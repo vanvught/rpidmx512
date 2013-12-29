@@ -123,6 +123,17 @@ void bw_i2c_ui_set_backlight_temp(uint8_t value) {
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 }
 
+void bw_i2c_ui_set_startup_message_line_1(const char *text, uint8_t length) {
+	static char cmd[] = { BW_PORT_WRITE_STARTUPMESSAGE_LINE1, 0xFF };
+	if (length == 0) {
+		ui_i2c_setup();
+		uwait(BW_UI_I2C_BYTE_WAIT_US);
+		bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	} else {
+
+	}
+}
+
 void bw_i2c_ui_get_backlight(uint8_t *value) {
 	static char cmd[] = { BW_PORT_READ_CURRENT_BACKLIGHT };
 	ui_i2c_setup();
