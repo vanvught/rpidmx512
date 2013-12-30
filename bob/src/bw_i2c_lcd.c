@@ -12,7 +12,7 @@ extern int printf(const char *format, ...);
 
 char i2c_lcd_slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 
-void inline static lcd_i2c_setup(void) {
+inline static void lcd_i2c_setup(void) {
 	bcm2835_i2c_setSlaveAddress(i2c_lcd_slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 }
@@ -107,6 +107,26 @@ void bw_i2c_lcd_set_backlight(uint8_t value) {
 	cmd[1] = value;
 	lcd_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+}
+
+//TODO
+void bw_i2c_lcd_set_startup_message_line_1(const char *text, uint8_t length) {
+	static char cmd[] = { BW_PORT_WRITE_STARTUPMESSAGE_LINE1, 0xFF };
+	if (length == 0) {
+		lcd_i2c_setup();
+		bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	} else {
+
+	}
+}
+
+void bw_i2c_lcd_set_startup_message_line_2(const char *text, uint8_t length) {
+}
+
+void bw_i2c_lcd_set_startup_message_line_3(const char *text, uint8_t length) {
+}
+
+void bw_i2c_lcd_set_startup_message_line_4(const char *text, uint8_t length) {
 }
 
 void bw_i2c_lcd_set_backlight_temp(uint8_t value) {
