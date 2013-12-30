@@ -1,0 +1,86 @@
+*** rpi-boot-master/emmc.c	2013-06-18 00:37:12.000000000 +0200
+--- workspace/emmc/emmc.c	2013-06-18 12:07:40.000000000 +0200
+***************
+*** 53,60 ****
+  #define SD_4BIT_DATA
+  
+  // SD Clock Frequencies (in Hz)
+! #define SD_CLOCK_ID         400000
+! #define SD_CLOCK_NORMAL     25000000
+  #define SD_CLOCK_HIGH       50000000
+  #define SD_CLOCK_100        100000000
+  #define SD_CLOCK_208        208000000
+--- 53,60 ----
+  #define SD_4BIT_DATA
+  
+  // SD Clock Frequencies (in Hz)
+! #define SD_CLOCK_ID         50000000 //400000
+! #define SD_CLOCK_NORMAL     50000000 //25000000
+  #define SD_CLOCK_HIGH       50000000
+  #define SD_CLOCK_100        100000000
+  #define SD_CLOCK_208        208000000
+***************
+*** 848,854 ****
+      // Set command reg
+      mmio_write(EMMC_BASE + EMMC_CMDTM, cmd_reg);
+  
+!     usleep(2000);
+  
+      // Wait for command complete interrupt
+      TIMEOUT_WAIT(mmio_read(EMMC_BASE + EMMC_INTERRUPT) & 0x8001, timeout);
+--- 848,854 ----
+      // Set command reg
+      mmio_write(EMMC_BASE + EMMC_CMDTM, cmd_reg);
+  
+!     // usleep(2000);
+  
+      // Wait for command complete interrupt
+      TIMEOUT_WAIT(mmio_read(EMMC_BASE + EMMC_INTERRUPT) & 0x8001, timeout);
+***************
+*** 868,874 ****
+          return;
+      }
+  
+!     usleep(2000);
+  
+      // Get response data
+      switch(cmd_reg & SD_CMD_RSPNS_TYPE_MASK)
+--- 868,874 ----
+          return;
+      }
+  
+!     // usleep(2000);
+  
+      // Get response data
+      switch(cmd_reg & SD_CMD_RSPNS_TYPE_MASK)
+***************
+*** 928,940 ****
+              {
+                  if(is_write)
+  				{
+! 					uint32_t data = read_word((uint8_t *)cur_buf_addr, 0);
+!                     mmio_write(EMMC_BASE + EMMC_DATA, data);
+  				}
+                  else
+  				{
+! 					uint32_t data = mmio_read(EMMC_BASE + EMMC_DATA);
+! 					write_word(data, (uint8_t *)cur_buf_addr, 0);
+  				}
+                  cur_byte_no += 4;
+                  cur_buf_addr++;
+--- 928,942 ----
+              {
+                  if(is_write)
+  				{
+!                 	mmio_write(EMMC_BASE + EMMC_DATA, *cur_buf_addr);
+! 					//uint32_t data = read_word((uint8_t *)cur_buf_addr, 0);
+!                     //mmio_write(EMMC_BASE + EMMC_DATA, data);
+  				}
+                  else
+  				{
+!                 	*cur_buf_addr = mmio_read(EMMC_BASE + EMMC_DATA);
+! 					//uint32_t data = mmio_read(EMMC_BASE + EMMC_DATA);
+! 					//write_word(data, (uint8_t *)cur_buf_addr, 0);
+  				}
+                  cur_byte_no += 4;
+                  cur_buf_addr++;
