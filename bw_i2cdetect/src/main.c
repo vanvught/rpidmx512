@@ -1,3 +1,25 @@
+/*
+ * Based on
+	    i2cdetect.c - a user-space program to scan for I2C devices
+	    Copyright (C) 1999-2004  Frodo Looijaard <frodol@dds.nl>, and
+	                             Mark D. Studebaker <mdsxyz123@yahoo.com>
+	    Copyright (C) 2004-2012  Jean Delvare <khali@linux-fr.org>
+
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ */
+
+/*
+After installing bcm2835, you can build this with something like:
+ gcc -O3 -Wall -o i2cdetect main.c -l bcm2835
+ sudo ./i2cdetect
+
+Or you can test it before installing with:
+ gcc -O3 -Wall -o i2cdetect -I ../../src ../../src/bcm2835.c main.c
+ sudo ./i2cdetect
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,7 +81,7 @@ int main(int argc, char **argv) {
 			break;
 		default:
 			fprintf(stderr, "Warning: Unsupported flag \"-%c\"!\n", argv[1 + flags][1]);
-			//help();
+			//help(); // TODO
 			exit(1);
 		}
 		flags++;
