@@ -12,11 +12,11 @@
 
 /*
 After installing bcm2835, you can build this with something like:
- gcc -O3 -Wall -o i2cdetect main.c -l bcm2835
+ gcc -O3 -Wall -o i2cdetect i2cdetect.c -l bcm2835
  sudo ./i2cdetect
 
 Or you can test it before installing with:
- gcc -O3 -Wall -o i2cdetect -I ../../src ../../src/bcm2835.c main.c
+ gcc -O3 -Wall -o i2cdetect -I ../../src ../../src/bcm2835.c i2cdetect.c
  sudo ./i2cdetect
 */
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 	}
 
     if (version) {
-		fprintf(stderr, "bw_i2cdetect version %s\n", VERSION);
+		fprintf(stderr, "i2cdetect version %s\n", VERSION);
 		exit(0);
 	}
 
