@@ -1,6 +1,7 @@
 #ifndef SYS_TIME_C_
 #define SYS_TIME_C_
 
+#include <stdint.h>
 #include <time.h>
 
 extern volatile uint64_t st_startup_micros;

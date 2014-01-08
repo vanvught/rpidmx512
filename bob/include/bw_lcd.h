@@ -4,7 +4,8 @@
 #include <stdint.h>
 
 #define BW_LCD_DEFAULT_SLAVE_ADDRESS	0x82
-#define BW_LCD_I2C_BYTE_WAIT_US			10
+#define BW_LCD_I2C_BYTE_WAIT_US			12
+#define BW_LCD_SPI_BYTE_WAIT_US			24
 
 #define BW_LCD_OK						0
 #define BW_LCD_ERROR					1

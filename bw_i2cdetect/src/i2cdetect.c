@@ -22,44 +22,28 @@ Or you can test it before installing with:
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <bcm2835.h>
 
 #define VERSION "1.0.0"
 
-#ifndef FALSE
-#define FALSE	0
-#define TRUE	!FALSE
-#endif
-
 struct device_details {
-	char address;
-	char name[32];
-	char isBW;
+	char slave_address;
+	const char *name;
+} const devices[] = {
+		{ 0x41, "BW:LCD" },
+		{ 0x4A, "BW:User Interface (UI)" },
+		{ 0x57, "MCP7941X {EEPROM}" },
+		{ 0x6F, "MCP7941X {SRAM RTCC}" }
 };
 
-struct device_details devices[] = {
-		{ 0x41, "LCD",                  TRUE},
-		{ 0x4A, "User Interface (UI)",  TRUE},
-		{ 0x57, "MCP7941X {EEPROM}",    FALSE},
-		{ 0x6F, "MCP7941X {SRAM RTCC}", FALSE}
-};
-
-static char *lookup_device(char address) {
+static const char *lookup_device(char slave_address) {
 	int i = 0;
 	int j = sizeof(devices) / sizeof(struct device_details);
-	static char string[48];
 
 	for (i = 0; i < j; i++) {
-		if (devices[i].address == address) {
-			strcpy(string, devices[i].name);
-			if (devices[i].isBW) {
-				char bw_address[10];
-				snprintf(bw_address, sizeof(bw_address), " BW:0x%.2X", address << 1);
-				strcat(string, bw_address);
-			}
-			return string;
+		if (devices[i].slave_address == slave_address) {
+			return devices[i].name;
 		}
 	}
 
@@ -67,7 +51,6 @@ static char *lookup_device(char address) {
 }
 
 int main(int argc, char **argv) {
-
 	int first = 0x03, last = 0x77;
     int flags = 0;
     int version = 0;
@@ -94,7 +77,7 @@ int main(int argc, char **argv) {
 
 	if (bcm2835_init() != 1) {
 		fprintf(stderr, "bcm2835_init() failed\n");
-		return 1;
+		exit(1);
 	}
 
 	bcm2835_i2c_begin();
@@ -103,13 +86,13 @@ int main(int argc, char **argv) {
 
 	int address;
 
-	for (address = 0x00; address <= 0x7F; address += 1) {
+	for (address = 0x00; address <= 0x7F; address++) {
 		if (address < first || address > last) {
 			continue;
 		}
 		bcm2835_i2c_setSlaveAddress(address);
 		if (bcm2835_i2c_write(NULL, 0) == 0) {
-			printf("0x%.2X : %s\n", address, lookup_device(address));
+			printf("0x%.2X : 0x%.2X : %s\n", address, address << 1, lookup_device(address));
 		}
 	}
 

@@ -8,8 +8,10 @@ extern void bw_spi_lcd_end (void);
 
 extern void bw_spi_lcd_reinit(void);
 
-extern void bw_spi_lcd_text_line_1(char *, uint8_t);
-extern void bw_spi_lcd_text_line_2(char *, uint8_t);
+extern void bw_spi_lcd_text_line_1(const char *, uint8_t);
+extern void bw_spi_lcd_text_line_2(const char *, uint8_t);
+extern void bw_spi_lcd_text_line_3(const char *, uint8_t);
+extern void bw_spi_lcd_text_line_4(const char *, uint8_t);
 
 extern void bw_spi_lcd_cls(void);
 extern void bw_spi_lcd_set_contrast(uint8_t);
