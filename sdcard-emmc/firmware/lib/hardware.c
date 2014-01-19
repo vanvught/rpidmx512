@@ -1,7 +1,7 @@
 #include <bcm2835.h>
 
 void led_set(int state) {
-	bcm2835_gpio_write(16, state);
+	bcm2835_gpio_write(16, !state);
 }
 
 void led_init(void) {

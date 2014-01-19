@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
-#define BW_UI_I2C_BYTE_WAIT_US			16
+#define BW_UI_I2C_BYTE_WAIT_US			14
 
 #define BW_UI_OK 						0
 #define BW_UI_ERROR						1

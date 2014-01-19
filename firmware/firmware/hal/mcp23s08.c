@@ -1,14 +1,12 @@
 #include <bcm2835.h>
 #include <mcp23s08.h>
 
-char spi_mcp23s08_slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;
+static char spi_mcp23s08_slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;
 
 void inline static mcp23s08_setup(void) {
-	bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);
-	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS1);
+	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);
 }
 
 int mcp23s08_start (char slave_address) {
@@ -17,6 +15,8 @@ int mcp23s08_start (char slave_address) {
 		return MCP23S08_ERROR;
 
 	bcm2835_spi_begin();
+	// Just once. Assuming all devices do have the same
+	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 
 	if (slave_address <= 0)
 		spi_mcp23s08_slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;

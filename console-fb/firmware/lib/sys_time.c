@@ -7,6 +7,7 @@
 volatile uint64_t st_startup_micros = 0;
 volatile uint32_t rtc_startup_seconds = 0;
 
+// Read time from RTC MCP7941x and set EPOCH time in seconds
 void sys_time_init(void) {
 	st_startup_micros = bcm2835_st_read();
 	struct rtc_time tm_rtc;

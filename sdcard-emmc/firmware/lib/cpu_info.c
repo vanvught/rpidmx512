@@ -6,6 +6,8 @@ unsigned int read_cpuid_id(void) {
 	return __val;
 }
 
+#ifdef INCLUDE_CPU_INFO
+
 // The following is derived from:
 // https://github.com/raspberrypi/linux/blob/b7c5c10f93a4f48609c3e8decaa37ab5aa04d830/arch/arm/include/asm/system_info.h
 
@@ -90,3 +92,4 @@ void cpu_info(void) {
 	}
 }
 
+#endif

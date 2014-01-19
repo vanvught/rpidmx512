@@ -3,7 +3,6 @@
 	<name>firmware</name>
 	<comment></comment>
 	<projects>
-		<project>bob</project>
 	</projects>
 	<buildSpec>
 	</buildSpec>

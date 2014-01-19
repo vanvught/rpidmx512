@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#ifdef INCLUDE_MEM_INFO
+
 void mem_info(void) {
     extern char __ram_start;
     extern char __ram_size;
@@ -26,3 +28,5 @@ void mem_info(void) {
     printf("heap_low        0x%08X\n", (unsigned int)&heap_low);
     printf("heap_top        0x%08X\n", (unsigned int)&heap_top);
 }
+
+#endif

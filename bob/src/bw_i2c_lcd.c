@@ -10,7 +10,7 @@ extern void uwait(int);
 
 extern int printf(const char *format, ...);
 
-char i2c_lcd_slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
+static char i2c_lcd_slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 
 inline static void lcd_i2c_setup(void) {
 	bcm2835_i2c_setSlaveAddress(i2c_lcd_slave_address >> 1);

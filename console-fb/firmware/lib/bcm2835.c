@@ -17,7 +17,7 @@ void inline bcm2835_gpio_set(uint8_t pin)
 
 void inline bcm2835_gpio_clr(uint8_t pin)
 {
-	BCM2835_GPIO->GPCLR0  = 1 << pin;
+	BCM2835_GPIO->GPCLR0 = 1 << pin;
 }
 
 void inline bcm2835_gpio_write(uint8_t pin, uint8_t on) {
@@ -229,7 +229,7 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
     uint8_t reason = BCM2835_I2C_REASON_OK;
 
     // Clear FIFO
-    BCM2835_PERI_SET_BITS(BCM2835_BSC1->C, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );
+    BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
     // Clear Status
     BCM2835_BSC1->S = BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE;
 	// Set Data Length
@@ -270,7 +270,7 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len)
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 
-	BCM2835_PERI_SET_BITS(BCM2835_BSC1->C, BCM2835_BSC_S_DONE , BCM2835_BSC_S_DONE);
+	BCM2835_BSC1->C = BCM2835_BSC_S_DONE;
 
     return reason;
 }
@@ -282,7 +282,7 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
     uint8_t reason = BCM2835_I2C_REASON_OK;
 
     // Clear FIFO
-    BCM2835_PERI_SET_BITS(BCM2835_BSC1->C, BCM2835_BSC_C_CLEAR_1 , BCM2835_BSC_C_CLEAR_1 );
+    BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
     // Clear Status
     BCM2835_BSC1->S = BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE;
 	// Set Data Length
@@ -325,7 +325,7 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len)
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 
-	BCM2835_PERI_SET_BITS(BCM2835_BSC1->C, BCM2835_BSC_S_DONE , BCM2835_BSC_S_DONE);
+	BCM2835_BSC1->C = BCM2835_BSC_S_DONE;
 
     return reason;
 }
