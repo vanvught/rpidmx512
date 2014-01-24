@@ -2,6 +2,7 @@
 #define BW_H_
 
 #include <bcm2835.h>
+#include <device_info.h>
 
 /// write ports
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00
@@ -41,11 +42,6 @@ typedef enum
 	BW_UI_BUTTON5	= 4,	///<
 	BW_UI_BUTTON6	= 5		///<
 } bwUiButtons;
-
-typedef struct _device_info {
-	char chip_select;
-	char slave_address;
-} device_info_t;
 
 #define BW_SPI0			BCM2835_SPI_CS0
 #define BW_SPI1			BCM2835_SPI_CS1

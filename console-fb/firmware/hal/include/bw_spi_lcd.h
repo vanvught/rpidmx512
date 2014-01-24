@@ -2,7 +2,7 @@
 #define BW_SPI_LCD_H_
 
 #include <stdint.h>
-#include <bw.h>
+#include <device_info.h>
 
 extern int bw_spi_lcd_start (device_info_t *);
 extern void bw_spi_lcd_end (void);

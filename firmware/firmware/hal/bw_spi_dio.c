@@ -11,10 +11,10 @@ extern void uwait(int);
 
 extern int printf(const char *format, ...);
 
-inline void static dio_spi_setup(device_info_t device_info) {
+inline void static dio_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
-	bcm2835_spi_setChipSelectPolarity(device_info.chip_select, LOW);
-	bcm2835_spi_chipSelect(device_info.chip_select);
+	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
+	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
 int bw_spi_dio_start (device_info_t *device_info) {
@@ -43,7 +43,7 @@ void bw_spi_dio_fsel_mask(device_info_t device_info, unsigned char mask) {
 	cmd[0] = device_info.slave_address;
 	cmd[1] = BW_PORT_WRITE_IO_DIRECTION;
 	cmd[2] = mask;
-	dio_spi_setup(device_info);
+	dio_spi_setup(&device_info);
 
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
@@ -56,7 +56,7 @@ void bw_spi_dio_output(device_info_t device_info, unsigned char pins) {
 	cmd[1] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
 	cmd[2] = pins;
 
-	dio_spi_setup(device_info);
+	dio_spi_setup(&device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
 }
@@ -71,7 +71,7 @@ void bw_spi_dio_read_id(device_info_t device_info) {
 	buf[0] = device_info.slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
 
-	dio_spi_setup(device_info);
+	dio_spi_setup(&device_info);
 	bcm2835_spi_transfern(buf, BW_DIO_ID_STRING_LENGTH);
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
 	printf("[%s]\n", &buf[1]);

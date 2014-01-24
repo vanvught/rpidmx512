@@ -2,6 +2,7 @@
 #define MCP23S08_H_
 
 #include <stdint.h>
+#include <device_info.h>
 
 #define MCP23S08_OK						0
 #define MCP23S08_ERROR					1
@@ -41,11 +42,11 @@ typedef enum
 	MCP23S08_FSEL_INPT  	= 0b001,   ///< Input
 } mcp23s08FunctionSelect;
 
-extern int mcp23s08_start(char slave_address);
+extern int mcp23s08_start(device_info_t *);
 extern void mcp23s08_end (void);
 
-extern void mcp23s08_gpio_fsel(uint8_t pin, uint8_t mode);
-extern void mcp23s08_gpio_set(uint8_t pin);
-extern void mcp23s08_gpio_clr(uint8_t pin);
+extern void mcp23s08_gpio_fsel(device_info_t, uint8_t, uint8_t);
+extern void mcp23s08_gpio_set(device_info_t, uint8_t);
+extern void mcp23s08_gpio_clr(device_info_t, uint8_t);
 
 #endif /* MCP23S08_H_ */

@@ -56,8 +56,8 @@
 #define RPI_GPIO_P1_03         0  ///< Version 1, Pin P1-03
 #define RPI_GPIO_P1_05         1  ///< Version 1, Pin P1-05
 #define RPI_GPIO_P1_07         4  ///< Version 1, Pin P1-07
-#define RPI_GPIO_P1_08        14  ///< Version 1, Pin P1-08, defaults to alt function 0 UART0_TXD
-#define RPI_GPIO_P1_10        15  ///< Version 1, Pin P1-10, defaults to alt function 0 UART0_RXD
+#define RPI_GPIO_P1_08        14  ///< Version 1, Pin P1-08, defaults to alt function 0 PL011_TXD
+#define RPI_GPIO_P1_10        15  ///< Version 1, Pin P1-10, defaults to alt function 0 PL011_RXD
 #define RPI_GPIO_P1_11        17  ///< Version 1, Pin P1-11
 #define RPI_GPIO_P1_12        18  ///< Version 1, Pin P1-12
 #define RPI_GPIO_P1_13        21  ///< Version 1, Pin P1-13
@@ -75,8 +75,8 @@
 #define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03
 #define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05
 #define RPI_V2_GPIO_P1_07      4  ///< Version 2, Pin P1-07
-#define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to alt function 0 UART0_TXD
-#define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to alt function 0 UART0_RXD
+#define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to alt function 0 PL011_TXD
+#define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to alt function 0 PL011_RXD
 #define RPI_V2_GPIO_P1_11     17  ///< Version 2, Pin P1-11
 #define RPI_V2_GPIO_P1_12     18  ///< Version 2, Pin P1-12
 #define RPI_V2_GPIO_P1_13     27  ///< Version 2, Pin P1-13
@@ -89,6 +89,25 @@
 #define RPI_V2_GPIO_P1_23     11  ///< Version 2, Pin P1-23, CLK when SPI0 in use
 #define RPI_V2_GPIO_P1_24      8  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
 #define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
+
+// The LCRH Register is the line control register
+#define PL011_LCRH_BRK			((uint32_t)(1 << 0))	///< Send break
+#define PL011_LCRH_PEN			((uint32_t)(1 << 1))	///< Parity enable
+#define PL011_LCRH_EPS			((uint32_t)(1 << 2))	///< Even parity select
+#define PL011_LCRH_STP2			((uint32_t)(1 << 3))	///< Two stop bits select
+#define PL011_LCRH_FEN			((uint32_t)(1 << 4))	///< Enable FIFOs
+#define PL011_LCRH_WLEN8		0x60					///< Word length 8 bits
+#define PL011_LCRH_SPS			((uint32_t)(1 << 7))	///< Sticky parity select
+
+#define PL011_IMSC_RXIM			((uint32_t)(1 << 4))	///<
+
+#define PL011_MIS_RXMIS			((uint32_t)(1 << 4))	///<
+
+#define PL011_FR_BUSY 			((uint32_t)(1 << 3))	///< Set to 1 when UART is transmitting data
+#define PL011_FR_RXFE			((uint32_t)(1 << 4))	///< Set to 1 when RX FIFO/register is empty
+#define PL011_FR_RXFF			((uint32_t)(1 << 6))	///< Set to 1 when RX FIFO/register is full
+
+#define PL011_ICRC_RXIC			((uint32_t)(1 << 4))	///<
 
 #ifdef __ASSEMBLY__
 #define BCM2835_SPI0_FIFO              0x0004 ///< SPI Master TX and RX FIFOs
@@ -209,7 +228,7 @@ extern void bcm2835_spi_setChipSelectPolarity(uint8_t, uint8_t);
 extern void bcm2835_spi_transfernb(char*, char*, uint32_t);
 extern void bcm2835_spi_transfern(char* buf, uint32_t len);
 extern void bcm2835_spi_writenb(char* tbuf, uint32_t len);
-extern void inline bcm2835_spi_write(uint16_t data);
+extern void bcm2835_spi_write(uint16_t data);
 
 extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
@@ -223,9 +242,11 @@ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
 
 extern void bcm2835_uart_begin(void);
 extern void inline bcm2835_uart_send(uint32_t);
+extern void bcm2835_uart_end(void);
 
-extern void bcm2835_spi_write(uint16_t data);
-extern void dac_write_all(uint16_t x, uint16_t y, uint8_t intensity, uint8_t red, uint8_t green, uint8_t blue);
+extern void bcm2835_pl011_begin(void);
+extern void inline bcm2835_pl011_send(uint32_t);
+extern void bcm2835_pl011_end(void);
 
 // TODO
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
@@ -233,6 +254,9 @@ extern void dac_write_all(uint16_t x, uint16_t y, uint8_t intensity, uint8_t red
 #define INTERRUPT_TIMER1 	(ARM_IRQ1_BASE + 1)
 #define INTERRUPT_TIMER3 	(ARM_IRQ1_BASE + 3)
 #define INTERRUPT_AUX 		(ARM_IRQ1_BASE + 29)
+
+#define ARM_IRQ2_BASE      32
+#define INTERRUPT_VC_UART  (ARM_IRQ2_BASE + 25)
 
 typedef enum
 {
@@ -275,6 +299,25 @@ typedef struct {
 	__I uint32_t STAT;     	// 0x64
 	__IO uint32_t BAUD;     // 0x68
 } BCM2835_UART_TypeDef;
+
+typedef struct {
+	__IO uint32_t DR;     	// 0x00
+	__IO uint32_t RSRECR;   // 0x04
+	__IO uint32_t PAD[4];	// 0x08
+	__IO uint32_t FR;       // 0x18
+	__IO uint32_t RES1;     // 0x1C
+	__IO uint32_t ILPR;     // 0x20
+	__IO uint32_t IBRD;     // 0x24
+	__IO uint32_t FBRD;     // 0x28
+	__IO uint32_t LCRH;     // 0x2C
+	__IO uint32_t CR; 	    // 0x30
+	__IO uint32_t IFLS;     // 0x34
+	__IO uint32_t IMSC;     // 0x38
+	__IO uint32_t RIS;     	// 0x3C
+	__IO uint32_t MIS;     	// 0x40
+	__IO uint32_t ICR;     	// 0x44
+	__IO uint32_t DMACR;   	// 0x48
+} BCM2835_PL011_TypeDef;
 
 typedef struct {
 	__IO uint32_t GPFSEL0; 	// 0x00
@@ -352,6 +395,7 @@ typedef struct {
 #define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
 #define BCM2835_GPIO_BASE      		(BCM2835_PERI_BASE + 0x200000)
 #define BCM2835_SPI0_BASE          	(BCM2835_PERI_BASE + 0x204000)
+#define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
 #define BCM2835_UART1_BASE			(BCM2835_PERI_BASE + 0x215000)
 #define BCM2835_BSC1_BASE			(BCM2835_PERI_BASE + 0x804000)
 #define BCM2835_BSC2_BASE			(BCM2835_PERI_BASE + 0x805000)
@@ -360,6 +404,7 @@ typedef struct {
 #define BCM2835_IRQ					((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
 #define BCM2835_GPIO 				((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
 #define BCM2835_SPI0 				((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
+#define BCM2835_PL011 				((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)
 #define BCM2835_UART1 				((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
 #define BCM2835_BSC1 				((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
 #define BCM2835_BSC2 				((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)

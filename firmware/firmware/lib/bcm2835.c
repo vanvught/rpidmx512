@@ -357,3 +357,44 @@ void inline bcm2835_uart_send(uint32_t c) {
 		;
 	BCM2835_UART1 ->IO = c;
 }
+
+void bcm2835_pl011_begin(void)
+{
+    BCM2835_PL011->CR = 0;						/* Disable everything */
+
+    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0); // PL011_TXD
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0); // PL011_RXD
+
+    // Disable pull-up/down
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+
+    /* Poll the "flags register" to wait for the UART to stop transmitting or receiving. */
+	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {
+	}
+
+    /* Flush the transmit FIFO by marking FIFOs as disabled in the "line control register". */
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
+
+    BCM2835_PL011->ICR = 0x7FF;					/* Clear all interrupt status */
+	/*
+	 * IBRD = UART_CLK / (16 * BAUD_RATE)
+	 * FBRD = ROUND((64 * MOD(UART_CLK,(16 * BAUD_RATE))) / (16 * BAUD_RATE))
+	 */
+    // UART_CLK = 3000000
+    // BAUD_RATE = 115200
+    BCM2835_PL011->IBRD = 1;
+    BCM2835_PL011->FBRD = 40;
+    //BCM2835_PL011->LCRH = 0x70;					/* Set N, 8, 1, FIFO enable */
+    BCM2835_PL011->LCRH = PL011_LCRH_WLEN8;		/* Set N, 8, 1, FIFO disabled */
+    BCM2835_PL011->CR = 0x301;					/* Enable UART */
+}
+
+void inline bcm2835_pl011_send(uint32_t c) {
+	while (1) {
+		if ((BCM2835_PL011 ->FR & 0x20) == 0)
+			break;
+	}
+	BCM2835_PL011 ->DR = c;
+}
