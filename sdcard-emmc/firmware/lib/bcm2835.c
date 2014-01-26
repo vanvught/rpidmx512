@@ -1,13 +1,5 @@
 #include <bcm2835.h>
 
-int bcm2835_init(void) {
-	return 1;
-}
-
-int bcm2835_close(void) {
-	return 1;
-}
-
 #define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
 
 void inline bcm2835_gpio_set(uint8_t pin)
@@ -384,8 +376,10 @@ void bcm2835_pl011_begin(void)
 	 */
     // UART_CLK = 3000000
     // BAUD_RATE = 115200
-    BCM2835_PL011->IBRD = 1;
-    BCM2835_PL011->FBRD = 40;
+    //BCM2835_PL011->IBRD = 1;
+    //BCM2835_PL011->FBRD = 40;
+    BCM2835_PL011->IBRD = PL011_BAUD_INT(115200);
+    BCM2835_PL011->FBRD = PL011_BAUD_FRAC(115200);
     //BCM2835_PL011->LCRH = 0x70;					/* Set N, 8, 1, FIFO enable */
     BCM2835_PL011->LCRH = PL011_LCRH_WLEN8;		/* Set N, 8, 1, FIFO disabled */
     BCM2835_PL011->CR = 0x301;					/* Enable UART */

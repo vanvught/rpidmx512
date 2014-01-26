@@ -25,8 +25,8 @@
 #include "mbox.h"
 #include "fb.h"
 
-#define WIDTH		640
-#define HEIGHT		480
+#define WIDTH		320
+#define HEIGHT		240
 #define BYTES_PER_PIXEL	2
 #define BPP		(BYTES_PER_PIXEL << 3)
 #define S_PITCH		(WIDTH * BYTES_PER_PIXEL)	// The pitch of the backbuffer
@@ -97,11 +97,11 @@ int fb_init()
 	phys_h = mailbuffer[6];
 
 	/* Request 640x480 if not otherwise specified */
-	if((phys_w == 0) && (phys_h == 0))
-	{
+	//if((phys_w == 0) && (phys_h == 0))
+	//{
 		phys_w = WIDTH;
 		phys_h = HEIGHT;
-	}
+	//}
 
 	if((phys_w == 0) || (phys_h == 0))
 		return FB_FAIL_INVALID_RESOLUTION;

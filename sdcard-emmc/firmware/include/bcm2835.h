@@ -90,24 +90,48 @@
 #define RPI_V2_GPIO_P1_24      8  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
 #define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
 
-// The LCRH Register is the line control register
+// PL011 UART
+// https://github.com/xinu-os/xinu/blob/master/device/uart-pl011/pl011.h
+#define PL011_DR_OE 			((uint32_t)(1 << 11))	///< Set to 1 on overrun error
+#define PL011_DR_BE 			((uint32_t)(1 << 10))	///< Set to 1 on break condition
+#define PL011_DR_PE 			((uint32_t)(1 <<  9))	///< Set to 1 on parity error
+#define PL011_DR_FE 			((uint32_t)(1 <<  8))	///< Set to 1 on framing error
+
+#define PL011_RSRECR_OE 		((uint32_t)(1 << 3))		///< Set to 1 on overrun error
+#define PL011_RSRECR_BE 		((uint32_t)(1 << 2))		///< Set to 1 on break condition
+#define PL011_RSRECR_PE 		((uint32_t)(1 << 1))		///< Set to 1 on parity error
+#define PL011_RSRECR_FE 		((uint32_t)(1 << 0))		///< Set to 1 on framing error
+
+#define PL011_FR_BUSY 			((uint32_t)(1 << 3))	///< Set to 1 when UART is transmitting data
+#define PL011_FR_RXFE			((uint32_t)(1 << 4))	///< Set to 1 when RX FIFO/register is empty
+#define PL011_FR_TXFF 			((uint32_t)(1 << 5))	///< Set to 1 when TX FIFO/register is full
+#define PL011_FR_RXFF			((uint32_t)(1 << 6))	///< Set to 1 when RX FIFO/register is full
+#define PL011_FR_TXFE 			((uint32_t)( 1<< 7))	///< Set to 1 when TX FIFO/register is empty
+
 #define PL011_LCRH_BRK			((uint32_t)(1 << 0))	///< Send break
 #define PL011_LCRH_PEN			((uint32_t)(1 << 1))	///< Parity enable
 #define PL011_LCRH_EPS			((uint32_t)(1 << 2))	///< Even parity select
 #define PL011_LCRH_STP2			((uint32_t)(1 << 3))	///< Two stop bits select
 #define PL011_LCRH_FEN			((uint32_t)(1 << 4))	///< Enable FIFOs
-#define PL011_LCRH_WLEN8		0x60					///< Word length 8 bits
+#define PL011_LCRH_WLEN8		((uint32_t)(0b11<<5))	///< Word length 8 bits
+#define PL011_LCRH_WLEN7 		((uint32_t)(0b10<<5))	///< Word length 7 bits
+#define PL011_LCRH_WLEN6 		((uint32_t)(0b01<<5))	///< Word length 6 bits
+#define PL011_LCRH_WLEN5 		((uint32_t)(0b00<<5))	///< Word length 5 bits
 #define PL011_LCRH_SPS			((uint32_t)(1 << 7))	///< Sticky parity select
 
 #define PL011_IMSC_RXIM			((uint32_t)(1 << 4))	///<
+#define PL011_IMSC_FEIM 		((uint32_t)(1 << 7))	///<
+#define PL011_IMSC_BEIM 		((uint32_t)(1 << 9)) 	///<
 
 #define PL011_MIS_RXMIS			((uint32_t)(1 << 4))	///<
-
-#define PL011_FR_BUSY 			((uint32_t)(1 << 3))	///< Set to 1 when UART is transmitting data
-#define PL011_FR_RXFE			((uint32_t)(1 << 4))	///< Set to 1 when RX FIFO/register is empty
-#define PL011_FR_RXFF			((uint32_t)(1 << 6))	///< Set to 1 when RX FIFO/register is full
+#define PL011_MIS_FEMIS			((uint32_t)(1 << 7))	///<
 
 #define PL011_ICRC_RXIC			((uint32_t)(1 << 4))	///<
+#define PL011_ICR_FEIC 			((uint32_t)(1 << 7))	///<
+
+#define PL011_BAUD_INT(x) (3000000 / (16 * (x)))
+#define PL011_BAUD_FRAC(x) (int)((((3000000.0 / (16.0 * (x)))-PL011_BAUD_INT(x))*64.0)+0.5)
+
 
 #ifdef __ASSEMBLY__
 #define BCM2835_SPI0_FIFO              0x0004 ///< SPI Master TX and RX FIFOs
@@ -205,12 +229,13 @@ typedef enum
 } bcm2835I2CReasonCodes;
 
 
-extern int bcm2835_init(void);
-extern int bcm2835_close(void);
+inline static int bcm2835_init(void) {return 1;}
+inline static int bcm2835_close(void) {return 1;}
 
 extern void inline bcm2835_delayMicroseconds(unsigned long long);
 
 //extern void bcm2835_peri_set_bits(uint32_t, uint32_t, uint32_t);
+extern void  bcm2835_gpio_set_pud(uint8_t, uint8_t);
 
 extern void bcm2835_gpio_fsel(uint8_t, uint8_t);
 extern void inline bcm2835_gpio_set(uint8_t);
@@ -221,9 +246,9 @@ extern uint8_t inline bcm2835_gpio_lev(uint8_t pin);
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
 extern void bcm2835_spi_setBitOrder(uint8_t);
-extern void inline bcm2835_spi_setClockDivider(uint16_t);
+extern void bcm2835_spi_setClockDivider(uint16_t);
 extern void bcm2835_spi_setDataMode(uint8_t);
-extern void inline bcm2835_spi_chipSelect(uint8_t);
+extern void bcm2835_spi_chipSelect(uint8_t);
 extern void bcm2835_spi_setChipSelectPolarity(uint8_t, uint8_t);
 extern void bcm2835_spi_transfernb(char*, char*, uint32_t);
 extern void bcm2835_spi_transfern(char* buf, uint32_t len);
@@ -314,7 +339,7 @@ typedef struct {
 	__IO uint32_t IFLS;     // 0x34
 	__IO uint32_t IMSC;     // 0x38
 	__IO uint32_t RIS;     	// 0x3C
-	__IO uint32_t MIS;     	// 0x40
+	__I  uint32_t MIS;     	// 0x40
 	__IO uint32_t ICR;     	// 0x44
 	__IO uint32_t DMACR;   	// 0x48
 } BCM2835_PL011_TypeDef;
@@ -376,16 +401,16 @@ typedef struct {
 } BCM2835_BSC_TypeDef;
 
 typedef struct {
-  __I uint32_t IRQ_BASIC_PENDING;// 0x00
-  __I uint32_t IRQ_PENDING1;	// 0x04
-  __I uint32_t IRQ_PENDING2;	// 0x08
-  __IO uint32_t FIQ_CONTROL;	// 0x0C
-  __IO uint32_t IRQ_ENABLE1;	// 0x10
-  __IO uint32_t IRQ_ENABLE2;	// 0x14
-  __IO uint32_t IRQ_BASIC_ENABLE;// 0x18
-  __IO uint32_t IRQ_DISABLE1;	// 0x1C
-  __IO uint32_t IRQ_DISABLE2;	// 0x20
-  __IO uint32_t IRQ_BASIC_DISABLE;// 0x24
+  __I uint32_t IRQ_BASIC_PENDING;	// 0x00
+  __I uint32_t IRQ_PENDING1;		// 0x04
+  __I uint32_t IRQ_PENDING2;		// 0x08
+  __IO uint32_t FIQ_CONTROL;		// 0x0C
+  __IO uint32_t IRQ_ENABLE1;		// 0x10
+  __IO uint32_t IRQ_ENABLE2;		// 0x14
+  __IO uint32_t IRQ_BASIC_ENABLE;	// 0x18
+  __IO uint32_t IRQ_DISABLE1;		// 0x1C
+  __IO uint32_t IRQ_DISABLE2;		// 0x20
+  __IO uint32_t IRQ_BASIC_DISABLE;	// 0x24
 } BCM2835_IRQ_TypeDef;
 
 #endif
