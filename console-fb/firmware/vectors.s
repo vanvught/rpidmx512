@@ -120,14 +120,3 @@ FUNC memory_barrier
     mov r0, #0
     mcr p15, #0, r0, c7, c10, #5
     bx lr
-
-FUNC uwait
-	push {r4, r5, lr}
-	mov r5,r0
-	ldr r4,=0x20003000
-    ldrd r2,r3,[r4,#4]
-4:  ldrd r0,r1,[r4,#4]
-    sub r1,r0,r2
-    cmp r1,r5
-    bls 4b
-    pop {r4, r5, pc}
