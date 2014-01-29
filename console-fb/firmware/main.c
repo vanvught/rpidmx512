@@ -24,7 +24,6 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
     	putc(ch, stdout);
     printf("\nputc\n");
 
-
     uint64_t ts = bcm2835_st_read();
 
     mem_info();

@@ -129,12 +129,13 @@
 #define PL011_ICRC_RXIC			((uint32_t)(1 << 4))	///<
 #define PL011_ICR_FEIC 			((uint32_t)(1 << 7))	///<
 
-#define PL011_BAUD_INT(x) (3000000 / (16 * (x)))
-#define PL011_BAUD_FRAC(x) (int)((((3000000.0 / (16.0 * (x)))-PL011_BAUD_INT(x))*64.0)+0.5)
+#define PL011_BAUD_INT(x) 		(3000000 / (16 * (x)))
+#define PL011_BAUD_FRAC(x) 		(int)((((3000000.0 / (16.0 * (x))) - PL011_BAUD_INT(x)) * 64.0) + 0.5)
 
 
 #ifdef __ASSEMBLY__
 #define BCM2835_SPI0_FIFO              0x0004 ///< SPI Master TX and RX FIFOs
+
 #define BCM2835_GPSET0                 0x001c ///< GPIO Pin Output Set 0
 #define BCM2835_GPCLR0                 0x0028 ///< GPIO Pin Output Clear 0
 
@@ -302,9 +303,9 @@ typedef struct {
 	__IO uint32_t CS;		// 0x00
 	__IO uint32_t CLO;		// 0x04
 	__IO uint32_t CHI;		// 0x08
-	__IO uint32_t C0;		// 0x0C used by GPU
+	__IO uint32_t C0;		// 0x0C used by GPU. DO NOT USE
 	__IO uint32_t C1;		// 0x10
-	__IO uint32_t C2;		// 0x14	used by GPU
+	__IO uint32_t C2;		// 0x14	used by GPU. DO NOT USE
 	__IO uint32_t C3;		// 0x18
 } BCM2835_ST_TypeDef;
 
