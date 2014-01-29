@@ -1,6 +1,7 @@
 #include <bcm2835.h>
 #include <bw.h>
 #include <bw_lcd.h>
+#include <bw_spi_lcd.h>
 
 #ifndef BARE_METAL
 static void uwait(int us) { bcm2835_delayMicroseconds(us); }

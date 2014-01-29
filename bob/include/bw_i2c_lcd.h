@@ -2,6 +2,9 @@
 #define BW_I2C_LCD_H_
 
 #include <stdint.h>
+#include <device_info.h>
+
+#define BW_LCD_I2C_BYTE_WAIT_US			12
 
 extern int bw_i2c_lcd_start (char);
 extern void bw_i2c_lcd_end (void);
