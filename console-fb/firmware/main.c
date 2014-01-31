@@ -1,8 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <bcm2835.h>
-
-#include "stdio.h"
-#include "console.h"
+#include <bcm2835_vc.h>
 
 void c_irq_handler(void) {}
 void c_fiq_handler(void) {}
@@ -16,13 +15,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 {
 	fb_init();
 
-    printf("Hello World!\n");
-    printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-
-    int ch = 32;
-    for (ch = 32; ch < 127; ch++)
-    	putc(ch, stdout);
-    printf("\nputc\n");
+    printf("Compiled on %s at %s\n\n", __DATE__, __TIME__);
 
     uint64_t ts = bcm2835_st_read();
 
@@ -32,7 +25,14 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 
 	cpu_info();
 
-    printf("Program end\n");
+	printf("\n");
+
+	printf("EMMC Clock rate (Hz): %ld\n", bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_EMMC));
+	printf("UART Clock rate (Hz): %ld\n", bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_UART));
+	printf("ARM  Clock rate (Hz): %ld\n", bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_ARM));
+	printf("CORE Clock rate (Hz): %ld\n", bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_CORE));
+
+    printf("\nProgram end\n");
 
     return 0;
 }
