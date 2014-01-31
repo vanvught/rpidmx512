@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <bcm2835.h>
+#include <bcm2835_vc.h>
 #include <hardware.h>
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
@@ -17,6 +18,8 @@ uint8_t dmx_data[512];
 
 static void bcm2835_pl011_dmx512_init(void)
 {
+	bcm2835_vc_set_clock_rate(BCM2835_MAILBOX_CLOCK_ID_UART, 4000000);
+
 	BCM2835_PL011->CR = 0;						/* Disable everything */
 
     // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
@@ -35,8 +38,8 @@ static void bcm2835_pl011_dmx512_init(void)
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 
     BCM2835_PL011->ICR = 0x7FF;									/* Clear all interrupt status */
-    BCM2835_PL011->IBRD = 1;									// config.txt
-    BCM2835_PL011->FBRD = 0;									// init_uart_clock=4000000 (4MHz)
+    BCM2835_PL011->IBRD = 1;									// UART Clock
+    BCM2835_PL011->FBRD = 0;									// is set to 4000000 (4MHz)
     BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;	/* Set 8, N, 2, FIFO disabled */
     BCM2835_PL011->CR = 0x301;									/* Enable UART */
 }
