@@ -132,6 +132,45 @@
 #define PL011_BAUD_INT(x) 		(3000000 / (16 * (x)))
 #define PL011_BAUD_FRAC(x) 		(int)((((3000000.0 / (16.0 * (x))) - PL011_BAUD_INT(x)) * 64.0) + 0.5)
 
+// Mailbox
+// https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+#define BCM2835_MAILBOX_STATUS_WF					0x80000000	///< Write full
+#define	 BCM2835_MAILBOX_STATUS_RE					0x40000000	///< Read empty
+#define BCM2835_MAILBOX_SUCCESS						0x80000000	///< Request successful
+#define BCM2835_MAILBOX_ERROR						0x80000001	///< Error parsing request buffer (partial response)
+#define BCM2835_MAILBOX_PROP_CHANNEL				8			///<
+// Unique clock ID
+#define BCM2835_MAILBOX_CLOCK_ID_RESERVED			0			///<
+#define BCM2835_MAILBOX_CLOCK_ID_EMMC				1			///<
+#define BCM2835_MAILBOX_CLOCK_ID_UART				2			///<
+#define BCM2835_MAILBOX_CLOCK_ID_ARM				3			///<
+#define BCM2835_MAILBOX_CLOCK_ID_CORE				4			///<
+#define BCM2835_MAILBOX_CLOCK_ID_V3D				5			///<
+#define BCM2835_MAILBOX_CLOCK_ID_H264				6			///<
+#define BCM2835_MAILBOX_CLOCK_ID_ISP				7			///<
+#define BCM2835_MAILBOX_CLOCK_ID_SDRAM				8			///<
+#define BCM2835_MAILBOX_CLOCK_ID_PIXEL				9			///<
+#define BCM2835_MAILBOX_CLOCK_ID_PWM				10			///<
+// Tag VideoCore
+#define BCM2835_MAILBOX_TAG_GET_FIRMWARE_REV		0x00000001	///<
+// Tag Hardware
+#define BCM2835_MAILBOX_TAG_GET_BOARD_MODEL			0x00010001	///<
+#define BCM2835_MAILBOX_TAG_GET_BOARD_REV			0x00010002	///<
+#define BCM2835_MAILBOX_TAG_GET_BOARD_MAC_ADDRESS	0x00010003	///<
+#define BCM2835_MAILBOX_TAG_GET_BOARD_SERIAL		0x00010004	///<
+#define BCM2835_MAILBOX_TAG_GET_ARM_MEMORY			0x00010005	///<
+#define BCM2835_MAILBOX_TAG_GET_VC_MEMORY			0x00010006	///<
+#define BCM2835_MAILBOX_TAG_GET_CLOCKS				0x00010007	///<
+// Tag Clock
+#define BCM2835_MAILBOX_TAG_GET_CLOCK_STATE			0x00030001	///<
+#define BCM2835_MAILBOX_TAG_GET_CLOCK_RATE 			0x00030002	///<
+#define BCM2835_MAILBOX_TAG_GET_MAX_CLOCK_RATE 		0x00030004	///<
+#define BCM2835_MAILBOX_TAG_GET_MIN_CLOCK_RATE 		0x00030007	///<
+#define BCM2835_MAILBOX_TAG_GET_TURBO		 		0x00030009	///<
+#define BCM2835_MAILBOX_TAG_SET_CLOCK_STATE			0x00038001	///<
+#define BCM2835_MAILBOX_TAG_SET_CLOCK_RATE 			0x00038002	///<
+#define BCM2835_MAILBOX_TAG_SET_TURBO	 			0x00038009	///<
+
 
 #ifdef __ASSEMBLY__
 #define BCM2835_SPI0_FIFO              0x0004 ///< SPI Master TX and RX FIFOs
@@ -274,6 +313,9 @@ extern void bcm2835_pl011_begin(void);
 extern void inline bcm2835_pl011_send(uint32_t);
 extern void bcm2835_pl011_end(void);
 
+extern uint32_t bcm2835_mailbox_read(uint8_t channel);
+extern void bcm2835_mailbox_write(uint8_t channel, uint32_t data);
+
 // TODO
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
 #define ARM_IRQ1_BASE 		0
@@ -414,11 +456,24 @@ typedef struct {
   __IO uint32_t IRQ_BASIC_DISABLE;	// 0x24
 } BCM2835_IRQ_TypeDef;
 
+typedef struct {
+  __I  uint32_t READ;				// 0x00
+  __I  uint32_t RES1;				// 0x04
+  __I  uint32_t RES2;				// 0x08
+  __I  uint32_t RES3;				// 0x0C
+  __I  uint32_t PEEK;				// 0x10
+  __I  uint32_t SENDER;				// 0x14
+  __IO uint32_t STATUS;				// 0x18
+  __I  uint32_t CONFIG;				// 0x1C
+  __O  uint32_t WRITE;				// 0x20
+} BCM2835_MAILBOX_TypeDef;
+
 #endif
 
 #define BCM2835_PERI_BASE      		0x20000000
 #define BCM2835_ST_BASE				(BCM2835_PERI_BASE + 0x3000)
 #define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
+#define BCM2835_MAILBOX_BASE 		(BCM2835_PERI_BASE + 0xB880)
 #define BCM2835_GPIO_BASE      		(BCM2835_PERI_BASE + 0x200000)
 #define BCM2835_SPI0_BASE          	(BCM2835_PERI_BASE + 0x204000)
 #define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
@@ -428,6 +483,7 @@ typedef struct {
 
 #define BCM2835_ST					((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
 #define BCM2835_IRQ					((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
+#define BCM2835_MAILBOX				((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
 #define BCM2835_GPIO 				((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
 #define BCM2835_SPI0 				((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
 #define BCM2835_PL011 				((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)

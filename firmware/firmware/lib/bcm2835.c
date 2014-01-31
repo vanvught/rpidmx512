@@ -392,3 +392,23 @@ void inline bcm2835_pl011_send(uint32_t c) {
 	}
 	BCM2835_PL011 ->DR = c;
 }
+
+uint32_t bcm2835_mailbox_read(uint8_t channel) {
+
+	while (1) {
+		while (BCM2835_MAILBOX ->STATUS & BCM2835_MAILBOX_STATUS_RE);
+
+		uint32_t data = BCM2835_MAILBOX ->READ;
+		uint8_t read_channel = (uint8_t) (data & 0xf);
+
+		if (read_channel == channel)
+			return (data & 0xfffffff0);
+	}
+
+	return BCM2835_MAILBOX_ERROR;
+}
+
+void bcm2835_mailbox_write(uint8_t channel, uint32_t data) {
+	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF);
+	BCM2835_MAILBOX->WRITE = (data & 0xfffffff0) | (uint32_t)(channel & 0xf);
+}
