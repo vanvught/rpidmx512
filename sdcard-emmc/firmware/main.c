@@ -39,10 +39,10 @@ int notmain (void)
 
 	f_mount(0, &Fatfs);		/* Register volume work area (never fails) */
 
-#if 1
+#if 0
 	int i;
 	printf("\nOpen an existing file (message.txt).\n");
-	rc = f_open(&Fil, "MESSAGE.TXT", FA_READ);
+	rc = f_open(&Fil, "message.txt", FA_READ);
 	if (rc)
 		die(rc);
 
@@ -62,6 +62,30 @@ int notmain (void)
 	if (rc)
 		die(rc);
 #endif
+
+#if 1
+	printf("\nOpen an existing file (message.txt).\n");
+	rc = f_open(&Fil, "message.txt", FA_READ);
+	if (rc)
+		die(rc);
+
+	printf("\nType the file content.\n");
+	int i = 1;
+	for (;;) {
+		if (f_gets(Buff, sizeof Buff, &Fil) == NULL)
+			break; /* Error or end of file */
+		printf("%d\t:%s\n", i, Buff);
+		i++;
+	}
+	if (rc)
+		die(rc);
+
+	printf("\nClose the file.\n");
+	rc = f_close(&Fil);
+	if (rc)
+		die(rc);
+#endif
+
 #if 0
 	printf("\nCreate a new file (hello.txt).\n");
 	rc = f_open(&Fil, "hello.txt", FA_WRITE | FA_CREATE_ALWAYS);
@@ -76,6 +100,7 @@ int notmain (void)
 	rc = f_close(&Fil);
 	if (rc) die(rc);
 #endif
+
 #if 1
 	printf("\nOpen root directory.\n");
 	rc = f_opendir(&dir, "");

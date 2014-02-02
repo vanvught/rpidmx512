@@ -3,7 +3,8 @@
 	<name>emmc</name>
 	<comment></comment>
 	<projects>
-		<project>sdcard-emmc</project>
+		<project>fb</project>
+		<project>ff9b</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -6,7 +6,7 @@ COPS = -Wall -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176j
 COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
 COPS += -I"./"
-#COPS += -I"./include"
+#COPS += -I"./common/include"
 COPS += -I"./firmware/hal/include" -I"./firmware/include"
 #COPS += -I"../fb" -I"../fb/include"
 
