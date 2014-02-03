@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>sdcard-emmc</name>
+	<name>ff9b</name>
 	<comment></comment>
 	<projects>
-		<project>emmc</project>
-		<project>fb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
