@@ -90,6 +90,12 @@
 #define RPI_V2_GPIO_P1_24      8  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
 #define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
 
+// Sytstem Timer
+#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))
+#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))
+#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))
+#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))
+
 // PL011 UART
 // https://github.com/xinu-os/xinu/blob/master/device/uart-pl011/pl011.h
 #define PL011_DR_OE 			((uint32_t)(1 << 11))	///< Set to 1 on overrun error

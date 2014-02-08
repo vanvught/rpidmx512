@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>console-fb</name>
+	<name>hal</name>
 	<comment></comment>
 	<projects>
-		<project>fb</project>
+		<project>firmware</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

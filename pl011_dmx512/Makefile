@@ -11,9 +11,11 @@ COPS += -I"./include"
 COPS += -I"./firmware/hal/include" -I"./firmware/include"
 #COPS += -I"../ff9b/src"
 COPS += -I"../fb" -I"../fb/include"
+#COPS += -I"../hal/include"
 
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.7.3 
 LIB += -L"../fb/lib"
+#LIB += -L"../hal/lib"
 LIB += -L"../emmc/lib"
 #LIB += -L"../ff9b/lib"
 

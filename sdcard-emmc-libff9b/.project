@@ -6,6 +6,7 @@
 		<project>emmc</project>
 		<project>fb</project>
 		<project>ff9b</project>
+		<project>hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

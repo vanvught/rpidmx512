@@ -3,6 +3,7 @@
 	<name>bob</name>
 	<comment></comment>
 	<projects>
+		<project>bcm2835</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

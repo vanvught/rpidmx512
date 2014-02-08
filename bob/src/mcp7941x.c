@@ -1,3 +1,24 @@
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <bcm2835.h>
@@ -42,14 +63,6 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 	bcm2835_i2c_write(cmd, sizeof(cmd)/sizeof(char));
 	bcm2835_i2c_read(reg, sizeof(reg)/sizeof(char));
 
-#ifdef _DEBUG
-	printf("bcm2835_i2c_read : %02x %02x %02x %02x %02x %02x %02x\n",
-			reg[MCP7941X_RTCC_TCR_SECONDS], reg[MCP7941X_RTCC_TCR_MINUTES],
-			reg[MCP7941X_RTCC_TCR_HOURS], reg[MCP7941X_RTCC_TCR_DAY],
-			reg[MCP7941X_RTCC_TCR_DATE], reg[MCP7941X_RTCC_TCR_MONTH],
-			reg[MCP7941X_RTCC_TCR_YEAR]);
-#endif
-
 	t->tm_sec  = BCD2DEC(reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
 	t->tm_min  = BCD2DEC(reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
 	t->tm_hour = BCD2DEC(reg[MCP7941X_RTCC_TCR_HOURS] & 0x3f);
@@ -73,14 +86,6 @@ void mcp7941x_set_date_time(struct rtc_time *t) {
 
 	reg[MCP7941X_RTCC_TCR_SECONDS] |=  MCP7941X_RTCC_BIT_ST;
 	reg[MCP7941X_RTCC_TCR_DAY] |= MCP7941X_RTCC_BIT_VBATEN;
-
-#ifdef _DEBUG
-	printf("reg[] : %02x %02x %02x %02x %02x %02x %02x\n",
-			reg[MCP7941X_RTCC_TCR_SECONDS], reg[MCP7941X_RTCC_TCR_MINUTES],
-			reg[MCP7941X_RTCC_TCR_HOURS], reg[MCP7941X_RTCC_TCR_DAY],
-			reg[MCP7941X_RTCC_TCR_DATE], reg[MCP7941X_RTCC_TCR_MONTH],
-			reg[MCP7941X_RTCC_TCR_YEAR]);
-#endif
 
 	char data[8];
 	data[0] = cmd[1];
