@@ -21,10 +21,23 @@
 
 #include <bcm2835.h>
 
-void led_set(int state) {
-	bcm2835_gpio_write(16, !state);
+inline static void bcm2835_wdog_start(uint32_t timeout) {
+	uint32_t cur;
+	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
+	cur = BCM2835_PM_WDOG->RSTC;
+	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (cur & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
 }
 
-void led_init(void) {
-	bcm2835_gpio_fsel(16, BCM2835_GPIO_FSEL_OUTP);
+void watchdog_stop(void) {
+	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
+}
+
+#define WDOG_TIMEOUT 0x0FFFF
+
+void watchdog_init(void) {
+	bcm2835_wdog_start(WDOG_TIMEOUT);
+}
+
+void watchdog_feed(void) {
+	bcm2835_wdog_start(WDOG_TIMEOUT);
 }

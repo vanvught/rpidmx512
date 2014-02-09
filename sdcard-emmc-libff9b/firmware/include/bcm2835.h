@@ -177,6 +177,11 @@
 #define BCM2835_MAILBOX_TAG_SET_CLOCK_RATE 			0x00038002	///<
 #define BCM2835_MAILBOX_TAG_SET_TURBO	 			0x00038009	///<
 
+#define BCM2835_PM_WDOG_PASSWORD					0x5a000000	///<
+#define BCM2835_PM_WDOG_TIME_SET            		0x000fffff	///<
+#define BCM2835_PM_WDOG_RSTC_RESET               	0x00000102	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_CLR           	0xffffffcf	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET		0x00000020	///<
 
 #ifdef __ASSEMBLY__
 #define BCM2835_SPI0_FIFO              0x0004 ///< SPI Master TX and RX FIFOs
@@ -332,33 +337,32 @@ extern void bcm2835_mailbox_write(uint8_t channel, uint32_t data);
 #define ARM_IRQ2_BASE      32
 #define INTERRUPT_VC_UART  (ARM_IRQ2_BASE + 25)
 
-typedef enum
-{
-  BCM2835_TIMER1_IRQn		= 1 << INTERRUPT_TIMER1,
-  BCM2835_TIMER3_IRQn		= 1 << INTERRUPT_TIMER3,
-  BCM2835_UART1_IRQn		= 1 << INTERRUPT_AUX,
+typedef enum {
+	BCM2835_TIMER1_IRQn = 1 << INTERRUPT_TIMER1,
+	BCM2835_TIMER3_IRQn = 1	<< INTERRUPT_TIMER3,
+	BCM2835_UART1_IRQn  = 1 << INTERRUPT_AUX
 } BCM2835_IRQn_TypeDef;
 
 #ifdef __cplusplus
-#define     __I     volatile                /*!< defines 'read only' permissions      */
+#define     __I     volatile			/*!< defines 'read only' permissions      */
 #else
-#define     __I     volatile const          /*!< defines 'read only' permissions      */
+#define     __I     volatile const	/*!< defines 'read only' permissions      */
 #endif
-#define     __O     volatile                  /*!< defines 'write only' permissions     */
-#define     __IO    volatile                  /*!< defines 'read / write' permissions   */
+#define     __O     volatile			/*!< defines 'write only' permissions     */
+#define     __IO    volatile			/*!< defines 'read / write' permissions   */
 
 typedef struct {
 	__IO uint32_t CS;		// 0x00
 	__IO uint32_t CLO;		// 0x04
 	__IO uint32_t CHI;		// 0x08
-	__IO uint32_t C0;		// 0x0C used by GPU. DO NOT USE
+	__I uint32_t  C0;		// 0x0C used by GPU. DO NOT USE
 	__IO uint32_t C1;		// 0x10
-	__IO uint32_t C2;		// 0x14	used by GPU. DO NOT USE
+	__I uint32_t  C2;		// 0x14	used by GPU. DO NOT USE
 	__IO uint32_t C3;		// 0x18
 } BCM2835_ST_TypeDef;
 
 typedef struct {
-	__I uint32_t IRQ;      	// 0x00
+	__I uint32_t  IRQ;     	// 0x00
 	__IO uint32_t ENABLE;   // 0x04
 	__IO uint32_t PAD[14];  // 0x08
 	__IO uint32_t IO;       // 0x40
@@ -370,7 +374,7 @@ typedef struct {
 	__IO uint32_t MSR;      // 0x58
 	__IO uint32_t SCR;      // 0x5C
 	__IO uint32_t CNTL;     // 0x60
-	__I uint32_t STAT;     	// 0x64
+	__I uint32_t  STAT;    	// 0x64
 	__IO uint32_t BAUD;     // 0x68
 } BCM2835_UART_TypeDef;
 
@@ -384,29 +388,29 @@ typedef struct {
 	__IO uint32_t IBRD;     // 0x24
 	__IO uint32_t FBRD;     // 0x28
 	__IO uint32_t LCRH;     // 0x2C
-	__IO uint32_t CR; 	    // 0x30
+	__IO uint32_t CR; 	   	// 0x30
 	__IO uint32_t IFLS;     // 0x34
 	__IO uint32_t IMSC;     // 0x38
 	__IO uint32_t RIS;     	// 0x3C
-	__I  uint32_t MIS;     	// 0x40
+	__I uint32_t  MIS;		// 0x40
 	__IO uint32_t ICR;     	// 0x44
 	__IO uint32_t DMACR;   	// 0x48
 } BCM2835_PL011_TypeDef;
 
 typedef struct {
-	__IO uint32_t GPFSEL0; 	// 0x00
-	__IO uint32_t GPFSEL1; 	// 0x04
-	__IO uint32_t GPFSEL2; 	// 0x08
-	__IO uint32_t GPFSEL3; 	// 0x0C
-	__IO uint32_t GPFSEL4; 	// 0x10
-	__IO uint32_t GPFSEL5; 	// 0x14
-	__IO uint32_t RES1;   	// 0x18
-	__O uint32_t GPSET0; 	// 0x1C
-	__O uint32_t GPSET1; 	// 0x20
+	__IO uint32_t GPFSEL0;	// 0x00
+	__IO uint32_t GPFSEL1;	// 0x04
+	__IO uint32_t GPFSEL2;	// 0x08
+	__IO uint32_t GPFSEL3;	// 0x0C
+	__IO uint32_t GPFSEL4;	// 0x10
+	__IO uint32_t GPFSEL5;	// 0x14
+	__IO uint32_t RES1;		// 0x18
+	__O uint32_t GPSET0;	// 0x1C
+	__O uint32_t GPSET1;	// 0x20
 	__IO uint32_t RES2;		// 0x24
-	__O uint32_t GPCLR0; 	// 0x28
-	__O uint32_t GPCLR1; 	// 0x2C
-	__IO uint32_t RES3;   	// 0x30
+	__O uint32_t GPCLR0;	// 0x28
+	__O uint32_t GPCLR1;	// 0x2C
+	__IO uint32_t RES3;		// 0x30
 	__I uint32_t GPLEV0;	// 0x34
 	__I uint32_t GPLEV1;	// 0x38
 	__IO uint32_t RES4;
@@ -450,29 +454,37 @@ typedef struct {
 } BCM2835_BSC_TypeDef;
 
 typedef struct {
-  __I uint32_t IRQ_BASIC_PENDING;	// 0x00
-  __I uint32_t IRQ_PENDING1;		// 0x04
-  __I uint32_t IRQ_PENDING2;		// 0x08
-  __IO uint32_t FIQ_CONTROL;		// 0x0C
-  __IO uint32_t IRQ_ENABLE1;		// 0x10
-  __IO uint32_t IRQ_ENABLE2;		// 0x14
-  __IO uint32_t IRQ_BASIC_ENABLE;	// 0x18
-  __IO uint32_t IRQ_DISABLE1;		// 0x1C
-  __IO uint32_t IRQ_DISABLE2;		// 0x20
-  __IO uint32_t IRQ_BASIC_DISABLE;	// 0x24
+	__I uint32_t IRQ_BASIC_PENDING;		// 0x00
+	__I uint32_t IRQ_PENDING1;			// 0x04
+	__I uint32_t IRQ_PENDING2;			// 0x08
+	__IO uint32_t FIQ_CONTROL;			// 0x0C
+	__IO uint32_t IRQ_ENABLE1;			// 0x10
+	__IO uint32_t IRQ_ENABLE2;			// 0x14
+	__IO uint32_t IRQ_BASIC_ENABLE;		// 0x18
+	__IO uint32_t IRQ_DISABLE1;			// 0x1C
+	__IO uint32_t IRQ_DISABLE2;			// 0x20
+	__IO uint32_t IRQ_BASIC_DISABLE;	// 0x24
 } BCM2835_IRQ_TypeDef;
 
 typedef struct {
-  __I  uint32_t READ;				// 0x00
-  __I  uint32_t RES1;				// 0x04
-  __I  uint32_t RES2;				// 0x08
-  __I  uint32_t RES3;				// 0x0C
-  __I  uint32_t PEEK;				// 0x10
-  __I  uint32_t SENDER;				// 0x14
-  __IO uint32_t STATUS;				// 0x18
-  __I  uint32_t CONFIG;				// 0x1C
-  __O  uint32_t WRITE;				// 0x20
+	__I uint32_t READ;		// 0x00
+	__I uint32_t RES1;		// 0x04
+	__I uint32_t RES2;		// 0x08
+	__I uint32_t RES3;		// 0x0C
+	__I uint32_t PEEK;		// 0x10
+	__I uint32_t SENDER;	// 0x14
+	__IO uint32_t STATUS;	// 0x18
+	__I uint32_t CONFIG;	// 0x1C
+	__O uint32_t WRITE;		// 0x20
 } BCM2835_MAILBOX_TypeDef;
+
+
+typedef struct {
+	__I  uint32_t UNKWOWN0[7];	// 0x00
+	__IO uint32_t RSTC;			// 0x1C
+	__I  uint32_t UNKWOWN1;		// 0x20
+	__IO uint32_t WDOG;			// 0x24
+} BCM2835_PM_WDOG_TypeDef;
 
 #endif
 
@@ -480,6 +492,7 @@ typedef struct {
 #define BCM2835_ST_BASE				(BCM2835_PERI_BASE + 0x3000)
 #define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
 #define BCM2835_MAILBOX_BASE 		(BCM2835_PERI_BASE + 0xB880)
+#define BCM2835_PM_WDOG_BASE		(BCM2835_PERI_BASE + 0x100000)
 #define BCM2835_GPIO_BASE      		(BCM2835_PERI_BASE + 0x200000)
 #define BCM2835_SPI0_BASE          	(BCM2835_PERI_BASE + 0x204000)
 #define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
@@ -490,6 +503,7 @@ typedef struct {
 #define BCM2835_ST					((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
 #define BCM2835_IRQ					((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
 #define BCM2835_MAILBOX				((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
+#define BCM2835_PM_WDOG				((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)
 #define BCM2835_GPIO 				((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
 #define BCM2835_SPI0 				((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
 #define BCM2835_PL011 				((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)
