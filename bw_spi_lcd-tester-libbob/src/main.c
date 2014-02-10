@@ -24,10 +24,6 @@
 #include <unistd.h>
 #include <time.h>
 //
-#include <bcm2835.h>
-//
-#include <bw.h>
-#include <bw_lcd.h>
 #include <bw_spi_lcd.h>
 
 unsigned int slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
@@ -64,16 +60,16 @@ int main(int argc, char **argv) {
 	printf("chip select   : %.1d\n", lcd_info.chip_select);
 
 	printf("bw_spi_lcd_reinit\n");
-	bw_spi_lcd_reinit(lcd_info);
+	bw_spi_lcd_reinit(&lcd_info);
 
 	printf("bw_spi_lcd_read_id\n");
-	bw_spi_lcd_read_id(lcd_info);
+	bw_spi_lcd_read_id(&lcd_info);
 
 	printf("bw_spi_lcd_cls\n");
-	bw_spi_lcd_cls(lcd_info);
+	bw_spi_lcd_cls(&lcd_info);
 
 	printf("bw_spi_lcd_text_line_1\n");
-	bw_spi_lcd_text_line_1(lcd_info, "Raspberry Pi", 12);
+	bw_spi_lcd_text_line_1(&lcd_info, "Raspberry Pi", 12);
 
 	printf("bw_spi_lcd_text_line_2\n");
 
@@ -87,7 +83,7 @@ int main(int argc, char **argv) {
 	    Tm = localtime(&ltime);
 	    if (sec != Tm->tm_sec) {
 	    	sprintf(buf, "%.2d:%.2d:%.2d", Tm->tm_hour, Tm->tm_min, Tm->tm_sec);
-	    	bw_spi_lcd_text_line_2(lcd_info, buf, 8);
+	    	bw_spi_lcd_text_line_2(&lcd_info, buf, 8);
 	    	sec = Tm->tm_sec;
 	    }
     }

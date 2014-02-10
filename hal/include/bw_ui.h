@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
-#define BW_UI_I2C_BYTE_WAIT_US			14
 
 #define BW_UI_OK 						0
 #define BW_UI_ERROR						1
@@ -13,8 +12,17 @@
 #define BW_UI_MAX_LINES					2
 #define BW_UI_ID_STRING_LENGTH			20
 
+typedef enum
+{
+	BW_UI_BUTTON1	= 0,	///<
+	BW_UI_BUTTON2	= 1,	///<
+	BW_UI_BUTTON3	= 2,	///<
+	BW_UI_BUTTON4	= 3,	///<
+	BW_UI_BUTTON5	= 4,	///<
+	BW_UI_BUTTON6	= 5		///<
+} bwUiButtons;
+
 #ifdef BW_I2C_UI
-#include <bw_i2c_ui.h>
 #define ui_start 						bw_i2c_ui_start
 #define ui_end							bw_i2c_ui_end
 #define ui_reinit						bw_i2c_ui_reinit
@@ -40,7 +48,6 @@
 #endif
 
 #ifdef BW_SPI_UI
-#include <bw_spi_ui.h>
 #define ui_start 						bw_spi_ui_start
 #define ui_end							bw_spi_ui_end
 #define ui_reinit						bw_spi_ui_reinit

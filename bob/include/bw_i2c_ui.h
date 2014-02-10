@@ -1,7 +1,12 @@
 #ifndef BW_I2C_UI_H_
 #define BW_I2C_UI_H_
 
+#include <bw_ui.h>
+#include <device_info.h>
+
 #include <stdint.h>
+
+#define BW_UI_I2C_BYTE_WAIT_US			14
 
 extern int bw_i2c_ui_start (char);
 extern void bw_i2c_ui_end (void);

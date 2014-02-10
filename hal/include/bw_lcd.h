@@ -13,7 +13,6 @@
 #define BW_LCD_ID_STRING_LENGTH			20
 
 #ifdef BW_I2C_LCD
-#include <bw_i2c_lcd.h>
 #define lcd_start 						bw_i2c_lcd_start
 #define lcd_end							bw_i2c_lcd_end
 #define lcd_reinit						bw_i2c_lcd_reinit
@@ -35,7 +34,6 @@
 #endif
 
 #ifdef BW_SPI_LCD
-#include <bw_spi_lcd.h>
 #define lcd_start 						bw_spi_lcd_start
 #define lcd_end							bw_spi_lcd_end
 #define lcd_reinit						bw_spi_lcd_reinit

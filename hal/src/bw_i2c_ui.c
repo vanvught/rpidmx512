@@ -20,27 +20,16 @@
  */
 
 #include <bcm2835.h>
+//
+#include <device_info.h>
+//
 #include <bw.h>
-#include <bw_ui.h>
+#include <bw_i2c_ui.h>
 
 #ifndef BARE_METAL
-static void uwait(int us) { bcm2835_delayMicroseconds(us); }
+#define uwait bcm2835_delayMicroseconds
 #else
 extern void uwait(int);
-#endif
-
-#if 0
-static uint64_t _st_sample;
-#define BW_UI_I2C_BYTE_WAIT_US 0
-inline static uint8_t _i2c_write(const char * buf, uint32_t len) {
-	int delta = (int)(bcm2835_st_read() - _st_sample);
-	if (delta > 0 && delta < 16)
-		bcm2835_delayMicroseconds(16 - delta);
-	uint8_t rc = bcm2835_i2c_write(buf, len);
-	_st_sample = bcm2835_st_read();
-	return rc;
-}
-#define bcm2835_i2c_write _i2c_write
 #endif
 
 extern int printf(const char *format, ...);

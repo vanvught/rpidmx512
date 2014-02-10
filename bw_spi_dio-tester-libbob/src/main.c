@@ -23,8 +23,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 //
-#include <bw.h>
-#include <bw_dio.h>
 #include <bw_spi_dio.h>
 
 unsigned int slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
@@ -61,17 +59,17 @@ int main(int argc, char **argv) {
 	printf("chip select   : %.1d\n", lcd_info.chip_select);
 
 	printf("bw_spi_dio_read_id\n");
-	bw_spi_dio_read_id(lcd_info);
+	bw_spi_dio_read_id(&lcd_info);
 
 	printf("bw_spi_dio_fsel_mask\n");
-	bw_spi_dio_fsel_mask(lcd_info, 0x7F);
+	bw_spi_dio_fsel_mask(&lcd_info, 0x7F);
 
 	printf("bw_spi_dio_output ...\n");
 
 	for(;;) {
-		bw_spi_dio_output(lcd_info, BW_DIO_PIN_IO0 | BW_DIO_PIN_IO2 | BW_DIO_PIN_IO4 | BW_DIO_PIN_IO6);
+		bw_spi_dio_output(&lcd_info, BW_DIO_PIN_IO0 | BW_DIO_PIN_IO2 | BW_DIO_PIN_IO4 | BW_DIO_PIN_IO6);
 		sleep(1);
-		bw_spi_dio_output(lcd_info, BW_DIO_PIN_IO1 | BW_DIO_PIN_IO3 | BW_DIO_PIN_IO5);
+		bw_spi_dio_output(&lcd_info, BW_DIO_PIN_IO1 | BW_DIO_PIN_IO3 | BW_DIO_PIN_IO5);
 		sleep(1);
 	}
 

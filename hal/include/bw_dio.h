@@ -2,21 +2,6 @@
 #define BW_DIO_H_
 
 #define BW_DIO_DEFAULT_SLAVE_ADDRESS		0x84
-// SPI
-#define BW_DIO_SPI_BYTE_WAIT_US				0
-
-// Write ports
-#define BW_PORT_WRITE_SET_ALL_OUTPUTS		0x10
-#define BW_PORT_WRITE_SET_OUTPUT_IO0		0x20
-#define BW_PORT_WRITE_SET_OUTPUT_IO1		0x21
-#define BW_PORT_WRITE_SET_OUTPUT_IO2		0x22
-#define BW_PORT_WRITE_SET_OUTPUT_IO3		0x23
-#define BW_PORT_WRITE_SET_OUTPUT_IO4		0x24
-#define BW_PORT_WRITE_SET_OUTPUT_IO5		0x25
-#define BW_PORT_WRITE_SET_OUTPUT_IO6		0x26
-#define BW_PORT_WRITE_IO_DIRECTION			0x30
-// Read ports
-#define BW_PORT_READ_ID_STRING				0x01
 
 #define BW_DIO_ID_STRING_LENGTH				20
 
@@ -36,7 +21,5 @@ typedef enum
 	BW_DIO_FSEL_INPT = 0b00,
 	BW_DIO_FSEL_OUTP = 0b01
 } bw_spi_dio_FunctionSelect;
-
-
 
 #endif /* BW_DIO_H_ */

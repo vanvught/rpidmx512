@@ -1,8 +1,10 @@
 #ifndef BW_I2C_LCD_H_
 #define BW_I2C_LCD_H_
 
-#include <stdint.h>
+#include <bw_lcd.h>
 #include <device_info.h>
+
+#include <stdint.h>
 
 #define BW_LCD_I2C_BYTE_WAIT_US			12
 

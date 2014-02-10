@@ -2,7 +2,6 @@
 #define BW_H_
 
 #include <bcm2835.h>
-#include <device_info.h>
 
 /// write ports
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00
@@ -18,6 +17,16 @@
 #define BW_PORT_WRITE_REINIT_LCD			0x14
 #define BW_PORT_WRITE_SET_BACKLIGHT			0x17
 #define BW_PORT_WRITE_CHANGE_SLAVE_ADDRESS	0xf0
+//
+#define BW_PORT_WRITE_SET_ALL_OUTPUTS		0x10
+#define BW_PORT_WRITE_SET_OUTPUT_IO0		0x20
+#define BW_PORT_WRITE_SET_OUTPUT_IO1		0x21
+#define BW_PORT_WRITE_SET_OUTPUT_IO2		0x22
+#define BW_PORT_WRITE_SET_OUTPUT_IO3		0x23
+#define BW_PORT_WRITE_SET_OUTPUT_IO4		0x24
+#define BW_PORT_WRITE_SET_OUTPUT_IO5		0x25
+#define BW_PORT_WRITE_SET_OUTPUT_IO6		0x26
+#define BW_PORT_WRITE_IO_DIRECTION			0x30
 
 /// read ports
 #define BW_PORT_READ_ID_STRING				0x01
@@ -32,16 +41,6 @@
 #define BW_PORT_READ_BUTTON_4				0x43
 #define BW_PORT_READ_BUTTON_5				0x44
 #define BW_PORT_READ_BUTTON_6				0x45
-
-typedef enum
-{
-	BW_UI_BUTTON1	= 0,	///<
-	BW_UI_BUTTON2	= 1,	///<
-	BW_UI_BUTTON3	= 2,	///<
-	BW_UI_BUTTON4	= 3,	///<
-	BW_UI_BUTTON5	= 4,	///<
-	BW_UI_BUTTON6	= 5		///<
-} bwUiButtons;
 
 #define BW_SPI0			BCM2835_SPI_CS0
 #define BW_SPI1			BCM2835_SPI_CS1
