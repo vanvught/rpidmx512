@@ -43,6 +43,13 @@ typedef enum
 	BW_UI_BUTTON6	= 5		///<
 } bwUiButtons;
 
+#define BUTTON6_PRESSED(x)		((x) & 0b000001)
+#define BUTTON5_PRESSED(x)		((x) & 0b000010)
+#define BUTTON4_PRESSED(x)		((x) & 0b000100)
+#define BUTTON3_PRESSED(x)		((x) & 0b001000)
+#define BUTTON2_PRESSED(x)		((x) & 0b010000)
+#define BUTTON1_PRESSED(x)		((x) & 0b100000)
+
 #ifdef BW_I2C_UI
 #define ui_start 						bw_i2c_ui_start
 #define ui_end							bw_i2c_ui_end
