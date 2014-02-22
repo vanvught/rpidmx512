@@ -26,7 +26,7 @@
 
 #define BW_DIO_ID_STRING_LENGTH				20
 
-typedef enum
+typedef enum 
 {
 	BW_DIO_PIN_IO0	= 0b00000001,
 	BW_DIO_PIN_IO1	= 0b00000010,

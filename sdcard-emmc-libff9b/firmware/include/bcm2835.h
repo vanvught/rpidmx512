@@ -480,9 +480,9 @@ typedef struct {
 
 
 typedef struct {
-	__I  uint32_t UNKWOWN0[7];	// 0x00
+	__I uint32_t UNKWOWN0[7];	// 0x00
 	__IO uint32_t RSTC;			// 0x1C
-	__I  uint32_t UNKWOWN1;		// 0x20
+	__I uint32_t UNKWOWN1;		// 0x20
 	__IO uint32_t WDOG;			// 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
