@@ -21,17 +21,15 @@
 
 #include <bcm2835.h>
 
-#define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
-
-void inline bcm2835_gpio_set(uint8_t pin) {
+inline void bcm2835_gpio_set(uint8_t pin) {
 	BCM2835_GPIO ->GPSET0 = 1 << pin;
 }
 
-void inline bcm2835_gpio_clr(uint8_t pin) {
+inline void bcm2835_gpio_clr(uint8_t pin) {
 	BCM2835_GPIO ->GPCLR0 = 1 << pin;
 }
 
-void inline bcm2835_gpio_write(uint8_t pin, uint8_t on) {
+inline void bcm2835_gpio_write(uint8_t pin, uint8_t on) {
 	if (on)
 		bcm2835_gpio_set(pin);
 	else

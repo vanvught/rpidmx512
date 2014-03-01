@@ -21,10 +21,12 @@
 
 #include <bcm2835.h>
 
+#define PIN		16
+
 void led_set(int state) {
-	bcm2835_gpio_write(16, !state);
+	bcm2835_gpio_write(PIN, !state);
 }
 
 void led_init(void) {
-	bcm2835_gpio_fsel(16, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
 }

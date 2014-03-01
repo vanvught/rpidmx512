@@ -19,33 +19,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_SPI_LCD_H_
-#define BW_SPI_LCD_H_
-
-#include <device_info.h>
-#include <bw_lcd.h>
+#ifndef MCP49X2_H_
+#define MCP49X2_H_
 
 #include <stdint.h>
 
-#define BW_LCD_SPI_BYTE_WAIT_US			12
+#define MCP4902_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
 
-extern int bw_spi_lcd_start (device_info_t *);
-extern void bw_spi_lcd_end (void);
+#define MCP49X2_WRITE_DAC_A		((uint16_t)(0 << 15))
+#define MCP49X2_WRITE_DAC_B		((uint16_t)(1 << 15))
 
-extern void bw_spi_lcd_reinit(device_info_t *);
 
-extern void bw_spi_lcd_text_line_1(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_2(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_3(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_4(device_info_t *, const char *, uint8_t);
 
-extern void bw_spi_lcd_cls(device_info_t *);
-extern void bw_spi_lcd_set_contrast(device_info_t *, uint8_t);
-extern void bw_spi_lcd_set_backlight(device_info_t *, uint8_t);
-
-extern void bw_spi_lcd_get_backlight(uint8_t *);
-extern void bw_spi_lcd_get_contrast(uint8_t *);
-
-extern void bw_spi_lcd_read_id(device_info_t *);
-
-#endif /* BW_SPI_LCD_H_ */
+#endif /* MCP49X2_H_ */

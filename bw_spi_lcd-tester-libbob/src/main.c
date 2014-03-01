@@ -30,7 +30,7 @@ unsigned int slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 unsigned int chip_select = 0;
 
 int main(int argc, char **argv) {
-	device_info_t lcd_info;
+	device_info_t device_info;
 
 	while ((argc > 1) && (argv[1][0] == '-')) {
 		switch (argv[1][1]) {
@@ -48,28 +48,28 @@ int main(int argc, char **argv) {
 		--argc;
 	}
 
-	lcd_info.slave_address = slave_address;
-	lcd_info.chip_select = chip_select;
+	device_info.slave_address = slave_address;
+	device_info.chip_select = chip_select;
 
-	if (bw_spi_lcd_start(&lcd_info)) {
+	if (bw_spi_lcd_start(&device_info)) {
 		fprintf(stderr,"Could not start bw_spi_lcd_start library\n");
 		exit(1);
 	}
 
-	printf("slave address : 0x%x\n", lcd_info.slave_address);
-	printf("chip select   : %.1d\n", lcd_info.chip_select);
+	printf("slave address : 0x%x\n", device_info.slave_address);
+	printf("chip select   : %.1d\n", device_info.chip_select);
 
 	printf("bw_spi_lcd_reinit\n");
-	bw_spi_lcd_reinit(&lcd_info);
+	bw_spi_lcd_reinit(&device_info);
 
 	printf("bw_spi_lcd_read_id\n");
-	bw_spi_lcd_read_id(&lcd_info);
+	bw_spi_lcd_read_id(&device_info);
 
 	printf("bw_spi_lcd_cls\n");
-	bw_spi_lcd_cls(&lcd_info);
+	bw_spi_lcd_cls(&device_info);
 
 	printf("bw_spi_lcd_text_line_1\n");
-	bw_spi_lcd_text_line_1(&lcd_info, "Raspberry Pi", 12);
+	bw_spi_lcd_text_line_1(&device_info, "Raspberry Pi", 12);
 
 	printf("bw_spi_lcd_text_line_2\n");
 
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 	    Tm = localtime(&ltime);
 	    if (sec != Tm->tm_sec) {
 	    	sprintf(buf, "%.2d:%.2d:%.2d", Tm->tm_hour, Tm->tm_min, Tm->tm_sec);
-	    	bw_spi_lcd_text_line_2(&lcd_info, buf, 8);
+	    	bw_spi_lcd_text_line_2(&device_info, buf, 8);
 	    	sec = Tm->tm_sec;
 	    }
     }

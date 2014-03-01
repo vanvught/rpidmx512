@@ -196,8 +196,9 @@
 #else
 #include <stdint.h>
 
-#define PUT32(x,y)	*(volatile uint32_t *)(x) = (y)
-#define GET32(x)	*(volatile uint32_t *)(x)
+#define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
+
+#define DMB()		asm volatile("mov r0, #0\nmcr p15, #0, r0, c7, c10, #5\n"::: "memory")
 
 typedef enum
 {
@@ -278,7 +279,6 @@ typedef enum
     BCM2835_I2C_REASON_ERROR_CLKT    = 0x02,      ///< Received Clock Stretch Timeout
     BCM2835_I2C_REASON_ERROR_DATA    = 0x04,      ///< Not all data is sent / received
 } bcm2835I2CReasonCodes;
-
 
 inline static int bcm2835_init(void) {return 1;}
 inline static int bcm2835_close(void) {return 1;}

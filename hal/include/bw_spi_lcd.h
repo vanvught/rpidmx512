@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 
-#define BW_LCD_SPI_BYTE_WAIT_US			8
+#define BW_LCD_SPI_BYTE_WAIT_US			12
 
 extern int bw_spi_lcd_start (device_info_t *);
 extern void bw_spi_lcd_end (void);

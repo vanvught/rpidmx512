@@ -61,8 +61,8 @@ int notmain (void)
 
 #if 0
 	int i;
-	printf("\nOpen an existing file (message.txt).\n");
-	rc = f_open(&Fil, "message.txt", FA_READ);
+	printf("\nOpen an existing file (devices.txt).\n");
+	rc = f_open(&Fil, "devices.txt", FA_READ);
 	if (rc)
 		die(rc);
 
@@ -84,8 +84,8 @@ int notmain (void)
 #endif
 
 #if 1
-	printf("\nOpen an existing file (message.txt).\n");
-	rc = f_open(&Fil, "message.txt", FA_READ);
+	printf("\nOpen an existing file (devices.txt).\n");
+	rc = f_open(&Fil, "devices.txt", FA_READ);
 	if (rc)
 		die(rc);
 
@@ -121,7 +121,7 @@ int notmain (void)
 	if (rc) die(rc);
 #endif
 
-#if 1
+#if 0
 	printf("\nOpen root directory.\n");
 	rc = f_opendir(&dir, "");
 	if (rc) die(rc);
