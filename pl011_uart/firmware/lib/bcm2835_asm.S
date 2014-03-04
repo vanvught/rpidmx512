@@ -52,7 +52,6 @@ pop	{r3, r4, r5, pc}
 
 FUNC bcm2835_spi_write
 @ void bcm2835_spi_write(uint16_t data)
-push {lr}
 ldr	r3, =BCM2835_SPI0_BASE
 ldr	r1, [r3]
 orr	r1, r1, #BCM2835_SPI0_CS_CLEAR
@@ -75,4 +74,4 @@ cs_done:
 ldr	r1, [r3]
 bic	r1, r1, #BCM2835_SPI0_CS_TA
 str	r1, [r3]
-pop {pc}
+bx lr
