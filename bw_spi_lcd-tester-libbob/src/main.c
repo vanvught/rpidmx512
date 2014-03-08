@@ -52,8 +52,8 @@ int main(int argc, char **argv) {
 	device_info.chip_select = chip_select;
 
 	if (bw_spi_lcd_start(&device_info)) {
-		fprintf(stderr,"Could not start bw_spi_lcd_start library\n");
-		exit(1);
+		fprintf(stderr,"Could not start bw_spi_lcd_start\n");
+		exit(EXIT_FAILURE);
 	}
 
 	printf("slave address : 0x%x\n", device_info.slave_address);

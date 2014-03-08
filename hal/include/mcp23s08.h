@@ -45,6 +45,8 @@
 #define MCP23S08_CMD_WRITE				0x40
 #define MCP23S08_CMD_READ				0x41
 
+#define MCP23S08_IOCON_HAEN				(uint8_t)(1 << 3)
+
 typedef enum {
 	MCP23S08_PIN_GP0 = 0b00000001,
 	MCP23S08_PIN_GP1 = 0b00000010,
@@ -64,8 +66,11 @@ typedef enum {
 extern int mcp23s08_start(device_info_t *);
 extern void mcp23s08_end (void);
 
-extern void mcp23s08_gpio_fsel(device_info_t, uint8_t, uint8_t);
-extern void mcp23s08_gpio_set(device_info_t, uint8_t);
-extern void mcp23s08_gpio_clr(device_info_t, uint8_t);
+extern uint8_t mcp23s08_reg_read(device_info_t *, uint8_t);
+extern void mcp23s08_reg_write(device_info_t *, uint8_t, uint8_t);
+
+extern void mcp23s08_gpio_fsel(device_info_t *, uint8_t, uint8_t);
+extern void mcp23s08_gpio_set(device_info_t *, uint8_t);
+extern void mcp23s08_gpio_clr(device_info_t *, uint8_t);
 
 #endif /* MCP23S08_H_ */
