@@ -4,6 +4,7 @@ OpenDMX
 DMX controller for Raspberry Pi
 
 Linux
+-----
 
 \bob
 \bw_i2cdetect
@@ -12,6 +13,7 @@ Linux
 \mcp23s08-tester-libbob
 
 Baremetal
+---------
 
 \emmc
 \fb
