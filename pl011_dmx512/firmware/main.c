@@ -16,32 +16,26 @@ uint8_t dmx_data[512];
 
 // -------------------------------------------------------------------------------------- //
 
-static void bcm2835_pl011_dmx512_init(void)
-{
+static void bcm2835_pl011_dmx512_init(void) {
+	// Set UART clock rate to 4000000 (4MHz)
 	bcm2835_vc_set_clock_rate(BCM2835_MAILBOX_CLOCK_ID_UART, 4000000);
-
-	BCM2835_PL011->CR = 0;						/* Disable everything */
-
-    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0); // PL011_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0); // PL011_RXD
-
-    // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
-
-    /* Poll the "flags register" to wait for the UART to stop transmitting or receiving. */
-	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {
-	}
-
-    /* Flush the transmit FIFO by marking FIFOs as disabled in the "line control register". */
-	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
-
-    BCM2835_PL011->ICR = 0x7FF;									/* Clear all interrupt status */
-    BCM2835_PL011->IBRD = 1;									// UART Clock
-    BCM2835_PL011->FBRD = 0;									// is set to 4000000 (4MHz)
-    BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;	/* Set 8, N, 2, FIFO disabled */
-    BCM2835_PL011->CR = 0x301;									/* Enable UART */
+	//
+	BCM2835_PL011->CR	= 0;										// Disable everything
+	//
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);	// PL011_TXD
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);	// PL011_RXD
+	//
+	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
+	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
+	//
+	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {}					// Poll the "flags register" to wait for the UART to stop transmitting or receiving
+	//
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;							// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
+	BCM2835_PL011->ICR 	= 0x7FF;									// Clear all interrupt status
+	BCM2835_PL011->IBRD = 1;										// UART Clock
+	BCM2835_PL011->FBRD = 0;										// 4000000 (4MHz)
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;		// Set 8, N, 2, FIFO disabled
+	BCM2835_PL011->CR 	= 0x301;									// Enable UART
 }
 
 // -------------------------------------------------------------------------------------- //
@@ -57,7 +51,7 @@ typedef enum {
 } _dmx_receive_state;
 
 uint8_t dmx_receive_state = IDLE;
-uint16_t dmx_channel_index = 0;
+uint16_t dmx_data_index = 0;
 
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	bcm2835_gpio_set(ANALYZER_CH1);
@@ -75,7 +69,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			bcm2835_gpio_clr(ANALYZER_CH4); // IDLE
 
 			dmx_receive_state = DATA;
-			dmx_channel_index = 0;
+			dmx_data_index = 0;
 		} else {
 			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
@@ -84,9 +78,9 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			dmx_receive_state = IDLE;
 		}
 	} else if (dmx_receive_state == DATA) {
-		dmx_data[dmx_channel_index] = (BCM2835_PL011 ->DR & 0xFF);
-		dmx_channel_index++;
-		if (dmx_channel_index >= 512) {
+		dmx_data[dmx_data_index] = (BCM2835_PL011 ->DR & 0xFF);
+		dmx_data_index++;
+		if (dmx_data_index >= 512) {
 			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
 			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
