@@ -90,11 +90,11 @@
 #define RPI_V2_GPIO_P1_24      8  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
 #define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
 
-// Sytstem Timer
-#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))
-#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))
-#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))
-#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))
+// System Timer
+#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))	///<
+#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))	///<
+#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///<
+#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///<
 
 // PL011 UART
 // https://github.com/xinu-os/xinu/blob/master/device/uart-pl011/pl011.h
@@ -196,11 +196,6 @@
 #else
 #include <stdint.h>
 
-#define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
-
-#define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
-#define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
-
 typedef enum {
 	BCM2835_GPIO_FSEL_INPT = 0b000,	///< Input
 	BCM2835_GPIO_FSEL_OUTP = 0b001,	///< Output
@@ -273,16 +268,17 @@ typedef enum {
 	BCM2835_I2C_REASON_ERROR_DATA 	= 0x04	///< Not all data is sent / received
 } bcm2835I2CReasonCodes;
 
-inline static int bcm2835_init(void) {return 1;}
-inline static int bcm2835_close(void) {return 1;}
+inline static int bcm2835_init(void);
+inline static int bcm2835_close(void);
+
 extern void inline bcm2835_delayMicroseconds(unsigned long long);
 // GPIO
 extern void  bcm2835_gpio_set_pud(uint8_t, uint8_t);
 extern void bcm2835_gpio_fsel(uint8_t, uint8_t);
-extern void inline bcm2835_gpio_set(uint8_t);
-extern void inline bcm2835_gpio_clr(uint8_t);
-extern void inline bcm2835_gpio_write(uint8_t, uint8_t);
-extern uint8_t inline bcm2835_gpio_lev(uint8_t pin);
+inline static void bcm2835_gpio_set(uint8_t);
+inline static void bcm2835_gpio_clr(uint8_t);
+inline static void bcm2835_gpio_write(uint8_t, uint8_t);
+extern uint8_t bcm2835_gpio_lev(uint8_t pin);
 // SPI
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
@@ -302,18 +298,17 @@ extern void bcm2835_i2c_setSlaveAddress(uint8_t);
 extern void bcm2835_i2c_setClockDivider(uint16_t );
 extern uint8_t bcm2835_i2c_write(const char *, uint32_t);
 extern uint8_t bcm2835_i2c_read(char*, uint32_t);
-
-uint64_t bcm2835_st_read(void);
+// ST
 void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
-
+// MINI UART
 extern void bcm2835_uart_begin(void);
-extern void inline bcm2835_uart_send(uint32_t);
+extern void bcm2835_uart_send(uint32_t);
 extern void bcm2835_uart_end(void);
-
+// PL011
 extern void bcm2835_pl011_begin(void);
-extern void inline bcm2835_pl011_send(uint32_t);
+extern void bcm2835_pl011_send(uint32_t);
 extern void bcm2835_pl011_end(void);
-
+// MAILBOX
 extern uint32_t bcm2835_mailbox_read(uint8_t channel);
 extern void bcm2835_mailbox_write(uint8_t channel, uint32_t data);
 
@@ -327,10 +322,15 @@ extern void bcm2835_mailbox_write(uint8_t channel, uint32_t data);
 #define INTERRUPT_VC_UART	(ARM_IRQ2_BASE + 25)
 
 typedef enum {
-	BCM2835_TIMER1_IRQn = 1 << INTERRUPT_TIMER1,
-	BCM2835_TIMER3_IRQn = 1	<< INTERRUPT_TIMER3,
-	BCM2835_UART1_IRQn  = 1 << INTERRUPT_AUX
+	// ARM_IRQ1_BASE
+	BCM2835_TIMER1_IRQn = 1 << (INTERRUPT_TIMER1 - ARM_IRQ1_BASE),
+	BCM2835_TIMER3_IRQn = 1	<< (INTERRUPT_TIMER3 - ARM_IRQ1_BASE),
+	BCM2835_UART1_IRQn  = 1 << (INTERRUPT_AUX - ARM_IRQ1_BASE),
+	// ARM_IRQ2_BASE
+	BCM2835_VC_UART_IRQn  = 1 << (INTERRUPT_VC_UART - ARM_IRQ2_BASE)
 } BCM2835_IRQn_TypeDef;
+
+#define BCM2835_FIQ_ENABLE	(1 << 7) // 0x80
 
 #ifdef __cplusplus
 #define		__I		volatile		///< defines 'read only' permissions
@@ -499,5 +499,38 @@ typedef struct {
 #define BCM2835_UART1				((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
 #define BCM2835_BSC1				((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
 #define BCM2835_BSC2				((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)
+
+#ifdef __ASSEMBLY__
+#else
+#define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
+
+#define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
+#define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
+
+inline static int bcm2835_init(void) {
+	return 1;
+}
+
+inline static int bcm2835_close(void) {
+	return 1;
+}
+
+#define bcm2835_st_read()			*(volatile uint64_t *)(BCM2835_ST_BASE + 0x04)
+
+inline static void bcm2835_gpio_set(uint8_t pin) {
+	BCM2835_GPIO ->GPSET0 = 1 << pin;
+}
+
+inline static void bcm2835_gpio_clr(uint8_t pin) {
+	BCM2835_GPIO ->GPCLR0 = 1 << pin;
+}
+
+inline static void bcm2835_gpio_write(uint8_t pin, uint8_t on) {
+	if (on)
+		bcm2835_gpio_set(pin);
+	else
+		bcm2835_gpio_clr(pin);
+}
+#endif
 
 #endif /* BCM2835_H_ */

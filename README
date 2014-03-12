@@ -3,23 +3,29 @@ OpenDMX
 
 DMX controller for Raspberry Pi
 
-Linux
+Linux projects for testing purposes only
 -----
 
 \bob
 \bw_i2cdetect
+\bw_spi_7fets-tester-libbob
 \bw_spi_dio-tester-libbob
 \bw_spi_lcd-tester-libbob
 \mcp23s08-tester-libbob
 
-Baremetal
+Baremetal projects testing purposes only
 ---------
 
+\pl011_dmx512_fiq
+\pl011_dmx512_irq
+\pl011_uart
+\sdcard-emmc-libff9b
+
+
+Baremetal projects for OpenDMX controller
+---------
 \emmc
 \fb
 \ff9b
 \firmware-template
 \hal
-\pl011_dmx512
-\pl011_uart
-\sdcard-emmc-libff9b

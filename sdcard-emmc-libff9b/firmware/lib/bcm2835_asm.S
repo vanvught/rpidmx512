@@ -31,12 +31,6 @@ orr	r3, r3, r1
 str	r3, [r0]
 pop {pc}
 
-FUNC bcm2835_st_read
-@ uint64_t bcm2835_st_read(void)
-ldr r0,=BCM2835_ST_BASE
-ldrd r0,r1,[r0,#4]
-bx lr
-
 FUNC bcm2835_st_delay
 @ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
 push {r3, r4, r5, lr}

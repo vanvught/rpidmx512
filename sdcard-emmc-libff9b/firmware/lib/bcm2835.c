@@ -21,39 +21,24 @@
 
 #include <bcm2835.h>
 
-inline void bcm2835_gpio_set(uint8_t pin) {
-	BCM2835_GPIO ->GPSET0 = 1 << pin;
-}
-
-inline void bcm2835_gpio_clr(uint8_t pin) {
-	BCM2835_GPIO ->GPCLR0 = 1 << pin;
-}
-
-inline void bcm2835_gpio_write(uint8_t pin, uint8_t on) {
-	if (on)
-		bcm2835_gpio_set(pin);
-	else
-		bcm2835_gpio_clr(pin);
-}
-
 uint8_t inline bcm2835_gpio_lev(uint8_t pin) {
 	uint32_t value = BCM2835_GPIO ->GPLEV0;
 	return (value & (1 << pin)) ? HIGH : LOW;
 }
 
-void inline bcm2835_delayMicroseconds(unsigned long long micros) {
+inline void bcm2835_delayMicroseconds(unsigned long long micros) {
 	bcm2835_st_delay(bcm2835_st_read(), micros);
 }
 
-void inline bcm2835_gpio_pud(uint8_t pud) {
+inline void bcm2835_gpio_pud(uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
 }
 
-void inline bcm2835_gpio_pudclk(uint8_t pin, uint8_t on) {
+inline void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on) {
 	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
 }
 
-void inline bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud) {
+inline void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud) {
 	bcm2835_gpio_pud(pud);
 	bcm2835_delayMicroseconds(10);
 	bcm2835_gpio_pudclk(pin, 1);
@@ -83,31 +68,30 @@ void bcm2835_spi_end(void) {
 	bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
 }
 
-void inline bcm2835_spi_setBitOrder(uint8_t order) {
+inline void bcm2835_spi_setBitOrder(uint8_t order) {
 	// BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 }
 
-void inline bcm2835_spi_setClockDivider(uint16_t divider) {
+inline void bcm2835_spi_setClockDivider(uint16_t divider) {
 	BCM2835_SPI0 ->CLK = divider;
 }
 
-void inline bcm2835_spi_setDataMode(uint8_t mode) {
+inline void bcm2835_spi_setDataMode(uint8_t mode) {
 	// Mask in the CPO and CPHA bits of CS
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2,
-			BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
+	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
 }
 
-void inline bcm2835_spi_chipSelect(uint8_t cs) {
+inline void bcm2835_spi_chipSelect(uint8_t cs) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
 }
 
-void inline bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active) {
+inline void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active) {
 	uint8_t shift = 21 + cs;
 	// Mask in the appropriate CSPOLn bit
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, active << shift, 1 << shift);
 }
 
-void inline bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
+inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -170,8 +154,8 @@ void bcm2835_spi_writenb(char* tbuf, uint32_t len) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
 }
 
-#if 0 // moved to bcm2835_asm.S
-void inline bcm2835_spi_write(uint16_t data) {
+#if 0// moved to bcm2835_asm.S
+inline void bcm2835_spi_write(uint16_t data) {
     // Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -341,7 +325,7 @@ void bcm2835_uart_begin(void) {
 }
 
 
-void inline bcm2835_uart_send(uint32_t c) {
+void bcm2835_uart_send(uint32_t c) {
 	while ((BCM2835_UART1->LSR & 0x20) == 0)
 		;
 	BCM2835_UART1 ->IO = c;
@@ -378,7 +362,7 @@ void bcm2835_pl011_begin(void) {
 	BCM2835_PL011 ->CR = 0x301; 					/* Enable UART */
 }
 
-void inline bcm2835_pl011_send(uint32_t c) {
+void bcm2835_pl011_send(uint32_t c) {
 	while (1) {
 		if ((BCM2835_PL011 ->FR & 0x20) == 0)
 			break;
