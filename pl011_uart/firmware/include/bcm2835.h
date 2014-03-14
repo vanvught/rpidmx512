@@ -271,7 +271,6 @@ typedef enum {
 inline static int bcm2835_init(void);
 inline static int bcm2835_close(void);
 
-extern void inline bcm2835_delayMicroseconds(unsigned long long);
 // GPIO
 extern void  bcm2835_gpio_set_pud(uint8_t, uint8_t);
 extern void bcm2835_gpio_fsel(uint8_t, uint8_t);

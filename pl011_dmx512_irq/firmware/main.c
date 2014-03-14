@@ -14,8 +14,6 @@ uint8_t dmx_data[512];
 #define ANALYZER_CH3   RPI_V2_GPIO_P1_19     // MOSI
 #define ANALYZER_CH4   RPI_V2_GPIO_P1_24     // CE0
 
-// -------------------------------------------------------------------------------------- //
-
 static void bcm2835_pl011_dmx512_init(void) {
 	// Set UART clock rate to 4000000 (4MHz)
 	bcm2835_vc_set_clock_rate(BCM2835_MAILBOX_CLOCK_ID_UART, 4000000);
@@ -37,8 +35,6 @@ static void bcm2835_pl011_dmx512_init(void) {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;		// Set 8, N, 2, FIFO disabled
 	BCM2835_PL011->CR 	= 0x301;									// Enable UART
 }
-
-// -------------------------------------------------------------------------------------- //
 
 static void irq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
@@ -92,22 +88,22 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	bcm2835_gpio_clr(ANALYZER_CH1);
 }
 
-// -------------------------------------------------------------------------------------- //
+extern void console_set_cursor(int, int);
 
 void task_fb(void) {
-#if 0
-	printf("%X %X %X %X %X %X %X %X\n", dmx_data[0], dmx_data[1], dmx_data[2],
-			dmx_data[3], dmx_data[4], dmx_data[5], dmx_data[6], dmx_data[7]);
-	printf("%X %X %X %X %X %X %X %X\n\n", dmx_data[8], dmx_data[9],
-			dmx_data[10], dmx_data[11], dmx_data[12], dmx_data[13],
-			dmx_data[14], dmx_data[15]);
-#else
-	printf("%X %X %X %X %X %X %X %X %X %X %X %X %X %X %X %X\n", dmx_data[0],
+	console_set_cursor(0, 4);
+
+	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
 			dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
 			dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9], dmx_data[10],
 			dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14],
 			dmx_data[15]);
-#endif
+	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[16],
+			dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20], dmx_data[21],
+			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
+			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
+			dmx_data[31]);
+
 }
 
 void task_led(void) {
@@ -159,6 +155,7 @@ int notmain(unsigned int earlypc) {
 	fb_init();
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("DMX512 Receiver, data analyzer for the first 32 channels\n");
 
 	led_init();
 	led_set(1);
