@@ -3,6 +3,7 @@
 	<name>fb</name>
 	<comment></comment>
 	<projects>
+		<project>firmware</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

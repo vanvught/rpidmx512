@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,142 +19,100 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
 #include <stdint.h>
-#include <stdio.h>
-#include "fb.h"
-#include "console.h"
-#include "util.h"
+#include <string.h>
+//
+#include <fb.h>
+#include <console.h>
 
-#ifdef ENABLE_DEFAULT_FONT
-extern uint8_t vgafont8[];
+extern unsigned char FONT[];
+
 #define CHAR_W		8
-#define CHAR_H		8
-#define FONT		vgafont8
-#endif
+#define CHAR_H		12
 
-#ifdef ENABLE_ALTERNATIVE_FONT
-#ifdef ENABLE_DEFAULT_FONT
-#error Cannot enable both the default and alternative fonts
-#endif
-#define FONT		altfont
-extern uint8_t		FONT[];
-#define CHAR_W		ALTERNATIVE_FONT_W
-#define CHAR_H		ALTERNATIVE_FONT_H
-#ifdef ALTERNATIVE_FONT_LSB_LEFT
-#define FONT_LSB_LEFT
-#endif
-#endif
-
-#ifndef FONT
-#error No console font is defined! Please see config.h
-#endif
-
-// Some fonts are encoded that the least significant byte is to the left, others have it to the right
-#ifdef FONT_LSB_LEFT
-#define BIT_SHIFT (s_bit_no)
-#else
-#define BIT_SHIFT (7 - s_bit_no)
-#endif
-
-#define DEF_FORE	0xffffffff
-#define DEF_BACK	0x00000000
+#define DEF_FORE	0xFFFF
+#define DEF_BACK	0x0000
 
 static int cur_x = 0;
 static int cur_y = 0;
 
-static uint32_t cur_fore = DEF_FORE;
-static uint32_t cur_back = DEF_BACK;
+static uint16_t cur_fore = DEF_FORE;
+static uint16_t cur_back = DEF_BACK;
 
-void clear()
-{
-	int height = fb_get_height();
-	int pitch = fb_get_pitch();
-	int line_byte_width = fb_get_width() * (fb_get_bpp() >> 3);
-	uint8_t *fb = (uint8_t *)fb_get_framebuffer();
-
-	for(int line = 0; line < height; line++)
-		memset(&fb[line * pitch], 0, line_byte_width);
-
-	cur_x = 0;
-	cur_y = 0;
-}
-
-#ifdef FONT
-void newline()
-{
+inline static void newline() {
 	cur_y++;
 	cur_x = 0;
 
-	// Scroll up if necessary
-	if(cur_y == fb_get_height() / CHAR_H)
-	{
-		uint8_t *fb = (uint8_t *)fb_get_framebuffer();
-		int line_byte_width = fb_get_width() * (fb_get_bpp() >> 3);
-		int pitch = fb_get_pitch();
-		int height = fb_get_height();
+	if (cur_y == HEIGHT / CHAR_H) {
+		uint8_t *fb = (uint8_t *) fb_addr;
+		int line_byte_WIDTH = WIDTH * (depth >> 3);
 
-		for(int line = 0; line < (height - CHAR_H); line++)
-			quick_memcpy(&fb[line * pitch], &fb[(line + CHAR_H) * pitch], line_byte_width);
-		for(int line = height - CHAR_H; line < height; line++)
-			memset(&fb[line * pitch], 0, line_byte_width);
+		for (int line = 0; line < (HEIGHT - CHAR_H); line++)
+			memcpy(&fb[line * pitch], &fb[(line + CHAR_H) * pitch],	line_byte_WIDTH);
+		for (int line = HEIGHT - CHAR_H; line < HEIGHT; line++)
+			memset(&fb[line * pitch], 0, line_byte_WIDTH);
 
 		cur_y--;
 	}
 }
 
-int console_putc(int c)
-{
-	int line_w = fb_get_width() / CHAR_W;
-
-	if(c == '\n')
-		newline();
-	else
-	{
-		draw_char((char)c, cur_x, cur_y, cur_fore, cur_back);
-		cur_x++;
-		if(cur_x == line_w)
-			newline();
-	}
-
-	return c;
+inline static void draw_pixel(int x, int y, uint16_t color) {
+	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x + y * WIDTH) * BYTES_PER_PIXEL);
+	*address = color;
 }
 
-void draw_char(char c, int x, int y, uint32_t fore, uint32_t back)
-{
-	volatile uint8_t *fb = (uint8_t *)fb_get_framebuffer();
-	int bpp = fb_get_bpp();
-	int bytes_per_pixel = bpp >> 3;
+static void draw_char(char c, int x, int y, uint16_t fore, uint16_t back) {
+	int i, j;
 
-	int d_offset = y * CHAR_H * fb_get_pitch() + x * bytes_per_pixel * CHAR_W;
-	int line_d_offset = d_offset;
-	int s_offset = (int)c * CHAR_W * CHAR_H;
-
-	for(int c_y = 0; c_y < CHAR_H; c_y++)
-	{
-		d_offset = line_d_offset;
-
-		for(int c_x = 0; c_x < CHAR_W; c_x++)
-		{
-			int s_byte_no = s_offset / 8;
-			int s_bit_no = s_offset % 8;
-
-			uint8_t s_byte = FONT[s_byte_no];
-			uint32_t colour = back;
-			if((s_byte >> BIT_SHIFT) & 0x1)
-				colour = fore;
-
-			for(int i = 0; i < bytes_per_pixel; i++)
-			{
-				fb[d_offset + i] = (uint8_t)(colour & 0xff);
-				colour >>= 8;
-			}	
-
-			d_offset += bytes_per_pixel;
-			s_offset++;
+	for (i = 0; i < CHAR_H; i++) {
+		uint8_t line = FONT[c * CHAR_H + i];
+		for (j = 0; j < CHAR_W; j++) {
+			if (line & 0x1) {
+				draw_pixel(x + j, y, fore);
+			} else
+				draw_pixel(x + j, y, back);
+			line >>= 1;
 		}
-
-		line_d_offset += fb_get_pitch();
+		y++;
 	}
 }
-#endif
+
+int console_draw_char(char ch, int x, int y, uint16_t fore, uint16_t back) {
+	draw_char(ch, x * CHAR_W, y * CHAR_H, fore, back);
+	return ch;
+}
+
+int console_putc(int ch) {
+	if (ch == '\n') {
+		newline();
+	} else if (ch == '\t') {
+		cur_x += 4;
+	} else {
+		draw_char(ch, cur_x * CHAR_W, cur_y * CHAR_H, cur_fore, cur_back);
+		cur_x++;
+		if (cur_x == WIDTH / CHAR_W) {
+			newline();
+		}
+	}
+	return ch;
+}
+
+void console_clear()
+{
+	memset((uint16_t *)fb_addr, cur_back, fb_size);
+
+	cur_x = 0;
+	cur_y = 0;
+}
+
+void console_set_cursor(int x, int y) {
+	if (x > WIDTH / CHAR_W)
+		cur_x = WIDTH / CHAR_W;
+	else
+		cur_x = x;
+
+	if (y > HEIGHT / CHAR_H)
+		cur_y = HEIGHT / CHAR_H;
+	else
+		cur_y = y;
+}

@@ -26,13 +26,15 @@ extern void bcm2835_uart_begin(void);
 extern void mini_uart_sendstr(const char *s);
 extern void mini_uart_puthex(uint32_t val);
 
+extern uint32_t fb_addr;
+
 void bcm2835_console_begin(void) {
 	bcm2835_uart_begin();
 
 	int result = fb_init();
 	if (result == 0) {
 		mini_uart_sendstr("Successfully set up frame buffer, fb_addr:");
-		mini_uart_puthex((uint32_t)fb_get_framebuffer());
+		mini_uart_puthex((uint32_t)fb_addr);
 		mini_uart_sendstr("\r\n");
 	} else {
 		mini_uart_sendstr("Error setting up framebuffer: ");

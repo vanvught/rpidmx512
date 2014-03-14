@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,14 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-void clear();
-void draw_char(char c, int x, int y, uint32_t fore, uint32_t back);
-int console_putc(int c);
+#define COLOUR_R	((uint16_t)(0b1111100000000000))
+#define COLOUR_G	((uint16_t)(0b0000011111100000))
+#define COLOUR_B	((uint16_t)(0b0000000000011111))
+
+int console_putc(int);
+void console_clear();
+void console_set_cursor(int, int);
+int console_draw_char(char, int, int, uint16_t, uint16_t);
 
 #endif
 
