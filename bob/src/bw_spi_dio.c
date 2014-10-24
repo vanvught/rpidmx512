@@ -1,3 +1,7 @@
+/**
+ * @file bw_spi_dio.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,12 +38,21 @@ extern void uwait(int);
 
 extern int printf(const char *format, ...);
 
+/**
+ *
+ * @param device_info
+ */
 inline void static dio_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
+/**
+ *
+ * @param device_info
+ * @return
+ */
 int bw_spi_dio_start(device_info_t *device_info) {
 
 	if (bcm2835_init() != 1)
@@ -55,11 +68,19 @@ int bw_spi_dio_start(device_info_t *device_info) {
 	return 0;
 }
 
+/**
+ *
+ */
 void bw_spi_dio_end(void) {
 	bcm2835_spi_end();
 	bcm2835_close();
 }
 
+/**
+ *
+ * @param device_info
+ * @param mask
+ */
 void bw_spi_dio_fsel_mask(device_info_t *device_info, uint8_t mask) {
 	char cmd[3];
 
@@ -72,6 +93,11 @@ void bw_spi_dio_fsel_mask(device_info_t *device_info, uint8_t mask) {
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
 }
 
+/**
+ *
+ * @param device_info
+ * @param pins
+ */
 void bw_spi_dio_output(device_info_t *device_info, uint8_t pins) {
 	char cmd[3];
 
@@ -84,6 +110,10 @@ void bw_spi_dio_output(device_info_t *device_info, uint8_t pins) {
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
 }
 
+/**
+ *
+ * @param device_info
+ */
 void bw_spi_dio_read_id(device_info_t *device_info) {
 	char buf[BW_DIO_ID_STRING_LENGTH + 1];
 	int i = 0;

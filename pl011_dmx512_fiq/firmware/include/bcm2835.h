@@ -239,15 +239,15 @@ typedef enum {
 	BCM2835_SPI_CLOCK_DIVIDER_16384 = 16384,	///< 16384 = 65.536us = 15.25878906kHz
 	BCM2835_SPI_CLOCK_DIVIDER_8192 = 8192,		///< 8192 = 32.768us = 30/51757813kHz
 	BCM2835_SPI_CLOCK_DIVIDER_4096 = 4096,		///< 4096 = 16.384us = 61.03515625kHz
-	BCM2835_SPI_CLOCK_DIVIDER_2500 = 2500,  	///< 2500 = 10us = 100 kHz
-	BCM2835_SPI_CLOCK_DIVIDER_2048 = 2048,  	///< 2048 = 8.192us = 122.0703125kHz
-	BCM2835_SPI_CLOCK_DIVIDER_1024 = 1024,  	///< 1024 = 4.096us = 244.140625kHz
-	BCM2835_SPI_CLOCK_DIVIDER_512 = 512,    	///< 512 = 2.048us = 488.28125kHz
-	BCM2835_SPI_CLOCK_DIVIDER_256 = 256,    	///< 256 = 1.024us = 976.5625MHz
-	BCM2835_SPI_CLOCK_DIVIDER_128 = 128,    	///< 128 = 512ns = = 1.953125MHz
-	BCM2835_SPI_CLOCK_DIVIDER_64 = 64,      	///< 64 = 256ns = 3.90625MHz
-	BCM2835_SPI_CLOCK_DIVIDER_32 = 32,      	///< 32 = 128ns = 7.8125MHz
-	BCM2835_SPI_CLOCK_DIVIDER_16 = 16,      	///< 16 = 64ns = 15.625MHz
+	BCM2835_SPI_CLOCK_DIVIDER_2500 = 2500,		///< 2500 = 10us = 100 kHz
+	BCM2835_SPI_CLOCK_DIVIDER_2048 = 2048,		///< 2048 = 8.192us = 122.0703125kHz
+	BCM2835_SPI_CLOCK_DIVIDER_1024 = 1024,		///< 1024 = 4.096us = 244.140625kHz
+	BCM2835_SPI_CLOCK_DIVIDER_512 = 512,		///< 512 = 2.048us = 488.28125kHz
+	BCM2835_SPI_CLOCK_DIVIDER_256 = 256,		///< 256 = 1.024us = 976.5625MHz
+	BCM2835_SPI_CLOCK_DIVIDER_128 = 128,		///< 128 = 512ns = = 1.953125MHz
+	BCM2835_SPI_CLOCK_DIVIDER_64 = 64,			///< 64 = 256ns = 3.90625MHz
+	BCM2835_SPI_CLOCK_DIVIDER_32 = 32,			///< 32 = 128ns = 7.8125MHz
+	BCM2835_SPI_CLOCK_DIVIDER_16 = 16,			///< 16 = 64ns = 15.625MHz
 	BCM2835_SPI_CLOCK_DIVIDER_8 = 8,			///< 8 = 32ns = 31.25MHz
 	BCM2835_SPI_CLOCK_DIVIDER_4 = 4,			///< 4 = 16ns = 62.5MHz
 	BCM2835_SPI_CLOCK_DIVIDER_2 = 2,			///< 2 = 8ns = 125MHz, fastest you can get
@@ -255,17 +255,17 @@ typedef enum {
 } bcm2835SPIClockDivider;
 
 typedef enum {
-	BCM2835_I2C_CLOCK_DIVIDER_2500	= 2500,	///< 2500 = 10us = 100 kHz
-	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,	///< 622 = 2.504us = 399.3610 kHz
-	BCM2835_I2C_CLOCK_DIVIDER_150	= 150,	///< 150 = 60ns = 1.666 MHz (default at reset)
-	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,	///< 148 = 59ns = 1.689 MHz
+	BCM2835_I2C_CLOCK_DIVIDER_2500	= 2500,		///< 2500 = 10us = 100 kHz
+	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,		///< 622 = 2.504us = 399.3610 kHz
+	BCM2835_I2C_CLOCK_DIVIDER_150	= 150,		///< 150 = 60ns = 1.666 MHz (default at reset)
+	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,		///< 148 = 59ns = 1.689 MHz
 } bcm2835I2CClockDivider;
 
 typedef enum {
-	BCM2835_I2C_REASON_OK			= 0x00,	///< Success
-	BCM2835_I2C_REASON_ERROR_NACK 	= 0x01,	///< Received a NACK
-	BCM2835_I2C_REASON_ERROR_CLKT 	= 0x02,	///< Received Clock Stretch Timeout
-	BCM2835_I2C_REASON_ERROR_DATA 	= 0x04	///< Not all data is sent / received
+	BCM2835_I2C_REASON_OK			= 0x00,		///< Success
+	BCM2835_I2C_REASON_ERROR_NACK 	= 0x01,		///< Received a NACK
+	BCM2835_I2C_REASON_ERROR_CLKT 	= 0x02,		///< Received Clock Stretch Timeout
+	BCM2835_I2C_REASON_ERROR_DATA 	= 0x04		///< Not all data is sent / received
 } bcm2835I2CReasonCodes;
 
 inline static int bcm2835_init(void);
@@ -329,7 +329,7 @@ typedef enum {
 	BCM2835_VC_UART_IRQn  = 1 << (INTERRUPT_VC_UART - ARM_IRQ2_BASE)
 } BCM2835_IRQn_TypeDef;
 
-#define BCM2835_FIQ_ENABLE	(1 << 7) // 0x80
+#define BCM2835_FIQ_ENABLE	(1 << 7)///< 0x80
 
 #ifdef __cplusplus
 #define		__I		volatile		///< defines 'read only' permissions
@@ -340,138 +340,146 @@ typedef enum {
 #define		__IO	volatile		///< defines 'read / write' permissions
 
 typedef struct {
-	__IO uint32_t CS;		///< 0x00	System Timer Control/Status 
-	__IO uint32_t CLO;		///< 0x04	System Timer Counter Lower 32 bits
-	__IO uint32_t CHI;		///< 0x08	System Timer Counter Higher 32 bits
-	__I uint32_t  C0;		///< 0x0C	System Timer Compare 0.  DO NOT USE; is used by GPU.
-	__IO uint32_t C1;		///< 0x10	System Timer Compare 1
-	__I uint32_t  C2;		///< 0x14	System Timer Compare 2.  DO NOT USE; is used by GPU.
-	__IO uint32_t C3;		///< 0x18	System Timer Compare 3
+	__IO uint32_t CS;			///< 0x00	System Timer Control/Status 
+	__IO uint32_t CLO;			///< 0x04	System Timer Counter Lower 32 bits
+	__IO uint32_t CHI;			///< 0x08	System Timer Counter Higher 32 bits
+	__I uint32_t  C0;			///< 0x0C	System Timer Compare 0.  DO NOT USE; is used by GPU.
+	__IO uint32_t C1;			///< 0x10	System Timer Compare 1
+	__I uint32_t  C2;			///< 0x14	System Timer Compare 2.  DO NOT USE; is used by GPU.
+	__IO uint32_t C3;			///< 0x18	System Timer Compare 3
 } BCM2835_ST_TypeDef;
 
 typedef struct {
-	__I uint32_t  IRQ;		// 0x00
-	__IO uint32_t ENABLE;	// 0x04
-	__IO uint32_t PAD[14];	// 0x08
-	__IO uint32_t IO;		// 0x40
-	__IO uint32_t IER;		// 0x44
-	__IO uint32_t IIR;		// 0x48
-	__IO uint32_t LCR;		// 0x4C
-	__IO uint32_t MCR;		// 0x50
-	__IO uint32_t LSR;		// 0x54
-	__IO uint32_t MSR;		// 0x58
-	__IO uint32_t SCR;		// 0x5C
-	__IO uint32_t CNTL;		// 0x60
-	__I uint32_t  STAT;		// 0x64
-	__IO uint32_t BAUD;		// 0x68
+	__I uint32_t  IRQ;			///< 0x00
+	__IO uint32_t ENABLE;		///< 0x04
+	__IO uint32_t PAD[14];		///< 0x08
+	__IO uint32_t IO;			///< 0x40
+	__IO uint32_t IER;			///< 0x44
+	__IO uint32_t IIR;			///< 0x48
+	__IO uint32_t LCR;			///< 0x4C
+	__IO uint32_t MCR;			///< 0x50
+	__IO uint32_t LSR;			///< 0x54
+	__IO uint32_t MSR;			///< 0x58
+	__IO uint32_t SCR;			///< 0x5C
+	__IO uint32_t CNTL;			///< 0x60
+	__I uint32_t  STAT;			///< 0x64
+	__IO uint32_t BAUD;			///< 0x68
 } BCM2835_UART_TypeDef;
 
 typedef struct {
-	__IO uint32_t DR;		// 0x00
-	__IO uint32_t RSRECR;	// 0x04
-	__IO uint32_t PAD[4];	// 0x08
-	__IO uint32_t FR;		// 0x18
-	__IO uint32_t RES1;		// 0x1C
-	__IO uint32_t ILPR;		// 0x20
-	__IO uint32_t IBRD;		// 0x24
-	__IO uint32_t FBRD;		// 0x28
-	__IO uint32_t LCRH;		// 0x2C
-	__IO uint32_t CR;		// 0x30
-	__IO uint32_t IFLS;		// 0x34
-	__IO uint32_t IMSC;		// 0x38
-	__IO uint32_t RIS;		// 0x3C
-	__I uint32_t  MIS;		// 0x40
-	__IO uint32_t ICR;		// 0x44
-	__IO uint32_t DMACR;	// 0x48
+	__IO uint32_t DR;			///< 0x00
+	__IO uint32_t RSRECR;		///< 0x04
+	__IO uint32_t PAD[4];		///< 0x08
+	__IO uint32_t FR;			///< 0x18
+	__IO uint32_t RES1;			///< 0x1C
+	__IO uint32_t ILPR;			///< 0x20
+	__IO uint32_t IBRD;			///< 0x24
+	__IO uint32_t FBRD;			///< 0x28
+	__IO uint32_t LCRH;			///< 0x2C
+	__IO uint32_t CR;			///< 0x30
+	__IO uint32_t IFLS;			///< 0x34
+	__IO uint32_t IMSC;			///< 0x38
+	__IO uint32_t RIS;			///< 0x3C
+	__I uint32_t  MIS;			///< 0x40
+	__IO uint32_t ICR;			///< 0x44
+	__IO uint32_t DMACR;		///< 0x48
 } BCM2835_PL011_TypeDef;
 
+// Defines for GPIO
+// The BCM2835 has 54 GPIO pins.
+//      BCM2835 data sheet, Page 90 onwards.
 typedef struct {
-	__IO uint32_t GPFSEL0;	// 0x00
-	__IO uint32_t GPFSEL1;	// 0x04
-	__IO uint32_t GPFSEL2;	// 0x08
-	__IO uint32_t GPFSEL3;	// 0x0C
-	__IO uint32_t GPFSEL4;	// 0x10
-	__IO uint32_t GPFSEL5;	// 0x14
-	__IO uint32_t RES1;		// 0x18
-	__O uint32_t GPSET0;	// 0x1C
-	__O uint32_t GPSET1;	// 0x20
-	__IO uint32_t RES2;		// 0x24
-	__O uint32_t GPCLR0;	// 0x28
-	__O uint32_t GPCLR1;	// 0x2C
-	__IO uint32_t RES3;		// 0x30
-	__I uint32_t GPLEV0;	// 0x34
-	__I uint32_t GPLEV1;	// 0x38
-	__IO uint32_t RES4;
-	__IO uint32_t EDS[2];
-	__IO uint32_t RES5;
-	__IO uint32_t REN[2];
-	__IO uint32_t RES6;
-	__IO uint32_t FEN[2];
-	__IO uint32_t RES7;
-	__IO uint32_t HEN[2];
-	__IO uint32_t RES8;
-	__IO uint32_t LEN[2];	// 0x70
-	__IO uint32_t RES9;
-	__IO uint32_t AREN[2];
-	__IO uint32_t RES10;
-	__IO uint32_t AFEN[2];	// 0x88
-	__IO uint32_t RES11;
-	__IO uint32_t GPPUD; 	// 0x94
-	__IO uint32_t GPPUDCLK0;// 0x98
-	__IO uint32_t GPPUDCLK1;// 0x9C
+	__IO uint32_t GPFSEL0;		///< 0x00, GPIO Function Select 0
+	__IO uint32_t GPFSEL1;		///< 0x04, GPIO Function Select 1
+	__IO uint32_t GPFSEL2;		///< 0x08, GPIO Function Select 2
+	__IO uint32_t GPFSEL3;		///< 0x0C, GPIO Function Select 3
+	__IO uint32_t GPFSEL4;		///< 0x10, GPIO Function Select 4
+	__IO uint32_t GPFSEL5;		///< 0x14, GPIO Function Select 5
+	__IO uint32_t RES1;			///< 0x18, Reserved
+	__O uint32_t GPSET0;		///< 0x1C, GPIO Pin Output Set 0
+	__O uint32_t GPSET1;		///< 0x20, GPIO Pin Output Set 1
+	__IO uint32_t RES2;			///< 0x24, Reserved
+	__O uint32_t GPCLR0;		///< 0x28, GPIO Pin Output Clear 0
+	__O uint32_t GPCLR1;		///< 0x2C, GPIO Pin Output Clear 1
+	__IO uint32_t RES3;			///< 0x30, Reserved
+	__I uint32_t GPLEV0;		///< 0x34, GPIO Pin Level 0
+	__I uint32_t GPLEV1;		///< 0x38, GPIO Pin Level 1
+	__IO uint32_t RES4;			///< 0x3C, Reserved
+	__IO uint32_t GPEDS0;		///< 0x40, GPIO Pin Event Detect Status 0
+	__IO uint32_t GPEDS1;		///< 0x44, GPIO Pin Event Detect Status 1
+	__IO uint32_t RES5;			///< 0x48, Reserved
+	__IO uint32_t GPREN0;		///< 0x4C, GPIO Pin Rising Edge Detect Enable 0
+	__IO uint32_t GPREN1;		///< 0x50, GPIO Pin Rising Edge Detect Enable 1
+	__IO uint32_t RES6;			///< 0x54, Reserved
+	__IO uint32_t GPFEN0;		///< 0x58, GPIO Pin Falling Edge Detect Enable 0
+	__IO uint32_t GPFEN1;		///< 0x5C, GPIO Pin Falling Edge Detect Enable 1
+	__IO uint32_t RES7;			///< 0x60, Reserved
+	__IO uint32_t GPHEN0;		///< 0x64, GPIO Pin High Detect Enable 0
+	__IO uint32_t GPHEN1;		///< 0x68, GPIO Pin High Detect Enable 1
+	__IO uint32_t RES8;			///< 0x6C, Reserved
+	__IO uint32_t GPLEN0;		///< 0x70, GPIO Pin Low Detect Enable 0
+	__IO uint32_t GPLEN1;		///< 0x74, GPIO Pin Low Detect Enable 1
+	__IO uint32_t RES9;			///< 0x78, Reserved
+	__IO uint32_t AREN[2];		///< 0x7C
+	__IO uint32_t RES10;		///< 0x84, Reserved
+	__IO uint32_t AFEN[2];		///< 0x88
+	__IO uint32_t RES11;		///< 0x90
+	__IO uint32_t GPPUD; 		///< 0x94, GPIO Pin Pull-up/down Enable
+	__IO uint32_t GPPUDCLK0;	///< 0x98, GPIO Pin Pull-up/down Enable Clock 0
+	__IO uint32_t GPPUDCLK1;	///< 0x9C, GPIO Pin Pull-up/down Enable Clock 1
 } BCM2835_GPIO_TypeDef;
 
 typedef struct {
-	__IO uint32_t CS;		// 0x00
-	__IO uint32_t FIFO;		// 0x04
-	__IO uint32_t CLK;		// 0x08
-	__IO uint32_t DLEN;		// 0x0C
-	__IO uint32_t LTOH;		// 0x10
-	__IO uint32_t DC;		// 0x14
+	__IO uint32_t CS;			///< 0x00
+	__IO uint32_t FIFO;			///< 0x04
+	__IO uint32_t CLK;			///< 0x08
+	__IO uint32_t DLEN;			///< 0x0C
+	__IO uint32_t LTOH;			///< 0x10
+	__IO uint32_t DC;			///< 0x14
 } BCM2835_SPI_TypeDef;
 
 typedef struct {
-	__IO uint32_t C;		// 0x00
-	__IO uint32_t S;		// 0x04
-	__IO uint32_t DLEN;		// 0x08
-	__IO uint32_t A;		// 0x0C
-	__IO uint32_t FIFO;		// 0x10
-	__IO uint32_t DIV;		// 0x14
-	__IO uint32_t DEL;		// 0x18
-	__IO uint32_t CLKT;		// 0x1C
+	__IO uint32_t C;			///< 0x00
+	__IO uint32_t S;			///< 0x04
+	__IO uint32_t DLEN;			///< 0x08
+	__IO uint32_t A;			///< 0x0C
+	__IO uint32_t FIFO;			///< 0x10
+	__IO uint32_t DIV;			///< 0x14
+	__IO uint32_t DEL;			///< 0x18
+	__IO uint32_t CLKT;			///< 0x1C
 } BCM2835_BSC_TypeDef;
 
 typedef struct {
-	__I uint32_t IRQ_BASIC_PENDING;		// 0x00
-	__I uint32_t IRQ_PENDING1;			// 0x04
-	__I uint32_t IRQ_PENDING2;			// 0x08
-	__IO uint32_t FIQ_CONTROL;			// 0x0C
-	__IO uint32_t IRQ_ENABLE1;			// 0x10
-	__IO uint32_t IRQ_ENABLE2;			// 0x14
-	__IO uint32_t IRQ_BASIC_ENABLE;		// 0x18
-	__IO uint32_t IRQ_DISABLE1;			// 0x1C
-	__IO uint32_t IRQ_DISABLE2;			// 0x20
-	__IO uint32_t IRQ_BASIC_DISABLE;	// 0x24
+	__I uint32_t IRQ_BASIC_PENDING;		///< 0x00
+	__I uint32_t IRQ_PENDING1;			///< 0x04
+	__I uint32_t IRQ_PENDING2;			///< 0x08
+	__IO uint32_t FIQ_CONTROL;			///< 0x0C
+	__IO uint32_t IRQ_ENABLE1;			///< 0x10
+	__IO uint32_t IRQ_ENABLE2;			///< 0x14
+	__IO uint32_t IRQ_BASIC_ENABLE;		///< 0x18
+	__IO uint32_t IRQ_DISABLE1;			///< 0x1C
+	__IO uint32_t IRQ_DISABLE2;			///< 0x20
+	__IO uint32_t IRQ_BASIC_DISABLE;	///< 0x24
 } BCM2835_IRQ_TypeDef;
 
 typedef struct {
-	__I uint32_t READ;			// 0x00
-	__I uint32_t RES1;			// 0x04
-	__I uint32_t RES2;			// 0x08
-	__I uint32_t RES3;			// 0x0C
-	__I uint32_t PEEK;			// 0x10
-	__I uint32_t SENDER;		// 0x14
-	__IO uint32_t STATUS;		// 0x18
-	__I uint32_t CONFIG;		// 0x1C
-	__O uint32_t WRITE;			// 0x20
+	__I uint32_t READ;			///< 0x00
+	__I uint32_t RES1;			///< 0x04
+	__I uint32_t RES2;			///< 0x08
+	__I uint32_t RES3;			///< 0x0C
+	__I uint32_t PEEK;			///< 0x10
+	__I uint32_t SENDER;		///< 0x14
+	__IO uint32_t STATUS;		///< 0x18
+	__I uint32_t CONFIG;		///< 0x1C
+	__O uint32_t WRITE;			///< 0x20
 } BCM2835_MAILBOX_TypeDef;
 
 
 typedef struct {
-	__I uint32_t UNKWOWN0[7];	// 0x00
-	__IO uint32_t RSTC;			// 0x1C
-	__I uint32_t UNKWOWN1;		// 0x20
-	__IO uint32_t WDOG;			// 0x24
+	__I uint32_t UNKWOWN0[7];	///< 0x00
+	__IO uint32_t RSTC;			///< 0x1C
+	__I uint32_t UNKWOWN1;		///< 0x20
+	__IO uint32_t WDOG;			///< 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
 #endif

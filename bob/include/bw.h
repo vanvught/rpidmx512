@@ -24,14 +24,13 @@
 
 #include <bcm2835.h>
 
-/// write ports
-#define BW_PORT_WRITE_DISPLAY_DATA			0x00
-#define BW_PORT_WRITE_COMMAND				0x01
-#define BW_PORT_WRITE_STARTUPMESSAGE_LINE1	0x08
-#define BW_PORT_WRITE_STARTUPMESSAGE_LINE2	0x09
-#define BW_PORT_WRITE_STARTUPMESSAGE_LINE3	0x0a
-#define BW_PORT_WRITE_STARTUPMESSAGE_LINE4	0x0b
-#define BW_PORT_WRITE_CLEAR_SCREEN			0x10
+#define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
+#define BW_PORT_WRITE_COMMAND				0x01	///< write data as command
+#define BW_PORT_WRITE_STARTUPMESSAGE_LINE1	0x08	///< Set startup message line 1
+#define BW_PORT_WRITE_STARTUPMESSAGE_LINE2	0x09	///< Set startup message line 2
+#define BW_PORT_WRITE_STARTUPMESSAGE_LINE3	0x0a	///< Set startup message line 3
+#define BW_PORT_WRITE_STARTUPMESSAGE_LINE4	0x0b	///< Set startup message line 4
+#define BW_PORT_WRITE_CLEAR_SCREEN			0x10	///< any data clears the screen
 #define BW_PORT_WRITE_MOVE_CURSOR			0x11
 #define BW_PORT_WRITE_SET_CONTRAST			0x12
 #define BW_PORT_WRITE_SET_BACKLIGHT_TEMP	0x13

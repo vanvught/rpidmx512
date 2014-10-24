@@ -41,6 +41,11 @@ inline static void lcd_i2c_setup(void) {
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 }
 
+/**
+ *
+ * @param slave_address
+ * @return
+ */
 int bw_i2c_lcd_start (char slave_address) {
 
 	if (bcm2835_init() != 1)
