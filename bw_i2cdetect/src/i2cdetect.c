@@ -46,7 +46,7 @@ Or you can test it before installing with:
 
 #include <bcm2835.h>
 
-#define VERSION "1.0.0"
+#define VERSION "1.1.0"
 
 struct device_details {
 	char slave_address;
@@ -73,8 +73,10 @@ static const char *lookup_device(char slave_address) {
 
 int main(int argc, char **argv) {
 	int first = 0x03, last = 0x77;
+	int i, j;
     int flags = 0;
     int version = 0;
+	char buf;
 
 	while (1 + flags < argc && argv[1 + flags][0] == '-') {
 		switch (argv[1 + flags][1]) {
@@ -106,15 +108,59 @@ int main(int argc, char **argv) {
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
 
 	int address;
+	uint8_t ret;
 
 	for (address = 0x00; address <= 0x7F; address++) {
+		/* Skip unwanted addresses */
 		if (address < first || address > last) {
 			continue;
 		}
+
+		/* Set slave address */
 		bcm2835_i2c_setSlaveAddress(address);
-		if (bcm2835_i2c_write(NULL, 0) == 0) {
+
+		/* Probe this address */
+		if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
+			ret = bcm2835_i2c_read(&buf, 1);
+		} else {
+			ret = bcm2835_i2c_write(NULL, 0);
+		}
+
+		if (ret == 0) {
 			printf("0x%.2X : 0x%.2X : %s\n", address, address << 1, lookup_device(address));
 		}
+	}
+
+	printf("\n");
+
+	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+
+	for (i = 0; i < 128; i += 16) {
+		printf("%02x: ", i);
+		for (j = 0; j < 16; j++) {
+			/* Skip unwanted addresses */
+			if (i + j < first || i + j > last) {
+				printf("   ");
+				continue;
+			}
+
+			/* Set slave address */
+			bcm2835_i2c_setSlaveAddress(i + j);
+
+			/* Probe this address */
+			if ((i + j >= 0x30 && i + j <= 0x37) || (i + j >= 0x50 && i + j <= 0x5F)) {
+				ret = bcm2835_i2c_read(&buf, 1);
+			} else {
+				/* This is known to corrupt the Atmel AT24RF08 EEPROM */
+				ret = bcm2835_i2c_write(NULL, 0);
+			}
+
+			if (ret != 0)
+				printf("-- ");
+			else
+				printf("%02x ", i + j);
+		}
+		printf("\n");
 	}
 
 	bcm2835_i2c_end();
