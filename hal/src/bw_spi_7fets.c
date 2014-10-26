@@ -88,10 +88,14 @@ void bw_spi_7fets_output(device_info_t *device_info, uint8_t pins) {
 	uwait(BW_7FETS_SPI_BYTE_WAIT_US);
 }
 
+/**
+ *
+ * @param device_info
+ */
 void bw_spi_7fets_read_id(device_info_t *device_info) {
-	char buf[BW_7FETS_ID_STRING_LENGTH + 1];
+	char buf[BW_7FETS_ID_STRING_LENGTH];
 	int i = 0;
-	for (i = 0; i <= BW_7FETS_ID_STRING_LENGTH; i++) {
+	for (i = 0; i < BW_7FETS_ID_STRING_LENGTH; i++) {
 		buf[i] = '\0';
 	}
 
@@ -99,7 +103,8 @@ void bw_spi_7fets_read_id(device_info_t *device_info) {
 	buf[1] = BW_PORT_READ_ID_STRING;
 
 	fets_spi_setup(device_info);
+	bcm2835_spi_setClockDivider(5000); // 50 kHz
 	bcm2835_spi_transfern(buf, BW_7FETS_ID_STRING_LENGTH);
 	uwait(BW_7FETS_SPI_BYTE_WAIT_US);
-	printf("[%s]\n", &buf[1]);
+	printf("[%.20s]\n", &buf[2]);
 }
