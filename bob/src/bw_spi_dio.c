@@ -24,9 +24,7 @@
  */
 
 #include <bcm2835.h>
-//
 #include <device_info.h>
-//
 #include <bw.h>
 #include <bw_spi_dio.h>
 
@@ -42,7 +40,7 @@ extern int printf(const char *format, ...);
  *
  * @param device_info
  */
-inline void static dio_spi_setup(device_info_t *device_info) {
+inline static void dio_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
@@ -115,9 +113,9 @@ void bw_spi_dio_output(device_info_t *device_info, uint8_t pins) {
  * @param device_info
  */
 void bw_spi_dio_read_id(device_info_t *device_info) {
-	char buf[BW_DIO_ID_STRING_LENGTH];
+	char buf[BW_ID_STRING_LENGTH];
 	int i = 0;
-	for (i = 0; i < BW_DIO_ID_STRING_LENGTH; i++) {
+	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
 		buf[i] = '\0';
 	}
 
@@ -126,7 +124,7 @@ void bw_spi_dio_read_id(device_info_t *device_info) {
 
 	dio_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_DIO_ID_STRING_LENGTH);
+	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
 	uwait(BW_DIO_SPI_BYTE_WAIT_US);
 	printf("[%.20s]\n", &buf[2]);
 }

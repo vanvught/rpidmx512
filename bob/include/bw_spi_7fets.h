@@ -22,8 +22,8 @@
 #ifndef BW_SPI_7FETS_H_
 #define BW_SPI_7FETS_H_
 
-#include <bw_7fets.h>
 #include <device_info.h>
+#include <bw_7fets.h>
 
 #include <stdint.h>
 

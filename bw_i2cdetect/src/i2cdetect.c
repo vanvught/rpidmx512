@@ -77,6 +77,8 @@ int main(int argc, char **argv) {
     int flags = 0;
     int version = 0;
 	char buf;
+	int address;
+	uint8_t ret;
 
 	while (1 + flags < argc && argv[1 + flags][0] == '-') {
 		switch (argv[1 + flags][1]) {
@@ -106,9 +108,6 @@ int main(int argc, char **argv) {
 	bcm2835_i2c_begin();
 
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
-
-	int address;
-	uint8_t ret;
 
 	for (address = 0x00; address <= 0x7F; address++) {
 		/* Skip unwanted addresses */

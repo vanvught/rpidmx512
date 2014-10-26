@@ -1,3 +1,7 @@
+/**
+ * @file mcp23s08.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,15 +24,24 @@
  */
 
 #include <bcm2835.h>
-//
+#include <device_info.h>
 #include <mcp23s08.h>
 
+/**
+ *
+ * @param device_info
+ */
 inline void static mcp23s08_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
+/**
+ *
+ * @param device_info
+ * @return
+ */
 int mcp23s08_start(device_info_t *device_info) {
 
 	if (bcm2835_init() != 1)

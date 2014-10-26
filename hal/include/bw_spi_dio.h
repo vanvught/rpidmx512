@@ -22,8 +22,8 @@
 #ifndef BW_SPI_DIO_H_
 #define BW_SPI_DIO_H_
 
-#include <bw_dio.h>
 #include <device_info.h>
+#include <bw_dio.h>
 
 #include <stdint.h>
 

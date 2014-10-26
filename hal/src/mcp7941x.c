@@ -1,3 +1,7 @@
+/**
+ * @file mcp7941x.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <unistd.h>
 #include <bcm2835.h>
 #include <mcp7941x.h>
 

@@ -62,6 +62,8 @@
 #define BW_PORT_READ_BUTTON_5				0x44
 #define BW_PORT_READ_BUTTON_6				0x45
 
+#define BW_ID_STRING_LENGTH					20
+
 #define BW_SPI0								BCM2835_SPI_CS0
 #define BW_SPI1								BCM2835_SPI_CS1
 

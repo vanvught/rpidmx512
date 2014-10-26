@@ -1,3 +1,7 @@
+/**
+ * @file bw_spi_lcd.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,9 +24,7 @@
  */
 
 #include <bcm2835.h>
-//
 #include <device_info.h>
-//
 #include <bw.h>
 #include <bw_i2c_lcd.h>
 
@@ -36,6 +38,9 @@ extern int printf(const char *format, ...);
 
 static char i2c_lcd_slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 
+/**
+ *
+ */
 inline static void lcd_i2c_setup(void) {
 	bcm2835_i2c_setSlaveAddress(i2c_lcd_slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
@@ -189,9 +194,9 @@ void bw_i2c_lcd_reinit(void) {
 
 void bw_i2c_lcd_read_id(void) {
 	static char cmd[] = { BW_PORT_READ_ID_STRING };
-	char buf[BW_LCD_ID_STRING_LENGTH];
+	char buf[BW_ID_STRING_LENGTH];
 	lcd_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read(buf, BW_LCD_ID_STRING_LENGTH);
+	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
 	printf("[%s]\r\n", buf);
 }

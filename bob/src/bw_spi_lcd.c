@@ -1,3 +1,7 @@
+/**
+ * @file bw_spi_lcd.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,9 +24,7 @@
  */
 
 #include <bcm2835.h>
-//
 #include <device_info.h>
-//
 #include <bw.h>
 #include <bw_spi_lcd.h>
 
@@ -34,11 +36,16 @@ extern void uwait(int);
 
 extern int printf(const char *format, ...);
 
+/**
+ *
+ * @param device_info
+ */
 inline static void lcd_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); //100kHz
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
+
 
 int bw_spi_lcd_start(device_info_t *device_info) {
 
@@ -159,11 +166,18 @@ void bw_spi_lcd_reinit(device_info_t *device_info) {
 }
 
 void bw_spi_lcd_read_id(device_info_t *device_info) {
-	char buf[BW_LCD_ID_STRING_LENGTH + 1] = { 0x00, BW_PORT_READ_ID_STRING };
-	buf[0] = device_info->slave_address + 1;
+	char buf[BW_ID_STRING_LENGTH];
+	int i = 0;
+	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
+		buf[i] = '\0';
+	}
+
+	buf[0] = device_info->slave_address | 1;
+	buf[1] = BW_PORT_READ_ID_STRING;
+
 	lcd_spi_setup(device_info);
-	bcm2835_spi_transfern(buf, BW_LCD_ID_STRING_LENGTH);
+	bcm2835_spi_setClockDivider(5000); // 50 kHz
+	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
 	uwait(BW_LCD_SPI_BYTE_WAIT_US);
-	buf[BW_LCD_ID_STRING_LENGTH] = '\0';
-	printf("[%s]\r\n", &buf[1]);
+	printf("[%.20s]\n", &buf[2]);
 }

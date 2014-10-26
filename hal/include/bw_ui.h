@@ -31,7 +31,6 @@
 
 #define BW_UI_MAX_CHARACTERS			16
 #define BW_UI_MAX_LINES					2
-#define BW_UI_ID_STRING_LENGTH			20
 
 typedef enum
 {

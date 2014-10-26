@@ -24,8 +24,6 @@
 
 #define BW_7FETS_DEFAULT_SLAVE_ADDRESS		0x88
 
-#define BW_7FETS_ID_STRING_LENGTH			20
-
 typedef enum
 {
 	BW_7FETS_PIN_IO0	= 0b00000001,

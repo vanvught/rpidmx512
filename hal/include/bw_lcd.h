@@ -31,7 +31,6 @@
 
 #define BW_LCD_MAX_CHARACTERS			16
 #define BW_LCD_MAX_LINES				2
-#define BW_LCD_ID_STRING_LENGTH			20
 
 #ifdef BW_I2C_LCD
 #define lcd_start 						bw_i2c_lcd_start

@@ -1,3 +1,7 @@
+/**
+ * @file bw_spi_7fets.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,9 +24,7 @@
  */
 
 #include <bcm2835.h>
-//
 #include <device_info.h>
-//
 #include <bw.h>
 #include <bw_spi_7fets.h>
 
@@ -36,6 +38,10 @@ extern int printf(const char *format, ...);
 
 static void bw_spi_7fets_fsel_mask(device_info_t *, uint8_t);
 
+/**
+ *
+ * @param device_info
+ */
 inline void static fets_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
@@ -93,9 +99,9 @@ void bw_spi_7fets_output(device_info_t *device_info, uint8_t pins) {
  * @param device_info
  */
 void bw_spi_7fets_read_id(device_info_t *device_info) {
-	char buf[BW_7FETS_ID_STRING_LENGTH];
+	char buf[BW_ID_STRING_LENGTH];
 	int i = 0;
-	for (i = 0; i < BW_7FETS_ID_STRING_LENGTH; i++) {
+	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
 		buf[i] = '\0';
 	}
 
@@ -104,7 +110,7 @@ void bw_spi_7fets_read_id(device_info_t *device_info) {
 
 	fets_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_7FETS_ID_STRING_LENGTH);
+	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
 	uwait(BW_7FETS_SPI_BYTE_WAIT_US);
 	printf("[%.20s]\n", &buf[2]);
 }

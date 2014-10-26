@@ -24,8 +24,6 @@
 
 #define BW_DIO_DEFAULT_SLAVE_ADDRESS		0x84
 
-#define BW_DIO_ID_STRING_LENGTH				20
-
 typedef enum 
 {
 	BW_DIO_PIN_IO0	= 0b00000001,
