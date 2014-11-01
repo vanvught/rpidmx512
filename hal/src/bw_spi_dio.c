@@ -79,7 +79,7 @@ void bw_spi_dio_end(void) {
  * @param device_info
  * @param mask
  */
-void bw_spi_dio_fsel_mask(device_info_t *device_info, uint8_t mask) {
+void bw_spi_dio_fsel_mask(device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
 
 	cmd[0] = device_info->slave_address;
@@ -96,7 +96,7 @@ void bw_spi_dio_fsel_mask(device_info_t *device_info, uint8_t mask) {
  * @param device_info
  * @param pins
  */
-void bw_spi_dio_output(device_info_t *device_info, uint8_t pins) {
+void bw_spi_dio_output(device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
 
 	cmd[0] = device_info->slave_address;

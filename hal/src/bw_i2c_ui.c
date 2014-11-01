@@ -53,7 +53,7 @@ inline static void ui_i2c_setup(void) {
  * @param slave_address
  * @return
  */
-int bw_i2c_ui_start (char slave_address) {
+int bw_i2c_ui_start (const char slave_address) {
 
 	if (bcm2835_init() != 1)
 		return BW_UI_ERROR;
@@ -121,7 +121,7 @@ void bw_i2c_ui_text(const char *text, uint8_t length) {
  * @param length
  */
 
-void bw_i2c_ui_text_line_1(const char *text, uint8_t length) {
+void bw_i2c_ui_text_line_1(const char *text, const uint8_t length) {
 	static char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0b0000000 };
 	ui_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
@@ -135,7 +135,7 @@ void bw_i2c_ui_text_line_1(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_text_line_2(const char *text, uint8_t length) {
+void bw_i2c_ui_text_line_2(const char *text, const uint8_t length) {
 	static char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0b0100000 };
 	ui_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
@@ -149,7 +149,7 @@ void bw_i2c_ui_text_line_2(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_text_line_3(const char *text, uint8_t length) {
+void bw_i2c_ui_text_line_3(const char *text, const uint8_t length) {
 	static char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0b1000000 };
 	ui_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
@@ -163,7 +163,7 @@ void bw_i2c_ui_text_line_3(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_text_line_4(const char *text, uint8_t length) {
+void bw_i2c_ui_text_line_4(const char *text, const uint8_t length) {
 	static char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0b1100000 };
 	ui_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
@@ -187,7 +187,7 @@ void bw_i2c_ui_cls(void) {
  *
  * @param value
  */
-void bw_i2c_ui_set_contrast(uint8_t value) {
+void bw_i2c_ui_set_contrast(const uint8_t value) {
 	static char cmd[] = { BW_PORT_WRITE_SET_CONTRAST, 0x00 };
 	cmd[1] = value;
 	ui_i2c_setup();
@@ -200,7 +200,7 @@ void bw_i2c_ui_set_contrast(uint8_t value) {
  *
  * @param value
  */
-void bw_i2c_ui_set_backlight(uint8_t value) {
+void bw_i2c_ui_set_backlight(const uint8_t value) {
 	static char cmd[] = { BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
 	cmd[1] = value;
 	ui_i2c_setup();
@@ -213,7 +213,7 @@ void bw_i2c_ui_set_backlight(uint8_t value) {
  *
  * @param value
  */
-void bw_i2c_ui_set_backlight_temp(uint8_t value) {
+void bw_i2c_ui_set_backlight_temp(const uint8_t value) {
 	static char cmd[] = { BW_PORT_WRITE_SET_BACKLIGHT_TEMP, 0x00 };
 	cmd[1] = value;
 	ui_i2c_setup();
@@ -318,7 +318,7 @@ void bw_i2c_ui_read_id(void) {
  * @param button
  * @return
  */
-char bw_i2c_ui_read_button(char button) {
+char bw_i2c_ui_read_button(const char button) {
 	if ((button < BW_UI_BUTTON1) | (button > BW_UI_BUTTON6))
 		return 0;
 

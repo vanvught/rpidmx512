@@ -36,7 +36,7 @@ extern void uwait(int);
 
 extern int printf(const char *format, ...);
 
-static void bw_spi_7fets_fsel_mask(device_info_t *, uint8_t);
+static void bw_spi_7fets_fsel_mask(device_info_t *, const uint8_t);
 
 /**
  *
@@ -70,7 +70,7 @@ void bw_spi_7fets_end(void) {
 	bcm2835_close();
 }
 
-static void bw_spi_7fets_fsel_mask(device_info_t *device_info, uint8_t mask) {
+inline static void bw_spi_7fets_fsel_mask(device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
 
 	cmd[0] = device_info->slave_address;
@@ -82,7 +82,7 @@ static void bw_spi_7fets_fsel_mask(device_info_t *device_info, uint8_t mask) {
 	uwait(BW_7FETS_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_7fets_output(device_info_t *device_info, uint8_t pins) {
+void bw_spi_7fets_output(device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
 
 	cmd[0] = device_info->slave_address;

@@ -34,14 +34,18 @@ extern void bw_spi_lcd_end (void);
 
 extern void bw_spi_lcd_reinit(device_info_t *);
 
-extern void bw_spi_lcd_text_line_1(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_2(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_3(device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_4(device_info_t *, const char *, uint8_t);
+extern void bw_spi_lcd_set_cursor(device_info_t *, uint8_t, uint8_t);
+
+extern void bw_spi_lcd_text(device_info_t *, const char *, uint8_t);
+
+extern void bw_spi_lcd_text_line_1(device_info_t *, const char *, const uint8_t);
+extern void bw_spi_lcd_text_line_2(device_info_t *, const char *, const uint8_t);
+extern void bw_spi_lcd_text_line_3(device_info_t *, const char *, const uint8_t);
+extern void bw_spi_lcd_text_line_4(device_info_t *, const char *, const uint8_t);
 
 extern void bw_spi_lcd_cls(device_info_t *);
-extern void bw_spi_lcd_set_contrast(device_info_t *, uint8_t);
-extern void bw_spi_lcd_set_backlight(device_info_t *, uint8_t);
+extern void bw_spi_lcd_set_contrast(device_info_t *, const uint8_t);
+extern void bw_spi_lcd_set_backlight(device_info_t *, const uint8_t);
 
 extern void bw_spi_lcd_get_backlight(uint8_t *);
 extern void bw_spi_lcd_get_contrast(uint8_t *);

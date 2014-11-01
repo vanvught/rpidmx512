@@ -32,7 +32,7 @@
 extern int bw_spi_7fets_start(device_info_t *);
 extern void bw_spi_7fets_end(void);
 
-extern void bw_spi_7fets_output(device_info_t *, uint8_t);
+extern void bw_spi_7fets_output(device_info_t *, const uint8_t);
 extern void bw_spi_7fets_read_id(device_info_t *);
 
 #endif /* BW_SPI_7FETS_H_ */

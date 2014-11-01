@@ -94,7 +94,7 @@ void bw_spi_lcd_text(device_info_t *device_info, const char *text, uint8_t lengt
 	uwait(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_text_line_1(device_info_t *device_info, const char *text, uint8_t length) {
+void bw_spi_lcd_text_line_1(device_info_t *device_info, const char *text, const uint8_t length) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0000000 };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
@@ -103,7 +103,7 @@ void bw_spi_lcd_text_line_1(device_info_t *device_info, const char *text, uint8_
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_2(device_info_t *device_info, const char *text, uint8_t length) {
+void bw_spi_lcd_text_line_2(device_info_t *device_info, const char *text, const uint8_t length) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0100000 };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
@@ -112,7 +112,7 @@ void bw_spi_lcd_text_line_2(device_info_t *device_info, const char *text, uint8_
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_3(device_info_t *device_info, const char *text, uint8_t length) {
+void bw_spi_lcd_text_line_3(device_info_t *device_info, const char *text, const uint8_t length) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1000000 };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
@@ -121,7 +121,7 @@ void bw_spi_lcd_text_line_3(device_info_t *device_info, const char *text, uint8_
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_4(device_info_t *device_info, const char *text, uint8_t length) {
+void bw_spi_lcd_text_line_4(device_info_t *device_info, const char *text, const uint8_t length) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1100000 };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
@@ -138,7 +138,7 @@ void bw_spi_lcd_cls(device_info_t *device_info) {
 	uwait(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_set_contrast(device_info_t *device_info, uint8_t value) {
+void bw_spi_lcd_set_contrast(device_info_t *device_info, const uint8_t value) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
 	cmd[0] = device_info->slave_address;
 	cmd[2] = value;
@@ -147,7 +147,7 @@ void bw_spi_lcd_set_contrast(device_info_t *device_info, uint8_t value) {
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 }
 
-void bw_spi_lcd_set_backlight(device_info_t *device_info, uint8_t value) {
+void bw_spi_lcd_set_backlight(device_info_t *device_info, const uint8_t value) {
 	static char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
 	cmd[0] = device_info->slave_address;
 	cmd[2] = value;

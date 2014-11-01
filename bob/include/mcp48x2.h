@@ -19,37 +19,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_I2C_LCD_H_
-#define BW_I2C_LCD_H_
-
-#include <bw_lcd.h>
-#include <device_info.h>
+#ifndef MCP48X2_H_
+#define MCP48X2_H_
 
 #include <stdint.h>
 
-#define BW_LCD_I2C_BYTE_WAIT_US			12
+#define MCP4802_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
+#define MCP4822_DATA(x)			((uint16_t)((uint16_t)(x) & 0x0FFF))
 
-extern int bw_i2c_lcd_start (const char);
-extern void bw_i2c_lcd_end (void);
+#define MCP48X2_WRITE_DAC_A		((uint16_t)(0 << 15))
+#define MCP48X2_WRITE_DAC_B		((uint16_t)(1 << 15))
 
-extern void bw_i2c_lcd_reinit(void);
 
-extern void bw_i2c_lcd_set_cursor(uint8_t, uint8_t);
 
-extern void bw_i2c_lcd_text(const char *, uint8_t);
-
-extern void bw_i2c_lcd_text_line_1(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_2(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_3(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_4(const char *, const uint8_t);
-
-extern void bw_i2c_lcd_cls(void);
-extern void bw_i2c_lcd_set_contrast(const uint8_t);
-extern void bw_i2c_lcd_set_backlight(const uint8_t);
-
-extern void bw_i2c_lcd_get_backlight(uint8_t *);
-extern void bw_i2c_lcd_get_contrast(uint8_t *);
-
-extern void bw_i2c_lcd_read_id(void);
-
-#endif /* BW_I2C_LCD_H_ */
+#endif /* MCP48X2_H_ */

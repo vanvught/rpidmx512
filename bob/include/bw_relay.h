@@ -19,37 +19,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_I2C_LCD_H_
-#define BW_I2C_LCD_H_
+#ifndef BW_RELAY_H_
+#define BW_RELAY_H_
 
-#include <bw_lcd.h>
-#include <device_info.h>
+#define BW_RELAY_DEFAULT_SLAVE_ADDRESS		0x8E
 
-#include <stdint.h>
+typedef enum
+{
+	BW_RELAY_0	= 0b00000001,
+	BW_RELAY_1	= 0b00000010
+} bw_spi_relay_Pin;
 
-#define BW_LCD_I2C_BYTE_WAIT_US			12
-
-extern int bw_i2c_lcd_start (const char);
-extern void bw_i2c_lcd_end (void);
-
-extern void bw_i2c_lcd_reinit(void);
-
-extern void bw_i2c_lcd_set_cursor(uint8_t, uint8_t);
-
-extern void bw_i2c_lcd_text(const char *, uint8_t);
-
-extern void bw_i2c_lcd_text_line_1(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_2(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_3(const char *, const uint8_t);
-extern void bw_i2c_lcd_text_line_4(const char *, const uint8_t);
-
-extern void bw_i2c_lcd_cls(void);
-extern void bw_i2c_lcd_set_contrast(const uint8_t);
-extern void bw_i2c_lcd_set_backlight(const uint8_t);
-
-extern void bw_i2c_lcd_get_backlight(uint8_t *);
-extern void bw_i2c_lcd_get_contrast(uint8_t *);
-
-extern void bw_i2c_lcd_read_id(void);
-
-#endif /* BW_I2C_LCD_H_ */
+#endif /* BW_RELAY_H_ */
