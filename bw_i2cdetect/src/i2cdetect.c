@@ -53,7 +53,19 @@ struct device_details {
 	const char *name;
 } const devices[] = {
 		{ 0x41, "BW:LCD" },
+		{ 0x42, "BW:7 digital IO lines (DIO)" },
+		{ 0x43, "BW:Servo" },
+		{ 0x44, "BW:7 FETs" },
+		{ 0x45, "BW:3 FETs" },
+		{ 0x46, "BW:Temp" },
+		{ 0x47, "BW:Relay" },
+		{ 0x48, "BW:Motor" },
 		{ 0x4A, "BW:User Interface (UI)" },
+		{ 0x4B, "BW:7 segment" },
+		{ 0x4D, "BW:Pushbutton" },
+		{ 0x4E, "BW:Bigrelay" },
+		{ 0x4F, "BW:Dimmer" },
+		{ 0x52, "BW:Raspberry juice" },
 		{ 0x57, "MCP7941X {EEPROM}" },
 		{ 0x6F, "MCP7941X {SRAM RTCC}" }
 };
