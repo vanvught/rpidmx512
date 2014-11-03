@@ -44,7 +44,7 @@ typedef struct framebuffer {
 	uint32_t size;		/* framebuffer size. Zero upon request. */
 } framebuffer_t;
 
-extern uint32_t width, height, pitch, fb_addr, fb_size, depth;
+extern uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
 
 int fb_init();
 

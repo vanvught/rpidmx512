@@ -44,24 +44,27 @@ inline static void newline() {
 	cur_x = 0;
 
 	if (cur_y == HEIGHT / CHAR_H) {
-		uint8_t *fb = (uint8_t *) fb_addr;
-		int line_byte_WIDTH = WIDTH * (depth >> 3);
+		/* Pointer to row = 0 */
+		uint8_t *to = (uint8_t *)(fb_addr);
+		/* Pointer to row = 1 */
+		uint8_t *from = to + (CHAR_H * fb_pitch);
+		/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
+		memmove(to, from, (HEIGHT - CHAR_H) * fb_pitch);
 
-		for (int line = 0; line < (HEIGHT - CHAR_H); line++)
-			memcpy(&fb[line * pitch], &fb[(line + CHAR_H) * pitch],	line_byte_WIDTH);
-		for (int line = HEIGHT - CHAR_H; line < HEIGHT; line++)
-			memset(&fb[line * pitch], 0, line_byte_WIDTH);
+		uint8_t *block = to + ((HEIGHT - CHAR_H) * fb_pitch);
+		/* Clear last row */
+		memset(block, cur_back, (CHAR_H * fb_pitch));
 
 		cur_y--;
 	}
 }
 
-inline static void draw_pixel(int x, int y, uint16_t color) {
+inline static void draw_pixel(const int x, const int y, const uint16_t color) {
 	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x + y * WIDTH) * BYTES_PER_PIXEL);
 	*address = color;
 }
 
-static void draw_char(char c, int x, int y, uint16_t fore, uint16_t back) {
+static void draw_char(const char c, const int x, int y, const uint16_t fore, const uint16_t back) {
 	int i, j;
 
 	for (i = 0; i < CHAR_H; i++) {
@@ -77,12 +80,12 @@ static void draw_char(char c, int x, int y, uint16_t fore, uint16_t back) {
 	}
 }
 
-int console_draw_char(char ch, int x, int y, uint16_t fore, uint16_t back) {
+int console_draw_char(const char ch, const int x, const int y, const uint16_t fore, const uint16_t back) {
 	draw_char(ch, x * CHAR_W, y * CHAR_H, fore, back);
 	return ch;
 }
 
-int console_putc(int ch) {
+int console_putc(const int ch) {
 	if (ch == '\n') {
 		newline();
 	} else if (ch == '\t') {
@@ -105,7 +108,7 @@ void console_clear()
 	cur_y = 0;
 }
 
-void console_set_cursor(int x, int y) {
+void console_set_cursor(const int x, const int y) {
 	if (x > WIDTH / CHAR_W)
 		cur_x = WIDTH / CHAR_W;
 	else

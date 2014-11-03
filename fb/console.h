@@ -26,10 +26,10 @@
 #define COLOUR_G	((uint16_t)(0b0000011111100000))
 #define COLOUR_B	((uint16_t)(0b0000000000011111))
 
-int console_putc(int);
+int console_putc(const int);
 void console_clear();
-void console_set_cursor(int, int);
-int console_draw_char(char, int, int, uint16_t, uint16_t);
+void console_set_cursor(const int, const int);
+int console_draw_char(const char, const int, const int, const uint16_t, const uint16_t);
 
 #endif
 

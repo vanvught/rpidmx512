@@ -25,7 +25,7 @@
 //
 #include <fb.h>
 
-uint32_t width, height, pitch, fb_addr, fb_size, depth;
+uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
 
 int fb_init()
 {
@@ -49,12 +49,12 @@ int fb_init()
 		return FB_ERROR;
 	}
 
-	width   = frame.width_p;
-	height  = frame.height_p;
-	pitch   = frame.pitch;
-	depth	= frame.depth;
-	fb_addr = frame.address;
-	fb_size = frame.size;
+	fb_width  = frame.width_p;
+	fb_height = frame.height_p;
+	fb_pitch  = frame.pitch;
+	fb_depth  = frame.depth;
+	fb_addr   = frame.address;
+	fb_size   = frame.size;
 
 	return 0;
 }
