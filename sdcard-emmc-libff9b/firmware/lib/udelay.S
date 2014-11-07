@@ -10,7 +10,7 @@
 .cpu arm1176jzf-s
 .fpu vfp
 
-FUNC uwait
+FUNC udelay
 	push {r4, r5, lr}
 	mov r5,r0
 	ldr r4,=BCM2835_ST_BASE

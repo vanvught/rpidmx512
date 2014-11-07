@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 
-void led_set(int state);
+void led_set(const int);
 void led_init(void);
 
 void __disable_fiq(void);

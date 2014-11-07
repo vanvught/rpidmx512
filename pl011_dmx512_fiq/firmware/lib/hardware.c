@@ -23,7 +23,7 @@
 
 #define PIN		16
 
-void led_set(int state) {
+void led_set(const int state) {
 	bcm2835_gpio_write(PIN, !state);
 }
 

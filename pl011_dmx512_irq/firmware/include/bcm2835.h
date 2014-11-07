@@ -1,3 +1,7 @@
+/**
+ * @file bcm2835.h
+ *
+ */
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
@@ -301,15 +305,17 @@ extern uint8_t bcm2835_i2c_read(char*, uint32_t);
 void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
 // MINI UART
 extern void bcm2835_uart_begin(void);
-extern void bcm2835_uart_send(uint32_t);
+extern void bcm2835_uart_send(const uint32_t);
 extern void bcm2835_uart_end(void);
 // PL011
 extern void bcm2835_pl011_begin(void);
-extern void bcm2835_pl011_send(uint32_t);
+extern void bcm2835_pl011_send(const uint32_t);
 extern void bcm2835_pl011_end(void);
 // MAILBOX
-extern uint32_t bcm2835_mailbox_read(uint8_t channel);
-extern void bcm2835_mailbox_write(uint8_t channel, uint32_t data);
+extern uint32_t bcm2835_mailbox_read(const uint8_t channel);
+extern void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data);
+// DELAY
+extern void udelay(const int);
 
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
 #define ARM_IRQ1_BASE		0
@@ -524,15 +530,15 @@ inline static int bcm2835_close(void) {
 
 #define bcm2835_st_read()			*(volatile uint64_t *)(BCM2835_ST_BASE + 0x04)
 
-inline static void bcm2835_gpio_set(uint8_t pin) {
+inline static void bcm2835_gpio_set(const uint8_t pin) {
 	BCM2835_GPIO ->GPSET0 = 1 << pin;
 }
 
-inline static void bcm2835_gpio_clr(uint8_t pin) {
+inline static void bcm2835_gpio_clr(const uint8_t pin) {
 	BCM2835_GPIO ->GPCLR0 = 1 << pin;
 }
 
-inline static void bcm2835_gpio_write(uint8_t pin, uint8_t on) {
+inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
 	if (on)
 		bcm2835_gpio_set(pin);
 	else

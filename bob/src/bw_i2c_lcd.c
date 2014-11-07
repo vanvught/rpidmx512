@@ -29,9 +29,7 @@
 #include <bw_i2c_lcd.h>
 
 #ifndef BARE_METAL
-#define uwait bcm2835_delayMicroseconds
-#else
-extern void uwait(int);
+#define udelay bcm2835_delayMicroseconds
 #endif
 
 extern int printf(const char *format, ...);
@@ -125,7 +123,7 @@ void bw_i2c_lcd_text_line_4(const char *text, const uint8_t length) {
 void bw_i2c_lcd_cls(void) {
 	static char cmd[] = { BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
 	lcd_i2c_setup();
-	uwait(BW_LCD_I2C_BYTE_WAIT_US);
+	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 }
 
@@ -187,9 +185,9 @@ void bw_i2c_lcd_get_contrast(uint8_t *value) {
 void bw_i2c_lcd_reinit(void) {
 	static char cmd[] = { BW_PORT_WRITE_REINIT_LCD, ' ' };
 	lcd_i2c_setup();
-	uwait(BW_LCD_I2C_BYTE_WAIT_US);
+	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	uwait(500000);
+	udelay(500000);
 }
 
 void bw_i2c_lcd_read_id(void) {

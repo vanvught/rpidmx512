@@ -32,7 +32,7 @@
  * @param device_info
  */
 inline void static mcp23s08_setup(device_info_t *device_info) {
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);	// 1.953125MHz
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }

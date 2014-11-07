@@ -7,8 +7,8 @@
 
 typedef int useconds_t;
 
-extern void uwait(uint32_t usec);
-#define usleep(x) uwait((x))
+extern void udelay(uint32_t usec);
+#define usleep(x) udelay((x))
 
 #define TIMEOUT_WAIT(stop_if_true, usec) 		\
 do {							\

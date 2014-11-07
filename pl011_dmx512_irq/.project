@@ -3,6 +3,7 @@
 	<name>pl011_dmx512_irq</name>
 	<comment></comment>
 	<projects>
+		<project>fb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

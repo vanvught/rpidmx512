@@ -29,9 +29,7 @@
 #include <bw_i2c_dio.h>
 
 #ifndef BARE_METAL
-#define uwait bcm2835_delayMicroseconds
-#else
-extern void uwait(int);
+#define udelay bcm2835_delayMicroseconds
 #endif
 
 extern int printf(const char *format, ...);
@@ -84,7 +82,7 @@ void bw_i2c_dio_fsel_mask(device_info_t *device_info, const uint8_t mask) {
 
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	uwait(BW_DIO_I2C_BYTE_WAIT_US);
+	udelay(BW_DIO_I2C_BYTE_WAIT_US);
 }
 
 /**
@@ -100,7 +98,7 @@ void bw_i2c_dio_output(device_info_t *device_info, const uint8_t pins) {
 
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	uwait(BW_DIO_I2C_BYTE_WAIT_US);
+	udelay(BW_DIO_I2C_BYTE_WAIT_US);
 }
 
 /**

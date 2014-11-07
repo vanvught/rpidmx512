@@ -1,3 +1,7 @@
+/**
+ * @file mcp48x2.h
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +33,5 @@
 
 #define MCP48X2_WRITE_DAC_A		((uint16_t)(0 << 15))
 #define MCP48X2_WRITE_DAC_B		((uint16_t)(1 << 15))
-
-
 
 #endif /* MCP48X2_H_ */

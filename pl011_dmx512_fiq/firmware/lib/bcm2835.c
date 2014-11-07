@@ -26,9 +26,11 @@ uint8_t inline bcm2835_gpio_lev(uint8_t pin) {
 	return (value & (1 << pin)) ? HIGH : LOW;
 }
 
+#if 1
 inline void bcm2835_delayMicroseconds(unsigned long long micros) {
 	bcm2835_st_delay(bcm2835_st_read(), micros);
 }
+#endif
 
 inline void bcm2835_gpio_pud(uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
@@ -55,8 +57,13 @@ void bcm2835_spi_begin(void) {
 	bcm2835_gpio_fsel(RPI_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); // MOSI
 	bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); // CLK
 
-	BCM2835_SPI0 ->CS = 0; // All 0s
+	BCM2835_SPI0 ->CS = 0;
 	BCM2835_SPI0 ->CS = BCM2835_SPI0_CS_CLEAR;
+
+	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
+	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);
+	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);						// CPOL = 0, CPHA = 0
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_2500);	// 100 kHz
 }
 
 void bcm2835_spi_end(void) {
@@ -105,8 +112,6 @@ inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
 		while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD))
 			;
 
-		// Write to FIFO, no barrier
-		//PUT32(BCM2835_SPI0_FIFO, tbuf[i]);
 		BCM2835_SPI0->FIFO = tbuf[i];
 
 		// Wait for RXD
@@ -325,7 +330,7 @@ void bcm2835_uart_begin(void) {
 }
 
 
-void bcm2835_uart_send(uint32_t c) {
+void bcm2835_uart_send(const uint32_t c) {
 	while ((BCM2835_UART1->LSR & 0x20) == 0)
 		;
 	BCM2835_UART1 ->IO = c;
@@ -362,7 +367,7 @@ void bcm2835_pl011_begin(void) {
 	BCM2835_PL011 ->CR = 0x301; 					/* Enable UART */
 }
 
-void bcm2835_pl011_send(uint32_t c) {
+void bcm2835_pl011_send(const uint32_t c) {
 	while (1) {
 		if ((BCM2835_PL011 ->FR & 0x20) == 0)
 			break;
@@ -370,7 +375,7 @@ void bcm2835_pl011_send(uint32_t c) {
 	BCM2835_PL011 ->DR = c;
 }
 
-uint32_t bcm2835_mailbox_read(uint8_t channel) {
+uint32_t bcm2835_mailbox_read(const uint8_t channel) {
 
 	while (1) {
 		while (BCM2835_MAILBOX ->STATUS & BCM2835_MAILBOX_STATUS_RE);
@@ -385,7 +390,7 @@ uint32_t bcm2835_mailbox_read(uint8_t channel) {
 	return BCM2835_MAILBOX_ERROR;
 }
 
-void bcm2835_mailbox_write(uint8_t channel, uint32_t data) {
+void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data) {
 	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF);
 	BCM2835_MAILBOX->WRITE = (data & 0xfffffff0) | (uint32_t)(channel & 0xf);
 }

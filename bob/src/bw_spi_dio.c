@@ -29,9 +29,7 @@
 #include <bw_spi_dio.h>
 
 #ifndef BARE_METAL
-#define uwait bcm2835_delayMicroseconds
-#else
-extern void uwait(int);
+#define udelay bcm2835_delayMicroseconds
 #endif
 
 extern int printf(const char *format, ...);
@@ -57,8 +55,6 @@ int bw_spi_dio_start(device_info_t *device_info) {
 		return 1;
 
 	bcm2835_spi_begin();
-	// Just once. Assuming all devices do have the same
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
@@ -88,7 +84,7 @@ void bw_spi_dio_fsel_mask(device_info_t *device_info, const uint8_t mask) {
 	dio_spi_setup(device_info);
 
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	uwait(BW_DIO_SPI_BYTE_WAIT_US);
+	udelay(BW_DIO_SPI_BYTE_WAIT_US);
 }
 
 /**
@@ -105,7 +101,7 @@ void bw_spi_dio_output(device_info_t *device_info, const uint8_t pins) {
 
 	dio_spi_setup(device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	uwait(BW_DIO_SPI_BYTE_WAIT_US);
+	udelay(BW_DIO_SPI_BYTE_WAIT_US);
 }
 
 /**
@@ -125,6 +121,6 @@ void bw_spi_dio_read_id(device_info_t *device_info) {
 	dio_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
 	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
-	uwait(BW_DIO_SPI_BYTE_WAIT_US);
+	udelay(BW_DIO_SPI_BYTE_WAIT_US);
 	printf("[%.20s]\n", &buf[2]);
 }

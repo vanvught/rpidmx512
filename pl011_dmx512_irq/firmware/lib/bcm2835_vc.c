@@ -36,7 +36,7 @@ struct vc_msg_get_clock_rate {
 	uint32_t end_tag;		/* an end identifier, should be set to NULL */
 };
 
-uint32_t bcm2835_vc_get_clock_rate(int clock_id) {
+uint32_t bcm2835_vc_get_clock_rate(const int clock_id) {
 
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
 	struct  vc_msg_get_clock_rate *vc_msg = (struct vc_msg_get_clock_rate *)mb_addr;
@@ -61,7 +61,7 @@ uint32_t bcm2835_vc_get_clock_rate(int clock_id) {
 
 }
 
-uint32_t bcm2835_vc_set_clock_rate(int clock_id, uint32_t clock_rate) {
+uint32_t bcm2835_vc_set_clock_rate(const int clock_id, const uint32_t clock_rate) {
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
 	struct  vc_msg_get_clock_rate *vc_msg = (struct vc_msg_get_clock_rate *)mb_addr;
 
