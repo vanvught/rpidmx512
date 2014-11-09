@@ -1,5 +1,5 @@
 /**
- * @file sys_time.h
+ * @file mcp49x2.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_C_
-#define SYS_TIME_C_
+#ifndef MCP49X2_H_
+#define MCP49X2_H_
 
 #include <stdint.h>
-#include <time.h>
 
-extern volatile uint64_t st_startup_micros;
-extern volatile uint32_t rtc_startup_seconds;
+/**
+ * Supports Mode 0,0 and Mode 1,1
+ * CPOL = 0, CPHA = 0
+ * CPOL = 1, CPHA = 1
+ */
 
-extern void sys_time_init(void);
-extern time_t sys_time (time_t *__timer);
+#define MCP4902_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
+#define MCP4922_DATA(x)			((uint16_t)((uint16_t)(x) & 0x0FFF))
 
-#endif /* SYS_TIME_C_ */
+#define MCP49X2_WRITE_DAC_A		((uint16_t)(0 << 15))
+#define MCP49X2_WRITE_DAC_B		((uint16_t)(1 << 15))
+
+#endif /* MCP49X2_H_ */

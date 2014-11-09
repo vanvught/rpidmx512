@@ -1,7 +1,3 @@
-/**
- * @file sys_time.h
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,16 +19,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_C_
-#define SYS_TIME_C_
+#ifndef BW_SPI_RELAY_H_
+#define BW_SPI_RELAY_H_
+
+#include <device_info.h>
+#include <bw_relay.h>
 
 #include <stdint.h>
-#include <time.h>
 
-extern volatile uint64_t st_startup_micros;
-extern volatile uint32_t rtc_startup_seconds;
+#define BW_RELAY_SPI_BYTE_WAIT_US				0
 
-extern void sys_time_init(void);
-extern time_t sys_time (time_t *__timer);
+extern int bw_spi_relay_start(device_info_t *);
+extern void bw_spi_relay_end(void);
 
-#endif /* SYS_TIME_C_ */
+extern void bw_spi_relay_output(device_info_t *, const uint8_t);
+extern void bw_spi_relay_read_id(device_info_t *);
+
+#endif /* BW_SPI_RELAY_H_ */

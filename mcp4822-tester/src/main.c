@@ -74,13 +74,11 @@ int main(int argc, char **argv) {
 	bcm2835_spi_setChipSelectPolarity(chip_select, LOW);
 
 	for (;;) {
-
 		for (t = 0; t <= 0x0FFF; t++) {
 			bcm2835_spi_write(MCP4822_DATA(t) | 0x3000 | MCP48X2_WRITE_DAC_A );
 			uint8_t data = t & 0x0FF;
 			uint16_t dacb = (uint16_t)((uint16_t)(data << 4) | (uint16_t)(data >> 4));
 			bcm2835_spi_write(MCP4822_DATA(dacb) | 0x3000 | MCP48X2_WRITE_DAC_B );
-			bcm2835_delay(500);
 		}
 	}
 

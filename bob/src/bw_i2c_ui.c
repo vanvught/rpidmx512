@@ -306,7 +306,7 @@ void bw_i2c_ui_read_id(void) {
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_UI_I2C_BYTE_WAIT_US);
 	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-	printf("[%s]\r\n", buf);
+	printf("[%s]\n", buf);
 }
 
 // UI specific

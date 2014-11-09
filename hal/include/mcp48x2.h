@@ -1,5 +1,5 @@
 /**
- * @file sys_time.h
+ * @file mcp48x2.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_C_
-#define SYS_TIME_C_
+#ifndef MCP48X2_H_
+#define MCP48X2_H_
 
 #include <stdint.h>
-#include <time.h>
 
-extern volatile uint64_t st_startup_micros;
-extern volatile uint32_t rtc_startup_seconds;
+#define MCP4802_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
+#define MCP4822_DATA(x)			((uint16_t)((uint16_t)(x) & 0x0FFF))
 
-extern void sys_time_init(void);
-extern time_t sys_time (time_t *__timer);
+#define MCP48X2_WRITE_DAC_A		((uint16_t)(0 << 15))
+#define MCP48X2_WRITE_DAC_B		((uint16_t)(1 << 15))
 
-#endif /* SYS_TIME_C_ */
+#endif /* MCP48X2_H_ */

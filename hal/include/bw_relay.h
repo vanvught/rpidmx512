@@ -1,7 +1,3 @@
-/**
- * @file sys_time.h
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,16 +19,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_C_
-#define SYS_TIME_C_
+#ifndef BW_RELAY_H_
+#define BW_RELAY_H_
 
-#include <stdint.h>
-#include <time.h>
+#define BW_RELAY_DEFAULT_SLAVE_ADDRESS		0x8E
 
-extern volatile uint64_t st_startup_micros;
-extern volatile uint32_t rtc_startup_seconds;
+typedef enum
+{
+	BW_RELAY_0	= 0b00000001,
+	BW_RELAY_1	= 0b00000010
+} bw_spi_relay_Pin;
 
-extern void sys_time_init(void);
-extern time_t sys_time (time_t *__timer);
-
-#endif /* SYS_TIME_C_ */
+#endif /* BW_RELAY_H_ */

@@ -40,7 +40,6 @@ extern int printf(const char *format, ...);
  */
 inline static void dio_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
-	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 

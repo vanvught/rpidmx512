@@ -20,6 +20,13 @@
  */
 
 /**
+ * @defgroup I2C-DIO input-output
+ * @ingroup I2C
+ * @brief I2C_DIO board.
+ *
+ */
+
+/**
  * @defgroup I2C-RTC real time clock
  * @ingroup I2C
  * @brief I2C_MCP7941x board.

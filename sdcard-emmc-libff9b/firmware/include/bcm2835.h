@@ -2,6 +2,26 @@
  * @file bcm2835.h
  *
  */
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
@@ -276,33 +296,30 @@ inline static int bcm2835_init(void);
 inline static int bcm2835_close(void);
 
 // GPIO
-extern void  bcm2835_gpio_set_pud(uint8_t, uint8_t);
-extern void bcm2835_gpio_fsel(uint8_t, uint8_t);
-inline static void bcm2835_gpio_set(uint8_t);
-inline static void bcm2835_gpio_clr(uint8_t);
-inline static void bcm2835_gpio_write(uint8_t, uint8_t);
-extern uint8_t bcm2835_gpio_lev(uint8_t pin);
+extern void  bcm2835_gpio_set_pud(const uint8_t, const uint8_t);
+extern void bcm2835_gpio_fsel(const uint8_t, const uint8_t);
+extern uint8_t bcm2835_gpio_lev(const uint8_t pin);
 // SPI
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
-extern void bcm2835_spi_setBitOrder(uint8_t);
-extern void bcm2835_spi_setClockDivider(uint16_t);
-extern void bcm2835_spi_setDataMode(uint8_t);
-extern void bcm2835_spi_chipSelect(uint8_t);
-extern void bcm2835_spi_setChipSelectPolarity(uint8_t, uint8_t);
-extern void bcm2835_spi_transfernb(char*, char*, uint32_t);
-extern void bcm2835_spi_transfern(char* buf, uint32_t len);
-extern void bcm2835_spi_writenb(char* tbuf, uint32_t len);
-extern void bcm2835_spi_write(uint16_t data);
+extern void bcm2835_spi_setBitOrder(const uint8_t);
+extern void bcm2835_spi_setClockDivider(const uint16_t);
+extern void bcm2835_spi_setDataMode(const uint8_t);
+extern void bcm2835_spi_chipSelect(const uint8_t);
+extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
+extern void bcm2835_spi_transfernb(char*, char*, const uint32_t);
+extern void bcm2835_spi_transfern(char* buf, const uint32_t);
+extern void bcm2835_spi_writenb(char* tbuf, const uint32_t);
+extern void bcm2835_spi_write(const uint16_t data);
 // I2C
 extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
-extern void bcm2835_i2c_setSlaveAddress(uint8_t);
-extern void bcm2835_i2c_setClockDivider(uint16_t );
-extern uint8_t bcm2835_i2c_write(const char *, uint32_t);
-extern uint8_t bcm2835_i2c_read(char*, uint32_t);
+extern void bcm2835_i2c_setSlaveAddress(const uint8_t);
+extern void bcm2835_i2c_setClockDivider(const uint16_t);
+extern uint8_t bcm2835_i2c_write(const char *, const uint32_t);
+extern uint8_t bcm2835_i2c_read(char*, const uint32_t);
 // ST
-void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
+extern void bcm2835_st_delay(const uint64_t offset_micros, const uint64_t micros);
 // MINI UART
 extern void bcm2835_uart_begin(void);
 extern void bcm2835_uart_send(const uint32_t);
@@ -315,7 +332,7 @@ extern void bcm2835_pl011_end(void);
 extern uint32_t bcm2835_mailbox_read(const uint8_t channel);
 extern void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data);
 // DELAY
-extern void udelay(const int);
+extern void udelay(const uint64_t);
 
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
 #define ARM_IRQ1_BASE		0

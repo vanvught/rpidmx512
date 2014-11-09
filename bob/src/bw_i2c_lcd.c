@@ -196,5 +196,5 @@ void bw_i2c_lcd_read_id(void) {
 	lcd_i2c_setup();
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-	printf("[%s]\r\n", buf);
+	printf("[%s]\n", buf);
 }

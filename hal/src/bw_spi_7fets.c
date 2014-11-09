@@ -42,7 +42,6 @@ static void bw_spi_7fets_fsel_mask(device_info_t *, const uint8_t);
  */
 inline void static fets_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
-	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 

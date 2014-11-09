@@ -1,3 +1,7 @@
+/**
+ * @file bcm2835.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,30 +25,24 @@
 
 #include <bcm2835.h>
 
-uint8_t inline bcm2835_gpio_lev(uint8_t pin) {
+uint8_t inline bcm2835_gpio_lev(const uint8_t pin) {
 	uint32_t value = BCM2835_GPIO ->GPLEV0;
 	return (value & (1 << pin)) ? HIGH : LOW;
 }
 
-#if 1
-inline void bcm2835_delayMicroseconds(unsigned long long micros) {
-	bcm2835_st_delay(bcm2835_st_read(), micros);
-}
-#endif
-
-inline void bcm2835_gpio_pud(uint8_t pud) {
+inline void bcm2835_gpio_pud(const uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
 }
 
-inline void bcm2835_gpio_pudclk(uint8_t pin, uint8_t on) {
+inline void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
 	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
 }
 
-inline void bcm2835_gpio_set_pud(uint8_t pin, uint8_t pud) {
+inline void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
 	bcm2835_gpio_pud(pud);
-	bcm2835_delayMicroseconds(10);
+	udelay(10);
 	bcm2835_gpio_pudclk(pin, 1);
-	bcm2835_delayMicroseconds(10);
+	udelay(10);
 	bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
 	bcm2835_gpio_pudclk(pin, 0);
 }
@@ -75,30 +73,30 @@ void bcm2835_spi_end(void) {
 	bcm2835_gpio_fsel(RPI_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
 }
 
-inline void bcm2835_spi_setBitOrder(uint8_t order) {
+inline void bcm2835_spi_setBitOrder(const uint8_t order) {
 	// BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 }
 
-inline void bcm2835_spi_setClockDivider(uint16_t divider) {
+inline void bcm2835_spi_setClockDivider(const uint16_t divider) {
 	BCM2835_SPI0 ->CLK = divider;
 }
 
-inline void bcm2835_spi_setDataMode(uint8_t mode) {
+inline void bcm2835_spi_setDataMode(const uint8_t mode) {
 	// Mask in the CPO and CPHA bits of CS
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
 }
 
-inline void bcm2835_spi_chipSelect(uint8_t cs) {
+inline void bcm2835_spi_chipSelect(const uint8_t cs) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
 }
 
-inline void bcm2835_spi_setChipSelectPolarity(uint8_t cs, uint8_t active) {
+inline void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
 	uint8_t shift = 21 + cs;
 	// Mask in the appropriate CSPOLn bit
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, active << shift, 1 << shift);
 }
 
-inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
+inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -129,11 +127,11 @@ inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
     BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
 }
 
-void bcm2835_spi_transfern(char* buf, uint32_t len) {
+void bcm2835_spi_transfern(char* buf, const uint32_t len) {
 	bcm2835_spi_transfernb(buf, buf, len);
 }
 
-void bcm2835_spi_writenb(char* tbuf, uint32_t len) {
+void bcm2835_spi_writenb(char* tbuf, const uint32_t len) {
     // Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -160,7 +158,7 @@ void bcm2835_spi_writenb(char* tbuf, uint32_t len) {
 }
 
 #if 0// moved to bcm2835_asm.S
-inline void bcm2835_spi_write(uint16_t data) {
+inline void bcm2835_spi_write(const uint16_t data) {
     // Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -194,15 +192,15 @@ void bcm2835_i2c_end(void) {
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT); // SCL
 }
 
-void bcm2835_i2c_setSlaveAddress(uint8_t addr) {
+void bcm2835_i2c_setSlaveAddress(const uint8_t addr) {
 	BCM2835_BSC1 ->A = addr;
 }
 
-void bcm2835_i2c_setClockDivider(uint16_t divider) {
+void bcm2835_i2c_setClockDivider(const uint16_t divider) {
 	BCM2835_BSC1 ->DIV = divider;
 }
 
-uint8_t bcm2835_i2c_write(const char * buf, uint32_t len) {
+uint8_t bcm2835_i2c_write(const char * buf, const uint32_t len) {
 	uint32_t remaining = len;
 	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
@@ -254,7 +252,7 @@ uint8_t bcm2835_i2c_write(const char * buf, uint32_t len) {
     return reason;
 }
 
-uint8_t bcm2835_i2c_read(char* buf, uint32_t len) {
+uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 	uint32_t remaining = len;
 	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;

@@ -110,6 +110,7 @@ void bw_i2c_dio_read_id(device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	udelay(BW_DIO_I2C_BYTE_WAIT_US);
 	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-	printf("[%s]\r\n", buf);
+	printf("[%s]\n", buf);
 }
