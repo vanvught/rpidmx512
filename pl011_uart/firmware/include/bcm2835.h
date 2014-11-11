@@ -275,15 +275,18 @@ typedef struct {
 	__IO uint32_t DC;			///< 0x14
 } BCM2835_SPI_TypeDef;
 
+/// Defines for I2C\n
+/// GPIO register offsets from BCM2835_BSC*_BASE.\n
+/// Offsets into the BSC Peripheral block in bytes per 3.1 BSC Register Map
 typedef struct {
-	__IO uint32_t C;			///< 0x00
-	__IO uint32_t S;			///< 0x04
-	__IO uint32_t DLEN;			///< 0x08
-	__IO uint32_t A;			///< 0x0C
-	__IO uint32_t FIFO;			///< 0x10
-	__IO uint32_t DIV;			///< 0x14
-	__IO uint32_t DEL;			///< 0x18
-	__IO uint32_t CLKT;			///< 0x1C
+	__IO uint32_t C;		///< 0x00, BSC Master Control
+	__IO uint32_t S;		///< 0x04, BSC Master Status
+	__IO uint32_t DLEN;		///< 0x08, BSC Master Data Length
+	__IO uint32_t A;		///< 0x0C, BSC Master Slave Address
+	__IO uint32_t FIFO;		///< 0x10, BSC Master Data FIFO
+	__IO uint32_t DIV;		///< 0x14, BSC Master Clock Divider
+	__IO uint32_t DEL;		///< 0x18, BSC Master Data Delay
+	__IO uint32_t CLKT;		///< 0x1C, BSC Master Clock Stretch Timeout
 } BCM2835_BSC_TypeDef;
 
 typedef struct {

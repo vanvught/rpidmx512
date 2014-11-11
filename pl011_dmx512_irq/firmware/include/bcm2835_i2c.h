@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+/// Specifies the divider used to generate the I2C clock from the system clock.\n
+/// Clock divided is based on nominal base clock rate of 250MHz
 typedef enum {
 	BCM2835_I2C_CLOCK_DIVIDER_2500	= 2500,		///< 2500 = 10us = 100 kHz
 	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,		///< 622 = 2.504us = 399.3610 kHz
@@ -35,6 +37,7 @@ typedef enum {
 	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,		///< 148 = 59ns = 1.689 MHz
 } bcm2835I2CClockDivider;
 
+/// Specifies the reason codes for the \ref bcm2835_i2c_write and \ref bcm2835_i2c_read functions.
 typedef enum {
 	BCM2835_I2C_REASON_OK			= 0x00,		///< Success
 	BCM2835_I2C_REASON_ERROR_NACK 	= 0x01,		///< Received a NACK

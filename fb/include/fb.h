@@ -33,8 +33,8 @@
 #define BYTES_PER_PIXEL		2							///< bytes per pixel for requested depth (BPP)
 #define BPP					(BYTES_PER_PIXEL << 3)		///< Requested depth (bits per pixel)
 
-#define FB_OK		0
-#define FB_ERROR	-1
+#define FB_OK		0									///< Call fb_init() OK
+#define FB_ERROR	-1									///< Call fb_init() failed
 
 extern uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
 

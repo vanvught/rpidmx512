@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+/// \ref BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 typedef enum {
 	BCM2835_SPI_BIT_ORDER_LSBFIRST = 0,	///< LSB First
 	BCM2835_SPI_BIT_ORDER_MSBFIRST = 1	///< MSB First

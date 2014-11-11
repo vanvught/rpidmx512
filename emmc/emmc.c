@@ -128,11 +128,27 @@ struct emmc_block_dev
 	uint32_t base_clock;
 };
 
+#include <bcm2835.h>
+// TODO
+typedef struct {
+	__IO uint32_t ARG2;			///< 0x00
+	__IO uint32_t BLKSIZECNT;	///< 0x04
+	__IO uint32_t ARG1;			///< 0x08
+	__IO uint32_t CMDTM;		///< 0x0C
+	__IO uint32_t RESP0;		///< 0x10
+	__IO uint32_t RESP1;		///< 0x14
+	__IO uint32_t RESP2;		///< 0x18
+	__IO uint32_t RESP3;		///< 0x1C
+} BCM2835_EMMC_TypeDef;
+
+#define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)
+#define BCM2835_EMMC			((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)
+
 #define EMMC_BASE		0x20300000
-#define	EMMC_ARG2		0
-#define EMMC_BLKSIZECNT		4
-#define EMMC_ARG1		8
-#define EMMC_CMDTM		0xC
+//#define EMMC_ARG2			0
+//#define EMMC_BLKSIZECNT	4
+//#define EMMC_ARG1			8
+//#define EMMC_CMDTM		0xC
 #define EMMC_RESP0		0x10
 #define EMMC_RESP1		0x14
 #define EMMC_RESP2		0x18
@@ -702,7 +718,9 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
 
         // We need to define a 4 kiB aligned buffer to use here
         // Then convert its virtual address to a bus address
-        mmio_write(EMMC_BASE + EMMC_ARG2, SDMA_BUFFER_PA);
+    	///< AvV
+        ///< mmio_write(EMMC_BASE + EMMC_ARG2, SDMA_BUFFER_PA);
+        BCM2835_EMMC->ARG2 = SDMA_BUFFER_PA;	///< AvV
     }
 
     // Set block size and block count
@@ -716,10 +734,14 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
         return;
     }
     uint32_t blksizecnt = dev->block_size | (dev->blocks_to_transfer << 16);
-    mmio_write(EMMC_BASE + EMMC_BLKSIZECNT, blksizecnt);
+    ///< AvV
+    ///< mmio_write(EMMC_BASE + EMMC_BLKSIZECNT, blksizecnt);
+    BCM2835_EMMC->BLKSIZECNT = blksizecnt;	///< AvV
 
     // Set argument 1 reg
-    mmio_write(EMMC_BASE + EMMC_ARG1, argument);
+    ///< AvV
+    ///< mmio_write(EMMC_BASE + EMMC_ARG1, argument);
+    BCM2835_EMMC->ARG1 = argument;	///< AvV
 
     if(is_sdma)
     {
@@ -728,7 +750,9 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
     }
 
     // Set command reg
-    mmio_write(EMMC_BASE + EMMC_CMDTM, cmd_reg);
+    ///<
+    ///< mmio_write(EMMC_BASE + EMMC_CMDTM, cmd_reg);
+    BCM2835_EMMC->CMDTM = cmd_reg;	///< AvV
 
     // usleep(2000);
 
@@ -926,7 +950,9 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
 #ifdef EMMC_DEBUG
                     printf("SD: aborting transfer\n");
 #endif
-                    mmio_write(EMMC_BASE + EMMC_CMDTM, sd_commands[STOP_TRANSMISSION]);
+                    ///< AvV
+                    ///< mmio_write(EMMC_BASE + EMMC_CMDTM, sd_commands[STOP_TRANSMISSION]);
+                    BCM2835_EMMC->CMDTM = sd_commands[STOP_TRANSMISSION];	///< AvV
 
 #ifdef EMMC_DEBUG
                     // pause to let us read the screen
@@ -1669,10 +1695,11 @@ int sd_card_init(struct block_device **dev)
 	    }
 	}
 	ret->block_size = 512;
-	uint32_t controller_block_size = mmio_read(EMMC_BASE + EMMC_BLKSIZECNT);
+	///< AvV
+	uint32_t controller_block_size = BCM2835_EMMC->BLKSIZECNT;
 	controller_block_size &= (~0xfff);
 	controller_block_size |= 0x200;
-	mmio_write(EMMC_BASE + EMMC_BLKSIZECNT, controller_block_size);
+	BCM2835_EMMC->BLKSIZECNT = controller_block_size;
 
 	// Get the cards SCR register
 	ret->scr = (struct sd_scr *)malloc(sizeof(struct sd_scr));
