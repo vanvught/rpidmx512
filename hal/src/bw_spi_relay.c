@@ -24,6 +24,7 @@
  */
 
 #include <bcm2835.h>
+#include <bcm2835_spi.h>
 #include <device_info.h>
 #include <bw.h>
 #include <bw_spi_relay.h>

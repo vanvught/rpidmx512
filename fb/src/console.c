@@ -1,3 +1,7 @@
+/**
+ * @file console.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,9 +25,8 @@
 
 #include <stdint.h>
 #include <string.h>
-//
-#include <fb.h>
-#include <console.h>
+#include "fb.h"
+#include "console.h"
 
 extern unsigned char FONT[];
 
@@ -39,6 +42,9 @@ static int cur_y = 0;
 static uint16_t cur_fore = DEF_FORE;
 static uint16_t cur_back = DEF_BACK;
 
+/**
+ *
+ */
 inline static void newline() {
 	cur_y++;
 	cur_x = 0;
@@ -59,12 +65,26 @@ inline static void newline() {
 	}
 }
 
+/**
+ *
+ * @param x
+ * @param y
+ * @param color
+ */
 inline static void draw_pixel(const int x, const int y, const uint16_t color) {
 	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x + y * WIDTH) * BYTES_PER_PIXEL);
 	*address = color;
 }
 
-static void draw_char(const char c, const int x, int y, const uint16_t fore, const uint16_t back) {
+/**
+ *
+ * @param c
+ * @param x
+ * @param y
+ * @param fore
+ * @param back
+ */
+inline static void draw_char(const char c, const int x, int y, const uint16_t fore, const uint16_t back) {
 	int i, j;
 
 	for (i = 0; i < CHAR_H; i++) {
@@ -80,11 +100,25 @@ static void draw_char(const char c, const int x, int y, const uint16_t fore, con
 	}
 }
 
+/**
+ *
+ * @param ch
+ * @param x
+ * @param y
+ * @param fore
+ * @param back
+ * @return
+ */
 int console_draw_char(const char ch, const int x, const int y, const uint16_t fore, const uint16_t back) {
 	draw_char(ch, x * CHAR_W, y * CHAR_H, fore, back);
 	return ch;
 }
 
+/**
+ *
+ * @param ch
+ * @return
+ */
 int console_putc(const int ch) {
 	if (ch == '\n') {
 		newline();
@@ -100,6 +134,9 @@ int console_putc(const int ch) {
 	return ch;
 }
 
+/**
+ *
+ */
 void console_clear()
 {
 	memset((uint16_t *)fb_addr, cur_back, fb_size);
@@ -108,6 +145,11 @@ void console_clear()
 	cur_y = 0;
 }
 
+/**
+ *
+ * @param x
+ * @param y
+ */
 void console_set_cursor(const int x, const int y) {
 	if (x > WIDTH / CHAR_W)
 		cur_x = WIDTH / CHAR_W;

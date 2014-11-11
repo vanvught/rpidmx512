@@ -28,74 +28,7 @@
 #define HIGH 0x1
 #define LOW  0x0
 
-#define BCM2835_SPI0_CS_LEN_LONG   0x02000000 ///< Enable Long data word in Lossi mode if DMA_LEN is set
-#define BCM2835_SPI0_CS_DMA_LEN    0x01000000 ///< Enable DMA mode in Lossi mode
-#define BCM2835_SPI0_CS_CSPOL2     0x00800000 ///< Chip Select 2 Polarity
-#define BCM2835_SPI0_CS_CSPOL1     0x00400000 ///< Chip Select 1 Polarity
-#define BCM2835_SPI0_CS_CSPOL0     0x00200000 ///< Chip Select 0 Polarity
-#define BCM2835_SPI0_CS_RXF        0x00100000 ///< RXF - RX FIFO Full
-#define BCM2835_SPI0_CS_RXR        0x00080000 ///< RXR RX FIFO needs Reading ( full)
-#define BCM2835_SPI0_CS_TXD        0x00040000 ///< TXD TX FIFO can accept Data
-#define BCM2835_SPI0_CS_RXD        0x00020000 ///< RXD RX FIFO contains Data
-#define BCM2835_SPI0_CS_DONE       0x00010000 ///< Done transfer Done
-#define BCM2835_SPI0_CS_TE_EN      0x00008000 ///< Unused
-#define BCM2835_SPI0_CS_LMONO      0x00004000 ///< Unused
-#define BCM2835_SPI0_CS_LEN        0x00002000 ///< LEN LoSSI enable
-#define BCM2835_SPI0_CS_REN        0x00001000 ///< REN Read Enable
-#define BCM2835_SPI0_CS_ADCS       0x00000800 ///< ADCS Automatically Deassert Chip Select
-#define BCM2835_SPI0_CS_INTR       0x00000400 ///< INTR Interrupt on RXR
-#define BCM2835_SPI0_CS_INTD       0x00000200 ///< INTD Interrupt on Done
-#define BCM2835_SPI0_CS_DMAEN      0x00000100 ///< DMAEN DMA Enable
-#define BCM2835_SPI0_CS_TA         0x00000080 ///< Transfer Active
-#define BCM2835_SPI0_CS_CSPOL      0x00000040 ///< Chip Select Polarity
-#define BCM2835_SPI0_CS_CLEAR      0x00000030 ///< Clear FIFO Clear RX and TX
-#define BCM2835_SPI0_CS_CLEAR_RX   0x00000020 ///< Clear FIFO Clear RX
-#define BCM2835_SPI0_CS_CLEAR_TX   0x00000010 ///< Clear FIFO Clear TX
-#define BCM2835_SPI0_CS_CPOL      	0x00000008 ///< Clock Polarity
-#define BCM2835_SPI0_CS_CPHA      	0x00000004 ///< Clock Phase
-#define BCM2835_SPI0_CS_CS        	0x00000003 ///< Chip Select
-
-#define BCM2835_BSC_C_I2CEN 		0x00008000 ///< I2C Enable, 0 = disabled, 1 = enabled
-#define BCM2835_BSC_C_INTR 			0x00000400 ///< Interrupt on RX
-#define BCM2835_BSC_C_INTT 			0x00000200 ///< Interrupt on TX
-#define BCM2835_BSC_C_INTD 			0x00000100 ///< Interrupt on DONE
-#define BCM2835_BSC_C_ST 			0x00000080 ///< Start transfer, 1 = Start a new transfer
-#define BCM2835_BSC_C_CLEAR_1 		0x00000020 ///< Clear FIFO Clear
-#define BCM2835_BSC_C_CLEAR_2 		0x00000010 ///< Clear FIFO Clear
-#define BCM2835_BSC_C_READ 			0x00000001 ///<	Read transfer
-
-#define BCM2835_BSC_S_CLKT 			0x00000200 ///< Clock stretch timeout
-#define BCM2835_BSC_S_ERR 			0x00000100 ///< ACK error
-#define BCM2835_BSC_S_RXF 			0x00000080 ///< RXF FIFO full, 0 = FIFO is not full, 1 = FIFO is full
-#define BCM2835_BSC_S_TXE 			0x00000040 ///< TXE FIFO full, 0 = FIFO is not full, 1 = FIFO is full
-#define BCM2835_BSC_S_RXD 			0x00000020 ///< RXD FIFO contains data
-#define BCM2835_BSC_S_TXD 			0x00000010 ///< TXD FIFO can accept data
-#define BCM2835_BSC_S_RXR 			0x00000008 ///< RXR FIFO needs reading (full)
-#define BCM2835_BSC_S_TXW 			0x00000004 ///< TXW FIFO needs writing (full)
-#define BCM2835_BSC_S_DONE 			0x00000002 ///< Transfer DONE
-#define BCM2835_BSC_S_TA 			0x00000001 ///< Transfer Active
-
-#define BCM2835_BSC_FIFO_SIZE   				16 ///< BSC FIFO size
-
-#define RPI_GPIO_P1_03         0  ///< Version 1, Pin P1-03
-#define RPI_GPIO_P1_05         1  ///< Version 1, Pin P1-05
-#define RPI_GPIO_P1_07         4  ///< Version 1, Pin P1-07
-#define RPI_GPIO_P1_08        14  ///< Version 1, Pin P1-08, defaults to alt function 0 PL011_TXD
-#define RPI_GPIO_P1_10        15  ///< Version 1, Pin P1-10, defaults to alt function 0 PL011_RXD
-#define RPI_GPIO_P1_11        17  ///< Version 1, Pin P1-11
-#define RPI_GPIO_P1_12        18  ///< Version 1, Pin P1-12
-#define RPI_GPIO_P1_13        21  ///< Version 1, Pin P1-13
-#define RPI_GPIO_P1_15        22  ///< Version 1, Pin P1-15
-#define RPI_GPIO_P1_16        23  ///< Version 1, Pin P1-16
-#define RPI_GPIO_P1_18        24  ///< Version 1, Pin P1-18
-#define RPI_GPIO_P1_19        10  ///< Version 1, Pin P1-19, MOSI when SPI0 in use
-#define RPI_GPIO_P1_21         9  ///< Version 1, Pin P1-21, MISO when SPI0 in use
-#define RPI_GPIO_P1_22        25  ///< Version 1, Pin P1-22
-#define RPI_GPIO_P1_23        11  ///< Version 1, Pin P1-23, CLK when SPI0 in use
-#define RPI_GPIO_P1_24         8  ///< Version 1, Pin P1-24, CE0 when SPI0 in use
-#define RPI_GPIO_P1_26         7  ///< Version 1, Pin P1-26, CE1 when SPI0 in use
-
- // RPi Version 2
+// RPi Version 2
 #define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03
 #define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05
 #define RPI_V2_GPIO_P1_07      4  ///< Version 2, Pin P1-07
@@ -162,52 +95,34 @@
 #define PL011_BAUD_INT(x) 		(3000000 / (16 * (x)))
 #define PL011_BAUD_FRAC(x) 		(int)((((3000000.0 / (16.0 * (x))) - PL011_BAUD_INT(x)) * 64.0) + 0.5)
 
-// Mailbox
-#define BCM2835_MAILBOX_STATUS_WF					0x80000000	///< Write full
-#define	 BCM2835_MAILBOX_STATUS_RE					0x40000000	///< Read empty
-#define BCM2835_MAILBOX_SUCCESS						0x80000000	///< Request successful
-#define BCM2835_MAILBOX_ERROR						0x80000001	///< Error parsing request buffer (partial response)
-#define BCM2835_MAILBOX_FB_CHANNEL					1			///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
-#define BCM2835_MAILBOX_PROP_CHANNEL				8			///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
-// Unique clock ID
-#define BCM2835_MAILBOX_CLOCK_ID_RESERVED			0			///<
-#define BCM2835_MAILBOX_CLOCK_ID_EMMC				1			///<
-#define BCM2835_MAILBOX_CLOCK_ID_UART				2			///<
-#define BCM2835_MAILBOX_CLOCK_ID_ARM				3			///<
-#define BCM2835_MAILBOX_CLOCK_ID_CORE				4			///<
-#define BCM2835_MAILBOX_CLOCK_ID_V3D				5			///<
-#define BCM2835_MAILBOX_CLOCK_ID_H264				6			///<
-#define BCM2835_MAILBOX_CLOCK_ID_ISP				7			///<
-#define BCM2835_MAILBOX_CLOCK_ID_SDRAM				8			///<
-#define BCM2835_MAILBOX_CLOCK_ID_PIXEL				9			///<
-#define BCM2835_MAILBOX_CLOCK_ID_PWM				10			///<
-// Tag VideoCore
-#define BCM2835_MAILBOX_TAG_GET_FIRMWARE_REV		0x00000001	///<
-// Tag Hardware
-#define BCM2835_MAILBOX_TAG_GET_BOARD_MODEL			0x00010001	///<
-#define BCM2835_MAILBOX_TAG_GET_BOARD_REV			0x00010002	///<
-#define BCM2835_MAILBOX_TAG_GET_BOARD_MAC_ADDRESS	0x00010003	///<
-#define BCM2835_MAILBOX_TAG_GET_BOARD_SERIAL		0x00010004	///<
-#define BCM2835_MAILBOX_TAG_GET_ARM_MEMORY			0x00010005	///<
-#define BCM2835_MAILBOX_TAG_GET_VC_MEMORY			0x00010006	///<
-#define BCM2835_MAILBOX_TAG_GET_CLOCKS				0x00010007	///<
-// Tag Clock
-#define BCM2835_MAILBOX_TAG_GET_CLOCK_STATE			0x00030001	///<
-#define BCM2835_MAILBOX_TAG_GET_CLOCK_RATE 			0x00030002	///<
-#define BCM2835_MAILBOX_TAG_GET_MAX_CLOCK_RATE 		0x00030004	///<
-#define BCM2835_MAILBOX_TAG_GET_MIN_CLOCK_RATE 		0x00030007	///<
-#define BCM2835_MAILBOX_TAG_GET_TURBO		 		0x00030009	///<
-#define BCM2835_MAILBOX_TAG_SET_CLOCK_STATE			0x00038001	///<
-#define BCM2835_MAILBOX_TAG_SET_CLOCK_RATE 			0x00038002	///<
-#define BCM2835_MAILBOX_TAG_SET_TURBO	 			0x00038009	///<
-
-#define BCM2835_PM_WDOG_PASSWORD					0x5a000000	///<
-#define BCM2835_PM_WDOG_TIME_SET            		0x000fffff	///<
-#define BCM2835_PM_WDOG_RSTC_RESET               	0x00000102	///<
-#define BCM2835_PM_WDOG_RSTC_WRCFG_CLR           	0xffffffcf	///<
-#define BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET		0x00000020	///<
-
 #ifdef __ASSEMBLY__
+#define BCM2835_SPI0_CS_LEN_LONG   0x02000000 ///< Enable Long data word in Lossi mode if DMA_LEN is set
+#define BCM2835_SPI0_CS_DMA_LEN    0x01000000 ///< Enable DMA mode in Lossi mode
+#define BCM2835_SPI0_CS_CSPOL2     0x00800000 ///< Chip Select 2 Polarity
+#define BCM2835_SPI0_CS_CSPOL1     0x00400000 ///< Chip Select 1 Polarity
+#define BCM2835_SPI0_CS_CSPOL0     0x00200000 ///< Chip Select 0 Polarity
+#define BCM2835_SPI0_CS_RXF        0x00100000 ///< RXF - RX FIFO Full
+#define BCM2835_SPI0_CS_RXR        0x00080000 ///< RXR RX FIFO needs Reading ( full)
+#define BCM2835_SPI0_CS_TXD        0x00040000 ///< TXD TX FIFO can accept Data
+#define BCM2835_SPI0_CS_RXD        0x00020000 ///< RXD RX FIFO contains Data
+#define BCM2835_SPI0_CS_DONE       0x00010000 ///< Done transfer Done
+#define BCM2835_SPI0_CS_TE_EN      0x00008000 ///< Unused
+#define BCM2835_SPI0_CS_LMONO      0x00004000 ///< Unused
+#define BCM2835_SPI0_CS_LEN        0x00002000 ///< LEN LoSSI enable
+#define BCM2835_SPI0_CS_REN        0x00001000 ///< REN Read Enable
+#define BCM2835_SPI0_CS_ADCS       0x00000800 ///< ADCS Automatically Deassert Chip Select
+#define BCM2835_SPI0_CS_INTR       0x00000400 ///< INTR Interrupt on RXR
+#define BCM2835_SPI0_CS_INTD       0x00000200 ///< INTD Interrupt on Done
+#define BCM2835_SPI0_CS_DMAEN      0x00000100 ///< DMAEN DMA Enable
+#define BCM2835_SPI0_CS_TA         0x00000080 ///< Transfer Active
+#define BCM2835_SPI0_CS_CSPOL      0x00000040 ///< Chip Select Polarity
+#define BCM2835_SPI0_CS_CLEAR      0x00000030 ///< Clear FIFO Clear RX and TX
+#define BCM2835_SPI0_CS_CLEAR_RX   0x00000020 ///< Clear FIFO Clear RX
+#define BCM2835_SPI0_CS_CLEAR_TX   0x00000010 ///< Clear FIFO Clear TX
+#define BCM2835_SPI0_CS_CPOL      	0x00000008 ///< Clock Polarity
+#define BCM2835_SPI0_CS_CPHA      	0x00000004 ///< Clock Phase
+#define BCM2835_SPI0_CS_CS        	0x00000003 ///< Chip Select
+
 #define BCM2835_SPI0_FIFO				0x0004	///< SPI Master TX and RX FIFOs
 
 #define BCM2835_GPSET0					0x001c	///< GPIO Pin Output Set 0
@@ -220,104 +135,6 @@
 #else
 #include <stdint.h>
 
-typedef enum {
-	BCM2835_GPIO_FSEL_INPT = 0b000,	///< Input
-	BCM2835_GPIO_FSEL_OUTP = 0b001,	///< Output
-	BCM2835_GPIO_FSEL_ALT0 = 0b100,	///< Alternate function 0
-	BCM2835_GPIO_FSEL_ALT1 = 0b101,	///< Alternate function 1
-	BCM2835_GPIO_FSEL_ALT2 = 0b110,	///< Alternate function 2
-	BCM2835_GPIO_FSEL_ALT3 = 0b111,	///< Alternate function 3
-	BCM2835_GPIO_FSEL_ALT4 = 0b011,	///< Alternate function 4
-	BCM2835_GPIO_FSEL_ALT5 = 0b010,	///< Alternate function 5
-	BCM2835_GPIO_FSEL_MASK = 0b111	///< Function select bits mask
-} bcm2835FunctionSelect;
-
-typedef enum {
-	BCM2835_GPIO_PUD_OFF 	= 0b00,	///< Off ? disable pull-up/down
-	BCM2835_GPIO_PUD_DOWN 	= 0b01,	///< Enable Pull Down control
-	BCM2835_GPIO_PUD_UP 	= 0b10	///< Enable Pull Up control
-} bcm2835PUDControl;
-
-typedef enum {
-	BCM2835_SPI_BIT_ORDER_LSBFIRST = 0,	///< LSB First
-	BCM2835_SPI_BIT_ORDER_MSBFIRST = 1	///< MSB First
-} bcm2835SPIBitOrder;
-
-typedef enum {
-	BCM2835_SPI_MODE0 = 0,	///< CPOL = 0, CPHA = 0
-	BCM2835_SPI_MODE1 = 1,	///< CPOL = 0, CPHA = 1
-	BCM2835_SPI_MODE2 = 2,	///< CPOL = 1, CPHA = 0
-	BCM2835_SPI_MODE3 = 3,	///< CPOL = 1, CPHA = 1
-} bcm2835SPIMode;
-
-typedef enum {
-	BCM2835_SPI_CS0 	= 0,	///< Chip Select 0
-	BCM2835_SPI_CS1		= 1,	///< Chip Select 1
-	BCM2835_SPI_CS2		= 2,	///< Chip Select 2 (ie pins CS1 and CS2 are asserted)
-	BCM2835_SPI_CS_NONE = 3		///< No CS, control it yourself
-} bcm2835SPIChipSelect;
-
-typedef enum {
-	BCM2835_SPI_CLOCK_DIVIDER_65536 = 0,		///< 65536 = 262.144us = 3.814697260kHz
-	BCM2835_SPI_CLOCK_DIVIDER_32768 = 32768,	///< 32768 = 131.072us = 7.629394531kHz
-	BCM2835_SPI_CLOCK_DIVIDER_16384 = 16384,	///< 16384 = 65.536us = 15.25878906kHz
-	BCM2835_SPI_CLOCK_DIVIDER_8192 = 8192,		///< 8192 = 32.768us = 30/51757813kHz
-	BCM2835_SPI_CLOCK_DIVIDER_4096 = 4096,		///< 4096 = 16.384us = 61.03515625kHz
-	BCM2835_SPI_CLOCK_DIVIDER_2500 = 2500,		///< 2500 = 10us = 100 kHz
-	BCM2835_SPI_CLOCK_DIVIDER_2048 = 2048,		///< 2048 = 8.192us = 122.0703125kHz
-	BCM2835_SPI_CLOCK_DIVIDER_1024 = 1024,		///< 1024 = 4.096us = 244.140625kHz
-	BCM2835_SPI_CLOCK_DIVIDER_512 = 512,		///< 512 = 2.048us = 488.28125kHz
-	BCM2835_SPI_CLOCK_DIVIDER_256 = 256,		///< 256 = 1.024us = 976.5625MHz
-	BCM2835_SPI_CLOCK_DIVIDER_128 = 128,		///< 128 = 512ns = = 1.953125MHz
-	BCM2835_SPI_CLOCK_DIVIDER_64 = 64,			///< 64 = 256ns = 3.90625MHz
-	BCM2835_SPI_CLOCK_DIVIDER_32 = 32,			///< 32 = 128ns = 7.8125MHz
-	BCM2835_SPI_CLOCK_DIVIDER_16 = 16,			///< 16 = 64ns = 15.625MHz
-	BCM2835_SPI_CLOCK_DIVIDER_8 = 8,			///< 8 = 32ns = 31.25MHz
-	BCM2835_SPI_CLOCK_DIVIDER_4 = 4,			///< 4 = 16ns = 62.5MHz
-	BCM2835_SPI_CLOCK_DIVIDER_2 = 2,			///< 2 = 8ns = 125MHz, fastest you can get
-	BCM2835_SPI_CLOCK_DIVIDER_1 = 1,			///< 0 = 262.144us = 3.814697260kHz, same as 0/65536
-} bcm2835SPIClockDivider;
-
-typedef enum {
-	BCM2835_I2C_CLOCK_DIVIDER_2500	= 2500,		///< 2500 = 10us = 100 kHz
-	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,		///< 622 = 2.504us = 399.3610 kHz
-	BCM2835_I2C_CLOCK_DIVIDER_150	= 150,		///< 150 = 60ns = 1.666 MHz (default at reset)
-	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,		///< 148 = 59ns = 1.689 MHz
-} bcm2835I2CClockDivider;
-
-typedef enum {
-	BCM2835_I2C_REASON_OK			= 0x00,		///< Success
-	BCM2835_I2C_REASON_ERROR_NACK 	= 0x01,		///< Received a NACK
-	BCM2835_I2C_REASON_ERROR_CLKT 	= 0x02,		///< Received Clock Stretch Timeout
-	BCM2835_I2C_REASON_ERROR_DATA 	= 0x04		///< Not all data is sent / received
-} bcm2835I2CReasonCodes;
-
-inline static int bcm2835_init(void);
-inline static int bcm2835_close(void);
-
-// GPIO
-extern void  bcm2835_gpio_set_pud(const uint8_t, const uint8_t);
-extern void bcm2835_gpio_fsel(const uint8_t, const uint8_t);
-extern uint8_t bcm2835_gpio_lev(const uint8_t pin);
-// SPI
-extern void bcm2835_spi_begin(void);
-extern void bcm2835_spi_end(void);
-extern void bcm2835_spi_setBitOrder(const uint8_t);
-extern void bcm2835_spi_setClockDivider(const uint16_t);
-extern void bcm2835_spi_setDataMode(const uint8_t);
-extern void bcm2835_spi_chipSelect(const uint8_t);
-extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
-extern void bcm2835_spi_transfernb(char*, char*, const uint32_t);
-extern void bcm2835_spi_transfern(char* buf, const uint32_t);
-extern void bcm2835_spi_writenb(char* tbuf, const uint32_t);
-extern void bcm2835_spi_write(const uint16_t data);
-// I2C
-extern void bcm2835_i2c_begin(void);
-extern void bcm2835_i2c_end(void);
-extern void bcm2835_i2c_setSlaveAddress(const uint8_t);
-extern void bcm2835_i2c_setClockDivider(const uint16_t);
-extern uint8_t bcm2835_i2c_write(const char *, const uint32_t);
-extern uint8_t bcm2835_i2c_read(char*, const uint32_t);
 // ST
 extern void bcm2835_st_delay(const uint64_t offset_micros, const uint64_t micros);
 // MINI UART
@@ -328,9 +145,6 @@ extern void bcm2835_uart_end(void);
 extern void bcm2835_pl011_begin(void);
 extern void bcm2835_pl011_send(const uint32_t);
 extern void bcm2835_pl011_end(void);
-// MAILBOX
-extern uint32_t bcm2835_mailbox_read(const uint8_t channel);
-extern void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data);
 // DELAY
 extern void udelay(const uint64_t);
 
@@ -497,7 +311,6 @@ typedef struct {
 	__O uint32_t WRITE;			///< 0x20
 } BCM2835_MAILBOX_TypeDef;
 
-
 typedef struct {
 	__I uint32_t UNKWOWN0[7];	///< 0x00
 	__IO uint32_t RSTC;			///< 0x1C
@@ -532,7 +345,6 @@ typedef struct {
 
 #ifdef __ASSEMBLY__
 #else
-#define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
 
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
@@ -547,20 +359,6 @@ inline static int bcm2835_close(void) {
 
 #define bcm2835_st_read()			*(volatile uint64_t *)(BCM2835_ST_BASE + 0x04)
 
-inline static void bcm2835_gpio_set(const uint8_t pin) {
-	BCM2835_GPIO ->GPSET0 = 1 << pin;
-}
-
-inline static void bcm2835_gpio_clr(const uint8_t pin) {
-	BCM2835_GPIO ->GPCLR0 = 1 << pin;
-}
-
-inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
-	if (on)
-		bcm2835_gpio_set(pin);
-	else
-		bcm2835_gpio_clr(pin);
-}
 #endif
 
 #endif /* BCM2835_H_ */

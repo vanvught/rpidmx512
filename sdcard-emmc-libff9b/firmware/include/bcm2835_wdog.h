@@ -1,3 +1,7 @@
+/**
+ * @file bcm2835_wdog.h
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,17 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef BCM2835_WDOG_H_
+#define BCM2835_WDOG_H_
 
-#define COLOUR_R	((uint16_t)(0b1111100000000000))
-#define COLOUR_G	((uint16_t)(0b0000011111100000))
-#define COLOUR_B	((uint16_t)(0b0000000000011111))
+extern void watchdog_init(void);
+extern void watchdog_feed(void);
+extern void watchdog_stop(void);
 
-int console_putc(const int);
-void console_clear();
-void console_set_cursor(const int, const int);
-int console_draw_char(const char, const int, const int, const uint16_t, const uint16_t);
-
-#endif
-
+#endif /* BCM2835_WDOG_H_ */

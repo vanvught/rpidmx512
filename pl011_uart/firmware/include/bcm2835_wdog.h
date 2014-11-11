@@ -1,4 +1,8 @@
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/**
+ * @file bcm2835_wdog.h
+ *
+ */
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,27 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MBOX_H
-#define MBOX_H
+#ifndef BCM2835_WDOG_H_
+#define BCM2835_WDOG_H_
 
-#include <stdint.h>
+extern void watchdog_init(void);
+extern void watchdog_feed(void);
+extern void watchdog_stop(void);
 
-#define MBOX_BASE 0x2000b880
-
-#define MBOX_PEEK 0x10
-#define MBOX_READ 0x00
-#define MBOX_WRITE 0x20
-#define MBOX_STATUS 0x18
-#define MBOX_SENDER 0x14
-#define MBOX_CONFIG 0x1c
-
-#define MBOX_FB		1
-#define MBOX_PROP	8
-
-#define MBOX_SUCCESS	0x80000000
-
-uint32_t mbox_read(uint8_t channel);
-void mbox_write(uint8_t channel, uint32_t data);
-
-#endif
-
+#endif /* BCM2835_WDOG_H_ */

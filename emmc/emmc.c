@@ -40,6 +40,8 @@
 #include "timer.h"
 #include "util.h"
 
+#include <bcm2835_vc.h>
+
 #ifdef DEBUG2
 #define EMMC_DEBUG
 #endif
@@ -450,11 +452,6 @@ static uint32_t sd_acommands[] = {
 
 #define SD_GET_CLOCK_DIVIDER_FAIL	0xffffffff
 
-// Get the current base clock rate in Hz
-#if SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_BCM_2708
-#include "mbox.h"
-#endif
-
 static void sd_power_off()
 {
 	/* Power off the SD card */
@@ -463,105 +460,19 @@ static void sd_power_off()
 	mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
 }
 
-static uint32_t sd_get_base_clock_hz()
-{
-    uint32_t base_clock;
-#if SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_GENERIC
-    capabilities_0 = mmio_read(EMMC_BASE + EMMC_CAPABILITIES_0);
-    base_clock = ((capabilities_0 >> 8) & 0xff) * 1000000;
-#elif SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_BCM_2708
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile uint32_t *mailbuffer = (uint32_t *)mb_addr;
-
-	/* Get the base clock rate */
-	// set up the buffer
-	mailbuffer[0] = 8 * 4;		// size of this message
-	mailbuffer[1] = 0;			// this is a request
-
-	// next comes the first tag
-	mailbuffer[2] = 0x00030002;	// get clock rate tag
-	mailbuffer[3] = 0x8;		// value buffer size
-	mailbuffer[4] = 0x4;		// is a request, value length = 4
-	mailbuffer[5] = 0x1;		// clock id + space to return clock id
-	mailbuffer[6] = 0;			// space to return rate (in Hz)
-
-	// closing tag
-	mailbuffer[7] = 0;
-
-	// send the message
-	mbox_write(MBOX_PROP, mb_addr);
-
-	// read the response
-	mbox_read(MBOX_PROP);
-
-	if(mailbuffer[1] != MBOX_SUCCESS)
-	{
-	    printf("EMMC: property mailbox did not return a valid response.\n");
-	    return 0;
-	}
-
-	if(mailbuffer[5] != 0x1)
-	{
-	    printf("EMMC: property mailbox did not return a valid clock id.\n");
-	    return 0;
-	}
-
-	base_clock = mailbuffer[6];
-#else
-    printf("EMMC: get_base_clock_hz() is not implemented for this "
-           "architecture.\n");
-    return 0;
-#endif
-
-#ifdef EMMC_DEBUG
-    printf("EMMC: base clock rate is %i Hz\n", base_clock);
-#endif
-    return base_clock;
-}
-
 #if SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_BCM_2708
 static int bcm_2708_power_off()
 {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile uint32_t *mailbuffer = (uint32_t *)mb_addr;
+	int32_t ret = bcm2835_vc_set_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD, 2);
 
-	/* Power off the SD card */
-	// set up the buffer
-	mailbuffer[0] = 8 * 4;		// size of this message
-	mailbuffer[1] = 0;			// this is a request
-
-	// next comes the first tag
-	mailbuffer[2] = 0x00028001;	// set power state tag
-	mailbuffer[3] = 0x8;		// value buffer size
-	mailbuffer[4] = 0x8;		// is a request, value length = 8
-	mailbuffer[5] = 0x0;		// device id and device id also returned here
-	mailbuffer[6] = 0x2;		// set power off, wait for stable and returns state
-
-	// closing tag
-	mailbuffer[7] = 0;
-
-	// send the message
-	mbox_write(MBOX_PROP, mb_addr);
-
-	// read the response
-	mbox_read(MBOX_PROP);
-
-	if(mailbuffer[1] != MBOX_SUCCESS)
-	{
-	    printf("EMMC: bcm_2708_power_off(): property mailbox did not return a valid response.\n");
-	    return -1;
+	if (ret < 0) {
+		printf("EMMC: bcm_2708_power_off(): bcm2835_vc_set_power_state() did not return a valid response.\n");
+		return -1;
 	}
 
-	if(mailbuffer[5] != 0x0)
-	{
-	    printf("EMMC: property mailbox did not return a valid device id.\n");
-	    return -1;
-	}
-
-	if((mailbuffer[6] & 0x3) != 0)
-	{
+	if ((ret & 0x3) != 0 ) {
 #ifdef EMMC_DEBUG
-		printf("EMMC: bcm_2708_power_off(): device did not power off successfully (%08x).\n", mailbuffer[6]);
+		printf("EMMC: bcm_2708_power_off(): device did not power off successfully (%08x).\n", ret);
 #endif
 		return 1;
 	}
@@ -571,46 +482,17 @@ static int bcm_2708_power_off()
 
 static int bcm_2708_power_on()
 {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile uint32_t *mailbuffer = (uint32_t *)mb_addr;
+	int32_t ret = bcm2835_vc_set_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD, 3);
 
-	/* Power on the SD card */
-	// set up the buffer
-	mailbuffer[0] = 8 * 4;		// size of this message
-	mailbuffer[1] = 0;			// this is a request
-
-	// next comes the first tag
-	mailbuffer[2] = 0x00028001;	// set power state tag
-	mailbuffer[3] = 0x8;		// value buffer size
-	mailbuffer[4] = 0x8;		// is a request, value length = 8
-	mailbuffer[5] = 0x0;		// device id and device id also returned here
-	mailbuffer[6] = 0x3;		// set power off, wait for stable and returns state
-
-	// closing tag
-	mailbuffer[7] = 0;
-
-	// send the message
-	mbox_write(MBOX_PROP, mb_addr);
-
-	// read the response
-	mbox_read(MBOX_PROP);
-
-	if(mailbuffer[1] != MBOX_SUCCESS)
-	{
-	    printf("EMMC: bcm_2708_power_on(): property mailbox did not return a valid response.\n");
-	    return -1;
+	if (ret < 0) {
+		printf("EMMC: bcm_2708_power_on(): bcm2835_vc_set_power_state() did not return a valid response.\n");
+		return -1;
 	}
 
-	if(mailbuffer[5] != 0x0)
-	{
-	    printf("EMMC: property mailbox did not return a valid device id.\n");
-	    return -1;
-	}
-
-	if((mailbuffer[6] & 0x3) != 1)
+	if((ret & 0x3) != 1)
 	{
 #ifdef EMMC_DEBUG
-		printf("EMMC: bcm_2708_power_on(): device did not power on successfully (%08x).\n", mailbuffer[6]);
+		printf("EMMC: bcm_2708_power_on(): device did not power on successfully (%08x).\n", ret);
 #endif
 		return 1;
 	}
@@ -1364,7 +1246,7 @@ int sd_card_init(struct block_device **dev)
 	mmio_write(EMMC_BASE + EMMC_CONTROL2, 0);
 
 	// Get the base clock rate
-	uint32_t base_clock = sd_get_base_clock_hz();
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_CORE);
 	if(base_clock == 0)
 	{
 	    printf("EMMC: assuming clock rate to be 100MHz\n");

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <bcm2835.h>
+#include <bcm2835_gpio.h>
 #include <bcm2835_vc.h>
 #include <hardware.h>
 

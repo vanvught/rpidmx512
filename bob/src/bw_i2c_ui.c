@@ -24,6 +24,7 @@
  */
 
 #include <bcm2835.h>
+#include <bcm2835_i2c.h>
 #include <device_info.h>
 #include <bw.h>
 #include <bw_i2c_ui.h>

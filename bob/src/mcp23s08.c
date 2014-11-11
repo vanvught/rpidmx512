@@ -24,6 +24,7 @@
  */
 
 #include <bcm2835.h>
+#include <bcm2835_spi.h>
 #include <device_info.h>
 #include <mcp23s08.h>
 

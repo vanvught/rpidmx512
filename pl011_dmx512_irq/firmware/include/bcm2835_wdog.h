@@ -1,3 +1,7 @@
+/**
+ * @file bcm2835_wdog.h
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,43 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-//
-#include <bcm2835.h>
-//
-#include <fb.h>
+#ifndef BCM2835_WDOG_H_
+#define BCM2835_WDOG_H_
 
-uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
+extern void watchdog_init(void);
+extern void watchdog_feed(void);
+extern void watchdog_stop(void);
 
-int fb_init()
-{
-	framebuffer_t volatile frame __attribute__((aligned (16)));
-
-	frame.width_p  = WIDTH;
-	frame.height_p = HEIGHT;
-	frame.width_v  = WIDTH;
-	frame.height_v = HEIGHT;
-	frame.pitch    = 0;
-	frame.depth    = BPP;
-	frame.x        = 0;
-	frame.y        = 0;
-	frame.address  = 0;
-	frame.size     = 0;
-
-	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL,((uint32_t)&frame) + 0x40000000);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
-
-	if (!frame.address) {
-		return FB_ERROR;
-	}
-
-	fb_width  = frame.width_p;
-	fb_height = frame.height_p;
-	fb_pitch  = frame.pitch;
-	fb_depth  = frame.depth;
-	fb_addr   = frame.address;
-	fb_size   = frame.size;
-
-	return 0;
-}
-
+#endif /* BCM2835_WDOG_H_ */

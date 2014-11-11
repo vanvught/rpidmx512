@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <bcm2835.h>
+#include <bcm2835_vc.h>
+#include <bcm2835_wdog.h>
 #include "ff.h"
 
 FATFS Fatfs;		/* File system object */
@@ -56,6 +58,8 @@ int notmain (void)
 #ifdef ENABLE_FRAMEBUFFER
 	bcm2835_console_begin();
 #endif
+
+	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD));
 
 	f_mount(0, &Fatfs);		/* Register volume work area (never fails) */
 
@@ -143,7 +147,12 @@ int notmain (void)
 	}
 	if (rc) die(rc);
 #endif
+
+	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD));
+
 	printf("\nTest completed.\n");
+
+	watchdog_init();
 
 	return 0;
 }

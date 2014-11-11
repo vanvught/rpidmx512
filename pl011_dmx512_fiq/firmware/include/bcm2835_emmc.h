@@ -1,3 +1,7 @@
+/**
+ * @file bcm2835_emmc.h
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,34 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef BCM2835_EMMC_H_
+#define BCM2835_EMMC_H_
 
-#ifndef FB_H
-#define FB_H
+#include "bcm2835.h"
 
-#define WIDTH				480
-#define HEIGHT				320
-#define BYTES_PER_PIXEL		2
-#define BPP					(BYTES_PER_PIXEL << 3)
 
-#define FB_ERROR	-1
-
-typedef struct framebuffer {
-	uint32_t width_p;	/* requested width of physical display */
-	uint32_t height_p;	/* requested height of physical display */
-	uint32_t width_v;	/* requested width of virtual display */
-	uint32_t height_v;	/* requested height of virtual display */
-	uint32_t pitch;		/* zero upon request; in response: # bytes between rows */
-	uint32_t depth;		/* requested depth in bits per pixel */
-	uint32_t x;			/* requested x offset of virtual framebuffer */
-	uint32_t y;			/* requested y offset of virtual framebuffer */
-	uint32_t address;	/* framebuffer address. Zero upon request; failure if zero upon response. */
-	uint32_t size;		/* framebuffer size. Zero upon request. */
-} framebuffer_t;
-
-extern uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
-
-int fb_init();
-
-#endif
-
+#endif /* BCM2835_EMMC_H_ */

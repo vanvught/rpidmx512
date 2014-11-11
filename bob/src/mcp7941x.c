@@ -24,6 +24,7 @@
  */
 
 #include <bcm2835.h>
+#include <bcm2835_i2c.h>
 #include <mcp7941x.h>
 
 char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
