@@ -1,4 +1,5 @@
 #include <bcm2835.h>
+#include <bcm2835_pl011.h>
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 

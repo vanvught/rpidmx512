@@ -1,5 +1,5 @@
 /**
- * @file bcm2835.c
+ * @file bcm2835_uart.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,27 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
+#ifndef BCM2835_UART_H_
+#define BCM2835_UART_H_
 
-uint8_t inline bcm2835_gpio_lev(const uint8_t pin) {
-	uint32_t value = BCM2835_GPIO ->GPLEV0;
-	return (value & (1 << pin)) ? HIGH : LOW;
-}
+#include <stdint.h>
 
-inline void bcm2835_gpio_pud(const uint8_t pud) {
-	BCM2835_GPIO ->GPPUD = pud;
-}
+extern void bcm2835_uart_begin(void);
+extern void bcm2835_uart_send(const uint32_t c);
 
-inline void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
-}
-
-inline void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
-	bcm2835_gpio_pud(pud);
-	udelay(10);
-	bcm2835_gpio_pudclk(pin, 1);
-	udelay(10);
-	bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
-	bcm2835_gpio_pudclk(pin, 0);
-}
+#endif /* BCM2835_UART_H_ */

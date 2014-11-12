@@ -1,3 +1,7 @@
+/**
+ * @file mini_uart.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
+#include <bcm2835_uart.h>
 
 static const char lowercase[] = "0123456789abcdef";
 

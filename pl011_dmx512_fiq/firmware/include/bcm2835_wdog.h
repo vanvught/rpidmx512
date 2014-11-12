@@ -26,6 +26,12 @@
 #ifndef BCM2835_WDOG_H_
 #define BCM2835_WDOG_H_
 
+#define BCM2835_PM_WDOG_PASSWORD					0x5a000000	///<
+#define BCM2835_PM_WDOG_TIME_SET            		0x000fffff	///<
+#define BCM2835_PM_WDOG_RSTC_RESET               	0x00000102	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_CLR           	0xffffffcf	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET		0x00000020	///<
+
 extern void watchdog_init(void);
 extern void watchdog_feed(void);
 extern void watchdog_stop(void);

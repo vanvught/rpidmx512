@@ -27,12 +27,6 @@
 #include "bcm2835.h"
 #include "bcm2835_wdog.h"
 
-#define BCM2835_PM_WDOG_PASSWORD					0x5a000000	///<
-#define BCM2835_PM_WDOG_TIME_SET            		0x000fffff	///<
-#define BCM2835_PM_WDOG_RSTC_RESET               	0x00000102	///<
-#define BCM2835_PM_WDOG_RSTC_WRCFG_CLR           	0xffffffcf	///<
-#define BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET		0x00000020	///<
-
 /**
  * @param timeout
  */

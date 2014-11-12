@@ -2,6 +2,7 @@
 #include <bcm2835.h>
 #include <bcm2835_gpio.h>
 #include <bcm2835_vc.h>
+#include <bcm2835_pl011.h>
 #include <hardware.h>
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}

@@ -1,5 +1,5 @@
 /**
- * @file bcm2835.c
+ * @file bcm2835_uart.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,27 +23,36 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
+#include "bcm2835_uart.h"
 
-uint8_t inline bcm2835_gpio_lev(const uint8_t pin) {
-	uint32_t value = BCM2835_GPIO ->GPLEV0;
-	return (value & (1 << pin)) ? HIGH : LOW;
+void bcm2835_uart_begin(void) {
+    BCM2835_UART1->ENABLE = 0x01;
+    BCM2835_UART1->CNTL = 0x00;
+    BCM2835_UART1->LCR = 0x03;
+    BCM2835_UART1->MCR = 0x00;
+    BCM2835_UART1->IER = 0x05;
+    BCM2835_UART1->IIR = 0xC6;
+    BCM2835_UART1->BAUD = 270;
+
+    // Set the GPI0 pins to the Alt 5 function to enable UART1 access on them
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT5); // UART1_TXD
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT5); // UART1_RXD
+
+    // Disable pull-up/down
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+
+    // turn on the uart for send and receive
+    BCM2835_UART1->CNTL = 3;
 }
 
-inline void bcm2835_gpio_pud(const uint8_t pud) {
-	BCM2835_GPIO ->GPPUD = pud;
+
+void bcm2835_uart_send(const uint32_t c) {
+	while ((BCM2835_UART1->LSR & 0x20) == 0)
+		;
+	BCM2835_UART1 ->IO = c;
 }
 
-inline void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
-}
-
-inline void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
-	bcm2835_gpio_pud(pud);
-	udelay(10);
-	bcm2835_gpio_pudclk(pin, 1);
-	udelay(10);
-	bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
-	bcm2835_gpio_pudclk(pin, 0);
-}

@@ -53,98 +53,24 @@
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///<
 #define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///<
 
-// PL011 UART
-// https://github.com/xinu-os/xinu/blob/master/device/uart-pl011/pl011.h
-#define PL011_DR_OE 			((uint32_t)(1 << 11))	///< Set to 1 on overrun error
-#define PL011_DR_BE 			((uint32_t)(1 << 10))	///< Set to 1 on break condition
-#define PL011_DR_PE 			((uint32_t)(1 <<  9))	///< Set to 1 on parity error
-#define PL011_DR_FE 			((uint32_t)(1 <<  8))	///< Set to 1 on framing error
-
-#define PL011_RSRECR_OE 		((uint32_t)(1 << 3))	///< Set to 1 on overrun error
-#define PL011_RSRECR_BE 		((uint32_t)(1 << 2))	///< Set to 1 on break condition
-#define PL011_RSRECR_PE 		((uint32_t)(1 << 1))	///< Set to 1 on parity error
-#define PL011_RSRECR_FE 		((uint32_t)(1 << 0))	///< Set to 1 on framing error
-
-#define PL011_FR_BUSY 			((uint32_t)(1 << 3))	///< Set to 1 when UART is transmitting data
-#define PL011_FR_RXFE			((uint32_t)(1 << 4))	///< Set to 1 when RX FIFO/register is empty
-#define PL011_FR_TXFF 			((uint32_t)(1 << 5))	///< Set to 1 when TX FIFO/register is full
-#define PL011_FR_RXFF			((uint32_t)(1 << 6))	///< Set to 1 when RX FIFO/register is full
-#define PL011_FR_TXFE 			((uint32_t)( 1<< 7))	///< Set to 1 when TX FIFO/register is empty
-
-#define PL011_LCRH_BRK			((uint32_t)(1 << 0))	///< Send break
-#define PL011_LCRH_PEN			((uint32_t)(1 << 1))	///< Parity enable
-#define PL011_LCRH_EPS			((uint32_t)(1 << 2))	///< Even parity select
-#define PL011_LCRH_STP2			((uint32_t)(1 << 3))	///< Two stop bits select
-#define PL011_LCRH_FEN			((uint32_t)(1 << 4))	///< Enable FIFOs
-#define PL011_LCRH_WLEN8		((uint32_t)(0b11<<5))	///< Word length 8 bits
-#define PL011_LCRH_WLEN7 		((uint32_t)(0b10<<5))	///< Word length 7 bits
-#define PL011_LCRH_WLEN6 		((uint32_t)(0b01<<5))	///< Word length 6 bits
-#define PL011_LCRH_WLEN5 		((uint32_t)(0b00<<5))	///< Word length 5 bits
-#define PL011_LCRH_SPS			((uint32_t)(1 << 7))	///< Sticky parity select
-
-#define PL011_IMSC_RXIM			((uint32_t)(1 << 4))	///<
-#define PL011_IMSC_FEIM 		((uint32_t)(1 << 7))	///<
-#define PL011_IMSC_BEIM 		((uint32_t)(1 << 9))	///<
-
-#define PL011_MIS_RXMIS			((uint32_t)(1 << 4))	///<
-#define PL011_MIS_FEMIS			((uint32_t)(1 << 7))	///<
-
-#define PL011_ICRC_RXIC			((uint32_t)(1 << 4))	///<
-#define PL011_ICR_FEIC 			((uint32_t)(1 << 7))	///<
-
-#define PL011_BAUD_INT(x) 		(3000000 / (16 * (x)))
-#define PL011_BAUD_FRAC(x) 		(int)((((3000000.0 / (16.0 * (x))) - PL011_BAUD_INT(x)) * 64.0) + 0.5)
+#define BCM2835_PERI_BASE			0x20000000
+#define BCM2835_ST_BASE				(BCM2835_PERI_BASE + 0x3000)
+#define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
+#define BCM2835_MAILBOX_BASE 		(BCM2835_PERI_BASE + 0xB880)
+#define BCM2835_PM_WDOG_BASE		(BCM2835_PERI_BASE + 0x100000)
+#define BCM2835_GPIO_BASE			(BCM2835_PERI_BASE + 0x200000)
+#define BCM2835_SPI0_BASE			(BCM2835_PERI_BASE + 0x204000)
+#define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
+#define BCM2835_UART1_BASE			(BCM2835_PERI_BASE + 0x215000)
+#define BCM2835_BSC1_BASE			(BCM2835_PERI_BASE + 0x804000)
+#define BCM2835_BSC2_BASE			(BCM2835_PERI_BASE + 0x805000)
 
 #ifdef __ASSEMBLY__
-#define BCM2835_SPI0_CS_LEN_LONG   0x02000000 ///< Enable Long data word in Lossi mode if DMA_LEN is set
-#define BCM2835_SPI0_CS_DMA_LEN    0x01000000 ///< Enable DMA mode in Lossi mode
-#define BCM2835_SPI0_CS_CSPOL2     0x00800000 ///< Chip Select 2 Polarity
-#define BCM2835_SPI0_CS_CSPOL1     0x00400000 ///< Chip Select 1 Polarity
-#define BCM2835_SPI0_CS_CSPOL0     0x00200000 ///< Chip Select 0 Polarity
-#define BCM2835_SPI0_CS_RXF        0x00100000 ///< RXF - RX FIFO Full
-#define BCM2835_SPI0_CS_RXR        0x00080000 ///< RXR RX FIFO needs Reading ( full)
-#define BCM2835_SPI0_CS_TXD        0x00040000 ///< TXD TX FIFO can accept Data
-#define BCM2835_SPI0_CS_RXD        0x00020000 ///< RXD RX FIFO contains Data
-#define BCM2835_SPI0_CS_DONE       0x00010000 ///< Done transfer Done
-#define BCM2835_SPI0_CS_TE_EN      0x00008000 ///< Unused
-#define BCM2835_SPI0_CS_LMONO      0x00004000 ///< Unused
-#define BCM2835_SPI0_CS_LEN        0x00002000 ///< LEN LoSSI enable
-#define BCM2835_SPI0_CS_REN        0x00001000 ///< REN Read Enable
-#define BCM2835_SPI0_CS_ADCS       0x00000800 ///< ADCS Automatically Deassert Chip Select
-#define BCM2835_SPI0_CS_INTR       0x00000400 ///< INTR Interrupt on RXR
-#define BCM2835_SPI0_CS_INTD       0x00000200 ///< INTD Interrupt on Done
-#define BCM2835_SPI0_CS_DMAEN      0x00000100 ///< DMAEN DMA Enable
-#define BCM2835_SPI0_CS_TA         0x00000080 ///< Transfer Active
-#define BCM2835_SPI0_CS_CSPOL      0x00000040 ///< Chip Select Polarity
-#define BCM2835_SPI0_CS_CLEAR      0x00000030 ///< Clear FIFO Clear RX and TX
-#define BCM2835_SPI0_CS_CLEAR_RX   0x00000020 ///< Clear FIFO Clear RX
-#define BCM2835_SPI0_CS_CLEAR_TX   0x00000010 ///< Clear FIFO Clear TX
-#define BCM2835_SPI0_CS_CPOL      	0x00000008 ///< Clock Polarity
-#define BCM2835_SPI0_CS_CPHA      	0x00000004 ///< Clock Phase
-#define BCM2835_SPI0_CS_CS        	0x00000003 ///< Chip Select
-
-#define BCM2835_SPI0_FIFO				0x0004	///< SPI Master TX and RX FIFOs
-
-#define BCM2835_GPSET0					0x001c	///< GPIO Pin Output Set 0
-#define BCM2835_GPCLR0					0x0028	///< GPIO Pin Output Clear 0
-
-#define BCM2835_ST_CS 					0x0000	///< System Timer Control/Status
-#define BCM2835_ST_CLO 					0x0004	///< System Timer Counter Lower 32 bits
-#define BCM2835_ST_CHI 					0x0008	///< System Timer Counter Upper 32 bits
-#define BCM2835_ST_C1					0x0010	///< System Timer
 #else
 #include <stdint.h>
 
 // ST
 extern void bcm2835_st_delay(const uint64_t offset_micros, const uint64_t micros);
-// MINI UART
-extern void bcm2835_uart_begin(void);
-extern void bcm2835_uart_send(const uint32_t);
-extern void bcm2835_uart_end(void);
-// PL011
-extern void bcm2835_pl011_begin(void);
-extern void bcm2835_pl011_send(const uint32_t);
-extern void bcm2835_pl011_end(void);
 // DELAY
 extern void udelay(const uint64_t);
 
@@ -275,15 +201,18 @@ typedef struct {
 	__IO uint32_t DC;			///< 0x14
 } BCM2835_SPI_TypeDef;
 
+/// Defines for I2C\n
+/// GPIO register offsets from BCM2835_BSC*_BASE.\n
+/// Offsets into the BSC Peripheral block in bytes per 3.1 BSC Register Map
 typedef struct {
-	__IO uint32_t C;			///< 0x00
-	__IO uint32_t S;			///< 0x04
-	__IO uint32_t DLEN;			///< 0x08
-	__IO uint32_t A;			///< 0x0C
-	__IO uint32_t FIFO;			///< 0x10
-	__IO uint32_t DIV;			///< 0x14
-	__IO uint32_t DEL;			///< 0x18
-	__IO uint32_t CLKT;			///< 0x1C
+	__IO uint32_t C;		///< 0x00, BSC Master Control
+	__IO uint32_t S;		///< 0x04, BSC Master Status
+	__IO uint32_t DLEN;		///< 0x08, BSC Master Data Length
+	__IO uint32_t A;		///< 0x0C, BSC Master Slave Address
+	__IO uint32_t FIFO;		///< 0x10, BSC Master Data FIFO
+	__IO uint32_t DIV;		///< 0x14, BSC Master Clock Divider
+	__IO uint32_t DEL;		///< 0x18, BSC Master Data Delay
+	__IO uint32_t CLKT;		///< 0x1C, BSC Master Clock Stretch Timeout
 } BCM2835_BSC_TypeDef;
 
 typedef struct {
@@ -318,20 +247,6 @@ typedef struct {
 	__IO uint32_t WDOG;			///< 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
-#endif
-
-#define BCM2835_PERI_BASE			0x20000000
-#define BCM2835_ST_BASE				(BCM2835_PERI_BASE + 0x3000)
-#define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
-#define BCM2835_MAILBOX_BASE 		(BCM2835_PERI_BASE + 0xB880)
-#define BCM2835_PM_WDOG_BASE		(BCM2835_PERI_BASE + 0x100000)
-#define BCM2835_GPIO_BASE			(BCM2835_PERI_BASE + 0x200000)
-#define BCM2835_SPI0_BASE			(BCM2835_PERI_BASE + 0x204000)
-#define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
-#define BCM2835_UART1_BASE			(BCM2835_PERI_BASE + 0x215000)
-#define BCM2835_BSC1_BASE			(BCM2835_PERI_BASE + 0x804000)
-#define BCM2835_BSC2_BASE			(BCM2835_PERI_BASE + 0x805000)
-
 #define BCM2835_ST					((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
 #define BCM2835_IRQ					((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
 #define BCM2835_MAILBOX				((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
@@ -342,9 +257,6 @@ typedef struct {
 #define BCM2835_UART1				((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
 #define BCM2835_BSC1				((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
 #define BCM2835_BSC2				((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)
-
-#ifdef __ASSEMBLY__
-#else
 
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
