@@ -46,14 +46,27 @@ typedef enum {
 	BCM2835_GPIO_PUD_UP 	= 0b10	///< Enable Pull Up control
 } bcm2835PUDControl;
 
+/**
+ *
+ * @param pin
+ */
 inline static void bcm2835_gpio_set(const uint8_t pin) {
 	BCM2835_GPIO ->GPSET0 = 1 << pin;
 }
 
+/**
+ *
+ * @param pin
+ */
 inline static void bcm2835_gpio_clr(const uint8_t pin) {
 	BCM2835_GPIO ->GPCLR0 = 1 << pin;
 }
 
+/**
+ *
+ * @param pin
+ * @param on
+ */
 inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
 	if (on)
 		bcm2835_gpio_set(pin);

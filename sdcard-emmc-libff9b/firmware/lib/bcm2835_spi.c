@@ -39,12 +39,38 @@
  * Default the SPI speed to 100 kHz (\ref BCM2835_SPI_CLOCK_DIVIDER_2500).
  */
 void bcm2835_spi_begin(void) {
+	uint32_t value;
 	// Set the SPI0 pins to the Alt 0 function to enable SPI0 access on them
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_ALT0); // CE1
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_ALT0); // CE0
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0); // MISO
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); // MOSI
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); // CLK
+
+	value = BCM2835_GPIO->GPFSEL0;
+	value &= ~(7 << 21);
+	value |= BCM2835_GPIO_FSEL_INPT << 21;	// Pin 7, GPIO Input
+	value &= ~(7 << 24);
+	value |= BCM2835_GPIO_FSEL_INPT << 24;	// Pin 8, GPIO Input
+	value &= ~(7 << 27);
+	value |= BCM2835_GPIO_FSEL_INPT << 27;	// Pin 9, GPIO Input
+	BCM2835_GPIO->GPFSEL0 = value;
+	value = BCM2835_GPIO->GPFSEL1;
+	value &= ~(7 << 0);
+	value |= BCM2835_GPIO_FSEL_INPT << 0;	// Pin 10, GPIO Input
+	value &= ~(7 << 3);
+	value |= BCM2835_GPIO_FSEL_INPT << 3;	// Pin 11, GPIO Input
+	BCM2835_GPIO->GPFSEL1 = value;
+
+	value = BCM2835_GPIO->GPFSEL0;
+	value &= ~(7 << 21);
+	value |= BCM2835_GPIO_FSEL_ALT0 << 21;	// Pin 7, Set CE1 pin to alternate function 0 for SPI0
+	value &= ~(7 << 24);
+	value |= BCM2835_GPIO_FSEL_ALT0 << 24;	// Pin 8, Set CE0 pin to alternate function 0 for SPI0
+	value &= ~(7 << 27);
+	value |= BCM2835_GPIO_FSEL_ALT0 << 27;	// Pin 9, Set MISO pin to alternate function 0 for SPI0
+	BCM2835_GPIO->GPFSEL0 = value;
+	value = BCM2835_GPIO->GPFSEL1;
+	value &= ~(7 << 0);
+	value |= BCM2835_GPIO_FSEL_ALT0 << 0;	// Pin 10, Set MOSI pin to alternate function 0 for SPI0
+	value &= ~(7 << 3);
+	value |= BCM2835_GPIO_FSEL_ALT0 << 3;	// Pin 11, Set CLK pin to alternate function 0 for SPI0
+	BCM2835_GPIO->GPFSEL1 = value;
 
 	BCM2835_SPI0 ->CS = 0;
 	BCM2835_SPI0 ->CS = BCM2835_SPI0_CS_CLEAR;
@@ -63,12 +89,23 @@ void bcm2835_spi_begin(void) {
  * are returned to their default INPUT behavior.
  */
 void bcm2835_spi_end(void) {
+	uint32_t value;
 	// Set all the SPI0 pins back to input
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT); // CE1
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT); // CE0
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT); // MISO
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT); // MOSI
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT); // CLK
+
+	value = BCM2835_GPIO->GPFSEL0;
+	value &= ~(7 << 21);
+	value |= BCM2835_GPIO_FSEL_INPT << 21;	// Pin 7, GPIO Input
+	value &= ~(7 << 24);
+	value |= BCM2835_GPIO_FSEL_INPT << 24;	// Pin 8, GPIO Input
+	value &= ~(7 << 27);
+	value |= BCM2835_GPIO_FSEL_INPT << 27;	// Pin 9, GPIO Input
+	BCM2835_GPIO->GPFSEL0 = value;
+	value = BCM2835_GPIO->GPFSEL1;
+	value &= ~(7 << 0);
+	value |= BCM2835_GPIO_FSEL_INPT << 0;	// Pin 10, GPIO Input
+	value &= ~(7 << 3);
+	value |= BCM2835_GPIO_FSEL_INPT << 3;	// Pin 11, GPIO Input
+	BCM2835_GPIO->GPFSEL1 = value;
 }
 
 /**

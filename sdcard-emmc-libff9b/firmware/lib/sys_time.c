@@ -1,3 +1,7 @@
+/**
+ * @file sys_time.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +32,9 @@
 volatile uint64_t st_startup_micros = 0;
 volatile uint32_t rtc_startup_seconds = 0;
 
-// Read time from RTC MCP7941x and set EPOCH time in seconds
+/**
+ * Read time from RTC MCP7941x and set EPOCH time in seconds
+ */
 void sys_time_init(void) {
 	st_startup_micros = bcm2835_st_read();
 	struct rtc_time tm_rtc;
@@ -51,6 +57,11 @@ void sys_time_init(void) {
 	rtc_startup_seconds = mktime(&tmbuf);
 }
 
+/**
+ *
+ * @param __timer
+ * @return
+ */
 time_t sys_time(time_t *__timer) {
 	// http://www.hackersdelight.org/magic.htm
 	// http://stackoverflow.com/questions/1269994/nanoseconds-to-milliseconds-fast-division-by-1000000

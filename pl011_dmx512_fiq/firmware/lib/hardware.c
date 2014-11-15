@@ -1,3 +1,7 @@
+/**
+ * @file hardware.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,10 +28,17 @@
 
 #define PIN		16
 
+/**
+ *
+ * @param state
+ */
 void led_set(const int state) {
 	bcm2835_gpio_write(PIN, !state);
 }
 
+/**
+ *
+ */
 void led_init(void) {
 	bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
 }

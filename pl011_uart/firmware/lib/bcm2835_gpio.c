@@ -1,5 +1,5 @@
 /**
- * @file bcm2835.c
+ * @file bcm2835_gpio.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -26,20 +26,39 @@
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
-uint8_t inline bcm2835_gpio_lev(const uint8_t pin) {
+/**
+ *
+ * @param pin
+ * @return
+ */
+uint8_t bcm2835_gpio_lev(const uint8_t pin) {
 	uint32_t value = BCM2835_GPIO ->GPLEV0;
 	return (value & (1 << pin)) ? HIGH : LOW;
 }
 
-inline void bcm2835_gpio_pud(const uint8_t pud) {
+/**
+ *
+ * @param pud
+ */
+void bcm2835_gpio_pud(const uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
 }
 
-inline void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
+/**
+ *
+ * @param pin
+ * @param on
+ */
+void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
 	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
 }
 
-inline void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
+/**
+ *
+ * @param pin
+ * @param pud
+ */
+void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
 	bcm2835_gpio_pud(pud);
 	udelay(10);
 	bcm2835_gpio_pudclk(pin, 1);

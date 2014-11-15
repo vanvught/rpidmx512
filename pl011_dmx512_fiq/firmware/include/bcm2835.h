@@ -148,9 +148,9 @@ typedef struct {
 	__IO uint32_t DMACR;		///< 0x48
 } BCM2835_PL011_TypeDef;
 
-// Defines for GPIO
-// The BCM2835 has 54 GPIO pins.
-//      BCM2835 data sheet, Page 90 onwards.
+/// Defines for GPIO\n
+/// The BCM2835 has 54 GPIO pins.\n
+/// BCM2835 data sheet, Page 90 onwards.\n
 typedef struct {
 	__IO uint32_t GPFSEL0;		///< 0x00, GPIO Function Select 0
 	__IO uint32_t GPFSEL1;		///< 0x04, GPIO Function Select 1
@@ -229,15 +229,15 @@ typedef struct {
 } BCM2835_IRQ_TypeDef;
 
 typedef struct {
-	__I uint32_t READ;			///< 0x00
-	__I uint32_t RES1;			///< 0x04
-	__I uint32_t RES2;			///< 0x08
-	__I uint32_t RES3;			///< 0x0C
-	__I uint32_t PEEK;			///< 0x10
-	__I uint32_t SENDER;		///< 0x14
-	__IO uint32_t STATUS;		///< 0x18
-	__I uint32_t CONFIG;		///< 0x1C
-	__O uint32_t WRITE;			///< 0x20
+	__I uint32_t READ;		///< 0x00
+	__I uint32_t RES1;		///< 0x04
+	__I uint32_t RES2;		///< 0x08
+	__I uint32_t RES3;		///< 0x0C
+	__I uint32_t PEEK;		///< 0x10
+	__I uint32_t SENDER;	///< 0x14
+	__IO uint32_t STATUS;	///< 0x18
+	__I uint32_t CONFIG;	///< 0x1C
+	__O uint32_t WRITE;		///< 0x20
 } BCM2835_MAILBOX_TypeDef;
 
 typedef struct {

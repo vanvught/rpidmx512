@@ -1,5 +1,5 @@
 /**
- * @file udelay.S
+ * @file bcm2835_gpio_fsel.S
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
+#include "bcm2835.h"
 
 .macro FUNC name
 .text
@@ -35,13 +35,23 @@
 .cpu arm1176jzf-s
 .fpu vfp
 
-FUNC udelay
-	push {r4, r5, lr}
-	mov r5,r0
-	ldr r4,=BCM2835_ST_BASE
-    ldrd r2,r3,[r4,#4]
-4:  ldrd r0,r1,[r4,#4]
-    sub r1,r0,r2
-    cmp r1,r5
-    bls 4b
-    pop {r4, r5, pc}
+FUNC bcm2835_gpio_fsel
+@ void bcm2835_gpio_fsel(uint8_t pin, uint8_t mode)
+push {lr}
+mov r3, r0
+ldr r0, =BCM2835_GPIO_BASE
+1:							@ Baking Pi Lesson 3 OK03
+	cmp r3,#9				@ http://www.cl.cam.ac.uk/freshers/raspberrypi/tutorials/os/ok03.html
+	subhi r3,#10
+	addhi r0,#4
+	bhi 1b					
+add r3, r3, lsl #1			
+mov r2, #7
+lsl r2, r3
+lsl r1, r3
+ldr	r3, [r0]				
+and	r1, r2, r1
+bic	r3, r3, r2
+orr	r3, r3, r1
+str	r3, [r0]
+pop {pc}
