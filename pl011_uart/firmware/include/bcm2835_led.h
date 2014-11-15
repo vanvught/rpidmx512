@@ -1,5 +1,5 @@
 /**
- * @file hardware.h
+ * @file bcm2835_led.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,15 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
+#ifndef BCM2835_LED_H_
+#define BCM2835_LED_H_
 
 #include <stdint.h>
 
-void __disable_fiq(void);
-void __enable_fiq(void);
+void led_set(const int);
+void led_init(void);
 
-void __disable_irq(void);
-void __enable_irq(void);
-
-#endif /* HARDWARE_H_ */
+#endif /* BCM2835_LED_H_ */

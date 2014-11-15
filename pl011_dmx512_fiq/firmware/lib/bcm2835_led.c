@@ -1,5 +1,5 @@
 /**
- * @file hardware.c
+ * @file bcm2835_led.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
@@ -40,5 +41,8 @@ void led_set(const int state) {
  *
  */
 void led_init(void) {
-	bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_OUTP);
+	uint32_t value = BCM2835_GPIO->GPFSEL1;
+	value &= ~(7 << 18);
+	value |= BCM2835_GPIO_FSEL_OUTP << 18;
+	BCM2835_GPIO->GPFSEL1 = value;
 }
