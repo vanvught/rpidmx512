@@ -40,7 +40,6 @@
 #include "timer.h"
 #include "util.h"
 
-#include <bcm2835.h>
 #include <bcm2835_vc.h>
 
 #ifdef DEBUG2
@@ -130,76 +129,50 @@ struct emmc_block_dev
 };
 
 #include <bcm2835.h>
-
+// TODO
 typedef struct {
-	__IO uint32_t ARG2;				///< 0x00
-	__IO uint32_t BLKSIZECNT;		///< 0x04
-	__IO uint32_t ARG1;				///< 0x08
-	__IO uint32_t CMDTM;			///< 0x0C
-	__O  uint32_t RESP0;			///< 0x10
-	__O  uint32_t RESP1;			///< 0x14
-	__O  uint32_t RESP2;			///< 0x18
-	__O  uint32_t RESP3;			///< 0x1C
-	__IO uint32_t DATA;				///< 0x20
-	__O  uint32_t STATUS;			///< 0x24
-	__IO uint32_t CONTROL0;			///< 0x28
-	__IO uint32_t CONTROL1;			///< 0x2C
-	__IO uint32_t INTERRUPT;		///< 0x30
-	__IO uint32_t IRPT_MASK;		///< 0x34
-	__IO uint32_t IRPT_EN;			///< 0x38
-	__IO uint32_t CONTROL2;			///< 0x3C
-	__IO uint32_t CAPABILITIES_0;	///< 0x40
-	__IO uint32_t CAPABILITIES_1;	///< 0x44
-	__IO uint32_t NOTINUSE1[2];
-	__IO uint32_t FORCE_IRPT;		///< 0x50
-	__IO uint32_t NOTINUSE2[7];
-	__IO uint32_t BOOT_TIMEOUT;		///< 0x70
-	__IO uint32_t DBG_SEL;			///< 0x74
-	__IO uint32_t NOTINUSE3[2];
-	__IO uint32_t EXRDFIFO_CFG;		///< 0x80
-	__IO uint32_t EXRDFIFO_EN;		///< 0x84
-	__IO uint32_t TUNE_STEP;		///< 0x88
-	__IO uint32_t TUNE_STEPS_STD;	///< 0x8C
-	__IO uint32_t TUNE_STEPS_DDR;	///< 0x90
-	__IO uint32_t NOTINUSE4[23];
-	__IO uint32_t SPI_INT_SPT;		///< 0xF0
-	__IO uint32_t NOTINUSE5[2];
-	__IO uint32_t SLOTISR_VER;		///< 0xFC
+	__IO uint32_t ARG2;			///< 0x00
+	__IO uint32_t BLKSIZECNT;	///< 0x04
+	__IO uint32_t ARG1;			///< 0x08
+	__IO uint32_t CMDTM;		///< 0x0C
+	__IO uint32_t RESP0;		///< 0x10
+	__IO uint32_t RESP1;		///< 0x14
+	__IO uint32_t RESP2;		///< 0x18
+	__IO uint32_t RESP3;		///< 0x1C
 } BCM2835_EMMC_TypeDef;
 
 #define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)
 #define BCM2835_EMMC			((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)
 
-// TODO
 #define EMMC_BASE		0x20300000
 //#define EMMC_ARG2			0
 //#define EMMC_BLKSIZECNT	4
 //#define EMMC_ARG1			8
 //#define EMMC_CMDTM		0xC
-//#define EMMC_RESP0		0x10
-//#define EMMC_RESP1		0x14
-//#define EMMC_RESP2		0x18
-//#define EMMC_RESP3		0x1C
-//#define EMMC_DATA		0x20
-//#define EMMC_STATUS		0x24
-//#define EMMC_CONTROL0		0x28
+#define EMMC_RESP0		0x10
+#define EMMC_RESP1		0x14
+#define EMMC_RESP2		0x18
+#define EMMC_RESP3		0x1C
+#define EMMC_DATA		0x20
+#define EMMC_STATUS		0x24
+#define EMMC_CONTROL0		0x28
 #define EMMC_CONTROL1		0x2C
 #define EMMC_INTERRUPT		0x30
-//#define EMMC_IRPT_MASK		0x34
-//#define EMMC_IRPT_EN		0x38
-//#define EMMC_CONTROL2		0x3C
-//#define EMMC_CAPABILITIES_0	0x40
-//#define EMMC_CAPABILITIES_1	0x44
-//#define EMMC_FORCE_IRPT		0x50
-//#define EMMC_BOOT_TIMEOUT	0x70
-//#define EMMC_DBG_SEL		0x74
-//#define EMMC_EXRDFIFO_CFG	0x80
-//#define EMMC_EXRDFIFO_EN	0x84
-//#define EMMC_TUNE_STEP		0x88
-//#define EMMC_TUNE_STEPS_STD	0x8C
-//#define EMMC_TUNE_STEPS_DDR	0x90
-//#define EMMC_SPI_INT_SPT	0xF0
-//#define EMMC_SLOTISR_VER	0xFC
+#define EMMC_IRPT_MASK		0x34
+#define EMMC_IRPT_EN		0x38
+#define EMMC_CONTROL2		0x3C
+#define EMMC_CAPABILITIES_0	0x40
+#define EMMC_CAPABILITIES_1	0x44
+#define EMMC_FORCE_IRPT		0x50
+#define EMMC_BOOT_TIMEOUT	0x70
+#define EMMC_DBG_SEL		0x74
+#define EMMC_EXRDFIFO_CFG	0x80
+#define EMMC_EXRDFIFO_EN	0x84
+#define EMMC_TUNE_STEP		0x88
+#define EMMC_TUNE_STEPS_STD	0x8C
+#define EMMC_TUNE_STEPS_DDR	0x90
+#define EMMC_SPI_INT_SPT	0xF0
+#define EMMC_SLOTISR_VER	0xFC
 
 #define SD_CMD_INDEX(a)		((a) << 24)
 #define SD_CMD_TYPE_NORMAL	0x0
@@ -495,20 +468,18 @@ static uint32_t sd_acommands[] = {
 
 #define SD_GET_CLOCK_DIVIDER_FAIL	0xffffffff
 
-///< Power off the SD card
 static void sd_power_off()
 {
-	///< AvV
-	///< uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
-	uint32_t control0 = BCM2835_EMMC->CONTROL0; ///< AvV
+	/* Power off the SD card */
+	uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
 	control0 &= ~(1 << 8);	// Set SD Bus Power bit off in Power Control Register
-	///< mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
-	BCM2835_EMMC->CONTROL0 = control0; ///< AvV
+	mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
 }
 
+#if SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_BCM_2708
 static int bcm_2708_power_off()
 {
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VCMSG_POWER_ID_SDCARD, BCM2835_SET_POWER_STATE_OFF_WAIT);
+	int32_t ret = bcm2835_vc_set_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD, 2);
 
 	if (ret < 0) {
 		printf("EMMC: bcm_2708_power_off(): bcm2835_vc_set_power_state() did not return a valid response.\n");
@@ -527,7 +498,7 @@ static int bcm_2708_power_off()
 
 static int bcm_2708_power_on()
 {
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VCMSG_POWER_ID_SDCARD, BCM2835_SET_POWER_STATE_ON_WAIT);
+	int32_t ret = bcm2835_vc_set_power_state(BCM2835_MAILBOX_POWER_ID_SDCARD, 3);
 
 	if (ret < 0) {
 		printf("EMMC: bcm_2708_power_on(): bcm2835_vc_set_power_state() did not return a valid response.\n");
@@ -554,6 +525,7 @@ static int bcm_2708_power_cycle()
 
 	return bcm_2708_power_on();
 }
+#endif
 
 // Set the clock dividers to generate a target value
 static uint32_t sd_get_clock_divider(uint32_t base_clock, uint32_t target_rate)
@@ -646,9 +618,7 @@ static int sd_switch_clock_rate(uint32_t base_clock, uint32_t target_rate)
     }
 
     // Wait for the command inhibit (CMD and DAT) bits to clear
-    ///< AvV
-    ///< while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x3)
-    while(BCM2835_EMMC->STATUS & 0x3) ///< AvV
+    while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x3)
         usleep(1000);
 
     // Set the SD clock off
@@ -712,9 +682,7 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
     // This is as per HCSS 3.7.1.1/3.7.2.2
 
     // Check Command Inhibit
-    ///< AvV
-    ///< AvV while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x1)
-    while(BCM2835_EMMC->STATUS & 0x1) ///< AvV
+    while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x1)
         usleep(1000);
 
     // Is the command with busy?
@@ -728,9 +696,7 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
             // Not an abort command
 
             // Wait for the data line to be free
-        	///< AvV
-        	///< AvV while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2)
-            while(BCM2835_EMMC->STATUS & 0x2) ///< AvV
+            while(mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2)
                 usleep(1000);
         }
     }
@@ -815,21 +781,14 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
     {
         case SD_CMD_RSPNS_TYPE_48:
         case SD_CMD_RSPNS_TYPE_48B:
-        	///< AvV
-        	///< dev->last_r0 = mmio_read(EMMC_BASE + EMMC_RESP0);
-            dev->last_r0 = BCM2835_EMMC->RESP0; ///< AvV
+            dev->last_r0 = mmio_read(EMMC_BASE + EMMC_RESP0);
             break;
 
         case SD_CMD_RSPNS_TYPE_136:
-        	///< AvV
-            ///< dev->last_r0 = mmio_read(EMMC_BASE + EMMC_RESP0);
-            dev->last_r0 = BCM2835_EMMC->RESP0; ///< AvV
-            ///< dev->last_r1 = mmio_read(EMMC_BASE + EMMC_RESP1);
-            dev->last_r1 = BCM2835_EMMC->RESP1; ///< AvV
-            ///< dev->last_r2 = mmio_read(EMMC_BASE + EMMC_RESP2);
-            dev->last_r2 = BCM2835_EMMC->RESP2; ///< AvV
-            ///< dev->last_r3 = mmio_read(EMMC_BASE + EMMC_RESP3);
-            dev->last_r3 = BCM2835_EMMC->RESP3; ///< AvV
+            dev->last_r0 = mmio_read(EMMC_BASE + EMMC_RESP0);
+            dev->last_r1 = mmio_read(EMMC_BASE + EMMC_RESP1);
+            dev->last_r2 = mmio_read(EMMC_BASE + EMMC_RESP2);
+            dev->last_r3 = mmio_read(EMMC_BASE + EMMC_RESP3);
             break;
     }
 
@@ -875,17 +834,13 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
             {
                 if(is_write)
 				{
-                	///< AvV
-                	///< mmio_write(EMMC_BASE + EMMC_DATA, *cur_buf_addr);
-                	BCM2835_EMMC->DATA = *cur_buf_addr; ///< AvV
+                	mmio_write(EMMC_BASE + EMMC_DATA, *cur_buf_addr);
 					//uint32_t data = read_word((uint8_t *)cur_buf_addr, 0);
                     //mmio_write(EMMC_BASE + EMMC_DATA, data);
 				}
                 else
 				{
-                	///< AvV
-                	///< *cur_buf_addr = mmio_read(EMMC_BASE + EMMC_DATA);
-                	*cur_buf_addr = BCM2835_EMMC->DATA; ///< AvV
+                	*cur_buf_addr = mmio_read(EMMC_BASE + EMMC_DATA);
 					//uint32_t data = mmio_read(EMMC_BASE + EMMC_DATA);
 					//write_word(data, (uint8_t *)cur_buf_addr, 0);
 				}
@@ -906,9 +861,7 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
        (cmd_reg & SD_CMD_ISDATA)) && (is_sdma == 0))
     {
         // First check command inhibit (DAT) is not already 0
-    	///< AvV
-    	///< if((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2) == 0)
-        if((BCM2835_EMMC->STATUS & 0x2) == 0) ///< AvV
+        if((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2) == 0)
             mmio_write(EMMC_BASE + EMMC_INTERRUPT, 0xffff0002);
         else
         {
@@ -936,9 +889,7 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
         //  DMA int or an error
 
         // First check command inhibit (DAT) is not already 0
-    	///< AvV
-    	///< if((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2) == 0)
-        if((BCM2835_EMMC->STATUS & 0x2) == 0) ///< AvV
+        if((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x2) == 0)
             mmio_write(EMMC_BASE + EMMC_INTERRUPT, 0xffff000a);
         else
         {
@@ -988,13 +939,11 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
                 else
                     printf("SD: unknown SDMA transfer error\n");
 
-                ///< AvV
-                ///< printf("SD: INTERRUPT: %08x, STATUS %08x\n", irpts, mmio_read(EMMC_BASE + EMMC_STATUS));
-                printf("SD: INTERRUPT: %08x, STATUS %08x\n", irpts, BCM2835_EMMC->STATUS); ///< AvV
+                printf("SD: INTERRUPT: %08x, STATUS %08x\n", irpts,
+                       mmio_read(EMMC_BASE + EMMC_STATUS));
 #endif
-                ///< AvV
-                ///< if((irpts == 0) && ((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x3) == 0x2))
-                if((irpts == 0) && ((BCM2835_EMMC->STATUS & 0x3) == 0x2))
+
+                if((irpts == 0) && ((mmio_read(EMMC_BASE + EMMC_STATUS) & 0x3) == 0x2))
                 {
                     // The data transfer is ongoing, we should attempt to stop
                     //  it
@@ -1007,7 +956,7 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
 
 #ifdef EMMC_DEBUG
                     // pause to let us read the screen
-                    // usleep(2000000);
+                    usleep(2000000);
 #endif
                 }
                 dev->last_error = irpts & 0xffff0000;
@@ -1026,9 +975,7 @@ static void sd_handle_card_interrupt(struct emmc_block_dev *dev)
     // Handle a card interrupt
 
 #ifdef EMMC_DEBUG
-	///< AvV
-    ///< uint32_t status = mmio_read(EMMC_BASE + EMMC_STATUS);
-	uint32_t status = BCM2835_EMMC->STATUS; ///< AvV
+    uint32_t status = mmio_read(EMMC_BASE + EMMC_STATUS);
 
     printf("SD: card interrupt\n");
     printf("SD: controller status: %08x\n", status);
@@ -1237,16 +1184,20 @@ int sd_card_init(struct block_device **dev)
     // Check the sanity of the sd_commands and sd_acommands structures
     if(sizeof(sd_commands) != (64 * sizeof(uint32_t)))
     {
-        printf("EMMC: fatal error, sd_commands of incorrect size: %i expected %i\n", sizeof(sd_commands), 64 * sizeof(uint32_t));
+        printf("EMMC: fatal error, sd_commands of incorrect size: %i"
+               " expected %i\n", sizeof(sd_commands),
+               64 * sizeof(uint32_t));
         return -1;
     }
-
     if(sizeof(sd_acommands) != (64 * sizeof(uint32_t)))
     {
-        printf("EMMC: fatal error, sd_acommands of incorrect size: %i expected %i\n", sizeof(sd_acommands), 64 * sizeof(uint32_t));
+        printf("EMMC: fatal error, sd_acommands of incorrect size: %i"
+               " expected %i\n", sizeof(sd_acommands),
+               64 * sizeof(uint32_t));
         return -1;
     }
 
+#if SDHCI_IMPLEMENTATION == SDHCI_IMPLEMENTATION_BCM_2708
 	// Power cycle the card to ensure its in its startup state
 	if(bcm_2708_power_cycle() != 0)
 	{
@@ -1256,11 +1207,10 @@ int sd_card_init(struct block_device **dev)
 #ifdef EMMC_DEBUG
 	printf("EMMC: BCM2708 controller power-cycled\n");
 #endif
+#endif
 
 	// Read the controller version
-	///< Avv
-	///< uint32_t ver = mmio_read(EMMC_BASE + EMMC_SLOTISR_VER);
-	uint32_t ver = BCM2835_EMMC->SLOTISR_VER; ///< AvV
+	uint32_t ver = mmio_read(EMMC_BASE + EMMC_SLOTISR_VER);
 	uint32_t vendor = ver >> 24;
 	uint32_t sdversion = (ver >> 16) & 0xff;
 	uint32_t slot_status = ver & 0xff;
@@ -1290,15 +1240,15 @@ int sd_card_init(struct block_device **dev)
 		return -1;
 	}
 #ifdef EMMC_DEBUG
-	printf("EMMC: control0: %08x, control1: %08x, control2: %08x\n", BCM2835_EMMC->CONTROL0, BCM2835_EMMC->CONTROL1, BCM2835_EMMC->CONTROL2);
+	printf("EMMC: control0: %08x, control1: %08x, control2: %08x\n",
+			mmio_read(EMMC_BASE + EMMC_CONTROL0),
+			mmio_read(EMMC_BASE + EMMC_CONTROL1),
+            mmio_read(EMMC_BASE + EMMC_CONTROL2));
 #endif
 
 	// Read the capabilities registers
-	///< Avv
-	///< capabilities_0 = mmio_read(EMMC_BASE + EMMC_CAPABILITIES_0);
-	capabilities_0 = BCM2835_EMMC->CAPABILITIES_0; ///< Avv
-	///< capabilities_1 = mmio_read(EMMC_BASE + EMMC_CAPABILITIES_1);
-	capabilities_1 = BCM2835_EMMC->CAPABILITIES_1; ///< Avv
+	capabilities_0 = mmio_read(EMMC_BASE + EMMC_CAPABILITIES_0);
+	capabilities_1 = mmio_read(EMMC_BASE + EMMC_CAPABILITIES_1);
 #ifdef EMMC_DEBUG
 	printf("EMMC: capabilities: %08x%08x\n", capabilities_1, capabilities_0);
 #endif
@@ -1307,11 +1257,8 @@ int sd_card_init(struct block_device **dev)
 #ifdef EMMC_DEBUG
 	printf("EMMC: checking for an inserted card\n");
 #endif
-	///< AvV
-    ///< TIMEOUT_WAIT(mmio_read(EMMC_BASE + EMMC_STATUS) & (1 << 16), 500000);
-	TIMEOUT_WAIT(BCM2835_EMMC->STATUS & (1 << 16), 500000); ///< AvV
-	///< uint32_t status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
-	uint32_t status_reg = BCM2835_EMMC->STATUS;
+    TIMEOUT_WAIT(mmio_read(EMMC_BASE + EMMC_STATUS) & (1 << 16), 500000);
+	uint32_t status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
 	if((status_reg & (1 << 16)) == 0)
 	{
 		printf("EMMC: no card inserted\n");
@@ -1322,12 +1269,10 @@ int sd_card_init(struct block_device **dev)
 #endif
 
 	// Clear control2
-	///< AvV
-	///< mmio_write(EMMC_BASE + EMMC_CONTROL2, 0);
-	BCM2835_EMMC->CONTROL2 = 0; ///< AvV
+	mmio_write(EMMC_BASE + EMMC_CONTROL2, 0);
 
 	// Get the base clock rate
-	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VCMSG_CLOCK_ID_CORE);
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_MAILBOX_CLOCK_ID_CORE);
 	if(base_clock == 0)
 	{
 	    printf("EMMC: assuming clock rate to be 100MHz\n");
@@ -1360,7 +1305,7 @@ int sd_card_init(struct block_device **dev)
 	}
 #ifdef EMMC_DEBUG
 	printf("EMMC: control0: %08x, control1: %08x\n",
-			BCM2835_EMMC->CONTROL0,
+			mmio_read(EMMC_BASE + EMMC_CONTROL0),
 			mmio_read(EMMC_BASE + EMMC_CONTROL1));
 #endif
 
@@ -1375,9 +1320,7 @@ int sd_card_init(struct block_device **dev)
 	usleep(2000);
 
 	// Mask off sending interrupts to the ARM
-	///< AvV
-	///<mmio_write(EMMC_BASE + EMMC_IRPT_EN, 0);
-	BCM2835_EMMC->IRPT_EN = 0; ///< AvV
+	mmio_write(EMMC_BASE + EMMC_IRPT_EN, 0);
 	// Reset interrupts
 	mmio_write(EMMC_BASE + EMMC_INTERRUPT, 0xffffffff);
 	// Have all interrupts sent to the INTERRUPT register
@@ -1385,9 +1328,7 @@ int sd_card_init(struct block_device **dev)
 #ifdef SD_CARD_INTERRUPTS
     irpt_mask |= SD_CARD_INTERRUPT;
 #endif
-    ///< AvV
-    ///<mmio_write(EMMC_BASE + EMMC_IRPT_MASK, irpt_mask);
-    BCM2835_EMMC->IRPT_MASK = irpt_mask; ///< AvV
+	mmio_write(EMMC_BASE + EMMC_IRPT_MASK, irpt_mask);
 
 	usleep(2000);
 
@@ -1584,9 +1525,7 @@ int sd_card_init(struct block_device **dev)
 	    mmio_write(EMMC_BASE + EMMC_CONTROL1, control1);
 
 	    // Check DAT[3:0]
-	    ///< AvV
-	    ///< status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
-	    status_reg = BCM2835_EMMC->STATUS; ///< AvV
+	    status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
 	    uint32_t dat30 = (status_reg >> 20) & 0xf;
 	    if(dat30 != 0)
 	    {
@@ -1599,19 +1538,15 @@ int sd_card_init(struct block_device **dev)
 	    }
 
 	    // Set 1.8V signal enable to 1
-	    ///< uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
-	    uint32_t control0 = BCM2835_EMMC->CONTROL0; ///< AvV
+	    uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
 	    control0 |= (1 << 8);
-	    ///< mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
-	    BCM2835_EMMC->CONTROL0 = control0;  ///< AvV
+	    mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
 
 	    // Wait 5 ms
 	    usleep(5000);
 
 	    // Check the 1.8V signal enable is set
-	    ///< AvV
-	    ///< control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
-	    control0 = BCM2835_EMMC->CONTROL0; ///< AvV
+	    control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
 	    if(((control0 >> 8) & 0x1) == 0)
 	    {
 #ifdef EMMC_DEBUG
@@ -1631,9 +1566,7 @@ int sd_card_init(struct block_device **dev)
 	    usleep(10000);
 
 	    // Check DAT[3:0]
-	    ///< AvV
-	    ///< status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
-		status_reg = BCM2835_EMMC->STATUS; ///< AvV
+	    status_reg = mmio_read(EMMC_BASE + EMMC_STATUS);
 	    dat30 = (status_reg >> 20) & 0xf;
 	    if(dat30 != 0xf)
 	    {
@@ -1826,12 +1759,9 @@ int sd_card_init(struct block_device **dev)
 #endif
 
         // Disable card interrupt in host
-        ///< AvV
-        ///< uint32_t old_irpt_mask = mmio_read(EMMC_BASE + EMMC_IRPT_MASK);
-        uint32_t old_irpt_mask = BCM2835_EMMC->IRPT_MASK; ///< AvV
+        uint32_t old_irpt_mask = mmio_read(EMMC_BASE + EMMC_IRPT_MASK);
         uint32_t new_iprt_mask = old_irpt_mask & ~(1 << 8);
-        ///< mmio_write(EMMC_BASE + EMMC_IRPT_MASK, new_iprt_mask);
-        BCM2835_EMMC->IRPT_MASK = new_iprt_mask; ///< AvV
+        mmio_write(EMMC_BASE + EMMC_IRPT_MASK, new_iprt_mask);
 
         // Send ACMD6 to change the card's bit mode
         sd_issue_command(ret, SET_BUS_WIDTH, 0x2, 500000);
@@ -1840,20 +1770,15 @@ int sd_card_init(struct block_device **dev)
         else
         {
             // Change bit mode for Host
-        	///< AvV
-            ///< uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
-        	uint32_t control0 = BCM2835_EMMC->CONTROL0; ///< AvV
+            uint32_t control0 = mmio_read(EMMC_BASE + EMMC_CONTROL0);
             control0 |= 0x2;
-            ///< mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
-            BCM2835_EMMC->CONTROL0 = control0; ///< AvV
+            mmio_write(EMMC_BASE + EMMC_CONTROL0, control0);
 
             // Re-enable card interrupt in host
-            ///< AvV
-            ///< mmio_write(EMMC_BASE + EMMC_IRPT_MASK, old_irpt_mask);
-            BCM2835_EMMC->IRPT_MASK = old_irpt_mask; ///< AvV
+            mmio_write(EMMC_BASE + EMMC_IRPT_MASK, old_irpt_mask);
 
 #ifdef EMMC_DEBUG
-			printf("SD: switch to 4-bit complete\n");
+                printf("SD: switch to 4-bit complete\n");
 #endif
         }
 #endif
