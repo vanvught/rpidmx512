@@ -34,8 +34,7 @@ typedef enum {
 	BCM2835_MAILBOX_ERROR	= 0x80000001	///< Error parsing request buffer (partial response)
 } bcm2835MailboxReasonCodes;
 
-// TODO rename
-struct vc_msg_tag_clock_rate {
+struct vc_msg_tag {
 	uint32_t tag_id;		///< the message id
 	uint32_t buffer_size;	///< size of the buffer (which in this case is always 8 bytes)
 	uint32_t data_size;		///< amount of data being sent or received
@@ -44,11 +43,11 @@ struct vc_msg_tag_clock_rate {
 };
 
 // TODO rename
-struct vc_msg_get_clock_rate {
-	uint32_t msg_size;					///< simply, sizeof(struct vc_msg)
-	uint32_t request_code;				///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
-	struct vc_msg_tag_clock_rate tag;	///< the tag structure above to make
-	uint32_t end_tag;					///< an end identifier, should be set to NULL
+struct vc_msg_get {
+	uint32_t msg_size;			///< simply, sizeof(struct vc_msg)
+	uint32_t request_code;		///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
+	struct vc_msg_tag tag;		///< the tag structure above to make
+	uint32_t end_tag;			///< an end identifier, should be set to NULL
 };
 
 /**
@@ -59,9 +58,9 @@ struct vc_msg_get_clock_rate {
 inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
 
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	struct  vc_msg_get_clock_rate *vc_msg = (struct vc_msg_get_clock_rate *)mb_addr;
+	struct  vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
 
-	vc_msg->msg_size = sizeof(struct vc_msg_get_clock_rate);
+	vc_msg->msg_size = sizeof(struct vc_msg_get);
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;
@@ -95,9 +94,9 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
  */
 inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_id, const uint32_t val) {
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	struct  vc_msg_get_clock_rate *vc_msg = (struct vc_msg_get_clock_rate *)mb_addr;
+	struct  vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
 
-	vc_msg->msg_size = sizeof(struct vc_msg_get_clock_rate);
+	vc_msg->msg_size = sizeof(struct vc_msg_get);
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;

@@ -24,7 +24,9 @@
  */
 
 #include <bcm2835.h>
+#ifdef BARE_METAL
 #include <bcm2835_spi.h>
+#endif
 #include <device_info.h>
 #include <bw.h>
 #include <bw_spi_lcd.h>

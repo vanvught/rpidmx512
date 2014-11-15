@@ -24,7 +24,9 @@
  */
 
 #include <bcm2835.h>
+#ifdef BARE_METAL
 #include <bcm2835_i2c.h>
+#endif
 #include <mcp7941x.h>
 
 char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;

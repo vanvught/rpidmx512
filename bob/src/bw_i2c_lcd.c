@@ -24,6 +24,9 @@
  */
 
 #include <bcm2835.h>
+#ifdef BARE_METAL
+#include <bcm2835_i2c.h>
+#endif
 #include <device_info.h>
 #include <bw.h>
 #include <bw_i2c_lcd.h>
