@@ -27,6 +27,7 @@
 #define BCM2835_GPIO_H_
 
 #include <stdint.h>
+#include "bcm2835.h"
 
 typedef enum {
 	BCM2835_GPIO_FSEL_INPT = 0b000,	///< Input

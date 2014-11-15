@@ -38,8 +38,12 @@ void bcm2835_uart_begin(void) {
     BCM2835_UART1->BAUD = 270;
 
     // Set the GPI0 pins to the Alt 5 function to enable UART1 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT5); // UART1_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT5); // UART1_RXD
+    uint32_t value = BCM2835_GPIO->GPFSEL1;
+    value &= ~(7 << 12);
+    value |= BCM2835_GPIO_FSEL_ALT5 << 12;	// Pin 14 UART1_TXD
+    value &= ~(7 << 15);
+    value |= BCM2835_GPIO_FSEL_ALT5 << 15;	// Pin 15 UART1_RXD
+    BCM2835_GPIO->GPFSEL1 = value;
 
     // Disable pull-up/down
     bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);

@@ -22,8 +22,14 @@ static void bcm2835_pl011_dmx512_init(void) {
 	//
 	BCM2835_PL011->CR	= 0;										// Disable everything
 	//
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);	// PL011_TXD
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);	// PL011_RXD
+	//bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);	// PL011_TXD
+	//bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);	// PL011_RXD
+    uint32_t value = BCM2835_GPIO->GPFSEL1;
+    value &= ~(7 << 12);
+    value |= BCM2835_GPIO_FSEL_ALT0 << 12;	// Pin 14 PL011_TXD
+    value &= ~(7 << 15);
+    value |= BCM2835_GPIO_FSEL_ALT0 << 15;	// Pin 15 PL011_RXD
+    BCM2835_GPIO->GPFSEL1 = value;
 	//
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down

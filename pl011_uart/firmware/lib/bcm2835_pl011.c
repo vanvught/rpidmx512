@@ -28,6 +28,9 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_pl011.h"
 
+/**
+ *
+ */
 void bcm2835_pl011_begin(void) {
 	BCM2835_PL011 ->CR = 0; /* Disable everything */
 
@@ -59,6 +62,10 @@ void bcm2835_pl011_begin(void) {
 	BCM2835_PL011 ->CR = 0x301; 					/* Enable UART */
 }
 
+/**
+ *
+ * @param c
+ */
 void bcm2835_pl011_send(const uint32_t c) {
 	while (1) {
 		if ((BCM2835_PL011 ->FR & 0x20) == 0)

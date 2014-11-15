@@ -28,7 +28,6 @@
 
 #include <stdint.h>
 
-// https://github.com/xinu-os/xinu/blob/master/device/uart-pl011/pl011.h
 #define PL011_DR_OE 			((uint32_t)(1 << 11))	///< Set to 1 on overrun error
 #define PL011_DR_BE 			((uint32_t)(1 << 10))	///< Set to 1 on break condition
 #define PL011_DR_PE 			((uint32_t)(1 <<  9))	///< Set to 1 on parity error
