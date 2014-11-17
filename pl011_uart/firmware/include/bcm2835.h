@@ -32,8 +32,8 @@
 #define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03
 #define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05
 #define RPI_V2_GPIO_P1_07      4  ///< Version 2, Pin P1-07
-#define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to alt function 0 PL011_TXD
-#define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to alt function 0 PL011_RXD
+#define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to ALT function 0 PL011_TXD
+#define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to ALT function 0 PL011_RXD
 #define RPI_V2_GPIO_P1_11     17  ///< Version 2, Pin P1-11
 #define RPI_V2_GPIO_P1_12     18  ///< Version 2, Pin P1-12
 #define RPI_V2_GPIO_P1_13     27  ///< Version 2, Pin P1-13
@@ -48,22 +48,23 @@
 #define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
 
 // System Timer
-#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))	///<
-#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))	///<
-#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///<
-#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///<
+#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))	///< System Timer Match 0. DO NOT USE; is used by GPU.
+#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))	///< System Timer Match 1
+#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
+#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
 
-#define BCM2835_PERI_BASE			0x20000000
-#define BCM2835_ST_BASE				(BCM2835_PERI_BASE + 0x3000)
-#define BCM2835_IRQ_BASE			(BCM2835_PERI_BASE + 0xB200)
-#define BCM2835_MAILBOX_BASE 		(BCM2835_PERI_BASE + 0xB880)
-#define BCM2835_PM_WDOG_BASE		(BCM2835_PERI_BASE + 0x100000)
-#define BCM2835_GPIO_BASE			(BCM2835_PERI_BASE + 0x200000)
-#define BCM2835_SPI0_BASE			(BCM2835_PERI_BASE + 0x204000)
-#define BCM2835_PL011_BASE			(BCM2835_PERI_BASE + 0x201000)
-#define BCM2835_UART1_BASE			(BCM2835_PERI_BASE + 0x215000)
-#define BCM2835_BSC1_BASE			(BCM2835_PERI_BASE + 0x804000)
-#define BCM2835_BSC2_BASE			(BCM2835_PERI_BASE + 0x805000)
+#define BCM2835_PERI_BASE		0x20000000
+#define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x3000)
+#define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0xB200)
+#define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0xB880)
+#define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)
+#define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)
+#define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)
+#define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)
+#define BCM2835_UART1_BASE		(BCM2835_PERI_BASE + 0x215000)
+#define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)
+#define BCM2835_BSC1_BASE		(BCM2835_PERI_BASE + 0x804000)
+#define BCM2835_BSC2_BASE		(BCM2835_PERI_BASE + 0x805000)
 
 #ifdef __ASSEMBLY__
 #else
@@ -75,21 +76,21 @@ extern void bcm2835_st_delay(const uint64_t offset_micros, const uint64_t micros
 extern void udelay(const uint64_t);
 
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
-#define ARM_IRQ1_BASE		0
-#define INTERRUPT_TIMER1	(ARM_IRQ1_BASE + 1)
-#define INTERRUPT_TIMER3	(ARM_IRQ1_BASE + 3)
-#define INTERRUPT_AUX		(ARM_IRQ1_BASE + 29)
+#define ARM_IRQ1_BASE		0						///<
+#define INTERRUPT_TIMER1	(ARM_IRQ1_BASE + 1)		///<
+#define INTERRUPT_TIMER3	(ARM_IRQ1_BASE + 3)		///<
+#define INTERRUPT_AUX		(ARM_IRQ1_BASE + 29)	///<
 
-#define ARM_IRQ2_BASE		32
-#define INTERRUPT_VC_UART	(ARM_IRQ2_BASE + 25)
+#define ARM_IRQ2_BASE		32						///<
+#define INTERRUPT_VC_UART	(ARM_IRQ2_BASE + 25)	///< UART Interrupt
 
 typedef enum {
 	// ARM_IRQ1_BASE
-	BCM2835_TIMER1_IRQn = 1 << (INTERRUPT_TIMER1 - ARM_IRQ1_BASE),
-	BCM2835_TIMER3_IRQn = 1	<< (INTERRUPT_TIMER3 - ARM_IRQ1_BASE),
-	BCM2835_UART1_IRQn  = 1 << (INTERRUPT_AUX - ARM_IRQ1_BASE),
+	BCM2835_TIMER1_IRQn = 1 << (INTERRUPT_TIMER1 - ARM_IRQ1_BASE),		///<
+	BCM2835_TIMER3_IRQn = 1	<< (INTERRUPT_TIMER3 - ARM_IRQ1_BASE),		///<
+	BCM2835_UART1_IRQn  = 1 << (INTERRUPT_AUX - ARM_IRQ1_BASE),			///<
 	// ARM_IRQ2_BASE
-	BCM2835_VC_UART_IRQn  = 1 << (INTERRUPT_VC_UART - ARM_IRQ2_BASE)
+	BCM2835_VC_UART_IRQn  = 1 << (INTERRUPT_VC_UART - ARM_IRQ2_BASE)	///<
 } BCM2835_IRQn_TypeDef;
 
 #define BCM2835_FIQ_ENABLE	(1 << 7)///< 0x80
@@ -129,13 +130,14 @@ typedef struct {
 	__IO uint32_t BAUD;			///< 0x68
 } BCM2835_UART_TypeDef;
 
+/// 13.4 Register View
 typedef struct {
-	__IO uint32_t DR;			///< 0x00
-	__IO uint32_t RSRECR;		///< 0x04
-	__IO uint32_t PAD[4];		///< 0x08
-	__IO uint32_t FR;			///< 0x18
-	__IO uint32_t RES1;			///< 0x1C
-	__IO uint32_t ILPR;			///< 0x20
+	__IO uint32_t DR;			///< 0x00, Data Register
+	__IO uint32_t RSRECR;		///< 0x04, Receive status register/error clear register
+	__IO uint32_t PAD[4];		///< 0x08, Padding
+	__IO uint32_t FR;			///< 0x18, Flag register
+	__IO uint32_t RES1;			///< 0x1C, Reserved
+	__IO uint32_t ILPR;			///< 0x20, not in use
 	__IO uint32_t IBRD;			///< 0x24
 	__IO uint32_t FBRD;			///< 0x28
 	__IO uint32_t LCRH;			///< 0x2C
@@ -192,18 +194,22 @@ typedef struct {
 	__IO uint32_t GPPUDCLK1;	///< 0x9C, GPIO Pin Pull-up/down Enable Clock 1
 } BCM2835_GPIO_TypeDef;
 
+
+/// Defines for SPI\n
+/// SPI register offsets from \ref BCM2835_SPI0_BASE.\n
+/// per 10.5 SPI Register Map
 typedef struct {
-	__IO uint32_t CS;			///< 0x00
-	__IO uint32_t FIFO;			///< 0x04
-	__IO uint32_t CLK;			///< 0x08
-	__IO uint32_t DLEN;			///< 0x0C
-	__IO uint32_t LTOH;			///< 0x10
-	__IO uint32_t DC;			///< 0x14
+	__IO uint32_t CS;			///< 0x00, SPI Master Control and Status
+	__IO uint32_t FIFO;			///< 0x04, SPI Master TX and RX FIFOs
+	__IO uint32_t CLK;			///< 0x08, SPI Master Clock Divider
+	__IO uint32_t DLEN;			///< 0x0C, SPI Master Data Length
+	__IO uint32_t LTOH;			///< 0x10, SPI LOSSI mode TOH
+	__IO uint32_t DC;			///< 0x14, SPI DMA DREQ Controls
 } BCM2835_SPI_TypeDef;
 
 /// Defines for I2C\n
-/// GPIO register offsets from BCM2835_BSC*_BASE.\n
-/// Offsets into the BSC Peripheral block in bytes per 3.1 BSC Register Map
+/// BSC register offsets from BCM2835_BSC*_BASE.\n
+/// per 3.1 BSC Register Map
 typedef struct {
 	__IO uint32_t C;		///< 0x00, BSC Master Control
 	__IO uint32_t S;		///< 0x04, BSC Master Status
@@ -247,16 +253,53 @@ typedef struct {
 	__IO uint32_t WDOG;			///< 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
-#define BCM2835_ST					((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
-#define BCM2835_IRQ					((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
-#define BCM2835_MAILBOX				((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
-#define BCM2835_PM_WDOG				((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)
-#define BCM2835_GPIO				((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
-#define BCM2835_SPI0				((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
-#define BCM2835_PL011				((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)
-#define BCM2835_UART1				((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
-#define BCM2835_BSC1				((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
-#define BCM2835_BSC2				((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)
+typedef struct {
+	__IO uint32_t ARG2;				///< 0x00
+	__IO uint32_t BLKSIZECNT;		///< 0x04
+	__IO uint32_t ARG1;				///< 0x08
+	__IO uint32_t CMDTM;			///< 0x0C
+	__O  uint32_t RESP0;			///< 0x10
+	__O  uint32_t RESP1;			///< 0x14
+	__O  uint32_t RESP2;			///< 0x18
+	__O  uint32_t RESP3;			///< 0x1C
+	__IO uint32_t DATA;				///< 0x20
+	__O  uint32_t STATUS;			///< 0x24
+	__IO uint32_t CONTROL0;			///< 0x28
+	__IO uint32_t CONTROL1;			///< 0x2C
+	__IO uint32_t INTERRUPT;		///< 0x30
+	__IO uint32_t IRPT_MASK;		///< 0x34
+	__IO uint32_t IRPT_EN;			///< 0x38
+	__IO uint32_t CONTROL2;			///< 0x3C
+	__IO uint32_t CAPABILITIES_0;	///< 0x40
+	__IO uint32_t CAPABILITIES_1;	///< 0x44
+	__IO uint32_t NOTINUSE1[2];
+	__IO uint32_t FORCE_IRPT;		///< 0x50
+	__IO uint32_t NOTINUSE2[7];
+	__IO uint32_t BOOT_TIMEOUT;		///< 0x70
+	__IO uint32_t DBG_SEL;			///< 0x74
+	__IO uint32_t NOTINUSE3[2];
+	__IO uint32_t EXRDFIFO_CFG;		///< 0x80
+	__IO uint32_t EXRDFIFO_EN;		///< 0x84
+	__IO uint32_t TUNE_STEP;		///< 0x88
+	__IO uint32_t TUNE_STEPS_STD;	///< 0x8C
+	__IO uint32_t TUNE_STEPS_DDR;	///< 0x90
+	__IO uint32_t NOTINUSE4[23];
+	__IO uint32_t SPI_INT_SPT;		///< 0xF0
+	__IO uint32_t NOTINUSE5[2];
+	__IO uint32_t SLOTISR_VER;		///< 0xFC
+} BCM2835_EMMC_TypeDef;
+
+#define BCM2835_ST			((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
+#define BCM2835_IRQ			((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
+#define BCM2835_MAILBOX		((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
+#define BCM2835_PM_WDOG		((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)
+#define BCM2835_GPIO		((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
+#define BCM2835_SPI0		((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
+#define BCM2835_PL011		((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)
+#define BCM2835_UART1		((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
+#define BCM2835_EMMC		((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)
+#define BCM2835_BSC1		((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
+#define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)
 
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )

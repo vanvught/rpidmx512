@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_emmc.h
+ * @file bcm2835_pl011_dmx512.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,20 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef BCM2835_EMMC_H_
-#define BCM2835_EMMC_H_
+#ifndef BCM2835_PL011_DMX512_H_
+#define BCM2835_PL011_DMX512_H_
 
-#include "stdint.h"
+extern void bcm2835_pl011_dmx512_begin(void);
 
-#define  BCM2835_EMMC_STATUS_CMD_INHIBIT	0x00000001	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CMD_INHIBIT 0x00000001
-#define  BCM2835_EMMC_STATUS_DATA_INHIBIT	0x00000002	///< SDHCI_PRESENT_STATE 0x24, SDHCI_DATA_INHIBIT 0x00000002
 
-// CONTROL0, offset 0x28
-#define BCM2835_EMMC_CONTROL0_POWER_ON		((uint32_t)(1 << 8))	///< SDHCI_POWER_CONTROL 0x29, SDHCI_POWER_ON 0x01
-
-// CONTROL1, offset 0x2C
-#define BCM2835_EMMC_CONTROL1_RESET_ALL 	((uint32_t)(1 << 24))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_ALL 0x01
-#define BCM2835_EMMC_CONTROL1_RESET_CMD 	((uint32_t)(1 << 25))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_CMD 0x02
-#define BCM2835_EMMC_CONTROL1_RESET_DATA	((uint32_t)(1 << 26))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_DATA 0x04
-
-#endif /* BCM2835_EMMC_H_ */
+#endif /* BCM2835_PL011_DMX512_H_ */

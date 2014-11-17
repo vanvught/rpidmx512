@@ -27,9 +27,10 @@
 #include <bcm2835.h>
 #include <bcm2835_gpio.h>
 #include <bcm2835_led.h>
-#include <bcm2835_vc.h>
 #include <bcm2835_pl011.h>
+#include <bcm2835_pl011_dmx512.h>
 #include <hardware.h>
+#include <console.h>
 
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
@@ -41,32 +42,6 @@ uint8_t dmx_data[512];
 #define ANALYZER_CH2   RPI_V2_GPIO_P1_21     // MISO
 #define ANALYZER_CH3   RPI_V2_GPIO_P1_19     // MOSI
 #define ANALYZER_CH4   RPI_V2_GPIO_P1_24     // CE0
-
-static void bcm2835_pl011_dmx512_init(void) {
-	// Set UART clock rate to 4000000 (4MHz)
-	bcm2835_vc_set_clock_rate(BCM2835_VCMSG_CLOCK_ID_UART, 4000000);
-	//
-	BCM2835_PL011->CR	= 0;										// Disable everything
-	//
-    uint32_t value = BCM2835_GPIO->GPFSEL1;
-    value &= ~(7 << 12);
-    value |= BCM2835_GPIO_FSEL_ALT0 << 12;							// Pin 14 PL011_TXD
-    value &= ~(7 << 15);
-    value |= BCM2835_GPIO_FSEL_ALT0 << 15;							// Pin 15 PL011_RXD
-    BCM2835_GPIO->GPFSEL1 = value;
-	//
-	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
-	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
-	//
-	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {}					// Poll the "flags register" to wait for the UART to stop transmitting or receiving
-	//
-	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;							// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
-	BCM2835_PL011->ICR 	= 0x7FF;									// Clear all interrupt status
-	BCM2835_PL011->IBRD = 1;										// UART Clock
-	BCM2835_PL011->FBRD = 0;										// 4000000 (4MHz)
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;		// Set 8, N, 2, FIFO disabled
-	BCM2835_PL011->CR 	= 0x301;									// Enable UART
-}
 
 static void fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
@@ -119,8 +94,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
 }
-
-extern void console_set_cursor(int, int);
 
 void task_fb(void) {
 	console_set_cursor(0, 4);
@@ -202,7 +175,7 @@ int notmain(unsigned int earlypc) {
 	bcm2835_gpio_clr(ANALYZER_CH3); // DATA
 	bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 
-	bcm2835_pl011_dmx512_init();
+	bcm2835_pl011_dmx512_begin();
 
 	fiq_init();
 	__enable_fiq();
