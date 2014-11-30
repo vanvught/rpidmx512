@@ -49,10 +49,10 @@ inline void static fets_spi_setup(device_info_t *device_info) {
 }
 
 int bw_spi_7fets_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
-
+#endif
 	bcm2835_spi_begin();
 
 	if (device_info->slave_address <= 0)
@@ -65,7 +65,6 @@ int bw_spi_7fets_start(device_info_t *device_info) {
 
 void bw_spi_7fets_end(void) {
 	bcm2835_spi_end();
-	bcm2835_close();
 }
 
 inline static void bw_spi_7fets_fsel_mask(device_info_t *device_info, const uint8_t mask) {

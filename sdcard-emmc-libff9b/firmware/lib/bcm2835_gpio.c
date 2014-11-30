@@ -29,33 +29,6 @@
 /**
  *
  * @param pin
- * @return
- */
-uint8_t bcm2835_gpio_lev(const uint8_t pin) {
-	uint32_t value = BCM2835_GPIO ->GPLEV0;
-	return (value & (1 << pin)) ? HIGH : LOW;
-}
-
-/**
- *
- * @param pud
- */
-void bcm2835_gpio_pud(const uint8_t pud) {
-	BCM2835_GPIO ->GPPUD = pud;
-}
-
-/**
- *
- * @param pin
- * @param on
- */
-void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
-}
-
-/**
- *
- * @param pin
  * @param pud
  */
 void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {

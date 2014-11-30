@@ -29,11 +29,6 @@
 #include "bcm2835_mailbox.h"
 #include "bcm2835_vc.h"
 
-typedef enum {
-	BCM2835_MAILBOX_SUCCESS	= 0x80000000,	///< Request successful
-	BCM2835_MAILBOX_ERROR	= 0x80000001	///< Error parsing request buffer (partial response)
-} bcm2835MailboxReasonCodes;
-
 struct vc_msg_tag {
 	uint32_t tag_id;		///< the message id
 	uint32_t buffer_size;	///< size of the buffer (which in this case is always 8 bytes)
@@ -127,7 +122,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
  * @return rate (in Hz)
  */
 int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
-	return bcm2835_vc_get(BCM2835_MAILBOX_TAG_GET_CLOCK_RATE, clock_id);
+	return bcm2835_vc_get(BCM2835_VC_TAG_GET_CLOCK_RATE, clock_id);
 }
 
 /**
@@ -140,7 +135,7 @@ int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
  * @return rate (in Hz). A rate of 0 is returned if the clock does not exist.
  */
 int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_rate) {
-	return bcm2835_vc_set(BCM2835_MAILBOX_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
+	return bcm2835_vc_set(BCM2835_VC_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
 }
 
 /**
@@ -154,7 +149,7 @@ int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_
  *   Bits 2-31: reserved for future use
  */
 int32_t bcm2835_vc_get_power_state(const uint32_t dev_id) {
-	return bcm2835_vc_get(BCM2835_MAILBOX_TAG_GET_POWER_STATE, dev_id);
+	return bcm2835_vc_get(BCM2835_VC_TAG_GET_POWER_STATE, dev_id);
 }
 
 /**
@@ -174,5 +169,5 @@ int32_t bcm2835_vc_get_power_state(const uint32_t dev_id) {
  *
  */
 int32_t bcm2835_vc_set_power_state(const uint32_t dev_id, const uint32_t state) {
-	return bcm2835_vc_set(BCM2835_MAILBOX_TAG_SET_POWER_STATE, dev_id, state);
+	return bcm2835_vc_set(BCM2835_VC_TAG_SET_POWER_STATE, dev_id, state);
 }

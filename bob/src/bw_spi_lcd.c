@@ -48,10 +48,10 @@ inline static void lcd_spi_setup(device_info_t *device_info) {
 
 
 int bw_spi_lcd_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return BW_LCD_ERROR;
-
+#endif
 	bcm2835_spi_begin();
 
 	if (device_info->slave_address <= 0)
@@ -62,7 +62,6 @@ int bw_spi_lcd_start(device_info_t *device_info) {
 
 void bw_spi_lcd_end(void) {
 	bcm2835_spi_end();
-	bcm2835_close();
 }
 
 void bw_spi_lcd_set_cursor(device_info_t *device_info, uint8_t line, uint8_t pos) {

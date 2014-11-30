@@ -40,10 +40,10 @@ void inline static mcp7941x_setup(void) {
 }
 
 int mcp7941x_start (char slave_address) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return MCP7941X_ERROR;
-
+#endif
 	bcm2835_i2c_begin();
 
 	if (slave_address <= 0)
@@ -56,7 +56,6 @@ int mcp7941x_start (char slave_address) {
 
 void mcp7941x_end (void) {
 	bcm2835_i2c_end();
-	bcm2835_close();
 }
 
 void mcp7941x_get_date_time(struct rtc_time *t) {

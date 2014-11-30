@@ -62,7 +62,7 @@ int notmain (void)
 
     printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 
-	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_VCMSG_POWER_ID_SDCARD));
+	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_VC_POWER_ID_SDCARD));
 
 	f_mount(0, &Fatfs);		/* Register volume work area (never fails) */
 
@@ -151,7 +151,7 @@ int notmain (void)
 	if (rc) die(rc);
 #endif
 
-	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_VCMSG_POWER_ID_SDCARD));
+	printf("SD Card power state: %ld\n", bcm2835_vc_get_power_state(BCM2835_VC_POWER_ID_SDCARD));
 
 	printf("\nTest completed.\n");
 

@@ -52,10 +52,10 @@ inline static void dio_spi_setup(device_info_t *device_info) {
  * @return
  */
 int bw_spi_dio_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
-
+#endif
 	bcm2835_spi_begin();
 
 	if (device_info->slave_address <= 0)
@@ -69,7 +69,6 @@ int bw_spi_dio_start(device_info_t *device_info) {
  */
 void bw_spi_dio_end(void) {
 	bcm2835_spi_end();
-	bcm2835_close();
 }
 
 /**

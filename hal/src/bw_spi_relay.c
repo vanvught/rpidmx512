@@ -49,10 +49,10 @@ inline void static fets_spi_setup(device_info_t *device_info) {
 }
 
 int bw_spi_relay_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
-
+#endif
 	bcm2835_spi_begin();
 	// Just once. Assuming all devices do have the same
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
@@ -67,7 +67,6 @@ int bw_spi_relay_start(device_info_t *device_info) {
 
 void bw_spi_relay_end(void) {
 	bcm2835_spi_end();
-	bcm2835_close();
 }
 
 inline static void bw_spi_relay_fsel_mask(device_info_t *device_info, const uint8_t mask) {

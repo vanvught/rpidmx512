@@ -70,11 +70,6 @@
 #else
 #include <stdint.h>
 
-// ST
-extern void bcm2835_st_delay(const uint64_t offset_micros, const uint64_t micros);
-// DELAY
-extern void udelay(const uint64_t);
-
 // https://github.com/raspberrypi/linux/blob/rpi-3.6.y/arch/arm/mach-bcm2708/include/mach/platform.h
 #define ARM_IRQ1_BASE		0						///<
 #define INTERRUPT_TIMER1	(ARM_IRQ1_BASE + 1)		///<
@@ -304,15 +299,16 @@ typedef struct {
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
 
-inline static int bcm2835_init(void) {
-	return 1;
+// ST
+extern void bcm2835_st_delay(const uint64_t, const uint64_t);
+
+inline static uint64_t bcm2835_st_read(void)
+{
+	return *(volatile uint64_t *) (BCM2835_ST_BASE + 0x04);
 }
 
-inline static int bcm2835_close(void) {
-	return 1;
-}
-
-#define bcm2835_st_read()			*(volatile uint64_t *)(BCM2835_ST_BASE + 0x04)
+// DELAY
+extern void udelay(const uint64_t);
 
 #endif
 

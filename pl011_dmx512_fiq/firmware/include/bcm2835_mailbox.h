@@ -28,6 +28,11 @@
 
 #include <stdint.h>
 
+typedef enum {
+	BCM2835_MAILBOX_SUCCESS	= 0x80000000,	///< Request successful
+	BCM2835_MILBOX_ERROR	= 0x80000001	///< Error parsing request buffer (partial response)
+} bcm2835MailboxReasonCodes;
+
 /**
  * @brief The following lists the currently defined mailbox channels.
  */

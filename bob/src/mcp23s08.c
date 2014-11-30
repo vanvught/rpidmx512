@@ -46,10 +46,10 @@ inline void static mcp23s08_setup(device_info_t *device_info) {
  * @return
  */
 int mcp23s08_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return MCP23S08_ERROR;
-
+#endif
 	bcm2835_spi_begin();
 	// Just once. Assuming all devices do have the same
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
