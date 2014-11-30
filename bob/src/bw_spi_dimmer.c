@@ -1,5 +1,5 @@
 /**
- * @file bw_spi_relay.c
+ * @file bw_spi_dimmer.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -29,7 +29,7 @@
 #endif
 #include <device_info.h>
 #include <bw.h>
-#include <bw_spi_relay.h>
+#include <bw_spi_dimmer.h>
 
 #ifndef BARE_METAL
 #define udelay bcm2835_delayMicroseconds
@@ -37,18 +37,16 @@
 
 extern int printf(const char *format, ...);
 
-static void bw_spi_relay_fsel_mask(device_info_t *, const uint8_t);
-
 /**
  *
  * @param device_info
  */
-inline void static fets_spi_setup(device_info_t *device_info) {
+inline void static dimmer_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
-int bw_spi_relay_start(device_info_t *device_info) {
+int bw_spi_dimmer_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
@@ -56,46 +54,33 @@ int bw_spi_relay_start(device_info_t *device_info) {
 	bcm2835_spi_begin();
 
 	if (device_info->slave_address <= 0)
-		device_info->slave_address = BW_RELAY_DEFAULT_SLAVE_ADDRESS;
-
-	bw_spi_relay_fsel_mask(device_info, 0x7F);
+		device_info->slave_address = BW_DIMMER_DEFAULT_SLAVE_ADDRESS;
 
 	return 0;
 }
 
-void bw_spi_relay_end(void) {
+
+void bw_spi_dimmer_output(device_info_t *device_info, const uint8_t value) {
+	char cmd[3];
+
+	cmd[0] = device_info->slave_address;
+	cmd[1] = BW_PORT_WRITE_DIMMER;
+	cmd[2] = value;
+
+	dimmer_spi_setup(device_info);
+	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
+}
+
+void bw_spi_dimmer_end(void) {
 	bcm2835_spi_end();
-}
-
-inline static void bw_spi_relay_fsel_mask(device_info_t *device_info, const uint8_t mask) {
-	char cmd[3];
-
-	cmd[0] = device_info->slave_address;
-	cmd[1] = BW_PORT_WRITE_IO_DIRECTION;
-	cmd[2] = mask;
-	fets_spi_setup(device_info);
-
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_RELAY_SPI_BYTE_WAIT_US);
-}
-
-void bw_spi_relay_output(device_info_t *device_info, const uint8_t pins) {
-	char cmd[3];
-
-	cmd[0] = device_info->slave_address;
-	cmd[1] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
-	cmd[2] = pins;
-
-	fets_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_RELAY_SPI_BYTE_WAIT_US);
 }
 
 /**
  *
  * @param device_info
  */
-void bw_spi_relay_read_id(device_info_t *device_info) {
+void bw_spi_dimmer_read_id(device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
 	int i = 0;
 	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
@@ -105,9 +90,9 @@ void bw_spi_relay_read_id(device_info_t *device_info) {
 	buf[0] = device_info->slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
 
-	fets_spi_setup(device_info);
+	dimmer_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
 	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
-	udelay(BW_RELAY_SPI_BYTE_WAIT_US);
+	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
 	printf("[%.20s]\n", &buf[2]);
 }

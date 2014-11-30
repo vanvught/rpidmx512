@@ -54,8 +54,6 @@ int bw_spi_relay_start(device_info_t *device_info) {
 		return 1;
 #endif
 	bcm2835_spi_begin();
-	// Just once. Assuming all devices do have the same
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = BW_RELAY_DEFAULT_SLAVE_ADDRESS;
