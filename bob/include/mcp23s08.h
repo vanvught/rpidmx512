@@ -70,11 +70,11 @@ typedef enum {
 extern int mcp23s08_start(device_info_t *);
 extern void mcp23s08_end (void);
 
-extern uint8_t mcp23s08_reg_read(device_info_t *, const uint8_t);
-extern void mcp23s08_reg_write(device_info_t *, const uint8_t, const uint8_t);
+extern uint8_t mcp23s08_reg_read(const device_info_t *, const uint8_t);
+extern void mcp23s08_reg_write(const device_info_t *, const uint8_t, const uint8_t);
 
-extern void mcp23s08_gpio_fsel(device_info_t *, const uint8_t, const uint8_t);
-extern void mcp23s08_gpio_set(device_info_t *, const uint8_t);
-extern void mcp23s08_gpio_clr(device_info_t *, const uint8_t);
+extern void mcp23s08_gpio_fsel(const device_info_t *, const uint8_t, const uint8_t);
+extern void mcp23s08_gpio_set(const device_info_t *, const uint8_t);
+extern void mcp23s08_gpio_clr(const device_info_t *, const uint8_t);
 
 #endif /* MCP23S08_H_ */

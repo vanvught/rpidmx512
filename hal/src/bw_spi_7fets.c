@@ -48,6 +48,11 @@ inline void static fets_spi_setup(device_info_t *device_info) {
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
+/**
+ *
+ * @param device_info
+ * @return
+ */
 int bw_spi_7fets_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
@@ -63,29 +68,38 @@ int bw_spi_7fets_start(device_info_t *device_info) {
 	return 0;
 }
 
+/**
+ *
+ */
 void bw_spi_7fets_end(void) {
 	bcm2835_spi_end();
 }
 
+/**
+ *
+ * @param device_info
+ * @param mask
+ */
 inline static void bw_spi_7fets_fsel_mask(device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
-
 	cmd[0] = device_info->slave_address;
 	cmd[1] = BW_PORT_WRITE_IO_DIRECTION;
 	cmd[2] = mask;
 	fets_spi_setup(device_info);
-
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
 }
 
+/**
+ *
+ * @param device_info
+ * @param pins
+ */
 void bw_spi_7fets_output(device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
-
 	cmd[0] = device_info->slave_address;
 	cmd[1] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
 	cmd[2] = pins;
-
 	fets_spi_setup(device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
@@ -97,14 +111,8 @@ void bw_spi_7fets_output(device_info_t *device_info, const uint8_t pins) {
  */
 void bw_spi_7fets_read_id(device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
-	int i = 0;
-	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
-		buf[i] = '\0';
-	}
-
 	buf[0] = device_info->slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
-
 	fets_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
 	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);

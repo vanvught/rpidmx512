@@ -41,7 +41,7 @@ extern int printf(const char *format, ...);
  *
  * @param device_info
  */
-inline static void dio_i2c_setup(device_info_t *device_info) {
+inline static void dio_i2c_setup(const device_info_t *device_info) {
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 }
@@ -52,10 +52,10 @@ inline static void dio_i2c_setup(device_info_t *device_info) {
  * @return
  */
 int bw_i2c_dio_start(device_info_t *device_info) {
-
+#ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
-
+#endif
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address <= 0)
@@ -77,12 +77,10 @@ void bw_i2c_dio_end(void) {
  * @param device_info
  * @param mask
  */
-void bw_i2c_dio_fsel_mask(device_info_t *device_info, const uint8_t mask) {
+void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[2];
-
 	cmd[0] = BW_PORT_WRITE_IO_DIRECTION;
 	cmd[1] = mask;
-
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_DIO_I2C_BYTE_WAIT_US);
@@ -93,12 +91,10 @@ void bw_i2c_dio_fsel_mask(device_info_t *device_info, const uint8_t mask) {
  * @param device_info
  * @param pins
  */
-void bw_i2c_dio_output(device_info_t *device_info, const uint8_t pins) {
+void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[2];
-
 	cmd[0] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
 	cmd[1] = pins;
-
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_DIO_I2C_BYTE_WAIT_US);
@@ -108,8 +104,8 @@ void bw_i2c_dio_output(device_info_t *device_info, const uint8_t pins) {
  *
  * @param device_info
  */
-void bw_i2c_dio_read_id(device_info_t *device_info) {
-	static char cmd[] = { BW_PORT_READ_ID_STRING };
+void bw_i2c_dio_read_id(const device_info_t *device_info) {
+	char cmd[] = { BW_PORT_READ_ID_STRING };
 	char buf[BW_ID_STRING_LENGTH];
 	dio_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));

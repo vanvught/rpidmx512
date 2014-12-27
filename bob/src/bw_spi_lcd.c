@@ -41,12 +41,16 @@ extern int printf(const char *format, ...);
  *
  * @param device_info
  */
-inline static void lcd_spi_setup(device_info_t *device_info) {
+inline static void lcd_spi_setup(const device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); //100kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
-
+/**
+ *
+ * @param device_info
+ * @return
+ */
 int bw_spi_lcd_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
@@ -60,25 +64,40 @@ int bw_spi_lcd_start(device_info_t *device_info) {
 	return BW_LCD_OK;
 }
 
+/**
+ *
+ */
 void bw_spi_lcd_end(void) {
 	bcm2835_spi_end();
 }
 
-void bw_spi_lcd_set_cursor(device_info_t *device_info, uint8_t line, uint8_t pos) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
+/**
+ *
+ * @param device_info
+ * @param line
+ * @param pos
+ */
+void bw_spi_lcd_set_cursor(const device_info_t *device_info, uint8_t line, uint8_t pos) {
+	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
 	cmd[0] = device_info->slave_address;
-	if (line > BW_LCD_MAX_LINES)
-		line = 0;
-	if (pos > BW_LCD_MAX_CHARACTERS)
-		pos = 0;
+//	if (line > BW_LCD_MAX_LINES)
+//		line = 0;
+//	if (pos > BW_LCD_MAX_CHARACTERS)
+//		pos = 0;
 	cmd[2] = ((line && 0b11) << 5) | (pos && 0b11111);
 	lcd_spi_setup(device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_text(device_info_t *device_info, const char *text, uint8_t length) {
-	static char data[22];
+/**
+ *
+ * @param device_info
+ * @param text
+ * @param length
+ */
+void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t length) {
+	char data[BW_LCD_MAX_CHARACTERS + 2];
 	data[0] = device_info->slave_address;
 	data[1] = BW_PORT_WRITE_DISPLAY_DATA;
 	if (length > BW_LCD_MAX_CHARACTERS)
@@ -91,52 +110,89 @@ void bw_spi_lcd_text(device_info_t *device_info, const char *text, uint8_t lengt
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_text_line_1(device_info_t *device_info, const char *text, const uint8_t length) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0000000 };
-	cmd[0] = device_info->slave_address;
-	lcd_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+/**
+ *
+ * @param device_info
+ * @param text
+ * @param length
+ */
+void bw_spi_lcd_text_line_1(const device_info_t *device_info, const char *text, const uint8_t length) {
+//	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0000000 };
+//	cmd[0] = device_info->slave_address;
+//	lcd_spi_setup(device_info);
+//	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	bw_spi_lcd_set_cursor(device_info, 0, 0);
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_2(device_info_t *device_info, const char *text, const uint8_t length) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0100000 };
-	cmd[0] = device_info->slave_address;
-	lcd_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+/**
+ *
+ * @param device_info
+ * @param text
+ * @param length
+ */
+void bw_spi_lcd_text_line_2(const device_info_t *device_info, const char *text, const uint8_t length) {
+//	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0100000 };
+//	cmd[0] = device_info->slave_address;
+//	lcd_spi_setup(device_info);
+//	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	bw_spi_lcd_set_cursor(device_info, 1, 0);
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_3(device_info_t *device_info, const char *text, const uint8_t length) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1000000 };
-	cmd[0] = device_info->slave_address;
-	lcd_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+/**
+ *
+ * @param device_info
+ * @param text
+ * @param length
+ */
+void bw_spi_lcd_text_line_3(const device_info_t *device_info, const char *text, const uint8_t length) {
+//	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1000000 };
+//	cmd[0] = device_info->slave_address;
+//	lcd_spi_setup(device_info);
+//	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	bw_spi_lcd_set_cursor(device_info, 2, 0);
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_text_line_4(device_info_t *device_info, const char *text, const uint8_t length) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1100000 };
-	cmd[0] = device_info->slave_address;
-	lcd_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+/**
+ *
+ * @param device_info
+ * @param text
+ * @param length
+ */
+void bw_spi_lcd_text_line_4(const device_info_t *device_info, const char *text, const uint8_t length) {
+//	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1100000 };
+//	cmd[0] = device_info->slave_address;
+//	lcd_spi_setup(device_info);
+//	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	bw_spi_lcd_set_cursor(device_info, 3, 0);
 	bw_spi_lcd_text(device_info, text, length);
 }
 
-void bw_spi_lcd_cls(device_info_t *device_info) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
+/**
+ *
+ * @param device_info
+ */
+void bw_spi_lcd_cls(const device_info_t *device_info) {
+	char cmd[] = { 0x00, BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_set_contrast(device_info_t *device_info, const uint8_t value) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
+/**
+ *
+ * @param device_info
+ * @param value
+ */
+void bw_spi_lcd_set_contrast(const device_info_t *device_info, const uint8_t value) {
+	char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
 	cmd[0] = device_info->slave_address;
 	cmd[2] = value;
 	lcd_spi_setup(device_info);
@@ -144,8 +200,13 @@ void bw_spi_lcd_set_contrast(device_info_t *device_info, const uint8_t value) {
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 }
 
-void bw_spi_lcd_set_backlight(device_info_t *device_info, const uint8_t value) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
+/**
+ *
+ * @param device_info
+ * @param value
+ */
+void bw_spi_lcd_set_backlight(const device_info_t *device_info, const uint8_t value) {
+	char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
 	cmd[0] = device_info->slave_address;
 	cmd[2] = value;
 	lcd_spi_setup(device_info);
@@ -153,8 +214,12 @@ void bw_spi_lcd_set_backlight(device_info_t *device_info, const uint8_t value) {
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 }
 
-void bw_spi_lcd_reinit(device_info_t *device_info) {
-	static char cmd[] = { 0x00, BW_PORT_WRITE_REINIT_LCD, ' ' };
+/**
+ *
+ * @param device_info
+ */
+void bw_spi_lcd_reinit(const device_info_t *device_info) {
+	char cmd[] = { 0x00, BW_PORT_WRITE_REINIT_LCD, ' ' };
 	cmd[0] = device_info->slave_address;
 	lcd_spi_setup(device_info);
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
@@ -162,19 +227,18 @@ void bw_spi_lcd_reinit(device_info_t *device_info) {
 	udelay(1000000);
 }
 
-void bw_spi_lcd_read_id(device_info_t *device_info) {
+/**
+ *
+ * @param device_info
+ */
+void bw_spi_lcd_read_id(const device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
-	int i = 0;
-	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
-		buf[i] = '\0';
-	}
-
 	buf[0] = device_info->slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
-
 	lcd_spi_setup(device_info);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
 	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	printf("[%.20s]\n", &buf[2]);
 }
+

@@ -34,9 +34,8 @@
  *
  * @param device_info
  */
-inline void static mcp23s08_setup(device_info_t *device_info) {
+inline void static mcp23s08_setup(const device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);	// 1.953125MHz
-	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
@@ -64,11 +63,20 @@ int mcp23s08_start(device_info_t *device_info) {
 	return MCP23S08_OK;
 }
 
+/**
+ *
+ */
 void mcp23s08_end (void) {
 	bcm2835_spi_end();
 }
 
-uint8_t mcp23s08_reg_read(device_info_t *device_info, const uint8_t reg) {
+/**
+ *
+ * @param device_info
+ * @param reg
+ * @return
+ */
+uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
 	char spiData[3];
 
 	spiData[0] = MCP23S08_CMD_READ | ((device_info->slave_address) << 1);
@@ -80,7 +88,13 @@ uint8_t mcp23s08_reg_read(device_info_t *device_info, const uint8_t reg) {
 	return spiData[2];
 }
 
-void mcp23s08_reg_write(device_info_t *device_info, const uint8_t reg, const uint8_t value) {
+/**
+ *
+ * @param device_info
+ * @param reg
+ * @param value
+ */
+void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
 	char spiData[3];
 
 	spiData[0] = MCP23S08_CMD_WRITE | ((device_info->slave_address) << 1);
@@ -91,7 +105,13 @@ void mcp23s08_reg_write(device_info_t *device_info, const uint8_t reg, const uin
 	bcm2835_spi_transfern(spiData, 3);
 }
 
-void mcp23s08_gpio_fsel(device_info_t *device_info, const uint8_t pin, const uint8_t mode) {
+/**
+ *
+ * @param device_info
+ * @param pin
+ * @param mode
+ */
+void mcp23s08_gpio_fsel(const device_info_t *device_info, const uint8_t pin, const uint8_t mode) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_IODIR);
 	if (mode == MCP23S08_FSEL_OUTP) {
 		data &= (~pin);
@@ -101,13 +121,23 @@ void mcp23s08_gpio_fsel(device_info_t *device_info, const uint8_t pin, const uin
 	mcp23s08_reg_write(device_info, MCP23S08_IODIR, data);
 }
 
-void mcp23s08_gpio_set(device_info_t *device_info, const uint8_t pin) {
+/**
+ *
+ * @param device_info
+ * @param pin
+ */
+void mcp23s08_gpio_set(const device_info_t *device_info, const uint8_t pin) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_OLAT);
 	data |= pin;
 	mcp23s08_reg_write(device_info, MCP23S08_GPIO, data);
 }
 
-void mcp23s08_gpio_clr(device_info_t *device_info, const uint8_t pin) {
+/**
+ *
+ * @param device_info
+ * @param pin
+ */
+void mcp23s08_gpio_clr(const device_info_t *device_info, const uint8_t pin) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_OLAT);
 	data &= (~pin);
 	mcp23s08_reg_write(device_info, MCP23S08_GPIO, data);
