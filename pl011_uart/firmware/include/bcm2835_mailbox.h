@@ -30,14 +30,16 @@
 
 typedef enum {
 	BCM2835_MAILBOX_SUCCESS	= 0x80000000,	///< Request successful
-	BCM2835_MILBOX_ERROR	= 0x80000001	///< Error parsing request buffer (partial response)
+	BCM2835_MAILBOX_ERROR	= 0x80000001	///< Error parsing request buffer (partial response)
 } bcm2835MailboxReasonCodes;
 
 /**
  * @brief The following lists the currently defined mailbox channels.
  */
 typedef enum {
-	BCM2835_MAILBOX_FB_CHANNEL 		= 1,	///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
+	BCM2835_MAILBOX_POWER_CHANNEL	= 0,	///< for use by the power management interface
+	BCM2835_MAILBOX_FB_CHANNEL		= 1,	///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
+	BCM2835_MAILBOX_VCHIQ_CHANNEL	= 3,    ///< for use by the VCHIQ interface
 	BCM2835_MAILBOX_PROP_CHANNEL	= 8		///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
 } bcm2835MailboxChannels;
 

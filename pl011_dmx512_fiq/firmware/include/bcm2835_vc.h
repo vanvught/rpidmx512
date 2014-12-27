@@ -56,6 +56,11 @@ typedef enum {
 	BCM2835_VC_POWER_ID_CCP2TX 		= 8 	///<
 } bcm2835VideoCorePowerId;
 
+/*
+ *  Bit 0: 0=off, 1=on
+ *  Bit 1: 0=do not wait, 1=wait
+ *  Bits 2-31: reserved for future use (set to 0)
+ */
 typedef enum {
 	BCM2835_VC_SET_POWER_STATE_OFF_NO_WAIT	= 0,	///<
 	BCM2835_VC_SET_POWER_STATE_ON_NO_WAIT	= 1,	///<

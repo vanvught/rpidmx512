@@ -25,7 +25,6 @@
 
 #include <stdint.h>
 #include "bcm2835.h"
-#include "bcm2835_mailbox.h"
 
 #define BCM2835_MAILBOX_STATUS_WF					0x80000000	///< Write full
 #define	 BCM2835_MAILBOX_STATUS_RE					0x40000000	///< Read empty
@@ -45,7 +44,7 @@ uint32_t bcm2835_mailbox_read(const uint8_t channel) {
 		uint8_t read_channel = (uint8_t) (data & 0xf);
 
 		if (read_channel == channel)
-			return (data & 0xfffffff0);
+			return (data &  ~0xf);
 	}
 
 	return 0;
@@ -59,5 +58,5 @@ uint32_t bcm2835_mailbox_read(const uint8_t channel) {
  */
 void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data) {
 	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF);
-	BCM2835_MAILBOX->WRITE = (data & 0xfffffff0) | (uint32_t)(channel & 0xf);
+	BCM2835_MAILBOX->WRITE = (data &  ~0xf) | (uint32_t)(channel & 0xf);
 }

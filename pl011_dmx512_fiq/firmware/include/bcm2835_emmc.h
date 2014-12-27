@@ -28,13 +28,7 @@
 
 #include "stdint.h"
 
-// TODO Move to sdhci.h
-#define  SDHCI_DIVIDER_SHIFT		8
-#define  SDHCI_DIVIDER_HI_SHIFT		6
-#define  SDHCI_DIV_MASK				0xFF
-#define  SDHCI_DIV_MASK_LEN			8
-#define  SDHCI_DIV_HI_MASK			0x300
-
+// STATUS, offset 0x24
 #define BCM2835_EMMC_STATUS_CMD_INHIBIT		((uint32_t)0x00000001)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CMD_INHIBIT 0x00000001
 #define BCM2835_EMMC_STATUS_DATA_INHIBIT	((uint32_t)0x00000002)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_DATA_INHIBIT 0x00000002
 
@@ -52,6 +46,13 @@
 /*
  * End of controller registers.
  */
+
+// TODO Move to sdhci.h
+#define SDHCI_DIVIDER_SHIFT		8
+#define SDHCI_DIVIDER_HI_SHIFT	6
+#define SDHCI_DIV_MASK			0xFF
+#define SDHCI_DIV_MASK_LEN		8
+#define SDHCI_DIV_HI_MASK		0x300
 
 #define SDHCI_MAX_DIV_SPEC_200	256
 #define SDHCI_MAX_DIV_SPEC_300	2046

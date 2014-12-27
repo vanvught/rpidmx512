@@ -109,8 +109,8 @@ extern void bcm2835_spi_setDataMode(const uint8_t);
 extern void bcm2835_spi_chipSelect(const uint8_t);
 extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
 extern void bcm2835_spi_transfernb(char*, char*, const uint32_t);
-extern void bcm2835_spi_transfern(char* buf, const uint32_t);
-extern void bcm2835_spi_writenb(char* tbuf, const uint32_t);
+extern void bcm2835_spi_transfern(char*, const uint32_t);
+extern void bcm2835_spi_writenb(const char*, const uint32_t);
 extern void bcm2835_spi_write(const uint16_t data);
 
 #endif
