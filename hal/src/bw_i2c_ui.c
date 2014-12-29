@@ -54,7 +54,7 @@ inline static void ui_i2c_setup(void) {
  * @param slave_address
  * @return
  */
-int bw_i2c_ui_start (const char slave_address) {
+uint8_t bw_i2c_ui_start (const char slave_address) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return BW_UI_ERROR;

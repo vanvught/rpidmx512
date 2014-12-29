@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-//
+#include <bw_spi.h>//
 #include <bw_spi_lcd.h>
 
 unsigned int slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
 	printf("bw_spi_lcd_reinit\n");
 	bw_spi_lcd_reinit(&device_info);
 
-	printf("bw_spi_lcd_read_id\n");
-	bw_spi_lcd_read_id(&device_info);
+	printf("bw_spi_read_id\n");
+	bw_spi_read_id(&device_info);
 
 	printf("bw_spi_lcd_cls\n");
 	bw_spi_lcd_cls(&device_info);

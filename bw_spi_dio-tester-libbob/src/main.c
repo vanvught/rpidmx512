@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//
+#include <bw_spi.h>
 #include <bw_spi_dio.h>
 
 unsigned int slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
 	printf("slave address : 0x%x\n", device_info.slave_address);
 	printf("chip select   : %.1d\n", device_info.chip_select);
 
-	printf("bw_spi_dio_read_id\n");
-	bw_spi_dio_read_id(&device_info);
+	printf("bw_spi_read_id\n");
+	bw_spi_read_id(&device_info);
 
 	printf("bw_spi_dio_fsel_mask\n");
 	bw_spi_dio_fsel_mask(&device_info, 0x7F);

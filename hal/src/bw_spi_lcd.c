@@ -35,8 +35,6 @@
 #define udelay bcm2835_delayMicroseconds
 #endif
 
-extern int printf(const char *format, ...);
-
 /**
  *
  * @param device_info
@@ -51,7 +49,7 @@ inline static void lcd_spi_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-int bw_spi_lcd_start(device_info_t *device_info) {
+uint8_t bw_spi_lcd_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return BW_LCD_ERROR;
@@ -225,20 +223,5 @@ void bw_spi_lcd_reinit(const device_info_t *device_info) {
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(1000000);
-}
-
-/**
- *
- * @param device_info
- */
-void bw_spi_lcd_read_id(const device_info_t *device_info) {
-	char buf[BW_ID_STRING_LENGTH];
-	buf[0] = device_info->slave_address | 1;
-	buf[1] = BW_PORT_READ_ID_STRING;
-	lcd_spi_setup(device_info);
-	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
-	udelay(BW_LCD_SPI_BYTE_WAIT_US);
-	printf("[%.20s]\n", &buf[2]);
 }
 

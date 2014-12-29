@@ -26,10 +26,12 @@
 #ifndef MCP7941X_H_
 #define MCP7941X_H_
 
-#define MCP7941X_OK							0
-#define MCP7941X_ERROR						1
+#include <stdint.h>
 
-#define  MCP7941X_DEFAULT_SLAVE_ADDRESS		0x6F
+#define MCP7941X_OK								0
+#define MCP7941X_ERROR							1
+
+#define  MCP7941X_DEFAULT_SLAVE_ADDRESS			0x6F
 
 /** Time and Configuration Registers (TCR) **/
 #define MCP7941X_RTCC_TCR_SECONDS				0x00
@@ -55,9 +57,8 @@ struct rtc_time {
 	int tm_isdst;	/* DST.			[-1/0/1]				*/
 };
 
-extern int mcp7941x_start(char);
+extern uint8_t mcp7941x_start(char);
 extern void mcp7941x_end(void);
-
 extern void mcp7941x_get_date_time(struct rtc_time *tm);
 extern void mcp7941x_set_date_time(struct rtc_time *tm);
 

@@ -22,18 +22,17 @@
 #ifndef BW_I2C_DIO_H_
 #define BW_I2C_DIO_H_
 
+#include <stdint.h>
+
 #include <device_info.h>
 #include <bw_dio.h>
 
-#include <stdint.h>
-
 #define BW_DIO_I2C_BYTE_WAIT_US				0
 
-extern int bw_i2c_dio_start(device_info_t *);
+extern uint8_t bw_i2c_dio_start(device_info_t *);
 extern void bw_i2c_dio_end(void);
 
 extern void bw_i2c_dio_fsel_mask(const device_info_t *, const uint8_t);
 extern void bw_i2c_dio_output(const device_info_t *, const uint8_t);
-extern void bw_i2c_dio_read_id(const device_info_t *);
 
 #endif /* BW_I2C_DIO_H_ */

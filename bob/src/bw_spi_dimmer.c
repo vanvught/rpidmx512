@@ -35,18 +35,16 @@
 #define udelay bcm2835_delayMicroseconds
 #endif
 
-extern int printf(const char *format, ...);
-
 /**
  *
  * @param device_info
  */
-inline void static dimmer_spi_setup(device_info_t *device_info) {
+inline void static dimmer_spi_setup(const device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
-int bw_spi_dimmer_start(device_info_t *device_info) {
+uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
@@ -59,14 +57,11 @@ int bw_spi_dimmer_start(device_info_t *device_info) {
 	return 0;
 }
 
-
-void bw_spi_dimmer_output(device_info_t *device_info, const uint8_t value) {
+void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];
-
 	cmd[0] = device_info->slave_address;
 	cmd[1] = BW_PORT_WRITE_DIMMER;
 	cmd[2] = value;
-
 	dimmer_spi_setup(device_info);
 	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
 	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
@@ -76,23 +71,3 @@ void bw_spi_dimmer_end(void) {
 	bcm2835_spi_end();
 }
 
-/**
- *
- * @param device_info
- */
-void bw_spi_dimmer_read_id(device_info_t *device_info) {
-	char buf[BW_ID_STRING_LENGTH];
-	int i = 0;
-	for (i = 0; i < BW_ID_STRING_LENGTH; i++) {
-		buf[i] = '\0';
-	}
-
-	buf[0] = device_info->slave_address | 1;
-	buf[1] = BW_PORT_READ_ID_STRING;
-
-	dimmer_spi_setup(device_info);
-	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
-	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
-	printf("[%.20s]\n", &buf[2]);
-}

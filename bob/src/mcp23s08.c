@@ -44,14 +44,12 @@ inline void static mcp23s08_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-int mcp23s08_start(device_info_t *device_info) {
+uint8_t mcp23s08_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return MCP23S08_ERROR;
 #endif
 	bcm2835_spi_begin();
-	// Just once. Assuming all devices do have the same
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;
@@ -78,13 +76,10 @@ void mcp23s08_end (void) {
  */
 uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
 	char spiData[3];
-
 	spiData[0] = MCP23S08_CMD_READ | ((device_info->slave_address) << 1);
 	spiData[1] = reg;
-
 	mcp23s08_setup(device_info);
 	bcm2835_spi_transfern(spiData, 3);
-
 	return spiData[2];
 }
 
@@ -96,11 +91,9 @@ uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
  */
 void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
 	char spiData[3];
-
 	spiData[0] = MCP23S08_CMD_WRITE | ((device_info->slave_address) << 1);
 	spiData[1] = reg;
 	spiData[2] = value;
-
 	mcp23s08_setup(device_info);
 	bcm2835_spi_transfern(spiData, 3);
 }

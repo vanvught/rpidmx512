@@ -1,3 +1,7 @@
+/**
+ * @file bw_i2c.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,18 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_SPI_DIMMER_H_
-#define BW_SPI_DIMMER_H_
-
-#include <stdint.h>
-
+#include <bcm2835.h>
+#ifdef BARE_METAL
+#include <bcm2835_spi.h>
+#endif
 #include <device_info.h>
-#include <bw_dimmer.h>
+#include <bw.h>
 
-#define BW_DIMMER_SPI_BYTE_WAIT_US		0
+extern int printf(const char *format, ...);
 
-extern uint8_t bw_spi_dimmer_start(device_info_t *);
-extern void bw_spi_dimmer_end(void);
-extern void bw_spi_dimmer_output(const device_info_t *, const uint8_t);
 
-#endif /* BW_SPI_DIMMER_H_ */
+/**
+ *
+ */
+void bw_i2c_read_id(const device_info_t *device_info) {
+	char cmd[] = { BW_PORT_READ_ID_STRING };
+	char buf[BW_ID_STRING_LENGTH];
+	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
+	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
+	printf("[%s]\n", buf);
+}

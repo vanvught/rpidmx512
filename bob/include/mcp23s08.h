@@ -67,12 +67,10 @@ typedef enum {
 	MCP23S08_FSEL_INPT = 0b001,   ///< Input
 } mcp23s08FunctionSelect;
 
-extern int mcp23s08_start(device_info_t *);
+extern uint8_t mcp23s08_start(device_info_t *);
 extern void mcp23s08_end (void);
-
 extern uint8_t mcp23s08_reg_read(const device_info_t *, const uint8_t);
 extern void mcp23s08_reg_write(const device_info_t *, const uint8_t, const uint8_t);
-
 extern void mcp23s08_gpio_fsel(const device_info_t *, const uint8_t, const uint8_t);
 extern void mcp23s08_gpio_set(const device_info_t *, const uint8_t);
 extern void mcp23s08_gpio_clr(const device_info_t *, const uint8_t);

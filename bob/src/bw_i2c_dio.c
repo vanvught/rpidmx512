@@ -51,7 +51,7 @@ inline static void dio_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-int bw_i2c_dio_start(device_info_t *device_info) {
+uint8_t bw_i2c_dio_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;

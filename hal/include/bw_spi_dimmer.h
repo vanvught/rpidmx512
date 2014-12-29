@@ -22,17 +22,15 @@
 #ifndef BW_SPI_DIMMER_H_
 #define BW_SPI_DIMMER_H_
 
+#include <stdint.h>
+
 #include <device_info.h>
 #include <bw_dimmer.h>
 
-#include <stdint.h>
+#define BW_DIMMER_SPI_BYTE_WAIT_US		0
 
-#define BW_DIMMER_SPI_BYTE_WAIT_US				0
-
-extern int bw_spi_dimmer_start(device_info_t *);
+extern uint8_t bw_spi_dimmer_start(device_info_t *);
 extern void bw_spi_dimmer_end(void);
-
-extern void bw_spi_dimmer_output(device_info_t *, const uint8_t);
-extern void bw_spi_dimmer_read_id(device_info_t *);
+extern void bw_spi_dimmer_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_DIMMER_H_ */

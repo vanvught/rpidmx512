@@ -35,15 +35,13 @@
 #define udelay bcm2835_delayMicroseconds
 #endif
 
-extern int printf(const char *format, ...);
-
-static void bw_spi_7fets_fsel_mask(device_info_t *, const uint8_t);
+static void bw_spi_7fets_fsel_mask(const device_info_t *, const uint8_t);
 
 /**
  *
  * @param device_info
  */
-inline void static fets_spi_setup(device_info_t *device_info) {
+inline void static fets_spi_setup(const device_info_t *device_info) {
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
@@ -53,7 +51,7 @@ inline void static fets_spi_setup(device_info_t *device_info) {
  * @param device_info
  * @return
  */
-int bw_spi_7fets_start(device_info_t *device_info) {
+uint8_t bw_spi_7fets_start(device_info_t *device_info) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return 1;
@@ -80,7 +78,7 @@ void bw_spi_7fets_end(void) {
  * @param device_info
  * @param mask
  */
-inline static void bw_spi_7fets_fsel_mask(device_info_t *device_info, const uint8_t mask) {
+inline static void bw_spi_7fets_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
 	cmd[0] = device_info->slave_address;
 	cmd[1] = BW_PORT_WRITE_IO_DIRECTION;
@@ -95,7 +93,7 @@ inline static void bw_spi_7fets_fsel_mask(device_info_t *device_info, const uint
  * @param device_info
  * @param pins
  */
-void bw_spi_7fets_output(device_info_t *device_info, const uint8_t pins) {
+void bw_spi_7fets_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
 	cmd[0] = device_info->slave_address;
 	cmd[1] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
@@ -105,17 +103,3 @@ void bw_spi_7fets_output(device_info_t *device_info, const uint8_t pins) {
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
 }
 
-/**
- *
- * @param device_info
- */
-void bw_spi_7fets_read_id(device_info_t *device_info) {
-	char buf[BW_ID_STRING_LENGTH];
-	buf[0] = device_info->slave_address | 1;
-	buf[1] = BW_PORT_READ_ID_STRING;
-	fets_spi_setup(device_info);
-	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
-	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
-	printf("[%.20s]\n", &buf[2]);
-}

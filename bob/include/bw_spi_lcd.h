@@ -22,34 +22,26 @@
 #ifndef BW_SPI_LCD_H_
 #define BW_SPI_LCD_H_
 
+#include <stdint.h>
+
 #include <device_info.h>
 #include <bw_lcd.h>
 
-#include <stdint.h>
-
 #define BW_LCD_SPI_BYTE_WAIT_US			12
 
-extern int bw_spi_lcd_start (device_info_t *);
+extern uint8_t bw_spi_lcd_start (device_info_t *);
 extern void bw_spi_lcd_end (void);
-
 extern void bw_spi_lcd_reinit(const device_info_t *);
-
 extern void bw_spi_lcd_set_cursor(const device_info_t *, uint8_t, uint8_t);
-
 extern void bw_spi_lcd_text(const device_info_t *, const char *, uint8_t);
-
 extern void bw_spi_lcd_text_line_1(const device_info_t *, const char *, const uint8_t);
 extern void bw_spi_lcd_text_line_2(const device_info_t *, const char *, const uint8_t);
 extern void bw_spi_lcd_text_line_3(const device_info_t *, const char *, const uint8_t);
 extern void bw_spi_lcd_text_line_4(const device_info_t *, const char *, const uint8_t);
-
 extern void bw_spi_lcd_cls(const device_info_t *);
 extern void bw_spi_lcd_set_contrast(const device_info_t *, const uint8_t);
 extern void bw_spi_lcd_set_backlight(const device_info_t *, const uint8_t);
-
 extern void bw_spi_lcd_get_backlight(uint8_t *);
 extern void bw_spi_lcd_get_contrast(uint8_t *);
-
-extern void bw_spi_lcd_read_id(const device_info_t *);
 
 #endif /* BW_SPI_LCD_H_ */

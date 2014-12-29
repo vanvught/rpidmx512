@@ -22,17 +22,15 @@
 #ifndef BW_SPI_7FETS_H_
 #define BW_SPI_7FETS_H_
 
+#include <stdint.h>
+
 #include <device_info.h>
 #include <bw_7fets.h>
 
-#include <stdint.h>
+#define BW_7FETS_SPI_BYTE_WAIT_US		0
 
-#define BW_7FETS_SPI_BYTE_WAIT_US				0
-
-extern int bw_spi_7fets_start(device_info_t *);
+extern uint8_t bw_spi_7fets_start(device_info_t *);
 extern void bw_spi_7fets_end(void);
-
-extern void bw_spi_7fets_output(device_info_t *, const uint8_t);
-extern void bw_spi_7fets_read_id(device_info_t *);
+extern void bw_spi_7fets_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_7FETS_H_ */

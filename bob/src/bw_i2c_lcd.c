@@ -35,8 +35,6 @@
 #define udelay bcm2835_delayMicroseconds
 #endif
 
-extern int printf(const char *format, ...);
-
 static char i2c_lcd_slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 
 /**
@@ -52,7 +50,7 @@ inline static void lcd_i2c_setup(void) {
  * @param slave_address
  * @return
  */
-int bw_i2c_lcd_start (const char slave_address) {
+uint8_t bw_i2c_lcd_start (const char slave_address) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return BW_LCD_ERROR;
@@ -274,16 +272,4 @@ void bw_i2c_lcd_reinit(void) {
 	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 	udelay(500000);
-}
-
-/**
- *
- */
-void bw_i2c_lcd_read_id(void) {
-	char cmd[] = { BW_PORT_READ_ID_STRING };
-	char buf[BW_ID_STRING_LENGTH];
-	lcd_i2c_setup();
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-	printf("[%s]\n", buf);
 }

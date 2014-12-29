@@ -29,7 +29,7 @@
 #endif
 #include <mcp7941x.h>
 
-char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
+static char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
 
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
@@ -39,7 +39,7 @@ void inline static mcp7941x_setup(void) {
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 }
 
-int mcp7941x_start (char slave_address) {
+uint8_t mcp7941x_start (char slave_address) {
 #ifndef BARE_METAL
 	if (bcm2835_init() != 1)
 		return MCP7941X_ERROR;
@@ -59,7 +59,7 @@ void mcp7941x_end (void) {
 }
 
 void mcp7941x_get_date_time(struct rtc_time *t) {
-	static char cmd[]  = {MCP7941X_RTCC_TCR_SECONDS};
+	char cmd[]  = {MCP7941X_RTCC_TCR_SECONDS};
 	char reg[] =  {0,0,0,0,0,0,0};
 
 	mcp7941x_setup();
@@ -77,7 +77,6 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 }
 
 void mcp7941x_set_date_time(struct rtc_time *t) {
-	static char cmd[]  = {MCP7941X_RTCC_TCR_SECONDS};
 	char reg[] =  {0,0,0,0,0,0,0};
 
 	reg[MCP7941X_RTCC_TCR_SECONDS] = DEC2BCD(t->tm_sec & 0x7f);
@@ -92,7 +91,7 @@ void mcp7941x_set_date_time(struct rtc_time *t) {
 	reg[MCP7941X_RTCC_TCR_DAY] |= MCP7941X_RTCC_BIT_VBATEN;
 
 	char data[8];
-	data[0] = cmd[1];
+	data[0] = MCP7941X_RTCC_TCR_SECONDS;
 	data[1] = reg[0];
 	data[2] = reg[1];
 	data[3] = reg[2];

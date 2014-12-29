@@ -19,18 +19,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_SPI_DIMMER_H_
-#define BW_SPI_DIMMER_H_
-
-#include <stdint.h>
+#ifndef BW_I2C_H_
+#define BW_I2C_H_
 
 #include <device_info.h>
-#include <bw_dimmer.h>
 
-#define BW_DIMMER_SPI_BYTE_WAIT_US		0
+extern void bw_i2c_read_id(const device_info_t *device_info);
 
-extern uint8_t bw_spi_dimmer_start(device_info_t *);
-extern void bw_spi_dimmer_end(void);
-extern void bw_spi_dimmer_output(const device_info_t *, const uint8_t);
-
-#endif /* BW_SPI_DIMMER_H_ */
+#endif /* BW_I2C_H_ */

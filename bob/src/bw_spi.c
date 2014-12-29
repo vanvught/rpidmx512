@@ -1,3 +1,7 @@
+/**
+ * @file bw_spi.c
+ *
+ */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,18 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_SPI_DIMMER_H_
-#define BW_SPI_DIMMER_H_
-
-#include <stdint.h>
-
+#include <bcm2835.h>
+#ifdef BARE_METAL
+#include <bcm2835_spi.h>
+#endif
 #include <device_info.h>
-#include <bw_dimmer.h>
+#include <bw.h>
 
-#define BW_DIMMER_SPI_BYTE_WAIT_US		0
+extern int printf(const char *format, ...);
 
-extern uint8_t bw_spi_dimmer_start(device_info_t *);
-extern void bw_spi_dimmer_end(void);
-extern void bw_spi_dimmer_output(const device_info_t *, const uint8_t);
-
-#endif /* BW_SPI_DIMMER_H_ */
+/**
+ *
+ * @param device_info
+ */
+void bw_spi_read_id(const device_info_t *device_info) {
+	char buf[BW_ID_STRING_LENGTH];
+	buf[0] = device_info->slave_address | 1;
+	buf[1] = BW_PORT_READ_ID_STRING;
+	bcm2835_spi_chipSelect(device_info->chip_select);
+	bcm2835_spi_setClockDivider(5000); // 50 kHz
+	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
+	printf("[%.20s]\n", &buf[2]);
+}
