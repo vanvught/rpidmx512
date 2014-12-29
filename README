@@ -12,6 +12,9 @@ Linux projects for testing purposes only
 \bw_spi_dio-tester-libbob
 \bw_spi_lcd-tester-libbob
 \mcp23s08-tester-libbob
+\mcp488-tester
+\mcp4902-tester
+\mcp7941x-tester
 
 Baremetal projects testing purposes only
 ---------
