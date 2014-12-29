@@ -69,7 +69,7 @@ typedef enum
 #define ui_set_startup_message_line_4	bw_i2c_ui_set_startup_message_line_4
 #define ui_get_backlight				bw_i2c_ui_get_backlight
 #define ui_get_contrast					bw_i2c_ui_get_contrast
-#define ui_read_id						bw_i2c_ui_read_id
+#define ui_read_id						bw_i2c_read_id
 #define ui_read_button					bw_i2c_ui_read_button
 #define ui_read_button_last				bw_i2c_ui_read_button_last
 #endif

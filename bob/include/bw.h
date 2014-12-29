@@ -26,7 +26,10 @@
 #ifndef BW_H_
 #define BW_H_
 
+#ifdef __AVR_ARCH__
+#else
 #include <bcm2835.h>
+#endif
 
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
 #define BW_PORT_WRITE_COMMAND				0x01	///< write data as command

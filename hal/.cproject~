@@ -47,6 +47,10 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.2040442271" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
 							<tool command="gcc" id="cdt.managedbuild.tool.gnu.cross.assembler.1819444066" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
 								<option id="gnu.both.asm.option.flags.1449952035" name="Assembler flags" superClass="gnu.both.asm.option.flags" value="-D__ASSEMBLY__ -Wall -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float" valueType="string"/>
+								<option id="gnu.both.asm.option.include.paths.1055440360" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hal/hal/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hal/firmware/firmware/include}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1269686806" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>

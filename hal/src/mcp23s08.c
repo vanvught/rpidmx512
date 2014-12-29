@@ -23,20 +23,34 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#include <util/delay.h>
+#include <avr_spi.h>
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
 #include <bcm2835_spi.h>
 #endif
+#endif
 #include <device_info.h>
 #include <mcp23s08.h>
+
+#ifdef __AVR_ARCH__
+#define FUNC_PREFIX(x) avr_##x
+#else
+#define FUNC_PREFIX(x) bcm2835_##x
+#endif
 
 /**
  *
  * @param device_info
  */
 inline void static mcp23s08_setup(const device_info_t *device_info) {
+#ifdef __AVR_ARCH__
+#else
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);	// 1.953125MHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
+#endif
 }
 
 /**
@@ -45,11 +59,11 @@ inline void static mcp23s08_setup(const device_info_t *device_info) {
  * @return
  */
 uint8_t mcp23s08_start(device_info_t *device_info) {
-#ifndef BARE_METAL
+#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return MCP23S08_ERROR;
 #endif
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;
@@ -65,7 +79,7 @@ uint8_t mcp23s08_start(device_info_t *device_info) {
  *
  */
 void mcp23s08_end (void) {
-	bcm2835_spi_end();
+	FUNC_PREFIX(spi_end());
 }
 
 /**
@@ -79,7 +93,7 @@ uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
 	spiData[0] = MCP23S08_CMD_READ | ((device_info->slave_address) << 1);
 	spiData[1] = reg;
 	mcp23s08_setup(device_info);
-	bcm2835_spi_transfern(spiData, 3);
+	FUNC_PREFIX(spi_transfern(spiData, 3));
 	return spiData[2];
 }
 
@@ -95,7 +109,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, con
 	spiData[1] = reg;
 	spiData[2] = value;
 	mcp23s08_setup(device_info);
-	bcm2835_spi_transfern(spiData, 3);
+	FUNC_PREFIX(spi_transfern(spiData, 3));
 }
 
 /**

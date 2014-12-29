@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
 #include <bcm2835_i2c.h>
+#endif
 #endif
 #include <device_info.h>
 #include <bw.h>

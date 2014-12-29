@@ -23,11 +23,21 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#include <avr_i2c.h>
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
 #include <bcm2835_i2c.h>
 #endif
+#endif
 #include <mcp7941x.h>
+
+#ifdef __AVR_ARCH__
+#define FUNC_PREFIX(x) avr_##x
+#else
+#define FUNC_PREFIX(x) bcm2835_##x
+#endif
 
 static char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
 
@@ -35,16 +45,19 @@ static char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
 void inline static mcp7941x_setup(void) {
-	bcm2835_i2c_setSlaveAddress(i2c_mcp7941x_slave_address);
+	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address));
+#ifdef __AVR_ARCH__
+#else
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+#endif
 }
 
 uint8_t mcp7941x_start (char slave_address) {
-#ifndef BARE_METAL
+#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return MCP7941X_ERROR;
 #endif
-	bcm2835_i2c_begin();
+	FUNC_PREFIX(i2c_begin());
 
 	if (slave_address <= 0)
 		i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
@@ -55,7 +68,7 @@ uint8_t mcp7941x_start (char slave_address) {
 }
 
 void mcp7941x_end (void) {
-	bcm2835_i2c_end();
+	FUNC_PREFIX(i2c_end());
 }
 
 void mcp7941x_get_date_time(struct rtc_time *t) {
@@ -64,8 +77,8 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 
 	mcp7941x_setup();
 
-	bcm2835_i2c_write(cmd, sizeof(cmd)/sizeof(char));
-	bcm2835_i2c_read(reg, sizeof(reg)/sizeof(char));
+	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd)/sizeof(char)));
+	FUNC_PREFIX(i2c_read(reg, sizeof(reg)/sizeof(char)));
 
 	t->tm_sec  = BCD2DEC(reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
 	t->tm_min  = BCD2DEC(reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
@@ -102,5 +115,5 @@ void mcp7941x_set_date_time(struct rtc_time *t) {
 	
 	mcp7941x_setup();
 	
-	bcm2835_i2c_write(data, sizeof(data)/sizeof(char));
+	FUNC_PREFIX(i2c_write(data, sizeof(data)/sizeof(char)));
 }

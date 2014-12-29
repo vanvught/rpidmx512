@@ -23,16 +23,27 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#include <util/delay.h>
+#include <avr_spi.h>
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
 #include <bcm2835_spi.h>
+#endif
 #endif
 #include <device_info.h>
 #include <bw.h>
 #include <bw_spi_dimmer.h>
 
+#ifdef __AVR_ARCH__
+#define udelay _delay_us
+#define FUNC_PREFIX(x) avr_##x
+#else
+#define FUNC_PREFIX(x) bcm2835_##x
 #ifndef BARE_METAL
 #define udelay bcm2835_delayMicroseconds
+#endif
 #endif
 
 /**
@@ -40,16 +51,19 @@
  * @param device_info
  */
 inline void static dimmer_spi_setup(const device_info_t *device_info) {
+#ifdef __AVR_ARCH__
+#else
 	bcm2835_spi_setClockDivider(2500); // 100kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
+#endif
 }
 
 uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
-#ifndef BARE_METAL
+#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return 1;
 #endif
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = BW_DIMMER_DEFAULT_SLAVE_ADDRESS;
@@ -63,11 +77,11 @@ void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value)
 	cmd[1] = BW_PORT_WRITE_DIMMER;
 	cmd[2] = value;
 	dimmer_spi_setup(device_info);
-	bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
 }
 
 void bw_spi_dimmer_end(void) {
-	bcm2835_spi_end();
+	FUNC_PREFIX(spi_end());
 }
 
