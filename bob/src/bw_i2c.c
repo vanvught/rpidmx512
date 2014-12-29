@@ -30,11 +30,19 @@
 #include <device_info.h>
 #include <bw.h>
 
+#ifdef __AVR_ARCH__
+#define FUNC_PREFIX(x) avr_##x
+#else
+#define FUNC_PREFIX(x) bcm2835_##x
+#endif
+
 extern int printf(const char *format, ...);
 
 
 /**
+ * @ingroup I2C
  *
+ * @param device_info
  */
 void bw_i2c_read_id(const device_info_t *device_info) {
 	char cmd[] = { BW_PORT_READ_ID_STRING };

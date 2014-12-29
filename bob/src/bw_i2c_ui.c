@@ -24,7 +24,6 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <util/delay.h>
 #include <avr_i2c.h>
 #else
 #include <bcm2835.h>
@@ -35,16 +34,6 @@
 #include <device_info.h>
 #include <bw.h>
 #include <bw_i2c_ui.h>
-
-#ifdef __AVR_ARCH__
-#define udelay _delay_us
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#ifndef BARE_METAL
-#define udelay bcm2835_delayMicroseconds
-#endif
-#endif
 
 static char i2c_ui_slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
 

@@ -71,7 +71,15 @@
 
 #define BW_ID_STRING_LENGTH					20
 
-#define BW_SPI0								BCM2835_SPI_CS0
-#define BW_SPI1								BCM2835_SPI_CS1
+#ifdef __AVR_ARCH__
+#include <util/delay.h>
+#define udelay _delay_us
+#define FUNC_PREFIX(x) avr_##x
+#else
+#define FUNC_PREFIX(x) bcm2835_##x
+#ifndef BARE_METAL
+#define udelay bcm2835_delayMicroseconds
+#endif
+#endif
 
 #endif /* BW_H_ */

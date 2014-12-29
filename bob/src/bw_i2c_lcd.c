@@ -46,6 +46,7 @@ inline static void lcd_i2c_setup(void) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param slave_address
  * @return
@@ -66,7 +67,7 @@ uint8_t bw_i2c_lcd_start (const char slave_address) {
 }
 
 /**
- *
+ * @ingroup I2C-LCD
  */
 void bw_i2c_lcd_end(void) {
 	bcm2835_i2c_end();
@@ -74,6 +75,7 @@ void bw_i2c_lcd_end(void) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param line
  * @param pos
@@ -91,6 +93,7 @@ void bw_i2c_lcd_set_cursor(uint8_t line, uint8_t pos) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -107,6 +110,7 @@ void bw_i2c_lcd_text(const char *text, uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -120,6 +124,7 @@ void bw_i2c_lcd_text_line_1(const char *text, const uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -133,6 +138,7 @@ void bw_i2c_lcd_text_line_2(const char *text, const uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -146,6 +152,7 @@ void bw_i2c_lcd_text_line_3(const char *text, const uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -159,6 +166,7 @@ void bw_i2c_lcd_text_line_4(const char *text, const uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  */
 void bw_i2c_lcd_cls(void) {
@@ -169,6 +177,7 @@ void bw_i2c_lcd_cls(void) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param value
  */
@@ -180,6 +189,7 @@ void bw_i2c_lcd_set_contrast(const uint8_t value) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param value
  */
@@ -192,6 +202,7 @@ void bw_i2c_lcd_set_backlight(const uint8_t value) {
 
 //TODO
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -207,6 +218,7 @@ void bw_i2c_lcd_set_startup_message_line_1(const char *text, uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -215,6 +227,7 @@ void bw_i2c_lcd_set_startup_message_line_2(const char *text, uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -223,6 +236,7 @@ void bw_i2c_lcd_set_startup_message_line_3(const char *text, uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param text
  * @param length
@@ -231,6 +245,7 @@ void bw_i2c_lcd_set_startup_message_line_4(const char *text, uint8_t length) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param value
  */
@@ -242,6 +257,7 @@ void bw_i2c_lcd_set_backlight_temp(const uint8_t value) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param value
  */
@@ -253,6 +269,7 @@ void bw_i2c_lcd_get_backlight(uint8_t *value) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  * @param value
  */
@@ -264,6 +281,7 @@ void bw_i2c_lcd_get_contrast(uint8_t *value) {
 }
 
 /**
+ * @ingroup I2C-LCD
  *
  */
 void bw_i2c_lcd_reinit(void) {

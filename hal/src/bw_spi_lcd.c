@@ -24,7 +24,6 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <util/delay.h>
 #include <avr_spi.h>
 #else
 #include <bcm2835.h>
@@ -35,16 +34,6 @@
 #include <device_info.h>
 #include <bw.h>
 #include <bw_spi_lcd.h>
-
-#ifdef __AVR_ARCH__
-#define udelay _delay_us
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#ifndef BARE_METAL
-#define udelay bcm2835_delayMicroseconds
-#endif
-#endif
 
 /**
  *

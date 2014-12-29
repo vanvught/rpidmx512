@@ -24,7 +24,6 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <util/delay.h>
 #include <avr_spi.h>
 #else
 #include <bcm2835.h>
@@ -36,17 +35,8 @@
 #include <bw.h>
 #include <bw_spi_dio.h>
 
-#ifdef __AVR_ARCH__
-#define udelay _delay_us
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#ifndef BARE_METAL
-#define udelay bcm2835_delayMicroseconds
-#endif
-#endif
-
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  */
@@ -59,6 +49,7 @@ inline static void dio_spi_setup(const device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @return
@@ -77,6 +68,7 @@ uint8_t bw_spi_dio_start(device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  */
 void bw_spi_dio_end(void) {
@@ -84,6 +76,7 @@ void bw_spi_dio_end(void) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param mask
@@ -99,6 +92,7 @@ void bw_spi_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param pins
