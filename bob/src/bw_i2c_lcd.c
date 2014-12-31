@@ -93,7 +93,6 @@ void bw_i2c_lcd_set_cursor(uint8_t line, uint8_t pos) {
 	cmd[1] = ((line && 0b11) << 5) | (pos && 0b11111);
 	lcd_i2c_setup();
 	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
-
 }
 
 /**
