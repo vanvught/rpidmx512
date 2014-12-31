@@ -28,6 +28,10 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_uart.h"
 
+/**
+ * @ingroup UART
+ *
+ */
 void bcm2835_uart_begin(void) {
     BCM2835_UART1->ENABLE = 0x01;
     BCM2835_UART1->CNTL = 0x00;
@@ -53,7 +57,11 @@ void bcm2835_uart_begin(void) {
     BCM2835_UART1->CNTL = 3;
 }
 
-
+/**
+ * @ingroup UART
+ *
+ * @param c
+ */
 void bcm2835_uart_send(const uint32_t c) {
 	while ((BCM2835_UART1->LSR & 0x20) == 0)
 		;
