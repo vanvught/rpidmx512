@@ -45,7 +45,7 @@ extern void bw_spi_lcd_text_line_4(const device_info_t *, const char *, const ui
 extern void bw_spi_lcd_cls(const device_info_t *);
 extern void bw_spi_lcd_set_contrast(const device_info_t *, const uint8_t);
 extern void bw_spi_lcd_set_backlight(const device_info_t *, const uint8_t);
-extern void bw_spi_lcd_get_backlight(uint8_t *);
-extern void bw_spi_lcd_get_contrast(uint8_t *);
+extern void bw_spi_lcd_get_backlight(const device_info_t *, uint8_t *);
+extern void bw_spi_lcd_get_contrast(const device_info_t *, uint8_t *);
 
 #endif /* BW_SPI_LCD_H_ */

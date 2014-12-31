@@ -62,6 +62,19 @@ int main(int argc, char **argv) {
 	printf("bw_spi_lcd_reinit\n");
 	bw_spi_lcd_reinit(&device_info);
 
+	bw_spi_lcd_set_backlight(&device_info, 64);
+	bw_spi_lcd_set_contrast(&device_info, 64);
+
+	uint8_t backlight;
+	printf("bw_spi_lcd_get_backlight := ");
+	bw_spi_lcd_get_backlight(&device_info, &backlight);
+	printf("%d\n", backlight);
+
+	uint8_t contrast;
+	printf("bw_spi_lcd_get_contrast := ");
+	bw_spi_lcd_get_contrast(&device_info, &contrast);
+	printf("%d\n", contrast);
+
 	printf("bw_spi_read_id\n");
 	bw_spi_read_id(&device_info);
 

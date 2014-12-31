@@ -45,6 +45,7 @@ extern void bw_i2c_ui_set_contrast(const uint8_t);
 extern void bw_i2c_ui_set_backlight(const uint8_t);
 extern void bw_i2c_ui_get_backlight(uint8_t *);
 extern void bw_i2c_ui_get_contrast(uint8_t *);
+extern void bw_i2c_ui_read_id(void);
 extern char bw_i2c_ui_read_button(const char);
 extern char bw_i2c_ui_read_button_last(void);
 

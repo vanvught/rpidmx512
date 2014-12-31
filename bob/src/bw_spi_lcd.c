@@ -193,7 +193,7 @@ void bw_spi_lcd_cls(const device_info_t *device_info) {
  * @param value
  */
 void bw_spi_lcd_set_contrast(const device_info_t *device_info, const uint8_t value) {
-	char cmd[] = { 0x00, BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
+	char cmd[] = { 0x00, BW_PORT_WRITE_SET_CONTRAST, 0x00 };
 	cmd[0] = device_info->slave_address;
 	cmd[2] = value;
 	lcd_spi_setup(device_info);
@@ -226,5 +226,33 @@ void bw_spi_lcd_reinit(const device_info_t *device_info) {
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(1000000);
+}
+
+/**
+ * @ingroup SPI-LCD
+ *
+ * @param value
+ */
+void bw_spi_lcd_get_backlight(const device_info_t *device_info, uint8_t *value) {
+	char cmd[] = { 0x00, BW_PORT_READ_CURRENT_BACKLIGHT, 0x00};
+	cmd[0] = device_info->slave_address | 1;
+	lcd_spi_setup(device_info);
+	FUNC_PREFIX(spi_transfern(cmd, sizeof(cmd) / sizeof(char)));
+	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	*value = cmd[2];
+}
+
+/**
+ * @ingroup SPI-LCD
+ *
+ * @param value
+ */
+void bw_spi_lcd_get_contrast(const device_info_t *device_info, uint8_t *value) {
+	char cmd[] = { 0x00, BW_PORT_READ_CURRENT_CONTRAST, 0x00};
+	cmd[0] = device_info->slave_address | 1;
+	lcd_spi_setup(device_info);
+	FUNC_PREFIX(spi_transfern(cmd, sizeof(cmd) / sizeof(char)));
+	udelay(BW_LCD_SPI_BYTE_WAIT_US);
+	*value = cmd[2];
 }
 

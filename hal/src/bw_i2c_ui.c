@@ -302,6 +302,18 @@ void bw_i2c_ui_reinit(void) {
 	udelay(500000);
 }
 
+extern int printf(const char *format, ...);
+
+void bw_i2c_ui_read_id(void) {
+	char cmd[] = { BW_PORT_READ_ID_STRING };
+	char buf[BW_ID_STRING_LENGTH];
+	ui_i2c_setup();
+	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
+	udelay(BW_UI_I2C_BYTE_WAIT_US);
+	FUNC_PREFIX(i2c_read(buf, BW_ID_STRING_LENGTH));
+	printf("[%s]\n", buf);
+}
+
 // UI specific
 /**
  * @ingroup I2C-UI
