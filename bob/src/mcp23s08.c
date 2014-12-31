@@ -42,6 +42,7 @@
 #endif
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  */
@@ -54,6 +55,7 @@ inline void static mcp23s08_setup(const device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @return
@@ -76,6 +78,7 @@ uint8_t mcp23s08_start(device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  */
 void mcp23s08_end (void) {
@@ -83,6 +86,7 @@ void mcp23s08_end (void) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param reg
@@ -98,6 +102,7 @@ uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param reg
@@ -113,6 +118,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, con
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param pin
@@ -129,6 +135,7 @@ void mcp23s08_gpio_fsel(const device_info_t *device_info, const uint8_t pin, con
 }
 
 /**
+ * @ingroup SPI-DIO
  *
  * @param device_info
  * @param pin

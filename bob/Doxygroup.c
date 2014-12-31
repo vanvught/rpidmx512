@@ -40,7 +40,7 @@
  */
 
 /**
- * @defgroup SPI-7FTETS 7-fets
+ * @defgroup SPI-7FETS 7-fets
  * @ingroup SPI
  * @brief SPI_7FETs board.
  *
@@ -54,15 +54,16 @@
  */
 
 /**
+ * @defgroup SPI-DIO input-output
+ * @ingroup SPI
+ * @brief SPI_MCP23S08 board.
+ *
+ */
+
+/**
  * @defgroup SPI-LCD lcd
  * @ingroup SPI
  * @brief SPI_LCD board.
  *
  */
 
-/**
- * @defgroup SPI-IO input-output
- * @ingroup SPI
- * @brief SPI_MCP23S08 board.
- *
- */
