@@ -45,9 +45,11 @@ static char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
 void inline static mcp7941x_setup(void) {
-	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address));
+
 #ifdef __AVR_ARCH__
+	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address << 1));
 #else
+	bcm2835_i2c_setSlaveAddress(i2c_mcp7941x_slave_address);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 #endif
 }

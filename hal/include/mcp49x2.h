@@ -28,12 +28,6 @@
 
 #include <stdint.h>
 
-/**
- * Supports Mode 0,0 and Mode 1,1
- * CPOL = 0, CPHA = 0
- * CPOL = 1, CPHA = 1
- */
-
 #define MCP4902_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
 #define MCP4922_DATA(x)			((uint16_t)((uint16_t)(x) & 0x0FFF))
 
