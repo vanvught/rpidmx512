@@ -26,11 +26,6 @@
 #ifndef BW_H_
 #define BW_H_
 
-#ifdef __AVR_ARCH__
-#else
-#include <bcm2835.h>
-#endif
-
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
 #define BW_PORT_WRITE_COMMAND				0x01	///< write data as command
 #define BW_PORT_WRITE_STARTUPMESSAGE_LINE1	0x08	///< Set startup message line 1
@@ -55,7 +50,6 @@
 #define BW_PORT_WRITE_SET_OUTPUT_IO6		0x26
 #define BW_PORT_WRITE_IO_DIRECTION			0x30
 
-/// read ports
 #define BW_PORT_READ_ID_STRING				0x01
 #define BW_PORT_READ_EEPROM_SN				0x02
 #define BW_PORT_READ_CURRENT_CONTRAST		0x12

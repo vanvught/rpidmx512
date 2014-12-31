@@ -26,7 +26,7 @@
 #ifndef BW_DIO_H_
 #define BW_DIO_H_
 
-#define BW_DIO_DEFAULT_SLAVE_ADDRESS		0x84
+#define BW_DIO_DEFAULT_SLAVE_ADDRESS	0x84	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
 
 typedef enum 
 {
