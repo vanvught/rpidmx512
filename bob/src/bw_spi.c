@@ -23,18 +23,16 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#include <avr_spi.h>
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
 #include <bcm2835_spi.h>
 #endif
+#endif
 #include <device_info.h>
 #include <bw.h>
-
-#ifdef __AVR_ARCH__
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#endif
 
 extern int printf(const char *format, ...);
 
@@ -47,8 +45,11 @@ void bw_spi_read_id(const device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
 	buf[0] = device_info->slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
+#ifdef __AVR_ARCH__
+#else
 	bcm2835_spi_chipSelect(device_info->chip_select);
 	bcm2835_spi_setClockDivider(5000); // 50 kHz
-	bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
+#endif
+	FUNC_PREFIX(spi_transfern(buf, BW_ID_STRING_LENGTH));
 	printf("[%.20s]\n", &buf[2]);
 }

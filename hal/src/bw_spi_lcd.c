@@ -121,7 +121,7 @@ void bw_spi_lcd_text_line_1(const device_info_t *device_info, const char *text, 
 //	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0000000 };
 //	cmd[0] = device_info->slave_address;
 //	lcd_spi_setup(device_info);
-//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 //	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	bw_spi_lcd_set_cursor(device_info, 0, 0);
 	bw_spi_lcd_text(device_info, text, length);
@@ -137,7 +137,7 @@ void bw_spi_lcd_text_line_2(const device_info_t *device_info, const char *text, 
 //	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b0100000 };
 //	cmd[0] = device_info->slave_address;
 //	lcd_spi_setup(device_info);
-//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 //	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	bw_spi_lcd_set_cursor(device_info, 1, 0);
 	bw_spi_lcd_text(device_info, text, length);
@@ -153,7 +153,7 @@ void bw_spi_lcd_text_line_3(const device_info_t *device_info, const char *text, 
 //	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1000000 };
 //	cmd[0] = device_info->slave_address;
 //	lcd_spi_setup(device_info);
-//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 //	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	bw_spi_lcd_set_cursor(device_info, 2, 0);
 	bw_spi_lcd_text(device_info, text, length);
@@ -169,7 +169,7 @@ void bw_spi_lcd_text_line_4(const device_info_t *device_info, const char *text, 
 //	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0b1100000 };
 //	cmd[0] = device_info->slave_address;
 //	lcd_spi_setup(device_info);
-//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char));
+//	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 //	udelay(BW_LCD_SPI_BYTE_WAIT_US);
 	bw_spi_lcd_set_cursor(device_info, 3, 0);
 	bw_spi_lcd_text(device_info, text, length);

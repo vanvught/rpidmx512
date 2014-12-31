@@ -23,21 +23,18 @@
  * THE SOFTWARE.
  */
 
+#ifdef __AVR_ARCH__
+#include <avr_i2c.h>
+#else
 #include <bcm2835.h>
 #ifdef BARE_METAL
-#include <bcm2835_spi.h>
+#include <bcm2835_i2c.h>
+#endif
 #endif
 #include <device_info.h>
 #include <bw.h>
 
-#ifdef __AVR_ARCH__
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#endif
-
 extern int printf(const char *format, ...);
-
 
 /**
  * @ingroup I2C
@@ -47,9 +44,13 @@ extern int printf(const char *format, ...);
 void bw_i2c_read_id(const device_info_t *device_info) {
 	char cmd[] = { BW_PORT_READ_ID_STRING };
 	char buf[BW_ID_STRING_LENGTH];
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
+#ifdef __AVR_ARCH__
+	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address));
+#else
+	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address >> 1));
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
+#endif
+	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
+	FUNC_PREFIX(i2c_read(buf, BW_ID_STRING_LENGTH));
 	printf("[%s]\n", buf);
 }

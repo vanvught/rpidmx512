@@ -24,29 +24,28 @@
  */
 
 #ifdef __AVR_ARCH__
+#include <avr_i2c.h>
 #else
 #include <bcm2835.h>
 #ifdef BARE_METAL
-#include <bcm2835_i2c.h>
+#include <FUNC_PREFIX(i2c.h>
 #endif
 #endif
 #include <device_info.h>
 #include <bw.h>
 #include <bw_i2c_dio.h>
 
-#ifndef BARE_METAL
-#define udelay bcm2835_delayMicroseconds
-#endif
-
-extern int printf(const char *format, ...);
-
 /**
  *
  * @param device_info
  */
 inline static void dio_i2c_setup(const device_info_t *device_info) {
+#ifdef __AVR_ARCH__
+	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address));
+#else
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+#endif
 }
 
 /**
@@ -55,11 +54,11 @@ inline static void dio_i2c_setup(const device_info_t *device_info) {
  * @return
  */
 uint8_t bw_i2c_dio_start(device_info_t *device_info) {
-#ifndef BARE_METAL
-	if (bcm2835_init() != 1)
+#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
+	if (FUNC_PREFIX(init() != 1))
 		return 1;
 #endif
-	bcm2835_i2c_begin();
+	FUNC_PREFIX(i2c_begin());
 
 	if (device_info->slave_address <= 0)
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
@@ -71,8 +70,7 @@ uint8_t bw_i2c_dio_start(device_info_t *device_info) {
  *
  */
 void bw_i2c_dio_end(void) {
-	bcm2835_i2c_end();
-	bcm2835_close();
+	FUNC_PREFIX(i2c_end());
 }
 
 /**
@@ -85,7 +83,7 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 	cmd[0] = BW_PORT_WRITE_IO_DIRECTION;
 	cmd[1] = mask;
 	dio_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_DIO_I2C_BYTE_WAIT_US);
 }
 
@@ -99,20 +97,6 @@ void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	cmd[0] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
 	cmd[1] = pins;
 	dio_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_DIO_I2C_BYTE_WAIT_US);
-}
-
-/**
- *
- * @param device_info
- */
-void bw_i2c_dio_read_id(const device_info_t *device_info) {
-	char cmd[] = { BW_PORT_READ_ID_STRING };
-	char buf[BW_ID_STRING_LENGTH];
-	dio_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	udelay(BW_DIO_I2C_BYTE_WAIT_US);
-	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-	printf("[%s]\n", buf);
 }
