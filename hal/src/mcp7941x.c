@@ -2,7 +2,7 @@
  * @file mcp7941x.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,22 +39,29 @@
 #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
-static char i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
+static uint8_t i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
 
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
+/**
+ *
+ */
 void inline static mcp7941x_setup(void) {
-
+	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address));
 #ifdef __AVR_ARCH__
-	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address << 1));
 #else
-	bcm2835_i2c_setSlaveAddress(i2c_mcp7941x_slave_address);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 #endif
 }
 
-uint8_t mcp7941x_start (char slave_address) {
+/**
+ * @ingroup I2C-RTC
+ *
+ * @param slave_address
+ * @return
+ */
+uint8_t mcp7941x_start (const uint8_t slave_address) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return MCP7941X_ERROR;
@@ -69,10 +76,19 @@ uint8_t mcp7941x_start (char slave_address) {
 	return MCP7941X_OK;
 }
 
+/**
+ *  @ingroup I2C-RTC
+ *
+ */
 void mcp7941x_end (void) {
 	FUNC_PREFIX(i2c_end());
 }
 
+/**
+ *  @ingroup I2C-RTC
+ *
+ * @param t
+ */
 void mcp7941x_get_date_time(struct rtc_time *t) {
 	char cmd[]  = {MCP7941X_RTCC_TCR_SECONDS};
 	char reg[] =  {0,0,0,0,0,0,0};
@@ -91,7 +107,12 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 	t->tm_year = BCD2DEC(reg[MCP7941X_RTCC_TCR_YEAR]);
 }
 
-void mcp7941x_set_date_time(struct rtc_time *t) {
+/**
+ *  @ingroup I2C-RTC
+ *
+ * @param t
+ */
+void mcp7941x_set_date_time(const struct rtc_time *t) {
 	char reg[] =  {0,0,0,0,0,0,0};
 
 	reg[MCP7941X_RTCC_TCR_SECONDS] = DEC2BCD(t->tm_sec & 0x7f);

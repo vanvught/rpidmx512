@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -134,11 +134,8 @@ int main(int argc, char **argv) {
 		}
 
 		/* Set slave address */
-#ifdef __AVR_ARCH__
-		FUNC_PREFIX(i2c_setSlaveAddress(address << 1));
-#else
 		FUNC_PREFIX(i2c_setSlaveAddress(address));
-#endif
+
 		/* Probe this address */
 		if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
 			ret = FUNC_PREFIX(i2c_read(&buf, 1));
@@ -165,11 +162,8 @@ int main(int argc, char **argv) {
 			}
 
 			/* Set slave address */
-#ifdef __AVR_ARCH__
-		FUNC_PREFIX(i2c_setSlaveAddress((i + j) << 1));
-#else
-		FUNC_PREFIX(i2c_setSlaveAddress(i + j));
-#endif
+			FUNC_PREFIX(i2c_setSlaveAddress(i + j));
+
 
 			/* Probe this address */
 			if ((i + j >= 0x30 && i + j <= 0x37) || (i + j >= 0x50 && i + j <= 0x5F)) {

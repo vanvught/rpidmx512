@@ -2,7 +2,7 @@
  * @file bw_i2c_dio.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,15 @@
  * @param device_info
  */
 inline static void dio_i2c_setup(const device_info_t *device_info) {
-#ifdef __AVR_ARCH__
-	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address));
+	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address >> 1));
+	#ifdef __AVR_ARCH__
 #else
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 #endif
 }
 
 /**
+ * @ingroup I2C-DIO
  *
  * @param device_info
  * @return
@@ -67,6 +67,7 @@ uint8_t bw_i2c_dio_start(device_info_t *device_info) {
 }
 
 /**
+ * @ingroup I2C-DIO
  *
  */
 void bw_i2c_dio_end(void) {
@@ -74,6 +75,7 @@ void bw_i2c_dio_end(void) {
 }
 
 /**
+ * @ingroup I2C-DIO
  *
  * @param device_info
  * @param mask
@@ -88,6 +90,7 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 }
 
 /**
+ * @ingroup I2C-DIO
  *
  * @param device_info
  * @param pins
