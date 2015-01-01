@@ -36,6 +36,7 @@
 #include <bw_spi_lcd.h>
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  */
@@ -48,6 +49,7 @@ inline static void lcd_spi_setup(const device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @return
@@ -66,6 +68,7 @@ uint8_t bw_spi_lcd_start(device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  */
 void bw_spi_lcd_end(void) {
@@ -73,6 +76,7 @@ void bw_spi_lcd_end(void) {
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param line
@@ -92,6 +96,7 @@ void bw_spi_lcd_set_cursor(const device_info_t *device_info, uint8_t line, uint8
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param text
@@ -112,6 +117,7 @@ void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param text
@@ -128,6 +134,7 @@ void bw_spi_lcd_text_line_1(const device_info_t *device_info, const char *text, 
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param text
@@ -144,6 +151,7 @@ void bw_spi_lcd_text_line_2(const device_info_t *device_info, const char *text, 
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param text
@@ -160,6 +168,7 @@ void bw_spi_lcd_text_line_3(const device_info_t *device_info, const char *text, 
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param text
@@ -176,6 +185,7 @@ void bw_spi_lcd_text_line_4(const device_info_t *device_info, const char *text, 
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  */
@@ -188,6 +198,7 @@ void bw_spi_lcd_cls(const device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param value
@@ -202,6 +213,7 @@ void bw_spi_lcd_set_contrast(const device_info_t *device_info, const uint8_t val
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  * @param value
@@ -216,6 +228,7 @@ void bw_spi_lcd_set_backlight(const device_info_t *device_info, const uint8_t va
 }
 
 /**
+ * @ingroup SPI-LCD
  *
  * @param device_info
  */

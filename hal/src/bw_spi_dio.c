@@ -2,7 +2,7 @@
  * @file bw_spi_dio.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@
 inline static void dio_spi_setup(const device_info_t *device_info) {
 #ifdef __AVR_ARCH__
 #else
-	bcm2835_spi_setClockDivider(2500); // 100kHz
+	bcm2835_spi_setClockDivider(1000); // 250kHz
 	bcm2835_spi_chipSelect(device_info->chip_select);
 #endif
 }
