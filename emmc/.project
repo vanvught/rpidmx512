@@ -3,8 +3,8 @@
 	<name>emmc</name>
 	<comment></comment>
 	<projects>
-		<project>fb</project>
 		<project>ff9b</project>
+		<project>firmware</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

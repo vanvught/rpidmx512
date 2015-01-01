@@ -7,17 +7,14 @@
 
 typedef int useconds_t;
 
-extern void udelay(const uint64_t);
-#define usleep(x) udelay((x))
-
-#define TIMEOUT_WAIT(stop_if_true, usec) 		\
-do {							\
+#define TIMEOUT_WAIT(stop_if_true, usec) 							\
+do {																\
 	uint32_t compare = (*(volatile uint32_t *)(TIMER_CLO)) + usec; \
-	do						\
-	{						\
-		if(stop_if_true)			\
-			break;				\
-	} while((*(volatile uint32_t *)(TIMER_CLO)) < compare);			\
+	do																\
+	{																\
+		if(stop_if_true)											\
+			break;													\
+	} while((*(volatile uint32_t *)(TIMER_CLO)) < compare);		\
 } while(0);
 
 #endif
