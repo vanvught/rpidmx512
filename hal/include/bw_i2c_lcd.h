@@ -1,5 +1,5 @@
 /**
- * @file mini_uart.c
+ * @file bw_i2c_lcd.h
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,18 +23,29 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835_uart.h>
+#ifndef BW_I2C_LCD_H_
+#define BW_I2C_LCD_H_
 
-static const char lowercase[] = "0123456789abcdef";
+#include <stdint.h>
 
-void mini_uart_sendstr(const char *s) {
-	char c;
-	while ((c = *s++))
-		bcm2835_uart_send(c);
-}
+#include <bw_lcd.h>
+#include <device_info.h>
 
-void mini_uart_puthex(uint32_t val) {
-	int i;
-	for (i = 7; i >= 0; i--)
-		bcm2835_uart_send(lowercase[(val >> (i * 4)) & 0xf]);
-}
+#define BW_LCD_I2C_BYTE_WAIT_US			12
+
+extern uint8_t bw_i2c_lcd_start (const char);
+extern void bw_i2c_lcd_end (void);
+extern void bw_i2c_lcd_reinit(void);
+extern void bw_i2c_lcd_set_cursor(uint8_t, uint8_t);
+extern void bw_i2c_lcd_text(const char *, uint8_t);
+extern void bw_i2c_lcd_text_line_1(const char *, const uint8_t);
+extern void bw_i2c_lcd_text_line_2(const char *, const uint8_t);
+extern void bw_i2c_lcd_text_line_3(const char *, const uint8_t);
+extern void bw_i2c_lcd_text_line_4(const char *, const uint8_t);
+extern void bw_i2c_lcd_cls(void);
+extern void bw_i2c_lcd_set_contrast(const uint8_t);
+extern void bw_i2c_lcd_set_backlight(const uint8_t);
+extern void bw_i2c_lcd_get_backlight(uint8_t *);
+extern void bw_i2c_lcd_get_contrast(uint8_t *);
+
+#endif /* BW_I2C_LCD_H_ */
