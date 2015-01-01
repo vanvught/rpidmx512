@@ -20,9 +20,23 @@
  */
 
 /**
- * @defgroup I2C-DIO input-output
+ * @defgroup I2C-DIO Digital I/O
  * @ingroup I2C
  * @brief I2C_DIO board.
+ *
+ */
+
+/**
+ * @defgroup I2C-DO Digital Output
+ * @ingroup I2C
+ * @brief TODO
+ *
+ */
+
+/**
+ * @defgroup I2C-AO Analog Output
+ * @ingroup I2C
+ * @brief TODO
  *
  */
 
