@@ -38,6 +38,7 @@
 static void bw_spi_7fets_fsel_mask(const device_info_t *, const uint8_t);
 
 /**
+ * @ingroup SPI-DO
  *
  * @param device_info
  */
@@ -50,6 +51,7 @@ inline void static fets_spi_setup(const device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DO
  *
  * @param device_info
  * @return
@@ -70,6 +72,7 @@ uint8_t bw_spi_7fets_start(device_info_t *device_info) {
 }
 
 /**
+ * @ingroup SPI-DO
  *
  */
 void bw_spi_7fets_end(void) {
@@ -77,6 +80,7 @@ void bw_spi_7fets_end(void) {
 }
 
 /**
+ * @ingroup SPI-DO
  *
  * @param device_info
  * @param mask
@@ -92,6 +96,7 @@ inline static void bw_spi_7fets_fsel_mask(const device_info_t *device_info, cons
 }
 
 /**
+ * @ingroup SPI-DO
  *
  * @param device_info
  * @param pins
@@ -105,4 +110,3 @@ void bw_spi_7fets_output(const device_info_t *device_info, const uint8_t pins) {
 	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
 }
-

@@ -36,6 +36,7 @@
 #include <bw_spi_dimmer.h>
 
 /**
+ * @ingroup SPI-AO
  *
  * @param device_info
  */
@@ -47,6 +48,12 @@ inline void static dimmer_spi_setup(const device_info_t *device_info) {
 #endif
 }
 
+/**
+ * @ingroup SPI-AO
+ *
+ * @param device_info
+ * @return
+ */
 uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
@@ -60,6 +67,12 @@ uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
 	return 0;
 }
 
+/**
+ * @ingroup SPI-AO
+ *
+ * @param device_info
+ * @param value
+ */
 void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];
 	cmd[0] = device_info->slave_address;
@@ -70,6 +83,10 @@ void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value)
 	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
 }
 
+/**
+ * @ingroup SPI-AO
+ *
+ */
 void bw_spi_dimmer_end(void) {
 	FUNC_PREFIX(spi_end());
 }

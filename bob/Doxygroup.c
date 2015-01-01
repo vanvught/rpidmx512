@@ -40,23 +40,23 @@
  */
 
 /**
- * @defgroup SPI-7FETS 7-fets
+ * @defgroup SPI-DIO Digital I/O
  * @ingroup SPI
- * @brief SPI_7FETs board.
+ * @brief TODO
  *
  */
 
 /**
- * @defgroup SPI-DIO input-output
+ * @defgroup SPI-DO Digital Output
  * @ingroup SPI
- * @brief SPI_DIO board.
+ * @brief TODO
  *
  */
 
 /**
- * @defgroup SPI-DIO input-output
+ * @defgroup SPI-AO Analog Output
  * @ingroup SPI
- * @brief SPI_MCP23S08 board.
+ * @brief TODO
  *
  */
 

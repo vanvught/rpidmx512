@@ -38,6 +38,7 @@
 static void bw_spi_relay_fsel_mask(const device_info_t *, const uint8_t);
 
 /**
+ * @ingroup SPI-DO
  *
  * @param device_info
  */
@@ -49,6 +50,12 @@ inline void static relay_spi_setup(const device_info_t *device_info) {
 #endif
 }
 
+/**
+ * @ingroup SPI-DO
+ *
+ * @param device_info
+ * @return
+ */
 uint8_t bw_spi_relay_start(device_info_t *device_info) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
@@ -64,10 +71,20 @@ uint8_t bw_spi_relay_start(device_info_t *device_info) {
 	return 0;
 }
 
+/**
+ * @ingroup SPI-DO
+ *
+ */
 void bw_spi_relay_end(void) {
 	FUNC_PREFIX(spi_end());
 }
 
+/**
+ * @ingroup SPI-DO
+ *
+ * @param device_info
+ * @param mask
+ */
 inline static void bw_spi_relay_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
 	cmd[0] = device_info->slave_address;
@@ -78,6 +95,12 @@ inline static void bw_spi_relay_fsel_mask(const device_info_t *device_info, cons
 	udelay(BW_RELAY_SPI_BYTE_WAIT_US);
 }
 
+/**
+ * @ingroup SPI-DO
+ *
+ * @param device_info
+ * @param pins
+ */
 void bw_spi_relay_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
 	cmd[0] = device_info->slave_address;
