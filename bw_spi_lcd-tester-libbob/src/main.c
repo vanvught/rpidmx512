@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include <bw_spi.h>//
-#include <bw_spi_lcd.h>
-
-unsigned int slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
-unsigned int chip_select = 0;
+#include "bw_spi.h"
+#include "bw_spi_lcd.h"
 
 int main(int argc, char **argv) {
 	device_info_t device_info;
+
+	unsigned int slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
+	unsigned int chip_select = 0;
 
 	while ((argc > 1) && (argv[1][0] == '-')) {
 		switch (argv[1][1]) {
