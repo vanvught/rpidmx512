@@ -1,0 +1,12 @@
+/**
+\mainpage Documentation
+
+Library for BitWizard I2C/SPI Expansion boards (http://www.bitwizard.nl/shop/expansion-boards).
+
+Source code is available at https://github.com/vanvught/OpenDMX/tree/master/bob
+
+<b>!Under Construction!</b>
+
+\author Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+
+*/

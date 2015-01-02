@@ -41,7 +41,7 @@
  */
 inline static void dio_i2c_setup(const device_info_t *device_info) {
 	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address >> 1));
-	#ifdef __AVR_ARCH__
+#ifdef __AVR_ARCH__
 #else
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 #endif
