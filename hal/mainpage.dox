@@ -1,0 +1,20 @@
+/**
+\mainpage Documentation
+
+Library for BitWizard I2C/SPI Expansion boards (http://www.bitwizard.nl/shop/expansion-boards).
+
+Source code is available at https://github.com/vanvught/OpenDMX/tree/master/bob
+
+The library is tested with:
+
+*. Raspberry Pi Raspian Linux, library -> http://www.airspayce.com/mikem/bcm2835/
+
+*. Raspbery Baremetal, library -> https://github.com/vanvught/OpenDMX/tree/master/hal
+
+*. Arduino Uno, library -> https://github.com/vanvught/AVR/tree/master/avr
+
+<b>!Under Construction!</b>
+
+\author Arjan van Vught <pm @ http://forum.bitwizard.nl/>
+
+*/
