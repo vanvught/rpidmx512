@@ -71,7 +71,7 @@ uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
  * @ingroup SPI-AO
  *
  * @param device_info
- * @param value
+ * @param value The value written can be between 0 and 255, where 0 is the lowest intensity and 255 is the highest intensity.
  */
 void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];

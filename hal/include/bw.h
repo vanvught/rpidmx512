@@ -63,6 +63,8 @@
 #define BW_PORT_READ_BUTTON_5				0x44
 #define BW_PORT_READ_BUTTON_6				0x45
 
+#define BW_PORT_WRITE_DIMMER				0x10	///< intensity
+
 #define BW_ID_STRING_LENGTH					20
 
 #ifdef __AVR_ARCH__

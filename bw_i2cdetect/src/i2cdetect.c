@@ -37,7 +37,7 @@
 #ifdef __AVR_ARCH__
 #define FUNC_PREFIX(x) avr_##x
 #include "avr_i2c.h"
-#include "uart.h"
+#include "uart_stream.h"
 #else
 #include "bcm2835.h"
 #define FUNC_PREFIX(x) bcm2835_##x

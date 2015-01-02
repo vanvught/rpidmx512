@@ -26,7 +26,6 @@
 #ifndef BW_DIMMER_H_
 #define BW_DIMMER_H_
 
-#define BW_DIMMER_DEFAULT_SLAVE_ADDRESS		0x9E
-#define BW_PORT_WRITE_DIMMER				0x10
+#define BW_DIMMER_DEFAULT_SLAVE_ADDRESS		0x9E	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
 
 #endif /* BW_DIMMER_H_ */

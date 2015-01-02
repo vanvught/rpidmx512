@@ -38,7 +38,7 @@ extern int printf(const char *format, ...);
 
 /**
  * @ingroup SPI
- *
+ * Prints the identification string.
  * @param device_info
  */
 void bw_spi_read_id(const device_info_t *device_info) {

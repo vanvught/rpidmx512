@@ -38,7 +38,7 @@ extern int printf(const char *format, ...);
 
 /**
  * @ingroup I2C
- *
+ * Prints the identification string.
  * @param device_info
  */
 void bw_i2c_read_id(const device_info_t *device_info) {

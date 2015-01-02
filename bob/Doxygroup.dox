@@ -4,7 +4,6 @@
  *
  */
 
-
 /**
  * @defgroup I2C-UI User Interface
  * @ingroup I2C
@@ -22,7 +21,7 @@
 /**
  * @defgroup I2C-DIO Digital I/O
  * @ingroup I2C
- * @brief I2C_DIO board.
+ * @brief Digital I/O lines.
  *
  */
 
@@ -36,14 +35,14 @@
 /**
  * @defgroup I2C-AO Analog Output
  * @ingroup I2C
- * @brief TODO
+ * @brief MCP48x6, MCP49x6
  *
  */
 
 /**
  * @defgroup I2C-RTC real time clock
  * @ingroup I2C
- * @brief I2C_MCP7941x board.
+ * @brief MCP7941x
  *
  */
 
@@ -56,21 +55,21 @@
 /**
  * @defgroup SPI-DIO Digital I/O
  * @ingroup SPI
- * @brief TODO
+ * @brief 7 digital IO lines (also with analog in).
  *
  */
 
 /**
  * @defgroup SPI-DO Digital Output
  * @ingroup SPI
- * @brief TODO
+ * @brief MCP23S08, 7FETS
  *
  */
 
 /**
  * @defgroup SPI-AO Analog Output
  * @ingroup SPI
- * @brief TODO
+ * @brief MCP48x6, MCP49x6, Dimmer
  *
  */
 
