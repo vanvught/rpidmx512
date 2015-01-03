@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>hal</name>
+	<name>bob-baremetal</name>
 	<comment></comment>
 	<projects>
 		<project>firmware</project>
