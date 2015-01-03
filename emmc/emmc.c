@@ -1,22 +1,6 @@
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/**
+ * @file emmc.c
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
-
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
-
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 
 /* Provides an interface to the EMMC controller and commands for interacting
@@ -38,19 +22,20 @@
 #include "timer.h"
 #include "util.h"
 
-#include <bcm2835.h>
-#include <bcm2835_emmc.h>
-#include <bcm2835_vc.h>
+#include "bcm2835.h"
+#include "bcm2835_vc.h"
+#include "bcm2835_emmc.h"
+#include "bcm2835_sdcard.h"
 
-int printf(const char *format, ...);
+#include "sdcard.h"
 
 #ifdef DEBUG2
 #define EMMC_DEBUG
 #endif
 
-
 /* Tracing macros */
 #ifdef EMMC_DEBUG
+int printf(const char *format, ...);
 #define EMMC_TRACE(...)     {										\
         printf("EMMC %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
@@ -105,7 +90,7 @@ int printf(const char *format, ...);
 static char driver_name[] = "emmc";
 static char device_name[] = "emmc0";	// We use a single device name as there is only one card slot in the RPi
 
-static uint32_t hci_ver = 0;
+uint32_t hci_ver = 0;
 static uint32_t capabilities_0 = 0;
 static uint32_t capabilities_1 = 0;
 
@@ -433,59 +418,15 @@ static uint32_t sd_acommands[] = {
 #define SET_CLR_CARD_DETECT     (42 | IS_APP_CMD)
 #define SEND_SCR                (51 | IS_APP_CMD)
 
-#define SD_GET_CLOCK_DIVIDER_FAIL	0xffffffff
 
 
 /**
  *
  * @return
  */
-inline static int bcm2835_emmc_power_off()
+int emmc_power_cycle()
 {
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_OFF_WAIT);
-
-	if (ret < 0) {
-		printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
-		return -1;
-	}
-	// TODO
-	if ((ret & 0x3) != 0 ) {
-		EMMC_TRACE("Device did not power off successfully (%08x).", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-/**
- *
- * @return
- */
-inline static int bcm2835_emmc_power_on()
-{
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
-
-	if (ret < 0) {
-		printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
-		return -1;
-	}
-	// TODO
-	if((ret & 0x3) != 1)
-	{
-		EMMC_TRACE("Device did not power on successfully (%08x).", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-/**
- *
- * @return
- */
-inline static int bcm2835_emmc_power_cycle()
-{
-	if(bcm2835_emmc_power_off() < 0)
+	if (bcm2835_emmc_power_off() < 0)
 		return -1;
 
 	udelay(5000);
@@ -495,161 +436,16 @@ inline static int bcm2835_emmc_power_cycle()
 
 /**
  *
- */
-static void sd_power_off()
-{
-	uint32_t control0 = BCM2835_EMMC->CONTROL0;
-	control0 &= ~BCM2835_EMMC_CONTROL0_POWER_ON; // Set SD Bus Power bit off in Power Control Register
-	BCM2835_EMMC->CONTROL0 = control0;
-}
-
-/**
- * Set the clock dividers to generate a target value
- *
- * @param base_clock
- * @param target_rate
- * @return
- */
-inline static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t target_rate)
-{
-	int divisor = 0;
-	int real_div = divisor;
-	uint32_t ret = 0;
-
-	if (target_rate == 0)
-		return SD_GET_CLOCK_DIVIDER_FAIL;
-
-	if (hci_ver >= 2)
-	{
-		if (base_clock <= target_rate)
-			divisor = 1;
-		else
-		{
-			for (divisor = 2; divisor < SDHCI_MAX_DIV_SPEC_300; divisor += 2)
-			{
-				if ((base_clock / divisor) <= target_rate)
-					break;
-			}
-		}
-
-		real_div = divisor;
-		divisor >>= 1;
-
-		int actual_clock;
-
-		if (real_div)
-			actual_clock = base_clock/ real_div;
-
-		ret |= (divisor & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
-		ret |= ((divisor & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN) << SDHCI_DIVIDER_HI_SHIFT;
-
-		EMMC_TRACE("base_clock: %i, target_rate: %i, divisor: %08x, actual_clock: %i, ret: %08x", base_clock, target_rate, divisor, actual_clock, ret);
-
-		return ret;
-	}
-	else
-	{
-		printf("EMMC: unsupported host version\n");
-		return SD_GET_CLOCK_DIVIDER_FAIL;
-	}
-
-}
-
-/**
- *
- * @param base_clock
- * @param target_rate
- * @return
- */
-static int bcm2835_emmc_switch_clock_rate(uint32_t base_clock, uint32_t target_rate)
-{
-    uint32_t divider = bcm2835_emmc_get_clock_divider(base_clock, target_rate);
-
-    if(divider == SD_GET_CLOCK_DIVIDER_FAIL)
-    {
-        printf("EMMC: couldn't get a valid divider for target rate %i Hz\n", target_rate);
-        return -1;
-    }
-
-    // Wait for the command inhibit (CMD and DAT) bits to clear
-	while (BCM2835_EMMC ->STATUS & (BCM2835_EMMC_STATUS_CMD_INHIBIT || BCM2835_EMMC_STATUS_DATA_INHIBIT))
-		;
-
-    // Set the SD clock off
-    uint32_t control1 = BCM2835_EMMC ->CONTROL1;
-    control1 &= ~BCM2835_EMMC_CLOCK_CARD_EN;
-    BCM2835_EMMC ->CONTROL1 = control1;
-    udelay(2000);
-
-    // Write the new divider
-	control1 &= ~0xffe0;		// Clear old setting + clock generator select
-    control1 |= divider;
-    BCM2835_EMMC ->CONTROL1 = control1;
-    udelay(2000);
-
-    // Enable the SD clock
-    control1 |= BCM2835_EMMC_CLOCK_CARD_EN;
-    BCM2835_EMMC ->CONTROL1 = control1;
-    udelay(2000);
-
-    EMMC_TRACE("Successfully set clock rate to %i Hz", target_rate);
-
-    return 0;
-}
-
-/**
- * Reset the CMD line
- *
- * @return
- */
-static int sd_reset_cmd()
-{
-	uint32_t control1 = BCM2835_EMMC->CONTROL1;
-
-	control1 |= BCM2835_EMMC_CONTROL1_RESET_CMD;
-	BCM2835_EMMC->CONTROL1 = control1;
-	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_CMD) == 0, 1000000);
-
-	if((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_CMD) != 0)
-	{
-		printf("EMMC: CMD line did not reset properly\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-/**
- * Reset the CMD line
- *
- * @return
- */
-static int sd_reset_dat()
-{
-	uint32_t control1 = BCM2835_EMMC->CONTROL1;
-
-	control1 |= BCM2835_EMMC_CONTROL1_RESET_DATA;
-	BCM2835_EMMC->CONTROL1 = control1;
-	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_DATA) == 0, 1000000);
-
-	if((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_DATA) != 0)
-	{
-		printf("EMMC: DAT line did not reset properly\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-
-/**
- *
  * @param dev
  * @param cmd_reg
  * @param argument
  * @param timeout
  */
-static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, useconds_t timeout)
+#ifdef DOXYGEN
+#else
+static
+#endif
+void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, useconds_t timeout)
 {
     dev->last_cmd_reg = cmd_reg;
     dev->last_cmd_success = 0;
@@ -770,12 +566,8 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
 			if(dev->blocks_to_transfer > 1)
 				SD_TRACE("Multi block transfer, awaiting block %i ready", cur_block);
 #endif
-			///< AvV
-            ///< TIMEOUT_WAIT(mmio_read(EMMC_BASE + EMMC_INTERRUPT) & (wr_irpt | 0x8000), timeout);
-			TIMEOUT_WAIT(BCM2835_EMMC->INTERRUPT & (wr_irpt | 0x8000), timeout); ///< AvV
-            ///< irpts = mmio_read(EMMC_BASE + EMMC_INTERRUPT);
-			irpts = BCM2835_EMMC->INTERRUPT;///< AvV
-            ///< mmio_write(EMMC_BASE + EMMC_INTERRUPT, 0xffff0000 | wr_irpt);
+			TIMEOUT_WAIT(BCM2835_EMMC->INTERRUPT & (wr_irpt | 0x8000), timeout);
+			irpts = BCM2835_EMMC->INTERRUPT;
 			BCM2835_EMMC->INTERRUPT = 0xffff0000 | wr_irpt;
 
             if((irpts & (0xffff0000 | wr_irpt)) != wr_irpt)
@@ -914,7 +706,11 @@ static void sd_issue_command_int(struct emmc_block_dev *dev, uint32_t cmd_reg, u
  *
  * @param dev
  */
-static void sd_handle_card_interrupt(struct emmc_block_dev *dev)
+#ifdef DOXYGEN
+#else
+static
+#endif
+void sd_handle_card_interrupt(struct emmc_block_dev *dev)
 {
     EMMC_TRACE("Controller status: %08x", BCM2835_EMMC->STATUS);
     SD_TRACE("Get the card status");
@@ -943,7 +739,11 @@ static void sd_handle_card_interrupt(struct emmc_block_dev *dev)
  *
  * @param dev
  */
-static void sd_handle_interrupts(struct emmc_block_dev *dev)
+#ifdef DOXYGEN
+#else
+static
+#endif
+void sd_handle_interrupts(struct emmc_block_dev *dev)
 {
 	uint32_t irpts = BCM2835_EMMC->INTERRUPT;
     uint32_t reset_mask = 0;
@@ -976,14 +776,14 @@ static void sd_handle_interrupts(struct emmc_block_dev *dev)
     {
     	SD_TRACE("Spurious buffer write ready interrupt");
         reset_mask |= SD_BUFFER_WRITE_READY;
-        sd_reset_dat();
+        bcm2835_emmc_reset_dat();
     }
 
     if(irpts & SD_BUFFER_READ_READY)
     {
     	SD_TRACE("Spurious buffer read ready interrupt");
         reset_mask |= SD_BUFFER_READ_READY;
-        sd_reset_dat();
+        bcm2835_emmc_reset_dat();
     }
 
     if(irpts & SD_CARD_INSERTION)
@@ -1015,7 +815,11 @@ static void sd_handle_interrupts(struct emmc_block_dev *dev)
     BCM2835_EMMC->INTERRUPT = reset_mask;
 }
 
-static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint32_t argument, useconds_t timeout)
+#ifdef DOXYGEN
+#else
+static
+#endif
+void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint32_t argument, useconds_t timeout)
 {
     // First, handle any pending interrupts
     sd_handle_interrupts(dev);
@@ -1092,6 +896,11 @@ static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint3
 #endif
 }
 
+/**
+ *
+ * @param dev
+ * @return
+ */
 int sd_card_init(struct block_device **dev)
 {
     if(sizeof(sd_commands) != (64 * sizeof(uint32_t)))
@@ -1106,7 +915,7 @@ int sd_card_init(struct block_device **dev)
         return -1;
     }
 
-	if(bcm2835_emmc_power_cycle() != 0)
+	if(emmc_power_cycle() != 0)
 	{
 		printf("EMMC: BCM2835 controller did not power cycle successfully\n");
 		return -1;
@@ -1271,7 +1080,7 @@ int sd_card_init(struct block_device **dev)
         v2_later = 0;
     else if(CMD_TIMEOUT(ret))
 	{
-		if (sd_reset_cmd() == -1)
+		if (bcm2835_emmc_reset_cmd() == -1)
 			return -1;
 		BCM2835_EMMC ->INTERRUPT = SD_ERR_MASK_CMD_TIMEOUT;
 		v2_later = 0;
@@ -1302,7 +1111,7 @@ int sd_card_init(struct block_device **dev)
     {
         if(CMD_TIMEOUT(ret))
         {
-            if(sd_reset_cmd() == -1)
+            if(bcm2835_emmc_reset_cmd() == -1)
                 return -1;
 
             BCM2835_EMMC->INTERRUPT = SD_ERR_MASK_CMD_TIMEOUT;
@@ -1396,7 +1205,7 @@ int sd_card_init(struct block_device **dev)
 	    {
 	    	SD_TRACE("SD: error issuing VOLTAGE_SWITCH");
 	        ret->failed_voltage_switch = 1;
-			sd_power_off();
+	        bcm2835_sdcard_power_off();
 	        return sd_card_init((struct block_device **)&ret);
 	    }
 
@@ -1414,7 +1223,7 @@ int sd_card_init(struct block_device **dev)
 	    {
 	    	SD_TRACE("DAT[3:0] did not settle to 0");
 	        ret->failed_voltage_switch = 1;
-			sd_power_off();
+	        bcm2835_sdcard_power_off();
 	        return sd_card_init((struct block_device **)&ret);
 	    }
 
@@ -1433,7 +1242,7 @@ int sd_card_init(struct block_device **dev)
 	    {
 	    	SD_TRACE("Controller did not keep 1.8V signal enable high");
 	        ret->failed_voltage_switch = 1;
-			sd_power_off();
+	        bcm2835_sdcard_power_off();
 	        return sd_card_init((struct block_device **)&ret);
 	    }
 
@@ -1454,7 +1263,7 @@ int sd_card_init(struct block_device **dev)
 	    {
 	    	SD_TRACE("DAT[3:0] did not settle to 1111b (%01x)", dat30);
 	        ret->failed_voltage_switch = 1;
-			sd_power_off();
+	        bcm2835_sdcard_power_off();
 	        return sd_card_init((struct block_device **)&ret);
 	    }
 	    SD_TRACE("SD: voltage switch complete");
@@ -1671,91 +1480,7 @@ int sd_card_init(struct block_device **dev)
 	return 0;
 }
 
-static int sd_ensure_data_mode(struct emmc_block_dev *edev)
-{
-	if(edev->card_rca == 0)
-	{
-		// Try again to initialise the card
-		int ret = sd_card_init((struct block_device **)&edev);
-		if(ret != 0)
-			return ret;
-	}
 
-	SD_TRACE("Obtaining status register for card_rca %08x: ", edev->card_rca);
-
-    sd_issue_command(edev, SEND_STATUS, edev->card_rca << 16, 500000);
-    if(FAIL(edev))
-    {
-        printf("SD: ensure_data_mode() error sending CMD13\n");
-        edev->card_rca = 0;
-        return -1;
-    }
-
-	uint32_t status = edev->last_r0;
-	uint32_t cur_state = (status >> 9) & 0xf;
-
-	SD_TRACE("status %i", cur_state);
-
-	if(cur_state == 3)
-	{
-		// Currently in the stand-by state - select it
-		sd_issue_command(edev, SELECT_CARD, edev->card_rca << 16, 500000);
-		if(FAIL(edev))
-		{
-			printf("SD: ensure_data_mode() no response from CMD17\n");
-			edev->card_rca = 0;
-			return -1;
-		}
-	}
-	else if(cur_state == 5)
-	{
-		// In the data transfer state - cancel the transmission
-		sd_issue_command(edev, STOP_TRANSMISSION, 0, 500000);
-		if(FAIL(edev))
-		{
-			printf("SD: ensure_data_mode() no response from CMD12\n");
-			edev->card_rca = 0;
-			return -1;
-		}
-
-		// Reset the data circuit
-		sd_reset_dat();
-	}
-	else if(cur_state != 4)
-	{
-		// Not in the transfer state - re-initialize
-		int ret = sd_card_init((struct block_device **)&edev);
-		if(ret != 0)
-			return ret;
-	}
-
-	// Check again that we're now in the correct mode
-	if(cur_state != 4)
-	{
-		SD_TRACE("Re-checking status: ");
-
-        sd_issue_command(edev, SEND_STATUS, edev->card_rca << 16, 500000);
-        if(FAIL(edev))
-		{
-			printf("SD: ensure_data_mode() no response from CMD13\n");
-			edev->card_rca = 0;
-			return -1;
-		}
-		status = edev->last_r0;
-		cur_state = (status >> 9) & 0xf;
-
-		SD_TRACE("%i", cur_state);
-
-		if(cur_state != 4)
-		{
-			printf("SD: unable to initialize SD card to data mode (state %i)\n", cur_state);
-			edev->card_rca = 0;
-			return -1;
-		}
-	}
-
-	return 0;
-}
 
 #ifdef SDMA_SUPPORT
 // We only support DMA transfers to buffers aligned on a 4 kiB boundary
@@ -1768,7 +1493,20 @@ static int sd_suitable_for_dma(void *buf)
 }
 #endif
 
-static int sd_do_data_command(struct emmc_block_dev *edev, int is_write, uint8_t *buf, size_t buf_size, uint32_t block_no)
+/**
+ *
+ * @param edev
+ * @param is_write
+ * @param buf
+ * @param buf_size
+ * @param block_no
+ * @return
+ */
+#ifdef DOXYGEN
+#else
+static
+#endif
+int sd_do_data_command(struct emmc_block_dev *edev, int is_write, uint8_t *buf, size_t buf_size, uint32_t block_no)
 {
 	// PLSS table 4.20 - SDSC cards use byte addresses rather than block addresses
 	if(!edev->card_supports_sdhc)
@@ -1785,7 +1523,7 @@ static int sd_do_data_command(struct emmc_block_dev *edev, int is_write, uint8_t
 	if(buf_size % edev->block_size)
 	{
 	    printf("SD: do_data_command() called with buffer size (%i) not an exact multiple of block size (%i)\n", buf_size, edev->block_size);
-        return -1;
+          return -1;
 	}
 	edev->buf = buf;
 
@@ -1851,6 +1589,101 @@ static int sd_do_data_command(struct emmc_block_dev *edev, int is_write, uint8_t
 
 /**
  *
+ * @param edev
+ * @return
+ */
+#ifdef DOXYGEN
+#else
+static
+#endif
+int sd_ensure_data_mode(struct emmc_block_dev *edev)
+{
+        if(edev->card_rca == 0)
+        {
+                // Try again to initialise the card
+                int ret = sd_card_init((struct block_device **)&edev);
+                if(ret != 0)
+                        return ret;
+        }
+
+        SD_TRACE("Obtaining status register for card_rca %08x: ", edev->card_rca);
+
+    sd_issue_command(edev, SEND_STATUS, edev->card_rca << 16, 500000);
+    if(FAIL(edev))
+    {
+        printf("SD: ensure_data_mode() error sending CMD13\n");
+        edev->card_rca = 0;
+        return -1;
+    }
+
+        uint32_t status = edev->last_r0;
+        uint32_t cur_state = (status >> 9) & 0xf;
+
+        SD_TRACE("status %i", cur_state);
+
+        if(cur_state == 3)
+        {
+                // Currently in the stand-by state - select it
+                sd_issue_command(edev, SELECT_CARD, edev->card_rca << 16, 500000);
+                if(FAIL(edev))
+                {
+                        printf("SD: ensure_data_mode() no response from CMD17\n");
+                        edev->card_rca = 0;
+                        return -1;
+                }
+        }
+        else if(cur_state == 5)
+        {
+                // In the data transfer state - cancel the transmission
+                sd_issue_command(edev, STOP_TRANSMISSION, 0, 500000);
+                if(FAIL(edev))
+                {
+                        printf("SD: ensure_data_mode() no response from CMD12\n");
+                        edev->card_rca = 0;
+                        return -1;
+                }
+
+                // Reset the data circuit
+                bcm2835_emmc_reset_dat();
+        }
+        else if(cur_state != 4)
+        {
+                // Not in the transfer state - re-initialize
+                int ret = sd_card_init((struct block_device **)&edev);
+                if(ret != 0)
+                        return ret;
+        }
+
+        // Check again that we're now in the correct mode
+        if(cur_state != 4)
+        {
+                SD_TRACE("Re-checking status: ");
+
+        sd_issue_command(edev, SEND_STATUS, edev->card_rca << 16, 500000);
+        if(FAIL(edev))
+                {
+                        printf("SD: ensure_data_mode() no response from CMD13\n");
+                        edev->card_rca = 0;
+                        return -1;
+                }
+                status = edev->last_r0;
+                cur_state = (status >> 9) & 0xf;
+
+                SD_TRACE("%i", cur_state);
+
+                if(cur_state != 4)
+                {
+                        printf("SD: unable to initialize SD card to data mode (state %i)\n", cur_state);
+                        edev->card_rca = 0;
+                        return -1;
+                }
+        }
+
+        return 0;
+}
+
+/**
+ *
  * @param dev
  * @param buf
  * @param buf_size
@@ -1859,19 +1692,19 @@ static int sd_do_data_command(struct emmc_block_dev *edev, int is_write, uint8_t
  */
 int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no)
 {
-	struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
+        struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
 
-	if (sd_ensure_data_mode(edev) != 0)
-		return -1;
+        if (sd_ensure_data_mode(edev) != 0)
+                return -1;
 
-	SD_TRACE("Card ready, reading from block %u", block_no);
+        SD_TRACE("Card ready, reading from block %u", block_no);
 
-	if (sd_do_data_command(edev, 0, buf, buf_size, block_no) < 0)
-		return -1;
+        if (sd_do_data_command(edev, 0, buf, buf_size, block_no) < 0)
+                return -1;
 
-	SD_TRACE("Data read successful");
+        SD_TRACE("Data read successful");
 
-	return buf_size;
+        return buf_size;
 }
 
 #ifdef SD_WRITE_SUPPORT
@@ -1883,21 +1716,20 @@ int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t bl
  * @param block_no
  * @return
  */
-int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size,	uint32_t block_no)
+int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size,   uint32_t block_no)
 {
-	struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
+        struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
 
-	if (sd_ensure_data_mode(edev) != 0)
-		return -1;
+        if (sd_ensure_data_mode(edev) != 0)
+                return -1;
 
-	SD_TRACE("Card ready, writing to block %u", block_no);
+        SD_TRACE("Card ready, writing to block %u", block_no);
 
-	if (sd_do_data_command(edev, 1, buf, buf_size, block_no) < 0)
-		return -1;
+        if (sd_do_data_command(edev, 1, buf, buf_size, block_no) < 0)
+                return -1;
 
-	SD_TRACE("Write read successful");
+        SD_TRACE("Write read successful");
 
-	return buf_size;
+        return buf_size;
 }
 #endif
-

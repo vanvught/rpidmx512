@@ -1,3 +1,8 @@
+/**
+ * @file block.c
+ *
+ */
+
 /* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +30,14 @@
 
 #define MAX_TRIES		1
 
+/**
+ *
+ * @param dev
+ * @param buf
+ * @param buf_size
+ * @param starting_block
+ * @return
+ */
 size_t block_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t starting_block)
 {
 	// Read the required number of blocks to satisfy the request
@@ -83,6 +96,14 @@ size_t block_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint3
 	return (size_t)buf_offset;
 }
 
+/**
+ *
+ * @param dev
+ * @param buf
+ * @param buf_size
+ * @param starting_block
+ * @return
+ */
 size_t block_write(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t starting_block)
 {
 	// Write the required number of blocks to satisfy the request

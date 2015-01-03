@@ -57,4 +57,11 @@
 #define SDHCI_MAX_DIV_SPEC_200	256
 #define SDHCI_MAX_DIV_SPEC_300	2046
 
+extern int bcm2835_emmc_power_on(void);
+extern int bcm2835_emmc_power_off(void);
+extern int bcm2835_emmc_reset_cmd(void);
+extern int bcm2835_emmc_reset_dat(void);
+extern uint32_t bcm2835_emmc_get_clock_divider(uint32_t, uint32_t);
+extern uint32_t bcm2835_emmc_switch_clock_rate(uint32_t, uint32_t);
+
 #endif /* BCM2835_EMMC_H_ */
