@@ -27,10 +27,12 @@ Baremetal projects testing purposes only
 
 Baremetal projects for OpenDMX controller
 ---------
+\bob-baremetal
 \emmc
 \fb
 \ff9b
+\firmware
 \firmware-template
-\hal
+
 
 Detailed information can be found here : https://sites.google.com/site/rpidmx512/home
