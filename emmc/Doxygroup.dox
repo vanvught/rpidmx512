@@ -12,7 +12,7 @@
  */
 
 /**
- * @defgroup SDCARD sdcard
+ * @defgroup SD sdcard
  * @ingroup EMMC-SDCARD
  * @brief TODO
  *
