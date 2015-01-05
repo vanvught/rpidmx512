@@ -1,7 +1,3 @@
-/**
- * @file bcm2835_wdog.c
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,44 +19,18 @@
  * THE SOFTWARE.
  */
 
+#ifndef DMX_DATA_H_
+#define DMX_DATA_H_
+
 #include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
 
-/**
- * @param timeout
- */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
-}
+extern uint8_t dmx_data[512];
+extern uint8_t dmx_data_refreshed;
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
-}
+extern void pl011_dmx512_init(void);
+extern void irq_init(void);
 
-/**
- *
- */
-#define WDOG_TIMEOUT 0x0FFFF
+#define DMX_DATA_REFRESHED_DEVICES		((uint8_t)(1 << 0))
+#define DMX_DATA_REFRESHED_UI			((uint8_t)(1 << 1))
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+#endif /* DMX_DATA_H_ */

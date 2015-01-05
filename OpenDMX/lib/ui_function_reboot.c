@@ -1,7 +1,3 @@
-/**
- * @file bcm2835_wdog.c
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,43 +19,26 @@
  * THE SOFTWARE.
  */
 
+// C standard library headers 
 #include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
+// BitWizard User Interface (LCD and push buttons)
+#include <bw_ui.h>
+//
+#include <ui_functions.h>
 
-/**
- * @ingroup watchdog
- *
- * @param timeout
- */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
-}
+extern uint32_t ticks_per_second;
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
-}
-
-#define WDOG_TIMEOUT 0x0FFFF
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
+void reboot(const char buttons) {
+	if (do_ui_cls) {
+		ui_cls();
+		ui_text_line_1("Reboot?", 7);
+		ui_text_line_2("Yes           No", BW_UI_MAX_CHARACTERS);
+		do_ui_cls = 0;
+	}
+	// No need to check for button 6 pressed (activate Menu)
+	if (BUTTON1_PRESSED(buttons)) {
+		ticks_per_second = ticks_per_second / 2;	// Let the LED blink faster
+		ui_text_line_2("Rebooting ....  ", BW_UI_MAX_CHARACTERS);
+		for(;;);									// Force Watchdog time-out
+	}
 }

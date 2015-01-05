@@ -1,7 +1,3 @@
-/**
- * @file bcm2835_wdog.c
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,43 +19,32 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
+#ifndef DMX_DEVICES_H_
+#define DMX_DEVICES_H_
 
-/**
- * @ingroup watchdog
- *
- * @param timeout
- */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
-}
+#define DMX_DEVICE_CONFIG_TABLE_FULL 				0
+#define DMX_DEVICE_CONFIG_INVALID_PROTOCOL 			-2
+#define DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT 		-3
+#define DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS 	-4
+#define DMX_DEVICE_CONFIG_INVALID_START_ADDRESS 	-5
+#define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6
+#define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
-}
+// Linker table helper macros
+#include <tables.h>
 
-#define WDOG_TIMEOUT 0x0FFFF
+typedef struct _device_entry {
+	int devices_table_index;
+	dmx_device_info_t dmx_device_info;
+} device_entry_t;
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+typedef struct _devices {
+	int elements_count;
+	device_entry_t device_entry[16];
+} _devices_t;
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+extern void dmx_devices_read_config(void);
+extern void dmx_devices_init(void);
+extern void dmx_devices_run(void);
+
+#endif /* DMX_DEVICES_H_ */

@@ -95,7 +95,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 8;	/* we're sending the clock ID and the new rates which is a total of 2 words */
+	vc_msg->tag.data_size = 8; /* we're sending the clock ID and the new rates which is a total of 2 words */
 	vc_msg->tag.dev_id = dev_id;
 	vc_msg->tag.val = val;
 	vc_msg->end_tag = 0;
@@ -149,7 +149,7 @@ int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_
  *   Bits 2-31: reserved for future use
  */
 int32_t bcm2835_vc_get_power_state(const uint32_t dev_id) {
-	return bcm2835_vc_get(BCM2835_VC_TAG_GET_POWER_STATE, dev_id);
+	return (bcm2835_vc_get(BCM2835_VC_TAG_GET_POWER_STATE, dev_id) & 0x3);
 }
 
 /**

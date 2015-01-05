@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_wdog.c
+ * @file mcp23s08.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,43 +23,49 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
+extern int printf(const char *format, ...);
+
+#include <tables.h>
+#include <dmx_data.h>
+#include <mcp23s08.h>
 
 /**
- * @ingroup watchdog
  *
- * @param timeout
+ * @param dmx_device_info
  */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
+static void mcp23s08(dmx_device_info_t * dmx_device_info) {
+	int i;
+	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+
+	for (i = 0 ; i <  8 ; i++) {
+
+		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
+			mcp23s08_gpio_set(&dmx_device_info->device_info, 1 << i);
+		} else {
+			mcp23s08_gpio_clr(&dmx_device_info->device_info, 1 << i);
+		}
+
+		dmx_data_index++;
+
+		if (dmx_data_index > 0x1FF)
+			break;
+	}
 }
+
+INITIALIZER(devices, mcp23s08)
 
 /**
- * @ingroup watchdog
  *
+ * @param dmx_device_info
  */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
+static void mcp23s08_init(dmx_device_info_t * dmx_device_info) {
+	printf("device init <mcp23s08>\n");
+	mcp23s08_start(&(dmx_device_info->device_info));
+	int i;
+	for (i = 0 ; i < 8 ; i++ ) {
+		mcp23s08_gpio_fsel(&dmx_device_info->device_info, 1 << i, MCP23S08_FSEL_OUTP);
+		mcp23s08_gpio_clr(&dmx_device_info->device_info, 1 << i);
+	}
 }
 
-#define WDOG_TIMEOUT 0x0FFFF
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+INITIALIZER(devices_init, mcp23s08_init)

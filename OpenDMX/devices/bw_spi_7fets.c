@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_uart.c
+ * @file bw_spi_7fets.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,48 +23,46 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
-#include "bcm2835_uart.h"
+extern int printf(const char *format, ...);
+
+#include <tables.h>
+#include <dmx_data.h>
+#include <bw_spi_7fets.h>
 
 /**
- * @ingroup UART
  *
+ * @param dmx_device_info
  */
-void bcm2835_uart_begin(void) {
-    BCM2835_UART1->ENABLE = 0x01;
-    BCM2835_UART1->CNTL = 0x00;
-    BCM2835_UART1->LCR = 0x03;
-    BCM2835_UART1->MCR = 0x00;
-    BCM2835_UART1->IER = 0x05;
-    BCM2835_UART1->IIR = 0xC6;
-    BCM2835_UART1->BAUD = 270;
+static void bw_spi_7fets(dmx_device_info_t *dmx_device_info) {
+	int i;
+	unsigned char data = 0;
+	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
 
-    // Set the GPI0 pins to the Alt 5 function to enable UART1 access on them
-    uint32_t value = BCM2835_GPIO->GPFSEL1;
-    value &= ~(7 << 12);
-    value |= BCM2835_GPIO_FSEL_ALT5 << 12;	// Pin 14 UART1_TXD
-    value &= ~(7 << 15);
-    value |= BCM2835_GPIO_FSEL_ALT5 << 15;	// Pin 15 UART1_RXD
-    BCM2835_GPIO->GPFSEL1 = value;
+	for (i = 0; i < 7; i++) {
 
-    // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+		if (dmx_data_index > 0x1FF)
+			break;
 
-    // turn on the uart for send and receive
-    BCM2835_UART1->CNTL = 3;
+		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
+			data = data | (1 << i);
+		}
+
+		dmx_data_index++;
+	}
+
+	bw_spi_7fets_output(&dmx_device_info->device_info, data);
 }
+
+INITIALIZER(devices, bw_spi_7fets)
 
 /**
- * @ingroup UART
  *
- * @param c
+ * @param dmx_device_info
  */
-void bcm2835_uart_send(const uint32_t c) {
-	while ((BCM2835_UART1->LSR & 0x20) == 0)
-		;
-	BCM2835_UART1 ->IO = c;
+static void bw_spi_7fets_init(dmx_device_info_t *dmx_device_info) {
+	printf("device init <bw_spi_7fets_init>\n");
+	bw_spi_7fets_start(&(dmx_device_info->device_info));
+	bw_spi_7fets_output(&dmx_device_info->device_info, 0);
 }
 
+INITIALIZER(devices_init, bw_spi_7fets_init)

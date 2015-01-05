@@ -1,7 +1,3 @@
-/**
- * @file bcm2835_wdog.c
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,43 +19,46 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
+// C standard library headers
+#include <stdio.h>
+//
+#include <sys_time.h>
+// BitWizard User Interface (LCD and push buttons)
+#include <bw_ui.h>
+//
+#include <ui_functions.h>
 
-/**
- * @ingroup watchdog
- *
- * @param timeout
- */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
+inline static void itoa_base10(int arg, char buf[]) {
+	char *n = buf + 1;
+
+	buf[0] = '0';
+	buf[1] = '0';
+
+	while (arg) {
+		*n = '0' + (arg % 10);
+		n--;
+		arg /= 10;
+	}
 }
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
-}
+void clock_time(const char buttons) {
+	time_t ltime = 0;
+	struct tm *local_time = NULL;
+	static char buf[BW_UI_MAX_CHARACTERS];
 
-#define WDOG_TIMEOUT 0x0FFFF
+	if (do_ui_cls) {
+		ui_cls();
+		ui_text_line_1("Clock", 5);
+		do_ui_cls = 0;
+		buf[2] = ':';
+		buf[5] = ':';
+    }
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+	ltime = sys_time(NULL);
+    local_time = localtime(&ltime);
 
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
+    itoa_base10(local_time->tm_hour, &buf[0]);
+    itoa_base10(local_time->tm_min , &buf[3]);
+    itoa_base10(local_time->tm_sec , &buf[6]);
+    ui_text_line_2(buf, 8);
 }

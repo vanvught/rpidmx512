@@ -2,7 +2,7 @@
  * @file bcm2835_gpio.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include "bcm2835.h"
 
+/// Function select modes for \ref bcm2835_gpio_fsel
 typedef enum {
 	BCM2835_GPIO_FSEL_INPT = 0b000,	///< Input
 	BCM2835_GPIO_FSEL_OUTP = 0b001,	///< Output
@@ -41,6 +42,7 @@ typedef enum {
 	BCM2835_GPIO_FSEL_MASK = 0b111	///< Function select bits mask
 } bcm2835FunctionSelect;
 
+/// Pullup/Pulldown defines for \ref bcm2835_gpio_set_pud
 typedef enum {
 	BCM2835_GPIO_PUD_OFF 	= 0b00,	///< Off ? disable pull-up/down
 	BCM2835_GPIO_PUD_DOWN 	= 0b01,	///< Enable Pull Down control
@@ -48,25 +50,34 @@ typedef enum {
 } bcm2835PUDControl;
 
 /**
+ * @ingroup GPIO
  *
- * @param pin
+ * Sets the specified pin output to HIGH
+ *
+ * @param pin GPIO number.
  */
 inline static void bcm2835_gpio_set(const uint8_t pin) {
 	BCM2835_GPIO ->GPSET0 = 1 << pin;
 }
 
 /**
+ * @ingroup GPIO
  *
- * @param pin
+ * Sets the specified pin output to LOW
+ *
+ * @param pin GPIO number.
  */
 inline static void bcm2835_gpio_clr(const uint8_t pin) {
 	BCM2835_GPIO ->GPCLR0 = 1 << pin;
 }
 
 /**
+ * @ingroup GPIO
  *
- * @param pin
- * @param on
+ * Sets the output state of the specified pin.
+ *
+ * @param pin GPIO number
+ * @param on \ref HIGH sets the output to HIGH and \ref LOW to LOW.
  */
 inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
 	if (on)
@@ -76,6 +87,7 @@ inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
 }
 
 /**
+ * @ingroup GPIO
  *
  * @param pin
  * @return
@@ -86,14 +98,20 @@ inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
 }
 
 /**
+ * @ingroup GPIO
  *
- * @param pud
+ * Sets the Pull-up/down register for the given pin. This is
+ * used with \ref bcm2835_gpio_pudclk to set the  Pull-up/down resistor for the given pin.
+ * However, it is usually more convenient to use \ref bcm2835_gpio_set_pud.
+ *
+ * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
  */
 inline static void bcm2835_gpio_pud(const uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
 }
 
 /**
+ * @ingroup GPIO
  *
  * @param pin
  * @param on
@@ -104,7 +122,19 @@ inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
 
 #define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
 
-extern void bcm2835_gpio_fsel(const uint8_t, const uint8_t);
+/**
+ * @ingroup GPIO
+ *
+ * Defined in file bcm2835_gpio_fsel.S
+ *
+ * Sets the Function Select register for the given pin, which configures
+ * the pin as Input, Output or one of the 6 alternate functions.
+ *
+ * @param pin GPIO number.
+ * @param mode Mode to set the pin to, one of BCM2835_GPIO_FSEL_* from \ref bcm2835FunctionSelect
+ */
+extern void bcm2835_gpio_fsel(const uint8_t pin, const uint8_t mode);
+
 extern void bcm2835_gpio_set_pud(const uint8_t, const uint8_t);
 
 #endif /* BCM2835_GPIO_H_ */

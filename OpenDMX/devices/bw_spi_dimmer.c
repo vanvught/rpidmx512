@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_led.c
+ * @file bw_spi_dimmer.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,26 +23,32 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
+extern int printf(const char *format, ...);
 
-#define PIN		16
-
-/**
- *
- * @param state
- */
-void led_set(const int state) {
-	bcm2835_gpio_write(PIN, !state);
-}
+#include <tables.h>
+#include <dmx_data.h>
+#include <bw_spi_dimmer.h>
 
 /**
  *
+ * @param dmx_device_info
  */
-void led_init(void) {
-	uint32_t value = BCM2835_GPIO->GPFSEL1;
-	value &= ~(7 << 18);
-	value |= BCM2835_GPIO_FSEL_OUTP << 18;
-	BCM2835_GPIO->GPFSEL1 = value;
+static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
+	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+
+	bw_spi_dimmer_output(&dmx_device_info->device_info, dmx_data[dmx_data_index]);
 }
+
+INITIALIZER(devices, bw_spi_dimmer)
+
+/**
+ *
+ * @param dmx_device_info
+ */
+static void bw_spi_dimmer_init(dmx_device_info_t *dmx_device_info) {
+	printf("device init <bw_spi_dimmer_init>\n");
+	bw_spi_dimmer_start(&(dmx_device_info->device_info));
+	bw_spi_dimmer_output(&dmx_device_info->device_info, 0);
+}
+
+INITIALIZER(devices_init, bw_spi_dimmer_init)

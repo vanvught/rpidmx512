@@ -34,7 +34,7 @@
  * Start SPI operations.
  * Forces RPi SPI0 pins P1-19 (MOSI), P1-21 (MISO), P1-23 (CLK), P1-24 (CE0) and P1-26 (CE1)
  * alternate function ALT0, which enables those pins for SPI interface.
- * Default the chip select polarity to \ref LOW
+ * Default the chip select polarity to LOW
  * Default to \ref BCM2835_SPI_MODE0 (CPOL = 0, CPHA = 0).
  * Default the SPI speed to 100 kHz (\ref BCM2835_SPI_CLOCK_DIVIDER_2500).
  */
@@ -78,7 +78,7 @@ void bcm2835_spi_begin(void) {
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);		// Chip select 0 active LOW
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);		// Chip select 1 active LOW
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);						// CPOL = 0, CPHA = 0
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_2500);	// 100 kHz
+	BCM2835_SPI0 ->CLK = BCM2835_SPI_CLOCK_DIVIDER_2500;			// 100 kHz
 }
 
 /**
@@ -91,7 +91,6 @@ void bcm2835_spi_begin(void) {
 void bcm2835_spi_end(void) {
 	uint32_t value;
 	// Set all the SPI0 pins back to input
-
 	value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 21);
 	value |= BCM2835_GPIO_FSEL_INPT << 21;	// Pin 7, GPIO Input
@@ -111,8 +110,13 @@ void bcm2835_spi_end(void) {
 /**
  * @ingroup SPI
  *
+ * Sets the SPI bit order.
+ * NOTE: has no effect. Not supported by SPI0.
+ * Defaults to ::BCM2835_SPI_BIT_ORDER_MSBFIRST
+ *
+ * @param order
  */
-inline void bcm2835_spi_setBitOrder(const uint8_t order) {
+void bcm2835_spi_setBitOrder(const uint8_t order) {
 	// BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 }
 
@@ -123,11 +127,19 @@ inline void bcm2835_spi_setBitOrder(const uint8_t order) {
  *
  * @param divider The desired SPI clock divider, one of ::bcm2835SPIClockDivider
  */
-inline void bcm2835_spi_setClockDivider(const uint16_t divider) {
+void bcm2835_spi_setClockDivider(const uint16_t divider) {
 	BCM2835_SPI0 ->CLK = divider;
 }
 
-inline void bcm2835_spi_setDataMode(const uint8_t mode) {
+/**
+ * @ingroup SPI
+ *
+ * Sets the SPI data mode.
+ * Sets the clock polarity and phase.
+ *
+ * @param mode The desired data mode,one of BCM2835_SPI_MODE*, see \ref bcm2835SPIMode
+ */
+void bcm2835_spi_setDataMode(const uint8_t mode) {
 	// Mask in the CPO and CPHA bits of CS
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
 }
@@ -136,8 +148,9 @@ inline void bcm2835_spi_setDataMode(const uint8_t mode) {
  * @ingroup SPI
  *
  * @param cs Specifies the CS pins(s) that are used to activate the desired slave.
+ *           One of BCM2835_SPI_CS*, see \ref bcm2835SPIChipSelect
  */
-inline void bcm2835_spi_chipSelect(const uint8_t cs) {
+void bcm2835_spi_chipSelect(const uint8_t cs) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
 }
 
@@ -149,7 +162,7 @@ inline void bcm2835_spi_chipSelect(const uint8_t cs) {
  * @param cs The chip select pin to affect
  * @param active Whether the chip select pin is to be active HIGH or LOW
  */
-inline void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
+void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
 	uint8_t shift = 21 + cs;
 	// Mask in the appropriate CSPOLn bit
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, active << shift, 1 << shift);
@@ -158,11 +171,15 @@ inline void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t ac
 /**
  * @ingroup SPI
  *
- * @param tbuf
- * @param rbuf
- * @param len
+ *  Transfers any number of bytes to and from the currently selected SPI slave.
+ *  Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
+ *  during the transfer.
+ *
+ * @param tbuf Buffer of bytes to send.
+ * @param rbuf Received bytes will by put in this buffer.
+ * @param len Number of bytes in the tbuf buffer, and the number of bytes to send/received.
  */
-inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
+void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
@@ -201,8 +218,12 @@ inline void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 /**
  * @ingroup SPI
  *
- * @param buf
- * @param len
+ * Transfers any number of bytes to and from the currently selected SPI slave
+ * using \ref bcm2835_spi_transfernb.
+ * The returned data from the slave replaces the transmitted data in the buffer.
+ *
+ * @param buf Buffer of bytes to send. Received bytes will replace the contents.
+ * @param len Number of bytes in the buffer, and the number of bytes to send/received.
  */
 void bcm2835_spi_transfern(char* buf, const uint32_t len) {
 	bcm2835_spi_transfernb(buf, buf, len);
@@ -211,8 +232,12 @@ void bcm2835_spi_transfern(char* buf, const uint32_t len) {
 /**
  * @ingroup SPI
  *
- * @param tbuf
- * @param len
+ * Transfers any number of bytes to the currently selected SPI slave.
+ * Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
+ * during the transfer.
+ *
+ * @param tbuf Buffer of bytes to send.
+ * @param len Number of bytes in the tbuf buffer, and the number of bytes to send.
  */
 void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
     // Clear TX and RX fifos

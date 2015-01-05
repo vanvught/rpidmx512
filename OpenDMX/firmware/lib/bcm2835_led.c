@@ -1,8 +1,8 @@
 /**
- * @file bcm2835_wdog.c
+ * @file bcm2835_led.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,41 +25,26 @@
 
 #include <stdint.h>
 #include "bcm2835.h"
-#include "bcm2835_wdog.h"
+#include "bcm2835_gpio.h"
+
+#define PIN		16
 
 /**
- * @ingroup watchdog
+ * @ingroup Led
  *
- * @param timeout
+ * @param state
  */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
+void led_set(const int state) {
+	bcm2835_gpio_write(PIN, !state);
 }
 
 /**
- * @ingroup watchdog
+ * @ingroup Led
  *
  */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
-}
-
-#define WDOG_TIMEOUT 0x0FFFF
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
+void led_init(void) {
+	uint32_t value = BCM2835_GPIO->GPFSEL1;
+	value &= ~(7 << 18);
+	value |= BCM2835_GPIO_FSEL_OUTP << 18;
+	BCM2835_GPIO->GPFSEL1 = value;
 }

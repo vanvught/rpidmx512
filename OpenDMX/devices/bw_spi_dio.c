@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_wdog.c
+ * @file bw_spi_dio.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,43 +23,47 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
+extern int printf(const char *format, ...);
+
+#include <tables.h>
+#include <dmx_data.h>
+#include <bw_spi_dio.h>
 
 /**
- * @ingroup watchdog
  *
- * @param timeout
+ * @param dmx_device_info
  */
-inline static void bcm2835_wdog_start(const uint32_t timeout) {
-	BCM2835_PM_WDOG->WDOG = BCM2835_PM_WDOG_PASSWORD | (timeout & BCM2835_PM_WDOG_TIME_SET);
-	uint32_t rstc = BCM2835_PM_WDOG->RSTC;
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | (rstc & BCM2835_PM_WDOG_RSTC_WRCFG_CLR) | BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET;
+static void bw_spi_dio(dmx_device_info_t *dmx_device_info) {
+	int i;
+	unsigned char data = 0;
+	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+
+	for (i = 0; i < 7; i++) {
+
+		if (dmx_data_index > 0x1FF)
+			break;
+
+		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
+			data = data | (1 << i);
+		}
+
+		dmx_data_index++;
+	}
+
+	bw_spi_dio_output(&dmx_device_info->device_info, data);
 }
+
+INITIALIZER(devices, bw_spi_dio)
 
 /**
- * @ingroup watchdog
  *
+ * @param dmx_device_info
  */
-void watchdog_stop(void) {
-	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
+static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
+	printf("device init <bw_spi_dio_init>\n");
+	bw_spi_dio_start(&(dmx_device_info->device_info));
+	bw_spi_dio_fsel_mask(&dmx_device_info->device_info, 0x7F);
+	bw_spi_dio_output(&dmx_device_info->device_info, 0);
 }
 
-#define WDOG_TIMEOUT 0x0FFFF
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_init(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
-
-/**
- * @ingroup watchdog
- *
- */
-void watchdog_feed(void) {
-	bcm2835_wdog_start(WDOG_TIMEOUT);
-}
+INITIALIZER(devices_init, bw_spi_dio_init)

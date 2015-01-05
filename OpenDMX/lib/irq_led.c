@@ -1,7 +1,3 @@
-/**
- * @file bcm2835_st_delay.S
- *
- */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,27 +19,27 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
+#include <bcm2835.h>
 
-.macro FUNC name
-.text
-.code 32
-.global \name
-\name:
-.endm
+uint32_t ticks_per_second = 1E6 / 2;	// Blinking at 1Hz
+static uint32_t irq_counter;
 
-.cpu arm1176jzf-s
-.fpu vfp
+#define PIN		16
 
-FUNC bcm2835_st_delay
-@ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
-push {r3, r4, r5, lr}
-adds r4, r2, r0
-adc	r5, r3, r1
-ldr r2, =BCM2835_ST_BASE
-2:
-	ldrd r0,r1,[r2,#4]
-	cmp	r1, r5
-	cmpeq r0, r4
-	bcc	2b
-pop	{r3, r4, r5, pc}
+void irq_init(void) {
+    irq_counter = 0;
+    BCM2835_ST->C1 = BCM2835_ST->CLO + ticks_per_second;
+    BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
+}
+
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
+	dmb();
+	BCM2835_ST ->CS = BCM2835_ST_CS_M1;
+	BCM2835_ST ->C1 = BCM2835_ST ->CLO + ticks_per_second;
+	if (irq_counter++ & 0x01)
+		BCM2835_GPIO ->GPSET0 = 1 << PIN;
+	else
+		BCM2835_GPIO ->GPCLR0 = 1 << PIN;
+	dmb();
+}

@@ -1,5 +1,5 @@
 /**
- * @file bcm2835_gpio.c
+ * @file bw_spi_relay.c
  *
  */
 /* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,19 +23,46 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
+extern int printf(const char *format, ...);
+
+#include <tables.h>
+#include <dmx_data.h>
+#include <bw_spi_relay.h>
 
 /**
  *
- * @param pin
- * @param pud
+ * @param dmx_device_info
  */
-void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
-	bcm2835_gpio_pud(pud);
-	udelay(10);
-	bcm2835_gpio_pudclk(pin, 1);
-	udelay(10);
-	bcm2835_gpio_pud(BCM2835_GPIO_PUD_OFF);
-	bcm2835_gpio_pudclk(pin, 0);
+static void bw_spi_relay(dmx_device_info_t *dmx_device_info) {
+	int i;
+	unsigned char data = 0;
+	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+
+	for (i = 0; i < 2; i++) {
+
+		if (dmx_data_index > 0x1FF)
+			break;
+
+		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
+			data = data | (1 << i);
+		}
+
+		dmx_data_index++;
+	}
+
+	bw_spi_relay_output(&dmx_device_info->device_info, data);
 }
+
+INITIALIZER(devices, bw_spi_relay)
+
+/**
+ *
+ * @param dmx_device_info
+ */
+static void bw_spi_relay_init(dmx_device_info_t *dmx_device_info) {
+	printf("device init <bw_spi_relay_init>\n");
+	bw_spi_relay_start(&(dmx_device_info->device_info));
+	bw_spi_relay_output(&dmx_device_info->device_info, 0);
+}
+
+INITIALIZER(devices_init, bw_spi_relay_init)
