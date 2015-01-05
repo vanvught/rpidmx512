@@ -28,6 +28,7 @@
 #include "bcm2835_pl011.h"
 
 /**
+ * @ingroup DMX512
  *
  */
 void bcm2835_pl011_dmx512_begin(void) {

@@ -25,8 +25,8 @@
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
-#define HIGH 0x1
-#define LOW  0x0
+#define HIGH 0x1					///< HIGH state
+#define LOW  0x0					///< LOW state
 
 // RPi Version 2
 #define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03
@@ -59,12 +59,12 @@
 #define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0xB880)
 #define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)
 #define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)
-#define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)
-#define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)
-#define BCM2835_UART1_BASE		(BCM2835_PERI_BASE + 0x215000)
-#define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)
-#define BCM2835_BSC1_BASE		(BCM2835_PERI_BASE + 0x804000)
-#define BCM2835_BSC2_BASE		(BCM2835_PERI_BASE + 0x805000)
+#define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)	///< Base Physical Address of the SPI0 registers
+#define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)	///< Base Physical Address of the PL011 registers
+#define BCM2835_UART1_BASE		(BCM2835_PERI_BASE + 0x215000)	///< Base Physical Address of the UART1 registers
+#define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)	///< Base Physical Address of the EMMC registers
+#define BCM2835_BSC1_BASE		(BCM2835_PERI_BASE + 0x804000)	///< Base Physical Address of the BSC1 registers
+#define BCM2835_BSC2_BASE		(BCM2835_PERI_BASE + 0x805000)	///< Base Physical Address of the BSC2 registers
 
 #ifdef __ASSEMBLY__
 #else
@@ -216,6 +216,7 @@ typedef struct {
 	__IO uint32_t CLKT;		///< 0x1C, BSC Master Clock Stretch Timeout
 } BCM2835_BSC_TypeDef;
 
+/// Defines for IRQ\n
 typedef struct {
 	__I uint32_t IRQ_BASIC_PENDING;		///< 0x00
 	__I uint32_t IRQ_PENDING1;			///< 0x04
@@ -229,6 +230,7 @@ typedef struct {
 	__IO uint32_t IRQ_BASIC_DISABLE;	///< 0x24
 } BCM2835_IRQ_TypeDef;
 
+/// Defines for MAILBOX\n
 typedef struct {
 	__I uint32_t READ;		///< 0x00
 	__I uint32_t RES1;		///< 0x04
@@ -241,6 +243,7 @@ typedef struct {
 	__O uint32_t WRITE;		///< 0x20
 } BCM2835_MAILBOX_TypeDef;
 
+/// Defines for WATCHDOG\n
 typedef struct {
 	__I uint32_t UNKWOWN0[7];	///< 0x00
 	__IO uint32_t RSTC;			///< 0x1C
@@ -248,6 +251,7 @@ typedef struct {
 	__IO uint32_t WDOG;			///< 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
+/// Defines for EMMC\n
 typedef struct {
 	__IO uint32_t ARG2;				///< 0x00
 	__IO uint32_t BLKSIZECNT;		///< 0x04
@@ -284,30 +288,44 @@ typedef struct {
 	__IO uint32_t SLOTISR_VER;		///< 0xFC
 } BCM2835_EMMC_TypeDef;
 
-#define BCM2835_ST			((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)
-#define BCM2835_IRQ			((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)
-#define BCM2835_MAILBOX		((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)
-#define BCM2835_PM_WDOG		((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)
-#define BCM2835_GPIO		((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)
-#define BCM2835_SPI0		((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)
-#define BCM2835_PL011		((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)
-#define BCM2835_UART1		((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)
-#define BCM2835_EMMC		((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)
-#define BCM2835_BSC1		((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)
-#define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)
+#define BCM2835_ST			((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)			///< Base register address for SYSTEM TIMER
+#define BCM2835_IRQ			((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)			///< Base register address for IRQ
+#define BCM2835_MAILBOX		((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)	///< Base register address for MAILBOX
+#define BCM2835_PM_WDOG		((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)	///< Base register address for WATCHDOG
+#define BCM2835_GPIO		((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)		///< Base register address for GPIO
+#define BCM2835_SPI0		((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)		///< Base register address for SPI
+#define BCM2835_PL011		((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)		///< Base register address for PL011
+#define BCM2835_UART1		((BCM2835_UART_TypeDef *) BCM2835_UART1_BASE)		///< Base register address for UART1
+#define BCM2835_EMMC		((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)		///< Base register address for EMMC
+#define BCM2835_BSC1		((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)		///< Base register address for I2C (BSC1)
+#define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)		///< Base register address for I2C (BSC2)
 
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
 
-// ST
+/**
+ * @ingroup TIMER
+ *
+ * @param
+ * @param
+ */
 extern void bcm2835_st_delay(const uint64_t, const uint64_t);
 
+/**
+ * @ingroup TIMER
+ *
+ * @return
+ */
 inline static uint64_t bcm2835_st_read(void)
 {
-	return *(volatile uint64_t *) (BCM2835_ST_BASE + 0x04);
+	return *(volatile uint64_t *)(BCM2835_ST_BASE + 0x04);
 }
 
-// DELAY
+/**
+ *
+ *
+ * @param
+ */
 extern void udelay(const uint64_t);
 
 #endif

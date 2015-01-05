@@ -29,6 +29,7 @@
 #include "bcm2835_pl011.h"
 
 /**
+ * @ingroup PL011
  *
  */
 void bcm2835_pl011_begin(void) {
@@ -63,6 +64,7 @@ void bcm2835_pl011_begin(void) {
 }
 
 /**
+ * @ingroup PL011
  *
  * @param c
  */

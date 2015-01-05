@@ -27,9 +27,12 @@
 #include "bcm2835_gpio.h"
 
 /**
+ * @ingroup GPIO
  *
- * @param pin
- * @param pud
+ * Sets the Pull-up/down mode for the specified pin.
+ *
+ * @param pin GPIO number.
+ * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
  */
 void bcm2835_gpio_set_pud(const uint8_t pin, const uint8_t pud) {
 	bcm2835_gpio_pud(pud);

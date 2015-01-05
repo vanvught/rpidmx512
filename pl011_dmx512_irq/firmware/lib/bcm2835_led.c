@@ -2,7 +2,7 @@
  * @file bcm2835_led.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #define PIN		16
 
 /**
+ * @ingroup Led
  *
  * @param state
  */
@@ -38,6 +39,7 @@ void led_set(const int state) {
 }
 
 /**
+ * @ingroup Led
  *
  */
 void led_init(void) {

@@ -44,29 +44,38 @@ typedef enum {
 } bcm2835VideoCoreClockId;
 
 /// Unique power ID
-typedef enum {
-	BCM2835_VC_POWER_ID_SDCARD 		= 0,	///<
-	BCM2835_VC_POWER_ID_UART0 		= 1,	///<
-	BCM2835_VC_POWER_ID_UART1 		= 2,	///<
-	BCM2835_VC_POWER_ID_USBHCD 		= 3,	///<
-	BCM2835_VC_POWER_ID_I2C0 		= 4,	///<
-	BCM2835_VC_POWER_ID_I2C1 		= 5,	///<
-	BCM2835_VC_POWER_ID_I2C2 		= 6,	///<
-	BCM2835_VC_POWER_ID_SPI 		= 7,	///<
-	BCM2835_VC_POWER_ID_CCP2TX 		= 8 	///<
+typedef enum
+{
+	BCM2835_VC_POWER_ID_SDCARD 	= 0,	///<
+	BCM2835_VC_POWER_ID_UART0 	= 1,	///<
+	BCM2835_VC_POWER_ID_UART1 	= 2,	///<
+	BCM2835_VC_POWER_ID_USBHCD 	= 3,	///<
+	BCM2835_VC_POWER_ID_I2C0 	= 4,	///<
+	BCM2835_VC_POWER_ID_I2C1 	= 5,	///<
+	BCM2835_VC_POWER_ID_I2C2 	= 6,	///<
+	BCM2835_VC_POWER_ID_SPI 	= 7,	///<
+	BCM2835_VC_POWER_ID_CCP2TX 	= 8 	///<
 } bcm2835VideoCorePowerId;
 
-/*
+/**
  *  Bit 0: 0=off, 1=on
  *  Bit 1: 0=do not wait, 1=wait
  *  Bits 2-31: reserved for future use (set to 0)
  */
-typedef enum {
-	BCM2835_VC_SET_POWER_STATE_OFF_NO_WAIT	= 0,	///<
-	BCM2835_VC_SET_POWER_STATE_ON_NO_WAIT	= 1,	///<
-	BCM2835_VC_SET_POWER_STATE_OFF_WAIT		= 2,	///<
+typedef enum
+{
+	BCM2835_VC_SET_POWER_STATE_OFF_NO_WAIT 	= 0,	///<
+	BCM2835_VC_SET_POWER_STATE_OFF_WAIT 	= 2,	///<
+	BCM2835_VC_SET_POWER_STATE_ON_NO_WAIT 	= 1,	///<
 	BCM2835_VC_SET_POWER_STATE_ON_WAIT 		= 3		///<
-}bcm2835SetPowerState;
+} bcm2835SetPowerState;
+
+#define BCM2835_VC_SET_POWER_STATE_REQ_OFF		(0 << 0)	///< Bit 0: 0=off
+#define BCM2835_VC_SET_POWER_STATE_REQ_ON		(1 << 0)	///< Bit 0: 1=on
+#define BCM2835_VC_SET_POWER_STATE_REQ_WAIT		(1 << 1)	///< Bit 1: 1=wait
+
+#define BCM2835_VC_POWER_STATE_RESP_ON			(1 << 0)	///< Bit 0: 0=off, 1=on
+#define BCM2835_VC_POWER_STATE_RESP_NODEV		(1 << 1)	///< Bit 1: 0=device exists, 1=device does not exist
 
 // Tag VideoCore
 #define BCM2835_VC_TAG_GET_FIRMWARE_REV			0x00000001	///<
