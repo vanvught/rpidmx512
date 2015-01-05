@@ -29,13 +29,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "block.h"
-#include "util.h"
-
-#include "bcm2835.h"
-#include "bcm2835_vc.h"
+//#include "util.h"
 #include "bcm2835_emmc.h"
-
 #include "sd.h"
+
+extern void udelay(uint32_t);
 
 uint32_t sd_commands[] = {
     SD_CMD_INDEX(0),
@@ -184,19 +182,17 @@ int printf(const char *format, ...);
 #endif
 
 // Enable 1.8V support
-#define SD_1_8V_SUPPORT
-
+//#define SD_1_8V_SUPPORT
 // Enable 4-bit support
 #define SD_4BIT_DATA
-
 // Enable SDXC maximum performance mode
 #define SDXC_MAXIMUM_PERFORMANCE
-
 // Enable EXPERIMENTAL (and possibly DANGEROUS) SD write support
 #define SD_WRITE_SUPPORT
 
-static char driver_name[] = "emmc";
-static char device_name[] = "emmc0";	// We use a single device name as there is only one card slot in the RPi
+//TODO Cleanup
+//static char driver_name[] = "emmc";
+//static char device_name[] = "emmc0";	///< We use a single device name as there is only one card slot in the RPi
 
 struct sd_scr
 {
@@ -219,59 +215,65 @@ int sd_write(struct block_device *, uint8_t *, size_t buf_size, uint32_t);
 /**
  * @ingroup SD
  * @param dev
+ * @param command
+ * @param argument
+ * @param timeout
  */
-static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint32_t argument, useconds_t timeout)
+static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint32_t argument, uint32_t timeout)
 {
-    // First, handle any pending interrupts
+	// First, handle any pending interrupts
 	bcm2835_emmc_handle_interrupts(dev);
 
-    // Stop the command issue if it was the card remove interrupt that was
-    //  handled
-    if(dev->card_removal)
-    {
-        dev->last_cmd_success = 0;
-        return;
-    }
+	// Stop the command issue if it was the card remove interrupt that was handled
+	if (dev->card_removal)
+	{
+		dev->last_cmd_success = 0;
+		return;
+	}
 
-    // Now run the appropriate commands by calling sd_issue_command_int()
-    if(command & IS_APP_CMD)
-    {
-        command &= 0xff;
+	// Now run the appropriate commands by calling bcm2835_emmc_issue_command()
+	if (command & IS_APP_CMD)
+	{
+		command &= 0xff;
 
-        SD_TRACE("Issuing command ACMD%i", command);
+		SD_TRACE("Issuing command ACMD%i", command);
 
-        if(sd_acommands[command] == SD_CMD_RESERVED(0))
-        {
-            printf("SD: invalid command ACMD%i\n", command);
-            dev->last_cmd_success = 0;
-            return;
-        }
-        dev->last_cmd = APP_CMD;
+		if (sd_acommands[command] == SD_CMD_RESERVED(0))
+		{
+			printf("SD: invalid command ACMD%i\n", command);
+			dev->last_cmd_success = 0;
+			return;
+		}
+		dev->last_cmd = APP_CMD;
 
-        uint32_t rca = 0;
-        if(dev->card_rca)
-            rca = dev->card_rca << 16;
-        bcm2835_emmc_issue_command(dev, sd_commands[APP_CMD], rca, timeout);
-        if(dev->last_cmd_success)
-        {
-            dev->last_cmd = command | IS_APP_CMD;
-            bcm2835_emmc_issue_command(dev, sd_acommands[command], argument, timeout);
-        }
-    }
-    else
-    {
-    	SD_TRACE("Issuing command CMD%i", command);
+		uint32_t rca = 0;
 
-        if(sd_commands[command] == SD_CMD_RESERVED(0))
-        {
-            printf("SD: invalid command CMD%i\n", command);
-            dev->last_cmd_success = 0;
-            return;
-        }
+		if (dev->card_rca)
+			rca = dev->card_rca << 16;
 
-        dev->last_cmd = command;
-        bcm2835_emmc_issue_command(dev, sd_commands[command], argument, timeout);
-    }
+		bcm2835_emmc_issue_command(dev, sd_commands[APP_CMD], rca, timeout);
+
+		if (dev->last_cmd_success)
+		{
+			dev->last_cmd = command | IS_APP_CMD;
+			bcm2835_emmc_issue_command(dev, sd_acommands[command], argument, timeout);
+		}
+	}
+	else
+	{
+		SD_TRACE("Issuing command CMD%i", command);
+
+		if (sd_commands[command] == SD_CMD_RESERVED(0))
+		{
+			printf("SD: invalid command CMD%i\n", command);
+			dev->last_cmd_success = 0;
+			return;
+		}
+
+		dev->last_cmd = command;
+
+		bcm2835_emmc_issue_command(dev, sd_commands[command], argument,	timeout);
+	}
 
 #ifdef SD_DEBUG
     if(FAIL(dev))
@@ -299,7 +301,7 @@ static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint3
 
 /**
  * @ingroup SD
- * @return
+ * @return 0 if successful; -1 otherwise.
  */
 static int sd_card_sanity_check(void) {
     if(sizeof(sd_commands) != (64 * sizeof(uint32_t)))
@@ -315,7 +317,6 @@ static int sd_card_sanity_check(void) {
     }
 
     return 0;
-
 }
 
 /**
@@ -328,22 +329,10 @@ int sd_card_init(struct block_device **dev)
 	if (sd_card_sanity_check() != 0)
 		return -1;
 
-    /***********************************************************************/
-
-	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
-
-	if (bcm2825_emmc_init(base_clock) !=0 )
+	if (bcm2825_emmc_init() !=0 )
 		return -1;
 
-    /***********************************************************************/
-
-	// Mask off sending interrupts to the ARM
-	BCM2835_EMMC->IRPT_EN = 0;
-	// Reset interrupts
-	BCM2835_EMMC->INTERRUPT = 0xffffffff;
-	// Have all interrupts sent to the INTERRUPT register
-	uint32_t irpt_mask = 0xffffffff & (~SD_CARD_INTERRUPT);
-    BCM2835_EMMC->IRPT_MASK = irpt_mask;
+	bcm2835_emmc_enable_all_interrupts_not_arm();
 
 	udelay(2000);
 
@@ -355,8 +344,8 @@ int sd_card_init(struct block_device **dev)
 		ret = (struct emmc_block_dev *)*dev;
 
 	memset(ret, 0, sizeof(struct emmc_block_dev));
-	ret->bd.driver_name = driver_name;
-	ret->bd.device_name = device_name;
+	//ret->bd.driver_name = driver_name;
+	//ret->bd.device_name = device_name;
 	ret->bd.block_size = 512;
 	ret->bd.read = sd_read;
 #ifdef SD_WRITE_SUPPORT
@@ -495,7 +484,7 @@ int sd_card_init(struct block_device **dev)
 
     // At this point, we know the card is definitely an SD card, so will definitely
 	//  support SDR12 mode which runs at 25 MHz
-    bcm2835_emmc_set_clock(base_clock, SD_CLOCK_NORMAL);
+    bcm2835_emmc_set_clock(SD_CLOCK_NORMAL);
 
 	// A small wait before the voltage switch
 	udelay(5000);
@@ -597,8 +586,8 @@ int sd_card_init(struct block_device **dev)
 	dev_id[1] = card_cid_1;
 	dev_id[2] = card_cid_2;
 	dev_id[3] = card_cid_3;
-	ret->bd.device_id = (uint8_t *)dev_id;
-	ret->bd.dev_id_len = 4 * sizeof(uint32_t);
+//	ret->bd.device_id = (uint8_t *)dev_id;
+//	ret->bd.dev_id_len = 4 * sizeof(uint32_t);
 
 	SD_TRACE("Send CMD3 to enter the data state");
 	sd_issue_command(ret, SEND_RELATIVE_ADDR, 0, 500000);
@@ -689,10 +678,7 @@ int sd_card_init(struct block_device **dev)
 
 	ret->block_size = 512;
 
-	uint32_t controller_block_size = BCM2835_EMMC->BLKSIZECNT;
-	controller_block_size &= (~0xfff);
-	controller_block_size |= 0x200;
-	BCM2835_EMMC->BLKSIZECNT = controller_block_size;
+	bcm2835_emmc_set_block_size(ret->block_size);
 
 	// Get the cards SCR register
 	ret->scr = (struct sd_scr *)malloc(sizeof(struct sd_scr));
@@ -713,7 +699,7 @@ int sd_card_init(struct block_device **dev)
 
 	// Determine card version
 	// Note that the SCR is big-endian
-	uint32_t scr0 = byte_swap(ret->scr->scr[0]);
+	uint32_t scr0 = __builtin_bswap32(ret->scr->scr[0]);
 
 	ret->scr->sd_version = SD_VER_UNKNOWN;
 
@@ -742,45 +728,33 @@ int sd_card_init(struct block_device **dev)
 
 	SD_TRACE("&scr: %08x", &ret->scr->scr[0]);
 	SD_TRACE("SCR[0]: %08x, SCR[1]: %08x", ret->scr->scr[0], ret->scr->scr[1]);;
-	SD_TRACE("SCR: %08x%08x", byte_swap(ret->scr->scr[0]), byte_swap(ret->scr->scr[1]));
+	SD_TRACE("SCR: %08x%08x", __builtin_bswap32(ret->scr->scr[0]), __builtin_bswap32(ret->scr->scr[1]));
 	SD_TRACE("SCR: version %s, bus_widths %01x", sd_versions[ret->scr->sd_version], ret->scr->sd_bus_widths);
 
-    if(ret->scr->sd_bus_widths & 0x4)
-    {
-        // Set 4-bit transfer mode (ACMD6)
-        // See HCSS 3.4 for the algorithm
 #ifdef SD_4BIT_DATA
-    	SD_TRACE("Switching to 4-bit data mode");
-        // Disable card interrupt in host
-        uint32_t old_irpt_mask = BCM2835_EMMC->IRPT_MASK;
-        uint32_t new_iprt_mask = old_irpt_mask & ~(1 << 8);
-        BCM2835_EMMC->IRPT_MASK = new_iprt_mask;
+	if (ret->scr->sd_bus_widths & 0x4)
+	{
+		SD_TRACE("Switching to 4-bit data mode");
 
-        // Send ACMD6 to change the card's bit mode
-        sd_issue_command(ret, SET_BUS_WIDTH, 0x2, 500000);
-        if(FAIL(ret))
-            printf("SD: switch to 4-bit data mode failed\n");
-        else
-        {
-            // Change bit mode for Host
-        	// TODO
-        	uint32_t control0 = BCM2835_EMMC->CONTROL0;
-            control0 |= 0x2;
-            BCM2835_EMMC->CONTROL0 = control0;
+		uint32_t old_irpt_mask = bcm2835_emmc_disable_card_interrupt();
 
-            // Re-enable card interrupt in host
-            BCM2835_EMMC->IRPT_MASK = old_irpt_mask;
+		// Send ACMD6 to change the card's bit mode
+	    sd_issue_command(ret, SET_BUS_WIDTH, 0x2, 500000);
 
-            SD_TRACE("Switch to 4-bit complete");
-        }
+	    if(FAIL(ret))
+	        printf("SD: switch to 4-bit data mode failed\n");
+	    else
+	    {
+	    	bcm2835_emmc_4bit_mode_change_bit(old_irpt_mask);
+	        SD_TRACE("Switch to 4-bit complete");
+	    }
+	}
 #endif
-    }
 
     SD_TRACE("Found a valid version %s SD card", sd_versions[ret->scr->sd_version]);
 	SD_TRACE("Setup successful (status %i)", status);
 
-	// Reset interrupt register
-	BCM2835_EMMC->INTERRUPT = 0xffffffff;
+	bcm2835_emmc_reset_interrupt_register();
 
 	*dev = (struct block_device *)ret;
 
@@ -964,19 +938,19 @@ static int sd_ensure_data_mode(struct emmc_block_dev *edev)
  */
 int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no)
 {
-        struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
+	struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
 
-        if (sd_ensure_data_mode(edev) != 0)
-                return -1;
+	if (sd_ensure_data_mode(edev) != 0)
+		return -1;
 
-        SD_TRACE("Card ready, reading from block %u", block_no);
+	SD_TRACE("Card ready, reading from block %u", block_no);
 
-        if (sd_do_data_command(edev, 0, buf, buf_size, block_no) < 0)
-                return -1;
+	if (sd_do_data_command(edev, 0, buf, buf_size, block_no) < 0)
+		return -1;
 
-        SD_TRACE("Data read successful");
+	SD_TRACE("Data read successful");
 
-        return buf_size;
+	return buf_size;
 }
 
 #ifdef SD_WRITE_SUPPORT
@@ -988,20 +962,20 @@ int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t bl
  * @param block_no
  * @return
  */
-int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size,   uint32_t block_no)
+int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no)
 {
-        struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
+	struct emmc_block_dev *edev = (struct emmc_block_dev *) dev;
 
-        if (sd_ensure_data_mode(edev) != 0)
-                return -1;
+	if (sd_ensure_data_mode(edev) != 0)
+		return -1;
 
-        SD_TRACE("Card ready, writing to block %u", block_no);
+	SD_TRACE("Card ready, writing to block %u", block_no);
 
-        if (sd_do_data_command(edev, 1, buf, buf_size, block_no) < 0)
-                return -1;
+	if (sd_do_data_command(edev, 1, buf, buf_size, block_no) < 0)
+		return -1;
 
-        SD_TRACE("Write read successful");
+	SD_TRACE("Write read successful");
 
-        return buf_size;
+	return buf_size;
 }
 #endif

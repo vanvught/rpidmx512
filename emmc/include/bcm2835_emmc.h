@@ -26,10 +26,8 @@
 #ifndef BCM2835_EMMC_H_
 #define BCM2835_EMMC_H_
 
-#include "stdint.h"
-
+#include <stdint.h>
 #include "block.h"
-#include "timer.h"
 
 struct emmc_block_dev
 {
@@ -61,24 +59,20 @@ struct emmc_block_dev
 };
 
 // STATUS, offset 0x24
-#define BCM2835_EMMC_STATUS_CMD_INHIBIT		((uint32_t)0x00000001)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CMD_INHIBIT 0x00000001
-#define BCM2835_EMMC_STATUS_DATA_INHIBIT	((uint32_t)0x00000002)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_DATA_INHIBIT 0x00000002
-#define BCM2835_EMMC_CARD_PRESENT     		((uint32_t)0x00010000)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CARD_PRESENT 0x00010000
+#define BCM2835_EMMC_STATUS_CMD_INHIBIT			((uint32_t)0x00000001)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CMD_INHIBIT 0x00000001
+#define BCM2835_EMMC_STATUS_DATA_INHIBIT		((uint32_t)0x00000002)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_DATA_INHIBIT 0x00000002
+#define BCM2835_EMMC_STATUS_CARD_PRESENT   		((uint32_t)0x00010000)	///< SDHCI_PRESENT_STATE 0x24, SDHCI_CARD_PRESENT 0x00010000
 
 // CONTROL0, offset 0x28
-#define BCM2835_EMMC_CONTROL0_POWER_ON		((uint32_t)(1 << 8))	///< SDHCI_POWER_CONTROL 0x29, SDHCI_POWER_ON 0x01
+#define BCM2835_EMMC_CONTROL0_POWER_ON			((uint32_t)(1 << 8))	///< SDHCI_POWER_CONTROL 0x29, SDHCI_POWER_ON 0x01
 
 // CONTROL1, offset 0x2C
-#define BCM2835_EMMC_CLOCK_INT_EN			((uint32_t)0x0001)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_INT_EN 0x0001
-#define BCM2835_EMMC_CLOCK_INT_STABLE		((uint32_t)0x0002)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_INT_STABLE 0x0002
-#define BCM2835_EMMC_CLOCK_CARD_EN			((uint32_t)0x0004)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_CARD_EN	0x0004
-#define BCM2835_EMMC_RESET_ALL 				((uint32_t)(1 << 24))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_ALL 0x01
-#define BCM2835_EMMC_RESET_CMD 				((uint32_t)(1 << 25))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_CMD 0x02
-#define BCM2835_EMMC_RESET_DATA				((uint32_t)(1 << 26))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_DATA 0x04
-
-/*
- * End of controller registers.
- */
+#define BCM2835_EMMC_CONTROL1_CLOCK_INT_EN		((uint32_t)0x0001)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_INT_EN 0x0001
+#define BCM2835_EMMC_CONTROL1_CLOCK_INT_STABLE	((uint32_t)0x0002)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_INT_STABLE 0x0002
+#define BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN		((uint32_t)0x0004)		///< SDHCI_CLOCK_CONTROL  0x2C, SDHCI_CLOCK_CARD_EN	0x0004
+#define BCM2835_EMMC_CONTROL1_RESET_ALL 		((uint32_t)(1 << 24))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_ALL 0x01
+#define BCM2835_EMMC_CONTROL1_RESET_CMD 		((uint32_t)(1 << 25))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_CMD 0x02
+#define BCM2835_EMMC_CONTROL1_RESET_DATA		((uint32_t)(1 << 26))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_DATA 0x04
 
 // TODO Move to sdhci.h
 #define SDHCI_DIVIDER_SHIFT		8
@@ -92,11 +86,15 @@ struct emmc_block_dev
 
 extern int bcm2835_emmc_reset_cmd(void);
 extern int bcm2835_emmc_reset_dat(void);
-extern uint32_t bcm2825_emmc_set_id_clock(uint32_t);
-extern uint32_t bcm2835_emmc_set_clock(uint32_t, uint32_t);
-extern uint32_t bcm2825_emmc_init(uint32_t);
+extern uint32_t bcm2835_emmc_set_clock(uint32_t);
+extern uint32_t bcm2825_emmc_init();
 extern void bcm2835_emmc_handle_interrupts(struct emmc_block_dev *);
-extern void bcm2835_emmc_issue_command(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, useconds_t timeout);
+extern void bcm2835_emmc_issue_command(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, uint32_t timeout);
 extern void bcm2835_emmc_sdcard_power_off(void);
+extern void bcm2835_emmc_enable_all_interrupts_not_arm(void);
+extern uint32_t bcm2835_emmc_disable_card_interrupt(void);
+extern void bcm2835_emmc_4bit_mode_change_bit(uint32_t);
+extern void bcm2835_emmc_set_block_size(uint32_t);
+extern void bcm2835_emmc_reset_interrupt_register(void);
 
 #endif /* BCM2835_EMMC_H_ */

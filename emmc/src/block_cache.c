@@ -2,8 +2,9 @@
  * @file block_cache.c
  *
  */
-
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ * Based on
+ * https://github.com/jncronin/rpi-boot/blob/master/block_cache.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +37,6 @@
 #include "block.h"
 #include "util.h"
 
-// The name to append to the device name to distinguish this as a cached device
-//#define CACHE_DEV_NAME_APPEND "_cache"
-#define CACHE_DEV_NAME_APPEND ""
-
-static char dev_name[] = CACHE_DEV_NAME_APPEND;
-static char drv_name[] = "block_cache";
-
 struct cache_dev
 {
 	struct block_device bd;
@@ -73,15 +67,6 @@ int cache_init(struct block_device *parent, struct block_device **dev, uintptr_t
 	memset(cd, 0, sizeof(struct cache_dev));
 
 	cd->bd.block_size = parent->block_size;
-	cd->bd.device_name = (char *)malloc(strlen(parent->device_name) + strlen(dev_name) + 1);
-	if(cd->bd.device_name == NULL)
-	{
-		free(cd);
-		return -1;
-	}
-	strcpy(cd->bd.device_name, parent->device_name);
-	strcat(cd->bd.device_name, dev_name);
-	cd->bd.driver_name = drv_name;
 	cd->bd.num_blocks = parent->num_blocks;
 	if(parent->read)
 		cd->bd.read = cache_read;
@@ -94,7 +79,6 @@ int cache_init(struct block_device *parent, struct block_device **dev, uintptr_t
 	int cache_entries = cache_length / cd->bd.block_size;
 	if(cache_entries == 0)
 	{
-		free(cd->bd.device_name);
 		free(cd);
 		return -1;
 	}
@@ -117,7 +101,6 @@ int cache_init(struct block_device *parent, struct block_device **dev, uintptr_t
 	cd->cached_blocks = (uint32_t *)malloc(cd->cache_entries * sizeof(uint32_t));
 	if(cd->cached_blocks == NULL)
 	{
-		free(cd->bd.device_name);
 		free(cd);
 		return -1;
 	}

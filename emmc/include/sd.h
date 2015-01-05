@@ -154,4 +154,6 @@
 #define SET_CLR_CARD_DETECT     (42 | IS_APP_CMD)
 #define SEND_SCR                (51 | IS_APP_CMD)
 
+#define SD_GET_CLOCK_DIVIDER_FAIL	0xffffffff
+
 #endif /* SD_H_ */

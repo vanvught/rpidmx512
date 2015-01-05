@@ -36,7 +36,6 @@ extern int printf(const char *format, ...);
 #include "bcm2835_emmc.h"
 
 #include "sd.h"
-#include "sdcard.h"
 
 extern uint32_t sd_commands[];
 
@@ -80,11 +79,11 @@ void bcm2835_emmc_sdcard_power_off(void)
 static uint32_t bcm2835_emmc_sdcard_inserted(void)
 {
 #if 0
-	TIMEOUT_WAIT(BCM2835_EMMC->STATUS & BCM2835_EMMC_CARD_PRESENT, 500000);
+	TIMEOUT_WAIT(BCM2835_EMMC->STATUS & BCM2835_EMMC_STATUS_CARD_PRESENT, 500000);
 #endif
 	uint32_t status_reg = BCM2835_EMMC->STATUS;
 #if 0
-	if((status_reg & BCM2835_EMMC_CARD_PRESENT) == 0)
+	if((status_reg & BCM2835_EMMC_STATUS_CARD_PRESENT) == 0)
 	{
 		printf("EMMC: no card inserted\n");
 		return -1;
@@ -117,9 +116,9 @@ static uint32_t bcm2835_emmc_get_version(void)
 static uint32_t bcm2835_emmc_do_reset(void)
 {
 	uint32_t control1 = BCM2835_EMMC->CONTROL1;
-	control1 |= BCM2835_EMMC_RESET_ALL;
-	control1 &= ~BCM2835_EMMC_CLOCK_CARD_EN;
-	control1 &= ~BCM2835_EMMC_CLOCK_INT_EN;
+	control1 |= BCM2835_EMMC_CONTROL1_RESET_ALL;
+	control1 &= ~BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN;
+	control1 &= ~BCM2835_EMMC_CONTROL1_CLOCK_INT_EN;
 	BCM2835_EMMC->CONTROL1 = control1;
 
 	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & (0x7 << 24)) == 0, 1000000);
@@ -137,62 +136,19 @@ static uint32_t bcm2835_emmc_do_reset(void)
 
 /**
  * @ingroup EMMC
- * @return
- */
-static int bcm2835_emmc_power_off(void)
-{
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_OFF_WAIT);
-
-	if (ret < 0) {
-		printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
-		return -1;
-	}
-	// TODO
-	if ((ret & 0x3) != 0 ) {
-		EMMC_TRACE("Device did not power off successfully (%08x).", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-/**
- * @ingroup EMMC
- * @return
- */
-static int bcm2835_emmc_power_on(void)
-{
-	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
-
-	if (ret < 0) {
-		printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
-		return -1;
-	}
-	// TODO
-	if((ret & 0x3) != 1)
-	{
-		EMMC_TRACE("Device did not power on successfully (%08x).", ret);
-		return 1;
-	}
-
-	return 0;
-}
-
-/**
- * @ingroup EMMC
  * Reset the CMD line
  *
- * @return
+ * @return 0 if successful; -1 otherwise.
  */
 int bcm2835_emmc_reset_cmd(void)
 {
 	uint32_t control1 = BCM2835_EMMC ->CONTROL1;
-
-	control1 |= BCM2835_EMMC_RESET_CMD;
+	control1 |= BCM2835_EMMC_CONTROL1_RESET_CMD;
 	BCM2835_EMMC ->CONTROL1 = control1;
-	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_RESET_CMD) == 0, 1000000);
 
-	if ((BCM2835_EMMC ->CONTROL1 & BCM2835_EMMC_RESET_CMD )!= 0){
+	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_CMD) == 0, 1000000);
+
+	if ((BCM2835_EMMC ->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_CMD )!= 0){
 		printf("EMMC: CMD line did not reset properly\n");
 		return -1;
 	}
@@ -206,18 +162,17 @@ int bcm2835_emmc_reset_cmd(void)
  * @ingroup EMMC
  * Reset the CMD line
  *
- * @return
+ * @return 0 if successful; -1 otherwise.
  */
 int bcm2835_emmc_reset_dat(void)
 {
 	uint32_t control1 = BCM2835_EMMC ->CONTROL1;
-
-	control1 |= BCM2835_EMMC_RESET_DATA;
+	control1 |= BCM2835_EMMC_CONTROL1_RESET_DATA;
 	BCM2835_EMMC ->CONTROL1 = control1;
-	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_RESET_DATA) == 0,
-			1000000);
 
-	if ((BCM2835_EMMC ->CONTROL1 & BCM2835_EMMC_RESET_DATA )!= 0){
+	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_DATA) == 0, 1000000);
+
+	if ((BCM2835_EMMC ->CONTROL1 & BCM2835_EMMC_CONTROL1_RESET_DATA )!= 0){
 		printf("EMMC: DAT line did not reset properly\n");
 		return -1;
 	}
@@ -231,16 +186,13 @@ int bcm2835_emmc_reset_dat(void)
  *
  * @param base_clock
  * @param target_rate
- * @return
+ * @return divider
  */
 static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t target_clock)
 {
 	int divisor = 0;
 	int real_div = divisor;
 	uint32_t ret = 0;
-
-	if (target_clock == 0)
-		return SD_GET_CLOCK_DIVIDER_FAIL;
 
 	if (base_clock <= target_clock)
 		divisor = 1;
@@ -262,11 +214,9 @@ static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t tar
 		actual_clock = base_clock / real_div;
 
 	ret |= (divisor & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
-	ret |= ((divisor & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
-			<< SDHCI_DIVIDER_HI_SHIFT;
+	ret |= ((divisor & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN) << SDHCI_DIVIDER_HI_SHIFT;
 
-	EMMC_TRACE("base_clock: %i, target_rate: %i, divisor: %08x, actual_clock: %i, ret: %08x",
-			base_clock, target_clock, divisor, actual_clock, ret);
+	EMMC_TRACE("base_clock: %i, target_rate: %i, divisor: %08x, actual_clock: %i, ret: %08x", base_clock, target_clock, divisor, actual_clock, ret);
 
 	return ret;
 }
@@ -277,62 +227,53 @@ static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t tar
  * @param target_rate
  * @return
  */
-uint32_t bcm2835_emmc_set_clock(uint32_t base_clock, uint32_t target_rate)
+uint32_t bcm2835_emmc_set_clock(uint32_t target_clock)
 {
-  uint32_t divider = bcm2835_emmc_get_clock_divider(base_clock, target_rate);
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
+	uint32_t divider = bcm2835_emmc_get_clock_divider(base_clock, target_clock);
 
-  if (divider == SD_GET_CLOCK_DIVIDER_FAIL)
-    {
-      printf("EMMC: couldn't get a valid divider for target rate %i Hz\n", target_rate);
-      return -1;
-    }
+	// Wait for the command inhibit (CMD and DAT) bits to clear
+	while (BCM2835_EMMC ->STATUS & (BCM2835_EMMC_STATUS_CMD_INHIBIT || BCM2835_EMMC_STATUS_DATA_INHIBIT ))
+		;
 
-  // Wait for the command inhibit (CMD and DAT) bits to clear
-  while (BCM2835_EMMC ->STATUS & (BCM2835_EMMC_STATUS_CMD_INHIBIT || BCM2835_EMMC_STATUS_DATA_INHIBIT ))
-    ;
+	// Set the SD clock off
+	uint32_t control1 = BCM2835_EMMC ->CONTROL1;
+	control1 &= ~BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN;
+	BCM2835_EMMC ->CONTROL1 = control1;
+	udelay(2000);
 
-  // Set the SD clock off
-  uint32_t control1 = BCM2835_EMMC ->CONTROL1;
-  control1 &= ~BCM2835_EMMC_CLOCK_CARD_EN;
-  BCM2835_EMMC ->CONTROL1 = control1;
-  udelay(2000);
+	// Write the new divider
+	control1 &= ~0xffe0;		// Clear old setting + clock generator select
+	control1 |= divider;
+	BCM2835_EMMC ->CONTROL1 = control1;
+	udelay(2000);
 
-  // Write the new divider
-  control1 &= ~0xffe0;		// Clear old setting + clock generator select
-  control1 |= divider;
-  BCM2835_EMMC ->CONTROL1 = control1;
-  udelay(2000);
+	// Enable the SD clock
+	control1 |= BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN;
+	BCM2835_EMMC ->CONTROL1 = control1;
+	udelay(2000);
 
-  // Enable the SD clock
-  control1 |= BCM2835_EMMC_CLOCK_CARD_EN;
-  BCM2835_EMMC ->CONTROL1 = control1;
-  udelay(2000);
+	EMMC_TRACE("Successfully set clock rate to %i Hz", target_clock);
 
-  EMMC_TRACE("Successfully set clock rate to %i Hz", target_rate);
-
-  return 0;
+	return 0;
 }
 
 /**
  * @ingroup EMMC
  * @return
  */
-uint32_t bcm2825_emmc_set_id_clock(uint32_t base_clock)
+static uint32_t bcm2825_emmc_set_id_clock(void)
 {
 	BCM2835_EMMC->CONTROL2 = 0;
-
-	if (base_clock == 0)
-	{
-		printf("EMMC: assuming clock rate to be 100MHz\n");
-		base_clock = 100000000;
-	}
 
 	EMMC_TRACE("Setting clock rate (to something slow)");
 
 	uint32_t control1 = BCM2835_EMMC->CONTROL1;
-	control1 |= BCM2835_EMMC_CLOCK_INT_EN;
+	control1 |= BCM2835_EMMC_CONTROL1_CLOCK_INT_EN;
 
 	EMMC_TRACE("Set to identification frequency : %d", SD_CLOCK_ID);
+
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
 
 	uint32_t f_id = bcm2835_emmc_get_clock_divider(base_clock, SD_CLOCK_ID);
 
@@ -346,9 +287,9 @@ uint32_t bcm2825_emmc_set_id_clock(uint32_t base_clock)
 	control1 |= (7 << 16);		// data timeout = TMCLK * 2^10
 	BCM2835_EMMC->CONTROL1 = control1;
 
-	TIMEOUT_WAIT(BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CLOCK_INT_STABLE, 0x1000000);
+	TIMEOUT_WAIT(BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_CLOCK_INT_STABLE, 0x1000000);
 
-	if ((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CLOCK_INT_STABLE ) == 0)
+	if ((BCM2835_EMMC->CONTROL1 & BCM2835_EMMC_CONTROL1_CLOCK_INT_STABLE ) == 0)
 	{
 		printf("EMMC: controller's clock did not stabilize within 1 second\n");
 		return -1;
@@ -361,7 +302,7 @@ uint32_t bcm2825_emmc_set_id_clock(uint32_t base_clock)
 	udelay(2000);
 
 	control1 = BCM2835_EMMC->CONTROL1;
-	control1 |= BCM2835_EMMC_CLOCK_CARD_EN;
+	control1 |= BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN;
 	BCM2835_EMMC->CONTROL1 = control1;
 
 	udelay(2000);
@@ -371,24 +312,50 @@ uint32_t bcm2825_emmc_set_id_clock(uint32_t base_clock)
 
 /**
  * @ingroup EMMC
- * @return
+ * @return  0 if successful; 1 otherwise.
  */
 static int emmc_power_cycle()
 {
-	if (bcm2835_emmc_power_off() < 0)
+
+	if (bcm2835_vc_get_power_state(BCM2835_VC_POWER_ID_SDCARD) != 0)
+	{
+		int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_OFF_WAIT);
+
+		if (ret < 0) {
+			printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
+			return -1;
+		}
+
+		if (ret == BCM2835_VC_POWER_STATE_RESP_ON) {
+			EMMC_TRACE("Device did not power off successfully (%08x).", ret);
+			return 1;
+		}
+
+		udelay(5000);
+	}
+
+	int32_t ret = bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
+
+	if (ret < 0) {
+		printf("EMMC: %s : bcm2835_vc_set_power_state() did not return a valid response.\n", __func__);
 		return -1;
+	}
 
-	udelay(5000);
+	if(ret != BCM2835_VC_POWER_STATE_RESP_ON)
+	{
+		EMMC_TRACE("Device did not power on successfully (%08x).", ret);
+		return 1;
+	}
 
-	return bcm2835_emmc_power_on();
+	return 0;
 }
 
 /**
  * @ingroup EMMC
  * @param base_clock
- * @return
+ * @return 0 if successful; -1 otherwise.
  */
-uint32_t bcm2825_emmc_init(uint32_t base_clock)
+uint32_t bcm2825_emmc_init(void)
 {
 	if(emmc_power_cycle() != 0)
 	{
@@ -410,10 +377,7 @@ uint32_t bcm2825_emmc_init(uint32_t base_clock)
 		return -1;
 	}
 
-	uint32_t capabilities_0 = BCM2835_EMMC->CAPABILITIES_0;
-	uint32_t capabilities_1 = BCM2835_EMMC->CAPABILITIES_1;
-
-	EMMC_TRACE("capabilities: %08x%08x", capabilities_1, capabilities_0);
+	EMMC_TRACE("capabilities: %08x%08x", BCM2835_EMMC->CAPABILITIES_1, BCM2835_EMMC->CAPABILITIES_0);
 
 	if(bcm2835_emmc_sdcard_inserted() != 0)
 	{
@@ -421,7 +385,7 @@ uint32_t bcm2825_emmc_init(uint32_t base_clock)
 		return -1;
 	}
 
-	if (bcm2825_emmc_set_id_clock(base_clock) != 0)
+	if (bcm2825_emmc_set_id_clock() != 0)
 	{
 		printf("EMMC: controller did not set low clock rate\n");
 		return -1;
@@ -437,7 +401,7 @@ uint32_t bcm2825_emmc_init(uint32_t base_clock)
  * @param argument
  * @param timeout
  */
-void bcm2835_emmc_issue_command(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, useconds_t timeout)
+void bcm2835_emmc_issue_command(struct emmc_block_dev *dev, uint32_t cmd_reg, uint32_t argument, uint32_t timeout)
 {
     dev->last_cmd_reg = cmd_reg;
     dev->last_cmd_success = 0;
@@ -663,7 +627,7 @@ void bcm2835_emmc_issue_command(struct emmc_block_dev *dev, uint32_t cmd_reg, ui
 			}
 			else
 			{
-#ifdef SDCARD_DEBUG
+#ifdef EMMC_DEBUG
 			EMMC_TRACE("Unknown error");
 
 			if(irpts == 0)
@@ -797,3 +761,68 @@ void bcm2835_emmc_handle_interrupts(struct emmc_block_dev *dev)
 
     BCM2835_EMMC->INTERRUPT = reset_mask;
 }
+
+/**
+ * @ingroup EMMC
+ * Mask off sending interrupts to the ARM.
+ * Reset interrupts.
+ * Have all interrupts sent to the INTERRUPT register.
+ */
+void bcm2835_emmc_enable_all_interrupts_not_arm(void)
+{
+	BCM2835_EMMC->IRPT_EN = 0;
+	BCM2835_EMMC->INTERRUPT = 0xffffffff;
+    BCM2835_EMMC->IRPT_MASK = 0xffffffff & (~SD_CARD_INTERRUPT);
+}
+
+/**
+ * @ingroup EMMC
+ * Disable card interrupt in host.
+ */
+uint32_t bcm2835_emmc_disable_card_interrupt(void)
+{
+    uint32_t old_irpt_mask = BCM2835_EMMC->IRPT_MASK;
+    BCM2835_EMMC->IRPT_MASK = old_irpt_mask & (~SD_CARD_INTERRUPT);
+
+    return old_irpt_mask;
+}
+
+/**
+ * @ingroup EMMC
+ * @param old_irpt_mask
+ */
+void bcm2835_emmc_4bit_mode_change_bit(uint32_t old_irpt_mask)
+{
+	// Change bit mode for Host
+	// TODO
+	uint32_t control0 = BCM2835_EMMC ->CONTROL0;
+	control0 |= 0x2;
+	BCM2835_EMMC ->CONTROL0 = control0;
+
+	// Re-enable card interrupt in host
+	BCM2835_EMMC ->IRPT_MASK = old_irpt_mask;
+
+	EMMC_TRACE("Switch to 4-bit complete");
+
+}
+
+/**
+ * @ingroup EMMC
+ * @param block_size
+ */
+void bcm2835_emmc_set_block_size(uint32_t block_size)
+{
+	uint32_t controller_block_size = BCM2835_EMMC->BLKSIZECNT;
+	controller_block_size &= (~0xfff);
+	controller_block_size |= block_size;
+	BCM2835_EMMC->BLKSIZECNT = controller_block_size;
+}
+
+/**
+ * @ingroup EMMC
+ */
+void bcm2835_emmc_reset_interrupt_register(void)
+{
+	BCM2835_EMMC->INTERRUPT = 0xffffffff;
+}
+

@@ -2,8 +2,9 @@
  * @file block.c
  *
  */
-
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ * Based on
+ * https://github.com/jncronin/rpi-boot/blob/master/block.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
