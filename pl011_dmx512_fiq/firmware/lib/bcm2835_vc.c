@@ -5,7 +5,7 @@
  * ARM to VC
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ struct vc_msg_get {
 inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
 
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	struct  vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
+	volatile struct vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_get);
 	vc_msg->request_code = 0;
@@ -89,7 +89,7 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
  */
 inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_id, const uint32_t val) {
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	struct  vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
+	volatile struct  vc_msg_get *vc_msg = (struct vc_msg_get *)mb_addr;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_get);
 	vc_msg->request_code = 0;

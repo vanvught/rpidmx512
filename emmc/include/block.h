@@ -1,4 +1,10 @@
-/* Copyright (C) 2013 by John Cronin <jncronin@tysos.org>
+/**
+ * @file block.h
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ * Based on
+ * https://github.com/jncronin/rpi-boot/blob/master/block.h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +29,6 @@
 #define BLOCK_H
 
 #include <stdint.h>
-#include <stddef.h>
 
 struct block_device {
 	int supports_multiple_block_read;

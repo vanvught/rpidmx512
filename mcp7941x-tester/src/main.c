@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 	tm_rtc_set.tm_hour = tm_linux->tm_hour;
 	tm_rtc_set.tm_mday = tm_linux->tm_mday;
 	tm_rtc_set.tm_mon = tm_linux->tm_mon;
-	tm_rtc_set.tm_year = tm_linux->tm_year - 100;
+	tm_rtc_set.tm_year = tm_linux->tm_year - 100; //TODO remove -100
 	tm_rtc_set.tm_wday = tm_linux->tm_wday;
 
 	mcp7941x_set_date_time(&tm_rtc_set);
