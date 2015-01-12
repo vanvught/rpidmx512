@@ -24,16 +24,16 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <avr_i2c.h>
+#include "avr_i2c.h"
 #else
-#include <bcm2835.h>
+#include "bcm2835.h"
 #ifdef BARE_METAL
-#include <bcm2835_i2c.h>
+#include "bcm2835_i2c.h"
 #endif
 #endif
-#include <device_info.h>
-#include <bw.h>
-#include <bw_i2c_ui.h>
+#include "device_info.h"
+#include "bw.h"
+#include "bw_i2c_ui.h"
 
 static char i2c_ui_slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
 

@@ -24,16 +24,16 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <util/delay.h>
-#include <avr_spi.h>
+#include "util/delay.h"
+#include "avr_spi.h"
 #else
-#include <bcm2835.h>
+#include "bcm2835.h"
 #ifdef BARE_METAL
-#include <bcm2835_spi.h>
+#include "bcm2835_spi.h"
 #endif
 #endif
-#include <device_info.h>
-#include <mcp23s08.h>
+#include "device_info.h"
+#include "mcp23s08.h"
 
 #ifdef __AVR_ARCH__
 #define FUNC_PREFIX(x) avr_##x

@@ -36,8 +36,6 @@
 #define FB_OK		0									///< Call fb_init() OK
 #define FB_ERROR	-1									///< Call fb_init() failed
 
-extern uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
-
 extern int fb_init(void);
 
 #endif

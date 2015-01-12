@@ -26,7 +26,7 @@ DOXYFILE_ENCODING = UTF-8
 # identify the project. Note that if you do not use Doxywizard you need
 # to put quotes around the project name if it contains spaces.
 
-PROJECT_NAME = EMMC
+PROJECT_NAME = "EMMC  library (-lemmc)"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number.
 # This could be handy for archiving the generated documentation or
@@ -1503,7 +1503,7 @@ INCLUDE_FILE_PATTERNS =
 # undefined via #undef or recursively expanded use the := operator
 # instead of the = operator.
 
-PREDEFINED = DOXYGEN SD_1_8V_SUPPORT SDHCI_IMPLEMENTATION_BCM_2708
+PREDEFINED = 
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

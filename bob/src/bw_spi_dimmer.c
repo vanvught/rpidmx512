@@ -24,16 +24,16 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <avr_spi.h>
+#include "avr_spi.h"
 #else
-#include <bcm2835.h>
+#include "bcm2835.h"
 #ifdef BARE_METAL
-#include <bcm2835_spi.h>
+#include "bcm2835_spi.h"
 #endif
 #endif
-#include <device_info.h>
-#include <bw.h>
-#include <bw_spi_dimmer.h>
+#include "device_info.h"
+#include "bw.h"
+#include "bw_spi_dimmer.h"
 
 /**
  * @ingroup SPI-AO

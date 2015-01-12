@@ -29,6 +29,6 @@
 #include <stdint.h>
 
 extern void bcm2835_uart_begin(void);
-extern void bcm2835_uart_send(const uint32_t c);
+extern void bcm2835_uart_send(const uint32_t);
 
 #endif /* BCM2835_UART_H_ */

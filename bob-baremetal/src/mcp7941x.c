@@ -24,14 +24,14 @@
  */
 
 #ifdef __AVR_ARCH__
-#include <avr_i2c.h>
+#include "avr_i2c.h"
 #else
-#include <bcm2835.h>
+#include "bcm2835.h"
 #ifdef BARE_METAL
-#include <bcm2835_i2c.h>
+#include "bcm2835_i2c.h"
 #endif
 #endif
-#include <mcp7941x.h>
+#include "mcp7941x.h"
 
 #ifdef __AVR_ARCH__
 #define FUNC_PREFIX(x) avr_##x

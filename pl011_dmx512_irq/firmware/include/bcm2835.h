@@ -324,9 +324,9 @@ inline static uint64_t bcm2835_st_read(void)
 /**
  *
  *
- * @param
+ * @param usec
  */
-extern void udelay(const uint64_t);
+extern void udelay(const uint64_t usec);
 
 #endif
 

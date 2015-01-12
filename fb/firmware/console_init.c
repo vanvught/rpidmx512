@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file console_init.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,14 +24,17 @@
  */
 
 #include <stdint.h>
+#include "bcm2835_uart.h"
 #include "fb.h"
 
-extern void bcm2835_uart_begin(void);
-extern void mini_uart_sendstr(const char *s);
-extern void mini_uart_puthex(uint32_t val);
+extern void mini_uart_sendstr(const char *);
+extern void mini_uart_puthex(const uint32_t);
 
 extern uint32_t fb_addr;
 
+/**
+ *
+ */
 void bcm2835_console_begin(void) {
 	bcm2835_uart_begin();
 

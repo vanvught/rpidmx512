@@ -28,6 +28,8 @@
 #include "fb.h"
 #include "console.h"
 
+extern uint32_t fb_pitch, fb_addr, fb_size;
+
 extern unsigned char FONT[];
 
 #define CHAR_W		8

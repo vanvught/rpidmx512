@@ -27,13 +27,21 @@
 
 static const char lowercase[] = "0123456789abcdef";
 
+/**
+ *
+ * @param s
+ */
 void mini_uart_sendstr(const char *s) {
 	char c;
 	while ((c = *s++))
 		bcm2835_uart_send(c);
 }
 
-void mini_uart_puthex(uint32_t val) {
+/**
+ *
+ * @param val
+ */
+void mini_uart_puthex(const uint32_t val) {
 	int i;
 	for (i = 7; i >= 0; i--)
 		bcm2835_uart_send(lowercase[(val >> (i * 4)) & 0xf]);

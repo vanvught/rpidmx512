@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <bcm2835_mailbox.h>
+#include "bcm2835_mailbox.h"
 #include "fb.h"
 
 uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
@@ -44,6 +44,7 @@ typedef struct framebuffer {
 } framebuffer_t;
 
 /**
+ * @ingroup FB
  *
  * @return
  */
