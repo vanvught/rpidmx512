@@ -21,12 +21,13 @@ Baremetal projects testing purposes only
 
 \pl011_dmx512_fiq
 \pl011_dmx512_irq
-\pl011_uart
 \sdcard-emmc-libff9b
 
 
 Baremetal projects for OpenDMX controller
 ---------
+\Eagle
+\OpenDMX
 \bob-baremetal
 \emmc
 \fb
