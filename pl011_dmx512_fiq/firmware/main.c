@@ -30,7 +30,7 @@
 #include <bcm2835_pl011.h>
 #include <bcm2835_pl011_dmx512.h>
 #include <hardware.h>
-#include <console.h>
+#include "console.h"
 
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 

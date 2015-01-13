@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,19 @@ extern int console_putc(const int);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
 extern int console_draw_char(const char, const int, const int, const uint16_t, const uint16_t);
+extern void console_set_fg_color(const uint16_t);
+extern void console_set_bg_color(const uint16_t);
+
+#define RGB(r, g, b) ((((r)>>3)<<11) | (((g)>>2)<<5) | ((b)>>3))
+
+// some RGB color definitions
+#define CONSOLE_BLACK		0x0000	///<   0,   0,   0
+#define CONSOLE_BLUE		0x001F	///<   0,   0, 255
+#define CONSOLE_GREEN		0x07E0	///<   0, 255,   0
+#define CONSOLE_CYAN		0x07FF	///<   0, 255, 255
+#define CONSOLE_RED			0xF800	///< 255,   0,   0
+#define CONSOLE_YELLOW		0xFFE0	///< 255, 255,   0
+#define CONSOLE_WHITE		0xFFFF	///< 255, 255, 255
 
 #endif
 

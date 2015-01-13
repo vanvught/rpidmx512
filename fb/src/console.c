@@ -2,7 +2,7 @@
  * @file console.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,11 @@ extern unsigned char FONT[];
 #define CHAR_W		8
 #define CHAR_H		12
 
-#define DEF_FORE	0xFFFF
-#define DEF_BACK	0x0000
-
 static int cur_x = 0;
 static int cur_y = 0;
 
-static uint16_t cur_fore = DEF_FORE;
-static uint16_t cur_back = DEF_BACK;
+static uint16_t cur_fore = CONSOLE_WHITE;
+static uint16_t cur_back = CONSOLE_BLACK;
 
 /**
  *
@@ -103,12 +100,13 @@ inline static void draw_char(const char c, const int x, int y, const uint16_t fo
 }
 
 /**
+ * Prints character ch with the specified color at position (col, row).
  *
- * @param ch
- * @param x
- * @param y
- * @param fore
- * @param back
+ * @param ch The character to display.
+ * @param x The column in which to display the character.
+ * @param y The row in which to display the character.
+ * @param fore The foreground color to use to display the character.
+ * @param back he background color to use to display the character.
  * @return
  */
 int console_draw_char(const char ch, const int x, const int y, const uint16_t fore, const uint16_t back) {
@@ -117,13 +115,23 @@ int console_draw_char(const char ch, const int x, const int y, const uint16_t fo
 }
 
 /**
+ * Prints character ch at the current location of the cursor.
  *
- * @param ch
+ *  If the character is a newline ('\n'), the cursor is
+ *  moved to the next line (scrolling if necessary). If
+ *  the character is a carriage return ('\r'), the cursor
+ *  is immediately reset to the beginning of the current
+ *  line, causing any future output to overwrite any existing
+ *  output on the line.
+ *
+ * @param ch The character to print.
  * @return
  */
 int console_putc(const int ch) {
 	if (ch == '\n') {
 		newline();
+	} else if (ch == '\r') {
+		cur_x = 0;
 	} else if (ch == '\t') {
 		cur_x += 4;
 	} else {
@@ -137,7 +145,7 @@ int console_putc(const int ch) {
 }
 
 /**
- *
+ * Clears the entire console.
  */
 void console_clear()
 {
@@ -148,18 +156,39 @@ void console_clear()
 }
 
 /**
+ * Sets the position of the cursor to the position (col, row).
  *
- * @param x
- * @param y
+ * @param x The new col for the cursor.
+ * @param y The new row for the cursor.
  */
 void console_set_cursor(const int x, const int y) {
 	if (x > WIDTH / CHAR_W)
-		cur_x = WIDTH / CHAR_W;
+		cur_x = 0;
 	else
 		cur_x = x;
 
 	if (y > HEIGHT / CHAR_H)
-		cur_y = HEIGHT / CHAR_H;
+		cur_y = 0;
 	else
 		cur_y = y;
+}
+
+/**
+ * Changes the foreground color of future characters printed on the console.
+ *
+ * @param fore The new color code.
+ */
+void console_set_fg_color(const uint16_t fore)
+{
+	cur_fore = fore;
+}
+
+/**
+ * Changes the background color of future characters printed on the console.
+ *
+ * @param back The new color code.
+ */
+void console_set_bg_color(const uint16_t back)
+{
+	cur_back = back;
 }
