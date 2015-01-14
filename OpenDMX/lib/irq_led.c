@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file irq_led.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
+#include "bcm2835.h"
 
-uint32_t ticks_per_second = 1E6 / 2;	// Blinking at 1Hz
-static uint32_t irq_counter;
+uint32_t ticks_per_second = 1E6 / 2;	///< Blinking at 1Hz
+static uint32_t irq_counter;			///<
 
 #define PIN		16
 
+/**
+ * @ingroup led
+ *
+ */
 void irq_init(void) {
     irq_counter = 0;
     BCM2835_ST->C1 = BCM2835_ST->CLO + ticks_per_second;
@@ -33,6 +41,10 @@ void irq_init(void) {
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
 }
 
+/**
+ * @ingroup led
+ *
+ */
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
 	BCM2835_ST ->CS = BCM2835_ST_CS_M1;

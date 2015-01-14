@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file dmx_devices.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +23,13 @@
  * THE SOFTWARE.
  */
 
-// C standard library headers
 #include <stdio.h>
 #include <string.h>
-// Broadcom BCM2835 system on a chip (SoC)
-#include <bcm2835.h>
-#include <bcm2835_spi.h>
-// DMX Receiver functions
-#include <dmx_data.h>
-#include <dmx_devices.h>
-// FatFs - Generic FAT File System Module
-#include <ff.h>
+#include "bcm2835.h"
+#include "bcm2835_spi.h"
+#include "dmx_data.h"
+#include "dmx_devices.h"
+#include "ff.h"
 
 #ifdef DEBUG
 static unsigned int dmx_devices_cycle_count;
@@ -41,6 +41,12 @@ TABLE(initializer_t, devices_init);
 
 _devices_t devices_connected;
 
+/**
+ * @ingroup dmx
+ *
+ * @param line
+ * @return
+ */
 static int add_connected_device(const char *line) {
 	if (devices_connected.elements_count < (sizeof(devices_connected.device_entry)	/ sizeof(devices_connected.device_entry[0]))) {
 
@@ -101,6 +107,10 @@ static int add_connected_device(const char *line) {
 	return DMX_DEVICE_CONFIG_TABLE_FULL;
 }
 
+/**
+ * @ingroup dmx
+ *
+ */
 void dmx_devices_read_config(void) {
 	int rc = -1;
 
@@ -133,6 +143,10 @@ void dmx_devices_read_config(void) {
 	printf("\ndevices_connected.elements_count = %d\n\n", devices_connected.elements_count);
 }
 
+/**
+ * @ingroup dmx
+ *
+ */
 void dmx_devices_init(void) {
 	int i;
 	for (i = 0; i < devices_connected.elements_count; i++) {
@@ -140,6 +154,10 @@ void dmx_devices_init(void) {
 	}
 }
 
+/**
+ * @ingroup dmx
+ *
+ */
 void dmx_devices_run() {
 #ifdef DEBUG
 	dmx_devices_cycle_count++;
@@ -160,6 +178,10 @@ void dmx_devices_run() {
 unsigned int dmx_devices_cycle_count_prev = 0;
 unsigned int dmx_devices_refresh_count_prev = 0;
 
+/**
+ * @ingroup dmx
+ *
+ */
 void print_devices_counter(void){
 	printf("dmx_devices_run: %d/%d\n", (int)(dmx_devices_cycle_count - dmx_devices_cycle_count_prev), (int)(dmx_devices_refresh_count - dmx_devices_refresh_count_prev));
 	dmx_devices_cycle_count_prev = dmx_devices_cycle_count;

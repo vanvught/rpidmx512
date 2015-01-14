@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file ui_function_analyzer.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +23,15 @@
  * THE SOFTWARE.
  */
 
-// BitWizard User Interface (LCD and push buttons)
 #include <bw_ui.h>
-//
-#include <ui_functions.h>
-//
-#include <dmx_data.h>
+#include "ui_functions.h"
+#include "dmx_data.h"
 
+/**
+ *
+ * @param arg
+ * @param buf
+ */
 inline static void itoa_base10(int arg, char buf[]) {
 	char *n = buf + 2;
 
@@ -38,6 +44,11 @@ inline static void itoa_base10(int arg, char buf[]) {
 	}
 }
 
+/**
+ * @ingroup ui
+ *
+ * @param start_channel
+ */
 inline static void display_channels(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 	int i = 0;
@@ -54,7 +65,12 @@ inline static void display_channels(const int start_channel) {
 	ui_text_line_1(text, BW_UI_MAX_CHARACTERS);
 }
 
-// UI function #1
+/**
+ * @ingroup ui
+ * @brief UI function #1
+ *
+ * @param start_channel
+ */
 inline static void display_data_decimal(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 	int i = 0;
@@ -73,7 +89,12 @@ inline static void display_data_decimal(const int start_channel) {
 	ui_text_line_2(text, BW_UI_MAX_CHARACTERS);
 }
 
-// UI function #2
+/**
+ * @ingroup ui
+ * @brief UI function #2
+ *
+ * @param start_channel
+ */
 inline static void display_data_hex(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 
@@ -94,7 +115,12 @@ inline static void display_data_hex(const int start_channel) {
 	ui_text_line_2(text, BW_UI_MAX_CHARACTERS);
 }
 
-// UI function #3
+/**
+ * @ingroup ui
+ * @brief UI function #3
+ *
+ * @param start_channel
+ */
 inline static void display_data_percentage(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 	int i = 0;
@@ -113,6 +139,11 @@ inline static void display_data_percentage(const int start_channel) {
 	ui_text_line_2(text, BW_UI_MAX_CHARACTERS);
 }
 
+/**
+ * @ingroup ui
+ *
+ * @param buttons
+ */
 void dmx_analyzer(const char buttons) {
 	static int dmx_start_address = 1;
 	static int ui_function = 1;

@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file dmx_data.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
-#include <bcm2835_gpio.h>
-#include <bcm2835_vc.h>
-#include <bcm2835_pl011.h>
+#include "bcm2835.h"
+#include "bcm2835_gpio.h"
+#include "bcm2835_vc.h"
+#include "bcm2835_pl011.h"
 
-uint8_t dmx_data[512];
-uint8_t dmx_data_refreshed;
+uint8_t dmx_data[512];			///<
+uint8_t dmx_data_refreshed;		///<
 
 #ifdef DEBUG_ANALYZER
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	// CLK
@@ -34,6 +38,10 @@ uint8_t dmx_data_refreshed;
 #define ANALYZER_CH4	RPI_V2_GPIO_P1_24	// CE0
 #endif
 
+/**
+ * @ingroup dmx
+ *
+ */
 void pl011_dmx512_init(void) {
 	// Set UART clock rate to 4000000 (4MHz)
 	bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);
@@ -60,6 +68,10 @@ void pl011_dmx512_init(void) {
 	BCM2835_PL011->CR 	= 0x301;									// Enable UART
 }
 
+/**
+ * @ingroup dmx
+ *
+ */
 void fiq_init(void) {
 #ifdef DEBUG_ANALYZER
 	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
@@ -76,14 +88,20 @@ void fiq_init(void) {
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
 
-// State of receiving DMX Bytes
+///< State of receiving DMX Bytes
 typedef enum {
-  IDLE, BREAK, DATA
+  IDLE,		///<
+  BREAK,	///<
+  DATA		///<
 } _dmx_receive_state;
 
-static uint8_t dmx_receive_state = IDLE;
-static uint16_t dmx_data_index = 0;
+static uint8_t dmx_receive_state = IDLE;	///< Current state of the DMX transmission
+static uint16_t dmx_data_index = 0;			///<
 
+/**
+ * @ingroup dmx
+ *
+ */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 #ifdef DEBUG_ANALYZER

@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file ui_function_reboot.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +23,17 @@
  * THE SOFTWARE.
  */
 
-// C standard library headers 
 #include <stdint.h>
-// BitWizard User Interface (LCD and push buttons)
-#include <bw_ui.h>
-//
-#include <ui_functions.h>
+#include "bw_ui.h"
+#include "ui_functions.h"
 
-extern uint32_t ticks_per_second;
+extern uint32_t ticks_per_second;	///<
 
+/**
+ * @ingroup ui
+ *
+ * @param buttons
+ */
 void reboot(const char buttons) {
 	if (do_ui_cls) {
 		ui_cls();

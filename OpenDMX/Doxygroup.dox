@@ -1,0 +1,53 @@
+/**
+ * @defgroup DMX512 Raspberry Pi DMX512 Receiver (Slave / Analyzer)
+ * @brief TODO
+ *
+ */
+ 
+  /**
+  * @defgroup lib Library
+  * @ingroup DMX512
+  * @brief TODO
+  */
+  
+  /**
+  * @defgroup dmx DMX512
+  * @ingroup lib
+  * @brief TODO
+  */
+  
+  /**
+  * @defgroup led Led
+  * @ingroup lib
+  * @brief TODO
+  */
+
+  /**
+  * @defgroup ui User Interface
+  * @ingroup lib
+  * @brief TODO
+  */
+ 
+ /**
+  * @defgroup firmware Firmware
+  * @ingroup DMX512
+  * @brief TODO
+  */
+  
+  /**
+  * @defgroup GPIO General Input/Output
+  * @ingroup firmware
+  * @brief TODO
+  */
+  
+  /**
+  * @defgroup I2C I2C
+  * @ingroup firmware
+  * @brief TODO
+  */
+  
+  /**
+  * @defgroup SPI SPI
+  * @ingroup firmware
+  * @brief TODO
+  */

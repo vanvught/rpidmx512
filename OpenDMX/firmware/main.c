@@ -24,16 +24,16 @@
  */
 
 #include <stdio.h>
-#include <bcm2835.h>
-#include <bcm2835_led.h>
-#include <bcm2835_wdog.h>
-#include <sys_time.h>
-#include <hardware.h>
-#include <fiq.h>
-#include <bw_ui.h>
-#include <ui_functions.h>
-#include <dmx_data.h>
-#include <dmx_devices.h>
+#include "bcm2835.h"
+#include "bcm2835_led.h"
+#include "bcm2835_wdog.h"
+#include "sys_time.h"
+#include "hardware.h"
+#include "fiq.h"
+#include "bw_ui.h"
+#include "ui_functions.h"
+#include "dmx_data.h"
+#include "dmx_devices.h"
 
 extern void fb_init(void);
 
@@ -88,6 +88,9 @@ inline static void events_check() {
 }
 
 /**
+ * @ingroup firmware
+ *
+ *
  *
  * @param boot_dev
  * @param arm_m_type

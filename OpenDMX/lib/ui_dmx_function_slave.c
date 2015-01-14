@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file ui_function_slave.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,18 +23,19 @@
  * THE SOFTWARE.
  */
 
-// C standard library headers
 #include <string.h>
-// BitWizard User Interface (LCD and push buttons)
 #include <bw_ui.h>
-// DMX Receiver functions
 #include <dmx_devices.h>
-//
 #include <ui_functions.h>
 
-extern initializer_t devices_table[];
-extern _devices_t devices_connected;
+extern initializer_t devices_table[];	///<
+extern _devices_t devices_connected;	///<
 
+/**
+ *
+ * @param arg
+ * @param buf
+ */
 inline static void itoa_base10(int arg, char buf[]) {
 	char *n = buf + 1;
 
@@ -44,6 +49,11 @@ inline static void itoa_base10(int arg, char buf[]) {
 	}
 }
 
+/**
+ *
+ * @param arg
+ * @param buf
+ */
 inline static void itoa_base10_3(int arg, char buf[]) {
 	char *n = buf + 2;
 
@@ -58,6 +68,11 @@ inline static void itoa_base10_3(int arg, char buf[]) {
 	}
 }
 
+/**
+ * @ingroup ui
+ *
+ * @param buttons
+ */
 void dmx_slave(const char buttons) {
 	static char ui_dmx_slave_refresh_devices = 1;
 	static char ui_dmx_slave_function = 0;
