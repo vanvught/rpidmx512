@@ -9,7 +9,7 @@ The library is tested with:
 
 *. Raspberry Pi Raspian Linux, library -> http://www.airspayce.com/mikem/bcm2835/
 
-*. Raspbery Baremetal, library -> https://github.com/vanvught/OpenDMX/tree/master/firmware
+*. Raspbery Pi Baremetal, library -> https://github.com/vanvught/OpenDMX/tree/master/firmware
 
 *. Arduino Uno, library -> https://github.com/vanvught/AVR/tree/master/avr
 

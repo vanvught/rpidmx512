@@ -37,13 +37,13 @@ typedef enum {
  * @brief The following lists the currently defined mailbox channels.
  */
 typedef enum {
-	BCM2835_MAILBOX_POWER_CHANNEL	= 0,	///< for use by the power management interface
+	BCM2835_MAILBOX_POWER_CHANNEL	= 0,	///< For use by the power management interface
 	BCM2835_MAILBOX_FB_CHANNEL		= 1,	///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
-	BCM2835_MAILBOX_VCHIQ_CHANNEL	= 3,    ///< for use by the VCHIQ interface
+	BCM2835_MAILBOX_VCHIQ_CHANNEL	= 3,    ///< For use by the VCHIQ interface
 	BCM2835_MAILBOX_PROP_CHANNEL	= 8		///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
 } bcm2835MailboxChannels;
 
-extern uint32_t bcm2835_mailbox_read(const uint8_t channel);
-extern void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data);
+extern uint32_t bcm2835_mailbox_read(const uint8_t);
+extern void bcm2835_mailbox_write(const uint8_t, const uint32_t);
 
 #endif /* BCM2835_MAILBOX_H_ */

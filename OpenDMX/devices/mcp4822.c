@@ -32,6 +32,7 @@ extern int printf(const char *format, ...);
 #include <mcp48x2.h>
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */
@@ -57,6 +58,7 @@ static void mcp4822(dmx_device_info_t * dmx_device_info) {
 INITIALIZER(devices, mcp4822)
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */

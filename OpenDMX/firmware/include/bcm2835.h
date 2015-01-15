@@ -306,10 +306,10 @@ typedef struct {
 /**
  * @ingroup TIMER
  *
- * @param
- * @param
+ * @param offset_micros
+ * @param micros
  */
-extern void bcm2835_st_delay(const uint64_t, const uint64_t);
+extern void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
 
 /**
  * @ingroup TIMER

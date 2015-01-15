@@ -25,11 +25,12 @@
 
 extern int printf(const char *format, ...);
 
-#include <tables.h>
-#include <dmx_data.h>
-#include <bw_spi_dimmer.h>
+#include "tables.h"
+#include "dmx_data.h"
+#include "bw_spi_dimmer.h"
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */
@@ -42,6 +43,7 @@ static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_dimmer)
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */

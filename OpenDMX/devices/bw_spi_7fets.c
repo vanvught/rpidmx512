@@ -25,16 +25,17 @@
 
 extern int printf(const char *format, ...);
 
-#include <tables.h>
-#include <dmx_data.h>
-#include <bw_spi_7fets.h>
+#include "tables.h"
+#include "dmx_data.h"
+#include "bw_spi_7fets.h"
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */
 static void bw_spi_7fets(dmx_device_info_t *dmx_device_info) {
-	int i;
+	int i = 0;
 	unsigned char data = 0;
 	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
 
@@ -56,6 +57,7 @@ static void bw_spi_7fets(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_7fets)
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */

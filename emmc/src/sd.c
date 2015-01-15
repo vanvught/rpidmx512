@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "block.h"
-//#include "util.h"
 #include "bcm2835_emmc.h"
 #include "sd.h"
 
@@ -190,10 +189,6 @@ int printf(const char *format, ...);
 // Enable EXPERIMENTAL (and possibly DANGEROUS) SD write support
 #define SD_WRITE_SUPPORT
 
-//TODO Cleanup
-//static char driver_name[] = "emmc";
-//static char device_name[] = "emmc0";	///< We use a single device name as there is only one card slot in the RPi
-
 struct sd_scr
 {
     uint32_t    scr[2];
@@ -344,8 +339,6 @@ int sd_card_init(struct block_device **dev)
 		ret = (struct emmc_block_dev *)*dev;
 
 	memset(ret, 0, sizeof(struct emmc_block_dev));
-	//ret->bd.driver_name = driver_name;
-	//ret->bd.device_name = device_name;
 	ret->bd.block_size = 512;
 	ret->bd.read = sd_read;
 #ifdef SD_WRITE_SUPPORT
@@ -586,8 +579,6 @@ int sd_card_init(struct block_device **dev)
 	dev_id[1] = card_cid_1;
 	dev_id[2] = card_cid_2;
 	dev_id[3] = card_cid_3;
-//	ret->bd.device_id = (uint8_t *)dev_id;
-//	ret->bd.dev_id_len = 4 * sizeof(uint32_t);
 
 	SD_TRACE("Send CMD3 to enter the data state");
 	sd_issue_command(ret, SEND_RELATIVE_ADDR, 0, 500000);

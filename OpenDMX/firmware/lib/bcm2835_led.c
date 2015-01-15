@@ -32,7 +32,7 @@
 /**
  * @ingroup Led
  *
- * @param state
+ * @param state \ref HIGH sets the led on and \ref LOW sets the led off.
  */
 void led_set(const int state) {
 	bcm2835_gpio_write(PIN, !state);
@@ -40,6 +40,8 @@ void led_set(const int state) {
 
 /**
  * @ingroup Led
+ *
+ * Set the GPIO pin for the led to output.
  *
  */
 void led_init(void) {

@@ -25,9 +25,11 @@
 
 extern int printf(const char *format, ...);
 
-#include <tables.h>
-#include <dmx_data.h>
-#include <bw_spi_lcd.h>
+#include "tables.h"
+#include "dmx_data.h"
+#include "bw_spi_lcd.h"
+
+#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
 
 /**
  *
@@ -47,6 +49,7 @@ inline static void itoa_base10(int arg, char buf[]) {
 }
 
 /**
+ * @ingroup DEV
  *
  * @param spi_lcd_info
  * @param start_channel
@@ -69,12 +72,12 @@ inline static void display_channels(device_info_t *spi_lcd_info, int start_chann
 }
 
 /**
+ * @ingroup DEV
  *
  * @param device_info
  * @param start_channel
  */
 inline static void display_data_hex(device_info_t *device_info, int start_channel) {
-	#define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 	char text[BW_LCD_MAX_CHARACTERS];
 
 	int i = 0;
@@ -105,6 +108,7 @@ static void bw_spi_lcd(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_lcd)
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */

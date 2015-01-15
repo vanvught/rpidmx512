@@ -30,6 +30,7 @@ extern int printf(const char *format, ...);
 #include <mcp23s08.h>
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */
@@ -55,6 +56,7 @@ static void mcp23s08(dmx_device_info_t * dmx_device_info) {
 INITIALIZER(devices, mcp23s08)
 
 /**
+ * @ingroup DEV
  *
  * @param dmx_device_info
  */

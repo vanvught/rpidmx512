@@ -51,3 +51,9 @@
   * @ingroup firmware
   * @brief TODO
   */
+  
+   /**
+  * @defgroup DEV Devices
+  * @ingroup DMX512
+  * @brief TODO
+  */

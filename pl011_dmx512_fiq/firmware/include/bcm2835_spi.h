@@ -26,34 +26,34 @@
 #ifndef BCM2835_SPI_H_
 #define BCM2835_SPI_H_
 
-#define BCM2835_SPI0_CS_LEN_LONG   0x02000000 ///< Enable Long data word in Lossi mode if DMA_LEN is set
-#define BCM2835_SPI0_CS_DMA_LEN    0x01000000 ///< Enable DMA mode in Lossi mode
-#define BCM2835_SPI0_CS_CSPOL2     0x00800000 ///< Chip Select 2 Polarity
-#define BCM2835_SPI0_CS_CSPOL1     0x00400000 ///< Chip Select 1 Polarity
-#define BCM2835_SPI0_CS_CSPOL0     0x00200000 ///< Chip Select 0 Polarity
-#define BCM2835_SPI0_CS_RXF        0x00100000 ///< RXF - RX FIFO Full
-#define BCM2835_SPI0_CS_RXR        0x00080000 ///< RXR RX FIFO needs Reading ( full)
-#define BCM2835_SPI0_CS_TXD        0x00040000 ///< TXD TX FIFO can accept Data
-#define BCM2835_SPI0_CS_RXD        0x00020000 ///< RXD RX FIFO contains Data
-#define BCM2835_SPI0_CS_DONE       0x00010000 ///< Done transfer Done
-#define BCM2835_SPI0_CS_TE_EN      0x00008000 ///< Unused
-#define BCM2835_SPI0_CS_LMONO      0x00004000 ///< Unused
-#define BCM2835_SPI0_CS_LEN        0x00002000 ///< LEN LoSSI enable
-#define BCM2835_SPI0_CS_REN        0x00001000 ///< REN Read Enable
-#define BCM2835_SPI0_CS_ADCS       0x00000800 ///< ADCS Automatically Deassert Chip Select
-#define BCM2835_SPI0_CS_INTR       0x00000400 ///< INTR Interrupt on RXR
-#define BCM2835_SPI0_CS_INTD       0x00000200 ///< INTD Interrupt on Done
-#define BCM2835_SPI0_CS_DMAEN      0x00000100 ///< DMAEN DMA Enable
-#define BCM2835_SPI0_CS_TA         0x00000080 ///< Transfer Active
-#define BCM2835_SPI0_CS_CSPOL      0x00000040 ///< Chip Select Polarity
-#define BCM2835_SPI0_CS_CLEAR      0x00000030 ///< Clear FIFO Clear RX and TX
-#define BCM2835_SPI0_CS_CLEAR_RX   0x00000020 ///< Clear FIFO Clear RX
-#define BCM2835_SPI0_CS_CLEAR_TX   0x00000010 ///< Clear FIFO Clear TX
-#define BCM2835_SPI0_CS_CPOL      	0x00000008 ///< Clock Polarity
-#define BCM2835_SPI0_CS_CPHA      	0x00000004 ///< Clock Phase
-#define BCM2835_SPI0_CS_CS        	0x00000003 ///< Chip Select
+#define BCM2835_SPI0_CS_LEN_LONG   0x02000000	///< Enable Long data word in Lossi mode if DMA_LEN is set
+#define BCM2835_SPI0_CS_DMA_LEN    0x01000000	///< Enable DMA mode in Lossi mode
+#define BCM2835_SPI0_CS_CSPOL2     0x00800000	///< Chip Select 2 Polarity
+#define BCM2835_SPI0_CS_CSPOL1     0x00400000	///< Chip Select 1 Polarity
+#define BCM2835_SPI0_CS_CSPOL0     0x00200000	///< Chip Select 0 Polarity
+#define BCM2835_SPI0_CS_RXF        0x00100000	///< RXF - RX FIFO Full
+#define BCM2835_SPI0_CS_RXR        0x00080000	///< RXR RX FIFO needs Reading ( full)
+#define BCM2835_SPI0_CS_TXD        0x00040000	///< TXD TX FIFO can accept Data
+#define BCM2835_SPI0_CS_RXD        0x00020000	///< RXD RX FIFO contains Data
+#define BCM2835_SPI0_CS_DONE       0x00010000	///< Done transfer Done
+#define BCM2835_SPI0_CS_TE_EN      0x00008000	///< Unused
+#define BCM2835_SPI0_CS_LMONO      0x00004000	///< Unused
+#define BCM2835_SPI0_CS_LEN        0x00002000	///< LEN LoSSI enable
+#define BCM2835_SPI0_CS_REN        0x00001000	///< REN Read Enable
+#define BCM2835_SPI0_CS_ADCS       0x00000800	///< ADCS Automatically Deassert Chip Select
+#define BCM2835_SPI0_CS_INTR       0x00000400	///< INTR Interrupt on RXR
+#define BCM2835_SPI0_CS_INTD       0x00000200	///< INTD Interrupt on Done
+#define BCM2835_SPI0_CS_DMAEN      0x00000100	///< DMAEN DMA Enable
+#define BCM2835_SPI0_CS_TA         0x00000080	///< Transfer Active
+#define BCM2835_SPI0_CS_CSPOL      0x00000040	///< Chip Select Polarity
+#define BCM2835_SPI0_CS_CLEAR      0x00000030	///< Clear FIFO Clear RX and TX
+#define BCM2835_SPI0_CS_CLEAR_RX   0x00000020	///< Clear FIFO Clear RX
+#define BCM2835_SPI0_CS_CLEAR_TX   0x00000010	///< Clear FIFO Clear TX
+#define BCM2835_SPI0_CS_CPOL      	0x00000008	///< Clock Polarity
+#define BCM2835_SPI0_CS_CPHA      	0x00000004	///< Clock Phase
+#define BCM2835_SPI0_CS_CS        	0x00000003	///< Chip Select
 
-#define BCM2835_SPI0_FIFO				0x0004	///< SPI Master TX and RX FIFOs
+#define BCM2835_SPI0_FIFO			0x0004		///< SPI Master TX and RX FIFOs
 
 
 #ifdef __ASSEMBLY__

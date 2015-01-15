@@ -27,9 +27,13 @@
 #include "bcm2835_mailbox.h"
 #include "fb.h"
 
-uint32_t fb_width, fb_height, fb_pitch, fb_addr, fb_size, fb_depth;
+uint32_t fb_width;	///< Width of physical display
+uint32_t fb_height;	///< Height of physical display
+uint32_t fb_pitch;	///< Number of bytes between each row of the frame buffer
+uint32_t fb_addr;	///< Address of buffer allocated by VC
+uint32_t fb_size;	///< Size of buffer allocated by VC
+uint32_t fb_depth;	///< Depth (bits per pixel)
 
-// All uint32_t values are little endian.
 typedef struct framebuffer {
 	uint32_t width_p;	///< Requested width of physical display
 	uint32_t height_p;	///< Requested height of physical display
@@ -50,33 +54,33 @@ typedef struct framebuffer {
  */
 int fb_init()
 {
-	// The buffer must be 16-byte aligned as only the upper 28 bits of the address can be passed via the mailbox.
-	framebuffer_t volatile frame __attribute__((aligned (16)));
+	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
+	volatile framebuffer_t *frame  = (framebuffer_t *)mb_addr;
 
-	frame.width_p  = WIDTH;
-	frame.height_p = HEIGHT;
-	frame.width_v  = WIDTH;
-	frame.height_v = HEIGHT;
-	frame.pitch    = 0;
-	frame.depth    = BPP;
-	frame.x        = 0;
-	frame.y        = 0;
-	frame.address  = 0;
-	frame.size     = 0;
+	frame->width_p  = WIDTH;
+	frame->height_p = HEIGHT;
+	frame->width_v  = WIDTH;
+	frame->height_v = HEIGHT;
+	frame->pitch    = 0;
+	frame->depth    = BPP;
+	frame->x        = 0;
+	frame->y        = 0;
+	frame->address  = 0;
+	frame->size     = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL,((uint32_t)&frame) + 0x40000000);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
 	bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
 
-	if (!frame.address) {
+	if (!frame->address) {
 		return FB_ERROR;
 	}
 
-	fb_width  = frame.width_p;
-	fb_height = frame.height_p;
-	fb_pitch  = frame.pitch;
-	fb_depth  = frame.depth;
-	fb_addr   = frame.address;
-	fb_size   = frame.size;
+	fb_width  = frame->width_p;
+	fb_height = frame->height_p;
+	fb_pitch  = frame->pitch;
+	fb_depth  = frame->depth;
+	fb_addr   = frame->address;
+	fb_size   = frame->size;
 
 	return FB_OK;
 }
