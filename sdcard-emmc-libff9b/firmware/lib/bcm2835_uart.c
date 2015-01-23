@@ -68,3 +68,14 @@ void bcm2835_uart_send(const uint32_t c) {
 	BCM2835_UART1 ->IO = c;
 }
 
+/**
+ * @ingroup UART
+ */
+uint32_t bcm2835_uart_receive(void) {
+	while (1) {
+		if (BCM2835_UART1->LSR & 0x01)
+			break;
+	}
+	return (BCM2835_UART1->IO);
+}
+

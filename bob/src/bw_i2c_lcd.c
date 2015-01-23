@@ -28,7 +28,7 @@
 #else
 #include <bcm2835.h>
 #ifdef BARE_METAL
-#include <FUNC_PREFIX(i2c.h>
+#include <bcm2835_i2c.h>
 #endif
 #endif
 #include <device_info.h>
