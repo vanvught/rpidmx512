@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,13 @@
  */
 
 #include <stdio.h>
-#include <bcm2835.h>
-#include <bcm2835_gpio.h>
-#include <bcm2835_led.h>
-#include <bcm2835_pl011.h>
-#include <bcm2835_pl011_dmx512.h>
-#include <hardware.h>
-#include <console.h>
+#include "bcm2835.h"
+#include "bcm2835_gpio.h"
+#include "bcm2835_led.h"
+#include "bcm2835_pl011.h"
+#include "bcm2835_pl011_dmx512.h"
+#include "hardware.h"
+#include "console.h"
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
