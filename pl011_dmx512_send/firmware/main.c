@@ -30,11 +30,15 @@
 #include "bcm2835_pl011.h"
 #include "bcm2835_pl011_dmx512.h"
 #include "hardware.h"
+#ifdef ENABLE_FRAMEBUFFER
 #include "console.h"
+extern void fb_init(void);
+#endif
+#ifdef BW_I2C_UI
+#include "bw_ui.h"
+#endif
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-
-extern void fb_init(void);
 
 volatile uint8_t dmx_data[512];
 
@@ -172,15 +176,20 @@ int notmain(unsigned int earlypc) {
 
 	for (i = 0; i < sizeof(dmx_data); i++)
 	{
-		dmx_data[i] = 0;
+		dmx_data[i] = (uint8_t)(i & 0xFF);
 	}
 
 	__disable_irq();
 
+#ifdef ENABLE_FRAMEBUFFER
 	fb_init();
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("DMX512 Controller\n");
+	printf("DMX512 Sender\n");
+#endif
+
+#ifdef BW_I2C_UI
+#endif
 
 	led_init();
 	led_set(1);

@@ -49,7 +49,7 @@ extern void print_devices_counter(void);
 #endif
 
 struct _event {
-	uint64_t period;
+	uint32_t period;
 	void (*f)(void);
 } const events[] = {
 	{1000000, ui_buttons_update},
