@@ -28,7 +28,7 @@ extern uint8_t dmx_data[512];
 extern uint8_t dmx_data_refreshed;
 
 extern void pl011_dmx512_init(void);
-extern void irq_init(void);
+extern void fiq_init(void);
 
 #define DMX_DATA_REFRESHED_DEVICES		((uint8_t)(1 << 0))
 #define DMX_DATA_REFRESHED_UI			((uint8_t)(1 << 1))

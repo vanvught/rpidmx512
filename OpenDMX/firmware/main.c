@@ -24,14 +24,17 @@
  */
 
 #include <stdio.h>
+
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
+
 #include "sys_time.h"
 #include "hardware.h"
-#include "fiq.h"
 #include "bw_ui.h"
+#include "irq_led.h"
 #include "ui_functions.h"
+
 #include "dmx_data.h"
 #include "dmx_devices.h"
 

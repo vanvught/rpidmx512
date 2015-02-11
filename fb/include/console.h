@@ -26,6 +26,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <stdint.h>
+
 extern int console_putc(const int);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);

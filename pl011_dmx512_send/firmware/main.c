@@ -47,11 +47,8 @@ volatile uint8_t dmx_data[512];
 #define ANALYZER_CH3	RPI_V2_GPIO_P1_19     // MOSI
 #define ANALYZER_CH4	RPI_V2_GPIO_P1_24     // CE0
 
-static uint8_t irq_counter;
-
 static void irq_init(void)
 {
-	irq_counter = 0;
 	BCM2835_ST->C1 = BCM2835_ST->CLO + 4;			// 4us
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
@@ -62,8 +59,8 @@ typedef enum {
   IDLE, BREAK, MAB, DATA
 } _dmx_send_state;
 
-uint8_t dmx_send_state = IDLE;
-uint16_t dmx_data_index = 0;
+static uint8_t dmx_send_state = IDLE;
+//static uint16_t dmx_send_data_index = 0;
 
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 {

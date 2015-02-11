@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/**
+ * @file irq_led.h
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef FIQ_H_
-#define FIQ_H_
 
-extern void fiq_init(void);
+#ifndef INCLUDE_IRQ_LED_H_
+#define INCLUDE_IRQ_LED_H_
 
-#endif /* FIQ_H_ */
+extern void irq_init(void);
+
+#endif /* INCLUDE_IRQ_LED_H_ */
