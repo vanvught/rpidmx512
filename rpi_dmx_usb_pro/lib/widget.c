@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "bcm2835_gpio.h"
+
 #include "widget.h"
 #include "dmx_data.h"
 #include "ft245rl.h"
@@ -110,7 +112,7 @@ static void send_message(const uint8_t label, const uint8_t *data, const uint16_
 }
 
 /**
- *
+ * TODO
  */
 void widget_print_parms(void)
 {
@@ -134,18 +136,22 @@ static void widget_set_dmx_port_direction(const uint8_t port_direction)
 	case DMX_PORT_DIRECTION_IDLE:
 		__disable_fiq();
 		__disable_irq();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 		break;
 	case DMX_PORT_DIRECTION_OUTP:
-		// TODO GPIO
 		__disable_fiq();
 		__disable_irq();
+		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 		irq_init();
 		__enable_irq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		// TODO GPIO
 		__disable_fiq();
 		__disable_irq();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 		fiq_init();
 		__enable_fiq();
 		break;
