@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>OpenDMX</name>
+	<name>rpi_dmx_usb_pro</name>
 	<comment></comment>
 	<projects>
 		<project>bob-baremetal</project>
-		<project>emmc</project>
 		<project>fb</project>
-		<project>ff9b</project>
-		<project>hal</project>
+		<project>firmware</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,7 +1,5 @@
-OpenDMX
+Raspberry Pi DMX512 / RDM
 =======
-
-DMX controller for Raspberry Pi
 
 Linux projects for testing purposes only
 -----
@@ -21,19 +19,20 @@ Baremetal projects testing purposes only
 
 \pl011_dmx512_fiq
 \pl011_dmx512_irq
+\pl011_dmx512_send
 \sdcard-emmc-libff9b
 
 
-Baremetal projects for OpenDMX controller
+Baremetal projects for DMX analyser-slave 
 ---------
 \Eagle
-\OpenDMX
 \bob-baremetal
 \emmc
 \fb
 \ff9b
 \firmware
 \firmware-template
-
+\rpi_dmx_analyzer-slave
+\rpi_dmx_usb_pro
 
 Detailed information can be found here : https://sites.google.com/site/rpidmx512/home
