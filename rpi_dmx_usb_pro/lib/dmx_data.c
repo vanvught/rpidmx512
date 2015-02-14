@@ -30,10 +30,22 @@
 #include "hardware.h"
 #include "dmx_data.h"
 
+///< State of receiving DMX Bytes
+typedef enum {
+  IDLE,		///<
+  BREAK,	///<
+  MAB,		///<
+  DATA		///<
+} _dmx_state;
+
+static uint8_t dmx_receive_state = IDLE;		///< Current state of the DMX transmission
+static uint16_t dmx_receive_data_index = 0;		///<
+static uint8_t dmx_send_state = IDLE;			///<
+
 uint8_t dmx_data[512];			///<
 uint8_t dmx_data_refreshed;		///<
 
-static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
 
 #ifdef DEBUG_ANALYZER
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	// CLK
@@ -77,22 +89,10 @@ static void pl011_dmx512_init(void) {
  * @ingroup dmx
  *
  */
-void fiq_init(void) {
+static void fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
-
-///< State of receiving DMX Bytes
-typedef enum {
-  IDLE,		///<
-  BREAK,	///<
-  MAB,		///<
-  DATA		///<
-} _dmx_state;
-
-static uint8_t dmx_receive_state = IDLE;		///< Current state of the DMX transmission
-static uint16_t dmx_receive_data_index = 0;		///<
-static uint8_t dmx_send_state = IDLE;			///<
 
 /**
  * @ingroup dmx
@@ -146,13 +146,21 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 }
 
-void irq_init(void)
+/**
+ * @ingroup dmx
+ *
+ */
+static void irq_init(void)
 {
 	BCM2835_ST->C1 = BCM2835_ST->CLO + 4;			// 4us
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
 }
 
+/**
+ * @ingroup dmx
+ *
+ */
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 {
 	dmb();
@@ -230,41 +238,68 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 }
 
 /**
+ * @ingroup dmx
  *
- * @param port_direction
  */
-void dmx_port_direction_set(const uint8_t port_direction)
+void dmx_data_start(void)
 {
-	switch (port_direction)
+	switch (dmx_port_direction)
 	{
-	case DMX_PORT_DIRECTION_IDLE:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
-		break;
 	case DMX_PORT_DIRECTION_OUTP:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
 		irq_init();
 		__enable_irq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		dmx_port_direction = DMX_PORT_DIRECTION_INP;
 		fiq_init();
 		__enable_fiq();
 		break;
 	default:
+		break;
+	}
+}
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_data_stop(void)
+{
+	__disable_fiq();
+	__disable_irq();
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param port_direction
+ */
+void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_data)
+{
+	switch (port_direction)
+	{
+	case DMX_PORT_DIRECTION_IDLE:
+		dmx_data_stop();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output
 		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
 		break;
+	case DMX_PORT_DIRECTION_OUTP:
+		dmx_data_stop();
+		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
+		break;
+	case DMX_PORT_DIRECTION_INP:
+		dmx_data_stop();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_INP;
+		break;
+	default:
+		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		break;
+	}
+
+	if (enable_data)
+	{
+		dmx_data_start();
 	}
 
 	return;
@@ -302,5 +337,54 @@ void dmx_init(void)
 		dmx_data[i] = 0;
 
 	pl011_dmx512_init();
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
+	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param data
+ * @param data_length
+ */
+void dmx_data_send(const uint8_t *data, const uint16_t data_length)
+{
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_set(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
+	udelay(88);						// Break Time
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_set(ANALYZER_CH4); // MAB
+#endif
+	udelay(8);						// Mark After Break
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_set(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
+	uint16_t i =0;
+	for (i = 0; i < data_length; i++)
+	{
+		while (1)
+		{
+			if ((BCM2835_PL011->FR & 0x20) == 0)
+				break;
+		}
+		BCM2835_PL011->DR = data[i];
+	}
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
 }

@@ -202,7 +202,7 @@ static void widget_set_params()
  */
 void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 {
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 1);
 
 	uint16_t i = 0;
 	for (i = 1; i < data_length; i++)
@@ -219,18 +219,19 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
  */
 static void widget_send_rdm_packet_request(const uint16_t data_length)
 {
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 0);
+	dmx_data_send(widget_data, data_length);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 
-	// TODO
 	printf("RDM Packet length : %d\n", data_length);
-#if 0
+#if 1
 	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
+	for (i = 0; i < 10; i++)
 	{
 		printf("%.2d-%.4d:%.2x\n", i,widget_data[i], widget_data[i]);
 	}
 #endif
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
+
 }
 
 /**
@@ -261,7 +262,7 @@ static void send_rdm_discovery_request(void)
  */
 static void widget_receive_dmx_on_change(void)
 {
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 	receive_dmx_on_change = widget_data[0];
 }
 

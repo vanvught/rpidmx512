@@ -44,6 +44,11 @@ extern void received_dmx_change_of_state_packet(void);
 // external monitor
 extern void monitor_update(void);
 
+static void task_led(void) {
+	static unsigned char led_counter = 0;
+	led_set(led_counter++ & 0x01);
+}
+
 struct _poll
 {
 	void (*f)(void);
@@ -57,6 +62,7 @@ struct _event
 }const events[] = {
 		{ 800000, received_dmx_packet },
 		{ 800000, received_dmx_change_of_state_packet },
+		{ 500000, task_led },
 		{1000000, monitor_update }};
 
 uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];

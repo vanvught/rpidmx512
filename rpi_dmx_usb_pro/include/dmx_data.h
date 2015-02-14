@@ -36,7 +36,8 @@ typedef enum
 } _dmx_port_direction;
 
 extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t);
+extern void dmx_port_direction_set(const uint8_t, const uint8_t);
 extern uint8_t dmx_port_direction_get(void);
+extern void dmx_data_send(const uint8_t *, const uint16_t);
 
 #endif /* DMX_DATA_H_ */
