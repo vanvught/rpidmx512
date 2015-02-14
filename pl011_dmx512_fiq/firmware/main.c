@@ -36,25 +36,54 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 extern void fb_init(void);
 
-uint8_t dmx_data[512];
+///< State of receiving DMX Bytes
+typedef enum {
+  IDLE, BREAK, DMXDATA, RDMDATA, CHECKSUMH, CHECKSUML
+} _dmx_receive_state;
 
-#define ANALYZER_CH1	RPI_V2_GPIO_P1_23     // CLK
-#define ANALYZER_CH2   RPI_V2_GPIO_P1_21     // MISO
-#define ANALYZER_CH3   RPI_V2_GPIO_P1_19     // MOSI
-#define ANALYZER_CH4   RPI_V2_GPIO_P1_24     // CE0
+/**
+ * The size of a UID.
+ */
+enum
+{
+	UID_SIZE = 6 /**< The size of a UID in binary form */
+};
+
+struct _rdm_command
+{
+	uint8_t start_code;
+	uint8_t sub_start_code;
+	uint8_t message_length;
+	uint8_t destination_uid[UID_SIZE];
+	uint8_t source_uid[UID_SIZE];
+	uint8_t transaction_number;
+	uint8_t port_id;
+	uint8_t message_count;
+	uint8_t sub_device[2];
+	uint8_t command_class;
+	uint8_t param_id[2];
+	uint8_t param_data_length;
+} ;
+
+static uint8_t dmx_data[512];
+static uint8_t dmx_receive_state = IDLE;
+static uint16_t dmx_data_index = 0;
+static uint64_t dmx_data_last_packet = 0;
+
+static uint8_t rdm_data[60];
+static uint16_t rdm_checksum = 0;
+static uint8_t rdm_available = 0;
+static uint32_t rdm_receive_end = 0;
+
+#define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
+#define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
+#define ANALYZER_CH3	RPI_V2_GPIO_P1_19	///< MOSI
+#define ANALYZER_CH4	RPI_V2_GPIO_P1_24	///< CE0
 
 static void fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
-
-// State of receiving DMX Bytes
-typedef enum {
-  IDLE, BREAK, DATA
-} _dmx_receive_state;
-
-uint8_t dmx_receive_state = IDLE;
-uint16_t dmx_data_index = 0;
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	bcm2835_gpio_set(ANALYZER_CH1);
@@ -66,24 +95,30 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 		dmx_receive_state = BREAK;
 	}  else if (dmx_receive_state == BREAK) {
-		if ((BCM2835_PL011 ->DR & 0xFF) == 0) {
+		uint8_t data = BCM2835_PL011->DR & 0xFF;
+		if (data == 0x00)			// DMX data start code
+		{
 			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 			bcm2835_gpio_set(ANALYZER_CH3);	// DATA
 			bcm2835_gpio_clr(ANALYZER_CH4); // IDLE
 
-			dmx_receive_state = DATA;
+			dmx_receive_state = DMXDATA;
 			dmx_data_index = 0;
-		} else {
-			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
-
-			dmx_receive_state = IDLE;
+			dmx_data_last_packet = bcm2835_st_read();
 		}
-	} else if (dmx_receive_state == DATA) {
-		dmx_data[dmx_data_index] = (BCM2835_PL011 ->DR & 0xFF);
-		dmx_data_index++;
-		if (dmx_data_index >= 512) {
+		else if (data == 0xCC)	// RDM start code
+		{
+			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+			bcm2835_gpio_set(ANALYZER_CH3);	// DATA
+			bcm2835_gpio_clr(ANALYZER_CH4); // IDLE
+
+			dmx_receive_state = RDMDATA;
+			dmx_data_index = 0;
+			rdm_data[dmx_data_index++] = 0xCC;
+			rdm_checksum =  0xCC;
+		}
+		else
+		{
 			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
 			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
@@ -91,8 +126,70 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			dmx_receive_state = IDLE;
 		}
 	}
+	else if (dmx_receive_state == DMXDATA)
+	{
+		dmx_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		if (dmx_data_index >= 512)
+		{
+			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
+
+			dmx_receive_state = IDLE;
+		}
+	}
+	else if (dmx_receive_state == RDMDATA)
+	{
+		if (dmx_data_index > (sizeof(rdm_data) / sizeof(uint8_t)))
+		{
+			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
+
+			dmx_receive_state = IDLE;
+		} else
+		{
+			uint8_t data = (BCM2835_PL011->DR & 0xFF);
+			rdm_data[dmx_data_index++] =  data;
+			rdm_checksum += data;
+
+			struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
+			if (dmx_data_index == p->message_length)
+			{
+				dmx_receive_state =	CHECKSUMH;
+			}
+		}
+	}
+	else if (dmx_receive_state == CHECKSUMH)
+	{
+		rdm_checksum -= (BCM2835_PL011->DR & 0xFF) << 8;
+		dmx_receive_state = CHECKSUML;
+	}
+	else if (dmx_receive_state == CHECKSUML)
+	{
+		rdm_checksum -= (BCM2835_PL011->DR & 0xFF);
+
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
+		{
+			rdm_available = 1;
+			dmx_data_last_packet = bcm2835_st_read();
+			rdm_receive_end = BCM2835_ST->CLO;
+		}
+
+		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+		bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+		bcm2835_gpio_set(ANALYZER_CH4); // IDLE
+
+		dmx_receive_state = IDLE;
+	}
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
+}
+
+uint16_t dmx_data_since(void)
+{
+	return ((uint16_t)((bcm2835_st_read() - dmx_data_last_packet) / 1E3));
 }
 
 void task_fb(void) {
@@ -108,6 +205,13 @@ void task_fb(void) {
 			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
 			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 			dmx_data[31]);
+	printf("%s : Data since %.6d\n", rdm_available == 1 ? "RDM" : "DMX", dmx_data_since());
+	rdm_available = 0;
+	uint16_t i = 0;
+	for (i = 0; i < 10; i++)
+	{
+		printf("%.2d-%.4d:%.2x\n", i, rdm_data[i], rdm_data[i]);
+	}
 
 }
 
