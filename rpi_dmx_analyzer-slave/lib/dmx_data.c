@@ -28,8 +28,19 @@
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
 
+///< State of receiving DMX Bytes
+typedef enum {
+  IDLE,		///<
+  BREAK,	///<
+  DATA		///<
+} _dmx_receive_state;
+
 uint8_t dmx_data[512];			///<
 uint8_t dmx_data_refreshed;		///<
+
+static uint8_t dmx_receive_state = IDLE;	///< Current state of the DMX transmission
+static uint16_t dmx_data_index = 0;			///<
+static uint32_t dmx_data_last_packet = 0;	///<
 
 #ifdef DEBUG_ANALYZER
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	// CLK
@@ -88,16 +99,6 @@ void fiq_init(void) {
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
 
-///< State of receiving DMX Bytes
-typedef enum {
-  IDLE,		///<
-  BREAK,	///<
-  DATA		///<
-} _dmx_receive_state;
-
-static uint8_t dmx_receive_state = IDLE;	///< Current state of the DMX transmission
-static uint16_t dmx_data_index = 0;			///<
-
 /**
  * @ingroup dmx
  *
@@ -123,6 +124,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 			dmx_receive_state = DATA;
 			dmx_data_index = 0;
+			dmx_data_last_packet = BCM2835_ST->CLO;
 		} else {							// Ignore all other; Text (0x17), System Information (0xCF), RDM (0xCC), etc.
 #ifdef DEBUG_ANALYZER
 			bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
