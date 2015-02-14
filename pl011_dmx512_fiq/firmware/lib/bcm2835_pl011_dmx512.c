@@ -56,3 +56,28 @@ void bcm2835_pl011_dmx512_begin(void) {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 ;		// Set 8, N, 2, FIFO disabled
 	BCM2835_PL011->CR 	= 0x301;									// Enable UART
 }
+
+/**
+ * @ingroup DMX512
+ *
+ * @param data
+ * @param data_length
+ */
+void bcm2835_pl011_dmx512_send(const uint8_t *data, const uint16_t data_length)
+{
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+	udelay(88);						// Break Time
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+	udelay(8);						// Mark After Break
+	uint16_t i =0;
+	BCM2835_PL011->DR = 0;
+	for (i = 0; i < data_length; i++)
+	{
+		while (1)
+		{
+			if ((BCM2835_PL011->FR & 0x20) == 0)
+				break;
+		}
+		BCM2835_PL011->DR = i;
+	}
+}
