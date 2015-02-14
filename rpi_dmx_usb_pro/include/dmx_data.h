@@ -28,14 +28,15 @@
 
 #include <stdint.h>
 
-extern uint8_t dmx_data[512];
-extern uint8_t dmx_data_refreshed;
+typedef enum
+{
+	DMX_PORT_DIRECTION_IDLE = 0,	///<
+	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
+	DMX_PORT_DIRECTION_INP = 2		///< DMX input
+} _dmx_port_direction;
 
-extern void dmx_data_init(void);
-
-extern void pl011_dmx512_init(void);
-
-extern void irq_init(void);
-extern void fiq_init(void);
+extern void dmx_init(void);
+extern void dmx_port_direction_set(const uint8_t);
+extern uint8_t dmx_port_direction_get(void);
 
 #endif /* DMX_DATA_H_ */

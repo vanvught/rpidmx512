@@ -28,16 +28,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bcm2835_gpio.h"
-
 #include "widget.h"
 #include "dmx_data.h"
 #include "ft245rl.h"
 
-#include "hardware.h"
 #include "console.h"
 
-static uint8_t widget_dmx_port_direction = DMX_PORT_DIRECTION_INP;
+extern uint8_t dmx_data[512];
+
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
 
@@ -121,45 +119,12 @@ void widget_print_parms(void)
 	printf("Firmware %d.%d BreakTime %d MaBTime %d RefreshRate %d\n",
 			DMXUSBPRO_params.firmware_msb, DMXUSBPRO_params.firmware_lsb,
 			DMXUSBPRO_params.break_time, DMXUSBPRO_params.mab_time, DMXUSBPRO_params.refresh_rate);
-	if (DMX_PORT_DIRECTION_INP == widget_dmx_port_direction)
+
+	if (DMX_PORT_DIRECTION_INP == dmx_port_direction_get())
 		printf("Input [%s]\n", receive_dmx_on_change == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
 	else
-		printf("%s                                     \n", dir[widget_dmx_port_direction]);
+		printf("%s                                     \n", dir[dmx_port_direction_get()]);
 }
-
-static void widget_set_dmx_port_direction(const uint8_t port_direction)
-{
-	widget_dmx_port_direction = port_direction;
-
-	switch (widget_dmx_port_direction)
-	{
-	case DMX_PORT_DIRECTION_IDLE:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		break;
-	case DMX_PORT_DIRECTION_OUTP:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		irq_init();
-		__enable_irq();
-		break;
-	case DMX_PORT_DIRECTION_INP:
-		__disable_fiq();
-		__disable_irq();
-		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
-		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-		fiq_init();
-		__enable_fiq();
-		break;
-	default:
-		break;
-	}
-}
-
 
 /**
  * @ingroup widget
@@ -237,7 +202,7 @@ static void widget_set_params()
  */
 void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 {
-	widget_set_dmx_port_direction(DMX_PORT_DIRECTION_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP);
 
 	uint16_t i = 0;
 	for (i = 1; i < data_length; i++)
@@ -254,7 +219,7 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
  */
 static void widget_send_rdm_packet_request(const uint16_t data_length)
 {
-	widget_set_dmx_port_direction(DMX_PORT_DIRECTION_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP);
 
 	// TODO
 	printf("RDM Packet length : %d\n", data_length);
@@ -265,7 +230,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 		printf("%.2d-%.4d:%.2x\n", i,widget_data[i], widget_data[i]);
 	}
 #endif
-	widget_set_dmx_port_direction(DMX_PORT_DIRECTION_INP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
 }
 
 /**
@@ -296,7 +261,7 @@ static void send_rdm_discovery_request(void)
  */
 static void widget_receive_dmx_on_change(void)
 {
-	widget_set_dmx_port_direction(DMX_PORT_DIRECTION_INP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
 	receive_dmx_on_change = widget_data[0];
 }
 
@@ -309,7 +274,7 @@ static void widget_receive_dmx_on_change(void)
  */
 void received_dmx_packet(void)
 {
-	if ((DMX_PORT_DIRECTION_INP != widget_dmx_port_direction) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
+	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
 	console_set_cursor(0,6);
@@ -331,7 +296,7 @@ void received_dmx_packet(void)
  */
 void received_dmx_change_of_state_packet(void)
 {
-	if ((DMX_PORT_DIRECTION_INP != widget_dmx_port_direction) || (SEND_ALWAYS == receive_dmx_on_change))
+	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 
 	console_set_cursor(0,6);
@@ -339,6 +304,7 @@ void received_dmx_change_of_state_packet(void)
 }
 
 /**
+ * @ingroup usb_host
  *
  * @return
  */
@@ -349,6 +315,7 @@ static uint8_t read_data(void)
 }
 
 /**
+ * @ingroup widget
  *
  */
 void receive_data_from_host(void)

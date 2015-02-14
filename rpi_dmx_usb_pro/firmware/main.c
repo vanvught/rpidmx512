@@ -30,7 +30,6 @@
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
-#include "hardware.h"
 #include "sys_time.h"
 #include "ft245rl.h" // TODO
 #include "dmx_data.h"
@@ -65,7 +64,7 @@ uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 /**
  *
  */
-void events_init() {
+static void events_init() {
 	int i;
 	uint64_t st_read_now = bcm2835_st_read();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
@@ -92,7 +91,7 @@ int notmain(void)
 {
 	FT245RL_init();  // TODO
 
-	dmx_data_init();
+	dmx_init();
 	
 	led_init();
 	led_set(1);
@@ -102,11 +101,6 @@ int notmain(void)
 	fb_init();			// Framebuffer
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-
-	// PL011 UART
-	pl011_dmx512_init();
-	fiq_init();
-	__enable_fiq();
 
 	watchdog_init();
 

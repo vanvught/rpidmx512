@@ -28,6 +28,8 @@
 #include "dmx_data.h"
 #include "console.h"
 
+extern uint8_t dmx_data[512];
+
 extern void widget_print_parms(void);
 
 void monitor_update(void)

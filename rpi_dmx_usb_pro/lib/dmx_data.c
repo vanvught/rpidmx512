@@ -27,9 +27,13 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
+#include "hardware.h"
+#include "dmx_data.h"
 
 uint8_t dmx_data[512];			///<
 uint8_t dmx_data_refreshed;		///<
+
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
 
 #ifdef DEBUG_ANALYZER
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	// CLK
@@ -43,29 +47,7 @@ uint8_t dmx_data_refreshed;		///<
  * @ingroup dmx
  *
  */
-void dmx_data_init(void)
-{
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-
-	bcm2835_gpio_clr(ANALYZER_CH1);		// IRQ
-	bcm2835_gpio_clr(ANALYZER_CH2);		// BREAK
-	bcm2835_gpio_clr(ANALYZER_CH3);		// DATA
-	bcm2835_gpio_set(ANALYZER_CH4);		// IDLE
-#endif
-	int i = 0;
-	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
-		dmx_data[i] = 0;
-}
-
-/**
- * @ingroup dmx
- *
- */
-void pl011_dmx512_init(void) {
+static void pl011_dmx512_init(void) {
 	// Set UART clock rate to 4000000 (4MHz)
 	bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);
 	//
@@ -245,4 +227,80 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 	bcm2835_gpio_clr(ANALYZER_CH1);
 #endif
 	dmb();
+}
+
+/**
+ *
+ * @param port_direction
+ */
+void dmx_port_direction_set(const uint8_t port_direction)
+{
+	switch (port_direction)
+	{
+	case DMX_PORT_DIRECTION_IDLE:
+		__disable_fiq();
+		__disable_irq();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		break;
+	case DMX_PORT_DIRECTION_OUTP:
+		__disable_fiq();
+		__disable_irq();
+		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+		dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
+		irq_init();
+		__enable_irq();
+		break;
+	case DMX_PORT_DIRECTION_INP:
+		__disable_fiq();
+		__disable_irq();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output //TODO
+		bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+		dmx_port_direction = DMX_PORT_DIRECTION_INP;
+		fiq_init();
+		__enable_fiq();
+		break;
+	default:
+		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		break;
+	}
+
+	return;
+}
+
+/**
+ *
+ * @return
+ */
+uint8_t dmx_port_direction_get(void)
+{
+	return dmx_port_direction;
+}
+
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_init(void)
+{
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
+
+	bcm2835_gpio_clr(ANALYZER_CH1);
+	bcm2835_gpio_clr(ANALYZER_CH2);
+	bcm2835_gpio_clr(ANALYZER_CH3);
+	bcm2835_gpio_set(ANALYZER_CH4);
+#endif
+	int i = 0;
+	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
+		dmx_data[i] = 0;
+
+	pl011_dmx512_init();
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP);
 }

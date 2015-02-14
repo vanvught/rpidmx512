@@ -1,15 +1,9 @@
 /**
- * @defgroup DMX512 Raspberry Pi DMX512 Receiver (Slave / Analyzer)
+ * @defgroup DMX512 Raspberry Pi RDM Controller
  * @brief TODO
  *
  */
  
-  /**
-  * @defgroup DEV Devices
-  * @ingroup DMX512
-  * @brief TODO
-  */
-  
  /**
   * @defgroup Firmware Firmware
   * @ingroup DMX512
@@ -33,3 +27,10 @@
   * @ingroup lib
   * @brief TODO
   */
+  
+ /**
+  * @defgroup widget Widget
+  * @ingroup lib
+  * @brief TODO
+  */
+ 
