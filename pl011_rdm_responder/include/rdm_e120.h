@@ -1,5 +1,5 @@
-#ifndef RDM_H_
-#define RDM_H_
+#ifndef RDM_E120_H_
+#define RDM_E120_H_
 
 
 /*****************************************************************/
@@ -639,4 +639,4 @@
 #define E137_1_MERGEMODE_DMX_ONLY                        0x03 /* DMX512 only, Preset ignored                                    */
 #define E137_1_MERGEMODE_OTHER                           0xFF /* Other (undefined) merge mode                                   */
 
-#endif /* RDM_H_ */
+#endif /* RDM_E120_H_ */

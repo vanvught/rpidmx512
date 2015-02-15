@@ -25,6 +25,12 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef __builtin_bswap16
+#define __builtin_bswap16(x) (((x << 8) & 0xff00) | ((x >> 8) & 0x00ff))
+#endif
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
@@ -35,9 +41,16 @@
 #include "hardware.h"
 #include "console.h"
 
+#include "rdm_e120.h"
+
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 extern void fb_init(void);
+
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
 
 ///< State of receiving DMX Bytes
 typedef enum {
@@ -62,11 +75,21 @@ struct _rdm_command
 	uint8_t transaction_number;
 	uint8_t port_id;
 	uint8_t message_count;
-	uint8_t sub_device[2];
+	uint16_t sub_device;
 	uint8_t command_class;
-	uint8_t param_id[2];
+	uint16_t param_id;
 	uint8_t param_data_length;
+	uint8_t param_data[60-24];
 } ;
+
+typedef enum
+{
+	DMX_PORT_DIRECTION_IDLE = 0,	///<
+	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
+	DMX_PORT_DIRECTION_INP = 2		///< DMX input
+} _dmx_port_direction;
+
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;
 
 static uint8_t dmx_data[512];
 static uint8_t dmx_receive_state = IDLE;
@@ -74,8 +97,14 @@ static uint16_t dmx_data_index = 0;
 
 static uint8_t rdm_data[60];
 static uint16_t rdm_checksum = 0;
-static uint8_t rdm_available = 0;
-//static uint32_t rdm_receive_end = 0;
+static uint64_t rdm_data_receive_end = 0;
+static uint8_t rdm_available = FALSE;
+static uint8_t rdm_is_mute = FALSE;
+
+// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
+static const uint8_t UID_ALL[UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+// RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
+static const uint8_t UID_DEVICE[UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
 
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
 #define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
@@ -175,7 +204,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
 		{
-			rdm_available = 1;
+			rdm_available = TRUE;
+			rdm_data_receive_end = bcm2835_st_read();
 		}
 
 		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
@@ -217,10 +247,224 @@ void task_fb(void) {
 	}
 }
 
+static void dmx_data_start(void)
+{
+	switch (dmx_port_direction)
+	{
+	case DMX_PORT_DIRECTION_OUTP:
+		// Nothing to do here
+		break;
+	case DMX_PORT_DIRECTION_INP:
+		fiq_init();
+		__enable_fiq();
+		break;
+	default:
+		break;
+	}
+}
+
+static void dmx_data_stop(void)
+{
+	__disable_fiq();
+	//__disable_irq();
+}
+
+void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_data)
+{
+	switch (port_direction)
+	{
+	case DMX_PORT_DIRECTION_IDLE:
+		dmx_data_stop();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		break;
+	case DMX_PORT_DIRECTION_OUTP:
+		dmx_data_stop();
+		bcm2835_gpio_set(18);	// GPIO18, data direction, 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
+		break;
+	case DMX_PORT_DIRECTION_INP:
+		dmx_data_stop();
+		bcm2835_gpio_clr(18);	// GPIO18, data direction, 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_INP;
+		break;
+	default:
+		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		break;
+	}
+
+	if (enable_data == TRUE)
+	{
+		dmx_data_start();
+	}
+
+	return;
+}
+
+void dmx_data_send(const uint8_t *data, const uint16_t data_length)
+{
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_set(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
+	udelay(88);						// Break Time
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_set(ANALYZER_CH4); // MAB
+#endif
+	udelay(8);						// Mark After Break
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_set(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
+	uint16_t i = 0;
+	for (i = 0; i < data_length; i++)
+	{
+		while (1)
+		{
+			if ((BCM2835_PL011->FR & 0x20) == 0)
+				break;
+		}
+		BCM2835_PL011->DR = data[i];
+	}
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_set(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
+	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+#endif
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	udelay(44);
+}
+
+static void process_rdm_message(const uint8_t command_class, const uint16_t param_id, const uint8_t rdm_packet_is_handled)
+{
+
+}
+
+static void rdm_respond_message(uint8_t rdm_packet_is_handled)
+{
+	uint16_t rdm_checksum = 0;
+
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
+
+	if(rdm_packet_is_handled == TRUE)
+	{
+		rdm_response->port_id = E120_RESPONSE_TYPE_ACK;
+	} else
+	{
+		rdm_response->port_id = E120_RESPONSE_TYPE_NACK_REASON;
+		rdm_response->param_data_length = 2;
+		rdm_response->param_data[0] = 0;
+		rdm_response->param_data[1] = 0;
+	}
+
+	memcpy(rdm_response->destination_uid, rdm_response->source_uid, UID_SIZE);
+	memcpy(rdm_response->source_uid, UID_DEVICE, UID_SIZE);
+
+	rdm_response->command_class++;
+
+	uint8_t i = 0;
+	for (i = 0; i < rdm_response->message_length; i++)
+	{
+		rdm_checksum += rdm_data[i];
+	}
+
+	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end;
+
+	if (delay < 180)
+	{
+		udelay(180 - delay);
+	}
+
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+
+	dmx_data_send(rdm_data, rdm_response->message_length);
+
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+}
+
+static void handle_rdm_data(void)
+{
+	if(rdm_available == FALSE)
+		return;
+
+	rdm_available = FALSE;
+
+	uint8_t rdm_packet_is_for_me = FALSE;
+	uint8_t rdm_packet_is_for_all = FALSE;
+	uint8_t rdm_packet_is_handled = FALSE;
+
+	struct _rdm_command *rdm_cmd = (struct _rdm_command *)rdm_data;
+
+	uint8_t command_class = rdm_cmd->command_class;
+	uint16_t param_id = rdm_cmd->param_id;
+
+	if (memcmp(rdm_cmd->destination_uid, UID_ALL, UID_SIZE) == 0)
+	{
+		rdm_packet_is_for_all = TRUE;
+	}
+	else if (memcmp(rdm_cmd->destination_uid, UID_DEVICE, UID_SIZE) == 0)
+	{
+		rdm_packet_is_for_me = TRUE;
+	}
+
+	if ((rdm_packet_is_for_me == FALSE) && (rdm_packet_is_for_all == FALSE))
+	{
+		// Ignore RDM packet
+	}
+	else if (command_class == E120_DISCOVERY_COMMAND)
+	{
+		if (param_id == __builtin_bswap16(E120_DISC_UNIQUE_BRANCH))
+		{
+			if (rdm_is_mute == FALSE)
+			{
+				if ((memcmp(rdm_cmd->param_data, UID_DEVICE, UID_SIZE) <= 0)
+						&& (memcmp(UID_DEVICE, rdm_cmd->param_data + 6,	UID_SIZE) <= 0))
+				{
+
+				}
+			}
+		} else if (param_id == __builtin_bswap16(E120_DISC_UN_MUTE))
+		{
+			rdm_is_mute = FALSE;
+			rdm_packet_is_handled = TRUE;
+			rdm_respond_message(TRUE);
+		} else if (param_id == __builtin_bswap16(E120_DISC_MUTE))
+		{
+			rdm_is_mute = TRUE;
+			rdm_packet_is_handled = TRUE;
+			rdm_respond_message(TRUE);
+		}
+	}
+	else if (rdm_packet_is_for_me == FALSE)
+	{
+		process_rdm_message(command_class, param_id, rdm_packet_is_handled);
+	}
+}
+
 void task_led(void) {
 	static unsigned char led_counter = 0;
 	led_set(led_counter++ & 0x01);
 }
+
+struct _poll
+{
+	void (*f)(void);
+} const poll_table[] = {
+		{ handle_rdm_data } };
 
 typedef struct _event {
 	uint64_t period;
@@ -289,6 +533,11 @@ int notmain(unsigned int earlypc) {
 	events_init();
 
 	for (;;) {
+
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
+			poll_table[i].f();
+		}
+
 		events_check();
 	}
 
