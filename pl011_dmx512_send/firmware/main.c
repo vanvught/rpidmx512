@@ -137,6 +137,12 @@ void dmx_data_send(const uint8_t *data, const uint16_t length)
 	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
 	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	udelay(44);
 }
 
 int notmain(unsigned int earlypc) {

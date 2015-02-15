@@ -43,19 +43,17 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 	</storageModule>
-	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="OpenDMX.null.243886014" name="OpenDMX"/>
-	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/OpenDMX"/>
+			<resource resourceType="PROJECT" workspacePath="/rpi_dmx_analyzer-slave"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.2135744397;cdt.managedbuild.toolchain.gnu.cross.base.2135744397.2072478041;cdt.managedbuild.tool.gnu.cross.c.compiler.1827372264;cdt.managedbuild.tool.gnu.c.compiler.input.697405561">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
@@ -68,5 +66,7 @@
 			</profile>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="rpi_dmx_analyzer-slave.null.635343984" name="rpi_dmx_analyzer-slave"/>
+	</storageModule>
 </cproject>

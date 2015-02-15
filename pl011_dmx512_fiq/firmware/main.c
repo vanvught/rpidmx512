@@ -24,11 +24,14 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
+
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_led.h"
 #include "bcm2835_pl011.h"
 #include "bcm2835_pl011_dmx512.h"
+#include "sys_time.h"
 #include "hardware.h"
 #include "console.h"
 
@@ -40,6 +43,9 @@ extern void fb_init(void);
 typedef enum {
   IDLE, BREAK, DMXDATA, RDMDATA, CHECKSUMH, CHECKSUML
 } _dmx_receive_state;
+
+static uint8_t checksum_h = 0;
+static uint8_t checksum_l = 0;
 
 /**
  * The size of a UID.
@@ -162,12 +168,16 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	}
 	else if (dmx_receive_state == CHECKSUMH)
 	{
-		rdm_checksum -= (BCM2835_PL011->DR & 0xFF) << 8;
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_checksum -= data << 8;
+		checksum_h = data;
 		dmx_receive_state = CHECKSUML;
 	}
 	else if (dmx_receive_state == CHECKSUML)
 	{
-		rdm_checksum -= (BCM2835_PL011->DR & 0xFF);
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_checksum -= data;
+		checksum_l = data;
 
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
@@ -193,7 +203,15 @@ uint16_t dmx_data_since(void)
 }
 
 void task_fb(void) {
-	console_set_cursor(0, 4);
+	time_t ltime = 0;
+	struct tm *local_time = NULL;
+
+	ltime = sys_time(NULL);
+    local_time = localtime(&ltime);
+
+	console_set_cursor(0,3);
+
+	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
 			dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
@@ -205,13 +223,15 @@ void task_fb(void) {
 			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
 			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 			dmx_data[31]);
-	printf("%s : Data since %.6d\n", rdm_available == 1 ? "RDM" : "DMX", dmx_data_since());
-	rdm_available = 0;
+	printf("%s : Data since [%.6d]\n", rdm_available == 1 ? "RDM" : "DMX", dmx_data_since());
+	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+	printf("%d, Checksum [%.2x:%.2x]: %.2x, sub_code %.2x\n", rdm_available, checksum_h, checksum_l, rdm_checksum, p->sub_start_code);
 	uint16_t i = 0;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < p->message_length; i++)
 	{
-		printf("%.2d-%.4d:%.2x\n", i, rdm_data[i], rdm_data[i]);
+		printf("%.2d-%.4d:%.2x ", i, rdm_data[i], rdm_data[i]);
 	}
+	printf("\n");
 
 }
 
@@ -252,6 +272,8 @@ static inline void events_check() {
 }
 
 int notmain(unsigned int earlypc) {
+
+	sys_time_init();
 
 	int i;
 

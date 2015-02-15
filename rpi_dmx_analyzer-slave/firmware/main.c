@@ -105,20 +105,16 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	__disable_irq();
 	__disable_fiq();
 
-	led_init();
+	led_init();				// ACT led Model A/B
 	led_set(1);
 
-	// Read RTC
-	sys_time_init();
-
-	// Framebuffer
-	fb_init();
+	sys_time_init();		// Read RTC
+	fb_init();				// Framebuffer
 
 	printf("DMX512 Receiver\n");
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 
-	// User Interface
-	ui_start(0x00);
+	ui_start(0x00);			// User Interface
 	ui_reinit();
 	ui_text_line_1("DMX512 Receiver", 15);
 	ui_text_line_2("Booting........", 15);
@@ -126,12 +122,10 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	dmx_devices_read_config();
 	dmx_devices_init();
 
-	// Led blink 1Hz
-	irq_init();
+	irq_init();				// Led blink 1Hz
 	__enable_irq();
 
-	// PL011 UART
-	pl011_dmx512_init();
+	pl011_dmx512_init();	// PL011 UART
 	fiq_init();
 	__enable_fiq();
 

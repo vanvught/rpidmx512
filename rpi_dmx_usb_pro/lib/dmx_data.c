@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
@@ -35,15 +37,16 @@ typedef enum {
   IDLE,		///<
   BREAK,	///<
   MAB,		///<
-  DATA		///<
+  DMXDATA,	///<
+  RDMDATA	///<
 } _dmx_state;
 
-static uint8_t dmx_receive_state = IDLE;		///< Current state of the DMX transmission
+static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
 static uint16_t dmx_receive_data_index = 0;		///<
-static uint8_t dmx_send_state = IDLE;			///<
+static uint8_t dmx_send_state = IDLE;			///< Current state of DMX send
 
-uint8_t dmx_data[512];			///<
-uint8_t dmx_data_refreshed;		///<
+uint8_t dmx_data[512];							///<
+uint8_t dmx_data_refreshed;						///<
 
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
 
@@ -58,25 +61,21 @@ static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
 /**
  * @ingroup dmx
  *
+ * Configure PL011 for DMX512 transmission. Enable the UART.
+ *
  */
 static void pl011_dmx512_init(void) {
-	// Set UART clock rate to 4000000 (4MHz)
-	bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);
-	//
+	bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);	// Set UART clock rate to 4000000 (4MHz)
 	BCM2835_PL011->CR	= 0;										// Disable everything
-	//
     uint32_t value = BCM2835_GPIO->GPFSEL1;
     value &= ~(7 << 12);
     value |= BCM2835_GPIO_FSEL_ALT0 << 12;							// Pin 14 PL011_TXD
     value &= ~(7 << 15);
     value |= BCM2835_GPIO_FSEL_ALT0 << 15;							// Pin 15 PL011_RXD
     BCM2835_GPIO->GPFSEL1 = value;
-	//
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);	// Disable pull-up/down
-	//
 	while (BCM2835_PL011 ->FR & PL011_FR_BUSY ) {}					// Poll the "flags register" to wait for the UART to stop transmitting or receiving
-	//
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;							// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
 	BCM2835_PL011->ICR 	= 0x7FF;									// Clear all interrupt status
 	BCM2835_PL011->IBRD = 1;										// UART Clock
@@ -88,8 +87,10 @@ static void pl011_dmx512_init(void) {
 /**
  * @ingroup dmx
  *
+ * Interrupt enable routine for PL011 receiving DMX data.
+ *
  */
-static void fiq_init(void) {
+static void dmx_receive_fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
@@ -97,6 +98,8 @@ static void fiq_init(void) {
 /**
  * @ingroup dmx
  *
+ * Interrupt handler for continues receiving DMX data.
+ * \sa dmx_receive_fiq_init
  */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
@@ -111,13 +114,13 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 		dmx_receive_state = BREAK;
 	}  else if (dmx_receive_state == BREAK) {
-		if ((BCM2835_PL011 ->DR & 0xFF) == 0x00) {		// "Start Code"
+		if ((BCM2835_PL011 ->DR & 0xFF) == 0x00) {		// DMX "Start Code"
 #ifdef DEBUG_ANALYZER
 			bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
 			bcm2835_gpio_set(ANALYZER_CH3);	// DATA
 			bcm2835_gpio_clr(ANALYZER_CH4);	// IDLE
 #endif
-			dmx_receive_state = DATA;
+			dmx_receive_state = DMXDATA;
 			dmx_receive_data_index = 0;
 		} else {							// Ignore all other; Text (0x17), System Information (0xCF), RDM (0xCC), etc.
 #ifdef DEBUG_ANALYZER
@@ -127,7 +130,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 			dmx_receive_state = IDLE;
 		}
-	} else if (dmx_receive_state == DATA) {
+	} else if (dmx_receive_state == DMXDATA) {
 		dmx_data[dmx_receive_data_index] = (BCM2835_PL011 ->DR & 0xFF);
 		dmx_receive_data_index++;
 		dmx_data_refreshed = 0xFF;			// Set all bits
@@ -150,7 +153,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
  * @ingroup dmx
  *
  */
-static void irq_init(void)
+static void dmx_send_irq_init(void)
 {
 	BCM2835_ST->C1 = BCM2835_ST->CLO + 4;			// 4us
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
@@ -159,6 +162,9 @@ static void irq_init(void)
 
 /**
  * @ingroup dmx
+ *
+ * Interrupt handler for continues sending DMX data.
+ * \ref dmx_data
  *
  */
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
@@ -192,7 +198,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 #endif
 		break;
 	case MAB:
-		dmx_send_state = DATA;
+		dmx_send_state = DMXDATA;
 #ifdef DEBUG_ANALYZER
 		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 		bcm2835_gpio_set(ANALYZER_CH3);	// DATA
@@ -203,7 +209,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 			if ((BCM2835_PL011->FR & 0x20) == 0)
 				break;
 		}
-		BCM2835_PL011->DR = 0;
+		BCM2835_PL011->DR = 0x00;		// DMX "Start Code"
 		int i = 0;
 		for (i = 0; i < 512; i++)
 		{
@@ -240,17 +246,19 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 /**
  * @ingroup dmx
  *
+ * The DMX port direction is set based on \ref dmx_port_direction (\ref DMX_PORT_DIRECTION_OUTP or \ref DMX_PORT_DIRECTION_INP).
+ *
  */
 void dmx_data_start(void)
 {
 	switch (dmx_port_direction)
 	{
 	case DMX_PORT_DIRECTION_OUTP:
-		irq_init();
+		dmx_send_irq_init();
 		__enable_irq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		fiq_init();
+		dmx_receive_fiq_init();
 		__enable_fiq();
 		break;
 	default:
@@ -260,6 +268,8 @@ void dmx_data_start(void)
 
 /**
  * @ingroup dmx
+ *
+ * Disable all DMX transmission (both continues send and receive).
  *
  */
 void dmx_data_stop(void)
@@ -314,33 +324,6 @@ uint8_t dmx_port_direction_get(void)
 	return dmx_port_direction;
 }
 
-
-/**
- * @ingroup dmx
- *
- */
-void dmx_init(void)
-{
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-
-	bcm2835_gpio_clr(ANALYZER_CH1);
-	bcm2835_gpio_clr(ANALYZER_CH2);
-	bcm2835_gpio_clr(ANALYZER_CH3);
-	bcm2835_gpio_set(ANALYZER_CH4);
-#endif
-	int i = 0;
-	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
-		dmx_data[i] = 0;
-
-	pl011_dmx512_init();
-	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
-}
-
 /**
  * @ingroup dmx
  *
@@ -371,7 +354,7 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 	bcm2835_gpio_set(ANALYZER_CH3);	// DATA
 	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
 #endif
-	uint16_t i =0;
+	uint16_t i = 0;
 	for (i = 0; i < data_length; i++)
 	{
 		while (1)
@@ -382,9 +365,41 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 		BCM2835_PL011->DR = data[i];
 	}
 #ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
+	bcm2835_gpio_set(ANALYZER_CH1); // IDLE
 	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
 	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
 	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
 #endif
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	udelay(44);
+}
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_init(void)
+{
+#ifdef DEBUG_ANALYZER
+	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
+
+	bcm2835_gpio_clr(ANALYZER_CH1);
+	bcm2835_gpio_clr(ANALYZER_CH2);
+	bcm2835_gpio_clr(ANALYZER_CH3);
+	bcm2835_gpio_clr(ANALYZER_CH4);
+#endif
+	int i = 0;
+	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
+		dmx_data[i] = 0;
+
+	pl011_dmx512_init();
+	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }

@@ -3,6 +3,7 @@
 	<name>pl011_dmx512_fiq</name>
 	<comment></comment>
 	<projects>
+		<project>bob-baremetal</project>
 		<project>fb</project>
 	</projects>
 	<buildSpec>

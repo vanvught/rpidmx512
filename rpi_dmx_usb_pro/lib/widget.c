@@ -226,10 +226,11 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	printf("RDM Packet length : %d\n", data_length);
 #if 1
 	uint16_t i = 0;
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < data_length; i++)
 	{
-		printf("%.2d-%.4d:%.2x\n", i,widget_data[i], widget_data[i]);
+		printf("%.2d-%.4d:%.2x ", i,widget_data[i], widget_data[i]);
 	}
+	printf("\n");
 #endif
 
 }
