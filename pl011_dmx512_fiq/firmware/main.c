@@ -44,9 +44,6 @@ typedef enum {
   IDLE, BREAK, DMXDATA, RDMDATA, CHECKSUMH, CHECKSUML
 } _dmx_receive_state;
 
-static uint8_t checksum_h = 0;
-static uint8_t checksum_l = 0;
-
 /**
  * The size of a UID.
  */
@@ -74,12 +71,11 @@ struct _rdm_command
 static uint8_t dmx_data[512];
 static uint8_t dmx_receive_state = IDLE;
 static uint16_t dmx_data_index = 0;
-static uint64_t dmx_data_last_packet = 0;
 
 static uint8_t rdm_data[60];
 static uint16_t rdm_checksum = 0;
 static uint8_t rdm_available = 0;
-static uint32_t rdm_receive_end = 0;
+//static uint32_t rdm_receive_end = 0;
 
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
 #define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
@@ -110,7 +106,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 			dmx_receive_state = DMXDATA;
 			dmx_data_index = 0;
-			dmx_data_last_packet = bcm2835_st_read();
 		}
 		else if (data == 0xCC)	// RDM start code
 		{
@@ -170,21 +165,17 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
 		rdm_checksum -= data << 8;
-		checksum_h = data;
 		dmx_receive_state = CHECKSUML;
 	}
 	else if (dmx_receive_state == CHECKSUML)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
 		rdm_checksum -= data;
-		checksum_l = data;
 
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
 		{
 			rdm_available = 1;
-			dmx_data_last_packet = bcm2835_st_read();
-			rdm_receive_end = BCM2835_ST->CLO;
 		}
 
 		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
@@ -195,11 +186,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	}
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
-}
-
-uint16_t dmx_data_since(void)
-{
-	return ((uint16_t)((bcm2835_st_read() - dmx_data_last_packet) / 1E3));
 }
 
 void task_fb(void) {
@@ -223,16 +209,12 @@ void task_fb(void) {
 			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
 			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 			dmx_data[31]);
-	printf("%s : Data since [%.6d]\n", rdm_available == 1 ? "RDM" : "DMX", dmx_data_since());
-	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-	printf("%d, Checksum [%.2x:%.2x]: %.2x, sub_code %.2x\n", rdm_available, checksum_h, checksum_l, rdm_checksum, p->sub_start_code);
+	printf("RDM data[0..15]:\n");
 	uint16_t i = 0;
-	for (i = 0; i < p->message_length; i++)
+	for (i = 0; i < 16; i++)
 	{
-		printf("%.2d-%.4d:%.2x ", i, rdm_data[i], rdm_data[i]);
+		printf("%.2d-%.4d:%.2x\n", i, rdm_data[i], rdm_data[i]);
 	}
-	printf("\n");
-
 }
 
 void task_led(void) {
@@ -272,25 +254,23 @@ static inline void events_check() {
 }
 
 int notmain(unsigned int earlypc) {
+	__disable_fiq();
 
 	sys_time_init();
 
-	int i;
+	fb_init();
 
+	led_init();
+	led_set(1);
+
+	int i;
 	for (i = 0; i < sizeof(dmx_data); i++)
 	{
 		dmx_data[i] = 0;
 	}
 
-	__disable_fiq();
-
-	fb_init();
-
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 	printf("DMX512 Receiver, data analyzer for the first 32 channels\n");
-
-	led_init();
-	led_set(1);
 
 	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
@@ -303,7 +283,6 @@ int notmain(unsigned int earlypc) {
 	bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 
 	bcm2835_pl011_dmx512_begin();
-
 	fiq_init();
 	__enable_fiq();
 
