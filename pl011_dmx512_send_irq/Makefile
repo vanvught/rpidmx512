@@ -12,7 +12,7 @@ COPS += -I"./firmware/include"
 COPS += -I"../fb" -I"../fb/include"
 COPS += -I"../bob-baremetal/include"
 
-LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.7.3 
+LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 LIB += -L"../fb/lib"
 LIB += -L"../bob-baremetal/lib"
 #LIB += -L"../emmc/lib"
