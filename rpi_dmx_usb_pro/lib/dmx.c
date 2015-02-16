@@ -25,38 +25,62 @@
 
 #include <stdint.h>
 
+#include "dmx.h"
+#include "rdm.h"
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
 #include "hardware.h"
-#include "dmx_data.h"
+
+// TODO move for util.h
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
 
 ///< State of receiving DMX Bytes
 typedef enum {
-  IDLE,		///<
-  BREAK,	///<
-  MAB,		///<
-  DMXDATA,	///<
-  RDMDATA	///<
+  IDLE,			///<
+  BREAK,		///<
+  MAB,			///<
+  DMXDATA,		///<
+  RDMDATA,		///<
+  CHECKSUMH,	///<
+  CHECKSUML		///<
 } _dmx_state;
 
+uint8_t dmx_data[512];							///<
 static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
-static uint16_t dmx_receive_data_index = 0;		///<
+static uint16_t dmx_data_index = 0;				///<
 static uint8_t dmx_send_state = IDLE;			///< Current state of DMX send
 
-uint8_t dmx_data[512];							///<
-uint8_t dmx_data_refreshed;						///<
+uint8_t rdm_data[60];
+static uint16_t rdm_checksum = 0;
+static uint64_t rdm_data_receive_end = 0;
+static uint8_t rdm_available = FALSE;
 
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
 
-#ifdef DEBUG_ANALYZER
-#define ANALYZER_CH1	RPI_V2_GPIO_P1_23	// CLK
-#define ANALYZER_CH2	RPI_V2_GPIO_P1_21	// MISO
-#define ANALYZER_CH3	RPI_V2_GPIO_P1_19	// MOSI
-#define ANALYZER_CH4	RPI_V2_GPIO_P1_24	// CE0
-#endif
+/**
+ * @ingroup rdm
+ *
+ * @return
+ */
+uint8_t rdm_available_get(void)
+{
+	return rdm_available;
+}
 
+/**
+ * @ingroup rdm
+ *
+ * @param is_available
+ */
+void rdm_available_set(uint8_t is_available)
+{
+	rdm_available = is_available;
+}
 
 /**
  * @ingroup dmx
@@ -103,49 +127,75 @@ static void dmx_receive_fiq_init(void) {
  */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_set(ANALYZER_CH1);
-#endif
+
 	if (BCM2835_PL011 ->DR & PL011_DR_BE ) {
-#ifdef DEBUG_ANALYZER
-		bcm2835_gpio_set(ANALYZER_CH2);		// BREAK
-		bcm2835_gpio_clr(ANALYZER_CH3);		// DATA
-		bcm2835_gpio_clr(ANALYZER_CH4);		// IDLE
-#endif
 		dmx_receive_state = BREAK;
 	}  else if (dmx_receive_state == BREAK) {
-		if ((BCM2835_PL011 ->DR & 0xFF) == 0x00) {		// DMX "Start Code"
-#ifdef DEBUG_ANALYZER
-			bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
-			bcm2835_gpio_set(ANALYZER_CH3);	// DATA
-			bcm2835_gpio_clr(ANALYZER_CH4);	// IDLE
-#endif
+		uint8_t data = BCM2835_PL011->DR & 0xFF;
+		if (data == 0x00)			// DMX data start code
+		{
 			dmx_receive_state = DMXDATA;
-			dmx_receive_data_index = 0;
-		} else {							// Ignore all other; Text (0x17), System Information (0xCF), RDM (0xCC), etc.
-#ifdef DEBUG_ANALYZER
-			bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
-			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-			bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
-#endif
-			dmx_receive_state = IDLE;
+			dmx_data_index = 0;
 		}
-	} else if (dmx_receive_state == DMXDATA) {
-		dmx_data[dmx_receive_data_index] = (BCM2835_PL011 ->DR & 0xFF);
-		dmx_receive_data_index++;
-		dmx_data_refreshed = 0xFF;			// Set all bits
-		if (dmx_receive_data_index >= 512){
-#ifdef DEBUG_ANALYZER
-			bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
-			bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-			bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
-#endif
+		else if (data == 0xCC)	// RDM start code
+		{
+			dmx_receive_state = RDMDATA;
+			dmx_data_index = 0;
+			rdm_data[dmx_data_index++] = 0xCC;
+			rdm_checksum =  0xCC;
+		}
+		else
+		{
 			dmx_receive_state = IDLE;
 		}
 	}
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1);
-#endif
+	else if (dmx_receive_state == DMXDATA)
+	{
+		dmx_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		if (dmx_data_index >= 512)
+		{
+			dmx_receive_state = IDLE;
+		}
+	}
+	else if (dmx_receive_state == RDMDATA)
+	{
+		if (dmx_data_index > (sizeof(rdm_data) / sizeof(uint8_t)))
+		{
+			dmx_receive_state = IDLE;
+		} else
+		{
+			uint8_t data = (BCM2835_PL011->DR & 0xFF);
+			rdm_data[dmx_data_index++] =  data;
+			rdm_checksum += data;
+
+			struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
+			if (dmx_data_index == p->message_length)
+			{
+				dmx_receive_state =	CHECKSUMH;
+			}
+		}
+	}
+	else if (dmx_receive_state == CHECKSUMH)
+	{
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_checksum -= data << 8;
+		dmx_receive_state = CHECKSUML;
+	}
+	else if (dmx_receive_state == CHECKSUML)
+	{
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_checksum -= data;
+
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
+		{
+			rdm_available = TRUE;
+			rdm_data_receive_end = bcm2835_st_read();
+		}
+
+		dmx_receive_state = IDLE;
+	}
+
 	dmb();
 }
 
@@ -163,7 +213,7 @@ static void dmx_send_irq_init(void)
 /**
  * @ingroup dmx
  *
- * Interrupt handler for continues sending DMX data.
+ * Interrupt handler for continues sending DMX data Channels only!.
  * \ref dmx_data
  *
  */
@@ -171,9 +221,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 {
 	dmb();
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_set(ANALYZER_CH1);
-#endif
 
 	switch (dmx_send_state)
 	{
@@ -181,29 +228,14 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 		dmx_send_state = BREAK;
 		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
 		BCM2835_ST->C1 = BCM2835_ST->CLO + 88;
-#ifdef DEBUG_ANALYZER
-		bcm2835_gpio_set(ANALYZER_CH2); // BREAK
-		bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-		bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 		break;
 	case BREAK:
 		dmx_send_state = MAB;
 		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 		BCM2835_ST->C1 = BCM2835_ST->CLO + 8;
-#ifdef DEBUG_ANALYZER
-		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-		bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-		bcm2835_gpio_set(ANALYZER_CH4); // MAB
-#endif
 		break;
 	case MAB:
 		dmx_send_state = DMXDATA;
-#ifdef DEBUG_ANALYZER
-		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-		bcm2835_gpio_set(ANALYZER_CH3);	// DATA
-		bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 		while (1)
 		{
 			if ((BCM2835_PL011->FR & 0x20) == 0)
@@ -227,19 +259,11 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 		}
 		BCM2835_ST->C1 = BCM2835_ST->CLO + 100;
 		dmx_send_state = IDLE;
-#ifdef DEBUG_ANALYZER
-		bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-		bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-		bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 		break;
 	default:
 		BCM2835_ST->C1 = BCM2835_ST->CLO + 44;
 		break;
 	}
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1);
-#endif
 	dmb();
 }
 
@@ -333,27 +357,9 @@ uint8_t dmx_port_direction_get(void)
 void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
-	bcm2835_gpio_set(ANALYZER_CH2); // BREAK
-	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 	udelay(88);						// Break Time
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
-	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-	bcm2835_gpio_set(ANALYZER_CH4); // MAB
-#endif
 	udelay(8);						// Mark After Break
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_clr(ANALYZER_CH1); // IDLE
-	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-	bcm2835_gpio_set(ANALYZER_CH3);	// DATA
-	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 	uint16_t i = 0;
 	for (i = 0; i < data_length; i++)
 	{
@@ -364,12 +370,6 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 		}
 		BCM2835_PL011->DR = data[i];
 	}
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_set(ANALYZER_CH1); // IDLE
-	bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
-	bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
-	bcm2835_gpio_clr(ANALYZER_CH4); // MAB
-#endif
 	while (1)
 	{
 		if ((BCM2835_PL011->FR & 0x20) == 0)
@@ -384,17 +384,6 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
  */
 void dmx_init(void)
 {
-#ifdef DEBUG_ANALYZER
-	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-
-	bcm2835_gpio_clr(ANALYZER_CH1);
-	bcm2835_gpio_clr(ANALYZER_CH2);
-	bcm2835_gpio_clr(ANALYZER_CH3);
-	bcm2835_gpio_clr(ANALYZER_CH4);
-#endif
 	int i = 0;
 	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
 		dmx_data[i] = 0;

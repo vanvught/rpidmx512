@@ -27,16 +27,17 @@
 #include <ctype.h>
 #include <stdint.h>
 
+#include "dmx.h"
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "sys_time.h"
-#include "ft245rl.h" // TODO
-#include "dmx_data.h"
+#include "ft245rl.h" // TODO Replace with generic usb.h
 
 extern void fb_init(void);
 
 // poll table
+extern void received_rdm_packet(void);
 extern void receive_data_from_host(void);
 // events table
 extern void received_dmx_packet(void);
@@ -53,6 +54,7 @@ struct _poll
 {
 	void (*f)(void);
 } const poll_table[] = {
+		{ received_rdm_packet },
 		{ receive_data_from_host } };
 
 struct _event
@@ -95,7 +97,7 @@ static inline void events_check() {
 
 int notmain(void)
 {
-	FT245RL_init();  // TODO
+	FT245RL_init();  // TODO Replace with generic usb_init
 
 	dmx_init();
 	

@@ -1,5 +1,5 @@
 /**
- * @file rdm_data.h
+ * @file rdm.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_DATA_H_
-#define RDM_DATA_H_
+#ifndef RDM_H_
+#define RDM_H_
+
+#include <stdint.h>
 
 /**
  * The size of a UID.
@@ -36,6 +38,7 @@ enum
 
 struct _rdm_command
 {
+	uint8_t start_code;
 	uint8_t sub_start_code;
 	uint8_t message_length;
 	uint8_t destination_uid[UID_SIZE];
@@ -43,10 +46,12 @@ struct _rdm_command
 	uint8_t transaction_number;
 	uint8_t port_id;
 	uint8_t message_count;
-	uint8_t sub_device[2];
+	uint16_t sub_device;
 	uint8_t command_class;
-	uint8_t param_id[2];
+	uint16_t param_id;
 	uint8_t param_data_length;
+	uint8_t param_data[60-24];
 } ;
 
-#endif /* RDM_DATA_H_ */
+
+#endif /* RDM_H_ */

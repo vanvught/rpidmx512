@@ -24,8 +24,9 @@
  */
 
 #include <stdio.h>
+
+#include "dmx.h"
 #include "sys_time.h"
-#include "dmx_data.h"
 #include "console.h"
 
 extern uint8_t dmx_data[512];

@@ -29,12 +29,19 @@
 #include <stdio.h>
 
 #include "widget.h"
-#include "dmx_data.h"
+#include "dmx.h"
+#include "rdm.h"
 #include "ft245rl.h"
-
 #include "console.h"
 
+// TODO move for util.h
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
+
 extern uint8_t dmx_data[512];
+extern uint8_t rdm_data[60];
 
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
@@ -223,10 +230,11 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	dmx_data_send(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 
+	console_set_cursor(0,6);
 	printf("RDM Packet length : %d\n", data_length);
 #if 1
 	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
+	for (i = 0; i < 15; i++)
 	{
 		printf("%.2d-%.4d:%.2x ", i,widget_data[i], widget_data[i]);
 	}
@@ -300,9 +308,32 @@ void received_dmx_change_of_state_packet(void)
 {
 	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
-
+	// TODO
 	console_set_cursor(0,6);
 	printf("Send changed DMX data to PC\n");
+}
+
+/**
+ * @ingroup widget
+ *
+ */
+void received_rdm_packet(void)
+{
+	if (rdm_available_get() == FALSE)
+		return;
+
+	rdm_available_set(FALSE);
+
+	struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
+	uint8_t message_length = p->message_length;
+
+	console_set_cursor(0,6);
+	printf("Send RDM data to PC, package length : %d\n", message_length);
+
+	send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+	FT245RL_write_data(0); 	// RDM Receive status
+	send_data(rdm_data, message_length);
+	send_footer();
 }
 
 /**
