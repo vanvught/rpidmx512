@@ -28,10 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef __builtin_bswap16
-#define __builtin_bswap16(x) (((x << 8) & 0xff00) | ((x >> 8) & 0x00ff))
-#endif
-
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_led.h"
@@ -117,6 +113,7 @@ static void fiq_init(void) {
 }
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
+	dmb();
 	bcm2835_gpio_set(ANALYZER_CH1);
 
 	if (BCM2835_PL011 ->DR & PL011_DR_BE ) {
@@ -216,6 +213,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	}
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
+	dmb();
 }
 
 void task_fb(void) {
@@ -225,25 +223,29 @@ void task_fb(void) {
 	ltime = sys_time(NULL);
     local_time = localtime(&ltime);
 
-	console_set_cursor(0,3);
+	console_set_cursor(0,2);
 
 	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
+
+	printf("%s\n", dmx_port_direction == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
 			dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
 			dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9], dmx_data[10],
 			dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14],
 			dmx_data[15]);
+
 	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[16],
 			dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20], dmx_data[21],
 			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
 			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 			dmx_data[31]);
-	printf("RDM data[0..15]:\n");
+
+	printf("RDM data[1..28]:\n");
 	uint16_t i = 0;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 14; i++)
 	{
-		printf("%.2d-%.4d:%.2x\n", i, rdm_data[i], rdm_data[i]);
+		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i+1, rdm_data[i], rdm_data[i], i+15, rdm_data[i+14], rdm_data[i+14]);
 	}
 }
 
@@ -358,6 +360,8 @@ static void rdm_respond_message(uint8_t rdm_packet_is_handled)
 {
 	uint16_t rdm_checksum = 0;
 
+	printf("rdm_respond_message\n");
+
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
 
 	if(rdm_packet_is_handled == TRUE)
@@ -382,6 +386,9 @@ static void rdm_respond_message(uint8_t rdm_packet_is_handled)
 		rdm_checksum += rdm_data[i];
 	}
 
+	rdm_data[i++] = rdm_checksum >> 8;
+	rdm_data[i] = rdm_checksum & 0XFF;;
+
 	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end;
 
 	if (delay < 180)
@@ -391,7 +398,7 @@ static void rdm_respond_message(uint8_t rdm_packet_is_handled)
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 
-	dmx_data_send(rdm_data, rdm_response->message_length);
+	dmx_data_send(rdm_data, rdm_response->message_length + 2);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
@@ -402,6 +409,8 @@ static void handle_rdm_data(void)
 		return;
 
 	rdm_available = FALSE;
+
+	printf("handle_rdm_data\n");
 
 	uint8_t rdm_packet_is_for_me = FALSE;
 	uint8_t rdm_packet_is_for_all = FALSE;
@@ -427,7 +436,7 @@ static void handle_rdm_data(void)
 	}
 	else if (command_class == E120_DISCOVERY_COMMAND)
 	{
-		if (param_id == __builtin_bswap16(E120_DISC_UNIQUE_BRANCH))
+		if (param_id == E120_DISC_UNIQUE_BRANCH)
 		{
 			if (rdm_is_mute == FALSE)
 			{
@@ -437,12 +446,12 @@ static void handle_rdm_data(void)
 
 				}
 			}
-		} else if (param_id == __builtin_bswap16(E120_DISC_UN_MUTE))
+		} else if (param_id == E120_DISC_UN_MUTE)
 		{
 			rdm_is_mute = FALSE;
 			rdm_packet_is_handled = TRUE;
 			rdm_respond_message(TRUE);
-		} else if (param_id == __builtin_bswap16(E120_DISC_MUTE))
+		} else if (param_id == E120_DISC_MUTE)
 		{
 			rdm_is_mute = TRUE;
 			rdm_packet_is_handled = TRUE;
@@ -514,7 +523,7 @@ int notmain(unsigned int earlypc) {
 	}
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("RDM Responder, DMX512 data analyzer for the first 32 channels\n");
+	printf("RDM Responder, DMX512 data analyzer for the channels 1-32\n");
 
 	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
