@@ -178,12 +178,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	else if (dmx_receive_state == CHECKSUMH)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_data[dmx_data_index++] =  data;
 		rdm_checksum -= data << 8;
 		dmx_receive_state = CHECKSUML;
 	}
 	else if (dmx_receive_state == CHECKSUML)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		rdm_data[dmx_data_index++] =  data;
 		rdm_checksum -= data;
 
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
@@ -390,5 +392,5 @@ void dmx_init(void)
 
 	pl011_dmx512_init();
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 0);
 }

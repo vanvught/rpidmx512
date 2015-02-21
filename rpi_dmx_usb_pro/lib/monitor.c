@@ -45,6 +45,7 @@ void monitor_update(void)
 
 	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
 
+	console_clear_line(2);
 	widget_print_parms();
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],

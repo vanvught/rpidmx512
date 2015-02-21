@@ -27,10 +27,12 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "widget.h"
 #include "dmx.h"
 #include "rdm.h"
+#include "rdm_e120.h"
 #include "ft245rl.h"
 #include "console.h"
 
@@ -61,12 +63,14 @@ struct _DMXUSBPRO_sn
 	uint8_t bcd_1;
 	uint8_t bcd_2;
 	uint8_t bcd_3;
-} static const DMXUSBPRO_SN = { DEC2BCD(0), DEC2BCD(0), DEC2BCD(0), DEC2BCD(0) };
+} static const DMXUSBPRO_SN = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
 
-static const uint8_t DEVICE_MANUFACTURER_ID[] = {0x00, 0x00};
-static const uint8_t DEVICE_MANUFACTURER_NAME[] = "Arjan van Vught";
-static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX/RDM Controller";
+static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
+static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
+static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_ID[] = {1, 0};
+
+static uint8_t dmx_port_direction_before_rdm = DMX_PORT_DIRECTION_OUTP;
 
 /**
  *
@@ -190,7 +194,6 @@ static void widget_set_params()
 	DMXUSBPRO_params.break_time = widget_data[2];
 	DMXUSBPRO_params.mab_time = widget_data[3];
 	DMXUSBPRO_params.refresh_rate = widget_data[4];
-	widget_print_parms();
 }
 
 /**
@@ -226,21 +229,27 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
  */
 static void widget_send_rdm_packet_request(const uint16_t data_length)
 {
+	console_clear_line(23);
+	printf("widget_send_rdm_packet_request\n");
+
+	dmx_port_direction_before_rdm = dmx_port_direction_get();
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 0);
 	dmx_data_send(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 
-	console_set_cursor(0,6);
+	console_clear_line(7);
 	printf("RDM Packet length : %d\n", data_length);
 #if 1
+	printf("RDM data[1..28]:\n");
 	uint16_t i = 0;
-	for (i = 0; i < 15; i++)
+	for (i = 0; i < 14; i++)
 	{
-		printf("%.2d-%.4d:%.2x ", i,widget_data[i], widget_data[i]);
+		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i + 1, widget_data[i],
+				widget_data[i], i + 15, widget_data[i + 14],
+				widget_data[i + 14]);
 	}
-	printf("\n");
 #endif
-
 }
 
 /**
@@ -251,6 +260,8 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
  */
 static void send_rdm_discovery_request(void)
 {
+	console_clear_line(21);
+	printf("send_rdm_discovery_request\n");
 	// TODO
 }
 
@@ -287,7 +298,7 @@ void received_dmx_packet(void)
 	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
-	console_set_cursor(0,6);
+	console_clear_line(7);
 	printf("Send DMX data to PC\n");
 
 	send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
@@ -309,7 +320,7 @@ void received_dmx_change_of_state_packet(void)
 	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 	// TODO
-	console_set_cursor(0,6);
+	console_clear_line(7);
 	printf("Send changed DMX data to PC\n");
 }
 
@@ -327,13 +338,22 @@ void received_rdm_packet(void)
 	struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
 	uint8_t message_length = p->message_length;
 
-	console_set_cursor(0,6);
+	console_clear_line(7);
 	printf("Send RDM data to PC, package length : %d\n", message_length);
 
 	send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 	FT245RL_write_data(0); 	// RDM Receive status
 	send_data(rdm_data, message_length);
 	send_footer();
+
+	printf("RDM data[1..28]:\n");
+	uint16_t i = 0;
+	for (i = 0; i < 14; i++)
+	{
+		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i+1, rdm_data[i], rdm_data[i], i+15, rdm_data[i+14], rdm_data[i+14]);
+	}
+
+	dmx_port_direction_set(dmx_port_direction_before_rdm, 1);
 }
 
 /**
@@ -370,10 +390,10 @@ void receive_data_from_host(void)
 				widget_data[i] = read_data();
 			}
 
-			while (AMF_END_CODE != read_data());
+			while ((AMF_END_CODE != read_data()) && (i++ < sizeof(widget_data)));
 
-			console_set_cursor(0,5);
-			printf("\nL:%d:%d\n", label, data_length);
+			console_clear_line(6);
+			printf("L:%d:%d(%d)\n", label, data_length, i);
 
 			switch (label)
 			{
@@ -400,6 +420,9 @@ void receive_data_from_host(void)
 				break;
 			case SEND_RDM_PACKET_REQUEST:
 				widget_send_rdm_packet_request(data_length);
+				break;
+			case SEND_RDM_DISCOVERY_REQUEST:
+				send_rdm_discovery_request();
 				break;
 			default:
 				break;
