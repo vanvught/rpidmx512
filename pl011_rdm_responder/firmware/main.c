@@ -63,20 +63,27 @@ enum
 
 struct _rdm_command
 {
-	uint8_t start_code;
-	uint8_t sub_start_code;
-	uint8_t message_length;
-	uint8_t destination_uid[UID_SIZE];
-	uint8_t source_uid[UID_SIZE];
-	uint8_t transaction_number;
-	uint8_t port_id;
-	uint8_t message_count;
-	uint16_t sub_device;
-	uint8_t command_class;
-	uint16_t param_id;
-	uint8_t param_data_length;
+	uint8_t start_code;						///< 1
+	uint8_t sub_start_code;					///< 2
+	uint8_t message_length;					///< 3
+	uint8_t destination_uid[UID_SIZE];		///< 4,5,6,7,8,9
+	uint8_t source_uid[UID_SIZE];			///< 10,11,12,13,14,15
+	uint8_t transaction_number;				///< 16
+	uint8_t port_id;						///< 17
+	uint8_t message_count;					///< 18
+	uint16_t sub_device;					///< 19, 20
+	uint8_t command_class;					///< 21
+	uint16_t param_id;						///< 22, 23
+	uint8_t param_data_length;				///< 24
 	uint8_t param_data[60-24];
 } ;
+
+struct _rdm_discovery_msg {
+	uint8_t header_FE[7];
+	uint8_t header_AA;
+	uint8_t masked_device_id[12];
+	uint8_t checksum[4];
+};
 
 typedef enum
 {
@@ -100,7 +107,7 @@ static uint8_t rdm_is_mute = FALSE;
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
 static const uint8_t UID_ALL[UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 // RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t UID_DEVICE[UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
+static const uint8_t UID_DEVICE[UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x01 };
 
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
 #define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
@@ -214,39 +221,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
 	dmb();
-}
-
-void task_fb(void) {
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
-
-	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
-
-	console_set_cursor(0,2);
-
-	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
-
-	printf("%s\n", dmx_port_direction == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
-
-	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
-			dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
-			dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9], dmx_data[10],
-			dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14],
-			dmx_data[15]);
-
-	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[16],
-			dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20], dmx_data[21],
-			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
-			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
-			dmx_data[31]);
-
-	printf("RDM data[1..28]:\n");
-	uint16_t i = 0;
-	for (i = 0; i < 14; i++)
-	{
-		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i+1, rdm_data[i], rdm_data[i], i+15, rdm_data[i+14], rdm_data[i+14]);
-	}
 }
 
 static void dmx_data_start(void)
@@ -410,8 +384,6 @@ static void handle_rdm_data(void)
 
 	rdm_available = FALSE;
 
-	printf("handle_rdm_data\n");
-
 	uint8_t rdm_packet_is_for_me = FALSE;
 	uint8_t rdm_packet_is_for_all = FALSE;
 	uint8_t rdm_packet_is_handled = FALSE;
@@ -420,6 +392,9 @@ static void handle_rdm_data(void)
 
 	uint8_t command_class = rdm_cmd->command_class;
 	uint16_t param_id = rdm_cmd->param_id;
+
+	console_set_cursor(0, 23);
+	printf("handle_rdm_data, param_id %d\n", param_id);
 
 	if (memcmp(rdm_cmd->destination_uid, UID_ALL, UID_SIZE) == 0)
 	{
@@ -443,6 +418,34 @@ static void handle_rdm_data(void)
 				if ((memcmp(rdm_cmd->param_data, UID_DEVICE, UID_SIZE) <= 0)
 						&& (memcmp(UID_DEVICE, rdm_cmd->param_data + 6,	UID_SIZE) <= 0))
 				{
+					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
+					uint16_t rdm_checksum = 6 * 0xFF;
+
+					uint8_t i = 0;
+					for (i = 0; i < 7; i++)
+					{
+						p->header_FE[i] = 0xFE;
+					}
+					p->header_AA = 0xAA;
+
+					for (i = 0; i < 6; i++)
+					{
+						p->masked_device_id[i + i] = UID_DEVICE[i] | 0xAA;
+						p->masked_device_id[i + i + 1] = UID_DEVICE[i] | 0x55;
+						rdm_checksum += UID_DEVICE[i];
+					}
+
+					p->checksum[0] = (rdm_checksum >> 8) | 0xAA;
+					p->checksum[1] = (rdm_checksum >> 8) | 0x55;
+					p->checksum[2] = (rdm_checksum & 0xFF) | 0xAA;
+					p->checksum[3] = (rdm_checksum & 0xFF) | 0x55;
+
+					//TODO for the time being we use dmx_data_send WITH a break. Need to fix the widget code fist.
+					dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+
+					dmx_data_send(rdm_data, sizeof(struct _rdm_discovery_msg));
+
+					dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
 				}
 			}
@@ -450,7 +453,7 @@ static void handle_rdm_data(void)
 		{
 			rdm_is_mute = FALSE;
 			rdm_packet_is_handled = TRUE;
-			rdm_respond_message(TRUE);
+			//rdm_respond_message(TRUE);
 		} else if (param_id == E120_DISC_MUTE)
 		{
 			rdm_is_mute = TRUE;
@@ -461,6 +464,39 @@ static void handle_rdm_data(void)
 	else if (rdm_packet_is_for_me == FALSE)
 	{
 		process_rdm_message(command_class, param_id, rdm_packet_is_handled);
+	}
+}
+
+void task_fb(void) {
+	time_t ltime = 0;
+	struct tm *local_time = NULL;
+
+	ltime = sys_time(NULL);
+    local_time = localtime(&ltime);
+
+	console_set_cursor(0,2);
+
+	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
+
+	printf("%s\n", dmx_port_direction == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+
+	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
+			dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
+			dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9], dmx_data[10],
+			dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14],
+			dmx_data[15]);
+
+	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[16],
+			dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20], dmx_data[21],
+			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
+			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
+			dmx_data[31]);
+
+	printf("RDM data[1..28]:\n");
+	uint16_t i = 0;
+	for (i = 0; i < 14; i++)
+	{
+		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i+1, rdm_data[i], rdm_data[i], i+15, rdm_data[i+14], rdm_data[i+14]);
 	}
 }
 
