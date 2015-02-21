@@ -34,6 +34,7 @@ extern void console_set_cursor(const int, const int);
 extern int console_draw_char(const char, const int, const int, const uint16_t, const uint16_t);
 extern void console_set_fg_color(const uint16_t);
 extern void console_set_bg_color(const uint16_t);
+extern void console_clear_line(const int);
 
 #define RGB(r, g, b) ((((r)>>3)<<11) | (((g)>>2)<<5) | ((b)>>3))
 

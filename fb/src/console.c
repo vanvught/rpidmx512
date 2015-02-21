@@ -192,3 +192,16 @@ void console_set_bg_color(const uint16_t back)
 {
 	cur_back = back;
 }
+
+
+void console_clear_line(const int y) {
+	if (y > HEIGHT / CHAR_H)
+		cur_y = 0;
+	else
+		cur_y = y;
+
+	cur_x = 0;
+
+	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (y * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
+	memset((uint16_t *)address, cur_back, CHAR_H * WIDTH * BYTES_PER_PIXEL);
+}
