@@ -90,7 +90,7 @@ static inline void events_check() {
 		if (st_read_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
+			//watchdog_feed();
 		}
 	}
 }
@@ -110,12 +110,12 @@ int notmain(void)
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 
-	watchdog_init();
+	//watchdog_init();
 
 	events_init();
 
 	while (1) {
-		watchdog_feed();
+		//watchdog_feed();
 
 		int i = 0;
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
