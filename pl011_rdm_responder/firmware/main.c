@@ -453,7 +453,7 @@ static void handle_rdm_data(void)
 		{
 			rdm_is_mute = FALSE;
 			rdm_packet_is_handled = TRUE;
-			//rdm_respond_message(TRUE);
+			rdm_respond_message(TRUE);
 		} else if (param_id == E120_DISC_MUTE)
 		{
 			rdm_is_mute = TRUE;
