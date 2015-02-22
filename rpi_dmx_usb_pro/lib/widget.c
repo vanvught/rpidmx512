@@ -47,6 +47,7 @@ extern uint8_t rdm_data[60];
 
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
+static uint8_t rdm_discovery_running = FALSE;
 
 struct _DMXUSBPRO_params
 {
@@ -69,6 +70,9 @@ static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
 static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_ID[] = {1, 0};
+
+static const uint8_t DEVICE_UUID[UID_SIZE] = {0x7F, 0xF0, DEC2BCD(12), DEC2BCD(34), DEC2BCD(56), DEC2BCD(78)};
+
 
 static uint8_t dmx_port_direction_before_rdm = DMX_PORT_DIRECTION_OUTP;
 
@@ -219,6 +223,21 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 		dmx_data[i - 1] = widget_data[i];
 }
 
+static void handle_internal_rdm_message(void)
+{
+	console_clear_line(23);
+	printf("handle_rdm_message\n");
+
+	uint16_t message_length = 0;
+
+	console_clear_line(7);
+	printf("Send RDM data to PC, message_length : %d\n", message_length);
+
+	send_header(RDM_TIMEOUT, message_length);
+	send_data(widget_data, message_length);
+	send_footer();
+}
+
 /**
  * @ingroup widget
  *
@@ -232,12 +251,6 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	console_clear_line(23);
 	printf("widget_send_rdm_packet_request\n");
 
-	dmx_port_direction_before_rdm = dmx_port_direction_get();
-
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 0);
-	dmx_data_send(widget_data, data_length);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
-
 	console_clear_line(7);
 	printf("RDM Packet length : %d\n", data_length);
 #if 1
@@ -250,6 +263,23 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 				widget_data[i + 14]);
 	}
 #endif
+
+	struct _rdm_command *p = (struct _rdm_command *)(widget_data);
+
+	if ((rdm_discovery_running == FALSE) && (p->command_class == E120_DISCOVERY_COMMAND) && (p->param_id == E120_DISC_UN_MUTE))
+	{
+		rdm_discovery_running = TRUE;
+		handle_internal_rdm_message();
+	}
+	else
+	{
+		dmx_port_direction_before_rdm = dmx_port_direction_get();
+
+		dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 0);
+		dmx_data_send(widget_data, data_length);
+	}
+
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }
 
 /**
@@ -258,11 +288,23 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
  * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
  * DMX port, and then receive an RDM Discovery Response (see Received DMX Packet \ref received_dmx_packet).
  */
-static void send_rdm_discovery_request(void)
+static void widget_send_rdm_discovery_request(uint16_t data_length)
 {
-	console_clear_line(21);
+	console_clear_line(23);
 	printf("send_rdm_discovery_request\n");
 	// TODO
+	console_clear_line(7);
+	printf("RDM Packet length : %d\n", data_length);
+#if 1
+	printf("RDM data[1..28]:\n");
+	uint16_t i = 0;
+	for (i = 0; i < 14; i++)
+	{
+		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i + 1, widget_data[i],
+				widget_data[i], i + 15, widget_data[i + 14],
+				widget_data[i + 14]);
+	}
+#endif
 }
 
 /**
@@ -295,7 +337,7 @@ static void widget_receive_dmx_on_change(void)
  */
 void received_dmx_packet(void)
 {
-	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
+	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
 	console_clear_line(7);
@@ -317,7 +359,7 @@ void received_dmx_packet(void)
  */
 void received_dmx_change_of_state_packet(void)
 {
-	if ((DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
+	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 	// TODO
 	console_clear_line(7);
@@ -422,7 +464,7 @@ void receive_data_from_host(void)
 				widget_send_rdm_packet_request(data_length);
 				break;
 			case SEND_RDM_DISCOVERY_REQUEST:
-				send_rdm_discovery_request();
+				widget_send_rdm_discovery_request(data_length);
 				break;
 			default:
 				break;
