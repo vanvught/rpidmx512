@@ -43,7 +43,7 @@ extern uint32_t sd_commands[];
 #define SDMA_BUFFER     0x6000
 #define SDMA_BUFFER_PA  (SDMA_BUFFER + 0xC0000000)
 
-#define EMMC_DEBUG
+//#define EMMC_DEBUG
 
 /* Tracing macros */
 #ifdef EMMC_DEBUG

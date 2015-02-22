@@ -168,7 +168,7 @@ static uint32_t sd_acommands[] = {
     SD_CMD_RESERVED(63)
 };
 
-#define SD_DEBUG
+//#define SD_DEBUG
 
 #ifdef SD_DEBUG
 int printf(const char *format, ...);
