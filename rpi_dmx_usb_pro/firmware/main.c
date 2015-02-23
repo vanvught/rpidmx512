@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "dmx.h"
+#include "widget_params.h"
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
@@ -101,6 +102,8 @@ int notmain(void)
 
 	dmx_init();
 	
+	widget_params_init();
+
 	led_init();
 	led_set(1);
 

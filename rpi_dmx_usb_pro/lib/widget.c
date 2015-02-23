@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "widget.h"
+#include "widget_params.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -49,30 +50,10 @@ static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
 static uint8_t rdm_discovery_running = FALSE;
 
-struct _DMXUSBPRO_params
-{
-	uint8_t firmware_lsb;
-	uint8_t firmware_msb;
-	uint8_t break_time;
-	uint8_t mab_time;
-	uint8_t refresh_rate;
-} static DMXUSBPRO_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
-
-struct _DMXUSBPRO_sn
-{
-	uint8_t bcd_0;
-	uint8_t bcd_1;
-	uint8_t bcd_2;
-	uint8_t bcd_3;
-} static const DMXUSBPRO_SN = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
-
 static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
 static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_ID[] = {1, 0};
-
-static const uint8_t DEVICE_UUID[UID_SIZE] = {0x7F, 0xF0, DEC2BCD(12), DEC2BCD(34), DEC2BCD(56), DEC2BCD(78)};
-
 
 static uint8_t dmx_port_direction_before_rdm = DMX_PORT_DIRECTION_OUTP;
 
@@ -124,21 +105,9 @@ static void send_message(const uint8_t label, const uint8_t *data, const uint16_
 	send_footer();
 }
 
-/**
- * TODO
- */
-void widget_print_parms(void)
+uint8_t receive_dmx_on_change_get()
 {
-	char dir[3][10] = {"Idle", "Output", "Input"};
-
-	printf("Firmware %d.%d BreakTime %d MaBTime %d RefreshRate %d\n",
-			DMXUSBPRO_params.firmware_msb, DMXUSBPRO_params.firmware_lsb,
-			DMXUSBPRO_params.break_time, DMXUSBPRO_params.mab_time, DMXUSBPRO_params.refresh_rate);
-
-	if (DMX_PORT_DIRECTION_INP == dmx_port_direction_get())
-		printf("Input [%s]\n", receive_dmx_on_change == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
-	else
-		printf("%s                                     \n", dir[dmx_port_direction_get()]);
+	return receive_dmx_on_change;
 }
 
 /**
@@ -149,7 +118,9 @@ void widget_print_parms(void)
  */
 static void widget_get_params_reply(void)
 {
-	send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&DMXUSBPRO_params, sizeof(struct _DMXUSBPRO_params));
+	struct _widget_params widget_params;
+	widget_params_get(&widget_params);
+	send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&widget_params, sizeof(struct _widget_params));
 }
 
 /**
@@ -160,7 +131,9 @@ static void widget_get_params_reply(void)
  */
 static void widget_get_sn_reply(void)
 {
-	send_message(GET_WIDGET_SN_REPLY, (uint8_t *)&DMXUSBPRO_SN, sizeof(struct _DMXUSBPRO_sn));
+	struct _widget_sn widget_sn;
+	widget_params_sn_get(&widget_sn);
+	send_message(GET_WIDGET_SN_REPLY, (uint8_t *)&widget_sn, sizeof(struct _widget_sn));
 }
 
 /**
@@ -195,9 +168,9 @@ static void widget_get_name_reply(void)
  */
 static void widget_set_params()
 {
-	DMXUSBPRO_params.break_time = widget_data[2];
-	DMXUSBPRO_params.mab_time = widget_data[3];
-	DMXUSBPRO_params.refresh_rate = widget_data[4];
+	widget_params_break_time_set(widget_data[2]);
+	widget_params_mab_time_set(widget_data[3]);
+	widget_params_refresh_rate_set(widget_data[4]);
 }
 
 /**
