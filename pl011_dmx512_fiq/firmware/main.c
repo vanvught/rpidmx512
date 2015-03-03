@@ -41,8 +41,17 @@ extern void fb_init(void);
 
 ///< State of receiving DMX Bytes
 typedef enum {
-  IDLE, BREAK, DMXDATA, RDMDATA, CHECKSUMH, CHECKSUML
-} _dmx_receive_state;
+  IDLE,			///<
+  BREAK,		///<
+  MAB,			///<
+  DMXDATA,		///<
+  RDMDATA,		///<
+  CHECKSUMH,	///<
+  CHECKSUML,	///<
+  RDMDISCFE,	///<
+  RDMDISCEUID,  ///<
+  RDMDISCECS	///<
+} _dmx_state;
 
 /**
  * The size of a UID.
@@ -75,28 +84,51 @@ static uint16_t dmx_data_index = 0;
 static uint8_t rdm_data[60];
 static uint16_t rdm_checksum = 0;
 static uint8_t rdm_available = 0;
-//static uint32_t rdm_receive_end = 0;
+static uint8_t rdm_disc_index = 0;
 
 #define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
 #define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
 #define ANALYZER_CH3	RPI_V2_GPIO_P1_19	///< MOSI
 #define ANALYZER_CH4	RPI_V2_GPIO_P1_24	///< CE0
 
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
+
 static void fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
+{
 	bcm2835_gpio_set(ANALYZER_CH1);
 
-	if (BCM2835_PL011 ->DR & PL011_DR_BE ) {
+	if (BCM2835_PL011->DR & PL011_DR_BE)
+	{
 		bcm2835_gpio_set(ANALYZER_CH2); // BREAK
 		bcm2835_gpio_clr(ANALYZER_CH3);	// DATA
 		bcm2835_gpio_clr(ANALYZER_CH4);	// IDLE
 
 		dmx_receive_state = BREAK;
-	}  else if (dmx_receive_state == BREAK) {
+	}
+	else if (dmx_receive_state == IDLE)
+	{
+		uint8_t data = BCM2835_PL011->DR & 0xFF;
+		if (data == 0xFE)
+		{
+			bcm2835_gpio_clr(ANALYZER_CH2); // BREAK
+			bcm2835_gpio_set(ANALYZER_CH3);	// DATA
+			bcm2835_gpio_clr(ANALYZER_CH4); // IDLE
+
+			dmx_receive_state = RDMDISCFE;
+			dmx_data_index = 0;
+			rdm_data[dmx_data_index++] = 0xFE;
+		}
+	}
+	else if (dmx_receive_state == BREAK)
+	{
 		uint8_t data = BCM2835_PL011->DR & 0xFF;
 		if (data == 0x00)			// DMX data start code
 		{
@@ -116,7 +148,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			dmx_receive_state = RDMDATA;
 			dmx_data_index = 0;
 			rdm_data[dmx_data_index++] = 0xCC;
-			rdm_checksum =  0xCC;
+			rdm_checksum = 0xCC;
 		}
 		else
 		{
@@ -148,16 +180,17 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			bcm2835_gpio_set(ANALYZER_CH4); // IDLE
 
 			dmx_receive_state = IDLE;
-		} else
+		}
+		else
 		{
 			uint8_t data = (BCM2835_PL011->DR & 0xFF);
-			rdm_data[dmx_data_index++] =  data;
+			rdm_data[dmx_data_index++] = data;
 			rdm_checksum += data;
 
-			struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
+			struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 			if (dmx_data_index == p->message_length)
 			{
-				dmx_receive_state =	CHECKSUMH;
+				dmx_receive_state = CHECKSUMH;
 			}
 		}
 	}
@@ -184,6 +217,40 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 		dmx_receive_state = IDLE;
 	}
+	else if (dmx_receive_state == RDMDISCFE)
+	{
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		if (data == 0xFE)
+		{
+			rdm_data[dmx_data_index++] = 0xFE;
+		}
+		else if (data == 0xAA)
+		{
+			dmx_receive_state = RDMDISCEUID;
+			rdm_disc_index = 0;
+			rdm_data[dmx_data_index++] = 0xAA;
+		}
+	}
+	else if (dmx_receive_state == RDMDISCEUID)
+	{
+		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_disc_index++;
+		if (rdm_disc_index == 2 * UID_SIZE)
+		{
+			dmx_receive_state = RDMDISCECS;
+			rdm_disc_index = 0;
+		}
+	}
+	else if (dmx_receive_state == RDMDISCECS)
+	{
+		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_disc_index++;
+		if (rdm_disc_index == 4)
+		{
+			rdm_available = TRUE;
+			dmx_receive_state = IDLE;
+		}
+	}
 
 	bcm2835_gpio_clr(ANALYZER_CH1);
 }
@@ -209,11 +276,16 @@ void task_fb(void) {
 			dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25], dmx_data[26],
 			dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 			dmx_data[31]);
-	printf("RDM data[0..15]:\n");
-	uint16_t i = 0;
-	for (i = 0; i < 16; i++)
+
+	printf("\nRDM data[1..36]:\n");
+	uint8_t i = 0;
+	for (i = 0; i < 9; i++)
 	{
-		printf("%.2d-%.4d:%.2x\n", i, rdm_data[i], rdm_data[i]);
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, rdm_data[i], rdm_data[i],
+				i+10, rdm_data[i+9], rdm_data[i+9],
+				i+19, rdm_data[i+18], rdm_data[i+18],
+				i+28, rdm_data[i+27], rdm_data[i+27]);
 	}
 }
 
