@@ -40,10 +40,10 @@ extern void fb_init(void);
 // poll table
 extern void received_rdm_packet(void);
 extern void receive_data_from_host(void);
+extern void rdm_timeout(void);
 // events table
 extern void received_dmx_packet(void);
 extern void received_dmx_change_of_state_packet(void);
-// external monitor
 extern void monitor_update(void);
 
 static void task_led(void) {
@@ -56,11 +56,12 @@ struct _poll
 	void (*f)(void);
 } const poll_table[] = {
 		{ received_rdm_packet },
+		{ rdm_timeout },
 		{ receive_data_from_host } };
 
 struct _event
 {
-	uint32_t period;
+	uint64_t period;
 	void (*f)(void);
 }const events[] = {
 		{ 800000, received_dmx_packet },
@@ -117,11 +118,12 @@ int notmain(void)
 
 	events_init();
 
-	while (1) {
+	for (;;)
+	{
 		//watchdog_feed();
-
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
+		{
 			poll_table[i].f();
 		}
 

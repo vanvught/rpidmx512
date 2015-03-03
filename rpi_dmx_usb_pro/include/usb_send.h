@@ -1,8 +1,8 @@
 /**
- * @file dmx_data.h
+ * @file usb_send.h
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_DATA_H_
-#define DMX_DATA_H_
+#ifndef USB_SEND_H_
+#define USB_SEND_H_
 
 #include <stdint.h>
 
-typedef enum
-{
-	DMX_PORT_DIRECTION_IDLE = 0,	///<
-	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
-	DMX_PORT_DIRECTION_INP = 2		///< DMX input
-} _dmx_port_direction;
+extern void usb_send_header(const uint8_t, const uint16_t);
+extern void usb_send_data(const uint8_t *, const uint16_t);
+extern void usb_send_footer(void);
+extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
 
-extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern uint8_t dmx_port_direction_get(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern uint8_t rdm_available_get(void);
-extern void rdm_available_set(uint8_t);
-extern uint64_t rdm_data_receive_end_get(void);
-
-#endif /* DMX_DATA_H_ */
+#endif /* USB_SEND_H_ */

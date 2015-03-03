@@ -81,5 +81,4 @@ void monitor_update(void)
 			dmx_data[20], dmx_data[21], dmx_data[22], dmx_data[23],
 			dmx_data[24], dmx_data[25], dmx_data[26], dmx_data[27],
 			dmx_data[28], dmx_data[29], dmx_data[30], dmx_data[31]);
-
 }

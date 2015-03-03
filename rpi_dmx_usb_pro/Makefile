@@ -10,15 +10,15 @@ COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DDEBUG_ANALYZER
 COPS += -I"./include"
 COPS += -I"./firmware/include"
-#COPS += -I"../ff9b/src"
+COPS += -I"../ff9b/src"
 COPS += -I"../fb/include"
 COPS += -I"../bob-baremetal/include"
 
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 LIB += -L"../fb/lib"
 LIB += -L"../bob-baremetal/lib"
-#LIB += -L"../emmc/lib"
-#LIB += -L"../ff9b/lib"
+LIB += -L"../emmc/lib"
+LIB += -L"../ff9b/lib"
 
 BUILD = build/
 SOURCE = ./
@@ -64,8 +64,8 @@ $(BUILD)%.o: $(SOURCE)lib/%.c
 $(BUILD)devices/%.o: $(SOURCE)devices/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 
-$(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../fb/lib/libfb.a ../bob-baremetal/lib/libbob.a 
-	$(ARMGNU)-ld $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lbob -lc -lgcc
+$(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../bob-baremetal/lib/libbob.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff9b/lib/libff9b.a 
+	$(ARMGNU)-ld $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lff9b -lemmc -lbob -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf

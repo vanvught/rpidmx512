@@ -41,13 +41,16 @@ typedef enum {
 
 ///< State of receiving DMX Bytes
 typedef enum {
-  IDLE,			///<
+  IDLE = 0,		///<
   BREAK,		///<
   MAB,			///<
   DMXDATA,		///<
   RDMDATA,		///<
   CHECKSUMH,	///<
-  CHECKSUML		///<
+  CHECKSUML,	///<
+  RDMDISCFE,	///<
+  RDMDISCEUID,  ///<
+  RDMDISCECS	///<
 } _dmx_state;
 
 uint8_t dmx_data[512];							///<
@@ -59,6 +62,7 @@ uint8_t rdm_data[60];
 static uint16_t rdm_checksum = 0;
 static uint64_t rdm_data_receive_end = 0;
 static uint8_t rdm_available = FALSE;
+static uint8_t rdm_disc_index = 0;				///<
 
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
 
@@ -125,24 +129,38 @@ static void dmx_receive_fiq_init(void) {
  * Interrupt handler for continues receiving DMX data.
  * \sa dmx_receive_fiq_init
  */
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
+{
 	dmb();
 
-	if (BCM2835_PL011 ->DR & PL011_DR_BE ) {
+	if (BCM2835_PL011->DR & PL011_DR_BE)
+	{
 		dmx_receive_state = BREAK;
-	}  else if (dmx_receive_state == BREAK) {
+	}
+	else if (dmx_receive_state == IDLE)
+	{
+		uint8_t data = BCM2835_PL011->DR & 0xFF;
+		if (data == 0xFE)
+		{
+			dmx_receive_state = RDMDISCFE;
+			dmx_data_index = 0;
+			rdm_data[dmx_data_index++] = 0xFE;
+		}
+	}
+	else if (dmx_receive_state == BREAK)
+	{
 		uint8_t data = BCM2835_PL011->DR & 0xFF;
 		if (data == 0x00)			// DMX data start code
 		{
 			dmx_receive_state = DMXDATA;
 			dmx_data_index = 0;
 		}
-		else if (data == 0xCC)	// RDM start code
+		else if (data == 0xCC)		// RDM start code
 		{
 			dmx_receive_state = RDMDATA;
 			dmx_data_index = 0;
 			rdm_data[dmx_data_index++] = 0xCC;
-			rdm_checksum =  0xCC;
+			rdm_checksum = 0xCC;
 		}
 		else
 		{
@@ -185,7 +203,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	else if (dmx_receive_state == CHECKSUML)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		rdm_data[dmx_data_index++] =  data;
+		rdm_data[dmx_data_index++] = data;
 		rdm_checksum -= data;
 
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
@@ -196,6 +214,41 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		}
 
 		dmx_receive_state = IDLE;
+	}
+	else if (dmx_receive_state == RDMDISCFE)
+	{
+		uint8_t data = (BCM2835_PL011->DR & 0xFF);
+		if (data == 0xFE)
+		{
+			rdm_data[dmx_data_index++] = 0xFE;
+		}
+		else if (data == 0xAA)
+		{
+			dmx_receive_state = RDMDISCEUID;
+			rdm_disc_index = 0;
+			rdm_data[dmx_data_index++] = 0xAA;
+		}
+	}
+	else if (dmx_receive_state == RDMDISCEUID)
+	{
+		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_disc_index++;
+		if (rdm_disc_index == 2 * UID_SIZE)
+		{
+			dmx_receive_state = RDMDISCECS;
+			rdm_disc_index = 0;
+		}
+	}
+	else if (dmx_receive_state == RDMDISCECS)
+	{
+		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_disc_index++;
+		if (rdm_disc_index == 4)
+		{
+			rdm_available = TRUE;
+			dmx_receive_state = IDLE;
+			rdm_data_receive_end = bcm2835_st_read();
+		}
 	}
 
 	dmb();
@@ -281,10 +334,12 @@ void dmx_data_start(void)
 	{
 	case DMX_PORT_DIRECTION_OUTP:
 		dmx_send_irq_init();
+		dmx_send_state = IDLE;
 		__enable_irq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
 		dmx_receive_fiq_init();
+		dmx_receive_state = IDLE;
 		__enable_fiq();
 		break;
 	default:
@@ -348,6 +403,11 @@ void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_d
 uint8_t dmx_port_direction_get(void)
 {
 	return dmx_port_direction;
+}
+
+uint64_t rdm_data_receive_end_get(void)
+{
+	return rdm_data_receive_end;
 }
 
 /**

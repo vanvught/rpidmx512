@@ -29,12 +29,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bcm2835.h"
 #include "widget.h"
 #include "widget_params.h"
+#include "usb_send.h"
+#include "ft245rl.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-#include "ft245rl.h"
 #include "console.h"
 
 // TODO move for util.h
@@ -49,61 +51,12 @@ extern uint8_t rdm_data[60];
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
 static uint8_t rdm_discovery_running = FALSE;
+static uint64_t widget_send_rdm_packet_start = 0;
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
 static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_ID[] = {1, 0};
-
-static uint8_t dmx_port_direction_before_rdm = DMX_PORT_DIRECTION_OUTP;
-
-/**
- *
- * @param label
- * @param length
- */
-static void send_header(const uint8_t label, const uint16_t length)
-{
-	FT245RL_write_data(AMF_START_CODE);
-	FT245RL_write_data(label);
-	FT245RL_write_data((uint8_t)(length & 0x00FF));
-	FT245RL_write_data((uint8_t)(length >> 8));
-}
-
-/**
- *
- * @param data
- * @param length
- */
-static void send_data(const uint8_t *data, const uint16_t length)
-{
-	uint16_t i;
-	for (i = 0; i < length; i++)
-	{
-		FT245RL_write_data(data[i]);
-	}
-}
-
-/**
- *
- */
-static void send_footer(void)
-{
-	FT245RL_write_data(AMF_END_CODE);
-}
-
-/**
- *
- * @param label
- * @param data
- * @param length
- */
-static void send_message(const uint8_t label, const uint8_t *data, const uint16_t length)
-{
-	send_header(label, length);
-	send_data(data, length);
-	send_footer();
-}
 
 uint8_t receive_dmx_on_change_get()
 {
@@ -120,42 +73,7 @@ static void widget_get_params_reply(void)
 {
 	struct _widget_params widget_params;
 	widget_params_get(&widget_params);
-	send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&widget_params, sizeof(struct _widget_params));
-}
-
-/**
- * @ingroup widget
- *
- * Get Widget Serial Number Reply (Label = 10 \ref GET_WIDGET_PARAMS_REPLY)
- *
- */
-static void widget_get_sn_reply(void)
-{
-	struct _widget_sn widget_sn;
-	widget_params_sn_get(&widget_sn);
-	send_message(GET_WIDGET_SN_REPLY, (uint8_t *)&widget_sn, sizeof(struct _widget_sn));
-}
-
-/**
- *
- */
-static void widget_get_manufacturer_reply(void)
-{
-	send_header(MANUFACTURER_LABEL, sizeof(DEVICE_MANUFACTURER_ID) + sizeof(DEVICE_MANUFACTURER_NAME));
-	send_data(DEVICE_MANUFACTURER_ID, sizeof(DEVICE_MANUFACTURER_ID));
-	send_data(DEVICE_MANUFACTURER_NAME, sizeof(DEVICE_MANUFACTURER_NAME));
-	send_footer();
-}
-
-/**
- *
- */
-static void widget_get_name_reply(void)
-{
-	send_header(GET_WIDGET_NAME_LABEL, sizeof(DEVICE_ID) + sizeof(DEVICE_NAME));
-	send_data(DEVICE_ID, sizeof(DEVICE_ID));
-	send_data(DEVICE_NAME, sizeof(DEVICE_NAME));
-	send_footer();
+	usb_send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&widget_params, sizeof(struct _widget_params));
 }
 
 /**
@@ -164,17 +82,116 @@ static void widget_get_name_reply(void)
  * Set Widget Parameters Request (Label=4 \ref SET_WIDGET_PARAMS)
  * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
  *
- * TODO use RTC RAM (battery)
  */
 static void widget_set_params()
 {
 	widget_params_break_time_set(widget_data[2]);
 	widget_params_mab_time_set(widget_data[3]);
 	widget_params_refresh_rate_set(widget_data[4]);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
 /**
  * @ingroup widget
+ *
+ * Received DMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
+ *
+ * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
+ * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
+ */
+void received_dmx_packet(void)
+{
+	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
+		return;
+
+	console_clear_line(7);
+	printf("Send DMX data to PC\n");
+
+	usb_send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
+	FT245RL_write_data(0); 	// DMX Receive status
+	FT245RL_write_data(0);	// DMX Start code
+	usb_send_data(dmx_data, sizeof(dmx_data) / sizeof(uint8_t));
+	usb_send_footer();
+}
+
+static void rdm_internal_time_out_message(void)
+{
+	console_clear_line(23);
+	printf("rdm_internal_time_out_message\n");
+
+	uint16_t message_length = 0;
+
+	console_clear_line(7);
+	printf("Send RDM data to PC, message_length : %d\n", message_length);
+
+	usb_send_header(RDM_TIMEOUT, message_length);
+	usb_send_data(widget_data, message_length);
+	usb_send_footer();
+
+	widget_send_rdm_packet_start = 0;
+}
+
+/**
+ * @ingroup widget
+ *
+ * Received RMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
+ *
+ * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
+ * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
+ */
+void received_rdm_packet(void)
+{
+	if ((rdm_available_get() == FALSE)  || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
+		return;
+
+	rdm_available_set(FALSE);
+
+	if (rdm_data[0] == 0xCC)
+	{
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		uint8_t message_length = p->message_length + 2;
+
+		console_clear_line(7);
+		printf("Send RDM data to PC, package length : %d\n", message_length);
+
+		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+		FT245RL_write_data(0); 	// RDM Receive status
+		usb_send_data(rdm_data, message_length);
+		usb_send_footer();
+
+		if (p->command_class == E120_DISCOVERY_COMMAND)
+			rdm_internal_time_out_message();
+	} else if (rdm_data[0] == 0xFE)
+	{
+		uint8_t message_length = 24;
+
+		console_clear_line(7);
+		printf("Send RDM data to PC, package length : %d\n", message_length);
+
+		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+		FT245RL_write_data(0); 	// RDM Receive status
+		usb_send_data(rdm_data, message_length);
+		usb_send_footer();
+
+		rdm_internal_time_out_message();
+	}
+
+	printf("RDM data[1..36]:\n");
+	uint8_t i = 0;
+	for (i = 0; i < 9; i++)
+	{
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, rdm_data[i], rdm_data[i],
+				i+10, rdm_data[i+9], rdm_data[i+9],
+				i+19, rdm_data[i+18], rdm_data[i+18],
+				i+28, rdm_data[i+27], rdm_data[i+27]);
+	}
+}
+
+/**
+ * @ingroup widget
+ *
+ * Output Only Send DMX Packet Request (label = 6 \ref OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST)
  *
  * This message requests the Widget to periodically send a DMX packet out of the Widget DMX port
  * at the configured DMX output rate. This message causes the widget to leave the DMX port direction
@@ -189,30 +206,17 @@ static void widget_set_params()
  */
 void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 {
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 1);
-
 	uint16_t i = 0;
 	for (i = 1; i < data_length; i++)
 		dmx_data[i - 1] = widget_data[i];
-}
 
-static void handle_internal_rdm_message(void)
-{
-	console_clear_line(23);
-	printf("handle_rdm_message\n");
-
-	uint16_t message_length = 0;
-
-	console_clear_line(7);
-	printf("Send RDM data to PC, message_length : %d\n", message_length);
-
-	send_header(RDM_TIMEOUT, message_length);
-	send_data(widget_data, message_length);
-	send_footer();
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 }
 
 /**
  * @ingroup widget
+ *
+ * Send RDM Packet Request (label = 7 \ref SEND_RDM_PACKET_REQUEST)
  *
  * This message requests the Widget to send an RDM packet out of the Widget DMX port, and then
  * change the DMX port direction to input, so that RDM or DMX packets can be received.
@@ -227,57 +231,40 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	console_clear_line(7);
 	printf("RDM Packet length : %d\n", data_length);
 #if 1
-	printf("RDM data[1..28]:\n");
-	uint16_t i = 0;
-	for (i = 0; i < 14; i++)
+	printf("RDM data[1..36]:\n");
+	uint8_t i = 0;
+	for (i = 0; i < 9; i++)
 	{
-		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i + 1, widget_data[i],
-				widget_data[i], i + 15, widget_data[i + 14],
-				widget_data[i + 14]);
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, widget_data[i], widget_data[i],
+				i+10, widget_data[i+9], widget_data[i+9],
+				i+19, widget_data[i+18], widget_data[i+18],
+				i+28, widget_data[i+27], widget_data[i+27]);
 	}
 #endif
-
 	struct _rdm_command *p = (struct _rdm_command *)(widget_data);
 
-	if ((rdm_discovery_running == FALSE) && (p->command_class == E120_DISCOVERY_COMMAND) && (p->param_id == E120_DISC_UN_MUTE))
-	{
+	if (p->command_class == E120_DISCOVERY_COMMAND)
 		rdm_discovery_running = TRUE;
-		handle_internal_rdm_message();
-	}
 	else
-	{
-		dmx_port_direction_before_rdm = dmx_port_direction_get();
+		rdm_discovery_running = FALSE;
 
-		dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, 0);
-		dmx_data_send(widget_data, data_length);
-	}
-
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+	dmx_data_send(widget_data, data_length);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+	widget_send_rdm_packet_start =  bcm2835_st_read();
 }
 
-/**
- * @ingroup widget
- *
- * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
- * DMX port, and then receive an RDM Discovery Response (see Received DMX Packet \ref received_dmx_packet).
- */
-static void widget_send_rdm_discovery_request(uint16_t data_length)
+void rdm_timeout(void)
 {
-	console_clear_line(23);
-	printf("send_rdm_discovery_request\n");
-	// TODO
-	console_clear_line(7);
-	printf("RDM Packet length : %d\n", data_length);
-#if 1
-	printf("RDM data[1..28]:\n");
-	uint16_t i = 0;
-	for (i = 0; i < 14; i++)
-	{
-		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i + 1, widget_data[i],
-				widget_data[i], i + 15, widget_data[i + 14],
-				widget_data[i + 14]);
+	if (widget_send_rdm_packet_start == 0)
+		return;
+
+	if (bcm2835_st_read() - widget_send_rdm_packet_start > 1000000) {
+		rdm_internal_time_out_message();
+		widget_send_rdm_packet_start = 0;
 	}
-#endif
+
 }
 
 /**
@@ -297,34 +284,18 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
  */
 static void widget_receive_dmx_on_change(void)
 {
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
 	receive_dmx_on_change = widget_data[0];
+	uint16_t i = 0;
+	for (i = 0; i < sizeof(dmx_data); i++)
+		dmx_data[i] = 0;
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
 /**
  * @ingroup widget
  *
- * Received DMX Packet (Label=5)
- * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
- * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
- */
-void received_dmx_packet(void)
-{
-	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
-		return;
-
-	console_clear_line(7);
-	printf("Send DMX data to PC\n");
-
-	send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
-	FT245RL_write_data(0); 	// DMX Receive status
-	FT245RL_write_data(0);	// DMX Start code
-	send_data(dmx_data, sizeof(dmx_data) / sizeof(uint8_t));
-	send_footer();
-}
-
-/**
- * @ingroup widget
+ * Received DMX Change Of State Packet (Label = 9 \ref RECEIVED_DMX_COS_TYPE)
  *
  * The Widget sends one or more instances of this message to the PC unsolicited, whenever the
  * Widget receives a changed DMX packet from the DMX port, and the Receive DMX on Change
@@ -342,33 +313,80 @@ void received_dmx_change_of_state_packet(void)
 /**
  * @ingroup widget
  *
+ * Get Widget Serial Number Reply (Label = 10 \ref GET_WIDGET_PARAMS_REPLY)
+ *
  */
-void received_rdm_packet(void)
+static void widget_get_sn_reply(void)
 {
-	if (rdm_available_get() == FALSE)
-		return;
+	struct _widget_sn widget_sn;
+	widget_params_sn_get(&widget_sn);
+	usb_send_message(GET_WIDGET_SN_REPLY, (uint8_t *)&widget_sn, sizeof(struct _widget_sn));
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+}
 
-	rdm_available_set(FALSE);
+/**
+ * @ingroup widget
+ *
+ * Send RDM Discovery Request (Label=11 \ref SEND_RDM_DISCOVERY_REQUEST)
+ *
+ * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
+ * DMX port, and then receive an RDM Discovery Response (see Received DMX Packet \ref received_dmx_packet).
+ */
+static void widget_send_rdm_discovery_request(uint16_t data_length)
+{
+	console_clear_line(23);
+	printf("send_rdm_discovery_request\n");
 
-	struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
-	uint8_t message_length = p->message_length;
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
+	dmx_data_send(widget_data, data_length);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_send_rdm_packet_start =  bcm2835_st_read();
 
 	console_clear_line(7);
-	printf("Send RDM data to PC, package length : %d\n", message_length);
-
-	send_header(RECEIVED_DMX_PACKET, 1 + message_length);
-	FT245RL_write_data(0); 	// RDM Receive status
-	send_data(rdm_data, message_length);
-	send_footer();
-
-	printf("RDM data[1..28]:\n");
-	uint16_t i = 0;
-	for (i = 0; i < 14; i++)
+	printf("RDM Packet length : %d\n", data_length);
+#if 1
+	printf("RDM data[1..36]:\n");
+	uint8_t i = 0;
+	for (i = 0; i < 9; i++)
 	{
-		printf("%.2d-%.4d:%.2x  %.2d-%.4d:%.2x\n", i+1, rdm_data[i], rdm_data[i], i+15, rdm_data[i+14], rdm_data[i+14]);
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, widget_data[i], widget_data[i],
+				i+10, widget_data[i+9], widget_data[i+9],
+				i+19, widget_data[i+18], widget_data[i+18],
+				i+28, widget_data[i+27], widget_data[i+27]);
 	}
+#endif
 
-	dmx_port_direction_set(dmx_port_direction_before_rdm, 1);
+
+}
+
+/**
+ * @ingroup widget
+ *
+ * Get Widget Manufacturer Reply (Label = 77 \ref MANUFACTURER_LABEL)
+ */
+static void widget_get_manufacturer_reply(void)
+{
+	usb_send_header(MANUFACTURER_LABEL, sizeof(DEVICE_MANUFACTURER_ID) + sizeof(DEVICE_MANUFACTURER_NAME));
+	usb_send_data(DEVICE_MANUFACTURER_ID, sizeof(DEVICE_MANUFACTURER_ID));
+	usb_send_data(DEVICE_MANUFACTURER_NAME, sizeof(DEVICE_MANUFACTURER_NAME));
+	usb_send_footer();
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+}
+
+/**
+ * @ingroup widget
+ *
+ * Get Widget Name Reply (Label = 78 \ref GET_WIDGET_NAME_LABEL)
+ */
+static void widget_get_name_reply(void)
+{
+	usb_send_header(GET_WIDGET_NAME_LABEL, sizeof(DEVICE_ID) + sizeof(DEVICE_NAME));
+	usb_send_data(DEVICE_ID, sizeof(DEVICE_ID));
+	usb_send_data(DEVICE_NAME, sizeof(DEVICE_NAME));
+	usb_send_footer();
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
 /**
