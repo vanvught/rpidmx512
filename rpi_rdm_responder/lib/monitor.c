@@ -44,9 +44,9 @@ void monitor_update(void)
 
 	console_set_cursor(0,2);
 
-	printf("%.2d:%.2d:%.2d\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
+	printf("%.2d:%.2d:%.2d\n\n", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
 
-	printf("%s\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n", dmx_data[0],
 				dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4], dmx_data[5],
@@ -60,7 +60,7 @@ void monitor_update(void)
 				dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30],
 				dmx_data[31]);
 
-	printf("[%d]:RDM data[1..36]:\n", rdm_is_mute_get());
+	printf("\n[%d]:RDM data[1..36]:\n", rdm_is_mute_get());
 
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)

@@ -72,7 +72,7 @@ void rdm_send_discovery_msg(const uint8_t *data, const uint16_t data_length)
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
-void rdm_send_respond_message(const uint8_t UID_DEVICE[UID_SIZE], uint8_t rdm_packet_is_handled)
+static void rdm_send_respond_message(const uint8_t UID_DEVICE[UID_SIZE], uint8_t rdm_packet_is_handled, uint16_t reason)
 {
 	uint16_t rdm_checksum = 0;
 
@@ -86,8 +86,8 @@ void rdm_send_respond_message(const uint8_t UID_DEVICE[UID_SIZE], uint8_t rdm_pa
 		rdm_response->message_length = rdm_response->message_length + 2;
 		rdm_response->port_id = E120_RESPONSE_TYPE_NACK_REASON;
 		rdm_response->param_data_length = 2;
-		rdm_response->param_data[0] = 0;
-		rdm_response->param_data[1] = 0;
+		rdm_response->param_data[0] = (uint8_t)(reason >> 8);
+		rdm_response->param_data[1] = (uint8_t)reason;
 	}
 
 	memcpy(rdm_response->destination_uid, rdm_response->source_uid, UID_SIZE);
@@ -114,4 +114,14 @@ void rdm_send_respond_message(const uint8_t UID_DEVICE[UID_SIZE], uint8_t rdm_pa
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 	dmx_data_send(rdm_data, rdm_response->message_length + 2);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+}
+
+void rdm_send_respond_message_ack(const uint8_t UID_DEVICE[UID_SIZE])
+{
+	rdm_send_respond_message(UID_DEVICE, TRUE, 0);
+}
+
+void rdm_send_respond_message_nack(const uint8_t UID_DEVICE[UID_SIZE], const uint16_t reason)
+{
+	rdm_send_respond_message(UID_DEVICE, FALSE, reason);
 }
