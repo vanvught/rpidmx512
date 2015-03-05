@@ -50,7 +50,7 @@ struct _rdm_command
 	uint8_t command_class;					///< 21
 	uint8_t param_id[2];					///< 22, 23
 	uint8_t param_data_length;				///< 24
-	uint8_t param_data[60-24];
+	uint8_t param_data[300];				///< 25,,,,
 } ;
 
 struct _rdm_discovery_msg {
@@ -75,5 +75,16 @@ struct _rdm_device_info
 	uint8_t sub_device_count[2];
 	uint8_t sensor_count;
 };
+
+// personalities
+struct _rdm_personality
+{
+	uint16_t slots;
+	const char *description;
+};
+
+#define RDM_DATA_BUFFER_SIZE			512 ///<
+#define RDM_MESSAGE_MINIMUM_SIZE		24	///< Minimum size of RDM message without the checksum
+#define RDM_MESSAGE_CHECKSUM_SIZE		2	///< Size of the checksum
 
 #endif /* RDM_H_ */
