@@ -1,7 +1,3 @@
-#ifndef RDM_E120_H_
-#define RDM_E120_H_
-
-
 /*****************************************************************/
 /* Entertainment Services Technology Association (ESTA)          */
 /* ANSI E1.20 Remote Device Management (RDM) over DMX512 Networks*/
@@ -15,10 +11,11 @@
 /*****************************************************************/
 /* Compiled by: Scott M. Blair   8/18/2006                       */
 /* Updated 10/11/2011: Adding E1.20-2010 and E1.37-1 defines.    */
+/* Updated 10/24/2014: Adding E1.37-2 defines                    */
 /*****************************************************************/
 /* For updates see: http://www.rdmprotocol.org                   */
 /*****************************************************************/
-/* Copyright 2006,2011 Litespeed Design                          */
+/* Copyright 2006,2011, 2014 Litespeed Design                    */
 /*****************************************************************/
 /* Permission to use, copy, modify, and distribute this software */
 /* is freely granted, provided that this notice is preserved.    */
@@ -28,16 +25,16 @@
 #define E120_PROTOCOL_VERSION                             0x0100
 
 /* RDM START CODE (Slot 0)                                                                                                     */
-#define	E120_SC_RDM 									  0xCC
+#define	E120_SC_RDM                                       0xCC
 
 /* RDM Protocol Data Structure ID's (Slot 1)                                                                                   */
-#define E120_SC_SUB_MESSAGE 							  0x01
+#define E120_SC_SUB_MESSAGE                               0x01
 
 /* Broadcast Device UID's                                                                                                      */
-#define E120_BROADCAST_ALL_DEVICES_ID       			  0xFFFFFFFFFFFF   /* (Broadcast all Manufacturers)                    */
-//#define ALL_DEVICES_ID  				     			  0xmmmmFFFFFFFF   /* (Specific Manufacturer ID 0xmmmm)                                              */
+#define E120_BROADCAST_ALL_DEVICES_ID                     0xFFFFFFFFFFFF   /* (Broadcast all Manufacturers)                    */
+//#define ALL_DEVICES_ID                                  0xmmmmFFFFFFFF   /* (Specific Manufacturer ID 0xmmmm)                */
 
-#define E120_SUB_DEVICE_ALL_CALL 		     			  0xFFFF
+#define E120_SUB_DEVICE_ALL_CALL                          0xFFFF
 
 
 /********************************************************/
@@ -131,7 +128,7 @@
 #define E120_LAMP_STATE                                   0x0403 /* See Table A-8                                              */
 #define E120_LAMP_ON_MODE                                 0x0404 /* See Table A-9                                              */
 #define E120_DEVICE_POWER_CYCLES                          0x0405
-#define E137_1_BURN_IN									  0x0440 /* Defined in ANSI E1.37-1                                    */
+#define E137_1_BURN_IN                                    0x0440 /* Defined in ANSI E1.37-1                                    */
 
 /* Category - Display Settings     */
 #define E120_DISPLAY_INVERT                               0x0500
@@ -145,6 +142,24 @@
 #define E137_1_LOCK_PIN                                   0x0640 /* Defined in ANSI E1.37-1                                    */
 #define E137_1_LOCK_STATE                                 0x0641 /* Defined in ANSI E1.37-1                                    */
 #define E137_1_LOCK_STATE_DESCRIPTION                     0x0642 /* Support required if MODULATION_FREQUENCY is supported      */
+
+/* Category - Network Configuration*/
+
+#define E137_2_LIST_INTERFACES                            0x0700 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_INTERFACE_LABEL                            0x0701 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_INTERFACE_HARDWARE_ADDRESS_TYPE1           0x0702 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_IPV4_DHCP_MODE                             0x0703 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_IPV4_ZEROCONF_MODE                         0x0704 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_IPV4_CURRENT_ADDRESS                       0x0705 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_IPV4_STATIC_ADDRESS                        0x0706 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_INTERFACE_RENEW_DHCP                       0x0707 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_INTERFACE_RELEASE_DHCP                     0x0708 /* Defined in ANSI E1.37-2                                    */
+#define E137_2_INTERFACE_APPLY_CONFIGURATION              0x0709 /* Defined in ANSI E1.37-2 (Support required if _ADDRESS PIDs supported) */
+#define E137_2_IPV4_DEFAULT_ROUTE                         0x070A /* Defined in ANSI E1.37-2                                    */
+#define E137_2_DNS_IPV4_NAME_SERVER                       0x070B /* Defined in ANSI E1.37-2                                    */
+#define E137_2_DNS_HOSTNAME                               0x070C /* Defined in ANSI E1.37-2                                    */
+#define E137_2_DNS_DOMAIN_NAME                            0x070D /* Defined in ANSI E1.37-2                                    */
+
 
 /* Category - Control              */
 #define E120_IDENTIFY_DEVICE                              0x1000
@@ -397,7 +412,7 @@
 
 
 #define E120_PRODUCT_DETAIL_OTHER                        0x7FFF /* for use where the Manufacturer believes that none of the
-                                                                   defined details apply.                                            */
+                                                                   defined details apply.                                       */
 /* Manufacturer Specific Types                           0x8000-
                                                          0xDFFF                                                                 */
 
@@ -513,35 +528,35 @@
 
 #define E120_UNITS_NONE                                  0x00   /* CONTACTS                                                     */
 #define E120_UNITS_CENTIGRADE                            0x01   /* TEMPERATURE	                                                */
-#define E120_UNITS_VOLTS_DC                              0x02   /* VOLTAGE		                                                */
+#define E120_UNITS_VOLTS_DC                              0x02   /* VOLTAGE                                                      */
 #define E120_UNITS_VOLTS_AC_PEAK                         0x03   /* VOLTAGE                                                      */
 #define E120_UNITS_VOLTS_AC_RMS                          0x04   /* VOLTAGE                                                      */
-#define E120_UNITS_AMPERE_DC                             0x05   /* CURRENT	                                                    */
-#define E120_UNITS_AMPERE_AC_PEAK                        0x06   /* CURRENT	                                                    */
+#define E120_UNITS_AMPERE_DC                             0x05   /* CURRENT                                                      */
+#define E120_UNITS_AMPERE_AC_PEAK                        0x06   /* CURRENT                                                      */
 #define E120_UNITS_AMPERE_AC_RMS                         0x07   /* CURRENT                                                      */
 #define E120_UNITS_HERTZ                                 0x08   /* FREQUENCY / ANG_VEL                                          */
-#define E120_UNITS_OHM                                   0x09   /* RESISTANCE			                                        */
-#define E120_UNITS_WATT                                  0x0A   /* POWER					                                    */
+#define E120_UNITS_OHM                                   0x09   /* RESISTANCE                                                   */
+#define E120_UNITS_WATT                                  0x0A   /* POWER                                                        */
 #define E120_UNITS_KILOGRAM                              0x0B   /* MASS                                                         */
-#define E120_UNITS_METERS                                0x0C   /* LENGTH / POSITION		                                    */
-#define E120_UNITS_METERS_SQUARED                        0x0D   /* AREA					                                        */
+#define E120_UNITS_METERS                                0x0C   /* LENGTH / POSITION                                            */
+#define E120_UNITS_METERS_SQUARED                        0x0D   /* AREA                                                         */
 #define E120_UNITS_METERS_CUBED                          0x0E   /* VOLUME                                                       */
 #define E120_UNITS_KILOGRAMMES_PER_METER_CUBED           0x0F   /* DENSITY                                                      */
-#define E120_UNITS_METERS_PER_SECOND                     0x10   /* VELOCITY		                                                */
+#define E120_UNITS_METERS_PER_SECOND                     0x10   /* VELOCITY                                                     */
 #define E120_UNITS_METERS_PER_SECOND_SQUARED             0x11   /* ACCELERATION	                                                */
 #define E120_UNITS_NEWTON                                0x12   /* FORCE                                                        */
-#define E120_UNITS_JOULE                                 0x13   /* ENERGY		                                                */
-#define E120_UNITS_PASCAL                                0x14   /* PRESSURE		                                                */
+#define E120_UNITS_JOULE                                 0x13   /* ENERGY                                                       */
+#define E120_UNITS_PASCAL                                0x14   /* PRESSURE                                                     */
 #define E120_UNITS_SECOND                                0x15   /* TIME                                                         */
-#define E120_UNITS_DEGREE                                0x16   /* ANGLE			                                            */
-#define E120_UNITS_STERADIAN                             0x17   /* ANGLE			                                            */
+#define E120_UNITS_DEGREE                                0x16   /* ANGLE                                                        */
+#define E120_UNITS_STERADIAN                             0x17   /* ANGLE                                                        */
 #define E120_UNITS_CANDELA                               0x18   /* LUMINOUS_INTENSITY                                           */
-#define E120_UNITS_LUMEN                                 0x19   /* LUMINOUS_FLUX		                                        */
-#define E120_UNITS_LUX                                   0x1A   /* ILLUMINANCE		                                            */
+#define E120_UNITS_LUMEN                                 0x19   /* LUMINOUS_FLUX                                                */
+#define E120_UNITS_LUX                                   0x1A   /* ILLUMINANCE                                                  */
 #define E120_UNITS_IRE                                   0x1B   /* CHROMINANCE                                                  */
-#define E120_UNITS_BYTE                                  0x1C   /* MEMORY	                                                    */
+#define E120_UNITS_BYTE                                  0x1C   /* MEMORY                                                       */
 /* Manufacturer-Specific Units                           0x80-
- 				                                         0xFF				                                                    */
+                                                         0xFF                                                                   */
 
 
 /********************************************************/
@@ -549,26 +564,26 @@
 /********************************************************/
 
 #define E120_PREFIX_NONE                                 0x00   /* Multiply by 1                                                */
-#define E120_PREFIX_DECI                                 0x01   /* Multiply by 10-1	                                            */
-#define E120_PREFIX_CENTI                                0x02   /* Multiply by 10-2	                                            */
-#define E120_PREFIX_MILLI                                0x03   /* Multiply by 10-3	                                            */
-#define E120_PREFIX_MICRO                                0x04   /* Multiply by 10-6	                                            */
-#define E120_PREFIX_NANO                                 0x05   /* Multiply by 10-9	                                            */
-#define E120_PREFIX_PICO                                 0x06   /* Multiply by 10-12	                                        */
-#define E120_PREFIX_FEMPTO                               0x07   /* Multiply by 10-15	                                        */
-#define E120_PREFIX_ATTO                                 0x08   /* Multiply by 10-18	                                        */
-#define E120_PREFIX_ZEPTO                                0x09   /* Multiply by 10-21	                                        */
-#define E120_PREFIX_YOCTO                                0x0A   /* Multiply by 10-24	                                        */
-#define E120_PREFIX_DECA                                 0x11   /* Multiply by 10+1	                                            */
-#define E120_PREFIX_HECTO                                0x12   /* Multiply by 10+2	                                            */
-#define E120_PREFIX_KILO                                 0x13   /* Multiply by 10+3	                                            */
-#define E120_PREFIX_MEGA                                 0x14   /* Multiply by 10+6	                                            */
-#define E120_PREFIX_GIGA                                 0x15   /* Multiply by 10+9	                                            */
-#define E120_PREFIX_TERRA                                0x16   /* Multiply by 10+12	                                        */
-#define E120_PREFIX_PETA                                 0x17   /* Multiply by 10+15	                                        */
-#define E120_PREFIX_EXA                                  0x18   /* Multiply by 10+18	                                        */
-#define E120_PREFIX_ZETTA                                0x19   /* Multiply by 10+21	                                        */
-#define E120_PREFIX_YOTTA                                0x1A   /* Multiply by 10+24	                                        */
+#define E120_PREFIX_DECI                                 0x01   /* Multiply by 10-1                                             */
+#define E120_PREFIX_CENTI                                0x02   /* Multiply by 10-2                                             */
+#define E120_PREFIX_MILLI                                0x03   /* Multiply by 10-3                                             */
+#define E120_PREFIX_MICRO                                0x04   /* Multiply by 10-6                                             */
+#define E120_PREFIX_NANO                                 0x05   /* Multiply by 10-9                                             */
+#define E120_PREFIX_PICO                                 0x06   /* Multiply by 10-12                                            */
+#define E120_PREFIX_FEMPTO                               0x07   /* Multiply by 10-15                                            */
+#define E120_PREFIX_ATTO                                 0x08   /* Multiply by 10-18                                            */
+#define E120_PREFIX_ZEPTO                                0x09   /* Multiply by 10-21                                            */
+#define E120_PREFIX_YOCTO                                0x0A   /* Multiply by 10-24                                            */
+#define E120_PREFIX_DECA                                 0x11   /* Multiply by 10+1                                             */
+#define E120_PREFIX_HECTO                                0x12   /* Multiply by 10+2                                             */
+#define E120_PREFIX_KILO                                 0x13   /* Multiply by 10+3                                             */
+#define E120_PREFIX_MEGA                                 0x14   /* Multiply by 10+6                                             */
+#define E120_PREFIX_GIGA                                 0x15   /* Multiply by 10+9                                             */
+#define E120_PREFIX_TERRA                                0x16   /* Multiply by 10+12                                            */
+#define E120_PREFIX_PETA                                 0x17   /* Multiply by 10+15                                            */
+#define E120_PREFIX_EXA                                  0x18   /* Multiply by 10+18                                            */
+#define E120_PREFIX_ZETTA                                0x19   /* Multiply by 10+21                                            */
+#define E120_PREFIX_YOTTA                                0x1A   /* Multiply by 10+24                                            */
 
 
 /********************************************************/
@@ -576,16 +591,16 @@
 /********************************************************/
 
 #define E120_DS_NOT_DEFINED                              0x00   /* Data type is not defined                                     */
-#define E120_DS_BIT_FIELD                                0x01   /* Data is bit packed			                                */
-#define E120_DS_ASCII                                    0x02   /* Data is a string					                            */
+#define E120_DS_BIT_FIELD                                0x01   /* Data is bit packed                                           */
+#define E120_DS_ASCII                                    0x02   /* Data is a string                                             */
 #define E120_DS_UNSIGNED_BYTE                            0x03   /* Data is an array of unsigned bytes                           */
 #define E120_DS_SIGNED_BYTE                              0x04   /* Data is an array of signed bytes                             */
-#define E120_DS_UNSIGNED_WORD                            0x05   /* Data is an array of unsigned 16-bit words	                */
-#define E120_DS_SIGNED_WORD                              0x06   /* Data is an array of signed 16-bit words	                    */
-#define E120_DS_UNSIGNED_DWORD                           0x07   /* Data is an array of unsigned 32-bit words	                */
-#define E120_DS_SIGNED_DWORD                             0x08   /* Data is an array of signed 32-bit words						*/
-/* Manufacturer-Specific Data Types		     		     0x80-                                                                  */
-/*                                                       0xDF	                                                                */
+#define E120_DS_UNSIGNED_WORD                            0x05   /* Data is an array of unsigned 16-bit words                    */
+#define E120_DS_SIGNED_WORD                              0x06   /* Data is an array of signed 16-bit words                      */
+#define E120_DS_UNSIGNED_DWORD                           0x07   /* Data is an array of unsigned 32-bit words                    */
+#define E120_DS_SIGNED_DWORD                             0x08   /* Data is an array of signed 32-bit words                      */
+/* Manufacturer-Specific Data Types                      0x80-                                                                  */
+/*                                                       0xDF                                                                   */
 
 /********************************************************/
 /* Table A-16: Parameter Desc. Command Class Defines    */
@@ -615,6 +630,8 @@
 #define E120_NR_SUB_DEVICE_OUT_OF_RANGE                  0x0009 /* Sub-Device is out of range or unknown.                       */
 #define E120_NR_PROXY_BUFFER_FULL                        0x000A /* Proxy buffer is full and can not store any more Queued       */
                                                                 /* Message or Status Message responses.                         */
+#define E137_2_NR_ACTION_NOT_SUPPORTED                   0x000B /* The parameter data is valid but the SET operation cannot be  */
+                                                                /* performed with the current configuration.                    */
 
 /********************************************************************************************************************************/
 /********************************************************************************************************************************/
@@ -639,4 +656,17 @@
 #define E137_1_MERGEMODE_DMX_ONLY                        0x03 /* DMX512 only, Preset ignored                                    */
 #define E137_1_MERGEMODE_OTHER                           0xFF /* Other (undefined) merge mode                                   */
 
-#endif /* RDM_E120_H_ */
+
+/********************************************************************************************************************************/
+/********************************************************************************************************************************/
+/* ANSI E1.37-2 DEFINES                                                                                                         */
+/********************************************************************************************************************************/
+/********************************************************************************************************************************/
+
+/********************************************************/
+/* E1.37-2 Table A-3: DHCP Mode Defines                 */
+/********************************************************/
+#define E137_2_DHCP_MODE_INACTIVE                        0x00 /* IP Address was not obtained via DHCP                           */
+#define E137_2_DHCP_MODE_ACTIVE                          0x01 /* IP Address was obtained via DHCP                               */
+#define E137_2_DHCP_MODE_UNKNOWN                         0x02 /* The system cannot determine if address was obtained via DHCP.  */
+

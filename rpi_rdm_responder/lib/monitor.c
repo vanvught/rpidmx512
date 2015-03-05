@@ -30,7 +30,7 @@
 #include "console.h"
 
 extern uint8_t dmx_data[512];
-extern uint8_t rdm_data[60];
+extern uint8_t rdm_data[512];
 
 extern uint8_t rdm_is_mute_get(void);
 

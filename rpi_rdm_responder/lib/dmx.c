@@ -58,7 +58,7 @@ static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
 static uint16_t dmx_data_index = 0;				///<
 static uint8_t dmx_send_state = IDLE;			///< Current state of DMX send
 
-uint8_t rdm_data[60];
+uint8_t rdm_data[512];
 static uint16_t rdm_checksum = 0;
 static uint64_t rdm_data_receive_end = 0;
 static uint8_t rdm_available = FALSE;

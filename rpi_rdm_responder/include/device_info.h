@@ -1,5 +1,5 @@
 /**
- * @file dmx_data.h
+ * @file device_info.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,26 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_DATA_H_
-#define DMX_DATA_H_
+#ifndef DEVICE_INFO_H_
+#define DEVICE_INFO_H_
 
 #include <stdint.h>
 
-typedef enum
-{
-	DMX_PORT_DIRECTION_IDLE = 0,	///<
-	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
-	DMX_PORT_DIRECTION_INP = 2		///< DMX input
-} _dmx_port_direction;
+extern void device_info_init(void);
+extern uint8_t * device_info_uuid_get(void);
+extern uint16_t device_info_dmx_footprint_get(void);
+extern uint16_t device_info_dmx_start_address_get(void);
+extern void device_info_dmx_start_address_set(uint16_t);
+extern uint8_t device_info_personality_count_get(void);
+extern uint8_t device_info_current_personality_get(void);
+extern void device_info_current_personality_set(uint8_t);
+extern const char * device_info_personality_description_get(uint8_t);
+extern uint16_t device_info_personality_slots_get(uint8_t);
 
-#define DMX_DATA_BUFFER_SIZE	512 ///<
-
-extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern uint8_t dmx_port_direction_get(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern uint8_t rdm_available_get(void);
-extern void rdm_available_set(uint8_t);
-extern uint64_t rdm_data_receive_end_get(void);
-
-#endif /* DMX_DATA_H_ */
+#endif /* DEVICE_INFO_H_ */

@@ -28,19 +28,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dmx.h"
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
-#include "sys_time.h"
-#include "console.h"
+#include "hardware.h"
+
+#include "dmx.h"
+#include "device_info.h"
 
 typedef enum {
 	FALSE = 0,
 	TRUE = 1
 } _boolean;
 
-extern void fb_init(void);
 
 // poll table
 extern void rdm_handle_data(void);
@@ -89,17 +89,12 @@ static inline void events_check() {
 }
 
 int notmain(void) {
+	hardware_init();
 	dmx_init();
-
-	led_init();
-	led_set(1);
-
-	sys_time_init();	// Read RTC
-
-	fb_init();			// Framebuffer
+	device_info_init();
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("RDM Responder, DMX512 data analyzer for the channels 1-32\n");
+	printf("RDM Responder, DMX512 data analyzer for 32 channels\n");
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
