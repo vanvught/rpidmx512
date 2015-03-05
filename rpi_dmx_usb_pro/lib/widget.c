@@ -46,7 +46,7 @@ typedef enum {
 } _boolean;
 
 extern uint8_t dmx_data[512];
-extern uint8_t rdm_data[60];
+extern uint8_t rdm_data[512];
 
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
