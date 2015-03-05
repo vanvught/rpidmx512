@@ -35,6 +35,8 @@ typedef enum
 	DMX_PORT_DIRECTION_INP = 2		///< DMX input
 } _dmx_port_direction;
 
+#define DMX_DATA_BUFFER_SIZE	512 ///<
+
 extern void dmx_init(void);
 extern void dmx_port_direction_set(const uint8_t, const uint8_t);
 extern uint8_t dmx_port_direction_get(void);
