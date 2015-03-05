@@ -1,5 +1,5 @@
 /**
- * @file hardware.h
+ * @file hardware.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARE_H_
-#define HARDWARE_H_
+#include "sys_time.h"
+#include "bcm2835_led.h"
+#include "bcm2835_wdog.h"
 
-extern void __disable_fiq(void);
-extern void __enable_fiq(void);
+extern void fb_init(void);
 
-extern void __disable_irq(void);
-extern void __enable_irq(void);
+void hardware_init(void)
+{
+	sys_time_init();
+	fb_init();
+	led_init();
+	led_set(1);
+}
 
-extern void hardware_init(void);
-extern void hardware_reboot(void);
-
-#endif /* HARDWARE_H_ */
+void hardware_reboot(void)
+{
+	watchdog_init();
+	for(;;);
+}

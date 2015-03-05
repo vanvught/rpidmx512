@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,13 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
-#include <stdint.h>
+extern void __disable_fiq(void);
+extern void __enable_fiq(void);
 
-void __disable_fiq(void);
-void __enable_fiq(void);
+extern void __disable_irq(void);
+extern void __enable_irq(void);
 
-void __disable_irq(void);
-void __enable_irq(void);
+extern void hardware_init(void);
+extern void hardware_reboot(void);
 
 #endif /* HARDWARE_H_ */
