@@ -29,14 +29,14 @@
 #include <bcm2835.h>
 #include <mcp7941x.h>
 
-volatile uint64_t st_startup_micros = 0;
-volatile uint32_t rtc_startup_seconds = 0;
+static volatile uint64_t sys_time_init_startup_micros = 0;
+static volatile uint32_t rtc_startup_seconds = 0;
 
 /**
  * Read time from RTC MCP7941x and set EPOCH time in seconds
  */
 void sys_time_init(void) {
-	st_startup_micros = bcm2835_st_read();
+	sys_time_init_startup_micros = bcm2835_st_read();
 	struct rtc_time tm_rtc;
 	struct tm tmbuf;
 
@@ -65,7 +65,7 @@ void sys_time_init(void) {
 time_t sys_time(time_t *__timer) {
 	// http://www.hackersdelight.org/magic.htm
 	// http://stackoverflow.com/questions/1269994/nanoseconds-to-milliseconds-fast-division-by-1000000
-	time_t elapsed = (unsigned long long)((bcm2835_st_read() - st_startup_micros) * 0x431bde83) >> (0x12 + 32);
+	time_t elapsed = (unsigned long long)((bcm2835_st_read() - sys_time_init_startup_micros) * 0x431bde83) >> (0x12 + 32);
 
 	elapsed = elapsed + rtc_startup_seconds;
 
