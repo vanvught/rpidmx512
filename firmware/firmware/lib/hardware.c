@@ -23,14 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include "sys_time.h"
+#include <bcm2835.h>
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 
+#include "sys_time.h"
+
 extern void fb_init(void);
+
+static volatile uint64_t hardware_init_startup_micros = 0;
 
 void hardware_init(void)
 {
+	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
 	fb_init();
 	led_init();
@@ -41,4 +46,9 @@ void hardware_reboot(void)
 {
 	watchdog_init();
 	for(;;);
+}
+
+uint64_t hardware_uptime_seconds(void)
+{
+	return (((bcm2835_st_read() - hardware_init_startup_micros) * 0x431bde83) >> (0x12 + 32));
 }

@@ -35,4 +35,6 @@ extern void __enable_irq(void);
 extern void hardware_init(void);
 extern void hardware_reboot(void);
 
+extern uint64_t hardware_uptime_seconds(void);
+
 #endif /* HARDWARE_H_ */
