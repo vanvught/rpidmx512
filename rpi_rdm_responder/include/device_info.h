@@ -29,7 +29,19 @@
 #include <stdint.h>
 
 extern void device_info_init(void);
+
 extern uint8_t * device_info_uuid_get(void);
+
+extern const uint8_t * device_info_label_get(void);
+extern const uint8_t device_info_label_length_get(void);
+extern void device_info_label_set(const uint8_t *, uint8_t );
+extern uint8_t device_info_is_factory_defaults_get(void);
+extern const uint8_t * device_info_manufacturer_name_get(void);
+extern const uint8_t device_info_manufacturer_name_length_get(void);
+extern const uint8_t * device_info_supported_language_get(void);
+extern const uint8_t device_info_supported_language_length_get(void);
+extern const uint8_t * device_info_software_version_get(void);
+extern const uint8_t device_info_software_version_length_get(void);
 extern uint16_t device_info_dmx_footprint_get(void);
 extern uint16_t device_info_dmx_start_address_get(void);
 extern void device_info_dmx_start_address_set(uint16_t);

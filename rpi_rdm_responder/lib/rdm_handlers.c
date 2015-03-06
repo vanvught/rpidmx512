@@ -43,15 +43,6 @@ typedef enum {
 	TRUE = 1
 } _boolean;
 
-static const uint8_t SUPPORTED_LANGUAGE[] = "en";
-static const uint8_t SUPPORTED_LANGUAGE_LENGTH = (sizeof(SUPPORTED_LANGUAGE) / sizeof(uint8_t)) - 1;
-static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
-static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = (sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(uint8_t)) - 1;
-static const uint8_t SOFTWARE_VERSION[] = "1.0";
-static const uint8_t SOFTWARE_VERSION_LENGTH = (sizeof(SOFTWARE_VERSION) / sizeof(uint8_t)) - 1;
-static const uint8_t DEVICE_NAME[] = "Raspberry Pi";
-static const uint8_t DEVICE_NAME_LENGTH = (sizeof(DEVICE_NAME) / sizeof(uint8_t)) - 1;
-
 extern uint8_t rdm_data[512];
 static uint8_t rdm_is_mute = FALSE;
 static uint8_t rdm_identify_mode_enabled = FALSE;
@@ -63,19 +54,23 @@ static void rdm_get_supported_parameters(void);
 static void rdm_get_device_info(void);
 static void rdm_get_manufacturer_label(void);
 static void rdm_get_device_label(void);
+static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device);
+static void rdm_get_factory_defaults(void);
+static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_language(void);
+static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_software_version_label(void);
 static void rdm_get_personality(void);
+static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_personality_description(void);
 static void rdm_get_dmx_start_address(void);
-static void rdm_get_identify_device(void);
-static void rdm_get_real_time_clock(void);
-
-static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device);
-static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device);
-static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device);
-static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device);
+static void rdm_get_device_hours(void);
+static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device);
+static void rdm_get_identify_device(void);
+static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device);
+static void rdm_get_real_time_clock(void);
+static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device);
 
 uint8_t rdm_is_mute_get(void)
 {
@@ -90,19 +85,21 @@ struct _pid_definition
 	uint8_t get_argument_size;
 	uint8_t include_in_supported_params;
 } const PID_DEFINITIONS[] = {
-		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,    NULL,                       0, FALSE},
-		{E120_DEVICE_INFO,                 &rdm_get_device_info,             NULL,                       0, FALSE},
-		{E120_MANUFACTURER_LABEL,          &rdm_get_manufacturer_label,      NULL,                       0, TRUE },
-		{E120_DEVICE_LABEL,                &rdm_get_device_label,            NULL,                       0, TRUE },
-		{E120_LANGUAGE_CAPABILITIES,       &rdm_get_language,			     NULL,                       0, TRUE },
-		{E120_LANGUAGE,				       &rdm_get_language,			     &rdm_set_language,          0, TRUE },
-		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,  NULL,                       0, FALSE},
-		{E120_DMX_PERSONALITY,		       &rdm_get_personality,             &rdm_set_personality,       0, TRUE },
-		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description, NULL,                       1, TRUE },
-		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,       &rdm_set_dmx_start_address, 0, FALSE},
-		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,         NULL,                       0, TRUE },
-		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		 &rdm_set_identify_device,   0, FALSE},
-		{E120_RESET_DEVICE,			       NULL,                             &rdm_set_reset_device,      1, TRUE },
+		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,    NULL,                        0, FALSE},
+		{E120_DEVICE_INFO,                 &rdm_get_device_info,             NULL,                        0, FALSE},
+		{E120_MANUFACTURER_LABEL,          &rdm_get_manufacturer_label,      NULL,                        0, TRUE },
+		{E120_DEVICE_LABEL,                &rdm_get_device_label,            &rdm_set_device_label,       0, TRUE },
+		{E120_FACTORY_DEFAULTS,            &rdm_get_factory_defaults,        &rdm_set_factory_defaults,   0, TRUE },
+		{E120_LANGUAGE_CAPABILITIES,       &rdm_get_language,			     NULL,                        0, TRUE },
+		{E120_LANGUAGE,				       &rdm_get_language,			     &rdm_set_language,           0, TRUE },
+		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,  NULL,                        0, FALSE},
+		{E120_DMX_PERSONALITY,		       &rdm_get_personality,             &rdm_set_personality,        0, TRUE },
+		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description, NULL,                        1, TRUE },
+		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,       &rdm_set_dmx_start_address,  0, FALSE},
+		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	     &rdm_set_device_hours,       0, TRUE },
+		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,         NULL,                        0, TRUE },
+		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		 &rdm_set_identify_device,    0, FALSE},
+		{E120_RESET_DEVICE,			       NULL,                             &rdm_set_reset_device,       0, TRUE },
 		};
 
 static void rdm_get_supported_parameters(void)
@@ -183,26 +180,92 @@ inline static void handle_string(const uint8_t *name, const uint8_t lenght)
 
 static void rdm_get_manufacturer_label(void)
 {
-	handle_string(DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
+	const uint8_t *manufacturer_name = device_info_manufacturer_name_get();
+	const uint8_t manufacturer_name_length = device_info_manufacturer_name_length_get();
+	handle_string(manufacturer_name, manufacturer_name_length);
 	rdm_send_respond_message_ack();
 }
 
 
 static void rdm_get_device_label(void)
 {
-	handle_string(DEVICE_NAME, DEVICE_NAME_LENGTH);
+	const uint8_t *device_name = device_info_label_get();
+	const uint8_t device_name_length = device_info_label_length_get();
+	handle_string(device_name, device_name_length);
+	rdm_send_respond_message_ack();
+}
+
+static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
+{
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
+
+	if (rdm_command->param_data_length > 32)
+	{
+		rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	uint8_t device_label_length = rdm_command->param_data_length;
+	uint8_t *device_label= &rdm_command->param_data[0];
+	device_info_label_set(device_label, device_label_length);
+
+	if(was_broadcast)
+		return;
+
+	rdm_command->param_data_length = 0;
+	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE;
+
+	rdm_send_respond_message_ack();
+}
+
+static void rdm_get_factory_defaults(void)
+{
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
+
+	if (rdm_command->param_data_length != 0)
+	{
+		rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	rdm_command->param_data_length = 1;
+	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
+	rdm_command->param_data[0] = device_info_is_factory_defaults_get();
+
+	rdm_send_respond_message_ack();
+}
+
+static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
+{
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
+
+	if (rdm_command->param_data_length != 0)
+	{
+		rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	device_info_init();
+
+	if(was_broadcast)
+		return;
+
 	rdm_send_respond_message_ack();
 }
 
 static void rdm_get_language(void)
 {
-	handle_string(SUPPORTED_LANGUAGE, SUPPORTED_LANGUAGE_LENGTH);
+	const uint8_t *supported_language = device_info_supported_language_get();
+	const uint8_t supported_language_length = device_info_supported_language_length_get();
+	handle_string(supported_language, supported_language_length);
 	rdm_send_respond_message_ack();
 }
 
 static void rdm_get_software_version_label(void)
 {
-	handle_string(SOFTWARE_VERSION, SOFTWARE_VERSION_LENGTH);
+	const uint8_t *software_version = device_info_software_version_get();
+	const uint8_t software_version_length = device_info_software_version_length_get();
+	handle_string(software_version, software_version_length);
 	rdm_send_respond_message_ack();
 }
 
@@ -261,9 +324,6 @@ static void rdm_get_personality_description(void)
 
 	uint16_t slots = device_info_personality_slots_get(personality);
 
-	console_clear_line(24);
-	printf("%d : slots %d\n", personality, slots);
-
 	const char *description = device_info_personality_description_get(personality);
 	uint8_t length = strlen(description);
 	length = length > 32 ? 32 : length;
@@ -288,18 +348,41 @@ static void rdm_get_dmx_start_address(void)
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
 	uint16_t dmx_start_address = device_info_dmx_start_address_get();
 	rdm_response->param_data_length = 2;
-	rdm_response->message_length = rdm_response->message_length + 2;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 	rdm_response->param_data[0] = (uint8_t)(dmx_start_address >> 8);
 	rdm_response->param_data[1] = (uint8_t)dmx_start_address;
 
 	rdm_send_respond_message_ack();
 }
 
+static void rdm_get_device_hours(void)
+{
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
+	uint64_t device_hours = hardware_uptime_seconds() / 3600;
+	rdm_response->param_data_length = 4;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 4;
+	rdm_response->param_data[0] = (uint8_t)(device_hours >> 24);
+	rdm_response->param_data[1] = (uint8_t)(device_hours >> 16);
+	rdm_response->param_data[2] = (uint8_t)(device_hours >> 8);
+	rdm_response->param_data[3] = (uint8_t)device_hours;
+
+	rdm_send_respond_message_ack();
+}
+
+static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device)
+{
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
+	rdm_command->param_data_length = 0;
+	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE;
+
+	rdm_send_respond_message_nack(E120_NR_WRITE_PROTECT);
+}
+
 static void rdm_get_identify_device(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
 	rdm_response->param_data_length = 1;
-	rdm_response->message_length = rdm_response->message_length + 1;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
 	rdm_response->param_data[0] = rdm_identify_mode_enabled;
 
 	rdm_send_respond_message_ack();
@@ -316,7 +399,7 @@ static void rdm_get_real_time_clock(void)
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
 
 	rdm_response->param_data_length = 7;
-	rdm_response->message_length = rdm_response->message_length + 7;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 7;
 
 	uint16_t year = local_time->tm_year + 2000;
 
@@ -331,6 +414,12 @@ static void rdm_get_real_time_clock(void)
 	rdm_send_respond_message_ack();
 }
 
+
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -407,7 +496,9 @@ static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	if ((rdm_command->param_data[0] != SUPPORTED_LANGUAGE[0]) || (rdm_command->param_data[1] != SUPPORTED_LANGUAGE[1]))
+	const uint8_t *supported_language = device_info_supported_language_get();
+
+	if ((rdm_command->param_data[0] != supported_language[0]) || (rdm_command->param_data[1] != supported_language[1]))
 	{
 		rdm_send_respond_message_nack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
@@ -420,6 +511,15 @@ static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param is_broadcast
+ * @param command_class
+ * @param param_id
+ * @param param_data_length
+ * @param sub_device
+ */
 static void process_rdm_message(const uint8_t is_broadcast, const uint8_t command_class, const uint16_t param_id, const uint8_t param_data_length, const uint16_t sub_device)
 {
 	struct _pid_definition const *pid_handler = NULL;
@@ -488,7 +588,10 @@ static void process_rdm_message(const uint8_t is_broadcast, const uint8_t comman
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * Main function for handling RDM data.
+ * The function is registered in the poll table \file main.c
  */
 void rdm_handle_data(void)
 {
@@ -570,7 +673,7 @@ void rdm_handle_data(void)
 		} else if (param_id == E120_DISC_UN_MUTE)
 		{
 			if (rdm_cmd->param_data_length != 0) {
-				rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
 			rdm_is_mute = FALSE;
@@ -582,7 +685,7 @@ void rdm_handle_data(void)
 		} else if (param_id == E120_DISC_MUTE)
 		{
 			if (rdm_cmd->param_data_length != 0) {
-				rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
 			rdm_is_mute = TRUE;
