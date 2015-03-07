@@ -108,4 +108,8 @@ extern int32_t bcm2835_vc_set_power_state(const uint32_t, const uint32_t);
 
 extern int32_t bcm2835_vc_get_board_mac_address(uint8_t *);
 
+extern int32_t bcm2835_vc_get_get_firmware_revision(void);
+extern int32_t bcm2835_vc_get_get_board_model(void);
+extern int32_t bcm2835_vc_get_get_board_revision(void);
+
 #endif /* BCM2835_VC_H_ */

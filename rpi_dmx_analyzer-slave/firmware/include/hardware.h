@@ -35,6 +35,12 @@ extern void __enable_irq(void);
 extern void hardware_init(void);
 extern void hardware_reboot(void);
 
-extern uint64_t hardware_uptime_seconds(void);
+extern const uint64_t hardware_uptime_seconds(void);
+extern const uint32_t hardware_get_firmware_revision(void);
+extern const uint8_t *hardware_get_firmware_copyright(void);
+extern const uint8_t hardware_get_firmware_copyright_length(void);
+extern const uint32_t hardware_get_board_model_id(void);
+extern const uint8_t *hardware_get_board_model(void);
+extern const uint8_t hardware_get_board_model_length(void);
 
 #endif /* HARDWARE_H_ */
