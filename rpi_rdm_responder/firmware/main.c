@@ -28,13 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/rdm_device_info.h"
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "hardware.h"
 
 #include "dmx.h"
-#include "device_info.h"
 
 typedef enum {
 	FALSE = 0,
@@ -91,11 +91,11 @@ static inline void events_check() {
 int notmain(void) {
 	hardware_init();
 	dmx_init();
-	device_info_init();
+	rdm_device_info_init();
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 	printf("RDM Responder, DMX512 data analyzer for 32 channels\n");
-	const uint8_t *uid_device = device_info_uuid_get();
+	const uint8_t *uid_device = rdm_device_info_uuid_get();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n", uid_device[0],
 			uid_device[1], uid_device[2], uid_device[3], uid_device[4],
 			uid_device[5]);
