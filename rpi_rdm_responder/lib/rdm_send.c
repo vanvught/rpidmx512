@@ -26,12 +26,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "../include/rdm_device_info.h"
 #include "bcm2835.h"
 #include "bcm2835_pl011.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-#include "device_info.h"
 
 // TODO move for util.h
 typedef enum {
@@ -94,7 +94,7 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 		rdm_response->param_data[1] = (uint8_t)reason;
 	}
 
-	const uint8_t *uid_device = device_info_uuid_get();
+	const uint8_t *uid_device = rdm_device_info_uuid_get();
 
 	memcpy(rdm_response->destination_uid, rdm_response->source_uid, UID_SIZE);
 	memcpy(rdm_response->source_uid, uid_device, UID_SIZE);
