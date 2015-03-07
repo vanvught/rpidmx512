@@ -145,7 +145,7 @@ DRESULT disk_ioctl (BYTE drv, BYTE ctrl, void *buf) {
 /*---------------------------------------------------------*/
 DWORD get_fattime (void)
 {
-	return	  ((DWORD)(2012 - 1980) << 25)	/* Year = 2012 */
+	return	  ((DWORD)(2015 - 1980) << 25)	/* Year = 2015 */
 			| ((DWORD)1 << 21)				/* Month = 1 */
 			| ((DWORD)1 << 16)				/* Day_m = 1*/
 			| ((DWORD)0 << 11)				/* Hour = 0 */
