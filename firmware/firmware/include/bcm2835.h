@@ -53,7 +53,11 @@
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
 #define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
 
+#if RPI2
+#define BCM2835_PERI_BASE		0x3F000000
+#else
 #define BCM2835_PERI_BASE		0x20000000
+#endif
 #define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x3000)
 #define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0xB200)
 #define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0xB880)
@@ -322,7 +326,7 @@ inline static uint64_t bcm2835_st_read(void)
 }
 
 /**
- *
+ * @ingroup TIMER
  *
  * @param usec
  */
