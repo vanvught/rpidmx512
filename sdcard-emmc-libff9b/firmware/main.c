@@ -43,6 +43,7 @@ extern void bcm2835_console_begin(void);
 
 void die(FRESULT rc) {
 	printf("Failed with rc=%u.\n", rc);
+	watchdog_init();
 	while (1)
 		;
 }
@@ -90,7 +91,7 @@ int notmain (void)
 		die(rc);
 #endif
 
-#if 1
+#if 0
 	printf("\nOpen an existing file (devices.txt).\n");
 	rc = f_open(&Fil, "devices.txt", FA_READ);
 	if (rc)
@@ -156,7 +157,7 @@ int notmain (void)
 
 	printf("\nTest completed.\n");
 
-	//watchdog_init();
+	watchdog_init();
 
 	return 0;
 }
