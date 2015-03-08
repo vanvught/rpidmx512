@@ -26,6 +26,8 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
+#include <stdint.h>
+
 extern void __disable_fiq(void);
 extern void __enable_fiq(void);
 
