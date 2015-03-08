@@ -40,7 +40,12 @@ void sys_time_init(void) {
 	struct rtc_time tm_rtc;
 	struct tm tmbuf;
 
-	mcp7941x_start(0x00);
+	if (mcp7941x_start(0x00) == MCP7941X_ERROR)
+	{
+		rtc_startup_seconds = 0;
+		return;
+	}
+
 	mcp7941x_get_date_time(&tm_rtc);
 
 	tmbuf.tm_hour = tm_rtc.tm_hour;
