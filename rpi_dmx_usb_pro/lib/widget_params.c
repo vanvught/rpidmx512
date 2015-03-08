@@ -26,18 +26,20 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "widget_params.h"
 #include "bcm2835_vc.h"
 #include "ff.h"
 
-static struct _widget_params DMXUSBPRO_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
-static struct _widget_sn DMXUSBPRO_SN = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
+#include "widget.h"
+#include "widget_params.h"
 
-static const TCHAR PARAMS_FILE_NAME[] = "params.txt";
+static struct _widget_params dmx_usb_pro_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
+static struct _widget_sn dmx_usb_pro_sn = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
 
-static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";
-static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";
-static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";
+static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file name
+///< entries
+static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";		///<
+static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";			///<
+static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";	///<
 
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
@@ -107,21 +109,21 @@ static void process_line_read(const char *line)
 	{
 		if (strncmp(name, DMXUSBPRO_PARAMS_BREAK_TIME, sizeof(DMXUSBPRO_PARAMS_BREAK_TIME)) == 0)
 		{
-			if((value >= 9) && (value <= 127))
+			if((value >= 9) && (value <= 127))		// DMX output break time in 10.67 μs units. Valid range is 9 to 127
 			{
-				DMXUSBPRO_params.break_time = value;
+				dmx_usb_pro_params.break_time = value;
 			}
 		} else if  (strncmp(name, DMXUSBPRO_PARAMS_MAB_TIME, sizeof(DMXUSBPRO_PARAMS_MAB_TIME)) == 0)
 		{
-			if((value >= 1) && (value <= 127))
+			if((value >= 1) && (value <= 127))		// DMX output Mark After Break time in 10.67 μs units. Valid range is 1 to 127.
 			{
-				DMXUSBPRO_params.mab_time = value;
+				dmx_usb_pro_params.mab_time = value;
 			}
 		} else if  (strncmp(name, DMXUSBPRO_PARAMS_REFRESH_RATE, sizeof(DMXUSBPRO_PARAMS_REFRESH_RATE)) == 0)
 		{
-			if((value >= 0) && (value <= 40))
+			if((value >= 0) && (value <= 40))		// DMX output rate in packets per second. Valid range is 1 to 40.
 			{
-				DMXUSBPRO_params.refresh_rate = value;
+				dmx_usb_pro_params.refresh_rate = value;
 			}
 		}
 	}
@@ -159,41 +161,53 @@ void widget_params_init(void)
 {
 	uint8_t mac_address[6];
 	if (bcm2835_vc_get_board_mac_address(mac_address) == 0){
-		DMXUSBPRO_SN.bcd_3 = mac_address[2];
-		DMXUSBPRO_SN.bcd_2 = mac_address[3];
-		DMXUSBPRO_SN.bcd_1 = mac_address[4];
-		DMXUSBPRO_SN.bcd_0 = mac_address[5];
+		dmx_usb_pro_sn.bcd_3 = mac_address[2];
+		dmx_usb_pro_sn.bcd_2 = mac_address[3];
+		dmx_usb_pro_sn.bcd_1 = mac_address[4];
+		dmx_usb_pro_sn.bcd_0 = mac_address[5];
 	}
 
 	read_config_file();
+
+	// Update the Widget
+	// DMX output rate in packets per second. Valid range is 1 to 40.
+	uint64_t period = 0;	// μs
+	if (dmx_usb_pro_params.refresh_rate > 0 && dmx_usb_pro_params.refresh_rate <= 40)
+	{
+		period = 1E6 / dmx_usb_pro_params.refresh_rate;
+	}
+	widget_dmx_output_period_set(period);
 }
 
 void widget_params_get(struct _widget_params *widget_params)
 {
-	memcpy(widget_params, &DMXUSBPRO_params, sizeof(struct _widget_params));
+	memcpy(widget_params, &dmx_usb_pro_params, sizeof(struct _widget_params));
 }
 
 
 void widget_params_break_time_set(uint8_t break_time)
 {
-	DMXUSBPRO_params.break_time = break_time;
+	dmx_usb_pro_params.break_time = break_time;
 	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
 void widget_params_mab_time_set(uint8_t mab_time)
 {
-	DMXUSBPRO_params.mab_time = mab_time;
+	dmx_usb_pro_params.mab_time = mab_time;
 	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
 void widget_params_refresh_rate_set(uint8_t refresh_rate)
 {
-	DMXUSBPRO_params.refresh_rate = refresh_rate;
+	dmx_usb_pro_params.refresh_rate = refresh_rate;
+	// Update Widget
+	widget_dmx_output_period_set(1E6 / refresh_rate);
+	// Update parameters file
 	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
 void widget_params_sn_get(struct _widget_sn *widget_sn)
 {
-	memcpy(widget_sn, &DMXUSBPRO_SN, sizeof(struct _widget_sn));
+	memcpy(widget_sn, &dmx_usb_pro_sn, sizeof(struct _widget_sn));
 }
 

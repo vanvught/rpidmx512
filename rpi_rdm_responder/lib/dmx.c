@@ -25,13 +25,15 @@
 
 #include <stdint.h>
 
-#include "dmx.h"
-#include "rdm.h"
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
 #include "hardware.h"
+
+#include "dmx.h"
+#include "rdm.h"
+#include "rdm_e120.h"
 
 // TODO move for util.h
 typedef enum {
@@ -53,18 +55,28 @@ typedef enum {
   RDMDISCECS	///<
 } _dmx_state;
 
-uint8_t dmx_data[512];							///<
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];			///<
 static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
 static uint16_t dmx_data_index = 0;				///<
-static uint8_t dmx_send_state = IDLE;			///< Current state of DMX send
 
-uint8_t rdm_data[512];
-static uint16_t rdm_checksum = 0;
-static uint64_t rdm_data_receive_end = 0;
-static uint8_t rdm_available = FALSE;
+uint8_t rdm_data[512];							///<
+static uint16_t rdm_checksum = 0;				///<
+static uint64_t rdm_data_receive_end = 0;		///<
+static uint8_t rdm_available = FALSE;			///<
 static uint8_t rdm_disc_index = 0;				///<
 
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
+
+/**
+ * IRQ Handler is not used
+ */
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
+{
+}
+
+/*
+ * GETTERS / SETTERS
+ */
 
 /**
  * @ingroup rdm
@@ -84,6 +96,24 @@ uint8_t rdm_available_get(void)
 void rdm_available_set(uint8_t is_available)
 {
 	rdm_available = is_available;
+}
+
+/**
+ *
+ * @return
+ */
+uint8_t dmx_port_direction_get(void)
+{
+	return dmx_port_direction;
+}
+
+/**
+ *
+ * @return
+ */
+uint64_t rdm_data_receive_end_get(void)
+{
+	return rdm_data_receive_end;
 }
 
 /**
@@ -155,12 +185,12 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			dmx_receive_state = DMXDATA;
 			dmx_data_index = 0;
 		}
-		else if (data == 0xCC)		// RDM start code
+		else if (data == E120_SC_RDM)		// RDM start code
 		{
 			dmx_receive_state = RDMDATA;
 			dmx_data_index = 0;
-			rdm_data[dmx_data_index++] = 0xCC;
-			rdm_checksum = 0xCC;
+			rdm_data[dmx_data_index++] = E120_SC_RDM;
+			rdm_checksum = E120_SC_RDM;
 		}
 		else
 		{
@@ -183,7 +213,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		} else
 		{
 			uint8_t data = (BCM2835_PL011->DR & 0xFF);
-			rdm_data[dmx_data_index++] =  data;
+			rdm_data[dmx_data_index++] = data;
 			rdm_checksum += data;
 
 			struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
@@ -207,7 +237,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		rdm_checksum -= data;
 
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-		if ((rdm_checksum == 0) && (p->sub_start_code == 0x01)) // E120_SC_SUB_MESSAGE
+		if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE))
 		{
 			rdm_available = TRUE;
 			rdm_data_receive_end = bcm2835_st_read();
@@ -233,7 +263,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	{
 		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
 		rdm_disc_index++;
-		if (rdm_disc_index == 2 * UID_SIZE)
+		if (rdm_disc_index == 2 * RDM_UID_SIZE)
 		{
 			dmx_receive_state = RDMDISCECS;
 			rdm_disc_index = 0;
@@ -257,74 +287,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 /**
  * @ingroup dmx
  *
- */
-static void dmx_send_irq_init(void)
-{
-	BCM2835_ST->C1 = BCM2835_ST->CLO + 4;			// 4us
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
-}
-
-/**
- * @ingroup dmx
- *
- * Interrupt handler for continues sending DMX data Channels only!.
- * \ref dmx_data
- *
- */
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
-{
-	dmb();
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-
-	switch (dmx_send_state)
-	{
-	case IDLE:
-		dmx_send_state = BREAK;
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-		BCM2835_ST->C1 = BCM2835_ST->CLO + 88;
-		break;
-	case BREAK:
-		dmx_send_state = MAB;
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-		BCM2835_ST->C1 = BCM2835_ST->CLO + 8;
-		break;
-	case MAB:
-		dmx_send_state = DMXDATA;
-		while (1)
-		{
-			if ((BCM2835_PL011->FR & 0x20) == 0)
-				break;
-		}
-		BCM2835_PL011->DR = 0x00;		// DMX "Start Code"
-		int i = 0;
-		for (i = 0; i < 512; i++)
-		{
-			while (1)
-			{
-				if ((BCM2835_PL011->FR & 0x20) == 0)
-					break;
-			}
-			BCM2835_PL011->DR = dmx_data[i];
-		}
-		while (1)
-		{
-			if ((BCM2835_PL011->FR & 0x20) == 0)
-				break;
-		}
-		BCM2835_ST->C1 = BCM2835_ST->CLO + 100;
-		dmx_send_state = IDLE;
-		break;
-	default:
-		BCM2835_ST->C1 = BCM2835_ST->CLO + 44;
-		break;
-	}
-	dmb();
-}
-
-/**
- * @ingroup dmx
- *
  * The DMX port direction is set based on \ref dmx_port_direction (\ref DMX_PORT_DIRECTION_OUTP or \ref DMX_PORT_DIRECTION_INP).
  *
  */
@@ -333,9 +295,6 @@ void dmx_data_start(void)
 	switch (dmx_port_direction)
 	{
 	case DMX_PORT_DIRECTION_OUTP:
-		dmx_send_irq_init();
-		dmx_send_state = IDLE;
-		__enable_irq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
 		dmx_receive_fiq_init();
@@ -350,13 +309,10 @@ void dmx_data_start(void)
 /**
  * @ingroup dmx
  *
- * Disable all DMX transmission (both continues send and receive).
- *
  */
 void dmx_data_stop(void)
 {
 	__disable_fiq();
-	__disable_irq();
 }
 
 /**
@@ -397,21 +353,8 @@ void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_d
 }
 
 /**
- *
- * @return
- */
-uint8_t dmx_port_direction_get(void)
-{
-	return dmx_port_direction;
-}
-
-uint64_t rdm_data_receive_end_get(void)
-{
-	return rdm_data_receive_end;
-}
-
-/**
  * @ingroup dmx
+ *
  *
  * @param data
  * @param data_length
@@ -419,9 +362,52 @@ uint64_t rdm_data_receive_end_get(void)
 void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(88);						// Break Time
+	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
+
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(8);						// Mark After Break
+	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
+
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	BCM2835_PL011->DR = 0x00;
+
+	uint16_t i = 0;
+	for (i = 0; i < data_length; i++)
+	{
+		while (1)
+		{
+			if ((BCM2835_PL011->FR & 0x20) == 0)
+				break;
+		}
+		BCM2835_PL011->DR = data[i];
+	}
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	udelay(44);
+}
+
+
+/**
+ * @ingroup rdm
+ *
+ *
+ * @param data
+ * @param data_length
+ */
+void rdm_data_send(const uint8_t *data, const uint16_t data_length)
+{
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
+
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
+
 	uint16_t i = 0;
 	for (i = 0; i < data_length; i++)
 	{

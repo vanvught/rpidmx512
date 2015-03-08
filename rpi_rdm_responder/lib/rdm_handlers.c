@@ -47,8 +47,9 @@ static uint8_t rdm_is_mute = FALSE;
 static uint8_t rdm_identify_mode_enabled = FALSE;
 
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
-static const uint8_t UID_ALL[UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+static const uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
+//static void rdm_get_queued_message(void);
 static void rdm_get_supported_parameters(void);
 static void rdm_get_device_info(void);
 static void rdm_get_device_model_description(void);
@@ -74,11 +75,6 @@ static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_real_time_clock(void);
 static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device);
 
-uint8_t rdm_is_mute_get(void)
-{
-	return rdm_is_mute;
-}
-
 struct _pid_definition
 {
 	uint16_t pid;
@@ -87,6 +83,7 @@ struct _pid_definition
 	uint8_t get_argument_size;
 	uint8_t include_in_supported_params;
 } const PID_DEFINITIONS[] = {
+//		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, TRUE },
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, FALSE},
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, FALSE},
 		{E120_DEVICE_MODEL_DESCRIPTION,    &rdm_get_device_model_description,   NULL,                        0, TRUE },
@@ -136,6 +133,22 @@ static void rdm_get_supported_parameters(void)
 
 	rdm_send_respond_message_ack();
 
+}
+
+#if 0
+static void rdm_get_queued_message(void)
+{
+	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_data;
+	rdm_response->port_id = E120_STATUS_MESSAGES;
+	rdm_response->param_data_length = 0;
+
+	rdm_send_respond_message_ack();
+}
+#endif
+
+uint8_t rdm_is_mute_get(void)
+{
+	return rdm_is_mute;
 }
 
 inline static void handle_string(const uint8_t *name, const uint8_t lenght)
@@ -647,17 +660,17 @@ void rdm_handle_data(void)
 
 	const uint8_t *uid_device = rdm_device_info_uuid_get();
 
-	if (memcmp(rdm_cmd->destination_uid, UID_ALL, UID_SIZE) == 0)
+	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
 	{
 		rdm_packet_is_broadcast = TRUE;
 	}
 
-	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, UID_SIZE-2) == 0))
+	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, RDM_UID_SIZE-2) == 0))
 	{
 		rdm_packet_is_vendorcast = TRUE;
 		rdm_packet_is_for_me = TRUE;
 	}
-	else if (memcmp(rdm_cmd->destination_uid, uid_device, UID_SIZE) == 0)
+	else if (memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0)
 	{
 		rdm_packet_is_for_me = TRUE;
 	}
@@ -672,8 +685,8 @@ void rdm_handle_data(void)
 		{
 			if (rdm_is_mute == FALSE)
 			{
-				if ((memcmp(rdm_cmd->param_data, uid_device, UID_SIZE) <= 0)
-						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	UID_SIZE) <= 0))
+				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0)
+						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	RDM_UID_SIZE) <= 0))
 				{
 					console_clear_line(24);
 					printf("E120_DISC_UNIQUE_BRANCH\n");
@@ -706,6 +719,9 @@ void rdm_handle_data(void)
 		} else if (param_id == E120_DISC_UN_MUTE)
 		{
 			if (rdm_cmd->param_data_length != 0) {
+				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+				 */
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
@@ -718,6 +734,9 @@ void rdm_handle_data(void)
 		} else if (param_id == E120_DISC_MUTE)
 		{
 			if (rdm_cmd->param_data_length != 0) {
+				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+				 */
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}

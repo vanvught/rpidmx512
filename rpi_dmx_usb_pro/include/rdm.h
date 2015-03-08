@@ -28,29 +28,39 @@
 
 #include <stdint.h>
 
-/**
- * The size of a UID.
- */
-enum
-{
-	UID_SIZE = 6 /**< The size of a UID in binary form */
-};
+///< 3 Timing
+#define RDM_TRANSMIT_BREAK_TIME			176		///< Min 176μs
+#define RDM_TRANSMIT_MAB_TIME			12		///< Min 12μs
+///< 3.2.2 Responder Packet spacing
+#define RDM_RESPONDER_PACKET_SPACING	180		///< Min 176μs, Max 2ms
+
+///< 5 Device Addressing
+#define RDM_UID_SIZE  					6		///< 48-bit
+
+///< 6.2.3 Message Length
+#define RDM_DATA_BUFFER_SIZE			512 	///< On the safe side > 255
+#define RDM_MESSAGE_MINIMUM_SIZE		24		///< Minimum size of RDM message without the checksum
+#define RDM_MESSAGE_CHECKSUM_SIZE		2		///< Size of the checksum
+#define RDM_MESSAGE_COUNT_MAX			255		///< Message Count field for Responder Generated Messages
 
 struct _rdm_command
 {
-	uint8_t start_code;						///< 1
-	uint8_t sub_start_code;					///< 2
-	uint8_t message_length;					///< 3
-	uint8_t destination_uid[UID_SIZE];		///< 4,5,6,7,8,9
-	uint8_t source_uid[UID_SIZE];			///< 10,11,12,13,14,15
+	uint8_t start_code;						///< 1			SC_RDM
+	uint8_t sub_start_code;					///< 2			SC_SUB_MESSAGE
+	uint8_t message_length;					///< 3			Range 24 to 255
+	uint8_t destination_uid[RDM_UID_SIZE];	///< 4,5,6,7,8,9
+	uint8_t source_uid[RDM_UID_SIZE];		///< 10,11,12,13,14,15
 	uint8_t transaction_number;				///< 16
+union {
 	uint8_t port_id;						///< 17
+	uint8_t response_type;					///< 17
+} slot16;
 	uint8_t message_count;					///< 18
 	uint8_t sub_device[2];					///< 19, 20
 	uint8_t command_class;					///< 21
 	uint8_t param_id[2];					///< 22, 23
-	uint8_t param_data_length;				///< 24
-	uint8_t param_data[300];				///< 25,,,,
+	uint8_t param_data_length;				///< 24			PDL	Range 0 to 231
+	uint8_t param_data[231];				///< 25,,,,		PD	6.2.3 Message Length
 } ;
 
 struct _rdm_discovery_msg {
@@ -82,9 +92,5 @@ struct _rdm_personality
 	uint16_t slots;
 	const char *description;
 };
-
-#define RDM_DATA_BUFFER_SIZE			512 ///<
-#define RDM_MESSAGE_MINIMUM_SIZE		24	///< Minimum size of RDM message without the checksum
-#define RDM_MESSAGE_CHECKSUM_SIZE		2	///< Size of the checksum
 
 #endif /* RDM_H_ */

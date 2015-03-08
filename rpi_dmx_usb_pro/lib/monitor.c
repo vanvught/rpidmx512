@@ -30,55 +30,72 @@
 #include "widget_params.h"
 #include "sys_time.h"
 #include "console.h"
+#include "hardware.h"
 
-extern uint8_t dmx_data[512];
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
 void monitor_update(void)
 {
 	char dir[3][10] =
 	{ "Idle", "Output", "Input" };
 	struct _widget_params widget_params;
-	struct _widget_sn widget_sn;
+
+	const uint32_t minute = 60;
+	const uint32_t hour = minute * 60;
+	const uint32_t day = hour * 24;
 
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 
 	ltime = sys_time(NULL);
-	local_time = localtime(&ltime);
-
-	console_set_cursor(0, 1);
-	widget_params_sn_get(&widget_sn);
-	printf("%.2d:%.2d:%.2d [%.2X%.2X%.2X%.2X]\n", local_time->tm_hour,
-			local_time->tm_min, local_time->tm_sec, widget_sn.bcd_3,
-			widget_sn.bcd_2, widget_sn.bcd_1, widget_sn.bcd_0);
-
-	console_clear_line(2);
+    local_time = localtime(&ltime);
 
 	widget_params_get(&widget_params);
 
+	console_set_cursor(0,1);
+
+	uint64_t uptime_seconds = hardware_uptime_seconds();
+
+	// line 1
+	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
+			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
+			(long int) (uptime_seconds / day),
+			(long int) (uptime_seconds % day) / hour,
+			(long int) (uptime_seconds % hour) / minute,
+			(long int) uptime_seconds % minute);
+
+	// line 2
 	printf("Firmware %d.%d BreakTime %d MaBTime %d RefreshRate %d\n",
 			widget_params.firmware_msb, widget_params.firmware_lsb,
 			widget_params.break_time, widget_params.mab_time,
 			widget_params.refresh_rate);
 
+	// line 3
+	console_clear_line(3);
+
 	if (DMX_PORT_DIRECTION_INP == dmx_port_direction_get())
 		printf("Input [%s]\n",
-				receive_dmx_on_change_get() == SEND_ALWAYS ?
-						"SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
+				receive_dmx_on_change_get() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
 	else
-		printf("%s                                     \n",
-				dir[dmx_port_direction_get()]);
+	{
+		printf("%s\n", dir[dmx_port_direction_get()]);
+	}
 
-	printf(
-			"01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
+	// line 4 LABEL
+	// line 5 Info
+	// line 6
+	console_set_cursor(0,8);
+
+	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
 			dmx_data[0], dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4],
 			dmx_data[5], dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9],
 			dmx_data[10], dmx_data[11], dmx_data[12], dmx_data[13],
 			dmx_data[14], dmx_data[15]);
-	printf(
-			"17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
+	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
 			dmx_data[16], dmx_data[17], dmx_data[18], dmx_data[19],
 			dmx_data[20], dmx_data[21], dmx_data[22], dmx_data[23],
 			dmx_data[24], dmx_data[25], dmx_data[26], dmx_data[27],
 			dmx_data[28], dmx_data[29], dmx_data[30], dmx_data[31]);
+
+	// line 11 RDM Data
 }

@@ -26,12 +26,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../include/rdm_device_info.h"
 #include "bcm2835.h"
 #include "bcm2835_pl011.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
+#include "rdm_device_info.h"
 
 // TODO move for util.h
 typedef enum {
@@ -41,6 +41,13 @@ typedef enum {
 
 extern uint8_t rdm_data[512];
 
+static uint8_t rdm_message_count;
+
+/**
+ *
+ * @param data
+ * @param data_length
+ */
 static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
 {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
@@ -62,13 +69,18 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
 	}
 }
 
+/**
+ *
+ * @param data
+ * @param data_length
+ */
 void rdm_send_discovery_msg(const uint8_t *data, const uint16_t data_length)
 {
 	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
-
-	if (delay < 180)
+	// 3.2.2 Responder Packet spacing
+	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
-		udelay(180 - delay);
+		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
@@ -76,6 +88,11 @@ void rdm_send_discovery_msg(const uint8_t *data, const uint16_t data_length)
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
+/**
+ *
+ * @param is_ack
+ * @param reason
+ */
 static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 {
 	uint16_t rdm_checksum = 0;
@@ -84,11 +101,11 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 
 	if(is_ack == TRUE)
 	{
-		rdm_response->port_id = E120_RESPONSE_TYPE_ACK;
+		rdm_response->slot16.response_type = E120_RESPONSE_TYPE_ACK;
 	} else
 	{
 		rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
-		rdm_response->port_id = E120_RESPONSE_TYPE_NACK_REASON;
+		rdm_response->slot16.response_type = E120_RESPONSE_TYPE_NACK_REASON;
 		rdm_response->param_data_length = 2;
 		rdm_response->param_data[0] = (uint8_t)(reason >> 8);
 		rdm_response->param_data[1] = (uint8_t)reason;
@@ -96,8 +113,8 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 
 	const uint8_t *uid_device = rdm_device_info_uuid_get();
 
-	memcpy(rdm_response->destination_uid, rdm_response->source_uid, UID_SIZE);
-	memcpy(rdm_response->source_uid, uid_device, UID_SIZE);
+	memcpy(rdm_response->destination_uid, rdm_response->source_uid, RDM_UID_SIZE);
+	memcpy(rdm_response->source_uid, uid_device, RDM_UID_SIZE);
 
 	rdm_response->command_class++;
 
@@ -111,23 +128,49 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 	rdm_data[i] = rdm_checksum & 0XFF;;
 
 	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
-
-	if (delay < 180)
+	// 3.2.2 Responder Packet spacing
+	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
-		udelay(180 - delay);
+		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
-	dmx_data_send(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	rdm_data_send(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
+/**
+ *
+ */
 void rdm_send_respond_message_ack()
 {
 	rdm_send_respond_message(TRUE, 0);
 }
 
+/**
+ *
+ * @param reason
+ */
 void rdm_send_respond_message_nack(const uint16_t reason)
 {
 	rdm_send_respond_message(FALSE, reason);
 }
+
+/**
+* Increment the queued message count
+*/
+void rdm_send_increment_message_count()
+{
+	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX)
+		rdm_message_count++;
+}
+
+/**
+ * Decrement the queued message count
+ */
+void rdm_send_decrement_message_count()
+{
+	if (rdm_message_count)
+		rdm_message_count--;
+}
+

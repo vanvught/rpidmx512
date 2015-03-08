@@ -46,9 +46,12 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="pl011_uart.null.1432326435" name="pl011_uart"/>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1456269405;cdt.managedbuild.toolchain.gnu.cross.base.1456269405.936576481;cdt.managedbuild.tool.gnu.cross.c.compiler.1940664636;cdt.managedbuild.tool.gnu.c.compiler.input.1707086544">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>

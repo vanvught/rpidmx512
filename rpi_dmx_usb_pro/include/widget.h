@@ -56,9 +56,10 @@ typedef enum
 {
 	SEND_ALWAYS = 0,				///<
 	SEND_ON_DATA_CHANGE_ONLY = 1	///<
-
 } _widget_send_state;
 
 extern uint8_t receive_dmx_on_change_get(void);
+extern uint64_t widget_dmx_output_period_get(void);
+extern void widget_dmx_output_period_set(uint64_t);
 
 #endif /* WIDGET_H_ */

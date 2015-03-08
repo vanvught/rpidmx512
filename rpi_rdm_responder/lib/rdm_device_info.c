@@ -1,5 +1,5 @@
 /**
- * @file device_info.c
+ * @file rdm_device_info.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -52,7 +52,7 @@ static const uint32_t SOFTWARE_VERSION_ID = 0x20150307;
 #define DMX_FOOTPRINT					32
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static uint8_t uid_device[UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x01 };
+static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x01 };
 static uint8_t device_label[32];
 static uint8_t device_label_length = 0;
 
@@ -158,7 +158,7 @@ const uint8_t rdm_device_info_software_version_length_get(void)
  */
 uint16_t rdm_device_info_dmx_footprint_get(void)
 {
-	uint16_t dmx_footprint = (rdm_device_info.dmx_footprint[0] >> 8) + rdm_device_info.dmx_footprint[1];
+	uint16_t dmx_footprint = (rdm_device_info.dmx_footprint[0] << 8) + rdm_device_info.dmx_footprint[1];
 	return dmx_footprint;
 }
 
@@ -169,7 +169,7 @@ uint16_t rdm_device_info_dmx_footprint_get(void)
  */
 uint16_t rdm_device_info_dmx_start_address_get(void)
 {
-	uint16_t dmx_start_address = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
+	uint16_t dmx_start_address = (rdm_device_info.dmx_start_address[0] << 8) + rdm_device_info.dmx_start_address[1];
 	return dmx_start_address;
 }
 

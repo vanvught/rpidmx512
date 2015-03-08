@@ -27,23 +27,24 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "dmx.h"
-#include "widget_params.h"
 #include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "sys_time.h"
 #include "ft245rl.h" // TODO Replace with generic usb.h
+#include "hardware.h"
 
-extern void fb_init(void);
+#include "dmx.h"
+#include "widget_params.h"
 
 // poll table
-extern void received_rdm_packet(void);
-extern void receive_data_from_host(void);
-extern void rdm_timeout(void);
+extern void widget_received_rdm_packet(void);
+extern void widget_receive_data_from_host(void);
+extern void widget_ouput_dmx(void);
+extern void widget_rdm_timeout(void);
 // events table
-extern void received_dmx_packet(void);
-extern void received_dmx_change_of_state_packet(void);
+extern void widget_received_dmx_packet(void);
+extern void widget_received_dmx_change_of_state_packet(void);
 extern void monitor_update(void);
 
 static void task_led(void) {
@@ -55,17 +56,19 @@ struct _poll
 {
 	void (*f)(void);
 } const poll_table[] = {
-		{ received_rdm_packet },
-		{ rdm_timeout },
-		{ receive_data_from_host } };
+		{ widget_received_rdm_packet },
+		{ widget_ouput_dmx },
+		{ widget_receive_data_from_host },
+		{ widget_rdm_timeout }
+		};
 
 struct _event
 {
 	uint64_t period;
 	void (*f)(void);
 }const events[] = {
-		{ 800000, received_dmx_packet },
-		{ 800000, received_dmx_change_of_state_packet },
+		{ 800000, widget_received_dmx_packet },
+		{ 800000, widget_received_dmx_change_of_state_packet },
 		{ 500000, task_led },
 		{1000000, monitor_update }};
 
@@ -99,20 +102,15 @@ static inline void events_check() {
 
 int notmain(void)
 {
+	hardware_init();
 	FT245RL_init();  // TODO Replace with generic usb_init
-
 	dmx_init();
-	
 	widget_params_init();
 
-	led_init();
-	led_set(1);
-
-	sys_time_init();	// Read RTC
-
-	fb_init();			// Framebuffer
-
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("Compiled on %s at %s - ", __DATE__, __TIME__);
+	struct _widget_sn widget_sn;
+	widget_params_sn_get(&widget_sn);
+	printf("Device S/N : %.2X%.2X%.2X%.2X\n", widget_sn.bcd_3,	widget_sn.bcd_2, widget_sn.bcd_1, widget_sn.bcd_0);
 
 	//watchdog_init();
 

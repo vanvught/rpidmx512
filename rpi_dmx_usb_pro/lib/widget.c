@@ -39,29 +39,70 @@
 #include "rdm_e120.h"
 #include "console.h"
 
+#define MONITOR_LINE_LABEL		5
+#define MONITOR_LINE_INFO		6
+#define MONITOR_LINE_RDM_DATA	11
+#define MONITOR_LINE_STATUS		23
+
 // TODO move for util.h
 typedef enum {
 	FALSE = 0,
 	TRUE = 1
 } _boolean;
 
-extern uint8_t dmx_data[512];
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 extern uint8_t rdm_data[512];
 
-static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t widget_data[600];
+static uint8_t receive_dmx_on_change = SEND_ALWAYS;
 static uint8_t rdm_discovery_running = FALSE;
 static uint64_t widget_send_rdm_packet_start = 0;
+static uint8_t widget_dmx_output_only = FALSE;
+static uint64_t widget_dmx_output_period = 0;
+static uint64_t widget_dmx_output_elapsed_time = 0;
+static uint16_t widget_dmx_output_data_length = 0;
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
 static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_ID[] = {1, 0};
 
+inline static void rdm_time_out_message(void);
+
+/*
+ * GETTERS / SETTERS
+ */
+
+/**
+ *
+ * @return
+ */
 uint8_t receive_dmx_on_change_get()
 {
 	return receive_dmx_on_change;
 }
+
+/**
+ *
+ * @return
+ */
+uint64_t widget_dmx_output_period_get(void)
+{
+	return widget_dmx_output_period;
+}
+
+/**
+ *
+ * @param dmx_output_period
+ */
+void widget_dmx_output_period_set(uint64_t dmx_output_period)
+{
+	widget_dmx_output_period = dmx_output_period;
+}
+
+/*
+ * Widget LABELs
+ */
 
 /**
  * @ingroup widget
@@ -94,18 +135,20 @@ static void widget_set_params()
 /**
  * @ingroup widget
  *
+ * This function is called from the poll table in \file main.c
+ *
  * Received DMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
  *
  * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
  * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
  */
-void received_dmx_packet(void)
+void widget_received_dmx_packet(void)
 {
 	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
-	console_clear_line(7);
-	printf("Send DMX data to PC\n");
+	console_clear_line(MONITOR_LINE_INFO);
+	printf("Send DMX data to HOST\n");
 
 	usb_send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
 	FT245RL_write_data(0); 	// DMX Receive status
@@ -114,32 +157,17 @@ void received_dmx_packet(void)
 	usb_send_footer();
 }
 
-static void rdm_internal_time_out_message(void)
-{
-	console_clear_line(23);
-	printf("rdm_internal_time_out_message\n");
-
-	uint16_t message_length = 0;
-
-	console_clear_line(7);
-	printf("Send RDM data to PC, message_length : %d\n", message_length);
-
-	usb_send_header(RDM_TIMEOUT, message_length);
-	usb_send_data(widget_data, message_length);
-	usb_send_footer();
-
-	widget_send_rdm_packet_start = 0;
-}
-
 /**
  * @ingroup widget
+ *
+ * This function is called from the poll table in \file main.c
  *
  * Received RMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
  *
  * The Widget sends this message to the PC unsolicited, whenever the Widget receives a DMX or RDM packet from the DMX port,
  * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
  */
-void received_rdm_packet(void)
+void widget_received_rdm_packet(void)
 {
 	if ((rdm_available_get() == FALSE)  || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
 		return;
@@ -151,32 +179,38 @@ void received_rdm_packet(void)
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		uint8_t message_length = p->message_length + 2;
 
-		console_clear_line(7);
-		printf("Send RDM data to PC, package length : %d\n", message_length);
+		console_clear_line(MONITOR_LINE_INFO);
+		printf("Send RDM data to HOST, package length : %d\n", message_length);
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		FT245RL_write_data(0); 	// RDM Receive status
 		usb_send_data(rdm_data, message_length);
 		usb_send_footer();
 
-		if (p->command_class == E120_DISCOVERY_COMMAND)
-			rdm_internal_time_out_message();
+		if (p->command_class == E120_DISCOVERY_COMMAND_RESPONSE)
+			rdm_time_out_message();
+		else
+			widget_send_rdm_packet_start = 0;
+
 	} else if (rdm_data[0] == 0xFE)
 	{
 		uint8_t message_length = 24;
 
-		console_clear_line(7);
-		printf("Send RDM data to PC, package length : %d\n", message_length);
+		console_clear_line(MONITOR_LINE_INFO);
+		printf("Send RDM data to HOST, package length : %d\n", message_length);
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		FT245RL_write_data(0); 	// RDM Receive status
 		usb_send_data(rdm_data, message_length);
 		usb_send_footer();
 
-		rdm_internal_time_out_message();
+		rdm_time_out_message();
 	}
 
-	printf("RDM data[1..36]:\n");
+	// TODO DEBUG
+	console_clear_line(MONITOR_LINE_RDM_DATA);
+	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+	printf("RDM Packet length : %d\n", p->message_length);
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
 	{
@@ -210,6 +244,9 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	for (i = 1; i < data_length; i++)
 		dmx_data[i - 1] = widget_data[i];
 
+	widget_dmx_output_elapsed_time = bcm2835_st_read();
+	widget_dmx_output_data_length = data_length - 1;
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 }
 
@@ -225,13 +262,24 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
  */
 static void widget_send_rdm_packet_request(const uint16_t data_length)
 {
-	console_clear_line(23);
+	console_clear_line(MONITOR_LINE_STATUS);
 	printf("widget_send_rdm_packet_request\n");
 
-	console_clear_line(7);
+	struct _rdm_command *p = (struct _rdm_command *)(widget_data);
+
+	if (p->command_class == E120_DISCOVERY_COMMAND)
+		rdm_discovery_running = TRUE;
+	else
+		rdm_discovery_running = FALSE;
+
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+	rdm_data_send(widget_data, data_length);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+	widget_send_rdm_packet_start =  bcm2835_st_read();
+
+	// TODO DEBUG
+	console_clear_line(MONITOR_LINE_RDM_DATA);
 	printf("RDM Packet length : %d\n", data_length);
-#if 1
-	printf("RDM data[1..36]:\n");
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
 	{
@@ -241,27 +289,21 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 				i+19, widget_data[i+18], widget_data[i+18],
 				i+28, widget_data[i+27], widget_data[i+27]);
 	}
-#endif
-	struct _rdm_command *p = (struct _rdm_command *)(widget_data);
-
-	if (p->command_class == E120_DISCOVERY_COMMAND)
-		rdm_discovery_running = TRUE;
-	else
-		rdm_discovery_running = FALSE;
-
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
-	dmx_data_send(widget_data, data_length);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
-	widget_send_rdm_packet_start =  bcm2835_st_read();
 }
 
-void rdm_timeout(void)
+/**
+ * @ingroup widget
+ *
+ * This function is called from the poll table in \file main.c
+ *
+ */
+void widget_rdm_timeout(void)
 {
 	if (widget_send_rdm_packet_start == 0)
 		return;
 
 	if (bcm2835_st_read() - widget_send_rdm_packet_start > 1000000) {
-		rdm_internal_time_out_message();
+		rdm_time_out_message();
 		widget_send_rdm_packet_start = 0;
 	}
 
@@ -301,13 +343,13 @@ static void widget_receive_dmx_on_change(void)
  * Widget receives a changed DMX packet from the DMX port, and the Receive DMX on Change
  * mode (\ref receive_dmx_on_change) is 'Send on data change only' (\ref SEND_ON_DATA_CHANGE_ONLY).
  */
-void received_dmx_change_of_state_packet(void)
+void widget_received_dmx_change_of_state_packet(void)
 {
 	if ((rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
-	// TODO
-	console_clear_line(7);
-	printf("Send changed DMX data to PC\n");
+	// TODO widget_received_dmx_change_of_state_packet
+	console_clear_line(MONITOR_LINE_INFO);
+	printf("Send changed DMX data to HOST\n");
 }
 
 /**
@@ -334,19 +376,18 @@ static void widget_get_sn_reply(void)
  */
 static void widget_send_rdm_discovery_request(uint16_t data_length)
 {
-	console_clear_line(23);
+	console_clear_line(MONITOR_LINE_STATUS);
 	printf("send_rdm_discovery_request\n");
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
-	dmx_data_send(widget_data, data_length);
+	rdm_data_send(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
 	widget_send_rdm_packet_start =  bcm2835_st_read();
 
-	console_clear_line(7);
+	// TODO DEBUG
+	console_clear_line(MONITOR_LINE_RDM_DATA);
 	printf("RDM Packet length : %d\n", data_length);
-#if 1
-	printf("RDM data[1..36]:\n");
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
 	{
@@ -356,9 +397,27 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 				i+19, widget_data[i+18], widget_data[i+18],
 				i+28, widget_data[i+27], widget_data[i+27]);
 	}
-#endif
+}
 
+/**
+ *
+ * (Label=12 \ref RDM_TIMEOUT)
+ *
+ */
+inline static void rdm_time_out_message(void)
+{
+	console_clear_line(MONITOR_LINE_STATUS);
+	printf("rdm_time_out_message\n");
 
+	const uint16_t message_length = 0;
+
+	console_clear_line(MONITOR_LINE_INFO);
+	printf("Send RDM data to HOST, message_length : %d\n", message_length);
+
+	usb_send_header(RDM_TIMEOUT, message_length);
+	usb_send_footer();
+
+	widget_send_rdm_packet_start = 0;
 }
 
 /**
@@ -390,11 +449,28 @@ static void widget_get_name_reply(void)
 }
 
 /**
+ * @ingroup widget
+ *
+ * This function is called from the poll table in \file main.c
+ */
+void widget_ouput_dmx(void){
+	if (widget_dmx_output_only == FALSE)
+		return;
+
+	if(bcm2835_st_read() < widget_dmx_output_elapsed_time + widget_dmx_output_period)
+		return;
+
+	dmx_data_send(dmx_data, widget_dmx_output_data_length);
+
+	widget_dmx_output_elapsed_time += widget_dmx_output_period;
+}
+
+/**
  * @ingroup usb_host
  *
  * @return
  */
-static uint8_t read_data(void)
+inline static uint8_t read_data(void)
 {
 	while (!FT245RL_data_available());
 	return FT245RL_read_data();
@@ -404,7 +480,7 @@ static uint8_t read_data(void)
  * @ingroup widget
  *
  */
-void receive_data_from_host(void)
+void widget_receive_data_from_host(void)
 {
 	if (FT245RL_data_available())
 	{
@@ -425,8 +501,10 @@ void receive_data_from_host(void)
 
 			while ((AMF_END_CODE != read_data()) && (i++ < sizeof(widget_data)));
 
-			console_clear_line(6);
+			console_clear_line(MONITOR_LINE_LABEL);
 			printf("L:%d:%d(%d)\n", label, data_length, i);
+
+			widget_dmx_output_only = (label == OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST);
 
 			switch (label)
 			{
