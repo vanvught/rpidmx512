@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #ifdef __AVR_ARCH__
 #include "avr_i2c.h"
 #else
@@ -73,7 +75,12 @@ uint8_t mcp7941x_start (const uint8_t slave_address) {
 	else
 		i2c_mcp7941x_slave_address = slave_address;
 
-	return MCP7941X_OK;
+	mcp7941x_setup();
+
+	if (bcm2835_i2c_write(NULL, 0) == 0)
+		return MCP7941X_OK;
+
+	return MCP7941X_ERROR;
 }
 
 /**
