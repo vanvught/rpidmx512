@@ -52,8 +52,17 @@ void widget_rdm_sniffer(void)
 
 	rdm_available_set(FALSE);
 
-	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-	uint8_t message_length = p->message_length + 2;
+	uint8_t message_length = 0;
+
+	if (rdm_data[0] == 0xCC)
+	{
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		message_length = p->message_length + 2;
+	}
+	else if (rdm_data[0] == 0xFE)
+	{
+		message_length = 24;
+	}
 
 	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
@@ -64,7 +73,7 @@ void widget_rdm_sniffer(void)
 		FT245RL_write_data(rdm_data[i]);
 	}
 
-	for (i = message_length; i < SNIFFER_PACKET_SIZE/2; i++)
+	for (i = message_length; i < SNIFFER_PACKET_SIZE / 2; i++)
 	{
 		FT245RL_write_data(CONTROL_MASK);
 		FT245RL_write_data(0x02);
@@ -74,7 +83,6 @@ void widget_rdm_sniffer(void)
 
 	// TODO DEBUG
 	console_clear_line(11);
-	printf("RDM Packet length : %d\n", p->message_length);
 	for (i = 0; i < 9; i++)
 	{
 		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
