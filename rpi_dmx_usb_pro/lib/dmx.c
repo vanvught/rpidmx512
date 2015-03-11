@@ -438,5 +438,5 @@ void dmx_init(void)
 
 	pl011_dmx512_init();
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 0);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }
