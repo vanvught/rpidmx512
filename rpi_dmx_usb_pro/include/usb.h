@@ -47,4 +47,9 @@ inline static const uint8_t usb_read_is_byte_available(void)
 	return FT245RL_data_available();
 }
 
+inline static void usb_init(void)
+{
+	FT245RL_init();
+}
+
 #endif /* USB_H_ */

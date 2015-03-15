@@ -31,11 +31,11 @@
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "sys_time.h"
-#include "ft245rl.h" // TODO Replace with generic usb.h
+#include "usb.h"
 #include "hardware.h"
-
 #include "dmx.h"
 #include "widget_params.h"
+#include "rdm_device_info.h"
 
 // poll table
 extern void widget_received_rdm_packet(void);
@@ -107,14 +107,14 @@ static inline void events_check() {
 int notmain(void)
 {
 	hardware_init();
-	FT245RL_init();  // TODO Replace with generic usb_init
+	usb_init();
 	dmx_init();
 	widget_params_init();
+	rdm_device_info_init();
 
 	printf("Compiled on %s at %s - ", __DATE__, __TIME__);
-	struct _widget_sn widget_sn;
-	widget_params_sn_get(&widget_sn);
-	printf("Device S/N : %.2X%.2X%.2X%.2X\n", widget_sn.bcd_3,	widget_sn.bcd_2, widget_sn.bcd_1, widget_sn.bcd_0);
+	const uint8_t *sn_device = rdm_device_info_get_sn();
+	printf("Device S/N : %.2X%.2X%.2X%.2X\n", sn_device[3],	sn_device[2], sn_device[1], sn_device[0]);
 
 	//watchdog_init();
 

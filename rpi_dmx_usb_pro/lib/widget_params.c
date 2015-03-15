@@ -26,14 +26,13 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "bcm2835_vc.h"
 #include "ff.h"
 
 #include "widget.h"
 #include "widget_params.h"
 
 static struct _widget_params dmx_usb_pro_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
-static struct _widget_sn dmx_usb_pro_sn = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
+//static struct _widget_sn dmx_usb_pro_sn = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
 
 static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file name
 ///< entries
@@ -159,14 +158,6 @@ static void read_config_file(void)
 
 void widget_params_init(void)
 {
-	uint8_t mac_address[6];
-	if (bcm2835_vc_get_board_mac_address(mac_address) == 0){
-		dmx_usb_pro_sn.bcd_3 = mac_address[2];
-		dmx_usb_pro_sn.bcd_2 = mac_address[3];
-		dmx_usb_pro_sn.bcd_1 = mac_address[4];
-		dmx_usb_pro_sn.bcd_0 = mac_address[5];
-	}
-
 	read_config_file();
 
 	// Update the Widget
@@ -206,8 +197,8 @@ void widget_params_refresh_rate_set(uint8_t refresh_rate)
 	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
-void widget_params_sn_get(struct _widget_sn *widget_sn)
-{
-	memcpy(widget_sn, &dmx_usb_pro_sn, sizeof(struct _widget_sn));
-}
+//void widget_params_sn_get(struct _widget_sn *widget_sn)
+//{
+//	memcpy(widget_sn, &dmx_usb_pro_sn, sizeof(struct _widget_sn));
+//}
 

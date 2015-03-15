@@ -105,7 +105,7 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 		rdm_response->param_data[1] = (uint8_t)reason;
 	}
 
-	const uint8_t *uid_device = rdm_device_info_uuid_get();
+	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
 	memcpy(rdm_response->destination_uid, rdm_response->source_uid, RDM_UID_SIZE);
 	memcpy(rdm_response->source_uid, uid_device, RDM_UID_SIZE);

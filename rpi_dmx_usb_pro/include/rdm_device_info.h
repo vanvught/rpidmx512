@@ -30,7 +30,7 @@
 
 extern struct _rdm_device_info *rdm_device_info_get(void);
 extern void rdm_device_info_init(void);
-extern uint8_t * rdm_device_info_get_uuid(void);
+extern const uint8_t * rdm_device_info_get_uuid(void);
 extern const uint8_t * rdm_device_info_get_label(void);
 extern const uint8_t rdm_device_info_get_label_length(void);
 extern void rdm_device_info_set_label(const uint8_t *, uint8_t );
@@ -50,5 +50,11 @@ extern uint8_t rdm_device_info_get_current_personality(void);
 extern void rdm_device_info_set_current_personality(uint8_t);
 extern const char * rdm_device_info_get_personality_description(uint8_t);
 extern uint16_t rdm_device_info_get_personality_slots(uint8_t);
+extern const uint8_t * rdm_device_info_get_manufacturer_id(void);
+extern const uint8_t rdm_device_info_get_manufacturer_id_length(void);
+extern const uint8_t * rdm_device_info_get_id(void);
+extern const uint8_t rdm_device_info_get_id_length(void);
+extern const uint8_t * rdm_device_info_get_sn(void);
+extern const uint8_t rdm_device_info_get_sn_length(void);
 
 #endif /* RDM_DEVICE_INFO_H_ */

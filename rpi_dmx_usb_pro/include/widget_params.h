@@ -45,7 +45,7 @@ typedef enum
 {
 	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
 	FIRMWARE_RDM = 2,			///< RDM firmware.This enables the Widget to act as an RDM Controller or RDM responder. Supports all messages except Receive DMX On Change (label=8) and Change Of State Receive (label=9).
-	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Enttec RDM packet monitoring application.
+	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
 } _firmware_version_msb;
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )

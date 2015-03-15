@@ -37,6 +37,7 @@
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
+#include "rdm_device_info.h"
 #include "console.h"
 
 #define MONITOR_LINE_LABEL		5
@@ -55,11 +56,6 @@ static uint8_t widget_dmx_output_only = FALSE;
 static uint64_t widget_dmx_output_period = 0;
 static uint64_t widget_dmx_output_elapsed_time = 0;
 static uint16_t widget_dmx_output_data_length = 0;
-
-static const uint8_t DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
-static const uint8_t DEVICE_MANUFACTURER_NAME[] = "AvV";
-static const uint8_t DEVICE_NAME[] = "Raspberry Pi DMX USB Pro";
-static const uint8_t DEVICE_ID[] = {1, 0};
 
 inline static void rdm_time_out_message(void);
 
@@ -354,9 +350,11 @@ void widget_received_dmx_change_of_state_packet(void)
  */
 static void widget_get_sn_reply(void)
 {
-	struct _widget_sn widget_sn;
-	widget_params_sn_get(&widget_sn);
-	usb_send_message(GET_WIDGET_SN_REPLY, (uint8_t *)&widget_sn, sizeof(struct _widget_sn));
+	const uint8_t *device_sn = rdm_device_info_get_sn();
+	const uint8_t device_sn_length = rdm_device_info_get_sn_length();
+
+	usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -421,10 +419,17 @@ inline static void rdm_time_out_message(void)
  */
 static void widget_get_manufacturer_reply(void)
 {
-	usb_send_header(MANUFACTURER_LABEL, sizeof(DEVICE_MANUFACTURER_ID) + sizeof(DEVICE_MANUFACTURER_NAME));
-	usb_send_data(DEVICE_MANUFACTURER_ID, sizeof(DEVICE_MANUFACTURER_ID));
-	usb_send_data(DEVICE_MANUFACTURER_NAME, sizeof(DEVICE_MANUFACTURER_NAME));
+	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
+	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
+
+	const uint8_t *manufacturer_id = rdm_device_info_get_manufacturer_id();
+	const uint8_t manufacturer_id_length = rdm_device_info_get_manufacturer_id_length();
+
+	usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
+	usb_send_data(manufacturer_id, manufacturer_id_length);
+	usb_send_data(manufacturer_name, manufacturer_name_length);
 	usb_send_footer();
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -435,10 +440,17 @@ static void widget_get_manufacturer_reply(void)
  */
 static void widget_get_name_reply(void)
 {
-	usb_send_header(GET_WIDGET_NAME_LABEL, sizeof(DEVICE_ID) + sizeof(DEVICE_NAME));
-	usb_send_data(DEVICE_ID, sizeof(DEVICE_ID));
-	usb_send_data(DEVICE_NAME, sizeof(DEVICE_NAME));
+	const uint8_t *device_name = rdm_device_info_get_label();
+	const uint8_t device_name_length = rdm_device_info_get_label_length();
+
+	const uint8_t *device_id = rdm_device_info_get_id();
+	const uint8_t device_id_length = rdm_device_info_get_id_length();
+
+	usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
+	usb_send_data(device_id, device_id_length);
+	usb_send_data(device_name, device_name_length);
 	usb_send_footer();
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -472,8 +484,8 @@ void widget_receive_data_from_host(void)
 		if (AMF_START_CODE == c)
 		{
 			uint8_t label = usb_read_byte();	// Label
-			uint8_t lsb = usb_read_byte();	// Data length LSB
-			uint8_t msb = usb_read_byte();	// Data length MSB
+			uint8_t lsb = usb_read_byte();		// Data length LSB
+			uint8_t msb = usb_read_byte();		// Data length MSB
 			uint16_t data_length = ((uint16_t) ((uint16_t) msb << 8)) | ((uint16_t) lsb);
 
 			uint16_t i;

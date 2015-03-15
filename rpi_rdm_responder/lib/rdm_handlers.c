@@ -183,8 +183,8 @@ static void rdm_get_device_model_description(void)
 
 static void rdm_get_manufacturer_label(void)
 {
-	const uint8_t *manufacturer_name = rdm_device_info_manufacturer_name_get();
-	const uint8_t manufacturer_name_length = rdm_device_info_manufacturer_name_length_get();
+	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
+	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
 	handle_string(manufacturer_name, manufacturer_name_length);
 	rdm_send_respond_message_ack();
 }
@@ -192,8 +192,8 @@ static void rdm_get_manufacturer_label(void)
 
 static void rdm_get_device_label(void)
 {
-	const uint8_t *device_name = rdm_device_info_label_get();
-	const uint8_t device_name_length = rdm_device_info_label_length_get();
+	const uint8_t *device_name = rdm_device_info_get_label();
+	const uint8_t device_name_length = rdm_device_info_get_label_length();
 	handle_string(device_name, device_name_length);
 	rdm_send_respond_message_ack();
 }
@@ -210,7 +210,7 @@ static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
 
 	uint8_t device_label_length = rdm_command->param_data_length;
 	uint8_t *device_label= &rdm_command->param_data[0];
-	rdm_device_info_label_set(device_label, device_label_length);
+	rdm_device_info_set_label(device_label, device_label_length);
 
 	if(was_broadcast)
 		return;
@@ -233,7 +233,7 @@ static void rdm_get_factory_defaults(void)
 
 	rdm_command->param_data_length = 1;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
-	rdm_command->param_data[0] = rdm_device_info_is_factory_defaults_get();
+	rdm_command->param_data[0] = rdm_device_info_get_is_factory_defaults();
 
 	rdm_send_respond_message_ack();
 }
@@ -258,16 +258,16 @@ static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
 
 static void rdm_get_language(void)
 {
-	const uint8_t *supported_language = rdm_device_info_supported_language_get();
-	const uint8_t supported_language_length = rdm_device_info_supported_language_length_get();
+	const uint8_t *supported_language = rdm_device_info_get_supported_language();
+	const uint8_t supported_language_length = rdm_device_info_get_supported_language_length();
 	handle_string(supported_language, supported_language_length);
 	rdm_send_respond_message_ack();
 }
 
 static void rdm_get_software_version_label(void)
 {
-	const uint8_t *software_version = rdm_device_info_software_version_get();
-	const uint8_t software_version_length = rdm_device_info_software_version_length_get();
+	const uint8_t *software_version = rdm_device_info_get_software_version();
+	const uint8_t software_version_length = rdm_device_info_get_software_version_length();
 	handle_string(software_version, software_version_length);
 	rdm_send_respond_message_ack();
 }
@@ -313,8 +313,8 @@ static void rdm_get_boot_software_version_label(void)
 static void rdm_get_personality(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
-	uint8_t current_personality = rdm_device_info_current_personality_get();
-	uint8_t personality_count = rdm_device_info_personality_count_get();
+	uint8_t current_personality = rdm_device_info_get_current_personality();
+	uint8_t personality_count = rdm_device_info_get_personality_count();
 	rdm_response->param_data_length = 2;
 	rdm_response->message_length = rdm_response->message_length + 2;
 	rdm_response->param_data[0] = current_personality;
@@ -334,7 +334,7 @@ static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 	}
 
 	uint8_t personality = rdm_command->param_data[0];
-	uint8_t max_personalities = rdm_device_info_personality_count_get();
+	uint8_t max_personalities = rdm_device_info_get_personality_count();
 
 	if ((personality == 0) || (personality > max_personalities))
 	{
@@ -342,7 +342,7 @@ static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	rdm_device_info_current_personality_set(personality);
+	rdm_device_info_set_current_personality(personality);
 
 	rdm_command->param_data_length = 0;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE;
@@ -355,7 +355,7 @@ static void rdm_get_personality_description(void)
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
 
 	uint8_t personality = rdm_command->param_data[0];
-	uint8_t max_personalities = rdm_device_info_personality_count_get();
+	uint8_t max_personalities = rdm_device_info_get_personality_count();
 
 	if ((personality == 0) || (personality > max_personalities))
 	{
@@ -363,9 +363,9 @@ static void rdm_get_personality_description(void)
 		return;
 	}
 
-	uint16_t slots = rdm_device_info_personality_slots_get(personality);
+	uint16_t slots = rdm_device_info_get_personality_slots(personality);
 
-	const char *description = rdm_device_info_personality_description_get(personality);
+	const char *description = rdm_device_info_get_personality_description(personality);
 	uint8_t length = strlen(description);
 	length = length > 32 ? 32 : length;
 
@@ -387,7 +387,7 @@ static void rdm_get_personality_description(void)
 static void rdm_get_dmx_start_address(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
-	uint16_t dmx_start_address = rdm_device_info_dmx_start_address_get();
+	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address();
 	rdm_response->param_data_length = 2;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 	rdm_response->param_data[0] = (uint8_t)(dmx_start_address >> 8);
@@ -518,7 +518,7 @@ static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device
 		return;
 	}
 
-	rdm_device_info_dmx_start_address_set(dmx_start_address);
+	rdm_device_info_set_dmx_start_address(dmx_start_address);
 
 	if(was_broadcast)
 		return;
@@ -537,7 +537,7 @@ static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	const uint8_t *supported_language = rdm_device_info_supported_language_get();
+	const uint8_t *supported_language = rdm_device_info_get_supported_language();
 
 	if ((rdm_command->param_data[0] != supported_language[0]) || (rdm_command->param_data[1] != supported_language[1]))
 	{
@@ -653,7 +653,7 @@ void rdm_handle_data(void)
 	console_clear_line(23);
 	printf("handle_rdm_data, param_id [%.2x%.2x]:%d\n", rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
-	const uint8_t *uid_device = rdm_device_info_uuid_get();
+	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
 	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
 	{

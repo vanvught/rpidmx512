@@ -62,7 +62,7 @@ void monitor_update(void)
 
 	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
-	uint16_t dmx_start_address = rdm_device_info_dmx_start_address_get();
+	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address();
 
 	#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
 
