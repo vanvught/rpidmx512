@@ -30,10 +30,10 @@
 #include <string.h>
 
 #include "bcm2835.h"
+#include "util.h"
 #include "widget.h"
 #include "widget_params.h"
-#include "usb_send.h"
-#include "ft245rl.h"
+#include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -44,14 +44,8 @@
 #define MONITOR_LINE_RDM_DATA	11
 #define MONITOR_LINE_STATUS		23
 
-// TODO move for util.h
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
-
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
-extern uint8_t rdm_data[512];
+extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 
 static uint8_t widget_data[600];
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;
@@ -151,8 +145,8 @@ void widget_received_dmx_packet(void)
 	printf("Send DMX data to HOST\n");
 
 	usb_send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
-	FT245RL_write_data(0); 	// DMX Receive status
-	FT245RL_write_data(0);	// DMX Start code
+	usb_send_byte(0); 	// DMX Receive status
+	usb_send_byte(0);	// DMX Start code
 	usb_send_data(dmx_data, sizeof(dmx_data) / sizeof(uint8_t));
 	usb_send_footer();
 }
@@ -174,7 +168,7 @@ void widget_received_rdm_packet(void)
 
 	rdm_available_set(FALSE);
 
-	if (rdm_data[0] == 0xCC)
+	if (rdm_data[0] == E120_SC_RDM)
 	{
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		uint8_t message_length = p->message_length + 2;
@@ -183,7 +177,7 @@ void widget_received_rdm_packet(void)
 		printf("Send RDM data to HOST, package length : %d\n", message_length);
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
-		FT245RL_write_data(0); 	// RDM Receive status
+		usb_send_byte(0); 	// RDM Receive status
 		usb_send_data(rdm_data, message_length);
 		usb_send_footer();
 
@@ -200,7 +194,7 @@ void widget_received_rdm_packet(void)
 		printf("Send RDM data to HOST, package length : %d\n", message_length);
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
-		FT245RL_write_data(0); 	// RDM Receive status
+		usb_send_byte(0); 	// RDM Receive status
 		usb_send_data(rdm_data, message_length);
 		usb_send_footer();
 
@@ -466,40 +460,29 @@ void widget_ouput_dmx(void){
 }
 
 /**
- * @ingroup usb_host
- *
- * @return
- */
-inline static uint8_t read_data(void)
-{
-	while (!FT245RL_data_available());
-	return FT245RL_read_data();
-}
-
-/**
  * @ingroup widget
  *
  */
 void widget_receive_data_from_host(void)
 {
-	if (FT245RL_data_available())
+	if (usb_read_is_byte_available())
 	{
-		uint8_t c = read_data();
+		uint8_t c = usb_read_byte();
 
 		if (AMF_START_CODE == c)
 		{
-			uint8_t label = read_data();	// Label
-			uint8_t lsb = read_data();		// Data length LSB
-			uint8_t msb = read_data();		// Data length MSB
+			uint8_t label = usb_read_byte();	// Label
+			uint8_t lsb = usb_read_byte();	// Data length LSB
+			uint8_t msb = usb_read_byte();	// Data length MSB
 			uint16_t data_length = ((uint16_t) ((uint16_t) msb << 8)) | ((uint16_t) lsb);
 
 			uint16_t i;
 			for (i = 0; i < data_length; i++)
 			{
-				widget_data[i] = read_data();
+				widget_data[i] = usb_read_byte();
 			}
 
-			while ((AMF_END_CODE != read_data()) && (i++ < sizeof(widget_data)));
+			while ((AMF_END_CODE != usb_read_byte()) && (i++ < sizeof(widget_data)));
 
 			console_clear_line(MONITOR_LINE_LABEL);
 			printf("L:%d:%d(%d)\n", label, data_length, i);

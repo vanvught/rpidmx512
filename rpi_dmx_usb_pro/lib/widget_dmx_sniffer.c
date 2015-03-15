@@ -1,7 +1,5 @@
 /**
- * @file usb_send.c
- *
- * @brief Interface for FT245RL
+ * @file widget_dmx_sniffer.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -26,54 +24,65 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
-#include "widget.h"
-#include "ft245rl.h"
+#include "util.h"
+#include "usb.h"
+#include "dmx.h"
+#include "console.h"
+
+#define MONITOR_LINE_INFO		6
+
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
+
+#define	SNIFFER_PACKET			0x81
+#define	SNIFFER_PACKET_SIZE  	200
+// if the high bit is set, this is a data byte, otherwise it's a control byte
+#define CONTROL_MASK			0x00
+#define DATA_MASK				0x80
+
+static uint8_t slot0 = 0;
 
 /**
  *
- * @param label
- * @param length
  */
-void usb_send_header(const uint8_t label, const uint16_t length)
+void widget_dmx_sniffer(void)
 {
-	FT245RL_write_data(AMF_START_CODE);
-	FT245RL_write_data(label);
-	FT245RL_write_data((uint8_t)(length & 0x00FF));
-	FT245RL_write_data((uint8_t)(length >> 8));
-}
+	if (dmx_available_get() == FALSE)
+			return;
 
-/**
- *
- * @param data
- * @param length
- */
-void usb_send_data(const uint8_t *data, const uint16_t length)
-{
-	uint16_t i;
-	for (i = 0; i < length; i++)
+	dmx_available_set(FALSE);
+
+	console_clear_line(MONITOR_LINE_INFO);
+
+	if (slot0 != dmx_data[0])
 	{
-		FT245RL_write_data(data[i]);
+		printf("Send DMX data to HOST\n");
+		slot0 = dmx_data[0];
+	} else
+	{
+		return;
 	}
-}
 
-/**
- *
- */
-void usb_send_footer(void)
-{
-	FT245RL_write_data(AMF_END_CODE);
-}
+	uint16_t message_length = 33;
 
-/**
- *
- * @param label
- * @param data
- * @param length
- */
-void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length)
-{
-	usb_send_header(label, length);
-	usb_send_data(data, length);
+	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+
+	usb_send_byte(DATA_MASK);
+	usb_send_byte(0);
+
+	uint8_t i = 0;
+	for (i = 0; i < message_length - 1; i++)
+	{
+		usb_send_byte(DATA_MASK);
+		usb_send_byte(dmx_data[i]);
+	}
+
+	for (i = message_length; i < SNIFFER_PACKET_SIZE / 2; i++)
+	{
+		usb_send_byte(CONTROL_MASK);
+		usb_send_byte(0x02);
+	}
+
 	usb_send_footer();
 }

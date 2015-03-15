@@ -28,19 +28,13 @@
 
 #include "bcm2835.h"
 #include "bcm2835_pl011.h"
+#include "util.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 
-// TODO move for util.h
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
-
 extern uint8_t rdm_data[512];
-
 static uint8_t rdm_message_count;
 
 /**

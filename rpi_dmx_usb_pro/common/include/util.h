@@ -1,8 +1,8 @@
 /**
- * @file usb_send.h
+ * @file util.h
  *
  */
-/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef USB_SEND_H_
-#define USB_SEND_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
-#include <stdint.h>
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
 
-extern void usb_send_header(const uint8_t, const uint16_t);
-extern void usb_send_data(const uint8_t *, const uint16_t);
-extern void usb_send_footer(void);
-extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
-
-#endif /* USB_SEND_H_ */
+#endif /* UTIL_H_ */

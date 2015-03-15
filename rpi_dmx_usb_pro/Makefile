@@ -8,6 +8,7 @@ COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
 #COPS += -DDEBUG
 #COPS += -DDEBUG_ANALYZER
+COPS += -I"./common/include"
 COPS += -I"./include"
 COPS += -I"./firmware/include"
 COPS += -I"../ff9b/src"
@@ -23,7 +24,7 @@ LIB += -L"../ff9b/lib"
 BUILD = build/
 SOURCE = ./
 ASM_OBJECTS := $(patsubst $(SOURCE)firmware/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.s)) $(patsubst $(SOURCE)firmware/lib/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.S))
-C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)firmware/hal/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/hal/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
+C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = kernel.img

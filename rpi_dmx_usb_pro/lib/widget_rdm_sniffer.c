@@ -24,33 +24,37 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
+#include "util.h"
+
+#include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
-#include "usb_send.h"
-#include "ft245rl.h"
+#include "console.h"
 
-// TODO move for util.h
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
+#define MONITOR_LINE_INFO		6
 
-extern uint8_t rdm_data[512];
-
+extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 
 #define	SNIFFER_PACKET			0x81
 #define	SNIFFER_PACKET_SIZE  	200
 // if the high bit is set, this is a data byte, otherwise it's a control byte
-static const uint8_t CONTROL_MASK = 0x00;
-static const uint8_t DATA_MASK = 0x80;
+#define CONTROL_MASK			0x00
+#define DATA_MASK				0x80
 
+/*
+ * @bug What is RDM package > 100 bytes?
+ */
 void widget_rdm_sniffer(void)
 {
 	if (rdm_available_get() == FALSE)
 			return;
 
 	rdm_available_set(FALSE);
+
+	console_clear_line(MONITOR_LINE_INFO);
+	printf("Send DMX data to HOST\n");
 
 	uint8_t message_length = 0;
 
@@ -69,14 +73,14 @@ void widget_rdm_sniffer(void)
 	uint8_t i = 0;
 	for (i = 0; i < message_length; i++)
 	{
-		FT245RL_write_data(DATA_MASK);
-		FT245RL_write_data(rdm_data[i]);
+		usb_send_byte(DATA_MASK);
+		usb_send_byte(rdm_data[i]);
 	}
 
 	for (i = message_length; i < SNIFFER_PACKET_SIZE / 2; i++)
 	{
-		FT245RL_write_data(CONTROL_MASK);
-		FT245RL_write_data(0x02);
+		usb_send_byte(CONTROL_MASK);
+		usb_send_byte(0x02);
 	}
 
 	usb_send_footer();

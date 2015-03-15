@@ -6,10 +6,13 @@ COPS = -Wall -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176j
 COPS += -DBARE_METAL
 COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
+#COPS += -DDEBUG
+#COPS += -DDEBUG_ANALYZER
+COPS += -I"./common/include"
 COPS += -I"./include"
 COPS += -I"./firmware/include"
 #COPS += -I"../ff9b/src"
-COPS += -I"../fb" -I"../fb/include"
+COPS += -I"../fb/include"
 COPS += -I"../bob-baremetal/include"
 
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
@@ -21,7 +24,7 @@ LIB += -L"../bob-baremetal/lib"
 BUILD = build/
 SOURCE = ./
 ASM_OBJECTS := $(patsubst $(SOURCE)firmware/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.s)) $(patsubst $(SOURCE)firmware/lib/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.S))
-C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)firmware/hal/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/hal/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
+C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = kernel.img

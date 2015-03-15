@@ -28,14 +28,9 @@
 
 #include "hardware.h"
 #include "bcm2835_vc.h"
-
+#include "util.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
 
 static const uint8_t  DEVICE_LABEL[] = "Raspberry Pi";
 static const uint8_t  DEVICE_LABEL_LENGTH = (sizeof(DEVICE_LABEL) / sizeof(uint8_t)) - 1;

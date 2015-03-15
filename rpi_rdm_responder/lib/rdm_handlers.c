@@ -30,17 +30,12 @@
 #include "sys_time.h"
 #include "console.h"
 #include "hardware.h"
-
+#include "util.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_send.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
-
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
 
 extern uint8_t rdm_data[512];
 static uint8_t rdm_is_mute = FALSE;

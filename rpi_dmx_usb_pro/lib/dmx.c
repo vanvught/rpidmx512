@@ -31,15 +31,10 @@
 #include "bcm2835_pl011.h"
 #include "hardware.h"
 
+#include "util.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-
-// TODO move for util.h
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
 
 ///< State of receiving DMX Bytes
 typedef enum {
@@ -58,8 +53,9 @@ typedef enum {
 uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];			///<
 static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
 static uint16_t dmx_data_index = 0;				///<
+static uint8_t dmx_available = FALSE;			///<
 
-uint8_t rdm_data[512];							///<
+uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];							///<
 static uint16_t rdm_checksum = 0;				///<
 static uint64_t rdm_data_receive_end = 0;		///<
 static uint8_t rdm_available = FALSE;			///<
@@ -96,6 +92,26 @@ uint8_t rdm_available_get(void)
 void rdm_available_set(uint8_t is_available)
 {
 	rdm_available = is_available;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+uint8_t dmx_available_get(void)
+{
+	return dmx_available;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param is_available
+ */
+void dmx_available_set(uint8_t is_available)
+{
+	dmx_available = is_available;
 }
 
 /**
@@ -203,6 +219,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		if (dmx_data_index >= 512)
 		{
 			dmx_receive_state = IDLE;
+			dmx_available = TRUE;
 		}
 	}
 	else if (dmx_receive_state == RDMDATA)

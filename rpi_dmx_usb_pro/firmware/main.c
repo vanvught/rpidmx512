@@ -42,7 +42,8 @@ extern void widget_received_rdm_packet(void);
 extern void widget_receive_data_from_host(void);
 extern void widget_ouput_dmx(void);
 extern void widget_rdm_timeout(void);
-extern void widget_rdm_sniffer(void);
+//extern void widget_rdm_sniffer(void);
+//extern void widget_dmx_sniffer(void);
 // events table
 extern void widget_received_dmx_packet(void);
 extern void widget_received_dmx_change_of_state_packet(void);
@@ -57,11 +58,12 @@ struct _poll
 {
 	void (*f)(void);
 } const poll_table[] = {
-//		{ widget_received_rdm_packet },
-//		{ widget_ouput_dmx },
+		{ widget_received_rdm_packet },
+		{ widget_ouput_dmx },
 		{ widget_receive_data_from_host },
-//		{ widget_rdm_timeout }
-		{ widget_rdm_sniffer }
+		{ widget_rdm_timeout }
+//		{ widget_rdm_sniffer },
+//		{ widget_dmx_sniffer }
 		};
 
 struct _event
@@ -69,8 +71,8 @@ struct _event
 	uint64_t period;
 	void (*f)(void);
 }const events[] = {
-//		{ 800000, widget_received_dmx_packet },
-//		{ 800000, widget_received_dmx_change_of_state_packet },
+		{ 800000, widget_received_dmx_packet },
+		{ 800000, widget_received_dmx_change_of_state_packet },
 		{ 500000, task_led },
 		{1000000, monitor_update }};
 

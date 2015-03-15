@@ -1,5 +1,5 @@
 /**
- * @file dmx_data.h
+ * @file dmx.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_DATA_H_
-#define DMX_DATA_H_
+#ifndef DMX_H_
+#define DMX_H_
 
 #include <stdint.h>
 
@@ -45,5 +45,7 @@ extern void rdm_data_send(const uint8_t *, const uint16_t);
 extern uint8_t rdm_available_get(void);
 extern void rdm_available_set(uint8_t);
 extern uint64_t rdm_data_receive_end_get(void);
+extern uint8_t dmx_available_get(void);
+extern void dmx_available_set(uint8_t);
 
-#endif /* DMX_DATA_H_ */
+#endif /* DMX_H_ */

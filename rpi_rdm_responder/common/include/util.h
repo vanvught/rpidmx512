@@ -1,5 +1,5 @@
 /**
- * @file dmx.h
+ * @file util.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,29 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_H_
-#define DMX_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
-#include <stdint.h>
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
 
-typedef enum
-{
-	DMX_PORT_DIRECTION_IDLE = 0,	///<
-	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
-	DMX_PORT_DIRECTION_INP = 2		///< DMX input
-} _dmx_port_direction;
-
-#define DMX_DATA_BUFFER_SIZE	512 ///<
-
-extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern uint8_t dmx_port_direction_get(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern void rdm_data_send(const uint8_t *, const uint16_t);
-extern uint8_t rdm_available_get(void);
-extern void rdm_available_set(uint8_t);
-extern uint64_t rdm_data_receive_end_get(void);
-extern uint8_t dmx_available_get(void);
-extern void dmx_available_set(uint8_t);
-
-#endif /* DMX_H_ */
+#endif /* UTIL_H_ */

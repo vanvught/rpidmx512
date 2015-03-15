@@ -1,8 +1,9 @@
+
 /**
- * @file dmx.h
+ * @file ft245el.h
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_H_
-#define DMX_H_
+#ifndef FT245RL_H_
+#define FT245RL_H_
 
 #include <stdint.h>
 
-typedef enum
-{
-	DMX_PORT_DIRECTION_IDLE = 0,	///<
-	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
-	DMX_PORT_DIRECTION_INP = 2		///< DMX input
-} _dmx_port_direction;
+extern void FT245RL_init(void);
+extern void FT245RL_write_data(uint8_t );
+extern uint8_t FT245RL_read_data();
+extern uint8_t FT245RL_data_available(void);
 
-#define DMX_DATA_BUFFER_SIZE	512 ///<
-
-extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern uint8_t dmx_port_direction_get(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern void rdm_data_send(const uint8_t *, const uint16_t);
-extern uint8_t rdm_available_get(void);
-extern void rdm_available_set(uint8_t);
-extern uint64_t rdm_data_receive_end_get(void);
-extern uint8_t dmx_available_get(void);
-extern void dmx_available_set(uint8_t);
-
-#endif /* DMX_H_ */
+#endif /* FT245RL_H_ */
