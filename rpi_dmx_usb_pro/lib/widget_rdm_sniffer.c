@@ -31,11 +31,7 @@
 #include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
-#include "console.h"
-
-#define MONITOR_LINE_INFO		6
-
-extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
+#include "monitor_debug.h"
 
 #define	SNIFFER_PACKET			0x81
 #define	SNIFFER_PACKET_SIZE  	200
@@ -53,8 +49,7 @@ void widget_rdm_sniffer(void)
 
 	rdm_available_set(FALSE);
 
-	console_clear_line(MONITOR_LINE_INFO);
-	printf("Send DMX data to HOST\n");
+	monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 
 	uint8_t message_length = 0;
 

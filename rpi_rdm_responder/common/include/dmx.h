@@ -1,8 +1,8 @@
 /**
- * @file usb.h
+ * @file dmx.h
  *
  */
-/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef USB_H_
-#define USB_H_
+#ifndef DMX_H_
+#define DMX_H_
 
 #include <stdint.h>
 
-extern void usb_send_header(const uint8_t, const uint16_t);
-extern void usb_send_data(const uint8_t *, const uint16_t);
-extern void usb_send_byte(const uint8_t);
-extern void usb_send_footer(void);
-extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
+#define DMX_DATA_BUFFER_SIZE	512 ///<
 
-#include "ft245rl.h"
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
-inline static const uint8_t usb_read_byte(void)
+typedef enum
 {
-	while (!FT245RL_data_available());
-	return FT245RL_read_data();
-}
+	DMX_PORT_DIRECTION_IDLE = 0,	///<
+	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
+	DMX_PORT_DIRECTION_INP = 2		///< DMX input
+} _dmx_port_direction;
 
-inline static const uint8_t usb_read_is_byte_available(void)
-{
-	return FT245RL_data_available();
-}
+extern void dmx_init(void);
+extern void dmx_port_direction_set(const uint8_t, const uint8_t);
+extern uint8_t dmx_port_direction_get(void);
+extern void dmx_data_send(const uint8_t *, const uint16_t);
+extern void rdm_data_send(const uint8_t *, const uint16_t);
+extern uint8_t rdm_available_get(void);
+extern void rdm_available_set(uint8_t);
+extern uint64_t rdm_data_receive_end_get(void);
+extern uint8_t dmx_available_get(void);
+extern void dmx_available_set(uint8_t);
 
-inline static void usb_init(void)
-{
-	FT245RL_init();
-}
-
-#endif /* USB_H_ */
+#endif /* DMX_H_ */

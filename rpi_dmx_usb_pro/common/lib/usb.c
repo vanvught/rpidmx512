@@ -1,5 +1,7 @@
 /**
- * @file util.h
+ * @file usb_send.c
+ *
+ * @brief Interface for FT245RL
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +25,66 @@
  * THE SOFTWARE.
  */
 
-#ifndef UTIL_H_
-#define UTIL_H_
+#include <stdint.h>
 
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
+#include "widget.h"
+#include "ft245rl.h"
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
+/**
+ *
+ * @param label
+ * @param length
+ */
+void usb_send_header(const uint8_t label, const uint16_t length)
+{
+	FT245RL_write_data(AMF_START_CODE);
+	FT245RL_write_data(label);
+	FT245RL_write_data((uint8_t)(length & 0x00FF));
+	FT245RL_write_data((uint8_t)(length >> 8));
+}
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+/**
+ *
+ * @param data
+ * @param length
+ */
+void usb_send_data(const uint8_t *data, const uint16_t length)
+{
+	uint16_t i;
+	for (i = 0; i < length; i++)
+	{
+		while(!FT245RL_can_write());
+		FT245RL_write_data(data[i]);
+	}
+}
 
-#endif /* UTIL_H_ */
+/**
+ *
+ */
+void usb_send_footer(void)
+{
+	FT245RL_write_data(AMF_END_CODE);
+}
+
+/**
+ *
+ * @param label
+ * @param data
+ * @param length
+ */
+void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length)
+{
+	usb_send_header(label, length);
+	usb_send_data(data, length);
+	usb_send_footer();
+}
+
+/**
+ *
+ * @param byte
+ */
+void usb_send_byte(const uint8_t byte)
+{
+	while(!FT245RL_can_write());
+	FT245RL_write_data(byte);
+}

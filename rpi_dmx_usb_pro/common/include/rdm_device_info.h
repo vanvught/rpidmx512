@@ -28,6 +28,12 @@
 
 #include <stdint.h>
 
+#define DEVICE_MANUFACTURER_ID_LENGTH		2	///<
+#define DEVICE_SUPPORTED_LANGUAGE_LENGTH	2	///< The Language Codes are 2 character alpha codes as defined by ISO 639-1.
+#define DEVICE_SN_LENGTH					4	///<
+#define DEVICE_LABEL_MAX_LENGTH				32	///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
+#define SOFTWARE_VERSION_LABEL_MAX_LENGTH	32	///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
+
 extern struct _rdm_device_info *rdm_device_info_get(void);
 extern void rdm_device_info_init(void);
 extern const uint8_t * rdm_device_info_get_uuid(void);
@@ -52,8 +58,8 @@ extern const char * rdm_device_info_get_personality_description(uint8_t);
 extern uint16_t rdm_device_info_get_personality_slots(uint8_t);
 extern const uint8_t * rdm_device_info_get_manufacturer_id(void);
 extern const uint8_t rdm_device_info_get_manufacturer_id_length(void);
-extern const uint8_t * rdm_device_info_get_id(void);
-extern const uint8_t rdm_device_info_get_id_length(void);
+extern const uint8_t * rdm_device_info_get_type_id(void);
+extern const uint8_t rdm_device_info_get_type_id_length(void);
 extern const uint8_t * rdm_device_info_get_sn(void);
 extern const uint8_t rdm_device_info_get_sn_length(void);
 

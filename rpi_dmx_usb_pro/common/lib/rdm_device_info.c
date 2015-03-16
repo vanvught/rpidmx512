@@ -31,26 +31,19 @@
 #include "util.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-
+#include "rdm_device_info.h"
 #include "rdm_device_const.h"
 
 static const uint8_t  DEVICE_LABEL_LENGTH = (sizeof(DEVICE_LABEL) / sizeof(uint8_t)) - 1;
-static const uint8_t  DEVICE_ID_LENGTH = (sizeof(DEVICE_ID) / sizeof(uint8_t));
 static const uint8_t  DEVICE_MANUFACTURER_NAME_LENGTH = (sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(uint8_t)) - 1;
-static const uint8_t  DEVICE_MANUFACTURER_ID_LENGTH = (sizeof(DEVICE_MANUFACTURER_ID) / sizeof(uint8_t));
-static const uint8_t  DEVICE_SUPPORTED_LANGUAGE_LENGTH = (sizeof(DEVICE_SUPPORTED_LANGUAGE) / sizeof(uint8_t)) - 1;
 static const uint8_t  DEVICE_SOFTWARE_VERSION_LENGTH = (sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(uint8_t)) - 1;
-
-#define DEFAULT_DMX_START_ADDRESS		1
-#define DEFAULT_CURRENT_PERSONALITY		1
-#define DMX_FOOTPRINT					32
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
-static uint8_t device_label[32];
+static uint8_t device_label[DEVICE_LABEL_MAX_LENGTH];
 static uint8_t device_label_length = 0;
 
-static uint8_t sn_device[4];
+static uint8_t device_sn[DEVICE_SN_LENGTH];
 
 static uint8_t is_factory_defaults = TRUE;
 static uint16_t factory_defaults_checksum = 0;
@@ -93,7 +86,7 @@ const uint8_t * rdm_device_info_get_uuid(void)
 
 const uint8_t * rdm_device_info_get_sn(void)
 {
-	return sn_device;
+	return device_sn;
 }
 
 const uint8_t rdm_device_info_get_sn_length(void)
@@ -120,17 +113,6 @@ void rdm_device_info_set_label(const uint8_t *label, uint8_t label_length)
 const uint8_t rdm_device_info_get_label_length(void)
 {
 	return device_label_length;
-}
-
-
-const uint8_t * rdm_device_info_get_id(void)
-{
-	return DEVICE_ID;
-}
-
-const uint8_t rdm_device_info_get_id_length(void)
-{
-	return DEVICE_ID_LENGTH;
 }
 
 
@@ -303,10 +285,10 @@ void rdm_device_info_init(void)
 	uid_device[0] = DEVICE_MANUFACTURER_ID[1];
 	uid_device[1] = DEVICE_MANUFACTURER_ID[0];
 
-	sn_device[0] = uid_device[5];
-	sn_device[1] = uid_device[4];
-	sn_device[2] = uid_device[3];
-	sn_device[3] = uid_device[2];
+	device_sn[0] = uid_device[5];
+	device_sn[1] = uid_device[4];
+	device_sn[2] = uid_device[3];
+	device_sn[3] = uid_device[2];
 
 	memcpy(device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	device_label_length = DEVICE_LABEL_LENGTH;

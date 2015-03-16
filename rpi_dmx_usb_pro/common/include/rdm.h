@@ -30,6 +30,8 @@
 
 #define RDM_DATA_BUFFER_SIZE			512
 
+extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
+
 ///< 3 Timing
 #define RDM_TRANSMIT_BREAK_TIME			176		///< Min 176μs
 #define RDM_TRANSMIT_MAB_TIME			12		///< Min 12μs

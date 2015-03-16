@@ -34,7 +34,6 @@
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 
-extern uint8_t rdm_data[512];
 static uint8_t rdm_message_count;
 
 /**

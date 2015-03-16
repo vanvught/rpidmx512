@@ -1,7 +1,5 @@
 /**
- * @file usb_send.c
- *
- * @brief Interface for FT245RL
+ * @file dmx.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -25,64 +23,31 @@
  * THE SOFTWARE.
  */
 
+#ifndef DMX_H_
+#define DMX_H_
+
 #include <stdint.h>
 
-#include "widget.h"
-#include "ft245rl.h"
+#define DMX_DATA_BUFFER_SIZE	512 ///<
 
-/**
- *
- * @param label
- * @param length
- */
-void usb_send_header(const uint8_t label, const uint16_t length)
-{
-	FT245RL_write_data(AMF_START_CODE);
-	FT245RL_write_data(label);
-	FT245RL_write_data((uint8_t)(length & 0x00FF));
-	FT245RL_write_data((uint8_t)(length >> 8));
-}
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
-/**
- *
- * @param data
- * @param length
- */
-void usb_send_data(const uint8_t *data, const uint16_t length)
+typedef enum
 {
-	uint16_t i;
-	for (i = 0; i < length; i++)
-	{
-		FT245RL_write_data(data[i]);
-	}
-}
+	DMX_PORT_DIRECTION_IDLE = 0,	///<
+	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
+	DMX_PORT_DIRECTION_INP = 2		///< DMX input
+} _dmx_port_direction;
 
-/**
- *
- */
-void usb_send_footer(void)
-{
-	FT245RL_write_data(AMF_END_CODE);
-}
+extern void dmx_init(void);
+extern void dmx_port_direction_set(const uint8_t, const uint8_t);
+extern uint8_t dmx_port_direction_get(void);
+extern void dmx_data_send(const uint8_t *, const uint16_t);
+extern void rdm_data_send(const uint8_t *, const uint16_t);
+extern uint8_t rdm_available_get(void);
+extern void rdm_available_set(uint8_t);
+extern uint64_t rdm_data_receive_end_get(void);
+extern uint8_t dmx_available_get(void);
+extern void dmx_available_set(uint8_t);
 
-/**
- *
- * @param label
- * @param data
- * @param length
- */
-void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length)
-{
-	usb_send_header(label, length);
-	usb_send_data(data, length);
-	usb_send_footer();
-}
-
-/**
- *
- * @param byte
- */
-void usb_send_byte(const uint8_t byte)
-{
-	FT245RL_write_data(byte);
-}
+#endif /* DMX_H_ */

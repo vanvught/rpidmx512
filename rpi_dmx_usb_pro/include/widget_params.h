@@ -1,7 +1,7 @@
 /**
  * @file widget_params.h
  */
-/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #ifndef WIDGET_PARAMS_H_
 #define WIDGET_PARAMS_H_
+
+#define DEVICE_TYPE_ID_LENGTH				2	///<
 
 struct _widget_params
 {
@@ -33,14 +36,6 @@ struct _widget_params
 	uint8_t refresh_rate;
 };
 
-struct _widget_sn
-{
-	uint8_t bcd_0;
-	uint8_t bcd_1;
-	uint8_t bcd_2;
-	uint8_t bcd_3;
-};
-
 typedef enum
 {
 	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
@@ -48,13 +43,12 @@ typedef enum
 	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
 } _firmware_version_msb;
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
-
 extern void widget_params_init(void);
 extern void widget_params_get(struct _widget_params *);
 extern void widget_params_break_time_set(uint8_t);
 extern void widget_params_mab_time_set(uint8_t);
 extern void widget_params_refresh_rate_set(uint8_t);
-extern void widget_params_sn_get(struct _widget_sn *);
+extern const uint8_t * widget_params_get_type_id(void);
+extern const uint8_t widget_params_get_type_id_length(void);
 
 #endif /* WIDGET_PARAMS_H_ */

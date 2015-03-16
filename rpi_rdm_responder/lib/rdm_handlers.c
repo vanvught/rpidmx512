@@ -25,10 +25,9 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "sys_time.h"
-#include "console.h"
+#include "monitor_debug.h"
 #include "hardware.h"
 #include "util.h"
 #include "dmx.h"
@@ -37,7 +36,6 @@
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 
-extern uint8_t rdm_data[512];
 static uint8_t rdm_is_mute = FALSE;
 static uint8_t rdm_identify_mode_enabled = FALSE;
 
@@ -99,6 +97,9 @@ struct _pid_definition
 		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, TRUE },
 		};
 
+/**
+ *
+ */
 static void rdm_get_supported_parameters(void)
 {
 	uint8_t supported_params = 0;
@@ -141,11 +142,20 @@ static void rdm_get_queued_message(void)
 }
 #endif
 
+/**
+ *
+ * @return
+ */
 uint8_t rdm_is_mute_get(void)
 {
 	return rdm_is_mute;
 }
 
+/**
+ *
+ * @param name
+ * @param lenght
+ */
 inline static void handle_string(const uint8_t *name, const uint8_t lenght)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_data;
@@ -158,6 +168,9 @@ inline static void handle_string(const uint8_t *name, const uint8_t lenght)
 		rdm_response->param_data[i] = name[i];
 }
 
+/**
+ *
+ */
 static void rdm_get_device_info(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
@@ -173,6 +186,9 @@ static void rdm_get_device_info(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_device_model_description(void)
 {
 	const uint8_t *board_model = hardware_get_board_model();
@@ -181,6 +197,9 @@ static void rdm_get_device_model_description(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_manufacturer_label(void)
 {
 	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
@@ -190,6 +209,9 @@ static void rdm_get_manufacturer_label(void)
 }
 
 
+/**
+ *
+ */
 static void rdm_get_device_label(void)
 {
 	const uint8_t *device_name = rdm_device_info_get_label();
@@ -198,6 +220,11 @@ static void rdm_get_device_label(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -221,6 +248,9 @@ static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_factory_defaults(void)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -238,6 +268,11 @@ static void rdm_get_factory_defaults(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -256,6 +291,9 @@ static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_language(void)
 {
 	const uint8_t *supported_language = rdm_device_info_get_supported_language();
@@ -264,6 +302,9 @@ static void rdm_get_language(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_software_version_label(void)
 {
 	const uint8_t *software_version = rdm_device_info_get_software_version();
@@ -272,6 +313,9 @@ static void rdm_get_software_version_label(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_boot_software_version_id(void)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -294,6 +338,9 @@ static void rdm_get_boot_software_version_id(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_boot_software_version_label(void)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -310,6 +357,9 @@ static void rdm_get_boot_software_version_label(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_personality(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
@@ -323,6 +373,11 @@ static void rdm_get_personality(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -350,6 +405,9 @@ static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_personality_description(void)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -384,6 +442,9 @@ static void rdm_get_personality_description(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_dmx_start_address(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
@@ -396,6 +457,9 @@ static void rdm_get_dmx_start_address(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_device_hours(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
@@ -410,6 +474,11 @@ static void rdm_get_device_hours(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_data;
@@ -419,6 +488,9 @@ static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_nack(E120_NR_WRITE_PROTECT);
 }
 
+/**
+ *
+ */
 static void rdm_get_identify_device(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
@@ -429,6 +501,9 @@ static void rdm_get_identify_device(void)
 	rdm_send_respond_message_ack();
 }
 
+/**
+ *
+ */
 static void rdm_get_real_time_clock(void)
 {
 	time_t ltime = 0;
@@ -650,8 +725,7 @@ void rdm_handle_data(void)
 	uint8_t command_class = rdm_cmd->command_class;
 	uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
 
-	console_clear_line(23);
-	printf("handle_rdm_data, param_id [%.2x%.2x]:%d\n", rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
+	monitor_debug_line(23, "handle_rdm_data, param_id [%.2x%.2x]:%d", rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
@@ -683,8 +757,7 @@ void rdm_handle_data(void)
 				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0)
 						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	RDM_UID_SIZE) <= 0))
 				{
-					console_clear_line(24);
-					printf("E120_DISC_UNIQUE_BRANCH\n");
+					monitor_debug_line(24, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
 					uint16_t rdm_checksum = 6 * 0xFF;

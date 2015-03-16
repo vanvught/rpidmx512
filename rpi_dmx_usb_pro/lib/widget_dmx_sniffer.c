@@ -33,7 +33,7 @@
 
 #define MONITOR_LINE_INFO		6
 
-extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
+static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
 #define	SNIFFER_PACKET			0x81
 #define	SNIFFER_PACKET_SIZE  	200
@@ -41,7 +41,37 @@ extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 #define CONTROL_MASK			0x00
 #define DATA_MASK				0x80
 
-static uint8_t slot0 = 0;
+inline static void usb_send_next_package(uint16_t start)
+{
+	uint16_t i = 0;
+
+	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+
+	for (i = start; i < (start + 100); i++)
+	{
+		usb_send_byte(DATA_MASK);
+		usb_send_byte(dmx_data[i]);
+	}
+
+	usb_send_footer();
+}
+
+inline static uint8_t dmx_data_is_changed(void)
+{
+	uint16_t i = 0;
+	uint8_t is_changed = FALSE;
+
+	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++)
+	{
+		if (dmx_data_previous[i] != dmx_data[i])	//TODO Is a memcpy more efficient?
+		{
+			is_changed = TRUE;
+			dmx_data_previous[i] = dmx_data[i];
+		}
+	}
+
+	return is_changed;
+}
 
 /**
  *
@@ -55,34 +85,49 @@ void widget_dmx_sniffer(void)
 
 	console_clear_line(MONITOR_LINE_INFO);
 
-	if (slot0 != dmx_data[0])
+	if (dmx_data_is_changed())
 	{
 		printf("Send DMX data to HOST\n");
-		slot0 = dmx_data[0];
 	} else
 	{
 		return;
 	}
 
-	uint16_t message_length = 33;
-
+	// DMX 0-98
 	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
-	usb_send_byte(DATA_MASK);
+	usb_send_byte(DATA_MASK);		// TODO Start byte part of dmx_data
 	usb_send_byte(0);
 
-	uint8_t i = 0;
-	for (i = 0; i < message_length - 1; i++)
+	uint16_t i = 0;
+	for (i = 0; i < 99; i++)
 	{
 		usb_send_byte(DATA_MASK);
 		usb_send_byte(dmx_data[i]);
 	}
 
-	for (i = message_length; i < SNIFFER_PACKET_SIZE / 2; i++)
+	usb_send_footer();
+
+	usb_send_next_package(99);	// DMX 99-198
+	usb_send_next_package(199);	// DMX 199-298
+	usb_send_next_package(299);	// DMX 299-398
+	usb_send_next_package(399);	// DMX 399-498
+
+	// DMX 499-511 + remaining control bytes
+	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+
+	for (i = 499; i < 512; i++)
+	{
+		usb_send_byte(DATA_MASK);
+		usb_send_byte(dmx_data[i]);
+	}
+
+	for (i = 13; i < SNIFFER_PACKET_SIZE / 2; i++)
 	{
 		usb_send_byte(CONTROL_MASK);
 		usb_send_byte(0x02);
 	}
 
 	usb_send_footer();
+
 }

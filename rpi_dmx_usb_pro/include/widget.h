@@ -4,7 +4,7 @@
  * @brief DMX USB Pro Widget API Specification 1.44
  *
  */
-/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,8 @@ typedef enum
 	GET_WIDGET_SN_REPLY = 10,
 	SEND_RDM_DISCOVERY_REQUEST = 11,
 	RDM_TIMEOUT = 12,
-	MANUFACTURER_LABEL = 77,
-	GET_WIDGET_NAME_LABEL = 78
+	MANUFACTURER_LABEL = 77,						///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+	GET_WIDGET_NAME_LABEL = 78						///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
 } _widget_codes;
 
 typedef enum

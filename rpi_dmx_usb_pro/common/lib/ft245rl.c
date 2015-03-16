@@ -181,3 +181,13 @@ uint8_t FT245RL_data_available(void)
 {
 	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
 }
+
+/**
+ * Read TXE#
+ *
+ * @return
+ */
+uint8_t FT245RL_can_write(void)
+{
+	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
+}

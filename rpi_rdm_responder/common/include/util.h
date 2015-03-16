@@ -31,4 +31,8 @@ typedef enum {
 	TRUE = 1
 } _boolean;
 
+#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
+
+#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+
 #endif /* UTIL_H_ */

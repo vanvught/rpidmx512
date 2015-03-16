@@ -32,8 +32,6 @@
 #include "console.h"
 #include "hardware.h"
 
-extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
-
 void monitor_update(void)
 {
 	char dir[3][10] =

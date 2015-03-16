@@ -28,12 +28,10 @@
 #include "hardware.h"
 #include "sys_time.h"
 #include "console.h"
-
+#include "util.h"
 #include "dmx.h"
+#include "rdm.h"
 #include "rdm_device_info.h"
-
-extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
-extern uint8_t rdm_data[512];
 
 extern uint8_t rdm_is_mute_get(void);
 
@@ -63,8 +61,6 @@ void monitor_update(void)
 	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address();
-
-	#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
 
 	printf("%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
 

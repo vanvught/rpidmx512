@@ -31,14 +31,16 @@
 #include "widget.h"
 #include "widget_params.h"
 
+static const uint8_t DEVICE_TYPE_ID[] = {1, 0};
+
 static struct _widget_params dmx_usb_pro_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
-//static struct _widget_sn dmx_usb_pro_sn = { DEC2BCD(78), DEC2BCD(56), DEC2BCD(34), DEC2BCD(12) };
 
 static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file name
 ///< entries
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";		///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";			///<
 static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";	///<
+///< custom entries
 
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
@@ -197,8 +199,12 @@ void widget_params_refresh_rate_set(uint8_t refresh_rate)
 	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
-//void widget_params_sn_get(struct _widget_sn *widget_sn)
-//{
-//	memcpy(widget_sn, &dmx_usb_pro_sn, sizeof(struct _widget_sn));
-//}
+const uint8_t * widget_params_get_type_id(void)
+{
+	return DEVICE_TYPE_ID;
+}
 
+const uint8_t widget_params_get_type_id_length(void)
+{
+	return DEVICE_TYPE_ID_LENGTH;
+}

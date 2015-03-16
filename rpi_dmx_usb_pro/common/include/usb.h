@@ -1,5 +1,5 @@
 /**
- * @file util.h
+ * @file usb.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef USB_H_
+#define USB_H_
 
-typedef enum {
-	FALSE = 0,
-	TRUE = 1
-} _boolean;
+#include <stdint.h>
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
+extern void usb_send_header(const uint8_t, const uint16_t);
+extern void usb_send_data(const uint8_t *, const uint16_t);
+extern void usb_send_byte(const uint8_t);
+extern void usb_send_footer(void);
+extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+#include "ft245rl.h"
 
-#endif /* UTIL_H_ */
+inline static const uint8_t usb_read_byte(void)
+{
+	while (!FT245RL_data_available());
+	return FT245RL_read_data();
+}
+
+inline static const uint8_t usb_read_is_byte_available(void)
+{
+	return FT245RL_data_available();
+}
+
+inline static void usb_init(void)
+{
+	FT245RL_init();
+}
+
+inline static const uint8_t usb_can_write(void)
+{
+	return FT245RL_can_write();
+}
+
+#endif /* USB_H_ */

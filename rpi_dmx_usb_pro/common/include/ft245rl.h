@@ -3,7 +3,7 @@
  * @file ft245el.h
  *
  */
-/* Copyright (C) 2015by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,5 +33,6 @@ extern void FT245RL_init(void);
 extern void FT245RL_write_data(uint8_t );
 extern uint8_t FT245RL_read_data();
 extern uint8_t FT245RL_data_available(void);
+extern uint8_t FT245RL_can_write(void);
 
 #endif /* FT245RL_H_ */

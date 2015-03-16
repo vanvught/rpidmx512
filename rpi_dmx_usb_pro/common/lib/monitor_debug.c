@@ -1,5 +1,5 @@
 /**
- * @file dmx.h
+ * @file monitor_debug.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,29 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_H_
-#define DMX_H_
-
+#include <stdio.h>
 #include <stdint.h>
+#include <stdarg.h>
 
-typedef enum
+#include "console.h"
+
+void monitor_debug_line(uint8_t line, const char *fmt, ...)
 {
-	DMX_PORT_DIRECTION_IDLE = 0,	///<
-	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
-	DMX_PORT_DIRECTION_INP = 2		///< DMX input
-} _dmx_port_direction;
+	va_list va;
 
-#define DMX_DATA_BUFFER_SIZE	512 ///<
+	console_clear_line(line);
 
-extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern uint8_t dmx_port_direction_get(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern void rdm_data_send(const uint8_t *, const uint16_t);
-extern uint8_t rdm_available_get(void);
-extern void rdm_available_set(uint8_t);
-extern uint64_t rdm_data_receive_end_get(void);
-extern uint8_t dmx_available_get(void);
-extern void dmx_available_set(uint8_t);
-
-#endif /* DMX_H_ */
+	printf(fmt, va);
+	fflush(stdout);
+}
