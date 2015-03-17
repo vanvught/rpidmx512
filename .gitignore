@@ -16,5 +16,6 @@
 *.out
 *.app
 *.bin
-*.img
 *.bak
+*.lst
+*.map
