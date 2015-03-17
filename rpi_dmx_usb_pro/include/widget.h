@@ -58,8 +58,18 @@ typedef enum
 	SEND_ON_DATA_CHANGE_ONLY = 1	///<
 } _widget_send_state;
 
+typedef enum
+{
+	MODE_DMX_RDM = 0,		///< Both DMX (\ref FIRMWARE_NORMAL_DMX)and RDM (\ref FIRMWARE_RDM) firmware enabled.
+	MODE_DMX = 1,			///< DMX (\ref FIRMWARE_NORMAL_DMX) firmware enabled
+	MODE_RDM = 2,			///< RDM (\ref FIRMWARE_RDM) firmware enabled.
+	MODE_RDM_SNIFFER = 3	///< RDM Sniffer firmware enabled.
+} _widget_mode;
+
 extern uint8_t receive_dmx_on_change_get(void);
 extern uint64_t widget_dmx_output_period_get(void);
 extern void widget_dmx_output_period_set(uint64_t);
+extern uint8_t widget_mode_get(void);
+extern void widget_mode_set(uint8_t);
 
 #endif /* WIDGET_H_ */

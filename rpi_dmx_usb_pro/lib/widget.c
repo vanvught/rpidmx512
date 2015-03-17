@@ -41,6 +41,7 @@
 #include "monitor_debug.h"
 
 static uint8_t widget_data[600];						///<
+static uint8_t widget_mode = MODE_DMX_RDM;				///<
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
 static uint64_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_dmx_output_only = FALSE;			///<
@@ -80,6 +81,20 @@ uint64_t widget_dmx_output_period_get(void)
 void widget_dmx_output_period_set(uint64_t dmx_output_period)
 {
 	widget_dmx_output_period = dmx_output_period;
+}
+
+/**
+ *
+ * @return
+ */
+uint8_t widget_mode_get()
+{
+	return widget_mode;
+}
+
+void widget_mode_set(uint8_t mode)
+{
+	widget_mode = mode;
 }
 
 /*
@@ -126,6 +141,9 @@ static void widget_set_params()
  */
 void widget_received_dmx_packet(void)
 {
+	if (widget_mode == MODE_RDM_SNIFFER)
+		return;
+
 	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
@@ -150,6 +168,9 @@ void widget_received_dmx_packet(void)
  */
 void widget_received_rdm_packet(void)
 {
+	if (widget_mode == MODE_DMX || widget_mode == MODE_RDM_SNIFFER)
+		return;
+
 	if ((rdm_available_get() == FALSE)  || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
 		return;
 
@@ -187,8 +208,8 @@ void widget_received_rdm_packet(void)
 	}
 
 	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-
-	//TODO -> monitor_debug.c
+	monitor_debug_data(MONITOR_LINE_RDM_DATA, p->message_length, rdm_data);
+	/*//TODO remove
 	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", p->message_length);
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
@@ -199,6 +220,7 @@ void widget_received_rdm_packet(void)
 				i+19, rdm_data[i+18], rdm_data[i+18],
 				i+28, rdm_data[i+27], rdm_data[i+27]);
 	}
+	*/
 }
 
 /**
@@ -255,7 +277,8 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 	widget_send_rdm_packet_start =  bcm2835_st_read();
 
-	//TODO -> monitor_debug.c
+	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	/*//TODO remove
 	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", data_length);
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
@@ -266,6 +289,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 				i+19, widget_data[i+18], widget_data[i+18],
 				i+28, widget_data[i+27], widget_data[i+27]);
 	}
+	*/
 }
 
 /**
@@ -276,6 +300,9 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
  */
 void widget_rdm_timeout(void)
 {
+	//if (widget_mode == MODE_RDM_SNIFFER)
+	//	return;
+
 	if (widget_send_rdm_packet_start == 0)
 		return;
 
@@ -322,6 +349,9 @@ static void widget_receive_dmx_on_change(void)
  */
 void widget_received_dmx_change_of_state_packet(void)
 {
+	if (widget_mode == MODE_RDM_SNIFFER)
+		return;
+
 	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 	// TODO widget_received_dmx_change_of_state_packet
@@ -362,7 +392,8 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 
 	widget_send_rdm_packet_start =  bcm2835_st_read();
 
-	//TODO -> monitor_debug.c
+	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	/*//TODO remove
 	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", data_length);
 	uint8_t i = 0;
 	for (i = 0; i < 9; i++)
@@ -373,6 +404,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 				i+19, widget_data[i+18], widget_data[i+18],
 				i+28, widget_data[i+27], widget_data[i+27]);
 	}
+	*/
 }
 
 /**
@@ -442,6 +474,9 @@ static void widget_get_name_reply(void)
  * This function is called from the poll table in \file main.c
  */
 void widget_ouput_dmx(void){
+	if (widget_mode == MODE_RDM_SNIFFER)
+		return;
+
 	if (widget_dmx_output_only == FALSE)
 		return;
 
@@ -456,6 +491,7 @@ void widget_ouput_dmx(void){
 /**
  * @ingroup widget
  *
+ * This function is called from the poll table in \file main.c
  */
 void widget_receive_data_from_host(void)
 {

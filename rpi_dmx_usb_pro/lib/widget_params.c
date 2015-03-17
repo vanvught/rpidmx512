@@ -27,12 +27,10 @@
 #include <string.h>
 
 #include "ff.h"
-
 #include "widget.h"
 #include "widget_params.h"
 
 static const uint8_t DEVICE_TYPE_ID[] = {1, 0};
-
 static struct _widget_params dmx_usb_pro_params = { 4, FIRMWARE_RDM, 9, 1, 40 };
 
 static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file name
@@ -40,8 +38,17 @@ static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";		///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";			///<
 static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";	///<
-///< custom entries
+///< custom entry
+static const char PARAMS_REFRESH_MODE[] = "mode";	///<
 
+/**
+ *
+ * @param line
+ * @param file_object_wr
+ * @param name
+ * @param value
+ * @return
+ */
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
 	char _name[64];
@@ -65,6 +72,11 @@ static char process_line_update(const char *line, FIL file_object_wr, const char
 	return 0;
 }
 
+/**
+ *
+ * @param name
+ * @param value
+ */
 static void update_config_file(const char *name, const int value)
 {
 	int rc = -1;
@@ -102,6 +114,10 @@ static void update_config_file(const char *name, const int value)
 	}
 }
 
+/**
+ *
+ * @param line
+ */
 static void process_line_read(const char *line)
 {
 	char name[64];
@@ -126,10 +142,19 @@ static void process_line_read(const char *line)
 			{
 				dmx_usb_pro_params.refresh_rate = value;
 			}
+		} else if  (strncmp(name, PARAMS_REFRESH_MODE, sizeof(PARAMS_REFRESH_MODE)) == 0)
+		{
+			if((value >= MODE_DMX_RDM) && value <= MODE_RDM_SNIFFER)
+			{
+				dmx_usb_pro_params.firmware_msb = value;
+			}
 		}
 	}
 }
 
+/**
+ *
+ */
 static void read_config_file(void)
 {
 	int rc = -1;
@@ -158,38 +183,39 @@ static void read_config_file(void)
 
 }
 
-void widget_params_init(void)
-{
-	read_config_file();
-
-	// Update the Widget
-	// DMX output rate in packets per second. Valid range is 1 to 40.
-	uint64_t period = 0;	// μs
-	if (dmx_usb_pro_params.refresh_rate > 0 && dmx_usb_pro_params.refresh_rate <= 40)
-	{
-		period = 1E6 / dmx_usb_pro_params.refresh_rate;
-	}
-	widget_dmx_output_period_set(period);
-}
-
+/**
+ *
+ * @param widget_params
+ */
 void widget_params_get(struct _widget_params *widget_params)
 {
 	memcpy(widget_params, &dmx_usb_pro_params, sizeof(struct _widget_params));
 }
 
-
+/**
+ *
+ * @param break_time
+ */
 void widget_params_break_time_set(uint8_t break_time)
 {
 	dmx_usb_pro_params.break_time = break_time;
 	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
+/**
+ *
+ * @param mab_time
+ */
 void widget_params_mab_time_set(uint8_t mab_time)
 {
 	dmx_usb_pro_params.mab_time = mab_time;
 	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
+/**
+ *
+ * @param refresh_rate
+ */
 void widget_params_refresh_rate_set(uint8_t refresh_rate)
 {
 	dmx_usb_pro_params.refresh_rate = refresh_rate;
@@ -199,12 +225,43 @@ void widget_params_refresh_rate_set(uint8_t refresh_rate)
 	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t * widget_params_get_type_id(void)
 {
 	return DEVICE_TYPE_ID;
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t widget_params_get_type_id_length(void)
 {
 	return DEVICE_TYPE_ID_LENGTH;
+}
+
+/**
+ * @brief Update the Widget with the settings from params.txt
+ *
+ */
+void widget_params_init(void)
+{
+	read_config_file();
+
+	// DMX output rate in packets per second. Valid range is 1 to 40.
+	uint64_t period = 0;	// μs
+	if (dmx_usb_pro_params.refresh_rate > 0 && dmx_usb_pro_params.refresh_rate <= 40)
+	{
+		period = 1E6 / dmx_usb_pro_params.refresh_rate;
+	}
+	widget_dmx_output_period_set(period);
+
+	uint8_t mode = dmx_usb_pro_params.firmware_msb;
+	if (mode == MODE_DMX_RDM)
+		dmx_usb_pro_params.firmware_msb = FIRMWARE_RDM;
+
+	widget_mode_set(mode);
 }

@@ -42,7 +42,6 @@ extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 #define RDM_UID_SIZE  					6		///< 48-bit
 
 ///< 6.2.3 Message Length
-#define RDM_DATA_BUFFER_SIZE			512 	///< On the safe side > 255
 #define RDM_MESSAGE_MINIMUM_SIZE		24		///< Minimum size of RDM message without the checksum
 #define RDM_MESSAGE_CHECKSUM_SIZE		2		///< Size of the checksum
 #define RDM_MESSAGE_COUNT_MAX			255		///< Message Count field for Responder Generated Messages

@@ -31,19 +31,22 @@
 #include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
+#include "widget.h"
 #include "monitor_debug.h"
-
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-// if the high bit is set, this is a data byte, otherwise it's a control byte
-#define CONTROL_MASK			0x00
-#define DATA_MASK				0x80
+#include "sniffer.h"
 
 /*
  * @bug What is RDM package > 100 bytes?
+ *
+ * This function is called from the poll table in \file main.c
  */
 void widget_rdm_sniffer(void)
 {
+	uint8_t mode = widget_mode_get();
+
+	if (mode != MODE_RDM_SNIFFER)
+		return;
+
 	if (rdm_available_get() == FALSE)
 			return;
 
@@ -80,14 +83,5 @@ void widget_rdm_sniffer(void)
 
 	usb_send_footer();
 
-	// TODO DEBUG
-	console_clear_line(11);
-	for (i = 0; i < 9; i++)
-	{
-		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				i+1, rdm_data[i], rdm_data[i],
-				i+10, rdm_data[i+9], rdm_data[i+9],
-				i+19, rdm_data[i+18], rdm_data[i+18],
-				i+28, rdm_data[i+27], rdm_data[i+27]);
-	}
+	monitor_debug_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
 }

@@ -1,7 +1,7 @@
 /**
- * @file usb_send.c
+ * @file usb.c
  *
- * @brief Interface for FT245RL
+ * @brief Generic interface for FT245RL
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -32,15 +32,25 @@
 
 /**
  *
+ * @param byte
+ */
+void usb_send_byte(const uint8_t byte)
+{
+	while(!FT245RL_can_write());
+	FT245RL_write_data(byte);
+}
+
+/**
+ *
  * @param label
  * @param length
  */
 void usb_send_header(const uint8_t label, const uint16_t length)
 {
-	FT245RL_write_data(AMF_START_CODE);
-	FT245RL_write_data(label);
-	FT245RL_write_data((uint8_t)(length & 0x00FF));
-	FT245RL_write_data((uint8_t)(length >> 8));
+	usb_send_byte(AMF_START_CODE);
+	usb_send_byte(label);
+	usb_send_byte((uint8_t)(length & 0x00FF));
+	usb_send_byte((uint8_t)(length >> 8));
 }
 
 /**
@@ -53,8 +63,7 @@ void usb_send_data(const uint8_t *data, const uint16_t length)
 	uint16_t i;
 	for (i = 0; i < length; i++)
 	{
-		while(!FT245RL_can_write());
-		FT245RL_write_data(data[i]);
+		usb_send_byte(data[i]);
 	}
 }
 
@@ -63,7 +72,7 @@ void usb_send_data(const uint8_t *data, const uint16_t length)
  */
 void usb_send_footer(void)
 {
-	FT245RL_write_data(AMF_END_CODE);
+	usb_send_byte(AMF_END_CODE);
 }
 
 /**
@@ -77,14 +86,4 @@ void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t l
 	usb_send_header(label, length);
 	usb_send_data(data, length);
 	usb_send_footer();
-}
-
-/**
- *
- * @param byte
- */
-void usb_send_byte(const uint8_t byte)
-{
-	while(!FT245RL_can_write());
-	FT245RL_write_data(byte);
 }

@@ -36,14 +36,15 @@
 #include "dmx.h"
 #include "widget_params.h"
 #include "rdm_device_info.h"
+#include "widget.h"
 
 // poll table
 extern void widget_received_rdm_packet(void);
 extern void widget_receive_data_from_host(void);
 extern void widget_ouput_dmx(void);
 extern void widget_rdm_timeout(void);
-//extern void widget_rdm_sniffer(void);
-//extern void widget_dmx_sniffer(void);
+extern void widget_rdm_sniffer(void);
+extern void widget_dmx_sniffer(void);
 // events table
 extern void widget_received_dmx_packet(void);
 extern void widget_received_dmx_change_of_state_packet(void);
@@ -61,9 +62,9 @@ struct _poll
 		{ widget_received_rdm_packet },
 		{ widget_ouput_dmx },
 		{ widget_receive_data_from_host },
-		{ widget_rdm_timeout }
-//		{ widget_rdm_sniffer },
-//		{ widget_dmx_sniffer }
+		{ widget_rdm_timeout },
+		{ widget_rdm_sniffer },
+		{ widget_dmx_sniffer }
 		};
 
 struct _event
@@ -112,9 +113,9 @@ int notmain(void)
 	widget_params_init();
 	rdm_device_info_init();
 
-	printf("Compiled on %s at %s - ", __DATE__, __TIME__);
-	const uint8_t *sn_device = rdm_device_info_get_sn();
-	printf("Device S/N : %.2X%.2X%.2X%.2X\n", sn_device[3],	sn_device[2], sn_device[1], sn_device[0]);
+	printf("Compiled on %s at %s ", __DATE__, __TIME__);
+	const uint8_t *device_sn = rdm_device_info_get_sn();
+	printf("[%d] Device S/N : %.2X%.2X%.2X%.2X\n", widget_mode_get(), device_sn[3],device_sn[2], device_sn[1], device_sn[0]);
 
 	//watchdog_init();
 

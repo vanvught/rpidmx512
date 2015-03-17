@@ -29,18 +29,18 @@
 #include "util.h"
 #include "usb.h"
 #include "dmx.h"
-#include "console.h"
+#include "widget.h"
+#include "monitor_debug.h"
+#include "sniffer.h"
 
 #define MONITOR_LINE_INFO		6
 
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-// if the high bit is set, this is a data byte, otherwise it's a control byte
-#define CONTROL_MASK			0x00
-#define DATA_MASK				0x80
-
+/**
+ *
+ * @param start
+ */
 inline static void usb_send_next_package(uint16_t start)
 {
 	uint16_t i = 0;
@@ -56,6 +56,10 @@ inline static void usb_send_next_package(uint16_t start)
 	usb_send_footer();
 }
 
+/**
+ *
+ * @return
+ */
 inline static uint8_t dmx_data_is_changed(void)
 {
 	uint16_t i = 0;
@@ -75,19 +79,25 @@ inline static uint8_t dmx_data_is_changed(void)
 
 /**
  *
+ * This function is called from the poll table in \file main.c
  */
 void widget_dmx_sniffer(void)
 {
+	uint8_t mode = widget_mode_get();
+
+	if (mode != MODE_RDM_SNIFFER)
+		return;
+
 	if (dmx_available_get() == FALSE)
 			return;
 
 	dmx_available_set(FALSE);
 
-	console_clear_line(MONITOR_LINE_INFO);
+	monitor_debug_line(MONITOR_LINE_INFO, NULL);
 
 	if (dmx_data_is_changed())
 	{
-		printf("Send DMX data to HOST\n");
+		monitor_debug_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 	} else
 	{
 		return;

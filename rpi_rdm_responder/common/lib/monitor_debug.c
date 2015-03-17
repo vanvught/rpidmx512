@@ -29,12 +29,31 @@
 
 #include "console.h"
 
-void monitor_debug_line(uint8_t line, const char *fmt, ...)
+void monitor_debug_line(const uint8_t line, const char *fmt, ...)
 {
 	va_list va;
 
 	console_clear_line(line);
 
-	printf(fmt, va);
-	fflush(stdout);
+	if (fmt != NULL)
+	{
+		va_start(va, fmt);
+		vprintf(fmt, va);
+		va_end(va);
+		fflush(stdout);
+	}
+}
+
+void monitor_debug_data(const uint8_t line, const uint16_t data_length, const uint8_t *data)
+{
+	uint8_t i;
+	console_clear_line(line);
+
+	printf("RDM Packet length : %d\n", data_length);
+
+	for (i = 0; i < 9; i++)
+	{
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, data[i], data[i], i+10, data[i+9], data[i+9], i+19, data[i+18], data[i+18], i+28, data[i+27], data[i+27]);
+	}
 }
