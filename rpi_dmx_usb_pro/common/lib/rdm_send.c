@@ -37,6 +37,39 @@
 static uint8_t rdm_message_count;
 
 /**
+ * @ingroup rdm
+ *
+ *
+ * @param data
+ * @param data_length
+ */
+void rdm_send_data(const uint8_t *data, const uint16_t data_length)
+{
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
+
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
+
+	uint16_t i = 0;
+	for (i = 0; i < data_length; i++)
+	{
+		while (1)
+		{
+			if ((BCM2835_PL011->FR & 0x20) == 0)
+				break;
+		}
+		BCM2835_PL011->DR = data[i];
+	}
+	while (1)
+	{
+		if ((BCM2835_PL011->FR & 0x20) == 0)
+			break;
+	}
+	udelay(44);
+}
+
+/**
  *
  * @param data
  * @param data_length
@@ -67,9 +100,9 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
  * @param data
  * @param data_length
  */
-void rdm_send_discovery_msg(const uint8_t *data, const uint16_t data_length)
+void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length)
 {
-	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
+	const uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
@@ -86,22 +119,28 @@ void rdm_send_discovery_msg(const uint8_t *data, const uint16_t data_length)
  * @param is_ack
  * @param reason
  */
-static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
+static void rdm_send_respond_message(uint8_t response_type, uint16_t value)
 {
 	uint16_t rdm_checksum = 0;
 
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
 
-	if(is_ack == TRUE)
-	{
-		rdm_response->slot16.response_type = E120_RESPONSE_TYPE_ACK;
-	} else
-	{
-		rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
-		rdm_response->slot16.response_type = E120_RESPONSE_TYPE_NACK_REASON;
-		rdm_response->param_data_length = 2;
-		rdm_response->param_data[0] = (uint8_t)(reason >> 8);
-		rdm_response->param_data[1] = (uint8_t)reason;
+	switch (response_type) {
+		case E120_RESPONSE_TYPE_ACK:
+			rdm_response->slot16.response_type = E120_RESPONSE_TYPE_ACK;
+			break;
+		case E120_RESPONSE_TYPE_NACK_REASON:
+		case E120_RESPONSE_TYPE_ACK_TIMER:
+			rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+			rdm_response->slot16.response_type = response_type;
+			rdm_response->param_data_length = 2;
+			rdm_response->param_data[0] = (uint8_t)(value >> 8);
+			rdm_response->param_data[1] = (uint8_t)value;
+			break;
+		default:
+			// forces timeout
+			return;
+			break;
 	}
 
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
@@ -120,7 +159,7 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;;
 
-	uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
+	const uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
@@ -128,7 +167,7 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
 	}
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
-	rdm_data_send(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	rdm_send_data(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -137,7 +176,7 @@ static void rdm_send_respond_message(uint8_t is_ack, uint16_t reason)
  */
 void rdm_send_respond_message_ack()
 {
-	rdm_send_respond_message(TRUE, 0);
+	rdm_send_respond_message(E120_RESPONSE_TYPE_ACK, 0);
 }
 
 /**
@@ -146,7 +185,16 @@ void rdm_send_respond_message_ack()
  */
 void rdm_send_respond_message_nack(const uint16_t reason)
 {
-	rdm_send_respond_message(FALSE, reason);
+	rdm_send_respond_message(E120_RESPONSE_TYPE_NACK_REASON, reason);
+}
+
+/**
+ *
+ * @param timer
+ */
+void rdm_send_respond_message_ack_timer(const uint16_t timer)
+{
+	rdm_send_respond_message(E120_RESPONSE_TYPE_ACK_TIMER, timer);
 }
 
 /**
