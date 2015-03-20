@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "ff.h"
+#include "dmx.h"
 #include "widget.h"
 #include "widget_params.h"
 
@@ -49,6 +50,7 @@ static const char PARAMS_REFRESH_MODE[] = "mode";	///<
  * @param value
  * @return
  */
+#ifdef UPDATE_CONFIG_FILE
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
 	char _name[64];
@@ -77,6 +79,7 @@ static char process_line_update(const char *line, FIL file_object_wr, const char
  * @param name
  * @param value
  */
+
 static void update_config_file(const char *name, const int value)
 {
 	int rc = -1;
@@ -113,6 +116,9 @@ static void update_config_file(const char *name, const int value)
 		f_close(&file_object_rd);
 	}
 }
+#else
+inline static void update_config_file(const char *name, const int value) { }
+#endif
 
 /**
  *
@@ -199,6 +205,7 @@ void widget_params_get(struct _widget_params *widget_params)
 void widget_params_break_time_set(uint8_t break_time)
 {
 	dmx_usb_pro_params.break_time = break_time;
+	dmx_output_break_time_set((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
 	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
@@ -209,6 +216,7 @@ void widget_params_break_time_set(uint8_t break_time)
 void widget_params_mab_time_set(uint8_t mab_time)
 {
 	dmx_usb_pro_params.mab_time = mab_time;
+	dmx_output_mab_time_set((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
 	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
@@ -264,4 +272,7 @@ void widget_params_init(void)
 		dmx_usb_pro_params.firmware_msb = FIRMWARE_RDM;
 
 	widget_mode_set(mode);
+
+	dmx_output_break_time_set((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
+	dmx_output_mab_time_set((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
 }
