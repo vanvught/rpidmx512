@@ -204,6 +204,7 @@ void widget_received_rdm_packet(void)
 
 		uint8_t rdm_packet_is_for_me = FALSE;
 		uint8_t rdm_packet_is_broadcast = FALSE;
+		uint8_t rdm_packet_is_vendorcast = FALSE;
 
 		const uint8_t *uid_device = rdm_device_info_get_uuid();
 
@@ -212,7 +213,14 @@ void widget_received_rdm_packet(void)
 		if (memcmp(p->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
 		{
 			rdm_packet_is_broadcast = TRUE;
-		} else if (memcmp(p->destination_uid, uid_device, RDM_UID_SIZE) == 0)
+		}
+
+		if ((memcmp(p->destination_uid, uid_device, 2) == 0) && (memcmp(&p->destination_uid[2], UID_ALL, RDM_UID_SIZE-2) == 0))
+		{
+			rdm_packet_is_vendorcast = TRUE;
+			rdm_packet_is_for_me = TRUE;
+		}
+		else if (memcmp(p->destination_uid, uid_device, RDM_UID_SIZE) == 0)
 		{
 			rdm_packet_is_for_me = TRUE;
 		}
