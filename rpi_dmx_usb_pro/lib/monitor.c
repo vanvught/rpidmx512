@@ -63,9 +63,10 @@ void monitor_update(void)
 			(long int) uptime_seconds % minute);
 
 	// line 2
-	printf("Firmware %d.%d BreakTime %d MaBTime %d RefreshRate %d\n",
+	printf("FW %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d\n",
 			widget_params.firmware_msb, widget_params.firmware_lsb,
-			widget_params.break_time, widget_params.mab_time,
+			widget_params.break_time, (int) dmx_output_break_time_get(),
+			widget_params.mab_time, (int) dmx_output_mab_time_get(),
 			widget_params.refresh_rate);
 
 	// line 3

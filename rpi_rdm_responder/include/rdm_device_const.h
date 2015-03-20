@@ -30,7 +30,7 @@ static const uint8_t  DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t  DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
 static const uint8_t  DEVICE_SUPPORTED_LANGUAGE[] = "en";
 static const uint8_t  DEVICE_SOFTWARE_VERSION[] = "1.0";
-static const uint32_t DEVICE_SOFTWARE_VERSION_ID = 0x20150315;
+static const uint32_t DEVICE_SOFTWARE_VERSION_ID = 0x20150320;
 
 #define DEFAULT_DMX_START_ADDRESS		1
 #define DEFAULT_CURRENT_PERSONALITY		1

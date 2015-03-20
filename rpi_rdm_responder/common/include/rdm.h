@@ -96,4 +96,6 @@ struct _rdm_personality
 	const char *description;
 };
 
+extern void rdm_send_data(const uint8_t *, const uint16_t);
+
 #endif /* RDM_H_ */

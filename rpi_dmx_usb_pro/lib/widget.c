@@ -38,6 +38,7 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
+#include "rdm_send.h"
 #include "monitor_debug.h"
 
 static uint8_t widget_data[600];						///<
@@ -49,6 +50,10 @@ static uint64_t widget_dmx_output_period = 0;			///<
 static uint64_t widget_dmx_output_elapsed_time = 0;		///<
 static uint16_t widget_dmx_output_data_length = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
+static uint8_t widget_rdm_is_mute = FALSE;				///<
+
+// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
+static const uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 inline static void rdm_time_out_message(void);
 
@@ -60,7 +65,7 @@ inline static void rdm_time_out_message(void);
  *
  * @return
  */
-uint8_t receive_dmx_on_change_get()
+const uint8_t receive_dmx_on_change_get()
 {
 	return receive_dmx_on_change;
 }
@@ -69,7 +74,7 @@ uint8_t receive_dmx_on_change_get()
  *
  * @return
  */
-uint64_t widget_dmx_output_period_get(void)
+const uint64_t widget_dmx_output_period_get(void)
 {
 	return widget_dmx_output_period;
 }
@@ -78,7 +83,7 @@ uint64_t widget_dmx_output_period_get(void)
  *
  * @param dmx_output_period
  */
-void widget_dmx_output_period_set(uint64_t dmx_output_period)
+void widget_dmx_output_period_set(const uint64_t dmx_output_period)
 {
 	widget_dmx_output_period = dmx_output_period;
 }
@@ -87,12 +92,12 @@ void widget_dmx_output_period_set(uint64_t dmx_output_period)
  *
  * @return
  */
-uint8_t widget_mode_get()
+const uint8_t widget_mode_get()
 {
 	return widget_mode;
 }
 
-void widget_mode_set(uint8_t mode)
+void widget_mode_set(const uint8_t mode)
 {
 	widget_mode = mode;
 }
@@ -109,6 +114,9 @@ void widget_mode_set(uint8_t mode)
  */
 static void widget_get_params_reply(void)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "GET_WIDGET_PARAMS_REPLY");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	struct _widget_params widget_params;
 	widget_params_get(&widget_params);
 	usb_send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&widget_params, sizeof(struct _widget_params));
@@ -123,6 +131,9 @@ static void widget_get_params_reply(void)
  */
 static void widget_set_params()
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "SET_WIDGET_PARAMS");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	widget_params_break_time_set(widget_data[2]);
 	widget_params_mab_time_set(widget_data[3]);
 	widget_params_refresh_rate_set(widget_data[4]);
@@ -144,10 +155,19 @@ void widget_received_dmx_packet(void)
 	if (widget_mode == MODE_RDM_SNIFFER)
 		return;
 
-	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
+	if ((widget_rdm_discovery_running == TRUE)
+			|| (DMX_PORT_DIRECTION_INP != dmx_port_direction_get())
+			|| (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
+	if (dmx_available_get() == FALSE)
+		return;
+
+	dmx_available_set(FALSE);
+
+	monitor_debug_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
 	monitor_debug_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
 	usb_send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
 	usb_send_byte(0); 	// DMX Receive status
@@ -176,28 +196,157 @@ void widget_received_rdm_packet(void)
 
 	rdm_available_set(FALSE);
 
+	monitor_debug_line(MONITOR_LINE_LABEL, "poll:RECEIVED_RDM_PACKET");
+
 	if (rdm_data[0] == E120_SC_RDM)
 	{
+		monitor_debug_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xCC");
+
+		uint8_t rdm_packet_is_for_me = FALSE;
+		uint8_t rdm_packet_is_broadcast = FALSE;
+
+		const uint8_t *uid_device = rdm_device_info_get_uuid();
+
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-		uint8_t message_length = p->message_length + 2;
 
-		monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
+		if (memcmp(p->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
+		{
+			rdm_packet_is_broadcast = TRUE;
+		} else if (memcmp(p->destination_uid, uid_device, RDM_UID_SIZE) == 0)
+		{
+			rdm_packet_is_for_me = TRUE;
+		}
 
-		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
-		usb_send_byte(0); 	// RDM Receive status
-		usb_send_data(rdm_data, message_length);
-		usb_send_footer();
-
-		if (p->command_class == E120_DISCOVERY_COMMAND_RESPONSE)
-			rdm_time_out_message();
+		if ((rdm_packet_is_for_me == FALSE) && (rdm_packet_is_broadcast == FALSE))
+		{
+			// Ignore RDM packet
+		}
 		else
-			widget_send_rdm_packet_start = 0;
+		{
+			const uint8_t command_class = p->command_class;
+			const uint16_t param_id = (p->param_id[0] << 8) + p->param_id[1];
 
+			if (command_class == E120_DISCOVERY_COMMAND)
+			{
+				switch (param_id) {
+				case E120_DISC_UNIQUE_BRANCH:
+					// Request Message Passed To Host : No
+					// Reply Sent By RDM Responder Widget : Discovery response when Widget UID is inside range of UIDs in request message and RDM discovery has not been muted.
+					if (widget_rdm_is_mute == FALSE)
+					{
+						if ((memcmp(p->param_data, uid_device, RDM_UID_SIZE) <= 0) && (memcmp(uid_device, p->param_data + 6, RDM_UID_SIZE) <= 0))
+						{
+							monitor_debug_line(24, "E120_DISC_UNIQUE_BRANCH");
+
+							struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
+							uint16_t rdm_checksum = 6 * 0xFF;
+
+							uint8_t i = 0;
+							for (i = 0; i < 7; i++)
+							{
+								p->header_FE[i] = 0xFE;
+							}
+							p->header_AA = 0xAA;
+
+							for (i = 0; i < 6; i++)
+							{
+								p->masked_device_id[i + i] = uid_device[i]
+										| 0xAA;
+								p->masked_device_id[i + i + 1] = uid_device[i]
+										| 0x55;
+								rdm_checksum += uid_device[i];
+							}
+
+							p->checksum[0] = (rdm_checksum >> 8) | 0xAA;
+							p->checksum[1] = (rdm_checksum >> 8) | 0x55;
+							p->checksum[2] = (rdm_checksum & 0xFF) | 0xAA;
+							p->checksum[3] = (rdm_checksum & 0xFF) | 0x55;
+
+							rdm_send_discovery_respond_message(rdm_data, sizeof(struct _rdm_discovery_msg));
+						}
+					}
+					break;
+					case E120_DISC_UN_MUTE:
+						// Request Message Passed To Host : No
+						// Reply Sent By RDM Responder Widget : DISC_MUTE response when request message was not broadcast.
+						if (p->param_data_length != 0) {
+							/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+							 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+							 */
+							//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+							return;
+						}
+						widget_rdm_is_mute = FALSE;
+						p->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+						p->param_data_length = 2;
+						p->param_data[0] = 0x00;	// Control Field
+						p->param_data[1] = 0x00;	// Control Field
+						rdm_send_respond_message_ack();
+						break;
+					case E120_DISC_MUTE:
+						// Request Message Passed To Host : No
+						// Reply Sent By RDM Responder Widget : DISC_UN_MUTE response when request message was not broadcast.
+						if (p->param_data_length != 0) {
+							/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
+							 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
+							 */
+							//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
+							return;
+						}
+						widget_rdm_is_mute = TRUE;
+						p->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+						p->param_data_length = 2;
+						p->param_data[0] = 0x00;	// Control Field
+						p->param_data[1] = 0x00;	// Control Field
+						rdm_send_respond_message_ack();
+						break;
+					default:
+						break;
+				}
+			} // if (p->command_class == E120_DISCOVERY_COMMAND)
+			else
+			{
+				if (command_class == E120_GET_COMMAND && param_id == E120_QUEUED_MESSAGE)
+				{
+					// Request Message Passed To Host : No
+					// Reply Sent By RDM Responder Widget : Queued message
+					// TODO
+				}
+				else
+				{
+					// Request Message Passed To Host : Yes
+
+					if (command_class == E120_GET_COMMAND || command_class == E120_SET_COMMAND)
+					{
+						// Reply Sent By RDM Responder Widget : ACK_TIMER response with time of 0.1 seconds.
+						uint8_t rdm_data_save[RDM_DATA_BUFFER_SIZE];
+						memcpy(rdm_data_save, rdm_data, RDM_DATA_BUFFER_SIZE);
+						rdm_send_respond_message_ack_timer(1);
+						memcpy(rdm_data, rdm_data_save, RDM_DATA_BUFFER_SIZE);
+					}
+
+					const uint8_t message_length = p->message_length + 2;
+
+					monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d",	message_length);
+
+					usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+					usb_send_byte(0); 	// RDM Receive status
+					usb_send_data(rdm_data, message_length);
+					usb_send_footer();
+
+					if (command_class == E120_DISCOVERY_COMMAND_RESPONSE)
+						rdm_time_out_message();
+					else
+						widget_send_rdm_packet_start = 0;
+				}
+			}
+		}
 	} else if (rdm_data[0] == 0xFE)
 	{
-		uint8_t message_length = 24;
+		const uint8_t message_length = 24;
 
 		monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
+		monitor_debug_line(MONITOR_LINE_STATUS, "RECEIVED_DMX_PACKET SC:0xFE");
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status
@@ -207,20 +356,8 @@ void widget_received_rdm_packet(void)
 		rdm_time_out_message();
 	}
 
-	struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+	const struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, p->message_length, rdm_data);
-	/*//TODO remove
-	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", p->message_length);
-	uint8_t i = 0;
-	for (i = 0; i < 9; i++)
-	{
-		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				i+1, rdm_data[i], rdm_data[i],
-				i+10, rdm_data[i+9], rdm_data[i+9],
-				i+19, rdm_data[i+18], rdm_data[i+18],
-				i+28, rdm_data[i+27], rdm_data[i+27]);
-	}
-	*/
 }
 
 /**
@@ -241,6 +378,9 @@ void widget_received_rdm_packet(void)
  */
 void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	uint16_t i = 0;
 	for (i = 1; i < data_length; i++)
 		dmx_data[i - 1] = widget_data[i];
@@ -263,9 +403,10 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
  */
 static void widget_send_rdm_packet_request(const uint16_t data_length)
 {
-	monitor_debug_line(MONITOR_LINE_STATUS, "widget_send_rdm_packet_request");
+	monitor_debug_line(MONITOR_LINE_INFO, "SEND_RDM_PACKET_REQUEST");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
-	struct _rdm_command *p = (struct _rdm_command *)(widget_data);
+	const struct _rdm_command *p = (struct _rdm_command *)(widget_data);
 
 	if (p->command_class == E120_DISCOVERY_COMMAND)
 		widget_rdm_discovery_running = TRUE;
@@ -273,23 +414,12 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 		widget_rdm_discovery_running = FALSE;
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
-	rdm_data_send(widget_data, data_length);
+	rdm_send_data(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
 	widget_send_rdm_packet_start =  bcm2835_st_read();
 
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
-	/*//TODO remove
-	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", data_length);
-	uint8_t i = 0;
-	for (i = 0; i < 9; i++)
-	{
-		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				i+1, widget_data[i], widget_data[i],
-				i+10, widget_data[i+9], widget_data[i+9],
-				i+19, widget_data[i+18], widget_data[i+18],
-				i+28, widget_data[i+27], widget_data[i+27]);
-	}
-	*/
 }
 
 /**
@@ -305,6 +435,10 @@ void widget_rdm_timeout(void)
 
 	if (widget_send_rdm_packet_start == 0)
 		return;
+
+	monitor_debug_line(MONITOR_LINE_LABEL, "poll");
+	monitor_debug_line(MONITOR_LINE_INFO, "widget_rdm_timeout");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
 	if (bcm2835_st_read() - widget_send_rdm_packet_start > 1000000) {
 		rdm_time_out_message();
@@ -330,6 +464,9 @@ void widget_rdm_timeout(void)
  */
 static void widget_receive_dmx_on_change(void)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "RECEIVE_DMX_ON_CHANGE");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
 	receive_dmx_on_change = widget_data[0];
 	uint16_t i = 0;
@@ -354,6 +491,10 @@ void widget_received_dmx_change_of_state_packet(void)
 
 	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
+
+	monitor_debug_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	// TODO widget_received_dmx_change_of_state_packet
 	monitor_debug_line(MONITOR_LINE_INFO, "Send changed DMX data to HOST");
 }
@@ -366,6 +507,9 @@ void widget_received_dmx_change_of_state_packet(void)
  */
 static void widget_get_sn_reply(void)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "GET_WIDGET_PARAMS_REPLY");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	const uint8_t *device_sn = rdm_device_info_get_sn();
 	const uint8_t device_sn_length = rdm_device_info_get_sn_length();
 
@@ -384,27 +528,17 @@ static void widget_get_sn_reply(void)
  */
 static void widget_send_rdm_discovery_request(uint16_t data_length)
 {
-	monitor_debug_line(MONITOR_LINE_STATUS, "send_rdm_discovery_request");
+	monitor_debug_line(MONITOR_LINE_INFO, "SEND_RDM_DISCOVERY_REQUEST");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
-	rdm_data_send(widget_data, data_length);
+	rdm_send_data(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
+	widget_rdm_discovery_running = TRUE;
 	widget_send_rdm_packet_start =  bcm2835_st_read();
 
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
-	/*//TODO remove
-	monitor_debug_line(MONITOR_LINE_RDM_DATA, "RDM Packet length : %d", data_length);
-	uint8_t i = 0;
-	for (i = 0; i < 9; i++)
-	{
-		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				i+1, widget_data[i], widget_data[i],
-				i+10, widget_data[i+9], widget_data[i+9],
-				i+19, widget_data[i+18], widget_data[i+18],
-				i+28, widget_data[i+27], widget_data[i+27]);
-	}
-	*/
 }
 
 /**
@@ -414,6 +548,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
  */
 inline static void rdm_time_out_message(void)
 {
+	monitor_debug_line(MONITOR_LINE_LABEL, "RDM_TIMEOUT");
 	monitor_debug_line(MONITOR_LINE_STATUS, "rdm_time_out_message");
 
 	const uint16_t message_length = 0;
@@ -433,6 +568,9 @@ inline static void rdm_time_out_message(void)
  */
 static void widget_get_manufacturer_reply(void)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "MANUFACTURER_LABEL");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
 	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
 
@@ -454,6 +592,9 @@ static void widget_get_manufacturer_reply(void)
  */
 static void widget_get_name_reply(void)
 {
+	monitor_debug_line(MONITOR_LINE_INFO, "GET_WIDGET_NAME_LABEL");
+	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
+
 	const uint8_t *device_name = rdm_device_info_get_label();
 	const uint8_t device_name_length = rdm_device_info_get_label_length();
 
@@ -497,14 +638,14 @@ void widget_receive_data_from_host(void)
 {
 	if (usb_read_is_byte_available())
 	{
-		uint8_t c = usb_read_byte();
+		const uint8_t c = usb_read_byte();
 
 		if (AMF_START_CODE == c)
 		{
-			uint8_t label = usb_read_byte();	// Label
-			uint8_t lsb = usb_read_byte();		// Data length LSB
-			uint8_t msb = usb_read_byte();		// Data length MSB
-			uint16_t data_length = ((uint16_t) ((uint16_t) msb << 8)) | ((uint16_t) lsb);
+			const uint8_t label = usb_read_byte();	// Label
+			const uint8_t lsb = usb_read_byte();	// Data length LSB
+			const uint8_t msb = usb_read_byte();	// Data length MSB
+			const uint16_t data_length = ((uint16_t) ((uint16_t) msb << 8)) | ((uint16_t) lsb);
 
 			uint16_t i;
 			for (i = 0; i < data_length; i++)

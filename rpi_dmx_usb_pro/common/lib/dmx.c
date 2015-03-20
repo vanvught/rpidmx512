@@ -36,7 +36,7 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
-///< State of receiving DMX Bytes
+///< State of receiving DMX/RDM Bytes
 typedef enum {
   IDLE = 0,		///<
   BREAK,		///<
@@ -50,12 +50,14 @@ typedef enum {
   RDMDISCECS	///<
 } _dmx_state;
 
-uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];			///<
-static uint8_t dmx_receive_state = IDLE;		///< Current state of DMX receive
-static uint16_t dmx_data_index = 0;				///<
-static uint8_t dmx_available = FALSE;			///<
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];									///< //TODO add SC
+static uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
+static uint16_t dmx_data_index = 0;										///<
+static uint8_t dmx_available = FALSE;									///<
+static uint64_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;	///<
+static uint64_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;		///<
 
-uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];							///<
+uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];			///<
 static uint16_t rdm_checksum = 0;				///<
 static uint64_t rdm_data_receive_end = 0;		///<
 static uint8_t rdm_available = FALSE;			///<
@@ -79,7 +81,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
  *
  * @return
  */
-uint8_t rdm_available_get(void)
+const uint8_t rdm_available_get(void)
 {
 	return rdm_available;
 }
@@ -89,7 +91,7 @@ uint8_t rdm_available_get(void)
  *
  * @param is_available
  */
-void rdm_available_set(uint8_t is_available)
+void rdm_available_set(const uint8_t is_available)
 {
 	rdm_available = is_available;
 }
@@ -99,7 +101,7 @@ void rdm_available_set(uint8_t is_available)
  *
  * @return
  */
-uint8_t dmx_available_get(void)
+const uint8_t dmx_available_get(void)
 {
 	return dmx_available;
 }
@@ -109,7 +111,7 @@ uint8_t dmx_available_get(void)
  *
  * @param is_available
  */
-void dmx_available_set(uint8_t is_available)
+void dmx_available_set(const uint8_t is_available)
 {
 	dmx_available = is_available;
 }
@@ -118,7 +120,7 @@ void dmx_available_set(uint8_t is_available)
  *
  * @return
  */
-uint8_t dmx_port_direction_get(void)
+const uint8_t dmx_port_direction_get(void)
 {
 	return dmx_port_direction;
 }
@@ -127,9 +129,45 @@ uint8_t dmx_port_direction_get(void)
  *
  * @return
  */
-uint64_t rdm_data_receive_end_get(void)
+const uint64_t rdm_data_receive_end_get(void)
 {
 	return rdm_data_receive_end;
+}
+
+/**
+ *
+ * @return
+ */
+const uint64_t dmx_output_break_time_get(void)
+{
+	return dmx_output_break_time;
+}
+
+/**
+ *
+ * @param break_time
+ */
+void dmx_output_break_time_set(const uint64_t break_time)
+{
+	dmx_output_break_time = MAX(DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
+}
+
+/**
+ *
+ * @return
+ */
+const uint64_t dmx_output_mab_time_get(void)
+{
+	return dmx_output_mab_time;
+}
+
+/**
+ *
+ * @param mab_time
+ */
+void dmx_output_mab_time_set(const uint64_t mab_time)
+{
+	dmx_output_mab_time = MAX(DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 }
 
 /**
@@ -379,10 +417,10 @@ void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_d
 void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
+	udelay(dmx_output_break_time);	// Break Time
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
+	udelay(dmx_output_mab_time);	// Mark After Break
 
 	while (1)
 	{
@@ -409,39 +447,6 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 	udelay(44);
 }
 
-
-/**
- * @ingroup rdm
- *
- *
- * @param data
- * @param data_length
- */
-void rdm_data_send(const uint8_t *data, const uint16_t data_length)
-{
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
-
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
-
-	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
-	{
-		while (1)
-		{
-			if ((BCM2835_PL011->FR & 0x20) == 0)
-				break;
-		}
-		BCM2835_PL011->DR = data[i];
-	}
-	while (1)
-	{
-		if ((BCM2835_PL011->FR & 0x20) == 0)
-			break;
-	}
-	udelay(44);
-}
 
 /**
  * @ingroup dmx
