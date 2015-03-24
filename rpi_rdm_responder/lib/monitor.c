@@ -84,6 +84,8 @@ void monitor_update(void)
 
 	printf("\n\n[%s] \n\n", rdm_is_mute_get() == 1 ? "Muted" :  "Unmute");
 
+	const uint8_t *rdm_data = rdm_get_current_data();
+
 	for (i = 0; i < 9; i++)
 	{
 		printf("%.2d-%.4d:%.2X %.2d-%.4d:%.2X %.2d-%.4d:%.2X %.2d-%.4d:%.2X\n",

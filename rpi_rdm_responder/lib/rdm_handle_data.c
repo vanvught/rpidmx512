@@ -57,10 +57,10 @@ uint8_t rdm_is_mute_get(void)
  */
 void rdm_handle_data(void)
 {
-	if(rdm_available_get() == FALSE)
-		return;
+	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
 
-	rdm_available_set(FALSE);
+	if (rdm_data == NULL)
+			return;
 
 	uint8_t rdm_packet_is_for_me = FALSE;
 	uint8_t rdm_packet_is_broadcast = FALSE;
@@ -144,7 +144,7 @@ void rdm_handle_data(void)
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field
 			rdm_cmd->param_data[1] = 0x00;	// Control Field
-			rdm_send_respond_message_ack();
+			rdm_send_respond_message_ack(rdm_data);
 		} else if (param_id == E120_DISC_MUTE)
 		{
 			if (rdm_cmd->param_data_length != 0) {
@@ -159,12 +159,12 @@ void rdm_handle_data(void)
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field
 			rdm_cmd->param_data[1] = 0x00;	// Control Field
-			rdm_send_respond_message_ack();
+			rdm_send_respond_message_ack(rdm_data);
 		}
 	}
 	else
 	{
 		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];
-		rdm_handlers(rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);
+		rdm_handlers(rdm_data, rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);
 	}
 }

@@ -95,6 +95,11 @@ const uint8_t *rdm_available_get(void)
 	}
 }
 
+const uint8_t *rdm_get_current_data(void)
+{
+	return &rdm_data_buffer[rdm_data_buffer_index_tail][0];
+}
+
 /**
  * @ingroup dmx
  *
