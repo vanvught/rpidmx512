@@ -33,6 +33,7 @@
 #include "sd.h"
 
 extern void udelay(uint32_t);
+extern int printf(const char *format, ...);
 
 uint32_t sd_commands[] = {
     SD_CMD_INDEX(0),
@@ -171,7 +172,6 @@ static uint32_t sd_acommands[] = {
 //#define SD_DEBUG
 
 #ifdef SD_DEBUG
-int printf(const char *format, ...);
 #define SD_TRACE(...)     {											\
         printf("SD   %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
@@ -196,9 +196,9 @@ struct sd_scr
     int         sd_version;
 };
 
+#ifdef SD_DEBUG
 static char *sd_versions[] = { "unknown", "1.0 and 1.01", "1.10", "2.00", "3.0x", "4.xx" };
 
-#ifdef SD_DEBUG
 static char *err_irpts[] = { "CMD_TIMEOUT", "CMD_CRC", "CMD_END_BIT", "CMD_INDEX",
 	"DATA_TIMEOUT", "DATA_CRC", "DATA_END_BIT", "CURRENT_LIMIT",
 	"AUTO_CMD12", "ADMA", "TUNING", "RSVD" };

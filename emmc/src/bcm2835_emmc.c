@@ -81,7 +81,9 @@ static uint32_t bcm2835_emmc_sdcard_inserted(void)
 #if 0
 	TIMEOUT_WAIT(BCM2835_EMMC->STATUS & BCM2835_EMMC_STATUS_CARD_PRESENT, 500000);
 #endif
+#ifdef EMMC_DEBUG
 	uint32_t status_reg = BCM2835_EMMC->STATUS;
+#endif
 #if 0
 	if((status_reg & BCM2835_EMMC_STATUS_CARD_PRESENT) == 0)
 	{
@@ -101,9 +103,13 @@ static uint32_t bcm2835_emmc_sdcard_inserted(void)
 static uint32_t bcm2835_emmc_get_version(void)
 {
 	uint32_t ver = BCM2835_EMMC->SLOTISR_VER;
+#ifdef EMMC_DEBUG
 	uint32_t vendor = ver >> 24;
+#endif
 	uint32_t sdversion = (ver >> 16) & 0xff;
+#ifdef EMMC_DEBUG
 	uint32_t slot_status = ver & 0xff;
+#endif
 	EMMC_TRACE("vendor %x, sdversion %x, slot_status %x", vendor, sdversion, slot_status);
 
 	return sdversion;
@@ -191,7 +197,9 @@ int bcm2835_emmc_reset_dat(void)
 static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t target_clock)
 {
 	int divisor = 0;
+#ifdef EMMC_DEBUG
 	int real_div = divisor;
+#endif
 	uint32_t ret = 0;
 
 	if (base_clock <= target_clock)
@@ -205,13 +213,18 @@ static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t tar
 		}
 	}
 
+#ifdef EMMC_DEBUG
 	real_div = divisor;
+#endif
+
 	divisor >>= 1;
 
+#ifdef EMMC_DEBUG
 	int actual_clock;
 
 	if (real_div)
 		actual_clock = base_clock / real_div;
+#endif
 
 	ret |= (divisor & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
 	ret |= ((divisor & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN) << SDHCI_DIVIDER_HI_SHIFT;
