@@ -28,6 +28,7 @@
 
 #include "bcm2835.h"
 #include "bcm2835_pl011.h"
+#include "hardware.h"
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
@@ -102,7 +103,7 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
  */
 void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length)
 {
-	const uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
+	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
@@ -111,6 +112,7 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 	rdm_send_no_break(data, data_length);
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -119,7 +121,7 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
  * @param is_ack
  * @param reason
  */
-static void rdm_send_respond_message(uint8_t response_type, uint16_t value)
+static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value)
 {
 	uint16_t rdm_checksum = 0;
 
@@ -159,7 +161,7 @@ static void rdm_send_respond_message(uint8_t response_type, uint16_t value)
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;;
 
-	const uint64_t delay = bcm2835_st_read() - rdm_data_receive_end_get();
+	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING)
 	{
@@ -168,33 +170,34 @@ static void rdm_send_respond_message(uint8_t response_type, uint16_t value)
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 	rdm_send_data(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
 /**
  *
  */
-void rdm_send_respond_message_ack()
+void rdm_send_respond_message_ack(uint8_t *rdm_data)
 {
-	rdm_send_respond_message(E120_RESPONSE_TYPE_ACK, 0);
+	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_ACK, 0);
 }
 
 /**
  *
  * @param reason
  */
-void rdm_send_respond_message_nack(const uint16_t reason)
+void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason)
 {
-	rdm_send_respond_message(E120_RESPONSE_TYPE_NACK_REASON, reason);
+	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_NACK_REASON, reason);
 }
 
 /**
  *
  * @param timer
  */
-void rdm_send_respond_message_ack_timer(const uint16_t timer)
+void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
 {
-	rdm_send_respond_message(E120_RESPONSE_TYPE_ACK_TIMER, timer);
+	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_ACK_TIMER, timer);
 }
 
 /**

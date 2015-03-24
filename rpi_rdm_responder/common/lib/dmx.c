@@ -24,13 +24,13 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
 #include "hardware.h"
-
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
@@ -57,10 +57,12 @@ static uint8_t dmx_available = FALSE;									///<
 static uint64_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint64_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;		///<
 
-uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];			///<
+#define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F					///< New
+static uint16_t rdm_data_buffer_index_head = 0;				///< New
+static uint16_t rdm_data_buffer_index_tail = 0;				///< New
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE];///< New
 static uint16_t rdm_checksum = 0;				///<
 static uint64_t rdm_data_receive_end = 0;		///<
-static uint8_t rdm_available = FALSE;			///<
 static uint8_t rdm_disc_index = 0;				///<
 
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;	///<
@@ -81,19 +83,16 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
  *
  * @return
  */
-const uint8_t rdm_available_get(void)
+const uint8_t *rdm_available_get(void)
 {
-	return rdm_available;
-}
-
-/**
- * @ingroup rdm
- *
- * @param is_available
- */
-void rdm_available_set(const uint8_t is_available)
-{
-	rdm_available = is_available;
+	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail)
+		return NULL;
+	else
+	{
+		uint16_t saved_tail = rdm_data_buffer_index_tail;
+		rdm_data_buffer_index_tail = (rdm_data_buffer_index_tail + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+		return &rdm_data_buffer[saved_tail][0];
+	}
 }
 
 /**
@@ -217,6 +216,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 {
 	dmb();
 
+
 	if (BCM2835_PL011->DR & PL011_DR_BE)
 	{
 		dmx_receive_state = BREAK;
@@ -228,7 +228,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		{
 			dmx_receive_state = RDMDISCFE;
 			dmx_data_index = 0;
-			rdm_data[dmx_data_index++] = 0xFE;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
 		}
 	}
 	else if (dmx_receive_state == BREAK)
@@ -237,13 +237,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		if (data == 0x00)			// DMX data start code
 		{
 			dmx_receive_state = DMXDATA;
+			dmx_available = TRUE;
 			dmx_data_index = 0;
 		}
 		else if (data == E120_SC_RDM)		// RDM start code
 		{
 			dmx_receive_state = RDMDATA;
 			dmx_data_index = 0;
-			rdm_data[dmx_data_index++] = E120_SC_RDM;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = E120_SC_RDM;
 			rdm_checksum = E120_SC_RDM;
 		}
 		else
@@ -257,21 +258,20 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		if (dmx_data_index >= 512)
 		{
 			dmx_receive_state = IDLE;
-			dmx_available = TRUE;
 		}
 	}
 	else if (dmx_receive_state == RDMDATA)
 	{
-		if (dmx_data_index > (sizeof(rdm_data) / sizeof(uint8_t)))
+		if (dmx_data_index > DMX_DATA_BUFFER_SIZE)
 		{
 			dmx_receive_state = IDLE;
 		} else
 		{
 			uint8_t data = (BCM2835_PL011->DR & 0xFF);
-			rdm_data[dmx_data_index++] = data;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_checksum += data;
 
-			struct _rdm_command *p = (struct _rdm_command *)(rdm_data);
+			struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 			if (dmx_data_index == p->message_length)
 			{
 				dmx_receive_state =	CHECKSUMH;
@@ -281,21 +281,22 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	else if (dmx_receive_state == CHECKSUMH)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		rdm_data[dmx_data_index++] =  data;
+		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =  data;
 		rdm_checksum -= data << 8;
 		dmx_receive_state = CHECKSUML;
 	}
 	else if (dmx_receive_state == CHECKSUML)
 	{
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		rdm_data[dmx_data_index++] = data;
+		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 		rdm_checksum -= data;
 
-		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		struct _rdm_command *p = (struct _rdm_command *) (&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 		if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE))
 		{
-			rdm_available = TRUE;
-			rdm_data_receive_end = bcm2835_st_read();
+			//rdm_available = TRUE;
+			rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+			rdm_data_receive_end = hardware_micros();
 		}
 
 		dmx_receive_state = IDLE;
@@ -305,18 +306,18 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		uint8_t data = (BCM2835_PL011->DR & 0xFF);
 		if (data == 0xFE)
 		{
-			rdm_data[dmx_data_index++] = 0xFE;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
 		}
 		else if (data == 0xAA)
 		{
 			dmx_receive_state = RDMDISCEUID;
 			rdm_disc_index = 0;
-			rdm_data[dmx_data_index++] = 0xAA;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xAA;
 		}
 	}
 	else if (dmx_receive_state == RDMDISCEUID)
 	{
-		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
 		rdm_disc_index++;
 		if (rdm_disc_index == 2 * RDM_UID_SIZE)
 		{
@@ -326,16 +327,16 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	}
 	else if (dmx_receive_state == RDMDISCECS)
 	{
-		rdm_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
+		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
 		rdm_disc_index++;
 		if (rdm_disc_index == 4)
 		{
-			rdm_available = TRUE;
+			//rdm_available = TRUE;
+			rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
 			dmx_receive_state = IDLE;
-			rdm_data_receive_end = bcm2835_st_read();
+			rdm_data_receive_end = hardware_micros();
 		}
 	}
-
 	dmb();
 }
 
@@ -457,6 +458,9 @@ void dmx_init(void)
 	int i = 0;
 	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
 		dmx_data[i] = 0;
+
+	rdm_data_buffer_index_head = 0;								///< New
+	rdm_data_buffer_index_tail = 0;								///< New
 
 	pl011_dmx512_init();
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);

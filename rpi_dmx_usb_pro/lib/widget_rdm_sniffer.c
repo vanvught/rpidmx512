@@ -47,10 +47,10 @@ void widget_rdm_sniffer(void)
 	if (mode != MODE_RDM_SNIFFER)
 		return;
 
-	if (rdm_available_get() == FALSE)
-			return;
+	const uint8_t *rdm_data = rdm_available_get();
 
-	rdm_available_set(FALSE);
+	if (rdm_data == NULL)
+			return;
 
 	monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 
