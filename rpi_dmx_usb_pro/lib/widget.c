@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bcm2835.h"
+#include "hardware.h"
 #include "util.h"
 #include "widget.h"
 #include "widget_params.h"
@@ -395,7 +395,7 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	for (i = 1; i < data_length; i++)
 		dmx_data[i - 1] = widget_data[i];
 
-	widget_dmx_output_elapsed_time = bcm2835_st_read();
+	widget_dmx_output_elapsed_time = hardware_micros();
 	widget_dmx_output_data_length = data_length - 1;
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
@@ -427,7 +427,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	rdm_send_data(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
-	widget_send_rdm_packet_start =  bcm2835_st_read();
+	widget_send_rdm_packet_start =  hardware_micros();
 
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
 }
@@ -450,7 +450,7 @@ void widget_rdm_timeout(void)
 	monitor_debug_line(MONITOR_LINE_INFO, "widget_rdm_timeout");
 	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
-	if (bcm2835_st_read() - widget_send_rdm_packet_start > 1000000) {
+	if (hardware_micros() - widget_send_rdm_packet_start > 1000000) {
 		rdm_time_out_message();
 		widget_send_rdm_packet_start = 0;
 	}
@@ -546,7 +546,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
 	widget_rdm_discovery_running = TRUE;
-	widget_send_rdm_packet_start =  bcm2835_st_read();
+	widget_send_rdm_packet_start =  hardware_micros();
 
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
 }
@@ -631,7 +631,7 @@ void widget_ouput_dmx(void){
 	if (widget_dmx_output_only == FALSE)
 		return;
 
-	if(bcm2835_st_read() < widget_dmx_output_elapsed_time + widget_dmx_output_period)
+	if(hardware_micros() < widget_dmx_output_elapsed_time + widget_dmx_output_period)
 		return;
 
 	dmx_data_send(dmx_data, widget_dmx_output_data_length);
