@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "bcm2835.h"
+
 extern void __disable_fiq(void);
 extern void __enable_fiq(void);
 
@@ -44,5 +46,10 @@ extern const uint8_t hardware_get_firmware_copyright_length(void);
 extern const uint32_t hardware_get_board_model_id(void);
 extern const uint8_t *hardware_get_board_model(void);
 extern const uint8_t hardware_get_board_model_length(void);
+
+inline static uint64_t hardware_micros(void)
+{
+	return bcm2835_st_read();
+}
 
 #endif /* HARDWARE_H_ */
