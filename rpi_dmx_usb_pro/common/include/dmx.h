@@ -50,6 +50,7 @@ extern const uint8_t dmx_port_direction_get(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
 extern const uint8_t *rdm_available_get(void);
+extern const uint8_t *rdm_get_current_data(void);
 
 extern void rdm_available_set(const uint8_t);
 extern const uint64_t rdm_data_receive_end_get(void);
