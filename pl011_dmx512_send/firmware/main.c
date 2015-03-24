@@ -170,6 +170,8 @@ int notmain(unsigned int earlypc) {
 	bcm2835_gpio_clr(ANALYZER_CH4);	// MAB
 
 	bcm2835_pl011_dmx512_begin();
+	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set(18);
 
 	events_init();
 
