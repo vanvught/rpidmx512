@@ -188,13 +188,13 @@ void widget_received_dmx_packet(void)
  */
 void widget_received_rdm_packet(void)
 {
-	if (widget_mode == MODE_DMX || widget_mode == MODE_RDM_SNIFFER)
+	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER) || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
 		return;
 
-	if ((rdm_available_get() == FALSE)  || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
-		return;
+	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
 
-	rdm_available_set(FALSE);
+	if (rdm_data == NULL)
+			return;
 
 	monitor_debug_line(MONITOR_LINE_LABEL, "poll:RECEIVED_RDM_PACKET");
 
@@ -289,7 +289,7 @@ void widget_received_rdm_packet(void)
 						p->param_data_length = 2;
 						p->param_data[0] = 0x00;	// Control Field
 						p->param_data[1] = 0x00;	// Control Field
-						rdm_send_respond_message_ack();
+						rdm_send_respond_message_ack(rdm_data);
 						break;
 					case E120_DISC_MUTE:
 						// Request Message Passed To Host : No
@@ -306,7 +306,7 @@ void widget_received_rdm_packet(void)
 						p->param_data_length = 2;
 						p->param_data[0] = 0x00;	// Control Field
 						p->param_data[1] = 0x00;	// Control Field
-						rdm_send_respond_message_ack();
+						rdm_send_respond_message_ack(rdm_data);
 						break;
 					default:
 						break;
@@ -329,7 +329,7 @@ void widget_received_rdm_packet(void)
 						// Reply Sent By RDM Responder Widget : ACK_TIMER response with time of 0.1 seconds.
 						uint8_t rdm_data_save[RDM_DATA_BUFFER_SIZE];
 						memcpy(rdm_data_save, rdm_data, RDM_DATA_BUFFER_SIZE);
-						rdm_send_respond_message_ack_timer(1);
+						rdm_send_respond_message_ack_timer(rdm_data, 1);
 						memcpy(rdm_data, rdm_data_save, RDM_DATA_BUFFER_SIZE);
 					}
 
@@ -346,6 +346,7 @@ void widget_received_rdm_packet(void)
 						rdm_time_out_message();
 					else
 						widget_send_rdm_packet_start = 0;
+
 				}
 			}
 		}
@@ -366,6 +367,7 @@ void widget_received_rdm_packet(void)
 
 	const struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 	monitor_debug_data(MONITOR_LINE_RDM_DATA, p->message_length, rdm_data);
+
 }
 
 /**
@@ -421,7 +423,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	else
 		widget_rdm_discovery_running = FALSE;
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 	rdm_send_data(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
@@ -539,7 +541,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 	monitor_debug_line(MONITOR_LINE_INFO, "SEND_RDM_DISCOVERY_REQUEST");
 	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 	rdm_send_data(widget_data, data_length);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 

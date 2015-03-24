@@ -50,9 +50,6 @@ static uint16_t factory_defaults_checksum = 0;
 
 static struct _rdm_device_info rdm_device_info;
 
-static struct _rdm_personality rdm_personalities[] =
-			{{ 32, "RDM Responder / DMX Analyzer" }};
-
 inline static uint16_t calculate_checksum(void)
 {
 	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
@@ -189,7 +186,7 @@ uint16_t rdm_device_info_get_dmx_start_address(void)
  *
  * @param start_address
  */
-void rdm_device_info_set_dmx_start_address(uint16_t start_address)
+void rdm_device_info_set_dmx_start_address(const uint16_t start_address)
 {
 	if (start_address == 0 ||  start_address > 512)
 		return;
@@ -197,6 +194,7 @@ void rdm_device_info_set_dmx_start_address(uint16_t start_address)
 	rdm_device_info.dmx_start_address[0] = (uint8_t)(start_address >> 8);
 	rdm_device_info.dmx_start_address[1] = (uint8_t)start_address;
 }
+
 
 /**
  * @ingroup device_info
@@ -213,7 +211,7 @@ uint8_t rdm_device_info_get_personality_count(void)
  *
  * @return
  */
-uint8_t rdm_device_info_get_current_personality(void)
+uint8_t rdm_device_info_get_personality_current(void)
 {
 	return rdm_device_info.current_personality;
 }
@@ -223,7 +221,7 @@ uint8_t rdm_device_info_get_current_personality(void)
  *
  * @param personality
  */
-void rdm_device_info_set_current_personality(uint8_t personality)
+void rdm_device_info_set_personality_current(const uint8_t personality)
 {
 	if ((personality == 0) || (personality > rdm_device_info_get_personality_count()))
 			return;
@@ -262,6 +260,7 @@ uint16_t rdm_device_info_get_personality_slots(uint8_t personality)
 
 	return (rdm_personalities[personality].slots);
 }
+
 
 struct _rdm_device_info *rdm_device_info_get(void)
 {

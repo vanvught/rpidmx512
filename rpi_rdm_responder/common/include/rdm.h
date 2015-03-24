@@ -38,6 +38,8 @@ extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 ///< 3.2.2 Responder Packet spacing
 #define RDM_RESPONDER_PACKET_SPACING	180		///< Min 176μs, Max 2ms
 
+#define RDM_RESPONDER_DATA_DIRECTION_DELAY	50	///<
+
 ///< 5 Device Addressing
 #define RDM_UID_SIZE  					6		///< 48-bit
 
@@ -89,7 +91,7 @@ struct _rdm_device_info
 	uint8_t sensor_count;
 };
 
-// personalities
+///< Personalities
 struct _rdm_personality
 {
 	uint16_t slots;

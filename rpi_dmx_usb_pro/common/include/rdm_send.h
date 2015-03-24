@@ -5,9 +5,9 @@
 #include <stdint.h>
 
 extern void rdm_send_discovery_respond_message(const uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack();
-extern void rdm_send_respond_message_nack(const uint16_t);
-extern void rdm_send_respond_message_ack_timer(const uint16_t);
+extern void rdm_send_respond_message_ack(uint8_t *);
+extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
+extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
 extern void rdm_send_increment_message_count();
 extern void rdm_send_decrement_message_count();
 

@@ -349,7 +349,7 @@ static void rdm_get_boot_software_version_label(void)
 static void rdm_get_personality(void)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
-	uint8_t current_personality = rdm_device_info_get_current_personality();
+	uint8_t current_personality = rdm_device_info_get_personality_current();
 	uint8_t personality_count = rdm_device_info_get_personality_count();
 	rdm_response->param_data_length = 2;
 	rdm_response->message_length = rdm_response->message_length + 2;
@@ -383,7 +383,7 @@ static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	rdm_device_info_set_current_personality(personality);
+	rdm_device_info_set_personality_current(personality);
 
 	rdm_command->param_data_length = 0;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE;
@@ -407,7 +407,7 @@ static void rdm_get_personality_description(void)
 		return;
 	}
 
-	uint16_t slots = rdm_device_info_get_personality_slots(personality);
+	const uint16_t slots = rdm_device_info_get_personality_slots(personality);
 
 	const char *description = rdm_device_info_get_personality_description(personality);
 	uint8_t length = strlen(description);

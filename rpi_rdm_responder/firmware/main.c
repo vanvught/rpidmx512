@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bcm2835.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "hardware.h"
@@ -64,7 +63,7 @@ uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 static void events_init() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	uint64_t st_read_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		events_elapsed_time[i] += st_read_now;
 	}
@@ -72,12 +71,12 @@ static void events_init() {
 
 static inline void events_check() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	uint64_t st_read_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		if (st_read_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			//watchdog_feed();
+			watchdog_feed();
 		}
 	}
 }
@@ -96,13 +95,13 @@ int notmain(void) {
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 
-	//watchdog_init();
+	watchdog_init();
 
 	events_init();
 
 	for (;;)
 	{
-		//watchdog_feed();
+		watchdog_feed();
 		int i = 0;
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
 		{

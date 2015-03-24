@@ -25,6 +25,8 @@
 #ifndef RDM_DEVICE_CONST_H_
 #define RDM_DEVICE_CONST_H_
 
+#include "rdm.h"
+
 static const uint8_t  DEVICE_LABEL[] = "Raspberry Pi";
 static const uint8_t  DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t  DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
@@ -35,5 +37,9 @@ static const uint32_t DEVICE_SOFTWARE_VERSION_ID = 0x20150320;
 #define DEFAULT_DMX_START_ADDRESS		1
 #define DEFAULT_CURRENT_PERSONALITY		1
 #define DMX_FOOTPRINT					32
+
+static const struct _rdm_personality rdm_personalities[] = {
+		{ 32, "RDM Responder / DMX Analyzer" }
+		};
 
 #endif /* RDM_DEVICE_CONST_H_ */
