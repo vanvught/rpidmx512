@@ -38,6 +38,8 @@ extern void __enable_irq(void);
 
 extern void hardware_init(void);
 extern void hardware_reboot(void);
+extern void hardware_led_init(void);
+extern void hardware_led_set(const uint8_t);
 
 extern const uint64_t hardware_uptime_seconds(void);
 extern const uint32_t hardware_get_firmware_revision(void);

@@ -33,6 +33,12 @@
 static const uint8_t FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";
 static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(uint8_t)) - 1;
 
+struct _hardware_led
+{
+	void (*init)(void);
+	void (*set)(const int);
+} static _hardware_led_f = {led_init, led_set};
+
 #define MAX_NAME_LENGTH 20
 
 struct _hardware_revision_code
@@ -61,21 +67,6 @@ struct _hardware_revision_code
 extern void fb_init(void);
 
 static volatile uint64_t hardware_init_startup_micros = 0;
-
-void hardware_init(void)
-{
-	hardware_init_startup_micros = bcm2835_st_read();
-	sys_time_init();
-	fb_init();
-	led_init();
-	led_set(1);
-}
-
-void hardware_reboot(void)
-{
-	watchdog_init();
-	for(;;);
-}
 
 const uint64_t hardware_uptime_seconds(void)
 {
@@ -123,4 +114,38 @@ const uint8_t *hardware_get_board_model(void)
 const uint8_t hardware_get_board_model_length(void)
 {
 	return MAX_NAME_LENGTH;
+}
+
+void hardware_led_init(void)
+{
+	_hardware_led_f.init();
+}
+
+void hardware_led_set(const int state)
+{
+	_hardware_led_f.set(state);
+}
+
+void hardware_init(void)
+{
+	hardware_init_startup_micros = bcm2835_st_read();
+	sys_time_init();
+	fb_init();
+
+	const uint32_t revision_code = bcm2835_vc_get_get_board_revision();
+
+	if (revision_code > 0x00000f)
+	{
+		_hardware_led_f.init = led_new_pi_init;
+		_hardware_led_f.set = led_new_pi_set;
+	}
+
+	hardware_led_init();
+	hardware_led_set(1);
+}
+
+void hardware_reboot(void)
+{
+	watchdog_init();
+	for(;;);
 }
