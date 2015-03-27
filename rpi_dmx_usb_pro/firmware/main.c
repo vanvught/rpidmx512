@@ -28,7 +28,6 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
-#include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "sys_time.h"
 #include "usb.h"
@@ -43,8 +42,8 @@ extern void widget_received_rdm_packet(void);
 extern void widget_receive_data_from_host(void);
 extern void widget_ouput_dmx(void);
 extern void widget_rdm_timeout(void);
-extern void widget_rdm_sniffer(void);
-extern void widget_dmx_sniffer(void);
+extern void widget_sniffer_rdm(void);
+extern void widget_sniffer_dmx(void);
 // events table
 extern void widget_received_dmx_packet(void);
 extern void widget_received_dmx_change_of_state_packet(void);
@@ -52,7 +51,7 @@ extern void monitor_update(void);
 
 static void task_led(void) {
 	static unsigned char led_counter = 0;
-	led_set(led_counter++ & 0x01);
+	hardware_led_set(led_counter++ & 0x01);
 }
 
 struct _poll
@@ -63,8 +62,8 @@ struct _poll
 		{ widget_ouput_dmx },
 		{ widget_receive_data_from_host },
 		{ widget_rdm_timeout },
-		{ widget_rdm_sniffer },
-		{ widget_dmx_sniffer }
+		{ widget_sniffer_rdm },
+		{ widget_sniffer_dmx }
 		};
 
 struct _event

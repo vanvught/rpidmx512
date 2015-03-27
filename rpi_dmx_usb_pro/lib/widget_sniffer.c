@@ -1,5 +1,5 @@
 /**
- * @file widget_dmx_sniffer.c
+ * @file widget_sniffer.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -29,6 +29,7 @@
 #include "util.h"
 #include "usb.h"
 #include "dmx.h"
+#include "rdm.h"
 #include "widget.h"
 #include "monitor_debug.h"
 #include "sniffer.h"
@@ -37,23 +38,41 @@
 
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
-/**
- *
- * @param start
- */
-inline static void usb_send_next_package(uint16_t start)
+inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length)
 {
-	uint16_t i = 0;
-
-	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
-
-	for (i = start; i < (start + 100); i++)
+	if (data_length < SNIFFER_PACKET_SIZE / 2)
 	{
-		usb_send_byte(DATA_MASK);
-		usb_send_byte(dmx_data[i]);
-	}
+		usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
-	usb_send_footer();
+		uint8_t i = 0;
+		for (i = 0; i < data_length; i++)
+		{
+			usb_send_byte(DATA_MASK);
+			usb_send_byte(data[i + start]);
+		}
+
+		for (i = data_length; i < SNIFFER_PACKET_SIZE / 2; i++)
+		{
+			usb_send_byte(CONTROL_MASK);
+			usb_send_byte(0x02);
+		}
+
+		usb_send_footer();
+	} else
+	{
+		usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+
+		uint8_t i = 0;
+		for (i = 0; i < SNIFFER_PACKET_SIZE / 2; i++)
+		{
+			usb_send_byte(DATA_MASK);
+			usb_send_byte(data[i + start]);
+		}
+
+		usb_send_footer();
+
+		usb_send_package(data, start + SNIFFER_PACKET_SIZE / 2, data_length - SNIFFER_PACKET_SIZE / 2);
+	}
 }
 
 /**
@@ -81,7 +100,7 @@ inline static uint8_t dmx_data_is_changed(void)
  *
  * This function is called from the poll table in \file main.c
  */
-void widget_dmx_sniffer(void)
+void widget_sniffer_dmx(void)
 {
 	uint8_t mode = widget_mode_get();
 
@@ -118,26 +137,42 @@ void widget_dmx_sniffer(void)
 
 	usb_send_footer();
 
-	usb_send_next_package(99);	// DMX 99-198
-	usb_send_next_package(199);	// DMX 199-298
-	usb_send_next_package(299);	// DMX 299-398
-	usb_send_next_package(399);	// DMX 399-498
-
-	// DMX 499-511 + remaining control bytes
-	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
-
-	for (i = 499; i < 512; i++)
-	{
-		usb_send_byte(DATA_MASK);
-		usb_send_byte(dmx_data[i]);
-	}
-
-	for (i = 13; i < SNIFFER_PACKET_SIZE / 2; i++)
-	{
-		usb_send_byte(CONTROL_MASK);
-		usb_send_byte(0x02);
-	}
-
-	usb_send_footer();
-
+	// DMX 99-512
+	usb_send_package(dmx_data, 99, 413);
 }
+
+/*
+ *
+ * This function is called from the poll table in \file main.c
+ */
+void widget_sniffer_rdm(void)
+{
+	uint8_t mode = widget_mode_get();
+
+	if (mode != MODE_RDM_SNIFFER)
+		return;
+
+	const uint8_t *rdm_data = rdm_available_get();
+
+	if (rdm_data == NULL)
+			return;
+
+	monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
+
+	uint8_t message_length = 0;
+
+	if (rdm_data[0] == 0xCC)
+	{
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		message_length = p->message_length + 2;
+	}
+	else if (rdm_data[0] == 0xFE)
+	{
+		message_length = 24;
+	}
+
+	usb_send_package(rdm_data, 0, message_length);
+
+	monitor_debug_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
+}
+
