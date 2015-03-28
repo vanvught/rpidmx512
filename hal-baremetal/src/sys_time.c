@@ -26,8 +26,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <bcm2835.h>
-#include <mcp7941x.h>
+#include "bcm2835.h"
+#include "mcp7941x.h"
 
 static volatile uint64_t sys_time_init_startup_micros = 0;
 static volatile uint32_t rtc_startup_seconds = 0;
@@ -42,7 +42,15 @@ void sys_time_init(void) {
 
 	if (mcp7941x_start(0x00) == MCP7941X_ERROR)
 	{
-		rtc_startup_seconds = 0;
+		tmbuf.tm_hour = 0;
+		tmbuf.tm_min = 0;
+		tmbuf.tm_sec = 0;
+		tmbuf.tm_mday = 1;
+		tmbuf.tm_mon = 1;
+		tmbuf.tm_year = 15;
+		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
+
+		rtc_startup_seconds = mktime(&tmbuf);
 		return;
 	}
 
@@ -51,15 +59,19 @@ void sys_time_init(void) {
 	tmbuf.tm_hour = tm_rtc.tm_hour;
 	tmbuf.tm_min = tm_rtc.tm_min;
 	tmbuf.tm_sec = tm_rtc.tm_sec;
-
 	tmbuf.tm_mday = tm_rtc.tm_mday;
 	tmbuf.tm_wday = tm_rtc.tm_wday;
 	tmbuf.tm_mon = tm_rtc.tm_mon;
 	tmbuf.tm_year = tm_rtc.tm_year;
-
 	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
 	rtc_startup_seconds = mktime(&tmbuf);
+}
+
+void sys_time_set(const struct tm *tmbuf)
+{
+	sys_time_init_startup_micros = bcm2835_st_read();
+	rtc_startup_seconds = mktime((struct tm *)tmbuf);
 }
 
 /**
