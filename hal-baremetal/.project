@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpi_rdm_responder</name>
+	<name>hal-baremetal</name>
 	<comment></comment>
 	<projects>
 		<project>bcm2835-baremetal</project>
 		<project>bob-baremetal</project>
-		<project>fb</project>
-		<project>hal-baremetal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
