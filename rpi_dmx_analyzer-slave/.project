@@ -3,11 +3,13 @@
 	<name>rpi_dmx_analyzer-slave</name>
 	<comment></comment>
 	<projects>
+		<project>bcm2835-baremetal</project>
 		<project>bob-baremetal</project>
 		<project>emmc</project>
 		<project>fb</project>
 		<project>ff9b</project>
 		<project>hal</project>
+		<project>hal-baremetal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

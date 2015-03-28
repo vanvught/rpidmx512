@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpi_dmx_usb_pro</name>
+	<name>bcm2835-baremetal</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
-		<project>bob-baremetal</project>
-		<project>emmc</project>
-		<project>fb</project>
-		<project>ff9b</project>
-		<project>hal-baremetal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
