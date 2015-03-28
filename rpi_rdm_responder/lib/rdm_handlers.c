@@ -62,6 +62,7 @@ static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_identify_device(void);
 static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_get_real_time_clock(void);
+static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device);
 static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device);
 
 struct _pid_definition
@@ -88,7 +89,7 @@ struct _pid_definition
 		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, TRUE },
 		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, FALSE},
 		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	        &rdm_set_device_hours,       0, TRUE },
-		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            NULL,                        0, TRUE },
+		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, TRUE },
 		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, FALSE},
 		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, TRUE },
 		};
@@ -517,6 +518,33 @@ static void rdm_get_real_time_clock(void)
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
+static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device)
+{
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 7)
+	{
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	struct hardware_time tm_hw;
+
+	tm_hw.year = (rdm_command->param_data[0] << 8) + rdm_command->param_data[1];
+	tm_hw.month = rdm_command->param_data[2];
+	tm_hw.day = rdm_command->param_data[3];
+	tm_hw.hour = rdm_command->param_data[4];
+	tm_hw.minute = rdm_command->param_data[5];
+	tm_hw.second = rdm_command->param_data[6];
+
+	hardware_rtc_set(&tm_hw);
+
+	if(was_broadcast)
+		return;
+
+	rdm_command->param_data_length = 0;
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
 
 /**
  *
