@@ -23,11 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
+#include <time.h>
+
+#include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
+#include "mcp7941x.h"
 
+#include "hardware.h"
 #include "sys_time.h"
 
 static const uint8_t FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";
@@ -124,6 +128,37 @@ void hardware_led_init(void)
 void hardware_led_set(const int state)
 {
 	_hardware_led_f.set(state);
+}
+
+void hardware_rtc_set(const struct hardware_time *tm_hw)
+{
+	struct rtc_time tm_rtc;
+
+	tm_rtc.tm_hour = tm_hw->hour;
+	tm_rtc.tm_min = tm_hw->minute;
+	tm_rtc.tm_sec = tm_hw->second;
+	tm_rtc.tm_mday = tm_hw->day;
+	//tm_rtc.tm_wday = // TODO
+	tm_rtc.tm_mon = tm_hw->month;
+	tm_rtc.tm_year = tm_hw->year;
+
+	if (mcp7941x_start(0x00) != MCP7941X_ERROR)
+	{
+		mcp7941x_set_date_time(&tm_rtc);
+	}
+
+	struct tm tmbuf;
+
+	tmbuf.tm_hour = tm_rtc.tm_hour;
+	tmbuf.tm_min = tm_rtc.tm_min;
+	tmbuf.tm_sec = tm_rtc.tm_sec;
+	tmbuf.tm_mday = tm_rtc.tm_mday;
+	tmbuf.tm_wday = tm_rtc.tm_wday;
+	tmbuf.tm_mon = tm_rtc.tm_mon;
+	tmbuf.tm_year = tm_rtc.tm_year - 2000;
+	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
+
+	sys_time_set(&tmbuf);
 }
 
 void hardware_init(void)

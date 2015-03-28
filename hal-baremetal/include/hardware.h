@@ -30,6 +30,15 @@
 
 #include "bcm2835.h"
 
+struct hardware_time {
+	uint8_t second;		///< Seconds.		[0-59]
+	uint8_t minute;		///< Minutes.		[0-59]
+	uint8_t hour;		///< Hours.			[0-23]
+	uint8_t day;		///< Day.		 	[1-31]
+	uint8_t month;		///< Month.			[1-12]
+	uint16_t year;		///< Year			[1970-....]
+};
+
 extern void __disable_fiq(void);
 extern void __enable_fiq(void);
 
@@ -39,7 +48,7 @@ extern void __enable_irq(void);
 extern void hardware_init(void);
 extern void hardware_reboot(void);
 extern void hardware_led_init(void);
-extern void hardware_led_set(const uint8_t);
+extern void hardware_led_set(const int);
 
 extern const uint64_t hardware_uptime_seconds(void);
 extern const uint32_t hardware_get_firmware_revision(void);
@@ -48,6 +57,8 @@ extern const uint8_t hardware_get_firmware_copyright_length(void);
 extern const uint32_t hardware_get_board_model_id(void);
 extern const uint8_t *hardware_get_board_model(void);
 extern const uint8_t hardware_get_board_model_length(void);
+
+extern void hardware_rtc_set(const struct hardware_time *);
 
 inline static uint64_t hardware_micros(void)
 {
