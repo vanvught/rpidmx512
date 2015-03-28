@@ -1,5 +1,6 @@
 /**
- * @file rdm_handlers.h
+ * @file rdm_identify.c
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,9 +23,54 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_HANDLERS_H_
-#define RDM_HANDLERS_H_
+#include <stdint.h>
 
-extern void rdm_handlers(uint8_t *, const uint8_t, const uint8_t, const uint16_t, const uint8_t, const uint16_t);
+#include "util.h"
 
-#endif /* RDM_HANDLERS_H_ */
+static uint8_t rdm_identify_enabled = FALSE;	///<
+
+/**
+ *
+ * @return
+ */
+const uint8_t rdm_identify_is_enabled(void)
+{
+	return rdm_identify_enabled;
+}
+
+/**
+ *
+ */
+void rdm_identify_off(void)
+{
+	rdm_identify_enabled = FALSE;
+
+	/*
+	 * Add user code here
+	 */
+}
+
+/**
+ *
+ */
+void rdm_identify_on(void)
+{
+	rdm_identify_enabled = TRUE;
+
+	/*
+	 * Add user code here
+	 */
+}
+
+/**
+ *
+ */
+void rdm_identify(void)
+{
+	if (rdm_identify_enabled == FALSE)
+		return;
+
+	/*
+	 * Add user code here
+	 */
+}

@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
 #include "hardware.h"
 #include "util.h"
@@ -38,11 +37,12 @@
 // poll table
 extern void rdm_handle_data(void);
 // events table
+extern void rdm_identify(void);
 extern void monitor_update(void);
 
 void task_led(void) {
 	static unsigned char led_counter = 0;
-	led_set(led_counter++ & 0x01);
+	hardware_led_set(led_counter++ & 0x01);
 }
 
 struct _poll
@@ -56,6 +56,7 @@ struct _event
 	uint64_t period;
 	void (*f)(void);
 }const events[] = {
+		{  500000, rdm_identify },
 		{ 1000000, monitor_update },
 		{  500000, task_led } };
 

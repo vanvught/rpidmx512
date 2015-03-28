@@ -34,8 +34,8 @@
 #include "rdm_send.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
+#include "rdm_identify.h"
 
-static uint8_t rdm_identify_mode_enabled = FALSE;
 static uint8_t *rdm_handlers_rdm_data = NULL;
 
 //static void rdm_get_queued_message(void);
@@ -483,7 +483,7 @@ static void rdm_get_identify_device(void)
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
 	rdm_response->param_data_length = 1;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
-	rdm_response->param_data[0] = rdm_identify_mode_enabled;
+	rdm_response->param_data[0] = rdm_identify_is_enabled();
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -539,9 +539,10 @@ static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	rdm_identify_mode_enabled = rdm_command->param_data[0];
-
-	//TODO Do something here Flash led?
+	if (rdm_command->param_data[0] == 0)
+		rdm_identify_off();
+	else
+		rdm_identify_on();
 
 	if(was_broadcast)
 		return;

@@ -33,7 +33,7 @@
 #include "rdm.h"
 #include "rdm_device_info.h"
 
-extern uint8_t rdm_is_mute_get(void);
+extern uint8_t rdm_is_muted(void);
 
 void monitor_update(void)
 {
@@ -82,7 +82,7 @@ void monitor_update(void)
 		putchar(' ');
 	}
 
-	printf("\n\n[%s] \n\n", rdm_is_mute_get() == 1 ? "Muted" :  "Unmute");
+	printf("\n\n[%s] \n\n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
 
 	const uint8_t *rdm_data = rdm_get_current_data();
 

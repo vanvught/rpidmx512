@@ -35,18 +35,15 @@
 #include "rdm_handlers.h"
 #include "rdm_send.h"
 
-// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
-static const uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-
-static uint8_t rdm_is_mute = FALSE;
+static uint8_t rdm_muted = FALSE;	///<
 
 /**
  *
  * @return
  */
-uint8_t rdm_is_mute_get(void)
+uint8_t rdm_is_muted(void)
 {
-	return rdm_is_mute;
+	return rdm_muted;
 }
 
 /**
@@ -98,7 +95,7 @@ void rdm_handle_data(void)
 	{
 		if (param_id == E120_DISC_UNIQUE_BRANCH)
 		{
-			if (rdm_is_mute == FALSE)
+			if (rdm_muted == FALSE)
 			{
 				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0)
 						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	RDM_UID_SIZE) <= 0))
@@ -139,7 +136,7 @@ void rdm_handle_data(void)
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
-			rdm_is_mute = FALSE;
+			rdm_muted = FALSE;
 			rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field
@@ -154,7 +151,7 @@ void rdm_handle_data(void)
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
-			rdm_is_mute = TRUE;
+			rdm_muted = TRUE;
 			rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field

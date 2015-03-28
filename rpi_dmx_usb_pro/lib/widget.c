@@ -52,9 +52,6 @@ static uint16_t widget_dmx_output_data_length = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
 static uint8_t widget_rdm_is_mute = FALSE;				///<
 
-// Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
-static const uint8_t UID_ALL[RDM_UID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-
 inline static void rdm_time_out_message(void);
 
 /*
@@ -204,7 +201,7 @@ void widget_received_rdm_packet(void)
 
 		uint8_t rdm_packet_is_for_me = FALSE;
 		uint8_t rdm_packet_is_broadcast = FALSE;
-		uint8_t rdm_packet_is_vendorcast = FALSE;
+		//uint8_t rdm_packet_is_vendorcast = FALSE;
 
 		const uint8_t *uid_device = rdm_device_info_get_uuid();
 
@@ -217,7 +214,7 @@ void widget_received_rdm_packet(void)
 
 		if ((memcmp(p->destination_uid, uid_device, 2) == 0) && (memcmp(&p->destination_uid[2], UID_ALL, RDM_UID_SIZE-2) == 0))
 		{
-			rdm_packet_is_vendorcast = TRUE;
+			//rdm_packet_is_vendorcast = TRUE;
 			rdm_packet_is_for_me = TRUE;
 		}
 		else if (memcmp(p->destination_uid, uid_device, RDM_UID_SIZE) == 0)
@@ -314,25 +311,16 @@ void widget_received_rdm_packet(void)
 			} // if (p->command_class == E120_DISCOVERY_COMMAND)
 			else
 			{
-				if (command_class == E120_GET_COMMAND && param_id == E120_QUEUED_MESSAGE)
+				if (command_class == E120_GET_COMMAND || command_class == E120_SET_COMMAND)
 				{
 					// Request Message Passed To Host : No
-					// Reply Sent By RDM Responder Widget : Queued message
-					// TODO
-				}
-				else
+					uint8_t rdm_data_save[RDM_DATA_BUFFER_SIZE];
+					memcpy(rdm_data_save, rdm_data, RDM_DATA_BUFFER_SIZE);
+					// Handle RDM message
+					memcpy(rdm_data, rdm_data_save, RDM_DATA_BUFFER_SIZE);
+				} else
 				{
 					// Request Message Passed To Host : Yes
-
-					if (command_class == E120_GET_COMMAND || command_class == E120_SET_COMMAND)
-					{
-						// Reply Sent By RDM Responder Widget : ACK_TIMER response with time of 0.1 seconds.
-						uint8_t rdm_data_save[RDM_DATA_BUFFER_SIZE];
-						memcpy(rdm_data_save, rdm_data, RDM_DATA_BUFFER_SIZE);
-						rdm_send_respond_message_ack_timer(rdm_data, 1);
-						memcpy(rdm_data, rdm_data_save, RDM_DATA_BUFFER_SIZE);
-					}
-
 					const uint8_t message_length = p->message_length + 2;
 
 					monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d",	message_length);
@@ -346,7 +334,6 @@ void widget_received_rdm_packet(void)
 						rdm_time_out_message();
 					else
 						widget_send_rdm_packet_start = 0;
-
 				}
 			}
 		}
