@@ -60,7 +60,7 @@ void monitor_update(void)
 
 	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
-	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address();
+	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 
 	printf("%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
 
@@ -82,7 +82,10 @@ void monitor_update(void)
 		putchar(' ');
 	}
 
-	printf("\n\n[%s] \n\n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
+	const struct _total_statistics *total_statistics = total_statistics_get();
+	printf("\n\nPackets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
+
+	printf("[%s] \n\n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
 
 	const uint8_t *rdm_data = rdm_get_current_data();
 

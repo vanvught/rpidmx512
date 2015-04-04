@@ -34,13 +34,13 @@
 #define DEVICE_LABEL_MAX_LENGTH				32	///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
 #define SOFTWARE_VERSION_LABEL_MAX_LENGTH	32	///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
 
-extern struct _rdm_device_info *rdm_device_info_get(void);
+extern struct _rdm_device_info *rdm_device_info_get(const uint16_t);
 extern void rdm_device_info_init(void);
 extern const uint8_t * rdm_device_info_get_uuid(void);
-extern const uint8_t * rdm_device_info_get_label(void);
-extern const uint8_t rdm_device_info_get_label_length(void);
-extern void rdm_device_info_set_label(const uint8_t *, uint8_t );
-extern uint8_t rdm_device_info_get_is_factory_defaults(void);
+extern const uint8_t * rdm_device_info_get_label(const uint16_t);
+extern const uint8_t rdm_device_info_get_label_length(const uint16_t);
+extern void rdm_device_info_set_label(const uint16_t, const uint8_t *, uint8_t );
+extern const uint8_t rdm_device_info_get_is_factory_defaults(void);
 extern const uint8_t * rdm_device_info_get_manufacturer_name(void);
 extern const uint8_t rdm_device_info_get_manufacturer_name_length(void);
 extern const uint8_t * rdm_device_info_get_supported_language(void);
@@ -48,14 +48,14 @@ extern const uint8_t rdm_device_info_get_supported_language_length(void);
 extern const uint8_t * rdm_device_info_get_software_version(void);
 extern const uint8_t rdm_device_info_get_software_version_length(void);
 extern const uint32_t rdm_device_info_get_software_version_id(void);
-extern uint16_t rdm_device_info_get_dmx_footprint(void);
-extern uint16_t rdm_device_info_get_dmx_start_address(void);
-extern void rdm_device_info_set_dmx_start_address(const uint16_t);
-extern uint8_t rdm_device_info_get_personality_count(void);
-extern uint8_t rdm_device_info_get_personality_current(void);
-extern void rdm_device_info_set_personality_current(const uint8_t);
-extern const char * rdm_device_info_get_personality_description(uint8_t);
-extern uint16_t rdm_device_info_get_personality_slots(uint8_t);
+extern const uint16_t rdm_device_info_get_dmx_footprint(const uint16_t);
+extern const uint16_t rdm_device_info_get_dmx_start_address(const uint16_t);
+extern void rdm_device_info_set_dmx_start_address(const uint16_t, const uint16_t);
+extern const uint8_t rdm_device_info_get_personality_count(const uint16_t);
+extern const uint8_t rdm_device_info_get_personality_current(const uint16_t);
+extern void rdm_device_info_set_personality_current(const uint16_t, const uint8_t);
+extern const char * rdm_device_info_get_personality_description(const uint16_t, uint8_t);
+extern const uint16_t rdm_device_info_get_personality_slots(const uint16_t, uint8_t);
 extern const uint8_t * rdm_device_info_get_manufacturer_id(void);
 extern const uint8_t rdm_device_info_get_manufacturer_id_length(void);
 extern const uint8_t * rdm_device_info_get_type_id(void);

@@ -1,5 +1,5 @@
 /**
- * @file rdm_identify.c
+ * @file irq_led.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,57 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef IRQ_LED_H_
+#define IRQ_LED_H_
 
-#include "util.h"
-#include "irq_led.h"
+extern void irq_init(void);
 
-static uint8_t rdm_identify_enabled = FALSE;	///<
+extern void ticks_per_second_set(uint32_t);
+extern uint32_t ticks_per_second_get(void);
 
-/**
- *
- * @return
- */
-const uint8_t rdm_identify_is_enabled(void)
-{
-	return rdm_identify_enabled;
-}
-
-/**
- *
- */
-void rdm_identify_off(void)
-{
-	rdm_identify_enabled = FALSE;
-
-	/*
-	 * Replace below with user code
-	 */
-	ticks_per_second_set(1E6 / 2);
-}
-
-/**
- *
- */
-void rdm_identify_on(void)
-{
-	rdm_identify_enabled = TRUE;
-
-	/*
-	 * Replace below with user code
-	 */
-	ticks_per_second_set(1E6 / 4);
-}
-
-/**
- *
- */
-void rdm_identify(void)
-{
-	if (rdm_identify_enabled == FALSE)
-		return;
-
-	/*
-	 * Add user code here
-	 */
-}
+#endif /* IRQ_LED_H_ */

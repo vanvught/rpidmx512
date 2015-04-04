@@ -35,12 +35,37 @@
 #define DMX_TRANSMIT_MAB_TIME_MIN		12		///< 12μs
 #define DMX_TRANSMIT_MAB_TIME_MAX		1E6		///< 1s
 
+#define DMX_MIN_SLOT_VALUE 				0		///< The minimum value a DMX512 slot can take.
+#define DMX_MAX_SLOT_VALUE 				255		///< The maximum value a DMX512 slot can take.
+#define DMX512_START_CODE				0		///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
+
+enum
+{
+	DMX_UNIVERSE_SIZE = 512 					///< The number of slots in a DMX512 universe.
+};
+
 typedef enum
 {
 	DMX_PORT_DIRECTION_IDLE = 0,	///<
 	DMX_PORT_DIRECTION_OUTP = 1,	///< DMX output
 	DMX_PORT_DIRECTION_INP = 2		///< DMX input
 } _dmx_port_direction;
+
+
+struct _dmx_statistics
+{
+	uint16_t mark_after_break;
+	uint16_t slots_in_packet;
+	uint16_t break_to_break;
+	uint16_t updates_per_seconde;
+	uint16_t slot_to_slot;
+};
+
+struct _total_statistics
+{
+	uint32_t dmx_packets;
+	uint32_t rdm_packets;
+};
 
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
@@ -60,5 +85,9 @@ extern const uint64_t dmx_output_break_time_get(void);
 extern void dmx_output_break_time_set(const uint64_t);
 extern const uint64_t dmx_output_mab_time_get(void);
 extern void dmx_output_mab_time_set(const uint64_t);
+
+extern void dmx_statistics_reset(void);
+extern void total_statistics_reset(void);
+extern const struct _total_statistics *total_statistics_get(void);
 
 #endif /* DMX_H_ */

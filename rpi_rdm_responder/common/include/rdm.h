@@ -46,6 +46,14 @@
 #define RDM_MESSAGE_CHECKSUM_SIZE		2		///< Size of the checksum
 #define RDM_MESSAGE_COUNT_MAX			255		///< Message Count field for Responder Generated Messages
 
+///< 7.6 Discovery Mute/Un-Mute Messages
+///< 7.6.1 Control Field
+///< The Reserved bits (Bits 4-15) are reserved for future implementation and shall be set to 0.
+#define RDM_CONTROL_FIELD_MANAGED_PROXY_FLAG	1 << 0	///< The Managed Proxy Flag (Bit 0) shall be set to 1 when the responder is a Proxy device.
+#define RDM_CONTROL_FIELD_SUB_DEVICE_FLAG		1 << 1	///< The Sub-Device Flag (Bit 1) shall be set to 1 when the responder supports Sub-Devices.
+#define RDM_CONTROL_FIELD_BOOTLOADER_FLAG		1 << 2	///< The Boot-Loader Flag (Bit 2) shall only be set to 1 when the device is incapable of normal operation until receiving a firmware upload.
+#define RDM_CONTROL_FIELD_PROXIED_DEVICE_FLAG	1 << 3	///< The Proxied Device Flag (Bit 3) shall only be set to 1 when a Proxy is responding to Discovery on behalf of another device. This flag indicates that the response has come from a Proxy, rather than the actual device.
+
 struct _rdm_command
 {
 	uint8_t start_code;						///< 1			SC_RDM
@@ -76,17 +84,17 @@ struct _rdm_discovery_msg {
 ///< http://rdm.openlighting.org/pid/display?manufacturer=0&pid=96
 struct _rdm_device_info
 {
-	uint8_t protocol_major;
-	uint8_t protocol_minor;
-	uint8_t device_model[2];
-	uint8_t product_category[2];
-	uint8_t software_version[4];
-	uint8_t dmx_footprint[2];
-	uint8_t current_personality;
-	uint8_t personality_count;
-	uint8_t dmx_start_address[2];
-	uint8_t sub_device_count[2];
-	uint8_t sensor_count;
+	uint8_t protocol_major;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t protocol_minor;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t device_model[2];		///< This field identifies the Device Model ID of the Root Device or the Sub-Device. The Manufacturer shall not use the same ID to represent more than one unique model type.
+	uint8_t product_category[2];	///< Devices shall report a Product Category based on the product’s primary function.
+	uint8_t software_version[4];	///< This field indicates the Software Version ID for the device. The Software Version ID is a 32-bit value determined by the Manufacturer.
+	uint8_t dmx_footprint[2];		///< If the DEVICE_INFO message is directed to a Sub-Device, then the response for this field contains the DMX512 Footprint for that Sub-Device. If the message is sent to the Root Device, it is the Footprint for the Root Device itself. If the Device or Sub-Device does not utilize Null Start Code packets for any control or functionality then it shall report a Footprint of 0x0000.
+	uint8_t current_personality;	///<
+	uint8_t personality_count;		///<
+	uint8_t dmx_start_address[2];	///< If the Device or Sub-Device that this message is directed to has a DMX512 Footprint of 0, then this field shall be set to 0xFFFF.
+	uint8_t sub_device_count[2];	///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
+	uint8_t sensor_count;			///< This field indicates the number of available sensors in a Root Device or Sub-Device. When this parameter is directed to a Sub-Device, the reply shall be identical for any Sub-Device owned by a specific Root Device.
 };
 
 ///< Personalities

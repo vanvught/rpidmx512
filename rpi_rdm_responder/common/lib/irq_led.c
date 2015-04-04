@@ -1,5 +1,5 @@
 /**
- * @file rdm_identify.c
+ * @file irq_led.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -25,55 +25,49 @@
 
 #include <stdint.h>
 
-#include "util.h"
-#include "irq_led.h"
+#include "bcm2835.h"
+#include "hardware.h"
 
-static uint8_t rdm_identify_enabled = FALSE;	///<
+static uint32_t ticks_per_second = 1E6 / 2;	///< Blinking at 1Hz
+static uint32_t irq_counter;				///<
+
+/**
+ *
+ * @param ticks
+ */
+void ticks_per_second_set(uint32_t ticks)
+{
+	ticks_per_second = ticks;
+}
 
 /**
  *
  * @return
  */
-const uint8_t rdm_identify_is_enabled(void)
+uint32_t ticks_per_second_get(void)
 {
-	return rdm_identify_enabled;
+	return ticks_per_second;
 }
 
 /**
+ * @ingroup led
  *
  */
-void rdm_identify_off(void)
-{
-	rdm_identify_enabled = FALSE;
-
-	/*
-	 * Replace below with user code
-	 */
-	ticks_per_second_set(1E6 / 2);
+void irq_init(void) {
+    irq_counter = 0;
+    BCM2835_ST->C1 = BCM2835_ST->CLO + ticks_per_second;
+    BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
 }
 
 /**
+ * @ingroup led
  *
  */
-void rdm_identify_on(void)
-{
-	rdm_identify_enabled = TRUE;
-
-	/*
-	 * Replace below with user code
-	 */
-	ticks_per_second_set(1E6 / 4);
-}
-
-/**
- *
- */
-void rdm_identify(void)
-{
-	if (rdm_identify_enabled == FALSE)
-		return;
-
-	/*
-	 * Add user code here
-	 */
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
+	dmb();
+	BCM2835_ST ->CS = BCM2835_ST_CS_M1;
+	BCM2835_ST ->C1 = BCM2835_ST ->CLO + ticks_per_second;
+	hardware_led_set(irq_counter++ & 0x01);
+	dmb();
 }

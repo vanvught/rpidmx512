@@ -33,6 +33,7 @@
 #include "rdm_device_info.h"
 #include "rdm_e120.h"
 #include "rdm_handlers.h"
+#include "rdm_sub_devices.h"
 #include "rdm_send.h"
 
 static uint8_t rdm_muted = FALSE;	///<
@@ -141,6 +142,10 @@ void rdm_handle_data(void)
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field
 			rdm_cmd->param_data[1] = 0x00;	// Control Field
+			if (rdm_sub_devices_get())
+			{
+				rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+			}
 			rdm_send_respond_message_ack(rdm_data);
 		} else if (param_id == E120_DISC_MUTE)
 		{
@@ -156,6 +161,10 @@ void rdm_handle_data(void)
 			rdm_cmd->param_data_length = 2;
 			rdm_cmd->param_data[0] = 0x00;	// Control Field
 			rdm_cmd->param_data[1] = 0x00;	// Control Field
+			if (rdm_sub_devices_get())
+			{
+				rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+			}
 			rdm_send_respond_message_ack(rdm_data);
 		}
 	}

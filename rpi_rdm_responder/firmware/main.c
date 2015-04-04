@@ -33,17 +33,13 @@
 #include "util.h"
 #include "rdm_device_info.h"
 #include "dmx.h"
+#include "irq_led.h"
 
 // poll table
 extern void rdm_handle_data(void);
 // events table
 extern void rdm_identify(void);
 extern void monitor_update(void);
-
-void task_led(void) {
-	static unsigned char led_counter = 0;
-	hardware_led_set(led_counter++ & 0x01);
-}
 
 struct _poll
 {
@@ -57,8 +53,7 @@ struct _event
 	void (*f)(void);
 }const events[] = {
 		{  500000, rdm_identify },
-		{ 1000000, monitor_update },
-		{  500000, task_led } };
+		{ 1000000, monitor_update }};
 
 uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
@@ -95,6 +90,9 @@ int notmain(void) {
 			uid_device[5]);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	irq_init();				// Led blink 1Hz
+	__enable_irq();
 
 	watchdog_init();
 

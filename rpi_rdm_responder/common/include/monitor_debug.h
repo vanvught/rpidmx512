@@ -31,6 +31,6 @@
 #define MONITOR_LINE_STATUS		23
 
 extern void monitor_debug_line(const uint8_t, const char *, ...);
-extern void monitor_debug_data(const uint8_t, const uint16_t, const uint8_t *);
+extern void monitor_debug_rdm_data(const uint8_t, const uint16_t, const uint8_t *);
 
 #endif /* MONITOR_DEBUG_H_ */

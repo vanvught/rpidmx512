@@ -29,8 +29,10 @@
 #include "hardware.h"
 #include "bcm2835_vc.h"
 #include "util.h"
+#include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
+#include "rdm_sub_devices.h"
 #include "rdm_device_info.h"
 #include "rdm_device_const.h"
 
@@ -40,8 +42,8 @@ static const uint8_t  DEVICE_SOFTWARE_VERSION_LENGTH = (sizeof(DEVICE_SOFTWARE_V
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
-static uint8_t device_label[DEVICE_LABEL_MAX_LENGTH];
-static uint8_t device_label_length = 0;
+static uint8_t root_device_label[DEVICE_LABEL_MAX_LENGTH];
+static uint8_t root_device_label_length = 0;
 
 static uint8_t device_sn[DEVICE_SN_LENGTH];
 
@@ -49,6 +51,7 @@ static uint8_t is_factory_defaults = TRUE;
 static uint16_t factory_defaults_checksum = 0;
 
 static struct _rdm_device_info rdm_device_info;
+static struct _rdm_device_info rdm_sub_device_info;
 
 inline static uint16_t calculate_checksum(void)
 {
@@ -56,13 +59,13 @@ inline static uint16_t calculate_checksum(void)
 	checksum += rdm_device_info.current_personality;
 
 	uint8_t i = 0;
-	for( i= 0; i < device_label_length; i++)
-		checksum += device_label[i];
+	for( i= 0; i < root_device_label_length; i++)
+		checksum += root_device_label[i];
 
 	return checksum;
 }
 
-uint8_t rdm_device_info_get_is_factory_defaults()
+const uint8_t rdm_device_info_get_is_factory_defaults()
 {
 	if (is_factory_defaults == TRUE)
 	{
@@ -91,25 +94,41 @@ const uint8_t rdm_device_info_get_sn_length(void)
 	return 4;
 }
 
-const uint8_t * rdm_device_info_get_label(void)
+const uint8_t * rdm_device_info_get_label(const uint16_t sub_device)
 {
-	return device_label;
-}
-
-void rdm_device_info_set_label(const uint8_t *label, uint8_t label_length)
-{
-	if (label_length > (sizeof(device_label) / sizeof(uint8_t)))
+	if (sub_device)
 	{
-		label_length = sizeof(device_label) / sizeof(uint8_t);
+		return rdm_sub_devices_get_label(sub_device);
 	}
 
-	memcpy(device_label, label, label_length);
-	device_label_length = label_length;
+	return root_device_label;
 }
 
-const uint8_t rdm_device_info_get_label_length(void)
+void rdm_device_info_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length)
 {
-	return device_label_length;
+	if (label_length > DEVICE_LABEL_MAX_LENGTH)
+	{
+		label_length = DEVICE_LABEL_MAX_LENGTH;
+	}
+
+	if (sub_device)
+	{
+		rdm_sub_devices_set_label(sub_device, label, label_length);
+		return;
+	}
+
+	memcpy(root_device_label, label, label_length);
+	root_device_label_length = label_length;
+}
+
+const uint8_t rdm_device_info_get_label_length(const uint16_t sub_device)
+{
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_label_length(sub_device);
+	}
+
+	return root_device_label_length;
 }
 
 
@@ -164,8 +183,13 @@ const uint8_t rdm_device_info_get_software_version_length(void)
  *
  * @return
  */
-uint16_t rdm_device_info_get_dmx_footprint(void)
+const uint16_t rdm_device_info_get_dmx_footprint(const uint16_t sub_device)
 {
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_footprint(sub_device);
+	}
+
 	uint16_t dmx_footprint = (rdm_device_info.dmx_footprint[0] << 8) + rdm_device_info.dmx_footprint[1];
 	return dmx_footprint;
 }
@@ -175,8 +199,13 @@ uint16_t rdm_device_info_get_dmx_footprint(void)
  *
  * @return
  */
-uint16_t rdm_device_info_get_dmx_start_address(void)
+const uint16_t rdm_device_info_get_dmx_start_address(const uint16_t sub_device)
 {
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_dmx_start_address(sub_device);
+	}
+
 	uint16_t dmx_start_address = (rdm_device_info.dmx_start_address[0] << 8) + rdm_device_info.dmx_start_address[1];
 	return dmx_start_address;
 }
@@ -186,10 +215,16 @@ uint16_t rdm_device_info_get_dmx_start_address(void)
  *
  * @param start_address
  */
-void rdm_device_info_set_dmx_start_address(const uint16_t start_address)
+void rdm_device_info_set_dmx_start_address(const uint16_t sub_device, const uint16_t start_address)
 {
-	if (start_address == 0 ||  start_address > 512)
+	if (start_address == 0 ||  start_address > DMX_UNIVERSE_SIZE)
 		return;
+
+	if(sub_device)
+	{
+		rdm_sub_devices_set_dmx_start_address(sub_device, start_address);
+		return;
+	}
 
 	rdm_device_info.dmx_start_address[0] = (uint8_t)(start_address >> 8);
 	rdm_device_info.dmx_start_address[1] = (uint8_t)start_address;
@@ -201,7 +236,7 @@ void rdm_device_info_set_dmx_start_address(const uint16_t start_address)
  *
  * @return
  */
-uint8_t rdm_device_info_get_personality_count(void)
+const uint8_t rdm_device_info_get_personality_count(const uint16_t sub_device)
 {
 	return (sizeof(rdm_personalities) / sizeof(struct _rdm_personality));
 }
@@ -211,8 +246,13 @@ uint8_t rdm_device_info_get_personality_count(void)
  *
  * @return
  */
-uint8_t rdm_device_info_get_personality_current(void)
+const uint8_t rdm_device_info_get_personality_current(const uint16_t sub_device)
 {
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_personality_current(sub_device);
+	}
+
 	return rdm_device_info.current_personality;
 }
 
@@ -221,10 +261,16 @@ uint8_t rdm_device_info_get_personality_current(void)
  *
  * @param personality
  */
-void rdm_device_info_set_personality_current(const uint8_t personality)
+void rdm_device_info_set_personality_current(const uint16_t sub_device, const uint8_t personality)
 {
-	if ((personality == 0) || (personality > rdm_device_info_get_personality_count()))
-			return;
+//	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device)))
+//			return;
+
+	if (sub_device)
+	{
+		rdm_sub_devices_set_personality_current(sub_device,personality);
+		return;
+	}
 
 	rdm_device_info.current_personality = personality;
 }
@@ -235,14 +281,17 @@ void rdm_device_info_set_personality_current(const uint8_t personality)
  * @param personality
  * @return
  */
-const char * rdm_device_info_get_personality_description(uint8_t personality)
+const char *rdm_device_info_get_personality_description(const uint16_t sub_device, const uint8_t personality)
 {
-	if ((personality == 0) || (personality > rdm_device_info_get_personality_count()))
+	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device)))
 			return NULL;
 
-	personality--;
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_personality_description(sub_device,personality);
+	}
 
-	return (rdm_personalities[personality].description);
+	return (rdm_personalities[personality - 1].description);
 }
 
 /**
@@ -251,19 +300,36 @@ const char * rdm_device_info_get_personality_description(uint8_t personality)
  * @param personality
  * @return
  */
-uint16_t rdm_device_info_get_personality_slots(uint8_t personality)
+const uint16_t rdm_device_info_get_personality_slots(const uint16_t sub_device, const uint8_t personality)
 {
-	if ((personality == 0) || (personality > rdm_device_info_get_personality_count()))
+	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device)))
 			return 0;
+	if (sub_device)
+	{
+		return rdm_sub_devices_get_personality_slots(sub_device, personality);
+	}
 
-	personality--;
-
-	return (rdm_personalities[personality].slots);
+	return (rdm_personalities[personality - 1].slots);
 }
 
 
-struct _rdm_device_info *rdm_device_info_get(void)
+struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device)
 {
+	if (sub_device)
+	{
+		const struct _rdm_sub_devices_info *sub_device_info = rdm_sub_devices_info_get(sub_device);
+
+		rdm_sub_device_info.dmx_footprint[0] = (uint8_t)(sub_device_info->dmx_footprint >> 8);
+		rdm_sub_device_info.dmx_footprint[1] = (uint8_t)sub_device_info->dmx_footprint;
+		rdm_sub_device_info.current_personality = sub_device_info->current_personality;
+		rdm_sub_device_info.personality_count = sub_device_info->personality_count;
+		rdm_sub_device_info.dmx_start_address[0] = (uint8_t)(sub_device_info->dmx_start_address >> 8);
+		rdm_sub_device_info.dmx_start_address[1] = (uint8_t)sub_device_info->dmx_start_address;
+		rdm_sub_device_info.sensor_count = sub_device_info->sensor_count;
+
+		return &rdm_sub_device_info;
+	}
+
 	return &rdm_device_info;
 }
 
@@ -289,11 +355,12 @@ void rdm_device_info_init(void)
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-	memcpy(device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
-	device_label_length = DEVICE_LABEL_LENGTH;
+	memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	root_device_label_length = DEVICE_LABEL_LENGTH;
 
-	uint16_t device_model = hardware_get_board_model_id();
-	uint32_t software_version_id = rdm_device_info_get_software_version_id();
+	const uint16_t device_model = hardware_get_board_model_id();
+	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
+	const uint16_t sub_device_count = rdm_sub_devices_get();
 
 	rdm_device_info.protocol_major       = E120_PROTOCOL_VERSION >> 8;
 	rdm_device_info.protocol_minor       = (uint8_t)E120_PROTOCOL_VERSION;
@@ -310,10 +377,12 @@ void rdm_device_info_init(void)
 	rdm_device_info.dmx_start_address[0] = (uint8_t)(DEFAULT_DMX_START_ADDRESS >> 8);
 	rdm_device_info.dmx_start_address[1] = (uint8_t)DEFAULT_DMX_START_ADDRESS;
 	rdm_device_info.current_personality  = DEFAULT_CURRENT_PERSONALITY;
-	rdm_device_info.personality_count    = rdm_device_info_get_personality_count();
-	rdm_device_info.sub_device_count[0]  = 0;
-	rdm_device_info.sub_device_count[1]  = 0;
+	rdm_device_info.personality_count    = rdm_device_info_get_personality_count(0);
+	rdm_device_info.sub_device_count[0]  = (uint8_t)(sub_device_count >> 8);;
+	rdm_device_info.sub_device_count[1]  = (uint8_t)sub_device_count;
 	rdm_device_info.sensor_count         = 0;
+
+	memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
 
 	factory_defaults_checksum = calculate_checksum();
 	is_factory_defaults = TRUE;
