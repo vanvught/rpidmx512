@@ -41,7 +41,7 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1781998917" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/firmware/firmware/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/bcm2835-baremetal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1530452907" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -74,6 +74,7 @@
 		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/hal"/>
 		</configuration>
+		<configuration configurationName="lib"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>

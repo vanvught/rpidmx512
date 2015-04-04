@@ -3,7 +3,7 @@
 	<name>fb</name>
 	<comment></comment>
 	<projects>
-		<project>firmware</project>
+		<project>bcm2835-baremetal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
