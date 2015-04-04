@@ -1,5 +1,5 @@
 /**
- * @file sniffer.h
+ * @file monitor_debug.h
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +22,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef MONITOR_DEBUG_H_
+#define MONITOR_DEBUG_H_
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+#define MONITOR_LINE_LABEL		5
+#define MONITOR_LINE_INFO		6
+#define MONITOR_LINE_RDM_DATA	11
+#define MONITOR_LINE_STATUS		23
 
-struct _rdm_statistics
-{
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+extern void monitor_debug_line(const uint8_t, const char *, ...);
+extern void monitor_debug_rdm_data(const uint8_t, const uint16_t, const uint8_t *);
 
-#endif /* SNIFFER_H_ */
+#endif /* MONITOR_DEBUG_H_ */

@@ -1,5 +1,6 @@
 /**
- * @file sniffer.h
+ * @file util.h
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+typedef enum {
+	FALSE = 0,
+	TRUE = 1
+} _boolean;
 
-struct _rdm_statistics
-{
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-#endif /* SNIFFER_H_ */
+#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+
+#ifndef MAX
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#endif /* UTIL_H_ */

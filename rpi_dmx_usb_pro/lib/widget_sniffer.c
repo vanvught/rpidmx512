@@ -30,6 +30,7 @@
 #include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
+#include "rdm_e120.h"
 #include "widget.h"
 #include "monitor_debug.h"
 #include "sniffer.h"
@@ -37,6 +38,8 @@
 #define MONITOR_LINE_INFO		6
 
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
+
+static struct _rdm_statistics rdm_statistics;
 
 inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length)
 {
@@ -165,14 +168,31 @@ void widget_sniffer_rdm(void)
 	{
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		message_length = p->message_length + 2;
+		switch (p->command_class) {
+			case E120_DISCOVERY_COMMAND:
+				rdm_statistics.discovery_packets++;
+				break;
+			case E120_DISCOVERY_COMMAND_RESPONSE:
+				rdm_statistics.discovery_response_packets++;
+				break;
+			case E120_GET_COMMAND:
+				rdm_statistics.get_requests++;
+				break;
+			case E120_SET_COMMAND:
+				rdm_statistics.set_requests++;
+				break;
+			default:
+				break;
+		}
 	}
 	else if (rdm_data[0] == 0xFE)
 	{
+		rdm_statistics.discovery_response_packets++;
 		message_length = 24;
 	}
 
 	usb_send_package(rdm_data, 0, message_length);
 
-	monitor_debug_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
+	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
 }
 

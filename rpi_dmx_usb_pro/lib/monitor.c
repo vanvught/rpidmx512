@@ -73,8 +73,7 @@ void monitor_update(void)
 	console_clear_line(3);
 
 	if (DMX_PORT_DIRECTION_INP == dmx_port_direction_get())
-		printf("Input [%s]\n",
-				receive_dmx_on_change_get() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
+		printf("Input [%s]\n", receive_dmx_on_change_get() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
 	else
 	{
 		printf("%s\n", dir[dmx_port_direction_get()]);

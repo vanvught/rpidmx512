@@ -1,5 +1,6 @@
 /**
- * @file sniffer.h
+ * @file usb.h
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef USB_H_
+#define USB_H_
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+#include <stdint.h>
 
-struct _rdm_statistics
+extern void usb_send_header(const uint8_t, const uint16_t);
+extern void usb_send_data(const uint8_t *, const uint16_t);
+extern void usb_send_byte(const uint8_t);
+extern void usb_send_footer(void);
+extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
+
+#include "ft245rl.h"
+
+inline static const uint8_t usb_read_byte(void)
 {
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+	while (!FT245RL_data_available());
+	return FT245RL_read_data();
+}
 
-#endif /* SNIFFER_H_ */
+inline static const uint8_t usb_read_is_byte_available(void)
+{
+	return FT245RL_data_available();
+}
+
+inline static void usb_init(void)
+{
+	FT245RL_init();
+}
+
+inline static const uint8_t usb_can_write(void)
+{
+	return FT245RL_can_write();
+}
+
+#endif /* USB_H_ */

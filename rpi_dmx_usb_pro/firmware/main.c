@@ -36,6 +36,7 @@
 #include "widget_params.h"
 #include "rdm_device_info.h"
 #include "widget.h"
+#include "irq_led.h"
 
 // poll table
 extern void widget_received_rdm_packet(void);
@@ -49,7 +50,7 @@ extern void widget_received_dmx_packet(void);
 extern void widget_received_dmx_change_of_state_packet(void);
 extern void monitor_update(void);
 
-static void task_led(void) {
+void task_led(void) {
 	static unsigned char led_counter = 0;
 	hardware_led_set(led_counter++ & 0x01);
 }
@@ -72,9 +73,10 @@ struct _event
 	void (*f)(void);
 }const events[] = {
 		{ 800000, widget_received_dmx_packet },
-		{ 800000, widget_received_dmx_change_of_state_packet },
-		{ 500000, task_led },
-		{1000000, monitor_update }};
+		{ 500000, widget_received_dmx_change_of_state_packet },
+		{1000000, monitor_update },
+		{ 500000, task_led}
+};
 
 uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 

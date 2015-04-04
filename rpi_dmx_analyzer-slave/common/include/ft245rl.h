@@ -1,5 +1,7 @@
+
 /**
- * @file sniffer.h
+ * @file ft245el.h
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef FT245RL_H_
+#define FT245RL_H_
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+#include <stdint.h>
 
-struct _rdm_statistics
-{
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+extern void FT245RL_init(void);
+extern void FT245RL_write_data(uint8_t );
+extern uint8_t FT245RL_read_data();
+extern uint8_t FT245RL_data_available(void);
+extern uint8_t FT245RL_can_write(void);
 
-#endif /* SNIFFER_H_ */
+#endif /* FT245RL_H_ */

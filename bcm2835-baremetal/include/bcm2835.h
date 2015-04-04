@@ -332,6 +332,25 @@ inline static uint64_t bcm2835_st_read(void)
  */
 extern void udelay(const uint64_t usec);
 
+/**
+ *
+ */
+extern void __disable_fiq(void);
+/**
+ *
+ */
+extern void __enable_fiq(void);
+
+/**
+ *
+ */
+extern void __disable_irq(void);
+
+/**
+ *
+ */
+extern void __enable_irq(void);
+
 #endif
 
 #endif /* BCM2835_H_ */

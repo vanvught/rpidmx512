@@ -353,7 +353,7 @@ void widget_received_rdm_packet(void)
 	}
 
 	const struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-	monitor_debug_data(MONITOR_LINE_RDM_DATA, p->message_length, rdm_data);
+	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, p->message_length, rdm_data);
 
 }
 
@@ -416,7 +416,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 
 	widget_send_rdm_packet_start =  hardware_micros();
 
-	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
 }
 
 /**
@@ -535,7 +535,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 	widget_rdm_discovery_running = TRUE;
 	widget_send_rdm_packet_start =  hardware_micros();
 
-	monitor_debug_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
 }
 
 /**
@@ -592,8 +592,8 @@ static void widget_get_name_reply(void)
 	monitor_debug_line(MONITOR_LINE_INFO, "GET_WIDGET_NAME_LABEL");
 	monitor_debug_line(MONITOR_LINE_STATUS, NULL);
 
-	const uint8_t *device_name = rdm_device_info_get_label();
-	const uint8_t device_name_length = rdm_device_info_get_label_length();
+	const uint8_t *device_name = rdm_device_info_get_label(0);
+	const uint8_t device_name_length = rdm_device_info_get_label_length(0);
 
 	const uint8_t *device_id = widget_params_get_type_id();
 	const uint8_t device_id_length = widget_params_get_type_id_length();

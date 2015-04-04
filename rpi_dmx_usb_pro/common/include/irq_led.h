@@ -1,5 +1,6 @@
 /**
- * @file sniffer.h
+ * @file irq_led.h
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef IRQ_LED_H_
+#define IRQ_LED_H_
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+extern void irq_init(void);
 
-struct _rdm_statistics
-{
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+extern void ticks_per_second_set(uint32_t);
+extern uint32_t ticks_per_second_get(void);
 
-#endif /* SNIFFER_H_ */
+#endif /* IRQ_LED_H_ */

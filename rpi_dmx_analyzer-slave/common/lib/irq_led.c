@@ -1,5 +1,6 @@
 /**
- * @file sniffer.h
+ * @file irq_led.c
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,20 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#include <stdint.h>
 
-#define	SNIFFER_PACKET			0x81
-#define	SNIFFER_PACKET_SIZE  	200
-#define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
-#define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
+#include "bcm2835.h"
+#include "hardware.h"
 
-struct _rdm_statistics
+static uint32_t ticks_per_second = 1E6 / 2;	///< Blinking at 1Hz
+static uint32_t irq_counter;				///<
+
+/**
+ *
+ * @param ticks
+ */
+void ticks_per_second_set(uint32_t ticks)
 {
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+	ticks_per_second = ticks;
+}
 
-#endif /* SNIFFER_H_ */
+/**
+ *
+ * @return
+ */
+uint32_t ticks_per_second_get(void)
+{
+	return ticks_per_second;
+}
+
+/**
+ * @ingroup led
+ *
+ */
+void irq_init(void) {
+    irq_counter = 0;
+    BCM2835_ST->C1 = BCM2835_ST->CLO + ticks_per_second;
+    BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
+}
+
+/**
+ * @ingroup led
+ *
+ */
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
+	dmb();
+	BCM2835_ST ->CS = BCM2835_ST_CS_M1;
+	BCM2835_ST ->C1 = BCM2835_ST ->CLO + ticks_per_second;
+	hardware_led_set(irq_counter++ & 0x01);
+	dmb();
+}
