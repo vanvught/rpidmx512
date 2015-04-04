@@ -39,16 +39,11 @@ struct hardware_time {
 	uint16_t year;		///< Year			[1970-....]
 };
 
-extern void __disable_fiq(void);
-extern void __enable_fiq(void);
-
-extern void __disable_irq(void);
-extern void __enable_irq(void);
-
 extern void hardware_init(void);
 extern void hardware_reboot(void);
+
 extern void hardware_led_init(void);
-extern void hardware_led_set(const int);
+void hardware_led_set(const int);
 
 extern const uint64_t hardware_uptime_seconds(void);
 extern const uint32_t hardware_get_firmware_revision(void);
