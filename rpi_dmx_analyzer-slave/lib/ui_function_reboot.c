@@ -24,10 +24,10 @@
  */
 
 #include <stdint.h>
+
 #include "bw_ui.h"
 #include "ui_functions.h"
-
-extern uint32_t ticks_per_second;	///<
+#include "irq_led.h"
 
 /**
  * @ingroup ui
@@ -43,8 +43,8 @@ void reboot(const char buttons) {
 	}
 	// No need to check for button 6 pressed (activate Menu)
 	if (BUTTON1_PRESSED(buttons)) {
-		ticks_per_second = ticks_per_second / 2;	// Let the LED blink faster
+	    ticks_per_second_set(1E6 / 4);	// Let the LED blink faster
 		ui_text_line_2("Rebooting ....  ", BW_UI_MAX_CHARACTERS);
-		for(;;);									// Force Watchdog time-out
+		for(;;);						// Force Watchdog time-out
 	}
 }

@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
 #include "dmx_data.h"
