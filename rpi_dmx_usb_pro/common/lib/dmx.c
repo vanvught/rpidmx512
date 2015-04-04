@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
@@ -56,6 +57,7 @@ static uint16_t dmx_data_index = 0;														///<
 static uint8_t dmx_available = FALSE;													///<
 static uint64_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;					///<
 static uint64_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;						///<
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;							///<
 
 #define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F												///<
 static uint16_t rdm_data_buffer_index_head = 0;											///<
@@ -65,14 +67,8 @@ static uint16_t rdm_checksum = 0;														///<
 static uint64_t rdm_data_receive_end = 0;												///<
 static uint8_t rdm_disc_index = 0;														///<
 
-static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;							///<
-
-/**
- * IRQ Handler is not used
- */
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
-{
-}
+static struct _dmx_statistics dmx_statistics;											///<
+static struct _total_statistics total_statistics;										///<
 
 /*
  * GETTERS / SETTERS
@@ -174,6 +170,21 @@ void dmx_output_mab_time_set(const uint64_t mab_time)
 	dmx_output_mab_time = MAX(DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 }
 
+void dmx_statistics_reset(void)
+{
+	memset(&dmx_statistics, 0, sizeof(struct _dmx_statistics));
+}
+
+void total_statistics_reset(void)
+{
+	memset(&total_statistics, 0, sizeof(struct _total_statistics));
+}
+
+const struct _total_statistics *total_statistics_get(void)
+{
+	return &total_statistics;
+}
+
 /**
  * @ingroup dmx
  *
@@ -225,119 +236,117 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	{
 		dmx_receive_state = BREAK;
 	}
-	else if (dmx_receive_state == IDLE)
+	else
 	{
-		uint8_t data = BCM2835_PL011->DR & 0xFF;
-		if (data == 0xFE)
+		const uint8_t data = BCM2835_PL011->DR & 0xFF;
+
+		switch (dmx_receive_state)
 		{
-			dmx_receive_state = RDMDISCFE;
-			dmx_data_index = 0;
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
-		}
-	}
-	else if (dmx_receive_state == BREAK)
-	{
-		uint8_t data = BCM2835_PL011->DR & 0xFF;
-		switch (data) {
-			case 0x00:				// DMX data start code
+		case IDLE:
+			if (data == 0xFE)
+			{
+				dmx_receive_state = RDMDISCFE;
+				dmx_data_index = 0;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+			}
+			break;
+		case BREAK:
+			switch (data)
+			{
+			case DMX512_START_CODE:	// DMX data start code
 				dmx_receive_state = DMXDATA;
 				dmx_available = TRUE;
 				dmx_data_index = 0;
+				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 				break;
 			case E120_SC_RDM:		// RDM start code
 				dmx_receive_state = RDMDATA;
 				dmx_data_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = E120_SC_RDM;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	E120_SC_RDM;
 				rdm_checksum = E120_SC_RDM;
+				total_statistics.rdm_packets = total_statistics.rdm_packets + 1;
 				break;
 			default:
 				dmx_receive_state = IDLE;
 				break;
-		}
-	}
-	else if (dmx_receive_state == DMXDATA)
-	{
-		dmx_data[dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
-		if (dmx_data_index >= 512)
-		{
-			dmx_receive_state = IDLE;
-		}
-	}
-	else if (dmx_receive_state == RDMDATA)
-	{
-		if (dmx_data_index > DMX_DATA_BUFFER_SIZE)
-		{
-			dmx_receive_state = IDLE;
-		} else
-		{
-			uint8_t data = (BCM2835_PL011->DR & 0xFF);
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-			rdm_checksum += data;
-
-			struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
-			if (dmx_data_index == p->message_length)
-			{
-				dmx_receive_state =	CHECKSUMH;
 			}
-		}
-	}
-	else if (dmx_receive_state == CHECKSUMH)
-	{
-		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =  data;
-		rdm_checksum -= data << 8;
-		dmx_receive_state = CHECKSUML;
-	}
-	else if (dmx_receive_state == CHECKSUML)
-	{
-		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-		rdm_checksum -= data;
+			break;
+		case DMXDATA:
+			dmx_data[dmx_data_index++] = data;
+			if (dmx_data_index >= DMX_UNIVERSE_SIZE)
+			{
+				dmx_receive_state = IDLE;
+			}
+			break;
+		case RDMDATA:
+			if (dmx_data_index > RDM_DATA_BUFFER_SIZE)
+			{
+				dmx_receive_state = IDLE;
+			} else
+			{
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+				rdm_checksum += data;
 
-		struct _rdm_command *p = (struct _rdm_command *) (&rdm_data_buffer[rdm_data_buffer_index_head][0]);
-		if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE))
-		{
-			rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
-			rdm_data_receive_end = hardware_micros();
-		}
-
-		dmx_receive_state = IDLE;
-	}
-	else if (dmx_receive_state == RDMDISCFE)
-	{
-		uint8_t data = (BCM2835_PL011->DR & 0xFF);
-		switch (data) {
+				const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
+				if (dmx_data_index == p->message_length)
+				{
+					dmx_receive_state = CHECKSUMH;
+				}
+			}
+			break;
+		case CHECKSUMH:
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			rdm_checksum -= data << 8;
+			dmx_receive_state = CHECKSUML;
+		break;
+		case CHECKSUML:
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			rdm_checksum -= data;
+			const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
+			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE))
+			{
+				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+				rdm_data_receive_end = hardware_micros();
+			}
+			dmx_receive_state = IDLE;
+			break;
+		case RDMDISCFE:
+			switch (data)
+			{
 			case 0xFE:
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	0xFE;
 				break;
 			case 0xAA:
 				dmx_receive_state = RDMDISCEUID;
 				rdm_disc_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xAA;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	0xAA;
 				break;
 			default:
+				dmx_receive_state = IDLE;
 				break;
-		}
-	}
-	else if (dmx_receive_state == RDMDISCEUID)
-	{
-		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
-		rdm_disc_index++;
-		if (rdm_disc_index == 2 * RDM_UID_SIZE)
-		{
-			dmx_receive_state = RDMDISCECS;
-			rdm_disc_index = 0;
-		}
-	}
-	else if (dmx_receive_state == RDMDISCECS)
-	{
-		rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = (BCM2835_PL011->DR & 0xFF);
-		rdm_disc_index++;
-		if (rdm_disc_index == 4)
-		{
-			rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
-			dmx_receive_state = IDLE;
-			rdm_data_receive_end = hardware_micros();
+			}
+			break;
+		case RDMDISCEUID:
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			rdm_disc_index++;
+			if (rdm_disc_index == 2 * RDM_UID_SIZE)
+			{
+				dmx_receive_state = RDMDISCECS;
+				rdm_disc_index = 0;
+			}
+			break;
+		case RDMDISCECS:
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			rdm_disc_index++;
+			if (rdm_disc_index == 4)
+			{
+				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+				dmx_receive_state = IDLE;
+				rdm_data_receive_end = hardware_micros();
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -467,6 +476,10 @@ void dmx_init(void)
 	rdm_data_buffer_index_tail = 0;
 
 	pl011_dmx512_init();
+
+	dmx_receive_state = IDLE;
+	dmx_available = FALSE;
+
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }
