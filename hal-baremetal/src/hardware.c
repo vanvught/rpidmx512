@@ -74,7 +74,7 @@ static volatile uint64_t hardware_init_startup_micros = 0;
 
 const uint64_t hardware_uptime_seconds(void)
 {
-	return (((bcm2835_st_read() - hardware_init_startup_micros) * 0x431bde83) >> (0x12 + 32));
+	return (((bcm2835_st_read() - hardware_init_startup_micros) / 1E6));
 }
 
 const uint32_t hardware_get_firmware_revision(void)
@@ -140,7 +140,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw)
 	tm_rtc.tm_mday = tm_hw->day;
 	//tm_rtc.tm_wday = // TODO
 	tm_rtc.tm_mon = tm_hw->month;
-	tm_rtc.tm_year = tm_hw->year;
+	tm_rtc.tm_year = tm_hw->year - 2000;	// RTC stores 2 digits only
 
 	if (mcp7941x_start(0x00) != MCP7941X_ERROR)
 	{
@@ -155,8 +155,8 @@ void hardware_rtc_set(const struct hardware_time *tm_hw)
 	tmbuf.tm_mday = tm_rtc.tm_mday;
 	tmbuf.tm_wday = tm_rtc.tm_wday;
 	tmbuf.tm_mon = tm_rtc.tm_mon;
-	tmbuf.tm_year = tm_rtc.tm_year - 2000;
-	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
+	tmbuf.tm_year = tm_rtc.tm_year;
+	tmbuf.tm_isdst = 0;
 
 	sys_time_set(&tmbuf);
 }
@@ -181,6 +181,7 @@ void hardware_init(void)
 
 void hardware_reboot(void)
 {
+	hardware_led_set(1);
 	watchdog_init();
 	for(;;);
 }

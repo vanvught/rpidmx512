@@ -80,9 +80,7 @@ void sys_time_set(const struct tm *tmbuf)
  * @return
  */
 time_t sys_time(time_t *__timer) {
-	// http://www.hackersdelight.org/magic.htm
-	// http://stackoverflow.com/questions/1269994/nanoseconds-to-milliseconds-fast-division-by-1000000
-	time_t elapsed = (unsigned long long)((bcm2835_st_read() - sys_time_init_startup_micros) * 0x431bde83) >> (0x12 + 32);
+	time_t elapsed = (unsigned long long)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
 
 	elapsed = elapsed + rtc_startup_seconds;
 
