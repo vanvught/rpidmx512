@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #define DMX_DATA_BUFFER_SIZE			512		///< //TODO include SC
+#define RDM_DATA_BUFFER_SIZE			512		///<
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92μs
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL	176		///< 176μs
@@ -68,6 +69,7 @@ struct _total_statistics
 };
 
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
+extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
 extern void dmx_port_direction_set(const uint8_t, const uint8_t);
@@ -89,5 +91,8 @@ extern void dmx_output_mab_time_set(const uint64_t);
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);
 extern const struct _total_statistics *total_statistics_get(void);
+
+extern const uint8_t rdm_is_available_get(void);
+extern void rdm_is_available_set(const uint8_t);
 
 #endif /* DMX_H_ */

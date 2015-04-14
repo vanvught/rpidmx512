@@ -65,8 +65,9 @@ static uint16_t rdm_data_buffer_index_tail = 0;											///<
 static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE];	///<
 static uint16_t rdm_checksum = 0;														///<
 static uint64_t rdm_data_receive_end = 0;												///<
+#ifdef RDM_CONTROLLER
 static uint8_t rdm_disc_index = 0;														///<
-
+#endif
 static struct _dmx_statistics dmx_statistics;											///<
 static struct _total_statistics total_statistics;										///<
 
@@ -170,16 +171,26 @@ void dmx_output_mab_time_set(const uint64_t mab_time)
 	dmx_output_mab_time = MAX(DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 }
 
+/**
+ *
+ */
 void dmx_statistics_reset(void)
 {
 	memset(&dmx_statistics, 0, sizeof(struct _dmx_statistics));
 }
 
+/**
+ *
+ */
 void total_statistics_reset(void)
 {
 	memset(&total_statistics, 0, sizeof(struct _total_statistics));
 }
 
+/**
+ *
+ * @return
+ */
 const struct _total_statistics *total_statistics_get(void)
 {
 	return &total_statistics;
@@ -242,6 +253,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 
 		switch (dmx_receive_state)
 		{
+#ifdef RDM_CONTROLLER
 		case IDLE:
 			if (data == 0xFE)
 			{
@@ -250,6 +262,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
 			}
 			break;
+#endif
 		case BREAK:
 			switch (data)
 			{
@@ -310,6 +323,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			}
 			dmx_receive_state = IDLE;
 			break;
+#ifdef RDM_CONTROLLER
 		case RDMDISCFE:
 			switch (data)
 			{
@@ -345,6 +359,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				rdm_data_receive_end = hardware_micros();
 			}
 			break;
+#endif
 		default:
 			break;
 		}
@@ -366,7 +381,7 @@ void dmx_data_start(void)
 	case DMX_PORT_DIRECTION_OUTP:
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		dmx_receive_fiq_init();
+		//dmx_receive_fiq_init();
 		dmx_receive_state = IDLE;
 		__enable_fiq();
 		break;
@@ -481,5 +496,6 @@ void dmx_init(void)
 	dmx_available = FALSE;
 
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
+	dmx_receive_fiq_init();
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }

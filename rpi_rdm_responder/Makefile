@@ -8,6 +8,8 @@ COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
 #COPS += -DDEBUG
 #COPS += -DDEBUG_ANALYZER
+COPS += -DRDM_RESPONDER
+
 COPS += -I"./common/include"
 COPS += -I"./include"
 #COPS += -I"../ff9b/src"

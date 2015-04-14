@@ -94,6 +94,7 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
 		if ((BCM2835_PL011->FR & 0x20) == 0)
 			break;
 	}
+	udelay(44);
 }
 
 /**

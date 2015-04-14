@@ -37,26 +37,23 @@ extern uint8_t rdm_is_muted(void);
 
 void monitor_update(void)
 {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
-
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 
 	ltime = sys_time(NULL);
     local_time = localtime(&ltime);
 
-	console_set_cursor(0,4);
-
 	uint64_t uptime_seconds = hardware_uptime_seconds();
 
-	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n\n",
+	// line 4
+	console_set_cursor(0,4);
+
+	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
+			(long int) (uptime_seconds / DAY),
+			(long int) (uptime_seconds % DAY) / HOUR,
+			(long int) (uptime_seconds % HOUR) / MINUTE,
+			(long int) uptime_seconds % MINUTE);
 
 	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 

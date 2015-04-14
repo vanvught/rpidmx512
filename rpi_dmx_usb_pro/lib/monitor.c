@@ -38,10 +38,6 @@ void monitor_update(void)
 	{ "Idle", "Output", "Input" };
 	struct _widget_params widget_params;
 
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
-
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 
@@ -50,17 +46,17 @@ void monitor_update(void)
 
 	widget_params_get(&widget_params);
 
-	console_set_cursor(0,1);
-
 	uint64_t uptime_seconds = hardware_uptime_seconds();
 
 	// line 1
+	console_set_cursor(0,1);
+
 	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
+			(long int) (uptime_seconds / DAY),
+			(long int) (uptime_seconds % DAY) / HOUR,
+			(long int) (uptime_seconds % HOUR) / MINUTE,
+			(long int) uptime_seconds % MINUTE);
 
 	// line 2
 	printf("FW %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d\n",
@@ -82,6 +78,15 @@ void monitor_update(void)
 	// line 4 LABEL
 	// line 5 Info
 	// line 6
+
+	const uint8_t widget_mode = widget_mode_get();
+
+	if (widget_mode == MODE_RDM_SNIFFER)
+	{
+
+	} else
+	{
+	// line 8
 	console_set_cursor(0,8);
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
@@ -96,4 +101,5 @@ void monitor_update(void)
 			dmx_data[28], dmx_data[29], dmx_data[30], dmx_data[31]);
 
 	// line 11 RDM Data
+	}
 }

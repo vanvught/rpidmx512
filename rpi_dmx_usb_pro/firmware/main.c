@@ -59,10 +59,10 @@ struct _poll
 {
 	void (*f)(void);
 } const poll_table[] = {
-		{ widget_received_rdm_packet },
-		{ widget_ouput_dmx },
 		{ widget_receive_data_from_host },
+		{ widget_received_rdm_packet },
 		{ widget_rdm_timeout },
+		{ widget_ouput_dmx },
 		{ widget_sniffer_rdm },
 		{ widget_sniffer_dmx }
 		};

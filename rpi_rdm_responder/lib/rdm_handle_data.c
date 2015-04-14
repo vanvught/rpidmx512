@@ -58,7 +58,7 @@ void rdm_handle_data(void)
 	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
 
 	if (rdm_data == NULL)
-			return;
+		return;
 
 	uint8_t rdm_packet_is_for_me = FALSE;
 	uint8_t rdm_packet_is_broadcast = FALSE;
@@ -69,7 +69,7 @@ void rdm_handle_data(void)
 	const uint8_t command_class = rdm_cmd->command_class;
 	const uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
 
-	monitor_debug_line(23, "handle_rdm_data, param_id [%.2x%.2x]:%d", rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
+	monitor_debug_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
@@ -130,6 +130,8 @@ void rdm_handle_data(void)
 			}
 		} else if (param_id == E120_DISC_UN_MUTE)
 		{
+			monitor_debug_line(24, "E120_DISC_UN_MUTE");
+
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
 				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
@@ -138,17 +140,22 @@ void rdm_handle_data(void)
 				return;
 			}
 			rdm_muted = FALSE;
-			rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
-			rdm_cmd->param_data_length = 2;
-			rdm_cmd->param_data[0] = 0x00;	// Control Field
-			rdm_cmd->param_data[1] = 0x00;	// Control Field
-			if (rdm_sub_devices_get())
+			if (rdm_packet_is_for_me)
 			{
-				rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+				rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+				rdm_cmd->param_data_length = 2;
+				rdm_cmd->param_data[0] = 0x00;	// Control Field
+				rdm_cmd->param_data[1] = 0x00;	// Control Field
+				if (rdm_sub_devices_get())
+				{
+					rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+				}
+				rdm_send_respond_message_ack(rdm_data);
 			}
-			rdm_send_respond_message_ack(rdm_data);
 		} else if (param_id == E120_DISC_MUTE)
 		{
+			monitor_debug_line(24, "E120_DISC_MUTE");
+
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
 				 * with the Command Classes GET_COMMAND_RESPONSE & SET_COMMAND_RESPONSE.
@@ -156,19 +163,24 @@ void rdm_handle_data(void)
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
+
 			rdm_muted = TRUE;
-			rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
-			rdm_cmd->param_data_length = 2;
-			rdm_cmd->param_data[0] = 0x00;	// Control Field
-			rdm_cmd->param_data[1] = 0x00;	// Control Field
-			if (rdm_sub_devices_get())
+
+			if (rdm_packet_is_for_me)
 			{
-				rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+				rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+				rdm_cmd->param_data_length = 2;
+				rdm_cmd->param_data[0] = 0x00;	// Control Field
+				rdm_cmd->param_data[1] = 0x00;	// Control Field
+				if (rdm_sub_devices_get())
+				{
+					rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
+				}
+				rdm_send_respond_message_ack(rdm_data);
 			}
-			rdm_send_respond_message_ack(rdm_data);
 		}
 	}
-	else
+	else if ((command_class == E120_GET_COMMAND) || (command_class == E120_SET_COMMAND))
 	{
 		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];
 		rdm_handlers(rdm_data, rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);
