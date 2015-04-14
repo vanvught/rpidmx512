@@ -34,13 +34,13 @@
 #include "hardware.h"
 #include "sys_time.h"
 
-static const uint8_t FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";
-static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(uint8_t)) - 1;
+static const uint8_t FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";								///<
+static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(uint8_t)) - 1;	///<
 
 struct _hardware_led
 {
-	void (*init)(void);
-	void (*set)(const int);
+	void (*init)(void);									///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
+	void (*set)(const int);								///< Pointer to function for LED ACCT on/off
 } static _hardware_led_f = {led_init, led_set};
 
 #define MAX_NAME_LENGTH 20
@@ -70,33 +70,57 @@ struct _hardware_revision_code
 
 extern void fb_init(void);
 
-static volatile uint64_t hardware_init_startup_micros = 0;
+static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
+/**
+ *
+ * @return
+ */
 const uint64_t hardware_uptime_seconds(void)
 {
 	return (((bcm2835_st_read() - hardware_init_startup_micros) / 1E6));
 }
 
+/**
+ *
+ * @return
+ */
 const uint32_t hardware_get_firmware_revision(void)
 {
 	return bcm2835_vc_get_get_firmware_revision();
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t *hardware_get_firmware_copyright(void)
 {
 	return FIRMWARE_COPYRIGHT;
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t hardware_get_firmware_copyright_length(void)
 {
 	return FIRMWARE_COPYRIGHT_LENGTH;
 }
 
+/**
+ *
+ * @return
+ */
 const uint32_t hardware_get_board_model_id(void)
 {
 	return bcm2835_vc_get_get_board_revision();
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t *hardware_get_board_model(void)
 {
 	const uint8_t array_length = sizeof(board_version) / sizeof(board_version[0]);
@@ -115,21 +139,36 @@ const uint8_t *hardware_get_board_model(void)
 	return board_version[0].name;
 }
 
+/**
+ *
+ * @return
+ */
 const uint8_t hardware_get_board_model_length(void)
 {
 	return MAX_NAME_LENGTH;
 }
 
+/**
+ *
+ */
 void hardware_led_init(void)
 {
 	_hardware_led_f.init();
 }
 
+/**
+ *
+ * @param state
+ */
 void hardware_led_set(const int state)
 {
 	_hardware_led_f.set(state);
 }
 
+/**
+ *
+ * @param tm_hw
+ */
 void hardware_rtc_set(const struct hardware_time *tm_hw)
 {
 	struct rtc_time tm_rtc;
@@ -161,6 +200,9 @@ void hardware_rtc_set(const struct hardware_time *tm_hw)
 	sys_time_set(&tmbuf);
 }
 
+/**
+ *
+ */
 void hardware_init(void)
 {
 	hardware_init_startup_micros = bcm2835_st_read();
@@ -179,6 +221,9 @@ void hardware_init(void)
 	hardware_led_set(1);
 }
 
+/**
+ *
+ */
 void hardware_reboot(void)
 {
 	hardware_led_set(1);

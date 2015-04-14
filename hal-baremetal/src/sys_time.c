@@ -2,7 +2,7 @@
  * @file sys_time.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,6 +68,10 @@ void sys_time_init(void) {
 	rtc_startup_seconds = mktime(&tmbuf);
 }
 
+/**
+ *
+ * @param tmbuf
+ */
 void sys_time_set(const struct tm *tmbuf)
 {
 	sys_time_init_startup_micros = bcm2835_st_read();
