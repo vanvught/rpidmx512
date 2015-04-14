@@ -50,9 +50,12 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="bcm2835-baremetal.null.513242692" name="bcm2835-baremetal"/>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.320821704;cdt.managedbuild.toolchain.gnu.cross.base.320821704.348703170;cdt.managedbuild.tool.gnu.cross.c.compiler.1961945435;cdt.managedbuild.tool.gnu.c.compiler.input.687165381">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile"/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>
