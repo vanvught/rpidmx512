@@ -34,9 +34,9 @@
 #define RDM_TRANSMIT_BREAK_TIME			176		///< Min 176μs
 #define RDM_TRANSMIT_MAB_TIME			12		///< Min 12μs
 ///< 3.2.2 Responder Packet spacing
-#define RDM_RESPONDER_PACKET_SPACING	180		///< Min 176μs, Max 2ms
+#define RDM_RESPONDER_PACKET_SPACING	200		///< Min 176μs, Max 2ms
 
-#define RDM_RESPONDER_DATA_DIRECTION_DELAY	50	///<
+#define RDM_RESPONDER_DATA_DIRECTION_DELAY	4	///<
 
 ///< 5 Device Addressing
 #define RDM_UID_SIZE  					6		///< 48-bit
