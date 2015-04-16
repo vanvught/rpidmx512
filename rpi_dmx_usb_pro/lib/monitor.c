@@ -32,6 +32,9 @@
 #include "console.h"
 #include "hardware.h"
 
+/**
+ * @ingroup monitor
+ */
 void monitor_update(void)
 {
 	char dir[3][10] =

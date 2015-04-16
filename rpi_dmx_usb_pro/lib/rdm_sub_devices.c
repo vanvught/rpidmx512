@@ -29,7 +29,7 @@
 #include "rdm.h"
 #include "rdm_sub_devices.h"
 
-static uint16_t rdm_sub_devices = 0;
+static uint16_t rdm_sub_devices = 0;		///<
 
 /**
  *
@@ -93,6 +93,11 @@ const uint8_t rdm_sub_devices_get_label_length(const uint16_t sub_device)
 }
 
 
+/**
+ *
+ * @param sub_device
+ * @return
+ */
 const uint8_t rdm_sub_devices_get_personality_current(const uint16_t sub_device)
 {
 	return 0;
@@ -108,11 +113,23 @@ void rdm_sub_devices_set_personality_current(const uint16_t sub_device, const ui
 
 }
 
+/**
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const char *rdm_sub_devices_get_personality_description(const uint16_t sub_device, const uint8_t personality)
 {
 	return 0;
 }
 
+/**
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t sub_device, const uint8_t personality)
 {
 	return 0;
@@ -128,6 +145,11 @@ const struct _rdm_sub_devices_info *rdm_sub_devices_info_get(const uint16_t sub_
 	return 0;
 }
 
+/**
+ *
+ * @param sub_device
+ * @param sub_devices_info
+ */
 void rdm_sub_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info)
 {
 

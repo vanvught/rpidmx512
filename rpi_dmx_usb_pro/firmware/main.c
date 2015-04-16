@@ -29,28 +29,19 @@
 
 #include "bcm2835.h"
 #include "bcm2835_wdog.h"
-#include "sys_time.h"
 #include "usb.h"
 #include "hardware.h"
 #include "dmx.h"
 #include "widget_params.h"
 #include "rdm_device_info.h"
 #include "widget.h"
-#include "irq_led.h"
+#include "monitor.h"
 
-// poll table
-extern void widget_received_rdm_packet(void);
-extern void widget_receive_data_from_host(void);
-extern void widget_ouput_dmx(void);
-extern void widget_rdm_timeout(void);
-extern void widget_sniffer_rdm(void);
-extern void widget_sniffer_dmx(void);
-// events table
-extern void widget_received_dmx_packet(void);
-extern void widget_received_dmx_change_of_state_packet(void);
-extern void monitor_update(void);
-
-void task_led(void) {
+/**
+ * @ingroup main
+ *
+ */
+static void task_led(void) {
 	static unsigned char led_counter = 0;
 	hardware_led_set(led_counter++ & 0x01);
 }
@@ -81,6 +72,7 @@ struct _event
 uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
+ * @ingroup main
  *
  */
 static void events_init() {
@@ -92,9 +84,10 @@ static void events_init() {
 }
 
 /**
+ * @ingroup main
  *
  */
-static inline void events_check() {
+inline static void events_check() {
 	int i;
 	uint64_t st_read_now = bcm2835_st_read();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
@@ -106,6 +99,11 @@ static inline void events_check() {
 	}
 }
 
+/**
+ * @ingroup main
+ *
+ * @return
+ */
 int notmain(void)
 {
 	hardware_init();

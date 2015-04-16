@@ -37351,10 +37351,10 @@ Disassembly of section .rodata:
    2b9b4:	73252074 	teqvc	r5, #116	; 0x74
    2b9b8:	00000020 	andeq	r0, r0, r0, lsr #32
    2b9bc:	20727041 	rsbscs	r7, r2, r1, asr #32
-   2b9c0:	32203331 	eorcc	r3, r0, #-1006632960	; 0xc4000000
+   2b9c0:	32203631 	eorcc	r3, r0, #51380224	; 0x3100000
    2b9c4:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2b9c8:	323a3331 	eorscc	r3, sl, #-1006632960	; 0xc4000000
-   2b9cc:	36343a39 			; <UNDEFINED> instruction: 0x36343a39
+   2b9c8:	323a3831 	eorscc	r3, sl, #3211264	; 0x310000
+   2b9cc:	30303a34 	eorscc	r3, r0, r4, lsr sl
    2b9d0:	00000000 	andeq	r0, r0, r0
    2b9d4:	5d64255b 	cfstr64pl	mvdx2, [r4, #-364]!	; 0xfffffe94
    2b9d8:	4e2f5320 	cdpmi	3, 2, cr5, cr15, cr0, {1}
@@ -38623,7 +38623,7 @@ Disassembly of section .bss:
 0002f628 <rdm_statistics>:
 	...
 
-0002f638 <led_counter.5201>:
+0002f638 <led_counter.5116>:
    2f638:	00000000 	andeq	r0, r0, r0
 
 0002f63c <heap_end>:

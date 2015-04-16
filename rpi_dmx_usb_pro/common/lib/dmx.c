@@ -1,5 +1,5 @@
 /**
- * @file dmx_data.c
+ * @file dmx.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -92,6 +92,11 @@ const uint8_t *rdm_available_get(void)
 	}
 }
 
+/**
+ * @ingroup rdm
+ *
+ * @return
+ */
 const uint8_t *rdm_get_current_data(void)
 {
 	return &rdm_data_buffer[rdm_data_buffer_index_tail][0];
@@ -118,6 +123,7 @@ void dmx_available_set(const uint8_t is_available)
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
@@ -127,6 +133,7 @@ const uint8_t dmx_port_direction_get(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
@@ -136,6 +143,7 @@ const uint64_t rdm_data_receive_end_get(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
@@ -145,6 +153,7 @@ const uint64_t dmx_output_break_time_get(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * @param break_time
  */
@@ -154,6 +163,7 @@ void dmx_output_break_time_set(const uint64_t break_time)
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
@@ -163,6 +173,7 @@ const uint64_t dmx_output_mab_time_get(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * @param mab_time
  */
@@ -172,6 +183,7 @@ void dmx_output_mab_time_set(const uint64_t mab_time)
 }
 
 /**
+ * @ingroup dmx
  *
  */
 void dmx_statistics_reset(void)
@@ -180,6 +192,7 @@ void dmx_statistics_reset(void)
 }
 
 /**
+ * @ingroup dmx
  *
  */
 void total_statistics_reset(void)
@@ -188,6 +201,7 @@ void total_statistics_reset(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
@@ -403,6 +417,7 @@ void dmx_data_stop(void)
  * @ingroup dmx
  *
  * @param port_direction
+ * @param enable_data
  */
 void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_data)
 {

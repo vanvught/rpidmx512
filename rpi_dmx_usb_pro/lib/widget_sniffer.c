@@ -41,6 +41,13 @@ static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
 static struct _rdm_statistics rdm_statistics;
 
+/**
+ * @ingroup widget
+ *
+ * @param data
+ * @param start
+ * @param data_length
+ */
 inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length)
 {
 	if (data_length < SNIFFER_PACKET_SIZE / 2)
@@ -79,6 +86,7 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 }
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -100,8 +108,9 @@ inline static uint8_t dmx_data_is_changed(void)
 }
 
 /**
+ * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_dmx(void)
 {
@@ -144,9 +153,10 @@ void widget_sniffer_dmx(void)
 	usb_send_package(dmx_data, 99, 413);
 }
 
-/*
+/**
+ * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_rdm(void)
 {
@@ -195,4 +205,3 @@ void widget_sniffer_rdm(void)
 
 	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
 }
-

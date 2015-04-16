@@ -1,5 +1,5 @@
 /**
- * @file ft245rl.h
+ * @file monitor.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,15 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef FT245RL_H_
-#define FT245RL_H_
+#ifndef MONITOR_H_
+#define MONITOR_H_
 
-#include <stdint.h>
+extern void monitor_update(void);
 
-extern void FT245RL_init(void);
-extern void FT245RL_write_data(uint8_t );
-extern uint8_t FT245RL_read_data();
-extern uint8_t FT245RL_data_available(void);
-extern uint8_t FT245RL_can_write(void);
 
-#endif /* FT245RL_H_ */
+#endif /* MONITOR_H_ */

@@ -72,4 +72,15 @@ extern void widget_dmx_output_period_set(const uint64_t);
 extern const uint8_t widget_mode_get(void);
 extern void widget_mode_set(const uint8_t);
 
+// poll table
+extern void widget_received_rdm_packet(void);
+extern void widget_receive_data_from_host(void);
+extern void widget_ouput_dmx(void);
+extern void widget_rdm_timeout(void);
+extern void widget_sniffer_rdm(void);
+extern void widget_sniffer_dmx(void);
+// events table
+extern void widget_received_dmx_packet(void);
+extern void widget_received_dmx_change_of_state_packet(void);
+
 #endif /* WIDGET_H_ */

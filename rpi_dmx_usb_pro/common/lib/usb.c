@@ -31,6 +31,7 @@
 #include "ft245rl.h"
 
 /**
+ * @ingroup usb
  *
  * @param byte
  */
@@ -41,6 +42,7 @@ void usb_send_byte(const uint8_t byte)
 }
 
 /**
+ * @ingroup usb
  *
  * @param label
  * @param length
@@ -54,6 +56,7 @@ void usb_send_header(const uint8_t label, const uint16_t length)
 }
 
 /**
+ * @ingroup usb
  *
  * @param data
  * @param length
@@ -68,6 +71,7 @@ void usb_send_data(const uint8_t *data, const uint16_t length)
 }
 
 /**
+ * @ingroup usb
  *
  */
 void usb_send_footer(void)
@@ -76,6 +80,7 @@ void usb_send_footer(void)
 }
 
 /**
+ * @ingroup usb
  *
  * @param label
  * @param data

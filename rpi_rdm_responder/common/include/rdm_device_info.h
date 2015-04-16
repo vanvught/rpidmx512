@@ -1,5 +1,5 @@
 /**
- * @file device_info.h
+ * @file rdm_device_info.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>

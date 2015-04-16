@@ -1,6 +1,5 @@
-
 /**
- * @file ft245el.h
+ * @file ft245rl.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>

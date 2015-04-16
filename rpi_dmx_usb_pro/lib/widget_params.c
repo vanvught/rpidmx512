@@ -42,7 +42,9 @@ static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";	//
 ///< custom entry
 static const char PARAMS_REFRESH_MODE[] = "mode";	///<
 
+#ifdef UPDATE_CONFIG_FILE
 /**
+ * @ingroup widget
  *
  * @param line
  * @param file_object_wr
@@ -50,7 +52,6 @@ static const char PARAMS_REFRESH_MODE[] = "mode";	///<
  * @param value
  * @return
  */
-#ifdef UPDATE_CONFIG_FILE
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
 	char _name[64];
@@ -121,6 +122,7 @@ inline static void update_config_file(const char *name, const int value) { }
 #endif
 
 /**
+ * @ingroup widget
  *
  * @param line
  */
@@ -159,6 +161,7 @@ static void process_line_read(const char *line)
 }
 
 /**
+ * @ingroup widget
  *
  */
 static void read_config_file(void)
@@ -190,6 +193,7 @@ static void read_config_file(void)
 }
 
 /**
+ * @ingroup widget
  *
  * @param widget_params
  */
@@ -199,6 +203,7 @@ void widget_params_get(struct _widget_params *widget_params)
 }
 
 /**
+ * @ingroup widget
  *
  * @param break_time
  */
@@ -210,6 +215,7 @@ void widget_params_break_time_set(uint8_t break_time)
 }
 
 /**
+ * @ingroup widget
  *
  * @param mab_time
  */
@@ -221,6 +227,7 @@ void widget_params_mab_time_set(uint8_t mab_time)
 }
 
 /**
+ * @ingroup widget
  *
  * @param refresh_rate
  */
@@ -234,6 +241,7 @@ void widget_params_refresh_rate_set(uint8_t refresh_rate)
 }
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -243,6 +251,7 @@ const uint8_t * widget_params_get_type_id(void)
 }
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -252,8 +261,9 @@ const uint8_t widget_params_get_type_id_length(void)
 }
 
 /**
- * @brief Update the Widget with the settings from params.txt
+ * @ingroup widget
  *
+ * Update the Widget with the settings from params.txt
  */
 void widget_params_init(void)
 {

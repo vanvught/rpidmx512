@@ -58,6 +58,7 @@ inline static void rdm_time_out_message(void);
  */
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -67,6 +68,7 @@ const uint8_t receive_dmx_on_change_get()
 }
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -76,6 +78,7 @@ const uint64_t widget_dmx_output_period_get(void)
 }
 
 /**
+ * @ingroup widget
  *
  * @param dmx_output_period
  */
@@ -85,6 +88,7 @@ void widget_dmx_output_period_set(const uint64_t dmx_output_period)
 }
 
 /**
+ * @ingroup widget
  *
  * @return
  */
@@ -94,6 +98,7 @@ const uint8_t widget_mode_get()
 }
 
 /**
+ * @ingroup widget
  *
  * @param mode
  */
@@ -143,7 +148,7 @@ static void widget_set_params()
 /**
  * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  *
  * Received DMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
  *
@@ -179,7 +184,7 @@ void widget_received_dmx_packet(void)
 /**
  * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  *
  * Received RMX Packet (Label=5 \ref RECEIVED_DMX_PACKET)
  *
@@ -303,7 +308,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 /**
  * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  *
  */
 void widget_rdm_timeout(void)
@@ -417,6 +422,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 }
 
 /**
+ * @ingroup widget
  *
  * (Label=12 \ref RDM_TIMEOUT)
  *
@@ -485,7 +491,7 @@ static void widget_get_name_reply(void)
 /**
  * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  */
 void widget_ouput_dmx(void){
 	if (widget_mode == MODE_RDM_SNIFFER)
@@ -505,7 +511,7 @@ void widget_ouput_dmx(void){
 /**
  * @ingroup widget
  *
- * This function is called from the poll table in \file main.c
+ * This function is called from the poll table in \ref main.c
  */
 void widget_receive_data_from_host(void)
 {

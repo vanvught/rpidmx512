@@ -16071,10 +16071,10 @@ Disassembly of section .rodata:
    16fe4:	73252074 	teqvc	r5, #116	; 0x74
    16fe8:	0000000a 	andeq	r0, r0, sl
    16fec:	20727041 	rsbscs	r7, r2, r1, asr #32
-   16ff0:	32203331 	eorcc	r3, r0, #-1006632960	; 0xc4000000
+   16ff0:	32203631 	eorcc	r3, r0, #51380224	; 0x3100000
    16ff4:	00353130 	eorseq	r3, r5, r0, lsr r1
-   16ff8:	323a3331 	eorscc	r3, sl, #-1006632960	; 0xc4000000
-   16ffc:	30353a39 	eorscc	r3, r5, r9, lsr sl
+   16ff8:	323a3831 	eorscc	r3, sl, #3211264	; 0x310000
+   16ffc:	32303a34 	eorscc	r3, r0, #52, 20	; 0x34000
    17000:	00000000 	andeq	r0, r0, r0
    17004:	204d4452 	subcs	r4, sp, r2, asr r4
    17008:	70736552 	rsbsvc	r6, r3, r2, asr r5

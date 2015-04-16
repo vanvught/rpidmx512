@@ -40,7 +40,6 @@ static uint8_t rdm_message_count;
 /**
  * @ingroup rdm
  *
- *
  * @param data
  * @param data_length
  */
@@ -71,6 +70,7 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length)
 }
 
 /**
+ * @ingroup rdm
  *
  * @param data
  * @param data_length
@@ -98,6 +98,7 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
 }
 
 /**
+ * @ingroup rdm
  *
  * @param data
  * @param data_length
@@ -118,9 +119,11 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
 }
 
 /**
+ * @ingroup rdm
  *
- * @param is_ack
- * @param reason
+ * @param rdm_data
+ * @param response_type
+ * @param value
  */
 static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value)
 {
@@ -176,7 +179,9 @@ static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, u
 }
 
 /**
+ * @ingroup rdm
  *
+ * @param rdm_data
  */
 void rdm_send_respond_message_ack(uint8_t *rdm_data)
 {
@@ -184,7 +189,9 @@ void rdm_send_respond_message_ack(uint8_t *rdm_data)
 }
 
 /**
+ * @ingroup rdm
  *
+ * @param rdm_data
  * @param reason
  */
 void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason)
@@ -193,7 +200,9 @@ void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason)
 }
 
 /**
+ * @ingroup rdm
  *
+ * @param rdm_data
  * @param timer
  */
 void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
@@ -202,8 +211,10 @@ void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
 }
 
 /**
-* Increment the queued message count
-*/
+ * @ingroup rdm
+ *
+ * Increment the queued message count
+ */
 void rdm_send_increment_message_count()
 {
 	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX)
@@ -211,6 +222,8 @@ void rdm_send_increment_message_count()
 }
 
 /**
+ * @ingroup rdm
+ *
  * Decrement the queued message count
  */
 void rdm_send_decrement_message_count()

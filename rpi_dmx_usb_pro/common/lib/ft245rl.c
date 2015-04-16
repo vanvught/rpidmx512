@@ -55,6 +55,7 @@
 #define _RD	23
 
 /**
+ * @ingroup usb
  *
  */
 static void data_gpio_fsel_output()
@@ -83,6 +84,7 @@ static void data_gpio_fsel_output()
 }
 
 /**
+ * @ingroup usb
  *
  */
 static void data_gpio_fsel_input()
@@ -111,6 +113,7 @@ static void data_gpio_fsel_input()
 }
 
 /**
+ * @ingroup usb
  *
  */
 void FT245RL_init(void)
@@ -153,6 +156,7 @@ void FT245RL_write_data(uint8_t data)
 }
 
 /**
+ * @ingroup usb
  *
  * @return
  */
@@ -173,6 +177,8 @@ uint8_t FT245RL_read_data()
 }
 
 /**
+ * @ingroup usb
+ *
  * Read RXF#
  *
  * @return
@@ -183,6 +189,8 @@ uint8_t FT245RL_data_available(void)
 }
 
 /**
+ * @ingroup usb
+ *
  * Read TXE#
  *
  * @return
