@@ -39,6 +39,7 @@ all : $(TARGET)
 
 clean :
 	rm -f $(BUILD)*.o
+	rm -f $(BUILD)devices/*.o
 	rm -f $(TARGET)
 	rm -f $(BUILD)*.elf
 	rm -f $(MAP)

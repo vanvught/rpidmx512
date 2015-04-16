@@ -58,9 +58,6 @@ $(BUILD)%.o: $(SOURCE)common/lib/%.c
 $(BUILD)%.o: $(SOURCE)firmware/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
 
-$(BUILD)%.o: $(SOURCE)firmware/hal/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@
-	
 $(BUILD)%.o: $(SOURCE)firmware/lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 	
