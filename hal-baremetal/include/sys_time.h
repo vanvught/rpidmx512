@@ -29,10 +29,6 @@
 #include <stdint.h>
 #include <time.h>
 
-#define MINUTE	60
-#define HOUR	MINUTE * 60
-#define DAY		HOUR * 24
-
 extern volatile uint64_t st_startup_micros;
 extern volatile uint32_t rtc_startup_seconds;
 

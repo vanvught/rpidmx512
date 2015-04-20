@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "util.h"
-#include "monitor_debug.h"
+#include "monitor.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_device_info.h"
@@ -69,7 +69,7 @@ void rdm_handle_data(void)
 	const uint8_t command_class = rdm_cmd->command_class;
 	const uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
 
-	monitor_debug_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
+	monitor_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
@@ -101,7 +101,7 @@ void rdm_handle_data(void)
 				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0)
 						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	RDM_UID_SIZE) <= 0))
 				{
-					monitor_debug_line(24, "E120_DISC_UNIQUE_BRANCH");
+					monitor_line(24, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
 					uint16_t rdm_checksum = 6 * 0xFF;
@@ -130,7 +130,7 @@ void rdm_handle_data(void)
 			}
 		} else if (param_id == E120_DISC_UN_MUTE)
 		{
-			monitor_debug_line(24, "E120_DISC_UN_MUTE");
+			monitor_line(24, "E120_DISC_UN_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
@@ -154,7 +154,7 @@ void rdm_handle_data(void)
 			}
 		} else if (param_id == E120_DISC_MUTE)
 		{
-			monitor_debug_line(24, "E120_DISC_MUTE");
+			monitor_line(24, "E120_DISC_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction

@@ -38,4 +38,6 @@ struct _rdm_statistics
 	uint32_t set_requests;
 };
 
+extern const struct _rdm_statistics *rdm_statistics_get(void);
+
 #endif /* SNIFFER_H_ */

@@ -32,7 +32,7 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "widget.h"
-#include "monitor_debug.h"
+#include "monitor.h"
 #include "sniffer.h"
 
 #define MONITOR_LINE_INFO		6
@@ -40,6 +40,16 @@
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
 static struct _rdm_statistics rdm_statistics;
+
+/**
+ * @ingroup widget
+ *
+ * @return
+ */
+const struct _rdm_statistics *rdm_statistics_get(void)
+{
+	return &rdm_statistics;
+}
 
 /**
  * @ingroup widget
@@ -114,7 +124,7 @@ inline static uint8_t dmx_data_is_changed(void)
  */
 void widget_sniffer_dmx(void)
 {
-	uint8_t mode = widget_mode_get();
+	const uint8_t mode = widget_mode_get();
 
 	if (mode != MODE_RDM_SNIFFER)
 		return;
@@ -124,11 +134,11 @@ void widget_sniffer_dmx(void)
 
 	dmx_available_set(FALSE);
 
-	monitor_debug_line(MONITOR_LINE_INFO, NULL);
+	monitor_line(MONITOR_LINE_INFO, NULL);
 
 	if (dmx_data_is_changed())
 	{
-		monitor_debug_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
+		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 	} else
 	{
 		return;
@@ -160,7 +170,7 @@ void widget_sniffer_dmx(void)
  */
 void widget_sniffer_rdm(void)
 {
-	uint8_t mode = widget_mode_get();
+	const uint8_t mode = widget_mode_get();
 
 	if (mode != MODE_RDM_SNIFFER)
 		return;
@@ -170,7 +180,7 @@ void widget_sniffer_rdm(void)
 	if (rdm_data == NULL)
 			return;
 
-	monitor_debug_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
+	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 
 	uint8_t message_length = 0;
 
@@ -198,10 +208,10 @@ void widget_sniffer_rdm(void)
 	else if (rdm_data[0] == 0xFE)
 	{
 		rdm_statistics.discovery_response_packets++;
-		message_length = 24;
+		message_length = 24;	// TODO check for real amount bytes received
 	}
 
 	usb_send_package(rdm_data, 0, message_length);
 
-	monitor_debug_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
+	//monitor_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
 }

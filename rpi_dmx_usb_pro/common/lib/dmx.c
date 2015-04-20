@@ -322,10 +322,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			}
 			break;
 		case CHECKSUMH:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	data;
 			rdm_checksum -= data << 8;
 			dmx_receive_state = CHECKSUML;
-		break;
+			break;
 		case CHECKSUML:
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_checksum -= data;
