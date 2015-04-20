@@ -29,7 +29,7 @@ LIB += -L"../ff9b/lib"
 BUILD = build/
 SOURCE = ./
 ASM_OBJECTS := $(patsubst $(SOURCE)firmware/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.s)) $(patsubst $(SOURCE)firmware/lib/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.S))
-C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
+C_OBJECTS := $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)common/%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = kernel.img
@@ -41,10 +41,14 @@ all : $(TARGET)
 
 clean :
 	rm -f $(BUILD)*.o
+	rm -f $(BUILD)common/*.o
 	rm -f $(TARGET)
 	rm -f $(BUILD)*.elf
 	rm -f $(MAP)
 	rm -f $(LIST)
+
+$(BUILD)common/%.o: $(SOURCE)common/lib/%.c
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 
 $(BUILD)vectors.o : firmware/vectors.s
 	$(ARMGNU)-as $(AOPS) firmware/vectors.s -o $(BUILD)vectors.o
@@ -52,15 +56,12 @@ $(BUILD)vectors.o : firmware/vectors.s
 $(BUILD)%.o: $(SOURCE)firmware/lib/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
-$(BUILD)%.o: $(SOURCE)common/lib/%.c
+$(BUILD)%.o: $(SOURCE)firmware/lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 
 $(BUILD)%.o: $(SOURCE)firmware/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
 
-$(BUILD)%.o: $(SOURCE)firmware/lib/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
-	
 $(BUILD)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 	
