@@ -35,7 +35,7 @@
  * @param line
  * @param fmt
  */
-void monitor_debug_line(const uint8_t line, const char *fmt, ...)
+void monitor_line(const uint8_t line, const char *fmt, ...)
 {
 	va_list va;
 
@@ -57,7 +57,7 @@ void monitor_debug_line(const uint8_t line, const char *fmt, ...)
  * @param data_length
  * @param data
  */
-void monitor_debug_rdm_data(const uint8_t line, const uint16_t data_length, const uint8_t *data)
+void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint8_t *data)
 {
 	uint8_t i;
 	console_clear_line(line);

@@ -26,7 +26,13 @@
 #ifndef MONITOR_H_
 #define MONITOR_H_
 
-extern void monitor_update(void);
+#define MONITOR_LINE_LABEL		5
+#define MONITOR_LINE_INFO		6
+#define MONITOR_LINE_RDM_DATA	11
+#define MONITOR_LINE_STATUS		23
 
+extern void monitor_line(const uint8_t, const char *, ...);
+extern void monitor_rdm_data(const uint8_t, const uint16_t, const uint8_t *);
+extern void monitor_update(void);
 
 #endif /* MONITOR_H_ */
