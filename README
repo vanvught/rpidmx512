@@ -1,38 +1,25 @@
 Raspberry Pi DMX512 / RDM
 =======
 
-Linux projects for testing purposes only
------
-
-\bob
-\bw_i2cdetect
-\bw_spi_7fets-tester-libbob
-\bw_spi_dio-tester-libbob
-\bw_spi_lcd-tester-libbob
-\mcp23s08-tester-libbob
-\mcp4822-tester
-\mcp4902-tester
-\mcp7941x-tester
-
 Baremetal projects testing purposes only
 ---------
 
 \pl011_dmx512_fiq
-\pl011_dmx512_irq
 \pl011_dmx512_send
-\sdcard-emmc-libff9b
 
-
-Baremetal projects for DMX analyser-slave 
+Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder 
 ---------
 \Eagle
+\bcm2835-baremetal
 \bob-baremetal
 \emmc
 \fb
 \ff9b
-\firmware
 \firmware-template
+\firmware
+\hal-baremetal
 \rpi_dmx_analyzer-slave
 \rpi_dmx_usb_pro
+\rpi_rdm_responder
 
 Detailed information can be found here : https://sites.google.com/site/rpidmx512/home
