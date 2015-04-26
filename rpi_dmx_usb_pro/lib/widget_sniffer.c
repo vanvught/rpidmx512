@@ -137,11 +137,11 @@ void widget_sniffer_dmx(void)
 	if (dmx_data_is_changed())
 	{
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
-	} else
-	{
-		return;
+		const uint16_t data_length = dmx_slots_in_packet_get() + 1;
+		usb_send_package(dmx_data, 0, data_length);
 	}
 
+#if 0
 	// DMX 0-98
 	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
 
@@ -159,6 +159,7 @@ void widget_sniffer_dmx(void)
 
 	// DMX 99-512
 	usb_send_package(dmx_data, 99, 413);
+#endif
 }
 
 /**

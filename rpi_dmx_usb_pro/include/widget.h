@@ -67,8 +67,8 @@ typedef enum
 } _widget_mode;
 
 extern const uint8_t receive_dmx_on_change_get(void);
-extern const uint64_t widget_dmx_output_period_get(void);
-extern void widget_dmx_output_period_set(const uint64_t);
+extern const uint32_t widget_dmx_output_period_get(void);
+extern void widget_dmx_output_period_set(const uint32_t);
 extern const uint8_t widget_mode_get(void);
 extern void widget_mode_set(const uint8_t);
 

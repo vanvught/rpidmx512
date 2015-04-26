@@ -44,10 +44,10 @@
 static uint8_t widget_data[600];						///<
 static uint8_t widget_mode = MODE_DMX_RDM;				///<
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
-static uint64_t widget_send_rdm_packet_start = 0;		///<
+static uint32_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_dmx_output_only = FALSE;			///<
-static uint64_t widget_dmx_output_period = 0;			///<
-static uint64_t widget_dmx_output_elapsed_time = 0;		///<
+static uint32_t widget_dmx_output_period = 0;			///<
+static uint32_t widget_dmx_output_elapsed_time = 0;		///<
 static uint16_t widget_dmx_output_data_length = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
 
@@ -72,7 +72,7 @@ const uint8_t receive_dmx_on_change_get()
  *
  * @return
  */
-const uint64_t widget_dmx_output_period_get(void)
+const uint32_t widget_dmx_output_period_get(void)
 {
 	return widget_dmx_output_period;
 }
@@ -82,7 +82,7 @@ const uint64_t widget_dmx_output_period_get(void)
  *
  * @param dmx_output_period
  */
-void widget_dmx_output_period_set(const uint64_t dmx_output_period)
+void widget_dmx_output_period_set(const uint32_t dmx_output_period)
 {
 	widget_dmx_output_period = dmx_output_period;
 }
@@ -170,14 +170,15 @@ void widget_received_dmx_packet(void)
 
 	dmx_available_set(FALSE);
 
+	const int16_t lenght = dmx_slots_in_packet_get() + 1;
+
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
-	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
+	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", lenght);
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	usb_send_header(RECEIVED_DMX_PACKET, 2 + (sizeof(dmx_data) / sizeof(uint8_t)));
+	usb_send_header(RECEIVED_DMX_PACKET, lenght + 1);
 	usb_send_byte(0); 	// DMX Receive status
-	usb_send_byte(0);	// DMX Start code
-	usb_send_data(dmx_data, sizeof(dmx_data) / sizeof(uint8_t));
+	usb_send_data(dmx_data, lenght);
 	usb_send_footer();
 }
 
@@ -264,11 +265,11 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
 	uint16_t i = 0;
-	for (i = 1; i < data_length; i++)
-		dmx_data[i - 1] = widget_data[i];
+	for (i = 0; i < data_length; i++)
+		dmx_data[i] = widget_data[i];
 
 	widget_dmx_output_elapsed_time = hardware_micros();
-	widget_dmx_output_data_length = data_length - 1;
+	widget_dmx_output_data_length = data_length;
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 }

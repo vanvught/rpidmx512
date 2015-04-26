@@ -299,7 +299,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			{
 			case DMX512_START_CODE:	// DMX data start code
 				dmx_receive_state = DMXDATA;
-				dmx_data_index = 0;
+				dmx_data[0] = DMX512_START_CODE;
+				dmx_data_index = 1;
 				dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 			    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
@@ -322,7 +323,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 		    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
 		    BCM2835_ST->CS = BCM2835_ST_CS_M1;
-			if (dmx_data_index >= DMX_UNIVERSE_SIZE)
+			if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			{
 				dmx_receive_state = IDLE;
 				dmx_available = TRUE;
@@ -419,9 +420,9 @@ void dmx_data_start(void)
 	switch (dmx_port_direction)
 	{
 	case DMX_PORT_DIRECTION_OUTP:
+		__disable_fiq();
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		//dmx_receive_fiq_init();
 		dmx_receive_state = IDLE;
 		__enable_fiq();
 		break;
@@ -492,13 +493,6 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 	udelay(dmx_output_mab_time);	// Mark After Break
 
-	while (1)
-	{
-		if ((BCM2835_PL011->FR & 0x20) == 0)
-			break;
-	}
-	BCM2835_PL011->DR = 0x00;
-
 	uint16_t i = 0;
 	for (i = 0; i < data_length; i++)
 	{
@@ -509,11 +503,13 @@ void dmx_data_send(const uint8_t *data, const uint16_t data_length)
 		}
 		BCM2835_PL011->DR = data[i];
 	}
+
 	while (1)
 	{
 		if ((BCM2835_PL011->FR & 0x20) == 0)
 			break;
 	}
+
 	udelay(44);
 }
 
@@ -562,7 +558,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 		{
 			dmx_receive_state = IDLE;
 			dmx_available = TRUE;
-			dmx_slots_in_packet = dmx_data_index;
+			dmx_slots_in_packet = dmx_data_index - 1;
 		} else
 			BCM2835_ST->C1 = clo + 45;
 	}

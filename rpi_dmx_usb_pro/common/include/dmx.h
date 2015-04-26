@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#define DMX_DATA_BUFFER_SIZE			512		///< //TODO include SC
+#define DMX_DATA_BUFFER_SIZE			513		///< including SC
 #define RDM_DATA_BUFFER_SIZE			512		///<
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92μs
