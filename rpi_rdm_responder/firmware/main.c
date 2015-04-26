@@ -33,13 +33,12 @@
 #include "util.h"
 #include "rdm_device_info.h"
 #include "dmx.h"
-#include "irq_led.h"
+#include "monitor.h"
 
 // poll table
 extern void rdm_handle_data(void);
 // events table
 extern void rdm_identify(void);
-extern void monitor_update(void);
 
 struct _poll
 {
@@ -49,27 +48,35 @@ struct _poll
 
 struct _event
 {
-	uint64_t period;
+	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
 		{  500000, rdm_identify },
 		{ 1000000, monitor_update }};
 
-uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
+/**
+ * @ingroup main
+ *
+ */
 static void events_init() {
 	int i;
-	uint64_t st_read_now = hardware_micros();
+	const uint32_t mircos_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		events_elapsed_time[i] += st_read_now;
+		events_elapsed_time[i] += mircos_now;
 	}
 }
 
-static inline void events_check() {
+/**
+ * @ingroup main
+ *
+ */
+inline static void events_check() {
 	int i;
-	uint64_t st_read_now = hardware_micros();
+	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (st_read_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
 			watchdog_feed();
@@ -88,11 +95,6 @@ int notmain(void) {
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n", uid_device[0],
 			uid_device[1], uid_device[2], uid_device[3], uid_device[4],
 			uid_device[5]);
-
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
-
-	irq_init();				// Led blink 1Hz
-	__enable_irq();
 
 	watchdog_init();
 

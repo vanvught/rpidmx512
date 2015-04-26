@@ -33,6 +33,7 @@
 
 extern void monitor_line(const uint8_t, const char *, ...);
 extern void monitor_rdm_data(const uint8_t, const uint16_t, const uint8_t *);
+extern void monitor_dmx_data(const uint8_t, const uint8_t *);
 extern void monitor_update(void);
 
 #endif /* MONITOR_H_ */

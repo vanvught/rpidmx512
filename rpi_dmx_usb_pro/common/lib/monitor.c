@@ -70,3 +70,17 @@ void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint
 				i+1, data[i], data[i], i+10, data[i+9], data[i+9], i+19, data[i+18], data[i+18], i+28, data[i+27], data[i+27]);
 	}
 }
+
+void monitor_dmx_data(const uint8_t line, const uint8_t *data)
+{
+	console_set_cursor(0,line);
+
+	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
+			data[1], data[2], data[3], data[4], data[5],
+			data[6], data[7], data[8], data[9], data[10],
+			data[11], data[12], data[13], data[14], data[15], data[16]);
+	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
+			data[17], data[18], data[19], data[20], data[21],
+			data[22], data[23], data[24], data[25], data[26],
+			data[27], data[28], data[29], data[30], data[31], data[32]);
+}

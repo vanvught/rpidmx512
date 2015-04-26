@@ -52,12 +52,12 @@ typedef enum {
   RDMDISCECS	///<
 } _dmx_state;
 
-uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];													///< //TODO add SC
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];													///<
 static uint8_t dmx_receive_state = IDLE;												///< Current state of DMX receive
 static uint16_t dmx_data_index = 0;														///<
 static uint8_t dmx_available = FALSE;													///<
-static uint64_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;					///<
-static uint64_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;						///<
+static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;					///<
+static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;						///<
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;							///<
 static volatile uint32_t dmx_fiq_micros_current = 0;									///<
 static volatile uint32_t dmx_fiq_micros_previous = 0;									///<
@@ -69,7 +69,7 @@ static uint16_t rdm_data_buffer_index_head = 0;											///<
 static uint16_t rdm_data_buffer_index_tail = 0;											///<
 static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE];	///<
 static uint16_t rdm_checksum = 0;														///<
-static uint64_t rdm_data_receive_end = 0;												///<
+static uint32_t rdm_data_receive_end = 0;												///<
 #ifdef RDM_CONTROLLER
 static uint8_t rdm_disc_index = 0;														///<
 #endif
@@ -152,7 +152,7 @@ const uint8_t dmx_port_direction_get(void)
  *
  * @return
  */
-const uint64_t rdm_data_receive_end_get(void)
+const uint32_t rdm_data_receive_end_get(void)
 {
 	return rdm_data_receive_end;
 }
@@ -162,7 +162,7 @@ const uint64_t rdm_data_receive_end_get(void)
  *
  * @return
  */
-const uint64_t dmx_output_break_time_get(void)
+const uint32_t dmx_output_break_time_get(void)
 {
 	return dmx_output_break_time;
 }
@@ -172,7 +172,7 @@ const uint64_t dmx_output_break_time_get(void)
  *
  * @param break_time
  */
-void dmx_output_break_time_set(const uint64_t break_time)
+void dmx_output_break_time_set(const uint32_t break_time)
 {
 	dmx_output_break_time = MAX(DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
 }
@@ -182,7 +182,7 @@ void dmx_output_break_time_set(const uint64_t break_time)
  *
  * @return
  */
-const uint64_t dmx_output_mab_time_get(void)
+const uint32_t dmx_output_mab_time_get(void)
 {
 	return dmx_output_mab_time;
 }
@@ -192,7 +192,7 @@ const uint64_t dmx_output_mab_time_get(void)
  *
  * @param mab_time
  */
-void dmx_output_mab_time_set(const uint64_t mab_time)
+void dmx_output_mab_time_set(const uint32_t mab_time)
 {
 	dmx_output_mab_time = MAX(DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 }

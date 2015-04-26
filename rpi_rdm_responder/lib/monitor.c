@@ -68,7 +68,8 @@ void monitor_update(void)
 	uint8_t i = 0;
 	for (i = 0; i< 16; i++)
 	{
-		uint8_t data = dmx_data[(dmx_start_address + i - 1) & 0x1FF];
+		uint16_t index = (dmx_start_address + i <= 512) ? (dmx_start_address + i) : (dmx_start_address + i - 512);
+		uint8_t data = dmx_data[index];
 		putchar(TO_HEX((data & 0xF0) >> 4));
 		putchar(TO_HEX(data & 0x0F));
 		putchar(' ');
@@ -77,7 +78,8 @@ void monitor_update(void)
 	printf("\n%.3d-%.3d : ", (dmx_start_address + 16) & 0x1FF, (dmx_start_address + 31) & 0x1FF);
 	for (i = 16; i< 32; i++)
 	{
-		uint8_t data = dmx_data[(dmx_start_address + i - 1) & 0x1FF];
+		uint16_t index = (dmx_start_address + i <= 512) ? (dmx_start_address + i) : (dmx_start_address + i - 512);
+		uint8_t data = dmx_data[index];
 		putchar(TO_HEX((data & 0xF0) >> 4));
 		putchar(TO_HEX(data & 0x0F));
 		putchar(' ');

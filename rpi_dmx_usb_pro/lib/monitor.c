@@ -64,7 +64,6 @@ void monitor_update(void)
 
 	uint64_t uptime_seconds = hardware_uptime_seconds();
 
-	// line 1
 	console_set_cursor(0,1);
 
 	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n\n",
@@ -78,16 +77,7 @@ void monitor_update(void)
 
 	if (widget_mode == MODE_RDM_SNIFFER)
 	{
-		console_clear_line(3);
-
-		printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-				dmx_data[0], dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4],
-				dmx_data[5], dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9],
-				dmx_data[10], dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14], dmx_data[15]);
-		printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-				dmx_data[16], dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20],
-				dmx_data[21], dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25],
-				dmx_data[26], dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30], dmx_data[31]);
+		monitor_dmx_data(3, dmx_data);
 
 		console_clear_line(7);
 		const struct _total_statistics *total_statistics = total_statistics_get();
@@ -103,10 +93,7 @@ void monitor_update(void)
 
 		const uint8_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_per_second_previous;
 
-		if (dmx_updates_per_second)
-		{
-			dmx_packets_per_second_min = MIN(dmx_packets_per_second_min, dmx_updates_per_second);
-		}
+		dmx_packets_per_second_min = MIN(dmx_packets_per_second_min, dmx_updates_per_second);
 		dmx_packets_per_second_max = MAX(dmx_packets_per_second_max, dmx_updates_per_second);
 
 		console_clear_line(14);
@@ -138,16 +125,7 @@ void monitor_update(void)
 		// line 5 Info
 		// line 6
 
-		console_set_cursor(0,8);
-
-		printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-				dmx_data[0], dmx_data[1], dmx_data[2], dmx_data[3], dmx_data[4],
-				dmx_data[5], dmx_data[6], dmx_data[7], dmx_data[8], dmx_data[9],
-				dmx_data[10], dmx_data[11], dmx_data[12], dmx_data[13], dmx_data[14], dmx_data[15]);
-		printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-				dmx_data[16], dmx_data[17], dmx_data[18], dmx_data[19], dmx_data[20],
-				dmx_data[21], dmx_data[22], dmx_data[23], dmx_data[24], dmx_data[25],
-				dmx_data[26], dmx_data[27], dmx_data[28], dmx_data[29], dmx_data[30], dmx_data[31]);
+		monitor_dmx_data(8, dmx_data);
 
 		// line 11 RDM Data
 	}

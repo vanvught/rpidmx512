@@ -108,7 +108,8 @@ int notmain(void)
 
 	printf("Compiled on %s at %s ", __DATE__, __TIME__);
 	const uint8_t *device_sn = rdm_device_info_get_sn();
-	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_mode_get(), device_sn[3],device_sn[2], device_sn[1], device_sn[0]);
+	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_mode_get(), device_sn[3],
+			device_sn[2], device_sn[1], device_sn[0]);
 
 	watchdog_init();
 

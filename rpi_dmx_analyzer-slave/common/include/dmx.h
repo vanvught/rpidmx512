@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#define DMX_DATA_BUFFER_SIZE			512		///< //TODO include SC
+#define DMX_DATA_BUFFER_SIZE			513		///< including SC
 #define RDM_DATA_BUFFER_SIZE			512		///<
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92μs
@@ -80,13 +80,13 @@ extern const uint8_t *rdm_available_get(void);
 extern const uint8_t *rdm_get_current_data(void);
 
 extern void rdm_available_set(const uint8_t);
-extern const uint64_t rdm_data_receive_end_get(void);
+extern const uint32_t rdm_data_receive_end_get(void);
 extern const uint8_t dmx_available_get(void);
 extern void dmx_available_set(const uint8_t);
-extern const uint64_t dmx_output_break_time_get(void);
-extern void dmx_output_break_time_set(const uint64_t);
-extern const uint64_t dmx_output_mab_time_get(void);
-extern void dmx_output_mab_time_set(const uint64_t);
+extern const uint32_t dmx_output_break_time_get(void);
+extern void dmx_output_break_time_set(const uint32_t);
+extern const uint32_t dmx_output_mab_time_get(void);
+extern void dmx_output_mab_time_set(const uint32_t);
 
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);
