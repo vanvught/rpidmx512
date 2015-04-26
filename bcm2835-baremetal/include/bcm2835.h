@@ -29,8 +29,8 @@
 #define LOW  0x0					///< LOW state
 
 // RPi Version 2
-#define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03
-#define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05
+#define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03, SDA when I2C in use
+#define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05, SCL when I2C in use
 #define RPI_V2_GPIO_P1_07      4  ///< Version 2, Pin P1-07
 #define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to ALT function 0 PL011_TXD
 #define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to ALT function 0 PL011_RXD

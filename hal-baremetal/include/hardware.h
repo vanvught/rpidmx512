@@ -55,9 +55,9 @@ extern const uint8_t hardware_get_board_model_length(void);
 
 extern void hardware_rtc_set(const struct hardware_time *);
 
-inline static uint64_t hardware_micros(void)
+inline static uint32_t hardware_micros(void)
 {
-	return bcm2835_st_read();
+	return BCM2835_ST->CLO;
 }
 
 #endif /* HARDWARE_H_ */
