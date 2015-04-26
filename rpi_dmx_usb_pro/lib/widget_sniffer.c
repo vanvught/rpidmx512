@@ -35,8 +35,6 @@
 #include "monitor.h"
 #include "sniffer.h"
 
-#define MONITOR_LINE_INFO		6
-
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
 
 static struct _rdm_statistics rdm_statistics;
@@ -107,7 +105,7 @@ inline static uint8_t dmx_data_is_changed(void)
 
 	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++)
 	{
-		if (dmx_data_previous[i] != dmx_data[i])	//TODO Is a memcpy more efficient?
+		if (dmx_data_previous[i] != dmx_data[i])	//TODO Is a memcmp more efficient?
 		{
 			is_changed = TRUE;
 			dmx_data_previous[i] = dmx_data[i];
@@ -212,6 +210,4 @@ void widget_sniffer_rdm(void)
 	}
 
 	usb_send_package(rdm_data, 0, message_length);
-
-	//monitor_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
 }

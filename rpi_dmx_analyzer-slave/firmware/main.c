@@ -38,7 +38,7 @@
 #include "dmx_data.h"
 #include "dmx_devices.h"
 
-extern void fb_init(void);
+extern void monitor_update(void);
 
 struct _poll {
 	void (*f)(void);
@@ -52,37 +52,40 @@ extern void print_devices_counter(void);
 #endif
 
 struct _event {
-	uint32_t period;
+	const uint32_t period;
 	void (*f)(void);
 } const events[] = {
 	{1000000, ui_buttons_update},
 #ifdef DEBUG
 	{1000000, print_devices_counter},
 #endif
-	{1000000, ui_lcd_refresh}
+	{1000000, ui_lcd_refresh},
+	{1000000, monitor_update}
 };
 
-uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
+ * @ingroup main
  *
  */
-inline static void events_init() {
+static void events_init() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	const uint32_t mircos_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		events_elapsed_time[i] += st_read_now;
+		events_elapsed_time[i] += mircos_now;
 	}
 }
 
 /**
+ * @ingroup main
  *
  */
 inline static void events_check() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (st_read_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
 			watchdog_feed();
@@ -102,17 +105,9 @@ inline static void events_check() {
  */
 int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 {
-	__disable_irq();
-	__disable_fiq();
+	hardware_init();
 
-	led_init();				// ACT led Model A/B
-	led_set(1);
-
-	sys_time_init();		// Read RTC
-	fb_init();				// Framebuffer
-
-	printf("DMX512 Receiver\n");
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("Compiled on %s at %s ", __DATE__, __TIME__);
 
 	ui_start(0x00);			// User Interface
 	ui_reinit();
@@ -122,7 +117,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	dmx_devices_read_config();
 	dmx_devices_init();
 
-	irq_init();				// Led blink 1Hz
+	irq_init();
 	__enable_irq();
 
 	pl011_dmx512_init();	// PL011 UART
