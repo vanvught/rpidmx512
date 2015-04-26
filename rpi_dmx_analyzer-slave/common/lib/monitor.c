@@ -1,5 +1,5 @@
 /**
- * @file irq_led.c
+ * @file monitor_debug.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,41 +23,50 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdint.h>
+#include <stdarg.h>
 
-#include "bcm2835.h"
-#include "hardware.h"
-
-static uint32_t ticks_per_second = 1E6 / 2;	///< Blinking at 1Hz
-static uint32_t irq_counter;				///<
+#include "console.h"
 
 /**
+ * @ingroup monitor
  *
- * @param ticks
+ * @param line
+ * @param fmt
  */
-void ticks_per_second_set(uint32_t ticks)
+void monitor_line(const uint8_t line, const char *fmt, ...)
 {
-	ticks_per_second = ticks;
+	va_list va;
+
+	console_clear_line(line);
+
+	if (fmt != NULL)
+	{
+		va_start(va, fmt);
+		vprintf(fmt, va);
+		va_end(va);
+		fflush(stdout);
+	}
 }
 
 /**
+ * @ingroup monitor
  *
- * @return
+ * @param line
+ * @param data_length
+ * @param data
  */
-uint32_t ticks_per_second_get(void)
+void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint8_t *data)
 {
-	return ticks_per_second;
+	uint8_t i;
+	console_clear_line(line);
+
+	printf("RDM Packet length : %d\n", data_length);
+
+	for (i = 0; i < 9; i++)
+	{
+		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
+				i+1, data[i], data[i], i+10, data[i+9], data[i+9], i+19, data[i+18], data[i+18], i+28, data[i+27], data[i+27]);
+	}
 }
-
-/**
- * @ingroup led
- *
- */
-
-void irq_init(void) {
-    irq_counter = 0;
-    BCM2835_ST->C3 = BCM2835_ST->CLO + ticks_per_second;
-    BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
-	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
-}
-

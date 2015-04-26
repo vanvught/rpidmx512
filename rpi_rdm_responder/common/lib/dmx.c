@@ -32,6 +32,7 @@
 #include "bcm2835_vc.h"
 #include "bcm2835_pl011.h"
 #include "hardware.h"
+#include "irq_led.h"
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
@@ -58,6 +59,10 @@ static uint8_t dmx_available = FALSE;													///<
 static uint64_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;					///<
 static uint64_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;						///<
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;							///<
+static volatile uint32_t dmx_fiq_micros_current = 0;									///<
+static volatile uint32_t dmx_fiq_micros_previous = 0;									///<
+static volatile uint32_t dmx_slot_to_slot = 0;											///<
+static volatile uint32_t dmx_slots_in_packet = 0;										///<
 
 #define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F												///<
 static uint16_t rdm_data_buffer_index_head = 0;											///<
@@ -74,6 +79,16 @@ static struct _total_statistics total_statistics;										///<
 /*
  * GETTERS / SETTERS
  */
+
+const uint32_t dmx_slot_to_slot_get(void)
+{
+	return dmx_slot_to_slot;
+}
+
+const uint32_t dmx_slots_in_packet_get(void)
+{
+	return dmx_slots_in_packet;
+}
 
 /**
  * @ingroup rdm
@@ -257,6 +272,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 {
 	dmb();
 
+	dmx_fiq_micros_current = BCM2835_ST->CLO;
+
 	if (BCM2835_PL011->DR & PL011_DR_BE)
 	{
 		dmx_receive_state = BREAK;
@@ -282,9 +299,11 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			{
 			case DMX512_START_CODE:	// DMX data start code
 				dmx_receive_state = DMXDATA;
-				dmx_available = TRUE;
 				dmx_data_index = 0;
+				dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
+			    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
+			    BCM2835_ST->CS = BCM2835_ST_CS_M1;
 				break;
 			case E120_SC_RDM:		// RDM start code
 				dmx_receive_state = RDMDATA;
@@ -300,9 +319,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			break;
 		case DMXDATA:
 			dmx_data[dmx_data_index++] = data;
+			dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
+		    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
+		    BCM2835_ST->CS = BCM2835_ST_CS_M1;
 			if (dmx_data_index >= DMX_UNIVERSE_SIZE)
 			{
 				dmx_receive_state = IDLE;
+				dmx_available = TRUE;
+				dmx_slots_in_packet = 512;
 			}
 			break;
 		case RDMDATA:
@@ -378,6 +402,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			break;
 		}
 	}
+
+	dmx_fiq_micros_previous = dmx_fiq_micros_current;
 
 	dmb();
 }
@@ -505,6 +531,11 @@ void dmx_init(void)
 	rdm_data_buffer_index_head = 0;
 	rdm_data_buffer_index_tail = 0;
 
+    BCM2835_ST->C3 = BCM2835_ST->CLO + ticks_per_second_get();
+    BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
+	__enable_irq();
+
 	pl011_dmx512_init();
 
 	dmx_receive_state = IDLE;
@@ -513,4 +544,35 @@ void dmx_init(void)
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 	dmx_receive_fiq_init();
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
+}
+
+static unsigned int irq_counter;
+
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
+{
+	dmb();
+
+	const uint32_t clo = BCM2835_ST->CLO;
+
+	BCM2835_ST->CS = BCM2835_ST_CS_M1;
+
+	if (dmx_receive_state == DMXDATA)
+	{
+		if (clo > dmx_fiq_micros_current + dmx_slot_to_slot)
+		{
+			dmx_receive_state = IDLE;
+			dmx_available = TRUE;
+			dmx_slots_in_packet = dmx_data_index;
+		} else
+			BCM2835_ST->C1 = clo + 45;
+	}
+
+	if (BCM2835_ST->CS & BCM2835_ST_CS_M3)
+	{
+		BCM2835_ST->CS = BCM2835_ST_CS_M3;
+		BCM2835_ST->C3 = clo + ticks_per_second_get();
+		hardware_led_set(irq_counter++ & 0x01);
+	}
+
+	dmb();
 }

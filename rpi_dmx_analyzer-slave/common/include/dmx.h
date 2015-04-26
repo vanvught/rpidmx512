@@ -95,4 +95,7 @@ extern const struct _total_statistics *total_statistics_get(void);
 extern const uint8_t rdm_is_available_get(void);
 extern void rdm_is_available_set(const uint8_t);
 
+extern const uint32_t dmx_slot_to_slot_get(void);
+extern const uint32_t dmx_slots_in_packet_get(void);
+
 #endif /* DMX_H_ */

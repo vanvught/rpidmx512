@@ -31,6 +31,7 @@
 #include "sys_time.h"
 #include "console.h"
 #include "hardware.h"
+#include "monitor.h"
 #include "sniffer.h"
 #include "util.h"
 
@@ -53,6 +54,8 @@ void monitor_update(void)
 
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
+
+	const uint32_t micros = hardware_micros();
 
 	ltime = sys_time(NULL);
     local_time = localtime(&ltime);
@@ -109,6 +112,8 @@ void monitor_update(void)
 		console_clear_line(14);
 		printf("DMX updates/sec %d : %d : %d\n", dmx_packets_per_second_min, dmx_updates_per_second, dmx_packets_per_second_max);
 		dmx_packets_per_second_previous = total_statistics->dmx_packets;
+		printf("Slots in packet %d  \n", (uint16_t)dmx_slots_in_packet_get());
+		printf("Slot to slot    %d  \n", (uint16_t)dmx_slot_to_slot_get());
 
 	} else
 	{
@@ -146,4 +151,6 @@ void monitor_update(void)
 
 		// line 11 RDM Data
 	}
+
+	monitor_line(MONITOR_LINE_STATUS, "%d", (uint32_t)hardware_micros() - micros);
 }

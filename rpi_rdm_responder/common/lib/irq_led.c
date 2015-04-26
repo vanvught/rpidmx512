@@ -53,21 +53,11 @@ uint32_t ticks_per_second_get(void)
  * @ingroup led
  *
  */
+
 void irq_init(void) {
     irq_counter = 0;
-    BCM2835_ST->C1 = BCM2835_ST->CLO + ticks_per_second;
-    BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn;
+    BCM2835_ST->C3 = BCM2835_ST->CLO + ticks_per_second;
+    BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
 }
 
-/**
- * @ingroup led
- *
- */
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
-	dmb();
-	BCM2835_ST ->CS = BCM2835_ST_CS_M1;
-	BCM2835_ST ->C1 = BCM2835_ST ->CLO + ticks_per_second;
-	hardware_led_set(irq_counter++ & 0x01);
-	dmb();
-}

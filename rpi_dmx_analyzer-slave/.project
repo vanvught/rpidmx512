@@ -8,7 +8,6 @@
 		<project>emmc</project>
 		<project>fb</project>
 		<project>ff9b</project>
-		<project>hal</project>
 		<project>hal-baremetal</project>
 	</projects>
 	<buildSpec>

@@ -41,11 +41,6 @@
  * @ingroup main
  *
  */
-static void task_led(void) {
-	static unsigned char led_counter = 0;
-	hardware_led_set(led_counter++ & 0x01);
-}
-
 struct _poll
 {
 	void (*f)(void);
@@ -60,16 +55,15 @@ struct _poll
 
 struct _event
 {
-	uint64_t period;
+	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
 		{ 800000, widget_received_dmx_packet },
 		{ 500000, widget_received_dmx_change_of_state_packet },
-		{1000000, monitor_update },
-		{ 500000, task_led}
+		{1000000, monitor_update }
 };
 
-uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
  * @ingroup main
@@ -77,9 +71,9 @@ uint64_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
  */
 static void events_init() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	const uint32_t mircos_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		events_elapsed_time[i] += st_read_now;
+		events_elapsed_time[i] += mircos_now;
 	}
 }
 
@@ -89,12 +83,12 @@ static void events_init() {
  */
 inline static void events_check() {
 	int i;
-	uint64_t st_read_now = bcm2835_st_read();
+	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (st_read_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			//watchdog_feed();
+			watchdog_feed();
 		}
 	}
 }
@@ -116,13 +110,13 @@ int notmain(void)
 	const uint8_t *device_sn = rdm_device_info_get_sn();
 	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_mode_get(), device_sn[3],device_sn[2], device_sn[1], device_sn[0]);
 
-	//watchdog_init();
+	watchdog_init();
 
 	events_init();
 
 	for (;;)
 	{
-		//watchdog_feed();
+		watchdog_feed();
 		int i = 0;
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
 		{
