@@ -6,6 +6,7 @@ Baremetal projects testing purposes only
 
 \pl011_dmx512_fiq
 \pl011_dmx512_send
+\pl011_dmx512_send_irq
 
 Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder 
 ---------
@@ -15,8 +16,8 @@ Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder
 \emmc
 \fb
 \ff9b
-\firmware-template
 \firmware
+\firmware-template
 \hal-baremetal
 \rpi_dmx_analyzer-slave
 \rpi_dmx_usb_pro
