@@ -31,10 +31,11 @@
 #define DMX_DATA_BUFFER_SIZE			513		///< including SC
 #define RDM_DATA_BUFFER_SIZE			512		///<
 
-#define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92μs
-#define DMX_TRANSMIT_BREAK_TIME_TYPICAL	176		///< 176μs
-#define DMX_TRANSMIT_MAB_TIME_MIN		12		///< 12μs
+#define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92 us
+#define DMX_TRANSMIT_BREAK_TIME_TYPICAL	176		///< 176 us
+#define DMX_TRANSMIT_MAB_TIME_MIN		12		///< 12 us
 #define DMX_TRANSMIT_MAB_TIME_MAX		1E6		///< 1s
+#define DMX_TRANSMIT_REFRESH_DEFAULT	1E6 / 40///< 40 / second = 25000 us
 
 #define DMX_MIN_SLOT_VALUE 				0		///< The minimum value a DMX512 slot can take.
 #define DMX_MAX_SLOT_VALUE 				255		///< The maximum value a DMX512 slot can take.
@@ -97,5 +98,8 @@ extern void rdm_is_available_set(const uint8_t);
 
 extern const uint32_t dmx_slot_to_slot_get(void);
 extern const uint32_t dmx_slots_in_packet_get(void);
+
+extern const uint16_t dmx_send_data_length_get(void);
+extern void dmx_send_data_length_set(uint16_t);
 
 #endif /* DMX_H_ */

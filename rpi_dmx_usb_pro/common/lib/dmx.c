@@ -52,17 +52,22 @@ typedef enum {
   RDMDISCECS	///<
 } _dmx_state;
 
-uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];													///<
-static uint8_t dmx_receive_state = IDLE;												///< Current state of DMX receive
-static uint16_t dmx_data_index = 0;														///<
-static uint8_t dmx_available = FALSE;													///<
-static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;					///<
-static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;						///<
-static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_IDLE;							///<
-static volatile uint32_t dmx_fiq_micros_current = 0;									///<
-static volatile uint32_t dmx_fiq_micros_previous = 0;									///<
-static volatile uint32_t dmx_slot_to_slot = 0;											///<
-static volatile uint32_t dmx_slots_in_packet = 0;										///<
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];											///<
+static uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
+static uint16_t dmx_data_index = 0;												///<
+static uint8_t dmx_available = FALSE;											///<
+static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;			///<
+static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;				///<
+static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
+static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;					///< SC + UNIVERSE SIZE
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
+static volatile uint32_t dmx_fiq_micros_current = 0;							///<
+static volatile uint32_t dmx_fiq_micros_previous = 0;							///<
+static volatile uint32_t dmx_slot_to_slot = 0;									///<
+static volatile uint32_t dmx_slots_in_packet = 0;								///<
+static volatile uint8_t dmx_send_state = IDLE;									///<
+static volatile uint8_t dmx_send_always = FALSE;								///<
+static volatile uint32_t dmx_send_break_micros = 0;								///<
 
 #define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F												///<
 static uint16_t rdm_data_buffer_index_head = 0;											///<
@@ -79,6 +84,16 @@ static struct _total_statistics total_statistics;										///<
 /*
  * GETTERS / SETTERS
  */
+
+const uint16_t dmx_send_data_length_get(void)
+{
+	return dmx_send_data_length;
+}
+
+void dmx_send_data_length_set(uint16_t send_data_length)
+{
+	dmx_send_data_length = send_data_length;
+}
 
 const uint32_t dmx_slot_to_slot_get(void)
 {
@@ -420,7 +435,9 @@ void dmx_data_start(void)
 	switch (dmx_port_direction)
 	{
 	case DMX_PORT_DIRECTION_OUTP:
-		__disable_fiq();
+		dmx_send_always = TRUE;
+		BCM2835_ST->C1 = BCM2835_ST->CLO + 4;
+		BCM2835_ST->CS = BCM2835_ST_CS_M1;
 		break;
 	case DMX_PORT_DIRECTION_INP:
 		dmx_receive_state = IDLE;
@@ -437,6 +454,9 @@ void dmx_data_start(void)
  */
 void dmx_data_stop(void)
 {
+	dmx_send_always = FALSE;
+	BCM2835_ST->C1 = BCM2835_ST->CLO;
+	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 	__disable_fiq();
 }
 
@@ -527,15 +547,16 @@ void dmx_init(void)
 	rdm_data_buffer_index_head = 0;
 	rdm_data_buffer_index_tail = 0;
 
+	dmx_receive_state = IDLE;
+	dmx_send_always = FALSE;
+	dmx_available = FALSE;
+
     BCM2835_ST->C3 = BCM2835_ST->CLO + ticks_per_second_get();
     BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
 	__enable_irq();
 
 	pl011_dmx512_init();
-
-	dmx_receive_state = IDLE;
-	dmx_available = FALSE;
 
 	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
 	dmx_receive_fiq_init();
@@ -550,17 +571,63 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 
 	const uint32_t clo = BCM2835_ST->CLO;
 
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-
-	if (dmx_receive_state == DMXDATA)
+	if (BCM2835_ST->CS & BCM2835_ST_CS_M1)
 	{
-		if (clo > dmx_fiq_micros_current + dmx_slot_to_slot)
+		BCM2835_ST->CS = BCM2835_ST_CS_M1;
+
+		if (dmx_receive_state == DMXDATA)
 		{
-			dmx_receive_state = IDLE;
-			dmx_available = TRUE;
-			dmx_slots_in_packet = dmx_data_index - 1;
-		} else
-			BCM2835_ST->C1 = clo + 45;
+			if (clo > dmx_fiq_micros_current + dmx_slot_to_slot)
+			{
+				dmx_receive_state = IDLE;
+				dmx_available = TRUE;
+				dmx_slots_in_packet = dmx_data_index - 1;
+			}
+			else
+				BCM2835_ST->C1 = clo + 45;
+		}
+
+		if (dmx_send_always)
+		{
+			switch (dmx_send_state)
+			{
+			case IDLE:
+				dmx_send_state = BREAK;
+				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+				const uint32_t clo_break = BCM2835_ST->CLO;
+				BCM2835_ST->C1 = clo_break + dmx_output_break_time;
+				dmx_send_break_micros = clo_break;
+				break;
+			case BREAK:
+				dmx_send_state = MAB;
+				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+				BCM2835_ST->C1 = BCM2835_ST->CLO + dmx_output_mab_time;
+				break;
+			case MAB:
+				dmx_send_state = DMXDATA;
+				uint16_t i = 0;
+				for (i = 0; i < dmx_send_data_length; i++)
+				{
+					while (1)
+					{
+						if ((BCM2835_PL011->FR & 0x20) == 0)
+							break;
+					}
+					BCM2835_PL011->DR = dmx_data[i];
+				}
+				while (1)
+				{
+					if ((BCM2835_PL011->FR & 0x20) == 0)
+						break;
+				}
+				udelay(44);
+				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				dmx_send_state = IDLE;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	if (BCM2835_ST->CS & BCM2835_ST_CS_M3)

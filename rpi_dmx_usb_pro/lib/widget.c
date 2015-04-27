@@ -264,12 +264,16 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	monitor_line(MONITOR_LINE_INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+
 	uint16_t i = 0;
 	for (i = 0; i < data_length; i++)
 		dmx_data[i] = widget_data[i];
 
-	widget_dmx_output_elapsed_time = hardware_micros();
-	widget_dmx_output_data_length = data_length;
+	//widget_dmx_output_elapsed_time = hardware_micros();
+	//widget_dmx_output_data_length = data_length;
+
+	dmx_send_data_length_set(data_length);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 }
@@ -296,7 +300,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
 	else
 		widget_rdm_discovery_running = FALSE;
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
@@ -411,7 +415,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 	monitor_line(MONITOR_LINE_INFO, "SEND_RDM_DISCOVERY_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
@@ -495,6 +499,8 @@ static void widget_get_name_reply(void)
  * This function is called from the poll table in \ref main.c
  */
 void widget_ouput_dmx(void){
+	return;
+
 	if (widget_mode == MODE_RDM_SNIFFER)
 		return;
 
