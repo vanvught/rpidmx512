@@ -16255,10 +16255,10 @@ Disassembly of section .rodata:
    172ac:	73252074 	teqvc	r5, #116	; 0x74
    172b0:	0000000a 	andeq	r0, r0, sl
    172b4:	20727041 	rsbscs	r7, r2, r1, asr #32
-   172b8:	32203632 	eorcc	r3, r0, #52428800	; 0x3200000
+   172b8:	32203732 	eorcc	r3, r0, #13107200	; 0xc80000
    172bc:	00353130 	eorseq	r3, r5, r0, lsr r1
-   172c0:	343a3831 	ldrtcc	r3, [sl], #-2097	; 0xfffff7cf
-   172c4:	33313a37 	teqcc	r1, #225280	; 0x37000
+   172c0:	303a3731 	eorscc	r3, sl, r1, lsr r7
+   172c4:	30333a32 	eorscc	r3, r3, r2, lsr sl
    172c8:	00000000 	andeq	r0, r0, r0
    172cc:	204d4452 	subcs	r4, sp, r2, asr r4
    172d0:	70736552 	rsbsvc	r6, r3, r2, asr r5
