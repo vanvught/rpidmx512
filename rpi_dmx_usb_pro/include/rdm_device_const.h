@@ -25,6 +25,10 @@
 #ifndef RDM_DEVICE_CONST_H_
 #define RDM_DEVICE_CONST_H_
 
+#include <stdint.h>
+
+#include "rdm.h"
+
 static const uint8_t  DEVICE_LABEL[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t  DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t  DEVICE_MANUFACTURER_ID[] = {0xF0, 0x7F};
@@ -37,7 +41,7 @@ static const uint32_t DEVICE_SOFTWARE_VERSION_ID = 0x20150321;
 #define DMX_FOOTPRINT					512
 
 static const struct _rdm_personality rdm_personalities[] = {
-		{ 512, "Raspberry Pi DMX USB Pro" }
+		{ DMX_FOOTPRINT, "Raspberry Pi DMX USB Pro" }
 		};
 
 #endif /* RDM_DEVICE_CONST_H_ */
