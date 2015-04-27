@@ -55,8 +55,6 @@ void monitor_update(void)
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 
-	const uint32_t micros = hardware_micros();
-
 	ltime = sys_time(NULL);
     local_time = localtime(&ltime);
 
@@ -129,6 +127,4 @@ void monitor_update(void)
 
 		// line 11 RDM Data
 	}
-
-	monitor_line(MONITOR_LINE_STATUS, "%d", (uint32_t)hardware_micros() - micros);
 }

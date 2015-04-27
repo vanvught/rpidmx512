@@ -47,8 +47,6 @@ static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
 static uint32_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_dmx_output_only = FALSE;			///<
 static uint32_t widget_dmx_output_period = 0;			///<
-static uint32_t widget_dmx_output_elapsed_time = 0;		///<
-static uint16_t widget_dmx_output_data_length = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
 
 inline static void rdm_time_out_message(void);
@@ -270,9 +268,6 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	for (i = 0; i < data_length; i++)
 		dmx_data[i] = widget_data[i];
 
-	//widget_dmx_output_elapsed_time = hardware_micros();
-	//widget_dmx_output_data_length = data_length;
-
 	dmx_send_data_length_set(data_length);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
@@ -491,28 +486,6 @@ static void widget_get_name_reply(void)
 	usb_send_footer();
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
-}
-
-/**
- * @ingroup widget
- *
- * This function is called from the poll table in \ref main.c
- */
-void widget_ouput_dmx(void){
-	return;
-
-	if (widget_mode == MODE_RDM_SNIFFER)
-		return;
-
-	if (widget_dmx_output_only == FALSE)
-		return;
-
-	if(hardware_micros() - widget_dmx_output_elapsed_time < widget_dmx_output_period)
-		return;
-
-	dmx_data_send(dmx_data, widget_dmx_output_data_length);
-
-	widget_dmx_output_elapsed_time += widget_dmx_output_period;
 }
 
 /**

@@ -27,7 +27,6 @@
 #include <ctype.h>
 #include <stdint.h>
 
-#include "bcm2835.h"
 #include "bcm2835_wdog.h"
 #include "usb.h"
 #include "hardware.h"
@@ -48,7 +47,6 @@ struct _poll
 		{ widget_receive_data_from_host },
 		{ widget_received_rdm_packet },
 		{ widget_rdm_timeout },
-		{ widget_ouput_dmx },
 		{ widget_sniffer_rdm },
 		{ widget_sniffer_dmx }
 		};
