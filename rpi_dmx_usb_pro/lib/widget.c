@@ -45,7 +45,6 @@ static uint8_t widget_data[600];						///<
 static uint8_t widget_mode = MODE_DMX_RDM;				///<
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
 static uint32_t widget_send_rdm_packet_start = 0;		///<
-static uint8_t widget_dmx_output_only = FALSE;			///<
 static uint32_t widget_dmx_output_period = 0;			///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
 
@@ -515,8 +514,6 @@ void widget_receive_data_from_host(void)
 			while ((AMF_END_CODE != usb_read_byte()) && (i++ < sizeof(widget_data)));
 
 			monitor_line(MONITOR_LINE_LABEL, "L:%d:%d(%d)", label, data_length, i);
-
-			widget_dmx_output_only = (label == OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST);
 
 			switch (label)
 			{
