@@ -25,44 +25,23 @@
 
 #include <stdio.h>
 
-#include "hardware.h"
-#include "sys_time.h"
+#include "monitor.h"
 #include "console.h"
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_device_info.h"
-
-extern uint8_t rdm_is_muted(void);
+#include "rdm_handle_data.h"
 
 void monitor_update(void)
 {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
+	monitor_time_uptime(4);
 
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
+	monitor_line(6, "%s", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
-	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
+	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 
-	uint64_t uptime_seconds = hardware_uptime_seconds();
-
-	// line 4
-	console_set_cursor(0,4);
-
-	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n\n",
-			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
-
-	printf("%s\n\n", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
-
-	uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
-
+	console_set_cursor(0,8);
 	printf("%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
 
 	uint8_t i = 0;
@@ -76,6 +55,7 @@ void monitor_update(void)
 	}
 
 	printf("\n%.3d-%.3d : ", (dmx_start_address + 16) & 0x1FF, (dmx_start_address + 31) & 0x1FF);
+
 	for (i = 16; i< 32; i++)
 	{
 		uint16_t index = (dmx_start_address + i <= 512) ? (dmx_start_address + i) : (dmx_start_address + i - 512);
@@ -86,8 +66,8 @@ void monitor_update(void)
 	}
 
 	const struct _total_statistics *total_statistics = total_statistics_get();
-	printf("\n\nPackets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
 
+	printf("\n\nPackets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
 	printf("[%s] \n\n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
 
 	const uint8_t *rdm_data = rdm_get_current_data();

@@ -1,5 +1,5 @@
 /**
- * @file monitor_debug.c
+ * @file monitor.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "sys_time.h"
+#include "hardware.h"
 #include "console.h"
 
 /**
@@ -50,6 +52,30 @@ void monitor_line(const uint8_t line, const char *fmt, ...)
 	}
 }
 
+void monitor_time_uptime(const uint8_t line)
+{
+	const uint32_t minute = 60;
+	const uint32_t hour = minute * 60;
+	const uint32_t day = hour * 24;
+
+	time_t ltime = 0;
+	struct tm *local_time = NULL;
+
+	ltime = sys_time(NULL);
+    local_time = localtime(&ltime);
+
+	const uint64_t uptime_seconds = hardware_uptime_seconds();
+
+	console_set_cursor(0,line);
+
+	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
+			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
+			(long int) (uptime_seconds / day),
+			(long int) (uptime_seconds % day) / hour,
+			(long int) (uptime_seconds % hour) / minute,
+			(long int) uptime_seconds % minute);
+}
+
 /**
  * @ingroup monitor
  *
@@ -71,6 +97,12 @@ void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint
 	}
 }
 
+/**
+ * @ingroup monitor
+ *
+ * @param line
+ * @param data
+ */
 void monitor_dmx_data(const uint8_t line, const uint8_t *data)
 {
 	console_set_cursor(0,line);

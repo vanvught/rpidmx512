@@ -28,9 +28,7 @@
 #include "dmx.h"
 #include "widget.h"
 #include "widget_params.h"
-#include "sys_time.h"
 #include "console.h"
-#include "hardware.h"
 #include "monitor.h"
 #include "sniffer.h"
 #include "util.h"
@@ -44,32 +42,13 @@ static uint8_t dmx_packets_per_second_previous = 0;
  */
 void monitor_update(void)
 {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
-
 	char dir[3][10] =
 	{ "Idle", "Output", "Input" };
 	struct _widget_params widget_params;
 
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
-
-	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
-
 	widget_params_get(&widget_params);
 
-	uint64_t uptime_seconds = hardware_uptime_seconds();
-
-	console_set_cursor(0,1);
-
-	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n\n",
-			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
+	monitor_time_uptime(1);
 
 	const uint8_t widget_mode = widget_mode_get();
 
