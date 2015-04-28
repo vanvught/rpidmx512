@@ -51,15 +51,9 @@ uint8_t rdm_is_muted(void)
  * @ingroup rdm_handlers
  *
  * Main function for handling RDM data.
- * The function is registered in the poll table \file main.c
  */
-void rdm_handle_data(void)
+void rdm_handle_data(uint8_t *rdm_data)
 {
-	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
-
-	if (rdm_data == NULL)
-		return;
-
 	uint8_t rdm_packet_is_for_me = FALSE;
 	uint8_t rdm_packet_is_broadcast = FALSE;
 	uint8_t rdm_packet_is_vendorcast = FALSE;
