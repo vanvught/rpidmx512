@@ -36,7 +36,7 @@
 #include "monitor.h"
 
 // poll table
-extern void rdm_handle_data(void);
+extern void rdm_data_received(void);
 // events table
 extern void rdm_identify(void);
 
@@ -44,7 +44,7 @@ struct _poll
 {
 	void (*f)(void);
 }const poll_table[] = {
-		{ rdm_handle_data } };
+		{ rdm_data_received } };
 
 struct _event
 {
