@@ -32,6 +32,10 @@
 #include "rdm.h"
 #include "rdm_device_info.h"
 #include "rdm_handle_data.h"
+#include "dmx_handle_data.h"
+
+static uint16_t function_count_previous = 0;							///<
+static uint16_t dmx_available_count_previous = 0;						///<
 
 void monitor_update(void)
 {
@@ -82,4 +86,13 @@ void monitor_update(void)
 	}
 
 	console_clear_line(24);
+
+	const struct _dmx_handle_data_statistics *dmx_handle_data_statistics = dmx_handle_data_get_statistics();
+	const uint16_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;
+	const uint16_t dmx_available_count_per_second = dmx_handle_data_statistics->dmx_available_count - dmx_available_count_previous;
+
+	monitor_line(25, "%d / %d", function_count_per_second, dmx_available_count_per_second);
+
+	function_count_previous = dmx_handle_data_statistics->function_count;
+	dmx_available_count_previous = dmx_handle_data_statistics->dmx_available_count;
 }

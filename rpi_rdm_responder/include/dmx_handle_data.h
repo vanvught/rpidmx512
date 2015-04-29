@@ -1,5 +1,5 @@
 /**
- * @file dmx_handle_data.c
+ * @file dmx_handle_data.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,53 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef DMX_HANDLE_DATA_H_
+#define DMX_HANDLE_DATA_H_
 
-#include "dmx_handle_data.h"
-#include "util.h"
-#include "dmx.h"
-#include "rdm_device_info.h"
-
-static struct _dmx_handle_data_statistics dmx_handle_data_statistics;	///<
-
-/**
- * @ingroup dmx
- *
- * @return
- */
-struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void)
+struct _dmx_handle_data_statistics
 {
-	return &dmx_handle_data_statistics;
-}
+	uint16_t function_count;
+	uint16_t dmx_available_count;
+};
 
-/**
- * @ingroup dmx
- *
- */
-void dmx_handle_data_reset_statistics(void)
-{
-	dmx_handle_data_statistics.function_count = 0;
-	dmx_handle_data_statistics.dmx_available_count = 0;
-}
+extern void dmx_handle_data(void);
+extern struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void);
+extern void dmx_handle_data_reset_statistics(void);
 
-/**
- *
- * The function is registered in the poll table \file main.c
- */
-void dmx_handle_data(void)
-{
-	dmx_handle_data_statistics.function_count++;
-
-	if (dmx_available_get() == FALSE)
-			return;
-
-	dmx_available_set(FALSE);
-
-	dmx_handle_data_statistics.dmx_available_count++;
-
-	// const uint16_t personality_current = rdm_device_info_get_personality_current(0);	// Root device
-
-	/*
-	 * Add user code here
-	 */
-}
+#endif /* DMX_HANDLE_DATA_H_ */
