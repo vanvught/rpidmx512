@@ -37,6 +37,7 @@
 
 // poll table
 extern void rdm_data_received(void);
+extern void dmx_handle_data(void);
 // events table
 extern void rdm_identify(void);
 
@@ -44,7 +45,8 @@ struct _poll
 {
 	void (*f)(void);
 }const poll_table[] = {
-		{ rdm_data_received } };
+	{ rdm_data_received },
+	{ dmx_handle_data } };
 
 struct _event
 {
