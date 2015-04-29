@@ -26,6 +26,8 @@
 #include <stddef.h>
 
 #include "dmx.h"
+#include "rdm.h"
+#include "rdm_e120.h"
 #include "rdm_handle_data.h"
 
 /**
@@ -39,5 +41,17 @@ void rdm_data_received(void)
 	if (rdm_data == NULL)
 		return;
 
-	rdm_handle_data(rdm_data);
+	const struct _rdm_command *rdm_cmd = (struct _rdm_command *)rdm_data;
+
+	const uint8_t command_class = rdm_cmd->command_class;
+
+	switch (command_class) {
+		case E120_DISCOVERY_COMMAND:
+		case E120_GET_COMMAND:
+		case E120_SET_COMMAND:
+			rdm_handle_data(rdm_data);
+			break;
+		default:
+			break;
+	}
 }

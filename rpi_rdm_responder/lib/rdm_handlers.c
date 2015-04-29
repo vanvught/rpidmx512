@@ -68,11 +68,11 @@ static void rdm_set_reset_device(uint8_t , uint16_t);
 
 struct _pid_definition
 {
-	uint16_t pid;
+	const uint16_t pid;
 	void (*get_handler)(uint16_t sub_device);
 	void (*set_handler)(uint8_t was_broadcast, uint16_t sub_device);
-	uint8_t get_argument_size;
-	uint8_t include_in_supported_params;
+	const uint8_t get_argument_size;
+	const uint8_t include_in_supported_params;
 };
 
 static const struct _pid_definition PID_DEFINITIONS[] = {
@@ -187,10 +187,9 @@ inline static void handle_string(const uint8_t *name, const uint8_t lenght)
 static void rdm_get_device_info(uint16_t sub_device)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
-
-	struct _rdm_device_info *rdm_device_info = rdm_device_info_get(sub_device);
-
+	const struct _rdm_device_info *rdm_device_info = rdm_device_info_get(sub_device);
 	struct _rdm_device_info *device_info = (struct _rdm_device_info *)rdm_response->param_data;
+
 	rdm_response->param_data_length = sizeof(struct _rdm_device_info);
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + rdm_response->param_data_length;
 

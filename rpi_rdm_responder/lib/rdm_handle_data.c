@@ -42,7 +42,7 @@ static uint8_t rdm_muted = FALSE;	///<
  *
  * @return
  */
-uint8_t rdm_is_muted(void)
+const uint8_t rdm_is_muted(void)
 {
 	return rdm_muted;
 }
@@ -174,7 +174,8 @@ void rdm_handle_data(uint8_t *rdm_data)
 			}
 		}
 	}
-	else if ((command_class == E120_GET_COMMAND) || (command_class == E120_SET_COMMAND))
+	//else if ((command_class == E120_GET_COMMAND) || (command_class == E120_SET_COMMAND))
+	else
 	{
 		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];
 		rdm_handlers(rdm_data, rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);

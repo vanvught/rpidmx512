@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-extern uint8_t rdm_is_muted(void);
+extern const uint8_t rdm_is_muted(void);
 extern void rdm_handle_data(uint8_t *rdm_data);
 
 #endif /* RDM_HANDLE_DATA_H_ */
