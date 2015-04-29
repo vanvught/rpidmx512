@@ -37520,8 +37520,8 @@ Disassembly of section .rodata:
    2bc2c:	20727041 	rsbscs	r7, r2, r1, asr #32
    2bc30:	32203932 	eorcc	r3, r0, #819200	; 0xc8000
    2bc34:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2bc38:	323a3931 	eorscc	r3, sl, #802816	; 0xc4000
-   2bc3c:	31303a35 	teqcc	r0, r5, lsr sl
+   2bc38:	333a3132 	teqcc	sl, #-2147483636	; 0x8000000c
+   2bc3c:	36323a39 			; <UNDEFINED> instruction: 0x36323a39
    2bc40:	00000000 	andeq	r0, r0, r0
    2bc44:	5d64255b 	cfstr64pl	mvdx2, [r4, #-364]!	; 0xfffffe94
    2bc48:	4e2f5320 	cdpmi	3, 2, cr5, cr15, cr0, {1}
