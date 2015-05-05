@@ -47,18 +47,11 @@ struct _poll {
 	{dmx_devices_run, "DMX Slave" }
 };
 
-#ifdef DEBUG
-extern void print_devices_counter(void);
-#endif
-
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
 } const events[] = {
 	{1000000, ui_buttons_update},
-#ifdef DEBUG
-	{1000000, print_devices_counter},
-#endif
 	{1000000, ui_lcd_refresh},
 	{1000000, monitor_update}
 };
@@ -106,8 +99,9 @@ inline static void events_check() {
 int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 {
 	hardware_init();
+	dmx_init();
 
-	printf("Compiled on %s at %s ", __DATE__, __TIME__);
+	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 
 	ui_start(0x00);			// User Interface
 	ui_reinit();
@@ -117,22 +111,16 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	dmx_devices_read_config();
 	dmx_devices_init();
 
-	irq_init();
-	__enable_irq();
-
-	pl011_dmx512_init();	// PL011 UART
-	fiq_init();
-	__enable_fiq();
-
 	watchdog_init();
 
 	events_init();
 
-	while (1) {
+	for (;;)
+	{
 		watchdog_feed();
-
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
+		{
 			poll_table[i].f();
 		}
 

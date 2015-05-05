@@ -24,9 +24,10 @@
  */
 
 #include <string.h>
-#include <bw_ui.h>
-#include <dmx_devices.h>
-#include <ui_functions.h>
+
+#include "bw_ui.h"
+#include "dmx_devices.h"
+#include "ui_functions.h"
 
 extern initializer_t devices_table[];	///<
 extern _devices_t devices_connected;	///<

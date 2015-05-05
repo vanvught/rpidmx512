@@ -70,7 +70,7 @@ struct _total_statistics
 };
 
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
-extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
+//extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
 extern void dmx_port_direction_set(const uint8_t, const uint8_t);

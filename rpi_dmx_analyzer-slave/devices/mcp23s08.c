@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG
 extern int printf(const char *format, ...);
-
+#endif
 #include <tables.h>
 #include <dmx_data.h>
 #include <mcp23s08.h>
@@ -35,22 +36,23 @@ extern int printf(const char *format, ...);
  * @param dmx_device_info
  */
 static void mcp23s08(dmx_device_info_t * dmx_device_info) {
-	int i;
-	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+	int i = 0;
+	unsigned char data = 0;
+	int dmx_data_index = dmx_device_info->dmx_start_address;
 
-	for (i = 0 ; i <  8 ; i++) {
+	for (i = 0; i < 8; i++) {
+
+		if (dmx_data_index > DMX_UNIVERSE_SIZE)
+			break;
 
 		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
-			mcp23s08_gpio_set(&dmx_device_info->device_info, 1 << i);
-		} else {
-			mcp23s08_gpio_clr(&dmx_device_info->device_info, 1 << i);
+			data = data | (1 << i);
 		}
 
 		dmx_data_index++;
-
-		if (dmx_data_index > 0x1FF)
-			break;
 	}
+
+	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_GPIO, data);
 }
 
 INITIALIZER(devices, mcp23s08)
@@ -61,13 +63,12 @@ INITIALIZER(devices, mcp23s08)
  * @param dmx_device_info
  */
 static void mcp23s08_init(dmx_device_info_t * dmx_device_info) {
+#ifdef DEBUG
 	printf("device init <mcp23s08>\n");
+#endif
 	mcp23s08_start(&(dmx_device_info->device_info));
-	int i;
-	for (i = 0 ; i < 8 ; i++ ) {
-		mcp23s08_gpio_fsel(&dmx_device_info->device_info, 1 << i, MCP23S08_FSEL_OUTP);
-		mcp23s08_gpio_clr(&dmx_device_info->device_info, 1 << i);
-	}
+	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_IODIR, 0x00);
+	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_GPIO, 0x00);
 }
 
 INITIALIZER(devices_init, mcp23s08_init)

@@ -23,9 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <bw_ui.h>
+#include "bw_ui.h"
 #include "ui_functions.h"
 #include "dmx_data.h"
+#include "util.h"
 
 /**
  *
@@ -75,7 +76,7 @@ inline static void display_data_decimal(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 	int i = 0;
 	int offset = 0;
-	const int dmx_data_index = start_channel - 1;
+	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++){
 		offset = i * 4;
@@ -100,7 +101,7 @@ inline static void display_data_hex(const int start_channel) {
 
 	int i = 0;
 	int offset = 0;
-	const int dmx_data_index = start_channel - 1;
+	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++) {
 		offset = i * 4;
@@ -125,7 +126,7 @@ inline static void display_data_percentage(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
 	int i = 0;
 	int offset = 0;
-	const int dmx_data_index = start_channel - 1;
+	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++){
 		offset = i * 4;
@@ -148,7 +149,6 @@ void dmx_analyzer(const char buttons) {
 	static int dmx_start_address = 1;
 	static int ui_function = 1;
 	static char ui_dmx_refresh_channels = 1;
-	static char ui_dmx_refresh_data = 1;
 	static char ui_dmx_channels_step = 4;
 
 	if (enter) {
@@ -163,27 +163,23 @@ void dmx_analyzer(const char buttons) {
 	if (BUTTON1_PRESSED(buttons)) {								// button(left), scroll dmx channels to right
 		dmx_start_address = (dmx_start_address - ui_dmx_channels_step) & 0x1FF;
 		ui_dmx_refresh_channels = 1;
-		dmx_data_refreshed = dmx_data_refreshed | DMX_DATA_REFRESHED_UI;
 	}
 
 	if (BUTTON2_PRESSED(buttons)) {								// button(right), scroll dmx channels to left
 		dmx_start_address = (dmx_start_address + ui_dmx_channels_step) & 0x1FF;
 		ui_dmx_refresh_channels = 1;
-		dmx_data_refreshed = dmx_data_refreshed | DMX_DATA_REFRESHED_UI;
 	}
 
 	if (BUTTON3_PRESSED(buttons)) {								// button(up), change data representation (D, H or %)
 		ui_function = ui_function + 1;
 		if (ui_function > 3)
 			ui_function = 1;
-		ui_dmx_refresh_data = 1;
 	}
 
 	if (BUTTON4_PRESSED(buttons)) {								// button(down), change data representation (D, H or %)
 		ui_function = ui_function - 1;
 		if (ui_function < 1)
 			ui_function = 3;
-		ui_dmx_refresh_data = 1;
 	}
 
 	if (ui_dmx_refresh_channels || do_ui_cls) {					// button left, right are pressed, or first call from menu
@@ -192,15 +188,18 @@ void dmx_analyzer(const char buttons) {
 		do_ui_cls = 0;
 	}
 
-	if (ui_dmx_refresh_data || (dmx_data_refreshed & DMX_DATA_REFRESHED_UI)) {
-		if (ui_function == 1) {
-			display_data_decimal(dmx_start_address);
-		} else if (ui_function == 2) {
-			display_data_hex(dmx_start_address);
-		} else if (ui_function == 3) {
-			display_data_percentage(dmx_start_address);
-		}
-		ui_dmx_refresh_data = 0;
-		dmx_data_refreshed = dmx_data_refreshed & (~DMX_DATA_REFRESHED_UI);
+	switch (ui_function)
+	{
+	case 1:
+		display_data_decimal(dmx_start_address);
+		break;
+	case 2:
+		display_data_hex(dmx_start_address);
+		break;
+	case 3:
+		display_data_percentage(dmx_start_address);
+		break;
+	default:
+		break;
 	}
 }

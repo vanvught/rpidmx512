@@ -28,19 +28,37 @@
 
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
-#include "dmx_data.h"
+#include "dmx.h"
 #include "dmx_devices.h"
+#include "util.h"
 #include "ff.h"
-
-#ifdef DEBUG
-static unsigned int dmx_devices_cycle_count;
-static unsigned int dmx_devices_refresh_count;
-#endif
 
 TABLE(initializer_t, devices);
 TABLE(initializer_t, devices_init);
 
 _devices_t devices_connected;
+
+static struct _dmx_devices_statistics dmx_devices_statistics;	///<
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+struct _dmx_devices_statistics *dmx_devices_get_statistics(void)
+{
+	return &dmx_devices_statistics;
+}
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_devices_reset_statistics(void)
+{
+	dmx_devices_statistics.function_count = 0;
+	dmx_devices_statistics.dmx_available_count = 0;
+}
 
 /**
  * @ingroup dmx
@@ -58,7 +76,9 @@ static int add_connected_device(const char *line) {
 		int dmx_start_address;
 
 		if (sscanf(line, "%4[^','],%64[^','],%x,%d", spi_interface, device_name, &slave_address, &dmx_start_address) == 4) {
+#ifdef DEBUG
 			printf("[%s, %s, %x, %d]\n", spi_interface, device_name, slave_address, dmx_start_address);
+#endif
 
 			if (strncmp("SPI", spi_interface, 3) != 0) {
 				printf("warning : invalid protocol. [skipping this line]\n");
@@ -77,7 +97,7 @@ static int add_connected_device(const char *line) {
 				return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
 			}
 
-			if (dmx_start_address < 1 || dmx_start_address > 512) {	
+			if (dmx_start_address < 1 || dmx_start_address > DMX_UNIVERSE_SIZE) {
 				printf("warning : invalid dmx_start_address [skipping this line]\n");
 				return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 			}
@@ -85,7 +105,9 @@ static int add_connected_device(const char *line) {
 			int j;
 			for (j = 0; j < TABLE_LENGTH(devices); j++) {
 				if (strcmp(devices_table[j].name, device_name) == 0) {
+#ifdef DEBUG
 					printf("device [%s] found in devices_table, entry number = %d\n", device_name, j);
+#endif
 					int devices_added = devices_connected.elements_count;
 					devices_connected.device_entry[devices_added].devices_table_index = j;
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.chip_select = chip_select;
@@ -140,8 +162,9 @@ void dmx_devices_read_config(void) {
 	// Do NOT init any devices
 	devices_connected.elements_count = 0;
 #endif
-
+#ifdef DEBUG
 	printf("\ndevices_connected.elements_count = %d\n\n", devices_connected.elements_count);
+#endif
 }
 
 /**
@@ -160,32 +183,17 @@ void dmx_devices_init(void) {
  *
  */
 void dmx_devices_run() {
-#ifdef DEBUG
-	dmx_devices_cycle_count++;
-#endif
-	if (dmx_data_refreshed & DMX_DATA_REFRESHED_DEVICES) {
-#ifdef DEBUG
-		dmx_devices_refresh_count++;
-#endif
-		int i;
-		for (i = 0; i < devices_connected.elements_count; i++) {
-			devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
-		}
-		dmx_data_refreshed = dmx_data_refreshed & (~DMX_DATA_REFRESHED_DEVICES);
+	dmx_devices_statistics.function_count++;
+
+	if (dmx_available_get() == FALSE)
+			return;
+
+	dmx_available_set(FALSE);
+
+	dmx_devices_statistics.dmx_available_count++;
+
+	int i;
+	for (i = 0; i < devices_connected.elements_count; i++) {
+		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
 }
-
-#ifdef DEBUG
-unsigned int dmx_devices_cycle_count_prev = 0;
-unsigned int dmx_devices_refresh_count_prev = 0;
-
-/**
- * @ingroup dmx
- *
- */
-void print_devices_counter(void){
-	printf("dmx_devices_run: %d/%d\n", (int)(dmx_devices_cycle_count - dmx_devices_cycle_count_prev), (int)(dmx_devices_refresh_count - dmx_devices_refresh_count_prev));
-	dmx_devices_cycle_count_prev = dmx_devices_cycle_count;
-	dmx_devices_refresh_count_prev = dmx_devices_refresh_count;
-}
-#endif

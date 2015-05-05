@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG
 extern int printf(const char *format, ...);
-
+#endif
 #include "tables.h"
 #include "dmx_data.h"
 #include "bw_spi_lcd.h"
-
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+#include "util.h"
 
 /**
  *
@@ -82,7 +82,7 @@ inline static void display_data_hex(device_info_t *device_info, int start_channe
 
 	int i = 0;
 	int offset = 0;
-	const int dmx_data_index = start_channel - 1;
+	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++) {
 		offset = i * 4;
@@ -113,7 +113,9 @@ INITIALIZER(devices, bw_spi_lcd)
  * @param dmx_device_info
  */
 static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info) {
+#ifdef DEBUG
 	printf("device init <bw_spi_lcd_init>\n");
+#endif
 	bw_spi_lcd_start(&(dmx_device_info->device_info));
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 	display_channels(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);

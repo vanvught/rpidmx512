@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG
 extern int printf(const char *format, ...);
-
+#endif
 #include "tables.h"
 #include "dmx_data.h"
 #include "bw_spi_dimmer.h"
@@ -35,7 +36,7 @@ extern int printf(const char *format, ...);
  * @param dmx_device_info
  */
 static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
-	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+	int dmx_data_index = dmx_device_info->dmx_start_address;
 
 	bw_spi_dimmer_output(&dmx_device_info->device_info, dmx_data[dmx_data_index]);
 }
@@ -48,7 +49,9 @@ INITIALIZER(devices, bw_spi_dimmer)
  * @param dmx_device_info
  */
 static void bw_spi_dimmer_init(dmx_device_info_t *dmx_device_info) {
+#ifdef DEBUG
 	printf("device init <bw_spi_dimmer_init>\n");
+#endif
 	bw_spi_dimmer_start(&(dmx_device_info->device_info));
 	bw_spi_dimmer_output(&dmx_device_info->device_info, 0);
 }

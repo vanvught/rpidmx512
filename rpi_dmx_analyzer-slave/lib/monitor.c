@@ -26,39 +26,38 @@
 #include <stdio.h>
 
 #include "dmx.h"
-#include "sys_time.h"
 #include "console.h"
-#include "hardware.h"
 #include "monitor.h"
-#include "util.h"
+#include "dmx_devices.h"
+
+
+static uint16_t function_count_previous = 0;							///<
+static uint16_t dmx_available_count_previous = 0;						///<
 
 /**
  * @ingroup monitor
  */
 void monitor_update(void)
 {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
+	monitor_time_uptime(3);
 
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
+	monitor_dmx_data(5, dmx_data);
 
-	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
+	console_clear_line(8);
+	const struct _total_statistics *total_statistics = total_statistics_get();
+	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
-	uint64_t uptime_seconds = hardware_uptime_seconds();
-
-	console_set_cursor(0,1);
-	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n\n",
-			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
-
-	console_clear_line(3);
+	console_clear_line(14);
 	printf("Slots in packet %d\n", (uint16_t)dmx_slots_in_packet_get());
 	printf("Slot to slot    %d\n", (uint16_t)dmx_slot_to_slot_get());
 
+	const struct _dmx_devices_statistics *dmx_devices_statistics = dmx_devices_get_statistics();
+	const uint16_t function_count_per_second = dmx_devices_statistics->function_count - function_count_previous;
+	const uint16_t dmx_available_count_per_second = dmx_devices_statistics->dmx_available_count - dmx_available_count_previous;
+
+	monitor_line(25, "%d / %d", function_count_per_second, dmx_available_count_per_second);
+
+	function_count_previous = dmx_devices_statistics->function_count;
+	dmx_available_count_previous = dmx_devices_statistics->dmx_available_count;
 }

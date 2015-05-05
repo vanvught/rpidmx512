@@ -43,8 +43,17 @@ typedef struct _devices {
 	device_entry_t device_entry[16];
 } _devices_t;
 
+struct _dmx_devices_statistics
+{
+	uint16_t function_count;
+	uint16_t dmx_available_count;
+};
+
 extern void dmx_devices_read_config(void);
 extern void dmx_devices_init(void);
 extern void dmx_devices_run(void);
+
+extern struct _dmx_devices_statistics *dmx_devices_get_statistics(void);
+extern void dmx_devices_reset_statistics(void);
 
 #endif /* DMX_DEVICES_H_ */

@@ -19,14 +19,11 @@
  * THE SOFTWARE.
  */
 
-// C standard library headers
 #include <stdio.h>
-// BitWizard User Interface (LCD and push buttons)
-#include <bw_i2c_ui.h>
-//
-#include <ui_functions.h>
-//
-#include <dmx_data.h>
+
+#include "bw_i2c_ui.h"
+#include "ui_functions.h"
+#include "dmx_data.h"
 
 #ifdef DEBUG
 #include <bcm2835.h>
@@ -79,7 +76,6 @@ void ui_lcd_refresh(void) {
 			ui_function_menu = ui_function_active;
 			enter = 0;
 			do_ui_cls = 1;
-			dmx_data_refreshed = dmx_data_refreshed | DMX_DATA_REFRESHED_UI;
 		} else if (button) {
 			const char *text = ui_functions[ui_function_active].msg;
 			if (do_ui_cls) {

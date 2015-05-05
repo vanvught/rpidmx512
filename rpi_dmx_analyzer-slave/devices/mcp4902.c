@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG
 extern int printf(const char *format, ...);
-
+#endif
 #include <tables.h>
 #include <dmx_data.h>
 #include <bcm2835.h>
@@ -41,13 +42,13 @@ static void mcp4902(dmx_device_info_t * dmx_device_info) {
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
-	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+	int dmx_data_index = dmx_device_info->dmx_start_address;
 
 	bcm2835_spi_write(MCP4902_DATA(dmx_data[dmx_data_index]) | 0x3000 | MCP49X2_WRITE_DAC_A);
 
 	dmx_data_index++;
 
-	if (dmx_data_index > 0x1FF)
+	if (dmx_data_index > DMX_UNIVERSE_SIZE)
 		return;
 
 	bcm2835_spi_write(MCP4902_DATA(dmx_data[dmx_data_index]) | 0x3000 | MCP49X2_WRITE_DAC_B);
@@ -61,7 +62,9 @@ INITIALIZER(devices, mcp4902)
  * @param dmx_device_info
  */
 static void mcp4902_init(dmx_device_info_t * dmx_device_info) {
+#ifdef DEBUG
 	printf("device init <mcp4902>\n");
+#endif
 	bcm2835_spi_begin();
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	// 15.625MHz
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);

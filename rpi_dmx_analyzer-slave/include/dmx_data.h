@@ -24,7 +24,9 @@
 
 #include <stdint.h>
 
-extern uint8_t dmx_data[512];
+#include "dmx.h"
+
+extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 extern uint8_t dmx_data_refreshed;
 
 extern void pl011_dmx512_init(void);

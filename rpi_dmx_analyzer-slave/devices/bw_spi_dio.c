@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifdef DEBUG
 extern int printf(const char *format, ...);
-
+#endif
 #include "tables.h"
 #include "dmx_data.h"
 #include "bw_spi_dio.h"
@@ -37,11 +38,11 @@ extern int printf(const char *format, ...);
 static void bw_spi_dio(dmx_device_info_t *dmx_device_info) {
 	int i = 0;
 	unsigned char data = 0;
-	int dmx_data_index = dmx_device_info->dmx_start_address - 1;
+	int dmx_data_index = dmx_device_info->dmx_start_address ;
 
 	for (i = 0; i < 7; i++) {
 
-		if (dmx_data_index > 0x1FF)
+		if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			break;
 
 		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
@@ -62,7 +63,9 @@ INITIALIZER(devices, bw_spi_dio)
  * @param dmx_device_info
  */
 static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
+#ifdef DEBUG
 	printf("device init <bw_spi_dio_init>\n");
+#endif
 	bw_spi_dio_start(&(dmx_device_info->device_info));
 	bw_spi_dio_fsel_mask(&dmx_device_info->device_info, 0x7F);
 	bw_spi_dio_output(&dmx_device_info->device_info, 0);

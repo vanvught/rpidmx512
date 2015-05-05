@@ -1,0 +1,23 @@
+/**
+  * @defgroup common Common Library
+  * @ingroup main
+  * @brief Functions which are shared with the DMX Analyzer/Slave, RDM Controller and RDM Responder
+  */
+  
+ /**
+  * @defgroup dmx DMX512
+  * @ingroup common
+  * @brief Generic DMX512 functions
+  */
+  
+ /**
+  * @defgroup rdm RDM
+  * @ingroup common
+  * @brief Generic RDM functions
+  */
+ 
+ /**
+  * @defgroup usb USB
+  * @ingroup common
+  * @brief TODO
+  */
