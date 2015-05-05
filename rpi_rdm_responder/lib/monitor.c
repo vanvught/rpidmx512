@@ -51,7 +51,7 @@ void monitor_update(void)
 	uint8_t i = 0;
 	for (i = 0; i< 16; i++)
 	{
-		uint16_t index = (dmx_start_address + i <= 512) ? (dmx_start_address + i) : (dmx_start_address + i - 512);
+		uint16_t index = (dmx_start_address + i <= DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - DMX_UNIVERSE_SIZE);
 		uint8_t data = dmx_data[index];
 		putchar(TO_HEX((data & 0xF0) >> 4));
 		putchar(TO_HEX(data & 0x0F));
@@ -62,7 +62,7 @@ void monitor_update(void)
 
 	for (i = 16; i< 32; i++)
 	{
-		uint16_t index = (dmx_start_address + i <= 512) ? (dmx_start_address + i) : (dmx_start_address + i - 512);
+		uint16_t index = (dmx_start_address + i <= DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - DMX_UNIVERSE_SIZE);
 		uint8_t data = dmx_data[index];
 		putchar(TO_HEX((data & 0xF0) >> 4));
 		putchar(TO_HEX(data & 0x0F));

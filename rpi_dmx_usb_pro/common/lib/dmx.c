@@ -342,7 +342,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			{
 				dmx_receive_state = IDLE;
 				dmx_available = TRUE;
-				dmx_slots_in_packet = 512;
+				dmx_slots_in_packet = DMX_UNIVERSE_SIZE;
 			}
 			break;
 		case RDMDATA:
