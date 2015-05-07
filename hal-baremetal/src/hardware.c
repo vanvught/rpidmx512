@@ -39,8 +39,8 @@ static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / s
 
 struct _hardware_led
 {
-	void (*init)(void);									///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
-	void (*set)(const int);								///< Pointer to function for LED ACCT on/off
+	void (*init)(void);								///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
+	void (*set)(const int);							///< Pointer to function for LED ACCT on/off
 } static _hardware_led_f = {led_init, led_set};
 
 #define MAX_NAME_LENGTH 20

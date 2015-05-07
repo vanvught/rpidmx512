@@ -185,7 +185,7 @@ void dmx_devices_init(void) {
 void dmx_devices_run() {
 	dmx_devices_statistics.function_count++;
 
-	if (dmx_available_get() == FALSE)
+	if (dmx_get_available() == FALSE)
 			return;
 
 	dmx_available_set(FALSE);

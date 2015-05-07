@@ -76,8 +76,8 @@ void monitor_update(void)
 		console_clear_line(14);
 		printf("DMX updates/sec %d : %d : %d\n", dmx_packets_per_second_min, dmx_updates_per_second, dmx_packets_per_second_max);
 		dmx_packets_per_second_previous = total_statistics->dmx_packets;
-		printf("Slots in packet %d  \n", (uint16_t)dmx_slots_in_packet_get());
-		printf("Slot to slot    %d  \n", (uint16_t)dmx_slot_to_slot_get());
+		printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
+		printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
 
 	} else
 	{

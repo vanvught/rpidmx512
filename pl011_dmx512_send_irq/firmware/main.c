@@ -134,8 +134,14 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 					if ((BCM2835_PL011->FR & 0x20) == 0)
 						break;
 				}
-				udelay(44);
-				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				//udelay(44);
+				if(dmx_output_period)
+				{
+					BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				} else
+				{
+					BCM2835_ST->C1 = 4 + BCM2835_ST->CLO;
+				}
 				dmx_send_state = IDLE;
 				// DEBUG
 				bcm2835_gpio_clr(ANALYZER_CH3);	// DATA

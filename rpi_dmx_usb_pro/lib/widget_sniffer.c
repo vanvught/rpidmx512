@@ -127,7 +127,7 @@ void widget_sniffer_dmx(void)
 	if (mode != MODE_RDM_SNIFFER)
 		return;
 
-	if (dmx_available_get() == FALSE)
+	if (dmx_get_available() == FALSE)
 			return;
 
 	dmx_available_set(FALSE);
@@ -137,7 +137,7 @@ void widget_sniffer_dmx(void)
 	if (dmx_data_is_changed())
 	{
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
-		const uint16_t data_length = dmx_slots_in_packet_get() + 1;
+		const uint16_t data_length = dmx_get_slots_in_packet() + 1;
 		usb_send_package(dmx_data, 0, data_length);
 	}
 
@@ -174,7 +174,7 @@ void widget_sniffer_rdm(void)
 	if (mode != MODE_RDM_SNIFFER)
 		return;
 
-	const uint8_t *rdm_data = rdm_available_get();
+	const uint8_t *rdm_data = rdm_get_available();
 
 	if (rdm_data == NULL)
 			return;

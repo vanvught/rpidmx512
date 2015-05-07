@@ -39,16 +39,18 @@ struct _widget_params
 typedef enum
 {
 	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
-	FIRMWARE_RDM = 2,			///< RDM firmware.This enables the Widget to act as an RDM Controller or RDM responder. Supports all messages except Receive DMX On Change (label=8) and Change Of State Receive (label=9).
+	FIRMWARE_RDM = 2,			///< RDM firmware. This enables the Widget to act as an RDM Controller.
 	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
 } _firmware_version_msb;
 
 extern void widget_params_init(void);
 extern void widget_params_get(struct _widget_params *);
-extern void widget_params_break_time_set(uint8_t);
-extern void widget_params_mab_time_set(uint8_t);
-extern void widget_params_refresh_rate_set(uint8_t);
+extern void widget_params_set_break_time(const uint8_t);
+extern void widget_params_set_mab_time(const uint8_t);
+extern void widget_params_set_refresh_rate(const uint8_t);
 extern const uint8_t * widget_params_get_type_id(void);
 extern const uint8_t widget_params_get_type_id_length(void);
+extern const uint8_t widget_params_get_throttle(void);
+extern void widget_params_set_throttle(const uint8_t);
 
 #endif /* WIDGET_PARAMS_H_ */

@@ -35,7 +35,8 @@
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL	176		///< 176 us
 #define DMX_TRANSMIT_MAB_TIME_MIN		12		///< 12 us
 #define DMX_TRANSMIT_MAB_TIME_MAX		1E6		///< 1s
-#define DMX_TRANSMIT_REFRESH_DEFAULT	1E6 / 40///< 40 / second = 25000 us
+#define DMX_TRANSMIT_REFRESH_DEFAULT	1E6 / 40///< 25000 us
+#define DMX_TRANSMIT_REFRESH_MIN		4		///< 4 us => as fast as possible
 
 #define DMX_MIN_SLOT_VALUE 				0		///< The minimum value a DMX512 slot can take.
 #define DMX_MAX_SLOT_VALUE 				255		///< The maximum value a DMX512 slot can take.
@@ -77,12 +78,12 @@ extern void dmx_port_direction_set(const uint8_t, const uint8_t);
 extern const uint8_t dmx_port_direction_get(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
-extern const uint8_t *rdm_available_get(void);
+extern const uint8_t *rdm_get_available(void);
 extern const uint8_t *rdm_get_current_data(void);
 
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_data_receive_end_get(void);
-extern const uint8_t dmx_available_get(void);
+extern const uint8_t dmx_get_available(void);
 extern void dmx_available_set(const uint8_t);
 extern const uint32_t dmx_output_break_time_get(void);
 extern void dmx_output_break_time_set(const uint32_t);
@@ -96,10 +97,13 @@ extern const struct _total_statistics *total_statistics_get(void);
 extern const uint8_t rdm_is_available_get(void);
 extern void rdm_is_available_set(const uint8_t);
 
-extern const uint32_t dmx_slot_to_slot_get(void);
-extern const uint32_t dmx_slots_in_packet_get(void);
+extern const uint32_t dmx_get_slot_to_slot(void);
+extern const uint32_t dmx_get_slots_in_packet(void);
 
-extern const uint16_t dmx_send_data_length_get(void);
-extern void dmx_send_data_length_set(uint16_t);
+extern const uint16_t dmx_get_send_data_length(void);
+extern void dmx_set_send_data_length(uint16_t);
+
+extern const uint16_t dmx_get_output_period(void);
+extern void dmx_set_output_period(const uint16_t);
 
 #endif /* DMX_H_ */

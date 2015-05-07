@@ -60,7 +60,7 @@ void dmx_handle_data(void)
 {
 	dmx_handle_data_statistics.function_count++;
 
-	if (dmx_available_get() == FALSE)
+	if (dmx_get_available() == FALSE)
 			return;
 
 	dmx_available_set(FALSE);

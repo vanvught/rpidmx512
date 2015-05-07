@@ -49,8 +49,8 @@ void monitor_update(void)
 	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
 	console_clear_line(14);
-	printf("Slots in packet %d\n", (uint16_t)dmx_slots_in_packet_get());
-	printf("Slot to slot    %d\n", (uint16_t)dmx_slot_to_slot_get());
+	printf("Slots in packet %d\n", (uint16_t)dmx_get_slots_in_packet());
+	printf("Slot to slot    %d\n", (uint16_t)dmx_get_slot_to_slot());
 
 	const struct _dmx_devices_statistics *dmx_devices_statistics = dmx_devices_get_statistics();
 	const uint16_t function_count_per_second = dmx_devices_statistics->function_count - function_count_previous;

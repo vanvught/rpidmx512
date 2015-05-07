@@ -45,7 +45,6 @@ static uint8_t widget_data[600];						///<
 static uint8_t widget_mode = MODE_DMX_RDM;				///<
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
 static uint32_t widget_send_rdm_packet_start = 0;		///<
-static uint32_t widget_dmx_output_period = 0;			///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///<
 
 inline static void rdm_time_out_message(void);
@@ -62,26 +61,6 @@ inline static void rdm_time_out_message(void);
 const uint8_t receive_dmx_on_change_get()
 {
 	return receive_dmx_on_change;
-}
-
-/**
- * @ingroup widget
- *
- * @return
- */
-const uint32_t widget_dmx_output_period_get(void)
-{
-	return widget_dmx_output_period;
-}
-
-/**
- * @ingroup widget
- *
- * @param dmx_output_period
- */
-void widget_dmx_output_period_set(const uint32_t dmx_output_period)
-{
-	widget_dmx_output_period = dmx_output_period;
 }
 
 /**
@@ -136,9 +115,9 @@ static void widget_set_params()
 	monitor_line(MONITOR_LINE_INFO, "SET_WIDGET_PARAMS");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	widget_params_break_time_set(widget_data[2]);
-	widget_params_mab_time_set(widget_data[3]);
-	widget_params_refresh_rate_set(widget_data[4]);
+	widget_params_set_break_time(widget_data[2]);
+	widget_params_set_mab_time(widget_data[3]);
+	widget_params_set_refresh_rate(widget_data[4]);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
 
@@ -162,12 +141,12 @@ void widget_received_dmx_packet(void)
 			|| (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
-	if (dmx_available_get() == FALSE)
+	if (dmx_get_available() == FALSE)
 		return;
 
 	dmx_available_set(FALSE);
 
-	const int16_t lenght = dmx_slots_in_packet_get() + 1;
+	const int16_t lenght = dmx_get_slots_in_packet() + 1;
 
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
 	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", lenght);
@@ -194,7 +173,7 @@ void widget_received_rdm_packet(void)
 	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER) || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
 		return;
 
-	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
+	uint8_t *rdm_data = (uint8_t *)rdm_get_available();
 
 	if (rdm_data == NULL)
 			return;
@@ -267,7 +246,7 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length)
 	for (i = 0; i < data_length; i++)
 		dmx_data[i] = widget_data[i];
 
-	dmx_send_data_length_set(data_length);
+	dmx_set_send_data_length(data_length);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, TRUE);
 }

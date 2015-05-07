@@ -85,22 +85,62 @@ static struct _total_statistics total_statistics;										///<
  * GETTERS / SETTERS
  */
 
-const uint16_t dmx_send_data_length_get(void)
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint16_t dmx_get_output_period(void)
+{
+	return dmx_output_period;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param period
+ */
+void dmx_set_output_period(const uint16_t period)
+{
+	dmx_output_period = period ;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint16_t dmx_get_send_data_length(void)
 {
 	return dmx_send_data_length;
 }
 
-void dmx_send_data_length_set(uint16_t send_data_length)
+/**
+ * @ingroup dmx
+ *
+ * @param send_data_length
+ */
+void dmx_set_send_data_length(uint16_t send_data_length)
 {
 	dmx_send_data_length = send_data_length;
 }
 
-const uint32_t dmx_slot_to_slot_get(void)
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint32_t dmx_get_slot_to_slot(void)
 {
 	return dmx_slot_to_slot;
 }
 
-const uint32_t dmx_slots_in_packet_get(void)
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint32_t dmx_get_slots_in_packet(void)
 {
 	return dmx_slots_in_packet;
 }
@@ -110,7 +150,7 @@ const uint32_t dmx_slots_in_packet_get(void)
  *
  * @return
  */
-const uint8_t *rdm_available_get(void)
+const uint8_t *rdm_get_available(void)
 {
 	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail)
 		return NULL;
@@ -137,7 +177,7 @@ const uint8_t *rdm_get_current_data(void)
  *
  * @return
  */
-const uint8_t dmx_available_get(void)
+const uint8_t dmx_get_available(void)
 {
 	return dmx_available;
 }
@@ -501,42 +541,6 @@ void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_d
 /**
  * @ingroup dmx
  *
- *
- * @param data
- * @param data_length
- */
-void dmx_data_send(const uint8_t *data, const uint16_t data_length)
-{
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-	udelay(dmx_output_break_time);	// Break Time
-
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(dmx_output_mab_time);	// Mark After Break
-
-	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
-	{
-		while (1)
-		{
-			if ((BCM2835_PL011->FR & 0x20) == 0)
-				break;
-		}
-		BCM2835_PL011->DR = data[i];
-	}
-
-	while (1)
-	{
-		if ((BCM2835_PL011->FR & 0x20) == 0)
-			break;
-	}
-
-	udelay(44);
-}
-
-
-/**
- * @ingroup dmx
- *
  */
 void dmx_init(void)
 {
@@ -620,8 +624,14 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 					if ((BCM2835_PL011->FR & 0x20) == 0)
 						break;
 				}
-				udelay(44);
-				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				//udelay(44); //TODO remove
+				if(dmx_output_period)
+				{
+					BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				} else
+				{
+					BCM2835_ST->C1 = 4 + BCM2835_ST->CLO;
+				}
 				dmx_send_state = IDLE;
 				break;
 			default:

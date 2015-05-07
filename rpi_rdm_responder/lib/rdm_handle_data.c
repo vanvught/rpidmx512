@@ -174,7 +174,6 @@ void rdm_handle_data(uint8_t *rdm_data)
 			}
 		}
 	}
-	//else if ((command_class == E120_GET_COMMAND) || (command_class == E120_SET_COMMAND))
 	else
 	{
 		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];

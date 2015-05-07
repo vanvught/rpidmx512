@@ -36,7 +36,7 @@
  */
 void rdm_data_received(void)
 {
-	uint8_t *rdm_data = (uint8_t *)rdm_available_get();
+	uint8_t *rdm_data = (uint8_t *)rdm_get_available();
 
 	if (rdm_data == NULL)
 		return;
