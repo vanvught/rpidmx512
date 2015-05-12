@@ -103,7 +103,7 @@ extern const uint32_t dmx_get_slots_in_packet(void);
 extern const uint16_t dmx_get_send_data_length(void);
 extern void dmx_set_send_data_length(uint16_t);
 
-extern const uint16_t dmx_get_output_period(void);
-extern void dmx_set_output_period(const uint16_t);
+extern const uint32_t dmx_get_output_period(void);
+extern void dmx_set_output_period(const uint32_t);
 
 #endif /* DMX_H_ */

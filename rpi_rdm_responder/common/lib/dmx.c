@@ -90,7 +90,7 @@ static struct _total_statistics total_statistics;										///<
  *
  * @return
  */
-const uint16_t dmx_get_output_period(void)
+const uint32_t dmx_get_output_period(void)
 {
 	return dmx_output_period;
 }
@@ -100,7 +100,7 @@ const uint16_t dmx_get_output_period(void)
  *
  * @param period
  */
-void dmx_set_output_period(const uint16_t period)
+void dmx_set_output_period(const uint32_t period)
 {
 	dmx_output_period = period ;
 }
@@ -356,7 +356,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_receive_state = DMXDATA;
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
-				dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
+				//dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 			    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
 			    BCM2835_ST->CS = BCM2835_ST_CS_M1;
@@ -624,14 +624,8 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 					if ((BCM2835_PL011->FR & 0x20) == 0)
 						break;
 				}
-				//udelay(44); //TODO remove
-				if(dmx_output_period)
-				{
-					BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
-				} else
-				{
-					BCM2835_ST->C1 = 4 + BCM2835_ST->CLO;
-				}
+				udelay(44); //TODO remove
+				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmx_send_state = IDLE;
 				break;
 			default:

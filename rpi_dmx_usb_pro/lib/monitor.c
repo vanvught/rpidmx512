@@ -33,8 +33,6 @@
 #include "sniffer.h"
 #include "util.h"
 
-static uint8_t dmx_packets_per_second_min = 0xFF;
-static uint8_t dmx_packets_per_second_max = 0x00;
 static uint8_t dmx_packets_per_second_previous = 0;
 
 /**
@@ -70,11 +68,8 @@ void monitor_update(void)
 
 		const uint8_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_per_second_previous;
 
-		dmx_packets_per_second_min = MIN(dmx_packets_per_second_min, dmx_updates_per_second);
-		dmx_packets_per_second_max = MAX(dmx_packets_per_second_max, dmx_updates_per_second);
-
 		console_clear_line(14);
-		printf("DMX updates/sec %d : %d : %d\n", dmx_packets_per_second_min, dmx_updates_per_second, dmx_packets_per_second_max);
+		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
 		dmx_packets_per_second_previous = total_statistics->dmx_packets;
 		printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
 		printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
