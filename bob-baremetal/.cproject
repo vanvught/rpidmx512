@@ -28,7 +28,7 @@
 							<option id="cdt.managedbuild.option.gnu.cross.path.1060845200" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value="/opt/gnuarm-hardfp" valueType="string"/>
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1966805609" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="arm-none-eabi-" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.781248632" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder buildPath="${workspace_loc:/hal}/Release" id="cdt.managedbuild.builder.gnu.cross.2049302523" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross">
+							<builder buildPath="${workspace_loc:/hal}/Release" id="cdt.managedbuild.builder.gnu.cross.2049302523" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="lib"/>
 								</outputEntries>
