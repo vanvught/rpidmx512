@@ -59,6 +59,7 @@ static uint8_t dmx_available = FALSE;											///<
 static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;			///<
 static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;				///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
+static uint8_t dmx_output_fast_as_possible = FALSE;								///<
 static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;					///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
 static volatile uint32_t dmx_fiq_micros_current = 0;							///<
@@ -102,7 +103,27 @@ const uint32_t dmx_get_output_period(void)
  */
 void dmx_set_output_period(const uint32_t period)
 {
-	dmx_output_period = period ;
+	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
+
+	if (period)
+	{
+		if (period < package_length_us)
+		{
+			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us);
+		}
+		else
+		{
+			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, period);
+		}
+
+		dmx_output_fast_as_possible = FALSE;
+	}
+	else
+	{
+		dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us);
+
+		dmx_output_fast_as_possible = TRUE;
+	}
 }
 
 /**
@@ -123,6 +144,9 @@ const uint16_t dmx_get_send_data_length(void)
 void dmx_set_send_data_length(uint16_t send_data_length)
 {
 	dmx_send_data_length = send_data_length;
+
+	if(dmx_output_fast_as_possible)
+		dmx_set_output_period(0);
 }
 
 /**
@@ -197,7 +221,7 @@ void dmx_available_set(const uint8_t is_available)
  *
  * @return
  */
-const uint8_t dmx_port_direction_get(void)
+const uint8_t dmx_get_port_direction(void)
 {
 	return dmx_port_direction;
 }
@@ -217,7 +241,7 @@ const uint32_t rdm_data_receive_end_get(void)
  *
  * @return
  */
-const uint32_t dmx_output_break_time_get(void)
+const uint32_t dmx_get_output_break_time(void)
 {
 	return dmx_output_break_time;
 }
@@ -227,9 +251,12 @@ const uint32_t dmx_output_break_time_get(void)
  *
  * @param break_time
  */
-void dmx_output_break_time_set(const uint32_t break_time)
+void dmx_set_output_break_time(const uint32_t break_time)
 {
 	dmx_output_break_time = MAX(DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
+
+	if(dmx_output_fast_as_possible)
+		dmx_set_output_period(0);
 }
 
 /**
@@ -237,7 +264,7 @@ void dmx_output_break_time_set(const uint32_t break_time)
  *
  * @return
  */
-const uint32_t dmx_output_mab_time_get(void)
+const uint32_t dmx_get_output_mab_time(void)
 {
 	return dmx_output_mab_time;
 }
@@ -247,9 +274,12 @@ const uint32_t dmx_output_mab_time_get(void)
  *
  * @param mab_time
  */
-void dmx_output_mab_time_set(const uint32_t mab_time)
+void dmx_set_output_mab_time(const uint32_t mab_time)
 {
 	dmx_output_mab_time = MAX(DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
+
+	if(dmx_output_fast_as_possible)
+		dmx_set_output_period(0);
 }
 
 /**
@@ -356,7 +386,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_receive_state = DMXDATA;
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
-				//dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 			    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
 			    BCM2835_ST->CS = BCM2835_ST_CS_M1;

@@ -33,7 +33,7 @@
 #include "sniffer.h"
 #include "util.h"
 
-static uint8_t dmx_packets_per_second_previous = 0;
+static uint32_t dmx_packets_previous = 0;
 
 /**
  * @ingroup monitor
@@ -66,11 +66,11 @@ void monitor_update(void)
 		printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
 		printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
 
-		const uint8_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_per_second_previous;
+		const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
 
 		console_clear_line(14);
 		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
-		dmx_packets_per_second_previous = total_statistics->dmx_packets;
+		dmx_packets_previous = total_statistics->dmx_packets;
 		printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
 		printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
 
@@ -78,19 +78,19 @@ void monitor_update(void)
 	{
 		console_clear_line(2);
 
-		printf("FW %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d\n",
+		printf("FW %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)\n",
 				widget_params.firmware_msb, widget_params.firmware_lsb,
-				widget_params.break_time, (int) dmx_output_break_time_get(),
-				widget_params.mab_time, (int) dmx_output_mab_time_get(),
-				widget_params.refresh_rate);
+				widget_params.break_time, (int) dmx_get_output_break_time(),
+				widget_params.mab_time, (int) dmx_get_output_mab_time(),
+				widget_params.refresh_rate, (int)(1E6 / dmx_get_output_period()));
 
 		console_clear_line(3);
 
-		if (DMX_PORT_DIRECTION_INP == dmx_port_direction_get())
+		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction())
 			printf("Input [%s]\n", receive_dmx_on_change_get() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
 		else
 		{
-			printf("%s\n", dir[dmx_port_direction_get()]);
+			printf("%s\n", dir[dmx_get_port_direction()]);
 		}
 
 		// line 4 LABEL

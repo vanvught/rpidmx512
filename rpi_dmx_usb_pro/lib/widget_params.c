@@ -131,8 +131,8 @@ inline static void update_config_file(const char *name, const int value) { }
 static void process_line_read(const char *line)
 {
 	char name[64];
-	int value;
-	if (sscanf(line, "%[^=]=%d", name, &value) == 2)
+	unsigned int value;
+	if (sscanf(line, "%[^=]=%u", name, &value) == 2)
 	{
 		if (strncmp(name, DMXUSBPRO_PARAMS_BREAK_TIME, sizeof(DMXUSBPRO_PARAMS_BREAK_TIME)) == 0)
 		{
@@ -148,10 +148,8 @@ static void process_line_read(const char *line)
 			}
 		} else if  (strncmp(name, DMXUSBPRO_PARAMS_REFRESH_RATE, sizeof(DMXUSBPRO_PARAMS_REFRESH_RATE)) == 0)
 		{
-			if((value >= 0) && (value <= 40))		// DMX output rate in packets per second. Valid range is 1 to 40.
-			{
-				dmx_usb_pro_params.refresh_rate = value;
-			}
+			// DMX output rate in packets per second. 0 is maximum possible
+			dmx_usb_pro_params.refresh_rate = value;
 		} else if  (strncmp(name, PARAMS_WIDGET_MODE, sizeof(PARAMS_WIDGET_MODE)) == 0)
 		{
 			if((value >= MODE_DMX_RDM) && value <= MODE_RDM_SNIFFER)
@@ -215,7 +213,7 @@ void widget_params_get(struct _widget_params *widget_params)
 void widget_params_set_break_time(const uint8_t break_time)
 {
 	dmx_usb_pro_params.break_time = break_time;
-	dmx_output_break_time_set((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
+	dmx_set_output_break_time((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
 	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
@@ -227,7 +225,7 @@ void widget_params_set_break_time(const uint8_t break_time)
 void widget_params_set_mab_time(const uint8_t mab_time)
 {
 	dmx_usb_pro_params.mab_time = mab_time;
-	dmx_output_mab_time_set((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
+	dmx_set_output_mab_time((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
 	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
@@ -287,9 +285,9 @@ void widget_params_init(void)
 {
 	read_config_file();
 
-	// DMX output rate in packets per second. Valid range is 1 to 40.
-	uint32_t period = 0;	// us
-	if (dmx_usb_pro_params.refresh_rate > 0 && dmx_usb_pro_params.refresh_rate <= 40)
+	uint32_t period = 0;
+
+	if (dmx_usb_pro_params.refresh_rate)
 	{
 		period = 1E6 / dmx_usb_pro_params.refresh_rate;
 	}
@@ -297,11 +295,12 @@ void widget_params_init(void)
 	dmx_set_output_period(period);
 
 	uint8_t mode = dmx_usb_pro_params.firmware_msb;
+
 	if (mode == MODE_DMX_RDM)
 		dmx_usb_pro_params.firmware_msb = FIRMWARE_RDM;
 
 	widget_mode_set(mode);
 
-	dmx_output_break_time_set((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
-	dmx_output_mab_time_set((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
+	dmx_set_output_break_time((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
+	dmx_set_output_mab_time((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));
 }

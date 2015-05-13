@@ -137,7 +137,7 @@ void widget_received_dmx_packet(void)
 		return;
 
 	if ((widget_rdm_discovery_running == TRUE)
-			|| (DMX_PORT_DIRECTION_INP != dmx_port_direction_get())
+			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
 			|| (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
 		return;
 
@@ -346,7 +346,7 @@ void widget_received_dmx_change_of_state_packet(void)
 	if (widget_mode == MODE_RDM_SNIFFER)
 		return;
 
-	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_port_direction_get()) || (SEND_ALWAYS == receive_dmx_on_change))
+	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_get_port_direction()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 
 	monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");

@@ -41,7 +41,7 @@ void monitor_update(void)
 {
 	monitor_time_uptime(4);
 
-	monitor_line(6, "%s", dmx_port_direction_get() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+	monitor_line(6, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 

@@ -31,16 +31,16 @@
 #define DMX_DATA_BUFFER_SIZE			513		///< including SC
 #define RDM_DATA_BUFFER_SIZE			512		///<
 
-#define DMX_TRANSMIT_BREAK_TIME_MIN		92		///< 92 us
-#define DMX_TRANSMIT_BREAK_TIME_TYPICAL	176		///< 176 us
-#define DMX_TRANSMIT_MAB_TIME_MIN		12		///< 12 us
-#define DMX_TRANSMIT_MAB_TIME_MAX		1E6		///< 1s
-#define DMX_TRANSMIT_REFRESH_DEFAULT	1E6 / 40///< 25000 us
-#define DMX_TRANSMIT_REFRESH_MIN		4		///< 4 us => as fast as possible
+#define DMX_TRANSMIT_BREAK_TIME_MIN				92		///< 92 us
+#define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176		///< 176 us
+#define DMX_TRANSMIT_MAB_TIME_MIN				12		///< 12 us
+#define DMX_TRANSMIT_MAB_TIME_MAX				1E6		///< 1s
+#define DMX_TRANSMIT_REFRESH_DEFAULT			1E6 / 40///< 25000 us
+#define DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN	1204	///< us
 
-#define DMX_MIN_SLOT_VALUE 				0		///< The minimum value a DMX512 slot can take.
-#define DMX_MAX_SLOT_VALUE 				255		///< The maximum value a DMX512 slot can take.
-#define DMX512_START_CODE				0		///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
+#define DMX_MIN_SLOT_VALUE 						0		///< The minimum value a DMX512 slot can take.
+#define DMX_MAX_SLOT_VALUE 						255		///< The maximum value a DMX512 slot can take.
+#define DMX512_START_CODE						0		///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 
 enum
 {
@@ -75,7 +75,7 @@ extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
 extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern const uint8_t dmx_port_direction_get(void);
+extern const uint8_t dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
 extern const uint8_t *rdm_get_available(void);
@@ -85,10 +85,10 @@ extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_data_receive_end_get(void);
 extern const uint8_t dmx_get_available(void);
 extern void dmx_available_set(const uint8_t);
-extern const uint32_t dmx_output_break_time_get(void);
-extern void dmx_output_break_time_set(const uint32_t);
-extern const uint32_t dmx_output_mab_time_get(void);
-extern void dmx_output_mab_time_set(const uint32_t);
+extern const uint32_t dmx_get_output_break_time(void);
+extern void dmx_set_output_break_time(const uint32_t);
+extern const uint32_t dmx_get_output_mab_time(void);
+extern void dmx_set_output_mab_time(const uint32_t);
 
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);
