@@ -54,9 +54,10 @@ void monitor_update(void)
 	{
 		monitor_dmx_data(3, dmx_data);
 
-		console_clear_line(7);
 		const struct _total_statistics *total_statistics = total_statistics_get();
 		const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+
+		console_clear_line(7);
 		printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
 		const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
@@ -69,11 +70,21 @@ void monitor_update(void)
 		const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
 
 		console_clear_line(14);
+		console_clear_line(17);
 		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
+		if (dmx_updates_per_second)
+		{
+			printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
+			printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
+			printf("Break to break  %ld\n", dmx_get_break_to_break());
+		}
+		else
+		{
+			printf("Slots in packet -- \n");
+			printf("Slot to slot    -- \n");
+			printf("Break to break  --\n");
+		}
 		dmx_packets_previous = total_statistics->dmx_packets;
-		printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
-		printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
-
 	} else
 	{
 		console_clear_line(2);
@@ -95,7 +106,6 @@ void monitor_update(void)
 
 		// line 4 LABEL
 		// line 5 Info
-		// line 6
 
 		monitor_dmx_data(8, dmx_data);
 

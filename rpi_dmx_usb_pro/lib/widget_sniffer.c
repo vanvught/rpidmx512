@@ -140,26 +140,6 @@ void widget_sniffer_dmx(void)
 		const uint16_t data_length = dmx_get_slots_in_packet() + 1;
 		usb_send_package(dmx_data, 0, data_length);
 	}
-
-#if 0
-	// DMX 0-98
-	usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
-
-	usb_send_byte(DATA_MASK);		// TODO Start byte part of dmx_data
-	usb_send_byte(0);
-
-	uint16_t i = 0;
-	for (i = 0; i < 99; i++)
-	{
-		usb_send_byte(DATA_MASK);
-		usb_send_byte(dmx_data[i]);
-	}
-
-	usb_send_footer();
-
-	// DMX 99-512
-	usb_send_package(dmx_data, 99, 413);
-#endif
 }
 
 /**

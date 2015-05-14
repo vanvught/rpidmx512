@@ -99,6 +99,7 @@ extern void rdm_is_available_set(const uint8_t);
 
 extern const uint32_t dmx_get_slot_to_slot(void);
 extern const uint32_t dmx_get_slots_in_packet(void);
+extern const uint32_t dmx_get_break_to_break(void);
 
 extern const uint16_t dmx_get_send_data_length(void);
 extern void dmx_set_send_data_length(uint16_t);

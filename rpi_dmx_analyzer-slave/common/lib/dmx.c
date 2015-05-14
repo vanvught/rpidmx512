@@ -52,23 +52,25 @@ typedef enum {
   RDMDISCECS	///<
 } _dmx_state;
 
-uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];											///<
-static uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
-static uint16_t dmx_data_index = 0;												///<
-static uint8_t dmx_available = FALSE;											///<
-static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;			///<
-static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;				///<
-static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
-static uint8_t dmx_output_fast_as_possible = FALSE;								///<
-static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;					///< SC + UNIVERSE SIZE
-static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
-static volatile uint32_t dmx_fiq_micros_current = 0;							///<
-static volatile uint32_t dmx_fiq_micros_previous = 0;							///<
-static volatile uint32_t dmx_slot_to_slot = 0;									///<
-static volatile uint32_t dmx_slots_in_packet = 0;								///<
-static volatile uint8_t dmx_send_state = IDLE;									///<
-static volatile uint8_t dmx_send_always = FALSE;								///<
-static volatile uint32_t dmx_send_break_micros = 0;								///<
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];									///<
+static uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
+static uint16_t dmx_data_index = 0;										///<
+static uint8_t dmx_available = FALSE;									///<
+static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;	///<
+static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;		///<
+static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;		///<
+static uint8_t dmx_output_fast_as_possible = FALSE;						///<
+static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;			///< SC + UNIVERSE SIZE
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;				///<
+static volatile uint32_t dmx_fiq_micros_current = 0;					///<
+static volatile uint32_t dmx_fiq_micros_previous = 0;					///<
+static volatile uint32_t dmx_slot_to_slot = 0;							///<
+static volatile uint32_t dmx_break_to_break = 0;						///<
+static volatile uint32_t dmx_break_to_break_previous = 0;				///<
+static volatile uint32_t dmx_slots_in_packet = 0;						///<
+static volatile uint8_t dmx_send_state = IDLE;							///<
+static volatile uint8_t dmx_send_always = FALSE;						///<
+static volatile uint32_t dmx_send_break_micros = 0;						///<
 
 #define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F												///<
 static uint16_t rdm_data_buffer_index_head = 0;											///<
@@ -109,18 +111,18 @@ void dmx_set_output_period(const uint32_t period)
 	{
 		if (period < package_length_us)
 		{
-			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us);
+			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
 		}
 		else
 		{
-			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, period);
+			dmx_output_period = period;
 		}
 
 		dmx_output_fast_as_possible = FALSE;
 	}
 	else
 	{
-		dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us);
+		dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
 
 		dmx_output_fast_as_possible = TRUE;
 	}
@@ -167,6 +169,16 @@ const uint32_t dmx_get_slot_to_slot(void)
 const uint32_t dmx_get_slots_in_packet(void)
 {
 	return dmx_slots_in_packet;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint32_t dmx_get_break_to_break(void)
+{
+	return dmx_break_to_break;
 }
 
 /**
@@ -362,6 +374,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	if (BCM2835_PL011->DR & PL011_DR_BE)
 	{
 		dmx_receive_state = BREAK;
+		dmx_break_to_break = dmx_fiq_micros_current - dmx_break_to_break_previous;
+		dmx_break_to_break_previous = dmx_fiq_micros_current;
 	}
 	else
 	{
@@ -387,8 +401,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
-			    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
-			    BCM2835_ST->CS = BCM2835_ST_CS_M1;
+			    //BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
+			    //BCM2835_ST->CS = BCM2835_ST_CS_M1;
 				break;
 			case E120_SC_RDM:		// RDM start code
 				dmx_receive_state = RDMDATA;
@@ -405,7 +419,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 		case DMXDATA:
 			dmx_data[dmx_data_index++] = data;
 			dmx_slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-		    BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
+		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_slot_to_slot + 2;
 		    BCM2835_ST->CS = BCM2835_ST_CS_M1;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			{
