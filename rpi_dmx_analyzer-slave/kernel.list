@@ -38186,11 +38186,11 @@ Disassembly of section .rodata:
    2c650:	61207325 	teqvs	r0, r5, lsr #6
    2c654:	73252074 	teqvc	r5, #116	; 0x74
    2c658:	0000000a 	andeq	r0, r0, sl
-   2c65c:	2079614d 	rsbscs	r6, r9, sp, asr #2
-   2c660:	32203431 	eorcc	r3, r0, #822083584	; 0x31000000
+   2c65c:	206e754a 	rsbcs	r7, lr, sl, asr #10
+   2c660:	32203220 	eorcc	r3, r0, #32, 4
    2c664:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2c668:	333a3631 	teqcc	sl, #51380224	; 0x3100000
-   2c66c:	31323a32 	teqcc	r2, r2, lsr sl
+   2c668:	333a3531 	teqcc	sl, #205520896	; 0xc400000
+   2c66c:	33343a33 	teqcc	r4, #208896	; 0x33000
    2c670:	00000000 	andeq	r0, r0, r0
    2c674:	35584d44 	ldrbcc	r4, [r8, #-3396]	; 0xfffff2bc
    2c678:	52203231 	eorpl	r3, r0, #268435459	; 0x10000003
