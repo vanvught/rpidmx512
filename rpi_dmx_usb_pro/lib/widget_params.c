@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #include "ff.h"
 #include "dmx.h"
@@ -40,9 +41,10 @@ static const TCHAR PARAMS_FILE_NAME[] = "params.txt";							///< Parameters file
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";		///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";			///<
 static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";	///<
-///< custom entry
-static const char PARAMS_WIDGET_MODE[] = "mode";									///<
+///< custom entries
+static const char PARAMS_WIDGET_MODE[] = "widget_mode";								///<
 static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";	///<
+
 
 #ifdef UPDATE_CONFIG_FILE
 /**
@@ -128,10 +130,13 @@ inline static void update_config_file(const char *name, const int value) { }
  *
  * @param line
  */
-static void process_line_read(const char *line)
+static int process_line_read_unsigned_int(const char *line)
 {
 	char name[64];
 	unsigned int value;
+
+	errno = 0;
+
 	if (sscanf(line, "%[^=]=%u", name, &value) == 2)
 	{
 		if (strncmp(name, DMXUSBPRO_PARAMS_BREAK_TIME, sizeof(DMXUSBPRO_PARAMS_BREAK_TIME)) == 0)
@@ -161,6 +166,8 @@ static void process_line_read(const char *line)
 			dmx_send_to_host_throttle = value;
 		}
 	}
+
+	return errno;
 }
 
 /**
@@ -185,7 +192,7 @@ static void read_config_file(void)
 		{
 			if (f_gets(buffer, sizeof buffer, &file_object) == NULL)
 				break; // Error or end of file
-			process_line_read((const char *) buffer);
+			process_line_read_unsigned_int((const char *) buffer);
 		}
 		f_close(&file_object);
 	}
