@@ -23,9 +23,15 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#ifdef RDM_CONTROLLER
+#include <ctype.h>
+#include <errno.h>
 
+#include "ff.h"
+#endif
 #include "hardware.h"
 #include "bcm2835_vc.h"
 #include "util.h"
@@ -40,12 +46,22 @@ static const uint8_t  DEVICE_LABEL_LENGTH = (sizeof(DEVICE_LABEL) / sizeof(uint8
 static const uint8_t  DEVICE_MANUFACTURER_NAME_LENGTH = (sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(uint8_t)) - 1;
 static const uint8_t  DEVICE_SOFTWARE_VERSION_LENGTH = (sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(uint8_t)) - 1;
 
+#ifdef RDM_CONTROLLER
+static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";			///< Parameters file name
+static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";	///<
+static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";		///<
+#endif
+
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
 static uint8_t root_device_label[DEVICE_LABEL_MAX_LENGTH];
 static uint8_t root_device_label_length = 0;
 
+static uint8_t device_manufacturer_name[DEVICE_MANUFACTURER_LABEL_MAX_LENGTH];
+static uint8_t device_manufacturer_name_length = 0;
 static uint8_t device_sn[DEVICE_SN_LENGTH];
+
+static uint8_t manufacturer_id[DEVICE_MANUFACTURER_ID_LENGTH];
 
 static uint8_t is_factory_defaults = TRUE;
 static uint16_t factory_defaults_checksum = 0;
@@ -54,6 +70,86 @@ static struct _rdm_device_info rdm_device_info;
 static struct _rdm_device_info rdm_sub_device_info;
 
 /**
+ * @ingroup rdm
+ *
+ * @param line
+ */
+#ifdef RDM_CONTROLLER
+static int process_line_read_string(const char *line)
+{
+	char name[64];
+	char value[64];
+
+	errno = 0;
+
+	if (sscanf(line, "%[^=]=%48s", name, value) == 2)
+	{
+		if (strncmp(name, RDM_DEVICE_MANUFACTURER_NAME, sizeof(RDM_DEVICE_MANUFACTURER_NAME)) == 0)
+		{
+			device_manufacturer_name_length = MIN(strlen(value), DEVICE_MANUFACTURER_LABEL_MAX_LENGTH);
+			memcpy(device_manufacturer_name, value, device_manufacturer_name_length);
+		} else if (strncmp(name, RDM_DEVICE_MANUFACTURER_ID, sizeof(RDM_DEVICE_MANUFACTURER_ID)) == 0)
+		{
+			size_t len = strlen(value);
+			if(len == 4)
+			{
+				if(isxdigit((int)value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3]))
+				{
+					uint8_t nibble_high;
+					uint8_t nibble_low;
+
+					nibble_high = (value[0] >'9' ? (value[0] | 0x20) - 'a' + 10 : value[0] - '0') << 4;
+					nibble_low = value[1] >'9' ? (value[1] | 0x20) - 'a' + 10 : value[1] - '0';
+
+					uid_device[0] = nibble_high | nibble_low;
+
+					nibble_high = (value[2] >'9' ? (value[2] | 0x20) - 'a' + 10 : value[2] - '0') << 4;
+					nibble_low = value[3] >'9' ? (value[3] | 0x20) - 'a' + 10 : value[3] - '0';
+
+					uid_device[1] = nibble_high | nibble_low;
+				}
+			}
+		}
+	}
+
+	return errno;
+}
+
+/**
+ * @ingroup rdm
+ *
+ */
+static void read_config_file(void)
+{
+	int rc = -1;
+
+	FATFS fat_fs;
+	FIL file_object;
+
+	f_mount(0, &fat_fs);		// Register volume work area (never fails)
+
+	rc = f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ);
+
+	if (rc == FR_OK)
+	{
+		TCHAR buffer[128];
+		for (;;)
+		{
+			if (f_gets(buffer, sizeof buffer, &file_object) == NULL)
+				break; // Error or end of file
+			process_line_read_string((const char *) buffer);
+		}
+		f_close(&file_object);
+	}
+	else
+	{
+	}
+
+}
+#endif
+
+/**
+ * @ingroup rdm
  *
  * @return
  */
@@ -177,7 +273,7 @@ const uint8_t rdm_device_info_get_label_length(const uint16_t sub_device)
  */
 const uint8_t * rdm_device_info_get_manufacturer_name(void)
 {
-	return DEVICE_MANUFACTURER_NAME;
+	return device_manufacturer_name;
 }
 
 /**
@@ -187,7 +283,7 @@ const uint8_t * rdm_device_info_get_manufacturer_name(void)
  */
 const uint8_t rdm_device_info_get_manufacturer_name_length(void)
 {
-	return DEVICE_MANUFACTURER_NAME_LENGTH;
+	return device_manufacturer_name_length;
 }
 
 /**
@@ -197,7 +293,10 @@ const uint8_t rdm_device_info_get_manufacturer_name_length(void)
  */
 const uint8_t * rdm_device_info_get_manufacturer_id(void)
 {
-	return DEVICE_MANUFACTURER_ID;
+	manufacturer_id[0] = uid_device[1];
+	manufacturer_id[1] = uid_device[0];
+
+	return manufacturer_id;
 }
 
 /**
@@ -441,8 +540,8 @@ void rdm_device_info_init(void)
 		uid_device[5] = mac_address[5];
 	}
 
-	uid_device[0] = DEVICE_MANUFACTURER_ID[1];
-	uid_device[1] = DEVICE_MANUFACTURER_ID[0];
+	uid_device[0] = DEVICE_MANUFACTURER_ID[0];
+	uid_device[1] = DEVICE_MANUFACTURER_ID[1];
 
 	device_sn[0] = uid_device[5];
 	device_sn[1] = uid_device[4];
@@ -451,6 +550,13 @@ void rdm_device_info_init(void)
 
 	memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	root_device_label_length = DEVICE_LABEL_LENGTH;
+
+	memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
+	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
+
+#ifdef RDM_CONTROLLER
+	read_config_file();
+#endif
 
 	const uint16_t device_model = hardware_get_board_model_id();
 	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
