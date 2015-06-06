@@ -35,8 +35,6 @@
 #include "monitor.h"
 #include "sniffer.h"
 
-static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];
-
 static struct _rdm_statistics rdm_statistics;
 
 /**
@@ -91,28 +89,6 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 
 		usb_send_package(data, start + SNIFFER_PACKET_SIZE / 2, data_length - SNIFFER_PACKET_SIZE / 2);
 	}
-}
-
-/**
- * @ingroup widget
- *
- * @return
- */
-inline static uint8_t dmx_data_is_changed(void)
-{
-	uint16_t i = 0;
-	uint8_t is_changed = FALSE;
-
-	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++)
-	{
-		if (dmx_data_previous[i] != dmx_data[i])	//TODO Is a memcmp more efficient?
-		{
-			is_changed = TRUE;
-			dmx_data_previous[i] = dmx_data[i];
-		}
-	}
-
-	return is_changed;
 }
 
 /**

@@ -72,6 +72,8 @@ static struct _rdm_device_info rdm_sub_device_info;
 /**
  * @ingroup rdm
  *
+ * Process the input , parse name=value
+ *
  * @param line
  */
 #ifdef RDM_CONTROLLER
@@ -82,7 +84,7 @@ static int process_line_read_string(const char *line)
 
 	errno = 0;
 
-	if (sscanf(line, "%[^=]=%48s", name, value) == 2)
+	if (sscanf(line, "%48[^=]=%48[^\n]", name, value) == 2)
 	{
 		if (strncmp(name, RDM_DEVICE_MANUFACTURER_NAME, sizeof(RDM_DEVICE_MANUFACTURER_NAME)) == 0)
 		{
@@ -118,6 +120,8 @@ static int process_line_read_string(const char *line)
 /**
  * @ingroup rdm
  *
+ * Read the configuration file from the sdcard and process each line.
+ *
  */
 static void read_config_file(void)
 {
@@ -151,7 +155,9 @@ static void read_config_file(void)
 /**
  * @ingroup rdm
  *
- * @return
+ * Calculate the checksum over rdm_device_info.dmx_start_address, rdm_device_info.current_personality and root_device_label
+ *
+ * @return checksum
  */
 inline static uint16_t calculate_checksum(void)
 {

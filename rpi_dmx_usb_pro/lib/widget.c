@@ -42,10 +42,10 @@
 #include "monitor.h"
 
 static uint8_t widget_data[600];						///<
-static uint8_t widget_mode = MODE_DMX_RDM;				///<
-static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///<
+static uint8_t widget_mode = MODE_DMX_RDM;				///< \ref _widget_mode
+static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///< \ref _widget_send_state
 static uint32_t widget_send_rdm_packet_start = 0;		///<
-static uint8_t widget_rdm_discovery_running = FALSE;	///<
+static uint8_t widget_rdm_discovery_running = FALSE;	///< Is the Widget in RDM Discovery mode?
 
 inline static void rdm_time_out_message(void);
 
@@ -349,11 +349,19 @@ void widget_received_dmx_change_of_state_packet(void)
 	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_get_port_direction()) || (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 
-	monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
-	monitor_line(MONITOR_LINE_STATUS, NULL);
+	if (dmx_get_available() == FALSE)
+			return;
 
-	// TODO widget_received_dmx_change_of_state_packet
-	monitor_line(MONITOR_LINE_INFO, "Send changed DMX data to HOST");
+	dmx_available_set(FALSE);
+
+	if (dmx_data_is_changed())
+	{
+		monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
+		monitor_line(MONITOR_LINE_STATUS, NULL);
+
+		// TODO widget_received_dmx_change_of_state_packet
+		monitor_line(MONITOR_LINE_INFO, "Send changed DMX data to HOST");
+	}
 }
 
 /**
@@ -381,7 +389,7 @@ static void widget_get_sn_reply(void)
  * Send RDM Discovery Request (Label=11 \ref SEND_RDM_DISCOVERY_REQUEST)
  *
  * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
- * DMX port, and then receive an RDM Discovery Response (see Received DMX Packet \ref received_dmx_packet).
+ * DMX port, and then receive an RDM Discovery Response.
  */
 static void widget_send_rdm_discovery_request(uint16_t data_length)
 {

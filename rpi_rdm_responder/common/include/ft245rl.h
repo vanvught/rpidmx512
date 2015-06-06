@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 extern void FT245RL_init(void);
-extern void FT245RL_write_data(uint8_t );
+extern void FT245RL_write_data(uint8_t);
 extern uint8_t FT245RL_read_data();
 extern uint8_t FT245RL_data_available(void);
 extern uint8_t FT245RL_can_write(void);

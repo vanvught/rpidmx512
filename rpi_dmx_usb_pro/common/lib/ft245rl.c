@@ -30,10 +30,9 @@
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
-// TODO Place the jumper on the left side for 3V3
 /*
  * Raspberry Pi
- * P5:Broadcom			FT245RL
+ * P1:Broadcom			FT245RL
  *
  *  3:GPIO02	<--->	D0
  *  5:GPIO03	<--->	D1
@@ -51,16 +50,16 @@
  * 22:GPIO25	<----	RXF#
  */
 
-#define WR	22
-#define _RD	23
+#define WR	22	///< GPIO22
+#define _RD	23	///< GPIO23
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
  *
+ * Set the GPIOs for data to output
  */
 static void data_gpio_fsel_output()
 {
-	// Data output
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
 	value |= BCM2835_GPIO_FSEL_OUTP << 6;
@@ -84,12 +83,12 @@ static void data_gpio_fsel_output()
 }
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
  *
+ * Set the GPIOs for data to input
  */
 static void data_gpio_fsel_input()
 {
-	// Data input
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
 	value |= BCM2835_GPIO_FSEL_INPT << 6;
@@ -113,8 +112,10 @@ static void data_gpio_fsel_input()
 }
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
  *
+ * Set RD#, WR to output, TXE#, RXF# to input.
+ * Set RD# to high, set WR to low
  */
 void FT245RL_init(void)
 {
@@ -137,6 +138,9 @@ void FT245RL_init(void)
 }
 
 /**
+ * @ingroup ft245rl
+ *
+ * Write 8-bits to USB
  *
  * @param data
  */
@@ -156,7 +160,9 @@ void FT245RL_write_data(uint8_t data)
 }
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
+ *
+ * Read 8-bits from USB
  *
  * @return
  */
@@ -177,7 +183,7 @@ uint8_t FT245RL_read_data()
 }
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
  *
  * Read RXF#
  *
@@ -189,7 +195,7 @@ uint8_t FT245RL_data_available(void)
 }
 
 /**
- * @ingroup usb
+ * @ingroup ft245rl
  *
  * Read TXE#
  *

@@ -36,6 +36,11 @@ extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
 
 #include "ft245rl.h"
 
+/**
+ * Wait for data is available in the FIFO which can be read by strobing RD# low, then high again.
+ *
+ * @return
+ */
 inline static const uint8_t usb_read_byte(void)
 {
 	while (!FT245RL_data_available());

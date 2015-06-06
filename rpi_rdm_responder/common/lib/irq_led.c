@@ -25,13 +25,12 @@
 
 #include <stdint.h>
 
-#include "bcm2835.h"
-#include "hardware.h"
-
 static uint32_t ticks_per_second = 1E6 / 2;	///< Blinking at 1Hz
-static uint32_t irq_counter;				///<
 
 /**
+ * @ingroup led
+ *
+ * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
  *
  * @param ticks
  */
@@ -41,23 +40,11 @@ void ticks_per_second_set(uint32_t ticks)
 }
 
 /**
+ * @ingroup led
  *
- * @return
+ * @return Ticks per second.
  */
 uint32_t ticks_per_second_get(void)
 {
 	return ticks_per_second;
 }
-
-/**
- * @ingroup led
- *
- */
-
-void irq_init(void) {
-    irq_counter = 0;
-    BCM2835_ST->C3 = BCM2835_ST->CLO + ticks_per_second;
-    BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
-	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
-}
-

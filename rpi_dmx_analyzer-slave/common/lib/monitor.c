@@ -52,6 +52,11 @@ void monitor_line(const uint8_t line, const char *fmt, ...)
 	}
 }
 
+/**
+ * @ingroup monitor
+ *
+ * @param line
+ */
 void monitor_time_uptime(const uint8_t line)
 {
 	const uint32_t minute = 60;

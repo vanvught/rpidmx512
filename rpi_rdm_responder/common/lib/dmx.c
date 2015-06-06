@@ -55,6 +55,7 @@ typedef enum {
 uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];									///<
 static uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
 static uint16_t dmx_data_index = 0;										///<
+static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE];					///<
 static uint8_t dmx_available = FALSE;									///<
 static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;		///<
@@ -62,12 +63,13 @@ static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;		///<
 static uint8_t dmx_output_fast_as_possible = FALSE;						///<
 static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;			///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;				///<
-static volatile uint32_t dmx_fiq_micros_current = 0;					///<
-static volatile uint32_t dmx_fiq_micros_previous = 0;					///<
+static volatile uint32_t dmx_fiq_micros_current = 0;					///< Timestamp FIQ
+static volatile uint32_t dmx_fiq_micros_previous = 0;					///< Timestamp previous FIQ
 static volatile uint32_t dmx_slot_to_slot = 0;							///<
 static volatile uint32_t dmx_break_to_break = 0;						///<
 static volatile uint32_t dmx_break_to_break_previous = 0;				///<
 static volatile uint32_t dmx_slots_in_packet = 0;						///<
+static uint32_t dmx_slots_in_packet_previous = 0;						///<
 static volatile uint8_t dmx_send_state = IDLE;							///<
 static volatile uint8_t dmx_send_always = FALSE;						///<
 static volatile uint32_t dmx_send_break_micros = 0;						///<
@@ -228,6 +230,34 @@ void dmx_available_set(const uint8_t is_available)
 	dmx_available = is_available;
 }
 
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+uint8_t dmx_data_is_changed(void)
+{
+	uint16_t i = 0;
+	uint8_t is_changed = FALSE;
+
+	if (dmx_slots_in_packet != dmx_slots_in_packet_previous) {
+		dmx_slots_in_packet_previous = dmx_slots_in_packet;
+		return TRUE;
+	}
+
+	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++)
+	{
+		if (dmx_data_previous[i] != dmx_data[i])
+		{
+			is_changed = TRUE;
+			dmx_data_previous[i] = dmx_data[i];
+		}
+	}
+
+	return is_changed;
+}
+
 /**
  * @ingroup dmx
  *
@@ -354,7 +384,7 @@ static void pl011_dmx512_init(void) {
  * Interrupt enable routine for PL011 receiving DMX data.
  *
  */
-static void dmx_receive_fiq_init(void) {
+inline static void dmx_receive_fiq_init(void) {
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
     BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_VC_UART;
 }
@@ -589,7 +619,10 @@ void dmx_init(void)
 {
 	int i = 0;
 	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
+	{
 		dmx_data[i] = 0;
+		dmx_data_previous[i] = 0;
+	}
 
 	rdm_data_buffer_index_head = 0;
 	rdm_data_buffer_index_tail = 0;

@@ -89,6 +89,7 @@ extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(const uint32_t);
+extern uint8_t dmx_data_is_changed(void);
 
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);

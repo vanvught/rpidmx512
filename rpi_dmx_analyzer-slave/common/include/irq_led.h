@@ -26,8 +26,6 @@
 #ifndef IRQ_LED_H_
 #define IRQ_LED_H_
 
-extern void irq_init(void);
-
 extern void ticks_per_second_set(uint32_t);
 extern uint32_t ticks_per_second_get(void);
 

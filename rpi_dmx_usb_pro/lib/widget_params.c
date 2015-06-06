@@ -137,7 +137,7 @@ static int process_line_read_unsigned_int(const char *line)
 
 	errno = 0;
 
-	if (sscanf(line, "%[^=]=%u", name, &value) == 2)
+	if (sscanf(line, "%48[^=]=%u", name, &value) == 2)
 	{
 		if (strncmp(name, DMXUSBPRO_PARAMS_BREAK_TIME, sizeof(DMXUSBPRO_PARAMS_BREAK_TIME)) == 0)
 		{
