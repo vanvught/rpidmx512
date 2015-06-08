@@ -16559,8 +16559,8 @@ Disassembly of section .rodata:
    17718:	206e754a 	rsbcs	r7, lr, sl, asr #10
    1771c:	32203820 	eorcc	r3, r0, #32, 16	; 0x200000
    17720:	00353130 	eorseq	r3, r5, r0, lsr r1
-   17724:	303a3731 	eorscc	r3, sl, r1, lsr r7
-   17728:	36303a31 			; <UNDEFINED> instruction: 0x36303a31
+   17724:	343a3731 	ldrtcc	r3, [sl], #-1841	; 0xfffff8cf
+   17728:	37303a38 			; <UNDEFINED> instruction: 0x37303a38
    1772c:	00000000 	andeq	r0, r0, r0
    17730:	204d4452 	subcs	r4, sp, r2, asr r4
    17734:	70736552 	rsbsvc	r6, r3, r2, asr r5
