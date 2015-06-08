@@ -234,19 +234,26 @@ void dmx_available_set(const uint8_t is_available)
 /**
  * @ingroup dmx
  *
+ * The DMX data is changed when slots in packets is changed,
+ * or when the data itself is changed.
+ *
  * @return
  */
 uint8_t dmx_data_is_changed(void)
 {
-	uint16_t i = 0;
+	uint32_t i = 0;
 	uint8_t is_changed = FALSE;
 
 	if (dmx_slots_in_packet != dmx_slots_in_packet_previous) {
 		dmx_slots_in_packet_previous = dmx_slots_in_packet;
+		for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++)
+		{
+			dmx_data_previous[i] = dmx_data[i];
+		}
 		return TRUE;
 	}
 
-	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++)
+	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++)
 	{
 		if (dmx_data_previous[i] != dmx_data[i])
 		{
@@ -419,7 +426,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			{
 				dmx_receive_state = RDMDISCFE;
 				dmx_data_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data; // 0xFE;
 			}
 			break;
 #endif
