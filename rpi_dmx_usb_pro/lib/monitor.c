@@ -34,6 +34,8 @@
 #include "util.h"
 
 static uint32_t dmx_packets_previous = 0;
+extern uint32_t widget_received_dmx_packet_count;
+static uint32_t widget_received_dmx_packet_count_previous = 0;
 
 /**
  * @ingroup monitor
@@ -48,7 +50,7 @@ void monitor_update(void)
 
 	monitor_time_uptime(1);
 
-	const uint8_t widget_mode = widget_mode_get();
+	const uint8_t widget_mode = widget_get_mode();
 
 	if (widget_mode == MODE_RDM_SNIFFER)
 	{
@@ -98,7 +100,7 @@ void monitor_update(void)
 		console_clear_line(3);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction())
-			printf("Input [%s]\n", receive_dmx_on_change_get() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
+			printf("Input [%s]\n", widget_get_receive_dmx_on_change() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
 		else
 		{
 			printf("%s\n", dir[dmx_get_port_direction()]);
@@ -110,5 +112,9 @@ void monitor_update(void)
 		monitor_dmx_data(8, dmx_data);
 
 		// line 11 RDM Data
+
+		const uint16_t function_count_per_second = widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous;
+		monitor_line(24, "%d\n", function_count_per_second);
+		widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 	}
 }

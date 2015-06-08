@@ -306,7 +306,7 @@ void widget_params_init(void)
 	if (mode == MODE_DMX_RDM)
 		dmx_usb_pro_params.firmware_msb = FIRMWARE_RDM;
 
-	widget_mode_set(mode);
+	widget_set_mode(mode);
 
 	dmx_set_output_break_time((double)(dmx_usb_pro_params.break_time) * (double)(10.67));
 	dmx_set_output_mab_time((double)(dmx_usb_pro_params.mab_time) * (double)(10.67));

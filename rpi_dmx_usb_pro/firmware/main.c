@@ -36,16 +36,13 @@
 #include "widget.h"
 #include "monitor.h"
 
-/**
- * @ingroup main
- *
- */
 struct _poll
 {
 	void (*f)(void);
 } const poll_table[] = {
 		{ widget_receive_data_from_host },
-		{ widget_received_dmx_change_of_state_packet},
+		{ widget_received_dmx_packet },
+		{ widget_received_dmx_change_of_state_packet },
 		{ widget_received_rdm_packet },
 		{ widget_rdm_timeout },
 		{ widget_sniffer_rdm },
@@ -57,7 +54,6 @@ struct _event
 	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
-		{ 800000, widget_received_dmx_packet },
 		{1000000, monitor_update }
 };
 
@@ -106,7 +102,7 @@ int notmain(void)
 
 	printf("Compiled on %s at %s ", __DATE__, __TIME__);
 	const uint8_t *device_sn = rdm_device_info_get_sn();
-	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_mode_get(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
+	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_get_mode(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
 
 	watchdog_init();
 

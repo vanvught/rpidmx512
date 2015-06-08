@@ -98,7 +98,7 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
  */
 void widget_sniffer_dmx(void)
 {
-	const uint8_t mode = widget_mode_get();
+	const uint8_t mode = widget_get_mode();
 
 	if (mode != MODE_RDM_SNIFFER)
 		return;
@@ -125,7 +125,7 @@ void widget_sniffer_dmx(void)
  */
 void widget_sniffer_rdm(void)
 {
-	const uint8_t mode = widget_mode_get();
+	const uint8_t mode = widget_get_mode();
 
 	if (mode != MODE_RDM_SNIFFER)
 		return;

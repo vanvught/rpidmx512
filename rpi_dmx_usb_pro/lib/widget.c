@@ -47,6 +47,8 @@ static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///< \ref _widget_send_stat
 static uint32_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///< Is the Widget in RDM Discovery mode?
 
+uint32_t widget_received_dmx_packet_count = 0; 			//TODO DEBUG
+
 inline static void rdm_time_out_message(void);
 
 /*
@@ -56,9 +58,9 @@ inline static void rdm_time_out_message(void);
 /**
  * @ingroup widget
  *
- * @return
+ * @return \ref _widget_send_state
  */
-const uint8_t receive_dmx_on_change_get()
+const uint8_t widget_get_receive_dmx_on_change()
 {
 	return receive_dmx_on_change;
 }
@@ -66,9 +68,9 @@ const uint8_t receive_dmx_on_change_get()
 /**
  * @ingroup widget
  *
- * @return
+ * @return \ref _widget_mode
  */
-const uint8_t widget_mode_get()
+const uint8_t widget_get_mode()
 {
 	return widget_mode;
 }
@@ -78,7 +80,7 @@ const uint8_t widget_mode_get()
  *
  * @param mode
  */
-void widget_mode_set(const uint8_t mode)
+void widget_set_mode(const uint8_t mode)
 {
 	widget_mode = mode;
 }
@@ -144,6 +146,8 @@ void widget_received_dmx_packet(void)
 	if (dmx_get_available() == FALSE)
 		return;
 
+	widget_received_dmx_packet_count++;
+
 	dmx_available_set(FALSE);
 
 	const int16_t lenght = dmx_get_slots_in_packet() + 1;
@@ -170,7 +174,8 @@ void widget_received_dmx_packet(void)
  */
 void widget_received_rdm_packet(void)
 {
-	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER) || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
+	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER)
+			|| (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
 		return;
 
 	uint8_t *rdm_data = (uint8_t *)rdm_get_available();
@@ -297,8 +302,8 @@ void widget_rdm_timeout(void)
 	if (widget_send_rdm_packet_start == 0)
 		return;
 
-	if (hardware_micros() - widget_send_rdm_packet_start > 1000000) {
-		rdm_time_out_message();
+	if (hardware_micros() - widget_send_rdm_packet_start > 1000000) {	// 1 second
+		rdm_time_out_message();											// Send message to host Label=12 RDM_TIMEOUT
 		widget_send_rdm_packet_start = 0;
 	}
 
@@ -346,7 +351,9 @@ void widget_received_dmx_change_of_state_packet(void)
 	if (widget_mode == MODE_RDM_SNIFFER)
 		return;
 
-	if ((widget_rdm_discovery_running == TRUE) || (DMX_PORT_DIRECTION_INP != dmx_get_port_direction()) || (SEND_ALWAYS == receive_dmx_on_change))
+	if ((widget_rdm_discovery_running == TRUE)
+			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
+			|| (SEND_ALWAYS == receive_dmx_on_change))
 		return;
 
 	if (dmx_get_available() == FALSE)
