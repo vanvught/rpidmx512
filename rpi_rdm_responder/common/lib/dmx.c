@@ -426,7 +426,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			{
 				dmx_receive_state = RDMDISCFE;
 				dmx_data_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data; // 0xFE;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
 			}
 			break;
 #endif
