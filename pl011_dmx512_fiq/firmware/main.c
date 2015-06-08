@@ -129,6 +129,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_receive_state = RDMDISCFE;
 				dmx_data_index = 0;
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+				bcm2835_gpio_set(ANALYZER_CH3); // DATA
 			}
 			break;
 #endif
@@ -154,6 +155,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				break;
 			default:
 				dmx_receive_state = IDLE;
+				bcm2835_gpio_clr(ANALYZER_CH3); // DATA
 				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 				break;
 			}
@@ -203,6 +205,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				rdm_data_receive_end = hardware_micros();
 			}
 			dmx_receive_state = IDLE;
+			bcm2835_gpio_clr(ANALYZER_CH3); // DATA
+			bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 			break;
 #ifdef RDM_CONTROLLER
 		case RDMDISCFE:
@@ -218,6 +222,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				break;
 			default:
 				dmx_receive_state = IDLE;
+				bcm2835_gpio_clr(ANALYZER_CH3); // DATA
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 				break;
 			}
 			break;
@@ -236,8 +242,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 			if (rdm_disc_index == 4)
 			{
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
-				dmx_receive_state = IDLE;
 				rdm_data_receive_end = hardware_micros();
+				dmx_receive_state = IDLE;
+				bcm2835_gpio_clr(ANALYZER_CH3); // DATA
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
 			}
 			break;
 #endif

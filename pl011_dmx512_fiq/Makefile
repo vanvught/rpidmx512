@@ -6,6 +6,9 @@ COPS = -Wall -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176j
 COPS += -DBARE_METAL
 COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
+#COPS += -DDEBUG
+#COPS += -DDEBUG_ANALYZER
+COPS += -DRDM_CONTROLLER
 
 COPS += -I"./common/include"
 COPS += -I"./include"
