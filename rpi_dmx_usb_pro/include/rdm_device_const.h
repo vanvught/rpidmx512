@@ -28,13 +28,13 @@
 #include <stdint.h>
 
 #include "rdm.h"
+#include "sofware_version_id.h"
 
 static const uint8_t  DEVICE_LABEL[] = "Raspberry Pi DMX USB Pro";
 static const uint8_t  DEVICE_MANUFACTURER_NAME[] = "AvV";
 static const uint8_t  DEVICE_MANUFACTURER_ID[] = {0x7F, 0xF0};	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static const uint8_t  DEVICE_SUPPORTED_LANGUAGE[] = "en";
 static const uint8_t  DEVICE_SOFTWARE_VERSION[] = "1.0";
-static const uint32_t DEVICE_SOFTWARE_VERSION_ID = 0x20150321;
 
 #define DEFAULT_DMX_START_ADDRESS		1
 #define DEFAULT_CURRENT_PERSONALITY		1

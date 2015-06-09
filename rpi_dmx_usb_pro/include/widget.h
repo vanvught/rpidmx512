@@ -67,10 +67,10 @@ typedef enum
 } _widget_mode;
 
 extern const uint8_t widget_get_receive_dmx_on_change(void);
-extern const uint32_t widget_dmx_output_period_get(void);
-extern void widget_dmx_output_period_set(const uint32_t);
 extern const uint8_t widget_get_mode(void);
 extern void widget_set_mode(const uint8_t);
+extern const uint32_t widget_get_received_dmx_packet_period(void);
+extern void widget_set_received_dmx_packet_period(uint32_t);
 
 // poll table
 extern void widget_received_rdm_packet(void);
@@ -79,7 +79,6 @@ extern void widget_ouput_dmx(void);
 extern void widget_rdm_timeout(void);
 extern void widget_sniffer_rdm(void);
 extern void widget_sniffer_dmx(void);
-// events table
 extern void widget_received_dmx_packet(void);
 extern void widget_received_dmx_change_of_state_packet(void);
 

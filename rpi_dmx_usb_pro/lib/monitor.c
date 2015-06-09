@@ -106,15 +106,10 @@ void monitor_update(void)
 			printf("%s\n", dir[dmx_get_port_direction()]);
 		}
 
-		// line 4 LABEL
-		// line 5 Info
-
 		monitor_dmx_data(8, dmx_data);
 
-		// line 11 RDM Data
-
 		const uint16_t function_count_per_second = widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous;
-		monitor_line(24, "%d\n", function_count_per_second);
+		monitor_line(MONITOR_LINE_STATS, "%d", function_count_per_second);
 		widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 	}
 }

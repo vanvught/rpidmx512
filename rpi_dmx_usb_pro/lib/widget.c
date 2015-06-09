@@ -44,6 +44,8 @@
 static uint8_t widget_data[600];						///<
 static uint8_t widget_mode = MODE_DMX_RDM;				///< \ref _widget_mode
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///< \ref _widget_send_state
+static uint32_t received_dmx_packet_period = 0;			///<
+static uint32_t widget_received_dmx_packet_start = 0;	///<
 static uint32_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///< Is the Widget in RDM Discovery mode?
 
@@ -85,6 +87,21 @@ void widget_set_mode(const uint8_t mode)
 	widget_mode = mode;
 }
 
+/**
+ * @ingroup widget
+ *
+ * @return
+ */
+const uint32_t widget_get_received_dmx_packet_period(void)
+{
+	return received_dmx_packet_period;
+}
+
+void widget_set_received_dmx_packet_period(uint32_t period)
+{
+	received_dmx_packet_period = period;
+}
+
 /*
  * Widget LABELs
  */
@@ -120,7 +137,10 @@ static void widget_set_params()
 	widget_params_set_break_time(widget_data[2]);
 	widget_params_set_mab_time(widget_data[3]);
 	widget_params_set_refresh_rate(widget_data[4]);
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_received_dmx_packet_start = hardware_micros();
 }
 
 /**
@@ -145,6 +165,13 @@ void widget_received_dmx_packet(void)
 
 	if (dmx_get_available() == FALSE)
 		return;
+
+	const uint32_t micros_now = hardware_micros();
+
+	if ( micros_now < widget_received_dmx_packet_start + received_dmx_packet_period)
+		return;
+
+	widget_received_dmx_packet_start = micros_now;
 
 	widget_received_dmx_packet_count++;
 
@@ -331,10 +358,14 @@ static void widget_receive_dmx_on_change(void)
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, FALSE);
 	receive_dmx_on_change = widget_data[0];
+
 	uint16_t i = 0;
-	for (i = 0; i < sizeof(dmx_data); i++)
+	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++)
 		dmx_data[i] = 0;
+
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_received_dmx_packet_start = hardware_micros();
 }
 
 /**
@@ -388,6 +419,8 @@ static void widget_get_sn_reply(void)
 	usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_received_dmx_packet_start = hardware_micros();
 }
 
 /**
@@ -455,6 +488,8 @@ static void widget_get_manufacturer_reply(void)
 	usb_send_footer();
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_received_dmx_packet_start = hardware_micros();
 }
 
 /**
@@ -479,6 +514,8 @@ static void widget_get_name_reply(void)
 	usb_send_footer();
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+
+	widget_received_dmx_packet_start = hardware_micros();
 }
 
 /**

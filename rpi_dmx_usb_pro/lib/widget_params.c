@@ -301,6 +301,15 @@ void widget_params_init(void)
 
 	dmx_set_output_period(period);
 
+	period = 0;
+
+	if (dmx_send_to_host_throttle)
+	{
+		period = 1E6 / dmx_send_to_host_throttle;
+	}
+
+	widget_set_received_dmx_packet_period(period);
+
 	uint8_t mode = dmx_usb_pro_params.firmware_msb;
 
 	if (mode == MODE_DMX_RDM)
