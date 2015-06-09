@@ -37,7 +37,7 @@ LINKER = firmware/memmap
 MAP = kernel.map
 LIST = kernel.list
 
-all : $(TARGET)
+all : ./include/sofware_version_id.h $(TARGET)
 
 clean :
 	rm -f $(BUILD)*.o
@@ -46,6 +46,10 @@ clean :
 	rm -f $(BUILD)*.elf
 	rm -f $(MAP)
 	rm -f $(LIST)
+	rm -f ./include/sofware_version_id.h 
+
+./include/sofware_version_id.h :
+	sh ./generate_sofware_version_id.sh
 
 $(BUILD)common/%.o: $(SOURCE)common/lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
