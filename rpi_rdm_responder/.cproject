@@ -38,6 +38,7 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.toolchain.gnu.cross.base.1456269405.51630724" name="generate_sofware_version_id.sh" rcbsApplicability="disable" resourcePath="generate_sofware_version_id.sh" toolsToInvoke=""/>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

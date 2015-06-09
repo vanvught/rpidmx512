@@ -91,7 +91,7 @@ void monitor_update(void)
 	const uint16_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;
 	const uint16_t dmx_available_count_per_second = dmx_handle_data_statistics->dmx_available_count - dmx_available_count_previous;
 
-	monitor_line(25, "%d / %d", function_count_per_second, dmx_available_count_per_second);
+	monitor_line(MONITOR_LINE_STATS, "%d / %d", function_count_per_second, dmx_available_count_per_second);
 
 	function_count_previous = dmx_handle_data_statistics->function_count;
 	dmx_available_count_previous = dmx_handle_data_statistics->dmx_available_count;

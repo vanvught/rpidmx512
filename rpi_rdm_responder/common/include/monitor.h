@@ -30,6 +30,7 @@
 #define MONITOR_LINE_INFO		6
 #define MONITOR_LINE_RDM_DATA	11
 #define MONITOR_LINE_STATUS		23
+#define MONITOR_LINE_STATS		25
 
 #include <stdarg.h>
 #include <stdint.h>
