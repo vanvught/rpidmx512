@@ -108,7 +108,9 @@ static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[] = {
 };
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_supported_parameters(uint16_t sub_device)
 {
@@ -165,6 +167,7 @@ static void rdm_get_queued_message(void)
 #endif
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param name
  * @param lenght
@@ -182,7 +185,9 @@ inline static void handle_string(const uint8_t *name, const uint8_t lenght)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_device_info(uint16_t sub_device)
 {
@@ -199,7 +204,9 @@ static void rdm_get_device_info(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_device_model_description(uint16_t sub_device)
 {
@@ -211,7 +218,9 @@ static void rdm_get_device_model_description(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_manufacturer_label(uint16_t sub_device)
 {
@@ -224,7 +233,9 @@ static void rdm_get_manufacturer_label(uint16_t sub_device)
 
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_device_label(uint16_t sub_device)
 {
@@ -236,6 +247,7 @@ static void rdm_get_device_label(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param was_broadcast
  * @param sub_device
@@ -265,7 +277,9 @@ static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_factory_defaults(uint16_t sub_device)
 {
@@ -285,6 +299,7 @@ static void rdm_get_factory_defaults(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param was_broadcast
  * @param sub_device
@@ -308,7 +323,9 @@ static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_language(uint16_t sub_device)
 {
@@ -320,7 +337,9 @@ static void rdm_get_language(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_software_version_label(uint16_t sub_device)
 {
@@ -332,7 +351,9 @@ static void rdm_get_software_version_label(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_boot_software_version_id(uint16_t sub_device)
 {
@@ -357,7 +378,9 @@ static void rdm_get_boot_software_version_id(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_boot_software_version_label(uint16_t sub_device)
 {
@@ -377,7 +400,9 @@ static void rdm_get_boot_software_version_label(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_personality(uint16_t sub_device)
 {
@@ -394,6 +419,7 @@ static void rdm_get_personality(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param was_broadcast
  * @param sub_device
@@ -426,7 +452,9 @@ static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_personality_description(uint16_t sub_device)
 {
@@ -462,7 +490,9 @@ static void rdm_get_personality_description(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_dmx_start_address(uint16_t sub_device)
 {
@@ -478,7 +508,9 @@ static void rdm_get_dmx_start_address(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_device_hours(uint16_t sub_device)
 {
@@ -496,6 +528,7 @@ static void rdm_get_device_hours(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param was_broadcast
  * @param sub_device
@@ -511,7 +544,9 @@ static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_identify_device(uint16_t sub_device)
 {
@@ -525,7 +560,9 @@ static void rdm_get_identify_device(uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
+ * @param sub_device
  */
 static void rdm_get_real_time_clock(uint16_t sub_device)
 {
@@ -553,6 +590,12 @@ static void rdm_get_real_time_clock(uint16_t sub_device)
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
@@ -582,6 +625,7 @@ static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param was_broadcast
  * @param sub_device
@@ -614,7 +658,12 @@ static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device)
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
-
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
@@ -626,6 +675,12 @@ static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device)
 	hardware_reboot();
 }
 
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;
@@ -653,6 +708,12 @@ static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
 static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;

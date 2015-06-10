@@ -31,6 +31,7 @@
 #include "rdm_handle_data.h"
 
 /**
+ * @ingroup rdm
  *
  * The function is registered in the poll table \file main.c
  */

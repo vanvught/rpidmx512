@@ -39,6 +39,7 @@
 static uint8_t rdm_muted = FALSE;	///<
 
 /**
+ * @ingroup rdm_handlers
  *
  * @return
  */

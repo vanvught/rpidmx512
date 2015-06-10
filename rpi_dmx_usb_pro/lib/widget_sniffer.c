@@ -106,7 +106,7 @@ void widget_sniffer_dmx(void)
 	if (dmx_get_available() == FALSE)
 			return;
 
-	dmx_available_set(FALSE);
+	dmx_set_available_false();
 
 	monitor_line(MONITOR_LINE_INFO, NULL);
 

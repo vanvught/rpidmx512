@@ -41,7 +41,7 @@ void monitor_update(void)
 {
 	monitor_time_uptime(4);
 
-	monitor_line(6, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+	monitor_line(MONITOR_LINE_INFO, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 
@@ -85,7 +85,7 @@ void monitor_update(void)
 					i+28, rdm_data[i+27], rdm_data[i+27]);
 	}
 
-	console_clear_line(24);
+	console_clear_line(MONITOR_LINE_STATS);
 
 	const struct _dmx_handle_data_statistics *dmx_handle_data_statistics = dmx_handle_data_get_statistics();
 	const uint16_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;
