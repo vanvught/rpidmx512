@@ -175,7 +175,7 @@ void widget_received_dmx_packet(void)
 
 	widget_received_dmx_packet_count++;
 
-	dmx_available_set(FALSE);
+	dmx_set_available_false();
 
 	const int16_t lenght = dmx_get_slots_in_packet() + 1;
 
@@ -390,7 +390,7 @@ void widget_received_dmx_change_of_state_packet(void)
 	if (dmx_get_available() == FALSE)
 			return;
 
-	dmx_available_set(FALSE);
+	dmx_set_available_false();
 
 	if (dmx_data_is_changed())
 	{

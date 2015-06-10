@@ -188,7 +188,7 @@ void dmx_devices_run() {
 	if (dmx_get_available() == FALSE)
 			return;
 
-	dmx_available_set(FALSE);
+	dmx_set_available_false();
 
 	dmx_devices_statistics.dmx_available_count++;
 

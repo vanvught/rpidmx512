@@ -53,6 +53,7 @@ void dmx_handle_data_reset_statistics(void)
 }
 
 /**
+ * @ingroup dmx
  *
  * The function is registered in the poll table \file main.c
  */
@@ -63,7 +64,7 @@ void dmx_handle_data(void)
 	if (dmx_get_available() == FALSE)
 			return;
 
-	dmx_available_set(FALSE);
+	dmx_set_available_false();
 
 	dmx_handle_data_statistics.dmx_available_count++;
 
