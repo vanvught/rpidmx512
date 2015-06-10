@@ -71,7 +71,6 @@ struct _total_statistics
 };
 
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
-//extern uint8_t rdm_data[RDM_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
 extern void dmx_port_direction_set(const uint8_t, const uint8_t);
@@ -84,7 +83,7 @@ extern const uint8_t *rdm_get_current_data(void);
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_data_receive_end_get(void);
 extern const uint8_t dmx_get_available(void);
-extern void dmx_available_set(const uint8_t);
+extern void dmx_set_available_false(void);
 extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);

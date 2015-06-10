@@ -225,9 +225,9 @@ const uint8_t dmx_get_available(void)
  *
  * @param is_available
  */
-void dmx_available_set(const uint8_t is_available)
+void dmx_set_available_false(void)
 {
-	dmx_available = is_available;
+	dmx_available = FALSE;
 }
 
 
