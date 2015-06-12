@@ -1570,7 +1570,7 @@ Disassembly of section .text:
 0000962c <rdm_device_info_get_software_version_id>:
     962c:	e59f0000 	ldr	r0, [pc]	; 9634 <rdm_device_info_get_software_version_id+0x8>
     9630:	e12fff1e 	bx	lr
-    9634:	557895ee 	ldrbpl	r9, [r8, #-1518]!	; 0xfffffa12
+    9634:	557b32e4 	ldrbpl	r3, [fp, #-740]!	; 0xfffffd1c
 
 00009638 <rdm_device_info_get_software_version>:
     9638:	e59f0000 	ldr	r0, [pc]	; 9640 <rdm_device_info_get_software_version+0x8>
@@ -1731,7 +1731,7 @@ Disassembly of section .text:
     984c:	eb003967 	bl	17df0 <hardware_get_board_model_id>
     9850:	e58d0004 	str	r0, [sp, #4]
     9854:	eb00024b 	bl	a188 <rdm_sub_devices_get>
-    9858:	e3e0e011 	mvn	lr, #17
+    9858:	e3e0e01b 	mvn	lr, #27
     985c:	e1a01000 	mov	r1, r0
     9860:	e3a03000 	mov	r3, #0
     9864:	e3a0c001 	mov	ip, #1
@@ -1739,8 +1739,8 @@ Disassembly of section .text:
     986c:	e3e0b000 	mvn	fp, #0
     9870:	e3a0e002 	mov	lr, #2
     9874:	e3a0a055 	mov	sl, #85	; 0x55
-    9878:	e3a09078 	mov	r9, #120	; 0x78
-    987c:	e3e0806a 	mvn	r8, #106	; 0x6a
+    9878:	e3a0907b 	mov	r9, #123	; 0x7b
+    987c:	e3a08032 	mov	r8, #50	; 0x32
     9880:	e59d2004 	ldr	r2, [sp, #4]
     9884:	e5c41035 	strb	r1, [r4, #53]	; 0x35
     9888:	e5c42027 	strb	r2, [r4, #39]	; 0x27
@@ -37782,10 +37782,10 @@ Disassembly of section .rodata:
    2c004:	73252074 	teqvc	r5, #116	; 0x74
    2c008:	00000020 	andeq	r0, r0, r0, lsr #32
    2c00c:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   2c010:	32203031 	eorcc	r3, r0, #49	; 0x31
+   2c010:	32203231 	eorcc	r3, r0, #268435459	; 0x10000003
    2c014:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2c018:	353a3132 	ldrcc	r3, [sl, #-306]!	; 0xfffffece
-   2c01c:	33323a34 	teqcc	r2, #52, 20	; 0x34000
+   2c018:	323a3132 	eorscc	r3, sl, #-2147483636	; 0x8000000c
+   2c01c:	38333a38 	ldmdacc	r3!, {r3, r4, r5, r9, fp, ip, sp}
    2c020:	00000000 	andeq	r0, r0, r0
    2c024:	5d64255b 	cfstr64pl	mvdx2, [r4, #-364]!	; 0xfffffe94
    2c028:	4e2f5320 	cdpmi	3, 2, cr5, cr15, cr0, {1}
