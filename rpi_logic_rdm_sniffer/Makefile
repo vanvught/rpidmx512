@@ -23,8 +23,8 @@ LIB += -L"../fb/lib"
 LIB += -L"../bob-baremetal/lib"
 LIB += -L"../bcm2835-baremetal/lib"
 LIB += -L"../hal-baremetal/lib"
-#LIB += -L"../emmc/lib"
-#LIB += -L"../ff9b/lib"
+LIB += -L"../emmc/lib"
+LIB += -L"../ff9b/lib"
 
 BUILD = build/
 SOURCE = ./
@@ -68,11 +68,9 @@ $(BUILD)%.o: $(SOURCE)lib/%.c
 $(BUILD)devices/%.o: $(SOURCE)devices/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
 
-$(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../hal-baremetal/lib/libhal.a ../bob-baremetal/lib/libbob.a ../fb/lib/libfb.a
-	$(ARMGNU)-ld $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lhal -lbob -lbcm2835 -lc -lgcc
+$(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../hal-baremetal/lib/libhal.a ../bob-baremetal/lib/libbob.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff9b/lib/libff9b.a 
+	$(ARMGNU)-ld $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lff9b -lemmc -lhal -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
 	$(ARMGNU)-objcopy $(BUILD)main.elf -O binary $(TARGET)
-	
-

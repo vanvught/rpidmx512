@@ -78,5 +78,3 @@ $(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../bcm2835-baremetal/lib/libbcm
 
 $(TARGET) : $(BUILD)main.elf
 	$(ARMGNU)-objcopy $(BUILD)main.elf -O binary $(TARGET)
-	
-
