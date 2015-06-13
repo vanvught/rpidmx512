@@ -3,6 +3,8 @@
  *
  * @brief DMX USB Pro Widget API Specification 1.44
  *
+ * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -41,7 +43,7 @@
 #include "rdm_send.h"
 #include "monitor.h"
 
-static uint8_t widget_data[600];						///<
+static uint8_t widget_data[600];						///< Message between widget and the USB host
 static uint8_t widget_mode = MODE_DMX_RDM;				///< \ref _widget_mode
 static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///< \ref _widget_send_state
 static uint32_t received_dmx_packet_period = 0;			///<
@@ -69,6 +71,8 @@ const uint8_t widget_get_receive_dmx_on_change()
 
 /**
  * @ingroup widget
+ *
+ * Returns the firmware varieties
  *
  * @return \ref _widget_mode
  */
@@ -450,6 +454,8 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
 /**
  * @ingroup widget
  *
+ * See https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
+ *
  * (Label=12 \ref RDM_TIMEOUT)
  *
  */
@@ -468,6 +474,8 @@ inline static void rdm_time_out_message(void)
 
 /**
  * @ingroup widget
+ *
+ * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Manufacturer.2C_Label_.3D_77.2C_no_data
  *
  * Get Widget Manufacturer Reply (Label = 77 \ref MANUFACTURER_LABEL)
  */
@@ -495,6 +503,8 @@ static void widget_get_manufacturer_reply(void)
 /**
  * @ingroup widget
  *
+ * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Name.2C_Label_.3D_78.2C_no_data
+ *
  * Get Widget Name Reply (Label = 78 \ref GET_WIDGET_NAME_LABEL)
  */
 static void widget_get_name_reply(void)
@@ -520,6 +530,8 @@ static void widget_get_name_reply(void)
 
 /**
  * @ingroup widget
+ *
+ * Read bytes from host
  *
  * This function is called from the poll table in \ref main.c
  */
