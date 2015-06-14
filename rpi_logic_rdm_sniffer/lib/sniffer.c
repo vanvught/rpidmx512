@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file sniffer.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,84 +23,82 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#include "bcm2835_wdog.h"
-#include "hardware.h"
 #include "util.h"
 #include "dmx.h"
+#include "rdm.h"
+#include "rdm_e120.h"
 #include "monitor.h"
 #include "sniffer.h"
 
-struct _poll
-{
-	void (*f)(void);
-}const poll_table[] = {
-		{ sniffer_rdm },
-		{ sniffer_dmx }
-};
-
-struct _event
-{
-	const uint32_t period;
-	void (*f)(void);
-}const events[] = {
-		{1000000, monitor_update }
-};
-
-uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+static struct _rdm_statistics rdm_statistics;
 
 /**
- * @ingroup main
+ * @ingroup
  *
+ * @return
  */
-static void events_init() {
-	int i;
-	const uint32_t mircos_now = hardware_micros();
-	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		events_elapsed_time[i] += mircos_now;
-	}
+const struct _rdm_statistics *rdm_statistics_get(void)
+{
+	return &rdm_statistics;
 }
 
 /**
- * @ingroup main
+ * @ingroup widget
  *
+ * This function is called from the poll table in \ref main.c
  */
-inline static void events_check() {
-	int i;
-	const uint32_t micros_now = hardware_micros();
-	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (micros_now > events_elapsed_time[i] + events[i].period) {
-			events[i].f();
-			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
-		}
-	}
+void sniffer_dmx(void)
+{
+	if (dmx_get_available() == FALSE)
+			return;
+
+	dmx_set_available_false();
+
+	monitor_dmx_data(4, dmx_data);
 }
 
-int notmain(void) {
-	hardware_init();
-	dmx_init();
+/**
+ * @ingroup
+ *
+ * This function is called from the poll table in \ref main.c
+ */
+void sniffer_rdm(void)
+{
+	const uint8_t *rdm_data = rdm_get_available();
 
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("Logic RDM Sniffer, DMX512 data analyzer for 32 channels\n");
+	if (rdm_data == NULL)
+			return;
 
-	watchdog_init();
+	//uint8_t message_length = 0;
 
-	events_init();
-
-	for (;;)
+	if (rdm_data[0] == 0xCC)
 	{
-		watchdog_feed();
-		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
-		{
-			poll_table[i].f();
+		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
+		//message_length = p->message_length + 2;
+		switch (p->command_class) {
+			case E120_DISCOVERY_COMMAND:
+				rdm_statistics.discovery_packets++;
+				break;
+			case E120_DISCOVERY_COMMAND_RESPONSE:
+				rdm_statistics.discovery_response_packets++;
+				break;
+			case E120_GET_COMMAND:
+				rdm_statistics.get_requests++;
+				break;
+			case E120_SET_COMMAND:
+				rdm_statistics.set_requests++;
+				break;
+			default:
+				break;
 		}
-
-		events_check();
+	}
+	else if (rdm_data[0] == 0xFE)
+	{
+		rdm_statistics.discovery_response_packets++;
+		//message_length = 24;
 	}
 
-	return 0;
 }
