@@ -13674,10 +13674,10 @@ Disassembly of section .rodata:
    14d04:	73252074 	teqvc	r5, #116	; 0x74
    14d08:	0000000a 	andeq	r0, r0, sl
    14d0c:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   14d10:	32203331 	eorcc	r3, r0, #-1006632960	; 0xc4000000
+   14d10:	32203431 	eorcc	r3, r0, #822083584	; 0x31000000
    14d14:	00353130 	eorseq	r3, r5, r0, lsr r1
-   14d18:	333a3232 	teqcc	sl, #536870915	; 0x20000003
-   14d1c:	31343a33 	teqcc	r4, r3, lsr sl
+   14d18:	333a3931 	teqcc	sl, #802816	; 0xc4000
+   14d1c:	33343a34 	teqcc	r4, #52, 20	; 0x34000
    14d20:	00000000 	andeq	r0, r0, r0
    14d24:	69676f4c 	stmdbvs	r7!, {r2, r3, r6, r8, r9, sl, fp, sp, lr}^
    14d28:	44522063 	ldrbmi	r2, [r2], #-99	; 0xffffff9d
