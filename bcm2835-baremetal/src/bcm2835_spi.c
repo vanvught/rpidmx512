@@ -182,31 +182,30 @@ void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
 void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
-
     // Set TA = 1
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
-    uint32_t i; //TODO use FIFO
-    for (i = 0; i < len; i++)
+	uint32_t fifo_writes = 0;
+	uint32_t fifo_reads = 0;
+
+	while ((fifo_writes < len) || (fifo_reads < len))
     {
-		// Maybe wait for TXD
-		while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD))
-			;
 
-		// Write a byte
-		if (tbuf)
-			BCM2835_SPI0->FIFO = tbuf[i];
-		else
-			BCM2835_SPI0->FIFO = 0;
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD) && (fifo_writes < len))
+		{
+			if (tbuf)
+				BCM2835_SPI0->FIFO = tbuf[fifo_writes++];
+			else
+				BCM2835_SPI0->FIFO = 0;
+		}
 
-		// Wait for RXD
-		while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD))
-			;
-
-		// then read the data byte
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD) && (fifo_reads < len))
+		{
 		if (rbuf)
-			rbuf[i] = BCM2835_SPI0->FIFO;
+			rbuf[fifo_reads++] = BCM2835_SPI0->FIFO;
+		}
     }
+
     // Wait for DONE to be set
     while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE))
         	;
