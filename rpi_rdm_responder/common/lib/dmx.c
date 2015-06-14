@@ -707,7 +707,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 					if ((BCM2835_PL011->FR & 0x20) == 0)
 						break;
 				}
-				udelay(44); //TODO remove
+				udelay(44);
 				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmx_send_state = IDLE;
 				break;
