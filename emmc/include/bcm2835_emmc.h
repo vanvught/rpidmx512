@@ -74,16 +74,6 @@ struct emmc_block_dev
 #define BCM2835_EMMC_CONTROL1_RESET_CMD 		((uint32_t)(1 << 25))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_CMD 0x02
 #define BCM2835_EMMC_CONTROL1_RESET_DATA		((uint32_t)(1 << 26))	///< SDHCI_SOFTWARE_RESET 0x2F, SDHCI_RESET_DATA 0x04
 
-// TODO Move to sdhci.h
-#define SDHCI_DIVIDER_SHIFT		8
-#define SDHCI_DIVIDER_HI_SHIFT	6
-#define SDHCI_DIV_MASK			0xFF
-#define SDHCI_DIV_MASK_LEN		8
-#define SDHCI_DIV_HI_MASK		0x300
-
-#define SDHCI_MAX_DIV_SPEC_200	256
-#define SDHCI_MAX_DIV_SPEC_300	2046
-
 extern int bcm2835_emmc_reset_cmd(void);
 extern int bcm2835_emmc_reset_dat(void);
 extern uint32_t bcm2835_emmc_set_clock(uint32_t);

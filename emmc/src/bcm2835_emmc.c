@@ -32,6 +32,7 @@
 #include "bcm2835_vc.h"
 #include "bcm2835_emmc.h"
 #include "sd.h"
+#include "sdhci.h"
 
 extern uint32_t sd_commands[];
 
