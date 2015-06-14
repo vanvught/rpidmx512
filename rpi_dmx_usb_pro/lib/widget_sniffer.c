@@ -163,7 +163,7 @@ void widget_sniffer_rdm(void)
 	else if (rdm_data[0] == 0xFE)
 	{
 		rdm_statistics.discovery_response_packets++;
-		message_length = 24;	// TODO check for real amount bytes received
+		message_length = 24;
 	}
 
 	usb_send_package(rdm_data, 0, message_length);

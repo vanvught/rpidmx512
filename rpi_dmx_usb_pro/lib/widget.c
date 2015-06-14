@@ -50,8 +50,7 @@ static uint32_t received_dmx_packet_period = 0;			///<
 static uint32_t widget_received_dmx_packet_start = 0;	///<
 static uint32_t widget_send_rdm_packet_start = 0;		///<
 static uint8_t widget_rdm_discovery_running = FALSE;	///< Is the Widget in RDM Discovery mode?
-
-uint32_t widget_received_dmx_packet_count = 0; 			//TODO DEBUG
+static uint32_t widget_received_dmx_packet_count = 0; 	///<
 
 inline static void rdm_time_out_message(void);
 
@@ -101,9 +100,24 @@ const uint32_t widget_get_received_dmx_packet_period(void)
 	return received_dmx_packet_period;
 }
 
+/**
+ * @ingroup widget
+ *
+ * @param period
+ */
 void widget_set_received_dmx_packet_period(uint32_t period)
 {
 	received_dmx_packet_period = period;
+}
+
+/**
+ * @ingroup widget
+ *
+ * @return
+ */
+const uint32_t widget_get_received_dmx_packet_count(void)
+{
+	return widget_received_dmx_packet_count;
 }
 
 /*
@@ -242,7 +256,7 @@ void widget_received_rdm_packet(void)
 		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
 		monitor_line(MONITOR_LINE_STATUS,"RECEIVED_RDM_PACKET SC:0xFE");
 
-		message_length = 24; // TODO not always in case of collision
+		message_length = 24;
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status

@@ -34,8 +34,8 @@
 #include "rdm_handle_data.h"
 #include "dmx_handle_data.h"
 
-static uint16_t function_count_previous = 0;							///<
-static uint16_t dmx_available_count_previous = 0;						///<
+static uint16_t function_count_previous = 0;			///<
+static uint16_t dmx_available_count_previous = 0;		///<
 
 void monitor_update(void)
 {
@@ -84,8 +84,6 @@ void monitor_update(void)
 					i+19, rdm_data[i+18], rdm_data[i+18],
 					i+28, rdm_data[i+27], rdm_data[i+27]);
 	}
-
-	console_clear_line(MONITOR_LINE_STATS);
 
 	const struct _dmx_handle_data_statistics *dmx_handle_data_statistics = dmx_handle_data_get_statistics();
 	const uint16_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;

@@ -34,7 +34,6 @@
 #include "util.h"
 
 static uint32_t dmx_packets_previous = 0;
-extern uint32_t widget_received_dmx_packet_count;
 static uint32_t widget_received_dmx_packet_count_previous = 0;
 
 /**
@@ -73,18 +72,20 @@ void monitor_update(void)
 
 		console_clear_line(14);
 		console_clear_line(17);
+
 		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
+
 		if (dmx_updates_per_second)
 		{
 			printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
 			printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
-			printf("Break to break  %ld\n", dmx_get_break_to_break());
+			printf("Break to break  %ld     \n", dmx_get_break_to_break());
 		}
 		else
 		{
 			printf("Slots in packet -- \n");
 			printf("Slot to slot    -- \n");
-			printf("Break to break  --\n");
+			printf("Break to break  --     \n");
 		}
 		dmx_packets_previous = total_statistics->dmx_packets;
 	} else
@@ -100,16 +101,26 @@ void monitor_update(void)
 		console_clear_line(3);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction())
-			printf("Input [%s]\n", widget_get_receive_dmx_on_change() == SEND_ALWAYS ? "SEND_ALWAYS" : "SEND_ON_DATA_CHANGE_ONLY");
+		{
+			const uint8_t receive_dmx_on_change = widget_get_receive_dmx_on_change();
+			if (receive_dmx_on_change == SEND_ALWAYS)
+			{
+				printf("Input [SEND_ALWAYS]\n");
+
+				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
+				monitor_line(MONITOR_LINE_STATS, "%d", widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
+				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
+			}
+			else
+			{
+				printf("Input [SEND_ON_DATA_CHANGE_ONLY]\n");
+			}
+		}
 		else
 		{
 			printf("%s\n", dir[dmx_get_port_direction()]);
 		}
 
 		monitor_dmx_data(8, dmx_data);
-
-		const uint16_t function_count_per_second = widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous;
-		monitor_line(MONITOR_LINE_STATS, "%d", function_count_per_second);
-		widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 	}
 }
