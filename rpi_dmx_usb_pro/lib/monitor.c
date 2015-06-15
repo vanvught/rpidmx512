@@ -33,8 +33,8 @@
 #include "sniffer.h"
 #include "util.h"
 
-static uint32_t dmx_packets_previous = 0;
-static uint32_t widget_received_dmx_packet_count_previous = 0;
+static uint32_t dmx_packets_previous = 0;						///<
+static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 
 /**
  * @ingroup monitor
