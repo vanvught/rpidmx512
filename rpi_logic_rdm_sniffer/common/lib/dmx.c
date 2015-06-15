@@ -38,6 +38,14 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#ifdef LOGIC_ANALYZER
+#define ANALYZER_CH1	RPI_V2_GPIO_P1_23	///< CLK
+#define ANALYZER_CH2	RPI_V2_GPIO_P1_21	///< MISO
+#define ANALYZER_CH3	RPI_V2_GPIO_P1_19	///< MOSI
+#define ANALYZER_CH4	RPI_V2_GPIO_P1_24	///< CE0
+#define ANALYZER_CH5	RPI_V2_GPIO_P1_26	///< CE1
+#endif
+
 ///< State of receiving DMX/RDM Bytes
 typedef enum {
   IDLE = 0,		///<
@@ -85,6 +93,8 @@ static uint8_t rdm_disc_index = 0;														///<
 #endif
 static struct _dmx_statistics dmx_statistics;											///<
 static struct _total_statistics total_statistics;										///<
+
+static unsigned int irq_counter;														///<
 
 /*
  * GETTERS / SETTERS
@@ -406,6 +416,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 {
 	dmb();
 
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_set(ANALYZER_CH1);
+#endif
+
 	dmx_fiq_micros_current = BCM2835_ST->CLO;
 
 	if (BCM2835_PL011->DR & PL011_DR_BE)
@@ -438,8 +452,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
-			    //BCM2835_ST->C1 = dmx_fiq_micros_current + 45;
-			    //BCM2835_ST->CS = BCM2835_ST_CS_M1;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
+			    bcm2835_gpio_set(ANALYZER_CH3); // DMX DATA
+#endif
 				break;
 			case E120_SC_RDM:		// RDM start code
 				dmx_receive_state = RDMDATA;
@@ -463,12 +479,19 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				dmx_receive_state = IDLE;
 				dmx_available = TRUE;
 				dmx_slots_in_packet = DMX_UNIVERSE_SIZE;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_clr(ANALYZER_CH3); // DMX DATA
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 			}
 			break;
 		case RDMDATA:
 			if (dmx_data_index > RDM_DATA_BUFFER_SIZE)
 			{
 				dmx_receive_state = IDLE;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 			} else
 			{
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
@@ -496,6 +519,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				rdm_data_receive_end = hardware_micros();
 			}
 			dmx_receive_state = IDLE;
+#ifdef LOGIC_ANALYZER
+			bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 			break;
 #ifdef RDM_CONTROLLER
 		case RDMDISCFE:
@@ -511,6 +537,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				break;
 			default:
 				dmx_receive_state = IDLE;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 				break;
 			}
 			break;
@@ -531,6 +560,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
 				dmx_receive_state = IDLE;
 				rdm_data_receive_end = hardware_micros();
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 			}
 			break;
 #endif
@@ -540,6 +572,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 	}
 
 	dmx_fiq_micros_previous = dmx_fiq_micros_current;
+
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH1);
+#endif
 
 	dmb();
 }
@@ -624,6 +660,20 @@ void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_d
  */
 void dmx_init(void)
 {
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_fsel(ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
+
+	bcm2835_gpio_clr(ANALYZER_CH1); // FIQ
+	bcm2835_gpio_clr(ANALYZER_CH2);	// BREAK
+	bcm2835_gpio_clr(ANALYZER_CH3); // DMX DATA
+	bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+	bcm2835_gpio_clr(ANALYZER_CH5); // IRQ
+#endif
+
 	int i = 0;
 	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
 	{
@@ -650,11 +700,14 @@ void dmx_init(void)
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, 1);
 }
 
-static unsigned int irq_counter;
-
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 {
 	dmb();
+
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_set(ANALYZER_CH5);
+#endif
+
 
 	const uint32_t clo = BCM2835_ST->CLO;
 
@@ -669,6 +722,10 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 				dmx_receive_state = IDLE;
 				dmx_available = TRUE;
 				dmx_slots_in_packet = dmx_data_index - 1;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_clr(ANALYZER_CH3); // DMX DATA
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 			}
 			else
 				BCM2835_ST->C1 = clo + 45;
@@ -710,6 +767,9 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 				udelay(44);
 				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmx_send_state = IDLE;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_set(ANALYZER_CH4);	// IDLE
+#endif
 				break;
 			default:
 				break;
@@ -723,6 +783,10 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 		BCM2835_ST->C3 = clo + ticks_per_second_get();
 		hardware_led_set(irq_counter++ & 0x01);
 	}
+
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_clr(ANALYZER_CH5);
+#endif
 
 	dmb();
 }
