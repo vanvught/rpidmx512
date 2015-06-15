@@ -752,6 +752,8 @@ void rdm_handlers(uint8_t *rdm_data, const uint8_t is_broadcast, const uint8_t c
 {
 	struct _pid_definition const *pid_handler = NULL;
 
+	rdm_handlers_rdm_data = rdm_data;
+
 	if (command_class != E120_GET_COMMAND && command_class != E120_SET_COMMAND)
 	{
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_UNSUPPORTED_COMMAND_CLASS);
@@ -760,13 +762,11 @@ void rdm_handlers(uint8_t *rdm_data, const uint8_t is_broadcast, const uint8_t c
 
 	const uint16_t sub_device_count = rdm_sub_devices_get();
 
-	if (sub_device >  sub_device_count && sub_device != 0xffff)
+	if ((sub_device >  sub_device_count) && (sub_device != 0xffff))
 	{
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_SUB_DEVICE_OUT_OF_RANGE);
 		return;
 	}
-
-	rdm_handlers_rdm_data = rdm_data;
 
 	uint8_t i;
 	for (i = 0; i < sizeof(PID_DEFINITIONS) / sizeof(struct _pid_definition); ++i)

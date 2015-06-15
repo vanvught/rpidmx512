@@ -31,11 +31,11 @@
 
 struct _rdm_sub_devices_info
 {
-	uint16_t dmx_footprint;
+	const uint16_t dmx_footprint;
 	uint8_t current_personality;
-	uint8_t personality_count;
+	const uint8_t personality_count;
 	uint16_t dmx_start_address;
-	uint8_t sensor_count;
+	const uint8_t sensor_count;
 	uint8_t device_label[DEVICE_LABEL_MAX_LENGTH];
 	uint8_t device_label_length;
 	const struct _rdm_personality *rdm_personalities;

@@ -24,41 +24,9 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 
-#include "rdm.h"
 #include "rdm_sub_devices.h"
-
-/*
-uint16_t dmx_footprint;
-uint8_t current_personality;
-uint8_t personality_count;
-uint16_t dmx_start_address;
-uint8_t sensor_count;
-uint8_t device_label[DEVICE_LABEL_MAX_LENGTH];
-uint8_t device_label_length;
-*/
-
-static const struct _rdm_personality rdm_sub_device_1[] = {
-		{ 7, "Digital output 7-lines" }
-		};
-
-static const struct _rdm_personality rdm_sub_device_2[] = {
-		{ 2, "2 Relays" }
-		};
-
-static const struct _rdm_personality rdm_sub_device_34[] = {
-		{ 8, "Digital output 8-lines" }
-		};
-
-static struct _rdm_sub_devices_info rdm_sub_devices_info[] = {
-		{ 7, 1, 1,  1, 0, "bw_spi_dio", 10, &rdm_sub_device_1[0] },
-		{ 2, 1, 1,  1, 0, "bw_spi_relay", 12, &rdm_sub_device_2[0] },
-		{ 8, 1, 1,  9, 0, "mcp23s08", 8, &rdm_sub_device_34[0] },
-		{ 8, 1, 1, 17, 0, "mcp23s08", 8, &rdm_sub_device_34[0] },
-};
-
-static uint16_t rdm_sub_devices = 4;
+#include "dmx_devices.h"
 
 /**
  *
@@ -67,7 +35,7 @@ static uint16_t rdm_sub_devices = 4;
  */
 const uint16_t rdm_sub_devices_get_footprint(const uint16_t sub_device)
 {
-	return rdm_sub_devices_info[sub_device - 1].dmx_footprint;
+	return dmx_devices_get_footprint(sub_device);
 }
 
 /**
@@ -77,7 +45,7 @@ const uint16_t rdm_sub_devices_get_footprint(const uint16_t sub_device)
  */
 const uint16_t rdm_sub_devices_get_dmx_start_address(const uint16_t sub_device)
 {
-	return rdm_sub_devices_info[sub_device - 1].dmx_start_address;
+	return dmx_devices_get_dmx_start_address(sub_device);
 }
 
 /**
@@ -87,7 +55,7 @@ const uint16_t rdm_sub_devices_get_dmx_start_address(const uint16_t sub_device)
  */
 void rdm_sub_devices_set_dmx_start_address(const uint16_t sub_device, const uint16_t dmx_start_address)
 {
-	rdm_sub_devices_info[sub_device - 1].dmx_start_address = dmx_start_address;
+	dmx_devices_set_dmx_start_address(sub_device,  dmx_start_address);
 }
 
 /**
@@ -97,7 +65,7 @@ void rdm_sub_devices_set_dmx_start_address(const uint16_t sub_device, const uint
  */
 const uint8_t *rdm_sub_devices_get_label(const uint16_t sub_device)
 {
-	return rdm_sub_devices_info[sub_device - 1].device_label;
+	return dmx_devices_get_label(sub_device);
 }
 
 /**
@@ -108,8 +76,7 @@ const uint8_t *rdm_sub_devices_get_label(const uint16_t sub_device)
  */
 void rdm_sub_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length)
 {
-	memcpy(rdm_sub_devices_info[sub_device - 1].device_label, label, label_length);
-	rdm_sub_devices_info[sub_device - 1].device_label_length = label_length;
+	dmx_devices_set_label(sub_device, label, label_length);
 }
 
 /**
@@ -119,13 +86,17 @@ void rdm_sub_devices_set_label(const uint16_t sub_device, const uint8_t *label, 
  */
 const uint8_t rdm_sub_devices_get_label_length(const uint16_t sub_device)
 {
-	return rdm_sub_devices_info[sub_device - 1].device_label_length;
+	return dmx_devices_get_label_length(sub_device);
 }
 
-
+/**
+ *
+ * @param sub_device
+ * @return
+ */
 const uint8_t rdm_sub_devices_get_personality_current(const uint16_t sub_device)
 {
-	return rdm_sub_devices_info[sub_device - 1].current_personality;
+	return 	dmx_devices_get_personality_current(sub_device);
 }
 
 /**
@@ -135,17 +106,29 @@ const uint8_t rdm_sub_devices_get_personality_current(const uint16_t sub_device)
  */
 void rdm_sub_devices_set_personality_current(const uint16_t sub_device, const uint8_t personality)
 {
-	rdm_sub_devices_info[sub_device - 1].current_personality = personality;
+	dmx_devices_set_personality_current(sub_device,  personality);
 }
 
+/**
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const char *rdm_sub_devices_get_personality_description(const uint16_t sub_device, const uint8_t personality)
 {
-	return rdm_sub_devices_info[sub_device - 1].rdm_personalities[personality - 1].description;
+	return dmx_devices_get_personality_description(sub_device, personality);
 }
 
+/**
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t sub_device, const uint8_t personality)
 {
-	return rdm_sub_devices_info[sub_device - 1].rdm_personalities[personality - 1].slots;
+	return dmx_devices_get_personality_slots(sub_device, personality);
 }
 
 /**
@@ -155,12 +138,12 @@ const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t sub_device, 
  */
 const struct _rdm_sub_devices_info *rdm_sub_devices_info_get(const uint16_t sub_device)
 {
-	return &rdm_sub_devices_info[sub_device - 1];
+	return dmx_devices_info_get(sub_device);
 }
 
 void rdm_sub_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info)
 {
-	memcpy(&rdm_sub_devices_info[sub_device - 1], sub_devices_info, sizeof(struct _rdm_sub_devices_info));
+	dmx_devices_info_set(sub_device, sub_devices_info);
 }
 
 /**
@@ -169,8 +152,5 @@ void rdm_sub_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_d
  */
 const uint16_t rdm_sub_devices_get(void)
 {
-	return rdm_sub_devices;
+	return dmx_devices_get_devices_connected();
 }
-
-
-
