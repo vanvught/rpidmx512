@@ -29,11 +29,11 @@
 
 struct _widget_params
 {
-	uint8_t firmware_lsb;
-	uint8_t firmware_msb;
-	uint8_t break_time;
-	uint8_t mab_time;
-	uint8_t refresh_rate;
+	uint8_t firmware_lsb;		///< Firmware version LSB. Valid range is 0 to 255.
+	uint8_t firmware_msb;		///< Firmware version MSB. Valid range is 0 to 255.
+	uint8_t break_time;			///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
+	uint8_t mab_time;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
+	uint8_t refresh_rate;		///< DMX output rate in packets per second. Valid range is s1 to 40.
 };
 
 typedef enum

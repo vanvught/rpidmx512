@@ -29,7 +29,7 @@
 #include "rdm.h"
 #include "rdm_sub_devices.h"
 
-static uint16_t rdm_sub_devices = 0;		///<
+static uint16_t rdm_sub_devices = 0;		///< This RDM Responder does not have sub-devices.
 
 /**
  *
