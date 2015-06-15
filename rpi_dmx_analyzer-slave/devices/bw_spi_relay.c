@@ -27,8 +27,14 @@
 extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
-#include "dmx_data.h"
+#include "dmx.h"
 #include "bw_spi_relay.h"
+
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 2, "2 Relays" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "bw_spi_relay", 12, &rdm_sub_device[0] };
 
 /**
  * @ingroup DEV
@@ -68,6 +74,9 @@ static void bw_spi_relay_init(dmx_device_info_t *dmx_device_info) {
 #endif
 	bw_spi_relay_start(&(dmx_device_info->device_info));
 	bw_spi_relay_output(&dmx_device_info->device_info, 0);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, bw_spi_relay_init)

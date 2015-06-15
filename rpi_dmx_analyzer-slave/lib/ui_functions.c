@@ -23,7 +23,7 @@
 
 #include "bw_i2c_ui.h"
 #include "ui_functions.h"
-#include "dmx_data.h"
+#include "dmx.h"
 
 #ifdef DEBUG
 #include <bcm2835.h>

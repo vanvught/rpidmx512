@@ -28,7 +28,6 @@ extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
 #include "dmx.h"
-#include "dmx_data.h"
 #include "bw_spi_7fets.h"
 
 /**

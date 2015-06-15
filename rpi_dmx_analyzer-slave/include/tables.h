@@ -55,12 +55,7 @@
 
 /* AvV begin */
 //typedef void (*thunk_t)(void);
-#include <device_info.h>
-
-typedef struct _dmx_device_info {
-	device_info_t device_info;
-	int dmx_start_address;
-} dmx_device_info_t;
+#include "dmx_devices.h"
 
 typedef void (*thunk_t)(dmx_device_info_t *);
 /* AvV end */

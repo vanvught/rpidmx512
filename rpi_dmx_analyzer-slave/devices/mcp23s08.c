@@ -26,9 +26,16 @@
 #ifdef DEBUG
 extern int printf(const char *format, ...);
 #endif
-#include <tables.h>
-#include <dmx_data.h>
-#include <mcp23s08.h>
+#include "tables.h"
+#include "dmx.h"
+#include "mcp23s08.h"
+
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 8, "Digital output 8-lines" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 8, 1, 1, 0, 0, "mcp23s08", 8, &rdm_sub_device[0] };
+
 
 /**
  * @ingroup DEV
@@ -69,6 +76,9 @@ static void mcp23s08_init(dmx_device_info_t * dmx_device_info) {
 	mcp23s08_start(&(dmx_device_info->device_info));
 	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_IODIR, 0x00);
 	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_GPIO, 0x00);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, mcp23s08_init)

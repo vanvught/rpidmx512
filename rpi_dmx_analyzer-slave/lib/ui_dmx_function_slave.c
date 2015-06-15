@@ -28,6 +28,7 @@
 #include "bw_ui.h"
 #include "dmx_devices.h"
 #include "ui_functions.h"
+#include "tables.h"
 
 extern initializer_t devices_table[];	///<
 extern _devices_t devices_connected;	///<
@@ -115,7 +116,7 @@ void dmx_slave(const char buttons) {
 				// Line 2
 				static char text_2[BW_UI_MAX_CHARACTERS] = {'s', 'a', ':', 'x', ' ', ' ', ' ', 'd', 'm', 'x', ':', ' ', ' ', ' ', 'D'};
 				char slave_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.device_info.slave_address;
-				int  dmx_start_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.dmx_start_address;
+				int  dmx_start_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.rdm_sub_devices_info->dmx_start_address;
 				text_2[4] = TO_HEX((slave_address & 0xF0) >> 4);
 				text_2[5] = TO_HEX(slave_address & 0x0F);
 				itoa_base10_3(dmx_start_address, &text_2[11]);

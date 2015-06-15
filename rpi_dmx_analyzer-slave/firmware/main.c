@@ -35,7 +35,7 @@
 #include "irq_led.h"
 #include "ui_functions.h"
 
-#include "dmx_data.h"
+#include "dmx.h"
 #include "dmx_devices.h"
 
 extern void monitor_update(void);

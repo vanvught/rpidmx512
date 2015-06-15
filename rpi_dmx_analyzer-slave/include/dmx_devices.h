@@ -30,8 +30,16 @@
 #define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6
 #define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7
 
-// Linker table helper macros
-#include <tables.h>
+#include <stdint.h>
+
+#include "device_info.h"
+#include "rdm_sub_devices.h"
+
+typedef struct _dmx_device_info {
+	device_info_t device_info;
+	uint16_t dmx_start_address;
+	struct _rdm_sub_devices_info * rdm_sub_devices_info;
+} dmx_device_info_t;
 
 typedef struct _device_entry {
 	int devices_table_index;
@@ -55,5 +63,20 @@ extern void dmx_devices_run(void);
 
 extern struct _dmx_devices_statistics *dmx_devices_get_statistics(void);
 extern void dmx_devices_reset_statistics(void);
+
+extern const uint16_t dmx_devices_get_devices_connected(void);
+
+extern const uint16_t dmx_devices_get_footprint(const uint16_t);
+extern const uint16_t dmx_devices_get_dmx_start_address(const uint16_t);
+extern void dmx_devices_set_dmx_start_address(const uint16_t, const uint16_t);
+extern const uint8_t * dmx_devices_get_label(const uint16_t);
+extern void dmx_devices_set_label(const uint16_t, const uint8_t *, uint8_t);
+extern const uint8_t dmx_devices_get_label_length(const uint16_t);
+extern const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t);
+extern void dmx_devices_info_set(const uint16_t, const struct _rdm_sub_devices_info *);
+extern const uint8_t dmx_devices_get_personality_current(const uint16_t);
+extern void dmx_devices_set_personality_current(const uint16_t, const uint8_t);
+extern const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t);
+extern const uint16_t dmx_devices_get_personality_slots(const uint16_t, const uint8_t);
 
 #endif /* DMX_DEVICES_H_ */

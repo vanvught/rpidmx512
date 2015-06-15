@@ -25,7 +25,7 @@
 
 #include "bw_ui.h"
 #include "ui_functions.h"
-#include "dmx_data.h"
+#include "dmx.h"
 #include "util.h"
 
 /**

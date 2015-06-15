@@ -26,11 +26,17 @@
 #ifdef DEBUG
 extern int printf(const char *format, ...);
 #endif
-#include <tables.h>
-#include <dmx_data.h>
-#include <bcm2835.h>
-#include <bcm2835_spi.h>
-#include <mcp48x2.h>
+#include "tables.h"
+#include "dmx.h"
+#include "bcm2835.h"
+#include "bcm2835_spi.h"
+#include "mcp48x2.h"
+
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 2, "Analog output 2-lines" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "mcp4822", 7, &rdm_sub_device[0] };
 
 /**
  * @ingroup DEV
@@ -73,6 +79,9 @@ static void mcp4822_init(dmx_device_info_t * dmx_device_info) {
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_A);
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_B);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, mcp4822_init)

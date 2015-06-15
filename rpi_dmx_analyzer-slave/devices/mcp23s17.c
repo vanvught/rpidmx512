@@ -26,9 +26,15 @@
 #ifdef DEBUG
 extern int printf(const char *format, ...);
 #endif
-#include <tables.h>
-#include <dmx_data.h>
-#include <mcp23s17.h>
+#include "tables.h"
+#include "dmx.h"
+#include "mcp23s17.h"
+
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 16, "Digital output 16-lines" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 16, 1, 1, 0, 0, "mcp23s17", 8, &rdm_sub_device[0] };
 
 /**
  * @ingroup DEV
@@ -69,6 +75,9 @@ static void mcp23s17_init(dmx_device_info_t * dmx_device_info) {
 	mcp23s17_start(&(dmx_device_info->device_info));
 	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_IODIRA, 0x0000);
 	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_GPIOA, 0x0000);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, mcp23s17_init)

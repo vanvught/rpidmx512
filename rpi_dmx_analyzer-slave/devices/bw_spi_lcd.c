@@ -27,9 +27,15 @@
 extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
-#include "dmx_data.h"
+#include "dmx.h"
 #include "bw_spi_lcd.h"
 #include "util.h"
+
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 4, "LCD 4-slots" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 4, 1, 1, 0, 0, "bw_spi_lcd", 10, &rdm_sub_device[0] };
 
 /**
  *
@@ -119,6 +125,9 @@ static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info) {
 	bw_spi_lcd_start(&(dmx_device_info->device_info));
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 	display_channels(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, bw_spi_lcd_init)
