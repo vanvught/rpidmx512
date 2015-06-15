@@ -1,8 +1,8 @@
 /**
- * @file dmx_handle_data.c
+ * @file bw_spi_7fets.c
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,51 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "dmx_handle_data.h"
-#include "util.h"
+#ifdef DEBUG
+extern int printf(const char *format, ...);
+#endif
+#include "tables.h"
 #include "dmx.h"
-#include "rdm_device_info.h"
-
-static struct _dmx_handle_data_statistics dmx_handle_data_statistics;	///<
+#include "bw_spi_7fets.h"
 
 /**
- * @ingroup dmx
+ * @ingroup DEV
  *
- * @return
+ * @param dmx_device_info
  */
-struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void)
-{
-	return &dmx_handle_data_statistics;
+static void bw_spi_7fets(dmx_device_info_t *dmx_device_info) {
+	int i = 0;
+	unsigned char data = 0;
+	int dmx_data_index = dmx_device_info->dmx_start_address;
+
+	for (i = 0; i < 7; i++) {
+
+		if (dmx_data_index > DMX_UNIVERSE_SIZE)
+			break;
+
+		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
+			data = data | (1 << i);
+		}
+
+		dmx_data_index++;
+	}
+
+	bw_spi_7fets_output(&dmx_device_info->device_info, data);
 }
+
+INITIALIZER(devices, bw_spi_7fets)
 
 /**
- * @ingroup dmx
+ * @ingroup DEV
  *
+ * @param dmx_device_info
  */
-void dmx_handle_data_reset_statistics(void)
-{
-	dmx_handle_data_statistics.function_count = 0;
-	dmx_handle_data_statistics.dmx_available_count = 0;
+static void bw_spi_7fets_init(dmx_device_info_t *dmx_device_info) {
+#ifdef DEBUG
+	printf("device init <bw_spi_7fets_init>\n");
+#endif
+	bw_spi_7fets_start(&(dmx_device_info->device_info));
+	bw_spi_7fets_output(&dmx_device_info->device_info, 0);
 }
 
-/**
- * @ingroup dmx
- *
- * The function is registered in the poll table \file main.c
- */
-void dmx_handle_data(void)
-{
-	dmx_handle_data_statistics.function_count++;
-
-	if (dmx_get_available() == FALSE)
-			return;
-
-	dmx_set_available_false();
-
-	dmx_handle_data_statistics.dmx_available_count++;
-
-	// const uint16_t personality_current = rdm_device_info_get_personality_current(0);	// Root device
-
-	/*
-	 * Add user code here
-	 */
-}
+INITIALIZER(devices_init, bw_spi_7fets_init)

@@ -33,11 +33,11 @@
 #include "util.h"
 #include "rdm_device_info.h"
 #include "dmx.h"
+#include "dmx_devices.h"
 #include "monitor.h"
 
 // poll table
 extern void rdm_data_received(void);
-extern void dmx_handle_data(void);
 // events table
 extern void rdm_identify(void);
 
@@ -46,7 +46,8 @@ struct _poll
 	void (*f)(void);
 }const poll_table[] = {
 	{ rdm_data_received },
-	{ dmx_handle_data } };
+	{ dmx_devices_run },
+};
 
 struct _event
 {
@@ -89,6 +90,8 @@ inline static void events_check() {
 int notmain(void) {
 	hardware_init();
 	dmx_init();
+	dmx_devices_read_config();
+	dmx_devices_init();
 	rdm_device_info_init();
 
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);

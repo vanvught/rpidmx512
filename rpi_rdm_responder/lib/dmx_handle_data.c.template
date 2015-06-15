@@ -1,0 +1,74 @@
+/**
+ * @file dmx_handle_data.c
+ *
+ */
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include <stdint.h>
+
+#include "dmx_handle_data.h"
+#include "util.h"
+#include "dmx.h"
+#include "rdm_device_info.h"
+
+static struct _dmx_handle_data_statistics dmx_handle_data_statistics;	///<
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void)
+{
+	return &dmx_handle_data_statistics;
+}
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_handle_data_reset_statistics(void)
+{
+	dmx_handle_data_statistics.function_count = 0;
+	dmx_handle_data_statistics.dmx_available_count = 0;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * The function is registered in the poll table \file main.c
+ */
+void dmx_handle_data(void)
+{
+	dmx_handle_data_statistics.function_count++;
+
+	if (dmx_get_available() == FALSE)
+			return;
+
+	dmx_set_available_false();
+
+	dmx_handle_data_statistics.dmx_available_count++;
+
+	/*
+	 * Add user code here
+	 */
+}
