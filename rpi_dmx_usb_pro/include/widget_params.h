@@ -27,6 +27,13 @@
 
 #define DEVICE_TYPE_ID_LENGTH				2	///<
 
+typedef enum
+{
+	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
+	FIRMWARE_RDM = 2,			///< RDM firmware. This enables the Widget to act as an RDM Controller.
+	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
+} _firmware_version_msb;
+
 struct _widget_params
 {
 	uint8_t firmware_lsb;		///< Firmware version LSB. Valid range is 0 to 255.
@@ -35,13 +42,6 @@ struct _widget_params
 	uint8_t mab_time;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
 	uint8_t refresh_rate;		///< DMX output rate in packets per second. Valid range is s1 to 40.
 };
-
-typedef enum
-{
-	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
-	FIRMWARE_RDM = 2,			///< RDM firmware. This enables the Widget to act as an RDM Controller.
-	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
-} _firmware_version_msb;
 
 extern void widget_params_init(void);
 extern void widget_params_get(struct _widget_params *);

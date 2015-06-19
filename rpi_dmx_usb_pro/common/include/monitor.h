@@ -26,16 +26,16 @@
 #ifndef MONITOR_H_
 #define MONITOR_H_
 
-#define MONITOR_LINE_LABEL		5
-#define MONITOR_LINE_INFO		6
-#define MONITOR_LINE_RDM_DATA	11
-#define MONITOR_LINE_STATUS		23
-#define MONITOR_LINE_STATS		25
-
 #include <stdarg.h>
 #include <stdint.h>
 
-extern void monitor_line(const uint8_t, const char *, ...);
+#define MONITOR_LINE_LABEL		(uint8_t)5
+#define MONITOR_LINE_INFO		(uint8_t)6
+#define MONITOR_LINE_RDM_DATA	(uint8_t)11
+#define MONITOR_LINE_STATUS		(uint8_t)23
+#define MONITOR_LINE_STATS		(uint8_t)25
+
+extern void monitor_line(const uint8_t, /*@null@*/ const char *, ...) /*@*/;
 extern void monitor_time_uptime(const uint8_t);
 extern void monitor_rdm_data(const uint8_t, const uint16_t, const uint8_t *);
 extern void monitor_dmx_data(const uint8_t, const uint8_t *);

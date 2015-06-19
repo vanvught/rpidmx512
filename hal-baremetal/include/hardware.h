@@ -46,10 +46,10 @@ extern void hardware_led_init(void);
 void hardware_led_set(const int);
 
 extern const uint64_t hardware_uptime_seconds(void);
-extern const uint32_t hardware_get_firmware_revision(void);
+extern const int32_t hardware_get_firmware_revision(void);
 extern const uint8_t *hardware_get_firmware_copyright(void);
 extern const uint8_t hardware_get_firmware_copyright_length(void);
-extern const uint32_t hardware_get_board_model_id(void);
+extern const int32_t hardware_get_board_model_id(void);
 extern const uint8_t *hardware_get_board_model(void);
 extern const uint8_t hardware_get_board_model_length(void);
 

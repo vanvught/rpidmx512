@@ -37,7 +37,7 @@
  * @param line
  * @param fmt
  */
-void monitor_line(const uint8_t line, const char *fmt, ...)
+void monitor_line(const uint8_t line, /*@null@*/ const char *fmt, ...) /*@*/
 {
 	va_list va;
 

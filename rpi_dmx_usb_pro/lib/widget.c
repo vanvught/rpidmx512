@@ -43,14 +43,14 @@
 #include "rdm_send.h"
 #include "monitor.h"
 
-static uint8_t widget_data[600];						///< Message between widget and the USB host
-static uint8_t widget_mode = MODE_DMX_RDM;				///< \ref _widget_mode
-static uint8_t receive_dmx_on_change = SEND_ALWAYS;		///< \ref _widget_send_state
-static uint32_t received_dmx_packet_period = 0;			///<
-static uint32_t widget_received_dmx_packet_start = 0;	///<
-static uint32_t widget_send_rdm_packet_start = 0;		///<
-static uint8_t widget_rdm_discovery_running = FALSE;	///< Is the Widget in RDM Discovery mode?
-static uint32_t widget_received_dmx_packet_count = 0; 	///<
+static uint8_t widget_data[600];								///< Message between widget and the USB host
+static _widget_mode widget_mode = MODE_DMX_RDM;					///< \ref _widget_mode
+static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;	///< \ref _widget_send_state
+static uint32_t received_dmx_packet_period = 0;					///<
+static uint32_t widget_received_dmx_packet_start = 0;			///<
+static uint32_t widget_send_rdm_packet_start = 0;				///<
+static _boolean widget_rdm_discovery_running = FALSE;			///< Is the Widget in RDM Discovery mode?
+static uint32_t widget_received_dmx_packet_count = 0; 			///<
 
 inline static void rdm_time_out_message(void);
 
@@ -63,7 +63,7 @@ inline static void rdm_time_out_message(void);
  *
  * @return \ref _widget_send_state
  */
-const uint8_t widget_get_receive_dmx_on_change()
+const _widget_send_state widget_get_receive_dmx_on_change()
 {
 	return receive_dmx_on_change;
 }
@@ -75,7 +75,7 @@ const uint8_t widget_get_receive_dmx_on_change()
  *
  * @return \ref _widget_mode
  */
-const uint8_t widget_get_mode()
+const _widget_mode widget_get_mode()
 {
 	return widget_mode;
 }
@@ -85,7 +85,7 @@ const uint8_t widget_get_mode()
  *
  * @param mode
  */
-void widget_set_mode(const uint8_t mode)
+void widget_set_mode(const _widget_mode mode)
 {
 	widget_mode = mode;
 }

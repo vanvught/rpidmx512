@@ -47,8 +47,8 @@ struct _hardware_led
 
 struct _hardware_revision_code
 {
-	uint32_t value;
-	const uint8_t name[MAX_NAME_LENGTH];
+	const uint32_t value;
+	const uint8_t name[MAX_NAME_LENGTH + 1];
 } const board_version[] = {
 		{0x000000, "Model Unknown       "},
 		{0x000002, "Model B R1 256MB    "},
@@ -85,7 +85,7 @@ const uint64_t hardware_uptime_seconds(void)
  *
  * @return
  */
-const uint32_t hardware_get_firmware_revision(void)
+const int32_t hardware_get_firmware_revision(void)
 {
 	return bcm2835_vc_get_get_firmware_revision();
 }
@@ -112,7 +112,7 @@ const uint8_t hardware_get_firmware_copyright_length(void)
  *
  * @return
  */
-const uint32_t hardware_get_board_model_id(void)
+const int32_t hardware_get_board_model_id(void)
 {
 	return bcm2835_vc_get_get_board_revision();
 }
@@ -124,7 +124,7 @@ const uint32_t hardware_get_board_model_id(void)
 const uint8_t *hardware_get_board_model(void)
 {
 	const uint8_t array_length = sizeof(board_version) / sizeof(board_version[0]);
-	const uint32_t revision_code = bcm2835_vc_get_get_board_revision();
+	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
 
 	if (revision_code <= 0)
 		return board_version[0].name;

@@ -63,8 +63,8 @@ typedef enum {
 } mcp23s08Pin;
 
 typedef enum {
-	MCP23S08_FSEL_OUTP = 0b000,		///< Output
-	MCP23S08_FSEL_INPT = 0b001,		///< Input
+	MCP23S08_FSEL_OUTP = 0,			///< Output
+	MCP23S08_FSEL_INPT = 1,			///< Input
 } mcp23s08FunctionSelect;
 
 extern uint8_t mcp23s08_start(device_info_t *);

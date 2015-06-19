@@ -280,7 +280,7 @@ uint8_t dmx_data_is_changed(void)
  *
  * @return
  */
-const uint8_t dmx_get_port_direction(void)
+const _dmx_port_direction dmx_get_port_direction(void)
 {
 	return dmx_port_direction;
 }
@@ -622,7 +622,7 @@ void dmx_data_stop(void)
  * @param port_direction
  * @param enable_data
  */
-void dmx_port_direction_set(const uint8_t port_direction, const uint8_t enable_data)
+void dmx_port_direction_set(const _dmx_port_direction port_direction, const _boolean enable_data)
 {
 	switch (port_direction)
 	{

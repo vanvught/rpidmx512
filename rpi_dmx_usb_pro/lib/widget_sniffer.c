@@ -61,9 +61,9 @@ const struct _rdm_statistics *rdm_statistics_get(void)
  */
 inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length)
 {
-	if (data_length < SNIFFER_PACKET_SIZE / 2)
+	if (data_length < (uint16_t) (SNIFFER_PACKET_SIZE / 2))
 	{
-		usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+		usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
 
 		uint8_t i = 0;
 		for (i = 0; i < data_length; i++)
@@ -74,19 +74,19 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 
 		for (i = data_length; i < SNIFFER_PACKET_SIZE / 2; i++)
 		{
-			usb_send_byte(CONTROL_MASK);
+			usb_send_byte((uint8_t) CONTROL_MASK);
 			usb_send_byte(0x02);
 		}
 
 		usb_send_footer();
 	} else
 	{
-		usb_send_header(SNIFFER_PACKET, SNIFFER_PACKET_SIZE);
+		usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
 
 		uint8_t i = 0;
 		for (i = 0; i < SNIFFER_PACKET_SIZE / 2; i++)
 		{
-			usb_send_byte(DATA_MASK);
+			usb_send_byte((uint8_t) DATA_MASK);
 			usb_send_byte(data[i + start]);
 		}
 

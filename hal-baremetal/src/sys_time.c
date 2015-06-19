@@ -84,7 +84,7 @@ void sys_time_set(const struct tm *tmbuf)
  * @return
  */
 time_t sys_time(time_t *__timer) {
-	time_t elapsed = (unsigned long long)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
+	time_t elapsed = (time_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
 
 	elapsed = elapsed + rtc_startup_seconds;
 

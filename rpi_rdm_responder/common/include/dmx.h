@@ -27,6 +27,7 @@
 #define DMX_H_
 
 #include <stdint.h>
+#include "util.h"
 
 #define DMX_DATA_BUFFER_SIZE			513		///< including SC
 #define RDM_DATA_BUFFER_SIZE			512		///<
@@ -73,8 +74,8 @@ struct _total_statistics
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
-extern void dmx_port_direction_set(const uint8_t, const uint8_t);
-extern const uint8_t dmx_get_port_direction(void);
+extern void dmx_port_direction_set(const _dmx_port_direction, const _boolean);
+extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
 extern const uint8_t *rdm_get_available(void);

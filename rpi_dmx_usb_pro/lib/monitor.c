@@ -47,7 +47,7 @@ void monitor_update(void)
 
 	widget_params_get(&widget_params);
 
-	monitor_time_uptime(1);
+	monitor_time_uptime((uint8_t)1);
 
 	const uint8_t widget_mode = widget_get_mode();
 

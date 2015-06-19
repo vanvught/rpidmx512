@@ -70,9 +70,9 @@ typedef enum
 	MODE_RDM_SNIFFER = 3						///< RDM Sniffer firmware enabled.
 } _widget_mode;
 
-extern const uint8_t widget_get_receive_dmx_on_change(void);
-extern const uint8_t widget_get_mode(void);
-extern void widget_set_mode(const uint8_t);
+extern const _widget_send_state widget_get_receive_dmx_on_change(void);
+extern const _widget_mode widget_get_mode(void);
+extern void widget_set_mode(const _widget_mode);
 extern const uint32_t widget_get_received_dmx_packet_period(void);
 extern void widget_set_received_dmx_packet_period(uint32_t);
 extern const uint32_t widget_get_received_dmx_packet_count(void);
