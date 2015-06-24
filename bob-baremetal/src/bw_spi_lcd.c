@@ -89,7 +89,8 @@ void bw_spi_lcd_set_cursor(const device_info_t *device_info, uint8_t line, uint8
 {
 	char cmd[] = { 0x00, BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
 	cmd[0] = device_info->slave_address;
-	cmd[2] = ((line && 0b11) << 5) | (pos && 0b11111);
+	//cmd[2] = ((line && 0b11) << 5) | (pos && 0b11111);
+	cmd[2] = ((line && 0x03) << 5) | (pos && 0x1f);
 	lcd_spi_setup(device_info);
 	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_LCD_SPI_BYTE_WAIT_US);

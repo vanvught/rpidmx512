@@ -90,7 +90,8 @@ void bw_i2c_ui_set_cursor(uint8_t line, uint8_t pos) {
 //		line = 0;
 //	if (pos > BW_UI_MAX_CHARACTERS)
 //		pos = 0;
-	cmd[1] = ((line && 0b11) << 5) | (pos && 0b11111);
+	//cmd[1] = ((line && 0b11) << 5) | (pos && 0b11111);
+	cmd[1] = ((line && 0x03) << 5) | (pos && 0x1f);
 	ui_i2c_setup();
 	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_UI_I2C_BYTE_WAIT_US);

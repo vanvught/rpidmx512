@@ -31,8 +31,8 @@
 /// http://www.bitwizard.nl/wiki/index.php/Relay
 typedef enum
 {
-	BW_RELAY_0	= 0b00000001,	///< relay 1
-	BW_RELAY_1	= 0b00000010	///< relay 2
+	BW_RELAY_0	= (1 << 0),	///< 0b00000001, relay 1
+	BW_RELAY_1	= (1 << 1)	///< 0b00000010, relay 2
 } bw_spi_relay_Pin;
 
 #endif /* BW_RELAY_H_ */

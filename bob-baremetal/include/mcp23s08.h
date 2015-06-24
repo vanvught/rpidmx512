@@ -52,14 +52,14 @@
 #define MCP23S08_IOCON_HAEN				(uint8_t)(1 << 3)
 
 typedef enum {
-	MCP23S08_PIN_GP0 = 0b00000001,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP1 = 0b00000010,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP2 = 0b00000100,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP3 = 0b00001000,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP4 = 0b00010000,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP5 = 0b00100000,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP6 = 0b01000000,	///< Bidirectional I/O pin.
-	MCP23S08_PIN_GP7 = 0b10000000	///< Bidirectional I/O pin.
+	MCP23S08_PIN_GP0 = (1 << 0),	///< 0b00000001, Bidirectional I/O pin.
+	MCP23S08_PIN_GP1 = (1 << 1),	///< 0b00000010, Bidirectional I/O pin.
+	MCP23S08_PIN_GP2 = (1 << 2),	///< 0b00000100, Bidirectional I/O pin.
+	MCP23S08_PIN_GP3 = (1 << 3),	///< 0b00001000, Bidirectional I/O pin.
+	MCP23S08_PIN_GP4 = (1 << 4),	///< 0b00010000, Bidirectional I/O pin.
+	MCP23S08_PIN_GP5 = (1 << 5),	///< 0b00100000, Bidirectional I/O pin.
+	MCP23S08_PIN_GP6 = (1 << 6),	///< 0b01000000, Bidirectional I/O pin.
+	MCP23S08_PIN_GP7 = (1 << 7)		///< 0b10000000, Bidirectional I/O pin.
 } mcp23s08Pin;
 
 typedef enum {
