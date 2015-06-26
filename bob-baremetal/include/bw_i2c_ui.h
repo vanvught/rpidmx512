@@ -29,11 +29,10 @@
 #include <stdint.h>
 
 #include <bw_ui.h>
-#include <device_info.h>
 
 #define BW_UI_I2C_BYTE_WAIT_US			14
 
-extern uint8_t bw_i2c_ui_start (char);
+extern uint8_t bw_i2c_ui_start (const uint8_t);
 extern void bw_i2c_ui_end (void);
 extern void bw_i2c_ui_reinit(void);
 extern void bw_i2c_ui_text_line_1(const char *, const uint8_t);
@@ -46,7 +45,7 @@ extern void bw_i2c_ui_set_backlight(const uint8_t);
 extern void bw_i2c_ui_get_backlight(uint8_t *);
 extern void bw_i2c_ui_get_contrast(uint8_t *);
 extern void bw_i2c_ui_read_id(void);
-extern char bw_i2c_ui_read_button(const char);
+extern char bw_i2c_ui_read_button(const BwUiButtons);
 extern char bw_i2c_ui_read_button_last(void);
 
 #endif /* BW_I2C_UI_H_ */

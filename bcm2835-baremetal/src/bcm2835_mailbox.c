@@ -37,7 +37,7 @@
  */
 uint32_t bcm2835_mailbox_read(const uint8_t channel) {
 
-	while (1) {
+	while (1==1) {
 		while (BCM2835_MAILBOX ->STATUS & BCM2835_MAILBOX_STATUS_RE);
 
 		uint32_t data = BCM2835_MAILBOX ->READ;

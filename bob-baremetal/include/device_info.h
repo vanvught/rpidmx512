@@ -26,9 +26,11 @@
 #ifndef DEVICE_INFO_H_
 #define DEVICE_INFO_H_
 
+#include <stdint.h>
+
 typedef struct _device_info {
-	char chip_select;
-	char slave_address;
+	uint8_t chip_select;
+	uint8_t slave_address;
 } device_info_t;
 
 #endif /* DEVICE_INFO_H_ */

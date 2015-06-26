@@ -27,9 +27,9 @@
 #define BW_UI_H_
 
 #include <stdint.h>
-#include "device_info.h"
+//#include "device_info.h"
 
-#define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
+#define BW_UI_DEFAULT_SLAVE_ADDRESS		(uint8_t)0x94
 
 #define BW_UI_OK 						0
 #define BW_UI_ERROR						1
@@ -45,7 +45,7 @@ typedef enum
 	BW_UI_BUTTON4	= 3,	///<
 	BW_UI_BUTTON5	= 4,	///<
 	BW_UI_BUTTON6	= 5		///<
-} bwUiButtons;
+} BwUiButtons;
 
 #define BUTTON6_PRESSED(x)		((x) & 0b000001)
 #define BUTTON5_PRESSED(x)		((x) & 0b000010)
@@ -79,7 +79,7 @@ typedef enum
 #define ui_read_button_last				bw_i2c_ui_read_button_last
 #endif
 
-extern uint8_t ui_start(char);
+extern uint8_t ui_start(const uint8_t);
 extern void ui_end(void);
 extern void ui_reinit(void);
 extern void ui_set_cursor(uint8_t, uint8_t);
@@ -100,7 +100,7 @@ extern void ui_get_backlight(uint8_t *);
 extern void ui_get_contrast(uint8_t *);
 extern void ui_read_id(void);
 // UI specific
-extern char ui_read_button(char);
+extern char ui_read_button(const BwUiButtons);
 extern char ui_read_button_last(void);
 
 #endif /* BW_UI_H_ */

@@ -57,12 +57,13 @@ inline void static dimmer_spi_setup(const device_info_t *device_info) {
 uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
-		return 1;
+	return 1;
 #endif
 	FUNC_PREFIX(spi_begin());
 
-	if (device_info->slave_address <= 0)
+	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIMMER_DEFAULT_SLAVE_ADDRESS;
+	}
 
 	return 0;
 }
@@ -75,9 +76,10 @@ uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
  */
 void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];
-	cmd[0] = device_info->slave_address;
-	cmd[1] = BW_PORT_WRITE_DIMMER;
-	cmd[2] = value;
+	cmd[0] = (char)device_info->slave_address;
+	cmd[1] = (char)BW_PORT_WRITE_DIMMER;
+	cmd[2] = (char)value;
+
 	dimmer_spi_setup(device_info);
 	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
@@ -90,4 +92,3 @@ void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value)
 void bw_spi_dimmer_end(void) {
 	FUNC_PREFIX(spi_end());
 }
-
