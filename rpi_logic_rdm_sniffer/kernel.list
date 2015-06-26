@@ -14123,10 +14123,10 @@ Disassembly of section .rodata:
    153d8:	73252074 	teqvc	r5, #116	; 0x74
    153dc:	0000000a 	andeq	r0, r0, sl
    153e0:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   153e4:	32203432 	eorcc	r3, r0, #838860800	; 0x32000000
+   153e4:	32203632 	eorcc	r3, r0, #52428800	; 0x3200000
    153e8:	00353130 	eorseq	r3, r5, r0, lsr r1
-   153ec:	323a3232 	eorscc	r3, sl, #536870915	; 0x20000003
-   153f0:	36313a33 			; <UNDEFINED> instruction: 0x36313a33
+   153ec:	333a3132 	teqcc	sl, #-2147483636	; 0x8000000c
+   153f0:	31343a38 	teqcc	r4, r8, lsr sl
    153f4:	00000000 	andeq	r0, r0, r0
    153f8:	69676f4c 	stmdbvs	r7!, {r2, r3, r6, r8, r9, sl, fp, sp, lr}^
    153fc:	44522063 	ldrbmi	r2, [r2], #-99	; 0xffffff9d
