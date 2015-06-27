@@ -45,20 +45,22 @@ static uint16_t cur_back = CONSOLE_BLACK;
  *
  */
 inline static void newline() {
+	uint8_t *block = NULL;
+
 	cur_y++;
 	cur_x = 0;
 
 	if (cur_y == HEIGHT / CHAR_H) {
 		/* Pointer to row = 0 */
-		uint8_t *to = (uint8_t *)(fb_addr);
+		uint8_t *to = (uint8_t *) (fb_addr);
 		/* Pointer to row = 1 */
 		uint8_t *from = to + (CHAR_H * fb_pitch);
 		/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
 		memmove(to, from, (HEIGHT - CHAR_H) * fb_pitch);
 
-		uint8_t *block = to + ((HEIGHT - CHAR_H) * fb_pitch);
+		block = to + ((HEIGHT - CHAR_H) * fb_pitch);
 		/* Clear last row */
-		memset(block, cur_back, (CHAR_H * fb_pitch));
+		memset(block, (int) cur_back, (size_t) (CHAR_H * fb_pitch));
 
 		cur_y--;
 	}
@@ -83,11 +85,12 @@ inline static void draw_pixel(const int x, const int y, const uint16_t color) {
  * @param fore
  * @param back
  */
-inline static void draw_char(const char c, const int x, int y, const uint16_t fore, const uint16_t back) {
+inline static void draw_char(const int c, const int x, int y, const uint16_t fore, const uint16_t back) {
 	int i, j;
+	uint8_t line;
 
 	for (i = 0; i < CHAR_H; i++) {
-		uint8_t line = FONT[c * CHAR_H + i];
+		line = (uint8_t) FONT[c * (int) CHAR_H + i];
 		for (j = 0; j < CHAR_W; j++) {
 			if (line & 0x1) {
 				draw_pixel(x + j, y, fore);
@@ -109,9 +112,9 @@ inline static void draw_char(const char c, const int x, int y, const uint16_t fo
  * @param back he background color to use to display the character.
  * @return
  */
-int console_draw_char(const char ch, const int x, const int y, const uint16_t fore, const uint16_t back) {
+int console_draw_char(const int ch, const int x, const int y, const uint16_t fore, const uint16_t back) {
 	draw_char(ch, x * CHAR_W, y * CHAR_H, fore, back);
-	return ch;
+	return (int)ch;
 }
 
 /**
@@ -128,11 +131,11 @@ int console_draw_char(const char ch, const int x, const int y, const uint16_t fo
  * @return
  */
 int console_putc(const int ch) {
-	if (ch == '\n') {
+	if (ch == (int)'\n') {
 		newline();
-	} else if (ch == '\r') {
+	} else if (ch == (int)'\r') {
 		cur_x = 0;
-	} else if (ch == '\t') {
+	} else if (ch == (int)'\t') {
 		cur_x += 4;
 	} else {
 		draw_char(ch, cur_x * CHAR_W, cur_y * CHAR_H, cur_fore, cur_back);
@@ -147,9 +150,8 @@ int console_putc(const int ch) {
 /**
  * Clears the entire console.
  */
-void console_clear()
-{
-	memset((uint16_t *)fb_addr, cur_back, fb_size);
+void console_clear() {
+	memset((uint16_t *) fb_addr, (int)cur_back, (size_t)fb_size);
 
 	cur_x = 0;
 	cur_y = 0;
@@ -195,6 +197,8 @@ void console_set_bg_color(const uint16_t back)
 
 
 void console_clear_line(const int y) {
+	volatile uint16_t *address = NULL;
+
 	if (y > HEIGHT / CHAR_H)
 		cur_y = 0;
 	else
@@ -202,6 +206,6 @@ void console_clear_line(const int y) {
 
 	cur_x = 0;
 
-	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (y * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
-	memset((uint16_t *)address, cur_back, CHAR_H * WIDTH * BYTES_PER_PIXEL);
+	address = (volatile uint16_t *)(fb_addr + (y * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
+	memset((uint16_t *)address, (int)cur_back, (size_t)(CHAR_H * WIDTH * BYTES_PER_PIXEL));
 }

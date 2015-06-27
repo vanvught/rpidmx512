@@ -69,9 +69,10 @@ void bcm2835_pl011_begin(void) {
  * @param c
  */
 void bcm2835_pl011_send(const uint32_t c) {
-	while (1) {
-		if ((BCM2835_PL011 ->FR & 0x20) == 0)
+	while (1 == 1) {
+		if ((BCM2835_PL011->FR & 0x20) == 0) {
 			break;
+		}
 	}
-	BCM2835_PL011 ->DR = c;
+	BCM2835_PL011->DR = c;
 }

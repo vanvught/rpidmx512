@@ -31,22 +31,22 @@
 
 /// Function select modes for \ref bcm2835_gpio_fsel
 typedef enum {
-	BCM2835_GPIO_FSEL_INPT = 0b000,	///< Input
-	BCM2835_GPIO_FSEL_OUTP = 0b001,	///< Output
-	BCM2835_GPIO_FSEL_ALT0 = 0b100,	///< Alternate function 0
-	BCM2835_GPIO_FSEL_ALT1 = 0b101,	///< Alternate function 1
-	BCM2835_GPIO_FSEL_ALT2 = 0b110,	///< Alternate function 2
-	BCM2835_GPIO_FSEL_ALT3 = 0b111,	///< Alternate function 3
-	BCM2835_GPIO_FSEL_ALT4 = 0b011,	///< Alternate function 4
-	BCM2835_GPIO_FSEL_ALT5 = 0b010,	///< Alternate function 5
-	BCM2835_GPIO_FSEL_MASK = 0b111	///< Function select bits mask
+	BCM2835_GPIO_FSEL_INPT = 0x00,	///< 0b000,	Input
+	BCM2835_GPIO_FSEL_OUTP = 0x01,	///< 0b001,	Output
+	BCM2835_GPIO_FSEL_ALT0 = 0x04,	///< 0b100,	Alternate function 0
+	BCM2835_GPIO_FSEL_ALT1 = 0x05,	///< 0b101,	Alternate function 1
+	BCM2835_GPIO_FSEL_ALT2 = 0x06,	///< 0b110,	Alternate function 2
+	BCM2835_GPIO_FSEL_ALT3 = 0x07,	///< 0b111,	Alternate function 3
+	BCM2835_GPIO_FSEL_ALT4 = 0x03,	///< 0b011,	Alternate function 4
+	BCM2835_GPIO_FSEL_ALT5 = 0x02,	///< 0b010,	Alternate function 5
+	BCM2835_GPIO_FSEL_MASK = 0x07	///< 0b111, Function select bits mask
 } bcm2835FunctionSelect;
 
 /// Pullup/Pulldown defines for \ref bcm2835_gpio_set_pud
 typedef enum {
-	BCM2835_GPIO_PUD_OFF 	= 0b00,	///< Off ? disable pull-up/down
-	BCM2835_GPIO_PUD_DOWN 	= 0b01,	///< Enable Pull Down control
-	BCM2835_GPIO_PUD_UP 	= 0b10	///< Enable Pull Up control
+	BCM2835_GPIO_PUD_OFF 	= 0x00,	///< 0b00, Off ? disable pull-up/down
+	BCM2835_GPIO_PUD_DOWN 	= 0x01,	///< 0b01, Enable Pull Down control
+	BCM2835_GPIO_PUD_UP 	= 0x02	///< 0b10, Enable Pull Up control
 } bcm2835PUDControl;
 
 /**
@@ -57,7 +57,7 @@ typedef enum {
  * @param pin GPIO number.
  */
 inline static void bcm2835_gpio_set(const uint8_t pin) {
-	BCM2835_GPIO ->GPSET0 = 1 << pin;
+	BCM2835_GPIO->GPSET0 = (uint32_t) (1 << pin);
 }
 
 /**
@@ -68,7 +68,7 @@ inline static void bcm2835_gpio_set(const uint8_t pin) {
  * @param pin GPIO number.
  */
 inline static void bcm2835_gpio_clr(const uint8_t pin) {
-	BCM2835_GPIO ->GPCLR0 = 1 << pin;
+	BCM2835_GPIO ->GPCLR0 = (uint32_t) (1 << pin);
 }
 
 /**
@@ -80,10 +80,11 @@ inline static void bcm2835_gpio_clr(const uint8_t pin) {
  * @param on \ref HIGH sets the output to HIGH and \ref LOW to LOW.
  */
 inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
-	if (on)
+	if (on) {
 		bcm2835_gpio_set(pin);
-	else
+	} else {
 		bcm2835_gpio_clr(pin);
+	}
 }
 
 /**
@@ -94,7 +95,7 @@ inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
  */
 inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
 	uint32_t value = BCM2835_GPIO ->GPLEV0; // TODO BUG pin > 32
-	return (value & (1 << pin)) ? HIGH : LOW;
+	return (value & (1 << pin)) ? (uint8_t)HIGH : (uint8_t)LOW;
 }
 
 /**

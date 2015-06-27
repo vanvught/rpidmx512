@@ -69,7 +69,7 @@ extern const uint16_t dmx_devices_get_devices_connected(void);
 extern const uint16_t dmx_devices_get_footprint(const uint16_t);
 extern const uint16_t dmx_devices_get_dmx_start_address(const uint16_t);
 extern void dmx_devices_set_dmx_start_address(const uint16_t, const uint16_t);
-extern const uint8_t * dmx_devices_get_label(const uint16_t);
+extern const char * dmx_devices_get_label(const uint16_t);
 extern void dmx_devices_set_label(const uint16_t, const uint8_t *, uint8_t);
 extern const uint8_t dmx_devices_get_label_length(const uint16_t);
 extern const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t);

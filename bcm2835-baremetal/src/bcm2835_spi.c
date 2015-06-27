@@ -116,7 +116,7 @@ void bcm2835_spi_end(void) {
  *
  * @param order
  */
-void bcm2835_spi_setBitOrder(const uint8_t order) {
+void bcm2835_spi_setBitOrder(/*@unused@*/ const uint8_t order) {
 	// BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 }
 
@@ -180,13 +180,13 @@ void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
  * @param len Number of bytes in the tbuf buffer, and the number of bytes to send/received.
  */
 void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
+	uint32_t fifo_writes = 0;
+	uint32_t fifo_reads = 0;
+
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
     // Set TA = 1
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
-
-	uint32_t fifo_writes = 0;
-	uint32_t fifo_reads = 0;
 
 	while ((fifo_writes < len) || (fifo_reads < len))
     {
@@ -239,13 +239,14 @@ void bcm2835_spi_transfern(char* buf, const uint32_t len) {
  * @param len Number of bytes in the tbuf buffer, and the number of bytes to send.
  */
 void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
-    // Clear TX and RX fifos
+    uint32_t i;
+
+	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 
     // Set TA = 1
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
-    uint32_t i;
 	for (i = 0; i < len; i++)
 	{
 		// Maybe wait for TXD

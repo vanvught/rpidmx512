@@ -41,18 +41,19 @@
  *
  * @param state \ref HIGH sets the led on and \ref LOW sets the led off.
  */
-void led_set(const int state)
-{
+void led_set(const int state) {
 #ifdef NEW_PI
-	if (state)
+	if (state != 0) {
 		BCM2835_GPIO->GPSET1 = 1 << (NEW_PI_PIN % 32);
-	else
+	} else {
 		BCM2835_GPIO->GPCLR1 = 1 << (NEW_PI_PIN % 32);
+	}
 #else
-	if (!state)
-		BCM2835_GPIO->GPSET0 = 1 << PIN;
-	else
-		BCM2835_GPIO->GPCLR0 = 1 << PIN;
+	if (state != 0) {
+		BCM2835_GPIO->GPSET0 = (uint32_t) (1 << PIN);
+	} else {
+		BCM2835_GPIO->GPCLR0 = (uint32_t) (1 << PIN);
+	}
 #endif
 }
 
@@ -62,8 +63,7 @@ void led_set(const int state)
  * Set the GPIO pin for the led to output.
  *
  */
-void led_init(void)
-{
+void led_init(void) {
 #ifdef NEW_PI
 	uint32_t value = BCM2835_GPIO->GPFSEL4;
 	value &= ~(7 << 21);
@@ -82,12 +82,12 @@ void led_init(void)
  *
  * @param state \ref HIGH sets the led on and \ref LOW sets the led off.
  */
-void led_new_pi_set(const int state)
-{
-	if (state)
-		BCM2835_GPIO->GPSET1 = 1 << (NEW_PI_PIN % 32);
-	else
-		BCM2835_GPIO->GPCLR1 = 1 << (NEW_PI_PIN % 32);
+void led_new_pi_set(const int state) {
+	if (state != 0) {
+		BCM2835_GPIO->GPSET1 = (uint32_t) (1 << (NEW_PI_PIN % 32));
+	} else {
+		BCM2835_GPIO->GPCLR1 = (uint32_t) (1 << (NEW_PI_PIN % 32));
+	}
 }
 
 /**
@@ -96,8 +96,7 @@ void led_new_pi_set(const int state)
  * Set the GPIO pin for the led to output.
  *
  */
-void led_new_pi_init(void)
-{
+void led_new_pi_init(void) {
 	uint32_t value = BCM2835_GPIO->GPFSEL4;
 	value &= ~(7 << 21);
 	value |= BCM2835_GPIO_FSEL_OUTP << 21;

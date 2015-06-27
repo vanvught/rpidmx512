@@ -54,19 +54,19 @@ struct vc_msg_uint32 {
 inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
 
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)mb_addr;
+	volatile struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *) mb_addr;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 4;	/* we're just sending the clock ID which is one word long */
+	vc_msg->tag.data_size = 4; /* we're just sending the clock ID which is one word long */
 	vc_msg->tag.dev_id = dev_id;
 	vc_msg->tag.val = 0;
 	vc_msg->end_tag = 0;
 
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -76,7 +76,7 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
 		return -1;
 	}
 
-	return vc_msg->tag.val;
+	return (int32_t) vc_msg->tag.val;
 
 }
 
@@ -102,7 +102,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
 	vc_msg->end_tag = 0;
 
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -112,7 +112,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
 		return -1;
 	}
 
-	return vc_msg->tag.val;
+	return (int32_t) vc_msg->tag.val;
 }
 
 /**
@@ -207,7 +207,7 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	vc_msg->end_tag = 0;
 
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -252,13 +252,13 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	vc_msg->end_tag = 0;
 
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	return vc_msg->tag.value;
+	return (int32_t) vc_msg->tag.value;
 }
 
 /**

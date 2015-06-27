@@ -2,7 +2,7 @@
  * @file fb.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,26 +52,25 @@ typedef struct framebuffer {
  *
  * @return
  */
-int fb_init()
-{
+int fb_init() {
 	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile framebuffer_t *frame  = (framebuffer_t *)mb_addr;
+	volatile framebuffer_t *frame = (framebuffer_t *) mb_addr;
 
-	frame->width_p  = WIDTH;
-	frame->height_p = HEIGHT;
-	frame->width_v  = WIDTH;
-	frame->height_v = HEIGHT;
-	frame->pitch    = 0;
-	frame->depth    = BPP;
-	frame->x        = 0;
-	frame->y        = 0;
-	frame->address  = 0;
-	frame->size     = 0;
+	frame->width_p = (uint32_t) WIDTH;
+	frame->height_p = (uint32_t) HEIGHT;
+	frame->width_v = (uint32_t) WIDTH;
+	frame->height_v = (uint32_t) HEIGHT;
+	frame->pitch = (uint32_t) 0;
+	frame->depth = (uint32_t) BPP;
+	frame->x = (uint32_t) 0;
+	frame->y = (uint32_t) 0;
+	frame->address = (uint32_t) 0;
+	frame->size = (uint32_t) 0;
 
 	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
-	bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
 
-	if (!frame->address) {
+	if (frame->address == 0) {
 		return FB_ERROR;
 	}
 

@@ -31,7 +31,7 @@
 extern int console_putc(const int);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
-extern int console_draw_char(const char, const int, const int, const uint16_t, const uint16_t);
+extern int console_draw_char(const int, const int, const int, const uint16_t, const uint16_t);
 extern void console_set_fg_color(const uint16_t);
 extern void console_set_bg_color(const uint16_t);
 extern void console_clear_line(const int);

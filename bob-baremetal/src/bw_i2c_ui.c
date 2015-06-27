@@ -58,14 +58,15 @@ inline static void ui_i2c_setup(void) {
 uint8_t bw_i2c_ui_start(const uint8_t slave_address) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
-	return BW_UI_ERROR;
+		return BW_UI_ERROR;
 #endif
 	FUNC_PREFIX(i2c_begin());
 
-	if (slave_address == (uint8_t)0)
+	if (slave_address == (uint8_t) 0) {
 		i2c_ui_slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
-	else
+	} else {
 		i2c_ui_slave_address = slave_address;
+	}
 
 	return BW_UI_OK;
 }
@@ -84,9 +85,10 @@ void bw_i2c_ui_end(void) {
  * @param line
  * @param pos
  */
-void bw_i2c_ui_set_cursor(uint8_t line, uint8_t pos) {
+void bw_i2c_ui_set_cursor(const uint8_t line, const uint8_t pos) {
 	char cmd[] = { (char)BW_PORT_WRITE_MOVE_CURSOR, (char)0x00 };
 	cmd[1] = (char)(((line & 0x03) << 5) | (pos & 0x1f));
+
 	ui_i2c_setup();
 	(void)FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
 	udelay(BW_UI_I2C_BYTE_WAIT_US);

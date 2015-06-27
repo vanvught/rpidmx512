@@ -63,17 +63,18 @@ void inline static mcp7941x_setup(void) {
  * @param slave_address
  * @return
  */
-uint8_t mcp7941x_start (const uint8_t slave_address) {
+uint8_t mcp7941x_start(const uint8_t slave_address) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return MCP7941X_ERROR;
 #endif
 	FUNC_PREFIX(i2c_begin());
 
-	if (slave_address <= 0)
+	if (slave_address == (uint8_t) 0) {
 		i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
-	else
+	} else {
 		i2c_mcp7941x_slave_address = slave_address;
+	}
 
 	mcp7941x_setup();
 
@@ -87,7 +88,7 @@ uint8_t mcp7941x_start (const uint8_t slave_address) {
  *  @ingroup I2C-RTC
  *
  */
-void mcp7941x_end (void) {
+void mcp7941x_end(void) {
 	FUNC_PREFIX(i2c_end());
 }
 
@@ -97,21 +98,21 @@ void mcp7941x_end (void) {
  * @param t
  */
 void mcp7941x_get_date_time(struct rtc_time *t) {
-	char cmd[]  = {MCP7941X_RTCC_TCR_SECONDS};
-	char reg[] =  {0,0,0,0,0,0,0};
+	char cmd[] = { (char) MCP7941X_RTCC_TCR_SECONDS };
+	char reg[] = { (char) 0, (char) 0, (char) 0, (char) 0, (char) 0, (char) 0,	(char) 0 };
 
 	mcp7941x_setup();
 
-	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd)/sizeof(char)));
-	FUNC_PREFIX(i2c_read(reg, sizeof(reg)/sizeof(char)));
+	(void) FUNC_PREFIX(i2c_write(cmd, sizeof(cmd)/sizeof(char)));
+	(void) FUNC_PREFIX(i2c_read(reg, sizeof(reg)/sizeof(char)));
 
-	t->tm_sec  = BCD2DEC(reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
-	t->tm_min  = BCD2DEC(reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
-	t->tm_hour = BCD2DEC(reg[MCP7941X_RTCC_TCR_HOURS] & 0x3f);
-	t->tm_wday = BCD2DEC(reg[MCP7941X_RTCC_TCR_DAY] & 0x07);
-	t->tm_mday = BCD2DEC(reg[MCP7941X_RTCC_TCR_DATE] & 0x3f);
-	t->tm_mon  = BCD2DEC(reg[MCP7941X_RTCC_TCR_MONTH] & 0x1f);
-	t->tm_year = BCD2DEC(reg[MCP7941X_RTCC_TCR_YEAR]);
+	t->tm_sec = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
+	t->tm_min = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
+	t->tm_hour = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_HOURS] & 0x3f);
+	t->tm_wday = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_DAY] & 0x07);
+	t->tm_mday = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_DATE] & 0x3f);
+	t->tm_mon = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_MONTH] & 0x1f);
+	t->tm_year = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_YEAR]);
 }
 
 /**
@@ -120,21 +121,21 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
  * @param t
  */
 void mcp7941x_set_date_time(const struct rtc_time *t) {
-	char reg[] =  {0,0,0,0,0,0,0};
+	char reg[] = { (char) 0, (char) 0, (char) 0, (char) 0, (char) 0, (char) 0,	(char) 0 };
+	char data[8];
 
-	reg[MCP7941X_RTCC_TCR_SECONDS] = DEC2BCD(t->tm_sec & 0x7f);
-	reg[MCP7941X_RTCC_TCR_MINUTES] = DEC2BCD(t->tm_min & 0x7f);
-	reg[MCP7941X_RTCC_TCR_HOURS]   = DEC2BCD(t->tm_hour & 0x1f);
-	reg[MCP7941X_RTCC_TCR_DAY]     = DEC2BCD(t->tm_wday & 0x07);
-	reg[MCP7941X_RTCC_TCR_DATE]    = DEC2BCD(t->tm_mday & 0x3f);
-	reg[MCP7941X_RTCC_TCR_MONTH]   = DEC2BCD(t->tm_mon & 0x1f);
-	reg[MCP7941X_RTCC_TCR_YEAR]    = DEC2BCD(t->tm_year);
+	reg[MCP7941X_RTCC_TCR_SECONDS] = (char) DEC2BCD(t->tm_sec & 0x7f);
+	reg[MCP7941X_RTCC_TCR_MINUTES] = (char) DEC2BCD(t->tm_min & 0x7f);
+	reg[MCP7941X_RTCC_TCR_HOURS] = (char) DEC2BCD(t->tm_hour & 0x1f);
+	reg[MCP7941X_RTCC_TCR_DAY] = (char) DEC2BCD(t->tm_wday & 0x07);
+	reg[MCP7941X_RTCC_TCR_DATE] = (char) DEC2BCD(t->tm_mday & 0x3f);
+	reg[MCP7941X_RTCC_TCR_MONTH] = (char) DEC2BCD(t->tm_mon & 0x1f);
+	reg[MCP7941X_RTCC_TCR_YEAR] = (char) DEC2BCD(t->tm_year);
 
-	reg[MCP7941X_RTCC_TCR_SECONDS] |=  MCP7941X_RTCC_BIT_ST;
+	reg[MCP7941X_RTCC_TCR_SECONDS] |= MCP7941X_RTCC_BIT_ST;
 	reg[MCP7941X_RTCC_TCR_DAY] |= MCP7941X_RTCC_BIT_VBATEN;
 
-	char data[8];
-	data[0] = MCP7941X_RTCC_TCR_SECONDS;
+	data[0] = (char) MCP7941X_RTCC_TCR_SECONDS;
 	data[1] = reg[0];
 	data[2] = reg[1];
 	data[3] = reg[2];
@@ -142,8 +143,8 @@ void mcp7941x_set_date_time(const struct rtc_time *t) {
 	data[5] = reg[4];
 	data[6] = reg[5];
 	data[7] = reg[6];
-	
+
 	mcp7941x_setup();
-	
-	FUNC_PREFIX(i2c_write(data, sizeof(data)/sizeof(char)));
+
+	(void) FUNC_PREFIX(i2c_write(data, sizeof(data)/sizeof(data[0])));
 }

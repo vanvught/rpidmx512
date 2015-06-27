@@ -49,10 +49,10 @@
 #define PL011_LCRH_EPS			((uint32_t)(1 << 2))	///< Even parity select
 #define PL011_LCRH_STP2			((uint32_t)(1 << 3))	///< Two stop bits select
 #define PL011_LCRH_FEN			((uint32_t)(1 << 4))	///< Enable FIFOs
-#define PL011_LCRH_WLEN8		((uint32_t)(0b11<<5))	///< Word length 8 bits
-#define PL011_LCRH_WLEN7 		((uint32_t)(0b10<<5))	///< Word length 7 bits
-#define PL011_LCRH_WLEN6 		((uint32_t)(0b01<<5))	///< Word length 6 bits
-#define PL011_LCRH_WLEN5 		((uint32_t)(0b00<<5))	///< Word length 5 bits
+#define PL011_LCRH_WLEN8		((uint32_t)(0x03<<5))	///< Word length 8 bits
+#define PL011_LCRH_WLEN7 		((uint32_t)(0x02<<5))	///< Word length 7 bits
+#define PL011_LCRH_WLEN6 		((uint32_t)(0x01<<5))	///< Word length 6 bits
+#define PL011_LCRH_WLEN5 		((uint32_t)(0x00<<5))	///< Word length 5 bits
 #define PL011_LCRH_SPS			((uint32_t)(1 << 7))	///< Sticky parity select
 
 #define PL011_IMSC_RXIM			((uint32_t)(1 << 4))	///<

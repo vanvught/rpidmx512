@@ -104,7 +104,7 @@ void bcm2835_i2c_setClockDivider(const uint16_t divider) {
  * @param len size of the buffer
  * @return ::BCM2835_I2C_REASON_OK if successful; BCM2835_I2C_REASON_ERROR_* otherwise. Reference \ref bcm2835I2CReasonCodes
  */
-uint8_t bcm2835_i2c_write(const char * buf, const uint32_t len) {
+uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
 	uint32_t remaining = len;
 	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
