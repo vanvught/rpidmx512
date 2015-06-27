@@ -54,10 +54,10 @@ static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";		///<
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
-static uint8_t root_device_label[DEVICE_LABEL_MAX_LENGTH];
+static char root_device_label[DEVICE_LABEL_MAX_LENGTH];
 static uint8_t root_device_label_length = 0;
 
-static uint8_t device_manufacturer_name[DEVICE_MANUFACTURER_LABEL_MAX_LENGTH];
+static char device_manufacturer_name[DEVICE_MANUFACTURER_LABEL_MAX_LENGTH];
 static uint8_t device_manufacturer_name_length = 0;
 static uint8_t device_sn[DEVICE_SN_LENGTH];
 
@@ -221,7 +221,7 @@ const uint8_t rdm_device_info_get_sn_length(void)
  * @param sub_device
  * @return
  */
-const uint8_t * rdm_device_info_get_label(const uint16_t sub_device)
+const char * rdm_device_info_get_label(const uint16_t sub_device)
 {
 	if (sub_device)
 	{
@@ -277,7 +277,7 @@ const uint8_t rdm_device_info_get_label_length(const uint16_t sub_device)
  *
  * @return
  */
-const uint8_t * rdm_device_info_get_manufacturer_name(void)
+const char * rdm_device_info_get_manufacturer_name(void)
 {
 	return device_manufacturer_name;
 }
@@ -320,7 +320,7 @@ const uint8_t rdm_device_info_get_manufacturer_id_length(void)
  *
  * @return
  */
-const uint8_t * rdm_device_info_get_supported_language(void)
+const char * rdm_device_info_get_supported_language(void)
 {
 	return DEVICE_SUPPORTED_LANGUAGE;
 }
@@ -350,7 +350,7 @@ const uint32_t rdm_device_info_get_software_version_id(void)
  *
  * @return
  */
-const uint8_t * rdm_device_info_get_software_version(void)
+const char * rdm_device_info_get_software_version(void)
 {
 	return DEVICE_SOFTWARE_VERSION;
 }

@@ -66,7 +66,7 @@ void rdm_sub_devices_set_dmx_start_address(const uint16_t sub_device, const uint
  * @param sub_device
  * @return
  */
-const uint8_t *rdm_sub_devices_get_label(const uint16_t sub_device)
+const char *rdm_sub_devices_get_label(const uint16_t sub_device)
 {
 	return 0;
 }

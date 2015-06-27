@@ -172,7 +172,7 @@ static void rdm_get_queued_message(void)
  * @param name
  * @param lenght
  */
-inline static void handle_string(const uint8_t *name, const uint8_t lenght)
+inline static void handle_string(const char *name, const uint8_t lenght)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
 
@@ -210,7 +210,7 @@ static void rdm_get_device_info(uint16_t sub_device)
  */
 static void rdm_get_device_model_description(uint16_t sub_device)
 {
-	const uint8_t *board_model = hardware_get_board_model();
+	const char *board_model = hardware_get_board_model();
 	const uint8_t board_model_length = hardware_get_board_model_length();
 
 	handle_string(board_model, board_model_length);
@@ -224,7 +224,7 @@ static void rdm_get_device_model_description(uint16_t sub_device)
  */
 static void rdm_get_manufacturer_label(uint16_t sub_device)
 {
-	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
+	const char *manufacturer_name = rdm_device_info_get_manufacturer_name();
 	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
 
 	handle_string(manufacturer_name, manufacturer_name_length);
@@ -239,7 +239,7 @@ static void rdm_get_manufacturer_label(uint16_t sub_device)
  */
 static void rdm_get_device_label(uint16_t sub_device)
 {
-	const uint8_t *device_name = rdm_device_info_get_label(sub_device);
+	const char *device_name = rdm_device_info_get_label(sub_device);
 	const uint8_t device_name_length = rdm_device_info_get_label_length(sub_device);
 
 	handle_string(device_name, device_name_length);
@@ -329,7 +329,7 @@ static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
  */
 static void rdm_get_language(uint16_t sub_device)
 {
-	const uint8_t *supported_language = rdm_device_info_get_supported_language();
+	const char *supported_language = rdm_device_info_get_supported_language();
 	const uint8_t supported_language_length = rdm_device_info_get_supported_language_length();
 
 	handle_string(supported_language, supported_language_length);
@@ -343,7 +343,7 @@ static void rdm_get_language(uint16_t sub_device)
  */
 static void rdm_get_software_version_label(uint16_t sub_device)
 {
-	const uint8_t *software_version = rdm_device_info_get_software_version();
+	const char *software_version = rdm_device_info_get_software_version();
 	const uint8_t software_version_length = rdm_device_info_get_software_version_length();
 
 	handle_string(software_version, software_version_length);
@@ -392,7 +392,7 @@ static void rdm_get_boot_software_version_label(uint16_t sub_device)
 		return;
 	}
 
-	const uint8_t *firmware_copyright = hardware_get_firmware_copyright();
+	const char *firmware_copyright = hardware_get_firmware_copyright();
 	const uint8_t firmware_copyright_length = hardware_get_firmware_copyright_length();
 
 	handle_string(firmware_copyright, firmware_copyright_length);
@@ -724,7 +724,7 @@ static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	const uint8_t *supported_language = rdm_device_info_get_supported_language();
+	const char *supported_language = rdm_device_info_get_supported_language();
 
 	if ((rdm_command->param_data[0] != supported_language[0]) || (rdm_command->param_data[1] != supported_language[1]))
 	{

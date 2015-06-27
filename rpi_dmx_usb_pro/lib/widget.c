@@ -498,7 +498,7 @@ static void widget_get_manufacturer_reply(void)
 	monitor_line(MONITOR_LINE_INFO, "MANUFACTURER_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const uint8_t *manufacturer_name = rdm_device_info_get_manufacturer_name();
+	const char *manufacturer_name = rdm_device_info_get_manufacturer_name();
 	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
 
 	const uint8_t *manufacturer_id = rdm_device_info_get_manufacturer_id();
@@ -506,7 +506,7 @@ static void widget_get_manufacturer_reply(void)
 
 	usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
 	usb_send_data(manufacturer_id, manufacturer_id_length);
-	usb_send_data(manufacturer_name, manufacturer_name_length);
+	usb_send_data((uint8_t *)manufacturer_name, manufacturer_name_length);
 	usb_send_footer();
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
@@ -526,7 +526,7 @@ static void widget_get_name_reply(void)
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_NAME_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const uint8_t *device_name = rdm_device_info_get_label(0);
+	const char *device_name = rdm_device_info_get_label(0);
 	const uint8_t device_name_length = rdm_device_info_get_label_length(0);
 
 	const uint8_t *device_id = widget_params_get_type_id();
@@ -534,7 +534,7 @@ static void widget_get_name_reply(void)
 
 	usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
 	usb_send_data(device_id, device_id_length);
-	usb_send_data(device_name, device_name_length);
+	usb_send_data((uint8_t *)device_name, device_name_length);
 	usb_send_footer();
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);

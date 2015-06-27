@@ -254,7 +254,7 @@ void dmx_devices_set_dmx_start_address(const uint16_t sub_device, const uint16_t
  * @param sub_device
  * @return
  */
-const uint8_t *dmx_devices_get_label(const uint16_t sub_device)
+const char *dmx_devices_get_label(const uint16_t sub_device)
 {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label;
