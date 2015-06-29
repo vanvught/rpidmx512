@@ -36,7 +36,7 @@
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176		///< 176 us
 #define DMX_TRANSMIT_MAB_TIME_MIN				12		///< 12 us
 #define DMX_TRANSMIT_MAB_TIME_MAX				1E6		///< 1s
-#define DMX_TRANSMIT_REFRESH_DEFAULT			1E6 / 40///< 25000 us
+#define DMX_TRANSMIT_REFRESH_DEFAULT			(uint32_t)(1E6 / 40)	///< 25000 us
 #define DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN	1204	///< us
 
 #define DMX_MIN_SLOT_VALUE 						0		///< The minimum value a DMX512 slot can take.

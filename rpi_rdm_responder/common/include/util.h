@@ -28,7 +28,7 @@
 
 typedef enum {
 	FALSE = 0,
-	TRUE = 1
+	TRUE = !FALSE
 } _boolean;
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )

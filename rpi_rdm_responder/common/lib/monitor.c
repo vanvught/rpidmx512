@@ -37,18 +37,17 @@
  * @param line
  * @param fmt
  */
-void monitor_line(const uint8_t line, /*@null@*/ const char *fmt, ...) /*@*/
+void monitor_line(const int line, const char *fmt, ...)
 {
 	va_list va;
 
 	console_clear_line(line);
 
-	if (fmt != NULL)
-	{
+	if (fmt != NULL) {
 		va_start(va, fmt);
-		vprintf(fmt, va);
+		(void) vprintf(fmt, va);
 		va_end(va);
-		fflush(stdout);
+		(void) fflush(stdout);
 	}
 }
 
@@ -57,21 +56,20 @@ void monitor_line(const uint8_t line, /*@null@*/ const char *fmt, ...) /*@*/
  *
  * @param line
  */
-void monitor_time_uptime(const uint8_t line)
-{
+void monitor_time_uptime(const int line) {
 	const uint32_t minute = 60;
 	const uint32_t hour = minute * 60;
 	const uint32_t day = hour * 24;
+
+	const uint64_t uptime_seconds = hardware_uptime_seconds();
 
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 
 	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
+	local_time = localtime(&ltime);
 
-	const uint64_t uptime_seconds = hardware_uptime_seconds();
-
-	console_set_cursor(0,line);
+	console_set_cursor(0, line);
 
 	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
@@ -88,17 +86,18 @@ void monitor_time_uptime(const uint8_t line)
  * @param data_length
  * @param data
  */
-void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint8_t *data)
-{
+void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t *data) {
 	uint8_t i;
 	console_clear_line(line);
 
-	printf("RDM Packet length : %d\n", data_length);
+	printf("RDM Packet length : %d\n", (int) data_length);
 
-	for (i = 0; i < 9; i++)
-	{
+	for (i = 0; i < 9; i++) {
 		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				i+1, data[i], data[i], i+10, data[i+9], data[i+9], i+19, data[i+18], data[i+18], i+28, data[i+27], data[i+27]);
+				(int) i + 1, (int) data[i], (unsigned int) data[i],
+				(int) i + 10, (int) data[i + 9], (unsigned int) data[i + 9],
+				(int) i + 19, (int) data[i + 18], (unsigned int) data[i + 18],
+				(int) i + 28, (int) data[i + 27], (unsigned int) data[i + 27]);
 	}
 }
 
@@ -108,16 +107,25 @@ void monitor_rdm_data(const uint8_t line, const uint16_t data_length, const uint
  * @param line
  * @param data
  */
-void monitor_dmx_data(const uint8_t line, const uint8_t *data)
-{
-	console_set_cursor(0,line);
+void monitor_dmx_data(const int line, const uint8_t *data) {
+	console_set_cursor(0, line);
 
 	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-			data[1], data[2], data[3], data[4], data[5],
-			data[6], data[7], data[8], data[9], data[10],
-			data[11], data[12], data[13], data[14], data[15], data[16]);
+			(unsigned int) data[1], (unsigned int) data[2],
+			(unsigned int) data[3], (unsigned int) data[4],
+			(unsigned int) data[5], (unsigned int) data[6],
+			(unsigned int) data[7], (unsigned int) data[8],
+			(unsigned int) data[9], (unsigned int) data[10],
+			(unsigned int) data[11], (unsigned int) data[12],
+			(unsigned int) data[13], (unsigned int) data[14],
+			(unsigned int) data[15], (unsigned int) data[16]);
 	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-			data[17], data[18], data[19], data[20], data[21],
-			data[22], data[23], data[24], data[25], data[26],
-			data[27], data[28], data[29], data[30], data[31], data[32]);
+			(unsigned int) data[17], (unsigned int) data[18],
+			(unsigned int) data[19], (unsigned int) data[20],
+			(unsigned int) data[21], (unsigned int) data[22],
+			(unsigned int) data[23], (unsigned int) data[24],
+			(unsigned int) data[25], (unsigned int) data[26],
+			(unsigned int) data[27], (unsigned int) data[28],
+			(unsigned int) data[29], (unsigned int) data[30],
+			(unsigned int) data[31], (unsigned int) data[32]);
 }

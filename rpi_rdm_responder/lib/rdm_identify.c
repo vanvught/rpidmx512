@@ -49,7 +49,7 @@ void rdm_identify_off(void)
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set(1E6 / 2);
+	ticks_per_second_set((uint32_t)(1E6 / 2));
 }
 
 /**
@@ -62,7 +62,7 @@ void rdm_identify_on(void)
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set(1E6 / 4);
+	ticks_per_second_set((uint32_t)(1E6 / 4));
 }
 
 /**

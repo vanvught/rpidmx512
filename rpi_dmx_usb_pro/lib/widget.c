@@ -132,10 +132,11 @@ const uint32_t widget_get_received_dmx_packet_count(void)
  */
 static void widget_get_params_reply(void)
 {
+	struct _widget_params widget_params;
+
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_PARAMS_REPLY");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	struct _widget_params widget_params;
 	widget_params_get(&widget_params);
 	usb_send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *)&widget_params, sizeof(struct _widget_params));
 }

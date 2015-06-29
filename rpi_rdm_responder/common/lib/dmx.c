@@ -69,7 +69,7 @@ static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;		///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;		///<
 static uint8_t dmx_output_fast_as_possible = FALSE;						///<
-static uint16_t dmx_send_data_length = DMX_UNIVERSE_SIZE + 1;			///< SC + UNIVERSE SIZE
+static uint16_t dmx_send_data_length = (uint16_t)DMX_UNIVERSE_SIZE + 1;	///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;				///<
 static volatile uint32_t dmx_fiq_micros_current = 0;					///< Timestamp FIQ
 static volatile uint32_t dmx_fiq_micros_previous = 0;					///< Timestamp previous FIQ
@@ -105,8 +105,7 @@ static unsigned int irq_counter;														///<
  *
  * @return
  */
-const uint32_t dmx_get_output_period(void)
-{
+const uint32_t dmx_get_output_period(void) {
 	return dmx_output_period;
 }
 
@@ -115,26 +114,19 @@ const uint32_t dmx_get_output_period(void)
  *
  * @param period
  */
-void dmx_set_output_period(const uint32_t period)
-{
+void dmx_set_output_period(const uint32_t period) {
 	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
 
-	if (period)
-	{
-		if (period < package_length_us)
-		{
-			dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
-		}
-		else
-		{
+	if (period != 0) {
+		if (period < package_length_us) {
+			dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
+		} else {
 			dmx_output_period = period;
 		}
 
 		dmx_output_fast_as_possible = FALSE;
-	}
-	else
-	{
-		dmx_output_period = MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
+	} else {
+		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
 
 		dmx_output_fast_as_possible = TRUE;
 	}
@@ -145,8 +137,7 @@ void dmx_set_output_period(const uint32_t period)
  *
  * @return
  */
-const uint16_t dmx_get_send_data_length(void)
-{
+const uint16_t dmx_get_send_data_length(void) {
 	return dmx_send_data_length;
 }
 
@@ -155,12 +146,12 @@ const uint16_t dmx_get_send_data_length(void)
  *
  * @param send_data_length
  */
-void dmx_set_send_data_length(uint16_t send_data_length)
-{
+void dmx_set_send_data_length(uint16_t send_data_length) {
 	dmx_send_data_length = send_data_length;
 
-	if(dmx_output_fast_as_possible)
+	if (dmx_output_fast_as_possible != 0) {
 		dmx_set_output_period(0);
+	}
 }
 
 /**
@@ -168,8 +159,7 @@ void dmx_set_send_data_length(uint16_t send_data_length)
  *
  * @return
  */
-const uint32_t dmx_get_slot_to_slot(void)
-{
+const uint32_t dmx_get_slot_to_slot(void) {
 	return dmx_slot_to_slot;
 }
 
@@ -178,8 +168,7 @@ const uint32_t dmx_get_slot_to_slot(void)
  *
  * @return
  */
-const uint32_t dmx_get_slots_in_packet(void)
-{
+const uint32_t dmx_get_slots_in_packet(void) {
 	return dmx_slots_in_packet;
 }
 
@@ -188,8 +177,7 @@ const uint32_t dmx_get_slots_in_packet(void)
  *
  * @return
  */
-const uint32_t dmx_get_break_to_break(void)
-{
+const uint32_t dmx_get_break_to_break(void) {
 	return dmx_break_to_break;
 }
 
@@ -675,7 +663,7 @@ void dmx_init(void)
 #endif
 
 	int i = 0;
-	for (i = 0; i < sizeof(dmx_data) / sizeof(uint8_t); i++)
+	for (i = 0; i < sizeof(dmx_data) / sizeof(dmx_data[0]); i++)
 	{
 		dmx_data[i] = 0;
 		dmx_data_previous[i] = 0;

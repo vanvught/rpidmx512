@@ -63,10 +63,9 @@ void rdm_handle_data(uint8_t *rdm_data)
 
 	const uint8_t command_class = rdm_cmd->command_class;
 	const uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
+	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
 	monitor_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
-
-	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
 	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
 	{

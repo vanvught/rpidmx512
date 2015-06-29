@@ -39,15 +39,13 @@ static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 /**
  * @ingroup monitor
  */
-void monitor_update(void)
-{
-	char dir[3][10] =
-	{ "Idle", "Output", "Input" };
+void monitor_update(void) {
+	char dir[3][10] = { "Idle", "Output", "Input" };
 	struct _widget_params widget_params;
 
 	widget_params_get(&widget_params);
 
-	monitor_time_uptime((uint8_t)1);
+	monitor_time_uptime(1);
 
 	const uint8_t widget_mode = widget_get_mode();
 

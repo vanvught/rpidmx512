@@ -43,26 +43,24 @@ static uint8_t rdm_message_count;
  * @param data
  * @param data_length
  */
-void rdm_send_data(const uint8_t *data, const uint16_t data_length)
-{
+void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
+	uint16_t i = 0;
+
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
 	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
 
-	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
-	{
-		while (1)
-		{
+	for (i = 0; i < data_length; i++) {
+		while (1 == 1) {
 			if ((BCM2835_PL011->FR & 0x20) == 0)
 				break;
 		}
 		BCM2835_PL011->DR = data[i];
 	}
-	while (1)
-	{
+
+	while (1 == 1) {
 		if ((BCM2835_PL011->FR & 0x20) == 0)
 			break;
 	}
@@ -75,22 +73,20 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length)
  * @param data
  * @param data_length
  */
-static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
-{
+static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
+	uint16_t i = 0;
+
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 
-	uint16_t i = 0;
-	for (i = 0; i < data_length; i++)
-	{
-		while (1)
-		{
+	for (i = 0; i < data_length; i++) {
+		while (1 == 1) {
 			if ((BCM2835_PL011->FR & 0x20) == 0)
 				break;
 		}
 		BCM2835_PL011->DR = data[i];
 	}
-	while (1)
-	{
+
+	while (1 == 1) {
 		if ((BCM2835_PL011->FR & 0x20) == 0)
 			break;
 	}
@@ -103,12 +99,10 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length)
  * @param data
  * @param data_length
  */
-void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length)
-{
+void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length) {
 	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
-	if (delay < RDM_RESPONDER_PACKET_SPACING)
-	{
+	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
@@ -125,55 +119,54 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
  * @param response_type
  * @param value
  */
-static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value)
-{
+static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value) {
 	uint16_t rdm_checksum = 0;
 
-	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_data;
+	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_data;
 
 	switch (response_type) {
-		case E120_RESPONSE_TYPE_ACK:
-			rdm_response->slot16.response_type = E120_RESPONSE_TYPE_ACK;
-			break;
-		case E120_RESPONSE_TYPE_NACK_REASON:
-		case E120_RESPONSE_TYPE_ACK_TIMER:
-			rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
-			rdm_response->slot16.response_type = response_type;
-			rdm_response->param_data_length = 2;
-			rdm_response->param_data[0] = (uint8_t)(value >> 8);
-			rdm_response->param_data[1] = (uint8_t)value;
-			break;
-		default:
-			// forces timeout
-			return;
-			break;
+	case E120_RESPONSE_TYPE_ACK:
+		rdm_response->slot16.response_type = E120_RESPONSE_TYPE_ACK;
+		break;
+	case E120_RESPONSE_TYPE_NACK_REASON:
+	case E120_RESPONSE_TYPE_ACK_TIMER:
+		rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+		rdm_response->slot16.response_type = response_type;
+		rdm_response->param_data_length = 2;
+		rdm_response->param_data[0] = (uint8_t) (value >> 8);
+		rdm_response->param_data[1] = (uint8_t) value;
+		break;
+	default:
+		// forces timeout
+		return;
+		// Unreachable code: break;
 	}
 
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
-	memcpy(rdm_response->destination_uid, rdm_response->source_uid, RDM_UID_SIZE);
+	memcpy(rdm_response->destination_uid, rdm_response->source_uid,	RDM_UID_SIZE);
 	memcpy(rdm_response->source_uid, uid_device, RDM_UID_SIZE);
 
 	rdm_response->command_class++;
 
 	uint8_t i = 0;
-	for (i = 0; i < rdm_response->message_length; i++)
-	{
+	for (i = 0; i < rdm_response->message_length; i++) {
 		rdm_checksum += rdm_data[i];
 	}
 
 	rdm_data[i++] = rdm_checksum >> 8;
-	rdm_data[i] = rdm_checksum & 0XFF;;
+	rdm_data[i] = rdm_checksum & 0XFF;
+	;
 
 	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
-	if (delay < RDM_RESPONDER_PACKET_SPACING)
-	{
+	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
-	rdm_send_data(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	rdm_send_data(rdm_data,
+			rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
 }
@@ -183,8 +176,7 @@ static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, u
  *
  * @param rdm_data
  */
-void rdm_send_respond_message_ack(uint8_t *rdm_data)
-{
+void rdm_send_respond_message_ack(uint8_t *rdm_data) {
 	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_ACK, 0);
 }
 
@@ -194,8 +186,7 @@ void rdm_send_respond_message_ack(uint8_t *rdm_data)
  * @param rdm_data
  * @param reason
  */
-void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason)
-{
+void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason) {
 	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_NACK_REASON, reason);
 }
 
@@ -205,8 +196,7 @@ void rdm_send_respond_message_nack(uint8_t *rdm_data, const uint16_t reason)
  * @param rdm_data
  * @param timer
  */
-void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
-{
+void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer) {
 	rdm_send_respond_message(rdm_data, E120_RESPONSE_TYPE_ACK_TIMER, timer);
 }
 
@@ -215,8 +205,7 @@ void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
  *
  * Increment the queued message count
  */
-void rdm_send_increment_message_count()
-{
+void rdm_send_increment_message_count() {
 	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX)
 		rdm_message_count++;
 }
@@ -226,8 +215,7 @@ void rdm_send_increment_message_count()
  *
  * Decrement the queued message count
  */
-void rdm_send_decrement_message_count()
-{
+void rdm_send_decrement_message_count() {
 	if (rdm_message_count)
 		rdm_message_count--;
 }

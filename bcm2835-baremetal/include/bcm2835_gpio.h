@@ -80,7 +80,7 @@ inline static void bcm2835_gpio_clr(const uint8_t pin) {
  * @param on \ref HIGH sets the output to HIGH and \ref LOW to LOW.
  */
 inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
-	if (on) {
+	if (on != 0) {
 		bcm2835_gpio_set(pin);
 	} else {
 		bcm2835_gpio_clr(pin);
@@ -118,7 +118,7 @@ inline static void bcm2835_gpio_pud(const uint8_t pud) {
  * @param on
  */
 inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (on ? 1 : 0) << pin;
+	BCM2835_GPIO ->GPPUDCLK0 = (uint32_t)((on ? 1 : 0) << pin);
 }
 
 #define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));

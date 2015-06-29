@@ -44,7 +44,7 @@ struct _widget_params
 };
 
 extern void widget_params_init(void);
-extern void widget_params_get(struct _widget_params *);
+extern void widget_params_get(/*@out@*/struct _widget_params *);
 extern void widget_params_set_break_time(const uint8_t);
 extern void widget_params_set_mab_time(const uint8_t);
 extern void widget_params_set_refresh_rate(const uint8_t);

@@ -37,7 +37,7 @@
 #include "rdm_device_info.h"
 #include "rdm_identify.h"
 
-static uint8_t *rdm_handlers_rdm_data = NULL;
+static uint8_t *rdm_handlers_rdm_data;
 
 //static void rdm_get_queued_message(void);
 static void rdm_get_supported_parameters(uint16_t);
@@ -69,8 +69,8 @@ static void rdm_set_reset_device(uint8_t , uint16_t);
 struct _pid_definition
 {
 	const uint16_t pid;
-	void (*get_handler)(uint16_t sub_device);
-	void (*set_handler)(uint8_t was_broadcast, uint16_t sub_device);
+	/*@null@*/void (*get_handler)(uint16_t sub_device);
+	/*@null@*/void (*set_handler)(uint8_t was_broadcast, uint16_t sub_device);
 	const uint8_t get_argument_size;
 	const uint8_t include_in_supported_params;
 };
@@ -117,16 +117,16 @@ static void rdm_get_supported_parameters(uint16_t sub_device)
 	uint8_t supported_params = 0;
 
 	const struct _pid_definition *pid_definitions;
-	int table_size;
+	int table_size = 0;
 
-	if (sub_device)
+	if (sub_device != 0)
 	{
 		pid_definitions = &PID_DEFINITIONS_SUB_DEVICES[0];
-		table_size = sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(struct _pid_definition);
+		table_size = (int)(sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(struct _pid_definition));
 	} else
 	{
 		pid_definitions = &PID_DEFINITIONS[0];
-		table_size = sizeof(PID_DEFINITIONS) / sizeof(struct _pid_definition);
+		table_size = (int)(sizeof(PID_DEFINITIONS) / sizeof(struct _pid_definition));
 	}
 
 	uint8_t i;

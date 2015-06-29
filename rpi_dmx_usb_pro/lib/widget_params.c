@@ -96,32 +96,26 @@ static int process_line_read_unsigned_int(const char *line)
  * @ingroup widget
  *
  */
-static void read_config_file(void)
-{
+static void read_config_file(void) {
 	FRESULT rc = FR_DISK_ERR;
 
 	FATFS fat_fs;
 	FIL file_object;
 
-	rc = f_mount((BYTE)0, &fat_fs);		// Register volume work area (never fails)
+	rc = f_mount((BYTE) 0, &fat_fs);// Register volume work area (never fails)
 
-	rc = f_open(&file_object, PARAMS_FILE_NAME, (BYTE)FA_READ);
+	rc = f_open(&file_object, PARAMS_FILE_NAME, (BYTE) FA_READ);
 
-	if (rc == FR_OK)
-	{
+	if (rc == FR_OK) {
 		TCHAR buffer[128];
-		for (;;)
-		{
-			if (f_gets(buffer, (int)sizeof(buffer), &file_object) == NULL)
+		for (;;) {
+			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL)
 				break; // Error or end of file
-			process_line_read_unsigned_int((const char *) buffer);
+			(void) process_line_read_unsigned_int((const char *) buffer);
 		}
-		f_close(&file_object);
+		(void) f_close(&file_object);
+	} else {
 	}
-	else
-	{
-	}
-
 }
 
 /**
@@ -207,32 +201,30 @@ void  widget_params_set_throttle(const uint8_t throttle)
  *
  * Update the Widget with the settings from params.txt
  */
-void widget_params_init(void)
-{
-	read_config_file();
-
+void widget_params_init(void) {
 	uint32_t period = 0;
 
-	if (dmx_usb_pro_params.refresh_rate)
-	{
-		period = 1E6 / dmx_usb_pro_params.refresh_rate;
+	read_config_file();
+
+	if (dmx_usb_pro_params.refresh_rate != 0) {
+		period = (uint32_t)(1E6 / dmx_usb_pro_params.refresh_rate);
 	}
 
 	dmx_set_output_period(period);
 
 	period = 0;
 
-	if (dmx_send_to_host_throttle)
-	{
-		period = 1E6 / dmx_send_to_host_throttle;
+	if (dmx_send_to_host_throttle != 0) {
+		period = (uint32_t)(1E6 / dmx_send_to_host_throttle);
 	}
 
 	widget_set_received_dmx_packet_period(period);
 
 	uint8_t mode = dmx_usb_pro_params.firmware_msb;
 
-	if (mode == MODE_DMX_RDM)
+	if (mode == MODE_DMX_RDM) {
 		dmx_usb_pro_params.firmware_msb = FIRMWARE_RDM;
+	}
 
 	widget_set_mode(mode);
 
