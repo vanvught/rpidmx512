@@ -1113,22 +1113,22 @@ Disassembly of section .text:
 
 00008fbc <monitor_time_uptime>:
     8fbc:	e92d41f0 	push	{r4, r5, r6, r7, r8, lr}
-    8fc0:	e3a06000 	mov	r6, #0
-    8fc4:	e24dd018 	sub	sp, sp, #24
+    8fc0:	e24dd018 	sub	sp, sp, #24
+    8fc4:	e3a06000 	mov	r6, #0
     8fc8:	e1a08000 	mov	r8, r0
-    8fcc:	e1a00006 	mov	r0, r6
-    8fd0:	e58d6014 	str	r6, [sp, #20]
-    8fd4:	eb000428 	bl	a07c <sys_time>
-    8fd8:	e28d3018 	add	r3, sp, #24
-    8fdc:	e5230004 	str	r0, [r3, #-4]!
-    8fe0:	e1a00003 	mov	r0, r3
-    8fe4:	eb00099b 	bl	b658 <localtime>
-    8fe8:	e1a05000 	mov	r5, r0
-    8fec:	eb00032b 	bl	9ca0 <hardware_uptime_seconds>
-    8ff0:	e1a04000 	mov	r4, r0
-    8ff4:	e1a07001 	mov	r7, r1
-    8ff8:	e1a00006 	mov	r0, r6
-    8ffc:	e1a01008 	mov	r1, r8
+    8fcc:	eb000333 	bl	9ca0 <hardware_uptime_seconds>
+    8fd0:	e1a04000 	mov	r4, r0
+    8fd4:	e1a00006 	mov	r0, r6
+    8fd8:	e1a07001 	mov	r7, r1
+    8fdc:	e58d6014 	str	r6, [sp, #20]
+    8fe0:	eb000425 	bl	a07c <sys_time>
+    8fe4:	e28d3018 	add	r3, sp, #24
+    8fe8:	e5230004 	str	r0, [r3, #-4]!
+    8fec:	e1a00003 	mov	r0, r3
+    8ff0:	eb000998 	bl	b658 <localtime>
+    8ff4:	e1a01008 	mov	r1, r8
+    8ff8:	e1a05000 	mov	r5, r0
+    8ffc:	e1a00006 	mov	r0, r6
     9000:	eb0002ce 	bl	9b40 <console_set_cursor>
     9004:	e1a00004 	mov	r0, r4
     9008:	e1a01007 	mov	r1, r7
@@ -14115,10 +14115,10 @@ Disassembly of section .rodata:
    153b8:	73252074 	teqvc	r5, #116	; 0x74
    153bc:	0000000a 	andeq	r0, r0, sl
    153c0:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   153c4:	32203732 	eorcc	r3, r0, #13107200	; 0xc80000
+   153c4:	32203932 	eorcc	r3, r0, #819200	; 0xc8000
    153c8:	00353130 	eorseq	r3, r5, r0, lsr r1
-   153cc:	333a3132 	teqcc	sl, #-2147483636	; 0x8000000c
-   153d0:	32323a31 	eorscc	r3, r2, #200704	; 0x31000
+   153cc:	343a3032 	ldrtcc	r3, [sl], #-50	; 0xffffffce
+   153d0:	32323a32 	eorscc	r3, r2, #204800	; 0x32000
    153d4:	00000000 	andeq	r0, r0, r0
    153d8:	69676f4c 	stmdbvs	r7!, {r2, r3, r6, r8, r9, sl, fp, sp, lr}^
    153dc:	44522063 	ldrbmi	r2, [r2], #-99	; 0xffffff9d

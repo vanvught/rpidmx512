@@ -955,22 +955,22 @@ Disassembly of section .text:
 
 00008d44 <monitor_time_uptime>:
     8d44:	e92d41f0 	push	{r4, r5, r6, r7, r8, lr}
-    8d48:	e3a06000 	mov	r6, #0
-    8d4c:	e24dd018 	sub	sp, sp, #24
+    8d48:	e24dd018 	sub	sp, sp, #24
+    8d4c:	e3a06000 	mov	r6, #0
     8d50:	e1a08000 	mov	r8, r0
-    8d54:	e1a00006 	mov	r0, r6
-    8d58:	e58d6014 	str	r6, [sp, #20]
-    8d5c:	eb003a1a 	bl	175cc <sys_time>
-    8d60:	e28d3018 	add	r3, sp, #24
-    8d64:	e5230004 	str	r0, [r3, #-4]!
-    8d68:	e1a00003 	mov	r0, r3
-    8d6c:	eb004885 	bl	1af88 <localtime>
-    8d70:	e1a05000 	mov	r5, r0
-    8d74:	eb00391d 	bl	171f0 <hardware_uptime_seconds>
-    8d78:	e1a04000 	mov	r4, r0
-    8d7c:	e1a07001 	mov	r7, r1
-    8d80:	e1a00006 	mov	r0, r6
-    8d84:	e1a01008 	mov	r1, r8
+    8d54:	eb003925 	bl	171f0 <hardware_uptime_seconds>
+    8d58:	e1a04000 	mov	r4, r0
+    8d5c:	e1a00006 	mov	r0, r6
+    8d60:	e1a07001 	mov	r7, r1
+    8d64:	e58d6014 	str	r6, [sp, #20]
+    8d68:	eb003a17 	bl	175cc <sys_time>
+    8d6c:	e28d3018 	add	r3, sp, #24
+    8d70:	e5230004 	str	r0, [r3, #-4]!
+    8d74:	e1a00003 	mov	r0, r3
+    8d78:	eb004882 	bl	1af88 <localtime>
+    8d7c:	e1a01008 	mov	r1, r8
+    8d80:	e1a05000 	mov	r5, r0
+    8d84:	e1a00006 	mov	r0, r6
     8d88:	eb0008a1 	bl	b014 <console_set_cursor>
     8d8c:	e1a00004 	mov	r0, r4
     8d90:	e1a01007 	mov	r1, r7
@@ -39319,10 +39319,10 @@ Disassembly of section .rodata:
    2d6fc:	73252074 	teqvc	r5, #116	; 0x74
    2d700:	0000000a 	andeq	r0, r0, sl
    2d704:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   2d708:	32203732 	eorcc	r3, r0, #13107200	; 0xc80000
+   2d708:	32203932 	eorcc	r3, r0, #819200	; 0xc8000
    2d70c:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2d710:	333a3132 	teqcc	sl, #-2147483636	; 0x8000000c
-   2d714:	36313a31 			; <UNDEFINED> instruction: 0x36313a31
+   2d710:	343a3032 	ldrtcc	r3, [sl], #-50	; 0xffffffce
+   2d714:	38313a32 	ldmdacc	r1!, {r1, r4, r5, r9, fp, ip, sp}
    2d718:	00000000 	andeq	r0, r0, r0
    2d71c:	35584d44 	ldrbcc	r4, [r8, #-3396]	; 0xfffff2bc
    2d720:	52203231 	eorpl	r3, r0, #268435459	; 0x10000003
