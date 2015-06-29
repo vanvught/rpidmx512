@@ -3,6 +3,7 @@ ARMGNU ?= arm-none-eabi
 AOPS = --warn --fatal-warnings  -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
 
 COPS = -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
+COPS += -DBARE_METAL
 COPS += -I"./include"
 COPS += -I"../bcm2835-baremetal/include"
 COPS += -I"../ff9b/src"
