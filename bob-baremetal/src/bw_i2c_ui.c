@@ -217,7 +217,7 @@ void bw_i2c_ui_set_backlight_temp(const uint8_t value) {
 }
 
 //TODO
-void bw_i2c_ui_set_startup_message_line_1(const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_1(/*@unused@*/const char *text, uint8_t length) {
 	char cmd[] = { (char)BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char)0xFF };
 	if (length == 0) {
 		ui_i2c_setup();
@@ -234,7 +234,7 @@ void bw_i2c_ui_set_startup_message_line_1(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_set_startup_message_line_2(const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_2(/*@unused@*/const char *text, /*@unused@*/uint8_t length) {
 }
 
 /**
@@ -243,7 +243,7 @@ void bw_i2c_ui_set_startup_message_line_2(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_set_startup_message_line_3(const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_3(/*@unused@*/const char *text, /*@unused@*/uint8_t length) {
 }
 
 /**
@@ -252,7 +252,7 @@ void bw_i2c_ui_set_startup_message_line_3(const char *text, uint8_t length) {
  * @param text
  * @param length
  */
-void bw_i2c_ui_set_startup_message_line_4(const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_4(/*@unused@*/const char *text, /*@unused@*/uint8_t length) {
 }
 
 /**

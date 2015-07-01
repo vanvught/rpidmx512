@@ -156,8 +156,7 @@ static void read_config_file(void) {
 inline static uint16_t calculate_checksum(void) {
 	uint8_t i = 0;
 
-	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8)
-			+ rdm_device_info.dmx_start_address[1];
+	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
 	checksum += rdm_device_info.current_personality;
 
 	for (i = 0; i < root_device_label_length; i++) {
@@ -174,8 +173,9 @@ inline static uint16_t calculate_checksum(void) {
  */
 const uint8_t rdm_device_info_get_is_factory_defaults() {
 	if (is_factory_defaults == TRUE) {
-		is_factory_defaults =
-				(factory_defaults_checksum == calculate_checksum());
+		if (factory_defaults_checksum != calculate_checksum()) {
+			is_factory_defaults = FALSE;
+		}
 	}
 	return is_factory_defaults;
 }
@@ -484,17 +484,19 @@ const uint16_t rdm_device_info_get_personality_slots(const uint16_t sub_device,
  * @param sub_device
  * @return
  */
-/*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device) {
+struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device) {
 	if (sub_device != 0) {
 		const struct _rdm_sub_devices_info *sub_device_info = rdm_sub_devices_info_get(sub_device);
 
-		rdm_sub_device_info.dmx_footprint[0] = (uint8_t) (sub_device_info->dmx_footprint >> 8);
-		rdm_sub_device_info.dmx_footprint[1] = (uint8_t) sub_device_info->dmx_footprint;
-		rdm_sub_device_info.current_personality = sub_device_info->current_personality;
-		rdm_sub_device_info.personality_count = sub_device_info->personality_count;
-		rdm_sub_device_info.dmx_start_address[0] = (uint8_t) (sub_device_info->dmx_start_address >> 8);
-		rdm_sub_device_info.dmx_start_address[1] = (uint8_t) sub_device_info->dmx_start_address;
-		rdm_sub_device_info.sensor_count = sub_device_info->sensor_count;
+		if (sub_device_info != NULL) {
+			rdm_sub_device_info.dmx_footprint[0] = (uint8_t) (sub_device_info->dmx_footprint >> 8);
+			rdm_sub_device_info.dmx_footprint[1] = (uint8_t) sub_device_info->dmx_footprint;
+			rdm_sub_device_info.current_personality = sub_device_info->current_personality;
+			rdm_sub_device_info.personality_count = sub_device_info->personality_count;
+			rdm_sub_device_info.dmx_start_address[0] = (uint8_t) (sub_device_info->dmx_start_address >> 8);
+			rdm_sub_device_info.dmx_start_address[1] = (uint8_t) sub_device_info->dmx_start_address;
+			rdm_sub_device_info.sensor_count = sub_device_info->sensor_count;
+		}
 
 		return &rdm_sub_device_info;
 	}

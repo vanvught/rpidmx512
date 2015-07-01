@@ -71,7 +71,7 @@ extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
 extern void bcm2835_i2c_setSlaveAddress(const uint8_t);
 extern void bcm2835_i2c_setClockDivider(const uint16_t);
-extern uint8_t bcm2835_i2c_write(/*@null@*/ const char *, const uint32_t);
-extern uint8_t bcm2835_i2c_read(char*, const uint32_t);
+extern uint8_t bcm2835_i2c_write(/*@null@*/const char *, const uint32_t);
+extern uint8_t bcm2835_i2c_read(/*@out@*/char*, const uint32_t);
 
 #endif /* BCM2835_I2C_H_ */

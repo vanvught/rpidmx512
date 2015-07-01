@@ -92,7 +92,7 @@ inline static void draw_char(const int c, const int x, int y, const uint16_t for
 	for (i = 0; i < CHAR_H; i++) {
 		line = (uint8_t) FONT[c * (int) CHAR_H + i];
 		for (j = 0; j < CHAR_W; j++) {
-			if (line & 0x1) {
+			if ((line & 0x1) != 0) {
 				draw_pixel(x + j, y, fore);
 			} else
 				draw_pixel(x + j, y, back);

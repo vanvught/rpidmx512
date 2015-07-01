@@ -26,6 +26,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
@@ -189,7 +190,7 @@ uint8_t FT245RL_read_data()
  *
  * @return
  */
-uint8_t FT245RL_data_available(void)
+bool FT245RL_data_available(void)
 {
 	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
 }
@@ -201,7 +202,7 @@ uint8_t FT245RL_data_available(void)
  *
  * @return
  */
-uint8_t FT245RL_can_write(void)
+bool FT245RL_can_write(void)
 {
 	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
 }

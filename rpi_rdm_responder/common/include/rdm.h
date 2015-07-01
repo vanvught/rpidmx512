@@ -100,8 +100,8 @@ struct _rdm_device_info
 ///< Personalities
 struct _rdm_personality
 {
-	uint16_t slots;
-	const char *description;
+	const uint16_t slots;
+	/*@shared@*/const char *description;
 };
 
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.

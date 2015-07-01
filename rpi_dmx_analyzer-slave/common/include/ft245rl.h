@@ -27,11 +27,12 @@
 #define FT245RL_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 extern void FT245RL_init(void);
 extern void FT245RL_write_data(uint8_t);
 extern uint8_t FT245RL_read_data();
-extern uint8_t FT245RL_data_available(void);
-extern uint8_t FT245RL_can_write(void);
+extern bool FT245RL_data_available(void);
+extern bool FT245RL_can_write(void);
 
 #endif /* FT245RL_H_ */

@@ -104,7 +104,7 @@ uint16_t mcp23s17_reg_read(const device_info_t *device_info, const uint8_t reg)
 
 	mcp23s17_setup(device_info);
 	FUNC_PREFIX(spi_transfern(spiData, 4));
-	return (uint16_t) (spiData[2] | (spiData[3] << 8));
+	return  ((uint16_t)spiData[2] | ((uint16_t)spiData[3] << 8));
 }
 
 /**
