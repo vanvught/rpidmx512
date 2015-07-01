@@ -39318,11 +39318,11 @@ Disassembly of section .rodata:
    2d6f8:	61207325 	teqvs	r0, r5, lsr #6
    2d6fc:	73252074 	teqvc	r5, #116	; 0x74
    2d700:	0000000a 	andeq	r0, r0, sl
-   2d704:	206e754a 	rsbcs	r7, lr, sl, asr #10
-   2d708:	32203932 	eorcc	r3, r0, #819200	; 0xc8000
+   2d704:	206c754a 	rsbcs	r7, ip, sl, asr #10
+   2d708:	32203120 	eorcc	r3, r0, #32, 2
    2d70c:	00353130 	eorseq	r3, r5, r0, lsr r1
-   2d710:	343a3032 	ldrtcc	r3, [sl], #-50	; 0xffffffce
-   2d714:	38313a32 	ldmdacc	r1!, {r1, r4, r5, r9, fp, ip, sp}
+   2d710:	353a3032 	ldrcc	r3, [sl, #-50]!	; 0xffffffce
+   2d714:	30343a38 	eorscc	r3, r4, r8, lsr sl
    2d718:	00000000 	andeq	r0, r0, r0
    2d71c:	35584d44 	ldrbcc	r4, [r8, #-3396]	; 0xfffff2bc
    2d720:	52203231 	eorpl	r3, r0, #268435459	; 0x10000003
