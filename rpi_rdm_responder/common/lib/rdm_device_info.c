@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #ifdef RDM_CONTROLLER
 #include <ctype.h>
 #include <errno.h>
@@ -68,7 +69,7 @@ static uint8_t device_sn[DEVICE_SN_LENGTH];
 
 static uint8_t manufacturer_id[DEVICE_MANUFACTURER_ID_LENGTH];
 
-static uint8_t is_factory_defaults = TRUE;
+static bool is_factory_defaults = true;
 static uint16_t factory_defaults_checksum = 0;
 
 static struct _rdm_device_info rdm_device_info;
@@ -171,10 +172,10 @@ inline static uint16_t calculate_checksum(void) {
  *
  * @return
  */
-const uint8_t rdm_device_info_get_is_factory_defaults() {
-	if (is_factory_defaults == TRUE) {
+const bool rdm_device_info_get_is_factory_defaults() {
+	if (is_factory_defaults) {
 		if (factory_defaults_checksum != calculate_checksum()) {
-			is_factory_defaults = FALSE;
+			is_factory_defaults = false;
 		}
 	}
 	return is_factory_defaults;

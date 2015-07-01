@@ -27,6 +27,7 @@
 #define RDM_DEVICE_INFO_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define DEVICE_MANUFACTURER_ID_LENGTH			2	///<
 #define DEVICE_MANUFACTURER_LABEL_MAX_LENGTH	32	///< 10.5.4 Get Manufacturer Label (MANUFACTURER_LABEL)
@@ -41,7 +42,7 @@ extern/*@shared@*/const uint8_t * rdm_device_info_get_uuid(void);
 extern /*@shared@*//*@null@*/const char * rdm_device_info_get_label(const uint16_t);
 extern const uint8_t rdm_device_info_get_label_length(const uint16_t);
 extern void rdm_device_info_set_label(const uint16_t, const uint8_t *, uint8_t);
-extern const uint8_t rdm_device_info_get_is_factory_defaults(void);
+extern const bool rdm_device_info_get_is_factory_defaults(void);
 extern /*@shared@*/const char * rdm_device_info_get_manufacturer_name(void);
 extern const uint8_t rdm_device_info_get_manufacturer_name_length(void);
 extern /*@shared@*/const char * rdm_device_info_get_supported_language(void);

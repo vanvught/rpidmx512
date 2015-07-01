@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "sys_time.h"
 #include "hardware.h"
@@ -45,66 +46,66 @@ static void rdm_get_device_info(uint16_t);
 static void rdm_get_device_model_description(uint16_t);
 static void rdm_get_manufacturer_label(uint16_t);
 static void rdm_get_device_label(uint16_t);
-static void rdm_set_device_label(uint8_t , uint16_t);
+static void rdm_set_device_label(bool , uint16_t);
 static void rdm_get_factory_defaults(uint16_t);
-static void rdm_set_factory_defaults(uint8_t , uint16_t);
+static void rdm_set_factory_defaults(bool , uint16_t);
 static void rdm_get_language(uint16_t);
-static void rdm_set_language(uint8_t , uint16_t);
+static void rdm_set_language(bool , uint16_t);
 static void rdm_get_software_version_label(uint16_t);
 static void rdm_get_boot_software_version_id(uint16_t);
 static void rdm_get_boot_software_version_label(uint16_t);
 static void rdm_get_personality(uint16_t);
-static void rdm_set_personality(uint8_t , uint16_t);
+static void rdm_set_personality(bool , uint16_t);
 static void rdm_get_personality_description(uint16_t);
 static void rdm_get_dmx_start_address(uint16_t);
-static void rdm_set_dmx_start_address(uint8_t , uint16_t);
+static void rdm_set_dmx_start_address(bool , uint16_t);
 static void rdm_get_device_hours(uint16_t);
-static void rdm_set_device_hours(uint8_t , uint16_t);
+static void rdm_set_device_hours(bool , uint16_t);
 static void rdm_get_identify_device(uint16_t);
-static void rdm_set_identify_device(uint8_t , uint16_t);
+static void rdm_set_identify_device(bool , uint16_t);
 static void rdm_get_real_time_clock(uint16_t);
-static void rdm_set_real_time_clock(uint8_t , uint16_t);
-static void rdm_set_reset_device(uint8_t , uint16_t);
+static void rdm_set_real_time_clock(bool , uint16_t);
+static void rdm_set_reset_device(bool , uint16_t);
 
 struct _pid_definition
 {
 	const uint16_t pid;
 	/*@null@*/void (*get_handler)(uint16_t sub_device);
-	/*@null@*/void (*set_handler)(uint8_t was_broadcast, uint16_t sub_device);
+	/*@null@*/void (*set_handler)(bool was_broadcast, uint16_t sub_device);
 	const uint8_t get_argument_size;
-	const uint8_t include_in_supported_params;
+	const bool include_in_supported_params;
 };
 
 static const struct _pid_definition PID_DEFINITIONS[] = {
-//		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, TRUE },
-		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, FALSE},
-		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, FALSE},
-		{E120_DEVICE_MODEL_DESCRIPTION,    &rdm_get_device_model_description,   NULL,                        0, TRUE },
-		{E120_MANUFACTURER_LABEL,          &rdm_get_manufacturer_label,         NULL,                        0, TRUE },
-		{E120_DEVICE_LABEL,                &rdm_get_device_label,               &rdm_set_device_label,       0, TRUE },
-		{E120_FACTORY_DEFAULTS,            &rdm_get_factory_defaults,           &rdm_set_factory_defaults,   0, TRUE },
-		{E120_LANGUAGE_CAPABILITIES,       &rdm_get_language,			        NULL,                        0, TRUE },
-		{E120_LANGUAGE,				       &rdm_get_language,			        &rdm_set_language,           0, TRUE },
-		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, FALSE},
-		{E120_BOOT_SOFTWARE_VERSION_ID,    &rdm_get_boot_software_version_id,   NULL,                        0, TRUE },
-		{E120_BOOT_SOFTWARE_VERSION_LABEL, &rdm_get_boot_software_version_label,NULL,                        0, TRUE },
-		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, TRUE },
-		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, TRUE },
-		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, FALSE},
-		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	        &rdm_set_device_hours,       0, TRUE },
-		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, TRUE },
-		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, FALSE},
-		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, TRUE }
+//		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, true },
+		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, false},
+		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, false},
+		{E120_DEVICE_MODEL_DESCRIPTION,    &rdm_get_device_model_description,   NULL,                        0, true },
+		{E120_MANUFACTURER_LABEL,          &rdm_get_manufacturer_label,         NULL,                        0, true },
+		{E120_DEVICE_LABEL,                &rdm_get_device_label,               &rdm_set_device_label,       0, true },
+		{E120_FACTORY_DEFAULTS,            &rdm_get_factory_defaults,           &rdm_set_factory_defaults,   0, true },
+		{E120_LANGUAGE_CAPABILITIES,       &rdm_get_language,			        NULL,                        0, true },
+		{E120_LANGUAGE,				       &rdm_get_language,			        &rdm_set_language,           0, true },
+		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, false},
+		{E120_BOOT_SOFTWARE_VERSION_ID,    &rdm_get_boot_software_version_id,   NULL,                        0, true },
+		{E120_BOOT_SOFTWARE_VERSION_LABEL, &rdm_get_boot_software_version_label,NULL,                        0, true },
+		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, true },
+		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, true },
+		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, false},
+		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	        &rdm_set_device_hours,       0, true },
+		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, true },
+		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, false},
+		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, true }
 };
 
 static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[] = {
-		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, TRUE },
-		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, TRUE },
-		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, TRUE },
-		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, TRUE },
-		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, TRUE },
-		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, TRUE },
-		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, TRUE }
+		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, true },
+		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, true },
+		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, true },
+		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, true },
+		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, true },
+		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, true },
+		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, true }
 };
 
 /**
@@ -115,9 +116,10 @@ static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[] = {
 static void rdm_get_supported_parameters(uint16_t sub_device)
 {
 	uint8_t supported_params = 0;
-
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
 	const struct _pid_definition *pid_definitions;
 	int table_size = 0;
+	int i,j;
 
 	if (sub_device != 0)
 	{
@@ -129,19 +131,16 @@ static void rdm_get_supported_parameters(uint16_t sub_device)
 		table_size = (int)(sizeof(PID_DEFINITIONS) / sizeof(struct _pid_definition));
 	}
 
-	uint8_t i;
 	for (i = 0;	i < table_size; i++)
 	{
 		if (pid_definitions[i].include_in_supported_params)
 			supported_params++;
 	}
 
-	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
-
 	rdm_response->param_data_length = (2 * supported_params);
 	rdm_response->message_length = rdm_response->message_length + (2 * supported_params);
 
-	int j = 0;
+	j = 0;
 	for (i = 0;	i < table_size; i++)
 	{
 		if (pid_definitions[i].include_in_supported_params)
@@ -172,16 +171,16 @@ static void rdm_get_queued_message(void)
  * @param name
  * @param lenght
  */
-inline static void handle_string(const char *name, const uint8_t lenght)
-{
+inline static void handle_string(const char *name, const uint8_t lenght) {
 	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
+	uint8_t i;
 
 	rdm_response->param_data_length = lenght;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + lenght;
 
-	uint8_t i;
-	for (i = 0; i < lenght; i++)
-		rdm_response->param_data[i] = name[i];
+	for (i = 0; i < lenght; i++) {
+		rdm_response->param_data[i] = (uint8_t) name[i];
+	}
 }
 
 /**
@@ -208,7 +207,7 @@ static void rdm_get_device_info(uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_device_model_description(uint16_t sub_device)
+static void rdm_get_device_model_description(/*@unused@*/uint16_t sub_device)
 {
 	const char *board_model = hardware_get_board_model();
 	const uint8_t board_model_length = hardware_get_board_model_length();
@@ -222,7 +221,7 @@ static void rdm_get_device_model_description(uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_manufacturer_label(uint16_t sub_device)
+static void rdm_get_manufacturer_label(/*@unused@*/uint16_t sub_device)
 {
 	const char *manufacturer_name = rdm_device_info_get_manufacturer_name();
 	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
@@ -252,9 +251,11 @@ static void rdm_get_device_label(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_device_label(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+	uint8_t device_label_length;
+	uint8_t *device_label;
 
 	if (rdm_command->param_data_length > 32)
 	{
@@ -262,8 +263,8 @@ static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
 		return;
 	}
 
-	const uint8_t device_label_length = rdm_command->param_data_length;
-	const uint8_t *device_label= &rdm_command->param_data[0];
+	device_label_length = rdm_command->param_data_length;
+	device_label= &rdm_command->param_data[0];
 
 	rdm_device_info_set_label(sub_device, device_label, device_label_length);
 
@@ -281,7 +282,7 @@ static void rdm_set_device_label(uint8_t was_broadcast, uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_factory_defaults(uint16_t sub_device)
+static void rdm_get_factory_defaults(/*@unused@*/uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -293,7 +294,7 @@ static void rdm_get_factory_defaults(uint16_t sub_device)
 
 	rdm_command->param_data_length = 1;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
-	rdm_command->param_data[0] = rdm_device_info_get_is_factory_defaults();
+	rdm_command->param_data[0] = (uint8_t)rdm_device_info_get_is_factory_defaults();
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -304,7 +305,7 @@ static void rdm_get_factory_defaults(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_factory_defaults(bool was_broadcast, /*@unused@*/uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -327,7 +328,7 @@ static void rdm_set_factory_defaults(uint8_t was_broadcast, uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_language(uint16_t sub_device)
+static void rdm_get_language(/*@unused@*/uint16_t sub_device)
 {
 	const char *supported_language = rdm_device_info_get_supported_language();
 	const uint8_t supported_language_length = rdm_device_info_get_supported_language_length();
@@ -341,7 +342,7 @@ static void rdm_get_language(uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_software_version_label(uint16_t sub_device)
+static void rdm_get_software_version_label(/*@unused@*/uint16_t sub_device)
 {
 	const char *software_version = rdm_device_info_get_software_version();
 	const uint8_t software_version_length = rdm_device_info_get_software_version_length();
@@ -355,9 +356,10 @@ static void rdm_get_software_version_label(uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_boot_software_version_id(uint16_t sub_device)
+static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+	uint32_t boot_software_version_id;
 
 	if (rdm_command->param_data_length != 0)
 	{
@@ -365,7 +367,7 @@ static void rdm_get_boot_software_version_id(uint16_t sub_device)
 		return;
 	}
 
-	uint32_t boot_software_version_id = hardware_get_firmware_revision();
+	boot_software_version_id = hardware_get_firmware_revision();
 
 	rdm_command->param_data_length = 4;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + 4;
@@ -382,9 +384,11 @@ static void rdm_get_boot_software_version_id(uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_boot_software_version_label(uint16_t sub_device)
+static void rdm_get_boot_software_version_label(/*@unused@*/uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+	const char *firmware_copyright;
+	uint8_t firmware_copyright_length;
 
 	if (rdm_command->param_data_length != 0)
 	{
@@ -392,8 +396,8 @@ static void rdm_get_boot_software_version_label(uint16_t sub_device)
 		return;
 	}
 
-	const char *firmware_copyright = hardware_get_firmware_copyright();
-	const uint8_t firmware_copyright_length = hardware_get_firmware_copyright_length();
+	firmware_copyright = hardware_get_firmware_copyright();
+	firmware_copyright_length = hardware_get_firmware_copyright_length();
 
 	handle_string(firmware_copyright, firmware_copyright_length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
@@ -424,7 +428,7 @@ static void rdm_get_personality(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_personality(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_personality(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -533,7 +537,7 @@ static void rdm_get_device_hours(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_device_hours(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_device_hours(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -596,7 +600,7 @@ static void rdm_get_real_time_clock(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_real_time_clock(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -630,7 +634,7 @@ static void rdm_set_real_time_clock(uint8_t was_broadcast, uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_identify_device(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
@@ -664,12 +668,12 @@ static void rdm_set_identify_device(uint8_t was_broadcast, uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_reset_device(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
 	rdm_response->param_data_length = 0;
 
-	if(was_broadcast == FALSE)
+	if(was_broadcast == false)
 		rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 
 	hardware_reboot();
@@ -681,7 +685,7 @@ static void rdm_set_reset_device(uint8_t was_broadcast, uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_dmx_start_address(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;
 
@@ -714,7 +718,7 @@ static void rdm_set_dmx_start_address(uint8_t was_broadcast, uint16_t sub_device
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
+static void rdm_set_language(bool was_broadcast, uint16_t sub_device)
 {
 	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;
 
@@ -748,7 +752,7 @@ static void rdm_set_language(uint8_t was_broadcast, uint16_t sub_device)
  * @param param_data_length
  * @param sub_device
  */
-void rdm_handlers(uint8_t *rdm_data, const uint8_t is_broadcast, const uint8_t command_class, const uint16_t param_id, const uint8_t param_data_length, const uint16_t sub_device)
+void rdm_handlers(uint8_t *rdm_data, const bool is_broadcast, const uint8_t command_class, const uint16_t param_id, const uint8_t param_data_length, const uint16_t sub_device)
 {
 	struct _pid_definition const *pid_handler = NULL;
 
