@@ -27,6 +27,8 @@
 #define DMX_H_
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "util.h"
 
 #define DMX_DATA_BUFFER_SIZE			513		///< including SC
@@ -74,7 +76,7 @@ struct _total_statistics
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE];
 
 extern void dmx_init(void);
-extern void dmx_port_direction_set(const _dmx_port_direction, const _boolean);
+extern void dmx_port_direction_set(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
@@ -83,13 +85,13 @@ extern const uint8_t *rdm_get_current_data(void);
 
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_data_receive_end_get(void);
-extern const uint8_t dmx_get_available(void);
+extern const bool dmx_get_available(void);
 extern void dmx_set_available_false(void);
 extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(const uint32_t);
-extern uint8_t dmx_data_is_changed(void);
+extern bool dmx_data_is_changed(void);
 
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);

@@ -26,10 +26,12 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+/*
 typedef enum {
 	FALSE = 0,
 	TRUE = !FALSE
 } _boolean;
+*/
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 

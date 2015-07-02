@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
@@ -187,8 +188,9 @@ void dmx_devices_init(void) {
 void dmx_devices_run() {
 	dmx_devices_statistics.function_count++;
 
-	if (dmx_get_available() == FALSE)
+	if (dmx_get_available() == false) {
 			return;
+	}
 
 	dmx_set_available_false();
 

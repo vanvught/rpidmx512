@@ -574,5 +574,5 @@ void rdm_device_info_init(void) {
 	memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
 
 	factory_defaults_checksum = calculate_checksum();
-	is_factory_defaults = TRUE;
+	is_factory_defaults = true;
 }

@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "util.h"
 #include "dmx.h"
@@ -40,8 +41,7 @@ static struct _rdm_statistics rdm_statistics;
  *
  * @return
  */
-const struct _rdm_statistics *rdm_statistics_get(void)
-{
+const struct _rdm_statistics *rdm_statistics_get(void) {
 	return &rdm_statistics;
 }
 
@@ -50,10 +50,9 @@ const struct _rdm_statistics *rdm_statistics_get(void)
  *
  * This function is called from the poll table in \ref main.c
  */
-void sniffer_dmx(void)
-{
-	if (dmx_get_available() == FALSE)
-			return;
+void sniffer_dmx(void) {
+	if (!dmx_get_available())
+		return;
 
 	dmx_set_available_false();
 
@@ -65,40 +64,31 @@ void sniffer_dmx(void)
  *
  * This function is called from the poll table in \ref main.c
  */
-void sniffer_rdm(void)
-{
+void sniffer_rdm(void) {
 	const uint8_t *rdm_data = rdm_get_available();
 
 	if (rdm_data == NULL)
-			return;
+		return;
 
-	//uint8_t message_length = 0;
-
-	if (rdm_data[0] == 0xCC)
-	{
+	if (rdm_data[0] == 0xCC) {
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
-		//message_length = p->message_length + 2;
 		switch (p->command_class) {
-			case E120_DISCOVERY_COMMAND:
-				rdm_statistics.discovery_packets++;
-				break;
-			case E120_DISCOVERY_COMMAND_RESPONSE:
-				rdm_statistics.discovery_response_packets++;
-				break;
-			case E120_GET_COMMAND:
-				rdm_statistics.get_requests++;
-				break;
-			case E120_SET_COMMAND:
-				rdm_statistics.set_requests++;
-				break;
-			default:
-				break;
+		case E120_DISCOVERY_COMMAND:
+			rdm_statistics.discovery_packets++;
+			break;
+		case E120_DISCOVERY_COMMAND_RESPONSE:
+			rdm_statistics.discovery_response_packets++;
+			break;
+		case E120_GET_COMMAND:
+			rdm_statistics.get_requests++;
+			break;
+		case E120_SET_COMMAND:
+			rdm_statistics.set_requests++;
+			break;
+		default:
+			break;
 		}
-	}
-	else if (rdm_data[0] == 0xFE)
-	{
+	} else if (rdm_data[0] == 0xFE) {
 		rdm_statistics.discovery_response_packets++;
-		//message_length = 24;
 	}
-
 }

@@ -24,53 +24,50 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "util.h"
 #include "irq_led.h"
 
-static uint8_t rdm_identify_enabled = FALSE;	///<
+static bool rdm_identify_enabled = false;	///<
 
 /**
  *
  * @return
  */
-const uint8_t rdm_identify_is_enabled(void)
-{
+const uint8_t rdm_identify_is_enabled(void) {
 	return rdm_identify_enabled;
 }
 
 /**
  *
  */
-void rdm_identify_off(void)
-{
-	rdm_identify_enabled = FALSE;
+void rdm_identify_off(void) {
+	rdm_identify_enabled = false;
 
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set((uint32_t)(1E6 / 2));
+	ticks_per_second_set((uint32_t) (1E6 / 2));
 }
 
 /**
  *
  */
-void rdm_identify_on(void)
-{
-	rdm_identify_enabled = TRUE;
+void rdm_identify_on(void) {
+	rdm_identify_enabled = true;
 
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set((uint32_t)(1E6 / 4));
+	ticks_per_second_set((uint32_t) (1E6 / 4));
 }
 
 /**
  *
  */
-void rdm_identify(void)
-{
-	if (rdm_identify_enabled == FALSE)
+void rdm_identify(void) {
+	if (!rdm_identify_enabled)
 		return;
 
 	/*

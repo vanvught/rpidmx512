@@ -35,7 +35,7 @@
 #define MONITOR_LINE_STATUS		23
 #define MONITOR_LINE_STATS		25
 
-extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies stream@*/;
+extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
 extern void monitor_time_uptime(const int);
 extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *);
 extern void monitor_dmx_data(const int, const uint8_t *);

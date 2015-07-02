@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "bcm2835.h"
 #include "bcm2835_pl011.h"
@@ -106,10 +107,10 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_no_break(data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
 }
 
 /**
@@ -164,11 +165,11 @@ static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, u
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, FALSE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_data(rdm_data,
 			rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, TRUE);
+	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
 }
 
 /**

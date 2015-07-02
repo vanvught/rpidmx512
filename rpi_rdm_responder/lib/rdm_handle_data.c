@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "util.h"
 #include "monitor.h"
@@ -36,15 +37,14 @@
 #include "rdm_sub_devices.h"
 #include "rdm_send.h"
 
-static uint8_t rdm_muted = FALSE;	///<
+static bool rdm_muted = false;	///<
 
 /**
  * @ingroup rdm_handlers
  *
  * @return
  */
-const uint8_t rdm_is_muted(void)
-{
+const bool rdm_is_muted(void) {
 	return rdm_muted;
 }
 
@@ -53,13 +53,12 @@ const uint8_t rdm_is_muted(void)
  *
  * Main function for handling RDM data.
  */
-void rdm_handle_data(uint8_t *rdm_data)
-{
-	uint8_t rdm_packet_is_for_me = FALSE;
-	uint8_t rdm_packet_is_broadcast = FALSE;
-	uint8_t rdm_packet_is_vendorcast = FALSE;
+void rdm_handle_data(uint8_t *rdm_data) {
+	bool rdm_packet_is_for_me = false;
+	bool rdm_packet_is_broadcast = false;
+	bool rdm_packet_is_vendorcast = false;
 
-	struct _rdm_command *rdm_cmd = (struct _rdm_command *)rdm_data;
+	struct _rdm_command *rdm_cmd = (struct _rdm_command *) rdm_data;
 
 	const uint8_t command_class = rdm_cmd->command_class;
 	const uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
@@ -67,48 +66,35 @@ void rdm_handle_data(uint8_t *rdm_data)
 
 	monitor_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
-	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0)
-	{
-		rdm_packet_is_broadcast = TRUE;
+	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0) {
+		rdm_packet_is_broadcast = true;
 	}
 
-	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, RDM_UID_SIZE-2) == 0))
-	{
-		rdm_packet_is_vendorcast = TRUE;
-		rdm_packet_is_for_me = TRUE;
-	}
-	else if (memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0)
-	{
-		rdm_packet_is_for_me = TRUE;
+	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, RDM_UID_SIZE - 2) == 0)) {
+		rdm_packet_is_vendorcast = true;
+		rdm_packet_is_for_me = true;
+	} else if (memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0) {
+		rdm_packet_is_for_me = true;
 	}
 
-	if ((rdm_packet_is_for_me == FALSE) && (rdm_packet_is_broadcast == FALSE))
-	{
+	if ((!rdm_packet_is_for_me) && (!rdm_packet_is_broadcast)) {
 		// Ignore RDM packet
-	}
-	else if (command_class == E120_DISCOVERY_COMMAND)
-	{
-		if (param_id == E120_DISC_UNIQUE_BRANCH)
-		{
-			if (rdm_muted == FALSE)
-			{
-				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0)
-						&& (memcmp(uid_device, rdm_cmd->param_data + 6,	RDM_UID_SIZE) <= 0))
-				{
+	} else if (command_class == E120_DISCOVERY_COMMAND) {
+		if (param_id == E120_DISC_UNIQUE_BRANCH) {
+			if (!rdm_muted) {
+				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
 					monitor_line(24, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
 					uint16_t rdm_checksum = 6 * 0xFF;
 
 					uint8_t i = 0;
-					for (i = 0; i < 7; i++)
-					{
+					for (i = 0; i < 7; i++) {
 						p->header_FE[i] = 0xFE;
 					}
 					p->header_AA = 0xAA;
 
-					for (i = 0; i < 6; i++)
-					{
+					for (i = 0; i < 6; i++) {
 						p->masked_device_id[i + i] = uid_device[i] | 0xAA;
 						p->masked_device_id[i + i + 1] = uid_device[i] | 0x55;
 						rdm_checksum += uid_device[i];
@@ -119,11 +105,11 @@ void rdm_handle_data(uint8_t *rdm_data)
 					p->checksum[2] = (rdm_checksum & 0xFF) | 0xAA;
 					p->checksum[3] = (rdm_checksum & 0xFF) | 0x55;
 
-					rdm_send_discovery_respond_message(rdm_data, sizeof(struct _rdm_discovery_msg));
+					rdm_send_discovery_respond_message(rdm_data,
+							sizeof(struct _rdm_discovery_msg));
 				}
 			}
-		} else if (param_id == E120_DISC_UN_MUTE)
-		{
+		} else if (param_id == E120_DISC_UN_MUTE) {
 			monitor_line(24, "E120_DISC_UN_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
@@ -133,21 +119,18 @@ void rdm_handle_data(uint8_t *rdm_data)
 				//rdm_send_respond_message_nack(E120_NR_FORMAT_ERROR);
 				return;
 			}
-			rdm_muted = FALSE;
-			if (rdm_packet_is_for_me)
-			{
+			rdm_muted = false;
+			if (rdm_packet_is_for_me) {
 				rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 				rdm_cmd->param_data_length = 2;
 				rdm_cmd->param_data[0] = 0x00;	// Control Field
 				rdm_cmd->param_data[1] = 0x00;	// Control Field
-				if (rdm_sub_devices_get())
-				{
+				if (rdm_sub_devices_get()) {
 					rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
 				}
 				rdm_send_respond_message_ack(rdm_data);
 			}
-		} else if (param_id == E120_DISC_MUTE)
-		{
+		} else if (param_id == E120_DISC_MUTE) {
 			monitor_line(24, "E120_DISC_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
@@ -158,25 +141,25 @@ void rdm_handle_data(uint8_t *rdm_data)
 				return;
 			}
 
-			rdm_muted = TRUE;
+			rdm_muted = true;
 
-			if (rdm_packet_is_for_me)
-			{
+			if (rdm_packet_is_for_me) {
 				rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 				rdm_cmd->param_data_length = 2;
 				rdm_cmd->param_data[0] = 0x00;	// Control Field
 				rdm_cmd->param_data[1] = 0x00;	// Control Field
-				if (rdm_sub_devices_get())
-				{
+				if (rdm_sub_devices_get()) {
 					rdm_cmd->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
 				}
 				rdm_send_respond_message_ack(rdm_data);
 			}
 		}
-	}
-	else
-	{
-		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];
-		rdm_handlers(rdm_data, rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);
+	} else {
+		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8)
+				+ rdm_cmd->sub_device[1];
+		rdm_handlers(rdm_data,
+				rdm_packet_is_broadcast || rdm_packet_is_vendorcast,
+				command_class, param_id, rdm_cmd->param_data_length,
+				sub_device);
 	}
 }
