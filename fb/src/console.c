@@ -73,7 +73,7 @@ inline static void newline() {
  * @param color
  */
 inline static void draw_pixel(const int x, const int y, const uint16_t color) {
-	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x + y * WIDTH) * BYTES_PER_PIXEL);
+	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x * BYTES_PER_PIXEL) + (y * WIDTH * BYTES_PER_PIXEL));
 	*address = color;
 }
 
@@ -88,14 +88,16 @@ inline static void draw_pixel(const int x, const int y, const uint16_t color) {
 inline static void draw_char(const int c, const int x, int y, const uint16_t fore, const uint16_t back) {
 	int i, j;
 	uint8_t line;
+	int index = c * (int) CHAR_H;
 
 	for (i = 0; i < CHAR_H; i++) {
-		line = (uint8_t) FONT[c * (int) CHAR_H + i];
+		line = (uint8_t) FONT[index++];
 		for (j = 0; j < CHAR_W; j++) {
 			if ((line & 0x1) != 0) {
 				draw_pixel(x + j, y, fore);
-			} else
+			} else {
 				draw_pixel(x + j, y, back);
+			}
 			line >>= 1;
 		}
 		y++;

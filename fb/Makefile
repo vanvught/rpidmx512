@@ -11,8 +11,8 @@ LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-
 
 BUILD = build/
 SOURCE = ./
-ASM_OBJECTS := $(patsubst $(SOURCE)/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)/*.s))
-C_OBJECTS := $(patsubst $(SOURCE)src/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)src/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) 
+ASM_OBJECTS := $(patsubst $(SOURCE)src/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)src/*.s))
+C_OBJECTS := $(patsubst $(SOURCE)src/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)src/*.c)) $(patsubst $(SOURCE)src/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)src/*.S))  $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) 
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = lib/libfb.a
@@ -25,7 +25,7 @@ clean :
 	rm -f $(MAP)
 	rm -f $(LIST)
 
-$(BUILD)%.o: $(SOURCE)/%.S
+$(BUILD)%.o: $(SOURCE)src/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@
 	
 $(BUILD)%.o: $(SOURCE)firmware/%.c
