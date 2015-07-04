@@ -25,21 +25,79 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "fb.h"
-#include "console.h"
 
-extern uint32_t fb_pitch, fb_addr, fb_size;
+#include "bcm2835_mailbox.h"
+#include "console.h"
 
 extern unsigned char FONT[];
 
-#define CHAR_W		8
-#define CHAR_H		12
+#define CHAR_W				8						///<
+#define CHAR_H				12						///<
+#define WIDTH				480						///< Requested width of physical display
+#define HEIGHT				320						///< Requested height of physical display
+#define BYTES_PER_PIXEL		2						///< bytes per pixel for requested depth (BPP)
+#define BPP					(BYTES_PER_PIXEL << 3)	///< Requested depth (bits per pixel)
 
-static int cur_x = 0;
-static int cur_y = 0;
+static int cur_x = 0;						///<
+static int cur_y = 0;						///<
+static uint16_t cur_fore = CONSOLE_WHITE;	///<
+static uint16_t cur_back = CONSOLE_BLACK;	///<
+static uint32_t fb_width;					///< Width of physical display
+static uint32_t fb_height;					///< Height of physical display
+static uint32_t fb_pitch;					///< Number of bytes between each row of the frame buffer
+static uint32_t fb_addr;					///< Address of buffer allocated by VC
+static uint32_t fb_size;					///< Size of buffer allocated by VC
+static uint32_t fb_depth;					///< Depth (bits per pixel)
 
-static uint16_t cur_fore = CONSOLE_WHITE;
-static uint16_t cur_back = CONSOLE_BLACK;
+typedef struct framebuffer {
+	uint32_t width_p;	///< Requested width of physical display
+	uint32_t height_p;	///< Requested height of physical display
+	uint32_t width_v;	///< Requested width of virtual display
+	uint32_t height_v;	///< Requested height of virtual display
+	uint32_t pitch;		///< Request: Set to zero, Response: Number of bytes between each row of the frame buffer
+	uint32_t depth;		///< Requested depth (bits per pixel)
+	uint32_t x;			///< Requested X offset of the virtual framebuffer
+	uint32_t y;			///< Requested Y offset of the virtual framebuffer
+	uint32_t address;	///< Framebuffer address. Request: Set to zero, Response: Address of buffer allocated by VC, or zero if request fails
+	uint32_t size;		///< Framebuffer size. Request: Set to zero, Response: Size of buffer allocated by VC
+} framebuffer_t;
+
+/**
+ * @ingroup FB
+ *
+ * @return
+ */
+int console_init() {
+	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
+	volatile framebuffer_t *frame = (framebuffer_t *) mb_addr;
+
+	frame->width_p = (uint32_t) WIDTH;
+	frame->height_p = (uint32_t) HEIGHT;
+	frame->width_v = (uint32_t) WIDTH;
+	frame->height_v = (uint32_t) HEIGHT;
+	frame->pitch = (uint32_t) 0;
+	frame->depth = (uint32_t) BPP;
+	frame->x = (uint32_t) 0;
+	frame->y = (uint32_t) 0;
+	frame->address = (uint32_t) 0;
+	frame->size = (uint32_t) 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
+
+	if (frame->address == 0) {
+		return CONSOLE_ERROR;
+	}
+
+	fb_width  = frame->width_p;
+	fb_height = frame->height_p;
+	fb_pitch  = frame->pitch;
+	fb_depth  = frame->depth;
+	fb_addr   = frame->address;
+	fb_size   = frame->size;
+
+	return CONSOLE_OK;
+}
 
 /**
  *

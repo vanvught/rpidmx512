@@ -26,17 +26,9 @@
 #ifndef FB_H
 #define FB_H
 
-#include <stdint.h>
+#include "console.h"
 
-#define WIDTH				480							///< Requested width of physical display
-#define HEIGHT				320							///< Requested height of physical display
-#define BYTES_PER_PIXEL		2							///< bytes per pixel for requested depth (BPP)
-#define BPP					(BYTES_PER_PIXEL << 3)		///< Requested depth (bits per pixel)
-
-#define FB_OK		0									///< Call fb_init() OK
-#define FB_ERROR	-1									///< Call fb_init() failed
-
-extern int fb_init(void);
+#define fb_init	console_init
 
 #endif
 

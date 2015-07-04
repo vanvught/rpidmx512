@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+extern int console_init(void);
 extern int console_putc(const int);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
@@ -46,6 +47,9 @@ extern void console_clear_line(const int);
 #define CONSOLE_RED			0xF800	///< 255,   0,   0
 #define CONSOLE_YELLOW		0xFFE0	///< 255, 255,   0
 #define CONSOLE_WHITE		0xFFFF	///< 255, 255, 255
+
+#define CONSOLE_OK		0			///< Call console_init() OK
+#define CONSOLE_ERROR	-1			///< Call console_init() failed
 
 #endif
 
