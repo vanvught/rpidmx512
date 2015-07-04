@@ -66,7 +66,7 @@ struct _hardware_revision_code {
 		{ 0xa01041, "Pi 2 Model B 1GB    " },
 };
 
-extern void fb_init(void);
+extern void console_init(void);
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
@@ -194,7 +194,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 void hardware_init(void) {
 	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
-	fb_init();
+	console_init();
 
 	if (bcm2835_vc_get_get_board_revision() > 0x00000f) {
 		_hardware_led_f.init = led_new_pi_init;
