@@ -6,6 +6,8 @@ COPS = -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mcpu=a
 COPS += -DBARE_METAL
 COPS += -I"./include"
 
+
+
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 
 BUILD = build/
@@ -15,6 +17,7 @@ C_OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(p
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = lib/libbcm2835.a
+LIST = lib.list
 
 all : $(TARGET)
 
@@ -32,3 +35,4 @@ $(BUILD)%.o: $(SOURCE)/%.c
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
+	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)

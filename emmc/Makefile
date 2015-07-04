@@ -17,6 +17,7 @@ C_OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(p
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = lib/libemmc.a
+LIST = lib.list
 
 all : $(TARGET)
 
@@ -37,3 +38,4 @@ $(BUILD)%.o: $(SOURCE)/%.c
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
+	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)

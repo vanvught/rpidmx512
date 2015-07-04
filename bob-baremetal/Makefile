@@ -7,15 +7,17 @@ COPS += -DBARE_METAL
 COPS += -I"./include"
 COPS += -I"../bcm2835-baremetal/include"
 
+
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 
 BUILD = build/
-SOURCE = ./
+SOURCE = ./src
 ASM_OBJECTS := $(patsubst $(SOURCE)/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)/*.s))
-C_OBJECTS := $(patsubst $(SOURCE)src/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)src/*.c)) $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) 
+C_OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))  
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 
 TARGET = lib/libbob.a
+LIST = lib.list
 
 all : $(TARGET)
 
@@ -28,11 +30,9 @@ clean :
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@
 	
-$(BUILD)%.o: $(SOURCE)firmware/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@				
-
-$(BUILD)%.o: $(SOURCE)src/%.c
+$(BUILD)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
+	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
