@@ -1353,7 +1353,7 @@ Disassembly of section .text:
     9334:	1affffeb 	bne	92e8 <read_config_file+0x44>
     9338:	e59d0004 	ldr	r0, [sp, #4]
     933c:	e59f1174 	ldr	r1, [pc, #372]	; 94b8 <read_config_file+0x214>
-    9340:	e3a02012 	mov	r2, #18
+    9340:	e3a02011 	mov	r2, #17
     9344:	eb00499a 	bl	1b9b4 <strncmp>
     9348:	e3500000 	cmp	r0, #0
     934c:	1a00000f 	bne	9390 <read_config_file+0xec>
@@ -1375,7 +1375,7 @@ Disassembly of section .text:
     938c:	e8bd8030 	pop	{r4, r5, pc}
     9390:	e59d0004 	ldr	r0, [sp, #4]
     9394:	e59f1124 	ldr	r1, [pc, #292]	; 94c0 <read_config_file+0x21c>
-    9398:	e3a02010 	mov	r2, #16
+    9398:	e3a0200f 	mov	r2, #15
     939c:	eb004984 	bl	1b9b4 <strncmp>
     93a0:	e3500000 	cmp	r0, #0
     93a4:	1affffcf 	bne	92e8 <read_config_file+0x44>
@@ -1571,7 +1571,7 @@ Disassembly of section .text:
 00009630 <rdm_device_info_get_software_version_id>:
     9630:	e59f0000 	ldr	r0, [pc]	; 9638 <rdm_device_info_get_software_version_id+0x8>
     9634:	e12fff1e 	bx	lr
-    9638:	559824bc 	ldrpl	r2, [r8, #1212]	; 0x4bc
+    9638:	559976db 	ldrpl	r7, [r9, #1755]	; 0x6db
 
 0000963c <rdm_device_info_get_software_version>:
     963c:	e59f0000 	ldr	r0, [pc]	; 9644 <rdm_device_info_get_software_version+0x8>
@@ -1748,11 +1748,11 @@ Disassembly of section .text:
     9890:	e3a03003 	mov	r3, #3
     9894:	e5c43000 	strb	r3, [r4]
     9898:	ebfffe81 	bl	92a4 <read_config_file>
-    989c:	e3e0c067 	mvn	ip, #103	; 0x67
+    989c:	e3e0c066 	mvn	ip, #102	; 0x66
     98a0:	e5c4c02b 	strb	ip, [r4, #43]	; 0x2b
-    98a4:	e3a0c024 	mov	ip, #36	; 0x24
+    98a4:	e3a0c076 	mov	ip, #118	; 0x76
     98a8:	e5c4c02c 	strb	ip, [r4, #44]	; 0x2c
-    98ac:	e3e0c043 	mvn	ip, #67	; 0x43
+    98ac:	e3e0c024 	mvn	ip, #36	; 0x24
     98b0:	e3a03001 	mov	r3, #1
     98b4:	e3a07000 	mov	r7, #0
     98b8:	e3a0e055 	mov	lr, #85	; 0x55
@@ -3255,7 +3255,7 @@ Disassembly of section .text:
     aedc:	1affffee 	bne	ae9c <read_config_file+0x3c>
     aee0:	e28d0010 	add	r0, sp, #16
     aee4:	e59f10e4 	ldr	r1, [pc, #228]	; afd0 <read_config_file+0x170>
-    aee8:	e3a02015 	mov	r2, #21
+    aee8:	e3a02014 	mov	r2, #20
     aeec:	eb0042b0 	bl	1b9b4 <strncmp>
     aef0:	e3500000 	cmp	r0, #0
     aef4:	1a00000a 	bne	af24 <read_config_file+0xc4>
@@ -3272,7 +3272,7 @@ Disassembly of section .text:
     af20:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
     af24:	e28d0010 	add	r0, sp, #16
     af28:	e59f10a8 	ldr	r1, [pc, #168]	; afd8 <read_config_file+0x178>
-    af2c:	e3a02013 	mov	r2, #19
+    af2c:	e3a02012 	mov	r2, #18
     af30:	eb00429f 	bl	1b9b4 <strncmp>
     af34:	e3500000 	cmp	r0, #0
     af38:	1a000005 	bne	af54 <read_config_file+0xf4>
@@ -3284,7 +3284,7 @@ Disassembly of section .text:
     af50:	eaffffd1 	b	ae9c <read_config_file+0x3c>
     af54:	e28d0010 	add	r0, sp, #16
     af58:	e59f107c 	ldr	r1, [pc, #124]	; afdc <read_config_file+0x17c>
-    af5c:	e3a02017 	mov	r2, #23
+    af5c:	e3a02016 	mov	r2, #22
     af60:	eb004293 	bl	1b9b4 <strncmp>
     af64:	e3500000 	cmp	r0, #0
     af68:	059f3064 	ldreq	r3, [pc, #100]	; afd4 <read_config_file+0x174>
@@ -3293,7 +3293,7 @@ Disassembly of section .text:
     af74:	0affffc8 	beq	ae9c <read_config_file+0x3c>
     af78:	e28d0010 	add	r0, sp, #16
     af7c:	e59f105c 	ldr	r1, [pc, #92]	; afe0 <read_config_file+0x180>
-    af80:	e3a0200c 	mov	r2, #12
+    af80:	e3a0200b 	mov	r2, #11
     af84:	eb00428a 	bl	1b9b4 <strncmp>
     af88:	e3500000 	cmp	r0, #0
     af8c:	1a000004 	bne	afa4 <read_config_file+0x144>
@@ -3302,7 +3302,7 @@ Disassembly of section .text:
     af98:	959f2034 	ldrls	r2, [pc, #52]	; afd4 <read_config_file+0x174>
     af9c:	95c23001 	strbls	r3, [r2, #1]
     afa0:	eaffffbd 	b	ae9c <read_config_file+0x3c>
-    afa4:	e3a0201a 	mov	r2, #26
+    afa4:	e3a02019 	mov	r2, #25
     afa8:	e28d0010 	add	r0, sp, #16
     afac:	e59f1030 	ldr	r1, [pc, #48]	; afe4 <read_config_file+0x184>
     afb0:	eb00427f 	bl	1b9b4 <strncmp>
@@ -40737,10 +40737,10 @@ Disassembly of section .rodata:
    2ee58:	73252074 	teqvc	r5, #116	; 0x74
    2ee5c:	00000020 	andeq	r0, r0, r0, lsr #32
    2ee60:	206c754a 	rsbcs	r7, ip, sl, asr #10
-   2ee64:	32203420 	eorcc	r3, r0, #32, 8	; 0x20000000
+   2ee64:	32203520 	eorcc	r3, r0, #32, 10	; 0x8000000
    2ee68:	00353130 	eorseq	r3, r5, r0, lsr r1
    2ee6c:	323a3032 	eorscc	r3, sl, #50	; 0x32
-   2ee70:	36353a33 			; <UNDEFINED> instruction: 0x36353a33
+   2ee70:	36333a36 			; <UNDEFINED> instruction: 0x36333a36
    2ee74:	00000000 	andeq	r0, r0, r0
    2ee78:	5d64255b 	cfstr64pl	mvdx2, [r4, #-364]!	; 0xfffffe94
    2ee7c:	4e2f5320 	cdpmi	3, 2, cr5, cr15, cr0, {1}
