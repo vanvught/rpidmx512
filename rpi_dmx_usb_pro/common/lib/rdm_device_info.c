@@ -34,7 +34,6 @@
 #include "ff.h"
 #endif
 #include "hardware.h"
-#include "bcm2835_vc.h"
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
@@ -43,19 +42,16 @@
 #include "rdm_device_info.h"
 #include "rdm_device_const.h"
 
-static const uint8_t DEVICE_LABEL_LENGTH = (sizeof(DEVICE_LABEL)
-		/ sizeof(DEVICE_LABEL[0])) - 1;
-static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH =
-		(sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]))
-				- 1;
-static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH =
-		(sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(DEVICE_SOFTWARE_VERSION[0]))
-				- 1;
+static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
+static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
+static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH = sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(DEVICE_SOFTWARE_VERSION[0]) - 1;
 
 #ifdef RDM_CONTROLLER
-static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";///< Parameters file name
-static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";	///<
-static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";		///<
+static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";				///< Parameters file name
+static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";		///<
+static const size_t RDM_DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(RDM_DEVICE_MANUFACTURER_NAME) / sizeof(RDM_DEVICE_MANUFACTURER_NAME[0]) - 1;
+static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";			///<
+static const size_t RDM_DEVICE_MANUFACTURER_ID_LENGTH = sizeof(RDM_DEVICE_MANUFACTURER_ID) / sizeof(RDM_DEVICE_MANUFACTURER_ID[0]) - 1;
 #endif
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
@@ -90,10 +86,10 @@ static int process_line_read_string(const char *line) {
 	errno = 0;
 
 	if (sscanf(line, "%48[^=]=%48[^\n]", name, value) == 2) {
-		if (strncmp(name, RDM_DEVICE_MANUFACTURER_NAME, sizeof(RDM_DEVICE_MANUFACTURER_NAME)) == 0) {
+		if (strncmp(name, RDM_DEVICE_MANUFACTURER_NAME, RDM_DEVICE_MANUFACTURER_NAME_LENGTH) == 0) {
 			device_manufacturer_name_length = MIN(strlen(value), DEVICE_MANUFACTURER_LABEL_MAX_LENGTH);
 			memcpy(device_manufacturer_name, value, device_manufacturer_name_length);
-		} else if (strncmp(name, RDM_DEVICE_MANUFACTURER_ID, sizeof(RDM_DEVICE_MANUFACTURER_ID)) == 0) {
+		} else if (strncmp(name, RDM_DEVICE_MANUFACTURER_ID, RDM_DEVICE_MANUFACTURER_ID_LENGTH) == 0) {
 			size_t len = strlen(value);
 			if (len == 4) {
 				if (isxdigit((int )value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
@@ -229,8 +225,7 @@ const char * rdm_device_info_get_label(const uint16_t sub_device) {
  * @param label
  * @param label_length
  */
-void rdm_device_info_set_label(const uint16_t sub_device, const uint8_t *label,
-		uint8_t label_length) {
+void rdm_device_info_set_label(const uint16_t sub_device, const uint8_t *label,	uint8_t label_length) {
 	if (label_length > DEVICE_LABEL_MAX_LENGTH) {
 		label_length = DEVICE_LABEL_MAX_LENGTH;
 	}
@@ -448,8 +443,7 @@ void rdm_device_info_set_personality_current(const uint16_t sub_device, const ui
  * @return
  */
 const char *rdm_device_info_get_personality_description(const uint16_t sub_device, const uint8_t personality) {
-	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device)))
-	{
+	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device))) {
 		return NULL;
 	}
 
@@ -467,11 +461,11 @@ const char *rdm_device_info_get_personality_description(const uint16_t sub_devic
  * @param personality
  * @return
  */
-const uint16_t rdm_device_info_get_personality_slots(const uint16_t sub_device,
-		const uint8_t personality) {
-	if ((personality == 0)
-			|| (personality > rdm_device_info_get_personality_count(sub_device)))
+const uint16_t rdm_device_info_get_personality_slots(const uint16_t sub_device, const uint8_t personality) {
+	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device))) {
 		return 0;
+	}
+
 	if (sub_device != 0) {
 		return rdm_sub_devices_get_personality_slots(sub_device, personality);
 	}
@@ -526,7 +520,7 @@ void rdm_device_info_init(void) {
 
 	memset(mac_address, 0 , sizeof(mac_address) / sizeof(mac_address[0]));
 
-	if (bcm2835_vc_get_board_mac_address(mac_address) == 0) {
+	if (hardware_get_mac_address(mac_address) == 0) {
 		uid_device[2] = mac_address[2];
 		uid_device[3] = mac_address[3];
 		uid_device[4] = mac_address[4];
