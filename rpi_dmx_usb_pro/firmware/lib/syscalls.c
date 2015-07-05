@@ -194,7 +194,7 @@ _times (struct tms * tp)
         tp->tms_cstime = 0; /* system time, children */
     }
     return timeval;
-};
+}
 
 
 int
