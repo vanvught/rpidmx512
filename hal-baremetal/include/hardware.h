@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
+#include "bcm2835_vc.h"
 
 struct hardware_time {
 	uint8_t second;		///< Seconds.		[0-59]
@@ -55,9 +56,20 @@ extern const uint8_t hardware_get_board_model_length(void);
 
 extern void hardware_rtc_set(const struct hardware_time *);
 
-inline static uint32_t hardware_micros(void)
-{
+/**
+ *
+ * @return
+ */
+inline static uint32_t hardware_micros(void) {
 	return BCM2835_ST->CLO;
+}
+
+/**
+ *
+ * @param mac_address
+ */
+inline static int32_t hardware_get_mac_address(uint8_t *mac_address) {
+	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
 #endif /* HARDWARE_H_ */
