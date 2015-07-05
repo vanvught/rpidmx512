@@ -35,8 +35,8 @@
 #include "util.h"
 #include "ff.h"
 
-TABLE(initializer_t, devices);
-TABLE(initializer_t, devices_init);
+TABLE(initializer_t, devices)
+TABLE(initializer_t, devices_init)
 
 _devices_t devices_connected;
 
