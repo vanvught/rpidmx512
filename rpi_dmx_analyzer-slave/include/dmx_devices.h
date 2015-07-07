@@ -53,8 +53,8 @@ typedef struct _devices {
 
 struct _dmx_devices_statistics
 {
-	uint16_t function_count;
-	uint16_t dmx_available_count;
+	uint32_t function_count;
+	uint32_t dmx_available_count;
 };
 
 extern void dmx_devices_read_config(void);

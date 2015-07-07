@@ -31,14 +31,14 @@ _start:
     ldr pc, irq_handler
     ldr pc, fiq_handler
 
-reset_handler:			.word reset
+reset_handler:		.word reset
 undefined_handler:	.word hang
-swi_handler:			.word hang
-prefetch_handler:		.word hang
-data_handler:			.word hang
+swi_handler:		.word hang
+prefetch_handler:	.word hang
+data_handler:		.word hang
 unused_handler:		.word hang
-irq_handler:			.word irq
-fiq_handler:			.word fiq
+irq_handler:		.word irq
+fiq_handler:		.word fiq
 
 reset:
     @ Copy vectors (including fiq handler) to 0x0000
@@ -61,6 +61,13 @@ reset:
     msr CPSR_c,#MODE_SVC|I_BIT|F_BIT	@ Supervisor Mode
     ldr r0, =__svc_stack_top
     mov sp, r0
+
+	@ start L1 chache
+	mrc p15, 0, r0, c1, c0, 0
+	orr r0,r0,#0x0004					@ Data Cache (Bit 2)
+	orr r0,r0,#0x0800					@ Branch Prediction (Bit 11)
+	orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
+	mcr p15, 0, r0, c1, c0, 0
 
     @ enable fpu
     mrc p15, 0, r0, c1, c0, 2
