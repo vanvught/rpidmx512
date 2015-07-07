@@ -1,13 +1,5 @@
 Raspberry Pi DMX512 / RDM
 =======
-
-Baremetal projects testing purposes only
----------
-
-\pl011_dmx512_fiq
-\pl011_dmx512_send
-\pl011_dmx512_send_irq
-
 Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder 
 ---------
 \Eagle
@@ -23,4 +15,4 @@ Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder
 \rpi_dmx_usb_pro
 \rpi_rdm_responder
 
-Detailed information can be found here : https://sites.google.com/site/rpidmx512
+Detailed information can be found here : http://www.raspberrypi-dmx.com/
