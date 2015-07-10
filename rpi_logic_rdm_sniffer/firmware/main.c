@@ -83,6 +83,7 @@ int notmain(void) {
 	hardware_init();
 	dmx_init();
 
+	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 	printf("Logic RDM Sniffer, DMX512 data analyzer for 32 channels\n");
 

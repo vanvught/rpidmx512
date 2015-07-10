@@ -100,9 +100,11 @@ int notmain(void)
 	widget_params_init();
 	rdm_device_info_init();
 
-	printf("Compiled on %s at %s ", __DATE__, __TIME__);
+	hardware_print_board_model();
+	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol]\n");
 	const uint8_t *device_sn = rdm_device_info_get_sn();
-	printf("[%d] S/N : %.2X%.2X%.2X%.2X\n", widget_get_mode(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
+	printf("Widget mode %d, S/N : %.2X%.2X%.2X%.2X\n", widget_get_mode(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
 
 	watchdog_init();
 

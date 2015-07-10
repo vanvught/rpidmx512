@@ -64,7 +64,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 	const uint16_t param_id = (rdm_cmd->param_id[0] << 8) + rdm_cmd->param_id[1];
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 
-	monitor_line(23, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
+	monitor_line(MONITOR_LINE_RDM_DATA - 2, "command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
 	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0) {
 		rdm_packet_is_broadcast = true;
@@ -83,7 +83,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 		if (param_id == E120_DISC_UNIQUE_BRANCH) {
 			if (!rdm_muted) {
 				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
-					monitor_line(24, "E120_DISC_UNIQUE_BRANCH");
+					monitor_line(MONITOR_LINE_STATUS, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);
 					uint16_t rdm_checksum = 6 * 0xFF;
@@ -110,7 +110,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 				}
 			}
 		} else if (param_id == E120_DISC_UN_MUTE) {
-			monitor_line(24, "E120_DISC_UN_MUTE");
+			monitor_line(MONITOR_LINE_STATUS, "E120_DISC_UN_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
@@ -131,7 +131,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 				rdm_send_respond_message_ack(rdm_data);
 			}
 		} else if (param_id == E120_DISC_MUTE) {
-			monitor_line(24, "E120_DISC_MUTE");
+			monitor_line(MONITOR_LINE_STATUS, "E120_DISC_MUTE");
 
 			if (rdm_cmd->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction
@@ -155,11 +155,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 			}
 		}
 	} else {
-		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8)
-				+ rdm_cmd->sub_device[1];
-		rdm_handlers(rdm_data,
-				rdm_packet_is_broadcast || rdm_packet_is_vendorcast,
-				command_class, param_id, rdm_cmd->param_data_length,
-				sub_device);
+		uint16_t sub_device = (rdm_cmd->sub_device[0] << 8) + rdm_cmd->sub_device[1];
+		rdm_handlers(rdm_data, rdm_packet_is_broadcast || rdm_packet_is_vendorcast, command_class, param_id, rdm_cmd->param_data_length, sub_device);
 	}
 }

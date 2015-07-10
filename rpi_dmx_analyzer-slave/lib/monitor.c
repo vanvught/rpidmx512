@@ -39,13 +39,14 @@ static uint32_t dmx_available_count_previous = 0;						///<
  */
 void monitor_update(void)
 {
-	monitor_time_uptime(3);
+	monitor_time_uptime(MONITOR_LINE_TIME);
 
-	monitor_dmx_data(5, dmx_data);
+	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 
-	console_clear_line(8);
 	const struct _total_statistics *total_statistics = total_statistics_get();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+
+	console_clear_line(MONITOR_LINE_PACKETS);
 	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
 	console_clear_line(14);

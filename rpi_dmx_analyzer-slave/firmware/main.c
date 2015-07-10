@@ -25,10 +25,7 @@
 
 #include <stdio.h>
 
-#include "bcm2835.h"
-#include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
-
 #include "sys_time.h"
 #include "hardware.h"
 #include "bw_ui.h"
@@ -101,6 +98,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	hardware_init();
 	dmx_init();
 
+	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 
 	ui_start(0x00);			// User Interface

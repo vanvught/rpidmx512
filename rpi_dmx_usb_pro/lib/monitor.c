@@ -45,18 +45,18 @@ void monitor_update(void) {
 
 	widget_params_get(&widget_params);
 
-	monitor_time_uptime(1);
+	monitor_time_uptime(MONITOR_LINE_TIME);
 
 	const uint8_t widget_mode = widget_get_mode();
 
 	if (widget_mode == MODE_RDM_SNIFFER)
 	{
-		monitor_dmx_data(3, dmx_data);
+		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 
 		const struct _total_statistics *total_statistics = total_statistics_get();
 		const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
 
-		console_clear_line(7);
+		console_clear_line(MONITOR_LINE_PACKETS);
 		printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
 		const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
@@ -88,15 +88,15 @@ void monitor_update(void) {
 		dmx_packets_previous = total_statistics->dmx_packets;
 	} else
 	{
-		console_clear_line(2);
+		console_clear_line(MONITOR_LINE_WIDGET_PARMS);
 
-		printf("FW %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)\n",
+		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)\n",
 				widget_params.firmware_msb, widget_params.firmware_lsb,
 				widget_params.break_time, (int) dmx_get_output_break_time(),
 				widget_params.mab_time, (int) dmx_get_output_mab_time(),
 				widget_params.refresh_rate, (int)(1E6 / dmx_get_output_period()));
 
-		console_clear_line(3);
+		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction())
 		{
@@ -119,6 +119,6 @@ void monitor_update(void) {
 			printf("%s\n", dir[dmx_get_port_direction()]);
 		}
 
-		monitor_dmx_data(8, dmx_data);
+		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 	}
 }

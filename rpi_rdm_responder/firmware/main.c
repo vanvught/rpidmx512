@@ -94,12 +94,11 @@ int notmain(void) {
 	dmx_devices_init();
 	rdm_device_info_init();
 
+	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 	printf("RDM Responder, DMX512 data analyzer for 32 channels\n");
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
-	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n", uid_device[0],
-			uid_device[1], uid_device[2], uid_device[3], uid_device[4],
-			uid_device[5]);
+	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 
 	watchdog_init();
 

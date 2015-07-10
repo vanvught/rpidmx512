@@ -50,6 +50,85 @@ static const size_t PARAMS_WIDGET_MODE_LENGTH = sizeof(PARAMS_WIDGET_MODE) / siz
 static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";	///<
 static const size_t PARAMS_DMX_SEND_TO_HOST_THROTTLE_LENGTH = sizeof(PARAMS_DMX_SEND_TO_HOST_THROTTLE) / sizeof(PARAMS_DMX_SEND_TO_HOST_THROTTLE[0]) -1;
 
+
+/**
+ *
+ * @param line
+ * @param file_object_wr
+ * @param name
+ * @param value
+ * @return
+ */
+#ifdef UPDATE_CONFIG_FILE
+static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
+{
+	char _name[64];
+	int _value;
+
+	if (sscanf(line, "%[^=]=%d", _name, &_value) == 2)
+	{
+		if (strncmp(_name, name, strlen(name)) == 0)
+		{
+			TCHAR buffer[128];
+			sprintf(buffer, "%s=%d\n", name, value);
+			f_puts(buffer, &file_object_wr);
+			return 1;
+
+		} else
+		{
+			f_puts(line, &file_object_wr);
+		}
+	}
+
+	return 0;
+}
+
+/**
+ *
+ * @param name
+ * @param value
+ */
+
+static void update_config_file(const char *name, const int value)
+{
+	int rc = -1;
+
+	FATFS fat_fs;
+	FIL file_object_rd;
+
+	f_mount(0, &fat_fs);		// Register volume work area (never fails)
+
+	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
+	if (rc == FR_OK)
+	{
+		FIL file_object_wr;
+		rc = f_open(&file_object_wr, "tmp.txt", FA_WRITE | FA_CREATE_ALWAYS);
+		if (rc == FR_OK)
+		{
+			TCHAR buffer[128];
+			char found = 0;
+			for (;;)
+			{
+				if (f_gets(buffer, sizeof(buffer), &file_object_rd) == NULL)
+					break; // Error or end of file
+
+				if (!found)
+				{
+					found = process_line_update((const char *) buffer, file_object_wr, name, value);
+				} else
+				{
+					f_puts(buffer, &file_object_wr);
+				}
+			}
+			f_close(&file_object_wr);
+		}
+		f_close(&file_object_rd);
+	}
+}
+#else
+inline static void update_config_file(const char *name, const int value) { }
+#endif
+
 /**
  * @ingroup widget
  *
@@ -130,6 +209,7 @@ void widget_params_get(struct _widget_params *widget_params) {
 void widget_params_set_break_time(const uint8_t break_time) {
 	dmx_usb_pro_params.break_time = break_time;
 	dmx_set_output_break_time((uint32_t) ((double) (dmx_usb_pro_params.break_time) * (double) (10.67)));
+	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
 /**
@@ -141,6 +221,7 @@ void widget_params_set_mab_time(const uint8_t mab_time)
 {
 	dmx_usb_pro_params.mab_time = mab_time;
 	dmx_set_output_mab_time((uint32_t) ((double) (dmx_usb_pro_params.mab_time) * (double) (10.67)));
+	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
 /**
@@ -151,6 +232,7 @@ void widget_params_set_mab_time(const uint8_t mab_time)
 void widget_params_set_refresh_rate(const uint8_t refresh_rate) {
 	dmx_usb_pro_params.refresh_rate = refresh_rate;
 	dmx_set_output_period(refresh_rate == (uint8_t) 0 ? (uint8_t) 0 : (uint8_t) (1E6 / refresh_rate));
+	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
 /**
@@ -180,6 +262,11 @@ const uint8_t widget_params_get_throttle(void) {
 	return dmx_send_to_host_throttle;
 }
 
+/**
+ *  @ingroup widget
+ *
+ * @param throttle
+ */
 void widget_params_set_throttle(const uint8_t throttle) {
 	dmx_send_to_host_throttle = throttle;
 }

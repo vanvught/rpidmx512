@@ -71,7 +71,7 @@ void monitor_time_uptime(const int line) {
 
 	console_set_cursor(0, line);
 
-	printf("%.2d:%.2d:%.2d uptime : %ld days, %ld:%02ld:%02ld\n",
+	printf("Local time %.2d:%.2d:%.2d, uptime %ld days, %ld:%02ld:%02ld\n",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
 			(long int) (uptime_seconds / day),
 			(long int) (uptime_seconds % day) / hour,

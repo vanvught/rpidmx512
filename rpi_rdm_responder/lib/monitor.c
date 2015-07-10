@@ -39,43 +39,45 @@ static uint32_t dmx_available_count_previous = 0;		///<
 
 void monitor_update(void)
 {
-	monitor_time_uptime(4);
+	monitor_time_uptime(MONITOR_LINE_TIME);
 
-	monitor_line(MONITOR_LINE_INFO, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+	monitor_line(MONITOR_LINE_PORT_DIRECTION, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
 	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 
-	console_set_cursor(0,8);
+	console_set_cursor(0, MONITOR_LINE_DMX_DATA);
+
 	printf("%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
+	(void) fflush(stdout);
 
 	uint8_t i = 0;
-	for (i = 0; i< 16; i++)
-	{
+	for (i = 0; i < 16; i++) {
 		uint16_t index = (dmx_start_address + i <= DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - DMX_UNIVERSE_SIZE);
 		uint8_t data = dmx_data[index];
-		putchar(TO_HEX((data & 0xF0) >> 4));
-		putchar(TO_HEX(data & 0x0F));
-		putchar(' ');
+		console_puthex(data);
+		(void) console_putc(' ');
 	}
 
 	printf("\n%.3d-%.3d : ", (dmx_start_address + 16) & 0x1FF, (dmx_start_address + 31) & 0x1FF);
+	(void) fflush(stdout);
 
-	for (i = 16; i< 32; i++)
-	{
+	for (i = 16; i < 32; i++) {
 		uint16_t index = (dmx_start_address + i <= DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - DMX_UNIVERSE_SIZE);
 		uint8_t data = dmx_data[index];
-		putchar(TO_HEX((data & 0xF0) >> 4));
-		putchar(TO_HEX(data & 0x0F));
-		putchar(' ');
+		console_puthex(data);
+		(void) console_putc(' ');
 	}
 
 	const struct _total_statistics *total_statistics = total_statistics_get();
 
-	printf("\n\nPackets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
-	printf("[%s] \n\n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
+	console_clear_line(MONITOR_LINE_PACKETS);
+	printf("Packets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
+
+	printf("[%s] \n", rdm_is_muted() == 1 ? "Muted" :  "Unmute");
 
 	const uint8_t *rdm_data = rdm_get_current_data();
 
+	console_set_cursor(0, MONITOR_LINE_RDM_DATA);
 	for (i = 0; i < 9; i++)
 	{
 		printf("%.2d-%.4d:%.2X %.2d-%.4d:%.2X %.2d-%.4d:%.2X %.2d-%.4d:%.2X\n",
