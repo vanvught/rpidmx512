@@ -31,12 +31,13 @@
 
 extern unsigned char FONT[];
 
-#define CHAR_W				8						///<
-#define CHAR_H				12						///<
-#define WIDTH				480						///< Requested width of physical display
-#define HEIGHT				320						///< Requested height of physical display
-#define BYTES_PER_PIXEL		2						///< bytes per pixel for requested depth (BPP)
-#define BPP					(BYTES_PER_PIXEL << 3)	///< Requested depth (bits per pixel)
+#define CHAR_W				8							///<
+#define CHAR_H				16							///<
+#define WIDTH				800							///< Requested width of physical display
+#define HEIGHT				480							///< Requested height of physical display
+#define BYTES_PER_PIXEL		2							///< bytes per pixel for requested depth (BPP)
+#define BPP					(BYTES_PER_PIXEL << 3)		///< Requested depth (bits per pixel)
+#define PITCH				(WIDTH * BYTES_PER_PIXEL)	///<
 
 static int cur_x = 0;						///<
 static int cur_y = 0;						///<
@@ -62,48 +63,37 @@ typedef struct framebuffer {
 	uint32_t size;		///< Framebuffer size. Request: Set to zero, Response: Size of buffer allocated by VC
 } framebuffer_t;
 
-/**
- * @ingroup FB
- *
- * @return
- */
-int console_init() {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile framebuffer_t *frame = (framebuffer_t *) mb_addr;
 
-	frame->width_p = (uint32_t) WIDTH;
-	frame->height_p = (uint32_t) HEIGHT;
-	frame->width_v = (uint32_t) WIDTH;
-	frame->height_v = (uint32_t) HEIGHT;
-	frame->pitch = (uint32_t) 0;
-	frame->depth = (uint32_t) BPP;
-	frame->x = (uint32_t) 0;
-	frame->y = (uint32_t) 0;
-	frame->address = (uint32_t) 0;
-	frame->size = (uint32_t) 0;
+const uint32_t console_get_address() {
+	return fb_addr;
+}
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
+const uint32_t console_get_pitch() {
+	return fb_pitch;
+}
 
-	if (frame->address == 0) {
-		return CONSOLE_ERROR;
-	}
+const uint32_t console_get_width() {
+	return fb_width;
+}
 
-	fb_width  = frame->width_p;
-	fb_height = frame->height_p;
-	fb_pitch  = frame->pitch;
-	fb_depth  = frame->depth;
-	fb_addr   = frame->address;
-	fb_size   = frame->size;
+const uint32_t console_get_height() {
+	return fb_height;
+}
 
-	return CONSOLE_OK;
+const uint32_t console_get_size() {
+	return fb_size;
+}
+
+const uint32_t console_get_depth() {
+	return fb_depth;
 }
 
 /**
  *
  */
 inline static void newline() {
-	uint8_t *block = NULL;
+	uint32_t i;
+	uint16_t *address;
 
 	cur_y++;
 	cur_x = 0;
@@ -112,13 +102,15 @@ inline static void newline() {
 		/* Pointer to row = 0 */
 		uint8_t *to = (uint8_t *) (fb_addr);
 		/* Pointer to row = 1 */
-		uint8_t *from = to + (CHAR_H * fb_pitch);
+		uint8_t *from = to + (CHAR_H * PITCH);
 		/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
-		memmove(to, from, (HEIGHT - CHAR_H) * fb_pitch);
+		memmove(to, from, (HEIGHT - CHAR_H) * PITCH);
 
-		block = to + ((HEIGHT - CHAR_H) * fb_pitch);
 		/* Clear last row */
-		memset(block, (int) cur_back, (size_t) (CHAR_H * fb_pitch));
+		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * PITCH);
+		for (i = (CHAR_H * WIDTH) ; i > 0 ; i--) {
+			*address++ =  cur_back;
+		}
 
 		cur_y--;
 	}
@@ -163,6 +155,42 @@ inline static void draw_char(const int c, const int x, int y, const uint16_t for
 }
 
 /**
+ *
+ * @return
+ */
+int console_init() {
+	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
+	volatile framebuffer_t *frame = (framebuffer_t *) mb_addr;
+
+	frame->width_p = (uint32_t) WIDTH;
+	frame->height_p = (uint32_t) HEIGHT;
+	frame->width_v = (uint32_t) WIDTH;
+	frame->height_v = (uint32_t) HEIGHT;
+	frame->pitch = (uint32_t) 0;
+	frame->depth = (uint32_t) BPP;
+	frame->x = (uint32_t) 0;
+	frame->y = (uint32_t) 0;
+	frame->address = (uint32_t) 0;
+	frame->size = (uint32_t) 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
+
+	if (frame->address == 0) {
+		return CONSOLE_ERROR;
+	}
+
+	fb_width  = frame->width_p;
+	fb_height = frame->height_p;
+	fb_pitch  = frame->pitch;
+	fb_depth  = frame->depth;
+	fb_addr   = frame->address;
+	fb_size   = frame->size;
+
+	return CONSOLE_OK;
+}
+
+/**
  * Prints character ch with the specified color at position (col, row).
  *
  * @param ch The character to display.
@@ -191,6 +219,7 @@ int console_draw_char(const int ch, const int x, const int y, const uint16_t for
  * @return
  */
 int console_putc(const int ch) {
+
 	if (ch == (int)'\n') {
 		newline();
 	} else if (ch == (int)'\r') {
@@ -204,14 +233,47 @@ int console_putc(const int ch) {
 			newline();
 		}
 	}
+
 	return ch;
+}
+
+/**
+ *
+ * @param s
+ * @return
+ */
+void console_puts(const char *s) {
+	char c;
+
+	while ((c = *s++) != (char) 0) {
+		(void) console_putc((int) c);
+	}
+}
+
+#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+
+void console_puthex(const uint8_t data) {
+	(void) console_putc(TO_HEX((data & 0xF0) >> 4));
+	(void) console_putc(TO_HEX(data & 0x0F));
+}
+
+/**
+ *
+ */
+void console_newline(){
+	newline();
 }
 
 /**
  * Clears the entire console.
  */
 void console_clear() {
-	memset((uint16_t *) fb_addr, (int)cur_back, (size_t)fb_size);
+	uint16_t *address = (uint16_t *)(fb_addr);
+	uint32_t i;
+
+	for (i = (HEIGHT * WIDTH); i > 0; i--) {
+		*address++ = cur_back;
+	}
 
 	cur_x = 0;
 	cur_y = 0;
@@ -240,8 +302,7 @@ void console_set_cursor(const int x, const int y) {
  *
  * @param fore The new color code.
  */
-void console_set_fg_color(const uint16_t fore)
-{
+void console_set_fg_color(const uint16_t fore) {
 	cur_fore = fore;
 }
 
@@ -250,22 +311,28 @@ void console_set_fg_color(const uint16_t fore)
  *
  * @param back The new color code.
  */
-void console_set_bg_color(const uint16_t back)
-{
+void console_set_bg_color(const uint16_t back) {
 	cur_back = back;
 }
 
+/**
+ *
+ * @param line
+ */
+void console_clear_line(const int line) {
+	uint16_t *address;
+	uint32_t i;
 
-void console_clear_line(const int y) {
-	volatile uint16_t *address = NULL;
-
-	if (y > HEIGHT / CHAR_H)
+	if (line > HEIGHT / CHAR_H) {
 		cur_y = 0;
-	else
-		cur_y = y;
+	} else {
+		cur_y = line;
+	}
 
 	cur_x = 0;
 
-	address = (volatile uint16_t *)(fb_addr + (y * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
-	memset((uint16_t *)address, (int)cur_back, (size_t)(CHAR_H * WIDTH * BYTES_PER_PIXEL));
+	address = (uint16_t *)(fb_addr + (line * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
+	for (i = (CHAR_H * WIDTH); i> 0; i--) {
+		*address++ = cur_back;
+	}
 }

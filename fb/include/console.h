@@ -28,8 +28,18 @@
 
 #include <stdint.h>
 
+extern const uint32_t console_get_address(void);
+extern const uint32_t console_get_pitch(void);
+extern const uint32_t console_get_width(void);
+extern const uint32_t console_get_height(void);
+extern const uint32_t console_get_size(void);
+extern const uint32_t console_get_depth(void);
+
 extern int console_init(void);
 extern int console_putc(const int);
+extern void console_puts(const char *);
+extern void console_puthex(const uint8_t);
+extern void console_newline(void);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
 extern int console_draw_char(const int, const int, const int, const uint16_t, const uint16_t);
