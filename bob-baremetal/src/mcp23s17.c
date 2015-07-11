@@ -50,7 +50,7 @@ inline void static mcp23s17_setup(const device_info_t *device_info)
 {
 #ifdef __AVR_ARCH__
 #else
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024);	// 1.953125MHz
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 #endif
 }
