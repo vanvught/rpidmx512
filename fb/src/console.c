@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "bcm2835_mailbox.h"
+#include "bcm2835_vc.h"
 #include "console.h"
 
 extern unsigned char FONT[];
@@ -49,20 +50,6 @@ static uint32_t fb_pitch;					///< Number of bytes between each row of the frame
 static uint32_t fb_addr;					///< Address of buffer allocated by VC
 static uint32_t fb_size;					///< Size of buffer allocated by VC
 static uint32_t fb_depth;					///< Depth (bits per pixel)
-
-typedef struct framebuffer {
-	uint32_t width_p;	///< Requested width of physical display
-	uint32_t height_p;	///< Requested height of physical display
-	uint32_t width_v;	///< Requested width of virtual display
-	uint32_t height_v;	///< Requested height of virtual display
-	uint32_t pitch;		///< Request: Set to zero, Response: Number of bytes between each row of the frame buffer
-	uint32_t depth;		///< Requested depth (bits per pixel)
-	uint32_t x;			///< Requested X offset of the virtual framebuffer
-	uint32_t y;			///< Requested Y offset of the virtual framebuffer
-	uint32_t address;	///< Framebuffer address. Request: Set to zero, Response: Address of buffer allocated by VC, or zero if request fails
-	uint32_t size;		///< Framebuffer size. Request: Set to zero, Response: Size of buffer allocated by VC
-} framebuffer_t;
-
 
 const uint32_t console_get_address() {
 	return fb_addr;
@@ -159,33 +146,86 @@ inline static void draw_char(const int c, const int x, int y, const uint16_t for
  * @return
  */
 int console_init() {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile framebuffer_t *frame = (framebuffer_t *) mb_addr;
+	uint32_t mailbuffer[64] __attribute__((aligned(16)));
 
-	frame->width_p = (uint32_t) WIDTH;
-	frame->height_p = (uint32_t) HEIGHT;
-	frame->width_v = (uint32_t) WIDTH;
-	frame->height_v = (uint32_t) HEIGHT;
-	frame->pitch = (uint32_t) 0;
-	frame->depth = (uint32_t) BPP;
-	frame->x = (uint32_t) 0;
-	frame->y = (uint32_t) 0;
-	frame->address = (uint32_t) 0;
-	frame->size = (uint32_t) 0;
+	mailbuffer[0] = 8 * 4;
+	mailbuffer[1] = 0;
+	mailbuffer[2] = BCM2835_VC_TAG_GET_PHYS_WH;
+	mailbuffer[3] = 8;
+	mailbuffer[4] = 0;
+	mailbuffer[5] = 0;
+	mailbuffer[6] = 0;
+	mailbuffer[7] = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_FB_CHANNEL, mb_addr);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_FB_CHANNEL);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	if (frame->address == 0) {
+	fb_width  = mailbuffer[5];
+	fb_height = mailbuffer[6];
+
+	if ((fb_width == 0) && (fb_height == 0)) {
+		fb_width = WIDTH;
+		fb_height = HEIGHT;
+	}
+
+	mailbuffer[0] = 22 * 4;
+	mailbuffer[1] = 0;
+
+	mailbuffer[2] = BCM2835_VC_TAG_SET_PHYS_WH;
+	mailbuffer[3] = 8;
+	mailbuffer[4] = 8;
+	mailbuffer[5] = fb_width;
+	mailbuffer[6] = fb_height;
+
+	mailbuffer[7] = BCM2835_VC_TAG_SET_VIRT_WH;
+	mailbuffer[8] = 8;
+	mailbuffer[9] = 8;
+	mailbuffer[10] = fb_width;
+	mailbuffer[11] = fb_height;
+
+	mailbuffer[12] = BCM2835_VC_TAG_SET_DEPTH;
+	mailbuffer[13] = 4;
+	mailbuffer[14] = 4;
+	mailbuffer[15] = BPP;
+
+	mailbuffer[16] = BCM2835_VC_TAG_ALLOCATE_BUFFER;
+	mailbuffer[17] = 8;
+	mailbuffer[18] = 4;
+	mailbuffer[19] = 16;
+	mailbuffer[20] = 0;
+
+	mailbuffer[21] = 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+	fb_addr = mailbuffer[19];
+	fb_size = mailbuffer[20];
+
+	if ((fb_addr == 0) || (fb_size == 0)) {
 		return CONSOLE_ERROR;
 	}
 
-	fb_width  = frame->width_p;
-	fb_height = frame->height_p;
-	fb_pitch  = frame->pitch;
-	fb_depth  = frame->depth;
-	fb_addr   = frame->address;
-	fb_size   = frame->size;
+	fb_depth = mailbuffer[15];
+
+	mailbuffer[0] = 7 * 4;
+	mailbuffer[1] = 0;
+
+	mailbuffer[2] = BCM2835_VC_TAG_GET_PITCH;
+	mailbuffer[3] = 4;
+	mailbuffer[4] = 0;
+	mailbuffer[5] = 0;
+
+	mailbuffer[6] = 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t) &mailbuffer);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+	fb_pitch = mailbuffer[5];
+
+	if (fb_pitch == 0) {
+		return CONSOLE_ERROR;
+	}
 
 	return CONSOLE_OK;
 }

@@ -26,8 +26,6 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-
 #include "bcm2835_mailbox.h"
 #include "bcm2835_vc.h"
 
@@ -52,31 +50,29 @@ struct vc_msg_uint32 {
  * @return
  */
 inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
+	struct vc_msg_uint32 vc_msg  __attribute__((aligned(16)));
 
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *) mb_addr;
+	vc_msg.msg_size = sizeof(struct vc_msg_uint32);
+	vc_msg.request_code = 0;
+	vc_msg.tag.tag_id = tag_id;
+	vc_msg.tag.buffer_size = 8;
+	vc_msg.tag.data_size = 4; /* we're just sending the clock ID which is one word long */
+	vc_msg.tag.dev_id = dev_id;
+	vc_msg.tag.val = 0;
+	vc_msg.end_tag = 0;
 
-	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
-	vc_msg->request_code = 0;
-	vc_msg->tag.tag_id = tag_id;
-	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 4; /* we're just sending the clock ID which is one word long */
-	vc_msg->tag.dev_id = dev_id;
-	vc_msg->tag.val = 0;
-	vc_msg->end_tag = 0;
-
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
+	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	if (vc_msg->tag.dev_id != dev_id) {
+	if (vc_msg.tag.dev_id != dev_id) {
 		return -1;
 	}
 
-	return (int32_t) vc_msg->tag.val;
+	return (int32_t) vc_msg.tag.val;
 
 }
 
@@ -89,30 +85,29 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
  * @return
  */
 inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_id, const uint32_t val) {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile struct  vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)mb_addr;
+	struct  vc_msg_uint32 vc_msg  __attribute__((aligned(16)));
 
-	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
-	vc_msg->request_code = 0;
-	vc_msg->tag.tag_id = tag_id;
-	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 8; /* we're sending the clock ID and the new rates which is a total of 2 words */
-	vc_msg->tag.dev_id = dev_id;
-	vc_msg->tag.val = val;
-	vc_msg->end_tag = 0;
+	vc_msg.msg_size = sizeof(struct vc_msg_uint32);
+	vc_msg.request_code = 0;
+	vc_msg.tag.tag_id = tag_id;
+	vc_msg.tag.buffer_size = 8;
+	vc_msg.tag.data_size = 8; /* we're sending the clock ID and the new rates which is a total of 2 words */
+	vc_msg.tag.dev_id = dev_id;
+	vc_msg.tag.val = val;
+	vc_msg.end_tag = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
+	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	if (vc_msg->tag.dev_id != dev_id) {
+	if (vc_msg.tag.dev_id != dev_id) {
 		return -1;
 	}
 
-	return (int32_t) vc_msg->tag.val;
+	return (int32_t) vc_msg.tag.val;
 }
 
 /**
@@ -195,25 +190,29 @@ struct vc_msg_board_mac_address {
  * @return
  */
 int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile struct vc_msg_board_mac_address *vc_msg = (struct vc_msg_board_mac_address *)mb_addr;
+	struct vc_msg_board_mac_address vc_msg __attribute__((aligned(16)));
 
-	vc_msg->msg_size = sizeof(struct vc_msg_board_mac_address);
-	vc_msg->request_code = 0;
-	vc_msg->tag.tag_id = BCM2835_VC_TAG_GET_BOARD_MAC_ADDRESS;
-	vc_msg->tag.buffer_size = 6;
-	vc_msg->tag.data_size = 0;
-	vc_msg->tag.mac_address[0] = 0;
-	vc_msg->end_tag = 0;
+	vc_msg.msg_size = sizeof(struct vc_msg_board_mac_address);
+	vc_msg.request_code = 0;
+	vc_msg.tag.tag_id = BCM2835_VC_TAG_GET_BOARD_MAC_ADDRESS;
+	vc_msg.tag.buffer_size = 6;
+	vc_msg.tag.data_size = 0;
+	vc_msg.tag.mac_address[0] = 0;
+	vc_msg.end_tag = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
+	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	memcpy(mac_address, (uint8_t *)vc_msg->tag.mac_address, 6);
+	mac_address[0] = vc_msg.tag.mac_address[0];
+	mac_address[1] = vc_msg.tag.mac_address[1];
+	mac_address[2] = vc_msg.tag.mac_address[2];
+	mac_address[3] = vc_msg.tag.mac_address[3];
+	mac_address[4] = vc_msg.tag.mac_address[4];
+	mac_address[5] = vc_msg.tag.mac_address[5];
 
 	return 0;
 }
@@ -240,25 +239,25 @@ struct vc_msg_uint32_t {
  * @return
  */
 inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
-	uint32_t mb_addr = 0x40007000;		// 0x7000 in L2 cache coherent mode
-	volatile struct vc_msg_uint32_t *vc_msg = (struct vc_msg_uint32_t *)mb_addr;
+	struct vc_msg_uint32_t vc_msg __attribute__((aligned(16)));
 
-	vc_msg->msg_size = sizeof(struct vc_msg_uint32_t);
-	vc_msg->request_code = 0;
-	vc_msg->tag.tag_id = tag_id;
-	vc_msg->tag.buffer_size = 4;
-	vc_msg->tag.data_size = 0;
-	vc_msg->tag.value = 0;
-	vc_msg->end_tag = 0;
+	vc_msg.msg_size = sizeof(struct vc_msg_uint32_t);
+	vc_msg.request_code = 0;
+	vc_msg.tag.tag_id = tag_id;
+	vc_msg.tag.buffer_size = 4;
+	vc_msg.tag.data_size = 0;
+	vc_msg.tag.value = 0;
+	vc_msg.end_tag = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, mb_addr);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&vc_msg);
+	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
+
+	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	return (int32_t) vc_msg->tag.value;
+	return (int32_t) vc_msg.tag.value;
 }
 
 /**
