@@ -59,7 +59,7 @@
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.320821704;cdt.managedbuild.toolchain.gnu.cross.base.320821704.348703170;cdt.managedbuild.tool.gnu.cross.c.compiler.1961945435;cdt.managedbuild.tool.gnu.c.compiler.input.687165381">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>

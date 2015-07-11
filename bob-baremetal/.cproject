@@ -20,7 +20,7 @@
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.607866355" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.884717125" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.12217285" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder id="cdt.managedbuild.builder.gnu.cross.1399797452" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder id="cdt.managedbuild.builder.gnu.cross.1399797452" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1345488849" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1980713098" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -47,7 +47,11 @@
 		<project id="bob-baremetal.null.174988803" name="bob-baremetal"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/bob-baremetal"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.233968025;cdt.managedbuild.toolchain.gnu.cross.base.233968025.1693681312;cdt.managedbuild.tool.gnu.cross.c.compiler.1345488849;cdt.managedbuild.tool.gnu.c.compiler.input.1980713098">
