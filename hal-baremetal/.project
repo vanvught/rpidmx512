@@ -5,6 +5,7 @@
 	<projects>
 		<project>bcm2835-baremetal</project>
 		<project>bob-baremetal</project>
+		<project>fb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

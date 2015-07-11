@@ -43,6 +43,8 @@ struct hardware_time {
 extern void hardware_init(void);
 extern void hardware_reboot(void);
 
+extern void hardware_print_board_model(void);
+
 extern void hardware_led_init(void);
 void hardware_led_set(const int);
 

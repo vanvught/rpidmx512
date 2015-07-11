@@ -32,6 +32,7 @@
 #include "mcp7941x.h"
 
 #include "hardware.h"
+#include "console.h"
 #include "sys_time.h"
 
 static const char FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";		///<
@@ -65,8 +66,6 @@ struct _hardware_revision_code {
 		{ 0x000012, "Model A+ 256MB      " },
 		{ 0xa01041, "Pi 2 Model B 1GB    " },
 };
-
-extern void console_init(void);
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
@@ -186,6 +185,10 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	tmbuf.tm_isdst = 0;
 
 	sys_time_set(&tmbuf);
+}
+
+void hardware_print_board_model(){
+	console_puts(hardware_get_board_model());
 }
 
 /**
