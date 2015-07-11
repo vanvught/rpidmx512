@@ -37,6 +37,7 @@
 #define MONITOR_LINE_DMX_DATA		11
 #define MONITOR_LINE_PACKETS		14
 #define MONITOR_LINE_RDM_DATA		17
+#define MONITOR_LINE_RDM_CC			27
 #define MONITOR_LINE_STATUS			28
 #define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
 

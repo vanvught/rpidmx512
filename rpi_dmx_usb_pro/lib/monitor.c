@@ -49,8 +49,7 @@ void monitor_update(void) {
 
 	const uint8_t widget_mode = widget_get_mode();
 
-	if (widget_mode == MODE_RDM_SNIFFER)
-	{
+	if (widget_mode == MODE_RDM_SNIFFER) {
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 
 		const struct _total_statistics *total_statistics = total_statistics_get();
@@ -68,26 +67,19 @@ void monitor_update(void) {
 
 		const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
 
-		console_clear_line(14);
-		console_clear_line(17);
-
 		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
 
-		if (dmx_updates_per_second)
-		{
-			printf("Slots in packet %d  \n", (uint16_t)dmx_get_slots_in_packet());
-			printf("Slot to slot    %d  \n", (uint16_t)dmx_get_slot_to_slot());
+		if (dmx_updates_per_second != 0) {
+			printf("Slots in packet %d      \n",(uint16_t) dmx_get_slots_in_packet());
+			printf("Slot to slot    %d      \n", (uint16_t) dmx_get_slot_to_slot());
 			printf("Break to break  %ld     \n", dmx_get_break_to_break());
-		}
-		else
-		{
-			printf("Slots in packet -- \n");
-			printf("Slot to slot    -- \n");
+		} else {
+			printf("Slots in packet --     \n");
+			printf("Slot to slot    --     \n");
 			printf("Break to break  --     \n");
 		}
 		dmx_packets_previous = total_statistics->dmx_packets;
-	} else
-	{
+	} else {
 		console_clear_line(MONITOR_LINE_WIDGET_PARMS);
 
 		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)\n",
@@ -98,24 +90,18 @@ void monitor_update(void) {
 
 		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
-		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction())
-		{
+		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
 			const uint8_t receive_dmx_on_change = widget_get_receive_dmx_on_change();
-			if (receive_dmx_on_change == SEND_ALWAYS)
-			{
+			if (receive_dmx_on_change == SEND_ALWAYS) {
 				printf("Input [SEND_ALWAYS]\n");
 
 				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
 				monitor_line(MONITOR_LINE_STATS, "%d", widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
 				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
-			}
-			else
-			{
+			} else {
 				printf("Input [SEND_ON_DATA_CHANGE_ONLY]\n");
 			}
-		}
-		else
-		{
+		} else {
 			printf("%s\n", dir[dmx_get_port_direction()]);
 		}
 
