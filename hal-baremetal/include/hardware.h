@@ -30,6 +30,7 @@
 
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
+#include "bcm2835_wdog.h"
 
 struct hardware_time {
 	uint8_t second;		///< Seconds.		[0-59]
@@ -42,12 +43,8 @@ struct hardware_time {
 
 extern void hardware_init(void);
 extern void hardware_reboot(void);
-
-extern void hardware_print_board_model(void);
-
 extern void hardware_led_init(void);
-void hardware_led_set(const int);
-
+extern void hardware_led_set(const int);
 extern const uint64_t hardware_uptime_seconds(void);
 extern const int32_t hardware_get_firmware_revision(void);
 extern /*@shared@*/const char *hardware_get_firmware_copyright(void);
@@ -55,8 +52,8 @@ extern const uint8_t hardware_get_firmware_copyright_length(void);
 extern const int32_t hardware_get_board_model_id(void);
 extern /*@shared@*/const char *hardware_get_board_model(void);
 extern const uint8_t hardware_get_board_model_length(void);
-
 extern void hardware_rtc_set(const struct hardware_time *);
+extern void hardware_print_board_model(void);
 
 /**
  *
@@ -70,8 +67,29 @@ inline static uint32_t hardware_micros(void) {
  *
  * @param mac_address
  */
-inline static int32_t hardware_get_mac_address(uint8_t *mac_address) {
+inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	return bcm2835_vc_get_board_mac_address(mac_address);
+}
+
+/**
+ *
+ */
+inline static void hardware_watchdog_init(void) {
+	watchdog_init();
+}
+
+/**
+ *
+ */
+inline static void hardware_watchdog_feed(void) {
+	watchdog_feed();
+}
+
+/**
+ *
+ */
+inline static void hardware_watchdog_stop(void) {
+	watchdog_stop();
 }
 
 #endif /* HARDWARE_H_ */
