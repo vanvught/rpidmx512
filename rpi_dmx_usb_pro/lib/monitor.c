@@ -67,7 +67,7 @@ void monitor_update(void) {
 
 		const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
 
-		printf("DMX updates/sec %d  \n", dmx_updates_per_second);
+		printf("\nDMX updates/sec %d  \n\n", dmx_updates_per_second);
 
 		if (dmx_updates_per_second != 0) {
 			printf("Slots in packet %d      \n",(uint16_t) dmx_get_slots_in_packet());

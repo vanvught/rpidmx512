@@ -151,7 +151,7 @@ static void read_config_file(void) {
  * @return checksum
  */
 inline static uint16_t calculate_checksum(void) {
-	uint8_t i = 0;
+	uint8_t i;
 
 	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
 	checksum += rdm_device_info.current_personality;
@@ -424,9 +424,6 @@ const uint8_t rdm_device_info_get_personality_current(const uint16_t sub_device)
  * @param personality
  */
 void rdm_device_info_set_personality_current(const uint16_t sub_device, const uint8_t personality) {
-//	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device)))
-//			return;
-
 	if (sub_device != 0) {
 		rdm_sub_devices_set_personality_current(sub_device, personality);
 		return;
@@ -506,6 +503,7 @@ struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device) {
 void rdm_device_info_init(void) {
 	const int32_t board_model_id = hardware_get_board_model_id();
 	uint16_t device_model;
+//	int i;
 
 	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
 	const uint16_t sub_device_count = rdm_sub_devices_get();
@@ -518,7 +516,9 @@ void rdm_device_info_init(void) {
 		device_model = (uint16_t)board_model_id;
 	}
 
-	memset(mac_address, 0 , sizeof(mac_address) / sizeof(mac_address[0]));
+//	for (i = 0; i < (sizeof(mac_address) / sizeof(mac_address[0])); i++) {
+//		mac_address[i] = (uint8_t)0;
+//	}
 
 	if (hardware_get_mac_address(mac_address) == 0) {
 		uid_device[2] = mac_address[2];

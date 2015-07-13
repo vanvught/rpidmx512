@@ -37,8 +37,7 @@
  * @param line
  * @param fmt
  */
-void monitor_line(const int line, const char *fmt, ...)
-{
+void monitor_line(const int line, const char *fmt, ...) {
 	va_list va;
 
 	console_clear_line(line);

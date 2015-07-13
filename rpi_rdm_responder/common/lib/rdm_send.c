@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include "bcm2835.h"
@@ -45,7 +44,7 @@ static uint8_t rdm_message_count;
  * @param data_length
  */
 void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
-	uint16_t i = 0;
+	uint16_t i;
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
 	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
@@ -55,15 +54,17 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
 
 	for (i = 0; i < data_length; i++) {
 		while (1 == 1) {
-			if ((BCM2835_PL011->FR & 0x20) == 0)
+			if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
 				break;
+			}
 		}
 		BCM2835_PL011->DR = data[i];
 	}
 
 	while (1 == 1) {
-		if ((BCM2835_PL011->FR & 0x20) == 0)
+		if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
 			break;
+		}
 	}
 	udelay(44);
 }
@@ -81,14 +82,14 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
 
 	for (i = 0; i < data_length; i++) {
 		while (1 == 1) {
-			if ((BCM2835_PL011->FR & 0x20) == 0)
+			if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0)
 				break;
 		}
 		BCM2835_PL011->DR = data[i];
 	}
 
 	while (1 == 1) {
-		if ((BCM2835_PL011->FR & 0x20) == 0)
+		if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0)
 			break;
 	}
 	udelay(44);
@@ -121,7 +122,10 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
  * @param value
  */
 static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value) {
-	uint16_t rdm_checksum = 0;
+	uint8_t i;
+	uint16_t rdm_checksum;
+	uint8_t *uid_device;
+	uint64_t delay;
 
 	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_data;
 
@@ -143,31 +147,32 @@ static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, u
 		// Unreachable code: break;
 	}
 
-	const uint8_t *uid_device = rdm_device_info_get_uuid();
+	uid_device = (uint8_t *)rdm_device_info_get_uuid();
 
-	memcpy(rdm_response->destination_uid, rdm_response->source_uid,	RDM_UID_SIZE);
-	memcpy(rdm_response->source_uid, uid_device, RDM_UID_SIZE);
+	for (i = 0; i < RDM_UID_SIZE; i++) {
+		rdm_response->destination_uid[i] = rdm_response->source_uid[i];
+		rdm_response->source_uid[i] = uid_device[i];
+	}
 
 	rdm_response->command_class++;
 
-	uint8_t i = 0;
+	rdm_checksum = 0;
+
 	for (i = 0; i < rdm_response->message_length; i++) {
 		rdm_checksum += rdm_data[i];
 	}
 
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;
-	;
 
-	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
+	delay = hardware_micros() - rdm_data_receive_end_get();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
 	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
-	rdm_send_data(rdm_data,
-			rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	rdm_send_data(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
 }
@@ -207,8 +212,9 @@ void rdm_send_respond_message_ack_timer(uint8_t *rdm_data, const uint16_t timer)
  * Increment the queued message count
  */
 void rdm_send_increment_message_count() {
-	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX)
+	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX) {
 		rdm_message_count++;
+	}
 }
 
 /**
@@ -217,7 +223,8 @@ void rdm_send_increment_message_count() {
  * Decrement the queued message count
  */
 void rdm_send_decrement_message_count() {
-	if (rdm_message_count)
+	if (rdm_message_count != 0) {
 		rdm_message_count--;
+	}
 }
 

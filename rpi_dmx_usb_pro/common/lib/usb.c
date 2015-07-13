@@ -35,9 +35,9 @@
  *
  * @param byte
  */
-void usb_send_byte(const uint8_t byte)
-{
-	while(!FT245RL_can_write());
+void usb_send_byte(const uint8_t byte) {
+	while (!FT245RL_can_write())
+		;
 	FT245RL_write_data(byte);
 }
 
@@ -47,12 +47,11 @@ void usb_send_byte(const uint8_t byte)
  * @param label
  * @param length
  */
-void usb_send_header(const uint8_t label, const uint16_t length)
-{
+void usb_send_header(const uint8_t label, const uint16_t length) {
 	usb_send_byte(AMF_START_CODE);
 	usb_send_byte(label);
-	usb_send_byte((uint8_t)(length & 0x00FF));
-	usb_send_byte((uint8_t)(length >> 8));
+	usb_send_byte((uint8_t) (length & 0x00FF));
+	usb_send_byte((uint8_t) (length >> 8));
 }
 
 /**
@@ -61,11 +60,9 @@ void usb_send_header(const uint8_t label, const uint16_t length)
  * @param data
  * @param length
  */
-void usb_send_data(const uint8_t *data, const uint16_t length)
-{
+void usb_send_data(const uint8_t *data, const uint16_t length) {
 	uint16_t i;
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		usb_send_byte(data[i]);
 	}
 }
@@ -74,8 +71,7 @@ void usb_send_data(const uint8_t *data, const uint16_t length)
  * @ingroup usb
  *
  */
-void usb_send_footer(void)
-{
+void usb_send_footer(void) {
 	usb_send_byte(AMF_END_CODE);
 }
 
@@ -86,8 +82,7 @@ void usb_send_footer(void)
  * @param data
  * @param length
  */
-void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length)
-{
+void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length) {
 	usb_send_header(label, length);
 	usb_send_data(data, length);
 	usb_send_footer();

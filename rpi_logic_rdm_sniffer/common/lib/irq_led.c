@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-static uint32_t ticks_per_second = (uint32_t)(1E6 / 2);	///< Blinking at 1Hz
+static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
 
 /**
  * @ingroup led
@@ -34,8 +34,7 @@ static uint32_t ticks_per_second = (uint32_t)(1E6 / 2);	///< Blinking at 1Hz
  *
  * @param ticks
  */
-void ticks_per_second_set(uint32_t ticks)
-{
+void ticks_per_second_set(uint32_t ticks) {
 	ticks_per_second = ticks;
 }
 
@@ -44,7 +43,6 @@ void ticks_per_second_set(uint32_t ticks)
  *
  * @return Ticks per second.
  */
-uint32_t ticks_per_second_get(void)
-{
+uint32_t ticks_per_second_get(void) {
 	return ticks_per_second;
 }

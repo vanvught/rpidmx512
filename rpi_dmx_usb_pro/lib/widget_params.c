@@ -126,7 +126,7 @@ static void update_config_file(const char *name, const int value)
 	}
 }
 #else
-inline static void update_config_file(const char *name, const int value) { }
+inline static void update_config_file(/*@unused@*/const char *name, /*@unused@*/const int value) { }
 #endif
 
 /**
@@ -209,7 +209,7 @@ void widget_params_get(struct _widget_params *widget_params) {
 void widget_params_set_break_time(const uint8_t break_time) {
 	dmx_usb_pro_params.break_time = break_time;
 	dmx_set_output_break_time((uint32_t) ((double) (dmx_usb_pro_params.break_time) * (double) (10.67)));
-	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
+	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, (int)break_time);
 }
 
 /**
@@ -221,7 +221,7 @@ void widget_params_set_mab_time(const uint8_t mab_time)
 {
 	dmx_usb_pro_params.mab_time = mab_time;
 	dmx_set_output_mab_time((uint32_t) ((double) (dmx_usb_pro_params.mab_time) * (double) (10.67)));
-	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
+	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, (int)mab_time);
 }
 
 /**
@@ -232,7 +232,7 @@ void widget_params_set_mab_time(const uint8_t mab_time)
 void widget_params_set_refresh_rate(const uint8_t refresh_rate) {
 	dmx_usb_pro_params.refresh_rate = refresh_rate;
 	dmx_set_output_period(refresh_rate == (uint8_t) 0 ? (uint8_t) 0 : (uint8_t) (1E6 / refresh_rate));
-	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
+	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, (int)refresh_rate);
 }
 
 /**
