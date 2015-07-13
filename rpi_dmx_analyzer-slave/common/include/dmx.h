@@ -80,7 +80,7 @@ extern void dmx_port_direction_set(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
-extern const uint8_t *rdm_get_available(void);
+extern const /*@null@*/uint8_t *rdm_get_available(void);
 extern const uint8_t *rdm_get_current_data(void);
 
 extern void rdm_available_set(const uint8_t);

@@ -29,11 +29,12 @@
 #include "bcm2835.h"
 #include "mcp7941x.h"
 
-static volatile uint64_t sys_time_init_startup_micros = 0;
-static volatile uint32_t rtc_startup_seconds = 0;
+static volatile uint64_t sys_time_init_startup_micros = 0;	///<
+static volatile uint32_t rtc_startup_seconds = 0;			///<
 
 /**
  * Read time from RTC MCP7941x and set EPOCH time in seconds
+ * When the RTC is not available, then the time is set to 2015-01-01 00:00:00
  */
 void sys_time_init(void) {
 	struct rtc_time tm_rtc;
@@ -41,8 +42,7 @@ void sys_time_init(void) {
 
 	sys_time_init_startup_micros = bcm2835_st_read();
 
-	if (mcp7941x_start(0x00) == MCP7941X_ERROR)
-	{
+	if (mcp7941x_start(0x00) == MCP7941X_ERROR) {
 		tmbuf.tm_hour = 0;
 		tmbuf.tm_min = 0;
 		tmbuf.tm_sec = 0;
@@ -73,24 +73,26 @@ void sys_time_init(void) {
  *
  * @param tmbuf
  */
-void sys_time_set(const struct tm *tmbuf)
-{
+void sys_time_set(const struct tm *tmbuf) {
 	sys_time_init_startup_micros = bcm2835_st_read();
-	rtc_startup_seconds = mktime((struct tm *)tmbuf);
+	rtc_startup_seconds = mktime((struct tm *) tmbuf);
 }
 
 /**
+ *  Returns the time as the number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
+ *  If \ref __timer is non-NULL, the return value is also stored in the memory pointed to by __timer.
  *
  * @param __timer
- * @return
+ * @return  The value of time in seconds since the Epoch
  */
 time_t sys_time(time_t *__timer) {
 	time_t elapsed = (time_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
 
 	elapsed = elapsed + rtc_startup_seconds;
 
-	if (__timer != NULL )
+	if (__timer != NULL ) {
 		*__timer = elapsed;
+	}
 
 	return elapsed;
 }

@@ -36,15 +36,16 @@
 #include "sys_time.h"
 
 static const char FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";		///<
-static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///<
+static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
 
 struct _hardware_led {
 	void (*init)(void);			///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
 	void (*set)(const int);		///< Pointer to function for LED ACCT on/off
 }static _hardware_led_f = { led_init, led_set };
 
-#define MAX_NAME_LENGTH 20
+#define MAX_NAME_LENGTH 20		///< Length for model name
 
+///< Reference http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
 struct _hardware_revision_code {
 	const uint32_t value;
 	const char name[MAX_NAME_LENGTH + 1];
@@ -65,13 +66,14 @@ struct _hardware_revision_code {
 		{ 0x000011, "Compute Module 512MB" },
 		{ 0x000012, "Model A+ 256MB      " },
 		{ 0xa01041, "Pi 2 Model B 1GB    " },
+		{ 0xa21041, "Pi 2 Model B 1GB    " }
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 /**
  *
- * @return
+ * @return The board uptime in seconds
  */
 const uint64_t hardware_uptime_seconds(void) {
 	return (((bcm2835_st_read() - hardware_init_startup_micros) / 1E6));
@@ -187,6 +189,9 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	sys_time_set(&tmbuf);
 }
 
+/**
+ *
+ */
 void hardware_print_board_model(){
 	console_puts(hardware_get_board_model());
 }
