@@ -24,8 +24,14 @@
  */
 
 #include <stdint.h>
+
 #include "bcm2835.h"
-#include "bcm2835_wdog.h"
+
+#define BCM2835_PM_WDOG_PASSWORD				((uint32_t)0x5a000000)	///<
+#define BCM2835_PM_WDOG_TIME_SET            	((uint32_t)0x000fffff)	///<
+#define BCM2835_PM_WDOG_RSTC_RESET              ((uint32_t)0x00000102)	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_CLR          ((uint32_t)0xffffffcf)	///<
+#define BCM2835_PM_WDOG_RSTC_WRCFG_FULL_RESET	((uint32_t)0x00000020)	///<
 
 /**
  * @ingroup watchdog
