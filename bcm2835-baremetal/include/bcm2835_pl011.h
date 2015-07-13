@@ -42,7 +42,7 @@
 #define PL011_FR_RXFE			((uint32_t)(1 << 4))	///< Set to 1 when RX FIFO/register is empty
 #define PL011_FR_TXFF 			((uint32_t)(1 << 5))	///< Set to 1 when TX FIFO/register is full
 #define PL011_FR_RXFF			((uint32_t)(1 << 6))	///< Set to 1 when RX FIFO/register is full
-#define PL011_FR_TXFE 			((uint32_t)( 1<< 7))	///< Set to 1 when TX FIFO/register is empty
+#define PL011_FR_TXFE 			((uint32_t)(1<< 7))	///< Set to 1 when TX FIFO/register is empty
 
 #define PL011_LCRH_BRK			((uint32_t)(1 << 0))	///< Send break
 #define PL011_LCRH_PEN			((uint32_t)(1 << 1))	///< Parity enable
