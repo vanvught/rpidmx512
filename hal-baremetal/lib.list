@@ -46,247 +46,257 @@ Disassembly of section .text:
   6c:	e92d4008 	push	{r3, lr}
   70:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
   74:	e3500000 	cmp	r0, #0
-  78:	da00001f 	ble	fc <hardware_get_board_model+0x90>
+  78:	da000022 	ble	108 <hardware_get_board_model+0x9c>
   7c:	e3500002 	cmp	r0, #2
-  80:	0a000027 	beq	124 <hardware_get_board_model+0xb8>
+  80:	0a00002a 	beq	130 <hardware_get_board_model+0xc4>
   84:	e3500003 	cmp	r0, #3
-  88:	0a000027 	beq	12c <hardware_get_board_model+0xc0>
+  88:	0a00002a 	beq	138 <hardware_get_board_model+0xcc>
   8c:	e3500004 	cmp	r0, #4
-  90:	0a000027 	beq	134 <hardware_get_board_model+0xc8>
+  90:	0a00002a 	beq	140 <hardware_get_board_model+0xd4>
   94:	e3500005 	cmp	r0, #5
-  98:	0a000027 	beq	13c <hardware_get_board_model+0xd0>
+  98:	0a00002a 	beq	148 <hardware_get_board_model+0xdc>
   9c:	e3500006 	cmp	r0, #6
-  a0:	0a000027 	beq	144 <hardware_get_board_model+0xd8>
+  a0:	0a00002a 	beq	150 <hardware_get_board_model+0xe4>
   a4:	e3500007 	cmp	r0, #7
-  a8:	0a000027 	beq	14c <hardware_get_board_model+0xe0>
+  a8:	0a00002a 	beq	158 <hardware_get_board_model+0xec>
   ac:	e3500008 	cmp	r0, #8
-  b0:	0a000027 	beq	154 <hardware_get_board_model+0xe8>
+  b0:	0a00002a 	beq	160 <hardware_get_board_model+0xf4>
   b4:	e3500009 	cmp	r0, #9
-  b8:	0a000027 	beq	15c <hardware_get_board_model+0xf0>
+  b8:	0a00002a 	beq	168 <hardware_get_board_model+0xfc>
   bc:	e350000d 	cmp	r0, #13
-  c0:	0a000027 	beq	164 <hardware_get_board_model+0xf8>
+  c0:	0a00002a 	beq	170 <hardware_get_board_model+0x104>
   c4:	e350000e 	cmp	r0, #14
-  c8:	0a000027 	beq	16c <hardware_get_board_model+0x100>
+  c8:	0a00002a 	beq	178 <hardware_get_board_model+0x10c>
   cc:	e350000f 	cmp	r0, #15
-  d0:	0a000011 	beq	11c <hardware_get_board_model+0xb0>
+  d0:	0a000014 	beq	128 <hardware_get_board_model+0xbc>
   d4:	e3500010 	cmp	r0, #16
-  d8:	0a000025 	beq	174 <hardware_get_board_model+0x108>
+  d8:	0a000028 	beq	180 <hardware_get_board_model+0x114>
   dc:	e3500011 	cmp	r0, #17
-  e0:	0a000025 	beq	17c <hardware_get_board_model+0x110>
+  e0:	0a000028 	beq	188 <hardware_get_board_model+0x11c>
   e4:	e3500012 	cmp	r0, #18
-  e8:	0a000005 	beq	104 <hardware_get_board_model+0x98>
-  ec:	e59f3090 	ldr	r3, [pc, #144]	; 184 <hardware_get_board_model+0x118>
+  e8:	0a000028 	beq	190 <hardware_get_board_model+0x124>
+  ec:	e59f30a4 	ldr	r3, [pc, #164]	; 198 <hardware_get_board_model+0x12c>
   f0:	e1500003 	cmp	r0, r3
-  f4:	03a0000f 	moveq	r0, #15
-  f8:	0a000002 	beq	108 <hardware_get_board_model+0x9c>
-  fc:	e59f0084 	ldr	r0, [pc, #132]	; 188 <hardware_get_board_model+0x11c>
- 100:	e8bd8008 	pop	{r3, pc}
- 104:	e3a0000e 	mov	r0, #14
- 108:	e59f307c 	ldr	r3, [pc, #124]	; 18c <hardware_get_board_model+0x120>
- 10c:	e0600180 	rsb	r0, r0, r0, lsl #3
- 110:	e0830100 	add	r0, r3, r0, lsl #2
- 114:	e2800004 	add	r0, r0, #4
- 118:	e8bd8008 	pop	{r3, pc}
- 11c:	e3a0000b 	mov	r0, #11
- 120:	eafffff8 	b	108 <hardware_get_board_model+0x9c>
- 124:	e3a00001 	mov	r0, #1
- 128:	eafffff6 	b	108 <hardware_get_board_model+0x9c>
- 12c:	e3a00002 	mov	r0, #2
- 130:	eafffff4 	b	108 <hardware_get_board_model+0x9c>
- 134:	e3a00003 	mov	r0, #3
- 138:	eafffff2 	b	108 <hardware_get_board_model+0x9c>
- 13c:	e3a00004 	mov	r0, #4
- 140:	eafffff0 	b	108 <hardware_get_board_model+0x9c>
- 144:	e3a00005 	mov	r0, #5
- 148:	eaffffee 	b	108 <hardware_get_board_model+0x9c>
- 14c:	e3a00006 	mov	r0, #6
- 150:	eaffffec 	b	108 <hardware_get_board_model+0x9c>
- 154:	e3a00007 	mov	r0, #7
- 158:	eaffffea 	b	108 <hardware_get_board_model+0x9c>
- 15c:	e3a00008 	mov	r0, #8
- 160:	eaffffe8 	b	108 <hardware_get_board_model+0x9c>
- 164:	e3a00009 	mov	r0, #9
- 168:	eaffffe6 	b	108 <hardware_get_board_model+0x9c>
- 16c:	e3a0000a 	mov	r0, #10
- 170:	eaffffe4 	b	108 <hardware_get_board_model+0x9c>
- 174:	e3a0000c 	mov	r0, #12
- 178:	eaffffe2 	b	108 <hardware_get_board_model+0x9c>
- 17c:	e3a0000d 	mov	r0, #13
- 180:	eaffffe0 	b	108 <hardware_get_board_model+0x9c>
- 184:	00a01041 	adceq	r1, r0, r1, asr #32
- 188:	00000020 	andeq	r0, r0, r0, lsr #32
- 18c:	0000001c 	andeq	r0, r0, ip, lsl r0
+  f4:	0a000005 	beq	110 <hardware_get_board_model+0xa4>
+  f8:	e2833802 	add	r3, r3, #131072	; 0x20000
+  fc:	e1500003 	cmp	r0, r3
+ 100:	03a00010 	moveq	r0, #16
+ 104:	0a000002 	beq	114 <hardware_get_board_model+0xa8>
+ 108:	e59f008c 	ldr	r0, [pc, #140]	; 19c <hardware_get_board_model+0x130>
+ 10c:	e8bd8008 	pop	{r3, pc}
+ 110:	e3a0000f 	mov	r0, #15
+ 114:	e59f3084 	ldr	r3, [pc, #132]	; 1a0 <hardware_get_board_model+0x134>
+ 118:	e0600180 	rsb	r0, r0, r0, lsl #3
+ 11c:	e0830100 	add	r0, r3, r0, lsl #2
+ 120:	e2800004 	add	r0, r0, #4
+ 124:	e8bd8008 	pop	{r3, pc}
+ 128:	e3a0000b 	mov	r0, #11
+ 12c:	eafffff8 	b	114 <hardware_get_board_model+0xa8>
+ 130:	e3a00001 	mov	r0, #1
+ 134:	eafffff6 	b	114 <hardware_get_board_model+0xa8>
+ 138:	e3a00002 	mov	r0, #2
+ 13c:	eafffff4 	b	114 <hardware_get_board_model+0xa8>
+ 140:	e3a00003 	mov	r0, #3
+ 144:	eafffff2 	b	114 <hardware_get_board_model+0xa8>
+ 148:	e3a00004 	mov	r0, #4
+ 14c:	eafffff0 	b	114 <hardware_get_board_model+0xa8>
+ 150:	e3a00005 	mov	r0, #5
+ 154:	eaffffee 	b	114 <hardware_get_board_model+0xa8>
+ 158:	e3a00006 	mov	r0, #6
+ 15c:	eaffffec 	b	114 <hardware_get_board_model+0xa8>
+ 160:	e3a00007 	mov	r0, #7
+ 164:	eaffffea 	b	114 <hardware_get_board_model+0xa8>
+ 168:	e3a00008 	mov	r0, #8
+ 16c:	eaffffe8 	b	114 <hardware_get_board_model+0xa8>
+ 170:	e3a00009 	mov	r0, #9
+ 174:	eaffffe6 	b	114 <hardware_get_board_model+0xa8>
+ 178:	e3a0000a 	mov	r0, #10
+ 17c:	eaffffe4 	b	114 <hardware_get_board_model+0xa8>
+ 180:	e3a0000c 	mov	r0, #12
+ 184:	eaffffe2 	b	114 <hardware_get_board_model+0xa8>
+ 188:	e3a0000d 	mov	r0, #13
+ 18c:	eaffffe0 	b	114 <hardware_get_board_model+0xa8>
+ 190:	e3a0000e 	mov	r0, #14
+ 194:	eaffffde 	b	114 <hardware_get_board_model+0xa8>
+ 198:	00a01041 	adceq	r1, r0, r1, asr #32
+ 19c:	00000020 	andeq	r0, r0, r0, lsr #32
+ 1a0:	0000001c 	andeq	r0, r0, ip, lsl r0
 
-00000190 <hardware_get_board_model_length>:
- 190:	e3a00014 	mov	r0, #20
- 194:	e12fff1e 	bx	lr
+000001a4 <hardware_get_board_model_length>:
+ 1a4:	e3a00014 	mov	r0, #20
+ 1a8:	e12fff1e 	bx	lr
 
-00000198 <hardware_led_init>:
- 198:	e59f3004 	ldr	r3, [pc, #4]	; 1a4 <hardware_led_init+0xc>
- 19c:	e5933000 	ldr	r3, [r3]
- 1a0:	e12fff13 	bx	r3
- 1a4:	00000000 	andeq	r0, r0, r0
+000001ac <hardware_led_init>:
+ 1ac:	e59f3004 	ldr	r3, [pc, #4]	; 1b8 <hardware_led_init+0xc>
+ 1b0:	e5933000 	ldr	r3, [r3]
+ 1b4:	e12fff13 	bx	r3
+ 1b8:	00000000 	andeq	r0, r0, r0
 
-000001a8 <hardware_led_set>:
- 1a8:	e59f3004 	ldr	r3, [pc, #4]	; 1b4 <hardware_led_set+0xc>
- 1ac:	e5933004 	ldr	r3, [r3, #4]
- 1b0:	e12fff13 	bx	r3
- 1b4:	00000000 	andeq	r0, r0, r0
+000001bc <hardware_led_set>:
+ 1bc:	e59f3004 	ldr	r3, [pc, #4]	; 1c8 <hardware_led_set+0xc>
+ 1c0:	e5933004 	ldr	r3, [r3, #4]
+ 1c4:	e12fff13 	bx	r3
+ 1c8:	00000000 	andeq	r0, r0, r0
 
-000001b8 <hardware_rtc_set>:
- 1b8:	e92d4070 	push	{r4, r5, r6, lr}
- 1bc:	e1d030b6 	ldrh	r3, [r0, #6]
- 1c0:	e5d04002 	ldrb	r4, [r0, #2]
- 1c4:	e5d0e001 	ldrb	lr, [r0, #1]
- 1c8:	e5d0c000 	ldrb	ip, [r0]
- 1cc:	e5d01003 	ldrb	r1, [r0, #3]
- 1d0:	e5d02004 	ldrb	r2, [r0, #4]
- 1d4:	e24dd048 	sub	sp, sp, #72	; 0x48
- 1d8:	e2433e7d 	sub	r3, r3, #2000	; 0x7d0
- 1dc:	e3a00000 	mov	r0, #0
- 1e0:	e58d3014 	str	r3, [sp, #20]
- 1e4:	e58d4008 	str	r4, [sp, #8]
- 1e8:	e88d5000 	stm	sp, {ip, lr}
- 1ec:	e58d100c 	str	r1, [sp, #12]
- 1f0:	e58d2010 	str	r2, [sp, #16]
- 1f4:	ebfffffe 	bl	0 <mcp7941x_start>
- 1f8:	e3500001 	cmp	r0, #1
- 1fc:	0a000001 	beq	208 <hardware_rtc_set+0x50>
- 200:	e1a0000d 	mov	r0, sp
- 204:	ebfffffe 	bl	0 <mcp7941x_set_date_time>
- 208:	e99d0030 	ldmib	sp, {r4, r5}
- 20c:	e3a06000 	mov	r6, #0
- 210:	e59de000 	ldr	lr, [sp]
- 214:	e59dc00c 	ldr	ip, [sp, #12]
- 218:	e59d1018 	ldr	r1, [sp, #24]
- 21c:	e59d2010 	ldr	r2, [sp, #16]
- 220:	e59d3014 	ldr	r3, [sp, #20]
- 224:	e28d0024 	add	r0, sp, #36	; 0x24
- 228:	e58d6044 	str	r6, [sp, #68]	; 0x44
- 22c:	e58d502c 	str	r5, [sp, #44]	; 0x2c
- 230:	e58d4028 	str	r4, [sp, #40]	; 0x28
- 234:	e58de024 	str	lr, [sp, #36]	; 0x24
- 238:	e58dc030 	str	ip, [sp, #48]	; 0x30
- 23c:	e58d103c 	str	r1, [sp, #60]	; 0x3c
- 240:	e58d2034 	str	r2, [sp, #52]	; 0x34
- 244:	e58d3038 	str	r3, [sp, #56]	; 0x38
- 248:	ebfffffe 	bl	0 <sys_time_set>
- 24c:	e28dd048 	add	sp, sp, #72	; 0x48
- 250:	e8bd8070 	pop	{r4, r5, r6, pc}
+000001cc <hardware_rtc_set>:
+ 1cc:	e92d4070 	push	{r4, r5, r6, lr}
+ 1d0:	e1d030b6 	ldrh	r3, [r0, #6]
+ 1d4:	e5d04002 	ldrb	r4, [r0, #2]
+ 1d8:	e5d0e001 	ldrb	lr, [r0, #1]
+ 1dc:	e5d0c000 	ldrb	ip, [r0]
+ 1e0:	e5d01003 	ldrb	r1, [r0, #3]
+ 1e4:	e5d02004 	ldrb	r2, [r0, #4]
+ 1e8:	e24dd048 	sub	sp, sp, #72	; 0x48
+ 1ec:	e2433e7d 	sub	r3, r3, #2000	; 0x7d0
+ 1f0:	e3a00000 	mov	r0, #0
+ 1f4:	e58d3014 	str	r3, [sp, #20]
+ 1f8:	e58d4008 	str	r4, [sp, #8]
+ 1fc:	e88d5000 	stm	sp, {ip, lr}
+ 200:	e58d100c 	str	r1, [sp, #12]
+ 204:	e58d2010 	str	r2, [sp, #16]
+ 208:	ebfffffe 	bl	0 <mcp7941x_start>
+ 20c:	e3500001 	cmp	r0, #1
+ 210:	0a000001 	beq	21c <hardware_rtc_set+0x50>
+ 214:	e1a0000d 	mov	r0, sp
+ 218:	ebfffffe 	bl	0 <mcp7941x_set_date_time>
+ 21c:	e99d0030 	ldmib	sp, {r4, r5}
+ 220:	e3a06000 	mov	r6, #0
+ 224:	e59de000 	ldr	lr, [sp]
+ 228:	e59dc00c 	ldr	ip, [sp, #12]
+ 22c:	e59d1018 	ldr	r1, [sp, #24]
+ 230:	e59d2010 	ldr	r2, [sp, #16]
+ 234:	e59d3014 	ldr	r3, [sp, #20]
+ 238:	e28d0024 	add	r0, sp, #36	; 0x24
+ 23c:	e58d6044 	str	r6, [sp, #68]	; 0x44
+ 240:	e58d502c 	str	r5, [sp, #44]	; 0x2c
+ 244:	e58d4028 	str	r4, [sp, #40]	; 0x28
+ 248:	e58de024 	str	lr, [sp, #36]	; 0x24
+ 24c:	e58dc030 	str	ip, [sp, #48]	; 0x30
+ 250:	e58d103c 	str	r1, [sp, #60]	; 0x3c
+ 254:	e58d2034 	str	r2, [sp, #52]	; 0x34
+ 258:	e58d3038 	str	r3, [sp, #56]	; 0x38
+ 25c:	ebfffffe 	bl	0 <sys_time_set>
+ 260:	e28dd048 	add	sp, sp, #72	; 0x48
+ 264:	e8bd8070 	pop	{r4, r5, r6, pc}
 
-00000254 <hardware_print_board_model>:
- 254:	e92d4008 	push	{r3, lr}
- 258:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
- 25c:	e3500000 	cmp	r0, #0
- 260:	da00001f 	ble	2e4 <hardware_print_board_model+0x90>
- 264:	e3500002 	cmp	r0, #2
- 268:	0a000029 	beq	314 <hardware_print_board_model+0xc0>
- 26c:	e3500003 	cmp	r0, #3
- 270:	0a000029 	beq	31c <hardware_print_board_model+0xc8>
- 274:	e3500004 	cmp	r0, #4
- 278:	0a000029 	beq	324 <hardware_print_board_model+0xd0>
- 27c:	e3500005 	cmp	r0, #5
- 280:	0a000029 	beq	32c <hardware_print_board_model+0xd8>
- 284:	e3500006 	cmp	r0, #6
- 288:	0a000029 	beq	334 <hardware_print_board_model+0xe0>
- 28c:	e3500007 	cmp	r0, #7
- 290:	0a000029 	beq	33c <hardware_print_board_model+0xe8>
- 294:	e3500008 	cmp	r0, #8
- 298:	0a000029 	beq	344 <hardware_print_board_model+0xf0>
- 29c:	e3500009 	cmp	r0, #9
- 2a0:	0a000029 	beq	34c <hardware_print_board_model+0xf8>
- 2a4:	e350000d 	cmp	r0, #13
- 2a8:	0a000029 	beq	354 <hardware_print_board_model+0x100>
- 2ac:	e350000e 	cmp	r0, #14
- 2b0:	0a000029 	beq	35c <hardware_print_board_model+0x108>
- 2b4:	e350000f 	cmp	r0, #15
- 2b8:	0a000013 	beq	30c <hardware_print_board_model+0xb8>
- 2bc:	e3500010 	cmp	r0, #16
- 2c0:	0a000027 	beq	364 <hardware_print_board_model+0x110>
- 2c4:	e3500011 	cmp	r0, #17
- 2c8:	0a000027 	beq	36c <hardware_print_board_model+0x118>
- 2cc:	e3500012 	cmp	r0, #18
- 2d0:	0a000006 	beq	2f0 <hardware_print_board_model+0x9c>
- 2d4:	e59f3098 	ldr	r3, [pc, #152]	; 374 <hardware_print_board_model+0x120>
- 2d8:	e1500003 	cmp	r0, r3
- 2dc:	03a0000f 	moveq	r0, #15
- 2e0:	0a000003 	beq	2f4 <hardware_print_board_model+0xa0>
- 2e4:	e8bd4008 	pop	{r3, lr}
- 2e8:	e59f0088 	ldr	r0, [pc, #136]	; 378 <hardware_print_board_model+0x124>
- 2ec:	eafffffe 	b	0 <console_puts>
- 2f0:	e3a0000e 	mov	r0, #14
- 2f4:	e59f3080 	ldr	r3, [pc, #128]	; 37c <hardware_print_board_model+0x128>
- 2f8:	e0600180 	rsb	r0, r0, r0, lsl #3
- 2fc:	e0830100 	add	r0, r3, r0, lsl #2
- 300:	e2800004 	add	r0, r0, #4
+00000268 <hardware_print_board_model>:
+ 268:	e92d4008 	push	{r3, lr}
+ 26c:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
+ 270:	e3500000 	cmp	r0, #0
+ 274:	da000022 	ble	304 <hardware_print_board_model+0x9c>
+ 278:	e3500002 	cmp	r0, #2
+ 27c:	0a00002c 	beq	334 <hardware_print_board_model+0xcc>
+ 280:	e3500003 	cmp	r0, #3
+ 284:	0a00002c 	beq	33c <hardware_print_board_model+0xd4>
+ 288:	e3500004 	cmp	r0, #4
+ 28c:	0a00002c 	beq	344 <hardware_print_board_model+0xdc>
+ 290:	e3500005 	cmp	r0, #5
+ 294:	0a00002c 	beq	34c <hardware_print_board_model+0xe4>
+ 298:	e3500006 	cmp	r0, #6
+ 29c:	0a00002c 	beq	354 <hardware_print_board_model+0xec>
+ 2a0:	e3500007 	cmp	r0, #7
+ 2a4:	0a00002c 	beq	35c <hardware_print_board_model+0xf4>
+ 2a8:	e3500008 	cmp	r0, #8
+ 2ac:	0a00002c 	beq	364 <hardware_print_board_model+0xfc>
+ 2b0:	e3500009 	cmp	r0, #9
+ 2b4:	0a00002c 	beq	36c <hardware_print_board_model+0x104>
+ 2b8:	e350000d 	cmp	r0, #13
+ 2bc:	0a00002c 	beq	374 <hardware_print_board_model+0x10c>
+ 2c0:	e350000e 	cmp	r0, #14
+ 2c4:	0a00002c 	beq	37c <hardware_print_board_model+0x114>
+ 2c8:	e350000f 	cmp	r0, #15
+ 2cc:	0a000016 	beq	32c <hardware_print_board_model+0xc4>
+ 2d0:	e3500010 	cmp	r0, #16
+ 2d4:	0a00002a 	beq	384 <hardware_print_board_model+0x11c>
+ 2d8:	e3500011 	cmp	r0, #17
+ 2dc:	0a00002a 	beq	38c <hardware_print_board_model+0x124>
+ 2e0:	e3500012 	cmp	r0, #18
+ 2e4:	0a00002a 	beq	394 <hardware_print_board_model+0x12c>
+ 2e8:	e59f30ac 	ldr	r3, [pc, #172]	; 39c <hardware_print_board_model+0x134>
+ 2ec:	e1500003 	cmp	r0, r3
+ 2f0:	0a000006 	beq	310 <hardware_print_board_model+0xa8>
+ 2f4:	e2833802 	add	r3, r3, #131072	; 0x20000
+ 2f8:	e1500003 	cmp	r0, r3
+ 2fc:	03a00010 	moveq	r0, #16
+ 300:	0a000003 	beq	314 <hardware_print_board_model+0xac>
  304:	e8bd4008 	pop	{r3, lr}
- 308:	eafffffe 	b	0 <console_puts>
- 30c:	e3a0000b 	mov	r0, #11
- 310:	eafffff7 	b	2f4 <hardware_print_board_model+0xa0>
- 314:	e3a00001 	mov	r0, #1
- 318:	eafffff5 	b	2f4 <hardware_print_board_model+0xa0>
- 31c:	e3a00002 	mov	r0, #2
- 320:	eafffff3 	b	2f4 <hardware_print_board_model+0xa0>
- 324:	e3a00003 	mov	r0, #3
- 328:	eafffff1 	b	2f4 <hardware_print_board_model+0xa0>
- 32c:	e3a00004 	mov	r0, #4
- 330:	eaffffef 	b	2f4 <hardware_print_board_model+0xa0>
- 334:	e3a00005 	mov	r0, #5
- 338:	eaffffed 	b	2f4 <hardware_print_board_model+0xa0>
- 33c:	e3a00006 	mov	r0, #6
- 340:	eaffffeb 	b	2f4 <hardware_print_board_model+0xa0>
- 344:	e3a00007 	mov	r0, #7
- 348:	eaffffe9 	b	2f4 <hardware_print_board_model+0xa0>
- 34c:	e3a00008 	mov	r0, #8
- 350:	eaffffe7 	b	2f4 <hardware_print_board_model+0xa0>
- 354:	e3a00009 	mov	r0, #9
- 358:	eaffffe5 	b	2f4 <hardware_print_board_model+0xa0>
- 35c:	e3a0000a 	mov	r0, #10
- 360:	eaffffe3 	b	2f4 <hardware_print_board_model+0xa0>
- 364:	e3a0000c 	mov	r0, #12
- 368:	eaffffe1 	b	2f4 <hardware_print_board_model+0xa0>
- 36c:	e3a0000d 	mov	r0, #13
- 370:	eaffffdf 	b	2f4 <hardware_print_board_model+0xa0>
- 374:	00a01041 	adceq	r1, r0, r1, asr #32
- 378:	00000020 	andeq	r0, r0, r0, lsr #32
- 37c:	0000001c 	andeq	r0, r0, ip, lsl r0
+ 308:	e59f0090 	ldr	r0, [pc, #144]	; 3a0 <hardware_print_board_model+0x138>
+ 30c:	eafffffe 	b	0 <console_puts>
+ 310:	e3a0000f 	mov	r0, #15
+ 314:	e59f3088 	ldr	r3, [pc, #136]	; 3a4 <hardware_print_board_model+0x13c>
+ 318:	e0600180 	rsb	r0, r0, r0, lsl #3
+ 31c:	e0830100 	add	r0, r3, r0, lsl #2
+ 320:	e2800004 	add	r0, r0, #4
+ 324:	e8bd4008 	pop	{r3, lr}
+ 328:	eafffffe 	b	0 <console_puts>
+ 32c:	e3a0000b 	mov	r0, #11
+ 330:	eafffff7 	b	314 <hardware_print_board_model+0xac>
+ 334:	e3a00001 	mov	r0, #1
+ 338:	eafffff5 	b	314 <hardware_print_board_model+0xac>
+ 33c:	e3a00002 	mov	r0, #2
+ 340:	eafffff3 	b	314 <hardware_print_board_model+0xac>
+ 344:	e3a00003 	mov	r0, #3
+ 348:	eafffff1 	b	314 <hardware_print_board_model+0xac>
+ 34c:	e3a00004 	mov	r0, #4
+ 350:	eaffffef 	b	314 <hardware_print_board_model+0xac>
+ 354:	e3a00005 	mov	r0, #5
+ 358:	eaffffed 	b	314 <hardware_print_board_model+0xac>
+ 35c:	e3a00006 	mov	r0, #6
+ 360:	eaffffeb 	b	314 <hardware_print_board_model+0xac>
+ 364:	e3a00007 	mov	r0, #7
+ 368:	eaffffe9 	b	314 <hardware_print_board_model+0xac>
+ 36c:	e3a00008 	mov	r0, #8
+ 370:	eaffffe7 	b	314 <hardware_print_board_model+0xac>
+ 374:	e3a00009 	mov	r0, #9
+ 378:	eaffffe5 	b	314 <hardware_print_board_model+0xac>
+ 37c:	e3a0000a 	mov	r0, #10
+ 380:	eaffffe3 	b	314 <hardware_print_board_model+0xac>
+ 384:	e3a0000c 	mov	r0, #12
+ 388:	eaffffe1 	b	314 <hardware_print_board_model+0xac>
+ 38c:	e3a0000d 	mov	r0, #13
+ 390:	eaffffdf 	b	314 <hardware_print_board_model+0xac>
+ 394:	e3a0000e 	mov	r0, #14
+ 398:	eaffffdd 	b	314 <hardware_print_board_model+0xac>
+ 39c:	00a01041 	adceq	r1, r0, r1, asr #32
+ 3a0:	00000020 	andeq	r0, r0, r0, lsr #32
+ 3a4:	0000001c 	andeq	r0, r0, ip, lsl r0
 
-00000380 <hardware_init>:
- 380:	e59f1054 	ldr	r1, [pc, #84]	; 3dc <hardware_init+0x5c>
- 384:	e59f0054 	ldr	r0, [pc, #84]	; 3e0 <hardware_init+0x60>
- 388:	e5912004 	ldr	r2, [r1, #4]
- 38c:	e5913008 	ldr	r3, [r1, #8]
- 390:	e92d4010 	push	{r4, lr}
- 394:	e1c020f0 	strd	r2, [r0]
- 398:	ebfffffe 	bl	0 <sys_time_init>
- 39c:	ebfffffe 	bl	0 <console_init>
- 3a0:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
- 3a4:	e350000f 	cmp	r0, #15
- 3a8:	d59f4034 	ldrle	r4, [pc, #52]	; 3e4 <hardware_init+0x64>
- 3ac:	c59f2034 	ldrgt	r2, [pc, #52]	; 3e8 <hardware_init+0x68>
- 3b0:	c59f402c 	ldrgt	r4, [pc, #44]	; 3e4 <hardware_init+0x64>
- 3b4:	c59f1030 	ldrgt	r1, [pc, #48]	; 3ec <hardware_init+0x6c>
- 3b8:	d5943000 	ldrle	r3, [r4]
- 3bc:	c1a03002 	movgt	r3, r2
- 3c0:	c5842000 	strgt	r2, [r4]
- 3c4:	c5841004 	strgt	r1, [r4, #4]
- 3c8:	e12fff33 	blx	r3
- 3cc:	e5943004 	ldr	r3, [r4, #4]
- 3d0:	e3a00001 	mov	r0, #1
- 3d4:	e8bd4010 	pop	{r4, lr}
- 3d8:	e12fff13 	bx	r3
- 3dc:	20003000 	andcs	r3, r0, r0
+000003a8 <hardware_init>:
+ 3a8:	e59f1054 	ldr	r1, [pc, #84]	; 404 <hardware_init+0x5c>
+ 3ac:	e59f0054 	ldr	r0, [pc, #84]	; 408 <hardware_init+0x60>
+ 3b0:	e5912004 	ldr	r2, [r1, #4]
+ 3b4:	e5913008 	ldr	r3, [r1, #8]
+ 3b8:	e92d4010 	push	{r4, lr}
+ 3bc:	e1c020f0 	strd	r2, [r0]
+ 3c0:	ebfffffe 	bl	0 <sys_time_init>
+ 3c4:	ebfffffe 	bl	0 <console_init>
+ 3c8:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
+ 3cc:	e350000f 	cmp	r0, #15
+ 3d0:	d59f4034 	ldrle	r4, [pc, #52]	; 40c <hardware_init+0x64>
+ 3d4:	c59f2034 	ldrgt	r2, [pc, #52]	; 410 <hardware_init+0x68>
+ 3d8:	c59f402c 	ldrgt	r4, [pc, #44]	; 40c <hardware_init+0x64>
+ 3dc:	c59f1030 	ldrgt	r1, [pc, #48]	; 414 <hardware_init+0x6c>
+ 3e0:	d5943000 	ldrle	r3, [r4]
+ 3e4:	c1a03002 	movgt	r3, r2
+ 3e8:	c5842000 	strgt	r2, [r4]
+ 3ec:	c5841004 	strgt	r1, [r4, #4]
+ 3f0:	e12fff33 	blx	r3
+ 3f4:	e5943004 	ldr	r3, [r4, #4]
+ 3f8:	e3a00001 	mov	r0, #1
+ 3fc:	e8bd4010 	pop	{r4, lr}
+ 400:	e12fff13 	bx	r3
+ 404:	20003000 	andcs	r3, r0, r0
 	...
 
-000003f0 <hardware_reboot>:
- 3f0:	e92d4008 	push	{r3, lr}
- 3f4:	e59f3010 	ldr	r3, [pc, #16]	; 40c <hardware_reboot+0x1c>
- 3f8:	e3a00001 	mov	r0, #1
- 3fc:	e5933004 	ldr	r3, [r3, #4]
- 400:	e12fff33 	blx	r3
- 404:	ebfffffe 	bl	0 <watchdog_init>
- 408:	eafffffe 	b	408 <hardware_reboot+0x18>
- 40c:	00000000 	andeq	r0, r0, r0
+00000418 <hardware_reboot>:
+ 418:	e92d4008 	push	{r3, lr}
+ 41c:	e59f3010 	ldr	r3, [pc, #16]	; 434 <hardware_reboot+0x1c>
+ 420:	e3a00001 	mov	r0, #1
+ 424:	e5933004 	ldr	r3, [r3, #4]
+ 428:	e12fff33 	blx	r3
+ 42c:	ebfffffe 	bl	0 <watchdog_init>
+ 430:	eafffffe 	b	430 <hardware_reboot+0x18>
+ 434:	00000000 	andeq	r0, r0, r0
 
 Disassembly of section .data:
 
@@ -396,7 +406,7 @@ Disassembly of section .rodata:
  168:	00000000 	andeq	r0, r0, r0
  16c:	00000010 	andeq	r0, r0, r0, lsl r0
  170:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087f3c>
+ 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087f14>
  178:	32313520 	eorscc	r3, r1, #32, 10	; 0x8000000
  17c:	2020424d 	eorcs	r4, r0, sp, asr #4
  180:	20202020 	eorcs	r2, r0, r0, lsr #32
@@ -410,7 +420,7 @@ Disassembly of section .rodata:
  1a0:	00000000 	andeq	r0, r0, r0
  1a4:	00000012 	andeq	r0, r0, r2, lsl r0
  1a8:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f74>
+ 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f4c>
  1b0:	36353220 	ldrtcc	r3, [r5], -r0, lsr #4
  1b4:	2020424d 	eorcs	r4, r0, sp, asr #4
  1b8:	20202020 	eorcs	r2, r0, r0, lsr #32
@@ -422,6 +432,13 @@ Disassembly of section .rodata:
  1d0:	42473120 	submi	r3, r7, #32, 2
  1d4:	20202020 	eorcs	r2, r0, r0, lsr #32
  1d8:	00000000 	andeq	r0, r0, r0
+ 1dc:	00a21041 	adceq	r1, r2, r1, asr #32
+ 1e0:	32206950 	eorcc	r6, r0, #80, 18	; 0x140000
+ 1e4:	646f4d20 	strbtvs	r4, [pc], #-3360	; 1ec <board_version+0x1d0>
+ 1e8:	42206c65 	eormi	r6, r0, #25856	; 0x6500
+ 1ec:	42473120 	submi	r3, r7, #32, 2
+ 1f0:	20202020 	eorcs	r2, r0, r0, lsr #32
+ 1f4:	00000000 	andeq	r0, r0, r0
 
 Disassembly of section .comment:
 
