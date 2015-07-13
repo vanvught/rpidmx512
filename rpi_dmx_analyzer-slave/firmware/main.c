@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 
-#include "bcm2835_wdog.h"
 #include "sys_time.h"
 #include "hardware.h"
 #include "bw_ui.h"
@@ -78,7 +78,7 @@ inline static void events_check() {
 		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
+			hardware_watchdog_feed();
 		}
 	}
 }
@@ -93,8 +93,7 @@ inline static void events_check() {
  * @param atags
  * @return
  */
-int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
-{
+int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
 	hardware_init();
 	dmx_init();
 
@@ -109,16 +108,14 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags)
 	dmx_devices_read_config();
 	dmx_devices_init();
 
-	watchdog_init();
+	hardware_watchdog_init();
 
 	events_init();
 
-	for (;;)
-	{
-		watchdog_feed();
+	for (;;) {
+		hardware_watchdog_feed();
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
-		{
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}
 

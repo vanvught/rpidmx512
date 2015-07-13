@@ -24,10 +24,8 @@
  */
 
 #include <stdio.h>
-#include <ctype.h>
 #include <stdint.h>
 
-#include "bcm2835_wdog.h"
 #include "usb.h"
 #include "hardware.h"
 #include "dmx.h"
@@ -82,7 +80,7 @@ inline static void events_check() {
 		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
+			hardware_watchdog_feed();
 		}
 	}
 }
@@ -92,8 +90,7 @@ inline static void events_check() {
  *
  * @return
  */
-int notmain(void)
-{
+int notmain(void) {
 	hardware_init();
 	usb_init();
 	dmx_init();
@@ -106,16 +103,14 @@ int notmain(void)
 	const uint8_t *device_sn = rdm_device_info_get_sn();
 	printf("Widget mode %d, S/N : %.2X%.2X%.2X%.2X\n", widget_get_mode(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
 
-	watchdog_init();
+	hardware_watchdog_init();
 
 	events_init();
 
-	for (;;)
-	{
-		watchdog_feed();
+	for (;;) {
+		hardware_watchdog_feed();
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
-		{
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}
 

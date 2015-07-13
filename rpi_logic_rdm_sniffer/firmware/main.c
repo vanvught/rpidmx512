@@ -26,20 +26,17 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "bcm2835_wdog.h"
 #include "hardware.h"
 #include "util.h"
 #include "dmx.h"
 #include "monitor.h"
 #include "sniffer.h"
 
-struct _poll
-{
+struct _poll {
 	void (*f)(void);
 }const poll_table[] = {
 		{ sniffer_rdm },
-		{ sniffer_dmx }
-};
+		{ sniffer_dmx } };
 
 struct _event
 {
@@ -74,7 +71,7 @@ inline static void events_check() {
 		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
+			hardware_watchdog_feed();
 		}
 	}
 }
@@ -87,16 +84,14 @@ int notmain(void) {
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
 	printf("Logic RDM Sniffer, DMX512 data analyzer for 32 channels\n");
 
-	watchdog_init();
+	hardware_watchdog_init();
 
 	events_init();
 
-	for (;;)
-	{
-		watchdog_feed();
+	for (;;) {
+		hardware_watchdog_feed();
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
-		{
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}
 

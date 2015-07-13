@@ -25,10 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include "bcm2835_wdog.h"
 #include "hardware.h"
 #include "util.h"
 #include "rdm_device_info.h"
@@ -82,7 +79,7 @@ inline static void events_check() {
 		if (micros_now > events_elapsed_time[i] + events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
-			watchdog_feed();
+			hardware_watchdog_feed();
 		}
 	}
 }
@@ -100,16 +97,14 @@ int notmain(void) {
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 
-	watchdog_init();
+	hardware_watchdog_init();
 
 	events_init();
 
-	for (;;)
-	{
-		watchdog_feed();
+	for (;;) {
+		hardware_watchdog_feed();
 		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++)
-		{
+		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}
 
