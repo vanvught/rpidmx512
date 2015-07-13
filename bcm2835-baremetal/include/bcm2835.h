@@ -304,8 +304,13 @@ typedef struct {
 #define BCM2835_BSC1		((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)		///< Base register address for I2C (BSC1)
 #define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)		///< Base register address for I2C (BSC2)
 
+#if RPI2
+#define dmb() asm volatile ("dmb" ::: "memory")
+#define dsb() asm volatile ("dsb" ::: "memory");
+#else
 #define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
+#endif
 
 /**
  * @ingroup TIMER
