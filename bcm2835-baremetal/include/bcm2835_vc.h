@@ -99,10 +99,13 @@ typedef enum
 // Tag Power
 #define BCM2835_VC_TAG_GET_POWER_STATE			0x00020001	///<
 #define BCM2835_VC_TAG_SET_POWER_STATE			0x00028001	///<
+// Tag Temperatures
+#define BCM2835_VC_TAG_GET_TEMP					0x00030006	///<
+#define BCM2835_VC_TAG_GET_MAX_TEMP				0x0003000A	///<
 // Tag Framebuffer
-#define BCM2835_VC_TAG_ALLOCATE_BUFFER			0x00040001
-#define BCM2835_VC_TAG_RELEASE_BUFFER			0x00048001
-#define BCM2835_VC_TAG_BLANK_SCREEN				0x00040002
+#define BCM2835_VC_TAG_ALLOCATE_BUFFER			0x00040001	///<
+#define BCM2835_VC_TAG_RELEASE_BUFFER			0x00048001	///<
+#define BCM2835_VC_TAG_BLANK_SCREEN				0x00040002	///<
 #define BCM2835_VC_TAG_GET_PHYS_WH			0x40003
 #define BCM2835_VC_TAG_TEST_PHYS_WH		0x44003
 #define BCM2835_VC_TAG_SET_PHYS_WH			0x48003
@@ -128,6 +131,7 @@ typedef enum
 #define BCM2835_VC_TAG_GET_PALETTE			0x4000b
 #define BCM2835_VC_TAG_TEST_PALETTE		0x4400b
 #define BCM2835_VC_TAG_SET_PALETTE			0x4800b
+
 
 extern int32_t bcm2835_vc_get_clock_rate(const uint32_t);
 extern int32_t bcm2835_vc_set_clock_rate(const uint32_t, const uint32_t);
