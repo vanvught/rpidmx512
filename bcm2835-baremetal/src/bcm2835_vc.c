@@ -45,6 +45,8 @@ struct vc_msg_uint32 {
 };
 
 /**
+ * @ingroup VideoCore
+ *
  * @param tag_id
  * @param dev_id
  * @return
@@ -204,6 +206,12 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
+		mac_address[0] = 0;
+		mac_address[1] = 0;
+		mac_address[2] = 0;
+		mac_address[3] = 0;
+		mac_address[4] = 0;
+		mac_address[5] = 0;
 		return -1;
 	}
 
@@ -265,8 +273,7 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
  *
  * @return
  */
-int32_t bcm2835_vc_get_get_firmware_revision(void)
-{
+int32_t bcm2835_vc_get_get_firmware_revision(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_FIRMWARE_REV);
 }
 
@@ -275,8 +282,7 @@ int32_t bcm2835_vc_get_get_firmware_revision(void)
  *
  * @return
  */
-int32_t bcm2835_vc_get_get_board_model(void)
-{
+int32_t bcm2835_vc_get_get_board_model(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_BOARD_MODEL);
 }
 
@@ -284,7 +290,6 @@ int32_t bcm2835_vc_get_get_board_model(void)
  *
  * @return
  */
-int32_t bcm2835_vc_get_get_board_revision(void)
-{
+int32_t bcm2835_vc_get_get_board_revision(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_BOARD_REV);
 }
