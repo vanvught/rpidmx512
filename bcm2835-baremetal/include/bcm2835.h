@@ -25,6 +25,15 @@
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
+#if __ARM_ARCH >= 7
+	#if !defined( RPI2 )
+		#define RPI2
+	#endif
+	#if !defined( RPIPLUS )
+		#define RPIPLUS
+	#endif
+#endif
+
 #define HIGH 0x1					///< HIGH state
 #define LOW  0x0					///< LOW state
 
@@ -53,7 +62,7 @@
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
 #define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
 
-#if RPI2
+#if defined ( RPI2 )
 #define BCM2835_PERI_BASE		0x3F000000
 #else
 #define BCM2835_PERI_BASE		0x20000000
@@ -106,14 +115,14 @@ typedef struct {
 	__IO uint32_t CS;			///< 0x00	System Timer Control/Status 
 	__IO uint32_t CLO;			///< 0x04	System Timer Counter Lower 32 bits
 	__IO uint32_t CHI;			///< 0x08	System Timer Counter Higher 32 bits
-	__I uint32_t  C0;			///< 0x0C	System Timer Compare 0.  DO NOT USE; is used by GPU.
+	__I uint32_t C0;			///< 0x0C	System Timer Compare 0.  DO NOT USE; is used by GPU.
 	__IO uint32_t C1;			///< 0x10	System Timer Compare 1
-	__I uint32_t  C2;			///< 0x14	System Timer Compare 2.  DO NOT USE; is used by GPU.
+	__I uint32_t C2;			///< 0x14	System Timer Compare 2.  DO NOT USE; is used by GPU.
 	__IO uint32_t C3;			///< 0x18	System Timer Compare 3
 } BCM2835_ST_TypeDef;
 
 typedef struct {
-	__I uint32_t  IRQ;			///< 0x00
+	__I uint32_t IRQ;			///< 0x00
 	__IO uint32_t ENABLE;		///< 0x04
 	__IO uint32_t PAD[14];		///< 0x08
 	__IO uint32_t IO;			///< 0x40
@@ -125,7 +134,7 @@ typedef struct {
 	__IO uint32_t MSR;			///< 0x58
 	__IO uint32_t SCR;			///< 0x5C
 	__IO uint32_t CNTL;			///< 0x60
-	__I uint32_t  STAT;			///< 0x64
+	__I uint32_t STAT;			///< 0x64
 	__IO uint32_t BAUD;			///< 0x68
 } BCM2835_UART_TypeDef;
 
@@ -144,7 +153,7 @@ typedef struct {
 	__IO uint32_t IFLS;			///< 0x34
 	__IO uint32_t IMSC;			///< 0x38
 	__IO uint32_t RIS;			///< 0x3C
-	__I uint32_t  MIS;			///< 0x40
+	__I uint32_t MIS;			///< 0x40
 	__IO uint32_t ICR;			///< 0x44
 	__IO uint32_t DMACR;		///< 0x48
 } BCM2835_PL011_TypeDef;
@@ -261,12 +270,12 @@ typedef struct {
 	__IO uint32_t BLKSIZECNT;		///< 0x04
 	__IO uint32_t ARG1;				///< 0x08
 	__IO uint32_t CMDTM;			///< 0x0C
-	__O  uint32_t RESP0;			///< 0x10
-	__O  uint32_t RESP1;			///< 0x14
-	__O  uint32_t RESP2;			///< 0x18
-	__O  uint32_t RESP3;			///< 0x1C
+	__O uint32_t RESP0;				///< 0x10
+	__O uint32_t RESP1;				///< 0x14
+	__O uint32_t RESP2;				///< 0x18
+	__O uint32_t RESP3;				///< 0x1C
 	__IO uint32_t DATA;				///< 0x20
-	__O  uint32_t STATUS;			///< 0x24
+	__O uint32_t STATUS;			///< 0x24
 	__IO uint32_t CONTROL0;			///< 0x28
 	__IO uint32_t CONTROL1;			///< 0x2C
 	__IO uint32_t INTERRUPT;		///< 0x30
