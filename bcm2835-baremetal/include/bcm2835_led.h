@@ -31,7 +31,7 @@
 extern void led_set(const int);
 extern void led_init(void);
 
-extern void led_new_pi_set(const int);
-extern void led_new_pi_init(void);
+extern void led_rpiplus_set(const int);
+extern void led_rpiplus_init(void);
 
 #endif /* BCM2835_LED_H_ */

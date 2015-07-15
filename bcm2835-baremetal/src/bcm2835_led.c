@@ -82,7 +82,7 @@ void led_init(void) {
  *
  * @param state \ref HIGH sets the led on and \ref LOW sets the led off.
  */
-void led_new_pi_set(const int state) {
+void led_rpiplus_set(const int state) {
 	if (state != 0) {
 		BCM2835_GPIO->GPSET1 = (uint32_t) (1 << (RPIPLUS_PIN % 32));
 	} else {
@@ -96,7 +96,7 @@ void led_new_pi_set(const int state) {
  * Set the GPIO pin for the led to output.
  *
  */
-void led_new_pi_init(void) {
+void led_rpiplus_init(void) {
 	uint32_t value = BCM2835_GPIO->GPFSEL4;
 	value &= ~(7 << 21);
 	value |= BCM2835_GPIO_FSEL_OUTP << 21;

@@ -202,11 +202,11 @@ void hardware_print_board_model(){
 void hardware_init(void) {
 	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
-	console_init();
+	(void)console_init();
 
 	if (bcm2835_vc_get_get_board_revision() > 0x00000f) {
-		_hardware_led_f.init = led_new_pi_init;
-		_hardware_led_f.set = led_new_pi_set;
+		_hardware_led_f.init = led_rpiplus_init;
+		_hardware_led_f.set = led_rpiplus_set;
 	}
 
 	hardware_led_init();
