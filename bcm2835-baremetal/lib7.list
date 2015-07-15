@@ -286,7 +286,7 @@ Disassembly of section .text:
   30:	e5823010 	str	r3, [r2, #16]
   34:	e12fff1e 	bx	lr
 
-00000038 <led_new_pi_set>:
+00000038 <led_rpiplus_set>:
   38:	e3a03000 	mov	r3, #0
   3c:	e3a02902 	mov	r2, #32768	; 0x8000
   40:	e3433f20 	movt	r3, #16160	; 0x3f20
@@ -295,7 +295,7 @@ Disassembly of section .text:
   4c:	0583202c 	streq	r2, [r3, #44]	; 0x2c
   50:	e12fff1e 	bx	lr
 
-00000054 <led_new_pi_init>:
+00000054 <led_rpiplus_init>:
   54:	e3a02000 	mov	r2, #0
   58:	e3432f20 	movt	r2, #16160	; 0x3f20
   5c:	e5923010 	ldr	r3, [r2, #16]
@@ -328,7 +328,7 @@ Disassembly of section .ARM.attributes:
   20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
   24:	17011501 	strne	r1, [r1, -r1, lsl #10]
   28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <led_new_pi_init+0x467e4>
+  2c:	1b011a01 	blne	46838 <led_rpiplus_init+0x467e4>
   30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
   34:	Address 0x0000000000000034 is out of bounds.
 
@@ -1057,223 +1057,298 @@ Disassembly of section .text:
  11c:	e24bd014 	sub	sp, fp, #20
  120:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
 
-00000124 <bcm2835_vc_get_power_state>:
- 124:	e92d4878 	push	{r3, r4, r5, r6, fp, lr}
- 128:	e28db014 	add	fp, sp, #20
- 12c:	e24dd030 	sub	sp, sp, #48	; 0x30
- 130:	e3a03001 	mov	r3, #1
- 134:	e28d400f 	add	r4, sp, #15
- 138:	e3403002 	movt	r3, #2
- 13c:	e3c4400f 	bic	r4, r4, #15
- 140:	e3a05008 	mov	r5, #8
- 144:	e3a02020 	mov	r2, #32
- 148:	e1a01004 	mov	r1, r4
- 14c:	e5843008 	str	r3, [r4, #8]
- 150:	e3a03004 	mov	r3, #4
- 154:	e5843010 	str	r3, [r4, #16]
- 158:	e3a03000 	mov	r3, #0
- 15c:	e5843004 	str	r3, [r4, #4]
- 160:	e1a06000 	mov	r6, r0
- 164:	e5843018 	str	r3, [r4, #24]
- 168:	e584301c 	str	r3, [r4, #28]
- 16c:	e5840014 	str	r0, [r4, #20]
- 170:	e1a00005 	mov	r0, r5
- 174:	e5842000 	str	r2, [r4]
- 178:	e584500c 	str	r5, [r4, #12]
- 17c:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
- 180:	e1a00005 	mov	r0, r5
- 184:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
- 188:	e5943004 	ldr	r3, [r4, #4]
- 18c:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 190:	1a000006 	bne	1b0 <bcm2835_vc_get_power_state+0x8c>
- 194:	e5943014 	ldr	r3, [r4, #20]
- 198:	e1560003 	cmp	r6, r3
- 19c:	1a000003 	bne	1b0 <bcm2835_vc_get_power_state+0x8c>
- 1a0:	e5940018 	ldr	r0, [r4, #24]
- 1a4:	e2000003 	and	r0, r0, #3
- 1a8:	e24bd014 	sub	sp, fp, #20
- 1ac:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
- 1b0:	e3a00003 	mov	r0, #3
- 1b4:	e24bd014 	sub	sp, fp, #20
- 1b8:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
+00000124 <bcm2835_vc_get_temperature>:
+ 124:	e92d4818 	push	{r3, r4, fp, lr}
+ 128:	e28db00c 	add	fp, sp, #12
+ 12c:	eddf2b19 	vldr	d18, [pc, #100]	; 198 <bcm2835_vc_get_temperature+0x74>
+ 130:	eddf3b1a 	vldr	d19, [pc, #104]	; 1a0 <bcm2835_vc_get_temperature+0x7c>
+ 134:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 138:	e3a00008 	mov	r0, #8
+ 13c:	eddf0b19 	vldr	d16, [pc, #100]	; 1a8 <bcm2835_vc_get_temperature+0x84>
+ 140:	eddf1b1a 	vldr	d17, [pc, #104]	; 1b0 <bcm2835_vc_get_temperature+0x8c>
+ 144:	e28d400f 	add	r4, sp, #15
+ 148:	e3c4400f 	bic	r4, r4, #15
+ 14c:	e1a01004 	mov	r1, r4
+ 150:	f4442aef 	vst1.64	{d18-d19}, [r4 :128]
+ 154:	edc40b04 	vstr	d16, [r4, #16]
+ 158:	edc41b06 	vstr	d17, [r4, #24]
+ 15c:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 160:	e3a00008 	mov	r0, #8
+ 164:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 168:	e5943004 	ldr	r3, [r4, #4]
+ 16c:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 170:	1a000005 	bne	18c <bcm2835_vc_get_temperature+0x68>
+ 174:	e5943014 	ldr	r3, [r4, #20]
+ 178:	e3530000 	cmp	r3, #0
+ 17c:	1a000002 	bne	18c <bcm2835_vc_get_temperature+0x68>
+ 180:	e5940018 	ldr	r0, [r4, #24]
+ 184:	e24bd00c 	sub	sp, fp, #12
+ 188:	e8bd8818 	pop	{r3, r4, fp, pc}
+ 18c:	e3e00000 	mvn	r0, #0
+ 190:	e24bd00c 	sub	sp, fp, #12
+ 194:	e8bd8818 	pop	{r3, r4, fp, pc}
+ 198:	00000020 	andeq	r0, r0, r0, lsr #32
+ 19c:	00000000 	andeq	r0, r0, r0
+ 1a0:	00030006 	andeq	r0, r3, r6
+ 1a4:	00000008 	andeq	r0, r0, r8
+ 1a8:	00000004 	andeq	r0, r0, r4
+	...
 
-000001bc <bcm2835_vc_set_power_state>:
- 1bc:	e92d4878 	push	{r3, r4, r5, r6, fp, lr}
- 1c0:	e28db014 	add	fp, sp, #20
- 1c4:	e24dd030 	sub	sp, sp, #48	; 0x30
- 1c8:	e3083001 	movw	r3, #32769	; 0x8001
- 1cc:	e28d400f 	add	r4, sp, #15
- 1d0:	e3403002 	movt	r3, #2
- 1d4:	e3c4400f 	bic	r4, r4, #15
- 1d8:	e3a05008 	mov	r5, #8
- 1dc:	e3a02020 	mov	r2, #32
- 1e0:	e1a06000 	mov	r6, r0
- 1e4:	e5843008 	str	r3, [r4, #8]
- 1e8:	e3a03000 	mov	r3, #0
- 1ec:	e5843004 	str	r3, [r4, #4]
- 1f0:	e584301c 	str	r3, [r4, #28]
- 1f4:	e5841018 	str	r1, [r4, #24]
- 1f8:	e1a01004 	mov	r1, r4
- 1fc:	e5840014 	str	r0, [r4, #20]
- 200:	e1a00005 	mov	r0, r5
- 204:	e5842000 	str	r2, [r4]
- 208:	e584500c 	str	r5, [r4, #12]
- 20c:	e5845010 	str	r5, [r4, #16]
- 210:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
- 214:	e1a00005 	mov	r0, r5
- 218:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
- 21c:	e5943004 	ldr	r3, [r4, #4]
- 220:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 224:	1a000005 	bne	240 <bcm2835_vc_set_power_state+0x84>
- 228:	e5943014 	ldr	r3, [r4, #20]
- 22c:	e1560003 	cmp	r6, r3
- 230:	1a000002 	bne	240 <bcm2835_vc_set_power_state+0x84>
- 234:	e5940018 	ldr	r0, [r4, #24]
- 238:	e24bd014 	sub	sp, fp, #20
- 23c:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
- 240:	e3e00000 	mvn	r0, #0
- 244:	e24bd014 	sub	sp, fp, #20
- 248:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
+000001b8 <bcm2835_vc_get_temperature_max>:
+ 1b8:	e92d4818 	push	{r3, r4, fp, lr}
+ 1bc:	e28db00c 	add	fp, sp, #12
+ 1c0:	eddf2b1a 	vldr	d18, [pc, #104]	; 230 <bcm2835_vc_get_temperature_max+0x78>
+ 1c4:	eddf3b1b 	vldr	d19, [pc, #108]	; 238 <bcm2835_vc_get_temperature_max+0x80>
+ 1c8:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 1cc:	e3a00008 	mov	r0, #8
+ 1d0:	eddf0b1a 	vldr	d16, [pc, #104]	; 240 <bcm2835_vc_get_temperature_max+0x88>
+ 1d4:	eddf1b1b 	vldr	d17, [pc, #108]	; 248 <bcm2835_vc_get_temperature_max+0x90>
+ 1d8:	e28d400f 	add	r4, sp, #15
+ 1dc:	e3c4400f 	bic	r4, r4, #15
+ 1e0:	e1a01004 	mov	r1, r4
+ 1e4:	f4442aef 	vst1.64	{d18-d19}, [r4 :128]
+ 1e8:	edc40b04 	vstr	d16, [r4, #16]
+ 1ec:	edc41b06 	vstr	d17, [r4, #24]
+ 1f0:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 1f4:	e3a00008 	mov	r0, #8
+ 1f8:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 1fc:	e5943004 	ldr	r3, [r4, #4]
+ 200:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 204:	1a000005 	bne	220 <bcm2835_vc_get_temperature_max+0x68>
+ 208:	e5943014 	ldr	r3, [r4, #20]
+ 20c:	e3530000 	cmp	r3, #0
+ 210:	1a000002 	bne	220 <bcm2835_vc_get_temperature_max+0x68>
+ 214:	e5940018 	ldr	r0, [r4, #24]
+ 218:	e24bd00c 	sub	sp, fp, #12
+ 21c:	e8bd8818 	pop	{r3, r4, fp, pc}
+ 220:	e3e00000 	mvn	r0, #0
+ 224:	e24bd00c 	sub	sp, fp, #12
+ 228:	e8bd8818 	pop	{r3, r4, fp, pc}
+ 22c:	e320f000 	nop	{0}
+ 230:	00000020 	andeq	r0, r0, r0, lsr #32
+ 234:	00000000 	andeq	r0, r0, r0
+ 238:	0003000a 	andeq	r0, r3, sl
+ 23c:	00000008 	andeq	r0, r0, r8
+ 240:	00000004 	andeq	r0, r0, r4
+	...
 
-0000024c <bcm2835_vc_get_board_mac_address>:
- 24c:	e92d48f0 	push	{r4, r5, r6, r7, fp, lr}
- 250:	e28db014 	add	fp, sp, #20
- 254:	e24dd030 	sub	sp, sp, #48	; 0x30
- 258:	e3a03003 	mov	r3, #3
- 25c:	e28d400f 	add	r4, sp, #15
- 260:	e3403001 	movt	r3, #1
- 264:	e3c4400f 	bic	r4, r4, #15
- 268:	e3a05000 	mov	r5, #0
- 26c:	e3a02020 	mov	r2, #32
- 270:	e1a01004 	mov	r1, r4
- 274:	e5843008 	str	r3, [r4, #8]
- 278:	e3a03006 	mov	r3, #6
- 27c:	e584300c 	str	r3, [r4, #12]
- 280:	e1a06000 	mov	r6, r0
- 284:	e5842000 	str	r2, [r4]
- 288:	e3a00008 	mov	r0, #8
- 28c:	e5845004 	str	r5, [r4, #4]
- 290:	e5845010 	str	r5, [r4, #16]
- 294:	e5c45014 	strb	r5, [r4, #20]
- 298:	e584501c 	str	r5, [r4, #28]
- 29c:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
- 2a0:	e3a00008 	mov	r0, #8
- 2a4:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
- 2a8:	e5943004 	ldr	r3, [r4, #4]
- 2ac:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 2b0:	1a00000e 	bne	2f0 <bcm2835_vc_get_board_mac_address+0xa4>
- 2b4:	e5d47014 	ldrb	r7, [r4, #20]
- 2b8:	e1a00005 	mov	r0, r5
- 2bc:	e5d4e015 	ldrb	lr, [r4, #21]
- 2c0:	e5d4c016 	ldrb	ip, [r4, #22]
- 2c4:	e5d41017 	ldrb	r1, [r4, #23]
- 2c8:	e5d42018 	ldrb	r2, [r4, #24]
- 2cc:	e5d43019 	ldrb	r3, [r4, #25]
- 2d0:	e5c67000 	strb	r7, [r6]
- 2d4:	e5c6e001 	strb	lr, [r6, #1]
- 2d8:	e5c6c002 	strb	ip, [r6, #2]
- 2dc:	e5c61003 	strb	r1, [r6, #3]
- 2e0:	e5c62004 	strb	r2, [r6, #4]
- 2e4:	e5c63005 	strb	r3, [r6, #5]
- 2e8:	e24bd014 	sub	sp, fp, #20
- 2ec:	e8bd88f0 	pop	{r4, r5, r6, r7, fp, pc}
- 2f0:	e5c65000 	strb	r5, [r6]
- 2f4:	e3e00000 	mvn	r0, #0
- 2f8:	e5c65001 	strb	r5, [r6, #1]
- 2fc:	e5c65002 	strb	r5, [r6, #2]
- 300:	e5c65003 	strb	r5, [r6, #3]
- 304:	e5c65004 	strb	r5, [r6, #4]
- 308:	e5c65005 	strb	r5, [r6, #5]
- 30c:	eafffff5 	b	2e8 <bcm2835_vc_get_board_mac_address+0x9c>
+00000250 <bcm2835_vc_get_power_state>:
+ 250:	e92d4878 	push	{r3, r4, r5, r6, fp, lr}
+ 254:	e28db014 	add	fp, sp, #20
+ 258:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 25c:	e3a03001 	mov	r3, #1
+ 260:	e28d400f 	add	r4, sp, #15
+ 264:	e3403002 	movt	r3, #2
+ 268:	e3c4400f 	bic	r4, r4, #15
+ 26c:	e3a05008 	mov	r5, #8
+ 270:	e3a02020 	mov	r2, #32
+ 274:	e1a01004 	mov	r1, r4
+ 278:	e5843008 	str	r3, [r4, #8]
+ 27c:	e3a03004 	mov	r3, #4
+ 280:	e5843010 	str	r3, [r4, #16]
+ 284:	e3a03000 	mov	r3, #0
+ 288:	e5843004 	str	r3, [r4, #4]
+ 28c:	e1a06000 	mov	r6, r0
+ 290:	e5843018 	str	r3, [r4, #24]
+ 294:	e584301c 	str	r3, [r4, #28]
+ 298:	e5840014 	str	r0, [r4, #20]
+ 29c:	e1a00005 	mov	r0, r5
+ 2a0:	e5842000 	str	r2, [r4]
+ 2a4:	e584500c 	str	r5, [r4, #12]
+ 2a8:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 2ac:	e1a00005 	mov	r0, r5
+ 2b0:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 2b4:	e5943004 	ldr	r3, [r4, #4]
+ 2b8:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 2bc:	1a000006 	bne	2dc <bcm2835_vc_get_power_state+0x8c>
+ 2c0:	e5943014 	ldr	r3, [r4, #20]
+ 2c4:	e1560003 	cmp	r6, r3
+ 2c8:	1a000003 	bne	2dc <bcm2835_vc_get_power_state+0x8c>
+ 2cc:	e5940018 	ldr	r0, [r4, #24]
+ 2d0:	e2000003 	and	r0, r0, #3
+ 2d4:	e24bd014 	sub	sp, fp, #20
+ 2d8:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
+ 2dc:	e3a00003 	mov	r0, #3
+ 2e0:	e24bd014 	sub	sp, fp, #20
+ 2e4:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
 
-00000310 <bcm2835_vc_get_get_firmware_revision>:
- 310:	e92d4818 	push	{r3, r4, fp, lr}
- 314:	e28db00c 	add	fp, sp, #12
- 318:	e24dd030 	sub	sp, sp, #48	; 0x30
- 31c:	e3a03001 	mov	r3, #1
- 320:	e28d400f 	add	r4, sp, #15
- 324:	e3a02004 	mov	r2, #4
- 328:	e3c4400f 	bic	r4, r4, #15
- 32c:	e3a0101c 	mov	r1, #28
- 330:	e3a00008 	mov	r0, #8
- 334:	e5843008 	str	r3, [r4, #8]
- 338:	e3a03000 	mov	r3, #0
- 33c:	e5843004 	str	r3, [r4, #4]
- 340:	e5843010 	str	r3, [r4, #16]
- 344:	e5843014 	str	r3, [r4, #20]
- 348:	e5843018 	str	r3, [r4, #24]
- 34c:	e5841000 	str	r1, [r4]
- 350:	e1a01004 	mov	r1, r4
- 354:	e584200c 	str	r2, [r4, #12]
- 358:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
- 35c:	e3a00008 	mov	r0, #8
- 360:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
- 364:	e5943004 	ldr	r3, [r4, #4]
- 368:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 36c:	13e00000 	mvnne	r0, #0
- 370:	05940014 	ldreq	r0, [r4, #20]
- 374:	e24bd00c 	sub	sp, fp, #12
- 378:	e8bd8818 	pop	{r3, r4, fp, pc}
+000002e8 <bcm2835_vc_set_power_state>:
+ 2e8:	e92d4878 	push	{r3, r4, r5, r6, fp, lr}
+ 2ec:	e28db014 	add	fp, sp, #20
+ 2f0:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 2f4:	e3083001 	movw	r3, #32769	; 0x8001
+ 2f8:	e28d400f 	add	r4, sp, #15
+ 2fc:	e3403002 	movt	r3, #2
+ 300:	e3c4400f 	bic	r4, r4, #15
+ 304:	e3a05008 	mov	r5, #8
+ 308:	e3a02020 	mov	r2, #32
+ 30c:	e1a06000 	mov	r6, r0
+ 310:	e5843008 	str	r3, [r4, #8]
+ 314:	e3a03000 	mov	r3, #0
+ 318:	e5843004 	str	r3, [r4, #4]
+ 31c:	e584301c 	str	r3, [r4, #28]
+ 320:	e5841018 	str	r1, [r4, #24]
+ 324:	e1a01004 	mov	r1, r4
+ 328:	e5840014 	str	r0, [r4, #20]
+ 32c:	e1a00005 	mov	r0, r5
+ 330:	e5842000 	str	r2, [r4]
+ 334:	e584500c 	str	r5, [r4, #12]
+ 338:	e5845010 	str	r5, [r4, #16]
+ 33c:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 340:	e1a00005 	mov	r0, r5
+ 344:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 348:	e5943004 	ldr	r3, [r4, #4]
+ 34c:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 350:	1a000005 	bne	36c <bcm2835_vc_set_power_state+0x84>
+ 354:	e5943014 	ldr	r3, [r4, #20]
+ 358:	e1560003 	cmp	r6, r3
+ 35c:	1a000002 	bne	36c <bcm2835_vc_set_power_state+0x84>
+ 360:	e5940018 	ldr	r0, [r4, #24]
+ 364:	e24bd014 	sub	sp, fp, #20
+ 368:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
+ 36c:	e3e00000 	mvn	r0, #0
+ 370:	e24bd014 	sub	sp, fp, #20
+ 374:	e8bd8878 	pop	{r3, r4, r5, r6, fp, pc}
 
-0000037c <bcm2835_vc_get_get_board_model>:
- 37c:	e92d4818 	push	{r3, r4, fp, lr}
- 380:	e28db00c 	add	fp, sp, #12
- 384:	e24dd030 	sub	sp, sp, #48	; 0x30
- 388:	e3a03001 	mov	r3, #1
- 38c:	e7df3813 	bfi	r3, r3, #16, #16
- 390:	e28d400f 	add	r4, sp, #15
- 394:	e3c4400f 	bic	r4, r4, #15
- 398:	e3a0201c 	mov	r2, #28
+00000378 <bcm2835_vc_get_board_mac_address>:
+ 378:	e92d48f0 	push	{r4, r5, r6, r7, fp, lr}
+ 37c:	e28db014 	add	fp, sp, #20
+ 380:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 384:	e3a03003 	mov	r3, #3
+ 388:	e28d400f 	add	r4, sp, #15
+ 38c:	e3403001 	movt	r3, #1
+ 390:	e3c4400f 	bic	r4, r4, #15
+ 394:	e3a05000 	mov	r5, #0
+ 398:	e3a02020 	mov	r2, #32
  39c:	e1a01004 	mov	r1, r4
- 3a0:	e3a00008 	mov	r0, #8
- 3a4:	e5842000 	str	r2, [r4]
- 3a8:	e3a02004 	mov	r2, #4
- 3ac:	e5843008 	str	r3, [r4, #8]
- 3b0:	e3a03000 	mov	r3, #0
- 3b4:	e5843004 	str	r3, [r4, #4]
- 3b8:	e5843010 	str	r3, [r4, #16]
- 3bc:	e5843014 	str	r3, [r4, #20]
- 3c0:	e5843018 	str	r3, [r4, #24]
- 3c4:	e584200c 	str	r2, [r4, #12]
+ 3a0:	e5843008 	str	r3, [r4, #8]
+ 3a4:	e3a03006 	mov	r3, #6
+ 3a8:	e584300c 	str	r3, [r4, #12]
+ 3ac:	e1a06000 	mov	r6, r0
+ 3b0:	e5842000 	str	r2, [r4]
+ 3b4:	e3a00008 	mov	r0, #8
+ 3b8:	e5845004 	str	r5, [r4, #4]
+ 3bc:	e5845010 	str	r5, [r4, #16]
+ 3c0:	e5c45014 	strb	r5, [r4, #20]
+ 3c4:	e584501c 	str	r5, [r4, #28]
  3c8:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
  3cc:	e3a00008 	mov	r0, #8
  3d0:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
  3d4:	e5943004 	ldr	r3, [r4, #4]
  3d8:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 3dc:	13e00000 	mvnne	r0, #0
- 3e0:	05940014 	ldreq	r0, [r4, #20]
- 3e4:	e24bd00c 	sub	sp, fp, #12
- 3e8:	e8bd8818 	pop	{r3, r4, fp, pc}
+ 3dc:	1a00000e 	bne	41c <bcm2835_vc_get_board_mac_address+0xa4>
+ 3e0:	e5d47014 	ldrb	r7, [r4, #20]
+ 3e4:	e1a00005 	mov	r0, r5
+ 3e8:	e5d4e015 	ldrb	lr, [r4, #21]
+ 3ec:	e5d4c016 	ldrb	ip, [r4, #22]
+ 3f0:	e5d41017 	ldrb	r1, [r4, #23]
+ 3f4:	e5d42018 	ldrb	r2, [r4, #24]
+ 3f8:	e5d43019 	ldrb	r3, [r4, #25]
+ 3fc:	e5c67000 	strb	r7, [r6]
+ 400:	e5c6e001 	strb	lr, [r6, #1]
+ 404:	e5c6c002 	strb	ip, [r6, #2]
+ 408:	e5c61003 	strb	r1, [r6, #3]
+ 40c:	e5c62004 	strb	r2, [r6, #4]
+ 410:	e5c63005 	strb	r3, [r6, #5]
+ 414:	e24bd014 	sub	sp, fp, #20
+ 418:	e8bd88f0 	pop	{r4, r5, r6, r7, fp, pc}
+ 41c:	e5c65000 	strb	r5, [r6]
+ 420:	e3e00000 	mvn	r0, #0
+ 424:	e5c65001 	strb	r5, [r6, #1]
+ 428:	e5c65002 	strb	r5, [r6, #2]
+ 42c:	e5c65003 	strb	r5, [r6, #3]
+ 430:	e5c65004 	strb	r5, [r6, #4]
+ 434:	e5c65005 	strb	r5, [r6, #5]
+ 438:	eafffff5 	b	414 <bcm2835_vc_get_board_mac_address+0x9c>
 
-000003ec <bcm2835_vc_get_get_board_revision>:
- 3ec:	e92d4818 	push	{r3, r4, fp, lr}
- 3f0:	e28db00c 	add	fp, sp, #12
- 3f4:	e24dd030 	sub	sp, sp, #48	; 0x30
- 3f8:	e3a03002 	mov	r3, #2
- 3fc:	e28d400f 	add	r4, sp, #15
- 400:	e3a0201c 	mov	r2, #28
- 404:	e3c4400f 	bic	r4, r4, #15
- 408:	e3403001 	movt	r3, #1
- 40c:	e1a01004 	mov	r1, r4
- 410:	e3a00008 	mov	r0, #8
- 414:	e5842000 	str	r2, [r4]
- 418:	e3a02004 	mov	r2, #4
- 41c:	e5843008 	str	r3, [r4, #8]
- 420:	e3a03000 	mov	r3, #0
- 424:	e5843004 	str	r3, [r4, #4]
- 428:	e5843010 	str	r3, [r4, #16]
- 42c:	e5843014 	str	r3, [r4, #20]
- 430:	e5843018 	str	r3, [r4, #24]
- 434:	e584200c 	str	r2, [r4, #12]
- 438:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
- 43c:	e3a00008 	mov	r0, #8
- 440:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
- 444:	e5943004 	ldr	r3, [r4, #4]
- 448:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
- 44c:	13e00000 	mvnne	r0, #0
- 450:	05940014 	ldreq	r0, [r4, #20]
- 454:	e24bd00c 	sub	sp, fp, #12
- 458:	e8bd8818 	pop	{r3, r4, fp, pc}
+0000043c <bcm2835_vc_get_get_firmware_revision>:
+ 43c:	e92d4818 	push	{r3, r4, fp, lr}
+ 440:	e28db00c 	add	fp, sp, #12
+ 444:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 448:	e3a03001 	mov	r3, #1
+ 44c:	e28d400f 	add	r4, sp, #15
+ 450:	e3a02004 	mov	r2, #4
+ 454:	e3c4400f 	bic	r4, r4, #15
+ 458:	e3a0101c 	mov	r1, #28
+ 45c:	e3a00008 	mov	r0, #8
+ 460:	e5843008 	str	r3, [r4, #8]
+ 464:	e3a03000 	mov	r3, #0
+ 468:	e5843004 	str	r3, [r4, #4]
+ 46c:	e5843010 	str	r3, [r4, #16]
+ 470:	e5843014 	str	r3, [r4, #20]
+ 474:	e5843018 	str	r3, [r4, #24]
+ 478:	e5841000 	str	r1, [r4]
+ 47c:	e1a01004 	mov	r1, r4
+ 480:	e584200c 	str	r2, [r4, #12]
+ 484:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 488:	e3a00008 	mov	r0, #8
+ 48c:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 490:	e5943004 	ldr	r3, [r4, #4]
+ 494:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 498:	13e00000 	mvnne	r0, #0
+ 49c:	05940014 	ldreq	r0, [r4, #20]
+ 4a0:	e24bd00c 	sub	sp, fp, #12
+ 4a4:	e8bd8818 	pop	{r3, r4, fp, pc}
+
+000004a8 <bcm2835_vc_get_get_board_model>:
+ 4a8:	e92d4818 	push	{r3, r4, fp, lr}
+ 4ac:	e28db00c 	add	fp, sp, #12
+ 4b0:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 4b4:	e3a03001 	mov	r3, #1
+ 4b8:	e7df3813 	bfi	r3, r3, #16, #16
+ 4bc:	e28d400f 	add	r4, sp, #15
+ 4c0:	e3c4400f 	bic	r4, r4, #15
+ 4c4:	e3a0201c 	mov	r2, #28
+ 4c8:	e1a01004 	mov	r1, r4
+ 4cc:	e3a00008 	mov	r0, #8
+ 4d0:	e5842000 	str	r2, [r4]
+ 4d4:	e3a02004 	mov	r2, #4
+ 4d8:	e5843008 	str	r3, [r4, #8]
+ 4dc:	e3a03000 	mov	r3, #0
+ 4e0:	e5843004 	str	r3, [r4, #4]
+ 4e4:	e5843010 	str	r3, [r4, #16]
+ 4e8:	e5843014 	str	r3, [r4, #20]
+ 4ec:	e5843018 	str	r3, [r4, #24]
+ 4f0:	e584200c 	str	r2, [r4, #12]
+ 4f4:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 4f8:	e3a00008 	mov	r0, #8
+ 4fc:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 500:	e5943004 	ldr	r3, [r4, #4]
+ 504:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 508:	13e00000 	mvnne	r0, #0
+ 50c:	05940014 	ldreq	r0, [r4, #20]
+ 510:	e24bd00c 	sub	sp, fp, #12
+ 514:	e8bd8818 	pop	{r3, r4, fp, pc}
+
+00000518 <bcm2835_vc_get_get_board_revision>:
+ 518:	e92d4818 	push	{r3, r4, fp, lr}
+ 51c:	e28db00c 	add	fp, sp, #12
+ 520:	e24dd030 	sub	sp, sp, #48	; 0x30
+ 524:	e3a03002 	mov	r3, #2
+ 528:	e28d400f 	add	r4, sp, #15
+ 52c:	e3a0201c 	mov	r2, #28
+ 530:	e3c4400f 	bic	r4, r4, #15
+ 534:	e3403001 	movt	r3, #1
+ 538:	e1a01004 	mov	r1, r4
+ 53c:	e3a00008 	mov	r0, #8
+ 540:	e5842000 	str	r2, [r4]
+ 544:	e3a02004 	mov	r2, #4
+ 548:	e5843008 	str	r3, [r4, #8]
+ 54c:	e3a03000 	mov	r3, #0
+ 550:	e5843004 	str	r3, [r4, #4]
+ 554:	e5843010 	str	r3, [r4, #16]
+ 558:	e5843014 	str	r3, [r4, #20]
+ 55c:	e5843018 	str	r3, [r4, #24]
+ 560:	e584200c 	str	r2, [r4, #12]
+ 564:	ebfffffe 	bl	0 <bcm2835_mailbox_write>
+ 568:	e3a00008 	mov	r0, #8
+ 56c:	ebfffffe 	bl	0 <bcm2835_mailbox_read>
+ 570:	e5943004 	ldr	r3, [r4, #4]
+ 574:	e3530102 	cmp	r3, #-2147483648	; 0x80000000
+ 578:	13e00000 	mvnne	r0, #0
+ 57c:	05940014 	ldreq	r0, [r4, #20]
+ 580:	e24bd00c 	sub	sp, fp, #12
+ 584:	e8bd8818 	pop	{r3, r4, fp, pc}
 
 Disassembly of section .comment:
 
@@ -1299,7 +1374,7 @@ Disassembly of section .ARM.attributes:
   20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
   24:	17011501 	strne	r1, [r1, -r1, lsl #10]
   28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <bcm2835_vc_get_get_board_revision+0x4644c>
+  2c:	1b011a01 	blne	46838 <bcm2835_vc_get_get_board_revision+0x46320>
   30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
   34:	Address 0x0000000000000034 is out of bounds.
 
