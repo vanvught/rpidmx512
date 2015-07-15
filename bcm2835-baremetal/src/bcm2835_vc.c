@@ -136,6 +136,14 @@ int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_
 	return bcm2835_vc_set(BCM2835_VC_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
 }
 
+int32_t bcm2835_vc_get_temperature(void) {
+	return bcm2835_vc_get(BCM2835_VC_TAG_GET_TEMP, 0);
+}
+
+int32_t bcm2835_vc_get_temperature_max(void) {
+	return bcm2835_vc_get(BCM2835_VC_TAG_GET_MAX_TEMP, 0);
+}
+
 /**
  * @ingroup VideoCore
  *

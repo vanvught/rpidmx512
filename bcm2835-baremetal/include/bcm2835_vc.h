@@ -106,32 +106,31 @@ typedef enum
 #define BCM2835_VC_TAG_ALLOCATE_BUFFER			0x00040001	///<
 #define BCM2835_VC_TAG_RELEASE_BUFFER			0x00048001	///<
 #define BCM2835_VC_TAG_BLANK_SCREEN				0x00040002	///<
-#define BCM2835_VC_TAG_GET_PHYS_WH			0x40003
-#define BCM2835_VC_TAG_TEST_PHYS_WH		0x44003
-#define BCM2835_VC_TAG_SET_PHYS_WH			0x48003
-#define BCM2835_VC_TAG_GET_VIRT_WH			0x40004
-#define BCM2835_VC_TAG_TEST_VIRT_WH		0x44004
-#define BCM2835_VC_TAG_SET_VIRT_WH			0x48004
-#define BCM2835_VC_TAG_GET_DEPTH			0x40005
-#define BCM2835_VC_TAG_TEST_DEPTH			0x44005
-#define BCM2835_VC_TAG_SET_DEPTH			0x48005
-#define BCM2835_VC_TAG_GET_PIXEL_ORDER		0x40006
-#define BCM2835_VC_TAG_TEST_PIXEL_ORDER		0x44006
-#define BCM2835_VC_TAG_SET_PIXEL_ORDER		0x48006
-#define BCM2835_VC_TAG_GET_ALPHA_MODE		0x40007
-#define BCM2835_VC_TAG_TEST_ALPHA_MODE		0x44007
-#define BCM2835_VC_TAG_SET_ALPHA_MODE		0x48007
-#define BCM2835_VC_TAG_GET_PITCH			0x40008
-#define BCM2835_VC_TAG_GET_VIRT_OFFSET		0x40009
-#define BCM2835_VC_TAG_TEST_VIRT_OFFSET		0x44009
-#define BCM2835_VC_TAG_SET_VIRT_OFFSET		0x48009
-#define BCM2835_VC_TAG_GET_OVERSCAN		0x4000a
-#define BCM2835_VC_TAG_TEST_OVERSCAN		0x4400a
-#define BCM2835_VC_TAG_SET_OVERSCAN		0x4800a
-#define BCM2835_VC_TAG_GET_PALETTE			0x4000b
-#define BCM2835_VC_TAG_TEST_PALETTE		0x4400b
-#define BCM2835_VC_TAG_SET_PALETTE			0x4800b
-
+#define BCM2835_VC_TAG_GET_PHYS_WH				0x00040003	///<
+#define BCM2835_VC_TAG_TEST_PHYS_WH				0x00044003	///<
+#define BCM2835_VC_TAG_SET_PHYS_WH				0x00048003	///<
+#define BCM2835_VC_TAG_GET_VIRT_WH				0x00040004	///<
+#define BCM2835_VC_TAG_TEST_VIRT_WH				0x00044004	///<
+#define BCM2835_VC_TAG_SET_VIRT_WH				0x00048004	///<
+#define BCM2835_VC_TAG_GET_DEPTH				0x00040005	///<
+#define BCM2835_VC_TAG_TEST_DEPTH				0x00044005	///<
+#define BCM2835_VC_TAG_SET_DEPTH				0x00048005	///<
+#define BCM2835_VC_TAG_GET_PIXEL_ORDER			0x00040006	///<
+#define BCM2835_VC_TAG_TEST_PIXEL_ORDER			0x00044006	///<
+#define BCM2835_VC_TAG_SET_PIXEL_ORDER			0x00048006	///<
+#define BCM2835_VC_TAG_GET_ALPHA_MODE			0x00040007	///<
+#define BCM2835_VC_TAG_TEST_ALPHA_MODE			0x00044007	///<
+#define BCM2835_VC_TAG_SET_ALPHA_MODE			0x00048007	///<
+#define BCM2835_VC_TAG_GET_PITCH				0x00040008	///<
+#define BCM2835_VC_TAG_GET_VIRT_OFFSET			0x00040009	///<
+#define BCM2835_VC_TAG_TEST_VIRT_OFFSET			0x00044009	///<
+#define BCM2835_VC_TAG_SET_VIRT_OFFSET			0x00048009	///<
+#define BCM2835_VC_TAG_GET_OVERSCAN				0x0004000a	///<
+#define BCM2835_VC_TAG_TEST_OVERSCAN			0x0004400a	///<
+#define BCM2835_VC_TAG_SET_OVERSCAN				0x0004800a	///<
+#define BCM2835_VC_TAG_GET_PALETTE				0x0004000b	///<
+#define BCM2835_VC_TAG_TEST_PALETTE				0x0004400b	///<
+#define BCM2835_VC_TAG_SET_PALETTE				0x0004800b	///<
 
 extern int32_t bcm2835_vc_get_clock_rate(const uint32_t);
 extern int32_t bcm2835_vc_set_clock_rate(const uint32_t, const uint32_t);
@@ -139,9 +138,13 @@ extern int32_t bcm2835_vc_set_clock_rate(const uint32_t, const uint32_t);
 extern int32_t bcm2835_vc_get_power_state(const uint32_t);
 extern int32_t bcm2835_vc_set_power_state(const uint32_t, const uint32_t);
 
+extern int32_t bcm2835_vc_get_temperature(void);
+extern int32_t bcm2835_vc_get_temperature_max(void);
+
 extern int32_t bcm2835_vc_get_board_mac_address(/*@out@*/uint8_t *);
 
 extern int32_t bcm2835_vc_get_get_firmware_revision(void);
+
 extern int32_t bcm2835_vc_get_get_board_model(void);
 extern int32_t bcm2835_vc_get_get_board_revision(void);
 
