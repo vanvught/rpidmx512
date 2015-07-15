@@ -311,7 +311,7 @@ void console_clear() {
 	uint16_t *address = (uint16_t *)(fb_addr);
 	uint32_t i;
 
-	for (i = (HEIGHT * WIDTH); i > 0; i--) {
+	for (i = 0; i < (HEIGHT * WIDTH); i++) {
 		*address++ = cur_back;
 	}
 
