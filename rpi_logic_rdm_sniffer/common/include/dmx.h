@@ -80,8 +80,8 @@ extern void dmx_port_direction_set(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 
-extern const /*@null@*/uint8_t *rdm_get_available(void);
-extern const uint8_t *rdm_get_current_data(void);
+extern const /*@null@*/uint8_t *rdm_get_available(void) __attribute__((assume_aligned(4)));
+extern const uint8_t *rdm_get_current_data(void) __attribute__((assume_aligned(4)));
 
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_data_receive_end_get(void);
@@ -95,7 +95,7 @@ extern bool dmx_data_is_changed(void);
 
 extern void dmx_statistics_reset(void);
 extern void total_statistics_reset(void);
-extern const struct _total_statistics *total_statistics_get(void);
+extern const struct _total_statistics *total_statistics_get(void) __attribute__((assume_aligned(4)));
 
 extern const uint8_t rdm_is_available_get(void);
 extern void rdm_is_available_set(const uint8_t);

@@ -85,14 +85,14 @@ static volatile uint32_t dmx_send_break_micros = 0;						///<
 #define RDM_DATA_BUFFER_INDEX_SIZE 	0x0F												///<
 static uint16_t rdm_data_buffer_index_head = 0;											///<
 static uint16_t rdm_data_buffer_index_tail = 0;											///<
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE];	///<
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
 static uint16_t rdm_checksum = 0;														///<
 static uint32_t rdm_data_receive_end = 0;												///<
 #ifdef RDM_CONTROLLER
 static uint8_t rdm_disc_index = 0;														///<
 #endif
-static struct _dmx_statistics dmx_statistics;											///<
-static struct _total_statistics total_statistics;										///<
+static struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));				///<
+static struct _total_statistics total_statistics __attribute__((aligned(4)));			///<
 
 static unsigned int irq_counter;														///<
 
@@ -186,7 +186,7 @@ const uint32_t dmx_get_break_to_break(void) {
  *
  * @return
  */
-const uint8_t *rdm_get_available(void) {
+const uint8_t *rdm_get_available(void)  {
 	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail) {
 		return NULL;
 	} else {
