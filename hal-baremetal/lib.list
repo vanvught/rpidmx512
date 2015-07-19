@@ -261,42 +261,52 @@ Disassembly of section .text:
  3a0:	00000020 	andeq	r0, r0, r0, lsr #32
  3a4:	0000001c 	andeq	r0, r0, ip, lsl r0
 
-000003a8 <hardware_init>:
- 3a8:	e59f1054 	ldr	r1, [pc, #84]	; 404 <hardware_init+0x5c>
- 3ac:	e59f0054 	ldr	r0, [pc, #84]	; 408 <hardware_init+0x60>
- 3b0:	e5912004 	ldr	r2, [r1, #4]
- 3b4:	e5913008 	ldr	r3, [r1, #8]
- 3b8:	e92d4010 	push	{r4, lr}
- 3bc:	e1c020f0 	strd	r2, [r0]
- 3c0:	ebfffffe 	bl	0 <sys_time_init>
- 3c4:	ebfffffe 	bl	0 <console_init>
- 3c8:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
- 3cc:	e350000f 	cmp	r0, #15
- 3d0:	d59f4034 	ldrle	r4, [pc, #52]	; 40c <hardware_init+0x64>
- 3d4:	c59f2034 	ldrgt	r2, [pc, #52]	; 410 <hardware_init+0x68>
- 3d8:	c59f402c 	ldrgt	r4, [pc, #44]	; 40c <hardware_init+0x64>
- 3dc:	c59f1030 	ldrgt	r1, [pc, #48]	; 414 <hardware_init+0x6c>
- 3e0:	d5943000 	ldrle	r3, [r4]
- 3e4:	c1a03002 	movgt	r3, r2
- 3e8:	c5842000 	strgt	r2, [r4]
- 3ec:	c5841004 	strgt	r1, [r4, #4]
- 3f0:	e12fff33 	blx	r3
- 3f4:	e5943004 	ldr	r3, [r4, #4]
- 3f8:	e3a00001 	mov	r0, #1
- 3fc:	e8bd4010 	pop	{r4, lr}
- 400:	e12fff13 	bx	r3
- 404:	20003000 	andcs	r3, r0, r0
+000003a8 <hardware_get_core_temperature>:
+ 3a8:	e92d4008 	push	{r3, lr}
+ 3ac:	ebfffffe 	bl	0 <bcm2835_vc_get_temperature>
+ 3b0:	e59f200c 	ldr	r2, [pc, #12]	; 3c4 <hardware_get_core_temperature+0x1c>
+ 3b4:	e1a03fc0 	asr	r3, r0, #31
+ 3b8:	e0c02092 	smull	r2, r0, r2, r0
+ 3bc:	e0630340 	rsb	r0, r3, r0, asr #6
+ 3c0:	e8bd8008 	pop	{r3, pc}
+ 3c4:	10624dd3 	ldrdne	r4, [r2], #-211	; 0xffffff2d	; <UNPREDICTABLE>
+
+000003c8 <hardware_init>:
+ 3c8:	e59f1054 	ldr	r1, [pc, #84]	; 424 <hardware_init+0x5c>
+ 3cc:	e59f0054 	ldr	r0, [pc, #84]	; 428 <hardware_init+0x60>
+ 3d0:	e5912004 	ldr	r2, [r1, #4]
+ 3d4:	e5913008 	ldr	r3, [r1, #8]
+ 3d8:	e92d4010 	push	{r4, lr}
+ 3dc:	e1c020f0 	strd	r2, [r0]
+ 3e0:	ebfffffe 	bl	0 <sys_time_init>
+ 3e4:	ebfffffe 	bl	0 <console_init>
+ 3e8:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
+ 3ec:	e350000f 	cmp	r0, #15
+ 3f0:	d59f4034 	ldrle	r4, [pc, #52]	; 42c <hardware_init+0x64>
+ 3f4:	c59f2034 	ldrgt	r2, [pc, #52]	; 430 <hardware_init+0x68>
+ 3f8:	c59f402c 	ldrgt	r4, [pc, #44]	; 42c <hardware_init+0x64>
+ 3fc:	c59f1030 	ldrgt	r1, [pc, #48]	; 434 <hardware_init+0x6c>
+ 400:	d5943000 	ldrle	r3, [r4]
+ 404:	c1a03002 	movgt	r3, r2
+ 408:	c5842000 	strgt	r2, [r4]
+ 40c:	c5841004 	strgt	r1, [r4, #4]
+ 410:	e12fff33 	blx	r3
+ 414:	e5943004 	ldr	r3, [r4, #4]
+ 418:	e3a00001 	mov	r0, #1
+ 41c:	e8bd4010 	pop	{r4, lr}
+ 420:	e12fff13 	bx	r3
+ 424:	20003000 	andcs	r3, r0, r0
 	...
 
-00000418 <hardware_reboot>:
- 418:	e92d4008 	push	{r3, lr}
- 41c:	e59f3010 	ldr	r3, [pc, #16]	; 434 <hardware_reboot+0x1c>
- 420:	e3a00001 	mov	r0, #1
- 424:	e5933004 	ldr	r3, [r3, #4]
- 428:	e12fff33 	blx	r3
- 42c:	ebfffffe 	bl	0 <watchdog_init>
- 430:	eafffffe 	b	430 <hardware_reboot+0x18>
- 434:	00000000 	andeq	r0, r0, r0
+00000438 <hardware_reboot>:
+ 438:	e92d4008 	push	{r3, lr}
+ 43c:	e59f3010 	ldr	r3, [pc, #16]	; 454 <hardware_reboot+0x1c>
+ 440:	e3a00001 	mov	r0, #1
+ 444:	e5933004 	ldr	r3, [r3, #4]
+ 448:	e12fff33 	blx	r3
+ 44c:	ebfffffe 	bl	0 <watchdog_init>
+ 450:	eafffffe 	b	450 <hardware_reboot+0x18>
+ 454:	00000000 	andeq	r0, r0, r0
 
 Disassembly of section .data:
 
@@ -406,7 +416,7 @@ Disassembly of section .rodata:
  168:	00000000 	andeq	r0, r0, r0
  16c:	00000010 	andeq	r0, r0, r0, lsl r0
  170:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087f14>
+ 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087ef4>
  178:	32313520 	eorscc	r3, r1, #32, 10	; 0x8000000
  17c:	2020424d 	eorcs	r4, r0, sp, asr #4
  180:	20202020 	eorcs	r2, r0, r0, lsr #32
@@ -420,7 +430,7 @@ Disassembly of section .rodata:
  1a0:	00000000 	andeq	r0, r0, r0
  1a4:	00000012 	andeq	r0, r0, r2, lsl r0
  1a8:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f4c>
+ 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f2c>
  1b0:	36353220 	ldrtcc	r3, [r5], -r0, lsr #4
  1b4:	2020424d 	eorcs	r4, r0, sp, asr #4
  1b8:	20202020 	eorcs	r2, r0, r0, lsr #32

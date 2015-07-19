@@ -35,7 +35,7 @@
 #include "dmx.h"
 #include "dmx_devices.h"
 
-extern void monitor_update(void);
+//extern void monitor_update(void);
 
 struct _poll {
 	void (*f)(void);
@@ -50,7 +50,7 @@ struct _event {
 } const events[] = {
 	{1000000, ui_buttons_update},
 	{1000000, ui_lcd_refresh},
-	{1000000, monitor_update}
+	//{1000000, monitor_update}
 };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];

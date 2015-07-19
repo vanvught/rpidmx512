@@ -266,46 +266,56 @@ Disassembly of section .text:
  3b4:	00000020 	andeq	r0, r0, r0, lsr #32
  3b8:	0000001c 	andeq	r0, r0, ip, lsl r0
 
-000003bc <hardware_init>:
- 3bc:	e3032004 	movw	r2, #12292	; 0x3004
- 3c0:	e3003000 	movw	r3, #0
- 3c4:	e3432f00 	movt	r2, #16128	; 0x3f00
- 3c8:	e3403000 	movt	r3, #0
- 3cc:	e92d4010 	push	{r4, lr}
- 3d0:	f46207cf 	vld1.64	{d16}, [r2]
- 3d4:	edc30b00 	vstr	d16, [r3]
- 3d8:	ebfffffe 	bl	0 <sys_time_init>
- 3dc:	ebfffffe 	bl	0 <console_init>
- 3e0:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
- 3e4:	e350000f 	cmp	r0, #15
- 3e8:	da00000c 	ble	420 <hardware_init+0x64>
- 3ec:	e3004000 	movw	r4, #0
- 3f0:	e3003000 	movw	r3, #0
- 3f4:	e3404000 	movt	r4, #0
- 3f8:	e3002000 	movw	r2, #0
- 3fc:	e3403000 	movt	r3, #0
- 400:	e3402000 	movt	r2, #0
- 404:	e5843000 	str	r3, [r4]
- 408:	e5842004 	str	r2, [r4, #4]
- 40c:	e12fff33 	blx	r3
- 410:	e5943004 	ldr	r3, [r4, #4]
- 414:	e3a00001 	mov	r0, #1
- 418:	e8bd4010 	pop	{r4, lr}
- 41c:	e12fff13 	bx	r3
- 420:	e3004000 	movw	r4, #0
- 424:	e3404000 	movt	r4, #0
- 428:	e5943000 	ldr	r3, [r4]
- 42c:	eafffff6 	b	40c <hardware_init+0x50>
+000003bc <hardware_get_core_temperature>:
+ 3bc:	e92d4008 	push	{r3, lr}
+ 3c0:	ebfffffe 	bl	0 <bcm2835_vc_get_temperature>
+ 3c4:	e3042dd3 	movw	r2, #19923	; 0x4dd3
+ 3c8:	e3412062 	movt	r2, #4194	; 0x1062
+ 3cc:	e0c32290 	smull	r2, r3, r0, r2
+ 3d0:	e1a00fc0 	asr	r0, r0, #31
+ 3d4:	e0600343 	rsb	r0, r0, r3, asr #6
+ 3d8:	e8bd8008 	pop	{r3, pc}
 
-00000430 <hardware_reboot>:
- 430:	e92d4008 	push	{r3, lr}
- 434:	e3003000 	movw	r3, #0
- 438:	e3403000 	movt	r3, #0
- 43c:	e3a00001 	mov	r0, #1
- 440:	e5933004 	ldr	r3, [r3, #4]
- 444:	e12fff33 	blx	r3
- 448:	ebfffffe 	bl	0 <watchdog_init>
- 44c:	eafffffe 	b	44c <hardware_reboot+0x1c>
+000003dc <hardware_init>:
+ 3dc:	e3032004 	movw	r2, #12292	; 0x3004
+ 3e0:	e3003000 	movw	r3, #0
+ 3e4:	e3432f00 	movt	r2, #16128	; 0x3f00
+ 3e8:	e3403000 	movt	r3, #0
+ 3ec:	e92d4010 	push	{r4, lr}
+ 3f0:	f46207cf 	vld1.64	{d16}, [r2]
+ 3f4:	edc30b00 	vstr	d16, [r3]
+ 3f8:	ebfffffe 	bl	0 <sys_time_init>
+ 3fc:	ebfffffe 	bl	0 <console_init>
+ 400:	ebfffffe 	bl	0 <bcm2835_vc_get_get_board_revision>
+ 404:	e350000f 	cmp	r0, #15
+ 408:	da00000c 	ble	440 <hardware_init+0x64>
+ 40c:	e3004000 	movw	r4, #0
+ 410:	e3003000 	movw	r3, #0
+ 414:	e3404000 	movt	r4, #0
+ 418:	e3002000 	movw	r2, #0
+ 41c:	e3403000 	movt	r3, #0
+ 420:	e3402000 	movt	r2, #0
+ 424:	e5843000 	str	r3, [r4]
+ 428:	e5842004 	str	r2, [r4, #4]
+ 42c:	e12fff33 	blx	r3
+ 430:	e5943004 	ldr	r3, [r4, #4]
+ 434:	e3a00001 	mov	r0, #1
+ 438:	e8bd4010 	pop	{r4, lr}
+ 43c:	e12fff13 	bx	r3
+ 440:	e3004000 	movw	r4, #0
+ 444:	e3404000 	movt	r4, #0
+ 448:	e5943000 	ldr	r3, [r4]
+ 44c:	eafffff6 	b	42c <hardware_init+0x50>
+
+00000450 <hardware_reboot>:
+ 450:	e92d4008 	push	{r3, lr}
+ 454:	e3003000 	movw	r3, #0
+ 458:	e3403000 	movt	r3, #0
+ 45c:	e3a00001 	mov	r0, #1
+ 460:	e5933004 	ldr	r3, [r3, #4]
+ 464:	e12fff33 	blx	r3
+ 468:	ebfffffe 	bl	0 <watchdog_init>
+ 46c:	eafffffe 	b	46c <hardware_reboot+0x1c>
 
 Disassembly of section .data:
 
@@ -415,7 +425,7 @@ Disassembly of section .rodata:
  168:	00000000 	andeq	r0, r0, r0
  16c:	00000010 	andeq	r0, r0, r0, lsl r0
  170:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087efc>
+ 174:	2b42206c 	blcs	108832c <hardware_reboot+0x1087edc>
  178:	32313520 	eorscc	r3, r1, #32, 10	; 0x8000000
  17c:	2020424d 	eorcs	r4, r0, sp, asr #4
  180:	20202020 	eorcs	r2, r0, r0, lsr #32
@@ -429,7 +439,7 @@ Disassembly of section .rodata:
  1a0:	00000000 	andeq	r0, r0, r0
  1a4:	00000012 	andeq	r0, r0, r2, lsl r0
  1a8:	65646f4d 	strbvs	r6, [r4, #-3917]!	; 0xfffff0b3
- 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f34>
+ 1ac:	2b41206c 	blcs	1048364 <hardware_reboot+0x1047f14>
  1b0:	36353220 	ldrtcc	r3, [r5], -r0, lsr #4
  1b4:	2020424d 	eorcs	r4, r0, sp, asr #4
  1b8:	20202020 	eorcs	r2, r0, r0, lsr #32
@@ -473,7 +483,7 @@ Disassembly of section .ARM.attributes:
   20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
   24:	17011501 	strne	r1, [r1, -r1, lsl #10]
   28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <hardware_reboot+0x46408>
+  2c:	1b011a01 	blne	46838 <hardware_reboot+0x463e8>
   30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
   34:	Address 0x0000000000000034 is out of bounds.
 
