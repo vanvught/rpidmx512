@@ -37,6 +37,7 @@
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 #include "rdm_identify.h"
+#include "rdm_sensor.h"
 
 static uint8_t *rdm_handlers_rdm_data;
 
@@ -59,6 +60,10 @@ static void rdm_set_personality(bool , uint16_t);
 static void rdm_get_personality_description(uint16_t);
 static void rdm_get_dmx_start_address(uint16_t);
 static void rdm_set_dmx_start_address(bool , uint16_t);
+static void rdm_get_sensor_definition(uint16_t);
+static void rdm_get_sensor_value(uint16_t);
+static void rdm_set_sensor_value(bool , uint16_t);
+static void rdm_set_record_sensors(bool , uint16_t);
 static void rdm_get_device_hours(uint16_t);
 static void rdm_set_device_hours(bool , uint16_t);
 static void rdm_get_identify_device(uint16_t);
@@ -92,6 +97,9 @@ static const struct _pid_definition PID_DEFINITIONS[] = {
 		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, true },
 		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, true },
 		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, false},
+		{E120_SENSOR_DEFINITION,		   &rdm_get_sensor_definition,			NULL,						 1, true },
+		{E120_SENSOR_VALUE,				   &rdm_get_sensor_value,				&rdm_set_sensor_value,		 1, true },
+		{E120_RECORD_SENSORS,			   NULL,								&rdm_set_record_sensors,	 0, true },
 		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	        &rdm_set_device_hours,       0, true },
 		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, true },
 		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, false},
@@ -113,26 +121,22 @@ static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[] = {
  *
  * @param sub_device
  */
-static void rdm_get_supported_parameters(uint16_t sub_device)
-{
+static void rdm_get_supported_parameters(uint16_t sub_device) {
 	uint8_t supported_params = 0;
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
 	const struct _pid_definition *pid_definitions;
 	int table_size = 0;
 	int i,j;
 
-	if (sub_device != 0)
-	{
+	if (sub_device != 0) {
 		pid_definitions = &PID_DEFINITIONS_SUB_DEVICES[0];
-		table_size = (int)(sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(struct _pid_definition));
-	} else
-	{
+		table_size = (int) (sizeof(PID_DEFINITIONS_SUB_DEVICES) / sizeof(PID_DEFINITIONS_SUB_DEVICES[0]));
+	} else {
 		pid_definitions = &PID_DEFINITIONS[0];
-		table_size = (int)(sizeof(PID_DEFINITIONS) / sizeof(struct _pid_definition));
+		table_size = (int) (sizeof(PID_DEFINITIONS) / sizeof(PID_DEFINITIONS[0]));
 	}
 
-	for (i = 0;	i < table_size; i++)
-	{
+	for (i = 0; i < table_size; i++) {
 		if (pid_definitions[i].include_in_supported_params)
 			supported_params++;
 	}
@@ -548,6 +552,173 @@ static void rdm_set_device_hours(bool was_broadcast, uint16_t sub_device)
 }
 
 /**
+ *
+ * @param sub_device
+ */
+static void rdm_get_sensor_definition(uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 1) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const uint8_t sensor_requested = rdm_command->param_data[0];
+
+	if ((sensor_requested != 0xFF) && (sensor_requested + 1 > rdm_sensors_get_count())) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
+	const struct _rdm_sensor_defintion *sensor_definition = rdm_sensors_get_defintion(sensor_requested);
+
+	if (sensor_requested != sensor_definition->sensor) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	rdm_response->param_data[0] = sensor_requested;
+	rdm_response->param_data[1] = sensor_definition->type;
+	rdm_response->param_data[2] = sensor_definition->unit;
+	rdm_response->param_data[3] = sensor_definition->prefix;
+	rdm_response->param_data[4] = (uint8_t)(sensor_definition->range_min >> 8);
+	rdm_response->param_data[5] = (uint8_t)(sensor_definition->range_min);
+	rdm_response->param_data[6] = (uint8_t)(sensor_definition->range_max >> 8);
+	rdm_response->param_data[7] = (uint8_t)(sensor_definition->range_max);
+	rdm_response->param_data[8] = (uint8_t)(sensor_definition->normal_min >> 8);
+	rdm_response->param_data[9] = (uint8_t)(sensor_definition->normal_min);
+	rdm_response->param_data[10] = (uint8_t)(sensor_definition->normal_max >> 8);
+	rdm_response->param_data[11] = (uint8_t)(sensor_definition->normal_max);
+	rdm_response->param_data[12] = sensor_definition->recorded_supported;
+
+	int i = 13;
+	int j = 0;
+	for (j = 0; j < sensor_definition->_len; j++) {
+		rdm_response->param_data[i++] = sensor_definition->description[j];
+	}
+
+	rdm_response->param_data_length = i;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + i;
+
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
+ *
+ * @param sub_device
+ */
+static void rdm_get_sensor_value(uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 1) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const uint8_t sensor_requested = rdm_command->param_data[0];
+
+	if ((sensor_requested != 0xFF) && (sensor_requested + 1 > rdm_sensors_get_count())) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
+	const struct _rdm_sensor_value *sensor_value = rdm_sensors_get_value(sensor_requested);
+
+	if (sensor_requested != sensor_value->sensor_requested) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	rdm_response->param_data_length = 9;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
+	rdm_response->param_data[0] = sensor_value->sensor_requested;
+	rdm_response->param_data[1] = (uint8_t)(sensor_value->present >> 8);
+	rdm_response->param_data[2] = (uint8_t)sensor_value->present;
+	rdm_response->param_data[3] = (uint8_t)(sensor_value->lowest_detected >> 8);
+	rdm_response->param_data[4] = (uint8_t)sensor_value->lowest_detected;
+	rdm_response->param_data[5] = (uint8_t)(sensor_value->highest_detected >> 8);
+	rdm_response->param_data[6] = (uint8_t)sensor_value->highest_detected;
+	rdm_response->param_data[7] = (uint8_t)(sensor_value->recorded >> 8);
+	rdm_response->param_data[8] = (uint8_t)sensor_value->recorded;
+
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
+ *
+ * @param was_broadcast
+ * @param uint16_t
+ */
+static void rdm_set_sensor_value(bool was_broadcast, uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 1) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const uint8_t sensor_requested = rdm_command->param_data[0];
+
+	if ((sensor_requested != 0xFF) && (sensor_requested + 1 > rdm_sensors_get_count())) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	rdm_sensors_set_value(sensor_requested);
+
+	if(was_broadcast)
+		return;
+
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
+	const struct _rdm_sensor_value *sensor_value = rdm_sensors_get_value(sensor_requested);
+
+	rdm_response->param_data_length = 9;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
+	rdm_response->param_data[0] = sensor_value->sensor_requested;
+	rdm_response->param_data[1] = (uint8_t)(sensor_value->present >> 8);
+	rdm_response->param_data[2] = (uint8_t)sensor_value->present;
+	rdm_response->param_data[3] = (uint8_t)(sensor_value->lowest_detected >> 8);
+	rdm_response->param_data[4] = (uint8_t)sensor_value->lowest_detected;
+	rdm_response->param_data[5] = (uint8_t)(sensor_value->highest_detected >> 8);
+	rdm_response->param_data[6] = (uint8_t)sensor_value->highest_detected;
+	rdm_response->param_data[7] = (uint8_t)(sensor_value->recorded >> 8);
+	rdm_response->param_data[8] = (uint8_t)sensor_value->recorded;
+
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
+ *
+ * @param was_broadcast
+ * @param sub_device
+ */
+static void rdm_set_record_sensors(bool was_broadcast, uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 1) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const uint8_t sensor_requested = rdm_command->param_data[0];
+
+	if ((sensor_requested != 0xFF) && (sensor_requested + 1 > rdm_sensors_get_count())) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	rmd_sensors_record(sensor_requested);
+
+	if(was_broadcast)
+		return;
+
+	rdm_command->param_data_length = 0;
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
  * @ingroup rdm_handlers
  *
  * @param sub_device
@@ -779,16 +950,13 @@ void rdm_handlers(uint8_t *rdm_data, const bool is_broadcast, const uint8_t comm
 			pid_handler = &PID_DEFINITIONS[i];
 	}
 
-	if (!pid_handler)
-	{
+	if (!pid_handler) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_UNKNOWN_PID);
 		return;
 	}
 
-	if (command_class == E120_GET_COMMAND)
-	{
-		if(is_broadcast)
-		{
+	if (command_class == E120_GET_COMMAND) {
+		if (is_broadcast) {
 			return;
 		}
 
@@ -811,11 +979,9 @@ void rdm_handlers(uint8_t *rdm_data, const bool is_broadcast, const uint8_t comm
 		}
 
 		pid_handler->get_handler(sub_device);
-	}
-	else
-	{
-		if (!pid_handler->set_handler)
-		{
+	} else {
+
+		if (!pid_handler->set_handler) {
 			rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_UNSUPPORTED_COMMAND_CLASS);
 			return;
 		}

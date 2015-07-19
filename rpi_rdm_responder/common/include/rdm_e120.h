@@ -566,8 +566,8 @@
 #define E120_PREFIX_NONE                                 0x00   /* Multiply by 1                                                */
 #define E120_PREFIX_DECI                                 0x01   /* Multiply by 10-1                                             */
 #define E120_PREFIX_CENTI                                0x02   /* Multiply by 10-2                                             */
-#define E120_PREFIX_MILLI                                0x03   /* Multiply by 10-3                                             */
-#define E120_PREFIX_MICRO                                0x04   /* Multiply by 10-6                                             */
+#define E120_PREFIX_MILLI								 0x03   /* Multiply by 10-3                                             */
+#define E120_PREFIX_MICRO								 0x04   /* Multiply by 10-6                                             */
 #define E120_PREFIX_NANO                                 0x05   /* Multiply by 10-9                                             */
 #define E120_PREFIX_PICO                                 0x06   /* Multiply by 10-12                                            */
 #define E120_PREFIX_FEMPTO                               0x07   /* Multiply by 10-15                                            */
