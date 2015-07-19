@@ -1,5 +1,5 @@
 /**
- * @file util.h
+ * @file sscan.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,16 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef INCLUDE_SSCAN_H_
+#define INCLUDE_SSCAN_H_
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
+#include <stdint.h>
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
+extern int sscan_char_p(const char *, const char *, char *, /*@out@*/uint8_t *);
 
-#ifndef MAX
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
-#endif /* UTIL_H_ */
+#endif /* INCLUDE_SSCAN_H_ */

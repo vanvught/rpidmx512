@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #ifdef RDM_CONTROLLER
 #include <ctype.h>
-#include <errno.h>
 
 #include "ff.h"
 #endif
@@ -41,6 +39,8 @@
 #include "rdm_sub_devices.h"
 #include "rdm_device_info.h"
 #include "rdm_device_const.h"
+#include "rdm_sensor.h"
+#include "sscan.h"
 
 static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
@@ -49,9 +49,7 @@ static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH = sizeof(DEVICE_SOFTWARE_VER
 #ifdef RDM_CONTROLLER
 static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";				///< Parameters file name
 static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";		///<
-static const size_t RDM_DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(RDM_DEVICE_MANUFACTURER_NAME) / sizeof(RDM_DEVICE_MANUFACTURER_NAME[0]) - 1;
 static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";			///<
-static const size_t RDM_DEVICE_MANUFACTURER_ID_LENGTH = sizeof(RDM_DEVICE_MANUFACTURER_ID) / sizeof(RDM_DEVICE_MANUFACTURER_ID[0]) - 1;
 #endif
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
@@ -68,8 +66,8 @@ static uint8_t manufacturer_id[DEVICE_MANUFACTURER_ID_LENGTH];
 static bool is_factory_defaults = true;
 static uint16_t factory_defaults_checksum = 0;
 
-static struct _rdm_device_info rdm_device_info;
-static struct _rdm_device_info rdm_sub_device_info;
+static struct _rdm_device_info rdm_device_info __attribute__((aligned(4)));
+static struct _rdm_device_info rdm_sub_device_info __attribute__((aligned(4)));
 
 /**
  * @ingroup rdm
@@ -79,38 +77,34 @@ static struct _rdm_device_info rdm_sub_device_info;
  * @param line
  */
 #ifdef RDM_CONTROLLER
-static int process_line_read_string(const char *line) {
-	char name[64];
-	char value[64];
+static void process_line_read_string(const char *line) {
+	char value[8] __attribute__((aligned(4)));
+	uint8_t len;
 
-	errno = 0;
+	device_manufacturer_name_length = DEVICE_MANUFACTURER_LABEL_MAX_LENGTH;
+	(void) sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &device_manufacturer_name_length);
 
-	if (sscanf(line, "%48[^=]=%48[^\n]", name, value) == 2) {
-		if (strncmp(name, RDM_DEVICE_MANUFACTURER_NAME, RDM_DEVICE_MANUFACTURER_NAME_LENGTH) == 0) {
-			device_manufacturer_name_length = MIN(strlen(value), DEVICE_MANUFACTURER_LABEL_MAX_LENGTH);
-			memcpy(device_manufacturer_name, value, device_manufacturer_name_length);
-		} else if (strncmp(name, RDM_DEVICE_MANUFACTURER_ID, RDM_DEVICE_MANUFACTURER_ID_LENGTH) == 0) {
-			size_t len = strlen(value);
-			if (len == 4) {
-				if (isxdigit((int )value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
-					uint8_t nibble_high;
-					uint8_t nibble_low;
+	len = 4;
+	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 0) {
+		if (len == 4) {
+			if (isxdigit((int )value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
+				uint8_t nibble_high;
+				uint8_t nibble_low;
 
-					nibble_high = (value[0] > '9' ? (value[0] | 0x20) - 'a' + 10 : value[0] - '0') << 4;
-					nibble_low = value[1] > '9' ? (value[1] | 0x20) - 'a' + 10 : value[1] - '0';
+				nibble_high = (value[0] > '9' ? (value[0] | 0x20) - 'a' + 10 : value[0] - '0') << 4;
+				nibble_low = value[1] > '9' ? (value[1] | 0x20) - 'a' + 10 : value[1] - '0';
 
-					uid_device[0] = nibble_high | nibble_low;
+				uid_device[0] = nibble_high | nibble_low;
 
-					nibble_high = (value[2] > '9' ? (value[2] | 0x20) - 'a' + 10 : value[2] - '0') << 4;
-					nibble_low = value[3] > '9' ? (value[3] | 0x20) - 'a' + 10 : value[3] - '0';
+				nibble_high = (value[2] > '9' ? (value[2] | 0x20) - 'a' + 10 : value[2] - '0') << 4;
+				nibble_low = value[3] > '9' ? (value[3] | 0x20) - 'a' + 10 : value[3] - '0';
 
-					uid_device[1] = nibble_high | nibble_low;
-				}
+				uid_device[1] = nibble_high | nibble_low;
 			}
 		}
 	}
 
-	return errno;
+	return;
 }
 
 /**
@@ -501,25 +495,20 @@ struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device) {
  *
  */
 void rdm_device_info_init(void) {
-	const int32_t board_model_id = hardware_get_board_model_id();
+#ifdef RDM_RESPONDER
 	uint16_t device_model;
-//	int i;
-
+	const int32_t board_model_id = hardware_get_board_model_id();
 	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
 	const uint16_t sub_device_count = rdm_sub_devices_get();
-
+#endif
 	uint8_t mac_address[6];
-
+#ifdef RDM_RESPONDER
 	if (board_model_id < 0) {
 		device_model = (uint16_t)0;
 	} else {
 		device_model = (uint16_t)board_model_id;
 	}
-
-//	for (i = 0; i < (sizeof(mac_address) / sizeof(mac_address[0])); i++) {
-//		mac_address[i] = (uint8_t)0;
-//	}
-
+#endif
 	if (hardware_get_mac_address(mac_address) == 0) {
 		uid_device[2] = mac_address[2];
 		uid_device[3] = mac_address[3];
@@ -543,7 +532,7 @@ void rdm_device_info_init(void) {
 
 #ifdef RDM_CONTROLLER
 	read_config_file();
-#endif
+#else
 
 	rdm_device_info.protocol_major = (uint8_t)(E120_PROTOCOL_VERSION >> 8);
 	rdm_device_info.protocol_minor = (uint8_t) E120_PROTOCOL_VERSION;
@@ -563,10 +552,13 @@ void rdm_device_info_init(void) {
 	rdm_device_info.personality_count = rdm_device_info_get_personality_count(0);
 	rdm_device_info.sub_device_count[0] = (uint8_t) (sub_device_count >> 8);
 	rdm_device_info.sub_device_count[1] = (uint8_t) sub_device_count;
-	rdm_device_info.sensor_count = 0;
+	rdm_device_info.sensor_count = rdm_sensors_get_count();
+
+	rdm_sensors_init();
 
 	memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
 
 	factory_defaults_checksum = calculate_checksum();
 	is_factory_defaults = true;
+#endif
 }

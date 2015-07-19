@@ -26,13 +26,6 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-/*
-typedef enum {
-	FALSE = 0,
-	TRUE = !FALSE
-} _boolean;
-*/
-
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
 #define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
