@@ -196,6 +196,10 @@ void hardware_print_board_model(){
 	console_puts(hardware_get_board_model());
 }
 
+const int32_t hardware_get_core_temperature(void) {
+	return bcm2835_vc_get_temperature() / 1000;
+}
+
 /**
  *
  */
