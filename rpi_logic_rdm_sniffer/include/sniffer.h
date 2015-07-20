@@ -33,7 +33,7 @@ struct _rdm_statistics
 	uint32_t set_requests;
 };
 
-extern /*@ shared @*/const struct _rdm_statistics *rdm_statistics_get(void);
+extern /*@ shared @*/const struct _rdm_statistics *rdm_statistics_get(void) __attribute__((assume_aligned(4)));
 
 extern void sniffer_rdm(void);
 extern void sniffer_dmx(void);

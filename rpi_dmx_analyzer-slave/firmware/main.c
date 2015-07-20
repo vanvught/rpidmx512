@@ -35,7 +35,7 @@
 #include "dmx.h"
 #include "dmx_devices.h"
 
-//extern void monitor_update(void);
+extern void monitor_update(void);
 
 struct _poll {
 	void (*f)(void);
@@ -50,7 +50,7 @@ struct _event {
 } const events[] = {
 	{1000000, ui_buttons_update},
 	{1000000, ui_lcd_refresh},
-	//{1000000, monitor_update}
+	{1000000, monitor_update}
 };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
@@ -96,16 +96,17 @@ inline static void events_check() {
 int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
 	hardware_init();
 	dmx_init();
+	dmx_devices_read_config();
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("Devices connected : %d\n", dmx_devices_get_devices_connected());
 
 	ui_start(0x00);			// User Interface
 	ui_reinit();
 	ui_text_line_1("DMX512 Receiver", 15);
 	ui_text_line_2("Booting........", 15);
 
-	dmx_devices_read_config();
 	dmx_devices_init();
 
 	hardware_watchdog_init();

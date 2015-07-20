@@ -34,7 +34,7 @@
 #include "monitor.h"
 #include "sniffer.h"
 
-static struct _rdm_statistics rdm_statistics;
+static struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
 
 /**
  * @ingroup

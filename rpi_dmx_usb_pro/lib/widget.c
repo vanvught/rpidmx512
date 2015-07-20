@@ -28,7 +28,6 @@
  */
 
 #include <stdint.h>
-//#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -44,7 +43,7 @@
 #include "rdm_send.h"
 #include "monitor.h"
 
-static uint8_t widget_data[600];								///< Message between widget and the USB host
+static uint8_t widget_data[600] __attribute__((aligned(4)));	///< Message between widget and the USB host
 static _widget_mode widget_mode = MODE_DMX_RDM;					///< \ref _widget_mode
 static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;	///< \ref _widget_send_state
 static uint32_t received_dmx_packet_period = 0;					///<
@@ -534,31 +533,27 @@ static void widget_get_name_reply(void)
  *
  * This function is called from the poll table in \ref main.c
  */
-void widget_receive_data_from_host(void)
-{
-	if (usb_read_is_byte_available())
-	{
+void widget_receive_data_from_host(void) {
+	if (usb_read_is_byte_available()) {
 		const uint8_t c = usb_read_byte();
 
-		if (AMF_START_CODE == c)
-		{
+		if (AMF_START_CODE == c) {
 			const uint8_t label = usb_read_byte();	// Label
 			const uint8_t lsb = usb_read_byte();	// Data length LSB
 			const uint8_t msb = usb_read_byte();	// Data length MSB
 			const uint16_t data_length = ((uint16_t) ((uint16_t) msb << 8)) | ((uint16_t) lsb);
 
 			uint16_t i;
-			for (i = 0; i < data_length; i++)
-			{
+			for (i = 0; i < data_length; i++) {
 				widget_data[i] = usb_read_byte();
 			}
 
-			while ((AMF_END_CODE != usb_read_byte()) && (i++ < sizeof(widget_data)));
+			while ((AMF_END_CODE != usb_read_byte()) && (i++ < sizeof(widget_data)))
+				;
 
 			monitor_line(MONITOR_LINE_LABEL, "L:%d:%d(%d)", label, data_length, i);
 
-			switch (label)
-			{
+			switch (label) {
 			case GET_WIDGET_PARAMS:
 				widget_get_params_reply();
 				break;

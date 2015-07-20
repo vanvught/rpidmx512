@@ -82,27 +82,30 @@ void monitor_update(void) {
 	} else {
 		console_clear_line(MONITOR_LINE_WIDGET_PARMS);
 
-		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)\n",
+		printf(
+				"Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
 				widget_params.firmware_msb, widget_params.firmware_lsb,
 				widget_params.break_time, (int) dmx_get_output_break_time(),
 				widget_params.mab_time, (int) dmx_get_output_mab_time(),
-				widget_params.refresh_rate, (int)(1E6 / dmx_get_output_period()));
+				widget_params.refresh_rate,
+				(int) (1E6 / dmx_get_output_period()));
 
 		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
 			const uint8_t receive_dmx_on_change = widget_get_receive_dmx_on_change();
 			if (receive_dmx_on_change == SEND_ALWAYS) {
-				printf("Input [SEND_ALWAYS]\n");
-
+				printf("Input [SEND_ALWAYS]");
 				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
-				monitor_line(MONITOR_LINE_STATS, "%d", widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
+				monitor_line(MONITOR_LINE_STATS, "%d dmx packets per second",
+						widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
 				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 			} else {
-				printf("Input [SEND_ON_DATA_CHANGE_ONLY]\n");
+				printf("Input [SEND_ON_DATA_CHANGE_ONLY]");
+				console_clear_line(MONITOR_LINE_STATS);
 			}
 		} else {
-			printf("%s\n", dir[dmx_get_port_direction()]);
+			printf("%s", dir[dmx_get_port_direction()]);
 		}
 
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);

@@ -81,7 +81,7 @@ struct _pid_definition
 	const bool include_in_supported_params;
 };
 
-static const struct _pid_definition PID_DEFINITIONS[] = {
+static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))) = {
 //		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, true },
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, false},
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, false},
@@ -106,7 +106,7 @@ static const struct _pid_definition PID_DEFINITIONS[] = {
 		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, true }
 };
 
-static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[] = {
+static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[]__attribute__((aligned(4))) = {
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, true },
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, true },
 		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, true },

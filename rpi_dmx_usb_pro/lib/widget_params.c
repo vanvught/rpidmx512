@@ -187,7 +187,6 @@ static void read_config_file(void) {
  * @param widget_params
  */
 void widget_params_get(struct _widget_params *widget_params) {
-	//memcpy(widget_params, &dmx_usb_pro_params, sizeof(struct _widget_params));
 	widget_params->break_time = dmx_usb_pro_params.break_time;
 	widget_params->firmware_lsb = dmx_usb_pro_params.firmware_lsb;
 	widget_params->firmware_msb = dmx_usb_pro_params.firmware_msb;

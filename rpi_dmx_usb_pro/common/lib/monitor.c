@@ -46,7 +46,6 @@ void monitor_line(const int line, const char *fmt, ...) {
 		va_start(va, fmt);
 		(void) vprintf(fmt, va);
 		va_end(va);
-		(void) fflush(stdout);
 	}
 }
 

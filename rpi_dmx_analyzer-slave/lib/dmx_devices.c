@@ -40,7 +40,7 @@ TABLE(initializer_t, devices_init)
 
 _devices_t devices_connected;
 
-static struct _dmx_devices_statistics dmx_devices_statistics;	///<
+static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((aligned(4)));	///<
 
 /**
  * @ingroup dmx
