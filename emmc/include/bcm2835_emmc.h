@@ -27,6 +27,7 @@
 #define BCM2835_EMMC_H_
 
 #include <stdint.h>
+
 #include "block.h"
 
 struct emmc_block_dev

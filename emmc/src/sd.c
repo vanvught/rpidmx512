@@ -28,8 +28,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "block.h"
 #include "bcm2835_emmc.h"
+
+#include "block.h"
 #include "sd.h"
 
 extern void udelay(uint32_t);

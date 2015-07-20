@@ -7,6 +7,7 @@ COPS += -DBARE_METAL
 COPS += -I"./include"
 COPS += -I"../bcm2835-baremetal/include"
 COPS += -I"../ff9b/src"
+COPS += -I"../hal-baremetal/include"
 
 LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 

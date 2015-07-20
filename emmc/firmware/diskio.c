@@ -1,4 +1,4 @@
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,46 +25,21 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-//
-#include "ff.h"
+
+#include "bcm2835_emmc.h"
+#include "sys_time.h"
 #include "diskio.h"
 
 volatile BYTE Stat = STA_NOINIT;
 
-#include <block.h>
-
-// Space for 512 x 512 byte cache areas
-#define BLOCK_CACHE_SIZE	0x40000		// 256kB
-
-static struct block_device *sd_dev = NULL;
-static struct block_device *c_dev = NULL;
-
-void* sd_aligned_malloc(size_t required_bytes, size_t alignment) {
-	void* p1; // original block
-	void** p2; // aligned block
-	int offset = alignment - 1 + sizeof(void*);
-	if ((p1 = (void*) malloc(required_bytes + offset)) == NULL ) {
-		return NULL ;
-	}
-	p2 = (void**) (((size_t) (p1) + offset) & ~(alignment - 1));
-	p2[-1] = p1;
-	return p2;
-}
-
-void sd_aligned_free(void *p) {
-	free(((void**) p)[-1]);
-}
+static struct emmc_block_dev *emmc_dev __attribute__((aligned(4)));
 
 extern int sd_card_init(struct block_device **dev);
-extern int cache_init(struct block_device *parent, struct block_device **dev, uintptr_t cache_start, size_t cache_length);
-extern int cache_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t starting_block);
+extern int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
+extern int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
 
 static inline int sdcard_init(void){
-	if (sd_card_init(&sd_dev) == 0) {
-		c_dev = sd_dev;
-		void *cache_start = sd_aligned_malloc(BLOCK_CACHE_SIZE, 512);
-		if(cache_start != 0)
-			cache_init(sd_dev, &c_dev, (uintptr_t)cache_start, BLOCK_CACHE_SIZE);
+	if (sd_card_init((struct block_device **)&emmc_dev) == 0) {
 		return RES_OK;
 	}
 
@@ -72,15 +47,22 @@ static inline int sdcard_init(void){
 }
 
 static inline int sdcard_read(uint8_t * buf, int sector, int count) {
-	size_t buf_size = count * sd_dev->block_size;
+	size_t buf_size = count * emmc_dev->bd.block_size;
 
-	struct block_device *dev = (struct block_device *)c_dev;
-	if(cache_read(dev, buf, buf_size, sector) < 0)
-        return RES_ERROR;
+	if (sd_read((struct block_device *)emmc_dev, buf, buf_size, sector) < buf_size) {
+		return RES_ERROR;
+	}
+
 	return RES_OK;
 }
 
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
+    size_t buf_size = count * emmc_dev->bd.block_size;
+
+    if (sd_write((struct block_device *)emmc_dev, (uint8_t *) buf, buf_size, sector) < buf_size) {
+		return RES_ERROR;
+	}
+
 	return RES_OK;
 }
 
@@ -137,6 +119,26 @@ DSTATUS disk_status (BYTE drv) {
  * Everything else.
  */
 DRESULT disk_ioctl (BYTE drv, BYTE ctrl, void *buf) {
+	switch (ctrl) {
+		case CTRL_SYNC:
+			return RES_OK;
+			break;
+		case GET_SECTOR_COUNT:
+			*(DWORD *)buf = emmc_dev->bd.num_blocks;
+			return RES_OK;
+			break;
+		case GET_SECTOR_SIZE:
+			*(DWORD *)buf = emmc_dev->bd.block_size;
+			return RES_OK;
+			break;
+		case GET_BLOCK_SIZE:
+			*(DWORD *)buf = emmc_dev->bd.block_size;
+			return RES_OK;
+			break;
+		default:
+			return RES_PARERR;
+			break;
+	}
 	return RES_OK;
 }
 
@@ -145,10 +147,17 @@ DRESULT disk_ioctl (BYTE drv, BYTE ctrl, void *buf) {
 /*---------------------------------------------------------*/
 DWORD get_fattime (void)
 {
-	return	  ((DWORD)(2015 - 1980) << 25)	/* Year = 2015 */
-			| ((DWORD)1 << 21)				/* Month = 1 */
-			| ((DWORD)1 << 16)				/* Day_m = 1*/
-			| ((DWORD)0 << 11)				/* Hour = 0 */
-			| ((DWORD)0 << 5)				/* Min = 0 */
-			| ((DWORD)0 >> 1);				/* Sec = 0 */
+	time_t ltime = 0;
+	struct tm *local_time = NULL;
+
+	ltime = sys_time(NULL);
+    local_time = localtime(&ltime);
+
+    return   ((DWORD)(local_time->tm_year - 80) << 25)
+           | ((DWORD)(local_time->tm_mon + 1) << 21)
+           | ((DWORD)local_time->tm_mday << 16)
+           | ((DWORD)local_time->tm_hour << 11)
+           | ((DWORD)local_time->tm_min << 5)
+           | ((DWORD)local_time->tm_sec >> 1);
+
 }

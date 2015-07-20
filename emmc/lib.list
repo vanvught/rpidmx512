@@ -714,325 +714,6 @@ Disassembly of section .ARM.attributes:
   3c:	Address 0x000000000000003c is out of bounds.
 
 
-block.o:     file format elf32-littlearm
-
-
-Disassembly of section .text:
-
-00000000 <block_read>:
-   0:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
-   4:	e590b008 	ldr	fp, [r0, #8]
-   8:	e24dd004 	sub	sp, sp, #4
-   c:	e35b0000 	cmp	fp, #0
-  10:	e1a07000 	mov	r7, r0
-  14:	0a00002a 	beq	c4 <block_read+0xc4>
-  18:	e1a08003 	mov	r8, r3
-  1c:	e5903000 	ldr	r3, [r0]
-  20:	e1a0a001 	mov	sl, r1
-  24:	e3530000 	cmp	r3, #0
-  28:	e1a05002 	mov	r5, r2
-  2c:	e5904010 	ldr	r4, [r0, #16]
-  30:	1a000016 	bne	90 <block_read+0x90>
-  34:	e3a06000 	mov	r6, #0
-  38:	ea000003 	b	4c <block_read+0x4c>
-  3c:	e0555004 	subs	r5, r5, r4
-  40:	e2888001 	add	r8, r8, #1
-  44:	0a00000e 	beq	84 <block_read+0x84>
-  48:	e597b008 	ldr	fp, [r7, #8]
-  4c:	e1540005 	cmp	r4, r5
-  50:	31a09004 	movcc	r9, r4
-  54:	21a09005 	movcs	r9, r5
-  58:	e1a00007 	mov	r0, r7
-  5c:	e1a02009 	mov	r2, r9
-  60:	e08a1006 	add	r1, sl, r6
-  64:	e1a03008 	mov	r3, r8
-  68:	e12fff3b 	blx	fp
-  6c:	e3500000 	cmp	r0, #0
-  70:	ba000004 	blt	88 <block_read+0x88>
-  74:	e5974010 	ldr	r4, [r7, #16]
-  78:	e0866009 	add	r6, r6, r9
-  7c:	e1550004 	cmp	r5, r4
-  80:	2affffed 	bcs	3c <block_read+0x3c>
-  84:	e1a00006 	mov	r0, r6
-  88:	e28dd004 	add	sp, sp, #4
-  8c:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
-  90:	e1a00002 	mov	r0, r2
-  94:	e1a01004 	mov	r1, r4
-  98:	ebfffffe 	bl	0 <__aeabi_uidiv>
-  9c:	e3500001 	cmp	r0, #1
-  a0:	9affffe3 	bls	34 <block_read+0x34>
-  a4:	e1a00007 	mov	r0, r7
-  a8:	e1a0100a 	mov	r1, sl
-  ac:	e1a02005 	mov	r2, r5
-  b0:	e1a03008 	mov	r3, r8
-  b4:	e1a0c00b 	mov	ip, fp
-  b8:	e28dd004 	add	sp, sp, #4
-  bc:	e8bd4ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
-  c0:	e12fff1c 	bx	ip
-  c4:	e1a0000b 	mov	r0, fp
-  c8:	e28dd004 	add	sp, sp, #4
-  cc:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
-
-000000d0 <block_write>:
-  d0:	e92d47f0 	push	{r4, r5, r6, r7, r8, r9, sl, lr}
-  d4:	e590a00c 	ldr	sl, [r0, #12]
-  d8:	e1a06000 	mov	r6, r0
-  dc:	e35a0000 	cmp	sl, #0
-  e0:	0a000019 	beq	14c <block_write+0x7c>
-  e4:	e1a09001 	mov	r9, r1
-  e8:	e1a04002 	mov	r4, r2
-  ec:	e1a07003 	mov	r7, r3
-  f0:	e3a05000 	mov	r5, #0
-  f4:	e590c010 	ldr	ip, [r0, #16]
-  f8:	ea000003 	b	10c <block_write+0x3c>
-  fc:	e054400c 	subs	r4, r4, ip
- 100:	e2877001 	add	r7, r7, #1
- 104:	0a00000e 	beq	144 <block_write+0x74>
- 108:	e596a00c 	ldr	sl, [r6, #12]
- 10c:	e15c0004 	cmp	ip, r4
- 110:	31a0800c 	movcc	r8, ip
- 114:	21a08004 	movcs	r8, r4
- 118:	e1a00006 	mov	r0, r6
- 11c:	e1a02008 	mov	r2, r8
- 120:	e0891005 	add	r1, r9, r5
- 124:	e1a03007 	mov	r3, r7
- 128:	e12fff3a 	blx	sl
- 12c:	e3500000 	cmp	r0, #0
- 130:	b8bd87f0 	poplt	{r4, r5, r6, r7, r8, r9, sl, pc}
- 134:	e596c010 	ldr	ip, [r6, #16]
- 138:	e0855008 	add	r5, r5, r8
- 13c:	e154000c 	cmp	r4, ip
- 140:	2affffed 	bcs	fc <block_write+0x2c>
- 144:	e1a00005 	mov	r0, r5
- 148:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
- 14c:	e1a0000a 	mov	r0, sl
- 150:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
-
-Disassembly of section .comment:
-
-00000000 <.comment>:
-   0:	43434700 	movtmi	r4, #14080	; 0x3700
-   4:	4728203a 			; <UNDEFINED> instruction: 0x4728203a
-   8:	2029554e 	eorcs	r5, r9, lr, asr #10
-   c:	2e392e34 	mrccs	14, 1, r2, cr9, cr4, {1}
-  10:	Address 0x0000000000000010 is out of bounds.
-
-
-Disassembly of section .ARM.attributes:
-
-00000000 <.ARM.attributes>:
-   0:	00003d41 	andeq	r3, r0, r1, asr #26
-   4:	61656100 	cmnvs	r5, r0, lsl #2
-   8:	01006962 	tsteq	r0, r2, ror #18
-   c:	00000033 	andeq	r0, r0, r3, lsr r0
-  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
-  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
-  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
-  1c:	07060053 	smlsdeq	r6, r3, r0, r0
-  20:	01090108 	tsteq	r9, r8, lsl #2
-  24:	0412020a 	ldreq	r0, [r2], #-522	; 0xfffffdf6
-  28:	01150114 	tsteq	r5, r4, lsl r1
-  2c:	01180317 	tsteq	r8, r7, lsl r3
-  30:	011a0119 	tsteq	sl, r9, lsl r1
-  34:	011c031b 	tsteq	ip, fp, lsl r3
-  38:	0122021e 	teqeq	r2, lr, lsl r2
-  3c:	Address 0x000000000000003c is out of bounds.
-
-
-block_cache.o:     file format elf32-littlearm
-
-
-Disassembly of section .text:
-
-00000000 <cache_read>:
-   0:	e590c010 	ldr	ip, [r0, #16]
-   4:	e92d47f0 	push	{r4, r5, r6, r7, r8, r9, sl, lr}
-   8:	e15c0002 	cmp	ip, r2
-   c:	e1a04000 	mov	r4, r0
-  10:	e1a05002 	mov	r5, r2
-  14:	3a00001b 	bcc	88 <cache_read+0x88>
-  18:	e5907024 	ldr	r7, [r0, #36]	; 0x24
-  1c:	e1a09001 	mov	r9, r1
-  20:	e5901028 	ldr	r1, [r0, #40]	; 0x28
-  24:	e0077003 	and	r7, r7, r3
-  28:	e7911107 	ldr	r1, [r1, r7, lsl #2]
-  2c:	e590601c 	ldr	r6, [r0, #28]
-  30:	e1510003 	cmp	r1, r3
-  34:	e1a08003 	mov	r8, r3
-  38:	e026679c 	mla	r6, ip, r7, r6
-  3c:	0a00000b 	beq	70 <cache_read+0x70>
-  40:	e5900018 	ldr	r0, [r0, #24]
-  44:	e1a01006 	mov	r1, r6
-  48:	e590c008 	ldr	ip, [r0, #8]
-  4c:	e12fff3c 	blx	ip
-  50:	e5943010 	ldr	r3, [r4, #16]
-  54:	e1a05000 	mov	r5, r0
-  58:	e1530000 	cmp	r3, r0
-  5c:	13e02000 	mvnne	r2, #0
-  60:	05943028 	ldreq	r3, [r4, #40]	; 0x28
-  64:	15943028 	ldrne	r3, [r4, #40]	; 0x28
-  68:	07838107 	streq	r8, [r3, r7, lsl #2]
-  6c:	17832107 	strne	r2, [r3, r7, lsl #2]
-  70:	e1a00009 	mov	r0, r9
-  74:	e1a01006 	mov	r1, r6
-  78:	e1a02005 	mov	r2, r5
-  7c:	ebfffffe 	bl	0 <qmemcpy>
-  80:	e1a00005 	mov	r0, r5
-  84:	e8bd87f0 	pop	{r4, r5, r6, r7, r8, r9, sl, pc}
-  88:	e5900018 	ldr	r0, [r0, #24]
-  8c:	e8bd47f0 	pop	{r4, r5, r6, r7, r8, r9, sl, lr}
-  90:	e590c008 	ldr	ip, [r0, #8]
-  94:	e12fff1c 	bx	ip
-
-00000098 <cache_write>:
-  98:	e92d43f8 	push	{r3, r4, r5, r6, r7, r8, r9, lr}
-  9c:	e1a05000 	mov	r5, r0
-  a0:	e1a06001 	mov	r6, r1
-  a4:	e1a00002 	mov	r0, r2
-  a8:	e5951010 	ldr	r1, [r5, #16]
-  ac:	e1a07002 	mov	r7, r2
-  b0:	e1a08003 	mov	r8, r3
-  b4:	ebfffffe 	bl	0 <__aeabi_uidivmod>
-  b8:	e2514000 	subs	r4, r1, #0
-  bc:	1a00001f 	bne	140 <cache_write+0xa8>
-  c0:	e5950018 	ldr	r0, [r5, #24]
-  c4:	e1a02007 	mov	r2, r7
-  c8:	e590c00c 	ldr	ip, [r0, #12]
-  cc:	e1a01006 	mov	r1, r6
-  d0:	e1a03008 	mov	r3, r8
-  d4:	e12fff3c 	blx	ip
-  d8:	e5951010 	ldr	r1, [r5, #16]
-  dc:	e1a07000 	mov	r7, r0
-  e0:	ebfffffe 	bl	0 <__aeabi_uidiv>
-  e4:	e2509000 	subs	r9, r0, #0
-  e8:	ca000003 	bgt	fc <cache_write+0x64>
-  ec:	ea000011 	b	138 <cache_write+0xa0>
-  f0:	e2844001 	add	r4, r4, #1
-  f4:	e1590004 	cmp	r9, r4
-  f8:	0a00000e 	beq	138 <cache_write+0xa0>
-  fc:	e595c024 	ldr	ip, [r5, #36]	; 0x24
- 100:	e0882004 	add	r2, r8, r4
- 104:	e5953028 	ldr	r3, [r5, #40]	; 0x28
- 108:	e00cc002 	and	ip, ip, r2
- 10c:	e793310c 	ldr	r3, [r3, ip, lsl #2]
- 110:	e1530002 	cmp	r3, r2
- 114:	1afffff5 	bne	f0 <cache_write+0x58>
- 118:	e5952010 	ldr	r2, [r5, #16]
- 11c:	e595001c 	ldr	r0, [r5, #28]
- 120:	e0216492 	mla	r1, r2, r4, r6
- 124:	e0200c92 	mla	r0, r2, ip, r0
- 128:	e2844001 	add	r4, r4, #1
- 12c:	ebfffffe 	bl	0 <qmemcpy>
- 130:	e1590004 	cmp	r9, r4
- 134:	1afffff0 	bne	fc <cache_write+0x64>
- 138:	e1a00007 	mov	r0, r7
- 13c:	e8bd83f8 	pop	{r3, r4, r5, r6, r7, r8, r9, pc}
- 140:	ebfffffe 	bl	0 <__errno>
- 144:	e3a0300e 	mov	r3, #14
- 148:	e3e07000 	mvn	r7, #0
- 14c:	e5803000 	str	r3, [r0]
- 150:	eafffff8 	b	138 <cache_write+0xa0>
-
-00000154 <cache_init>:
- 154:	e3510000 	cmp	r1, #0
- 158:	13500000 	cmpne	r0, #0
- 15c:	e92d43f8 	push	{r3, r4, r5, r6, r7, r8, r9, lr}
- 160:	03a09001 	moveq	r9, #1
- 164:	13a09000 	movne	r9, #0
- 168:	0a000039 	beq	254 <cache_init+0x100>
- 16c:	e1a05000 	mov	r5, r0
- 170:	e3a0002c 	mov	r0, #44	; 0x2c
- 174:	e1a07001 	mov	r7, r1
- 178:	e1a08003 	mov	r8, r3
- 17c:	e1a06002 	mov	r6, r2
- 180:	ebfffffe 	bl	0 <malloc>
- 184:	e2504000 	subs	r4, r0, #0
- 188:	0a000031 	beq	254 <cache_init+0x100>
- 18c:	e1a01009 	mov	r1, r9
- 190:	e3a0202c 	mov	r2, #44	; 0x2c
- 194:	ebfffffe 	bl	0 <memset>
- 198:	e5952008 	ldr	r2, [r5, #8]
- 19c:	e5953014 	ldr	r3, [r5, #20]
- 1a0:	e3520000 	cmp	r2, #0
- 1a4:	e5951010 	ldr	r1, [r5, #16]
- 1a8:	e5843014 	str	r3, [r4, #20]
- 1ac:	159f30a8 	ldrne	r3, [pc, #168]	; 25c <cache_init+0x108>
- 1b0:	e5841010 	str	r1, [r4, #16]
- 1b4:	15843008 	strne	r3, [r4, #8]
- 1b8:	e595300c 	ldr	r3, [r5, #12]
- 1bc:	e1a00008 	mov	r0, r8
- 1c0:	e3530000 	cmp	r3, #0
- 1c4:	159f3094 	ldrne	r3, [pc, #148]	; 260 <cache_init+0x10c>
- 1c8:	1584300c 	strne	r3, [r4, #12]
- 1cc:	e895000c 	ldm	r5, {r2, r3}
- 1d0:	e884000c 	stm	r4, {r2, r3}
- 1d4:	ebfffffe 	bl	0 <__aeabi_uidiv>
- 1d8:	e3500000 	cmp	r0, #0
- 1dc:	0a00001a 	beq	24c <cache_init+0xf8>
- 1e0:	e1b030c0 	asrs	r3, r0, #1
- 1e4:	03a00004 	moveq	r0, #4
- 1e8:	03a0c001 	moveq	ip, #1
- 1ec:	0a000007 	beq	210 <cache_init+0xbc>
- 1f0:	e3a0c000 	mov	ip, #0
- 1f4:	e1b030c3 	asrs	r3, r3, #1
- 1f8:	e28cc001 	add	ip, ip, #1
- 1fc:	1afffffc 	bne	1f4 <cache_init+0xa0>
- 200:	e3a03001 	mov	r3, #1
- 204:	e1a0cc13 	lsl	ip, r3, ip
- 208:	e24c3001 	sub	r3, ip, #1
- 20c:	e1a0010c 	lsl	r0, ip, #2
- 210:	e584c020 	str	ip, [r4, #32]
- 214:	e5843024 	str	r3, [r4, #36]	; 0x24
- 218:	e584601c 	str	r6, [r4, #28]
- 21c:	e5845018 	str	r5, [r4, #24]
- 220:	ebfffffe 	bl	0 <malloc>
- 224:	e3500000 	cmp	r0, #0
- 228:	e5840028 	str	r0, [r4, #40]	; 0x28
- 22c:	0a000006 	beq	24c <cache_init+0xf8>
- 230:	e5942020 	ldr	r2, [r4, #32]
- 234:	e3a010ff 	mov	r1, #255	; 0xff
- 238:	e1a02102 	lsl	r2, r2, #2
- 23c:	ebfffffe 	bl	0 <memset>
- 240:	e3a00000 	mov	r0, #0
- 244:	e5874000 	str	r4, [r7]
- 248:	e8bd83f8 	pop	{r3, r4, r5, r6, r7, r8, r9, pc}
- 24c:	e1a00004 	mov	r0, r4
- 250:	ebfffffe 	bl	0 <free>
- 254:	e3e00000 	mvn	r0, #0
- 258:	e8bd83f8 	pop	{r3, r4, r5, r6, r7, r8, r9, pc}
-	...
-
-Disassembly of section .comment:
-
-00000000 <.comment>:
-   0:	43434700 	movtmi	r4, #14080	; 0x3700
-   4:	4728203a 			; <UNDEFINED> instruction: 0x4728203a
-   8:	2029554e 	eorcs	r5, r9, lr, asr #10
-   c:	2e392e34 	mrccs	14, 1, r2, cr9, cr4, {1}
-  10:	Address 0x0000000000000010 is out of bounds.
-
-
-Disassembly of section .ARM.attributes:
-
-00000000 <.ARM.attributes>:
-   0:	00003d41 	andeq	r3, r0, r1, asr #26
-   4:	61656100 	cmnvs	r5, r0, lsl #2
-   8:	01006962 	tsteq	r0, r2, ror #18
-   c:	00000033 	andeq	r0, r0, r3, lsr r0
-  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
-  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
-  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
-  1c:	07060053 	smlsdeq	r6, r3, r0, r0
-  20:	01090108 	tsteq	r9, r8, lsl #2
-  24:	0412020a 	ldreq	r0, [r2], #-522	; 0xfffffdf6
-  28:	01150114 	tsteq	r5, r4, lsl r1
-  2c:	01180317 	tsteq	r8, r7, lsl r3
-  30:	011a0119 	tsteq	sl, r9, lsl r1
-  34:	011c031b 	tsteq	ip, fp, lsl r3
-  38:	0122021e 	teqeq	r2, lr, lsl r2
-  3c:	Address 0x000000000000003c is out of bounds.
-
-
 sd.o:     file format elf32-littlearm
 
 
@@ -2364,169 +2045,153 @@ Disassembly of section .ARM.attributes:
   3c:	Address 0x000000000000003c is out of bounds.
 
 
-qmemcpy.o:     file format elf32-littlearm
-
-
-Disassembly of section .text:
-
-00000000 <qmemcpy>:
-   0:	e310000f 	tst	r0, #15
-   4:	1a000009 	bne	30 <.loopb+0x14>
-   8:	e311000f 	tst	r1, #15
-   c:	1a000007 	bne	30 <.loopb+0x14>
-  10:	e312000f 	tst	r2, #15
-  14:	1a000005 	bne	30 <.loopb+0x14>
-
-00000018 <quick_memcpy>:
-  18:	e92d43c1 	push	{r0, r6, r7, r8, r9, lr}
-
-0000001c <.loopb>:
-  1c:	e8b103c0 	ldm	r1!, {r6, r7, r8, r9}
-  20:	e8a003c0 	stmia	r0!, {r6, r7, r8, r9}
-  24:	e2522010 	subs	r2, r2, #16
-  28:	8afffffb 	bhi	1c <.loopb>
-  2c:	e8bd83c1 	pop	{r0, r6, r7, r8, r9, pc}
-  30:	eafffffe 	b	0 <memcpy>
-
-Disassembly of section .ARM.attributes:
-
-00000000 <.ARM.attributes>:
-   0:	00002741 	andeq	r2, r0, r1, asr #14
-   4:	61656100 	cmnvs	r5, r0, lsl #2
-   8:	01006962 	tsteq	r0, r2, ror #18
-   c:	0000001d 	andeq	r0, r0, sp, lsl r0
-  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
-  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
-  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
-  1c:	07060053 	smlsdeq	r6, r3, r0, r0
-  20:	01090108 	tsteq	r9, r8, lsl #2
-  24:	0144020a 	cmpeq	r4, sl, lsl #4
-
 diskio.o:     file format elf32-littlearm
 
 
 Disassembly of section .text:
 
-00000000 <sd_aligned_malloc>:
-   0:	e92d4038 	push	{r3, r4, r5, lr}
-   4:	e2815003 	add	r5, r1, #3
-   8:	e0850000 	add	r0, r5, r0
-   c:	e1a04001 	mov	r4, r1
-  10:	ebfffffe 	bl	0 <malloc>
-  14:	e2503000 	subs	r3, r0, #0
-  18:	10835005 	addne	r5, r3, r5
-  1c:	12644000 	rsbne	r4, r4, #0
-  20:	10050004 	andne	r0, r5, r4
-  24:	15003004 	strne	r3, [r0, #-4]
-  28:	01a00003 	moveq	r0, r3
-  2c:	e8bd8038 	pop	{r3, r4, r5, pc}
-
-00000030 <sd_aligned_free>:
-  30:	e5100004 	ldr	r0, [r0, #-4]
-  34:	eafffffe 	b	0 <free>
-
-00000038 <disk_initialize>:
-  38:	e3500000 	cmp	r0, #0
-  3c:	0a000002 	beq	4c <disk_initialize+0x14>
-  40:	e59f307c 	ldr	r3, [pc, #124]	; c4 <disk_initialize+0x8c>
-  44:	e5d30000 	ldrb	r0, [r3]
-  48:	e12fff1e 	bx	lr
-  4c:	e92d4010 	push	{r4, lr}
-  50:	e59f4070 	ldr	r4, [pc, #112]	; c8 <disk_initialize+0x90>
-  54:	e1a00004 	mov	r0, r4
-  58:	ebfffffe 	bl	0 <sd_card_init>
-  5c:	e3500000 	cmp	r0, #0
-  60:	0a000002 	beq	70 <disk_initialize+0x38>
-  64:	e59f3058 	ldr	r3, [pc, #88]	; c4 <disk_initialize+0x8c>
-  68:	e5d30000 	ldrb	r0, [r3]
-  6c:	e8bd8010 	pop	{r4, pc}
-  70:	e5943000 	ldr	r3, [r4]
-  74:	e59f0050 	ldr	r0, [pc, #80]	; cc <disk_initialize+0x94>
-  78:	e5843004 	str	r3, [r4, #4]
-  7c:	ebfffffe 	bl	0 <malloc>
-  80:	e3500000 	cmp	r0, #0
-  84:	0a000008 	beq	ac <disk_initialize+0x74>
-  88:	e1a01004 	mov	r1, r4
-  8c:	e2802c02 	add	r2, r0, #512	; 0x200
-  90:	e2822003 	add	r2, r2, #3
-  94:	e3c22f7f 	bic	r2, r2, #508	; 0x1fc
-  98:	e3c22003 	bic	r2, r2, #3
-  9c:	e5020004 	str	r0, [r2, #-4]
-  a0:	e4910004 	ldr	r0, [r1], #4
-  a4:	e3a03701 	mov	r3, #262144	; 0x40000
-  a8:	ebfffffe 	bl	0 <cache_init>
-  ac:	e59f3010 	ldr	r3, [pc, #16]	; c4 <disk_initialize+0x8c>
-  b0:	e5d32000 	ldrb	r2, [r3]
-  b4:	e20220fe 	and	r2, r2, #254	; 0xfe
-  b8:	e5c32000 	strb	r2, [r3]
-  bc:	e5d30000 	ldrb	r0, [r3]
-  c0:	e8bd8010 	pop	{r4, pc}
-	...
-  cc:	00040203 	andeq	r0, r4, r3, lsl #4
-
-000000d0 <disk_read>:
-  d0:	e16fcf13 	clz	ip, r3
-  d4:	e1a0c2ac 	lsr	ip, ip, #5
-  d8:	e3500000 	cmp	r0, #0
-  dc:	01a0000c 	moveq	r0, ip
-  e0:	138c0001 	orrne	r0, ip, #1
-  e4:	e3500000 	cmp	r0, #0
-  e8:	0a000001 	beq	f4 <disk_read+0x24>
-  ec:	e3a00004 	mov	r0, #4
-  f0:	e12fff1e 	bx	lr
-  f4:	e59f003c 	ldr	r0, [pc, #60]	; 138 <disk_read+0x68>
-  f8:	e5d00000 	ldrb	r0, [r0]
-  fc:	e3100001 	tst	r0, #1
- 100:	0a000001 	beq	10c <disk_read+0x3c>
- 104:	e3a00003 	mov	r0, #3
- 108:	e12fff1e 	bx	lr
- 10c:	e1a0c003 	mov	ip, r3
- 110:	e92d4008 	push	{r3, lr}
- 114:	e1a03002 	mov	r3, r2
- 118:	e59f201c 	ldr	r2, [pc, #28]	; 13c <disk_read+0x6c>
- 11c:	e592e000 	ldr	lr, [r2]
- 120:	e5920004 	ldr	r0, [r2, #4]
- 124:	e59e2010 	ldr	r2, [lr, #16]
- 128:	e0020c92 	mul	r2, r2, ip
- 12c:	ebfffffe 	bl	0 <cache_read>
- 130:	e1a00fa0 	lsr	r0, r0, #31
- 134:	e8bd8008 	pop	{r3, pc}
+00000000 <disk_initialize>:
+   0:	e3500000 	cmp	r0, #0
+   4:	e92d4008 	push	{r3, lr}
+   8:	0a000003 	beq	1c <disk_initialize+0x1c>
+   c:	e59f3028 	ldr	r3, [pc, #40]	; 3c <disk_initialize+0x3c>
+  10:	e5d30000 	ldrb	r0, [r3]
+  14:	e6ef0070 	uxtb	r0, r0
+  18:	e8bd8008 	pop	{r3, pc}
+  1c:	e59f001c 	ldr	r0, [pc, #28]	; 40 <disk_initialize+0x40>
+  20:	ebfffffe 	bl	0 <sd_card_init>
+  24:	e59f3010 	ldr	r3, [pc, #16]	; 3c <disk_initialize+0x3c>
+  28:	e3500000 	cmp	r0, #0
+  2c:	05d32000 	ldrbeq	r2, [r3]
+  30:	020220fe 	andeq	r2, r2, #254	; 0xfe
+  34:	05c32000 	strbeq	r2, [r3]
+  38:	eafffff4 	b	10 <disk_initialize+0x10>
 	...
 
-00000140 <disk_write>:
- 140:	e16f3f13 	clz	r3, r3
- 144:	e1a032a3 	lsr	r3, r3, #5
- 148:	e3500000 	cmp	r0, #0
- 14c:	01a00003 	moveq	r0, r3
- 150:	13830001 	orrne	r0, r3, #1
- 154:	e3500000 	cmp	r0, #0
- 158:	0a000001 	beq	164 <disk_write+0x24>
- 15c:	e3a00004 	mov	r0, #4
- 160:	e12fff1e 	bx	lr
- 164:	e59f300c 	ldr	r3, [pc, #12]	; 178 <disk_write+0x38>
- 168:	e5d30000 	ldrb	r0, [r3]
- 16c:	e2100001 	ands	r0, r0, #1
- 170:	13a00003 	movne	r0, #3
- 174:	e12fff1e 	bx	lr
- 178:	00000000 	andeq	r0, r0, r0
+00000044 <disk_read>:
+  44:	e16fcf13 	clz	ip, r3
+  48:	e1a0c2ac 	lsr	ip, ip, #5
+  4c:	e3500000 	cmp	r0, #0
+  50:	01a0000c 	moveq	r0, ip
+  54:	138c0001 	orrne	r0, ip, #1
+  58:	e3500000 	cmp	r0, #0
+  5c:	0a000001 	beq	68 <disk_read+0x24>
+  60:	e3a00004 	mov	r0, #4
+  64:	e12fff1e 	bx	lr
+  68:	e59f0044 	ldr	r0, [pc, #68]	; b4 <disk_read+0x70>
+  6c:	e5d00000 	ldrb	r0, [r0]
+  70:	e3100001 	tst	r0, #1
+  74:	0a000001 	beq	80 <disk_read+0x3c>
+  78:	e3a00003 	mov	r0, #3
+  7c:	e12fff1e 	bx	lr
+  80:	e92d4010 	push	{r4, lr}
+  84:	e1a04003 	mov	r4, r3
+  88:	e1a03002 	mov	r3, r2
+  8c:	e59f2024 	ldr	r2, [pc, #36]	; b8 <disk_read+0x74>
+  90:	e5920000 	ldr	r0, [r2]
+  94:	e5902010 	ldr	r2, [r0, #16]
+  98:	e0040492 	mul	r4, r2, r4
+  9c:	e1a02004 	mov	r2, r4
+  a0:	ebfffffe 	bl	0 <sd_read>
+  a4:	e1540000 	cmp	r4, r0
+  a8:	93a00000 	movls	r0, #0
+  ac:	83a00001 	movhi	r0, #1
+  b0:	e8bd8010 	pop	{r4, pc}
+	...
 
-0000017c <disk_status>:
- 17c:	e3500000 	cmp	r0, #0
- 180:	059f300c 	ldreq	r3, [pc, #12]	; 194 <disk_status+0x18>
- 184:	05d30000 	ldrbeq	r0, [r3]
- 188:	06ef0070 	uxtbeq	r0, r0
- 18c:	13a00001 	movne	r0, #1
- 190:	e12fff1e 	bx	lr
- 194:	00000000 	andeq	r0, r0, r0
+000000bc <disk_write>:
+  bc:	e16fcf13 	clz	ip, r3
+  c0:	e1a0c2ac 	lsr	ip, ip, #5
+  c4:	e3500000 	cmp	r0, #0
+  c8:	01a0000c 	moveq	r0, ip
+  cc:	138c0001 	orrne	r0, ip, #1
+  d0:	e3500000 	cmp	r0, #0
+  d4:	0a000001 	beq	e0 <disk_write+0x24>
+  d8:	e3a00004 	mov	r0, #4
+  dc:	e12fff1e 	bx	lr
+  e0:	e59f0044 	ldr	r0, [pc, #68]	; 12c <disk_write+0x70>
+  e4:	e5d00000 	ldrb	r0, [r0]
+  e8:	e3100001 	tst	r0, #1
+  ec:	0a000001 	beq	f8 <disk_write+0x3c>
+  f0:	e3a00003 	mov	r0, #3
+  f4:	e12fff1e 	bx	lr
+  f8:	e92d4010 	push	{r4, lr}
+  fc:	e1a04003 	mov	r4, r3
+ 100:	e1a03002 	mov	r3, r2
+ 104:	e59f2024 	ldr	r2, [pc, #36]	; 130 <disk_write+0x74>
+ 108:	e5920000 	ldr	r0, [r2]
+ 10c:	e5902010 	ldr	r2, [r0, #16]
+ 110:	e0040492 	mul	r4, r2, r4
+ 114:	e1a02004 	mov	r2, r4
+ 118:	ebfffffe 	bl	0 <sd_write>
+ 11c:	e1540000 	cmp	r4, r0
+ 120:	93a00000 	movls	r0, #0
+ 124:	83a00001 	movhi	r0, #1
+ 128:	e8bd8010 	pop	{r4, pc}
+	...
 
-00000198 <disk_ioctl>:
- 198:	e3a00000 	mov	r0, #0
- 19c:	e12fff1e 	bx	lr
+00000134 <disk_status>:
+ 134:	e3500000 	cmp	r0, #0
+ 138:	059f300c 	ldreq	r3, [pc, #12]	; 14c <disk_status+0x18>
+ 13c:	05d30000 	ldrbeq	r0, [r3]
+ 140:	06ef0070 	uxtbeq	r0, r0
+ 144:	13a00001 	movne	r0, #1
+ 148:	e12fff1e 	bx	lr
+ 14c:	00000000 	andeq	r0, r0, r0
 
-000001a0 <get_fattime>:
- 1a0:	e59f0000 	ldr	r0, [pc]	; 1a8 <get_fattime+0x8>
- 1a4:	e12fff1e 	bx	lr
- 1a8:	46210000 	strtmi	r0, [r1], -r0
+00000150 <disk_ioctl>:
+ 150:	e3510003 	cmp	r1, #3
+ 154:	979ff101 	ldrls	pc, [pc, r1, lsl #2]
+ 158:	ea000011 	b	1a4 <disk_ioctl+0x54>
+ 15c:	00000184 	andeq	r0, r0, r4, lsl #3
+ 160:	0000018c 	andeq	r0, r0, ip, lsl #3
+ 164:	0000016c 	andeq	r0, r0, ip, ror #2
+ 168:	0000016c 	andeq	r0, r0, ip, ror #2
+ 16c:	e59f3038 	ldr	r3, [pc, #56]	; 1ac <disk_ioctl+0x5c>
+ 170:	e3a00000 	mov	r0, #0
+ 174:	e5933000 	ldr	r3, [r3]
+ 178:	e5933010 	ldr	r3, [r3, #16]
+ 17c:	e5823000 	str	r3, [r2]
+ 180:	e12fff1e 	bx	lr
+ 184:	e3a00000 	mov	r0, #0
+ 188:	e12fff1e 	bx	lr
+ 18c:	e59f3018 	ldr	r3, [pc, #24]	; 1ac <disk_ioctl+0x5c>
+ 190:	e3a00000 	mov	r0, #0
+ 194:	e5933000 	ldr	r3, [r3]
+ 198:	e5933014 	ldr	r3, [r3, #20]
+ 19c:	e5823000 	str	r3, [r2]
+ 1a0:	e12fff1e 	bx	lr
+ 1a4:	e3a00004 	mov	r0, #4
+ 1a8:	e12fff1e 	bx	lr
+ 1ac:	00000000 	andeq	r0, r0, r0
+
+000001b0 <get_fattime>:
+ 1b0:	e3a03000 	mov	r3, #0
+ 1b4:	e52de004 	push	{lr}		; (str lr, [sp, #-4]!)
+ 1b8:	e1a00003 	mov	r0, r3
+ 1bc:	e24dd00c 	sub	sp, sp, #12
+ 1c0:	e58d3004 	str	r3, [sp, #4]
+ 1c4:	ebfffffe 	bl	0 <sys_time>
+ 1c8:	e28d3008 	add	r3, sp, #8
+ 1cc:	e5230004 	str	r0, [r3, #-4]!
+ 1d0:	e1a00003 	mov	r0, r3
+ 1d4:	ebfffffe 	bl	0 <localtime>
+ 1d8:	e590100c 	ldr	r1, [r0, #12]
+ 1dc:	e5903008 	ldr	r3, [r0, #8]
+ 1e0:	e5902004 	ldr	r2, [r0, #4]
+ 1e4:	e1a01801 	lsl	r1, r1, #16
+ 1e8:	e1811583 	orr	r1, r1, r3, lsl #11
+ 1ec:	e590c000 	ldr	ip, [r0]
+ 1f0:	e5903014 	ldr	r3, [r0, #20]
+ 1f4:	e1812282 	orr	r2, r1, r2, lsl #5
+ 1f8:	e5900010 	ldr	r0, [r0, #16]
+ 1fc:	e18220ac 	orr	r2, r2, ip, lsr #1
+ 200:	e2433050 	sub	r3, r3, #80	; 0x50
+ 204:	e1823c83 	orr	r3, r2, r3, lsl #25
+ 208:	e2800001 	add	r0, r0, #1
+ 20c:	e1830a80 	orr	r0, r3, r0, lsl #21
+ 210:	e28dd00c 	add	sp, sp, #12
+ 214:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
 
 Disassembly of section .data:
 
@@ -2536,11 +2201,8 @@ Disassembly of section .data:
 
 Disassembly of section .bss:
 
-00000000 <sd_dev>:
+00000000 <emmc_dev>:
    0:	00000000 	andeq	r0, r0, r0
-
-00000004 <c_dev>:
-   4:	00000000 	andeq	r0, r0, r0
 
 Disassembly of section .comment:
 
