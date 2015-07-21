@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <dmx_devices.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -30,7 +31,6 @@
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
 #include "dmx.h"
-#include "dmx_devices.h"
 #include "tables.h"
 #include "util.h"
 #include "ff.h"

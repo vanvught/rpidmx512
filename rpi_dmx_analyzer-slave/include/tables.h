@@ -55,7 +55,7 @@
 
 /* AvV begin */
 //typedef void (*thunk_t)(void);
-#include "dmx_devices.h"
+#include <dmx_devices.h>
 
 typedef void (*thunk_t)(dmx_device_info_t *);
 /* AvV end */

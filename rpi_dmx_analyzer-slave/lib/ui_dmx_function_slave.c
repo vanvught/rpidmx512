@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
+#include <dmx_devices.h>
 #include <string.h>
 
 #include "bw_ui.h"
-#include "dmx_devices.h"
 #include "ui_functions.h"
 #include "tables.h"
 

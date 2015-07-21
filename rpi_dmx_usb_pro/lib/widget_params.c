@@ -54,6 +54,7 @@ static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttl
  * @return
  */
 #ifdef UPDATE_CONFIG_FILE
+#include <stdio.h>
 static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
 {
 	char _name[64];
