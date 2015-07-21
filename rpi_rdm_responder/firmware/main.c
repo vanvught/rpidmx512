@@ -38,21 +38,18 @@ extern void rdm_data_received(void);
 // events table
 extern void rdm_identify(void);
 
-struct _poll
-{
+struct _poll {
 	void (*f)(void);
 }const poll_table[] = {
-	{ rdm_data_received },
-	{ dmx_devices_run },
-};
+		{ rdm_data_received },
+		{ dmx_devices_run } };
 
-struct _event
-{
+struct _event {
 	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
 		{  500000, rdm_identify },
-		{ 1000000, monitor_update }};
+		{ 1000000, monitor_update } };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
@@ -76,7 +73,7 @@ inline static void events_check() {
 	int i;
 	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (micros_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now - events_elapsed_time[i] > events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
 			hardware_watchdog_feed();

@@ -47,13 +47,11 @@ struct _poll
 		{ widget_sniffer_dmx }
 		};
 
-struct _event
-{
+struct _event {
 	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
-		{1000000, monitor_update }
-};
+		{ 1000000, monitor_update } };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
@@ -77,7 +75,7 @@ inline static void events_check() {
 	int i;
 	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (micros_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now - events_elapsed_time[i] >  events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
 			hardware_watchdog_feed();
@@ -99,9 +97,10 @@ int notmain(void) {
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol]\n");
-	const uint8_t *device_sn = rdm_device_info_get_sn();
-	printf("Widget mode %d, S/N : %.2X%.2X%.2X%.2X\n", widget_get_mode(), device_sn[3], device_sn[2], device_sn[1], device_sn[0]);
+	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d\n", widget_get_mode());
+	const uint8_t *uid_device = rdm_device_info_get_uuid();
+	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x\n",
+			uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 
 	hardware_watchdog_init();
 

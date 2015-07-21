@@ -38,13 +38,11 @@ struct _poll {
 		{ sniffer_rdm },
 		{ sniffer_dmx } };
 
-struct _event
-{
+struct _event {
 	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
-		{1000000, monitor_update }
-};
+		{ 1000000, monitor_update } };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
