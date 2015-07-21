@@ -34,7 +34,7 @@
 #include "sd.h"
 #include "sdhci.h"
 
-extern uint32_t sd_commands[];
+extern const uint32_t sd_commands[] __attribute__((aligned(4)));
 
 // SDMA buffer address
 #define SDMA_BUFFER     0x6000
