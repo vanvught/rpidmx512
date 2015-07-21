@@ -1,5 +1,5 @@
 /**
- * @file monitor.c
+ * @file rdm_monitor.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>

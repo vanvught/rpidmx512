@@ -1,5 +1,5 @@
 /**
- * @file monitor.c
+ * @file widget_monitor.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -90,6 +90,8 @@ void monitor_update(void) {
 				widget_params.refresh_rate,
 				(int) (1E6 / dmx_get_output_period()));
 
+		//console_clear_line(MONITOR_LINE_LABEL);
+		//console_clear_line(MONITOR_LINE_INFO);
 		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
