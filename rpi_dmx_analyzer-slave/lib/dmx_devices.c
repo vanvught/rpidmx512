@@ -34,6 +34,7 @@
 #include "tables.h"
 #include "util.h"
 #include "ff.h"
+#include "sscan.h"
 
 TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)
@@ -71,23 +72,19 @@ void dmx_devices_reset_statistics(void)
 static int add_connected_device(const char *line) {
 	if (devices_connected.elements_count < (sizeof(devices_connected.device_entry)	/ sizeof(devices_connected.device_entry[0]))) {
 
-		char spi_interface[5];
 		char device_name[65];
 		char chip_select;
-		unsigned int slave_address;
-		int dmx_start_address;
+		uint8_t slave_address;
+		uint16_t dmx_start_address;
+		int rc;
+		uint8_t len = 64;
 
-		if (sscanf(line, "%4[^','],%64[^','],%x,%d", spi_interface, device_name, &slave_address, &dmx_start_address) == 4) {
+		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address);
 #ifdef DEBUG
-			printf("[%s, %s, %x, %d]\n", spi_interface, device_name, slave_address, dmx_start_address);
+		printf("%s", line);
+		printf("%d, {%d (%s)[%d] %d %d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address);
 #endif
-
-			if (strncmp("SPI", spi_interface, 3) != 0) {
-				printf("warning : invalid protocol. [skipping this line]\n");
-				return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
-			}
-
-			chip_select = spi_interface[3] - '0';
+		if ((rc == 4) && (len != 0)) {
 
 			if (chip_select < BCM2835_SPI_CS0 || chip_select > BCM2835_SPI_CS1) {
 				printf("warning : invalid chip_select [skipping this line]\n");
@@ -121,13 +118,29 @@ static int add_connected_device(const char *line) {
 					return devices_connected.elements_count;
 				}
 			}
-
-			printf("warning : device [%s] not found in devices_table [skipping this line]\n", device_name);
-			return DMX_DEVICE_CONFIG_INVALID_DEVICE;
-
+		} else {
+			switch (rc) {
+				case DMX_DEVICE_CONFIG_INVALID_PROTOCOL:
+					printf("warning : invalid protocol. [skipping this line]\n");
+					return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
+					break;
+				case DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT:
+					printf("warning : invalid chip_select [skipping this line]\n");
+					return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
+					break;
+				case DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS:
+					printf("warning : invalid slave_address [skipping this line]\n");
+					break;
+				case DMX_DEVICE_CONFIG_INVALID_START_ADDRESS:
+					printf("warning : invalid dmx_start_address [skipping this line]\n");
+					break;
+				default:
+					return DMX_DEVICE_CONFIG_INVALID_ENTRY;
+					break;
+			}
 		}
 
-		return DMX_DEVICE_CONFIG_INVALID_ENTRY;
+
 	}
 
 	return DMX_DEVICE_CONFIG_TABLE_FULL;
