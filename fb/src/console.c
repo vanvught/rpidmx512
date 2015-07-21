@@ -94,8 +94,8 @@ inline static void newline() {
 		memmove(to, from, (HEIGHT - CHAR_H) * PITCH);
 
 		/* Clear last row */
-		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * PITCH);
-		for (i = (CHAR_H * WIDTH) ; i > 0 ; i--) {
+		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * WIDTH);
+		for (i = 0 ; i < (CHAR_H * WIDTH) ; i++) {
 			*address++ =  cur_back;
 		}
 
@@ -139,95 +139,6 @@ inline static void draw_char(const int c, const int x, int y, const uint16_t for
 		}
 		y++;
 	}
-}
-
-/**
- *
- * @return
- */
-int console_init() {
-	uint32_t mailbuffer[64] __attribute__((aligned(16)));
-
-	mailbuffer[0] = 8 * 4;
-	mailbuffer[1] = 0;
-	mailbuffer[2] = BCM2835_VC_TAG_GET_PHYS_WH;
-	mailbuffer[3] = 8;
-	mailbuffer[4] = 0;
-	mailbuffer[5] = 0;
-	mailbuffer[6] = 0;
-	mailbuffer[7] = 0;
-
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
-	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-	fb_width  = mailbuffer[5];
-	fb_height = mailbuffer[6];
-
-	if ((fb_width == 0) && (fb_height == 0)) {
-		fb_width = WIDTH;
-		fb_height = HEIGHT;
-	}
-
-	mailbuffer[0] = 22 * 4;
-	mailbuffer[1] = 0;
-
-	mailbuffer[2] = BCM2835_VC_TAG_SET_PHYS_WH;
-	mailbuffer[3] = 8;
-	mailbuffer[4] = 8;
-	mailbuffer[5] = fb_width;
-	mailbuffer[6] = fb_height;
-
-	mailbuffer[7] = BCM2835_VC_TAG_SET_VIRT_WH;
-	mailbuffer[8] = 8;
-	mailbuffer[9] = 8;
-	mailbuffer[10] = fb_width;
-	mailbuffer[11] = fb_height;
-
-	mailbuffer[12] = BCM2835_VC_TAG_SET_DEPTH;
-	mailbuffer[13] = 4;
-	mailbuffer[14] = 4;
-	mailbuffer[15] = BPP;
-
-	mailbuffer[16] = BCM2835_VC_TAG_ALLOCATE_BUFFER;
-	mailbuffer[17] = 8;
-	mailbuffer[18] = 4;
-	mailbuffer[19] = 16;
-	mailbuffer[20] = 0;
-
-	mailbuffer[21] = 0;
-
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
-	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-	fb_addr = mailbuffer[19];
-	fb_size = mailbuffer[20];
-
-	if ((fb_addr == 0) || (fb_size == 0)) {
-		return CONSOLE_ERROR;
-	}
-
-	fb_depth = mailbuffer[15];
-
-	mailbuffer[0] = 7 * 4;
-	mailbuffer[1] = 0;
-
-	mailbuffer[2] = BCM2835_VC_TAG_GET_PITCH;
-	mailbuffer[3] = 4;
-	mailbuffer[4] = 0;
-	mailbuffer[5] = 0;
-
-	mailbuffer[6] = 0;
-
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t) &mailbuffer);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-	fb_pitch = mailbuffer[5];
-
-	if (fb_pitch == 0) {
-		return CONSOLE_ERROR;
-	}
-
-	return CONSOLE_OK;
 }
 
 /**
@@ -371,8 +282,98 @@ void console_clear_line(const int line) {
 
 	cur_x = 0;
 
-	address = (uint16_t *)(fb_addr + (line * CHAR_H * WIDTH) * BYTES_PER_PIXEL);
-	for (i = (CHAR_H * WIDTH); i> 0; i--) {
+	address = (uint16_t *)(fb_addr + (line * CHAR_H * WIDTH * BYTES_PER_PIXEL));
+
+	for (i = 0; i < (CHAR_H * WIDTH); i++) {
 		*address++ = cur_back;
 	}
+}
+
+/**
+ *
+ * @return
+ */
+int console_init() {
+	uint32_t mailbuffer[64] __attribute__((aligned(16)));
+
+	mailbuffer[0] = 8 * 4;
+	mailbuffer[1] = 0;
+	mailbuffer[2] = BCM2835_VC_TAG_GET_PHYS_WH;
+	mailbuffer[3] = 8;
+	mailbuffer[4] = 0;
+	mailbuffer[5] = 0;
+	mailbuffer[6] = 0;
+	mailbuffer[7] = 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+	fb_width  = mailbuffer[5];
+	fb_height = mailbuffer[6];
+
+	if ((fb_width == 0) && (fb_height == 0)) {
+		fb_width = WIDTH;
+		fb_height = HEIGHT;
+	}
+
+	mailbuffer[0] = 22 * 4;
+	mailbuffer[1] = 0;
+
+	mailbuffer[2] = BCM2835_VC_TAG_SET_PHYS_WH;
+	mailbuffer[3] = 8;
+	mailbuffer[4] = 8;
+	mailbuffer[5] = fb_width;
+	mailbuffer[6] = fb_height;
+
+	mailbuffer[7] = BCM2835_VC_TAG_SET_VIRT_WH;
+	mailbuffer[8] = 8;
+	mailbuffer[9] = 8;
+	mailbuffer[10] = fb_width;
+	mailbuffer[11] = fb_height;
+
+	mailbuffer[12] = BCM2835_VC_TAG_SET_DEPTH;
+	mailbuffer[13] = 4;
+	mailbuffer[14] = 4;
+	mailbuffer[15] = BPP;
+
+	mailbuffer[16] = BCM2835_VC_TAG_ALLOCATE_BUFFER;
+	mailbuffer[17] = 8;
+	mailbuffer[18] = 4;
+	mailbuffer[19] = 16;
+	mailbuffer[20] = 0;
+
+	mailbuffer[21] = 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+	fb_addr = mailbuffer[19];
+	fb_size = mailbuffer[20];
+
+	if ((fb_addr == 0) || (fb_size == 0)) {
+		return CONSOLE_ERROR;
+	}
+
+	fb_depth = mailbuffer[15];
+
+	mailbuffer[0] = 7 * 4;
+	mailbuffer[1] = 0;
+
+	mailbuffer[2] = BCM2835_VC_TAG_GET_PITCH;
+	mailbuffer[3] = 4;
+	mailbuffer[4] = 0;
+	mailbuffer[5] = 0;
+
+	mailbuffer[6] = 0;
+
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t) &mailbuffer);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+	fb_pitch = mailbuffer[5];
+
+	if (fb_pitch == 0) {
+		return CONSOLE_ERROR;
+	}
+
+	return CONSOLE_OK;
 }
