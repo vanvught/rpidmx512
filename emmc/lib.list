@@ -724,890 +724,775 @@ Disassembly of section .text:
    4:	e1a05000 	mov	r5, r0
    8:	ebfffffe 	bl	0 <bcm2825_emmc_init>
    c:	e3500000 	cmp	r0, #0
-  10:	1a000103 	bne	424 <sd_card_init+0x424>
+  10:	1a000101 	bne	41c <sd_card_init+0x41c>
   14:	ebfffffe 	bl	0 <bcm2835_emmc_enable_all_interrupts_not_arm>
   18:	e3a00e7d 	mov	r0, #2000	; 0x7d0
   1c:	ebfffffe 	bl	0 <udelay>
   20:	e5954000 	ldr	r4, [r5]
   24:	e3540000 	cmp	r4, #0
-  28:	0a000100 	beq	430 <sd_card_init+0x430>
+  28:	0a0000fe 	beq	428 <sd_card_init+0x428>
   2c:	e3a01000 	mov	r1, #0
   30:	e3a02068 	mov	r2, #104	; 0x68
   34:	e1a00004 	mov	r0, r4
   38:	ebfffffe 	bl	0 <memset>
   3c:	e3a06001 	mov	r6, #1
-  40:	e3a01c02 	mov	r1, #512	; 0x200
-  44:	e59f3790 	ldr	r3, [pc, #1936]	; 7dc <sd_card_init+0x7dc>
-  48:	e59f2790 	ldr	r2, [pc, #1936]	; 7e0 <sd_card_init+0x7e0>
-  4c:	e584300c 	str	r3, [r4, #12]
-  50:	e5841010 	str	r1, [r4, #16]
-  54:	e5846000 	str	r6, [r4]
-  58:	e5846004 	str	r6, [r4, #4]
-  5c:	e5842008 	str	r2, [r4, #8]
-  60:	e1a00004 	mov	r0, r4
-  64:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
-  68:	e5947064 	ldr	r7, [r4, #100]	; 0x64
-  6c:	e3570000 	cmp	r7, #0
-  70:	13a03000 	movne	r3, #0
-  74:	15843040 	strne	r3, [r4, #64]	; 0x40
-  78:	1a00014b 	bne	5ac <sd_card_init+0x5ac>
-  7c:	e59f3760 	ldr	r3, [pc, #1888]	; 7e4 <sd_card_init+0x7e4>
-  80:	e584703c 	str	r7, [r4, #60]	; 0x3c
-  84:	e1a00004 	mov	r0, r4
-  88:	e1a01007 	mov	r1, r7
-  8c:	e1a02007 	mov	r2, r7
-  90:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
-  94:	e5943040 	ldr	r3, [r4, #64]	; 0x40
-  98:	e3530000 	cmp	r3, #0
-  9c:	0a000142 	beq	5ac <sd_card_init+0x5ac>
-  a0:	e1a00004 	mov	r0, r4
-  a4:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
-  a8:	e5943064 	ldr	r3, [r4, #100]	; 0x64
-  ac:	e3530000 	cmp	r3, #0
-  b0:	15847040 	strne	r7, [r4, #64]	; 0x40
-  b4:	1a000023 	bne	148 <sd_card_init+0x148>
-  b8:	e3a03008 	mov	r3, #8
-  bc:	e59f7724 	ldr	r7, [pc, #1828]	; 7e8 <sd_card_init+0x7e8>
-  c0:	e584303c 	str	r3, [r4, #60]	; 0x3c
-  c4:	e1a02007 	mov	r2, r7
-  c8:	e59f3714 	ldr	r3, [pc, #1812]	; 7e4 <sd_card_init+0x7e4>
-  cc:	e1a00004 	mov	r0, r4
-  d0:	e59f1714 	ldr	r1, [pc, #1812]	; 7ec <sd_card_init+0x7ec>
-  d4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
-  d8:	e5943040 	ldr	r3, [r4, #64]	; 0x40
-  dc:	e3530000 	cmp	r3, #0
-  e0:	0a000018 	beq	148 <sd_card_init+0x148>
-  e4:	e5943044 	ldr	r3, [r4, #68]	; 0x44
-  e8:	e1a03a03 	lsl	r3, r3, #20
-  ec:	e1570a23 	cmp	r7, r3, lsr #20
-  f0:	1a000131 	bne	5bc <sd_card_init+0x5bc>
-  f4:	e1a00004 	mov	r0, r4
-  f8:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
-  fc:	e5942064 	ldr	r2, [r4, #100]	; 0x64
- 100:	e3520000 	cmp	r2, #0
- 104:	13a03000 	movne	r3, #0
- 108:	15843040 	strne	r3, [r4, #64]	; 0x40
- 10c:	1a000017 	bne	170 <sd_card_init+0x170>
- 110:	e3a03005 	mov	r3, #5
- 114:	e1a00004 	mov	r0, r4
- 118:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 11c:	e59f16cc 	ldr	r1, [pc, #1740]	; 7f0 <sd_card_init+0x7f0>
- 120:	e59f36cc 	ldr	r3, [pc, #1740]	; 7f4 <sd_card_init+0x7f4>
- 124:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 128:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 12c:	e3530000 	cmp	r3, #0
- 130:	0a00000e 	beq	170 <sd_card_init+0x170>
- 134:	e59f06bc 	ldr	r0, [pc, #1724]	; 7f8 <sd_card_init+0x7f8>
- 138:	ebfffffe 	bl	0 <printf>
- 13c:	e3e06000 	mvn	r6, #0
- 140:	e1a00006 	mov	r0, r6
- 144:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
- 148:	e594302c 	ldr	r3, [r4, #44]	; 0x2c
- 14c:	e3530000 	cmp	r3, #0
- 150:	0a000028 	beq	1f8 <sd_card_init+0x1f8>
- 154:	e3130801 	tst	r3, #65536	; 0x10000
- 158:	1a000023 	bne	1ec <sd_card_init+0x1ec>
- 15c:	e5941028 	ldr	r1, [r4, #40]	; 0x28
- 160:	e59f0694 	ldr	r0, [pc, #1684]	; 7fc <sd_card_init+0x7fc>
- 164:	ebfffffe 	bl	0 <printf>
- 168:	e3e06000 	mvn	r6, #0
- 16c:	eafffff3 	b	140 <sd_card_init+0x140>
- 170:	e594302c 	ldr	r3, [r4, #44]	; 0x2c
- 174:	e3530000 	cmp	r3, #0
- 178:	0a000004 	beq	190 <sd_card_init+0x190>
- 17c:	e3130801 	tst	r3, #65536	; 0x10000
- 180:	0affffeb 	beq	134 <sd_card_init+0x134>
- 184:	ebfffffe 	bl	0 <bcm2835_emmc_reset_cmd>
- 188:	e3700001 	cmn	r0, #1
- 18c:	0a0000a4 	beq	424 <sd_card_init+0x424>
- 190:	e1a00004 	mov	r0, r4
- 194:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 198:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 19c:	e3530000 	cmp	r3, #0
- 1a0:	13a03000 	movne	r3, #0
- 1a4:	15843040 	strne	r3, [r4, #64]	; 0x40
- 1a8:	1a00000b 	bne	1dc <sd_card_init+0x1dc>
- 1ac:	e3a03037 	mov	r3, #55	; 0x37
- 1b0:	e5942024 	ldr	r2, [r4, #36]	; 0x24
- 1b4:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 1b8:	e3520000 	cmp	r2, #0
- 1bc:	11a02802 	lslne	r2, r2, #16
- 1c0:	e59f361c 	ldr	r3, [pc, #1564]	; 7e4 <sd_card_init+0x7e4>
- 1c4:	e1a00004 	mov	r0, r4
- 1c8:	e59f1630 	ldr	r1, [pc, #1584]	; 800 <sd_card_init+0x800>
- 1cc:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 1d0:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 1d4:	e3530000 	cmp	r3, #0
- 1d8:	1a000098 	bne	440 <sd_card_init+0x440>
- 1dc:	e59f0620 	ldr	r0, [pc, #1568]	; 804 <sd_card_init+0x804>
- 1e0:	ebfffffe 	bl	0 <printf>
- 1e4:	e3e06000 	mvn	r6, #0
- 1e8:	eaffffd4 	b	140 <sd_card_init+0x140>
- 1ec:	ebfffffe 	bl	0 <bcm2835_emmc_reset_cmd>
- 1f0:	e3700001 	cmn	r0, #1
- 1f4:	0a00008a 	beq	424 <sd_card_init+0x424>
- 1f8:	e3a06000 	mov	r6, #0
- 1fc:	eaffffbc 	b	f4 <sd_card_init+0xf4>
- 200:	e1a02423 	lsr	r2, r3, #8
- 204:	e1a03f23 	lsr	r3, r3, #30
- 208:	e6ff2072 	uxth	r2, r2
- 20c:	e2033001 	and	r3, r3, #1
- 210:	e5842020 	str	r2, [r4, #32]
- 214:	e5843018 	str	r3, [r4, #24]
- 218:	e59f05e8 	ldr	r0, [pc, #1512]	; 808 <sd_card_init+0x808>
- 21c:	ebfffffe 	bl	0 <bcm2835_emmc_set_clock>
- 220:	e59f05e4 	ldr	r0, [pc, #1508]	; 80c <sd_card_init+0x80c>
- 224:	ebfffffe 	bl	0 <udelay>
- 228:	e1a00004 	mov	r0, r4
- 22c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 230:	e5946064 	ldr	r6, [r4, #100]	; 0x64
- 234:	e3560000 	cmp	r6, #0
- 238:	1a0000d5 	bne	594 <sd_card_init+0x594>
- 23c:	e3a03002 	mov	r3, #2
- 240:	e1a00004 	mov	r0, r4
- 244:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 248:	e59f15c0 	ldr	r1, [pc, #1472]	; 810 <sd_card_init+0x810>
- 24c:	e59f3590 	ldr	r3, [pc, #1424]	; 7e4 <sd_card_init+0x7e4>
- 250:	e1a02006 	mov	r2, r6
- 254:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 258:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 25c:	e3530000 	cmp	r3, #0
- 260:	0a0000cd 	beq	59c <sd_card_init+0x59c>
- 264:	e1a00004 	mov	r0, r4
- 268:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 26c:	e5942064 	ldr	r2, [r4, #100]	; 0x64
- 270:	e3520000 	cmp	r2, #0
- 274:	15846040 	strne	r6, [r4, #64]	; 0x40
- 278:	1a000138 	bne	760 <sd_card_init+0x760>
- 27c:	e3a03003 	mov	r3, #3
- 280:	e1a00004 	mov	r0, r4
- 284:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 288:	e59f1584 	ldr	r1, [pc, #1412]	; 814 <sd_card_init+0x814>
- 28c:	e59f3550 	ldr	r3, [pc, #1360]	; 7e4 <sd_card_init+0x7e4>
- 290:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 294:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 298:	e3530000 	cmp	r3, #0
- 29c:	0a00012f 	beq	760 <sd_card_init+0x760>
- 2a0:	e5943044 	ldr	r3, [r4, #68]	; 0x44
- 2a4:	e1a07823 	lsr	r7, r3, #16
- 2a8:	e1a01723 	lsr	r1, r3, #14
- 2ac:	e1a066a3 	lsr	r6, r3, #13
- 2b0:	e3130902 	tst	r3, #32768	; 0x8000
- 2b4:	e1a03423 	lsr	r3, r3, #8
- 2b8:	e5847024 	str	r7, [r4, #36]	; 0x24
- 2bc:	e2011001 	and	r1, r1, #1
- 2c0:	e2066001 	and	r6, r6, #1
- 2c4:	e2033001 	and	r3, r3, #1
- 2c8:	1a00011e 	bne	748 <sd_card_init+0x748>
- 2cc:	e3510000 	cmp	r1, #0
- 2d0:	1a000116 	bne	730 <sd_card_init+0x730>
- 2d4:	e3560000 	cmp	r6, #0
- 2d8:	1a00010e 	bne	718 <sd_card_init+0x718>
- 2dc:	e3530000 	cmp	r3, #0
- 2e0:	0a000106 	beq	700 <sd_card_init+0x700>
- 2e4:	e1a00004 	mov	r0, r4
- 2e8:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 2ec:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 2f0:	e3530000 	cmp	r3, #0
- 2f4:	15846040 	strne	r6, [r4, #64]	; 0x40
- 2f8:	1a00011e 	bne	778 <sd_card_init+0x778>
- 2fc:	e3a03007 	mov	r3, #7
- 300:	e1a02807 	lsl	r2, r7, #16
- 304:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 308:	e1a00004 	mov	r0, r4
- 30c:	e59f34d0 	ldr	r3, [pc, #1232]	; 7e4 <sd_card_init+0x7e4>
- 310:	e59f1500 	ldr	r1, [pc, #1280]	; 818 <sd_card_init+0x818>
- 314:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 318:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 31c:	e3530000 	cmp	r3, #0
- 320:	0a000114 	beq	778 <sd_card_init+0x778>
- 324:	e5941044 	ldr	r1, [r4, #68]	; 0x44
- 328:	e1a014a1 	lsr	r1, r1, #9
- 32c:	e201100f 	and	r1, r1, #15
- 330:	e2413003 	sub	r3, r1, #3
- 334:	e3530001 	cmp	r3, #1
- 338:	8a0000a3 	bhi	5cc <sd_card_init+0x5cc>
- 33c:	e5946018 	ldr	r6, [r4, #24]
- 340:	e3560000 	cmp	r6, #0
- 344:	1a00000f 	bne	388 <sd_card_init+0x388>
- 348:	e1a00004 	mov	r0, r4
- 34c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 350:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 354:	e3530000 	cmp	r3, #0
- 358:	15846040 	strne	r6, [r4, #64]	; 0x40
- 35c:	1a000118 	bne	7c4 <sd_card_init+0x7c4>
- 360:	e3a03010 	mov	r3, #16
- 364:	e1a00004 	mov	r0, r4
- 368:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 36c:	e59f14a8 	ldr	r1, [pc, #1192]	; 81c <sd_card_init+0x81c>
- 370:	e59f346c 	ldr	r3, [pc, #1132]	; 7e4 <sd_card_init+0x7e4>
- 374:	e3a02c02 	mov	r2, #512	; 0x200
- 378:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 37c:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 380:	e3530000 	cmp	r3, #0
- 384:	0a00010e 	beq	7c4 <sd_card_init+0x7c4>
- 388:	e3a00c02 	mov	r0, #512	; 0x200
- 38c:	e584005c 	str	r0, [r4, #92]	; 0x5c
- 390:	ebfffffe 	bl	0 <bcm2835_emmc_set_block_size>
- 394:	e3a00010 	mov	r0, #16
- 398:	ebfffffe 	bl	0 <malloc>
- 39c:	e3a03001 	mov	r3, #1
- 3a0:	e3a02008 	mov	r2, #8
- 3a4:	e5840030 	str	r0, [r4, #48]	; 0x30
- 3a8:	e5840054 	str	r0, [r4, #84]	; 0x54
- 3ac:	e5843058 	str	r3, [r4, #88]	; 0x58
- 3b0:	e584205c 	str	r2, [r4, #92]	; 0x5c
- 3b4:	e1a00004 	mov	r0, r4
- 3b8:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 3bc:	e5946064 	ldr	r6, [r4, #100]	; 0x64
- 3c0:	e3560000 	cmp	r6, #0
- 3c4:	13a03000 	movne	r3, #0
- 3c8:	15843040 	strne	r3, [r4, #64]	; 0x40
- 3cc:	1a00000c 	bne	404 <sd_card_init+0x404>
- 3d0:	e3a02037 	mov	r2, #55	; 0x37
- 3d4:	e5943024 	ldr	r3, [r4, #36]	; 0x24
- 3d8:	e584203c 	str	r2, [r4, #60]	; 0x3c
- 3dc:	e3530000 	cmp	r3, #0
- 3e0:	11a02803 	lslne	r2, r3, #16
- 3e4:	01a02006 	moveq	r2, r6
- 3e8:	e59f33f4 	ldr	r3, [pc, #1012]	; 7e4 <sd_card_init+0x7e4>
- 3ec:	e1a00004 	mov	r0, r4
- 3f0:	e59f1408 	ldr	r1, [pc, #1032]	; 800 <sd_card_init+0x800>
- 3f4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 3f8:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 3fc:	e3530000 	cmp	r3, #0
- 400:	1a000077 	bne	5e4 <sd_card_init+0x5e4>
- 404:	e3a03c02 	mov	r3, #512	; 0x200
- 408:	e584305c 	str	r3, [r4, #92]	; 0x5c
- 40c:	e59f040c 	ldr	r0, [pc, #1036]	; 820 <sd_card_init+0x820>
- 410:	ebfffffe 	bl	0 <printf>
- 414:	e5940030 	ldr	r0, [r4, #48]	; 0x30
+  40:	e3a02c02 	mov	r2, #512	; 0x200
+  44:	e59f3788 	ldr	r3, [pc, #1928]	; 7d4 <sd_card_init+0x7d4>
+  48:	e5842010 	str	r2, [r4, #16]
+  4c:	e5843008 	str	r3, [r4, #8]
+  50:	e5846000 	str	r6, [r4]
+  54:	e5846004 	str	r6, [r4, #4]
+  58:	e1a00004 	mov	r0, r4
+  5c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+  60:	e5947064 	ldr	r7, [r4, #100]	; 0x64
+  64:	e3570000 	cmp	r7, #0
+  68:	13a03000 	movne	r3, #0
+  6c:	15843040 	strne	r3, [r4, #64]	; 0x40
+  70:	1a00014b 	bne	5a4 <sd_card_init+0x5a4>
+  74:	e59f375c 	ldr	r3, [pc, #1884]	; 7d8 <sd_card_init+0x7d8>
+  78:	e584703c 	str	r7, [r4, #60]	; 0x3c
+  7c:	e1a00004 	mov	r0, r4
+  80:	e1a01007 	mov	r1, r7
+  84:	e1a02007 	mov	r2, r7
+  88:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+  8c:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+  90:	e3530000 	cmp	r3, #0
+  94:	0a000142 	beq	5a4 <sd_card_init+0x5a4>
+  98:	e1a00004 	mov	r0, r4
+  9c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+  a0:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+  a4:	e3530000 	cmp	r3, #0
+  a8:	15847040 	strne	r7, [r4, #64]	; 0x40
+  ac:	1a000023 	bne	140 <sd_card_init+0x140>
+  b0:	e3a03008 	mov	r3, #8
+  b4:	e59f7720 	ldr	r7, [pc, #1824]	; 7dc <sd_card_init+0x7dc>
+  b8:	e584303c 	str	r3, [r4, #60]	; 0x3c
+  bc:	e1a02007 	mov	r2, r7
+  c0:	e59f3710 	ldr	r3, [pc, #1808]	; 7d8 <sd_card_init+0x7d8>
+  c4:	e1a00004 	mov	r0, r4
+  c8:	e59f1710 	ldr	r1, [pc, #1808]	; 7e0 <sd_card_init+0x7e0>
+  cc:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+  d0:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+  d4:	e3530000 	cmp	r3, #0
+  d8:	0a000018 	beq	140 <sd_card_init+0x140>
+  dc:	e5943044 	ldr	r3, [r4, #68]	; 0x44
+  e0:	e1a03a03 	lsl	r3, r3, #20
+  e4:	e1570a23 	cmp	r7, r3, lsr #20
+  e8:	1a000131 	bne	5b4 <sd_card_init+0x5b4>
+  ec:	e1a00004 	mov	r0, r4
+  f0:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+  f4:	e5942064 	ldr	r2, [r4, #100]	; 0x64
+  f8:	e3520000 	cmp	r2, #0
+  fc:	13a03000 	movne	r3, #0
+ 100:	15843040 	strne	r3, [r4, #64]	; 0x40
+ 104:	1a000017 	bne	168 <sd_card_init+0x168>
+ 108:	e3a03005 	mov	r3, #5
+ 10c:	e1a00004 	mov	r0, r4
+ 110:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 114:	e59f16c8 	ldr	r1, [pc, #1736]	; 7e4 <sd_card_init+0x7e4>
+ 118:	e59f36c8 	ldr	r3, [pc, #1736]	; 7e8 <sd_card_init+0x7e8>
+ 11c:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 120:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 124:	e3530000 	cmp	r3, #0
+ 128:	0a00000e 	beq	168 <sd_card_init+0x168>
+ 12c:	e59f06b8 	ldr	r0, [pc, #1720]	; 7ec <sd_card_init+0x7ec>
+ 130:	ebfffffe 	bl	0 <printf>
+ 134:	e3e06000 	mvn	r6, #0
+ 138:	e1a00006 	mov	r0, r6
+ 13c:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
+ 140:	e594302c 	ldr	r3, [r4, #44]	; 0x2c
+ 144:	e3530000 	cmp	r3, #0
+ 148:	0a000028 	beq	1f0 <sd_card_init+0x1f0>
+ 14c:	e3130801 	tst	r3, #65536	; 0x10000
+ 150:	1a000023 	bne	1e4 <sd_card_init+0x1e4>
+ 154:	e5941028 	ldr	r1, [r4, #40]	; 0x28
+ 158:	e59f0690 	ldr	r0, [pc, #1680]	; 7f0 <sd_card_init+0x7f0>
+ 15c:	ebfffffe 	bl	0 <printf>
+ 160:	e3e06000 	mvn	r6, #0
+ 164:	eafffff3 	b	138 <sd_card_init+0x138>
+ 168:	e594302c 	ldr	r3, [r4, #44]	; 0x2c
+ 16c:	e3530000 	cmp	r3, #0
+ 170:	0a000004 	beq	188 <sd_card_init+0x188>
+ 174:	e3130801 	tst	r3, #65536	; 0x10000
+ 178:	0affffeb 	beq	12c <sd_card_init+0x12c>
+ 17c:	ebfffffe 	bl	0 <bcm2835_emmc_reset_cmd>
+ 180:	e3700001 	cmn	r0, #1
+ 184:	0a0000a4 	beq	41c <sd_card_init+0x41c>
+ 188:	e1a00004 	mov	r0, r4
+ 18c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 190:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 194:	e3530000 	cmp	r3, #0
+ 198:	13a03000 	movne	r3, #0
+ 19c:	15843040 	strne	r3, [r4, #64]	; 0x40
+ 1a0:	1a00000b 	bne	1d4 <sd_card_init+0x1d4>
+ 1a4:	e3a03037 	mov	r3, #55	; 0x37
+ 1a8:	e5942024 	ldr	r2, [r4, #36]	; 0x24
+ 1ac:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 1b0:	e3520000 	cmp	r2, #0
+ 1b4:	11a02802 	lslne	r2, r2, #16
+ 1b8:	e59f3618 	ldr	r3, [pc, #1560]	; 7d8 <sd_card_init+0x7d8>
+ 1bc:	e1a00004 	mov	r0, r4
+ 1c0:	e59f162c 	ldr	r1, [pc, #1580]	; 7f4 <sd_card_init+0x7f4>
+ 1c4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 1c8:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 1cc:	e3530000 	cmp	r3, #0
+ 1d0:	1a000098 	bne	438 <sd_card_init+0x438>
+ 1d4:	e59f061c 	ldr	r0, [pc, #1564]	; 7f8 <sd_card_init+0x7f8>
+ 1d8:	ebfffffe 	bl	0 <printf>
+ 1dc:	e3e06000 	mvn	r6, #0
+ 1e0:	eaffffd4 	b	138 <sd_card_init+0x138>
+ 1e4:	ebfffffe 	bl	0 <bcm2835_emmc_reset_cmd>
+ 1e8:	e3700001 	cmn	r0, #1
+ 1ec:	0a00008a 	beq	41c <sd_card_init+0x41c>
+ 1f0:	e3a06000 	mov	r6, #0
+ 1f4:	eaffffbc 	b	ec <sd_card_init+0xec>
+ 1f8:	e1a02423 	lsr	r2, r3, #8
+ 1fc:	e1a03f23 	lsr	r3, r3, #30
+ 200:	e6ff2072 	uxth	r2, r2
+ 204:	e2033001 	and	r3, r3, #1
+ 208:	e5842020 	str	r2, [r4, #32]
+ 20c:	e5843018 	str	r3, [r4, #24]
+ 210:	e59f05e4 	ldr	r0, [pc, #1508]	; 7fc <sd_card_init+0x7fc>
+ 214:	ebfffffe 	bl	0 <bcm2835_emmc_set_clock>
+ 218:	e59f05e0 	ldr	r0, [pc, #1504]	; 800 <sd_card_init+0x800>
+ 21c:	ebfffffe 	bl	0 <udelay>
+ 220:	e1a00004 	mov	r0, r4
+ 224:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 228:	e5946064 	ldr	r6, [r4, #100]	; 0x64
+ 22c:	e3560000 	cmp	r6, #0
+ 230:	1a0000d5 	bne	58c <sd_card_init+0x58c>
+ 234:	e3a03002 	mov	r3, #2
+ 238:	e1a00004 	mov	r0, r4
+ 23c:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 240:	e59f15bc 	ldr	r1, [pc, #1468]	; 804 <sd_card_init+0x804>
+ 244:	e59f358c 	ldr	r3, [pc, #1420]	; 7d8 <sd_card_init+0x7d8>
+ 248:	e1a02006 	mov	r2, r6
+ 24c:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 250:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 254:	e3530000 	cmp	r3, #0
+ 258:	0a0000cd 	beq	594 <sd_card_init+0x594>
+ 25c:	e1a00004 	mov	r0, r4
+ 260:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 264:	e5942064 	ldr	r2, [r4, #100]	; 0x64
+ 268:	e3520000 	cmp	r2, #0
+ 26c:	15846040 	strne	r6, [r4, #64]	; 0x40
+ 270:	1a000138 	bne	758 <sd_card_init+0x758>
+ 274:	e3a03003 	mov	r3, #3
+ 278:	e1a00004 	mov	r0, r4
+ 27c:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 280:	e59f1580 	ldr	r1, [pc, #1408]	; 808 <sd_card_init+0x808>
+ 284:	e59f354c 	ldr	r3, [pc, #1356]	; 7d8 <sd_card_init+0x7d8>
+ 288:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 28c:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 290:	e3530000 	cmp	r3, #0
+ 294:	0a00012f 	beq	758 <sd_card_init+0x758>
+ 298:	e5943044 	ldr	r3, [r4, #68]	; 0x44
+ 29c:	e1a07823 	lsr	r7, r3, #16
+ 2a0:	e1a01723 	lsr	r1, r3, #14
+ 2a4:	e1a066a3 	lsr	r6, r3, #13
+ 2a8:	e3130902 	tst	r3, #32768	; 0x8000
+ 2ac:	e1a03423 	lsr	r3, r3, #8
+ 2b0:	e5847024 	str	r7, [r4, #36]	; 0x24
+ 2b4:	e2011001 	and	r1, r1, #1
+ 2b8:	e2066001 	and	r6, r6, #1
+ 2bc:	e2033001 	and	r3, r3, #1
+ 2c0:	1a00011e 	bne	740 <sd_card_init+0x740>
+ 2c4:	e3510000 	cmp	r1, #0
+ 2c8:	1a000116 	bne	728 <sd_card_init+0x728>
+ 2cc:	e3560000 	cmp	r6, #0
+ 2d0:	1a00010e 	bne	710 <sd_card_init+0x710>
+ 2d4:	e3530000 	cmp	r3, #0
+ 2d8:	0a000106 	beq	6f8 <sd_card_init+0x6f8>
+ 2dc:	e1a00004 	mov	r0, r4
+ 2e0:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 2e4:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 2e8:	e3530000 	cmp	r3, #0
+ 2ec:	15846040 	strne	r6, [r4, #64]	; 0x40
+ 2f0:	1a00011e 	bne	770 <sd_card_init+0x770>
+ 2f4:	e3a03007 	mov	r3, #7
+ 2f8:	e1a02807 	lsl	r2, r7, #16
+ 2fc:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 300:	e1a00004 	mov	r0, r4
+ 304:	e59f34cc 	ldr	r3, [pc, #1228]	; 7d8 <sd_card_init+0x7d8>
+ 308:	e59f14fc 	ldr	r1, [pc, #1276]	; 80c <sd_card_init+0x80c>
+ 30c:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 310:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 314:	e3530000 	cmp	r3, #0
+ 318:	0a000114 	beq	770 <sd_card_init+0x770>
+ 31c:	e5941044 	ldr	r1, [r4, #68]	; 0x44
+ 320:	e1a014a1 	lsr	r1, r1, #9
+ 324:	e201100f 	and	r1, r1, #15
+ 328:	e2413003 	sub	r3, r1, #3
+ 32c:	e3530001 	cmp	r3, #1
+ 330:	8a0000a3 	bhi	5c4 <sd_card_init+0x5c4>
+ 334:	e5946018 	ldr	r6, [r4, #24]
+ 338:	e3560000 	cmp	r6, #0
+ 33c:	1a00000f 	bne	380 <sd_card_init+0x380>
+ 340:	e1a00004 	mov	r0, r4
+ 344:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 348:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 34c:	e3530000 	cmp	r3, #0
+ 350:	15846040 	strne	r6, [r4, #64]	; 0x40
+ 354:	1a000118 	bne	7bc <sd_card_init+0x7bc>
+ 358:	e3a03010 	mov	r3, #16
+ 35c:	e1a00004 	mov	r0, r4
+ 360:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 364:	e59f14a4 	ldr	r1, [pc, #1188]	; 810 <sd_card_init+0x810>
+ 368:	e59f3468 	ldr	r3, [pc, #1128]	; 7d8 <sd_card_init+0x7d8>
+ 36c:	e3a02c02 	mov	r2, #512	; 0x200
+ 370:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 374:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 378:	e3530000 	cmp	r3, #0
+ 37c:	0a00010e 	beq	7bc <sd_card_init+0x7bc>
+ 380:	e3a00c02 	mov	r0, #512	; 0x200
+ 384:	e584005c 	str	r0, [r4, #92]	; 0x5c
+ 388:	ebfffffe 	bl	0 <bcm2835_emmc_set_block_size>
+ 38c:	e3a00010 	mov	r0, #16
+ 390:	ebfffffe 	bl	0 <malloc>
+ 394:	e3a03001 	mov	r3, #1
+ 398:	e3a02008 	mov	r2, #8
+ 39c:	e5840030 	str	r0, [r4, #48]	; 0x30
+ 3a0:	e5840054 	str	r0, [r4, #84]	; 0x54
+ 3a4:	e5843058 	str	r3, [r4, #88]	; 0x58
+ 3a8:	e584205c 	str	r2, [r4, #92]	; 0x5c
+ 3ac:	e1a00004 	mov	r0, r4
+ 3b0:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 3b4:	e5946064 	ldr	r6, [r4, #100]	; 0x64
+ 3b8:	e3560000 	cmp	r6, #0
+ 3bc:	13a03000 	movne	r3, #0
+ 3c0:	15843040 	strne	r3, [r4, #64]	; 0x40
+ 3c4:	1a00000c 	bne	3fc <sd_card_init+0x3fc>
+ 3c8:	e3a02037 	mov	r2, #55	; 0x37
+ 3cc:	e5943024 	ldr	r3, [r4, #36]	; 0x24
+ 3d0:	e584203c 	str	r2, [r4, #60]	; 0x3c
+ 3d4:	e3530000 	cmp	r3, #0
+ 3d8:	11a02803 	lslne	r2, r3, #16
+ 3dc:	01a02006 	moveq	r2, r6
+ 3e0:	e59f33f0 	ldr	r3, [pc, #1008]	; 7d8 <sd_card_init+0x7d8>
+ 3e4:	e1a00004 	mov	r0, r4
+ 3e8:	e59f1404 	ldr	r1, [pc, #1028]	; 7f4 <sd_card_init+0x7f4>
+ 3ec:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 3f0:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 3f4:	e3530000 	cmp	r3, #0
+ 3f8:	1a000077 	bne	5dc <sd_card_init+0x5dc>
+ 3fc:	e3a03c02 	mov	r3, #512	; 0x200
+ 400:	e584305c 	str	r3, [r4, #92]	; 0x5c
+ 404:	e59f0408 	ldr	r0, [pc, #1032]	; 814 <sd_card_init+0x814>
+ 408:	ebfffffe 	bl	0 <printf>
+ 40c:	e5940030 	ldr	r0, [r4, #48]	; 0x30
+ 410:	ebfffffe 	bl	0 <free>
+ 414:	e1a00004 	mov	r0, r4
  418:	ebfffffe 	bl	0 <free>
- 41c:	e1a00004 	mov	r0, r4
- 420:	ebfffffe 	bl	0 <free>
- 424:	e3e06000 	mvn	r6, #0
- 428:	e1a00006 	mov	r0, r6
- 42c:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
- 430:	e3a00068 	mov	r0, #104	; 0x68
- 434:	ebfffffe 	bl	0 <malloc>
- 438:	e1a04000 	mov	r4, r0
- 43c:	eafffefa 	b	2c <sd_card_init+0x2c>
- 440:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
- 444:	e1a00004 	mov	r0, r4
- 448:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 44c:	e59f13d0 	ldr	r1, [pc, #976]	; 824 <sd_card_init+0x824>
- 450:	e59f338c 	ldr	r3, [pc, #908]	; 7e4 <sd_card_init+0x7e4>
- 454:	e3a02000 	mov	r2, #0
- 458:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 45c:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 460:	e3530000 	cmp	r3, #0
- 464:	0affff5c 	beq	1dc <sd_card_init+0x1dc>
- 468:	e3560000 	cmp	r6, #0
- 46c:	e3a06037 	mov	r6, #55	; 0x37
- 470:	1a000014 	bne	4c8 <sd_card_init+0x4c8>
- 474:	e1a00004 	mov	r0, r4
- 478:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 47c:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 480:	e3530000 	cmp	r3, #0
- 484:	1a00002f 	bne	548 <sd_card_init+0x548>
- 488:	e5942024 	ldr	r2, [r4, #36]	; 0x24
- 48c:	e59f3350 	ldr	r3, [pc, #848]	; 7e4 <sd_card_init+0x7e4>
- 490:	e3520000 	cmp	r2, #0
- 494:	11a02802 	lslne	r2, r2, #16
- 498:	e584603c 	str	r6, [r4, #60]	; 0x3c
- 49c:	e1a00004 	mov	r0, r4
- 4a0:	e59f1358 	ldr	r1, [pc, #856]	; 800 <sd_card_init+0x800>
- 4a4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 4a8:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 4ac:	e3530000 	cmp	r3, #0
- 4b0:	1a000027 	bne	554 <sd_card_init+0x554>
- 4b4:	e3e06000 	mvn	r6, #0
- 4b8:	e59f0368 	ldr	r0, [pc, #872]	; 828 <sd_card_init+0x828>
- 4bc:	ebfffffe 	bl	0 <printf>
- 4c0:	e1a00006 	mov	r0, r6
- 4c4:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
- 4c8:	e1a00004 	mov	r0, r4
- 4cc:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 4d0:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 4d4:	e3530000 	cmp	r3, #0
- 4d8:	1a00001a 	bne	548 <sd_card_init+0x548>
- 4dc:	e5942024 	ldr	r2, [r4, #36]	; 0x24
- 4e0:	e59f32fc 	ldr	r3, [pc, #764]	; 7e4 <sd_card_init+0x7e4>
- 4e4:	e3520000 	cmp	r2, #0
- 4e8:	11a02802 	lslne	r2, r2, #16
- 4ec:	e584603c 	str	r6, [r4, #60]	; 0x3c
- 4f0:	e1a00004 	mov	r0, r4
- 4f4:	e59f1304 	ldr	r1, [pc, #772]	; 800 <sd_card_init+0x800>
- 4f8:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 4fc:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 500:	e3530000 	cmp	r3, #0
- 504:	0affffea 	beq	4b4 <sd_card_init+0x4b4>
- 508:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
- 50c:	e1a00004 	mov	r0, r4
- 510:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 514:	e59f1308 	ldr	r1, [pc, #776]	; 824 <sd_card_init+0x824>
- 518:	e59f32c4 	ldr	r3, [pc, #708]	; 7e4 <sd_card_init+0x7e4>
- 51c:	e59f2308 	ldr	r2, [pc, #776]	; 82c <sd_card_init+0x82c>
- 520:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 524:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 528:	e59f02b4 	ldr	r0, [pc, #692]	; 7e4 <sd_card_init+0x7e4>
- 52c:	e3530000 	cmp	r3, #0
- 530:	0affffdf 	beq	4b4 <sd_card_init+0x4b4>
- 534:	e5943044 	ldr	r3, [r4, #68]	; 0x44
- 538:	e3530000 	cmp	r3, #0
- 53c:	baffff2f 	blt	200 <sd_card_init+0x200>
- 540:	ebfffffe 	bl	0 <udelay>
- 544:	eaffffdf 	b	4c8 <sd_card_init+0x4c8>
- 548:	e3a03000 	mov	r3, #0
- 54c:	e5843040 	str	r3, [r4, #64]	; 0x40
- 550:	eaffffd7 	b	4b4 <sd_card_init+0x4b4>
- 554:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
- 558:	e1a00004 	mov	r0, r4
- 55c:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 560:	e59f12bc 	ldr	r1, [pc, #700]	; 824 <sd_card_init+0x824>
- 564:	e59f3278 	ldr	r3, [pc, #632]	; 7e4 <sd_card_init+0x7e4>
- 568:	e59f22c0 	ldr	r2, [pc, #704]	; 830 <sd_card_init+0x830>
- 56c:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 570:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 574:	e59f0268 	ldr	r0, [pc, #616]	; 7e4 <sd_card_init+0x7e4>
- 578:	e3530000 	cmp	r3, #0
- 57c:	0affffcc 	beq	4b4 <sd_card_init+0x4b4>
- 580:	e5943044 	ldr	r3, [r4, #68]	; 0x44
- 584:	e3530000 	cmp	r3, #0
- 588:	baffff1c 	blt	200 <sd_card_init+0x200>
- 58c:	ebfffffe 	bl	0 <udelay>
- 590:	eaffffb7 	b	474 <sd_card_init+0x474>
- 594:	e3a03000 	mov	r3, #0
- 598:	e5843040 	str	r3, [r4, #64]	; 0x40
- 59c:	e59f0290 	ldr	r0, [pc, #656]	; 834 <sd_card_init+0x834>
- 5a0:	ebfffffe 	bl	0 <printf>
- 5a4:	e3e06000 	mvn	r6, #0
- 5a8:	eafffee4 	b	140 <sd_card_init+0x140>
- 5ac:	e59f0284 	ldr	r0, [pc, #644]	; 838 <sd_card_init+0x838>
- 5b0:	ebfffffe 	bl	0 <printf>
- 5b4:	e3e06000 	mvn	r6, #0
- 5b8:	eafffee0 	b	140 <sd_card_init+0x140>
- 5bc:	e59f0278 	ldr	r0, [pc, #632]	; 83c <sd_card_init+0x83c>
- 5c0:	ebfffffe 	bl	0 <printf>
- 5c4:	e3e06000 	mvn	r6, #0
- 5c8:	eafffedc 	b	140 <sd_card_init+0x140>
- 5cc:	e59f026c 	ldr	r0, [pc, #620]	; 840 <sd_card_init+0x840>
- 5d0:	ebfffffe 	bl	0 <printf>
- 5d4:	e1a00004 	mov	r0, r4
- 5d8:	ebfffffe 	bl	0 <free>
- 5dc:	e3e06000 	mvn	r6, #0
- 5e0:	eafffed6 	b	140 <sd_card_init+0x140>
- 5e4:	e3a031ce 	mov	r3, #-2147483597	; 0x80000033
- 5e8:	e3a02000 	mov	r2, #0
- 5ec:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 5f0:	e1a00004 	mov	r0, r4
- 5f4:	e59f31e8 	ldr	r3, [pc, #488]	; 7e4 <sd_card_init+0x7e4>
- 5f8:	e59f1244 	ldr	r1, [pc, #580]	; 844 <sd_card_init+0x844>
- 5fc:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 600:	e3a02c02 	mov	r2, #512	; 0x200
- 604:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 608:	e584205c 	str	r2, [r4, #92]	; 0x5c
- 60c:	e3530000 	cmp	r3, #0
- 610:	0affff7d 	beq	40c <sd_card_init+0x40c>
- 614:	e3a02000 	mov	r2, #0
- 618:	e5941030 	ldr	r1, [r4, #48]	; 0x30
- 61c:	e5913000 	ldr	r3, [r1]
- 620:	e581200c 	str	r2, [r1, #12]
- 624:	e6bf3f33 	rev	r3, r3
- 628:	e1a02c23 	lsr	r2, r3, #24
- 62c:	e212200f 	ands	r2, r2, #15
- 630:	e1a00823 	lsr	r0, r3, #16
- 634:	03a03001 	moveq	r3, #1
- 638:	e200c00f 	and	ip, r0, #15
- 63c:	e581c008 	str	ip, [r1, #8]
- 640:	0581300c 	streq	r3, [r1, #12]
- 644:	0a000005 	beq	660 <sd_card_init+0x660>
- 648:	e3520001 	cmp	r2, #1
- 64c:	03a03002 	moveq	r3, #2
- 650:	0581300c 	streq	r3, [r1, #12]
- 654:	0a000001 	beq	660 <sd_card_init+0x660>
- 658:	e3520002 	cmp	r2, #2
- 65c:	0a00001e 	beq	6dc <sd_card_init+0x6dc>
- 660:	e3100004 	tst	r0, #4
- 664:	1a000003 	bne	678 <sd_card_init+0x678>
- 668:	ebfffffe 	bl	0 <bcm2835_emmc_reset_interrupt_register>
- 66c:	e5854000 	str	r4, [r5]
- 670:	e1a00006 	mov	r0, r6
- 674:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
- 678:	ebfffffe 	bl	0 <bcm2835_emmc_disable_card_interrupt>
- 67c:	e1a07000 	mov	r7, r0
- 680:	e1a00004 	mov	r0, r4
- 684:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 688:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 68c:	e3530000 	cmp	r3, #0
- 690:	13a03000 	movne	r3, #0
- 694:	15843040 	strne	r3, [r4, #64]	; 0x40
- 698:	1a00000c 	bne	6d0 <sd_card_init+0x6d0>
- 69c:	e3a02037 	mov	r2, #55	; 0x37
- 6a0:	e5943024 	ldr	r3, [r4, #36]	; 0x24
- 6a4:	e584203c 	str	r2, [r4, #60]	; 0x3c
- 6a8:	e3530000 	cmp	r3, #0
- 6ac:	11a02803 	lslne	r2, r3, #16
- 6b0:	01a02003 	moveq	r2, r3
- 6b4:	e1a00004 	mov	r0, r4
- 6b8:	e59f3124 	ldr	r3, [pc, #292]	; 7e4 <sd_card_init+0x7e4>
- 6bc:	e59f113c 	ldr	r1, [pc, #316]	; 800 <sd_card_init+0x800>
- 6c0:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 6c4:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 6c8:	e3530000 	cmp	r3, #0
- 6cc:	1a00002f 	bne	790 <sd_card_init+0x790>
- 6d0:	e59f0170 	ldr	r0, [pc, #368]	; 848 <sd_card_init+0x848>
- 6d4:	ebfffffe 	bl	0 <printf>
- 6d8:	eaffffe2 	b	668 <sd_card_init+0x668>
- 6dc:	e3130902 	tst	r3, #32768	; 0x8000
- 6e0:	03a03003 	moveq	r3, #3
- 6e4:	0581300c 	streq	r3, [r1, #12]
- 6e8:	0affffdc 	beq	660 <sd_card_init+0x660>
- 6ec:	e3130b01 	tst	r3, #1024	; 0x400
- 6f0:	03a03004 	moveq	r3, #4
- 6f4:	13a03005 	movne	r3, #5
- 6f8:	e581300c 	str	r3, [r1, #12]
- 6fc:	eaffffd7 	b	660 <sd_card_init+0x660>
- 700:	e59f0144 	ldr	r0, [pc, #324]	; 84c <sd_card_init+0x84c>
- 704:	ebfffffe 	bl	0 <printf>
- 708:	e1a00004 	mov	r0, r4
- 70c:	ebfffffe 	bl	0 <free>
- 710:	e3e06000 	mvn	r6, #0
- 714:	eafffe89 	b	140 <sd_card_init+0x140>
- 718:	e59f0130 	ldr	r0, [pc, #304]	; 850 <sd_card_init+0x850>
- 71c:	ebfffffe 	bl	0 <printf>
- 720:	e1a00004 	mov	r0, r4
- 724:	ebfffffe 	bl	0 <free>
- 728:	e3e06000 	mvn	r6, #0
- 72c:	eafffe83 	b	140 <sd_card_init+0x140>
- 730:	e59f011c 	ldr	r0, [pc, #284]	; 854 <sd_card_init+0x854>
- 734:	ebfffffe 	bl	0 <printf>
- 738:	e1a00004 	mov	r0, r4
- 73c:	ebfffffe 	bl	0 <free>
- 740:	e3e06000 	mvn	r6, #0
- 744:	eafffe7d 	b	140 <sd_card_init+0x140>
- 748:	e59f0108 	ldr	r0, [pc, #264]	; 858 <sd_card_init+0x858>
- 74c:	ebfffffe 	bl	0 <printf>
- 750:	e1a00004 	mov	r0, r4
- 754:	ebfffffe 	bl	0 <free>
- 758:	e3e06000 	mvn	r6, #0
- 75c:	eafffe77 	b	140 <sd_card_init+0x140>
- 760:	e59f00f4 	ldr	r0, [pc, #244]	; 85c <sd_card_init+0x85c>
- 764:	ebfffffe 	bl	0 <printf>
- 768:	e1a00004 	mov	r0, r4
- 76c:	ebfffffe 	bl	0 <free>
- 770:	e3e06000 	mvn	r6, #0
- 774:	eafffe71 	b	140 <sd_card_init+0x140>
- 778:	e59f00e0 	ldr	r0, [pc, #224]	; 860 <sd_card_init+0x860>
- 77c:	ebfffffe 	bl	0 <printf>
- 780:	e1a00004 	mov	r0, r4
- 784:	ebfffffe 	bl	0 <free>
- 788:	e3e06000 	mvn	r6, #0
- 78c:	eafffe6b 	b	140 <sd_card_init+0x140>
- 790:	e3a0311a 	mov	r3, #-2147483642	; 0x80000006
- 794:	e1a00004 	mov	r0, r4
- 798:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 79c:	e59f10c0 	ldr	r1, [pc, #192]	; 864 <sd_card_init+0x864>
- 7a0:	e59f303c 	ldr	r3, [pc, #60]	; 7e4 <sd_card_init+0x7e4>
- 7a4:	e3a02002 	mov	r2, #2
- 7a8:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 7ac:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- 7b0:	e3530000 	cmp	r3, #0
- 7b4:	0affffc5 	beq	6d0 <sd_card_init+0x6d0>
- 7b8:	e1a00007 	mov	r0, r7
- 7bc:	ebfffffe 	bl	0 <bcm2835_emmc_4bit_mode_change_bit>
- 7c0:	eaffffa8 	b	668 <sd_card_init+0x668>
- 7c4:	e59f009c 	ldr	r0, [pc, #156]	; 868 <sd_card_init+0x868>
- 7c8:	ebfffffe 	bl	0 <printf>
- 7cc:	e1a00004 	mov	r0, r4
- 7d0:	ebfffffe 	bl	0 <free>
- 7d4:	e3e06000 	mvn	r6, #0
- 7d8:	eafffe58 	b	140 <sd_card_init+0x140>
-	...
- 7e4:	0007a120 	andeq	sl, r7, r0, lsr #2
- 7e8:	000001aa 	andeq	r0, r0, sl, lsr #3
- 7ec:	080a0000 	stmdaeq	sl, {}	; <UNPREDICTABLE>
- 7f0:	05010000 	streq	r0, [r1, #-0]
- 7f4:	00002710 	andeq	r2, r0, r0, lsl r7
- 7f8:	00000050 	andeq	r0, r0, r0, asr r0
- 7fc:	00000018 	andeq	r0, r0, r8, lsl r0
- 800:	370a0000 	strcc	r0, [sl, -r0]
- 804:	00000084 	andeq	r0, r0, r4, lsl #1
- 808:	02faf080 	rscseq	pc, sl, #128	; 0x80
- 80c:	00001388 	andeq	r1, r0, r8, lsl #7
- 810:	02090000 	andeq	r0, r9, #0
- 814:	030a0000 	movweq	r0, #40960	; 0xa000
- 818:	070b0000 	streq	r0, [fp, -r0]
- 81c:	100a0000 	andne	r0, sl, r0
- 820:	000001ac 	andeq	r0, r0, ip, lsr #3
- 824:	29020000 	stmdbcs	r2, {}	; <UNPREDICTABLE>
- 828:	000000a0 	andeq	r0, r0, r0, lsr #1
- 82c:	50ff8000 	rscspl	r8, pc, r0
- 830:	00ff8000 	rscseq	r8, pc, r0
- 834:	000000bc 	strheq	r0, [r0], -ip
- 838:	00000000 	andeq	r0, r0, r0
- 83c:	0000003c 	andeq	r0, r0, ip, lsr r0
- 840:	00000170 	andeq	r0, r0, r0, ror r1
- 844:	332a0010 	teqcc	sl, #16
- 848:	000001c8 	andeq	r0, r0, r8, asr #3
- 84c:	00000140 	andeq	r0, r0, r0, asr #2
- 850:	0000012c 	andeq	r0, r0, ip, lsr #2
- 854:	00000114 	andeq	r0, r0, r4, lsl r1
- 858:	00000104 	andeq	r0, r0, r4, lsl #2
- 85c:	000000dc 	ldrdeq	r0, [r0], -ip
- 860:	00000158 	andeq	r0, r0, r8, asr r1
- 864:	060a0000 	streq	r0, [sl], -r0
- 868:	0000018c 	andeq	r0, r0, ip, lsl #3
+ 41c:	e3e06000 	mvn	r6, #0
+ 420:	e1a00006 	mov	r0, r6
+ 424:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
+ 428:	e3a00068 	mov	r0, #104	; 0x68
+ 42c:	ebfffffe 	bl	0 <malloc>
+ 430:	e1a04000 	mov	r4, r0
+ 434:	eafffefc 	b	2c <sd_card_init+0x2c>
+ 438:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
+ 43c:	e1a00004 	mov	r0, r4
+ 440:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 444:	e59f13cc 	ldr	r1, [pc, #972]	; 818 <sd_card_init+0x818>
+ 448:	e59f3388 	ldr	r3, [pc, #904]	; 7d8 <sd_card_init+0x7d8>
+ 44c:	e3a02000 	mov	r2, #0
+ 450:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 454:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 458:	e3530000 	cmp	r3, #0
+ 45c:	0affff5c 	beq	1d4 <sd_card_init+0x1d4>
+ 460:	e3560000 	cmp	r6, #0
+ 464:	e3a06037 	mov	r6, #55	; 0x37
+ 468:	1a000014 	bne	4c0 <sd_card_init+0x4c0>
+ 46c:	e1a00004 	mov	r0, r4
+ 470:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 474:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 478:	e3530000 	cmp	r3, #0
+ 47c:	1a00002f 	bne	540 <sd_card_init+0x540>
+ 480:	e5942024 	ldr	r2, [r4, #36]	; 0x24
+ 484:	e59f334c 	ldr	r3, [pc, #844]	; 7d8 <sd_card_init+0x7d8>
+ 488:	e3520000 	cmp	r2, #0
+ 48c:	11a02802 	lslne	r2, r2, #16
+ 490:	e584603c 	str	r6, [r4, #60]	; 0x3c
+ 494:	e1a00004 	mov	r0, r4
+ 498:	e59f1354 	ldr	r1, [pc, #852]	; 7f4 <sd_card_init+0x7f4>
+ 49c:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 4a0:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 4a4:	e3530000 	cmp	r3, #0
+ 4a8:	1a000027 	bne	54c <sd_card_init+0x54c>
+ 4ac:	e3e06000 	mvn	r6, #0
+ 4b0:	e59f0364 	ldr	r0, [pc, #868]	; 81c <sd_card_init+0x81c>
+ 4b4:	ebfffffe 	bl	0 <printf>
+ 4b8:	e1a00006 	mov	r0, r6
+ 4bc:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
+ 4c0:	e1a00004 	mov	r0, r4
+ 4c4:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 4c8:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 4cc:	e3530000 	cmp	r3, #0
+ 4d0:	1a00001a 	bne	540 <sd_card_init+0x540>
+ 4d4:	e5942024 	ldr	r2, [r4, #36]	; 0x24
+ 4d8:	e59f32f8 	ldr	r3, [pc, #760]	; 7d8 <sd_card_init+0x7d8>
+ 4dc:	e3520000 	cmp	r2, #0
+ 4e0:	11a02802 	lslne	r2, r2, #16
+ 4e4:	e584603c 	str	r6, [r4, #60]	; 0x3c
+ 4e8:	e1a00004 	mov	r0, r4
+ 4ec:	e59f1300 	ldr	r1, [pc, #768]	; 7f4 <sd_card_init+0x7f4>
+ 4f0:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 4f4:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 4f8:	e3530000 	cmp	r3, #0
+ 4fc:	0affffea 	beq	4ac <sd_card_init+0x4ac>
+ 500:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
+ 504:	e1a00004 	mov	r0, r4
+ 508:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 50c:	e59f1304 	ldr	r1, [pc, #772]	; 818 <sd_card_init+0x818>
+ 510:	e59f32c0 	ldr	r3, [pc, #704]	; 7d8 <sd_card_init+0x7d8>
+ 514:	e59f2304 	ldr	r2, [pc, #772]	; 820 <sd_card_init+0x820>
+ 518:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 51c:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 520:	e59f02b0 	ldr	r0, [pc, #688]	; 7d8 <sd_card_init+0x7d8>
+ 524:	e3530000 	cmp	r3, #0
+ 528:	0affffdf 	beq	4ac <sd_card_init+0x4ac>
+ 52c:	e5943044 	ldr	r3, [r4, #68]	; 0x44
+ 530:	e3530000 	cmp	r3, #0
+ 534:	baffff2f 	blt	1f8 <sd_card_init+0x1f8>
+ 538:	ebfffffe 	bl	0 <udelay>
+ 53c:	eaffffdf 	b	4c0 <sd_card_init+0x4c0>
+ 540:	e3a03000 	mov	r3, #0
+ 544:	e5843040 	str	r3, [r4, #64]	; 0x40
+ 548:	eaffffd7 	b	4ac <sd_card_init+0x4ac>
+ 54c:	e3a031a6 	mov	r3, #-2147483607	; 0x80000029
+ 550:	e1a00004 	mov	r0, r4
+ 554:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 558:	e59f12b8 	ldr	r1, [pc, #696]	; 818 <sd_card_init+0x818>
+ 55c:	e59f3274 	ldr	r3, [pc, #628]	; 7d8 <sd_card_init+0x7d8>
+ 560:	e59f22bc 	ldr	r2, [pc, #700]	; 824 <sd_card_init+0x824>
+ 564:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 568:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 56c:	e59f0264 	ldr	r0, [pc, #612]	; 7d8 <sd_card_init+0x7d8>
+ 570:	e3530000 	cmp	r3, #0
+ 574:	0affffcc 	beq	4ac <sd_card_init+0x4ac>
+ 578:	e5943044 	ldr	r3, [r4, #68]	; 0x44
+ 57c:	e3530000 	cmp	r3, #0
+ 580:	baffff1c 	blt	1f8 <sd_card_init+0x1f8>
+ 584:	ebfffffe 	bl	0 <udelay>
+ 588:	eaffffb7 	b	46c <sd_card_init+0x46c>
+ 58c:	e3a03000 	mov	r3, #0
+ 590:	e5843040 	str	r3, [r4, #64]	; 0x40
+ 594:	e59f028c 	ldr	r0, [pc, #652]	; 828 <sd_card_init+0x828>
+ 598:	ebfffffe 	bl	0 <printf>
+ 59c:	e3e06000 	mvn	r6, #0
+ 5a0:	eafffee4 	b	138 <sd_card_init+0x138>
+ 5a4:	e59f0280 	ldr	r0, [pc, #640]	; 82c <sd_card_init+0x82c>
+ 5a8:	ebfffffe 	bl	0 <printf>
+ 5ac:	e3e06000 	mvn	r6, #0
+ 5b0:	eafffee0 	b	138 <sd_card_init+0x138>
+ 5b4:	e59f0274 	ldr	r0, [pc, #628]	; 830 <sd_card_init+0x830>
+ 5b8:	ebfffffe 	bl	0 <printf>
+ 5bc:	e3e06000 	mvn	r6, #0
+ 5c0:	eafffedc 	b	138 <sd_card_init+0x138>
+ 5c4:	e59f0268 	ldr	r0, [pc, #616]	; 834 <sd_card_init+0x834>
+ 5c8:	ebfffffe 	bl	0 <printf>
+ 5cc:	e1a00004 	mov	r0, r4
+ 5d0:	ebfffffe 	bl	0 <free>
+ 5d4:	e3e06000 	mvn	r6, #0
+ 5d8:	eafffed6 	b	138 <sd_card_init+0x138>
+ 5dc:	e3a031ce 	mov	r3, #-2147483597	; 0x80000033
+ 5e0:	e3a02000 	mov	r2, #0
+ 5e4:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 5e8:	e1a00004 	mov	r0, r4
+ 5ec:	e59f31e4 	ldr	r3, [pc, #484]	; 7d8 <sd_card_init+0x7d8>
+ 5f0:	e59f1240 	ldr	r1, [pc, #576]	; 838 <sd_card_init+0x838>
+ 5f4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 5f8:	e3a02c02 	mov	r2, #512	; 0x200
+ 5fc:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 600:	e584205c 	str	r2, [r4, #92]	; 0x5c
+ 604:	e3530000 	cmp	r3, #0
+ 608:	0affff7d 	beq	404 <sd_card_init+0x404>
+ 60c:	e3a02000 	mov	r2, #0
+ 610:	e5941030 	ldr	r1, [r4, #48]	; 0x30
+ 614:	e5913000 	ldr	r3, [r1]
+ 618:	e581200c 	str	r2, [r1, #12]
+ 61c:	e6bf3f33 	rev	r3, r3
+ 620:	e1a02c23 	lsr	r2, r3, #24
+ 624:	e212200f 	ands	r2, r2, #15
+ 628:	e1a00823 	lsr	r0, r3, #16
+ 62c:	03a03001 	moveq	r3, #1
+ 630:	e200c00f 	and	ip, r0, #15
+ 634:	e581c008 	str	ip, [r1, #8]
+ 638:	0581300c 	streq	r3, [r1, #12]
+ 63c:	0a000005 	beq	658 <sd_card_init+0x658>
+ 640:	e3520001 	cmp	r2, #1
+ 644:	03a03002 	moveq	r3, #2
+ 648:	0581300c 	streq	r3, [r1, #12]
+ 64c:	0a000001 	beq	658 <sd_card_init+0x658>
+ 650:	e3520002 	cmp	r2, #2
+ 654:	0a00001e 	beq	6d4 <sd_card_init+0x6d4>
+ 658:	e3100004 	tst	r0, #4
+ 65c:	1a000003 	bne	670 <sd_card_init+0x670>
+ 660:	ebfffffe 	bl	0 <bcm2835_emmc_reset_interrupt_register>
+ 664:	e5854000 	str	r4, [r5]
+ 668:	e1a00006 	mov	r0, r6
+ 66c:	e8bd80f8 	pop	{r3, r4, r5, r6, r7, pc}
+ 670:	ebfffffe 	bl	0 <bcm2835_emmc_disable_card_interrupt>
+ 674:	e1a07000 	mov	r7, r0
+ 678:	e1a00004 	mov	r0, r4
+ 67c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 680:	e5943064 	ldr	r3, [r4, #100]	; 0x64
+ 684:	e3530000 	cmp	r3, #0
+ 688:	13a03000 	movne	r3, #0
+ 68c:	15843040 	strne	r3, [r4, #64]	; 0x40
+ 690:	1a00000c 	bne	6c8 <sd_card_init+0x6c8>
+ 694:	e3a02037 	mov	r2, #55	; 0x37
+ 698:	e5943024 	ldr	r3, [r4, #36]	; 0x24
+ 69c:	e584203c 	str	r2, [r4, #60]	; 0x3c
+ 6a0:	e3530000 	cmp	r3, #0
+ 6a4:	11a02803 	lslne	r2, r3, #16
+ 6a8:	01a02003 	moveq	r2, r3
+ 6ac:	e1a00004 	mov	r0, r4
+ 6b0:	e59f3120 	ldr	r3, [pc, #288]	; 7d8 <sd_card_init+0x7d8>
+ 6b4:	e59f1138 	ldr	r1, [pc, #312]	; 7f4 <sd_card_init+0x7f4>
+ 6b8:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 6bc:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 6c0:	e3530000 	cmp	r3, #0
+ 6c4:	1a00002f 	bne	788 <sd_card_init+0x788>
+ 6c8:	e59f016c 	ldr	r0, [pc, #364]	; 83c <sd_card_init+0x83c>
+ 6cc:	ebfffffe 	bl	0 <printf>
+ 6d0:	eaffffe2 	b	660 <sd_card_init+0x660>
+ 6d4:	e3130902 	tst	r3, #32768	; 0x8000
+ 6d8:	03a03003 	moveq	r3, #3
+ 6dc:	0581300c 	streq	r3, [r1, #12]
+ 6e0:	0affffdc 	beq	658 <sd_card_init+0x658>
+ 6e4:	e3130b01 	tst	r3, #1024	; 0x400
+ 6e8:	03a03004 	moveq	r3, #4
+ 6ec:	13a03005 	movne	r3, #5
+ 6f0:	e581300c 	str	r3, [r1, #12]
+ 6f4:	eaffffd7 	b	658 <sd_card_init+0x658>
+ 6f8:	e59f0140 	ldr	r0, [pc, #320]	; 840 <sd_card_init+0x840>
+ 6fc:	ebfffffe 	bl	0 <printf>
+ 700:	e1a00004 	mov	r0, r4
+ 704:	ebfffffe 	bl	0 <free>
+ 708:	e3e06000 	mvn	r6, #0
+ 70c:	eafffe89 	b	138 <sd_card_init+0x138>
+ 710:	e59f012c 	ldr	r0, [pc, #300]	; 844 <sd_card_init+0x844>
+ 714:	ebfffffe 	bl	0 <printf>
+ 718:	e1a00004 	mov	r0, r4
+ 71c:	ebfffffe 	bl	0 <free>
+ 720:	e3e06000 	mvn	r6, #0
+ 724:	eafffe83 	b	138 <sd_card_init+0x138>
+ 728:	e59f0118 	ldr	r0, [pc, #280]	; 848 <sd_card_init+0x848>
+ 72c:	ebfffffe 	bl	0 <printf>
+ 730:	e1a00004 	mov	r0, r4
+ 734:	ebfffffe 	bl	0 <free>
+ 738:	e3e06000 	mvn	r6, #0
+ 73c:	eafffe7d 	b	138 <sd_card_init+0x138>
+ 740:	e59f0104 	ldr	r0, [pc, #260]	; 84c <sd_card_init+0x84c>
+ 744:	ebfffffe 	bl	0 <printf>
+ 748:	e1a00004 	mov	r0, r4
+ 74c:	ebfffffe 	bl	0 <free>
+ 750:	e3e06000 	mvn	r6, #0
+ 754:	eafffe77 	b	138 <sd_card_init+0x138>
+ 758:	e59f00f0 	ldr	r0, [pc, #240]	; 850 <sd_card_init+0x850>
+ 75c:	ebfffffe 	bl	0 <printf>
+ 760:	e1a00004 	mov	r0, r4
+ 764:	ebfffffe 	bl	0 <free>
+ 768:	e3e06000 	mvn	r6, #0
+ 76c:	eafffe71 	b	138 <sd_card_init+0x138>
+ 770:	e59f00dc 	ldr	r0, [pc, #220]	; 854 <sd_card_init+0x854>
+ 774:	ebfffffe 	bl	0 <printf>
+ 778:	e1a00004 	mov	r0, r4
+ 77c:	ebfffffe 	bl	0 <free>
+ 780:	e3e06000 	mvn	r6, #0
+ 784:	eafffe6b 	b	138 <sd_card_init+0x138>
+ 788:	e3a0311a 	mov	r3, #-2147483642	; 0x80000006
+ 78c:	e1a00004 	mov	r0, r4
+ 790:	e584303c 	str	r3, [r4, #60]	; 0x3c
+ 794:	e59f10bc 	ldr	r1, [pc, #188]	; 858 <sd_card_init+0x858>
+ 798:	e59f3038 	ldr	r3, [pc, #56]	; 7d8 <sd_card_init+0x7d8>
+ 79c:	e3a02002 	mov	r2, #2
+ 7a0:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 7a4:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 7a8:	e3530000 	cmp	r3, #0
+ 7ac:	0affffc5 	beq	6c8 <sd_card_init+0x6c8>
+ 7b0:	e1a00007 	mov	r0, r7
+ 7b4:	ebfffffe 	bl	0 <bcm2835_emmc_4bit_mode_change_bit>
+ 7b8:	eaffffa8 	b	660 <sd_card_init+0x660>
+ 7bc:	e59f0098 	ldr	r0, [pc, #152]	; 85c <sd_card_init+0x85c>
+ 7c0:	ebfffffe 	bl	0 <printf>
+ 7c4:	e1a00004 	mov	r0, r4
+ 7c8:	ebfffffe 	bl	0 <free>
+ 7cc:	e3e06000 	mvn	r6, #0
+ 7d0:	eafffe58 	b	138 <sd_card_init+0x138>
+ 7d4:	00000000 	andeq	r0, r0, r0
+ 7d8:	0007a120 	andeq	sl, r7, r0, lsr #2
+ 7dc:	000001aa 	andeq	r0, r0, sl, lsr #3
+ 7e0:	080a0000 	stmdaeq	sl, {}	; <UNPREDICTABLE>
+ 7e4:	05010000 	streq	r0, [r1, #-0]
+ 7e8:	00002710 	andeq	r2, r0, r0, lsl r7
+ 7ec:	00000050 	andeq	r0, r0, r0, asr r0
+ 7f0:	00000018 	andeq	r0, r0, r8, lsl r0
+ 7f4:	370a0000 	strcc	r0, [sl, -r0]
+ 7f8:	00000084 	andeq	r0, r0, r4, lsl #1
+ 7fc:	02faf080 	rscseq	pc, sl, #128	; 0x80
+ 800:	00001388 	andeq	r1, r0, r8, lsl #7
+ 804:	02090000 	andeq	r0, r9, #0
+ 808:	030a0000 	movweq	r0, #40960	; 0xa000
+ 80c:	070b0000 	streq	r0, [fp, -r0]
+ 810:	100a0000 	andne	r0, sl, r0
+ 814:	000001ac 	andeq	r0, r0, ip, lsr #3
+ 818:	29020000 	stmdbcs	r2, {}	; <UNPREDICTABLE>
+ 81c:	000000a0 	andeq	r0, r0, r0, lsr #1
+ 820:	50ff8000 	rscspl	r8, pc, r0
+ 824:	00ff8000 	rscseq	r8, pc, r0
+ 828:	000000bc 	strheq	r0, [r0], -ip
+ 82c:	00000000 	andeq	r0, r0, r0
+ 830:	0000003c 	andeq	r0, r0, ip, lsr r0
+ 834:	00000170 	andeq	r0, r0, r0, ror r1
+ 838:	332a0010 	teqcc	sl, #16
+ 83c:	000001c8 	andeq	r0, r0, r8, asr #3
+ 840:	00000140 	andeq	r0, r0, r0, asr #2
+ 844:	0000012c 	andeq	r0, r0, ip, lsr #2
+ 848:	00000114 	andeq	r0, r0, r4, lsl r1
+ 84c:	00000104 	andeq	r0, r0, r4, lsl #2
+ 850:	000000dc 	ldrdeq	r0, [r0], -ip
+ 854:	00000158 	andeq	r0, r0, r8, asr r1
+ 858:	060a0000 	streq	r0, [sl], -r0
+ 85c:	0000018c 	andeq	r0, r0, ip, lsl #3
 
-0000086c <sd_ensure_data_mode>:
- 86c:	e92d4030 	push	{r4, r5, lr}
- 870:	e5905024 	ldr	r5, [r0, #36]	; 0x24
- 874:	e24dd00c 	sub	sp, sp, #12
- 878:	e3550000 	cmp	r5, #0
- 87c:	e1a04000 	mov	r4, r0
- 880:	e58d0004 	str	r0, [sp, #4]
- 884:	1a000005 	bne	8a0 <sd_ensure_data_mode+0x34>
- 888:	e28d0004 	add	r0, sp, #4
+00000860 <sd_read>:
+ 860:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
+ 864:	e5909024 	ldr	r9, [r0, #36]	; 0x24
+ 868:	e24dd014 	sub	sp, sp, #20
+ 86c:	e3590000 	cmp	r9, #0
+ 870:	e1a04000 	mov	r4, r0
+ 874:	e58d000c 	str	r0, [sp, #12]
+ 878:	e1a07001 	mov	r7, r1
+ 87c:	e1a06002 	mov	r6, r2
+ 880:	e1a08003 	mov	r8, r3
+ 884:	1a000006 	bne	8a4 <sd_read+0x44>
+ 888:	e28d000c 	add	r0, sp, #12
  88c:	ebfffffe 	bl	0 <sd_card_init>
  890:	e3500000 	cmp	r0, #0
- 894:	1a00003a 	bne	984 <sd_ensure_data_mode+0x118>
- 898:	e59d4004 	ldr	r4, [sp, #4]
- 89c:	e5945024 	ldr	r5, [r4, #36]	; 0x24
- 8a0:	e1a00004 	mov	r0, r4
- 8a4:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 8a8:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 8ac:	e3530000 	cmp	r3, #0
- 8b0:	13a03000 	movne	r3, #0
- 8b4:	15843040 	strne	r3, [r4, #64]	; 0x40
- 8b8:	1a000006 	bne	8d8 <sd_ensure_data_mode+0x6c>
- 8bc:	e3a0300d 	mov	r3, #13
- 8c0:	e1a02805 	lsl	r2, r5, #16
- 8c4:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 8c8:	e1a00004 	mov	r0, r4
- 8cc:	e59f11cc 	ldr	r1, [pc, #460]	; aa0 <sd_ensure_data_mode+0x234>
- 8d0:	e59f31cc 	ldr	r3, [pc, #460]	; aa4 <sd_ensure_data_mode+0x238>
- 8d4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 8d8:	e59d4004 	ldr	r4, [sp, #4]
- 8dc:	e5945040 	ldr	r5, [r4, #64]	; 0x40
- 8e0:	e3550000 	cmp	r5, #0
- 8e4:	0a00005b 	beq	a58 <sd_ensure_data_mode+0x1ec>
- 8e8:	e5943044 	ldr	r3, [r4, #68]	; 0x44
- 8ec:	e1a034a3 	lsr	r3, r3, #9
- 8f0:	e203300f 	and	r3, r3, #15
- 8f4:	e3530003 	cmp	r3, #3
- 8f8:	0a000023 	beq	98c <sd_ensure_data_mode+0x120>
- 8fc:	e3530005 	cmp	r3, #5
- 900:	0a00003a 	beq	9f0 <sd_ensure_data_mode+0x184>
- 904:	e3530004 	cmp	r3, #4
- 908:	0a00001c 	beq	980 <sd_ensure_data_mode+0x114>
- 90c:	e28d0004 	add	r0, sp, #4
- 910:	ebfffffe 	bl	0 <sd_card_init>
- 914:	e3500000 	cmp	r0, #0
- 918:	1a000019 	bne	984 <sd_ensure_data_mode+0x118>
- 91c:	e59d4004 	ldr	r4, [sp, #4]
- 920:	e1a00004 	mov	r0, r4
- 924:	e5945024 	ldr	r5, [r4, #36]	; 0x24
- 928:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 92c:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 930:	e3530000 	cmp	r3, #0
- 934:	13a03000 	movne	r3, #0
- 938:	15843040 	strne	r3, [r4, #64]	; 0x40
- 93c:	1a000006 	bne	95c <sd_ensure_data_mode+0xf0>
- 940:	e3a0300d 	mov	r3, #13
- 944:	e1a02805 	lsl	r2, r5, #16
- 948:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 94c:	e1a00004 	mov	r0, r4
- 950:	e59f1148 	ldr	r1, [pc, #328]	; aa0 <sd_ensure_data_mode+0x234>
- 954:	e59f3148 	ldr	r3, [pc, #328]	; aa4 <sd_ensure_data_mode+0x238>
- 958:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 95c:	e59d3004 	ldr	r3, [sp, #4]
- 960:	e5934040 	ldr	r4, [r3, #64]	; 0x40
- 964:	e3540000 	cmp	r4, #0
- 968:	0a000040 	beq	a70 <sd_ensure_data_mode+0x204>
- 96c:	e5931044 	ldr	r1, [r3, #68]	; 0x44
- 970:	e1a014a1 	lsr	r1, r1, #9
- 974:	e201100f 	and	r1, r1, #15
- 978:	e3510004 	cmp	r1, #4
- 97c:	1a00002e 	bne	a3c <sd_ensure_data_mode+0x1d0>
- 980:	e3a00000 	mov	r0, #0
- 984:	e28dd00c 	add	sp, sp, #12
- 988:	e8bd8030 	pop	{r4, r5, pc}
- 98c:	e1a00004 	mov	r0, r4
- 990:	e5945024 	ldr	r5, [r4, #36]	; 0x24
- 994:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 998:	e5943064 	ldr	r3, [r4, #100]	; 0x64
- 99c:	e3530000 	cmp	r3, #0
- 9a0:	13a03000 	movne	r3, #0
- 9a4:	15843040 	strne	r3, [r4, #64]	; 0x40
- 9a8:	1a000006 	bne	9c8 <sd_ensure_data_mode+0x15c>
- 9ac:	e3a03007 	mov	r3, #7
- 9b0:	e1a02805 	lsl	r2, r5, #16
- 9b4:	e584303c 	str	r3, [r4, #60]	; 0x3c
- 9b8:	e1a00004 	mov	r0, r4
- 9bc:	e59f10e4 	ldr	r1, [pc, #228]	; aa8 <sd_ensure_data_mode+0x23c>
- 9c0:	e59f30dc 	ldr	r3, [pc, #220]	; aa4 <sd_ensure_data_mode+0x238>
- 9c4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- 9c8:	e59d4004 	ldr	r4, [sp, #4]
- 9cc:	e5945040 	ldr	r5, [r4, #64]	; 0x40
- 9d0:	e3550000 	cmp	r5, #0
- 9d4:	1affffd1 	bne	920 <sd_ensure_data_mode+0xb4>
- 9d8:	e59f00cc 	ldr	r0, [pc, #204]	; aac <sd_ensure_data_mode+0x240>
- 9dc:	ebfffffe 	bl	0 <printf>
- 9e0:	e59d3004 	ldr	r3, [sp, #4]
- 9e4:	e3e00000 	mvn	r0, #0
- 9e8:	e5835024 	str	r5, [r3, #36]	; 0x24
- 9ec:	eaffffe4 	b	984 <sd_ensure_data_mode+0x118>
- 9f0:	e1a00004 	mov	r0, r4
- 9f4:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- 9f8:	e5942064 	ldr	r2, [r4, #100]	; 0x64
- 9fc:	e3520000 	cmp	r2, #0
- a00:	13a03000 	movne	r3, #0
- a04:	15843040 	strne	r3, [r4, #64]	; 0x40
- a08:	1a000005 	bne	a24 <sd_ensure_data_mode+0x1b8>
- a0c:	e3a0300c 	mov	r3, #12
- a10:	e1a00004 	mov	r0, r4
- a14:	e584303c 	str	r3, [r4, #60]	; 0x3c
- a18:	e59f1090 	ldr	r1, [pc, #144]	; ab0 <sd_ensure_data_mode+0x244>
- a1c:	e59f3080 	ldr	r3, [pc, #128]	; aa4 <sd_ensure_data_mode+0x238>
- a20:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- a24:	e59d3004 	ldr	r3, [sp, #4]
- a28:	e5934040 	ldr	r4, [r3, #64]	; 0x40
- a2c:	e3540000 	cmp	r4, #0
- a30:	0a000014 	beq	a88 <sd_ensure_data_mode+0x21c>
- a34:	ebfffffe 	bl	0 <bcm2835_emmc_reset_dat>
- a38:	eaffffb7 	b	91c <sd_ensure_data_mode+0xb0>
- a3c:	e59f0070 	ldr	r0, [pc, #112]	; ab4 <sd_ensure_data_mode+0x248>
- a40:	ebfffffe 	bl	0 <printf>
- a44:	e3a02000 	mov	r2, #0
- a48:	e59d3004 	ldr	r3, [sp, #4]
- a4c:	e3e00000 	mvn	r0, #0
- a50:	e5832024 	str	r2, [r3, #36]	; 0x24
- a54:	eaffffca 	b	984 <sd_ensure_data_mode+0x118>
- a58:	e59f0058 	ldr	r0, [pc, #88]	; ab8 <sd_ensure_data_mode+0x24c>
- a5c:	ebfffffe 	bl	0 <printf>
- a60:	e59d3004 	ldr	r3, [sp, #4]
- a64:	e3e00000 	mvn	r0, #0
- a68:	e5835024 	str	r5, [r3, #36]	; 0x24
- a6c:	eaffffc4 	b	984 <sd_ensure_data_mode+0x118>
- a70:	e59f0044 	ldr	r0, [pc, #68]	; abc <sd_ensure_data_mode+0x250>
- a74:	ebfffffe 	bl	0 <printf>
- a78:	e59d3004 	ldr	r3, [sp, #4]
- a7c:	e3e00000 	mvn	r0, #0
- a80:	e5834024 	str	r4, [r3, #36]	; 0x24
- a84:	eaffffbe 	b	984 <sd_ensure_data_mode+0x118>
- a88:	e59f0030 	ldr	r0, [pc, #48]	; ac0 <sd_ensure_data_mode+0x254>
- a8c:	ebfffffe 	bl	0 <printf>
- a90:	e59d3004 	ldr	r3, [sp, #4]
+ 894:	1a00007e 	bne	a94 <sd_read+0x234>
+ 898:	e59d500c 	ldr	r5, [sp, #12]
+ 89c:	e5959024 	ldr	r9, [r5, #36]	; 0x24
+ 8a0:	ea000000 	b	8a8 <sd_read+0x48>
+ 8a4:	e1a05000 	mov	r5, r0
+ 8a8:	e1a00005 	mov	r0, r5
+ 8ac:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 8b0:	e5953064 	ldr	r3, [r5, #100]	; 0x64
+ 8b4:	e3530000 	cmp	r3, #0
+ 8b8:	13a03000 	movne	r3, #0
+ 8bc:	15853040 	strne	r3, [r5, #64]	; 0x40
+ 8c0:	1a000006 	bne	8e0 <sd_read+0x80>
+ 8c4:	e3a0300d 	mov	r3, #13
+ 8c8:	e1a02809 	lsl	r2, r9, #16
+ 8cc:	e585303c 	str	r3, [r5, #60]	; 0x3c
+ 8d0:	e1a00005 	mov	r0, r5
+ 8d4:	e59f12e8 	ldr	r1, [pc, #744]	; bc4 <sd_read+0x364>
+ 8d8:	e59f32e8 	ldr	r3, [pc, #744]	; bc8 <sd_read+0x368>
+ 8dc:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 8e0:	e59d500c 	ldr	r5, [sp, #12]
+ 8e4:	e5959040 	ldr	r9, [r5, #64]	; 0x40
+ 8e8:	e3590000 	cmp	r9, #0
+ 8ec:	0a0000a6 	beq	b8c <sd_read+0x32c>
+ 8f0:	e595c044 	ldr	ip, [r5, #68]	; 0x44
+ 8f4:	e1a0c4ac 	lsr	ip, ip, #9
+ 8f8:	e20cc00f 	and	ip, ip, #15
+ 8fc:	e35c0003 	cmp	ip, #3
+ 900:	0a000066 	beq	aa0 <sd_read+0x240>
+ 904:	e35c0005 	cmp	ip, #5
+ 908:	0a00007c 	beq	b00 <sd_read+0x2a0>
+ 90c:	e35c0004 	cmp	ip, #4
+ 910:	0a00001c 	beq	988 <sd_read+0x128>
+ 914:	e28d000c 	add	r0, sp, #12
+ 918:	ebfffffe 	bl	0 <sd_card_init>
+ 91c:	e3500000 	cmp	r0, #0
+ 920:	1a00005b 	bne	a94 <sd_read+0x234>
+ 924:	e59d500c 	ldr	r5, [sp, #12]
+ 928:	e1a00005 	mov	r0, r5
+ 92c:	e5959024 	ldr	r9, [r5, #36]	; 0x24
+ 930:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ 934:	e5953064 	ldr	r3, [r5, #100]	; 0x64
+ 938:	e3530000 	cmp	r3, #0
+ 93c:	13a03000 	movne	r3, #0
+ 940:	15853040 	strne	r3, [r5, #64]	; 0x40
+ 944:	1a000006 	bne	964 <sd_read+0x104>
+ 948:	e3a0300d 	mov	r3, #13
+ 94c:	e1a02809 	lsl	r2, r9, #16
+ 950:	e585303c 	str	r3, [r5, #60]	; 0x3c
+ 954:	e1a00005 	mov	r0, r5
+ 958:	e59f1264 	ldr	r1, [pc, #612]	; bc4 <sd_read+0x364>
+ 95c:	e59f3264 	ldr	r3, [pc, #612]	; bc8 <sd_read+0x368>
+ 960:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 964:	e59d300c 	ldr	r3, [sp, #12]
+ 968:	e5935040 	ldr	r5, [r3, #64]	; 0x40
+ 96c:	e3550000 	cmp	r5, #0
+ 970:	0a00008a 	beq	ba0 <sd_read+0x340>
+ 974:	e5931044 	ldr	r1, [r3, #68]	; 0x44
+ 978:	e1a014a1 	lsr	r1, r1, #9
+ 97c:	e201100f 	and	r1, r1, #15
+ 980:	e3510004 	cmp	r1, #4
+ 984:	1a000070 	bne	b4c <sd_read+0x2ec>
+ 988:	e5943018 	ldr	r3, [r4, #24]
+ 98c:	e594505c 	ldr	r5, [r4, #92]	; 0x5c
+ 990:	e3530000 	cmp	r3, #0
+ 994:	01a08488 	lsleq	r8, r8, #9
+ 998:	e1560005 	cmp	r6, r5
+ 99c:	3a000070 	bcc	b64 <sd_read+0x304>
+ 9a0:	e1a01005 	mov	r1, r5
+ 9a4:	e1a00006 	mov	r0, r6
+ 9a8:	ebfffffe 	bl	0 <__aeabi_uidiv>
+ 9ac:	e1a01005 	mov	r1, r5
+ 9b0:	e5840058 	str	r0, [r4, #88]	; 0x58
+ 9b4:	e1a09000 	mov	r9, r0
+ 9b8:	e1a00006 	mov	r0, r6
+ 9bc:	ebfffffe 	bl	0 <__aeabi_uidivmod>
+ 9c0:	e3510000 	cmp	r1, #0
+ 9c4:	1a00006b 	bne	b78 <sd_read+0x318>
+ 9c8:	e3590001 	cmp	r9, #1
+ 9cc:	d3a09011 	movle	r9, #17
+ 9d0:	c3a09012 	movgt	r9, #18
+ 9d4:	e5847054 	str	r7, [r4, #84]	; 0x54
+ 9d8:	e1a0a009 	mov	sl, r9
+ 9dc:	e3a05003 	mov	r5, #3
+ 9e0:	e59fb1e4 	ldr	fp, [pc, #484]	; bcc <sd_read+0x36c>
+ 9e4:	ea000010 	b	a2c <sd_read+0x1cc>
+ 9e8:	e584903c 	str	r9, [r4, #60]	; 0x3c
+ 9ec:	e1a00004 	mov	r0, r4
+ 9f0:	e1a02008 	mov	r2, r8
+ 9f4:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ 9f8:	e5943040 	ldr	r3, [r4, #64]	; 0x40
+ 9fc:	e3530000 	cmp	r3, #0
+ a00:	1a00001c 	bne	a78 <sd_read+0x218>
+ a04:	e1a0100a 	mov	r1, sl
+ a08:	e59f01c0 	ldr	r0, [pc, #448]	; bd0 <sd_read+0x370>
+ a0c:	ebfffffe 	bl	0 <printf>
+ a10:	e59f01bc 	ldr	r0, [pc, #444]	; bd4 <sd_read+0x374>
+ a14:	e594102c 	ldr	r1, [r4, #44]	; 0x2c
+ a18:	ebfffffe 	bl	0 <printf>
+ a1c:	e2555001 	subs	r5, r5, #1
+ a20:	e59f01b0 	ldr	r0, [pc, #432]	; bd8 <sd_read+0x378>
+ a24:	0a000062 	beq	bb4 <sd_read+0x354>
+ a28:	ebfffffe 	bl	0 <printf>
+ a2c:	e3a07000 	mov	r7, #0
+ a30:	e1a00004 	mov	r0, r4
+ a34:	e5847060 	str	r7, [r4, #96]	; 0x60
+ a38:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ a3c:	e5942064 	ldr	r2, [r4, #100]	; 0x64
+ a40:	e59f3194 	ldr	r3, [pc, #404]	; bdc <sd_read+0x37c>
+ a44:	e1520007 	cmp	r2, r7
+ a48:	15847040 	strne	r7, [r4, #64]	; 0x40
+ a4c:	1affffec 	bne	a04 <sd_read+0x1a4>
+ a50:	e79b1109 	ldr	r1, [fp, r9, lsl #2]
+ a54:	e3710001 	cmn	r1, #1
+ a58:	1affffe2 	bne	9e8 <sd_read+0x188>
+ a5c:	e59f017c 	ldr	r0, [pc, #380]	; be0 <sd_read+0x380>
+ a60:	e1a01009 	mov	r1, r9
+ a64:	e58d2004 	str	r2, [sp, #4]
+ a68:	ebfffffe 	bl	0 <printf>
+ a6c:	e59d2004 	ldr	r2, [sp, #4]
+ a70:	e5842040 	str	r2, [r4, #64]	; 0x40
+ a74:	eaffffe2 	b	a04 <sd_read+0x1a4>
+ a78:	e1a00006 	mov	r0, r6
+ a7c:	e28dd014 	add	sp, sp, #20
+ a80:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ a84:	e59f0158 	ldr	r0, [pc, #344]	; be4 <sd_read+0x384>
+ a88:	ebfffffe 	bl	0 <printf>
+ a8c:	e59d300c 	ldr	r3, [sp, #12]
+ a90:	e5835024 	str	r5, [r3, #36]	; 0x24
  a94:	e3e00000 	mvn	r0, #0
- a98:	e5834024 	str	r4, [r3, #36]	; 0x24
- a9c:	eaffffb8 	b	984 <sd_ensure_data_mode+0x118>
- aa0:	0d0a0000 	stceq	0, cr0, [sl, #-0]
- aa4:	0007a120 	andeq	sl, r7, r0, lsr #2
- aa8:	070b0000 	streq	r0, [fp, -r0]
- aac:	0000021c 	andeq	r0, r0, ip, lsl r2
- ab0:	0ccb0000 	stcleq	0, cr0, [fp], {0}
- ab4:	000002ac 	andeq	r0, r0, ip, lsr #5
- ab8:	000001f0 	strdeq	r0, [r0], -r0	; <UNPREDICTABLE>
- abc:	0000027c 	andeq	r0, r0, ip, ror r2
- ac0:	0000024c 	andeq	r0, r0, ip, asr #4
-
-00000ac4 <sd_read>:
- ac4:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
- ac8:	e24dd00c 	sub	sp, sp, #12
- acc:	e1a08001 	mov	r8, r1
- ad0:	e1a06002 	mov	r6, r2
- ad4:	e1a0a003 	mov	sl, r3
- ad8:	e1a04000 	mov	r4, r0
- adc:	ebffff62 	bl	86c <sd_ensure_data_mode>
- ae0:	e3500000 	cmp	r0, #0
- ae4:	1a000042 	bne	bf4 <sd_read+0x130>
- ae8:	e5943018 	ldr	r3, [r4, #24]
- aec:	e594505c 	ldr	r5, [r4, #92]	; 0x5c
- af0:	e3530000 	cmp	r3, #0
- af4:	01a0a48a 	lsleq	sl, sl, #9
- af8:	e1560005 	cmp	r6, r5
- afc:	3a000038 	bcc	be4 <sd_read+0x120>
- b00:	e1a01005 	mov	r1, r5
- b04:	e1a00006 	mov	r0, r6
- b08:	ebfffffe 	bl	0 <__aeabi_uidiv>
- b0c:	e1a01005 	mov	r1, r5
- b10:	e5840058 	str	r0, [r4, #88]	; 0x58
- b14:	e1a07000 	mov	r7, r0
- b18:	e1a00006 	mov	r0, r6
- b1c:	ebfffffe 	bl	0 <__aeabi_uidivmod>
- b20:	e3510000 	cmp	r1, #0
- b24:	1a000035 	bne	c00 <sd_read+0x13c>
- b28:	e3570001 	cmp	r7, #1
- b2c:	e5848054 	str	r8, [r4, #84]	; 0x54
- b30:	d3a08011 	movle	r8, #17
- b34:	c3a08012 	movgt	r8, #18
- b38:	e3a05003 	mov	r5, #3
- b3c:	e1a09008 	mov	r9, r8
- b40:	e59fb0dc 	ldr	fp, [pc, #220]	; c24 <sd_read+0x160>
- b44:	ea000010 	b	b8c <sd_read+0xc8>
- b48:	e584803c 	str	r8, [r4, #60]	; 0x3c
- b4c:	e1a00004 	mov	r0, r4
- b50:	e1a0200a 	mov	r2, sl
- b54:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- b58:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- b5c:	e3530000 	cmp	r3, #0
- b60:	1a00001c 	bne	bd8 <sd_read+0x114>
- b64:	e1a01009 	mov	r1, r9
- b68:	e59f00b8 	ldr	r0, [pc, #184]	; c28 <sd_read+0x164>
- b6c:	ebfffffe 	bl	0 <printf>
- b70:	e59f00b4 	ldr	r0, [pc, #180]	; c2c <sd_read+0x168>
- b74:	e594102c 	ldr	r1, [r4, #44]	; 0x2c
- b78:	ebfffffe 	bl	0 <printf>
- b7c:	e2555001 	subs	r5, r5, #1
- b80:	e59f00a8 	ldr	r0, [pc, #168]	; c30 <sd_read+0x16c>
- b84:	0a000022 	beq	c14 <sd_read+0x150>
- b88:	ebfffffe 	bl	0 <printf>
- b8c:	e3a07000 	mov	r7, #0
- b90:	e1a00004 	mov	r0, r4
- b94:	e5847060 	str	r7, [r4, #96]	; 0x60
- b98:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- b9c:	e5942064 	ldr	r2, [r4, #100]	; 0x64
- ba0:	e59f308c 	ldr	r3, [pc, #140]	; c34 <sd_read+0x170>
- ba4:	e1520007 	cmp	r2, r7
- ba8:	15847040 	strne	r7, [r4, #64]	; 0x40
- bac:	1affffec 	bne	b64 <sd_read+0xa0>
- bb0:	e79b1108 	ldr	r1, [fp, r8, lsl #2]
- bb4:	e3710001 	cmn	r1, #1
- bb8:	1affffe2 	bne	b48 <sd_read+0x84>
- bbc:	e59f0074 	ldr	r0, [pc, #116]	; c38 <sd_read+0x174>
- bc0:	e1a01008 	mov	r1, r8
- bc4:	e58d2004 	str	r2, [sp, #4]
- bc8:	ebfffffe 	bl	0 <printf>
- bcc:	e59d2004 	ldr	r2, [sp, #4]
- bd0:	e5842040 	str	r2, [r4, #64]	; 0x40
- bd4:	eaffffe2 	b	b64 <sd_read+0xa0>
- bd8:	e1a00006 	mov	r0, r6
- bdc:	e28dd00c 	add	sp, sp, #12
- be0:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
- be4:	e1a01006 	mov	r1, r6
- be8:	e1a02005 	mov	r2, r5
- bec:	e59f0048 	ldr	r0, [pc, #72]	; c3c <sd_read+0x178>
- bf0:	ebfffffe 	bl	0 <printf>
- bf4:	e3e00000 	mvn	r0, #0
- bf8:	e28dd00c 	add	sp, sp, #12
- bfc:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
- c00:	e1a01006 	mov	r1, r6
- c04:	e1a02005 	mov	r2, r5
- c08:	e59f0030 	ldr	r0, [pc, #48]	; c40 <sd_read+0x17c>
- c0c:	ebfffffe 	bl	0 <printf>
- c10:	eafffff7 	b	bf4 <sd_read+0x130>
- c14:	e59f0028 	ldr	r0, [pc, #40]	; c44 <sd_read+0x180>
- c18:	ebfffffe 	bl	0 <printf>
- c1c:	e5845024 	str	r5, [r4, #36]	; 0x24
- c20:	eafffff3 	b	bf4 <sd_read+0x130>
- c24:	00000000 	andeq	r0, r0, r0
- c28:	000003b4 			; <UNDEFINED> instruction: 0x000003b4
- c2c:	000003d0 	ldrdeq	r0, [r0], -r0	; <UNPREDICTABLE>
- c30:	000003e0 	andeq	r0, r0, r0, ror #7
- c34:	004c4b40 	subeq	r4, ip, r0, asr #22
- c38:	00000398 	muleq	r0, r8, r3
- c3c:	000002e8 	andeq	r0, r0, r8, ror #5
- c40:	00000338 	andeq	r0, r0, r8, lsr r3
- c44:	000003f0 	strdeq	r0, [r0], -r0	; <UNPREDICTABLE>
-
-00000c48 <sd_write>:
- c48:	e92d4ff0 	push	{r4, r5, r6, r7, r8, r9, sl, fp, lr}
- c4c:	e24dd00c 	sub	sp, sp, #12
- c50:	e1a08001 	mov	r8, r1
- c54:	e1a06002 	mov	r6, r2
- c58:	e1a0a003 	mov	sl, r3
- c5c:	e1a04000 	mov	r4, r0
- c60:	ebffff01 	bl	86c <sd_ensure_data_mode>
- c64:	e3500000 	cmp	r0, #0
- c68:	1a000042 	bne	d78 <sd_write+0x130>
- c6c:	e5943018 	ldr	r3, [r4, #24]
- c70:	e594505c 	ldr	r5, [r4, #92]	; 0x5c
- c74:	e3530000 	cmp	r3, #0
- c78:	01a0a48a 	lsleq	sl, sl, #9
- c7c:	e1560005 	cmp	r6, r5
- c80:	3a000038 	bcc	d68 <sd_write+0x120>
- c84:	e1a01005 	mov	r1, r5
- c88:	e1a00006 	mov	r0, r6
- c8c:	ebfffffe 	bl	0 <__aeabi_uidiv>
- c90:	e1a01005 	mov	r1, r5
- c94:	e5840058 	str	r0, [r4, #88]	; 0x58
- c98:	e1a07000 	mov	r7, r0
- c9c:	e1a00006 	mov	r0, r6
- ca0:	ebfffffe 	bl	0 <__aeabi_uidivmod>
- ca4:	e3510000 	cmp	r1, #0
- ca8:	1a000035 	bne	d84 <sd_write+0x13c>
- cac:	e3570001 	cmp	r7, #1
- cb0:	e5848054 	str	r8, [r4, #84]	; 0x54
- cb4:	d3a08018 	movle	r8, #24
- cb8:	c3a08019 	movgt	r8, #25
- cbc:	e3a05003 	mov	r5, #3
- cc0:	e1a09008 	mov	r9, r8
- cc4:	e59fb0dc 	ldr	fp, [pc, #220]	; da8 <sd_write+0x160>
- cc8:	ea000010 	b	d10 <sd_write+0xc8>
- ccc:	e584803c 	str	r8, [r4, #60]	; 0x3c
- cd0:	e1a00004 	mov	r0, r4
- cd4:	e1a0200a 	mov	r2, sl
- cd8:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
- cdc:	e5943040 	ldr	r3, [r4, #64]	; 0x40
- ce0:	e3530000 	cmp	r3, #0
- ce4:	1a00001c 	bne	d5c <sd_write+0x114>
- ce8:	e1a01009 	mov	r1, r9
- cec:	e59f00b8 	ldr	r0, [pc, #184]	; dac <sd_write+0x164>
- cf0:	ebfffffe 	bl	0 <printf>
- cf4:	e59f00b4 	ldr	r0, [pc, #180]	; db0 <sd_write+0x168>
- cf8:	e594102c 	ldr	r1, [r4, #44]	; 0x2c
- cfc:	ebfffffe 	bl	0 <printf>
- d00:	e2555001 	subs	r5, r5, #1
- d04:	e59f00a8 	ldr	r0, [pc, #168]	; db4 <sd_write+0x16c>
- d08:	0a000022 	beq	d98 <sd_write+0x150>
- d0c:	ebfffffe 	bl	0 <printf>
- d10:	e3a07000 	mov	r7, #0
- d14:	e1a00004 	mov	r0, r4
- d18:	e5847060 	str	r7, [r4, #96]	; 0x60
- d1c:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
- d20:	e5942064 	ldr	r2, [r4, #100]	; 0x64
- d24:	e59f308c 	ldr	r3, [pc, #140]	; db8 <sd_write+0x170>
- d28:	e1520007 	cmp	r2, r7
- d2c:	15847040 	strne	r7, [r4, #64]	; 0x40
- d30:	1affffec 	bne	ce8 <sd_write+0xa0>
- d34:	e79b1108 	ldr	r1, [fp, r8, lsl #2]
- d38:	e3710001 	cmn	r1, #1
- d3c:	1affffe2 	bne	ccc <sd_write+0x84>
- d40:	e59f0074 	ldr	r0, [pc, #116]	; dbc <sd_write+0x174>
- d44:	e1a01008 	mov	r1, r8
- d48:	e58d2004 	str	r2, [sp, #4]
- d4c:	ebfffffe 	bl	0 <printf>
- d50:	e59d2004 	ldr	r2, [sp, #4]
- d54:	e5842040 	str	r2, [r4, #64]	; 0x40
- d58:	eaffffe2 	b	ce8 <sd_write+0xa0>
- d5c:	e1a00006 	mov	r0, r6
- d60:	e28dd00c 	add	sp, sp, #12
- d64:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
- d68:	e1a01006 	mov	r1, r6
- d6c:	e1a02005 	mov	r2, r5
- d70:	e59f0048 	ldr	r0, [pc, #72]	; dc0 <sd_write+0x178>
- d74:	ebfffffe 	bl	0 <printf>
- d78:	e3e00000 	mvn	r0, #0
- d7c:	e28dd00c 	add	sp, sp, #12
- d80:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
- d84:	e1a01006 	mov	r1, r6
- d88:	e1a02005 	mov	r2, r5
- d8c:	e59f0030 	ldr	r0, [pc, #48]	; dc4 <sd_write+0x17c>
- d90:	ebfffffe 	bl	0 <printf>
- d94:	eafffff7 	b	d78 <sd_write+0x130>
- d98:	e59f0028 	ldr	r0, [pc, #40]	; dc8 <sd_write+0x180>
- d9c:	ebfffffe 	bl	0 <printf>
- da0:	e5845024 	str	r5, [r4, #36]	; 0x24
- da4:	eafffff3 	b	d78 <sd_write+0x130>
- da8:	00000000 	andeq	r0, r0, r0
- dac:	000003b4 			; <UNDEFINED> instruction: 0x000003b4
- db0:	000003d0 	ldrdeq	r0, [r0], -r0	; <UNPREDICTABLE>
- db4:	000003e0 	andeq	r0, r0, r0, ror #7
- db8:	004c4b40 	subeq	r4, ip, r0, asr #22
- dbc:	00000398 	muleq	r0, r8, r3
- dc0:	000002e8 	andeq	r0, r0, r8, ror #5
- dc4:	00000338 	andeq	r0, r0, r8, lsr r3
- dc8:	000003f0 	strdeq	r0, [r0], -r0	; <UNPREDICTABLE>
+ a98:	e28dd014 	add	sp, sp, #20
+ a9c:	e8bd8ff0 	pop	{r4, r5, r6, r7, r8, r9, sl, fp, pc}
+ aa0:	e1a00005 	mov	r0, r5
+ aa4:	e5959024 	ldr	r9, [r5, #36]	; 0x24
+ aa8:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ aac:	e5953064 	ldr	r3, [r5, #100]	; 0x64
+ ab0:	e3530000 	cmp	r3, #0
+ ab4:	13a03000 	movne	r3, #0
+ ab8:	15853040 	strne	r3, [r5, #64]	; 0x40
+ abc:	1a000006 	bne	adc <sd_read+0x27c>
+ ac0:	e3a03007 	mov	r3, #7
+ ac4:	e1a02809 	lsl	r2, r9, #16
+ ac8:	e585303c 	str	r3, [r5, #60]	; 0x3c
+ acc:	e1a00005 	mov	r0, r5
+ ad0:	e59f1110 	ldr	r1, [pc, #272]	; be8 <sd_read+0x388>
+ ad4:	e59f30ec 	ldr	r3, [pc, #236]	; bc8 <sd_read+0x368>
+ ad8:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ adc:	e59d500c 	ldr	r5, [sp, #12]
+ ae0:	e5959040 	ldr	r9, [r5, #64]	; 0x40
+ ae4:	e3590000 	cmp	r9, #0
+ ae8:	1affff8e 	bne	928 <sd_read+0xc8>
+ aec:	e59f00f8 	ldr	r0, [pc, #248]	; bec <sd_read+0x38c>
+ af0:	ebfffffe 	bl	0 <printf>
+ af4:	e59d300c 	ldr	r3, [sp, #12]
+ af8:	e5839024 	str	r9, [r3, #36]	; 0x24
+ afc:	eaffffe4 	b	a94 <sd_read+0x234>
+ b00:	e1a00005 	mov	r0, r5
+ b04:	ebfffffe 	bl	0 <bcm2835_emmc_handle_interrupts>
+ b08:	e5952064 	ldr	r2, [r5, #100]	; 0x64
+ b0c:	e3520000 	cmp	r2, #0
+ b10:	13a03000 	movne	r3, #0
+ b14:	15853040 	strne	r3, [r5, #64]	; 0x40
+ b18:	1a000005 	bne	b34 <sd_read+0x2d4>
+ b1c:	e3a0300c 	mov	r3, #12
+ b20:	e1a00005 	mov	r0, r5
+ b24:	e585303c 	str	r3, [r5, #60]	; 0x3c
+ b28:	e59f10c0 	ldr	r1, [pc, #192]	; bf0 <sd_read+0x390>
+ b2c:	e59f3094 	ldr	r3, [pc, #148]	; bc8 <sd_read+0x368>
+ b30:	ebfffffe 	bl	0 <bcm2835_emmc_issue_command>
+ b34:	e59d300c 	ldr	r3, [sp, #12]
+ b38:	e5935040 	ldr	r5, [r3, #64]	; 0x40
+ b3c:	e3550000 	cmp	r5, #0
+ b40:	0affffcf 	beq	a84 <sd_read+0x224>
+ b44:	ebfffffe 	bl	0 <bcm2835_emmc_reset_dat>
+ b48:	eaffff75 	b	924 <sd_read+0xc4>
+ b4c:	e59f00a0 	ldr	r0, [pc, #160]	; bf4 <sd_read+0x394>
+ b50:	ebfffffe 	bl	0 <printf>
+ b54:	e3a02000 	mov	r2, #0
+ b58:	e59d300c 	ldr	r3, [sp, #12]
+ b5c:	e5832024 	str	r2, [r3, #36]	; 0x24
+ b60:	eaffffcb 	b	a94 <sd_read+0x234>
+ b64:	e1a01006 	mov	r1, r6
+ b68:	e1a02005 	mov	r2, r5
+ b6c:	e59f0084 	ldr	r0, [pc, #132]	; bf8 <sd_read+0x398>
+ b70:	ebfffffe 	bl	0 <printf>
+ b74:	eaffffc6 	b	a94 <sd_read+0x234>
+ b78:	e1a01006 	mov	r1, r6
+ b7c:	e1a02005 	mov	r2, r5
+ b80:	e59f0074 	ldr	r0, [pc, #116]	; bfc <sd_read+0x39c>
+ b84:	ebfffffe 	bl	0 <printf>
+ b88:	eaffffc1 	b	a94 <sd_read+0x234>
+ b8c:	e59f006c 	ldr	r0, [pc, #108]	; c00 <sd_read+0x3a0>
+ b90:	ebfffffe 	bl	0 <printf>
+ b94:	e59d300c 	ldr	r3, [sp, #12]
+ b98:	e5839024 	str	r9, [r3, #36]	; 0x24
+ b9c:	eaffffbc 	b	a94 <sd_read+0x234>
+ ba0:	e59f005c 	ldr	r0, [pc, #92]	; c04 <sd_read+0x3a4>
+ ba4:	ebfffffe 	bl	0 <printf>
+ ba8:	e59d300c 	ldr	r3, [sp, #12]
+ bac:	e5835024 	str	r5, [r3, #36]	; 0x24
+ bb0:	eaffffb7 	b	a94 <sd_read+0x234>
+ bb4:	e59f004c 	ldr	r0, [pc, #76]	; c08 <sd_read+0x3a8>
+ bb8:	ebfffffe 	bl	0 <printf>
+ bbc:	e5845024 	str	r5, [r4, #36]	; 0x24
+ bc0:	eaffffb3 	b	a94 <sd_read+0x234>
+ bc4:	0d0a0000 	stceq	0, cr0, [sl, #-0]
+ bc8:	0007a120 	andeq	sl, r7, r0, lsr #2
+ bcc:	00000000 	andeq	r0, r0, r0
+ bd0:	000003b4 			; <UNDEFINED> instruction: 0x000003b4
+ bd4:	000003d0 	ldrdeq	r0, [r0], -r0	; <UNPREDICTABLE>
+ bd8:	000003e0 	andeq	r0, r0, r0, ror #7
+ bdc:	004c4b40 	subeq	r4, ip, r0, asr #22
+ be0:	00000398 	muleq	r0, r8, r3
+ be4:	0000024c 	andeq	r0, r0, ip, asr #4
+ be8:	070b0000 	streq	r0, [fp, -r0]
+ bec:	0000021c 	andeq	r0, r0, ip, lsl r2
+ bf0:	0ccb0000 	stcleq	0, cr0, [fp], {0}
+ bf4:	000002ac 	andeq	r0, r0, ip, lsr #5
+ bf8:	000002e8 	andeq	r0, r0, r8, ror #5
+ bfc:	00000338 	andeq	r0, r0, r8, lsr r3
+ c00:	000001f0 	strdeq	r0, [r0], -r0	; <UNPREDICTABLE>
+ c04:	0000027c 	andeq	r0, r0, ip, ror r2
+ c08:	000003f0 	strdeq	r0, [r0], -r0	; <UNPREDICTABLE>
 
 Disassembly of section .rodata:
 
@@ -1622,8 +1507,8 @@ Disassembly of section .rodata:
   1c:	070b0000 	streq	r0, [fp, -r0]
   20:	080a0000 	stmdaeq	sl, {}	; <UNPREDICTABLE>
   24:	09090000 	stmdbeq	r9, {}	; <UNPREDICTABLE>
-  28:	0a090000 	beq	240030 <sd_write+0x23f3e8>
-  2c:	0b0a0000 	bleq	280034 <sd_write+0x27f3ec>
+  28:	0a090000 	beq	240030 <sd_read+0x23f7d0>
+  2c:	0b0a0000 	bleq	280034 <sd_read+0x27f7d4>
   30:	0ccb0000 	stcleq	0, cr0, [fp], {0}
   34:	0d0a0000 	stceq	0, cr0, [sl, #-0]
   38:	ffffffff 			; <UNDEFINED> instruction: 0xffffffff
@@ -1639,7 +1524,7 @@ Disassembly of section .rodata:
   60:	182a0000 	stmdane	sl!, {}	; <UNPREDICTABLE>
   64:	192a0022 	stmdbne	sl!, {r1, r5}
   68:	ffffffff 			; <UNDEFINED> instruction: 0xffffffff
-  6c:	1b2a0000 	blne	a80074 <sd_write+0xa7f42c>
+  6c:	1b2a0000 	blne	a80074 <sd_read+0xa7f814>
   70:	1c0b0000 	stcne	0, cr0, [fp], {-0}
   74:	1d0b0000 	stcne	0, cr0, [fp, #-0]
   78:	1e2a0010 	mcrne	0, 1, r0, cr10, cr0, {0}
@@ -1693,7 +1578,7 @@ Disassembly of section .rodata.str1.4:
   28:	20676e69 	rsbcs	r6, r7, r9, ror #28
   2c:	38444d43 	stmdacc	r4, {r0, r1, r6, r8, sl, fp, lr}^
   30:	30252820 	eorcc	r2, r5, r0, lsr #16
-  34:	0a297838 	beq	a5e11c <sd_write+0xa5d4d4>
+  34:	0a297838 	beq	a5e11c <sd_read+0xa5d8bc>
   38:	00000000 	andeq	r0, r0, r0
   3c:	203a4453 	eorscs	r4, sl, r3, asr r4
   40:	73756e75 	cmnvc	r5, #1872	; 0x750
@@ -1753,7 +1638,7 @@ Disassembly of section .rodata.str1.4:
  118:	656c6c69 	strbvs	r6, [ip, #-3177]!	; 0xfffff397
  11c:	206c6167 	rsbcs	r6, ip, r7, ror #2
  120:	6d6d6f63 	stclvs	15, cr6, [sp, #-396]!	; 0xfffffe74
- 124:	0a646e61 	beq	191bab0 <sd_write+0x191ae68>
+ 124:	0a646e61 	beq	191bab0 <sd_read+0x191b250>
  128:	00000000 	andeq	r0, r0, r0
  12c:	203a4453 	eorscs	r4, sl, r3, asr r4
  130:	656e6567 	strbvs	r6, [lr, #-1383]!	; 0xfffffa99
@@ -1777,7 +1662,7 @@ Disassembly of section .rodata.str1.4:
  178:	2064696c 	rsbcs	r6, r4, ip, ror #18
  17c:	74617473 	strbtvc	r7, [r1], #-1139	; 0xfffffb8d
  180:	28207375 	stmdacs	r0!, {r0, r2, r4, r5, r6, r8, r9, ip, sp, lr}
- 184:	0a296925 	beq	a5a620 <sd_write+0xa599d8>
+ 184:	0a296925 	beq	a5a620 <sd_read+0xa59dc0>
  188:	00000000 	andeq	r0, r0, r0
  18c:	203a4453 	eorscs	r4, sl, r3, asr r4
  190:	6f727265 	svcvs	0x00727265
@@ -1876,7 +1761,7 @@ Disassembly of section .rodata.str1.4:
  304:	74697720 	strbtvc	r7, [r9], #-1824	; 0xfffff8e0
  308:	75622068 	strbvc	r2, [r2, #-104]!	; 0xffffff98
  30c:	72656666 	rsbvc	r6, r5, #106954752	; 0x6600000
- 310:	7a697320 	bvc	1a5cf98 <sd_write+0x1a5c350>
+ 310:	7a697320 	bvc	1a5cf98 <sd_read+0x1a5c738>
  314:	25282065 	strcs	r2, [r8, #-101]!	; 0xffffff9b
  318:	6c202969 	stcvs	9, cr2, [r0], #-420	; 0xfffffe5c
  31c:	20737365 	rsbscs	r7, r3, r5, ror #6
@@ -1896,7 +1781,7 @@ Disassembly of section .rodata.str1.4:
  354:	74697720 	strbtvc	r7, [r9], #-1824	; 0xfffff8e0
  358:	75622068 	strbvc	r2, [r2, #-104]!	; 0xffffff98
  35c:	72656666 	rsbvc	r6, r5, #106954752	; 0x6600000
- 360:	7a697320 	bvc	1a5cfe8 <sd_write+0x1a5c3a0>
+ 360:	7a697320 	bvc	1a5cfe8 <sd_read+0x1a5c788>
  364:	25282065 	strcs	r2, [r8, #-101]!	; 0xffffff9b
  368:	6e202969 	cdpvs	9, 2, cr2, cr0, cr9, {3}
  36c:	6120746f 	teqvs	r0, pc, ror #8
@@ -1908,7 +1793,7 @@ Disassembly of section .rodata.str1.4:
  384:	636f6c62 	cmnvs	pc, #25088	; 0x6200
  388:	6973206b 	ldmdbvs	r3!, {r0, r1, r3, r5, r6, sp}^
  38c:	2820657a 	stmdacs	r0!, {r1, r3, r4, r5, r6, r8, sl, sp, lr}
- 390:	0a296925 	beq	a5a82c <sd_write+0xa59be4>
+ 390:	0a296925 	beq	a5a82c <sd_read+0xa59fcc>
  394:	00000000 	andeq	r0, r0, r0
  398:	203a4453 	eorscs	r4, sl, r3, asr r4
  39c:	61766e69 	cmnvs	r6, r9, ror #28
@@ -1930,7 +1815,7 @@ Disassembly of section .rodata.str1.4:
  3dc:	0020202e 	eoreq	r2, r0, lr, lsr #32
  3e0:	72746552 	rsbsvc	r6, r4, #343932928	; 0x14800000
  3e4:	676e6979 			; <UNDEFINED> instruction: 0x676e6979
- 3e8:	0a2e2e2e 	beq	b8bca8 <sd_write+0xb8b060>
+ 3e8:	0a2e2e2e 	beq	b8bca8 <sd_read+0xb8b448>
  3ec:	00000000 	andeq	r0, r0, r0
  3f0:	69766947 	ldmdbvs	r6!, {r0, r1, r2, r6, r8, fp, sp, lr}^
  3f4:	7520676e 	strvc	r6, [r0, #-1902]!	; 0xfffff892
@@ -2022,98 +1907,71 @@ Disassembly of section .text:
 	...
 
 000000bc <disk_write>:
-  bc:	e16fcf13 	clz	ip, r3
-  c0:	e1a0c2ac 	lsr	ip, ip, #5
+  bc:	e3a00000 	mov	r0, #0
+  c0:	e12fff1e 	bx	lr
+
+000000c4 <disk_status>:
   c4:	e3500000 	cmp	r0, #0
-  c8:	01a0000c 	moveq	r0, ip
-  cc:	138c0001 	orrne	r0, ip, #1
-  d0:	e3500000 	cmp	r0, #0
-  d4:	0a000001 	beq	e0 <disk_write+0x24>
-  d8:	e3a00004 	mov	r0, #4
-  dc:	e12fff1e 	bx	lr
-  e0:	e59f0044 	ldr	r0, [pc, #68]	; 12c <disk_write+0x70>
-  e4:	e5d00000 	ldrb	r0, [r0]
-  e8:	e3100001 	tst	r0, #1
-  ec:	0a000001 	beq	f8 <disk_write+0x3c>
-  f0:	e3a00003 	mov	r0, #3
-  f4:	e12fff1e 	bx	lr
-  f8:	e92d4010 	push	{r4, lr}
-  fc:	e1a04003 	mov	r4, r3
- 100:	e1a03002 	mov	r3, r2
- 104:	e59f2024 	ldr	r2, [pc, #36]	; 130 <disk_write+0x74>
- 108:	e5920000 	ldr	r0, [r2]
- 10c:	e5902010 	ldr	r2, [r0, #16]
- 110:	e0040492 	mul	r4, r2, r4
- 114:	e1a02004 	mov	r2, r4
- 118:	ebfffffe 	bl	0 <sd_write>
- 11c:	e1540000 	cmp	r4, r0
- 120:	93a00000 	movls	r0, #0
- 124:	83a00001 	movhi	r0, #1
- 128:	e8bd8010 	pop	{r4, pc}
-	...
+  c8:	059f300c 	ldreq	r3, [pc, #12]	; dc <disk_status+0x18>
+  cc:	05d30000 	ldrbeq	r0, [r3]
+  d0:	06ef0070 	uxtbeq	r0, r0
+  d4:	13a00001 	movne	r0, #1
+  d8:	e12fff1e 	bx	lr
+  dc:	00000000 	andeq	r0, r0, r0
 
-00000134 <disk_status>:
- 134:	e3500000 	cmp	r0, #0
- 138:	059f300c 	ldreq	r3, [pc, #12]	; 14c <disk_status+0x18>
- 13c:	05d30000 	ldrbeq	r0, [r3]
- 140:	06ef0070 	uxtbeq	r0, r0
- 144:	13a00001 	movne	r0, #1
- 148:	e12fff1e 	bx	lr
- 14c:	00000000 	andeq	r0, r0, r0
+000000e0 <disk_ioctl>:
+  e0:	e3510003 	cmp	r1, #3
+  e4:	979ff101 	ldrls	pc, [pc, r1, lsl #2]
+  e8:	ea000011 	b	134 <disk_ioctl+0x54>
+  ec:	00000114 	andeq	r0, r0, r4, lsl r1
+  f0:	0000011c 	andeq	r0, r0, ip, lsl r1
+  f4:	000000fc 	strdeq	r0, [r0], -ip
+  f8:	000000fc 	strdeq	r0, [r0], -ip
+  fc:	e59f3038 	ldr	r3, [pc, #56]	; 13c <disk_ioctl+0x5c>
+ 100:	e3a00000 	mov	r0, #0
+ 104:	e5933000 	ldr	r3, [r3]
+ 108:	e5933010 	ldr	r3, [r3, #16]
+ 10c:	e5823000 	str	r3, [r2]
+ 110:	e12fff1e 	bx	lr
+ 114:	e3a00000 	mov	r0, #0
+ 118:	e12fff1e 	bx	lr
+ 11c:	e59f3018 	ldr	r3, [pc, #24]	; 13c <disk_ioctl+0x5c>
+ 120:	e3a00000 	mov	r0, #0
+ 124:	e5933000 	ldr	r3, [r3]
+ 128:	e5933014 	ldr	r3, [r3, #20]
+ 12c:	e5823000 	str	r3, [r2]
+ 130:	e12fff1e 	bx	lr
+ 134:	e3a00004 	mov	r0, #4
+ 138:	e12fff1e 	bx	lr
+ 13c:	00000000 	andeq	r0, r0, r0
 
-00000150 <disk_ioctl>:
- 150:	e3510003 	cmp	r1, #3
- 154:	979ff101 	ldrls	pc, [pc, r1, lsl #2]
- 158:	ea000011 	b	1a4 <disk_ioctl+0x54>
- 15c:	00000184 	andeq	r0, r0, r4, lsl #3
- 160:	0000018c 	andeq	r0, r0, ip, lsl #3
- 164:	0000016c 	andeq	r0, r0, ip, ror #2
- 168:	0000016c 	andeq	r0, r0, ip, ror #2
- 16c:	e59f3038 	ldr	r3, [pc, #56]	; 1ac <disk_ioctl+0x5c>
- 170:	e3a00000 	mov	r0, #0
- 174:	e5933000 	ldr	r3, [r3]
- 178:	e5933010 	ldr	r3, [r3, #16]
- 17c:	e5823000 	str	r3, [r2]
- 180:	e12fff1e 	bx	lr
- 184:	e3a00000 	mov	r0, #0
- 188:	e12fff1e 	bx	lr
- 18c:	e59f3018 	ldr	r3, [pc, #24]	; 1ac <disk_ioctl+0x5c>
- 190:	e3a00000 	mov	r0, #0
- 194:	e5933000 	ldr	r3, [r3]
- 198:	e5933014 	ldr	r3, [r3, #20]
- 19c:	e5823000 	str	r3, [r2]
- 1a0:	e12fff1e 	bx	lr
- 1a4:	e3a00004 	mov	r0, #4
- 1a8:	e12fff1e 	bx	lr
- 1ac:	00000000 	andeq	r0, r0, r0
-
-000001b0 <get_fattime>:
- 1b0:	e3a03000 	mov	r3, #0
- 1b4:	e52de004 	push	{lr}		; (str lr, [sp, #-4]!)
- 1b8:	e1a00003 	mov	r0, r3
- 1bc:	e24dd00c 	sub	sp, sp, #12
- 1c0:	e58d3004 	str	r3, [sp, #4]
- 1c4:	ebfffffe 	bl	0 <sys_time>
- 1c8:	e28d3008 	add	r3, sp, #8
- 1cc:	e5230004 	str	r0, [r3, #-4]!
- 1d0:	e1a00003 	mov	r0, r3
- 1d4:	ebfffffe 	bl	0 <localtime>
- 1d8:	e590100c 	ldr	r1, [r0, #12]
- 1dc:	e5903008 	ldr	r3, [r0, #8]
- 1e0:	e5902004 	ldr	r2, [r0, #4]
- 1e4:	e1a01801 	lsl	r1, r1, #16
- 1e8:	e1811583 	orr	r1, r1, r3, lsl #11
- 1ec:	e590c000 	ldr	ip, [r0]
- 1f0:	e5903014 	ldr	r3, [r0, #20]
- 1f4:	e1812282 	orr	r2, r1, r2, lsl #5
- 1f8:	e5900010 	ldr	r0, [r0, #16]
- 1fc:	e18220ac 	orr	r2, r2, ip, lsr #1
- 200:	e2433050 	sub	r3, r3, #80	; 0x50
- 204:	e1823c83 	orr	r3, r2, r3, lsl #25
- 208:	e2800001 	add	r0, r0, #1
- 20c:	e1830a80 	orr	r0, r3, r0, lsl #21
- 210:	e28dd00c 	add	sp, sp, #12
- 214:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
+00000140 <get_fattime>:
+ 140:	e3a03000 	mov	r3, #0
+ 144:	e52de004 	push	{lr}		; (str lr, [sp, #-4]!)
+ 148:	e1a00003 	mov	r0, r3
+ 14c:	e24dd00c 	sub	sp, sp, #12
+ 150:	e58d3004 	str	r3, [sp, #4]
+ 154:	ebfffffe 	bl	0 <sys_time>
+ 158:	e28d3008 	add	r3, sp, #8
+ 15c:	e5230004 	str	r0, [r3, #-4]!
+ 160:	e1a00003 	mov	r0, r3
+ 164:	ebfffffe 	bl	0 <localtime>
+ 168:	e590100c 	ldr	r1, [r0, #12]
+ 16c:	e5903008 	ldr	r3, [r0, #8]
+ 170:	e5902004 	ldr	r2, [r0, #4]
+ 174:	e1a01801 	lsl	r1, r1, #16
+ 178:	e1811583 	orr	r1, r1, r3, lsl #11
+ 17c:	e590c000 	ldr	ip, [r0]
+ 180:	e5903014 	ldr	r3, [r0, #20]
+ 184:	e1812282 	orr	r2, r1, r2, lsl #5
+ 188:	e5900010 	ldr	r0, [r0, #16]
+ 18c:	e18220ac 	orr	r2, r2, ip, lsr #1
+ 190:	e2433050 	sub	r3, r3, #80	; 0x50
+ 194:	e1823c83 	orr	r3, r2, r3, lsl #25
+ 198:	e2800001 	add	r0, r0, #1
+ 19c:	e1830a80 	orr	r0, r3, r0, lsl #21
+ 1a0:	e28dd00c 	add	sp, sp, #12
+ 1a4:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
 
 Disassembly of section .data:
 

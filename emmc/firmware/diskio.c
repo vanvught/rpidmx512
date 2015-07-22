@@ -56,6 +56,7 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 	return RES_OK;
 }
 
+#if 0
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     size_t buf_size = count * emmc_dev->bd.block_size;
 
@@ -65,6 +66,7 @@ static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
 
 	return RES_OK;
 }
+#endif
 
 /* disk_initialize
  *
@@ -96,12 +98,16 @@ DRESULT disk_read (BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
  * Write some sectors.
  */
 DRESULT disk_write (BYTE drv, const BYTE *buf,	DWORD sector, BYTE count) {
+#if 0
 	if (drv || !count) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
 	if (sdcard_write(buf, sector, count) == 0)
 		return RES_OK;
 	else
 		return 	RES_ERROR;
+#else
+	return RES_OK;
+#endif
 }
 
 /* disk_status

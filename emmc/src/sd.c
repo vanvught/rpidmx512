@@ -188,7 +188,7 @@ static const uint32_t sd_acommands[] __attribute__((aligned(4))) = {
 // Enable SDXC maximum performance mode
 #define SDXC_MAXIMUM_PERFORMANCE
 // Enable EXPERIMENTAL (and possibly DANGEROUS) SD write support
-#define SD_WRITE_SUPPORT
+//#define SD_WRITE_SUPPORT
 
 struct sd_scr
 {
@@ -206,7 +206,9 @@ static char *err_irpts[] = { "CMD_TIMEOUT", "CMD_CRC", "CMD_END_BIT", "CMD_INDEX
 #endif
 
 int sd_read(struct block_device *, uint8_t *, size_t buf_size, uint32_t);
+#ifdef SD_WRITE_SUPPORT
 int sd_write(struct block_device *, uint8_t *, size_t buf_size, uint32_t);
+#endif
 
 /**
  * @ingroup SD
