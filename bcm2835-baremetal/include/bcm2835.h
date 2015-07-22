@@ -314,11 +314,13 @@ typedef struct {
 #define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)		///< Base register address for I2C (BSC2)
 
 #if RPI2
-#define dmb() asm volatile ("dmb" ::: "memory")
+#define isb() asm volatile ("isb" ::: "memory")
 #define dsb() asm volatile ("dsb" ::: "memory");
+#define dmb() asm volatile ("dmb" ::: "memory")
 #else
-#define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
+#define isb() asm volatile ("mcr p15, #0, %[zero], c7, c5,  #4" : : [zero] "r" (0) )
 #define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
+#define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
 #endif
 
 /**
@@ -364,6 +366,11 @@ extern void __disable_irq(void);
  *
  */
 extern void __enable_irq(void);
+
+/**
+ *
+ */
+extern void memory_barrier(void);
 
 #endif
 
