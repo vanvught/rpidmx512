@@ -36,7 +36,9 @@ static struct emmc_block_dev *emmc_dev __attribute__((aligned(4)));
 
 extern int sd_card_init(struct block_device **dev);
 extern int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
+#ifdef SD_WRITE_SUPPORT
 extern int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
+#endif
 
 static inline int sdcard_init(void){
 	if (sd_card_init((struct block_device **)&emmc_dev) == 0) {
@@ -56,7 +58,7 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 	return RES_OK;
 }
 
-#if 0
+#ifdef SD_WRITE_SUPPORT
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     size_t buf_size = count * emmc_dev->bd.block_size;
 
@@ -98,7 +100,7 @@ DRESULT disk_read (BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
  * Write some sectors.
  */
 DRESULT disk_write (BYTE drv, const BYTE *buf,	DWORD sector, BYTE count) {
-#if 0
+#ifdef SD_WRITE_SUPPORT
 	if (drv || !count) return RES_PARERR;
 	if (Stat & STA_NOINIT) return RES_NOTRDY;
 	if (sdcard_write(buf, sector, count) == 0)

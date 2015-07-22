@@ -6789,8 +6789,8 @@ Disassembly of section .rodata:
     e6c4:	206c754a 	rsbcs	r7, ip, sl, asr #10
     e6c8:	32203232 	eorcc	r3, r0, #536870915	; 0x20000003
     e6cc:	00353130 	eorseq	r3, r5, r0, lsr r1
-    e6d0:	313a3032 	teqcc	sl, r2, lsr r0
-    e6d4:	38353a33 	ldmdacc	r5!, {r0, r1, r4, r5, r9, fp, ip, sp}
+    e6d0:	323a3132 	eorscc	r3, sl, #-2147483636	; 0x8000000c
+    e6d4:	35333a36 	ldrcc	r3, [r3, #-2614]!	; 0xfffff5ca
     e6d8:	00000000 	andeq	r0, r0, r0
     e6dc:	69676f4c 	stmdbvs	r7!, {r2, r3, r6, r8, r9, sl, fp, sp, lr}^
     e6e0:	44522063 	ldrbmi	r2, [r2], #-99	; 0xffffff9d
