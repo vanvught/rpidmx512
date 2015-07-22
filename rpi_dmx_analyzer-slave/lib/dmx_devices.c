@@ -87,17 +87,23 @@ static int add_connected_device(const char *line) {
 		if ((rc == 4) && (len != 0)) {
 
 			if (chip_select < BCM2835_SPI_CS0 || chip_select > BCM2835_SPI_CS1) {
+#ifdef DEBUG
 				printf("warning : invalid chip_select [skipping this line]\n");
+#endif
 				return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
 			}
 
 			if (slave_address < 0 || slave_address > 0xFF) {
+#ifdef DEBUG
 				printf("warning : invalid slave_address [skipping this line]\n");
+#endif
 				return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
 			}
 
 			if (dmx_start_address < 1 || dmx_start_address > DMX_UNIVERSE_SIZE) {
+#ifdef DEBUG
 				printf("warning : invalid dmx_start_address [skipping this line]\n");
+#endif
 				return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 			}
 
@@ -121,18 +127,28 @@ static int add_connected_device(const char *line) {
 		} else {
 			switch (rc) {
 				case DMX_DEVICE_CONFIG_INVALID_PROTOCOL:
+#ifdef DEBUG
 					printf("warning : invalid protocol. [skipping this line]\n");
+#endif
 					return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
 					break;
 				case DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT:
+#ifdef DEBUG
 					printf("warning : invalid chip_select [skipping this line]\n");
+#endif
 					return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
 					break;
 				case DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS:
+#ifdef DEBUG
 					printf("warning : invalid slave_address [skipping this line]\n");
+#endif
+					return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
 					break;
 				case DMX_DEVICE_CONFIG_INVALID_START_ADDRESS:
+#ifdef DEBUG
 					printf("warning : invalid dmx_start_address [skipping this line]\n");
+#endif
+					return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 					break;
 				default:
 					return DMX_DEVICE_CONFIG_INVALID_ENTRY;
