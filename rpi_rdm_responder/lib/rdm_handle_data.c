@@ -39,6 +39,12 @@
 
 static bool rdm_muted = false;	///<
 
+/**
+ *
+ * @param s1
+ * @param s2
+ * @return
+ */
 static int _memcmp_6(const void *s1, const void *s2) {
 	unsigned char u1, u2;
 	int n = 6;
@@ -51,6 +57,7 @@ static int _memcmp_6(const void *s1, const void *s2) {
 	}
 	return 0;
 }
+
 
 /**
  * @ingroup rdm_handlers

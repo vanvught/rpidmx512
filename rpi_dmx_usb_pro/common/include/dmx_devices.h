@@ -22,13 +22,13 @@
 #ifndef DMX_DEVICES_H_
 #define DMX_DEVICES_H_
 
-#define DMX_DEVICE_CONFIG_TABLE_FULL 				0
-#define DMX_DEVICE_CONFIG_INVALID_PROTOCOL 			-2
-#define DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT 		-3
-#define DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS 	-4
-#define DMX_DEVICE_CONFIG_INVALID_START_ADDRESS 	-5
-#define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6
-#define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7
+#define DMX_DEVICE_CONFIG_TABLE_FULL 				0	///<
+#define DMX_DEVICE_CONFIG_INVALID_PROTOCOL 			-2	///<
+#define DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT 		-3	///<
+#define DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS 	-4	///<
+#define DMX_DEVICE_CONFIG_INVALID_START_ADDRESS 	-5	///<
+#define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6	///<
+#define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7	///<
 
 #include <stdint.h>
 
@@ -51,8 +51,7 @@ typedef struct _devices {
 	device_entry_t device_entry[16];
 } _devices_t;
 
-struct _dmx_devices_statistics
-{
+struct _dmx_devices_statistics {
 	uint32_t function_count;
 	uint32_t dmx_available_count;
 };

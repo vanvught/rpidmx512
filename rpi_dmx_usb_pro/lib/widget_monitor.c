@@ -70,9 +70,10 @@ void monitor_update(void) {
 		printf("\nDMX updates/sec %d  \n\n", dmx_updates_per_second);
 
 		if (dmx_updates_per_second != 0) {
-			printf("Slots in packet %d      \n",(uint16_t) dmx_get_slots_in_packet());
-			printf("Slot to slot    %d      \n", (uint16_t) dmx_get_slot_to_slot());
-			printf("Break to break  %ld     \n", dmx_get_break_to_break());
+			const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+			printf("Slots in packet %d      \n", (uint16_t)dmx_statistics->slots_in_packet);
+			printf("Slot to slot    %d      \n", (uint16_t)dmx_statistics->slot_to_slot);
+			printf("Break to break  %ld     \n", dmx_statistics->break_to_break);
 		} else {
 			printf("Slots in packet --     \n");
 			printf("Slot to slot    --     \n");

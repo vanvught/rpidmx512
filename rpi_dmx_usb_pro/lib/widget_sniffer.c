@@ -109,7 +109,8 @@ void widget_sniffer_dmx(void) {
 
 	if (dmx_data_is_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
-		const uint16_t data_length = dmx_get_slots_in_packet() + 1;
+		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
 		usb_send_package(dmx_data, 0, data_length);
 	}
 }

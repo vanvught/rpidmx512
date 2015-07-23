@@ -66,7 +66,7 @@ inline static void events_check() {
 	int i;
 	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
-		if (micros_now > events_elapsed_time[i] + events[i].period) {
+		if (micros_now - events_elapsed_time[i] > events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
 			hardware_watchdog_feed();

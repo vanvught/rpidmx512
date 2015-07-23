@@ -26,6 +26,8 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include <stdbool.h>
+
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
 #define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
@@ -34,5 +36,23 @@
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+/**
+ *
+ * @param c
+ * @return
+ */
+inline static bool is_digit(char c) {
+	return (c >= (char)'0') && (c <= (char)'9');
+}
+
+/**
+ *
+ * @param c
+ * @return
+ */
+inline static bool is_xdigit(char c) {
+	return (is_digit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+}
 
 #endif /* UTIL_H_ */

@@ -186,15 +186,16 @@ void widget_received_dmx_packet(void) {
 
 	dmx_set_available_false();
 
-	const int16_t lenght = dmx_get_slots_in_packet() + 1;
+	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	const uint16_t length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
 
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
-	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", lenght);
+	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", length);
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	usb_send_header(RECEIVED_DMX_PACKET, lenght + 1);
+	usb_send_header(RECEIVED_DMX_PACKET, length + 1);
 	usb_send_byte(0); 	// DMX Receive status
-	usb_send_data(dmx_data, lenght);
+	usb_send_data(dmx_data, length);
 	usb_send_footer();
 }
 

@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include <ctype.h>
 
 #include "ff.h"
 #include "hardware.h"
@@ -85,7 +84,7 @@ static void process_line_read_string(const char *line) {
 	len = 4;
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
 		if (len == 4) {
-			if (isxdigit((int )value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
+			if (is_xdigit(value[0]) && is_xdigit(value[1]) && is_xdigit(value[2]) && is_xdigit(value[3])) {
 				uint8_t nibble_high;
 				uint8_t nibble_low;
 

@@ -26,15 +26,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "util.h"
 #include "dmx_devices.h"
-
-inline static bool is_digit(char c) {
-	return (c >= (char)'0') && (c <= (char)'9');
-}
-
-inline static bool is_xdigit(char c) {
-	return (is_digit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
-}
 
 int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	int i;
