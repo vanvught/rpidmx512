@@ -107,7 +107,7 @@ void widget_sniffer_dmx(void) {
 
 	monitor_line(MONITOR_LINE_INFO, NULL);
 
-	if (dmx_data_is_changed()) {
+	if (dmx_is_data_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
@@ -123,13 +123,15 @@ void widget_sniffer_dmx(void) {
 void widget_sniffer_rdm(void) {
 	const uint8_t mode = widget_get_mode();
 
-	if (mode != MODE_RDM_SNIFFER)
+	if (mode != MODE_RDM_SNIFFER) {
 		return;
+	}
 
 	const uint8_t *rdm_data = rdm_get_available();
 
-	if (rdm_data == NULL)
+	if (rdm_data == NULL) {
 		return;
+	}
 
 	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 

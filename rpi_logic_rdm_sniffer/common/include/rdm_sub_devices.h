@@ -29,8 +29,7 @@
 #include "rdm.h"
 #include "rdm_device_info.h"
 
-struct _rdm_sub_devices_info
-{
+struct _rdm_sub_devices_info {
 	const uint16_t dmx_footprint;
 	uint8_t current_personality;
 	const uint8_t personality_count;

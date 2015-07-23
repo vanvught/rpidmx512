@@ -33,7 +33,6 @@
 #include "sniffer.h"
 #include "util.h"
 
-static uint32_t dmx_packets_previous = 0;						///<
 static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 
 /**
@@ -50,49 +49,16 @@ void monitor_update(void) {
 	const uint8_t widget_mode = widget_get_mode();
 
 	if (widget_mode == MODE_RDM_SNIFFER) {
-		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
-
-		const struct _total_statistics *total_statistics = total_statistics_get();
-		const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
-
-		console_clear_line(MONITOR_LINE_PACKETS);
-		printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
-
-		const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
-
-		printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
-		printf("Discovery response : %ld\n", rdm_statistics->discovery_response_packets);
-		printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
-		printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
-
-		const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
-
-		printf("\nDMX updates/sec %d  \n\n", dmx_updates_per_second);
-
-		if (dmx_updates_per_second != 0) {
-			const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-			printf("Slots in packet %d      \n", (uint16_t)dmx_statistics->slots_in_packet);
-			printf("Slot to slot    %d      \n", (uint16_t)dmx_statistics->slot_to_slot);
-			printf("Break to break  %ld     \n", dmx_statistics->break_to_break);
-		} else {
-			printf("Slots in packet --     \n");
-			printf("Slot to slot    --     \n");
-			printf("Break to break  --     \n");
-		}
-		dmx_packets_previous = total_statistics->dmx_packets;
+		monitor_sniffer();
 	} else {
 		console_clear_line(MONITOR_LINE_WIDGET_PARMS);
 
-		printf(
-				"Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
+		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
 				widget_params.firmware_msb, widget_params.firmware_lsb,
 				widget_params.break_time, (int) dmx_get_output_break_time(),
 				widget_params.mab_time, (int) dmx_get_output_mab_time(),
-				widget_params.refresh_rate,
-				(int) (1E6 / dmx_get_output_period()));
+				widget_params.refresh_rate, (int) (1E6 / dmx_get_output_period()));
 
-		//console_clear_line(MONITOR_LINE_LABEL);
-		//console_clear_line(MONITOR_LINE_INFO);
 		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {

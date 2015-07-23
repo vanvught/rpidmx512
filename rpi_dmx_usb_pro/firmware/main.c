@@ -28,24 +28,24 @@
 
 #include "usb.h"
 #include "hardware.h"
+#include "led.h"
 #include "dmx.h"
 #include "widget_params.h"
 #include "rdm_device_info.h"
 #include "widget.h"
 #include "monitor.h"
 
-struct _poll
-{
+struct _poll {
 	void (*f)(void);
-} const poll_table[] = {
+}const poll_table[] = {
 		{ widget_receive_data_from_host },
 		{ widget_received_dmx_packet },
 		{ widget_received_dmx_change_of_state_packet },
 		{ widget_received_rdm_packet },
 		{ widget_rdm_timeout },
 		{ widget_sniffer_rdm },
-		{ widget_sniffer_dmx }
-		};
+		{ widget_sniffer_dmx },
+		{ led_blink } };
 
 struct _event {
 	const uint32_t period;

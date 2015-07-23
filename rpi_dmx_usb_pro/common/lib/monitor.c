@@ -27,9 +27,16 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "dmx.h"
+#include "monitor.h"
 #include "sys_time.h"
 #include "hardware.h"
 #include "console.h"
+#if defined(DMX_SLAVE)
+#elif defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
+#include "sniffer.h"
+#elif defined(RDM_RESPONDER)
+#endif
 
 /**
  * @ingroup monitor
@@ -126,4 +133,40 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 			(unsigned int) data[27], (unsigned int) data[28],
 			(unsigned int) data[29], (unsigned int) data[30],
 			(unsigned int) data[31], (unsigned int) data[32]);
+}
+
+/**
+ * @ingroup monitor
+ *
+ */
+void monitor_sniffer(void) {
+	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
+
+	const struct _total_statistics *total_statistics = dmx_get_total_statistics();
+	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+
+	console_clear_line(MONITOR_LINE_PACKETS);
+	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
+
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
+	const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
+
+	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
+	printf("Discovery response : %ld\n", rdm_statistics->discovery_response_packets);
+	printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
+	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
+#endif
+
+	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	printf("\nDMX updates/sec %d  \n\n", (uint16_t)dmx_statistics->updates_per_seconde);
+
+	if (dmx_statistics->updates_per_seconde != 0) {
+		printf("Slots in packet %d      \n", (uint16_t)dmx_statistics->slots_in_packet);
+		printf("Slot to slot    %d      \n", (uint16_t)dmx_statistics->slot_to_slot);
+		printf("Break to break  %ld     \n", dmx_statistics->break_to_break);
+	} else {
+		printf("Slots in packet --     \n");
+		printf("Slot to slot    --     \n");
+		printf("Break to break  --     \n");
+	}
 }

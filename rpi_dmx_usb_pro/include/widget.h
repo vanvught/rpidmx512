@@ -32,8 +32,7 @@
 
 #include <stdint.h>
 
-typedef enum
-{
+typedef enum {
 	GET_WIDGET_PARAMS = 3,						///< Get Widget Parameters Request
 	GET_WIDGET_PARAMS_REPLY = 3,				///< Get Widget Parameters Reply
 	SET_WIDGET_PARAMS = 4,						///< Set Widget Parameters Request
@@ -50,20 +49,17 @@ typedef enum
 	GET_WIDGET_NAME_LABEL = 78					///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
 } _widget_codes;
 
-typedef enum
-{
+typedef enum {
 	AMF_START_CODE = 0x7E,						///< Start of message delimiter
 	AMF_END_CODE = 0xE7							///< End of message delimiter
 } _application_message_format_codes;
 
-typedef enum
-{
+typedef enum {
 	SEND_ALWAYS = 0,							///< The widget will always send (default)
 	SEND_ON_DATA_CHANGE_ONLY = 1				///< Requests the Widget to send a DMX packet to the host only when the DMX values change on the input port
 } _widget_send_state;
 
-typedef enum
-{
+typedef enum {
 	MODE_DMX_RDM = 0,							///< Both DMX (\ref FIRMWARE_NORMAL_DMX)and RDM (\ref FIRMWARE_RDM) firmware enabled.
 	MODE_DMX = 1,								///< DMX (\ref FIRMWARE_NORMAL_DMX) firmware enabled
 	MODE_RDM = 2,								///< RDM (\ref FIRMWARE_RDM) firmware enabled.

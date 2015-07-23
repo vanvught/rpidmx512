@@ -1,5 +1,6 @@
 /**
- * @file sniffer.h
+ * @file led.h
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -22,16 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_H_
-#define SNIFFER_H_
+#ifndef LED_H_
+#define LED_H_
 
-struct _rdm_statistics {
-	uint32_t discovery_packets;
-	uint32_t discovery_response_packets;
-	uint32_t get_requests;
-	uint32_t set_requests;
-};
+extern void ticks_per_second_set(uint32_t);
+extern uint32_t ticks_per_second_get(void);
 
-extern /*@ shared @*/const struct _rdm_statistics *rdm_statistics_get(void) __attribute__((assume_aligned(4)));
+extern void led_blink(void);
 
-#endif /* SNIFFER_H_ */
+#endif /* LED_H_ */

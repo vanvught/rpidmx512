@@ -70,7 +70,7 @@ struct _total_statistics {
 extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE]; //TODO remove
 
 extern void dmx_init(void);
-extern void dmx_port_direction_set(const _dmx_port_direction, const bool);
+extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 extern const bool dmx_get_available(void);
@@ -79,9 +79,9 @@ extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(const uint32_t);
-extern bool dmx_data_is_changed(void);
-extern void total_statistics_reset(void);
-extern const struct _total_statistics *total_statistics_get(void) __attribute__((assume_aligned(4)));
+extern bool dmx_is_data_changed(void);
+extern void dmx_reset_total_statistics(void);
+extern const struct _total_statistics *dmx_get_total_statistics(void) __attribute__((assume_aligned(4)));
 extern const struct _dmx_statistics *dmx_get_statistics(void) __attribute__((assume_aligned(4)));
 extern const uint16_t dmx_get_send_data_length(void);
 extern void dmx_set_send_data_length(uint16_t);
@@ -90,6 +90,6 @@ extern void dmx_set_output_period(const uint32_t);
 extern const /*@null@*/uint8_t *rdm_get_available(void) __attribute__((assume_aligned(4)));
 extern const uint8_t *rdm_get_current_data(void) __attribute__((assume_aligned(4)));
 extern void rdm_available_set(const uint8_t);
-extern const uint32_t rdm_data_receive_end_get(void);
+extern const uint32_t rdm_get_data_receive_end(void);
 
 #endif /* DMX_H_ */

@@ -102,16 +102,16 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
  * @param data_length
  */
 void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length) {
-	const uint64_t delay = hardware_micros() - rdm_data_receive_end_get();
+	const uint64_t delay = hardware_micros() - rdm_get_data_receive_end();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_no_break(data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }
 
 /**
@@ -165,16 +165,16 @@ static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, u
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;
 
-	delay = hardware_micros() - rdm_data_receive_end_get();
+	delay = hardware_micros() - rdm_get_data_receive_end();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_data(rdm_data, rdm_response->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }
 
 /**

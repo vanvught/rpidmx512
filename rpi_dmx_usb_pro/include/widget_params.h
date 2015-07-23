@@ -25,22 +25,40 @@
 #ifndef WIDGET_PARAMS_H_
 #define WIDGET_PARAMS_H_
 
-#define DEVICE_TYPE_ID_LENGTH				2	///<
+#define DEVICE_TYPE_ID_LENGTH	2	///<
 
-typedef enum
-{
-	FIRMWARE_NORMAL_DMX = 1,	///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
-	FIRMWARE_RDM = 2,			///< RDM firmware. This enables the Widget to act as an RDM Controller.
-	FIRMWARE_RDM_SNIFFER = 3	///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
+typedef enum {
+	WIDGET_DEFAULT_FIRMWARE_LSB = 4	///< x.4
+} _firmware_version_lsb;
+
+typedef enum {
+	FIRMWARE_NORMAL_DMX = 1,		///< Normal DMX firmware. Supports all messages except Send RDM (label=7), Send RDM Discovery Request(label=11) and receive RDM .
+	FIRMWARE_RDM = 2,				///< RDM firmware. This enables the Widget to act as an RDM Controller.
+	FIRMWARE_RDM_SNIFFER = 3		///< RDM Sniffer firmware. This is for use with the Openlighting RDM packet monitoring application.
 } _firmware_version_msb;
 
-struct _widget_params
-{
-	uint8_t firmware_lsb;		///< Firmware version LSB. Valid range is 0 to 255.
-	uint8_t firmware_msb;		///< Firmware version MSB. Valid range is 0 to 255.
-	uint8_t break_time;			///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
-	uint8_t mab_time;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
-	uint8_t refresh_rate;		///< DMX output rate in packets per second. Valid range is s1 to 40.
+typedef enum {
+	WIDGET_MIN_BREAK_TIME = 9,		///<
+	WIDGET_DEFAULT_BREAK_TIME = 9,	///<
+	WIDGET_MAX_BREAK_TIME = 127		///<
+} _firmware_break_time;
+
+typedef enum {
+	WIDGET_MIN_MAB_TIME = 1,		///<
+	WIDGET_DEFAULT_MAB_TIME = 1,	///<
+	WIDGET_MAX_MAB_TIME = 127,		///<
+} _firmware_mab_time;
+
+typedef enum {
+	WIDGET_DEFAULT_REFRESH_RATE = 40///<
+} _firmware_refresh_rate;
+
+struct _widget_params {
+	uint8_t firmware_lsb;			///< Firmware version LSB. Valid range is 0 to 255.
+	uint8_t firmware_msb;			///< Firmware version MSB. Valid range is 0 to 255.
+	uint8_t break_time;				///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
+	uint8_t mab_time;				///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
+	uint8_t refresh_rate;			///< DMX output rate in packets per second. Valid range is 1 to 40.
 };
 
 extern void widget_params_init(void);
@@ -48,7 +66,7 @@ extern void widget_params_get(/*@out@*/struct _widget_params *);
 extern void widget_params_set_break_time(const uint8_t);
 extern void widget_params_set_mab_time(const uint8_t);
 extern void widget_params_set_refresh_rate(const uint8_t);
-extern const uint8_t * widget_params_get_type_id(void);
+extern /*@shared@*/const uint8_t * widget_params_get_type_id(void);
 extern const uint8_t widget_params_get_type_id_length(void);
 extern const uint8_t widget_params_get_throttle(void);
 extern void widget_params_set_throttle(const uint8_t);

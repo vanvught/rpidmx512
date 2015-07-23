@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "led.h"
 #include "util.h"
 #include "dmx.h"
 #include "monitor.h"
@@ -36,7 +37,8 @@ struct _poll {
 	void (*f)(void);
 }const poll_table[] = {
 		{ sniffer_rdm },
-		{ sniffer_dmx } };
+		{ sniffer_dmx },
+		{ led_blink } };
 
 struct _event {
 	const uint32_t period;

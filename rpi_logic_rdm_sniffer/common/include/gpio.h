@@ -1,5 +1,5 @@
 /**
- * @file irq_led.c
+ * @file gpio.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,26 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
+#ifndef GPIO_H_
+#define GPIO_H_
 
-/**
- * @ingroup led
- *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
- */
-void ticks_per_second_set(uint32_t ticks) {
-	ticks_per_second = ticks;
-}
+#define GPIO_DMX_DATA_DIRECTION		18	///<  RPI_V2_GPIO_P1_12
 
-/**
- * @ingroup led
- *
- * @return Ticks per second.
- */
-uint32_t ticks_per_second_get(void) {
-	return ticks_per_second;
-}
+#ifdef LOGIC_ANALYZER
+#define GPIO_ANALYZER_CH1			RPI_V2_GPIO_P1_23	///< CLK
+#define GPIO_ANALYZER_CH2			RPI_V2_GPIO_P1_21	///< MISO
+#define GPIO_ANALYZER_CH3			RPI_V2_GPIO_P1_19	///< MOSI
+#define GPIO_ANALYZER_CH4			RPI_V2_GPIO_P1_24	///< CE0
+#define GPIO_ANALYZER_CH5			RPI_V2_GPIO_P1_26	///< CE1
+#endif
+
+
+#endif /* GPIO_H_ */

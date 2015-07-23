@@ -23,26 +23,22 @@
  * THE SOFTWARE.
  */
 
-#include <dmx_devices.h>
 #include <stdio.h>
 #include <stdint.h>
 
-#include "sys_time.h"
 #include "hardware.h"
 #include "bw_ui.h"
-#include "irq_led.h"
+#include "led.h"
 #include "ui_functions.h"
-
+#include "monitor.h"
 #include "dmx.h"
-
-//extern void monitor_update(void);
+#include "dmx_devices.h"
 
 struct _poll {
 	void (*f)(void);
-	const char *msg;
-} const poll_table[] = {
-	{dmx_devices_run, "DMX Slave" }
-};
+}const poll_table[] = {
+		{ dmx_devices_run },
+		{ led_blink } };
 
 struct _event {
 	const uint32_t period;
@@ -50,7 +46,7 @@ struct _event {
 } const events[] = {
 	{1000000, ui_buttons_update},
 	{1000000, ui_lcd_refresh},
-	//{1000000, monitor_update}
+	{1000000, monitor_update}
 };
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];

@@ -29,10 +29,32 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "bcm2835.h"
+
 extern void FT245RL_init(void);
 extern void FT245RL_write_data(uint8_t);
 extern uint8_t FT245RL_read_data();
-extern bool FT245RL_data_available(void);
-extern bool FT245RL_can_write(void);
+
+/**
+ * @ingroup ft245rl
+ *
+ * Read RXF#
+ *
+ * @return
+ */
+inline static bool FT245RL_data_available(void) {
+	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
+}
+
+/**
+ * @ingroup ft245rl
+ *
+ * Read TXE#
+ *
+ * @return
+ */
+inline static bool FT245RL_can_write(void) {
+	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
+}
 
 #endif /* FT245RL_H_ */

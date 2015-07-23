@@ -43,14 +43,16 @@
 #include "rdm_send.h"
 #include "monitor.h"
 
-static uint8_t widget_data[600] __attribute__((aligned(4)));	///< Message between widget and the USB host
-static _widget_mode widget_mode = MODE_DMX_RDM;					///< \ref _widget_mode
-static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;	///< \ref _widget_send_state
-static uint32_t received_dmx_packet_period = 0;					///<
-static uint32_t widget_received_dmx_packet_start = 0;			///<
-static uint32_t widget_send_rdm_packet_start = 0;				///<
-static bool widget_rdm_discovery_running = false;				///< Is the Widget in RDM Discovery mode?
-static uint32_t widget_received_dmx_packet_count = 0; 			///<
+#define WIDGET_DATA_BUFFER_SIZE		600												///<
+
+static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///< Message between widget and the USB host
+static _widget_mode widget_mode = MODE_DMX_RDM;										///< \ref _widget_mode
+static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;						///< \ref _widget_send_state
+static uint32_t received_dmx_packet_period = 0;										///<
+static uint32_t widget_received_dmx_packet_start = 0;								///<
+static uint32_t widget_send_rdm_packet_start = 0;									///<
+static bool widget_rdm_discovery_running = false;									///< Is the Widget in RDM Discovery mode?
+static uint32_t widget_received_dmx_packet_count = 0; 								///<
 
 inline static void rdm_time_out_message(void);
 
@@ -141,8 +143,7 @@ static void widget_get_params_reply(void) {
  * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
  *
  */
-static void widget_set_params()
-{
+static void widget_set_params() {
 	monitor_line(MONITOR_LINE_INFO, "SET_WIDGET_PARAMS");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -150,7 +151,7 @@ static void widget_set_params()
 	widget_params_set_mab_time(widget_data[3]);
 	widget_params_set_refresh_rate(widget_data[4]);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_received_dmx_packet_start = hardware_micros();
 }
@@ -166,19 +167,25 @@ static void widget_set_params()
  * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
  */
 void widget_received_dmx_packet(void) {
-	if (widget_mode == MODE_RDM_SNIFFER)
+	if (widget_mode == MODE_RDM_SNIFFER) {
 		return;
+	}
 
-	if (widget_rdm_discovery_running || (DMX_PORT_DIRECTION_INP != dmx_get_port_direction()) || (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change))
+	if (widget_rdm_discovery_running
+			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
+			|| (SEND_ON_DATA_CHANGE_ONLY == receive_dmx_on_change)) {
 		return;
+	}
 
-	if (!dmx_get_available())
+	if (!dmx_get_available()) {
 		return;
+	}
 
 	const uint32_t micros_now = hardware_micros();
 
-	if ( micros_now < widget_received_dmx_packet_start + received_dmx_packet_period)
+	if (micros_now - widget_received_dmx_packet_start < received_dmx_packet_period) {
 		return;
+	}
 
 	widget_received_dmx_packet_start = micros_now;
 
@@ -187,7 +194,7 @@ void widget_received_dmx_packet(void) {
 	dmx_set_available_false();
 
 	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-	const uint16_t length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
+	const uint16_t length = (uint16_t) (dmx_statistics->slots_in_packet + 1);
 
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
 	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", length);
@@ -210,13 +217,16 @@ void widget_received_dmx_packet(void) {
  * and the Receive DMX on Change mode (\ref receive_dmx_on_change) is 'Send always' (\ref SEND_ALWAYS).
  */
 void widget_received_rdm_packet(void) {
-	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER) || (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY))
+	if ((widget_mode == MODE_DMX) || (widget_mode == MODE_RDM_SNIFFER)
+			|| (receive_dmx_on_change == SEND_ON_DATA_CHANGE_ONLY)) {
 		return;
+	}
 
 	uint8_t *rdm_data = (uint8_t *) rdm_get_available();
 
-	if (rdm_data == NULL)
+	if (rdm_data == NULL) {
 		return;
+	}
 
 	uint8_t message_length = 0;
 
@@ -242,10 +252,10 @@ void widget_received_rdm_packet(void) {
 			widget_send_rdm_packet_start = 0;
 		}
 	} else if (rdm_data[0] == 0xFE) {
+		message_length = 24;
+
 		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
 		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xFE");
-
-		message_length = 24;
 
 		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status
@@ -278,7 +288,7 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length) {
 	monitor_line(MONITOR_LINE_INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 
 	uint16_t i = 0;
 	for (i = 0; i < data_length; i++) {
@@ -287,7 +297,7 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length) {
 
 	dmx_set_send_data_length(data_length);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, true);
 }
 
 /**
@@ -300,19 +310,18 @@ void widget_output_only_send_dmx_packet_request(const uint16_t data_length) {
  *
  * @param data_length RDM data to send, beginning with the start code.
  */
-static void widget_send_rdm_packet_request(const uint16_t data_length)
-{
+static void widget_send_rdm_packet_request(const uint16_t data_length) {
 	monitor_line(MONITOR_LINE_INFO, "SEND_RDM_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const struct _rdm_command *p = (struct _rdm_command *)(widget_data);
+	const struct _rdm_command *p = (struct _rdm_command *) (widget_data);
 
 	widget_rdm_discovery_running = (p->command_class == E120_DISCOVERY_COMMAND);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_send_rdm_packet_start = hardware_micros();
 
@@ -325,16 +334,17 @@ static void widget_send_rdm_packet_request(const uint16_t data_length)
  * This function is called from the poll table in \ref main.c
  *
  */
-void widget_rdm_timeout(void)
-{
-	if (widget_mode == MODE_RDM_SNIFFER)
+void widget_rdm_timeout(void) {
+	if (widget_mode == MODE_RDM_SNIFFER) {
 		return;
+	}
 
-	if (widget_send_rdm_packet_start == 0)
+	if (widget_send_rdm_packet_start == 0) {
 		return;
+	}
 
-	if (hardware_micros() - widget_send_rdm_packet_start > 1000000) {	// 1 second
-		rdm_time_out_message();											// Send message to host Label=12 RDM_TIMEOUT
+	if (hardware_micros() - widget_send_rdm_packet_start > 1000000) {// 1 second
+		rdm_time_out_message();		// Send message to host Label=12 RDM_TIMEOUT
 		widget_send_rdm_packet_start = 0;
 	}
 
@@ -355,20 +365,19 @@ void widget_rdm_timeout(void)
  * selected, the initial received DMX data is cleared to all zeros.
  *
  */
-static void widget_receive_dmx_on_change(void)
-{
+static void widget_receive_dmx_on_change(void) {
 	monitor_line(MONITOR_LINE_INFO, "RECEIVE_DMX_ON_CHANGE");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 	receive_dmx_on_change = widget_data[0];
 
-	uint16_t i = 0;
+	uint16_t i;
 	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
 		dmx_data[i] = 0;
 	}
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_received_dmx_packet_start = hardware_micros();
 }
@@ -382,21 +391,24 @@ static void widget_receive_dmx_on_change(void)
  * Widget receives a changed DMX packet from the DMX port, and the Receive DMX on Change
  * mode (\ref receive_dmx_on_change) is 'Send on data change only' (\ref SEND_ON_DATA_CHANGE_ONLY).
  */
-void widget_received_dmx_change_of_state_packet(void)
-{
-	if (widget_mode == MODE_RDM_SNIFFER)
+void widget_received_dmx_change_of_state_packet(void) {
+	if (widget_mode == MODE_RDM_SNIFFER) {
 		return;
+	}
 
-	if (widget_rdm_discovery_running|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction()) || (SEND_ALWAYS == receive_dmx_on_change))
+	if (widget_rdm_discovery_running
+			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
+			|| (SEND_ALWAYS == receive_dmx_on_change)) {
 		return;
+	}
 
-	if (!dmx_get_available())
-			return;
+	if (!dmx_get_available()) {
+		return;
+	}
 
 	dmx_set_available_false();
 
-	if (dmx_data_is_changed())
-	{
+	if (dmx_is_data_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
 		monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -411,8 +423,7 @@ void widget_received_dmx_change_of_state_packet(void)
  * Get Widget Serial Number Reply (Label = 10 \ref GET_WIDGET_PARAMS_REPLY)
  *
  */
-static void widget_get_sn_reply(void)
-{
+static void widget_get_sn_reply(void) {
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_PARAMS_REPLY");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -421,7 +432,7 @@ static void widget_get_sn_reply(void)
 
 	usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_received_dmx_packet_start = hardware_micros();
 }
@@ -434,18 +445,17 @@ static void widget_get_sn_reply(void)
  * This message requests the Widget to send an RDM Discovery Request packet out of the Widget
  * DMX port, and then receive an RDM Discovery Response.
  */
-static void widget_send_rdm_discovery_request(uint16_t data_length)
-{
+static void widget_send_rdm_discovery_request(uint16_t data_length) {
 	monitor_line(MONITOR_LINE_INFO, "SEND_RDM_DISCOVERY_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_OUTP, false);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_rdm_discovery_running = true;
-	widget_send_rdm_packet_start =  hardware_micros();
+	widget_send_rdm_packet_start = hardware_micros();
 
 	monitor_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
 }
@@ -458,8 +468,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length)
  * (Label=12 \ref RDM_TIMEOUT)
  *
  */
-inline static void rdm_time_out_message(void)
-{
+inline static void rdm_time_out_message(void) {
 	const uint16_t message_length = 0;
 
 	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, message_length : %d", message_length);
@@ -478,8 +487,7 @@ inline static void rdm_time_out_message(void)
  *
  * Get Widget Manufacturer Reply (Label = 77 \ref MANUFACTURER_LABEL)
  */
-static void widget_get_manufacturer_reply(void)
-{
+static void widget_get_manufacturer_reply(void) {
 	monitor_line(MONITOR_LINE_INFO, "MANUFACTURER_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -491,10 +499,10 @@ static void widget_get_manufacturer_reply(void)
 
 	usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
 	usb_send_data(manufacturer_id, manufacturer_id_length);
-	usb_send_data((uint8_t *)manufacturer_name, manufacturer_name_length);
+	usb_send_data((uint8_t *) manufacturer_name, manufacturer_name_length);
 	usb_send_footer();
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_received_dmx_packet_start = hardware_micros();
 }
@@ -506,8 +514,7 @@ static void widget_get_manufacturer_reply(void)
  *
  * Get Widget Name Reply (Label = 78 \ref GET_WIDGET_NAME_LABEL)
  */
-static void widget_get_name_reply(void)
-{
+static void widget_get_name_reply(void) {
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_NAME_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -519,10 +526,10 @@ static void widget_get_name_reply(void)
 
 	usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
 	usb_send_data(device_id, device_id_length);
-	usb_send_data((uint8_t *)device_name, device_name_length);
+	usb_send_data((uint8_t *) device_name, device_name_length);
 	usb_send_footer();
 
-	dmx_port_direction_set(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_received_dmx_packet_start = hardware_micros();
 }

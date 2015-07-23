@@ -8,7 +8,7 @@ COPS += -DENABLE_FRAMEBUFFER
 COPS += -DBW_I2C_UI
 #COPS += -DDEBUG
 #COPS += -DLOGIC_ANALYZER
-#COPS += -DRDM_CONTROLLER
+COPS += -DDMX_SLAVE
 
 COPS += -I"./common/include"
 COPS += -I"./include"

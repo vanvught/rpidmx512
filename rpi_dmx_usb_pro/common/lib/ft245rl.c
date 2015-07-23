@@ -176,24 +176,3 @@ uint8_t FT245RL_read_data() {
 	return data;
 }
 
-/**
- * @ingroup ft245rl
- *
- * Read RXF#
- *
- * @return
- */
-bool FT245RL_data_available(void) {
-	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
-}
-
-/**
- * @ingroup ft245rl
- *
- * Read TXE#
- *
- * @return
- */
-bool FT245RL_can_write(void) {
-	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
-}

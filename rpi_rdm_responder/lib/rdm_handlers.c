@@ -255,14 +255,12 @@ static void rdm_get_device_label(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_device_label(bool was_broadcast, uint16_t sub_device)
-{
+static void rdm_set_device_label(bool was_broadcast, uint16_t sub_device) {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 	uint8_t device_label_length;
 	uint8_t *device_label;
 
-	if (rdm_command->param_data_length > 32)
-	{
+	if (rdm_command->param_data_length > DEVICE_LABEL_MAX_LENGTH) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
@@ -272,8 +270,9 @@ static void rdm_set_device_label(bool was_broadcast, uint16_t sub_device)
 
 	rdm_device_info_set_label(sub_device, device_label, device_label_length);
 
-	if(was_broadcast)
+	if(was_broadcast) {
 		return;
+	}
 
 	rdm_command->param_data_length = 0;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE;
@@ -286,12 +285,10 @@ static void rdm_set_device_label(bool was_broadcast, uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_factory_defaults(/*@unused@*/uint16_t sub_device)
-{
+static void rdm_get_factory_defaults(/*@unused@*/uint16_t sub_device) {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
-	if (rdm_command->param_data_length != 0)
-	{
+	if (rdm_command->param_data_length != 0) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
@@ -309,20 +306,19 @@ static void rdm_get_factory_defaults(/*@unused@*/uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_factory_defaults(bool was_broadcast, /*@unused@*/uint16_t sub_device)
-{
-	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+static void rdm_set_factory_defaults(bool was_broadcast, /*@unused@*/uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;
 
-	if (rdm_command->param_data_length != 0)
-	{
+	if (rdm_command->param_data_length != 0) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
 
 	rdm_device_info_init();
 
-	if(was_broadcast)
+	if(was_broadcast) {
 		return;
+	}
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -332,8 +328,7 @@ static void rdm_set_factory_defaults(bool was_broadcast, /*@unused@*/uint16_t su
  *
  * @param sub_device
  */
-static void rdm_get_language(/*@unused@*/uint16_t sub_device)
-{
+static void rdm_get_language(/*@unused@*/uint16_t sub_device) {
 	const char *supported_language = rdm_device_info_get_supported_language();
 	const uint8_t supported_language_length = rdm_device_info_get_supported_language_length();
 
@@ -346,8 +341,7 @@ static void rdm_get_language(/*@unused@*/uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_software_version_label(/*@unused@*/uint16_t sub_device)
-{
+static void rdm_get_software_version_label(/*@unused@*/uint16_t sub_device) {
 	const char *software_version = rdm_device_info_get_software_version();
 	const uint8_t software_version_length = rdm_device_info_get_software_version_length();
 
@@ -360,13 +354,11 @@ static void rdm_get_software_version_label(/*@unused@*/uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device)
-{
-	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *) rdm_handlers_rdm_data;
 	uint32_t boot_software_version_id;
 
-	if (rdm_command->param_data_length != 0)
-	{
+	if (rdm_command->param_data_length != 0) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
@@ -388,14 +380,12 @@ static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_boot_software_version_label(/*@unused@*/uint16_t sub_device)
-{
+static void rdm_get_boot_software_version_label(/*@unused@*/uint16_t sub_device) {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 	const char *firmware_copyright;
 	uint8_t firmware_copyright_length;
 
-	if (rdm_command->param_data_length != 0)
-	{
+	if (rdm_command->param_data_length != 0) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
@@ -432,12 +422,10 @@ static void rdm_get_personality(uint16_t sub_device)
  * @param was_broadcast
  * @param sub_device
  */
-static void rdm_set_personality(bool was_broadcast, uint16_t sub_device)
-{
+static void rdm_set_personality(bool was_broadcast, uint16_t sub_device) {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 
-	if (rdm_command->param_data_length != 1)
-	{
+	if (rdm_command->param_data_length != 1) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
 		return;
 	}
@@ -445,8 +433,7 @@ static void rdm_set_personality(bool was_broadcast, uint16_t sub_device)
 	const uint8_t personality = rdm_command->param_data[0];
 	const uint8_t max_personalities = rdm_device_info_get_personality_count(sub_device);
 
-	if ((personality == 0) || (personality > max_personalities))
-	{
+	if ((personality == 0) || (personality > max_personalities)) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -464,14 +451,12 @@ static void rdm_set_personality(bool was_broadcast, uint16_t sub_device)
  *
  * @param sub_device
  */
-static void rdm_get_personality_description(uint16_t sub_device)
-{
+static void rdm_get_personality_description(uint16_t sub_device) {
 	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
 	const uint8_t personality = rdm_command->param_data[0];
 	const uint8_t max_personalities = rdm_device_info_get_personality_count(sub_device);
 
-	if ((personality == 0) || (personality > max_personalities))
-	{
+	if ((personality == 0) || (personality > max_personalities)) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -486,8 +471,7 @@ static void rdm_get_personality_description(uint16_t sub_device)
 	rdm_command->param_data[2] = (uint8_t)(slots);
 
 	uint8_t i = 0;
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		rdm_command->param_data[3 + i] = description[i];
 	}
 

@@ -45,7 +45,10 @@ extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *s
 extern void monitor_time_uptime(const int);
 extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *);
 extern void monitor_dmx_data(const int, const uint8_t *);
-/*
+extern void monitor_sniffer(void);
+
+/**
+ * @ingroup monitor
  *
  */
 extern void monitor_update(void);

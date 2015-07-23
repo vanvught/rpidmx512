@@ -32,8 +32,12 @@
 #include "sscan.h"
 
 static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] = { (uint8_t) 1, (uint8_t) 0 };
+
 static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
-		(uint8_t) 4, (uint8_t) FIRMWARE_RDM, (uint8_t) 9, (uint8_t) 1, (uint8_t) 40 };
+		(uint8_t) WIDGET_DEFAULT_FIRMWARE_LSB, (uint8_t) FIRMWARE_RDM,
+		(uint8_t) WIDGET_DEFAULT_BREAK_TIME, (uint8_t) WIDGET_DEFAULT_MAB_TIME,
+		(uint8_t) WIDGET_DEFAULT_REFRESH_RATE };
+
 static uint8_t dmx_send_to_host_throttle = 0;
 
 static const TCHAR PARAMS_FILE_NAME[] = "params.txt";								///< Parameters file name
@@ -55,22 +59,18 @@ static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttl
  */
 #ifdef UPDATE_CONFIG_FILE
 #include <stdio.h>
-static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value)
-{
+static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value) {
 	char _name[64];
 	int _value;
 
-	if (sscanf(line, "%[^=]=%d", _name, &_value) == 2)
-	{
-		if (strncmp(_name, name, strlen(name)) == 0)
-		{
+	if (sscanf(line, "%[^=]=%d", _name, &_value) == 2) {
+		if (strncmp(_name, name, strlen(name)) == 0) {
 			TCHAR buffer[128];
 			sprintf(buffer, "%s=%d\n", name, value);
 			f_puts(buffer, &file_object_wr);
 			return 1;
 
-		} else
-		{
+		} else {
 			f_puts(line, &file_object_wr);
 		}
 	}
@@ -83,9 +83,7 @@ static char process_line_update(const char *line, FIL file_object_wr, const char
  * @param name
  * @param value
  */
-
-static void update_config_file(const char *name, const int value)
-{
+static void update_config_file(const char *name, const int value) {
 	int rc = -1;
 
 	FATFS fat_fs;
@@ -94,24 +92,19 @@ static void update_config_file(const char *name, const int value)
 	f_mount(0, &fat_fs);		// Register volume work area (never fails)
 
 	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
-	if (rc == FR_OK)
-	{
+	if (rc == FR_OK) {
 		FIL file_object_wr;
 		rc = f_open(&file_object_wr, "tmp.txt", FA_WRITE | FA_CREATE_ALWAYS);
-		if (rc == FR_OK)
-		{
+		if (rc == FR_OK) {
 			TCHAR buffer[128];
 			char found = 0;
-			for (;;)
-			{
+			for (;;) {
 				if (f_gets(buffer, sizeof(buffer), &file_object_rd) == NULL)
 					break; // Error or end of file
 
-				if (!found)
-				{
+				if (!found) {
 					found = process_line_update((const char *) buffer, file_object_wr, name, value);
-				} else
-				{
+				} else {
 					f_puts(buffer, &file_object_wr);
 				}
 			}
@@ -129,19 +122,19 @@ inline static void update_config_file(/*@unused@*/const char *name, /*@unused@*/
  *
  * @param line
  */
-static void process_line_read_unsigned_int(const char *line) {
+static void process_line_read_uint8_t(const char *line) {
 	uint8_t value;
 
 	if (sscan_uint8_t(line, DMXUSBPRO_PARAMS_BREAK_TIME, &value) == 2) {
-		if ((value >= (uint8_t) 9) && (value <= (uint8_t) 127)) {
-			dmx_usb_pro_params.break_time = value; // DMX output break time in 10.67 us units. Valid range is 9 to 127
+		if ((value >= (uint8_t) WIDGET_MIN_BREAK_TIME) && (value <= (uint8_t) WIDGET_MAX_BREAK_TIME)) {
+			dmx_usb_pro_params.break_time = value;
 		}
 	} else if (sscan_uint8_t(line, DMXUSBPRO_PARAMS_MAB_TIME, &value) == 2) {
-		if ((value >= (uint8_t) 1) && (value <= (uint8_t) 127)) {
-			dmx_usb_pro_params.mab_time = value; // DMX output Mark After Break time in 10.67 us units. Valid range is 1 to 127.
+		if ((value >= (uint8_t) WIDGET_MIN_MAB_TIME) && (value <= (uint8_t) WIDGET_MAX_MAB_TIME)) {
+			dmx_usb_pro_params.mab_time = value;
 		}
 	} else if (sscan_uint8_t(line, DMXUSBPRO_PARAMS_REFRESH_RATE, &value) == 2) {
-		dmx_usb_pro_params.refresh_rate = (uint8_t) value; // DMX output rate in packets per second. 0 is maximum possible
+		dmx_usb_pro_params.refresh_rate = (uint8_t) value;
 	} else if (sscan_uint8_t(line, PARAMS_WIDGET_MODE, &value) == 2) {
 		if ((value >= (uint8_t) MODE_DMX_RDM) && value <= (uint8_t) MODE_RDM_SNIFFER) {
 			dmx_usb_pro_params.firmware_msb = value;
@@ -174,7 +167,7 @@ static void read_config_file(void) {
 		for (;;) {
 			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL)
 				break; // Error or end of file
-			(void) process_line_read_unsigned_int((const char *) buffer);
+			(void) process_line_read_uint8_t((const char *) buffer);
 		}
 		(void) f_close(&file_object);
 	} else {
@@ -211,11 +204,10 @@ void widget_params_set_break_time(const uint8_t break_time) {
  *
  * @param mab_time
  */
-void widget_params_set_mab_time(const uint8_t mab_time)
-{
+void widget_params_set_mab_time(const uint8_t mab_time) {
 	dmx_usb_pro_params.mab_time = mab_time;
 	dmx_set_output_mab_time((uint32_t) ((double) (dmx_usb_pro_params.mab_time) * (double) (10.67)));
-	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, (int)mab_time);
+	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, (int) mab_time);
 }
 
 /**
@@ -225,7 +217,7 @@ void widget_params_set_mab_time(const uint8_t mab_time)
  */
 void widget_params_set_refresh_rate(const uint8_t refresh_rate) {
 	dmx_usb_pro_params.refresh_rate = refresh_rate;
-	dmx_set_output_period(refresh_rate == (uint8_t) 0 ? (uint8_t) 0 : (uint8_t) (1E6 / refresh_rate));
+	dmx_set_output_period(refresh_rate == (uint8_t) 0 ? (uint32_t) 0 : (uint32_t) (1E6 / refresh_rate));
 	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, (int)refresh_rate);
 }
 

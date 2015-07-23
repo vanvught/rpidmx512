@@ -25,49 +25,12 @@
 
 #include <stdio.h>
 
-#include "dmx.h"
-#include "console.h"
 #include "monitor.h"
-#include "util.h"
-#include "sniffer.h"
-
-static uint32_t dmx_packets_previous = 0;
 
 /**
  * @ingroup monitor
  */
 void monitor_update(void) {
 	monitor_time_uptime(MONITOR_LINE_TIME);
-
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
-
-	const struct _total_statistics *total_statistics = total_statistics_get();
-	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
-
-	console_clear_line(MONITOR_LINE_PACKETS);
-	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
-
-	const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
-
-	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
-	printf("Discovery response : %ld\n", rdm_statistics->discovery_response_packets);
-	printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
-	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
-
-	const uint16_t dmx_updates_per_second = total_statistics->dmx_packets - dmx_packets_previous;
-
-	printf("\nDMX updates/sec %d  \n\n", dmx_updates_per_second);
-
-	if (dmx_updates_per_second != 0) {
-		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-		printf("Slots in packet %d      \n", (uint16_t)dmx_statistics->slots_in_packet);
-		printf("Slot to slot    %d      \n", (uint16_t)dmx_statistics->slot_to_slot);
-		printf("Break to break  %ld     \n", dmx_statistics->break_to_break);
-	} else {
-		printf("Slots in packet --     \n");
-		printf("Slot to slot    --     \n");
-		printf("Break to break  --     \n");
-	}
-
-	dmx_packets_previous = total_statistics->dmx_packets;
+	monitor_sniffer();
 }

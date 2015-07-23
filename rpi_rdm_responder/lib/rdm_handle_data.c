@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include "util.h"
@@ -48,6 +47,44 @@ static bool rdm_muted = false;	///<
 static int _memcmp_6(const void *s1, const void *s2) {
 	unsigned char u1, u2;
 	int n = 6;
+	for (; n--; s1++, s2++) {
+		u1 = *(unsigned char *) s1;
+		u2 = *(unsigned char *) s2;
+		if (u1 != u2) {
+			return (u1 - u2);
+		}
+	}
+	return 0;
+}
+
+/**
+ *
+ * @param s1
+ * @param s2
+ * @return
+ */
+static int _memcmp_4(const void *s1, const void *s2) {
+	unsigned char u1, u2;
+	int n = 4;
+	for (; n--; s1++, s2++) {
+		u1 = *(unsigned char *) s1;
+		u2 = *(unsigned char *) s2;
+		if (u1 != u2) {
+			return (u1 - u2);
+		}
+	}
+	return 0;
+}
+
+/**
+ *
+ * @param s1
+ * @param s2
+ * @return
+ */
+static int _memcmp_2(const void *s1, const void *s2) {
+	unsigned char u1, u2;
+	int n = 2;
 	for (; n--; s1++, s2++) {
 		u1 = *(unsigned char *) s1;
 		u2 = *(unsigned char *) s2;
@@ -90,7 +127,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 		rdm_packet_is_broadcast = true;
 	}
 
-	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, RDM_UID_SIZE - 2) == 0)) {
+	if ((_memcmp_2(rdm_cmd->destination_uid, uid_device) == 0) && (_memcmp_4(&rdm_cmd->destination_uid[2], UID_ALL) == 0)) {
 		rdm_packet_is_vendorcast = true;
 		rdm_packet_is_for_me = true;
 	} else if (_memcmp_6(rdm_cmd->destination_uid, uid_device) == 0) {

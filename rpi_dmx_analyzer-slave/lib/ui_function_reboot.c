@@ -27,7 +27,7 @@
 
 #include "bw_ui.h"
 #include "ui_functions.h"
-#include "irq_led.h"
+#include "led.h"
 
 /**
  * @ingroup ui
