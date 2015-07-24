@@ -556,211 +556,184 @@ Disassembly of section .text:
 000000c0 <bcm2835_spi_setBitOrder>:
   c0:	e12fff1e 	bx	lr
 
-000000c4 <bcm2835_spi_setClockDivider>:
-  c4:	e59f3004 	ldr	r3, [pc, #4]	; d0 <bcm2835_spi_setClockDivider+0xc>
-  c8:	e5830008 	str	r0, [r3, #8]
-  cc:	e12fff1e 	bx	lr
-  d0:	20204000 	eorcs	r4, r0, r0
+000000c4 <bcm2835_spi_setChipSelectPolarity>:
+  c4:	e3a03001 	mov	r3, #1
+  c8:	e59fc020 	ldr	ip, [pc, #32]	; f0 <bcm2835_spi_setChipSelectPolarity+0x2c>
+  cc:	e2800015 	add	r0, r0, #21
+  d0:	e6ef0070 	uxtb	r0, r0
+  d4:	e59c2000 	ldr	r2, [ip]
+  d8:	e1a03013 	lsl	r3, r3, r0
+  dc:	e0031011 	and	r1, r3, r1, lsl r0
+  e0:	e1c20003 	bic	r0, r2, r3
+  e4:	e1800001 	orr	r0, r0, r1
+  e8:	e58c0000 	str	r0, [ip]
+  ec:	e12fff1e 	bx	lr
+  f0:	20204000 	eorcs	r4, r0, r0
 
-000000d4 <bcm2835_spi_setDataMode>:
-  d4:	e59f2018 	ldr	r2, [pc, #24]	; f4 <bcm2835_spi_setDataMode+0x20>
-  d8:	e1a00100 	lsl	r0, r0, #2
-  dc:	e5923000 	ldr	r3, [r2]
-  e0:	e200000c 	and	r0, r0, #12
-  e4:	e3c3300c 	bic	r3, r3, #12
-  e8:	e1800003 	orr	r0, r0, r3
-  ec:	e5820000 	str	r0, [r2]
-  f0:	e12fff1e 	bx	lr
-  f4:	20204000 	eorcs	r4, r0, r0
+000000f4 <bcm2835_spi_transfernb>:
+  f4:	e92d40f0 	push	{r4, r5, r6, r7, lr}
+  f8:	e3a05000 	mov	r5, #0
+  fc:	e1a0e005 	mov	lr, r5
+ 100:	e1a06005 	mov	r6, r5
+ 104:	e59fc0e8 	ldr	ip, [pc, #232]	; 1f4 <bcm2835_spi_transfernb+0x100>
+ 108:	e59c3000 	ldr	r3, [ip]
+ 10c:	e3833030 	orr	r3, r3, #48	; 0x30
+ 110:	e58c3000 	str	r3, [ip]
+ 114:	e59c3000 	ldr	r3, [ip]
+ 118:	e3833080 	orr	r3, r3, #128	; 0x80
+ 11c:	e58c3000 	str	r3, [ip]
+ 120:	e15e0002 	cmp	lr, r2
+ 124:	23a04000 	movcs	r4, #0
+ 128:	33a04001 	movcc	r4, #1
+ 12c:	e15e0002 	cmp	lr, r2
+ 130:	21550002 	cmpcs	r5, r2
+ 134:	2a000025 	bcs	1d0 <bcm2835_spi_transfernb+0xdc>
+ 138:	e3500000 	cmp	r0, #0
+ 13c:	1080400e 	addne	r4, r0, lr
+ 140:	0a00000a 	beq	170 <bcm2835_spi_transfernb+0x7c>
+ 144:	e59c3000 	ldr	r3, [ip]
+ 148:	e1a03923 	lsr	r3, r3, #18
+ 14c:	e15e0002 	cmp	lr, r2
+ 150:	23a03000 	movcs	r3, #0
+ 154:	32033001 	andcc	r3, r3, #1
+ 158:	e3530000 	cmp	r3, #0
+ 15c:	0a00000a 	beq	18c <bcm2835_spi_transfernb+0x98>
+ 160:	e4d43001 	ldrb	r3, [r4], #1
+ 164:	e28ee001 	add	lr, lr, #1
+ 168:	e58c3004 	str	r3, [ip, #4]
+ 16c:	eafffff4 	b	144 <bcm2835_spi_transfernb+0x50>
+ 170:	e59c3000 	ldr	r3, [ip]
+ 174:	e0143923 	ands	r3, r4, r3, lsr #18
+ 178:	0a000003 	beq	18c <bcm2835_spi_transfernb+0x98>
+ 17c:	e58c6004 	str	r6, [ip, #4]
+ 180:	e59c3000 	ldr	r3, [ip]
+ 184:	e0143923 	ands	r3, r4, r3, lsr #18
+ 188:	1afffffb 	bne	17c <bcm2835_spi_transfernb+0x88>
+ 18c:	e0813005 	add	r3, r1, r5
+ 190:	e1550002 	cmp	r5, r2
+ 194:	23a04000 	movcs	r4, #0
+ 198:	33a04001 	movcc	r4, #1
+ 19c:	e3510000 	cmp	r1, #0
+ 1a0:	1a000003 	bne	1b4 <bcm2835_spi_transfernb+0xc0>
+ 1a4:	e59c3000 	ldr	r3, [ip]
+ 1a8:	e01438a3 	ands	r3, r4, r3, lsr #17
+ 1ac:	1afffffc 	bne	1a4 <bcm2835_spi_transfernb+0xb0>
+ 1b0:	eaffffda 	b	120 <bcm2835_spi_transfernb+0x2c>
+ 1b4:	e59c7000 	ldr	r7, [ip]
+ 1b8:	e01448a7 	ands	r4, r4, r7, lsr #17
+ 1bc:	0affffd7 	beq	120 <bcm2835_spi_transfernb+0x2c>
+ 1c0:	e59c4004 	ldr	r4, [ip, #4]
+ 1c4:	e2855001 	add	r5, r5, #1
+ 1c8:	e4c34001 	strb	r4, [r3], #1
+ 1cc:	eaffffef 	b	190 <bcm2835_spi_transfernb+0x9c>
+ 1d0:	e59f101c 	ldr	r1, [pc, #28]	; 1f4 <bcm2835_spi_transfernb+0x100>
+ 1d4:	e5913000 	ldr	r3, [r1]
+ 1d8:	e59f2014 	ldr	r2, [pc, #20]	; 1f4 <bcm2835_spi_transfernb+0x100>
+ 1dc:	e3130801 	tst	r3, #65536	; 0x10000
+ 1e0:	0afffffb 	beq	1d4 <bcm2835_spi_transfernb+0xe0>
+ 1e4:	e5923000 	ldr	r3, [r2]
+ 1e8:	e3c33080 	bic	r3, r3, #128	; 0x80
+ 1ec:	e5823000 	str	r3, [r2]
+ 1f0:	e8bd80f0 	pop	{r4, r5, r6, r7, pc}
+ 1f4:	20204000 	eorcs	r4, r0, r0
 
-000000f8 <bcm2835_spi_chipSelect>:
-  f8:	e59f2014 	ldr	r2, [pc, #20]	; 114 <bcm2835_spi_chipSelect+0x1c>
-  fc:	e2000003 	and	r0, r0, #3
- 100:	e5923000 	ldr	r3, [r2]
- 104:	e3c33003 	bic	r3, r3, #3
- 108:	e1800003 	orr	r0, r0, r3
- 10c:	e5820000 	str	r0, [r2]
- 110:	e12fff1e 	bx	lr
- 114:	20204000 	eorcs	r4, r0, r0
+000001f8 <bcm2835_spi_transfern>:
+ 1f8:	e92d4070 	push	{r4, r5, r6, lr}
+ 1fc:	e3a04000 	mov	r4, #0
+ 200:	e59f30f4 	ldr	r3, [pc, #244]	; 2fc <bcm2835_spi_transfern+0x104>
+ 204:	e1a05004 	mov	r5, r4
+ 208:	e5932000 	ldr	r2, [r3]
+ 20c:	e3822030 	orr	r2, r2, #48	; 0x30
+ 210:	e5832000 	str	r2, [r3]
+ 214:	e593c000 	ldr	ip, [r3]
+ 218:	e1a02003 	mov	r2, r3
+ 21c:	e38cc080 	orr	ip, ip, #128	; 0x80
+ 220:	e583c000 	str	ip, [r3]
+ 224:	e1a0c004 	mov	ip, r4
+ 228:	e151000c 	cmp	r1, ip
+ 22c:	93a0e000 	movls	lr, #0
+ 230:	83a0e001 	movhi	lr, #1
+ 234:	e151000c 	cmp	r1, ip
+ 238:	91510004 	cmpls	r1, r4
+ 23c:	9a000025 	bls	2d8 <bcm2835_spi_transfern+0xe0>
+ 240:	e3500000 	cmp	r0, #0
+ 244:	1080e00c 	addne	lr, r0, ip
+ 248:	0a00000a 	beq	278 <bcm2835_spi_transfern+0x80>
+ 24c:	e5923000 	ldr	r3, [r2]
+ 250:	e1a03923 	lsr	r3, r3, #18
+ 254:	e151000c 	cmp	r1, ip
+ 258:	93a03000 	movls	r3, #0
+ 25c:	82033001 	andhi	r3, r3, #1
+ 260:	e3530000 	cmp	r3, #0
+ 264:	0a00000a 	beq	294 <bcm2835_spi_transfern+0x9c>
+ 268:	e4de3001 	ldrb	r3, [lr], #1
+ 26c:	e28cc001 	add	ip, ip, #1
+ 270:	e5823004 	str	r3, [r2, #4]
+ 274:	eafffff4 	b	24c <bcm2835_spi_transfern+0x54>
+ 278:	e5923000 	ldr	r3, [r2]
+ 27c:	e01e3923 	ands	r3, lr, r3, lsr #18
+ 280:	0a000003 	beq	294 <bcm2835_spi_transfern+0x9c>
+ 284:	e5825004 	str	r5, [r2, #4]
+ 288:	e5923000 	ldr	r3, [r2]
+ 28c:	e01e3923 	ands	r3, lr, r3, lsr #18
+ 290:	1afffffb 	bne	284 <bcm2835_spi_transfern+0x8c>
+ 294:	e0803004 	add	r3, r0, r4
+ 298:	e1510004 	cmp	r1, r4
+ 29c:	93a0e000 	movls	lr, #0
+ 2a0:	83a0e001 	movhi	lr, #1
+ 2a4:	e3500000 	cmp	r0, #0
+ 2a8:	1a000003 	bne	2bc <bcm2835_spi_transfern+0xc4>
+ 2ac:	e5923000 	ldr	r3, [r2]
+ 2b0:	e01e38a3 	ands	r3, lr, r3, lsr #17
+ 2b4:	1afffffc 	bne	2ac <bcm2835_spi_transfern+0xb4>
+ 2b8:	eaffffda 	b	228 <bcm2835_spi_transfern+0x30>
+ 2bc:	e5926000 	ldr	r6, [r2]
+ 2c0:	e01ee8a6 	ands	lr, lr, r6, lsr #17
+ 2c4:	0affffd7 	beq	228 <bcm2835_spi_transfern+0x30>
+ 2c8:	e592e004 	ldr	lr, [r2, #4]
+ 2cc:	e2844001 	add	r4, r4, #1
+ 2d0:	e4c3e001 	strb	lr, [r3], #1
+ 2d4:	eaffffef 	b	298 <bcm2835_spi_transfern+0xa0>
+ 2d8:	e59f101c 	ldr	r1, [pc, #28]	; 2fc <bcm2835_spi_transfern+0x104>
+ 2dc:	e5913000 	ldr	r3, [r1]
+ 2e0:	e59f2014 	ldr	r2, [pc, #20]	; 2fc <bcm2835_spi_transfern+0x104>
+ 2e4:	e3130801 	tst	r3, #65536	; 0x10000
+ 2e8:	0afffffb 	beq	2dc <bcm2835_spi_transfern+0xe4>
+ 2ec:	e5923000 	ldr	r3, [r2]
+ 2f0:	e3c33080 	bic	r3, r3, #128	; 0x80
+ 2f4:	e5823000 	str	r3, [r2]
+ 2f8:	e8bd8070 	pop	{r4, r5, r6, pc}
+ 2fc:	20204000 	eorcs	r4, r0, r0
 
-00000118 <bcm2835_spi_setChipSelectPolarity>:
- 118:	e3a03001 	mov	r3, #1
- 11c:	e59fc020 	ldr	ip, [pc, #32]	; 144 <bcm2835_spi_setChipSelectPolarity+0x2c>
- 120:	e2800015 	add	r0, r0, #21
- 124:	e6ef0070 	uxtb	r0, r0
- 128:	e59c2000 	ldr	r2, [ip]
- 12c:	e1a03013 	lsl	r3, r3, r0
- 130:	e0031011 	and	r1, r3, r1, lsl r0
- 134:	e1c20003 	bic	r0, r2, r3
- 138:	e1800001 	orr	r0, r0, r1
- 13c:	e58c0000 	str	r0, [ip]
- 140:	e12fff1e 	bx	lr
- 144:	20204000 	eorcs	r4, r0, r0
-
-00000148 <bcm2835_spi_transfernb>:
- 148:	e92d40f0 	push	{r4, r5, r6, r7, lr}
- 14c:	e3a05000 	mov	r5, #0
- 150:	e1a0e005 	mov	lr, r5
- 154:	e1a06005 	mov	r6, r5
- 158:	e59fc0e8 	ldr	ip, [pc, #232]	; 248 <bcm2835_spi_transfernb+0x100>
- 15c:	e59c3000 	ldr	r3, [ip]
- 160:	e3833030 	orr	r3, r3, #48	; 0x30
- 164:	e58c3000 	str	r3, [ip]
- 168:	e59c3000 	ldr	r3, [ip]
- 16c:	e3833080 	orr	r3, r3, #128	; 0x80
- 170:	e58c3000 	str	r3, [ip]
- 174:	e15e0002 	cmp	lr, r2
- 178:	23a04000 	movcs	r4, #0
- 17c:	33a04001 	movcc	r4, #1
- 180:	e15e0002 	cmp	lr, r2
- 184:	21550002 	cmpcs	r5, r2
- 188:	2a000025 	bcs	224 <bcm2835_spi_transfernb+0xdc>
- 18c:	e3500000 	cmp	r0, #0
- 190:	1080400e 	addne	r4, r0, lr
- 194:	0a00000a 	beq	1c4 <bcm2835_spi_transfernb+0x7c>
- 198:	e59c3000 	ldr	r3, [ip]
- 19c:	e1a03923 	lsr	r3, r3, #18
- 1a0:	e15e0002 	cmp	lr, r2
- 1a4:	23a03000 	movcs	r3, #0
- 1a8:	32033001 	andcc	r3, r3, #1
- 1ac:	e3530000 	cmp	r3, #0
- 1b0:	0a00000a 	beq	1e0 <bcm2835_spi_transfernb+0x98>
- 1b4:	e4d43001 	ldrb	r3, [r4], #1
- 1b8:	e28ee001 	add	lr, lr, #1
- 1bc:	e58c3004 	str	r3, [ip, #4]
- 1c0:	eafffff4 	b	198 <bcm2835_spi_transfernb+0x50>
- 1c4:	e59c3000 	ldr	r3, [ip]
- 1c8:	e0143923 	ands	r3, r4, r3, lsr #18
- 1cc:	0a000003 	beq	1e0 <bcm2835_spi_transfernb+0x98>
- 1d0:	e58c6004 	str	r6, [ip, #4]
- 1d4:	e59c3000 	ldr	r3, [ip]
- 1d8:	e0143923 	ands	r3, r4, r3, lsr #18
- 1dc:	1afffffb 	bne	1d0 <bcm2835_spi_transfernb+0x88>
- 1e0:	e0813005 	add	r3, r1, r5
- 1e4:	e1550002 	cmp	r5, r2
- 1e8:	23a04000 	movcs	r4, #0
- 1ec:	33a04001 	movcc	r4, #1
- 1f0:	e3510000 	cmp	r1, #0
- 1f4:	1a000003 	bne	208 <bcm2835_spi_transfernb+0xc0>
- 1f8:	e59c3000 	ldr	r3, [ip]
- 1fc:	e01438a3 	ands	r3, r4, r3, lsr #17
- 200:	1afffffc 	bne	1f8 <bcm2835_spi_transfernb+0xb0>
- 204:	eaffffda 	b	174 <bcm2835_spi_transfernb+0x2c>
- 208:	e59c7000 	ldr	r7, [ip]
- 20c:	e01448a7 	ands	r4, r4, r7, lsr #17
- 210:	0affffd7 	beq	174 <bcm2835_spi_transfernb+0x2c>
- 214:	e59c4004 	ldr	r4, [ip, #4]
- 218:	e2855001 	add	r5, r5, #1
- 21c:	e4c34001 	strb	r4, [r3], #1
- 220:	eaffffef 	b	1e4 <bcm2835_spi_transfernb+0x9c>
- 224:	e59f101c 	ldr	r1, [pc, #28]	; 248 <bcm2835_spi_transfernb+0x100>
- 228:	e5913000 	ldr	r3, [r1]
- 22c:	e59f2014 	ldr	r2, [pc, #20]	; 248 <bcm2835_spi_transfernb+0x100>
- 230:	e3130801 	tst	r3, #65536	; 0x10000
- 234:	0afffffb 	beq	228 <bcm2835_spi_transfernb+0xe0>
- 238:	e5923000 	ldr	r3, [r2]
- 23c:	e3c33080 	bic	r3, r3, #128	; 0x80
- 240:	e5823000 	str	r3, [r2]
- 244:	e8bd80f0 	pop	{r4, r5, r6, r7, pc}
- 248:	20204000 	eorcs	r4, r0, r0
-
-0000024c <bcm2835_spi_transfern>:
- 24c:	e92d4070 	push	{r4, r5, r6, lr}
- 250:	e3a04000 	mov	r4, #0
- 254:	e59f30f4 	ldr	r3, [pc, #244]	; 350 <bcm2835_spi_transfern+0x104>
- 258:	e1a05004 	mov	r5, r4
- 25c:	e5932000 	ldr	r2, [r3]
- 260:	e3822030 	orr	r2, r2, #48	; 0x30
- 264:	e5832000 	str	r2, [r3]
- 268:	e593c000 	ldr	ip, [r3]
- 26c:	e1a02003 	mov	r2, r3
- 270:	e38cc080 	orr	ip, ip, #128	; 0x80
- 274:	e583c000 	str	ip, [r3]
- 278:	e1a0c004 	mov	ip, r4
- 27c:	e151000c 	cmp	r1, ip
- 280:	93a0e000 	movls	lr, #0
- 284:	83a0e001 	movhi	lr, #1
- 288:	e151000c 	cmp	r1, ip
- 28c:	91510004 	cmpls	r1, r4
- 290:	9a000025 	bls	32c <bcm2835_spi_transfern+0xe0>
- 294:	e3500000 	cmp	r0, #0
- 298:	1080e00c 	addne	lr, r0, ip
- 29c:	0a00000a 	beq	2cc <bcm2835_spi_transfern+0x80>
- 2a0:	e5923000 	ldr	r3, [r2]
- 2a4:	e1a03923 	lsr	r3, r3, #18
- 2a8:	e151000c 	cmp	r1, ip
- 2ac:	93a03000 	movls	r3, #0
- 2b0:	82033001 	andhi	r3, r3, #1
- 2b4:	e3530000 	cmp	r3, #0
- 2b8:	0a00000a 	beq	2e8 <bcm2835_spi_transfern+0x9c>
- 2bc:	e4de3001 	ldrb	r3, [lr], #1
- 2c0:	e28cc001 	add	ip, ip, #1
- 2c4:	e5823004 	str	r3, [r2, #4]
- 2c8:	eafffff4 	b	2a0 <bcm2835_spi_transfern+0x54>
- 2cc:	e5923000 	ldr	r3, [r2]
- 2d0:	e01e3923 	ands	r3, lr, r3, lsr #18
- 2d4:	0a000003 	beq	2e8 <bcm2835_spi_transfern+0x9c>
- 2d8:	e5825004 	str	r5, [r2, #4]
- 2dc:	e5923000 	ldr	r3, [r2]
- 2e0:	e01e3923 	ands	r3, lr, r3, lsr #18
- 2e4:	1afffffb 	bne	2d8 <bcm2835_spi_transfern+0x8c>
- 2e8:	e0803004 	add	r3, r0, r4
- 2ec:	e1510004 	cmp	r1, r4
- 2f0:	93a0e000 	movls	lr, #0
- 2f4:	83a0e001 	movhi	lr, #1
- 2f8:	e3500000 	cmp	r0, #0
- 2fc:	1a000003 	bne	310 <bcm2835_spi_transfern+0xc4>
- 300:	e5923000 	ldr	r3, [r2]
- 304:	e01e38a3 	ands	r3, lr, r3, lsr #17
- 308:	1afffffc 	bne	300 <bcm2835_spi_transfern+0xb4>
- 30c:	eaffffda 	b	27c <bcm2835_spi_transfern+0x30>
- 310:	e5926000 	ldr	r6, [r2]
- 314:	e01ee8a6 	ands	lr, lr, r6, lsr #17
- 318:	0affffd7 	beq	27c <bcm2835_spi_transfern+0x30>
- 31c:	e592e004 	ldr	lr, [r2, #4]
- 320:	e2844001 	add	r4, r4, #1
- 324:	e4c3e001 	strb	lr, [r3], #1
- 328:	eaffffef 	b	2ec <bcm2835_spi_transfern+0xa0>
- 32c:	e59f101c 	ldr	r1, [pc, #28]	; 350 <bcm2835_spi_transfern+0x104>
- 330:	e5913000 	ldr	r3, [r1]
- 334:	e59f2014 	ldr	r2, [pc, #20]	; 350 <bcm2835_spi_transfern+0x104>
- 338:	e3130801 	tst	r3, #65536	; 0x10000
- 33c:	0afffffb 	beq	330 <bcm2835_spi_transfern+0xe4>
- 340:	e5923000 	ldr	r3, [r2]
- 344:	e3c33080 	bic	r3, r3, #128	; 0x80
- 348:	e5823000 	str	r3, [r2]
- 34c:	e8bd8070 	pop	{r4, r5, r6, pc}
- 350:	20204000 	eorcs	r4, r0, r0
-
-00000354 <bcm2835_spi_writenb>:
- 354:	e59fc064 	ldr	ip, [pc, #100]	; 3c0 <bcm2835_spi_writenb+0x6c>
- 358:	e3510000 	cmp	r1, #0
- 35c:	e59c3000 	ldr	r3, [ip]
- 360:	10801001 	addne	r1, r0, r1
- 364:	e3833030 	orr	r3, r3, #48	; 0x30
- 368:	e58c3000 	str	r3, [ip]
- 36c:	e59c3000 	ldr	r3, [ip]
- 370:	e3833080 	orr	r3, r3, #128	; 0x80
- 374:	e58c3000 	str	r3, [ip]
- 378:	0a000007 	beq	39c <bcm2835_spi_writenb+0x48>
- 37c:	e59c3000 	ldr	r3, [ip]
- 380:	e59f2038 	ldr	r2, [pc, #56]	; 3c0 <bcm2835_spi_writenb+0x6c>
- 384:	e3130701 	tst	r3, #262144	; 0x40000
- 388:	0afffffb 	beq	37c <bcm2835_spi_writenb+0x28>
- 38c:	e4d03001 	ldrb	r3, [r0], #1
- 390:	e1500001 	cmp	r0, r1
- 394:	e5823004 	str	r3, [r2, #4]
- 398:	1afffff7 	bne	37c <bcm2835_spi_writenb+0x28>
- 39c:	e59f101c 	ldr	r1, [pc, #28]	; 3c0 <bcm2835_spi_writenb+0x6c>
- 3a0:	e5913000 	ldr	r3, [r1]
- 3a4:	e59f2014 	ldr	r2, [pc, #20]	; 3c0 <bcm2835_spi_writenb+0x6c>
- 3a8:	e3130801 	tst	r3, #65536	; 0x10000
- 3ac:	0afffffb 	beq	3a0 <bcm2835_spi_writenb+0x4c>
- 3b0:	e5923000 	ldr	r3, [r2]
- 3b4:	e3c33080 	bic	r3, r3, #128	; 0x80
- 3b8:	e5823000 	str	r3, [r2]
- 3bc:	e12fff1e 	bx	lr
- 3c0:	20204000 	eorcs	r4, r0, r0
+00000300 <bcm2835_spi_writenb>:
+ 300:	e59fc064 	ldr	ip, [pc, #100]	; 36c <bcm2835_spi_writenb+0x6c>
+ 304:	e3510000 	cmp	r1, #0
+ 308:	e59c3000 	ldr	r3, [ip]
+ 30c:	10801001 	addne	r1, r0, r1
+ 310:	e3833030 	orr	r3, r3, #48	; 0x30
+ 314:	e58c3000 	str	r3, [ip]
+ 318:	e59c3000 	ldr	r3, [ip]
+ 31c:	e3833080 	orr	r3, r3, #128	; 0x80
+ 320:	e58c3000 	str	r3, [ip]
+ 324:	0a000007 	beq	348 <bcm2835_spi_writenb+0x48>
+ 328:	e59c3000 	ldr	r3, [ip]
+ 32c:	e59f2038 	ldr	r2, [pc, #56]	; 36c <bcm2835_spi_writenb+0x6c>
+ 330:	e3130701 	tst	r3, #262144	; 0x40000
+ 334:	0afffffb 	beq	328 <bcm2835_spi_writenb+0x28>
+ 338:	e4d03001 	ldrb	r3, [r0], #1
+ 33c:	e1500001 	cmp	r0, r1
+ 340:	e5823004 	str	r3, [r2, #4]
+ 344:	1afffff7 	bne	328 <bcm2835_spi_writenb+0x28>
+ 348:	e59f101c 	ldr	r1, [pc, #28]	; 36c <bcm2835_spi_writenb+0x6c>
+ 34c:	e5913000 	ldr	r3, [r1]
+ 350:	e59f2014 	ldr	r2, [pc, #20]	; 36c <bcm2835_spi_writenb+0x6c>
+ 354:	e3130801 	tst	r3, #65536	; 0x10000
+ 358:	0afffffb 	beq	34c <bcm2835_spi_writenb+0x4c>
+ 35c:	e5923000 	ldr	r3, [r2]
+ 360:	e3c33080 	bic	r3, r3, #128	; 0x80
+ 364:	e5823000 	str	r3, [r2]
+ 368:	e12fff1e 	bx	lr
+ 36c:	20204000 	eorcs	r4, r0, r0
 
 Disassembly of section .comment:
 
