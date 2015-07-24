@@ -35,11 +35,11 @@
 #endif
 
 char button;
-char enter = 0;
+char enter = (char)0;
 int ui_function_menu = 1;
 int ui_function_active = 1;
 
-char do_ui_cls = 1;
+char do_ui_cls = (char)1;
 
 extern void dmx_slave(const char);
 extern void dmx_analyzer(const char);

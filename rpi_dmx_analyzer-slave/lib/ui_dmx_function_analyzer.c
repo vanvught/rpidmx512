@@ -38,8 +38,8 @@ inline static void itoa_base10(int arg, char buf[]) {
 
 	if (arg == 0) *n = '0';
 
-	while (arg) {
-		*n = '0' + (arg % 10);
+	while (arg != 0) {
+		*n = (char)'0' + (char)(arg % 10);
 		n--;
 		arg /= 10;
 	}
@@ -83,7 +83,7 @@ inline static void display_data_decimal(const int start_channel) {
 		text[offset    ] = ' ';
 		text[offset + 1] = ' ';
 		text[offset + 3] = ' ';
-		itoa_base10(dmx_data[dmx_data_index + i], &text[offset]);
+		itoa_base10((int)dmx_data[dmx_data_index + i], &text[offset]);
 	}
 
 	text[15] = 'D';
@@ -98,14 +98,14 @@ inline static void display_data_decimal(const int start_channel) {
  */
 inline static void display_data_hex(const int start_channel) {
 	char text[BW_UI_MAX_CHARACTERS];
-
 	int i = 0;
 	int offset = 0;
 	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++) {
+		uint8_t data;
 		offset = i * 4;
-		unsigned char data = dmx_data[dmx_data_index + i];
+		data = dmx_data[dmx_data_index + i];
 		text[offset    ] = ' ';
 		text[offset + 1] = TO_HEX((data & 0xF0) >> 4);
 		text[offset + 2] = TO_HEX(data & 0x0F);
@@ -133,7 +133,7 @@ inline static void display_data_percentage(const int start_channel) {
 		text[offset    ] = ' ';
 		text[offset + 1] = ' ';
 		text[offset + 3] = ' ';
-		itoa_base10(((double) dmx_data[dmx_data_index + i] / 255) * 100, &text[offset]);
+		itoa_base10((int)((double) dmx_data[dmx_data_index + i] / 255) * 100, &text[offset]);
 	}
 
 	text[15] = '%';
@@ -148,12 +148,12 @@ inline static void display_data_percentage(const int start_channel) {
 void dmx_analyzer(const char buttons) {
 	static int dmx_start_address = 1;
 	static int ui_function = 1;
-	static char ui_dmx_refresh_channels = 1;
-	static char ui_dmx_channels_step = 4;
+	static char ui_dmx_refresh_channels = (char)1;
+	static char ui_dmx_channels_step = (char)4;
 
-	if (enter) {
-		ui_dmx_channels_step = (ui_dmx_channels_step * 2) & 0x1FF;
-		enter = 0;
+	if (enter != (char)0) {
+		ui_dmx_channels_step = (ui_dmx_channels_step * 2) & 0x1FF; //TODO Bug?
+		enter = (char)0;
 	}
 
 	if ((BUTTON1_PRESSED(buttons)) && (BUTTON2_PRESSED(buttons))) {

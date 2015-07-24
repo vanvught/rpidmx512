@@ -35,11 +35,11 @@
  * @param buttons
  */
 void reboot(const char buttons) {
-	if (do_ui_cls) {
+	if (do_ui_cls != (char)0) {
 		ui_cls();
 		ui_text_line_1("Reboot?", 7);
 		ui_text_line_2("Yes           No", BW_UI_MAX_CHARACTERS);
-		do_ui_cls = 0;
+		do_ui_cls = (char)0;
 	}
 	// No need to check for button 6 pressed (activate Menu)
 	if (BUTTON1_PRESSED(buttons)) {
