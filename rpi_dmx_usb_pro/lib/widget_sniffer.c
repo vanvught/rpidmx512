@@ -34,6 +34,7 @@
 #include "widget.h"
 #include "monitor.h"
 #include "sniffer.h"
+#include "hardware.h"
 
 #define	SNIFFER_PACKET			0x81	///< Label
 #define	SNIFFER_PACKET_SIZE  	200		///< Packet size
@@ -89,6 +90,20 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 	}
 }
 
+static bool can_send(void) {
+	const uint32_t compare = (uint32_t)hardware_micros() + (uint32_t)1000;
+
+	while (!usb_can_write() && ((uint32_t) hardware_micros() < compare)) {
+	}
+
+	if (!usb_can_write()) {
+		monitor_line(MONITOR_LINE_INFO, "!Failed! Cannot send to host");
+		return false;
+	}
+
+	return true;
+}
+
 /**
  * @ingroup widget
  *
@@ -97,11 +112,17 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 void widget_sniffer_dmx(void) {
 	const uint8_t mode = widget_get_mode();
 
-	if (mode != MODE_RDM_SNIFFER)
+	if (mode != MODE_RDM_SNIFFER) {
 		return;
+	}
 
-	if (!dmx_get_available())
+	if (!dmx_get_available()) {
 		return;
+	}
+
+	if (!can_send()) {
+		return;
+	}
 
 	dmx_set_available_false();
 
@@ -130,6 +151,10 @@ void widget_sniffer_rdm(void) {
 	const uint8_t *rdm_data = rdm_get_available();
 
 	if (rdm_data == NULL) {
+		return;
+	}
+
+	if (!can_send()) {
 		return;
 	}
 

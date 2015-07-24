@@ -185,7 +185,7 @@ void rdm_device_info_set_label(const uint16_t sub_device, const uint8_t *label,	
 		return;
 	}
 
-	memcpy(root_device_label, label, label_length);
+	_memcpy(root_device_label, label, label_length);
 	root_device_label_length = label_length;
 }
 
@@ -524,10 +524,10 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-	memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	_memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	root_device_label_length = DEVICE_LABEL_LENGTH;
 
-	memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
+	_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
 
 	read_config_file();
@@ -555,7 +555,7 @@ void rdm_device_info_init(void) {
 
 	rdm_sensors_init();
 
-	memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
+	_memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
 
 	factory_defaults_checksum = calculate_checksum();
 	is_factory_defaults = true;

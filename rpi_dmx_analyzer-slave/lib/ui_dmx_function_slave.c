@@ -111,7 +111,7 @@ void dmx_slave(const char buttons) {
 				static char text_1[BW_UI_MAX_CHARACTERS + 1] = {'S', 'P', 'I', ' ', ' '};
 				text_1[3] = devices_connected.device_entry[devices_connected_index].dmx_device_info.device_info.chip_select + '0';
 				strncpy(&text_1[5],devices_table[devices_connected.device_entry[devices_connected_index].devices_table_index].name, BW_UI_MAX_CHARACTERS - 5);
-				int length = strlen(text_1);
+				int length = _strlen(text_1);
 				memset(&text_1[length], ' ', BW_UI_MAX_CHARACTERS - length);
 				ui_text_line_1(text_1, BW_UI_MAX_CHARACTERS);
 				// Line 2

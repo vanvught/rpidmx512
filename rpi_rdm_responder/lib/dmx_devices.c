@@ -295,7 +295,7 @@ const char *dmx_devices_get_label(const uint16_t sub_device) {
  */
 void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label, label, label_length);
+		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label, label, label_length);
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label_length = label_length;
 	}
 }
@@ -392,7 +392,7 @@ const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_devi
  */
 void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
+		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
 	}
 }
 

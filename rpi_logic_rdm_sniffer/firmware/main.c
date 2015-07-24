@@ -28,7 +28,6 @@
 
 #include "hardware.h"
 #include "led.h"
-#include "util.h"
 #include "dmx.h"
 #include "monitor.h"
 #include "sniffer.h"

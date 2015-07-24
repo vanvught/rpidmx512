@@ -39,64 +39,6 @@
 static bool rdm_muted = false;	///<
 
 /**
- *
- * @param s1
- * @param s2
- * @return
- */
-static int _memcmp_6(const void *s1, const void *s2) {
-	unsigned char u1, u2;
-	int n = 6;
-	for (; n--; s1++, s2++) {
-		u1 = *(unsigned char *) s1;
-		u2 = *(unsigned char *) s2;
-		if (u1 != u2) {
-			return (u1 - u2);
-		}
-	}
-	return 0;
-}
-
-/**
- *
- * @param s1
- * @param s2
- * @return
- */
-static int _memcmp_4(const void *s1, const void *s2) {
-	unsigned char u1, u2;
-	int n = 4;
-	for (; n--; s1++, s2++) {
-		u1 = *(unsigned char *) s1;
-		u2 = *(unsigned char *) s2;
-		if (u1 != u2) {
-			return (u1 - u2);
-		}
-	}
-	return 0;
-}
-
-/**
- *
- * @param s1
- * @param s2
- * @return
- */
-static int _memcmp_2(const void *s1, const void *s2) {
-	unsigned char u1, u2;
-	int n = 2;
-	for (; n--; s1++, s2++) {
-		u1 = *(unsigned char *) s1;
-		u2 = *(unsigned char *) s2;
-		if (u1 != u2) {
-			return (u1 - u2);
-		}
-	}
-	return 0;
-}
-
-
-/**
  * @ingroup rdm_handlers
  *
  * @return
@@ -123,14 +65,14 @@ void rdm_handle_data(uint8_t *rdm_data) {
 
 	monitor_line(MONITOR_LINE_RDM_CC, "Command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
-	if (_memcmp_6(rdm_cmd->destination_uid, UID_ALL) == 0) {
+	if (_memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0) {
 		rdm_packet_is_broadcast = true;
 	}
 
-	if ((_memcmp_2(rdm_cmd->destination_uid, uid_device) == 0) && (_memcmp_4(&rdm_cmd->destination_uid[2], UID_ALL) == 0)) {
+	if ((_memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (_memcmp(&rdm_cmd->destination_uid[2], UID_ALL, 4) == 0)) {
 		rdm_packet_is_vendorcast = true;
 		rdm_packet_is_for_me = true;
-	} else if (_memcmp_6(rdm_cmd->destination_uid, uid_device) == 0) {
+	} else if (_memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0) {
 		rdm_packet_is_for_me = true;
 	}
 
@@ -139,7 +81,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 	} else if (command_class == E120_DISCOVERY_COMMAND) {
 		if (param_id == E120_DISC_UNIQUE_BRANCH) {
 			if (!rdm_muted) {
-				if ((_memcmp_6(rdm_cmd->param_data, uid_device) <= 0) && (_memcmp_6(uid_device, rdm_cmd->param_data + 6) <= 0)) {
+				if ((_memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (_memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
 					monitor_line(MONITOR_LINE_STATUS, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);

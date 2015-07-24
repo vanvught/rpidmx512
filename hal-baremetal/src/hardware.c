@@ -35,7 +35,7 @@
 #include "console.h"
 #include "sys_time.h"
 
-static const char FIRMWARE_COPYRIGHT[] = "Copyright (c) 2012 Broadcom";		///<
+static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";		///<
 static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
 
 struct _hardware_led {
@@ -49,7 +49,7 @@ struct _hardware_led {
 struct _hardware_revision_code {
 	const uint32_t value;
 	const char name[MAX_NAME_LENGTH + 1];
-}const board_version[] = {
+}const board_version[] __attribute__((aligned(4))) = {
 		{ 0x000000, "Model Unknown       " },
 		{ 0x000002,	"Model B R1 256MB    " },
 		{ 0x000003, "Model B R1 256MB    " },

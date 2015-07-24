@@ -27,6 +27,7 @@
 #define UTIL_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
@@ -55,4 +56,49 @@ inline static bool is_xdigit(char c) {
 	return (is_digit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
 }
 
+/**
+ *
+ * @param s1
+ * @param s2
+ * @param n
+ * @return
+ */
+inline static int _memcmp(const void *s1, const void *s2, size_t n) {
+	unsigned char u1, u2;
+
+	for (; n--; s1++, s2++) {
+		u1 = *(unsigned char *) s1;
+		u2 = *(unsigned char *) s2;
+		if (u1 != u2) {
+			return (u1 - u2);
+		}
+	}
+
+	return 0;
+}
+
+/**
+ *
+ * @param dest
+ * @param src
+ * @param n
+ */
+inline static void *_memcpy(void *dest, const void *src, size_t n) {
+	char *dp = dest;
+	const char *sp = src;
+
+	while (n--) {
+		*dp++ = *sp++;
+	}
+
+	return dest;
+}
+
+
+inline static size_t _strlen(const char *s) {
+	const char *p = s;
+	while (*s)
+		++s;
+	return s - p;
+}
 #endif /* UTIL_H_ */

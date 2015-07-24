@@ -31,7 +31,7 @@
 #include "widget_params.h"
 #include "sscan.h"
 
-static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] = { (uint8_t) 1, (uint8_t) 0 };
+static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
 
 static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 		(uint8_t) WIDGET_DEFAULT_FIRMWARE_LSB, (uint8_t) FIRMWARE_RDM,
@@ -64,7 +64,7 @@ static char process_line_update(const char *line, FIL file_object_wr, const char
 	int _value;
 
 	if (sscanf(line, "%[^=]=%d", _name, &_value) == 2) {
-		if (strncmp(_name, name, strlen(name)) == 0) {
+		if (strncmp(_name, name, _strlen(name)) == 0) {
 			TCHAR buffer[128];
 			sprintf(buffer, "%s=%d\n", name, value);
 			f_puts(buffer, &file_object_wr);

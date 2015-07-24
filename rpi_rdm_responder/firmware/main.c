@@ -28,7 +28,6 @@
 
 #include "hardware.h"
 #include "led.h"
-#include "util.h"
 #include "rdm_device_info.h"
 #include "dmx.h"
 #include "dmx_devices.h"

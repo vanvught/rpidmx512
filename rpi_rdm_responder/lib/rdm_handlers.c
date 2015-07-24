@@ -201,7 +201,7 @@ static void rdm_get_device_info(uint16_t sub_device)
 	rdm_response->param_data_length = sizeof(struct _rdm_device_info);
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + rdm_response->param_data_length;
 
-	memcpy(device_info, rdm_device_info, sizeof(struct _rdm_device_info));
+	_memcpy(device_info, rdm_device_info, sizeof(struct _rdm_device_info));
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -464,7 +464,7 @@ static void rdm_get_personality_description(uint16_t sub_device) {
 	const uint16_t slots = rdm_device_info_get_personality_slots(sub_device, personality);
 
 	const char *description = rdm_device_info_get_personality_description(sub_device, personality);
-	uint8_t length = strlen(description);
+	uint8_t length = _strlen(description);
 	length = length > 32 ? 32 : length;
 
 	rdm_command->param_data[1] = (uint8_t)(slots >> 8);
