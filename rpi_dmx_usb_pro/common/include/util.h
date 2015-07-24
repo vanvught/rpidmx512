@@ -30,7 +30,7 @@
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+#define TO_HEX(i)	((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
 
 #ifndef MAX
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))

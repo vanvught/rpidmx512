@@ -123,40 +123,6 @@ void bcm2835_spi_setBitOrder(/*@unused@*/ const uint8_t order) {
 /**
  * @ingroup SPI
  *
- * Sets the SPI clock divider and therefore the SPI clock speed.
- *
- * @param divider The desired SPI clock divider, one of ::bcm2835SPIClockDivider
- */
-void bcm2835_spi_setClockDivider(const uint16_t divider) {
-	BCM2835_SPI0 ->CLK = divider;
-}
-
-/**
- * @ingroup SPI
- *
- * Sets the SPI data mode.
- * Sets the clock polarity and phase.
- *
- * @param mode The desired data mode,one of BCM2835_SPI_MODE*, see \ref bcm2835SPIMode
- */
-void bcm2835_spi_setDataMode(const uint8_t mode) {
-	// Mask in the CPO and CPHA bits of CS
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
-}
-
-/**
- * @ingroup SPI
- *
- * @param cs Specifies the CS pins(s) that are used to activate the desired slave.
- *           One of BCM2835_SPI_CS*, see \ref bcm2835SPIChipSelect
- */
-void bcm2835_spi_chipSelect(const uint8_t cs) {
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
-}
-
-/**
- * @ingroup SPI
- *
  * Sets the chip select pin polarity for a given pin.
  *
  * @param cs The chip select pin to affect
@@ -254,7 +220,7 @@ void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
 			;
 
 		// Write to FIFO
-		BCM2835_SPI0->FIFO = tbuf[i];
+		BCM2835_SPI0->FIFO = (uint32_t)tbuf[i];
 
 	}
 

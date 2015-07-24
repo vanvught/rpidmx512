@@ -27,6 +27,7 @@
 #define USB_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 extern void usb_send_header(const uint8_t, const uint16_t);
 extern void usb_send_data(const uint8_t *, const uint16_t);
@@ -47,7 +48,7 @@ inline static const uint8_t usb_read_byte(void)
 	return FT245RL_read_data();
 }
 
-inline static const uint8_t usb_read_is_byte_available(void)
+inline static const bool usb_read_is_byte_available(void)
 {
 	return FT245RL_data_available();
 }
@@ -57,7 +58,7 @@ inline static void usb_init(void)
 	FT245RL_init();
 }
 
-inline static const uint8_t usb_can_write(void)
+inline static const bool usb_can_write(void)
 {
 	return FT245RL_can_write();
 }

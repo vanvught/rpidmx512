@@ -49,7 +49,6 @@ enum {
 };
 
 typedef enum {
-	DMX_PORT_DIRECTION_IDLE = 0,						///<
 	DMX_PORT_DIRECTION_OUTP = 1,						///< DMX output
 	DMX_PORT_DIRECTION_INP = 2							///< DMX input
 } _dmx_port_direction;

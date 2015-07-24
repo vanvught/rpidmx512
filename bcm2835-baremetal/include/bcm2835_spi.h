@@ -60,6 +60,9 @@
 #else
 #include <stdint.h>
 
+#include "bcm2835.h"
+#include "bcm2835_gpio.h"
+
 /// \ref BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 typedef enum {
 	BCM2835_SPI_BIT_ORDER_LSBFIRST = 0,	///< LSB First
@@ -104,9 +107,41 @@ typedef enum {
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
 extern void bcm2835_spi_setBitOrder(const uint8_t);
-extern void bcm2835_spi_setClockDivider(const uint16_t);
-extern void bcm2835_spi_setDataMode(const uint8_t);
-extern void bcm2835_spi_chipSelect(const uint8_t);
+
+/**
+ * @ingroup SPI
+ *
+ * Sets the SPI clock divider and therefore the SPI clock speed.
+ *
+ * @param divider The desired SPI clock divider, one of ::bcm2835SPIClockDivider
+ */
+inline static void bcm2835_spi_setClockDivider(const uint16_t divider) {
+	BCM2835_SPI0 ->CLK = divider;
+}
+
+/**
+ * @ingroup SPI
+ *
+ * Sets the SPI data mode.
+ * Sets the clock polarity and phase.
+ *
+ * @param mode The desired data mode,one of BCM2835_SPI_MODE*, see \ref bcm2835SPIMode
+ */
+inline static void bcm2835_spi_setDataMode(const uint8_t mode) {
+	// Mask in the CPO and CPHA bits of CS
+	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
+}
+
+/**
+ * @ingroup SPI
+ *
+ * @param cs Specifies the CS pins(s) that are used to activate the desired slave.
+ *           One of BCM2835_SPI_CS*, see \ref bcm2835SPIChipSelect
+ */
+inline static void bcm2835_spi_chipSelect(const uint8_t cs) {
+	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
+}
+
 extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
 extern void bcm2835_spi_transfernb(char*, char*, const uint32_t);
 extern void bcm2835_spi_transfern(char*, const uint32_t);

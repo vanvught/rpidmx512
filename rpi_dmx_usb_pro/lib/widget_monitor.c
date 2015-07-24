@@ -39,7 +39,6 @@ static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
  * @ingroup monitor
  */
 void monitor_update(void) {
-	char dir[3][10] = { "Idle", "Output", "Input" };
 	struct _widget_params widget_params;
 
 	widget_params_get(&widget_params);
@@ -74,7 +73,7 @@ void monitor_update(void) {
 				console_clear_line(MONITOR_LINE_STATS);
 			}
 		} else {
-			printf("%s", dir[dmx_get_port_direction()]);
+			printf("Output");
 		}
 
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);

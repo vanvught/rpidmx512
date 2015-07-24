@@ -595,11 +595,6 @@ void dmx_stop_data(void) {
  */
 void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool enable_data) {
 	switch (port_direction) {
-	case DMX_PORT_DIRECTION_IDLE:
-		dmx_stop_data();
-		bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
-		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
-		break;
 	case DMX_PORT_DIRECTION_OUTP:
 		dmx_stop_data();
 		bcm2835_gpio_set(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
@@ -611,7 +606,9 @@ void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool
 		dmx_port_direction = DMX_PORT_DIRECTION_INP;
 		break;
 	default:
-		dmx_port_direction = DMX_PORT_DIRECTION_IDLE;
+		dmx_stop_data();
+		bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
+		dmx_port_direction = DMX_PORT_DIRECTION_INP;
 		break;
 	}
 

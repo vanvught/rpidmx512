@@ -28,6 +28,4 @@ extern char enter;
 extern void ui_lcd_refresh(void);
 extern void ui_buttons_update(void);
 
-#define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
-
 #endif /* UI_FUNCTIONS_H_ */

@@ -27,7 +27,6 @@
 #define BW_UI_H_
 
 #include <stdint.h>
-//#include "device_info.h"
 
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		(uint8_t)0x94
 
