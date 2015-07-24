@@ -48,8 +48,7 @@ static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((alig
  *
  * @return
  */
-struct _dmx_devices_statistics *dmx_devices_get_statistics(void)
-{
+const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) {
 	return &dmx_devices_statistics;
 }
 
@@ -57,8 +56,7 @@ struct _dmx_devices_statistics *dmx_devices_get_statistics(void)
  * @ingroup dmx
  *
  */
-void dmx_devices_reset_statistics(void)
-{
+void dmx_devices_reset_statistics(void) {
 	dmx_devices_statistics.function_count = 0;
 	dmx_devices_statistics.dmx_available_count = 0;
 }
@@ -70,7 +68,7 @@ void dmx_devices_reset_statistics(void)
  * @return
  */
 static int add_connected_device(const char *line) {
-	if (devices_connected.elements_count < (sizeof(devices_connected.device_entry)	/ sizeof(devices_connected.device_entry[0]))) {
+	if (devices_connected.elements_count < (uint16_t)(sizeof(devices_connected.device_entry)	/ sizeof(devices_connected.device_entry[0]))) {
 
 		char device_name[65];
 		char chip_select;
@@ -85,37 +83,30 @@ static int add_connected_device(const char *line) {
 		printf("%d, {%d (%s)[%d] %d %d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address);
 #endif
 		if ((rc == 4) && (len != 0)) {
+			int j;
 
-			if (chip_select < BCM2835_SPI_CS0 || chip_select > BCM2835_SPI_CS1) {
+			if (chip_select < (char)BCM2835_SPI_CS0 || chip_select > (char)BCM2835_SPI_CS1) {
 #ifdef DEBUG
 				printf("warning : invalid chip_select [skipping this line]\n");
 #endif
 				return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
 			}
 
-			if (slave_address < 0 || slave_address > 0xFF) {
-#ifdef DEBUG
-				printf("warning : invalid slave_address [skipping this line]\n");
-#endif
-				return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
-			}
-
-			if (dmx_start_address < 1 || dmx_start_address > DMX_UNIVERSE_SIZE) {
+			if (dmx_start_address == (uint16_t)0 || dmx_start_address > (uint16_t)DMX_UNIVERSE_SIZE) {
 #ifdef DEBUG
 				printf("warning : invalid dmx_start_address [skipping this line]\n");
 #endif
 				return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 			}
 
-			int j;
 			for (j = 0; j < TABLE_LENGTH(devices); j++) {
 				if (strcmp(devices_table[j].name, device_name) == 0) {
 #ifdef DEBUG
 					printf("device [%s] found in devices_table, entry number = %d\n", device_name, j);
 #endif
-					int devices_added = devices_connected.elements_count;
+					uint16_t devices_added = devices_connected.elements_count;
 					devices_connected.device_entry[devices_added].devices_table_index = j;
-					devices_connected.device_entry[devices_added].dmx_device_info.device_info.chip_select = chip_select;
+					devices_connected.device_entry[devices_added].dmx_device_info.device_info.chip_select = (uint8_t)chip_select;
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.slave_address = slave_address;
 					devices_connected.device_entry[devices_added].dmx_device_info.dmx_start_address = dmx_start_address;
 					devices_connected.device_entry[devices_added].dmx_device_info.rdm_sub_devices_info = NULL;
@@ -131,28 +122,28 @@ static int add_connected_device(const char *line) {
 					printf("warning : invalid protocol. [skipping this line]\n");
 #endif
 					return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
-					break;
+					//break;
 				case DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT:
 #ifdef DEBUG
 					printf("warning : invalid chip_select [skipping this line]\n");
 #endif
 					return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
-					break;
+					//break;
 				case DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS:
 #ifdef DEBUG
 					printf("warning : invalid slave_address [skipping this line]\n");
 #endif
 					return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
-					break;
+					//break;
 				case DMX_DEVICE_CONFIG_INVALID_START_ADDRESS:
 #ifdef DEBUG
 					printf("warning : invalid dmx_start_address [skipping this line]\n");
 #endif
 					return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
-					break;
+					//break;
 				default:
 					return DMX_DEVICE_CONFIG_INVALID_ENTRY;
-					break;
+					//break;
 			}
 		}
 
@@ -204,7 +195,7 @@ void dmx_devices_read_config(void) {
  *
  */
 void dmx_devices_init(void) {
-	int i;
+	uint16_t i;
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
@@ -215,28 +206,29 @@ void dmx_devices_init(void) {
  *
  */
 void dmx_devices_run() {
+	uint16_t i;
+
 	dmx_devices_statistics.function_count++;
 
-	if (dmx_get_available() == false) {
-			return;
+	if (!dmx_get_available()) {
+		return;
 	}
 
 	dmx_set_available_false();
 
 	dmx_devices_statistics.dmx_available_count++;
 
-	int i;
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
 }
 
 /**
+ * @ingroup dmx
  *
  * @return
  */
-const uint16_t dmx_devices_get_devices_connected(void)
-{
+const uint16_t dmx_devices_get_devices_connected(void) {
 	return devices_connected.elements_count;
 }
 
@@ -246,147 +238,160 @@ const uint16_t dmx_devices_get_devices_connected(void)
  * @param sub_device
  * @return
  */
-const uint16_t dmx_devices_get_footprint(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const uint16_t dmx_devices_get_footprint(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->dmx_footprint;
+	}
 
 	return 0;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @return
  */
-const uint16_t dmx_devices_get_dmx_start_address(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const uint16_t dmx_devices_get_dmx_start_address(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.dmx_start_address;
+	}
 
 	return 0;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @param dmx_start_address
  */
-void dmx_devices_set_dmx_start_address(const uint16_t sub_device, const uint16_t dmx_start_address)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
-	{
+void dmx_devices_set_dmx_start_address(const uint16_t sub_device, const uint16_t dmx_start_address) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.dmx_start_address = dmx_start_address;
 	}
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @return
  */
-const char *dmx_devices_get_label(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const char *dmx_devices_get_label(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label;
+	}
 
 	return NULL;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @param label
  * @param label_length
  */
-void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
-	{
+void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label, label, label_length);
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label_length = label_length;
 	}
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @return
  */
-const uint8_t dmx_devices_get_label_length(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const uint8_t dmx_devices_get_label_length(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label_length;
+	}
 
 	return 0;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @return
  */
-const uint8_t dmx_devices_get_personality_current(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const uint8_t dmx_devices_get_personality_current(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->current_personality;
+	}
 
 	return 0;
 }
 
-void dmx_devices_set_personality_current(const uint16_t sub_device, const uint8_t personality)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
-	{
+/**
+ * @ingroup dmx
+ *
+ * @param sub_device
+ * @param personality
+ */
+void dmx_devices_set_personality_current(const uint16_t sub_device, const uint8_t personality) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->current_personality = personality;
 	}
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @param personality
  * @return
  */
-const char *dmx_devices_get_personality_description(const uint16_t sub_device, const uint8_t personality)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const char *dmx_devices_get_personality_description(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->description;
+	}
 
 	return NULL;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @param personality
  * @return
  */
-const uint16_t dmx_devices_get_personality_slots(const uint16_t sub_device, const uint8_t personality)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const uint16_t dmx_devices_get_personality_slots(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->slots;
+	}
 
 	return 0;
 }
 
 /**
+ * @ingroup dmx
  *
  * @param sub_device
  * @return
  */
-const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_device)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
+const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_device) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info;
+	}
 
 	return NULL;
 }
 
-void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info)
-{
-	if ((sub_device != 0) || (sub_device < devices_connected.elements_count))
-	{
+/**
+ * @ingroup dmx
+ *
+ * @param sub_device
+ * @param sub_devices_info
+ */
+void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
 	}
 }
