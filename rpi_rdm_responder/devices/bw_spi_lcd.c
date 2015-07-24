@@ -42,13 +42,13 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 4, 1, 1, 0, 0, "bw_
  * @param arg
  * @param buf
  */
-inline static void itoa_base10(int arg, char buf[]) {
+inline static void itoa_base10(uint16_t arg, char buf[]) {
 	char *n = buf + 2;
 
 	if (arg == 0) *n = '0';
 
-	while (arg) {
-		*n = '0' + (arg % 10);
+	while (arg != 0) {
+		*n = (char)'0' + (char)(arg % 10);
 		n--;
 		arg /= 10;
 	}
@@ -60,7 +60,7 @@ inline static void itoa_base10(int arg, char buf[]) {
  * @param spi_lcd_info
  * @param start_channel
  */
-inline static void display_channels(device_info_t *spi_lcd_info, int start_channel) {
+inline static void display_channels(device_info_t *spi_lcd_info, uint16_t start_channel) {
 	char text[BW_LCD_MAX_CHARACTERS];
 	int i = 0;
 	int offset = 0;
@@ -83,19 +83,18 @@ inline static void display_channels(device_info_t *spi_lcd_info, int start_chann
  * @param device_info
  * @param start_channel
  */
-inline static void display_data_hex(device_info_t *device_info, int start_channel) {
+inline static void display_data_hex(device_info_t *device_info, const uint16_t start_channel) {
 	char text[BW_LCD_MAX_CHARACTERS];
-
 	int i = 0;
 	int offset = 0;
-	const int dmx_data_index = start_channel;
 
 	for (i = 0; i < 4; i++) {
+		uint8_t data;
 		offset = i * 4;
-		unsigned char data = dmx_data[dmx_data_index + i];
+		data = dmx_data[start_channel + i];
 		text[offset    ] = ' ';
-		text[offset + 1] = TO_HEX((data & 0xF0) >> 4);
-		text[offset + 2] = TO_HEX(data & 0x0F);
+		text[offset + 1] = TO_HEX((data & (char)0xF0) >> 4);
+		text[offset + 2] = TO_HEX(data & (char)0x0F);
 		text[offset + 3] = ' ';
 	}
 
@@ -122,7 +121,7 @@ static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info) {
 #ifdef DEBUG
 	printf("device init <bw_spi_lcd_init>\n");
 #endif
-	bw_spi_lcd_start(&(dmx_device_info->device_info));
+	(void)bw_spi_lcd_start(&(dmx_device_info->device_info));
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 	display_channels(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);
 

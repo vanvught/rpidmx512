@@ -42,7 +42,7 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 1, 1, 1, 0, 0, "bw_
  * @param dmx_device_info
  */
 static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
-	int dmx_data_index = dmx_device_info->dmx_start_address;
+	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
 
 	bw_spi_dimmer_output(&dmx_device_info->device_info, dmx_data[dmx_data_index]);
 }
@@ -58,7 +58,7 @@ static void bw_spi_dimmer_init(dmx_device_info_t *dmx_device_info) {
 #ifdef DEBUG
 	printf("device init <bw_spi_dimmer_init>\n");
 #endif
-	bw_spi_dimmer_start(&(dmx_device_info->device_info));
+	(void)bw_spi_dimmer_start(&(dmx_device_info->device_info));
 	bw_spi_dimmer_output(&dmx_device_info->device_info, 0);
 
 	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;

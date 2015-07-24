@@ -30,6 +30,12 @@ extern int printf(const char *format, ...);
 #include "dmx.h"
 #include "bw_spi_7fets.h"
 
+static const struct _rdm_personality rdm_sub_device[] = {
+		{ 7, "Digital output 7-lines" }
+		};
+
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 7, 1, 1, 0, 0, "bw_spi_7fets", 12, &rdm_sub_device[0] };
+
 /**
  * @ingroup DEV
  *
@@ -37,16 +43,16 @@ extern int printf(const char *format, ...);
  */
 static void bw_spi_7fets(dmx_device_info_t *dmx_device_info) {
 	int i = 0;
-	unsigned char data = 0;
-	int dmx_data_index = dmx_device_info->dmx_start_address;
+	uint8_t data = 0;
+	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
 
 	for (i = 0; i < 7; i++) {
 
 		if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			break;
 
-		if (dmx_data[dmx_data_index] & 0x80) {	// 0-127 is off, 128-255 is on
-			data = data | (1 << i);
+		if ((dmx_data[dmx_data_index] & (uint8_t)0x80) != 0) {	// 0-127 is off, 128-255 is on
+			data = data | (uint8_t)(1 << i);
 		}
 
 		dmx_data_index++;
@@ -66,8 +72,11 @@ static void bw_spi_7fets_init(dmx_device_info_t *dmx_device_info) {
 #ifdef DEBUG
 	printf("device init <bw_spi_7fets_init>\n");
 #endif
-	bw_spi_7fets_start(&(dmx_device_info->device_info));
+	(void)bw_spi_7fets_start(&(dmx_device_info->device_info));
 	bw_spi_7fets_output(&dmx_device_info->device_info, 0);
+
+	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
+	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
 }
 
 INITIALIZER(devices_init, bw_spi_7fets_init)

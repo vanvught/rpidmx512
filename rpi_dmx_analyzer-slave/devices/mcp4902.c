@@ -44,11 +44,13 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "mcp
  * @param dmx_device_info
  */
 static void mcp4902(dmx_device_info_t * dmx_device_info) {
+	uint16_t dmx_data_index;
+
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	// 15.625MHz
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
-	int dmx_data_index = dmx_device_info->dmx_start_address;
+	dmx_data_index = dmx_device_info->dmx_start_address;
 
 	bcm2835_spi_write(MCP4902_DATA(dmx_data[dmx_data_index]) | 0x3000 | MCP49X2_WRITE_DAC_A);
 
