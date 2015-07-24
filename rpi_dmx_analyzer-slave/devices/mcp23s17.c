@@ -30,11 +30,8 @@ extern int printf(const char *format, ...);
 #include "dmx.h"
 #include "mcp23s17.h"
 
-static const struct _rdm_personality rdm_sub_device[] = {
-		{ 16, "Digital output 16-lines" }
-		};
-
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 16, 1, 1, 0, 0, "mcp23s17", 8, &rdm_sub_device[0] };
+static const struct _rdm_personality rdm_sub_device = { 16, "Digital output 16-lines", 23 };
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 16, 1, 1, 0, 0, "mcp23s17", 8, &rdm_sub_device };
 
 /**
  * @ingroup DEV

@@ -41,7 +41,7 @@ static const char  DEVICE_SOFTWARE_VERSION[] = "1.0";
 #define DMX_FOOTPRINT					512
 
 static const struct _rdm_personality rdm_personalities[] = {
-		{ DMX_FOOTPRINT, "Raspberry Pi DMX USB Pro" }
+		{ (uint16_t)DMX_FOOTPRINT, "Raspberry Pi DMX USB Pro", (uint8_t)24 }
 		};
 
 #endif /* RDM_DEVICE_CONST_H_ */

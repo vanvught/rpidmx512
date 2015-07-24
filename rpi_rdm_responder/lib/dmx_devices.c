@@ -362,6 +362,21 @@ const char *dmx_devices_get_personality_description(const uint16_t sub_device, /
  * @param personality
  * @return
  */
+const uint8_t dmx_devices_get_personality_description_length(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
+	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->description_len;
+	}
+
+	return 0;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const uint16_t dmx_devices_get_personality_slots(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
 		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->slots;

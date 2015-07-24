@@ -22,6 +22,11 @@
 #ifndef DMX_DEVICES_H_
 #define DMX_DEVICES_H_
 
+#include <stdint.h>
+
+#include "device_info.h"
+#include "rdm_sub_devices.h"
+
 #define DMX_DEVICE_CONFIG_TABLE_FULL 				0	///<
 #define DMX_DEVICE_CONFIG_INVALID_PROTOCOL 			-2	///<
 #define DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT 		-3	///<
@@ -29,11 +34,6 @@
 #define DMX_DEVICE_CONFIG_INVALID_START_ADDRESS 	-5	///<
 #define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6	///<
 #define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7	///<
-
-#include <stdint.h>
-
-#include "device_info.h"
-#include "rdm_sub_devices.h"
 
 typedef struct _dmx_device_info {
 	device_info_t device_info;
@@ -76,6 +76,7 @@ extern void dmx_devices_info_set(const uint16_t, const struct _rdm_sub_devices_i
 extern const uint8_t dmx_devices_get_personality_current(const uint16_t);
 extern void dmx_devices_set_personality_current(const uint16_t, const uint8_t);
 extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t);
+extern const uint8_t dmx_devices_get_personality_description_length(const uint16_t, const uint8_t);
 extern const uint16_t dmx_devices_get_personality_slots(const uint16_t, const uint8_t);
 
 #endif /* DMX_DEVICES_H_ */

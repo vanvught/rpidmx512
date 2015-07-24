@@ -39,7 +39,7 @@ static const char  DEVICE_SOFTWARE_VERSION[] = "1.0";
 #define DMX_FOOTPRINT					32
 
 static const struct _rdm_personality rdm_personalities[] = {
-		{ 32, "RDM Responder / DMX Analyzer" }
+		{ (uint16_t)32, "RDM Responder / DMX Analyzer", (uint8_t)28 }
 		};
 
 #endif /* RDM_DEVICE_CONST_H_ */

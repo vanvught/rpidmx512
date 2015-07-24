@@ -30,11 +30,8 @@ extern int printf(const char *format, ...);
 #include "dmx.h"
 #include "bw_spi_dio.h"
 
-static const struct _rdm_personality rdm_sub_device[] = {
-		{ 7, "Digital output 7-lines" }
-		};
-
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 7, 1, 1, 0, 0, "bw_spi_dio", 10, &rdm_sub_device[0] };
+static const struct _rdm_personality rdm_sub_device = { 7, "Digital output 7-lines", 22 };
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 7, 1, 1, 0, 0, "bw_spi_dio", 10, &rdm_sub_device };
 
 /**
  * @ingroup DEV

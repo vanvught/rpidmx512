@@ -464,9 +464,11 @@ static void rdm_get_personality_description(uint16_t sub_device) {
 	const uint16_t slots = rdm_device_info_get_personality_slots(sub_device, personality);
 
 	const char *description = rdm_device_info_get_personality_description(sub_device, personality);
+	uint8_t length = rdm_device_info_get_personality_description_length(sub_device, personality);
+/*
 	uint8_t length = _strlen(description);
 	length = length > 32 ? 32 : length;
-
+*/
 	rdm_command->param_data[1] = (uint8_t)(slots >> 8);
 	rdm_command->param_data[2] = (uint8_t)(slots);
 

@@ -31,11 +31,8 @@ extern int printf(const char *format, ...);
 #include "bw_spi_lcd.h"
 #include "util.h"
 
-static const struct _rdm_personality rdm_sub_device[] = {
-		{ 4, "LCD 4-slots" }
-		};
-
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 4, 1, 1, 0, 0, "bw_spi_lcd", 10, &rdm_sub_device[0] };
+static const struct _rdm_personality rdm_sub_device = { 4, "LCD 4-slots", 11 };
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 4, 1, 1, 0, 0, "bw_spi_lcd", 10, &rdm_sub_device };
 
 /**
  *

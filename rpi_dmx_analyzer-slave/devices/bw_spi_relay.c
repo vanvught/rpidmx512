@@ -30,11 +30,8 @@ extern int printf(const char *format, ...);
 #include "dmx.h"
 #include "bw_spi_relay.h"
 
-static const struct _rdm_personality rdm_sub_device[] = {
-		{ 2, "2 Relays" }
-		};
-
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "bw_spi_relay", 12, &rdm_sub_device[0] };
+static const struct _rdm_personality rdm_sub_device = { 2, "Relays", 6 };
+static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "bw_spi_relay", 12, &rdm_sub_device };
 
 /**
  * @ingroup DEV

@@ -56,6 +56,7 @@ extern const uint8_t rdm_sub_devices_get_personality_current(const uint16_t);
 extern void rdm_sub_devices_set_personality_current(const uint16_t, const uint8_t);
 
 extern /*@shared@*//*@null@*/const char *rdm_sub_devices_get_personality_description(const uint16_t, const uint8_t);
+extern const uint8_t rdm_sub_devices_get_personality_description_length(const uint16_t, const uint8_t);
 
 extern const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t, const uint8_t);
 

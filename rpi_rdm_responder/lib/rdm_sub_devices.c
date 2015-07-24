@@ -117,6 +117,16 @@ const char *rdm_sub_devices_get_personality_description(const uint16_t sub_devic
  * @param personality
  * @return
  */
+const uint8_t rdm_sub_devices_get_personality_description_length(const uint16_t sub_device, const uint8_t personality) {
+	return dmx_devices_get_personality_description_length(sub_device, personality);
+}
+
+/**
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t sub_device, const uint8_t personality) {
 	return dmx_devices_get_personality_slots(sub_device, personality);
 }

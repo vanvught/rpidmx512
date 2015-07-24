@@ -355,6 +355,25 @@ const char *rdm_device_info_get_personality_description(const uint16_t sub_devic
  * @param personality
  * @return
  */
+const uint8_t rdm_device_info_get_personality_description_length(const uint16_t sub_device, const uint8_t personality) {
+	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device))) {
+		return 0;
+	}
+
+	if (sub_device != 0) {
+		return rdm_sub_devices_get_personality_description_length(sub_device, personality);
+	}
+
+	return (rdm_personalities[personality - 1].description_len);
+}
+
+/**
+ * @ingroup rdm
+ *
+ * @param sub_device
+ * @param personality
+ * @return
+ */
 const uint16_t rdm_device_info_get_personality_slots(const uint16_t sub_device, const uint8_t personality) {
 	if ((personality == 0) || (personality > rdm_device_info_get_personality_count(sub_device))) {
 		return 0;

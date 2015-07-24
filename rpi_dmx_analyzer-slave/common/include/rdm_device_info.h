@@ -57,6 +57,7 @@ extern const uint8_t rdm_device_info_get_personality_count(const uint16_t);
 extern const uint8_t rdm_device_info_get_personality_current(const uint16_t);
 extern void rdm_device_info_set_personality_current(const uint16_t, const uint8_t);
 extern /*@shared@*//*@null@*/const char * rdm_device_info_get_personality_description(const uint16_t, uint8_t);
+extern const uint8_t rdm_device_info_get_personality_description_length(const uint16_t, const uint8_t);
 extern const uint16_t rdm_device_info_get_personality_slots(const uint16_t, uint8_t);
 extern /*@shared@*/const uint8_t * rdm_device_info_get_manufacturer_id(void);
 extern const uint8_t rdm_device_info_get_manufacturer_id_length(void);
