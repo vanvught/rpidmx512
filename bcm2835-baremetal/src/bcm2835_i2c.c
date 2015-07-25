@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_i2c.h"
@@ -79,26 +80,6 @@ void bcm2835_i2c_end(void) {
 /**
  * @ingroup I2C
  *
- * Sets the I2C slave address
- * @param addr buffer for read.
- */
-void bcm2835_i2c_setSlaveAddress(const uint8_t addr) {
-	BCM2835_BSC1 ->A = addr;
-}
-
-/**
- * @ingroup I2C
- *
- * Sets the I2C clock divider and therefore the I2C clock speed.
- * @param divider The desired I2C clock divider, one of \ref bcm2835I2CClockDivider
- */
-void bcm2835_i2c_setClockDivider(const uint16_t divider) {
-	BCM2835_BSC1 ->DIV = divider;
-}
-
-/**
- * @ingroup I2C
- *
  * Write a data to I2C device.
  * @param buf buffer to write
  * @param len size of the buffer
@@ -112,24 +93,24 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
     // Clear FIFO
     BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
     // Clear Status
-    BCM2835_BSC1->S = BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE;
+    BCM2835_BSC1->S = (uint32_t)(BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 	// Set Data Length
     BCM2835_BSC1->DLEN = len;
     // pre populate FIFO with max buffer
-	while (remaining && (i < BCM2835_BSC_FIFO_SIZE)) {
-		BCM2835_BSC1 ->FIFO = buf[i];
+	while ((remaining != (uint32_t)0)  && (i < BCM2835_BSC_FIFO_SIZE)) {
+		BCM2835_BSC1 ->FIFO = (uint32_t)buf[i];
 		i++;
 		remaining--;
 	}
 
     // Enable device and start transfer
-    BCM2835_BSC1->C = BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST;
+    BCM2835_BSC1->C = (uint32_t)(BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
 
 	// Transfer is over when BCM2835_BSC_S_DONE
 	while (!(BCM2835_BSC1 ->S & BCM2835_BSC_S_DONE)) {
-		while (remaining && (BCM2835_BSC1 ->S & BCM2835_BSC_S_TXD)) {
+		while ((remaining != (uint32_t)0) && (BCM2835_BSC1 ->S & BCM2835_BSC_S_TXD)) {
 			// Write to FIFO
-			BCM2835_BSC1 ->FIFO = buf[i];
+			BCM2835_BSC1 ->FIFO = (uint32_t)buf[i];
 			i++;
 			remaining--;
     	}
@@ -147,7 +128,7 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
 	}
 
 	// Not all data is sent
-	else if (remaining) {
+	else if (remaining != (uint32_t)0) {
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 
@@ -172,27 +153,27 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
     // Clear FIFO
     BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
     // Clear Status
-    BCM2835_BSC1->S = BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE;
+    BCM2835_BSC1->S = (uint32_t)(BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 	// Set Data Length
     BCM2835_BSC1->DLEN = len;
     // Start read
-    BCM2835_BSC1->C = BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST | BCM2835_BSC_C_READ;
+    BCM2835_BSC1->C = (uint32_t)(BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST | BCM2835_BSC_C_READ);
 
 	// wait for transfer to complete
 	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
 		// we must empty the FIFO as it is populated and not use any delay
 		while (BCM2835_BSC1->S & BCM2835_BSC_S_RXD) {
 			// Read from FIFO, no barrier
-			buf[i] = BCM2835_BSC1 ->FIFO;
+			buf[i] = (char)BCM2835_BSC1 ->FIFO;
 			i++;
 			remaining--;
 		}
 	}
 
 	// transfer has finished - grab any remaining stuff in FIFO
-	while (remaining && (BCM2835_BSC1 ->S & BCM2835_BSC_S_RXD)) {
+	while ((remaining != (uint32_t)0) && (BCM2835_BSC1 ->S & BCM2835_BSC_S_RXD)) {
 		// Read from FIFO, no barrier
-		buf[i] = BCM2835_BSC1 ->FIFO;
+		buf[i] = (char)BCM2835_BSC1 ->FIFO;
 		i++;
 		remaining--;
 	}
@@ -209,7 +190,7 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 	}
 
 	// Not all data is received
-	else if (remaining) {
+	else if (remaining != (uint32_t)0) {
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 

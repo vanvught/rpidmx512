@@ -86,163 +86,151 @@ Disassembly of section .text:
   4c:	e12fff1e 	bx	lr
   50:	20200000 	eorcs	r0, r0, r0
 
-00000054 <bcm2835_i2c_setSlaveAddress>:
-  54:	e59f3004 	ldr	r3, [pc, #4]	; 60 <bcm2835_i2c_setSlaveAddress+0xc>
-  58:	e583000c 	str	r0, [r3, #12]
-  5c:	e12fff1e 	bx	lr
-  60:	20804000 	addcs	r4, r0, r0
+00000054 <bcm2835_i2c_write>:
+  54:	e3a02020 	mov	r2, #32
+  58:	e92d4010 	push	{r4, lr}
+  5c:	e59f3104 	ldr	r3, [pc, #260]	; 168 <bcm2835_i2c_write+0x114>
+  60:	e59f4104 	ldr	r4, [pc, #260]	; 16c <bcm2835_i2c_write+0x118>
+  64:	e3510000 	cmp	r1, #0
+  68:	e5842000 	str	r2, [r4]
+  6c:	e5843004 	str	r3, [r4, #4]
+  70:	e5841008 	str	r1, [r4, #8]
+  74:	0a000039 	beq	160 <bcm2835_i2c_write+0x10c>
+  78:	e3a03000 	mov	r3, #0
+  7c:	e240c001 	sub	ip, r0, #1
+  80:	e2511001 	subs	r1, r1, #1
+  84:	13a02001 	movne	r2, #1
+  88:	03a02000 	moveq	r2, #0
+  8c:	e2833001 	add	r3, r3, #1
+  90:	e353000f 	cmp	r3, #15
+  94:	83a02000 	movhi	r2, #0
+  98:	92022001 	andls	r2, r2, #1
+  9c:	e5fce001 	ldrb	lr, [ip, #1]!
+  a0:	e3520000 	cmp	r2, #0
+  a4:	e584e010 	str	lr, [r4, #16]
+  a8:	1afffff4 	bne	80 <bcm2835_i2c_write+0x2c>
+  ac:	e59fc0b8 	ldr	ip, [pc, #184]	; 16c <bcm2835_i2c_write+0x118>
+  b0:	e59fe0b8 	ldr	lr, [pc, #184]	; 170 <bcm2835_i2c_write+0x11c>
+  b4:	e1a0200c 	mov	r2, ip
+  b8:	e58ce000 	str	lr, [ip]
+  bc:	e592c004 	ldr	ip, [r2, #4]
+  c0:	e59fe0a4 	ldr	lr, [pc, #164]	; 16c <bcm2835_i2c_write+0x118>
+  c4:	e31c0002 	tst	ip, #2
+  c8:	1a000011 	bne	114 <bcm2835_i2c_write+0xc0>
+  cc:	e3510000 	cmp	r1, #0
+  d0:	0afffff9 	beq	bc <bcm2835_i2c_write+0x68>
+  d4:	e592c004 	ldr	ip, [r2, #4]
+  d8:	e31c0010 	tst	ip, #16
+  dc:	0afffff6 	beq	bc <bcm2835_i2c_write+0x68>
+  e0:	e080c003 	add	ip, r0, r3
+  e4:	e4dce001 	ldrb	lr, [ip], #1
+  e8:	e2511001 	subs	r1, r1, #1
+  ec:	e2833001 	add	r3, r3, #1
+  f0:	e582e010 	str	lr, [r2, #16]
+  f4:	0afffff0 	beq	bc <bcm2835_i2c_write+0x68>
+  f8:	e592e004 	ldr	lr, [r2, #4]
+  fc:	e31e0010 	tst	lr, #16
+ 100:	1afffff7 	bne	e4 <bcm2835_i2c_write+0x90>
+ 104:	e592c004 	ldr	ip, [r2, #4]
+ 108:	e59fe05c 	ldr	lr, [pc, #92]	; 16c <bcm2835_i2c_write+0x118>
+ 10c:	e31c0002 	tst	ip, #2
+ 110:	0affffed 	beq	cc <bcm2835_i2c_write+0x78>
+ 114:	e59e3004 	ldr	r3, [lr, #4]
+ 118:	e3130c01 	tst	r3, #256	; 0x100
+ 11c:	1a00000b 	bne	150 <bcm2835_i2c_write+0xfc>
+ 120:	e59e3004 	ldr	r3, [lr, #4]
+ 124:	e3130c02 	tst	r3, #512	; 0x200
+ 128:	13a00002 	movne	r0, #2
+ 12c:	0a000003 	beq	140 <bcm2835_i2c_write+0xec>
+ 130:	e3a02002 	mov	r2, #2
+ 134:	e59f3030 	ldr	r3, [pc, #48]	; 16c <bcm2835_i2c_write+0x118>
+ 138:	e5832000 	str	r2, [r3]
+ 13c:	e8bd8010 	pop	{r4, pc}
+ 140:	e3510000 	cmp	r1, #0
+ 144:	13a00004 	movne	r0, #4
+ 148:	03a00000 	moveq	r0, #0
+ 14c:	eafffff7 	b	130 <bcm2835_i2c_write+0xdc>
+ 150:	e3a03c01 	mov	r3, #256	; 0x100
+ 154:	e3a00001 	mov	r0, #1
+ 158:	e58e3004 	str	r3, [lr, #4]
+ 15c:	eafffff3 	b	130 <bcm2835_i2c_write+0xdc>
+ 160:	e1a03001 	mov	r3, r1
+ 164:	eaffffd0 	b	ac <bcm2835_i2c_write+0x58>
+ 168:	00000302 	andeq	r0, r0, r2, lsl #6
+ 16c:	20804000 	addcs	r4, r0, r0
+ 170:	00008080 	andeq	r8, r0, r0, lsl #1
 
-00000064 <bcm2835_i2c_setClockDivider>:
-  64:	e59f3004 	ldr	r3, [pc, #4]	; 70 <bcm2835_i2c_setClockDivider+0xc>
-  68:	e5830014 	str	r0, [r3, #20]
-  6c:	e12fff1e 	bx	lr
-  70:	20804000 	addcs	r4, r0, r0
-
-00000074 <bcm2835_i2c_write>:
-  74:	e3a02020 	mov	r2, #32
-  78:	e92d4010 	push	{r4, lr}
-  7c:	e59f3104 	ldr	r3, [pc, #260]	; 188 <bcm2835_i2c_write+0x114>
-  80:	e59f4104 	ldr	r4, [pc, #260]	; 18c <bcm2835_i2c_write+0x118>
-  84:	e3510000 	cmp	r1, #0
-  88:	e5842000 	str	r2, [r4]
-  8c:	e5843004 	str	r3, [r4, #4]
-  90:	e5841008 	str	r1, [r4, #8]
-  94:	0a000039 	beq	180 <bcm2835_i2c_write+0x10c>
-  98:	e3a03000 	mov	r3, #0
-  9c:	e240c001 	sub	ip, r0, #1
-  a0:	e2511001 	subs	r1, r1, #1
-  a4:	13a02001 	movne	r2, #1
-  a8:	03a02000 	moveq	r2, #0
-  ac:	e2833001 	add	r3, r3, #1
-  b0:	e353000f 	cmp	r3, #15
-  b4:	83a02000 	movhi	r2, #0
-  b8:	92022001 	andls	r2, r2, #1
-  bc:	e5fce001 	ldrb	lr, [ip, #1]!
-  c0:	e3520000 	cmp	r2, #0
-  c4:	e584e010 	str	lr, [r4, #16]
-  c8:	1afffff4 	bne	a0 <bcm2835_i2c_write+0x2c>
-  cc:	e59fc0b8 	ldr	ip, [pc, #184]	; 18c <bcm2835_i2c_write+0x118>
-  d0:	e59fe0b8 	ldr	lr, [pc, #184]	; 190 <bcm2835_i2c_write+0x11c>
-  d4:	e1a0200c 	mov	r2, ip
-  d8:	e58ce000 	str	lr, [ip]
-  dc:	e592c004 	ldr	ip, [r2, #4]
-  e0:	e59fe0a4 	ldr	lr, [pc, #164]	; 18c <bcm2835_i2c_write+0x118>
-  e4:	e31c0002 	tst	ip, #2
-  e8:	1a000011 	bne	134 <bcm2835_i2c_write+0xc0>
-  ec:	e3510000 	cmp	r1, #0
-  f0:	0afffff9 	beq	dc <bcm2835_i2c_write+0x68>
-  f4:	e592c004 	ldr	ip, [r2, #4]
-  f8:	e31c0010 	tst	ip, #16
-  fc:	0afffff6 	beq	dc <bcm2835_i2c_write+0x68>
- 100:	e080c003 	add	ip, r0, r3
- 104:	e4dce001 	ldrb	lr, [ip], #1
- 108:	e2511001 	subs	r1, r1, #1
- 10c:	e2833001 	add	r3, r3, #1
- 110:	e582e010 	str	lr, [r2, #16]
- 114:	0afffff0 	beq	dc <bcm2835_i2c_write+0x68>
- 118:	e592e004 	ldr	lr, [r2, #4]
- 11c:	e31e0010 	tst	lr, #16
- 120:	1afffff7 	bne	104 <bcm2835_i2c_write+0x90>
- 124:	e592c004 	ldr	ip, [r2, #4]
- 128:	e59fe05c 	ldr	lr, [pc, #92]	; 18c <bcm2835_i2c_write+0x118>
- 12c:	e31c0002 	tst	ip, #2
- 130:	0affffed 	beq	ec <bcm2835_i2c_write+0x78>
- 134:	e59e3004 	ldr	r3, [lr, #4]
- 138:	e3130c01 	tst	r3, #256	; 0x100
- 13c:	1a00000b 	bne	170 <bcm2835_i2c_write+0xfc>
- 140:	e59e3004 	ldr	r3, [lr, #4]
- 144:	e3130c02 	tst	r3, #512	; 0x200
- 148:	13a00002 	movne	r0, #2
- 14c:	0a000003 	beq	160 <bcm2835_i2c_write+0xec>
- 150:	e3a02002 	mov	r2, #2
- 154:	e59f3030 	ldr	r3, [pc, #48]	; 18c <bcm2835_i2c_write+0x118>
- 158:	e5832000 	str	r2, [r3]
- 15c:	e8bd8010 	pop	{r4, pc}
- 160:	e3510000 	cmp	r1, #0
- 164:	13a00004 	movne	r0, #4
- 168:	03a00000 	moveq	r0, #0
- 16c:	eafffff7 	b	150 <bcm2835_i2c_write+0xdc>
- 170:	e3a03c01 	mov	r3, #256	; 0x100
- 174:	e3a00001 	mov	r0, #1
- 178:	e58e3004 	str	r3, [lr, #4]
- 17c:	eafffff3 	b	150 <bcm2835_i2c_write+0xdc>
- 180:	e1a03001 	mov	r3, r1
- 184:	eaffffd0 	b	cc <bcm2835_i2c_write+0x58>
- 188:	00000302 	andeq	r0, r0, r2, lsl #6
- 18c:	20804000 	addcs	r4, r0, r0
- 190:	00008080 	andeq	r8, r0, r0, lsl #1
-
-00000194 <bcm2835_i2c_read>:
- 194:	e3a03020 	mov	r3, #32
- 198:	e59fc100 	ldr	ip, [pc, #256]	; 2a0 <bcm2835_i2c_read+0x10c>
- 19c:	e59f2100 	ldr	r2, [pc, #256]	; 2a4 <bcm2835_i2c_read+0x110>
- 1a0:	e52de004 	push	{lr}		; (str lr, [sp, #-4]!)
- 1a4:	e58c3000 	str	r3, [ip]
- 1a8:	e58c2004 	str	r2, [ip, #4]
- 1ac:	e1a03001 	mov	r3, r1
- 1b0:	e58c1008 	str	r1, [ip, #8]
- 1b4:	e1a0200c 	mov	r2, ip
- 1b8:	e3a01000 	mov	r1, #0
- 1bc:	e59fe0e4 	ldr	lr, [pc, #228]	; 2a8 <bcm2835_i2c_read+0x114>
- 1c0:	e58ce000 	str	lr, [ip]
- 1c4:	e592e004 	ldr	lr, [r2, #4]
- 1c8:	e59fc0d0 	ldr	ip, [pc, #208]	; 2a0 <bcm2835_i2c_read+0x10c>
- 1cc:	e31e0002 	tst	lr, #2
- 1d0:	1a00000e 	bne	210 <bcm2835_i2c_read+0x7c>
- 1d4:	e592c004 	ldr	ip, [r2, #4]
- 1d8:	e31c0020 	tst	ip, #32
- 1dc:	0afffff8 	beq	1c4 <bcm2835_i2c_read+0x30>
- 1e0:	e080c001 	add	ip, r0, r1
- 1e4:	e592e010 	ldr	lr, [r2, #16]
- 1e8:	e2811001 	add	r1, r1, #1
- 1ec:	e4cce001 	strb	lr, [ip], #1
- 1f0:	e592e004 	ldr	lr, [r2, #4]
- 1f4:	e2433001 	sub	r3, r3, #1
- 1f8:	e31e0020 	tst	lr, #32
- 1fc:	1afffff8 	bne	1e4 <bcm2835_i2c_read+0x50>
- 200:	e592e004 	ldr	lr, [r2, #4]
- 204:	e59fc094 	ldr	ip, [pc, #148]	; 2a0 <bcm2835_i2c_read+0x10c>
- 208:	e31e0002 	tst	lr, #2
- 20c:	0afffff0 	beq	1d4 <bcm2835_i2c_read+0x40>
- 210:	e3530000 	cmp	r3, #0
- 214:	0a00000c 	beq	24c <bcm2835_i2c_read+0xb8>
- 218:	e59c2004 	ldr	r2, [ip, #4]
- 21c:	e3120020 	tst	r2, #32
- 220:	0a00000a 	beq	250 <bcm2835_i2c_read+0xbc>
- 224:	e1a0200c 	mov	r2, ip
- 228:	e0801001 	add	r1, r0, r1
- 22c:	ea000002 	b	23c <bcm2835_i2c_read+0xa8>
- 230:	e5920004 	ldr	r0, [r2, #4]
- 234:	e3100020 	tst	r0, #32
- 238:	0a000004 	beq	250 <bcm2835_i2c_read+0xbc>
- 23c:	e5920010 	ldr	r0, [r2, #16]
- 240:	e2533001 	subs	r3, r3, #1
- 244:	e4c10001 	strb	r0, [r1], #1
- 248:	1afffff8 	bne	230 <bcm2835_i2c_read+0x9c>
- 24c:	e3a03000 	mov	r3, #0
- 250:	e59f2048 	ldr	r2, [pc, #72]	; 2a0 <bcm2835_i2c_read+0x10c>
- 254:	e5921004 	ldr	r1, [r2, #4]
- 258:	e3110c01 	tst	r1, #256	; 0x100
- 25c:	1a00000b 	bne	290 <bcm2835_i2c_read+0xfc>
- 260:	e5922004 	ldr	r2, [r2, #4]
- 264:	e3120c02 	tst	r2, #512	; 0x200
- 268:	13a00002 	movne	r0, #2
- 26c:	0a000003 	beq	280 <bcm2835_i2c_read+0xec>
- 270:	e3a02002 	mov	r2, #2
- 274:	e59f3024 	ldr	r3, [pc, #36]	; 2a0 <bcm2835_i2c_read+0x10c>
- 278:	e5832000 	str	r2, [r3]
- 27c:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
- 280:	e3530000 	cmp	r3, #0
- 284:	13a00004 	movne	r0, #4
- 288:	03a00000 	moveq	r0, #0
- 28c:	eafffff7 	b	270 <bcm2835_i2c_read+0xdc>
- 290:	e3a03c01 	mov	r3, #256	; 0x100
- 294:	e3a00001 	mov	r0, #1
- 298:	e5823004 	str	r3, [r2, #4]
- 29c:	eafffff3 	b	270 <bcm2835_i2c_read+0xdc>
- 2a0:	20804000 	addcs	r4, r0, r0
- 2a4:	00000302 	andeq	r0, r0, r2, lsl #6
- 2a8:	00008081 	andeq	r8, r0, r1, lsl #1
+00000174 <bcm2835_i2c_read>:
+ 174:	e3a03020 	mov	r3, #32
+ 178:	e59fc100 	ldr	ip, [pc, #256]	; 280 <bcm2835_i2c_read+0x10c>
+ 17c:	e59f2100 	ldr	r2, [pc, #256]	; 284 <bcm2835_i2c_read+0x110>
+ 180:	e52de004 	push	{lr}		; (str lr, [sp, #-4]!)
+ 184:	e58c3000 	str	r3, [ip]
+ 188:	e58c2004 	str	r2, [ip, #4]
+ 18c:	e1a03001 	mov	r3, r1
+ 190:	e58c1008 	str	r1, [ip, #8]
+ 194:	e1a0200c 	mov	r2, ip
+ 198:	e3a01000 	mov	r1, #0
+ 19c:	e59fe0e4 	ldr	lr, [pc, #228]	; 288 <bcm2835_i2c_read+0x114>
+ 1a0:	e58ce000 	str	lr, [ip]
+ 1a4:	e592e004 	ldr	lr, [r2, #4]
+ 1a8:	e59fc0d0 	ldr	ip, [pc, #208]	; 280 <bcm2835_i2c_read+0x10c>
+ 1ac:	e31e0002 	tst	lr, #2
+ 1b0:	1a00000e 	bne	1f0 <bcm2835_i2c_read+0x7c>
+ 1b4:	e592c004 	ldr	ip, [r2, #4]
+ 1b8:	e31c0020 	tst	ip, #32
+ 1bc:	0afffff8 	beq	1a4 <bcm2835_i2c_read+0x30>
+ 1c0:	e080c001 	add	ip, r0, r1
+ 1c4:	e592e010 	ldr	lr, [r2, #16]
+ 1c8:	e2811001 	add	r1, r1, #1
+ 1cc:	e4cce001 	strb	lr, [ip], #1
+ 1d0:	e592e004 	ldr	lr, [r2, #4]
+ 1d4:	e2433001 	sub	r3, r3, #1
+ 1d8:	e31e0020 	tst	lr, #32
+ 1dc:	1afffff8 	bne	1c4 <bcm2835_i2c_read+0x50>
+ 1e0:	e592e004 	ldr	lr, [r2, #4]
+ 1e4:	e59fc094 	ldr	ip, [pc, #148]	; 280 <bcm2835_i2c_read+0x10c>
+ 1e8:	e31e0002 	tst	lr, #2
+ 1ec:	0afffff0 	beq	1b4 <bcm2835_i2c_read+0x40>
+ 1f0:	e3530000 	cmp	r3, #0
+ 1f4:	0a00000c 	beq	22c <bcm2835_i2c_read+0xb8>
+ 1f8:	e59c2004 	ldr	r2, [ip, #4]
+ 1fc:	e3120020 	tst	r2, #32
+ 200:	0a00000a 	beq	230 <bcm2835_i2c_read+0xbc>
+ 204:	e1a0200c 	mov	r2, ip
+ 208:	e0801001 	add	r1, r0, r1
+ 20c:	ea000002 	b	21c <bcm2835_i2c_read+0xa8>
+ 210:	e5920004 	ldr	r0, [r2, #4]
+ 214:	e3100020 	tst	r0, #32
+ 218:	0a000004 	beq	230 <bcm2835_i2c_read+0xbc>
+ 21c:	e5920010 	ldr	r0, [r2, #16]
+ 220:	e2533001 	subs	r3, r3, #1
+ 224:	e4c10001 	strb	r0, [r1], #1
+ 228:	1afffff8 	bne	210 <bcm2835_i2c_read+0x9c>
+ 22c:	e3a03000 	mov	r3, #0
+ 230:	e59f2048 	ldr	r2, [pc, #72]	; 280 <bcm2835_i2c_read+0x10c>
+ 234:	e5921004 	ldr	r1, [r2, #4]
+ 238:	e3110c01 	tst	r1, #256	; 0x100
+ 23c:	1a00000b 	bne	270 <bcm2835_i2c_read+0xfc>
+ 240:	e5922004 	ldr	r2, [r2, #4]
+ 244:	e3120c02 	tst	r2, #512	; 0x200
+ 248:	13a00002 	movne	r0, #2
+ 24c:	0a000003 	beq	260 <bcm2835_i2c_read+0xec>
+ 250:	e3a02002 	mov	r2, #2
+ 254:	e59f3024 	ldr	r3, [pc, #36]	; 280 <bcm2835_i2c_read+0x10c>
+ 258:	e5832000 	str	r2, [r3]
+ 25c:	e49df004 	pop	{pc}		; (ldr pc, [sp], #4)
+ 260:	e3530000 	cmp	r3, #0
+ 264:	13a00004 	movne	r0, #4
+ 268:	03a00000 	moveq	r0, #0
+ 26c:	eafffff7 	b	250 <bcm2835_i2c_read+0xdc>
+ 270:	e3a03c01 	mov	r3, #256	; 0x100
+ 274:	e3a00001 	mov	r0, #1
+ 278:	e5823004 	str	r3, [r2, #4]
+ 27c:	eafffff3 	b	250 <bcm2835_i2c_read+0xdc>
+ 280:	20804000 	addcs	r4, r0, r0
+ 284:	00000302 	andeq	r0, r0, r2, lsl #6
+ 288:	00008081 	andeq	r8, r0, r1, lsl #1
 
 Disassembly of section .comment:
 

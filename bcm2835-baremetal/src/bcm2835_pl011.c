@@ -27,7 +27,7 @@
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
-#include "bcm2835_pl011.h"
+#include "pl011.h"
 
 /**
  * @ingroup PL011

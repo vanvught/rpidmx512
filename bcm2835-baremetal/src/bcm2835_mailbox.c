@@ -36,15 +36,18 @@
  * @return
  */
 uint32_t bcm2835_mailbox_read(const uint8_t channel) {
+	uint32_t data;
+	uint8_t read_channel;
 
 	while (1==1) {
 		while (BCM2835_MAILBOX ->STATUS & BCM2835_MAILBOX_STATUS_RE);
 
-		uint32_t data = BCM2835_MAILBOX ->READ;
-		uint8_t read_channel = (uint8_t) (data & 0xf);
+		data = BCM2835_MAILBOX ->READ;
+		read_channel = (uint8_t) (data & 0xf);
 
-		if (read_channel == channel)
+		if (read_channel == channel) {
 			return (data &  ~0xf);
+		}
 	}
 
 	return 0;

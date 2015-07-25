@@ -33,6 +33,8 @@
  *
  */
 void bcm2835_uart_begin(void) {
+	uint32_t value;
+
     BCM2835_UART1->ENABLE = 0x01;
     BCM2835_UART1->CNTL = 0x00;
     BCM2835_UART1->LCR = 0x03;
@@ -42,7 +44,7 @@ void bcm2835_uart_begin(void) {
     BCM2835_UART1->BAUD = 270;
 
     // Set the GPI0 pins to the Alt 5 function to enable UART1 access on them
-    uint32_t value = BCM2835_GPIO->GPFSEL1;
+    value = BCM2835_GPIO->GPFSEL1;
     value &= ~(7 << 12);
     value |= BCM2835_GPIO_FSEL_ALT5 << 12;	// Pin 14 UART1_TXD
     value &= ~(7 << 15);
@@ -72,7 +74,7 @@ void bcm2835_uart_send(const uint32_t c) {
  * @ingroup UART
  */
 uint32_t bcm2835_uart_receive(void) {
-	while (1) {
+	while (1 == 1) {
 		if (BCM2835_UART1->LSR & 0x01)
 			break;
 	}

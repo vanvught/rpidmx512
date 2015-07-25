@@ -69,9 +69,27 @@ typedef enum {
 
 extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
-extern void bcm2835_i2c_setSlaveAddress(const uint8_t);
-extern void bcm2835_i2c_setClockDivider(const uint16_t);
 extern uint8_t bcm2835_i2c_write(/*@null@*/const char *, const uint32_t);
 extern uint8_t bcm2835_i2c_read(/*@out@*/char*, const uint32_t);
+
+/**
+ * @ingroup I2C
+ *
+ * Sets the I2C slave address
+ * @param addr buffer for read.
+ */
+inline static void bcm2835_i2c_setSlaveAddress(const uint8_t addr) {
+	BCM2835_BSC1 ->A = addr;
+}
+
+/**
+ * @ingroup I2C
+ *
+ * Sets the I2C clock divider and therefore the I2C clock speed.
+ * @param divider The desired I2C clock divider, one of \ref bcm2835I2CClockDivider
+ */
+inline static void bcm2835_i2c_setClockDivider(const uint16_t divider) {
+	BCM2835_BSC1 ->DIV = divider;
+}
 
 #endif /* BCM2835_I2C_H_ */
