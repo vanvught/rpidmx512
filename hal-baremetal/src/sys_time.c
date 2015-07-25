@@ -66,7 +66,7 @@ void sys_time_init(void) {
 	tmbuf.tm_year = tm_rtc.tm_year;
 	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
-	rtc_startup_seconds = mktime(&tmbuf);
+	rtc_startup_seconds = (uint32_t)mktime(&tmbuf);
 }
 
 /**
@@ -75,7 +75,7 @@ void sys_time_init(void) {
  */
 void sys_time_set(const struct tm *tmbuf) {
 	sys_time_init_startup_micros = bcm2835_st_read();
-	rtc_startup_seconds = mktime((struct tm *) tmbuf);
+	rtc_startup_seconds = (uint32_t)mktime((struct tm *) tmbuf);
 }
 
 /**
