@@ -190,6 +190,25 @@ int console_putc(const int ch) {
 
 /**
  *
+ * @param ch
+ * @return
+ */
+int console_putc_inverted(const int ch) {
+	int rc;
+
+	cur_fore = ~cur_fore;
+	cur_back = ~cur_back;
+
+	rc = console_putc(ch);
+
+	cur_fore = ~cur_fore;
+	cur_back = ~cur_back;
+
+	return rc;
+}
+
+/**
+ *
  * @param s
  * @return
  */
@@ -201,13 +220,31 @@ void console_puts(const char *s) {
 	}
 }
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)	///<
+#define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
+/**
+ *
+ * @param data
+ */
 void console_puthex(const uint8_t data) {
-	(void) console_putc(TO_HEX((data & 0xF0) >> 4));
+	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
 	(void) console_putc(TO_HEX(data & 0x0F));
 }
 
+/**
+ *
+ * @param data
+ */
+void console_puthex_inverted(const uint8_t data) {
+	cur_fore = ~cur_fore;
+	cur_back = ~cur_back;
+
+	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
+	(void) console_putc(TO_HEX(data & 0x0F));
+
+	cur_fore = ~cur_fore;
+	cur_back = ~cur_back;
+}
 /**
  *
  */

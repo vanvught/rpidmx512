@@ -37,8 +37,10 @@ extern const uint32_t console_get_depth(void);
 
 extern int console_init(void);
 extern int console_putc(const int);
+extern int console_putc_inverted(const int);
 extern void console_puts(const char *);
 extern void console_puthex(const uint8_t);
+extern void console_puthex_inverted(const uint8_t);
 extern void console_newline(void);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
