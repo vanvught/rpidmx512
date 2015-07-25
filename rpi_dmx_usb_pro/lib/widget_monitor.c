@@ -63,17 +63,17 @@ void monitor_update(void) {
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
 			const uint8_t receive_dmx_on_change = widget_get_receive_dmx_on_change();
 			if (receive_dmx_on_change == SEND_ALWAYS) {
-				printf("Input [SEND_ALWAYS]");
+				printf("Input [SEND_ALWAYS], Throttle %d", (int)(1E6 / widget_get_received_dmx_packet_period()));
 				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
-				monitor_line(MONITOR_LINE_STATS, "%d dmx packets per second",
+				monitor_line(MONITOR_LINE_STATS, "DMX packets per second to host : %d",
 						widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
 				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 			} else {
-				printf("Input [SEND_ON_DATA_CHANGE_ONLY]");
+				console_puts("Input [SEND_ON_DATA_CHANGE_ONLY]");
 				console_clear_line(MONITOR_LINE_STATS);
 			}
 		} else {
-			printf("Output");
+			console_puts("Output");
 		}
 
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);

@@ -27,7 +27,7 @@
 
 #include "bw_ui.h"
 #include "ui_functions.h"
-#include "led.h"
+#include "hardware.h"
 
 /**
  * @ingroup ui
@@ -43,8 +43,7 @@ void reboot(const char buttons) {
 	}
 	// No need to check for button 6 pressed (activate Menu)
 	if (BUTTON1_PRESSED(buttons)) {
-	    ticks_per_second_set(1E6 / 4);	// Let the LED blink faster
-		ui_text_line_2("Rebooting ....  ", BW_UI_MAX_CHARACTERS);
-		for(;;);						// Force Watchdog time-out
+	    ui_text_line_2("Rebooting ....  ", BW_UI_MAX_CHARACTERS);
+	    hardware_reboot();
 	}
 }

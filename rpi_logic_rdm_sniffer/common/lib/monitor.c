@@ -113,26 +113,37 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
  * @param data
  */
 void monitor_dmx_data(const int line, const uint8_t *data) {
+	uint16_t i;
+
+	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->slots_in_packet + 1);
+
 	console_set_cursor(0, line);
 
-	printf("01-16 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-			(unsigned int) data[1], (unsigned int) data[2],
-			(unsigned int) data[3], (unsigned int) data[4],
-			(unsigned int) data[5], (unsigned int) data[6],
-			(unsigned int) data[7], (unsigned int) data[8],
-			(unsigned int) data[9], (unsigned int) data[10],
-			(unsigned int) data[11], (unsigned int) data[12],
-			(unsigned int) data[13], (unsigned int) data[14],
-			(unsigned int) data[15], (unsigned int) data[16]);
-	printf("17-32 : %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X %.2X\n",
-			(unsigned int) data[17], (unsigned int) data[18],
-			(unsigned int) data[19], (unsigned int) data[20],
-			(unsigned int) data[21], (unsigned int) data[22],
-			(unsigned int) data[23], (unsigned int) data[24],
-			(unsigned int) data[25], (unsigned int) data[26],
-			(unsigned int) data[27], (unsigned int) data[28],
-			(unsigned int) data[29], (unsigned int) data[30],
-			(unsigned int) data[31], (unsigned int) data[32]);
+	console_puts("01-16 : ");
+
+	for (i = 1; i < slots_in_packet; i++) {
+		if (data[i] == 0) {
+			console_puts(" 0");
+		} else {
+			console_puthex_inverted(data[i]);
+		}
+		if (i == 16) {
+			console_puts("\n17-32 : ");
+		} else {
+			(void) console_putc((int) ' ');
+		}
+
+	}
+
+	for (; i < 33; i++) {
+		console_puts("--");
+		if (i == 16) {
+			console_puts("\n17-32 : ");
+		} else {
+			(void) console_putc((int) ' ');
+		}
+	}
 }
 
 /**
@@ -140,13 +151,15 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
  *
  */
 void monitor_sniffer(void) {
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
-
 	const struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 
+	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 	console_clear_line(MONITOR_LINE_PACKETS);
-	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
+	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets,
+			(long int) total_statistics->dmx_packets,
+			(long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 	const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
@@ -157,16 +170,15 @@ void monitor_sniffer(void) {
 	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
 #endif
 
-	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-	printf("\nDMX updates/sec %d  \n\n", (uint16_t)dmx_statistics->updates_per_seconde);
+	printf("\nDMX updates/sec %d  \n\n", (int)dmx_statistics->updates_per_seconde);
 
 	if (dmx_statistics->updates_per_seconde != 0) {
-		printf("Slots in packet %d      \n", (uint16_t)dmx_statistics->slots_in_packet);
-		printf("Slot to slot    %d      \n", (uint16_t)dmx_statistics->slot_to_slot);
-		printf("Break to break  %ld     \n", dmx_statistics->break_to_break);
+		printf("Slots in packet %d      \n", (int)dmx_statistics->slots_in_packet);
+		printf("Slot to slot    %d      \n", (int)dmx_statistics->slot_to_slot);
+		printf("Break to break  %ld     \n", (long int)dmx_statistics->break_to_break);
 	} else {
-		printf("Slots in packet --     \n");
-		printf("Slot to slot    --     \n");
-		printf("Break to break  --     \n");
+		console_puts("Slots in packet --     \n");
+		console_puts("Slot to slot    --     \n");
+		console_puts("Break to break  --     \n");
 	}
 }
