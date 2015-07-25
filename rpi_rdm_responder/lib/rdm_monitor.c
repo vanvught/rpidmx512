@@ -55,8 +55,7 @@ void monitor_update(void) {
 		(void) console_putc((int) ' ');
 	}
 
-	printf("\n%.3d-%.3d : ", (dmx_start_address + 16) & 0x1FF,
-			(dmx_start_address + 31) & 0x1FF);
+	printf("\n%.3d-%.3d : ", (dmx_start_address + 16) & 0x1FF, (dmx_start_address + 31) & 0x1FF);
 
 	for (i = 16; i < 32; i++) {
 		uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?

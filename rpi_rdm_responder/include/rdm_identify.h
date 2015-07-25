@@ -25,10 +25,9 @@
 #ifndef RDM_IDENTIFY_H_
 #define RDM_IDENTIFY_H_
 
-#include <stdint.h>
+#include <stdbool.h>
 
-extern const uint8_t rdm_identify_is_enabled(void);
-
+extern const bool rdm_identify_is_enabled(void);
 extern void rdm_identify_off(void);
 extern void rdm_identify_on(void);
 

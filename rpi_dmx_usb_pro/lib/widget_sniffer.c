@@ -162,7 +162,7 @@ void widget_sniffer_rdm(void) {
 
 	uint8_t message_length = 0;
 
-	if (rdm_data[0] == 0xCC) {
+	if (rdm_data[0] == E120_SC_RDM) {
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		message_length = p->message_length + 2;
 		switch (p->command_class) {

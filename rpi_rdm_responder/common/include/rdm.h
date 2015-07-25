@@ -28,21 +28,24 @@
 
 #include <stdint.h>
 
-///< 3 Timing
-#define RDM_TRANSMIT_BREAK_TIME				176	///< Min 176us
-#define RDM_TRANSMIT_MAB_TIME				12	///< Min 12us
-///< 3.2.2 Responder Packet spacing
-#define RDM_RESPONDER_PACKET_SPACING		200	///< Min 176us, Max 2ms
+#define RDM_ROOT_DEVICE							0		///<
 
-#define RDM_RESPONDER_DATA_DIRECTION_DELAY	4	///<
+///< 3 Timing
+#define RDM_TRANSMIT_BREAK_TIME					176		///< Min 176us
+#define RDM_TRANSMIT_MAB_TIME					12		///< Min 12us
+
+///< 3.2.2 Responder Packet spacing
+#define RDM_RESPONDER_PACKET_SPACING			200		///< Min 176us, Max 2ms
+
+#define RDM_RESPONDER_DATA_DIRECTION_DELAY		4		///<
 
 ///< 5 Device Addressing
-#define RDM_UID_SIZE  						6	///< 48-bit
+#define RDM_UID_SIZE  							6		///< 48-bit
 
 ///< 6.2.3 Message Length
-#define RDM_MESSAGE_MINIMUM_SIZE			24	///< Minimum size of RDM message without the checksum
-#define RDM_MESSAGE_CHECKSUM_SIZE			2	///< Size of the checksum
-#define RDM_MESSAGE_COUNT_MAX				255	///< Message Count field for Responder Generated Messages
+#define RDM_MESSAGE_MINIMUM_SIZE				24		///< Minimum size of RDM message without the checksum
+#define RDM_MESSAGE_CHECKSUM_SIZE				2		///< Size of the checksum
+#define RDM_MESSAGE_COUNT_MAX					255		///< Message Count field for Responder Generated Messages
 
 ///< 7.6 Discovery Mute/Un-Mute Messages
 ///< 7.6.1 Control Field
@@ -51,6 +54,33 @@
 #define RDM_CONTROL_FIELD_SUB_DEVICE_FLAG		(1 << 1)	///< The Sub-Device Flag (Bit 1) shall be set to 1 when the responder supports Sub-Devices.
 #define RDM_CONTROL_FIELD_BOOTLOADER_FLAG		(1 << 2)	///< The Boot-Loader Flag (Bit 2) shall only be set to 1 when the device is incapable of normal operation until receiving a firmware upload.
 #define RDM_CONTROL_FIELD_PROXIED_DEVICE_FLAG	(1 << 3)	///< The Proxied Device Flag (Bit 3) shall only be set to 1 when a Proxy is responding to Discovery on behalf of another device. This flag indicates that the response has come from a Proxy, rather than the actual device.
+
+#define RDM_DEVICE_MANUFACTURER_ID_LENGTH		2	///<
+
+///< 10.5.4 Get Manufacturer Label (MANUFACTURER_LABEL)
+#define RDM_MANUFACTURER_LABEL_MAX_LENGTH		32			///< Manufacturer name for the device of up to 32 characters.
+
+///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
+#define RDM_DEVICE_LABEL_MAX_LENGTH				32
+
+///< 10.5.8 Get/Set Language (LANGUAGE)
+#define RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH	2			///< The Language Codes are 2 character alpha codes as defined by ISO 639-1.
+
+///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
+#define RDM_SOFTWARE_VERSION_LABEL_MAX_LENGTH	32
+
+///< 10.5.10 Get Boot Software Version ID (BOOT_SOFTWARE_VERSION_ID)
+#define RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH		4			///< The Boot Software Version ID is a 32-bit value determined by the Manufacturer.
+
+///< 10.7.1 Get Sensor Definition (SENSOR_DEFINITION)
+#define RDM_SENSORS_ALL							0xFF		///< The sensor number 0xFF is used to address all sensors.
+
+///< 10.8.1 Get/Set Device Hours (DEVICE_HOURS)
+#define RDM_DEVICE_HOURS_SIZE					4
+
+///< 10.11.1 Get/Set Identify Device (IDENTIFY_DEVICE)
+#define	RDM_IDENTIFY_STATE_OFF				(uint8_t)0
+#define	RDM_IDENTIFY_STATE_ON				(uint8_t)1
 
 struct _rdm_command {
 	uint8_t start_code;						///< 1	SC_RDM

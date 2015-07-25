@@ -29,12 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DEVICE_MANUFACTURER_ID_LENGTH			2	///<
-#define DEVICE_MANUFACTURER_LABEL_MAX_LENGTH	32	///< 10.5.4 Get Manufacturer Label (MANUFACTURER_LABEL)
-#define DEVICE_SUPPORTED_LANGUAGE_LENGTH		2	///< The Language Codes are 2 character alpha codes as defined by ISO 639-1.
 #define DEVICE_SN_LENGTH						4	///<
-#define DEVICE_LABEL_MAX_LENGTH					32	///< 10.5.5 Get/Set Device Label (DEVICE_LABEL)
-#define SOFTWARE_VERSION_LABEL_MAX_LENGTH		32	///< 10.5.9 Get Software Version Label (SOFTWARE_VERSION_LABEL)
 
 extern /*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t);
 extern void rdm_device_info_init(void);

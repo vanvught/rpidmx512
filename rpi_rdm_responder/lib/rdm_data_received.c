@@ -35,12 +35,12 @@
  *
  * The function is registered in the poll table \file main.c
  */
-void rdm_data_received(void)
-{
+void rdm_data_received(void) {
 	uint8_t *rdm_data = (uint8_t *)rdm_get_available();
 
-	if (rdm_data == NULL)
+	if (rdm_data == NULL) {
 		return;
+	}
 
 	const struct _rdm_command *rdm_cmd = (struct _rdm_command *)rdm_data;
 

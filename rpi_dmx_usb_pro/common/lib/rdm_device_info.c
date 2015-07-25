@@ -51,14 +51,14 @@ static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";			///<
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
-static char root_device_label[DEVICE_LABEL_MAX_LENGTH];
+static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH];
 static uint8_t root_device_label_length = 0;
 
-static char device_manufacturer_name[DEVICE_MANUFACTURER_LABEL_MAX_LENGTH];
+static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
 static uint8_t device_manufacturer_name_length = 0;
 static uint8_t device_sn[DEVICE_SN_LENGTH];
 
-static uint8_t manufacturer_id[DEVICE_MANUFACTURER_ID_LENGTH];
+static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH];
 
 #ifdef RDM_RESPONDER
 static bool is_factory_defaults = true;
@@ -78,7 +78,7 @@ static void process_line_read_string(const char *line) {
 	char value[8] __attribute__((aligned(4)));
 	uint8_t len;
 
-	device_manufacturer_name_length = DEVICE_MANUFACTURER_LABEL_MAX_LENGTH;
+	device_manufacturer_name_length = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
 	(void) sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &device_manufacturer_name_length);
 
 	len = 4;
@@ -176,8 +176,8 @@ const bool rdm_device_info_get_is_factory_defaults() {
  * @param label_length
  */
 void rdm_device_info_set_label(const uint16_t sub_device, const uint8_t *label,	uint8_t label_length) {
-	if (label_length > DEVICE_LABEL_MAX_LENGTH) {
-		label_length = DEVICE_LABEL_MAX_LENGTH;
+	if (label_length > RDM_DEVICE_LABEL_MAX_LENGTH) {
+		label_length = RDM_DEVICE_LABEL_MAX_LENGTH;
 	}
 
 	if (sub_device != 0) {
@@ -204,7 +204,7 @@ const char * rdm_device_info_get_supported_language(void) {
  * @return
  */
 const uint8_t rdm_device_info_get_supported_language_length(void) {
-	return DEVICE_SUPPORTED_LANGUAGE_LENGTH;
+	return RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH;
 }
 
 /**
@@ -479,7 +479,7 @@ const uint8_t * rdm_device_info_get_manufacturer_id(void) {
  * @return
  */
 const uint8_t rdm_device_info_get_manufacturer_id_length(void) {
-	return DEVICE_MANUFACTURER_ID_LENGTH;
+	return RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
 /**

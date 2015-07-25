@@ -35,7 +35,7 @@ struct _rdm_sub_devices_info {
 	const uint8_t personality_count;
 	uint16_t dmx_start_address;
 	const uint8_t sensor_count;
-	char device_label[DEVICE_LABEL_MAX_LENGTH];
+	char device_label[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t device_label_length;
 	const struct _rdm_personality *rdm_personalities;
 };

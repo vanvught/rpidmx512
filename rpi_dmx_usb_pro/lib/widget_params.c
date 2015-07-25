@@ -141,8 +141,6 @@ static void process_line_read_uint8_t(const char *line) {
 		}
 	} else if (sscan_uint8_t(line, PARAMS_DMX_SEND_TO_HOST_THROTTLE, &value) == 2) {
 		dmx_send_to_host_throttle = value;
-	} else {
-		// nothing to do here
 	}
 
 	return;

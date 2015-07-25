@@ -66,11 +66,11 @@ inline static bool is_xdigit(char c) {
 inline static int _memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
 
-	for (; n--; s1++, s2++) {
+	for (; n-- != (size_t)0; s1++, s2++) {
 		u1 = *(unsigned char *) s1;
 		u2 = *(unsigned char *) s2;
 		if (u1 != u2) {
-			return (u1 - u2);
+			return (int) (u1 - u2);
 		}
 	}
 
@@ -87,18 +87,26 @@ inline static void *_memcpy(void *dest, const void *src, size_t n) {
 	char *dp = dest;
 	const char *sp = src;
 
-	while (n--) {
+	while (n-- != (size_t) 0) {
 		*dp++ = *sp++;
 	}
 
 	return dest;
 }
 
-
+/**
+ *
+ * @param s
+ * @return
+ */
 inline static size_t _strlen(const char *s) {
 	const char *p = s;
-	while (*s)
+
+	while (*s != (char)0) {
 		++s;
-	return s - p;
+	}
+
+	return (size_t) (s - p);
 }
+
 #endif /* UTIL_H_ */
