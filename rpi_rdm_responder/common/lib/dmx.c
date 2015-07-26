@@ -64,6 +64,7 @@ static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< S
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
 static volatile uint32_t dmx_fiq_micros_current = 0;							///< Timestamp FIQ
 static volatile uint32_t dmx_fiq_micros_previous = 0;							///< Timestamp previous FIQ
+static volatile uint32_t dmx_break_to_break_current = 0;						///<
 static volatile uint32_t dmx_break_to_break_previous = 0;						///<
 static uint32_t dmx_slots_in_packet_previous = 0;								///<
 static volatile uint8_t dmx_send_state = IDLE;									///<
@@ -326,7 +327,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 	if (BCM2835_PL011->DR & PL011_DR_BE) {
 		dmx_receive_state = BREAK;
-		dmx_statistics.break_to_break = dmx_fiq_micros_current - dmx_break_to_break_previous;
+		dmx_break_to_break_current = dmx_fiq_micros_current - dmx_break_to_break_previous;
 		dmx_break_to_break_previous = dmx_fiq_micros_current;
 	} else {
 		const uint8_t data = BCM2835_PL011->DR & 0xFF;
@@ -348,6 +349,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
+				dmx_statistics.break_to_break = dmx_break_to_break_current;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
 			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA

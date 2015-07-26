@@ -126,8 +126,6 @@ void widget_sniffer_dmx(void) {
 
 	dmx_set_available_false();
 
-	monitor_line(MONITOR_LINE_INFO, NULL);
-
 	if (dmx_is_data_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();

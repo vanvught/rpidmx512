@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "util.h"
 #include "dmx.h"
 #include "monitor.h"
 #include "sys_time.h"
@@ -114,21 +115,26 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
  */
 void monitor_dmx_data(const int line, const uint8_t *data) {
 	uint16_t i;
+	uint16_t slots;
 
-	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-	const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->slots_in_packet + 1);
+	if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
+		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+		slots = (uint16_t) (dmx_statistics->slots_in_packet + 1);
+	} else {
+		slots = dmx_get_send_data_length();
+	}
 
 	console_set_cursor(0, line);
 
 	console_puts("01-16 : ");
 
-	for (i = 1; i < slots_in_packet; i++) {
-		if (data[i] == 0) {
+	for (i = (uint16_t)1; i < slots; i++) {
+		if (data[i] == (uint8_t)0) {
 			console_puts(" 0");
 		} else {
 			console_puthex_inverted(data[i]);
 		}
-		if (i == 16) {
+		if (i == (uint16_t)16) {
 			console_puts("\n17-32 : ");
 		} else {
 			(void) console_putc((int) ' ');
@@ -136,15 +142,22 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 
 	}
 
-	for (; i < 33; i++) {
+	for (; i < (uint16_t)33; i++) {
 		console_puts("--");
-		if (i == 16) {
+		if (i == (uint16_t)16) {
 			console_puts("\n17-32 : ");
 		} else {
 			(void) console_putc((int) ' ');
 		}
 	}
 }
+
+static uint32_t slots_in_packet_min = UINT32_MAX;
+static uint32_t slots_in_packet_max = (uint32_t)0;
+static uint32_t slot_to_slot_min = UINT32_MAX;
+static uint32_t slot_to_slot_max = (uint32_t)0;
+static uint32_t break_to_break_min = UINT32_MAX;
+static uint32_t break_to_break_max = (uint32_t)0;
 
 /**
  * @ingroup monitor
@@ -158,8 +171,7 @@ void monitor_sniffer(void) {
 	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 	console_clear_line(MONITOR_LINE_PACKETS);
 	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets,
-			(long int) total_statistics->dmx_packets,
-			(long int) total_statistics->rdm_packets);
+			(long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 	const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
@@ -173,9 +185,16 @@ void monitor_sniffer(void) {
 	printf("\nDMX updates/sec %d  \n\n", (int)dmx_statistics->updates_per_seconde);
 
 	if (dmx_statistics->updates_per_seconde != 0) {
-		printf("Slots in packet %d      \n", (int)dmx_statistics->slots_in_packet);
-		printf("Slot to slot    %d      \n", (int)dmx_statistics->slot_to_slot);
-		printf("Break to break  %ld     \n", (long int)dmx_statistics->break_to_break);
+		slots_in_packet_min = MIN(dmx_statistics->slots_in_packet, slots_in_packet_min);
+		slots_in_packet_max = MAX(dmx_statistics->slots_in_packet, slots_in_packet_max);
+		slot_to_slot_min = MIN(dmx_statistics->slot_to_slot, slot_to_slot_min);
+		slot_to_slot_max = MAX(dmx_statistics->slot_to_slot, slot_to_slot_max);
+		break_to_break_min = MIN(dmx_statistics->break_to_break, break_to_break_min);
+		break_to_break_max = MAX(dmx_statistics->break_to_break, break_to_break_max);
+
+		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->slots_in_packet, (int)slots_in_packet_min, (int)slots_in_packet_max);
+		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->slot_to_slot, (int)slot_to_slot_min, (int)slot_to_slot_max);
+		printf("Break to break %8ld  %6d / %d\n", (long int)dmx_statistics->break_to_break, (int)break_to_break_min, (int)break_to_break_max);
 	} else {
 		console_puts("Slots in packet --     \n");
 		console_puts("Slot to slot    --     \n");

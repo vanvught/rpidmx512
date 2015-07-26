@@ -30,7 +30,6 @@
 #define LED_BLINK_IDENTIFY	(uint32_t) (1E6 / 4)	///< 2Hz
 #define LED_BLINK_DMX_DATA	(uint32_t) (1E6 / 6)	///< 3Hz
 #define LED_BLINK_RDM_DATA	(uint32_t) (1E6 / 8)	///< 4Hz
-#define LED_BLINK_REBOOT	(uint32_t) (1E6 /10)	///< 5Hz
 
 extern void ticks_per_second_set(uint32_t);
 extern uint32_t ticks_per_second_get(void);

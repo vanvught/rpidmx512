@@ -1,2 +1,2 @@
-// Generated Sat Jul 25 20:49:01 CEST 2015
-static const uint32_t DEVICE_SOFTWARE_VERSION_ID=1437850141;
+// Generated Sun Jul 26 15:19:32 CEST 2015
+static const uint32_t DEVICE_SOFTWARE_VERSION_ID=1437916772;
