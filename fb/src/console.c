@@ -245,6 +245,21 @@ void console_puthex_inverted(const uint8_t data) {
 	cur_fore = ~cur_fore;
 	cur_back = ~cur_back;
 }
+
+void console_puthex_fg_bg(const uint8_t data, const uint16_t fore, const uint16_t back) {
+	uint16_t fore_current = cur_fore;
+	uint16_t back_current = cur_back;
+
+	cur_fore = fore;
+	cur_back = back;
+
+	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
+	(void) console_putc(TO_HEX(data & 0x0F));
+
+	cur_fore = fore_current;
+	cur_back = back_current;
+}
+
 /**
  *
  */

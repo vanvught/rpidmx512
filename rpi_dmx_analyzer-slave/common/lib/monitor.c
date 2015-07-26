@@ -128,11 +128,16 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 
 	console_puts("01-16 : ");
 
+	if (slots > 33) {
+		slots = 33;
+	}
+
 	for (i = (uint16_t)1; i < slots; i++) {
 		if (data[i] == (uint8_t)0) {
 			console_puts(" 0");
 		} else {
-			console_puthex_inverted(data[i]);
+			uint8_t d = data[i];
+			console_puthex_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d,d,d));
 		}
 		if (i == (uint16_t)16) {
 			console_puts("\n17-32 : ");

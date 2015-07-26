@@ -40,6 +40,7 @@ extern int console_putc(const int);
 extern int console_putc_inverted(const int);
 extern void console_puts(const char *);
 extern void console_puthex(const uint8_t);
+extern void console_puthex_fg_bg(const uint8_t, const uint16_t, const uint16_t);
 extern void console_puthex_inverted(const uint8_t);
 extern void console_newline(void);
 extern void console_clear();
