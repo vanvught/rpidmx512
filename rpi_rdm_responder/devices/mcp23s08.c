@@ -27,12 +27,17 @@
 extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
+#include "util.h"
 #include "dmx.h"
 #include "mcp23s08.h"
 
-static const struct _rdm_personality rdm_sub_device = { 8, "Digital output 8-lines", 22 };
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 8, 1, 1, 0, 0, "mcp23s08", 8, &rdm_sub_device };
+#define DMX_FOOTPRINT	8
 
+static const char device_label[] = "mcp23s08";
+static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);
+
+static const struct _rdm_personality rdm_personality = { DMX_FOOTPRINT, "Digital output 8-lines", 22 };
+static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* start address */0, /* sensor count */0, "", 0, &rdm_personality};
 
 /**
  * @ingroup DEV
@@ -40,11 +45,11 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 8, 1, 1, 0, 0, "mcp
  * @param dmx_device_info
  */
 static void mcp23s08(dmx_device_info_t * dmx_device_info) {
-	int i = 0;
+	int i;
 	uint8_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < DMX_FOOTPRINT; i++) {
 
 		if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			break;
@@ -67,6 +72,7 @@ INITIALIZER(devices, mcp23s08)
  * @param dmx_device_info
  */
 static void mcp23s08_init(dmx_device_info_t * dmx_device_info) {
+	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &dmx_device_info->rdm_sub_devices_info;
 #ifdef DEBUG
 	printf("device init <mcp23s08>\n");
 #endif
@@ -74,8 +80,10 @@ static void mcp23s08_init(dmx_device_info_t * dmx_device_info) {
 	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_IODIR, 0x00);
 	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_GPIO, 0x00);
 
-	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
-	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 
 INITIALIZER(devices_init, mcp23s08_init)

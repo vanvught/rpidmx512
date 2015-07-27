@@ -27,11 +27,17 @@
 extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
+#include "util.h"
 #include "dmx.h"
 #include "bw_spi_dio.h"
 
-static const struct _rdm_personality rdm_sub_device = { 7, "Digital output 7-lines", 22 };
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 7, 1, 1, 0, 0, "bw_spi_dio", 10, &rdm_sub_device };
+#define DMX_FOOTPRINT	7
+
+static const char device_label[] = "bw_spi_dio";
+static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);
+
+static const struct _rdm_personality rdm_personality = { DMX_FOOTPRINT, "Digital output 7-lines", 22 };
+static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* start address */0, /* sensor count */0, "", 0, &rdm_personality};
 
 /**
  * @ingroup DEV
@@ -39,11 +45,11 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 7, 1, 1, 0, 0, "bw_
  * @param dmx_device_info
  */
 static void bw_spi_dio(dmx_device_info_t *dmx_device_info) {
-	int i = 0;
+	int i;
 	uint8_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address ;
 
-	for (i = 0; i < 7; i++) {
+	for (i = 0; i < DMX_FOOTPRINT; i++) {
 
 		if (dmx_data_index > DMX_UNIVERSE_SIZE)
 			break;
@@ -66,6 +72,7 @@ INITIALIZER(devices, bw_spi_dio)
  * @param dmx_device_info
  */
 static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
+	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 #ifdef DEBUG
 	printf("device init <bw_spi_dio_init>\n");
 #endif
@@ -73,8 +80,10 @@ static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
 	bw_spi_dio_fsel_mask(&dmx_device_info->device_info, 0x7F);
 	bw_spi_dio_output(&dmx_device_info->device_info, 0);
 
-	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
-	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 
 INITIALIZER(devices_init, bw_spi_dio_init)

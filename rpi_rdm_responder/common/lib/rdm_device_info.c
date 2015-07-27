@@ -143,12 +143,26 @@ static void read_config_file(void) {
  */
 inline static uint16_t calculate_checksum(void) {
 	uint8_t i;
+	uint16_t sub_device;
+	uint8_t j;
+	char *label;
+	uint8_t label_length;
 
 	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
 	checksum += rdm_device_info.current_personality;
 
 	for (i = 0; i < root_device_label_length; i++) {
 		checksum += (uint16_t) root_device_label[i];
+	}
+
+	sub_device = (rdm_device_info.sub_device_count[0] << 8) + rdm_device_info.sub_device_count[1];
+
+	for (i = 1; i <= sub_device; i++) {
+		label = (char *)rdm_sub_devices_get_label(i);
+		label_length = rdm_sub_devices_get_label_length(i);
+		for (j = 0; j < label_length; j++) {
+			checksum += (uint16_t) label[i];
+		}
 	}
 
 	return checksum;
@@ -575,6 +589,8 @@ void rdm_device_info_init(void) {
 	rdm_sensors_init();
 
 	_memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
+
+	rdm_sub_devices_info_init();
 
 	factory_defaults_checksum = calculate_checksum();
 	is_factory_defaults = true;

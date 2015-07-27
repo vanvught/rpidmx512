@@ -38,7 +38,7 @@
 typedef struct _dmx_device_info {
 	device_info_t device_info;
 	uint16_t dmx_start_address;
-	struct _rdm_sub_devices_info * rdm_sub_devices_info;
+	struct _rdm_sub_devices_info rdm_sub_devices_info;
 } dmx_device_info_t;
 
 typedef struct _device_entry {
@@ -48,8 +48,8 @@ typedef struct _device_entry {
 
 typedef struct _devices {
 	uint16_t elements_count;
-	device_entry_t device_entry[16];
-} _devices_t;
+	device_entry_t device_entry[255];
+} devices_t;
 
 struct _dmx_devices_statistics {
 	uint32_t function_count;
@@ -60,7 +60,7 @@ extern void dmx_devices_read_config(void);
 extern void dmx_devices_init(void);
 extern void dmx_devices_run(void);
 
-extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void);
+extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) __attribute__((assume_aligned(4)));
 extern void dmx_devices_reset_statistics(void);
 
 extern const uint16_t dmx_devices_get_devices_connected(void);
@@ -75,7 +75,7 @@ extern /*@shared@*//*@null@*/const struct _rdm_sub_devices_info *dmx_devices_inf
 extern void dmx_devices_info_set(const uint16_t, const struct _rdm_sub_devices_info *);
 extern const uint8_t dmx_devices_get_personality_current(const uint16_t);
 extern void dmx_devices_set_personality_current(const uint16_t, const uint8_t);
-extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t);
+extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t) __attribute__((assume_aligned(4)));
 extern const uint8_t dmx_devices_get_personality_description_length(const uint16_t, const uint8_t);
 extern const uint16_t dmx_devices_get_personality_slots(const uint16_t, const uint8_t);
 

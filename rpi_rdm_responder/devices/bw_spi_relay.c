@@ -27,11 +27,17 @@
 extern int printf(const char *format, ...);
 #endif
 #include "tables.h"
+#include "util.h"
 #include "dmx.h"
 #include "bw_spi_relay.h"
 
-static const struct _rdm_personality rdm_sub_device = { 2, "Relays", 6 };
-static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "bw_spi_relay", 12, &rdm_sub_device };
+#define DMX_FOOTPRINT	2
+
+static const char device_label[] = "bw_spi_relay";
+static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);
+
+static const struct _rdm_personality rdm_personality = { DMX_FOOTPRINT, "Relays", 6 };
+static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* start address */0, /* sensor count */0, "", 0, &rdm_personality};
 
 /**
  * @ingroup DEV
@@ -39,7 +45,7 @@ static struct _rdm_sub_devices_info rdm_sub_devices_info = { 2, 1, 1, 0, 0, "bw_
  * @param dmx_device_info
  */
 static void bw_spi_relay(dmx_device_info_t *dmx_device_info) {
-	int i = 0;
+	int i;
 	uint8_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
 
@@ -66,14 +72,17 @@ INITIALIZER(devices, bw_spi_relay)
  * @param dmx_device_info
  */
 static void bw_spi_relay_init(dmx_device_info_t *dmx_device_info) {
+	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 #ifdef DEBUG
 	printf("device init <bw_spi_relay_init>\n");
 #endif
 	(void)bw_spi_relay_start(&(dmx_device_info->device_info));
 	bw_spi_relay_output(&dmx_device_info->device_info, 0);
 
-	dmx_device_info->rdm_sub_devices_info = &rdm_sub_devices_info;
-	rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
+	_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 
 INITIALIZER(devices_init, bw_spi_relay_init)

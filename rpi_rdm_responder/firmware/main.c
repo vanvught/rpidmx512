@@ -43,14 +43,16 @@ struct _poll {
 }const poll_table[] = {
 		{ rdm_data_received },
 		{ dmx_devices_run },
-		{ led_blink } };
+		{ led_blink }
+		};
 
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
 }const events[] = {
 		{  500000, rdm_identify },
-		{ 1000000, monitor_update } };
+		{ 1000000, monitor_update }
+		};
 
 uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 

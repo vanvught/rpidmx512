@@ -39,8 +39,7 @@
 TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)
 
-_devices_t devices_connected;
-
+static devices_t devices_connected __attribute__((aligned(4)));
 static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((aligned(4)));	///<
 
 /**
@@ -68,7 +67,10 @@ void dmx_devices_reset_statistics(void) {
  * @return
  */
 static int add_connected_device(const char *line) {
-	if (devices_connected.elements_count < (uint16_t)(sizeof(devices_connected.device_entry)	/ sizeof(devices_connected.device_entry[0]))) {
+#ifdef DEBUG
+	printf("%d < %d\n", devices_connected.elements_count, ((uint16_t)(sizeof(devices_connected.device_entry) / sizeof(devices_connected.device_entry[0]))));
+#endif
+	if (devices_connected.elements_count < (uint16_t)(sizeof(devices_connected.device_entry) / sizeof(devices_connected.device_entry[0]))) {
 
 		char device_name[65];
 		char chip_select;
@@ -109,7 +111,6 @@ static int add_connected_device(const char *line) {
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.chip_select = (uint8_t)chip_select;
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.slave_address = slave_address;
 					devices_connected.device_entry[devices_added].dmx_device_info.dmx_start_address = dmx_start_address;
-					devices_connected.device_entry[devices_added].dmx_device_info.rdm_sub_devices_info = NULL;
 					devices_added++;
 					devices_connected.elements_count = devices_added;
 					return devices_connected.elements_count;
@@ -240,7 +241,7 @@ const uint16_t dmx_devices_get_devices_connected(void) {
  */
 const uint16_t dmx_devices_get_footprint(const uint16_t sub_device) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->dmx_footprint;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.dmx_footprint;
 	}
 
 	return 0;
@@ -280,7 +281,7 @@ void dmx_devices_set_dmx_start_address(const uint16_t sub_device, const uint16_t
  */
 const char *dmx_devices_get_label(const uint16_t sub_device) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label;
 	}
 
 	return NULL;
@@ -295,8 +296,8 @@ const char *dmx_devices_get_label(const uint16_t sub_device) {
  */
 void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label, label, label_length);
-		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label_length = label_length;
+		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label, label, label_length);
+		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label_length = label_length;
 	}
 }
 
@@ -308,7 +309,7 @@ void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint
  */
 const uint8_t dmx_devices_get_label_length(const uint16_t sub_device) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->device_label_length;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label_length;
 	}
 
 	return 0;
@@ -322,7 +323,7 @@ const uint8_t dmx_devices_get_label_length(const uint16_t sub_device) {
  */
 const uint8_t dmx_devices_get_personality_current(const uint16_t sub_device) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->current_personality;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.current_personality;
 	}
 
 	return 0;
@@ -336,7 +337,7 @@ const uint8_t dmx_devices_get_personality_current(const uint16_t sub_device) {
  */
 void dmx_devices_set_personality_current(const uint16_t sub_device, const uint8_t personality) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->current_personality = personality;
+		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.current_personality = personality;
 	}
 }
 
@@ -349,7 +350,7 @@ void dmx_devices_set_personality_current(const uint16_t sub_device, const uint8_
  */
 const char *dmx_devices_get_personality_description(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->description;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.rdm_personalities->description;
 	}
 
 	return NULL;
@@ -364,7 +365,7 @@ const char *dmx_devices_get_personality_description(const uint16_t sub_device, /
  */
 const uint8_t dmx_devices_get_personality_description_length(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->description_len;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.rdm_personalities->description_len;
 	}
 
 	return 0;
@@ -379,7 +380,7 @@ const uint8_t dmx_devices_get_personality_description_length(const uint16_t sub_
  */
 const uint16_t dmx_devices_get_personality_slots(const uint16_t sub_device, /*@unused@*/const uint8_t personality) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info->rdm_personalities->slots;
+		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.rdm_personalities->slots;
 	}
 
 	return 0;
@@ -393,7 +394,7 @@ const uint16_t dmx_devices_get_personality_slots(const uint16_t sub_device, /*@u
  */
 const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_device) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		return devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info;
+		return &(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info;
 	}
 
 	return NULL;
@@ -407,7 +408,8 @@ const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_devi
  */
 void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
+		_memcpy(&(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
 	}
 }
+
 

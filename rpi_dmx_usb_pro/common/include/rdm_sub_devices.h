@@ -62,4 +62,6 @@ extern const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t, cons
 
 extern const uint16_t rdm_sub_devices_get(void);
 
+extern void rdm_sub_devices_info_init(void);
+
 #endif /* RDM_SUB_DEVICES_H_ */

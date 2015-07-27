@@ -151,3 +151,11 @@ void rdm_sub_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_d
 const uint16_t rdm_sub_devices_get(void) {
 	return dmx_devices_get_devices_connected();
 }
+
+
+/**
+ *
+ */
+void rdm_sub_devices_info_init(void) {
+	dmx_devices_init();
+}
