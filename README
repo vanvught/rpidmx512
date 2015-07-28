@@ -1,6 +1,6 @@
 Raspberry Pi DMX512 / RDM
 =======
-Baremetal projects for DMX analyser-slave, RPi USB DMX Pro, RDM Responder 
+Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
 ---------
 \Eagle
 \bcm2835-baremetal
