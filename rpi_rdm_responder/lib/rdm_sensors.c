@@ -30,6 +30,7 @@
 #include "rdm_sensor_const.h"
 
 /**
+ * @ingroup rdm
  *
  * @return
  */
@@ -38,6 +39,7 @@ const uint8_t rdm_sensors_get_count(void) {
 }
 
 /**
+ * @ingroup rdm
  *
  */
 void rdm_sensors_init(void) {
@@ -59,6 +61,7 @@ void rdm_sensors_init(void) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sensor
  * @return
@@ -72,6 +75,7 @@ const struct _rdm_sensor_defintion *rdm_sensors_get_defintion(uint8_t sensor) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sensor
  * @return
@@ -93,6 +97,7 @@ struct _rdm_sensor_value *rdm_sensors_get_value(uint8_t sensor) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sensor
  */
@@ -112,6 +117,7 @@ void rdm_sensors_set_value(uint8_t sensor) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sensor
  */

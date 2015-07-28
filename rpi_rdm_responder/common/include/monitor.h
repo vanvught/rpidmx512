@@ -29,16 +29,16 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#define MONITOR_LINE_TIME			3
-#define MONITOR_LINE_WIDGET_PARMS	4
-#define MONITOR_LINE_LABEL			6
-#define MONITOR_LINE_INFO			7
-#define MONITOR_LINE_PORT_DIRECTION	9
-#define MONITOR_LINE_DMX_DATA		11
-#define MONITOR_LINE_PACKETS		14
-#define MONITOR_LINE_RDM_DATA		17
-#define MONITOR_LINE_RDM_CC			27
-#define MONITOR_LINE_STATUS			28
+#define MONITOR_LINE_TIME			3	///<
+#define MONITOR_LINE_WIDGET_PARMS	4	///<
+#define MONITOR_LINE_LABEL			6	///<
+#define MONITOR_LINE_INFO			7	///<
+#define MONITOR_LINE_PORT_DIRECTION	9	///<
+#define MONITOR_LINE_DMX_DATA		11	///<
+#define MONITOR_LINE_PACKETS		14	///<
+#define MONITOR_LINE_RDM_DATA		17	///<
+#define MONITOR_LINE_RDM_CC			27	///<
+#define MONITOR_LINE_STATUS			28	///<
 #define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
 
 extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;

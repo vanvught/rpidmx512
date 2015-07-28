@@ -26,14 +26,13 @@
 #ifndef DMX_HANDLE_DATA_H_
 #define DMX_HANDLE_DATA_H_
 
-struct _dmx_handle_data_statistics
-{
+struct _dmx_handle_data_statistics {
 	uint16_t function_count;
 	uint16_t dmx_available_count;
 };
 
 extern void dmx_handle_data(void);
-extern struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void);
+extern struct _dmx_handle_data_statistics *dmx_handle_data_get_statistics(void) __attribute__((assume_aligned(4)));
 extern void dmx_handle_data_reset_statistics(void);
 
 #endif /* DMX_HANDLE_DATA_H_ */

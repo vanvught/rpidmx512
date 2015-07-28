@@ -190,25 +190,6 @@ int console_putc(const int ch) {
 
 /**
  *
- * @param ch
- * @return
- */
-int console_putc_inverted(const int ch) {
-	int rc;
-
-	cur_fore = ~cur_fore;
-	cur_back = ~cur_back;
-
-	rc = console_putc(ch);
-
-	cur_fore = ~cur_fore;
-	cur_back = ~cur_back;
-
-	return rc;
-}
-
-/**
- *
  * @param s
  * @return
  */
@@ -229,21 +210,6 @@ void console_puts(const char *s) {
 void console_puthex(const uint8_t data) {
 	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
 	(void) console_putc(TO_HEX(data & 0x0F));
-}
-
-/**
- *
- * @param data
- */
-void console_puthex_inverted(const uint8_t data) {
-	cur_fore = ~cur_fore;
-	cur_back = ~cur_back;
-
-	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
-	(void) console_putc(TO_HEX(data & 0x0F));
-
-	cur_fore = ~cur_fore;
-	cur_back = ~cur_back;
 }
 
 void console_puthex_fg_bg(const uint8_t data, const uint16_t fore, const uint16_t back) {
@@ -368,6 +334,10 @@ int console_init() {
 		fb_height = HEIGHT;
 	}
 
+	if ((fb_width == 0) || (fb_height == 0)) {
+		return CONSOLE_FAIL_INVALID_RESOLUTION;
+	}
+
 	mailbuffer[0] = 22 * 4;
 	mailbuffer[1] = 0;
 
@@ -403,7 +373,7 @@ int console_init() {
 	fb_size = mailbuffer[20];
 
 	if ((fb_addr == 0) || (fb_size == 0)) {
-		return CONSOLE_ERROR;
+		return CONSOLE_FAIL_INVALID_TAG_DATA;
 	}
 
 	fb_depth = mailbuffer[15];
@@ -424,7 +394,7 @@ int console_init() {
 	fb_pitch = mailbuffer[5];
 
 	if (fb_pitch == 0) {
-		return CONSOLE_ERROR;
+		return CONSOLE_FAIL_INVALID_PITCH_DATA;
 	}
 
 	return CONSOLE_OK;

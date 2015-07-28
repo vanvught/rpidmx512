@@ -40,8 +40,8 @@ inline static void itoa_base10(int arg, char buf[]) {
 	buf[0] = '0';
 	buf[1] = '0';
 
-	while (arg) {
-		*n = '0' + (arg % 10);
+	while (arg != 0) {
+		*n = (char)'0' + (char)(arg % 10);
 		n--;
 		arg /= 10;
 	}
@@ -52,7 +52,7 @@ inline static void itoa_base10(int arg, char buf[]) {
  *
  * @param buttons
  */
-void clock_time(const char buttons) {
+void clock_time(/*@unused@*/const char buttons) {
 	time_t ltime = 0;
 	struct tm *local_time = NULL;
 	static char buf[BW_UI_MAX_CHARACTERS];
@@ -60,7 +60,7 @@ void clock_time(const char buttons) {
 	if (do_ui_cls) {
 		ui_cls();
 		ui_text_line_1("Clock", 5);
-		do_ui_cls = 0;
+		do_ui_cls = (char)0;
 		buf[2] = ':';
 		buf[5] = ':';
     }

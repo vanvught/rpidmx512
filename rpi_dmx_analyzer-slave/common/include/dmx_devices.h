@@ -79,4 +79,6 @@ extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description
 extern const uint8_t dmx_devices_get_personality_description_length(const uint16_t, const uint8_t);
 extern const uint16_t dmx_devices_get_personality_slots(const uint16_t, const uint8_t);
 
+extern devices_t *dmx_devices_get_devices(void) __attribute__((assume_aligned(4)));
+
 #endif /* DMX_DEVICES_H_ */

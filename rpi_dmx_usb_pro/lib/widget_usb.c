@@ -1,5 +1,5 @@
 /**
- * @file led.c
+ * @file widget_usb.c
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -25,40 +25,52 @@
 
 #include <stdint.h>
 
-#include "hardware.h"
-
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
-static uint32_t micros_previous = 0;						///<
-static uint32_t led_counter = 0;							///<
+#include "usb.h"
+#include "widget.h"
 
 /**
- * @ingroup led
+ * @ingroup usb
  *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
+ * @param label
+ * @param length
  */
-void ticks_per_second_set(uint32_t ticks) {
-	ticks_per_second = ticks;
+void usb_send_header(const uint8_t label, const uint16_t length) {
+	usb_send_byte(AMF_START_CODE);
+	usb_send_byte(label);
+	usb_send_byte((uint8_t) (length & 0x00FF));
+	usb_send_byte((uint8_t) (length >> 8));
 }
 
 /**
- * @ingroup led
+ * @ingroup usb
  *
- * @return Ticks per second.
+ * @param data
+ * @param length
  */
-uint32_t ticks_per_second_get(void) {
-	return ticks_per_second;
-}
-
-void led_blink(void) {
-	const uint32_t micros_now = hardware_micros();
-
-	if (micros_now - micros_previous < ticks_per_second) {
-		return;
+void usb_send_data(const uint8_t *data, const uint16_t length) {
+	uint16_t i;
+	for (i = 0; i < length; i++) {
+		usb_send_byte(data[i]);
 	}
+}
 
-	hardware_led_set(led_counter++ & 0x01);
+/**
+ * @ingroup usb
+ *
+ */
+void usb_send_footer(void) {
+	usb_send_byte(AMF_END_CODE);
+}
 
-	micros_previous = micros_now;
+/**
+ * @ingroup usb
+ *
+ * @param label
+ * @param data
+ * @param length
+ */
+void usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length) {
+	usb_send_header(label, length);
+	usb_send_data(data, length);
+	usb_send_footer();
 }

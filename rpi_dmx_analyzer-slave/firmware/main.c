@@ -27,12 +27,12 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "bw_ui.h"
 #include "led.h"
+#include "bw_ui.h"
 #include "ui_functions.h"
-#include "monitor.h"
 #include "dmx.h"
 #include "dmx_devices.h"
+#include "monitor.h"
 
 struct _poll {
 	void (*f)(void);
@@ -96,7 +96,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("Devices connected : %d\n", dmx_devices_get_devices_connected());
+	printf("DMX Slave-Analyzer, Devices connected : %d\n", dmx_devices_get_devices_connected());
 
 	ui_start(0x00);			// User Interface
 	ui_reinit();

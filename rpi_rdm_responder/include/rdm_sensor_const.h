@@ -1,6 +1,7 @@
 /**
  * @file rdm_sensor_const.c
  *
+ * @brief These definitions are private for the RDM Responder
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -42,7 +43,8 @@ static const struct _rdm_sensor_defintion rdm_sensor_defintions[] __attribute__(
 		(int16_t) RDM_SENSOR_TEMPERATURE_ABS_ZERO,
 		(int16_t) 85,
 		(uint8_t) RDM_SENSOR_RECORDED_SUPPORTED | RDM_SENSOR_LOW_HIGH_DETECT,
-		"CPU", 3 } };
+		"CPU", /* description length */3 }
+		};
 
 #define RDM_SENSORS_COUNT	(sizeof(rdm_sensor_defintions) / sizeof(rdm_sensor_defintions[0]))
 

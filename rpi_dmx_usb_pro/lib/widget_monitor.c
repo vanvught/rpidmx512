@@ -39,6 +39,7 @@ static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
  * @ingroup monitor
  */
 void monitor_update(void) {
+	const uint8_t widget_mode = widget_get_mode();
 	struct _widget_params widget_params;
 
 	widget_params_get(&widget_params);
@@ -47,30 +48,32 @@ void monitor_update(void) {
 
 	console_clear_line(MONITOR_LINE_INFO);
 
-	const uint8_t widget_mode = widget_get_mode();
-
 	if (widget_mode == MODE_RDM_SNIFFER) {
 		monitor_sniffer();
 	} else {
 		console_clear_line(MONITOR_LINE_WIDGET_PARMS);
 
 		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
-				widget_params.firmware_msb, widget_params.firmware_lsb,
-				widget_params.break_time, (int) dmx_get_output_break_time(),
-				widget_params.mab_time, (int) dmx_get_output_mab_time(),
-				widget_params.refresh_rate, (int) (1E6 / dmx_get_output_period()));
+				(int)widget_params.firmware_msb, (int)widget_params.firmware_lsb,
+				(int)widget_params.break_time, (int) dmx_get_output_break_time(),
+				(int)widget_params.mab_time, (int) dmx_get_output_mab_time(),
+				(int)widget_params.refresh_rate, (int) (1E6 / dmx_get_output_period()));
 
 		console_clear_line(MONITOR_LINE_PORT_DIRECTION);
 
 		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
 			const uint8_t receive_dmx_on_change = widget_get_receive_dmx_on_change();
+
 			if (receive_dmx_on_change == SEND_ALWAYS) {
-				console_puts("Input [SEND_ALWAYS]");
 				const uint32_t throttle = widget_get_received_dmx_packet_period();
+				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
+
+				console_puts("Input [SEND_ALWAYS]");
+
 				if (throttle != (uint32_t) 0) {
 					printf(", Throttle %d", (int) (1E6 / throttle));
 				}
-				const uint32_t widget_received_dmx_packet_count = widget_get_received_dmx_packet_count();
+
 				monitor_line(MONITOR_LINE_STATS, "DMX packets per second to host : %d",
 						widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
 				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;

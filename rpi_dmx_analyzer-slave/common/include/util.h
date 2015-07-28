@@ -39,6 +39,7 @@
 #endif
 
 /**
+ * @ingroup util
  *
  * @param c
  * @return
@@ -48,6 +49,7 @@ inline static bool is_digit(char c) {
 }
 
 /**
+ * @ingroup util
  *
  * @param c
  * @return
@@ -57,6 +59,7 @@ inline static bool is_xdigit(char c) {
 }
 
 /**
+ * @ingroup util
  *
  * @param s1
  * @param s2
@@ -78,6 +81,7 @@ inline static int _memcmp(const void *s1, const void *s2, size_t n) {
 }
 
 /**
+ * @ingroup util
  *
  * @param dest
  * @param src
@@ -95,6 +99,7 @@ inline static void *_memcpy(void *dest, const void *src, size_t n) {
 }
 
 /**
+ * @ingroup util
  *
  * @param s
  * @return

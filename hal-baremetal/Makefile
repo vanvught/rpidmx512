@@ -5,7 +5,7 @@ COPS_COMMON += -I"./include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
 COPS_COMMON += -I"../bob-baremetal/include"
 COPS_COMMON += -I"../fb/include"
-COPS_COMMON += -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
 
 COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
 COPS += $(COPS_COMMON)

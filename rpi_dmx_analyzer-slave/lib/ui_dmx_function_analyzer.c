@@ -157,17 +157,17 @@ void dmx_analyzer(const char buttons) {
 	}
 
 	if ((BUTTON1_PRESSED(buttons)) && (BUTTON2_PRESSED(buttons))) {
-		ui_dmx_channels_step = 4;
+		ui_dmx_channels_step = (char)4;
 	}
 
 	if (BUTTON1_PRESSED(buttons)) {								// button(left), scroll dmx channels to right
 		dmx_start_address = (dmx_start_address - ui_dmx_channels_step) & 0x1FF;
-		ui_dmx_refresh_channels = 1;
+		ui_dmx_refresh_channels = (char)1;
 	}
 
 	if (BUTTON2_PRESSED(buttons)) {								// button(right), scroll dmx channels to left
 		dmx_start_address = (dmx_start_address + ui_dmx_channels_step) & 0x1FF;
-		ui_dmx_refresh_channels = 1;
+		ui_dmx_refresh_channels = (char)1;
 	}
 
 	if (BUTTON3_PRESSED(buttons)) {								// button(up), change data representation (D, H or %)
@@ -184,8 +184,8 @@ void dmx_analyzer(const char buttons) {
 
 	if (ui_dmx_refresh_channels || do_ui_cls) {					// button left, right are pressed, or first call from menu
 		display_channels(dmx_start_address);
-		ui_dmx_refresh_channels = 0;
-		do_ui_cls = 0;
+		ui_dmx_refresh_channels = (char)0;
+		do_ui_cls = (char)0;
 	}
 
 	switch (ui_function)

@@ -79,8 +79,11 @@ void rdm_handle_data(uint8_t *rdm_data) {
 	if ((!rdm_packet_is_for_me) && (!rdm_packet_is_broadcast)) {
 		// Ignore RDM packet
 	} else if (command_class == E120_DISCOVERY_COMMAND) {
+
 		if (param_id == E120_DISC_UNIQUE_BRANCH) {
+
 			if (!rdm_muted) {
+
 				if ((_memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (_memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
 					monitor_line(MONITOR_LINE_STATUS, "E120_DISC_UNIQUE_BRANCH");
 
@@ -104,8 +107,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 					p->checksum[2] = (rdm_checksum & 0xFF) | 0xAA;
 					p->checksum[3] = (rdm_checksum & 0xFF) | 0x55;
 
-					rdm_send_discovery_respond_message(rdm_data,
-							sizeof(struct _rdm_discovery_msg));
+					rdm_send_discovery_respond_message(rdm_data, sizeof(struct _rdm_discovery_msg));
 				}
 			}
 		} else if (param_id == E120_DISC_UN_MUTE) {
@@ -119,6 +121,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 				return;
 			}
 			rdm_muted = false;
+
 			if (rdm_packet_is_for_me) {
 				rdm_cmd->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
 				rdm_cmd->param_data_length = 2;

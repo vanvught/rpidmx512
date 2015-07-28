@@ -33,6 +33,8 @@ static volatile uint64_t sys_time_init_startup_micros = 0;	///<
 static volatile uint32_t rtc_startup_seconds = 0;			///<
 
 /**
+ * @ingroup time
+ *
  * Read time from RTC MCP7941x and set EPOCH time in seconds
  * When the RTC is not available, then the time is set to 2015-01-01 00:00:00
  */
@@ -70,6 +72,7 @@ void sys_time_init(void) {
 }
 
 /**
+ * @ingroup time
  *
  * @param tmbuf
  */
@@ -79,6 +82,8 @@ void sys_time_set(const struct tm *tmbuf) {
 }
 
 /**
+ * @ingroup time
+ *
  *  Returns the time as the number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
  *  If \ref __timer is non-NULL, the return value is also stored in the memory pointed to by __timer.
  *

@@ -86,7 +86,7 @@ extern const uint16_t dmx_get_send_data_length(void);
 extern void dmx_set_send_data_length(uint16_t);
 extern const uint32_t dmx_get_output_period(void);
 extern void dmx_set_output_period(const uint32_t);
-extern const /*@null@*/uint8_t *rdm_get_available(void) __attribute__((assume_aligned(4)));
+extern /*@shared@*/const /*@null@*/uint8_t *rdm_get_available(void) __attribute__((assume_aligned(4)));
 extern /*@shared@*/const uint8_t *rdm_get_current_data(void) __attribute__((assume_aligned(4)));
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_get_data_receive_end(void);

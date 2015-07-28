@@ -1,5 +1,111 @@
 In archive lib/libhal.a:
 
+ft245rl.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <FT245RL_init>:
+   0:	e3a00502 	mov	r0, #8388608	; 0x800000
+   4:	e3a01501 	mov	r1, #4194304	; 0x400000
+   8:	e59f201c 	ldr	r2, [pc, #28]	; 2c <FT245RL_init+0x2c>
+   c:	e5923008 	ldr	r3, [r2, #8]
+  10:	e3c33bff 	bic	r3, r3, #261120	; 0x3fc00
+  14:	e3c33d0f 	bic	r3, r3, #960	; 0x3c0
+  18:	e3833d09 	orr	r3, r3, #576	; 0x240
+  1c:	e5823008 	str	r3, [r2, #8]
+  20:	e582001c 	str	r0, [r2, #28]
+  24:	e5821028 	str	r1, [r2, #40]	; 0x28
+  28:	e12fff1e 	bx	lr
+  2c:	20200000 	eorcs	r0, r0, r0
+
+00000030 <FT245RL_write_data>:
+  30:	e3a01501 	mov	r1, #4194304	; 0x400000
+  34:	e59f3058 	ldr	r3, [pc, #88]	; 94 <FT245RL_write_data+0x64>
+  38:	e59f2058 	ldr	r2, [pc, #88]	; 98 <FT245RL_write_data+0x68>
+  3c:	e593c000 	ldr	ip, [r3]
+  40:	e002200c 	and	r2, r2, ip
+  44:	e3822692 	orr	r2, r2, #153092096	; 0x9200000
+  48:	e3822d49 	orr	r2, r2, #4672	; 0x1240
+  4c:	e5832000 	str	r2, [r3]
+  50:	e5932004 	ldr	r2, [r3, #4]
+  54:	e3c2203f 	bic	r2, r2, #63	; 0x3f
+  58:	e3822009 	orr	r2, r2, #9
+  5c:	e5832004 	str	r2, [r3, #4]
+  60:	e583101c 	str	r1, [r3, #28]
+  64:	e320f000 	nop	{0}
+  68:	e3c02007 	bic	r2, r0, #7
+  6c:	e1a02202 	lsl	r2, r2, #4
+  70:	e2000007 	and	r0, r0, #7
+  74:	e1820100 	orr	r0, r2, r0, lsl #2
+  78:	e2202ef9 	eor	r2, r0, #3984	; 0xf90
+  7c:	e222200c 	eor	r2, r2, #12
+  80:	e583001c 	str	r0, [r3, #28]
+  84:	e5832028 	str	r2, [r3, #40]	; 0x28
+  88:	e320f000 	nop	{0}
+  8c:	e5831028 	str	r1, [r3, #40]	; 0x28
+  90:	e12fff1e 	bx	lr
+  94:	20200000 	eorcs	r0, r0, r0
+  98:	c01f803f 	andsgt	r8, pc, pc, lsr r0	; <UNPREDICTABLE>
+
+0000009c <FT245RL_read_data>:
+  9c:	e3a01502 	mov	r1, #8388608	; 0x800000
+  a0:	e59f204c 	ldr	r2, [pc, #76]	; f4 <FT245RL_read_data+0x58>
+  a4:	e59f304c 	ldr	r3, [pc, #76]	; f8 <FT245RL_read_data+0x5c>
+  a8:	e5920000 	ldr	r0, [r2]
+  ac:	e0033000 	and	r3, r3, r0
+  b0:	e5823000 	str	r3, [r2]
+  b4:	e5923004 	ldr	r3, [r2, #4]
+  b8:	e3c3303f 	bic	r3, r3, #63	; 0x3f
+  bc:	e5823004 	str	r3, [r2, #4]
+  c0:	e5821028 	str	r1, [r2, #40]	; 0x28
+  c4:	e320f000 	nop	{0}
+  c8:	e59f302c 	ldr	r3, [pc, #44]	; fc <FT245RL_read_data+0x60>
+  cc:	e5920034 	ldr	r0, [r2, #52]	; 0x34
+  d0:	e582101c 	str	r1, [r2, #28]
+  d4:	e0033000 	and	r3, r3, r0
+  d8:	e1a00123 	lsr	r0, r3, #2
+  dc:	e320f000 	nop	{0}
+  e0:	e1a03223 	lsr	r3, r3, #4
+  e4:	e3c33007 	bic	r3, r3, #7
+  e8:	e200000f 	and	r0, r0, #15
+  ec:	e1830000 	orr	r0, r3, r0
+  f0:	e12fff1e 	bx	lr
+  f4:	20200000 	eorcs	r0, r0, r0
+  f8:	c01f803f 	andsgt	r8, pc, pc, lsr r0	; <UNPREDICTABLE>
+  fc:	00000f9c 	muleq	r0, ip, pc	; <UNPREDICTABLE>
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	43434700 	movtmi	r4, #14080	; 0x3700
+   4:	4728203a 			; <UNDEFINED> instruction: 0x4728203a
+   8:	2029554e 	eorcs	r5, r9, lr, asr #10
+   c:	2e392e34 	mrccs	14, 1, r2, cr9, cr4, {1}
+  10:	Address 0x0000000000000010 is out of bounds.
+
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00003d41 	andeq	r3, r0, r1, asr #26
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000033 	andeq	r0, r0, r3, lsr r0
+  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
+  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
+  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
+  1c:	07060053 	smlsdeq	r6, r3, r0, r0
+  20:	01090108 	tsteq	r9, r8, lsl #2
+  24:	0412020a 	ldreq	r0, [r2], #-522	; 0xfffffdf6
+  28:	01150114 	tsteq	r5, r4, lsl r1
+  2c:	01180317 	tsteq	r8, r7, lsl r3
+  30:	011a0119 	tsteq	sl, r9, lsl r1
+  34:	011c031b 	tsteq	ip, fp, lsl r3
+  38:	0122021e 	teqeq	r2, lr, lsl r2
+  3c:	Address 0x000000000000003c is out of bounds.
+
+
 hardware.o:     file format elf32-littlearm
 
 
@@ -481,6 +587,88 @@ Disassembly of section .ARM.attributes:
   3c:	Address 0x000000000000003c is out of bounds.
 
 
+led.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <led_set_ticks_per_second>:
+   0:	e59f3004 	ldr	r3, [pc, #4]	; c <led_set_ticks_per_second+0xc>
+   4:	e5830000 	str	r0, [r3]
+   8:	e12fff1e 	bx	lr
+   c:	00000000 	andeq	r0, r0, r0
+
+00000010 <led_get_ticks_per_second>:
+  10:	e59f3004 	ldr	r3, [pc, #4]	; 1c <led_get_ticks_per_second+0xc>
+  14:	e5930000 	ldr	r0, [r3]
+  18:	e12fff1e 	bx	lr
+  1c:	00000000 	andeq	r0, r0, r0
+
+00000020 <led_blink>:
+  20:	e92d4038 	push	{r3, r4, r5, lr}
+  24:	e59f3038 	ldr	r3, [pc, #56]	; 64 <led_blink+0x44>
+  28:	e59f4038 	ldr	r4, [pc, #56]	; 68 <led_blink+0x48>
+  2c:	e59f2038 	ldr	r2, [pc, #56]	; 6c <led_blink+0x4c>
+  30:	e5935004 	ldr	r5, [r3, #4]
+  34:	e5943000 	ldr	r3, [r4]
+  38:	e5922000 	ldr	r2, [r2]
+  3c:	e0633005 	rsb	r3, r3, r5
+  40:	e1530002 	cmp	r3, r2
+  44:	38bd8038 	popcc	{r3, r4, r5, pc}
+  48:	e5940004 	ldr	r0, [r4, #4]
+  4c:	e2803001 	add	r3, r0, #1
+  50:	e2000001 	and	r0, r0, #1
+  54:	e5843004 	str	r3, [r4, #4]
+  58:	ebfffffe 	bl	0 <hardware_led_set>
+  5c:	e5845000 	str	r5, [r4]
+  60:	e8bd8038 	pop	{r3, r4, r5, pc}
+  64:	20003000 	andcs	r3, r0, r0
+	...
+
+Disassembly of section .data:
+
+00000000 <ticks_per_second>:
+   0:	0007a120 	andeq	sl, r7, r0, lsr #2
+
+Disassembly of section .bss:
+
+00000000 <micros_previous>:
+   0:	00000000 	andeq	r0, r0, r0
+
+00000004 <led_counter>:
+   4:	00000000 	andeq	r0, r0, r0
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	43434700 	movtmi	r4, #14080	; 0x3700
+   4:	4728203a 			; <UNDEFINED> instruction: 0x4728203a
+   8:	2029554e 	eorcs	r5, r9, lr, asr #10
+   c:	2e392e34 	mrccs	14, 1, r2, cr9, cr4, {1}
+  10:	Address 0x0000000000000010 is out of bounds.
+
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00003d41 	andeq	r3, r0, r1, asr #26
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000033 	andeq	r0, r0, r3, lsr r0
+  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
+  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
+  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
+  1c:	07060053 	smlsdeq	r6, r3, r0, r0
+  20:	01090108 	tsteq	r9, r8, lsl #2
+  24:	0412020a 	ldreq	r0, [r2], #-522	; 0xfffffdf6
+  28:	01150114 	tsteq	r5, r4, lsl r1
+  2c:	01180317 	tsteq	r8, r7, lsl r3
+  30:	011a0119 	tsteq	sl, r9, lsl r1
+  34:	011c031b 	tsteq	ip, fp, lsl r3
+  38:	0122021e 	teqeq	r2, lr, lsl r2
+  3c:	Address 0x000000000000003c is out of bounds.
+
+
 sys_time.o:     file format elf32-littlearm
 
 
@@ -585,6 +773,50 @@ Disassembly of section .bss:
 
 00000008 <rtc_startup_seconds>:
 	...
+
+Disassembly of section .comment:
+
+00000000 <.comment>:
+   0:	43434700 	movtmi	r4, #14080	; 0x3700
+   4:	4728203a 			; <UNDEFINED> instruction: 0x4728203a
+   8:	2029554e 	eorcs	r5, r9, lr, asr #10
+   c:	2e392e34 	mrccs	14, 1, r2, cr9, cr4, {1}
+  10:	Address 0x0000000000000010 is out of bounds.
+
+
+Disassembly of section .ARM.attributes:
+
+00000000 <.ARM.attributes>:
+   0:	00003d41 	andeq	r3, r0, r1, asr #26
+   4:	61656100 	cmnvs	r5, r0, lsl #2
+   8:	01006962 	tsteq	r0, r2, ror #18
+   c:	00000033 	andeq	r0, r0, r3, lsr r0
+  10:	4d524105 	ldfmie	f4, [r2, #-20]	; 0xffffffec
+  14:	36373131 			; <UNDEFINED> instruction: 0x36373131
+  18:	2d465a4a 	vstrcs	s11, [r6, #-296]	; 0xfffffed8
+  1c:	07060053 	smlsdeq	r6, r3, r0, r0
+  20:	01090108 	tsteq	r9, r8, lsl #2
+  24:	0412020a 	ldreq	r0, [r2], #-522	; 0xfffffdf6
+  28:	01150114 	tsteq	r5, r4, lsl r1
+  2c:	01180317 	tsteq	r8, r7, lsl r3
+  30:	011a0119 	tsteq	sl, r9, lsl r1
+  34:	011c031b 	tsteq	ip, fp, lsl r3
+  38:	0122021e 	teqeq	r2, lr, lsl r2
+  3c:	Address 0x000000000000003c is out of bounds.
+
+
+usb.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <usb_send_byte>:
+   0:	e59f200c 	ldr	r2, [pc, #12]	; 14 <usb_send_byte+0x14>
+   4:	e5923034 	ldr	r3, [r2, #52]	; 0x34
+   8:	e3130401 	tst	r3, #16777216	; 0x1000000
+   c:	1afffffc 	bne	4 <usb_send_byte+0x4>
+  10:	eafffffe 	b	0 <FT245RL_write_data>
+  14:	20200000 	eorcs	r0, r0, r0
 
 Disassembly of section .comment:
 

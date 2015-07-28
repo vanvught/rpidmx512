@@ -133,11 +133,11 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 	}
 
 	for (i = (uint16_t)1; i < slots; i++) {
-		if (data[i] == (uint8_t)0) {
+		uint8_t d = data[i];
+		if (d == (uint8_t)0) {
 			console_puts(" 0");
 		} else {
-			uint8_t d = data[i];
-			console_puthex_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d,d,d));
+			console_puthex_fg_bg(d, (uint16_t)(d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t)RGB(d,d,d));
 		}
 		if (i == (uint16_t)16) {
 			console_puts("\n17-32 : ");

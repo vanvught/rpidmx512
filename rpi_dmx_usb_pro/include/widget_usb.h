@@ -1,5 +1,5 @@
 /**
- * @file led.c
+ * @file widget_usb.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,42 +23,14 @@
  * THE SOFTWARE.
  */
 
+#ifndef WIDGET_USB_H_
+#define WIDGET_USB_H_
+
 #include <stdint.h>
 
-#include "hardware.h"
+extern void usb_send_header(const uint8_t, const uint16_t);
+extern void usb_send_data(const uint8_t *, const uint16_t);
+extern void usb_send_footer(void);
+extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
 
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
-static uint32_t micros_previous = 0;						///<
-static uint32_t led_counter = 0;							///<
-
-/**
- * @ingroup led
- *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
- */
-void ticks_per_second_set(uint32_t ticks) {
-	ticks_per_second = ticks;
-}
-
-/**
- * @ingroup led
- *
- * @return Ticks per second.
- */
-uint32_t ticks_per_second_get(void) {
-	return ticks_per_second;
-}
-
-void led_blink(void) {
-	const uint32_t micros_now = hardware_micros();
-
-	if (micros_now - micros_previous < ticks_per_second) {
-		return;
-	}
-
-	hardware_led_set(led_counter++ & 0x01);
-
-	micros_previous = micros_now;
-}
+#endif /* WIDGET_USB_H_ */

@@ -31,7 +31,7 @@
 
 #define DEVICE_SN_LENGTH						4	///<
 
-extern /*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t);
+extern /*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t) __attribute__((assume_aligned(4)));
 extern void rdm_device_info_init(void);
 extern/*@shared@*/const uint8_t * rdm_device_info_get_uuid(void);
 extern /*@shared@*//*@null@*/const char * rdm_device_info_get_label(const uint16_t);

@@ -62,35 +62,35 @@ void ui_lcd_refresh(void) {
 	if (ui_function_menu == -1) {
 		if (BUTTON3_PRESSED(button)) {
 			ui_function_active += 1;
-			if (ui_function_active > (sizeof(ui_functions) / sizeof(ui_functions[0])) - 1)
+			if (ui_function_active > (int)(sizeof(ui_functions) / sizeof(ui_functions[0])) - 1)
 				ui_function_active = 0;
 		}
 
 		if (BUTTON4_PRESSED(button)) {
 			ui_function_active -= 1;
 			if (ui_function_active < 0)
-				ui_function_active = (sizeof(ui_functions) / sizeof(ui_functions[0])) - 1;
+				ui_function_active = (int)(sizeof(ui_functions) / sizeof(ui_functions[0])) - 1;
 		}
 
 		if(enter) {
 			ui_function_menu = ui_function_active;
-			enter = 0;
-			do_ui_cls = 1;
+			enter = (char)0;
+			do_ui_cls = (char)1;
 		} else if (button) {
 			const char *text = ui_functions[ui_function_active].msg;
 			if (do_ui_cls) {
 				bw_i2c_ui_cls();
 				bw_i2c_ui_text_line_1("Function :", 10);
-				do_ui_cls = 0;
+				do_ui_cls = (char)0;
 			}
 			bw_i2c_ui_text_line_2(text, 15);
 		}
-		button = 0;
+		button = (char)0;
 	}
 
 	if (ui_function_menu >= 0) {
 		ui_functions[ui_function_active].f(button);
-		button = 0;
+		button = (char)0;
 	}
 
 	DEBUG_END("ui_lcd_refresh");

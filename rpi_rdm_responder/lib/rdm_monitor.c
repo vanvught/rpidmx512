@@ -37,6 +37,10 @@
 static uint32_t function_count_previous = 0;			///<
 static uint32_t dmx_available_count_previous = 0;		///<
 
+/**
+ * @ingroup rdm
+ *
+ */
 void monitor_update(void) {
 	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
 	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
@@ -56,10 +60,11 @@ void monitor_update(void) {
 		uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?
 						(dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
 		if (i < slots_in_packet) {
-			if (dmx_data[index] == 0) {
+			uint8_t data = dmx_data[index];
+			if (data == 0) {
 				console_puts(" 0");
 			} else {
-				console_puthex_inverted(dmx_data[index]);
+				console_puthex_fg_bg(data, (uint16_t)(data > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t)RGB(data,data,data));
 			}
 		}
 		else {
@@ -74,10 +79,11 @@ void monitor_update(void) {
 		uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?
 						(dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
 		if (i < slots_in_packet) {
-			if (dmx_data[index] == 0) {
+			uint8_t data = dmx_data[index];
+			if (data == 0) {
 				console_puts(" 0");
 			} else {
-				console_puthex_inverted(dmx_data[index]);
+				console_puthex_fg_bg(data, (uint16_t)(data > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t)RGB(data,data,data));
 			}
 		}
 		else {

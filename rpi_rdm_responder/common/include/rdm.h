@@ -133,6 +133,4 @@ struct _rdm_personality {
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
 static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-
 #endif /* RDM_H_ */

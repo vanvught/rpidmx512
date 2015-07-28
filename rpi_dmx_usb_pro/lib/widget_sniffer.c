@@ -25,9 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
 #include "util.h"
-#include "usb.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -35,6 +33,8 @@
 #include "monitor.h"
 #include "sniffer.h"
 #include "hardware.h"
+#include "usb.h"
+#include "widget_usb.h"
 
 #define	SNIFFER_PACKET			0x81	///< Label
 #define	SNIFFER_PACKET_SIZE  	200		///< Packet size
@@ -127,9 +127,9 @@ void widget_sniffer_dmx(void) {
 	dmx_set_available_false();
 
 	if (dmx_is_data_changed()) {
-		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
+		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		usb_send_package(dmx_data, 0, data_length);
 	}
 }

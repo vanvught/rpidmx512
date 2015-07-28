@@ -29,6 +29,7 @@
 #include "dmx_devices.h"
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -38,6 +39,7 @@ const uint16_t rdm_sub_devices_get_footprint(const uint16_t sub_device) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -47,6 +49,7 @@ const uint16_t rdm_sub_devices_get_dmx_start_address(const uint16_t sub_device) 
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param dmx_start_address
@@ -56,6 +59,7 @@ void rdm_sub_devices_set_dmx_start_address(const uint16_t sub_device, const uint
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -65,6 +69,7 @@ const char *rdm_sub_devices_get_label(const uint16_t sub_device) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param label
@@ -75,6 +80,7 @@ void rdm_sub_devices_set_label(const uint16_t sub_device, const uint8_t *label, 
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -84,6 +90,7 @@ const uint8_t rdm_sub_devices_get_label_length(const uint16_t sub_device) {
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -93,6 +100,7 @@ const uint8_t rdm_sub_devices_get_personality_current(const uint16_t sub_device)
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param personality
@@ -102,6 +110,7 @@ void rdm_sub_devices_set_personality_current(const uint16_t sub_device, const ui
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param personality
@@ -112,6 +121,7 @@ const char *rdm_sub_devices_get_personality_description(const uint16_t sub_devic
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param personality
@@ -122,6 +132,7 @@ const uint8_t rdm_sub_devices_get_personality_description_length(const uint16_t 
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @param personality
@@ -132,6 +143,7 @@ const uint16_t rdm_sub_devices_get_personality_slots(const uint16_t sub_device, 
 }
 
 /**
+ * @ingroup rdm
  *
  * @param sub_device
  * @return
@@ -145,6 +157,7 @@ void rdm_sub_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_d
 }
 
 /**
+ * @ingroup rdm
  *
  * @return
  */
@@ -154,6 +167,7 @@ const uint16_t rdm_sub_devices_get(void) {
 
 
 /**
+ * @ingroup rdm
  *
  */
 void rdm_sub_devices_info_init(void) {

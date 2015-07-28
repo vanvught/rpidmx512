@@ -37,7 +37,7 @@
 static struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
 
 /**
- * @ingroup
+ * @ingroup sniffer
  *
  * @return
  */
@@ -46,7 +46,7 @@ const struct _rdm_statistics *rdm_statistics_get(void) {
 }
 
 /**
- * @ingroup widget
+ * @ingroup sniffer
  *
  * This function is called from the poll table in \ref main.c
  */
@@ -60,7 +60,7 @@ void sniffer_dmx(void) {
 }
 
 /**
- * @ingroup
+ * @ingroup sniffer
  *
  * This function is called from the poll table in \ref main.c
  */
@@ -70,7 +70,7 @@ void sniffer_rdm(void) {
 	if (rdm_data == NULL)
 		return;
 
-	if (rdm_data[0] == 0xCC) {
+	if (rdm_data[0] == E120_SC_RDM) {
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);
 		switch (p->command_class) {
 		case E120_DISCOVERY_COMMAND:

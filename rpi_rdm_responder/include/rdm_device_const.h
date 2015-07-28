@@ -1,5 +1,7 @@
 /**
  * @file rdm_device_const.h
+ *
+ * @brief These definitions are private for the RDM Responder
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -28,15 +30,15 @@
 #include "rdm.h"
 #include "sofware_version_id.h"
 
-static const char  DEVICE_LABEL[] = "Raspberry Pi";
-static const char  DEVICE_MANUFACTURER_NAME[] = "AvV";
-static const uint8_t  DEVICE_MANUFACTURER_ID[] = {0x7F, 0xF0};	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const char  DEVICE_SUPPORTED_LANGUAGE[] = "en";
-static const char  DEVICE_SOFTWARE_VERSION[] = "1.0";
+static const char DEVICE_LABEL[] = "Raspberry Pi";				///<
+static const char DEVICE_MANUFACTURER_NAME[] = "AvV";			///<
+static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
+static const char DEVICE_SUPPORTED_LANGUAGE[] = "en";			///<
+static const char DEVICE_SOFTWARE_VERSION[] = "1.0";			///<
 
-#define DEFAULT_DMX_START_ADDRESS		1
-#define DEFAULT_CURRENT_PERSONALITY		1
-#define DMX_FOOTPRINT					32
+#define DEFAULT_DMX_START_ADDRESS		1						///<
+#define DEFAULT_CURRENT_PERSONALITY		1						///<
+#define DMX_FOOTPRINT					32						///<
 
 static const struct _rdm_personality rdm_personalities[] = {
 		{ (uint16_t)32, "RDM Responder / DMX Analyzer", (uint8_t)28 }

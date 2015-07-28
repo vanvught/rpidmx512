@@ -37,11 +37,9 @@ extern const uint32_t console_get_depth(void);
 
 extern int console_init(void);
 extern int console_putc(const int);
-extern int console_putc_inverted(const int);
 extern void console_puts(const char *);
 extern void console_puthex(const uint8_t);
 extern void console_puthex_fg_bg(const uint8_t, const uint16_t, const uint16_t);
-extern void console_puthex_inverted(const uint8_t);
 extern void console_newline(void);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
@@ -61,8 +59,15 @@ extern void console_clear_line(const int);
 #define CONSOLE_YELLOW		0xFFE0	///< 255, 255,   0
 #define CONSOLE_WHITE		0xFFFF	///< 255, 255, 255
 
-#define CONSOLE_OK		0			///< Call console_init() OK
-#define CONSOLE_ERROR	-1			///< Call console_init() failed
+#define CONSOLE_OK		0						///< Call console_init() OK
+#define CONSOLE_FAIL_GET_RESOLUTION			-1	///<
+#define CONSOLE_FAIL_INVALID_RESOLUTION		-2	///<
+#define CONSOLE_FAIL_SETUP_FB				-3	///<
+#define CONSOLE_FAIL_INVALID_TAGS			-4	///<
+#define CONSOLE_FAIL_INVALID_TAG_RESPONSE	-5	///<
+#define CONSOLE_FAIL_INVALID_TAG_DATA		-6	///<
+#define CONSOLE_FAIL_INVALID_PITCH_RESPONSE	-7	///<
+#define CONSOLE_FAIL_INVALID_PITCH_DATA		-8	///<
 
 #endif
 

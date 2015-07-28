@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "usb.h"
 #include "hardware.h"
 #include "led.h"
+#include "usb.h"
 #include "dmx.h"
 #include "widget_params.h"
 #include "rdm_device_info.h"

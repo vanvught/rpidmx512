@@ -29,6 +29,13 @@
 #include "util.h"
 #include "dmx_devices.h"
 
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @return
+ */
 int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	int i;
 	int k = 0;
@@ -62,6 +69,14 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	return 2;
 }
 
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @param len
+ * @return
+ */
 int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 	int i;
 	int k;
@@ -93,6 +108,16 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 	return 2;
 }
 
+/**
+ *
+ * @param buf
+ * @param spi
+ * @param name
+ * @param len
+ * @param address
+ * @param dmx
+ * @return
+ */
 int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *address, uint16_t *dmx) {
 	int i;
 	int j;

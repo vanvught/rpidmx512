@@ -32,6 +32,7 @@
 static bool rdm_identify_enabled = false;	///<
 
 /**
+ * @ingroup rdm
  *
  * @return
  */
@@ -40,6 +41,7 @@ const bool rdm_identify_is_enabled(void) {
 }
 
 /**
+ * @ingroup rdm
  *
  */
 void rdm_identify_off(void) {
@@ -48,10 +50,11 @@ void rdm_identify_off(void) {
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set(LED_BLINK_NORMAL);
+	led_set_ticks_per_second(LED_BLINK_NORMAL);
 }
 
 /**
+ * @ingroup rdm
  *
  */
 void rdm_identify_on(void) {
@@ -60,10 +63,11 @@ void rdm_identify_on(void) {
 	/*
 	 * Replace below with user code
 	 */
-	ticks_per_second_set(LED_BLINK_IDENTIFY);
+	led_set_ticks_per_second(LED_BLINK_IDENTIFY);
 }
 
 /**
+ * @ingroup rdm
  *
  */
 void rdm_identify(void) {

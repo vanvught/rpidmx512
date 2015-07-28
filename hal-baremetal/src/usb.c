@@ -1,5 +1,7 @@
 /**
- * @file led.c
+ * @file usb.c
+ *
+ * @brief
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -25,40 +27,16 @@
 
 #include <stdint.h>
 
-#include "hardware.h"
-
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
-static uint32_t micros_previous = 0;						///<
-static uint32_t led_counter = 0;							///<
+#include "ft245rl.h"
 
 /**
- * @ingroup led
+ * @ingroup usb
  *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
+ * @param byte
  */
-void ticks_per_second_set(uint32_t ticks) {
-	ticks_per_second = ticks;
+void usb_send_byte(const uint8_t byte) {
+	while (!FT245RL_can_write())
+		;
+	FT245RL_write_data(byte);
 }
 
-/**
- * @ingroup led
- *
- * @return Ticks per second.
- */
-uint32_t ticks_per_second_get(void) {
-	return ticks_per_second;
-}
-
-void led_blink(void) {
-	const uint32_t micros_now = hardware_micros();
-
-	if (micros_now - micros_previous < ticks_per_second) {
-		return;
-	}
-
-	hardware_led_set(led_counter++ & 0x01);
-
-	micros_previous = micros_now;
-}

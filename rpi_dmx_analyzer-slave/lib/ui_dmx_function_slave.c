@@ -32,7 +32,7 @@
 #include "util.h"
 
 extern initializer_t devices_table[];	///<
-extern _devices_t devices_connected;	///<
+extern devices_t devices_connected;	///<
 
 /**
  *
@@ -45,8 +45,8 @@ inline static void itoa_base10(int arg, char buf[]) {
 	buf[0] = '0';
 	buf[1] = '0';
 
-	while (arg) {
-		*n = '0' + (arg % 10);
+	while (arg != 0) {
+		*n = (char)'0' + (char)(arg % 10);
 		n--;
 		arg /= 10;
 	}
@@ -64,8 +64,8 @@ inline static void itoa_base10_3(int arg, char buf[]) {
 	buf[1] = ' ';
 	buf[2] = '0';
 
-	while (arg) {
-		*n = '0' + (arg % 10);
+	while (arg != 0) {
+		*n = (char)'0' + (char)(arg % 10);
 		n--;
 		arg /= 10;
 	}
@@ -77,17 +77,17 @@ inline static void itoa_base10_3(int arg, char buf[]) {
  * @param buttons
  */
 void dmx_slave(const char buttons) {
-	static char ui_dmx_slave_refresh_devices = 1;
-	static char ui_dmx_slave_function = 0;
+	static char ui_dmx_slave_refresh_devices = (char)1;
+	static char ui_dmx_slave_function = (char)0;
 	static int devices_connected_index = 0;
 
 	int devices_connected_index_max = devices_connected.elements_count - 1;
 
 	if (enter) {
 		ui_dmx_slave_function = ui_dmx_slave_function^1;
-		enter = 0;
-		do_ui_cls = 1;
-		ui_dmx_slave_refresh_devices = 1;
+		enter = (char)0;
+		do_ui_cls = (char)1;
+		ui_dmx_slave_refresh_devices = (char)1;
 	}
 
 	if (BUTTON3_PRESSED(buttons)) {
@@ -117,7 +117,7 @@ void dmx_slave(const char buttons) {
 				// Line 2
 				static char text_2[BW_UI_MAX_CHARACTERS] = {'s', 'a', ':', 'x', ' ', ' ', ' ', 'd', 'm', 'x', ':', ' ', ' ', ' ', 'D'};
 				char slave_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.device_info.slave_address;
-				int  dmx_start_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.rdm_sub_devices_info->dmx_start_address;
+				int  dmx_start_address = devices_connected.device_entry[devices_connected_index].dmx_device_info.rdm_sub_devices_info.dmx_start_address;
 				text_2[4] = TO_HEX((slave_address & 0xF0) >> 4);
 				text_2[5] = TO_HEX(slave_address & 0x0F);
 				itoa_base10_3(dmx_start_address, &text_2[11]);

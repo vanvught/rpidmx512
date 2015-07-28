@@ -1,5 +1,5 @@
 /**
- * @file led.c
+ * @file usb.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,42 +23,53 @@
  * THE SOFTWARE.
  */
 
+#ifndef USB_H_
+#define USB_H_
+
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "hardware.h"
+#include <ft245rl.h>
 
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
-static uint32_t micros_previous = 0;						///<
-static uint32_t led_counter = 0;							///<
-
-/**
- * @ingroup led
- *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
- */
-void ticks_per_second_set(uint32_t ticks) {
-	ticks_per_second = ticks;
-}
+extern void usb_send_byte(const uint8_t);
 
 /**
- * @ingroup led
+ * @ingroup usb
  *
- * @return Ticks per second.
+ * Wait for data is available in the FIFO which can be read by strobing RD# low, then high again.
+ *
+ * @return
  */
-uint32_t ticks_per_second_get(void) {
-	return ticks_per_second;
+inline static const uint8_t usb_read_byte(void) {
+	while (!FT245RL_data_available())
+		;
+	return FT245RL_read_data();
 }
 
-void led_blink(void) {
-	const uint32_t micros_now = hardware_micros();
-
-	if (micros_now - micros_previous < ticks_per_second) {
-		return;
-	}
-
-	hardware_led_set(led_counter++ & 0x01);
-
-	micros_previous = micros_now;
+/**
+ * @ingroup usb
+ *
+ * @return
+ */
+inline static const bool usb_read_is_byte_available(void) {
+	return FT245RL_data_available();
 }
+
+/**
+ * @ingroup usb
+ *
+ */
+inline static void usb_init(void) {
+	FT245RL_init();
+}
+
+/**
+ * @ingroup usb
+ *
+ * @return
+ */
+inline static const bool usb_can_write(void) {
+	return FT245RL_can_write();
+}
+
+#endif /* USB_H_ */

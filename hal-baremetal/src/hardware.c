@@ -35,7 +35,7 @@
 #include "console.h"
 #include "sys_time.h"
 
-static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";		///<
+static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
 static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
 
 struct _hardware_led {
@@ -48,10 +48,10 @@ struct _hardware_led {
 ///< Reference http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
 struct _hardware_revision_code {
 	const uint32_t value;
-	const char name[MAX_NAME_LENGTH + 1];
+	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
 }const board_version[] __attribute__((aligned(4))) = {
 		{ 0x000000, "Model Unknown       " },
-		{ 0x000002,	"Model B R1 256MB    " },
+		{ 0x000002, "Model B R1 256MB    " },
 		{ 0x000003, "Model B R1 256MB    " },
 		{ 0x000004, "Model B R2 256MB    " },
 		{ 0x000005, "Model B R2 256MB    " },
@@ -72,6 +72,7 @@ struct _hardware_revision_code {
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 /**
+ * @ingroup hal
  *
  * @return The board uptime in seconds
  */
@@ -80,6 +81,7 @@ const uint64_t hardware_uptime_seconds(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -88,6 +90,7 @@ const int32_t hardware_get_firmware_revision(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -96,6 +99,7 @@ const char *hardware_get_firmware_copyright(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -104,6 +108,7 @@ const uint8_t hardware_get_firmware_copyright_length(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -112,6 +117,7 @@ const int32_t hardware_get_board_model_id(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -135,6 +141,7 @@ const char *hardware_get_board_model(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @return
  */
@@ -143,6 +150,7 @@ const uint8_t hardware_get_board_model_length(void) {
 }
 
 /**
+ * @ingroup hal
  *
  */
 void hardware_led_init(void) {
@@ -150,6 +158,7 @@ void hardware_led_init(void) {
 }
 
 /**
+ * @ingroup hal
  *
  * @param state
  */
@@ -158,6 +167,7 @@ void hardware_led_set(const int state) {
 }
 
 /**
+ * @ingroup hal
  *
  * @param tm_hw
  */
@@ -190,6 +200,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 }
 
 /**
+ * @ingroup hal
  *
  */
 void hardware_print_board_model(){
@@ -201,6 +212,7 @@ const int32_t hardware_get_core_temperature(void) {
 }
 
 /**
+ * @ingroup hal
  *
  */
 void hardware_init(void) {
@@ -218,6 +230,7 @@ void hardware_init(void) {
 }
 
 /**
+ * @ingroup hal
  *
  */
 void hardware_reboot(void) {

@@ -1,5 +1,5 @@
 /**
- * @file ft245rl.h
+ * @file led.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,38 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef FT245RL_H_
-#define FT245RL_H_
+#ifndef LED_H_
+#define LED_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "bcm2835.h"
+#define LED_BLINK_NORMAL	(uint32_t) (1E6 / 2)	///< 1Hz
+#define LED_BLINK_IDENTIFY	(uint32_t) (1E6 / 4)	///< 2Hz
+#define LED_BLINK_DMX_DATA	(uint32_t) (1E6 / 6)	///< 3Hz
+#define LED_BLINK_RDM_DATA	(uint32_t) (1E6 / 8)	///< 4Hz
 
-extern void FT245RL_init(void);
-extern void FT245RL_write_data(uint8_t);
-extern uint8_t FT245RL_read_data();
+extern void led_set_ticks_per_second(uint32_t);
+extern uint32_t ticks_per_second_get(void);
 
-/**
- * @ingroup ft245rl
- *
- * Read RXF#
- *
- * @return
- */
-inline static bool FT245RL_data_available(void) {
-	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
-}
+extern void led_blink(void);
 
-/**
- * @ingroup ft245rl
- *
- * Read TXE#
- *
- * @return
- */
-inline static bool FT245RL_can_write(void) {
-	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
-}
-
-#endif /* FT245RL_H_ */
+#endif /* LED_H_ */

@@ -27,6 +27,10 @@
 #ifndef GPIO_H_
 #define GPIO_H_
 
+#ifdef LOGIC_ANALYZER
+#include "bcm2835.h"
+#endif
+
 #define GPIO_DMX_DATA_DIRECTION		18	///<  RPI_V2_GPIO_P1_12
 
 #ifdef LOGIC_ANALYZER
