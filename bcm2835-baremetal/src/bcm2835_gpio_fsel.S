@@ -34,7 +34,8 @@
 
 #if defined ( RPI2 )
 .cpu cortex-a7
-.fpu neon-vfpv4
+@.fpu neon-vfpv4	NEON is not enabled in vectors.s
+.fpu vfp
 #else
 .cpu arm1176jzf-s
 .fpu vfp
