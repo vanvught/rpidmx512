@@ -5,7 +5,7 @@ COPS_COMMON = -std=c99 -pedantic -Wall -O3 -nostartfiles -ffreestanding -mhard-f
 COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
 COPS += $(COPS_COMMON)
 
-COPS7 = -mfpu=neon-vfpv4 -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7
+COPS7 = -mfpu=vfp -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
 COPS7 += -DRPI2 -DRPIPLUS
 COPS7 += $(COPS_COMMON)
 
