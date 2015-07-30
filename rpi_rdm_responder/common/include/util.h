@@ -117,17 +117,15 @@ inline static size_t _strlen(const char *s) {
 	return (size_t) (s - p);
 }
 
-
 #define GCC_VERSION (__GNUC__ * 10000 \
                    + __GNUC_MINOR__ * 100 \
                    + __GNUC_PATCHLEVEL__)
 
 #if GCC_VERSION > 40899
-// 4.9 supports assume_aligned, 4.8 does not.
+// 4.9 supports assume_aligned, 4.8 does not. 
 #define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
 #else
-#define ASSUME_ALIGNED
+#define ASSUME_ALIGNED  
 #endif
-
 
 #endif /* UTIL_H_ */

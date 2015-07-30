@@ -26,8 +26,8 @@
 #ifdef DEBUG
 extern int printf(const char *format, ...);
 #endif
-#include "util.h"
 #include "tables.h"
+#include "util.h"
 #include "dmx.h"
 #include "bw_spi_dimmer.h"
 
