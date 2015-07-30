@@ -19,3 +19,6 @@
 *.lst
 *.map
 Splint*.prefs
+
+# listings do not belong in git!
+*.list
