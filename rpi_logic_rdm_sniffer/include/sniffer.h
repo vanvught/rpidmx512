@@ -25,6 +25,8 @@
 #ifndef SNIFFER_H_
 #define SNIFFER_H_
 
+#include "util.h"
+
 struct _rdm_statistics {
 	uint32_t discovery_packets;
 	uint32_t discovery_response_packets;
@@ -32,7 +34,7 @@ struct _rdm_statistics {
 	uint32_t set_requests;
 };
 
-extern /*@shared@*/const struct _rdm_statistics *rdm_statistics_get(void) __attribute__((assume_aligned(4)));
+extern /*@shared@*/const struct _rdm_statistics *rdm_statistics_get(void) ASSUME_ALIGNED;
 
 extern void sniffer_rdm(void);
 extern void sniffer_dmx(void);
