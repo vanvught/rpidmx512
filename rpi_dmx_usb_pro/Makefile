@@ -38,7 +38,7 @@ LINKER = firmware/memmap
 MAP = kernel.map
 LIST = kernel.list
 
-all : ./include/sofware_version_id.h $(TARGET)
+all : builddirs ./include/sofware_version_id.h $(TARGET)
 
 .PHONY: clean builddirs
 
