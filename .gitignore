@@ -17,8 +17,8 @@
 *.bin
 *.bak
 *.lst
+*.list
 *.map
 Splint*.prefs
-
 # listings do not belong in git!
 *.list
