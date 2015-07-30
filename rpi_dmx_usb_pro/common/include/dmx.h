@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "util.h"
+
 #define DMX_DATA_BUFFER_SIZE					513		///< including SC
 #define RDM_DATA_BUFFER_SIZE					512		///<
 #define RDM_DATA_BUFFER_INDEX_SIZE 				0x0F	///<

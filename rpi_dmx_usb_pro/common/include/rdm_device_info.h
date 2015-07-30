@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "util.h"
+
 #define DEVICE_SN_LENGTH						4	///<
 
 extern /*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t) ASSUME_ALIGNED;
