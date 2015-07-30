@@ -25,7 +25,6 @@
 
 #include <stdint.h>
 
-#include "util.h"
 #include "rdm_sub_devices.h"
 #include "dmx_devices.h"
 
