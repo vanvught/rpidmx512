@@ -25,6 +25,7 @@
 
 #include <stddef.h>
 
+#include "util.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"

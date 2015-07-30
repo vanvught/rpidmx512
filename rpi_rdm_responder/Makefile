@@ -25,6 +25,8 @@ LIB += -L"../bcm2835-baremetal/lib"
 LIB += -L"../hal-baremetal/lib"
 LIB += -L"../emmc/lib"
 LIB += -L"../ff9b/lib"
+LIB += -L/usr/lib/arm-none-eabi/newlib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
+
 
 BUILD = build/
 SOURCE = ./
@@ -37,7 +39,12 @@ LINKER = firmware/memmap
 MAP = kernel.map
 LIST = kernel.list
 
-all : ./include/sofware_version_id.h $(TARGET)
+all : builddirs ./include/sofware_version_id.h $(TARGET)
+
+.PHONY: clean builddirs
+
+builddirs:
+	@mkdir -p build/common build/devices
 
 clean :
 	rm -f $(BUILD)*.o

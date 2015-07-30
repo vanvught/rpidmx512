@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "util.h"
 #include "hardware.h"
 #include "led.h"
 #include "rdm_device_info.h"
