@@ -60,7 +60,7 @@ extern void dmx_devices_read_config(void);
 extern void dmx_devices_init(void);
 extern void dmx_devices_run(void);
 
-extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) __attribute__((assume_aligned(4)));
+extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) ASSUME_ALIGNED;
 extern void dmx_devices_reset_statistics(void);
 
 extern const uint16_t dmx_devices_get_devices_connected(void);
@@ -75,10 +75,10 @@ extern /*@shared@*//*@null@*/const struct _rdm_sub_devices_info *dmx_devices_inf
 extern void dmx_devices_info_set(const uint16_t, const struct _rdm_sub_devices_info *);
 extern const uint8_t dmx_devices_get_personality_current(const uint16_t);
 extern void dmx_devices_set_personality_current(const uint16_t, const uint8_t);
-extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t) __attribute__((assume_aligned(4)));
+extern /*@shared@*//*@null@*/const char *dmx_devices_get_personality_description(const uint16_t, const uint8_t) ASSUME_ALIGNED;
 extern const uint8_t dmx_devices_get_personality_description_length(const uint16_t, const uint8_t);
 extern const uint16_t dmx_devices_get_personality_slots(const uint16_t, const uint8_t);
 
-extern devices_t *dmx_devices_get_devices(void) __attribute__((assume_aligned(4)));
+extern devices_t *dmx_devices_get_devices(void) ASSUME_ALIGNED;
 
 #endif /* DMX_DEVICES_H_ */

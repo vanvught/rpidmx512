@@ -21,7 +21,12 @@ TARGET7 = lib7/libff9b.a
 LIST = lib.list
 LIST7 = lib7.list
 
-all : $(TARGET) $(TARGET7)
+all : builddirs $(TARGET) $(TARGET7)
+
+.PHONY: clean builddirs
+
+builddirs: 
+	@mkdir -p build build7 lib lib7
 
 clean :
 	rm -f $(BUILD)*.o

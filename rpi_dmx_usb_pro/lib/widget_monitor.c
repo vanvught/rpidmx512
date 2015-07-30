@@ -25,13 +25,13 @@
 
 #include <stdio.h>
 
+#include "util.h"
 #include "dmx.h"
 #include "widget.h"
 #include "widget_params.h"
 #include "console.h"
 #include "monitor.h"
 #include "sniffer.h"
-#include "util.h"
 
 static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 
