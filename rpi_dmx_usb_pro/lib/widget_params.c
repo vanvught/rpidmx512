@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "ff.h"
+#include "util.h"
 #include "dmx.h"
 #include "widget.h"
 #include "widget_params.h"

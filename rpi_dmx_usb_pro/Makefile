@@ -1,8 +1,8 @@
 ARMGNU ?= arm-none-eabi
 
-AOPS = --warn   -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
+AOPS = --warn --fatal-warnings  -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
 
-COPS = -Wall  -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
+COPS = -Wall -Werror -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
 COPS += -DBARE_METAL
 COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
