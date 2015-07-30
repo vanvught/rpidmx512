@@ -710,19 +710,19 @@ Disassembly of section .comment:
 Disassembly of section .ARM.attributes:
 
 00000000 <.ARM.attributes>:
-   0:	00003641 	andeq	r3, r0, r1, asr #12
+   0:	00003441 	andeq	r3, r0, r1, asr #8
    4:	61656100 	cmnvs	r5, r0, lsl #2
    8:	01006962 	tsteq	r0, r2, ror #18
-   c:	0000002c 	andeq	r0, r0, ip, lsr #32
+   c:	0000002a 	andeq	r0, r0, sl, lsr #32
   10:	412d3705 	teqmi	sp, r5, lsl #14
   14:	070a0600 	streq	r0, [sl, -r0, lsl #12]
   18:	09010841 	stmdbeq	r1, {r0, r6, fp}
-  1c:	0c050a02 	stceq	10, cr0, [r5], {2}
-  20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
-  24:	17011501 	strne	r1, [r1, -r1, lsl #10]
-  28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <bcm2835_emmc_reset_interrupt_register+0x45ddc>
-  30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
+  1c:	12020a02 	andne	r0, r2, #8192	; 0x2000
+  20:	15011404 	strne	r1, [r1, #-1028]	; 0xfffffbfc
+  24:	18031701 	stmdane	r3, {r0, r8, r9, sl, ip}
+  28:	1a011901 	bne	46434 <bcm2835_emmc_reset_interrupt_register+0x459d8>
+  2c:	1c031b01 	stcne	11, cr1, [r3], {1}
+  30:	22021e01 	andcs	r1, r2, #1, 28
   34:	Address 0x0000000000000034 is out of bounds.
 
 
@@ -1927,19 +1927,19 @@ Disassembly of section .comment:
 Disassembly of section .ARM.attributes:
 
 00000000 <.ARM.attributes>:
-   0:	00003641 	andeq	r3, r0, r1, asr #12
+   0:	00003441 	andeq	r3, r0, r1, asr #8
    4:	61656100 	cmnvs	r5, r0, lsl #2
    8:	01006962 	tsteq	r0, r2, ror #18
-   c:	0000002c 	andeq	r0, r0, ip, lsr #32
+   c:	0000002a 	andeq	r0, r0, sl, lsr #32
   10:	412d3705 	teqmi	sp, r5, lsl #14
   14:	070a0600 	streq	r0, [sl, -r0, lsl #12]
   18:	09010841 	stmdbeq	r1, {r0, r6, fp}
-  1c:	0c050a02 	stceq	10, cr0, [r5], {2}
-  20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
-  24:	17011501 	strne	r1, [r1, -r1, lsl #10]
-  28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <sd_read+0x45f84>
-  30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
+  1c:	12020a02 	andne	r0, r2, #8192	; 0x2000
+  20:	15011404 	strne	r1, [r1, #-1028]	; 0xfffffbfc
+  24:	18031701 	stmdane	r3, {r0, r8, r9, sl, ip}
+  28:	1a011901 	bne	46434 <sd_read+0x45b80>
+  2c:	1c031b01 	stcne	11, cr1, [r3], {1}
+  30:	22021e01 	andcs	r1, r2, #1, 28
   34:	Address 0x0000000000000034 is out of bounds.
 
 
@@ -2090,18 +2090,18 @@ Disassembly of section .comment:
 Disassembly of section .ARM.attributes:
 
 00000000 <.ARM.attributes>:
-   0:	00003641 	andeq	r3, r0, r1, asr #12
+   0:	00003441 	andeq	r3, r0, r1, asr #8
    4:	61656100 	cmnvs	r5, r0, lsl #2
    8:	01006962 	tsteq	r0, r2, ror #18
-   c:	0000002c 	andeq	r0, r0, ip, lsr #32
+   c:	0000002a 	andeq	r0, r0, sl, lsr #32
   10:	412d3705 	teqmi	sp, r5, lsl #14
   14:	070a0600 	streq	r0, [sl, -r0, lsl #12]
   18:	09010841 	stmdbeq	r1, {r0, r6, fp}
-  1c:	0c050a02 	stceq	10, cr0, [r5], {2}
-  20:	14041202 	strne	r1, [r4], #-514	; 0xfffffdfe
-  24:	17011501 	strne	r1, [r1, -r1, lsl #10]
-  28:	19011803 	stmdbne	r1, {r0, r1, fp, ip}
-  2c:	1b011a01 	blne	46838 <get_fattime+0x466f4>
-  30:	1e011c03 	cdpne	12, 0, cr1, cr1, cr3, {0}
+  1c:	12020a02 	andne	r0, r2, #8192	; 0x2000
+  20:	15011404 	strne	r1, [r1, #-1028]	; 0xfffffbfc
+  24:	18031701 	stmdane	r3, {r0, r8, r9, sl, ip}
+  28:	1a011901 	bne	46434 <get_fattime+0x462f0>
+  2c:	1c031b01 	stcne	11, cr1, [r3], {1}
+  30:	22021e01 	andcs	r1, r2, #1, 28
   34:	Address 0x0000000000000034 is out of bounds.
 
