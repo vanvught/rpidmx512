@@ -1,8 +1,8 @@
 ARMGNU ?= arm-none-eabi
 
-AOPS = --warn --fatal-warnings  -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
+AOPS = --warn   -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
 
-COPS = -Wall -Werror -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
+COPS = -Wall  -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
 COPS += -DBARE_METAL
 COPS += -DENABLE_FRAMEBUFFER
 #COPS += -DBW_I2C_UI
@@ -25,6 +25,7 @@ LIB += -L"../bcm2835-baremetal/lib"
 LIB += -L"../hal-baremetal/lib"
 LIB += -L"../emmc/lib"
 LIB += -L"../ff9b/lib"
+LIB += -L/usr/lib/arm-none-eabi/newlib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
 BUILD = build/
 SOURCE = ./
@@ -38,6 +39,14 @@ MAP = kernel.map
 LIST = kernel.list
 
 all : ./include/sofware_version_id.h $(TARGET)
+
+.PHONY: clean builddirs
+
+builddirs:
+	@mkdir -p build/common
+
+../ff9b/lib/libff9b.a:
+	(cd ../ff9b ; make)
 
 clean :
 	rm -f $(BUILD)*.o

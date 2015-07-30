@@ -23,6 +23,11 @@ LIST7 = lib7.list
 
 all : $(TARGET) $(TARGET7)
 
+.PHONY: clean builddirs
+
+builddirs: 
+	@mkdir -p build build7 lib lib7
+
 clean :
 	rm -f $(BUILD)*.o
 	rm -f $(BUILD7)*.o
