@@ -1,32 +1,40 @@
 ARMGNU ?= arm-none-eabi
 
-AOPS = --warn --fatal-warnings  -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
+COPS_COMMON = -DBARE_METAL 
+COPS_COMMON += -I"./include"
+COPS_COMMON += -I"../bcm2835-baremetal/include"
+COPS_COMMON += -I"../ff9b/src"
+COPS_COMMON += -I"../hal-baremetal/include"
+COPS_COMMON += -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
 
-COPS = -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float 
-COPS += -DBARE_METAL
-COPS += -I"./include"
-COPS += -I"../bcm2835-baremetal/include"
-COPS += -I"../ff9b/src"
-COPS += -I"../hal-baremetal/include"
+COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
+COPS += $(COPS_COMMON)
 
-LIB = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
+COPS7 = -mfpu=vfp -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
+COPS7 += -DRPI2 -DRPIPLUS
+COPS7 += $(COPS_COMMON)
 
 BUILD = build/
+BUILD7 = build7/
 SOURCE = ./src
-ASM_OBJECTS := $(patsubst $(SOURCE)/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)/*.s))
-C_OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst ./firmware/%.S,$(BUILD)%.o,$(wildcard ./firmware/*.S)) $(patsubst ./firmware/%.c,$(BUILD)%.o,$(wildcard ./firmware/*.c))
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
+
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst ./firmware/%.S,$(BUILD)%.o,$(wildcard ./firmware/*.S)) $(patsubst ./firmware/%.c,$(BUILD)%.o,$(wildcard ./firmware/*.c))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst ./firmware/%.S,$(BUILD7)%.o,$(wildcard ./firmware/*.S)) $(patsubst ./firmware/%.c,$(BUILD7)%.o,$(wildcard ./firmware/*.c))
 
 TARGET = lib/libemmc.a
+TARGET7 = lib7/libemmc.a
 LIST = lib.list
+LIST7 = lib7.list
 
-all : $(TARGET)
+all : $(TARGET) $(TARGET7)
 
 clean :
 	rm -f $(BUILD)*.o
+	rm -f $(BUILD7)*.o
 	rm -f $(TARGET)
-	rm -f $(MAP)
+	rm -f $(TARGET7)
 	rm -f $(LIST)
+	rm -f $(LIST7)
 
 $(BUILD)%.o: ./firmware/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
@@ -40,3 +48,16 @@ $(BUILD)%.o: $(SOURCE)/%.c
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
 	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
+	
+$(BUILD7)%.o: ./firmware/%.c
+	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
+
+$(BUILD)%.o: ./firmware/%.S
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
+
+$(BUILD7)%.o: $(SOURCE)/%.c
+	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
+
+$(TARGET7): Makefile $(OBJECTS7)
+	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7) 
+	$(ARMGNU)-objdump -D $(TARGET7) > $(LIST7)

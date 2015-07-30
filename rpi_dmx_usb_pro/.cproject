@@ -51,6 +51,7 @@
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/rpi_dmx_usb_pro"/>
 		</configuration>
+		<configuration configurationName="Makefile7"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
@@ -68,4 +69,5 @@
 			</profile>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
