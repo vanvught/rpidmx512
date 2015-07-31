@@ -29,16 +29,17 @@
 #define TIMER_H_
 
 #include <stdint.h>
-#include <bcm2835.h>
 
-#define TIMEOUT_WAIT(stop_if_true, usec) 									\
-do {																		\
-	uint32_t compare = (*(volatile uint32_t *)(BCM2835_ST->CLO)) + usec;	\
-	do																		\
-	{																		\
-		if(stop_if_true)													\
-			break;															\
-	} while((*(volatile uint32_t *)(BCM2835_ST->CLO)) < compare);			\
+#include "bcm2835.h"
+
+#define TIMEOUT_WAIT(stop_if_true, usec) 						\
+do {															\
+	uint32_t micros_now = BCM2835_ST->CLO;						\
+	do															\
+	{															\
+		if(stop_if_true)										\
+			break;												\
+	} while( BCM2835_ST->CLO - micros_now < (uint32_t)usec);	\
 } while(0);
 
 #endif /* TIMER_H_ */
