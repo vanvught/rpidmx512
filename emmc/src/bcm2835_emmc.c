@@ -41,18 +41,17 @@ extern const uint32_t sd_commands[] __attribute__((aligned(4)));
 #define SDMA_BUFFER_PA  (SDMA_BUFFER + 0xC0000000)
 
 //#define EMMC_DEBUG
+#include "stdio.h"
 
 /* Tracing macros */
 #ifdef EMMC_DEBUG
 #define EMMC_TRACE(...)     {										\
-		extern int printf(const char *format, ...);
         printf("EMMC %s:%4d[%s] : ", __FILE__, __LINE__, __func__);	\
         printf(__VA_ARGS__);										\
         printf("\n"); }
 #else
 #define EMMC_TRACE(...)
 #endif
-
 
 /**
  * @ingroup EMMC
@@ -117,8 +116,9 @@ static uint32_t bcm2835_emmc_get_version(void)
  * @ingroup EMMC
  * @return
  */
-static uint32_t bcm2835_emmc_do_reset(void)
-{
+static uint32_t bcm2835_emmc_do_reset(void) {
+	EMMC_TRACE(">Enter<");
+
 	uint32_t control1 = BCM2835_EMMC->CONTROL1;
 	control1 |= BCM2835_EMMC_CONTROL1_RESET_ALL;
 	control1 &= ~BCM2835_EMMC_CONTROL1_CLOCK_CARD_EN;
@@ -127,8 +127,7 @@ static uint32_t bcm2835_emmc_do_reset(void)
 
 	TIMEOUT_WAIT((BCM2835_EMMC->CONTROL1 & (0x7 << 24)) == 0, 1000000);
 
-	if((BCM2835_EMMC->CONTROL1 & (0x7 << 24)) != 0)
-	{
+	if ((BCM2835_EMMC->CONTROL1 & (0x7 << 24)) != 0) {
 		EMMC_TRACE("EMMC: controller did not reset properly\n");
 		return -1;
 	}
