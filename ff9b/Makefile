@@ -9,15 +9,17 @@ COPS7 = -mfpu=vfp -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not
 COPS7 += -DRPI2 -DRPIPLUS
 COPS7 += $(COPS_COMMON)
 
+SOURCE = ./src
+
 BUILD = build/
 BUILD7 = build7/
-SOURCE = ./src
 
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
 OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
 
 TARGET = lib/libff9b.a 
 TARGET7 = lib7/libff9b.a
+
 LIST = lib.list
 LIST7 = lib7.list
 

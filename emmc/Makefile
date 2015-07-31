@@ -14,19 +14,26 @@ COPS7 = -mfpu=vfp -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not
 COPS7 += -DRPI2 -DRPIPLUS
 COPS7 += $(COPS_COMMON)
 
+SOURCE = ./src
+
 BUILD = build/
 BUILD7 = build7/
-SOURCE = ./src
 
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst ./firmware/%.S,$(BUILD)%.o,$(wildcard ./firmware/*.S)) $(patsubst ./firmware/%.c,$(BUILD)%.o,$(wildcard ./firmware/*.c))
 OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst ./firmware/%.S,$(BUILD7)%.o,$(wildcard ./firmware/*.S)) $(patsubst ./firmware/%.c,$(BUILD7)%.o,$(wildcard ./firmware/*.c))
 
 TARGET = lib/libemmc.a
 TARGET7 = lib7/libemmc.a
+
 LIST = lib.list
 LIST7 = lib7.list
 
-all : $(TARGET) $(TARGET7)
+all : builddirs $(TARGET) $(TARGET7)
+
+.PHONY: clean builddirs
+
+builddirs:
+	@mkdir -p build build7 lib lib7
 
 clean :
 	rm -f $(BUILD)*.o

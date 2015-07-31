@@ -13,19 +13,26 @@ COPS7 = -mfpu=vfp -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not
 COPS7 += -DRPI2 -DRPIPLUS  
 COPS7 += $(COPS_COMMON)
 
+SOURCE = ./src
+
 BUILD = build/
 BUILD7 = build7/
-SOURCE = ./src
 
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
 OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
 
 TARGET = lib/libhal.a 
 TARGET7 = lib7/libhal.a
+
 LIST = lib.list
 LIST7 = lib7.list
 
-all : $(TARGET) $(TARGET7)
+all : builddirs $(TARGET) $(TARGET7)
+
+.PHONY: clean builddirs
+
+builddirs:
+	@mkdir -p build build7 lib lib7
 
 clean :
 	rm -f $(BUILD)*.o
