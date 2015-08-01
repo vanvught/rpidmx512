@@ -54,7 +54,7 @@ uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 static void events_init() {
 	int i;
 	const uint32_t mircos_now = hardware_micros();
-	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
 		events_elapsed_time[i] += mircos_now;
 	}
 }
@@ -66,7 +66,7 @@ static void events_init() {
 inline static void events_check() {
 	int i;
 	const uint32_t micros_now = hardware_micros();
-	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
 		if (micros_now - events_elapsed_time[i] > events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
@@ -75,13 +75,15 @@ inline static void events_check() {
 	}
 }
 
-int notmain(void) {
+void notmain(void) {
+	int i;
+
 	hardware_init();
 	dmx_init();
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("Logic RDM Sniffer, DMX512 data analyzer for 32 channels\n");
+	printf("Logic RDM Sniffer, DMX512 data analyzer for 32 channels");
 
 	hardware_watchdog_init();
 
@@ -89,13 +91,10 @@ int notmain(void) {
 
 	for (;;) {
 		hardware_watchdog_feed();
-		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
+		for (i = 0; i < (int)(sizeof(poll_table) / sizeof(poll_table[0])); i++) {
 			poll_table[i].f();
 		}
 
 		events_check();
 	}
-
-	return 0;
 }

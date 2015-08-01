@@ -34,14 +34,14 @@
 #include "monitor.h"
 #include "sniffer.h"
 
-static struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
+static volatile struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
 
 /**
  * @ingroup sniffer
  *
  * @return
  */
-const struct _rdm_statistics *rdm_statistics_get(void) {
+const volatile struct _rdm_statistics *rdm_statistics_get(void) {
 	return &rdm_statistics;
 }
 

@@ -34,7 +34,7 @@ struct _rdm_statistics {
 	uint32_t set_requests;
 };
 
-extern /*@shared@*/const struct _rdm_statistics *rdm_statistics_get(void) ASSUME_ALIGNED;
+extern /*@shared@*/const volatile struct _rdm_statistics *rdm_statistics_get(void) ASSUME_ALIGNED;
 
 extern void sniffer_rdm(void);
 extern void sniffer_dmx(void);
