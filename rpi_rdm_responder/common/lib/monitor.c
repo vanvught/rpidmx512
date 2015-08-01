@@ -179,7 +179,7 @@ void monitor_sniffer(void) {
 			(long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
-	const struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
+	const volatile struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
 
 	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
 	printf("Discovery response : %ld\n", rdm_statistics->discovery_response_packets);

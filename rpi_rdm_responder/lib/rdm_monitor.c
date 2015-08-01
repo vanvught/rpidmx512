@@ -92,10 +92,9 @@ void monitor_update(void) {
 		(void) console_putc((int) ' ');
 	}
 
-	monitor_line(MONITOR_LINE_PACKETS, "Packets : DMX %ld, RDM %ld\n",
-			total_statistics->dmx_packets, total_statistics->rdm_packets);
+	monitor_line(MONITOR_LINE_PACKETS, "Packets : DMX %ld, RDM %ld\n", total_statistics->dmx_packets, total_statistics->rdm_packets);
 
-	printf("[%s] \n", rdm_is_muted() == 1 ? "Muted" : "Unmute");
+	printf("[%s] ", rdm_is_muted() == 1 ? "Muted" : "Unmute");
 
 	console_set_cursor(0, MONITOR_LINE_RDM_DATA);
 

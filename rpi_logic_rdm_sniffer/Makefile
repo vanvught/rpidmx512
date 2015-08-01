@@ -31,11 +31,9 @@ LIB += -L"../hal-baremetal/lib"
 LIB7 = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
 LIB7 += -L"../bob-baremetal/lib7"
 LIB7 += -L"../bcm2835-baremetal/lib7"
-LIB7 += -L"../emmc/lib7"
 LIB7 += -L"../fb/lib7"
-LIB7 += -L"../ff9b/lib7"
 LIB7 += -L"../hal-baremetal/lib7"
-LIB7 += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
+#LIB7 += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
 SOURCE = ./
 
@@ -45,8 +43,8 @@ BUILD7 = build7/
 ASM_OBJECTS := $(patsubst $(SOURCE)firmware/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.s))
 ASM_OBJECTS7 := $(patsubst $(SOURCE)firmware/%.s,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/*.s))
 
-C_OBJECTS := $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c))
-C_OBJECTS7 := $(patsubst $(SOURCE)firmware/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)lib/*.c))
+C_OBJECTS := $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)common/%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
+C_OBJECTS7 := $(patsubst $(SOURCE)firmware/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD7)common/%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)lib/*.c)) $(patsubst $(SOURCE)devices/%.c,$(BUILD7)devices/%.o,$(wildcard $(SOURCE)devices/*.c))
 
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 OBJECTS7 := $(ASM_OBJECTS7) $(C_OBJECTS7)
@@ -67,11 +65,13 @@ all : builddirs $(TARGET) $(TARGET7)
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p build build7
+	@mkdir -p build/common build7/common
 
 clean :
 	rm -f $(BUILD)*.o
 	rm -f $(BUILD7)*.o
+	rm -f $(BUILD)common/*.o
+	rm -f $(BUILD7)common/*.o
 	rm -f $(TARGET)
 	rm -f $(TARGET7)
 	rm -f $(BUILD)*.elf
@@ -86,7 +86,7 @@ clean :
 $(BUILD)vectors.o : firmware/vectors.s
 	$(ARMGNU)-as $(AOPS) firmware/vectors.s -o $(BUILD)vectors.o
 
-$(BUILD)%.o: $(SOURCE)common/lib/%.c
+$(BUILD)common/%.o: $(SOURCE)common/lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 	
 $(BUILD)%.o: $(SOURCE)firmware/%.c
@@ -110,7 +110,7 @@ $(TARGET) : $(BUILD)main.elf
 $(BUILD7)vectors.o : firmware/vectors.s
 	$(ARMGNU)-as $(AOPS) firmware/vectors.s -o $(BUILD7)vectors.o
 
-$(BUILD7)%.o: $(SOURCE)common/lib/%.c
+$(BUILD7)common/%.o: $(SOURCE)common/lib/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 	
 $(BUILD7)%.o: $(SOURCE)firmware/%.c

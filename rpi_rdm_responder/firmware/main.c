@@ -26,12 +26,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "util.h"
 #include "hardware.h"
 #include "led.h"
-#include "rdm_device_info.h"
 #include "dmx.h"
 #include "dmx_devices.h"
+#include "rdm_device_info.h"
 #include "monitor.h"
 
 // poll table
@@ -85,7 +84,9 @@ inline static void events_check() {
 	}
 }
 
-int notmain(void) {
+void notmain(void) {
+	int i;
+
 	hardware_init();
 	dmx_init();
 	dmx_devices_read_config();
@@ -104,13 +105,10 @@ int notmain(void) {
 
 	for (;;) {
 		hardware_watchdog_feed();
-		int i = 0;
-		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
+		for (i = 0; i < (int)(sizeof(poll_table) / sizeof(poll_table[0])); i++) {
 			poll_table[i].f();
 		}
 
 		events_check();
 	}
-
-	return 0;
 }
