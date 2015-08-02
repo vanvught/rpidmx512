@@ -39,16 +39,16 @@
 
 ///< State of receiving DMX/RDM Bytes
 typedef enum {
-  IDLE = 0,		///<
-  BREAK,		///<
-  MAB,			///<
-  DMXDATA,		///<
-  RDMDATA,		///<
-  CHECKSUMH,	///<
-  CHECKSUML,	///<
-  RDMDISCFE,	///<
-  RDMDISCEUID,  ///<
-  RDMDISCECS	///<
+	IDLE = 0,	///<
+	BREAK,		///<
+	MAB,		///<
+	DMXDATA,	///<
+	RDMDATA,	///<
+	CHECKSUMH,	///<
+	CHECKSUML,	///<
+	RDMDISCFE,	///<
+	RDMDISCEUID,///<
+	RDMDISCECS	///<
 } _dmx_state;
 
 uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));				///<
@@ -62,18 +62,19 @@ static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
 static bool dmx_output_fast_as_possible = false;								///<
 static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
-static volatile uint32_t dmx_fiq_micros_current = 0;							///< Timestamp FIQ
-static volatile uint32_t dmx_fiq_micros_previous = 0;							///< Timestamp previous FIQ
-static volatile uint32_t dmx_break_to_break_current = 0;						///<
-static volatile uint32_t dmx_break_to_break_previous = 0;						///<
+static uint32_t dmx_fiq_micros_current = 0;										///< Timestamp FIQ
+static uint32_t dmx_fiq_micros_previous = 0;									///< Timestamp previous FIQ
+static bool dmx_is_previous_break_dmx = false;									///< Is the previous break from a DMX packet?
+static uint32_t dmx_break_to_break_current = 0;									///<
+static uint32_t dmx_break_to_break_previous = 0;								///<
 static uint32_t dmx_slots_in_packet_previous = 0;								///<
-static volatile uint8_t dmx_send_state = IDLE;									///<
-static volatile bool dmx_send_always = false;									///<
-static volatile uint32_t dmx_send_break_micros = 0;								///<
+static uint8_t dmx_send_state = IDLE;											///<
+static bool dmx_send_always = false;											///<
+static uint32_t dmx_send_break_micros = 0;										///<
 
 static uint16_t rdm_data_buffer_index_head = 0;									///<
 static uint16_t rdm_data_buffer_index_tail = 0;									///<
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///<
 static uint16_t rdm_checksum = 0;												///<
 static uint32_t rdm_data_receive_end = 0;										///<
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
@@ -349,7 +350,12 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
-				dmx_statistics.break_to_break = dmx_break_to_break_current;
+				if (dmx_is_previous_break_dmx) {
+					dmx_statistics.break_to_break = dmx_break_to_break_current;
+				} else {
+					dmx_is_previous_break_dmx = true;
+				}
+
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
 			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
@@ -361,6 +367,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	E120_SC_RDM;
 				rdm_checksum = E120_SC_RDM;
 				total_statistics.rdm_packets = total_statistics.rdm_packets + 1;
+				dmx_is_previous_break_dmx = false;
 				break;
 			default:
 				dmx_receive_state = IDLE;
@@ -408,8 +415,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_checksum -= data;
 			const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
-			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE))
-			{
+			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
 				rdm_data_receive_end = BCM2835_ST->CLO;
 			}
@@ -420,15 +426,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			break;
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 		case RDMDISCFE:
-			switch (data)
-			{
+			switch (data) {
 			case 0xFE:
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	0xFE;
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
 				break;
 			case 0xAA:
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xAA;
 				dmx_receive_state = RDMDISCEUID;
 				rdm_disc_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	0xAA;
 				break;
 			default:
 				dmx_receive_state = IDLE;
