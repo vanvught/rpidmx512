@@ -2,23 +2,17 @@
 *.o
 
 # Libraries
-*.lib
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+lib*.a
+lib*
 
 # Executables
-*.exe
 *.out
-*.app
 *.bin
+
+# Others 
 *.bak
-*.lst
 *.list
+*.lst
 *.map
 Splint*.prefs
-# listings do not belong in git!
-*.list
+
