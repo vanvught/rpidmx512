@@ -1,7 +1,5 @@
 ARMGNU ?= arm-none-eabi
 
-AOPS = --warn --fatal-warnings  -mcpu=arm1176jzf-s -march=armv6 -mfpu=vfp
-
 COPS_COMMON = -DBARE_METAL 
 COPS_COMMON += -DENABLE_FRAMEBUFFER
 COPS_COMMON += -DRDM_CONTROLLER
@@ -44,9 +42,6 @@ SOURCE = ./
 
 BUILD = build/
 BUILD7 = build7/
-
-ASM_OBJECTS := $(patsubst $(SOURCE)firmware/%.s,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.s))
-ASM_OBJECTS7 := $(patsubst $(SOURCE)firmware/%.s,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/*.s))
 
 C_OBJECTS := $(patsubst $(SOURCE)firmware/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD)common/%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)lib/*.c))
 C_OBJECTS7 := $(patsubst $(SOURCE)firmware/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/*.c)) $(patsubst $(SOURCE)firmware/lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)firmware/lib/*.c)) $(patsubst $(SOURCE)common/lib/%.c,$(BUILD7)common/%.o,$(wildcard $(SOURCE)common/lib/*.c)) $(patsubst $(SOURCE)lib/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)lib/*.c))
@@ -92,8 +87,8 @@ clean :
 	
 # Build kernel.img
 
-$(BUILD)vectors.o : firmware/vectors.s
-	$(ARMGNU)-as $(AOPS) firmware/vectors.s -o $(BUILD)vectors.o
+$(BUILD)vectors.o : firmware/vectors.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD)vectors.o
 
 $(BUILD)common/%.o: $(SOURCE)common/lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
@@ -107,8 +102,8 @@ $(BUILD)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 	
-$(BUILD)main.elf : Makefile $(LINKER) $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../hal-baremetal/lib/libhal.a ../bob-baremetal/lib/libbob.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff9b/lib/libff9b.a 
-	$(ARMGNU)-ld $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lff9b -lemmc -lhal -lbob -lbcm2835 -lc -lgcc
+$(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../hal-baremetal/lib/libhal.a ../bob-baremetal/lib/libbob.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff9b/lib/libff9b.a 
+	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lfb -lff9b -lemmc -lhal -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
@@ -116,8 +111,8 @@ $(TARGET) : $(BUILD)main.elf
 	
 # Build kernel7.img
 
-$(BUILD7)vectors.o : firmware/vectors.s
-	$(ARMGNU)-as $(AOPS) firmware/vectors.s -o $(BUILD7)vectors.o
+$(BUILD7)vectors.o : firmware/vectors.S
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD7)vectors.o
 
 $(BUILD7)common/%.o: $(SOURCE)common/lib/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
@@ -131,8 +126,8 @@ $(BUILD7)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD7)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 	
-$(BUILD7)main.elf : Makefile $(LINKER) $(OBJECTS7) ../bcm2835-baremetal/lib7/libbcm2835.a ../hal-baremetal/lib7/libhal.a ../bob-baremetal/lib7/libbob.a ../fb/lib7/libfb.a ../emmc/lib7/libemmc.a ../ff9b/lib7/libff9b.a 
-	$(ARMGNU)-ld $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) -lfb -lff9b -lemmc -lhal -lbob -lbcm2835 -lc -lgcc
+$(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) ../bcm2835-baremetal/lib7/libbcm2835.a ../hal-baremetal/lib7/libhal.a ../bob-baremetal/lib7/libbob.a ../fb/lib7/libfb.a ../emmc/lib7/libemmc.a ../ff9b/lib7/libff9b.a 
+	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) -lfb -lff9b -lemmc -lhal -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD7)main.elf > $(LIST7)
 
 $(TARGET7) : $(BUILD7)main.elf
