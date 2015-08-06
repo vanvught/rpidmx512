@@ -69,7 +69,7 @@ reset:
 	orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
 	mcr p15, 0, r0, c1, c0, 0
 
-    @ enable fpu
+    @ Enable fpu
     mrc p15, 0, r0, c1, c0, 2
     orr r0,r0,#0x300000 				@ single precision
     orr r0,r0,#0xC00000 				@ double precision
@@ -124,6 +124,10 @@ FUNC __disable_fiq
     bx lr
 
 FUNC memory_barrier
+#if defined ( RPI2 )
+	dmb
+#else
     mov r0, #0
     mcr p15, #0, r0, c7, c10, #5
+#endif
     bx lr
