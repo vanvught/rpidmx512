@@ -29,7 +29,7 @@ LIB += -L"../ff9b/lib"
 LIB += -L"../hal-baremetal/lib"
 #LIB += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
-LIB7 = -L /opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2 
+LIB7 = -L/opt/gnuarm-hardfp/arm-none-eabi/lib/ -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.2
 LIB7 += -L"../bob-baremetal/lib7"
 LIB7 += -L"../bcm2835-baremetal/lib7"
 LIB7 += -L"../emmc/lib7"
