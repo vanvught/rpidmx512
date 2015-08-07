@@ -118,7 +118,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, con
 	spiData[2] = (char) value;
 
 	mcp23s08_setup(device_info);
-	FUNC_PREFIX(spi_transfern(spiData, 3));
+	FUNC_PREFIX(spi_writenb(spiData, 3));
 }
 
 /**

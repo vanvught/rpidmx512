@@ -89,7 +89,7 @@ void bw_spi_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 	cmd[2] = (char)mask;
 
 	dio_spi_setup(device_info);
-	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
+	FUNC_PREFIX(spi_writenb(cmd, 3));
 	udelay(BW_DIO_SPI_BYTE_WAIT_US);
 }
 
@@ -106,7 +106,7 @@ void bw_spi_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	cmd[2] = (char)pins;
 
 	dio_spi_setup(device_info);
-	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
+	FUNC_PREFIX(spi_writenb(cmd, 3));
 	udelay(BW_DIO_SPI_BYTE_WAIT_US);
 }
 

@@ -61,8 +61,7 @@ inline void static mcp23s17_setup(const device_info_t *device_info)
  * @param device_info
  * @return
  */
-uint8_t mcp23s17_start(device_info_t *device_info)
-{
+uint8_t mcp23s17_start(device_info_t *device_info) {
 #if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
 	if (bcm2835_init() != 1)
 		return MCP23S17_ERROR;
@@ -84,8 +83,7 @@ uint8_t mcp23s17_start(device_info_t *device_info)
  * @ingroup SPI-DIO
  *
  */
-void mcp23s17_end(void)
-{
+void mcp23s17_end(void) {
 	FUNC_PREFIX(spi_end());
 }
 
@@ -96,8 +94,7 @@ void mcp23s17_end(void)
  * @param reg
  * @return
  */
-uint16_t mcp23s17_reg_read(const device_info_t *device_info, const uint8_t reg)
-{
+uint16_t mcp23s17_reg_read(const device_info_t *device_info, const uint8_t reg) {
 	char spiData[4];
 	spiData[0] = (char) MCP23S17_CMD_READ | (char) ((device_info->slave_address) << 1);
 	spiData[1] = (char) reg;
@@ -114,8 +111,7 @@ uint16_t mcp23s17_reg_read(const device_info_t *device_info, const uint8_t reg)
  * @param reg
  * @param value
  */
-void mcp23s17_reg_write(const device_info_t *device_info, const uint8_t reg, const uint16_t value)
-{
+void mcp23s17_reg_write(const device_info_t *device_info, const uint8_t reg, const uint16_t value) {
 	char spiData[4];
 	spiData[0] = (char) MCP23S17_CMD_WRITE | (char) ((device_info->slave_address) << 1);
 	spiData[1] = (char) reg;
@@ -123,7 +119,7 @@ void mcp23s17_reg_write(const device_info_t *device_info, const uint8_t reg, con
 	spiData[3] = (char) (value >> 8);
 
 	mcp23s17_setup(device_info);
-	FUNC_PREFIX(spi_transfern(spiData, 4));
+	FUNC_PREFIX(spi_writenb(spiData, 4));
 }
 
 /**
@@ -133,15 +129,14 @@ void mcp23s17_reg_write(const device_info_t *device_info, const uint8_t reg, con
  * @param reg
  * @param value
  */
-void mcp23s17_reg_write_byte(const device_info_t *device_info, const uint8_t reg, const uint8_t value)
-{
+void mcp23s17_reg_write_byte(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
 	char spiData[3];
 	spiData[0] = (char) MCP23S17_CMD_WRITE | (char) ((device_info->slave_address) << 1);
 	spiData[1] = (char) reg;
 	spiData[2] = (char) value;
 
 	mcp23s17_setup(device_info);
-	FUNC_PREFIX(spi_transfern(spiData, 3));
+	FUNC_PREFIX(spi_writenb(spiData, 3));
 }
 
 
@@ -153,8 +148,7 @@ void mcp23s17_reg_write_byte(const device_info_t *device_info, const uint8_t reg
  * @param pin GP number, or one of MCP23S17_PIN_* from \ref mcp23s08Pin.
  * @param mode Mode to set the pin to, one of MCP23S17_FSEL_* from \ref mcp23s08FunctionSelect
  */
-void mcp23s17_gpio_fsel(const device_info_t *device_info, const uint16_t pin, const uint8_t mode)
-{
+void mcp23s17_gpio_fsel(const device_info_t *device_info, const uint16_t pin, const uint8_t mode) {
 	uint8_t data = mcp23s17_reg_read(device_info, MCP23S17_IODIRA);
 
 	if (mode == MCP23S17_FSEL_OUTP) {
@@ -172,8 +166,7 @@ void mcp23s17_gpio_fsel(const device_info_t *device_info, const uint16_t pin, co
  * @param device_info
  * @param pin GP number, or one of MCP23S17_PIN_* from \ref mcp23s17Pin.
  */
-void mcp23s17_gpio_set(const device_info_t *device_info, const uint16_t pin)
-{
+void mcp23s17_gpio_set(const device_info_t *device_info, const uint16_t pin) {
 	uint8_t data = mcp23s17_reg_read(device_info, MCP23S17_OLATA);
 	data |= pin;
 	mcp23s17_reg_write(device_info, MCP23S17_GPIOA, data);
@@ -185,8 +178,7 @@ void mcp23s17_gpio_set(const device_info_t *device_info, const uint16_t pin)
  * @param device_info
  * @param pin GP number, or one of MCP23S17_PIN_* from \ref mcp23s17Pin.
  */
-void mcp23s17_gpio_clr(const device_info_t *device_info, const uint16_t pin)
-{
+void mcp23s17_gpio_clr(const device_info_t *device_info, const uint16_t pin) {
 	uint8_t data = mcp23s17_reg_read(device_info, MCP23S17_OLATA);
 	data &= (~pin);
 	mcp23s17_reg_write(device_info, MCP23S17_GPIOA, data);

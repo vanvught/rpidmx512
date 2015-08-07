@@ -93,7 +93,7 @@ inline static void bw_spi_7fets_fsel_mask(const device_info_t *device_info, cons
 	cmd[2] = (char)mask;
 
 	fets_spi_setup(device_info);
-	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
+	FUNC_PREFIX(spi_writenb(cmd, 3));
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
 }
 
@@ -110,6 +110,6 @@ void bw_spi_7fets_output(const device_info_t *device_info, const uint8_t pins) {
 	cmd[2] = (char)pins;
 
 	fets_spi_setup(device_info);
-	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
+	FUNC_PREFIX(spi_writenb(cmd, 3));
 	udelay(BW_7FETS_SPI_BYTE_WAIT_US);
 }
