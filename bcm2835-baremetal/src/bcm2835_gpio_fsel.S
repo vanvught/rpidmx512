@@ -32,15 +32,6 @@
 \name:
 .endm
 
-#if defined ( RPI2 )
-.cpu cortex-a7
-@.fpu neon-vfpv4	NEON is not enabled in vectors.s
-.fpu vfp
-#else
-.cpu arm1176jzf-s
-.fpu vfp
-#endif
-
 FUNC bcm2835_gpio_fsel
 @ void bcm2835_gpio_fsel(uint8_t pin, uint8_t mode)
 push {lr}

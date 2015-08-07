@@ -32,9 +32,6 @@
 \name:
 .endm
 
-.cpu arm1176jzf-s
-.fpu vfp
-
 FUNC bcm2835_st_delay
 @ void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros)
 push {r3, r4, r5, lr}

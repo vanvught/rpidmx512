@@ -32,9 +32,6 @@
 \name:
 .endm
 
-.cpu arm1176jzf-s
-.fpu vfp
-
 FUNC udelay
 	push {r4, r5, lr}
 	mov r5,r0

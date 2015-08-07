@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_spi.h"
@@ -59,26 +60,26 @@ void bcm2835_spi_begin(void) {
 
 	value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 21);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 21;	// Pin 7, Set CE1 pin to alternate function 0 for SPI0
+	value |= BCM2835_GPIO_FSEL_ALT0 << 21;// Pin 7, Set CE1 pin to alternate function 0 for SPI0
 	value &= ~(7 << 24);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 24;	// Pin 8, Set CE0 pin to alternate function 0 for SPI0
+	value |= BCM2835_GPIO_FSEL_ALT0 << 24;// Pin 8, Set CE0 pin to alternate function 0 for SPI0
 	value &= ~(7 << 27);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 27;	// Pin 9, Set MISO pin to alternate function 0 for SPI0
+	value |= BCM2835_GPIO_FSEL_ALT0 << 27;// Pin 9, Set MISO pin to alternate function 0 for SPI0
 	BCM2835_GPIO->GPFSEL0 = value;
 	value = BCM2835_GPIO->GPFSEL1;
 	value &= ~(7 << 0);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 0;	// Pin 10, Set MOSI pin to alternate function 0 for SPI0
+	value |= BCM2835_GPIO_FSEL_ALT0 << 0;// Pin 10, Set MOSI pin to alternate function 0 for SPI0
 	value &= ~(7 << 3);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 3;	// Pin 11, Set CLK pin to alternate function 0 for SPI0
+	value |= BCM2835_GPIO_FSEL_ALT0 << 3;// Pin 11, Set CLK pin to alternate function 0 for SPI0
 	BCM2835_GPIO->GPFSEL1 = value;
 
-	BCM2835_SPI0 ->CS = 0;
-	BCM2835_SPI0 ->CS = BCM2835_SPI0_CS_CLEAR;
+	BCM2835_SPI0->CS = 0;
+	BCM2835_SPI0->CS = BCM2835_SPI0_CS_CLEAR;
 
-	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);		// Chip select 0 active LOW
-	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);		// Chip select 1 active LOW
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);						// CPOL = 0, CPHA = 0
-	BCM2835_SPI0 ->CLK = BCM2835_SPI_CLOCK_DIVIDER_2500;			// 100 kHz
+	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);// Chip select 0 active LOW
+	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);// Chip select 1 active LOW
+	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);			// CPOL = 0, CPHA = 0
+	BCM2835_SPI0->CLK = BCM2835_SPI_CLOCK_DIVIDER_2500;			// 100 kHz
 }
 
 /**
@@ -116,7 +117,7 @@ void bcm2835_spi_end(void) {
  *
  * @param order
  */
-void bcm2835_spi_setBitOrder(/*@unused@*/ const uint8_t order) {
+void bcm2835_spi_setBitOrder(/*@unused@*/const uint8_t order) {
 	// BCM2835_SPI_BIT_ORDER_MSBFIRST is the only one supported by SPI0
 }
 
@@ -151,33 +152,32 @@ void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
-    // Set TA = 1
+	// Set TA = 1
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
 
-	while ((fifo_writes < len) || (fifo_reads < len))
-    {
+	while ((fifo_writes < len) || (fifo_reads < len)) {
 
-		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD) && (fifo_writes < len))
-		{
-			if (tbuf)
-				BCM2835_SPI0->FIFO = (uint32_t)tbuf[fifo_writes++];
-			else
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD) && (fifo_writes < len)) {
+			if (tbuf) {
+				BCM2835_SPI0->FIFO = (uint32_t) tbuf[fifo_writes++];
+			} else {
 				BCM2835_SPI0->FIFO = 0;
+			}
 		}
 
-		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD) && (fifo_reads < len))
-		{
-		if (rbuf)
-			rbuf[fifo_reads++] = (uint32_t)BCM2835_SPI0->FIFO;
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD) && (fifo_reads < len)) {
+			if (rbuf) {
+				rbuf[fifo_reads++] = (uint32_t) BCM2835_SPI0->FIFO;
+			}
 		}
-    }
+	}
 
-    // Wait for DONE to be set
-    while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE))
-        	;
+	// Wait for DONE to be set
+	while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE))
+		;
 
-    // Set TA = 0, and also set the barrier
-    BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
+	// Set TA = 0
+	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
 }
 
 /**
@@ -192,42 +192,4 @@ void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
  */
 void bcm2835_spi_transfern(char* buf, const uint32_t len) {
 	bcm2835_spi_transfernb(buf, buf, len);
-}
-
-/**
- * @ingroup SPI
- *
- * Transfers any number of bytes to the currently selected SPI slave.
- * Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
- * during the transfer.
- *
- * @param tbuf Buffer of bytes to send.
- * @param len Number of bytes in the tbuf buffer, and the number of bytes to send.
- */
-void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
-    uint32_t i;
-
-	// Clear TX and RX fifos
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
-
-    // Set TA = 1
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_TA, BCM2835_SPI0_CS_TA);
-
-	for (i = 0; i < len; i++)
-	{
-		// Maybe wait for TXD
-		while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD))
-			;
-
-		// Write to FIFO
-		BCM2835_SPI0->FIFO = (uint32_t)tbuf[i];
-
-	}
-
-    // Wait for DONE to be set
-    while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE))
-    	;
-
-    // Set TA = 0, and also set the barrier
-	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
 }

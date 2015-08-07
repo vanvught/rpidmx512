@@ -33,9 +33,6 @@
 \name:
 .endm
 
-.cpu arm1176jzf-s
-.fpu vfp
-
 FUNC bcm2835_spi_write
 @ void bcm2835_spi_write(uint16_t data)
 ldr	r3, =BCM2835_SPI0_BASE
