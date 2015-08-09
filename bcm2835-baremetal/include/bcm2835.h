@@ -336,9 +336,8 @@ extern void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
  *
  * @return
  */
-inline static uint64_t bcm2835_st_read(void)
-{
-	return *(volatile uint64_t *)(BCM2835_ST_BASE + 0x04);
+inline static uint64_t bcm2835_st_read(void) {
+	return *(volatile uint64_t *) (BCM2835_ST_BASE + 0x04);
 }
 
 /**
@@ -366,11 +365,6 @@ extern void __disable_irq(void);
  *
  */
 extern void __enable_irq(void);
-
-/**
- *
- */
-extern void memory_barrier(void);
 
 #endif
 
