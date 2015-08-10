@@ -37,7 +37,7 @@ LIB7 += -L"../bob-baremetal/lib7"
 LIB7 += -L"../bcm2835-baremetal/lib7"
 LIB7 += -L"../emmc/lib7"
 LIB7 += -L"../fb/lib7"
-LIB7 += -L"../ff9b/lib7"
+LIB7 += -L"../ff11/lib7"
 LIB7 += -L"../hal-baremetal/lib7"
 #LIB7 += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
