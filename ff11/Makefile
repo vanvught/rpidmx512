@@ -17,8 +17,8 @@ BUILD7 = build7/
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
 OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
 
-TARGET = lib/libff9b.a 
-TARGET7 = lib7/libff9b.a
+TARGET = lib/libff11.a 
+TARGET7 = lib7/libff11.a
 
 LIST = lib.list
 LIST7 = lib7.list

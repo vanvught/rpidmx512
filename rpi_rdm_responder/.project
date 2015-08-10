@@ -6,6 +6,7 @@
 		<project>bcm2835-baremetal</project>
 		<project>bob-baremetal</project>
 		<project>fb</project>
+		<project>ff11</project>
 		<project>hal-baremetal</project>
 	</projects>
 	<buildSpec>
