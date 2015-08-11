@@ -105,7 +105,7 @@
 
 #define SD_CMD_RESERVED(a)  0xffffffff
 
-#define SD_COMMAND_COMPLETE    1
+#define SD_COMMAND_COMPLETE    (1 << 0)
 #define SD_TRANSFER_COMPLETE   (1 << 1)
 #define SD_BLOCK_GAP_EVENT     (1 << 2)
 #define SD_DMA_INTERRUPT       (1 << 3)

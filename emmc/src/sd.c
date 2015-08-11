@@ -190,11 +190,10 @@ static const uint32_t sd_acommands[] __attribute__((aligned(4))) = {
 // Enable EXPERIMENTAL (and possibly DANGEROUS) SD write support
 //#define SD_WRITE_SUPPORT
 
-struct sd_scr
-{
-    uint32_t    scr[2];
-    uint32_t    sd_bus_widths;
-    int         sd_version;
+struct sd_scr {
+	uint32_t scr[2];
+	uint32_t sd_bus_widths;
+	int sd_version;
 };
 
 #ifdef SD_DEBUG
@@ -302,15 +301,14 @@ static void sd_issue_command(struct emmc_block_dev *dev, uint32_t command, uint3
  * @return 0 if successful; -1 otherwise.
  */
 static int sd_card_sanity_check(void) {
-    if(sizeof(sd_commands) != (64 * sizeof(uint32_t)))
-    {
-        printf("EMMC: fatal error, sd_commands of incorrect size: %i expected %i\n", sizeof(sd_commands), 64 * sizeof(uint32_t));
+
+	if (sizeof(sd_commands) != (64 * sizeof(uint32_t))) {
+		SD_TRACE("Fatal error, sd_commands of incorrect size: %i expected %i", sizeof(sd_commands), 64 * sizeof(uint32_t));
         return -1;
     }
 
-    if(sizeof(sd_acommands) != (64 * sizeof(uint32_t)))
-    {
-        printf("EMMC: fatal error, sd_acommands of incorrect size: %i expected %i\n", sizeof(sd_acommands), 64 * sizeof(uint32_t));
+	if (sizeof(sd_acommands) != (64 * sizeof(uint32_t))) {
+		SD_TRACE("Fatal error, sd_acommands of incorrect size: %i expected %i", sizeof(sd_acommands), 64 * sizeof(uint32_t));
         return -1;
     }
 
@@ -324,11 +322,13 @@ static int sd_card_sanity_check(void) {
  */
 int sd_card_init(struct block_device **dev)
 {
-	if (sd_card_sanity_check() != 0)
+	if (sd_card_sanity_check() != 0) {
 		return -1;
+	}
 
-	if (bcm2825_emmc_init() !=0 )
+	if (bcm2825_emmc_init() !=0 ) {
 		return -1;
+	}
 
 	bcm2835_emmc_enable_all_interrupts_not_arm();
 
@@ -336,10 +336,11 @@ int sd_card_init(struct block_device **dev)
 
     // Prepare the device structure
 	struct emmc_block_dev *ret;
-	if(*dev == NULL)
-		ret = (struct emmc_block_dev *)malloc(sizeof(struct emmc_block_dev));
-	else
-		ret = (struct emmc_block_dev *)*dev;
+	if (*dev == NULL) {
+		ret = (struct emmc_block_dev *) malloc(sizeof(struct emmc_block_dev));
+	} else {
+		ret = (struct emmc_block_dev *) *dev;
+	}
 
 	memset(ret, 0, sizeof(struct emmc_block_dev));
 	ret->bd.block_size = 512;
@@ -354,10 +355,9 @@ int sd_card_init(struct block_device **dev)
 
 	// Send CMD0 to the card (reset to idle state)
 	sd_issue_command(ret, GO_IDLE_STATE, 0, 500000);
-	if(FAIL(ret))
-	{
-        printf("SD: no CMD0 response\n");
-        return -1;
+	if (FAIL(ret)) {
+		printf("SD: no CMD0 response\n");
+		return -1;
 	}
 
 	// Send CMD8 to the card
