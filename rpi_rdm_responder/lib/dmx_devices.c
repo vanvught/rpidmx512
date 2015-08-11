@@ -171,9 +171,13 @@ void dmx_devices_read_config(void) {
 
 	FATFS fat_fs;
 	FIL file_object;
-
-	f_mount(0, &fat_fs);		// Register volume work area (never fails)
-
+#if (_FFCONF == 82786)	/* R0.09b */
+	rc = f_mount((BYTE) 0, &fat_fs);
+#elif (_FFCONF == 32020)/* R0.11 */
+	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
+#else
+#error Not a recognized/tested FatFs version
+#endif
 	devices_connected.elements_count = 0;
 
 	rc = f_open(&file_object, "devices.txt", FA_READ);

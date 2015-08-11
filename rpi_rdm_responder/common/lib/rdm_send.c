@@ -27,7 +27,7 @@
 #include <stdbool.h>
 
 #include "bcm2835.h"
-#include "pl011.h"
+#include "arm/pl011.h"
 #include "hardware.h"
 #include "util.h"
 #include "dmx.h"

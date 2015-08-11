@@ -89,9 +89,13 @@ static void update_config_file(const char *name, const int value) {
 
 	FATFS fat_fs;
 	FIL file_object_rd;
-
-	f_mount(0, &fat_fs);		// Register volume work area (never fails)
-
+#if (_FFCONF == 82786)	/* R0.09b */
+	rc = f_mount((BYTE) 0, &fat_fs);
+#elif (_FFCONF == 32020)/* R0.11 */
+	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
+#else
+#error Not a recognized/tested FatFs version
+#endif
 	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
 	if (rc == FR_OK) {
 		FIL file_object_wr;
@@ -156,9 +160,13 @@ static void read_config_file(void) {
 
 	FATFS fat_fs;
 	FIL file_object;
-
-	rc = f_mount((BYTE) 0, &fat_fs);// Register volume work area (never fails)
-
+#if (_FFCONF == 82786)	/* R0.09b */
+	rc = f_mount((BYTE) 0, &fat_fs);
+#elif (_FFCONF == 32020)/* R0.11 */
+	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
+#else
+#error Not a recognized/tested FatFs version
+#endif
 	rc = f_open(&file_object, PARAMS_FILE_NAME, (BYTE) FA_READ);
 
 	if (rc == FR_OK) {
