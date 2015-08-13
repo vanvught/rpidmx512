@@ -7,12 +7,12 @@ __ram_start = ORIGIN(ram);
 __ram_size  = LENGTH(ram);
 __ram_end   = __ram_start + __ram_size;
 
-__und_stack_size = 0x1000;
-__abt_stack_size = 0x1000;
-__fiq_stack_size = 0x1000;
-__irq_stack_size = 0x1000;
-__svc_stack_size = 0x1000;
-__sys_stack_size = 0x1000;
+__und_stack_size = 0x0400;
+__abt_stack_size = 0x0400;
+__fiq_stack_size = 0x0400;
+__irq_stack_size = 0x0400;
+__svc_stack_size = 0x0400;
+__sys_stack_size = 0x0400;
 
 SECTIONS
 {

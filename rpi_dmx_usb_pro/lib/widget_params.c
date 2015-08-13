@@ -70,6 +70,7 @@ static char process_line_update(const char *line, FIL file_object_wr, const char
 			sprintf(buffer, "%s=%d\n", name, value);
 			f_puts(buffer, &file_object_wr);
 			return 1;
+
 		} else {
 			f_puts(line, &file_object_wr);
 		}
@@ -98,14 +99,13 @@ static void update_config_file(const char *name, const int value) {
 	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
 	if (rc == FR_OK) {
 		FIL file_object_wr;
-		rc = f_open(&file_object_wr, "updates.txt", FA_WRITE | FA_CREATE_ALWAYS);
+		rc = f_open(&file_object_wr, "tmp.txt", FA_WRITE | FA_CREATE_ALWAYS);
 		if (rc == FR_OK) {
 			TCHAR buffer[128];
 			char found = 0;
 			for (;;) {
-				if (f_gets(buffer, sizeof(buffer), &file_object_rd) == NULL) {
+				if (f_gets(buffer, sizeof(buffer), &file_object_rd) == NULL)
 					break; // Error or end of file
-				}
 
 				if (!found) {
 					found = process_line_update((const char *) buffer, file_object_wr, name, value);

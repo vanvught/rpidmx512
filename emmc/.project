@@ -4,7 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>bcm2835-baremetal</project>
-		<project>ff11</project>
+		<project>ff9b</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -48,7 +48,6 @@ static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH = sizeof(DEVICE_SOFTWARE_VER
 static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";				///< Parameters file name
 static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";		///<
 static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";			///<
-static const char RDM_DEVICE_LABEL[] = "device_label";						///<
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
@@ -57,10 +56,9 @@ static uint8_t root_device_label_length = 0;								///<
 
 static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH];	///<
 static uint8_t device_manufacturer_name_length = 0;							///<
+static uint8_t device_sn[DEVICE_SN_LENGTH];									///<
 
 static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH];			///<
-
-static uint8_t device_sn[DEVICE_SN_LENGTH];									///<
 
 #ifdef RDM_RESPONDER
 static bool is_factory_defaults = true;										///<
@@ -81,15 +79,8 @@ static void process_line_read_string(const char *line) {
 	char value[8] __attribute__((aligned(4)));
 	uint8_t len;
 
-	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
-	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &len) == 2) {
-		device_manufacturer_name_length = len;
-	}
-
-	len = RDM_DEVICE_LABEL_MAX_LENGTH;
-	if (sscan_char_p(line, RDM_DEVICE_LABEL, root_device_label, &len) == 2) {
-		root_device_label_length = len;
-	}
+	device_manufacturer_name_length = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
+	(void) sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &device_manufacturer_name_length);
 
 	len = 4;
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
@@ -110,6 +101,8 @@ static void process_line_read_string(const char *line) {
 			}
 		}
 	}
+
+	return;
 }
 
 /**
@@ -142,6 +135,7 @@ static void read_config_file(void) {
 		f_close(&file_object);
 	} else {
 	}
+
 }
 
 #ifdef RDM_RESPONDER
