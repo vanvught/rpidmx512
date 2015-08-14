@@ -43,9 +43,9 @@ static uint32_t dmx_available_count_previous = 0;		///<
  */
 void monitor_update(void) {
 	const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
-	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 	const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->slots_in_packet);
-	const struct _total_statistics *total_statistics = dmx_get_total_statistics();
+	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const struct _dmx_devices_statistics *dmx_handle_data_statistics = dmx_devices_get_statistics();
 	const uint32_t dmx_available_count_per_second = dmx_handle_data_statistics->dmx_available_count - dmx_available_count_previous;
 	const uint32_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;

@@ -74,8 +74,7 @@ void monitor_update(void) {
 					printf(", Throttle %d", (int) (1E6 / throttle));
 				}
 
-				monitor_line(MONITOR_LINE_STATS, "DMX packets per second to host : %d",
-						widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
+				monitor_line(MONITOR_LINE_STATS, "DMX packets per second to host : %d", widget_received_dmx_packet_count - widget_received_dmx_packet_count_previous);
 				widget_received_dmx_packet_count_previous = widget_received_dmx_packet_count;
 			} else {
 				console_puts("Input [SEND_ON_DATA_CHANGE_ONLY]");
@@ -83,6 +82,7 @@ void monitor_update(void) {
 			}
 		} else {
 			console_puts("Output");
+			console_clear_line(MONITOR_LINE_STATS);
 		}
 
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);

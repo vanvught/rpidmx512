@@ -91,9 +91,9 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 }
 
 static bool can_send(void) {
-	const uint32_t compare = (uint32_t)hardware_micros() + (uint32_t)1000;
+	const uint32_t micros = (uint32_t)hardware_micros();
 
-	while (!usb_can_write() && ((uint32_t) hardware_micros() < compare)) {
+	while (!usb_can_write() && ((uint32_t) hardware_micros() -micros < (uint32_t)1000)) {
 	}
 
 	if (!usb_can_write()) {
@@ -127,7 +127,7 @@ void widget_sniffer_dmx(void) {
 	dmx_set_available_false();
 
 	if (dmx_is_data_changed()) {
-		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		usb_send_package(dmx_data, 0, data_length);

@@ -140,12 +140,14 @@ static void widget_get_params_reply(void) {
  * @ingroup widget
  *
  * Set Widget Parameters Request (Label=4 \ref SET_WIDGET_PARAMS)
- * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
+ * This message sets the Widget configuration.
  *
  */
 static void widget_set_params() {
 	monitor_line(MONITOR_LINE_INFO, "SET_WIDGET_PARAMS");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
+
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
 	widget_params_set_break_time(widget_data[2]);
 	widget_params_set_mab_time(widget_data[3]);
@@ -193,7 +195,7 @@ void widget_received_dmx_packet(void) {
 
 	dmx_set_available_false();
 
-	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 	const uint16_t length = (uint16_t) (dmx_statistics->slots_in_packet + 1);
 
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
@@ -284,7 +286,7 @@ void widget_received_rdm_packet(void) {
  *
  * @param data_length DMX data to send, beginning with the start code.
  */
-void widget_output_only_send_dmx_packet_request(const uint16_t data_length) {
+void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
 	monitor_line(MONITOR_LINE_INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -319,8 +321,10 @@ static void widget_send_rdm_packet_request(const uint16_t data_length) {
 	widget_rdm_discovery_running = (p->command_class == E120_DISCOVERY_COMMAND);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
+
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_send_rdm_packet_start = hardware_micros();
@@ -370,6 +374,7 @@ static void widget_receive_dmx_on_change(void) {
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
+
 	receive_dmx_on_change = widget_data[0];
 
 	uint16_t i;
@@ -430,6 +435,8 @@ static void widget_get_sn_reply(void) {
 	const uint8_t *device_sn = rdm_device_info_get_sn();
 	const uint8_t device_sn_length = rdm_device_info_get_sn_length();
 
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
+
 	usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
@@ -450,8 +457,10 @@ static void widget_send_rdm_discovery_request(uint16_t data_length) {
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
+
 	rdm_send_data(widget_data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	widget_rdm_discovery_running = true;
@@ -477,6 +486,7 @@ inline static void rdm_time_out_message(void) {
 	usb_send_header(RDM_TIMEOUT, message_length);
 	usb_send_footer();
 
+	widget_rdm_discovery_running = false;
 	widget_send_rdm_packet_start = 0;
 }
 
@@ -496,6 +506,8 @@ static void widget_get_manufacturer_reply(void) {
 
 	const uint8_t *manufacturer_id = rdm_device_info_get_manufacturer_id();
 	const uint8_t manufacturer_id_length = rdm_device_info_get_manufacturer_id_length();
+
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
 	usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
 	usb_send_data(manufacturer_id, manufacturer_id_length);
@@ -523,6 +535,8 @@ static void widget_get_name_reply(void) {
 
 	const uint8_t *device_id = widget_params_get_type_id();
 	const uint8_t device_id_length = widget_params_get_type_id_length();
+
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
 	usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
 	usb_send_data(device_id, device_id_length);
@@ -578,7 +592,7 @@ void widget_receive_data_from_host(void) {
 				widget_get_manufacturer_reply();
 				break;
 			case OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST:
-				widget_output_only_send_dmx_packet_request(data_length);
+				widget_send_dmx_packet_request_output_only(data_length);
 				break;
 			case RECEIVE_DMX_ON_CHANGE:
 				widget_receive_dmx_on_change();
