@@ -38,6 +38,7 @@ extern const uint32_t console_get_depth(void);
 extern int console_init(void);
 extern int console_putc(const int);
 extern void console_puts(const char *);
+extern void console_putsn(const char *s, int n);
 extern void console_puthex(const uint8_t);
 extern void console_puthex_fg_bg(const uint8_t, const uint16_t, const uint16_t);
 extern void console_newline(void);

@@ -201,6 +201,19 @@ void console_puts(const char *s) {
 	}
 }
 
+/**
+ *
+ * @param s
+ * @param n
+ */
+void console_putsn(const char *s, int n) {
+	char c;
+
+	while (((c = *s++) != (char) 0) && (n-- != 0)) {
+		(void) console_putc((int) c);
+	}
+}
+
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
 /**
