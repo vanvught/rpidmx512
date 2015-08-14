@@ -38,6 +38,10 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#if defined(RDM_CONTROLLER) && defined(LOGIC_ANALYZER)
+#error You cannot have defined both RDM_CONTROLLER and LOGIC_ANALYZER
+#endif
+
 ///< State of receiving DMX/RDM Bytes
 typedef enum {
 	IDLE = 0,	///<
@@ -54,37 +58,38 @@ typedef enum {
 
 uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));				///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
-static uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
-static uint16_t dmx_data_index = 0;												///<
-static bool dmx_available = false;												///<
-static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;			///<
-static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;				///<
+static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
+static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
+static volatile bool dmx_available = false;										///<
+static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
+static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
 static bool dmx_output_fast_as_possible = false;								///<
 static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
-static uint32_t dmx_fiq_micros_current = 0;										///< Timestamp FIQ
-static uint32_t dmx_fiq_micros_previous = 0;									///< Timestamp previous FIQ
-static bool dmx_is_previous_break_dmx = false;									///< Is the previous break from a DMX packet?
-static uint32_t dmx_break_to_break_current = 0;									///<
-static uint32_t dmx_break_to_break_previous = 0;								///<
-static uint32_t dmx_slots_in_packet_previous = 0;								///<
-static uint8_t dmx_send_state = IDLE;											///<
-static bool dmx_send_always = false;											///<
-static uint32_t dmx_send_break_micros = 0;										///<
+static volatile uint32_t dmx_fiq_micros_current = (uint32_t) 0;					///< Timestamp FIQ
+static volatile uint32_t dmx_fiq_micros_previous = (uint32_t) 0;				///< Timestamp previous FIQ
+static volatile bool dmx_is_previous_break_dmx = false;							///< Is the previous break from a DMX packet?
+static volatile uint32_t dmx_break_to_break_latest = (uint32_t) 0;				///<
+static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
+static uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;					///<
+static volatile uint8_t dmx_send_state = IDLE;									///<
+static volatile bool dmx_send_always = false;									///<
+static uint32_t dmx_send_break_micros = (uint32_t) 0;							///<
 
-static uint16_t rdm_data_buffer_index_head = 0;									///<
-static uint16_t rdm_data_buffer_index_tail = 0;									///<
+static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
+static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
 static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///<
-static uint16_t rdm_checksum = 0;												///<
-static uint32_t rdm_data_receive_end = 0;										///<
+static volatile uint16_t rdm_checksum = (uint16_t) 0;							///<
+static volatile uint32_t rdm_data_receive_end = (uint32_t) 0;					///<
+
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
-static uint8_t rdm_disc_index = 0;												///<
+static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 #endif
 
-static uint32_t dmx_packets_previous = 0;										///<
-static struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
-static struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
+static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
+static volatile struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
+static volatile struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
 
 /**
  * @ingroup dmx
@@ -144,7 +149,7 @@ void dmx_set_send_data_length(uint16_t send_data_length) {
  *
  * @return
  */
-const struct _dmx_statistics *dmx_get_statistics(void) {
+const volatile struct _dmx_statistics *dmx_get_statistics(void) {
 	return &dmx_statistics;
 }
 
@@ -297,19 +302,8 @@ void dmx_reset_total_statistics(void) {
  *
  * @return
  */
-const struct _total_statistics *dmx_get_total_statistics(void) {
+const volatile struct _total_statistics *dmx_get_total_statistics(void) {
 	return &total_statistics;
-}
-
-/**
- * @ingroup dmx
- *
- * Interrupt enable routine for PL011 receiving DMX data.
- *
- */
-inline static void dmx_receive_fiq_init(void) {
-	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
-    BCM2835_IRQ->FIQ_CONTROL = (uint32_t)BCM2835_FIQ_ENABLE | (uint32_t)INTERRUPT_VC_UART;
 }
 
 /**
@@ -329,8 +323,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 	if (BCM2835_PL011->DR & PL011_DR_BE) {
 		dmx_receive_state = BREAK;
-		dmx_break_to_break_current = dmx_fiq_micros_current - dmx_break_to_break_previous;
-		dmx_break_to_break_previous = dmx_fiq_micros_current;
+		dmx_break_to_break_latest = dmx_fiq_micros_current;
 	} else {
 		const uint8_t data = BCM2835_PL011->DR & 0xFF;
 
@@ -346,15 +339,18 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 		case BREAK:
 			switch (data) {
-			case DMX512_START_CODE:	// DMX data start code
+			case DMX512_START_CODE:
 				dmx_receive_state = DMXDATA;
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 				if (dmx_is_previous_break_dmx) {
-					dmx_statistics.break_to_break = dmx_break_to_break_current;
+					dmx_statistics.break_to_break = dmx_break_to_break_latest - dmx_break_to_break_previous;
+					dmx_break_to_break_previous = dmx_break_to_break_latest;
+
 				} else {
 					dmx_is_previous_break_dmx = true;
+					dmx_break_to_break_previous = dmx_break_to_break_latest;
 				}
 
 #ifdef LOGIC_ANALYZER
@@ -362,7 +358,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
 #endif
 				break;
-			case E120_SC_RDM:		// RDM start code
+			case E120_SC_RDM:
 				dmx_receive_state = RDMDATA;
 				dmx_data_index = 0;
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	E120_SC_RDM;
@@ -372,6 +368,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				break;
 			default:
 				dmx_receive_state = IDLE;
+				dmx_is_previous_break_dmx = false;
 				break;
 			}
 			break;
@@ -380,8 +377,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			dmx_statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_statistics.slot_to_slot + 2;
 		    BCM2835_ST->CS = BCM2835_ST_CS_M1;
-			if (dmx_data_index > DMX_UNIVERSE_SIZE)
-			{
+			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 				dmx_receive_state = IDLE;
 				dmx_available = true;
 				dmx_statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
@@ -501,7 +497,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 			} else {
-				BCM2835_ST->C1 = clo + 45;
+				BCM2835_ST->C1 = clo + (uint32_t) 45;
 			}
 		}
 
@@ -589,9 +585,19 @@ void dmx_start_data(void) {
  *
  */
 void dmx_stop_data(void) {
-	dmx_send_always = false;
+	if (dmx_send_always) {
+		dmx_send_always = false;
+		udelay(dmx_output_period);
+		dmx_send_state = IDLE;
+	}
+
 	BCM2835_ST->C1 = BCM2835_ST->CLO;
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
+
+	dmx_receive_state = IDLE;
+	dmx_available = false;
+	dmx_statistics.slots_in_packet = 0;
+
 	__disable_fiq();
 }
 
@@ -602,19 +608,18 @@ void dmx_stop_data(void) {
  * @param enable_data
  */
 void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool enable_data) {
+	dmx_stop_data();
+
 	switch (port_direction) {
 	case DMX_PORT_DIRECTION_OUTP:
-		dmx_stop_data();
 		bcm2835_gpio_set(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
 		dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		dmx_stop_data();
 		bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
 		dmx_port_direction = DMX_PORT_DIRECTION_INP;
 		break;
 	default:
-		dmx_stop_data();
 		bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
 		dmx_port_direction = DMX_PORT_DIRECTION_INP;
 		break;
@@ -680,21 +685,26 @@ void dmx_init(void) {
 		dmx_data_previous[i] = (uint8_t)0;
 	}
 
-	rdm_data_buffer_index_head = 0;
-	rdm_data_buffer_index_tail = 0;
+	rdm_data_buffer_index_head = (uint16_t) 0;
+	rdm_data_buffer_index_tail = (uint16_t) 0;
 
 	dmx_receive_state = IDLE;
-	dmx_send_always = false;
 	dmx_available = false;
+	dmx_send_state = IDLE;
+	dmx_send_always = false;
 
     BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t)1000000;
     BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
+
 	__enable_irq();
 
 	pl011_init();
 
-	bcm2835_gpio_fsel(18, BCM2835_GPIO_FSEL_OUTP);
-	dmx_receive_fiq_init();
-	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+	bcm2835_gpio_fsel(GPIO_DMX_DATA_DIRECTION, BCM2835_GPIO_FSEL_OUTP);
+
+	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
+    BCM2835_IRQ->FIQ_CONTROL = (uint32_t)BCM2835_FIQ_ENABLE | (uint32_t)INTERRUPT_VC_UART;
+
+    dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }
