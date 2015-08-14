@@ -38,6 +38,9 @@
 #include "sniffer.h"
 #elif defined(RDM_RESPONDER)
 #endif
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+#include "rdm_device_info.h"
+#endif
 
 /**
  * @ingroup monitor
@@ -118,7 +121,7 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 	uint16_t slots;
 
 	if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
-		const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		slots = (uint16_t) (dmx_statistics->slots_in_packet + 1);
 	} else {
 		slots = dmx_get_send_data_length();
@@ -157,6 +160,8 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 	}
 }
 
+static uint32_t updates_per_seconde_min = UINT32_MAX;
+static uint32_t updates_per_seconde_max = (uint32_t)0;
 static uint32_t slots_in_packet_min = UINT32_MAX;
 static uint32_t slots_in_packet_max = (uint32_t)0;
 static uint32_t slot_to_slot_min = UINT32_MAX;
@@ -169,9 +174,8 @@ static uint32_t break_to_break_max = (uint32_t)0;
  *
  */
 void monitor_sniffer(void) {
-	const struct _total_statistics *total_statistics = dmx_get_total_statistics();
+	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
-	const struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 
 	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
 	console_clear_line(MONITOR_LINE_PACKETS);
@@ -186,8 +190,15 @@ void monitor_sniffer(void) {
 	printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
 	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
 #endif
+	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 
-	printf("\nDMX updates/sec %d  \n\n", (int)dmx_statistics->updates_per_seconde);
+	if ((int)dmx_statistics->updates_per_seconde != (int)0) {
+		updates_per_seconde_min = MIN(dmx_statistics->updates_per_seconde, updates_per_seconde_min);
+		updates_per_seconde_max = MAX(dmx_statistics->updates_per_seconde, updates_per_seconde_max);
+		printf("\nDMX updates/sec      %2d      %2d / %2d\n\n", (int)dmx_statistics->updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
+	} else {
+		printf("\nDMX updates/sec --     \n\n");
+	}
 
 	if (dmx_statistics->updates_per_seconde != 0) {
 		slots_in_packet_min = MIN(dmx_statistics->slots_in_packet, slots_in_packet_min);
@@ -206,3 +217,9 @@ void monitor_sniffer(void) {
 		console_puts("Break to break  --     \n");
 	}
 }
+
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+void monitor_print_root_device_label(void) {
+	console_putsn(rdm_device_info_get_label(0), (int) rdm_device_info_get_label_length(0));
+}
+#endif

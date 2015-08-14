@@ -46,6 +46,9 @@ extern void monitor_time_uptime(const int);
 extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *);
 extern void monitor_dmx_data(const int, const uint8_t *);
 extern void monitor_sniffer(void);
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+extern void monitor_print_root_device_label(void);
+#endif
 
 /**
  * @ingroup monitor
