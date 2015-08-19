@@ -29,7 +29,7 @@
 #define SD_H_
 
 #define SD_CLOCK_ID         	4000000
-#define SD_CLOCK_NORMAL     	50000000
+#define SD_CLOCK_NORMAL     	25000000
 #define SD_CLOCK_HIGH       	50000000
 #define SD_CLOCK_100        	100000000
 #define SD_CLOCK_208        	208000000
@@ -41,28 +41,28 @@
 #define SD_VER_3            	4
 #define SD_VER_4            	5
 
-#define SD_CMD_INDEX(a)		((a) << 24)
-#define SD_CMD_TYPE_NORMAL	0x0
-#define SD_CMD_TYPE_SUSPEND	(1 << 22)
-#define SD_CMD_TYPE_RESUME	(2 << 22)
-#define SD_CMD_TYPE_ABORT	(3 << 22)
-#define SD_CMD_TYPE_MASK    (3 << 22)
-#define SD_CMD_ISDATA		(1 << 21)
-#define SD_CMD_IXCHK_EN		(1 << 20)
-#define SD_CMD_CRCCHK_EN	(1 << 19)
-#define SD_CMD_RSPNS_TYPE_NONE	0			// For no response
-#define SD_CMD_RSPNS_TYPE_136	(1 << 16)		// For response R2 (with CRC), R3,4 (no CRC)
-#define SD_CMD_RSPNS_TYPE_48	(2 << 16)		// For responses R1, R5, R6, R7 (with CRC)
-#define SD_CMD_RSPNS_TYPE_48B	(3 << 16)		// For responses R1b, R5b (with CRC)
-#define SD_CMD_RSPNS_TYPE_MASK  (3 << 16)
-#define SD_CMD_MULTI_BLOCK	(1 << 5)
-#define SD_CMD_DAT_DIR_HC	0
-#define SD_CMD_DAT_DIR_CH	(1 << 4)
-#define SD_CMD_AUTO_CMD_EN_NONE	0
+#define SD_CMD_INDEX(a)				((a) << 24)
+#define SD_CMD_TYPE_NORMAL			0x0
+#define SD_CMD_TYPE_SUSPEND			(1 << 22)
+#define SD_CMD_TYPE_RESUME			(2 << 22)
+#define SD_CMD_TYPE_ABORT			(3 << 22)
+#define SD_CMD_TYPE_MASK			(3 << 22)
+#define SD_CMD_ISDATA				(1 << 21)
+#define SD_CMD_IXCHK_EN				(1 << 20)
+#define SD_CMD_CRCCHK_EN			(1 << 19)
+#define SD_CMD_RSPNS_TYPE_NONE		0			// For no response
+#define SD_CMD_RSPNS_TYPE_136		(1 << 16)	// For response R2 (with CRC), R3,4 (no CRC)
+#define SD_CMD_RSPNS_TYPE_48		(2 << 16)	// For responses R1, R5, R6, R7 (with CRC)
+#define SD_CMD_RSPNS_TYPE_48B		(3 << 16)	// For responses R1b, R5b (with CRC)
+#define SD_CMD_RSPNS_TYPE_MASK 		(3 << 16)
+#define SD_CMD_MULTI_BLOCK			(1 << 5)
+#define SD_CMD_DAT_DIR_HC			0
+#define SD_CMD_DAT_DIR_CH			(1 << 4)
+#define SD_CMD_AUTO_CMD_EN_NONE		0
 #define SD_CMD_AUTO_CMD_EN_CMD12	(1 << 2)
 #define SD_CMD_AUTO_CMD_EN_CMD23	(2 << 2)
-#define SD_CMD_BLKCNT_EN		(1 << 1)
-#define SD_CMD_DMA          1
+#define SD_CMD_BLKCNT_EN			(1 << 1)
+#define SD_CMD_DMA          		1
 
 #define SD_ERR_CMD_TIMEOUT	0
 #define SD_ERR_CMD_CRC		1

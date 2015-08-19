@@ -237,7 +237,7 @@ static uint32_t bcm2835_emmc_get_clock_divider(uint32_t base_clock, uint32_t tar
  */
 uint32_t bcm2835_emmc_set_clock(uint32_t target_clock)
 {
-	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_EMMC);
 	uint32_t divider = bcm2835_emmc_get_clock_divider(base_clock, target_clock);
 
 	// Wait for the command inhibit (CMD and DAT) bits to clear
@@ -278,7 +278,7 @@ static uint32_t bcm2825_emmc_set_sd_clock_id(void) {
 	uint32_t control1 = BCM2835_EMMC->CONTROL1;
 	control1 |= BCM2835_EMMC_CONTROL1_CLOCK_INT_EN;
 
-	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
+	uint32_t base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_EMMC);
 
 	uint32_t f_id = bcm2835_emmc_get_clock_divider(base_clock, SD_CLOCK_ID);
 
