@@ -156,7 +156,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 
 	name[k] = (char) 0;
 
-	*len = k;
+	*len = (uint8_t) k;
 
 	if (buf[i] != (char) ',') {
 		return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
@@ -207,7 +207,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 		if (!is_digit(tmp[j])) {
 			return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 		}
-		uint16 = uint16 * 10 + tmp[j++] - (char) '0';
+		uint16 = uint16 * (uint16_t)10 + (uint16_t)tmp[j++] - (uint16_t) '0';
 	}
 
 	*dmx = uint16;
