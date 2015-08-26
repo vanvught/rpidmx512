@@ -1,11 +1,12 @@
 ARMGNU ?= arm-none-eabi
 
-COPS_COMMON = -DBARE_METAL 
+COPS_COMMON  = -DBARE_METAL 
+COPS_COMMON += -DSD_WRITE_SUPPORT
 COPS_COMMON += -I"./include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
 COPS_COMMON += -I"../ff9b/src"
 COPS_COMMON += -I"../hal-baremetal/include"
-COPS_COMMON += -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
+COPS_COMMON += -std=c99 -pedantic -Wall -O3 -nostartfiles -ffreestanding -mhard-float  
 
 COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
 COPS += $(COPS_COMMON)

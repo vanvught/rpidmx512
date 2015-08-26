@@ -3,8 +3,6 @@
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
- * Based on
- * https://github.com/jncronin/rpi-boot/blob/master/emmc.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

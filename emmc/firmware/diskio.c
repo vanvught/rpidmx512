@@ -1,3 +1,7 @@
+/**
+ * @file diskio.c
+ *
+ */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,38 +24,45 @@
  */
 
 /*
-* Based on code from NXP app note AN10916.
+ * Based on code from NXP app note AN10916.
  */
 
 #include <stdint.h>
-#include <stdlib.h>
 
-#include "bcm2835_emmc.h"
+#include "sd.h"
 #include "sys_time.h"
 #include "diskio.h"
 
-volatile BYTE Stat = STA_NOINIT;
-
-static struct emmc_block_dev *emmc_dev __attribute__((aligned(4)));
-
-extern int sd_card_init(struct block_device **dev);
-extern int sd_read(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
-#ifdef SD_WRITE_SUPPORT
-extern int sd_write(struct block_device *dev, uint8_t *buf, size_t buf_size, uint32_t block_no);
+#if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
+#error Wrong sector size configuration
 #endif
+#define SECTOR_SIZE	512
 
+static volatile BYTE diskio_status = (BYTE) STA_NOINIT;
+
+/**
+ *
+ * @return
+ */
 static inline int sdcard_init(void){
-	if (sd_card_init((struct block_device **)&emmc_dev) == 0) {
+	if (sd_card_init() == 0) {
 		return RES_OK;
 	}
 
 	return RES_ERROR;
 }
 
+/**
+ *
+ * @param buf
+ * @param sector
+ * @param count
+ * @return
+ */
 static inline int sdcard_read(uint8_t * buf, int sector, int count) {
-	size_t buf_size = count * emmc_dev->bd.block_size;
+	size_t buf_size = count * SECTOR_SIZE;
 
-	if (sd_read((struct block_device *)emmc_dev, buf, buf_size, sector) < buf_size) {
+	if (sd_read(buf, buf_size, (uint32_t) sector) < (int) buf_size) {
 		return RES_ERROR;
 	}
 
@@ -59,10 +70,17 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 }
 
 #ifdef SD_WRITE_SUPPORT
+/**
+ *
+ * @param buf
+ * @param sector
+ * @param count
+ * @return
+ */
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
-    size_t buf_size = count * emmc_dev->bd.block_size;
+    size_t buf_size = count * SECTOR_SIZE;
 
-    if (sd_write((struct block_device *)emmc_dev, (uint8_t *) buf, buf_size, sector) < buf_size) {
+    if (sd_write((uint8_t *) buf, buf_size, sector) < buf_size) {
 		return RES_ERROR;
 	}
 
@@ -74,39 +92,53 @@ static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
  *
  * Set up the disk.
  */
-DSTATUS disk_initialize (BYTE drv) {
-	if (drv == 0 && sdcard_init() == 0) {
-		Stat &= ~STA_NOINIT;
+DSTATUS disk_initialize(BYTE drv) {
+	if (drv == (BYTE) 0 && sdcard_init() == 0) {
+		diskio_status &= ~STA_NOINIT;
 	}
 
-	return Stat;
+	return diskio_status;
 }
 
 /* disk_read
  *
  * Read some sectors.
  */
-DRESULT disk_read (BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
-	if (drv || !count) return RES_PARERR;
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
-	if (sdcard_read(buf, sector, count) == 0)
+DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
+	if (drv || !count) {
+		return RES_PARERR;
+	}
+
+	if (diskio_status & STA_NOINIT) {
+		return RES_NOTRDY;
+	}
+
+	if (sdcard_read((uint8_t *) buf, (int) sector, (int) count) == 0) {
 		return RES_OK;
-	else
-		return RES_ERROR;
+	}
+
+	return RES_ERROR;
 }
 
 /* disk_write
  *
  * Write some sectors.
  */
-DRESULT disk_write (BYTE drv, const BYTE *buf,	DWORD sector, BYTE count) {
+DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, BYTE count) {
 #ifdef SD_WRITE_SUPPORT
-	if (drv || !count) return RES_PARERR;
-	if (Stat & STA_NOINIT) return RES_NOTRDY;
-	if (sdcard_write(buf, sector, count) == 0)
+	if (drv || !count) {
+		return RES_PARERR;
+	}
+
+	if (diskio_status & STA_NOINIT) {
+		return RES_NOTRDY;
+	}
+
+	if (sdcard_write(buf, sector, count) == 0) {
 		return RES_OK;
-	else
-		return 	RES_ERROR;
+	}
+
+	return RES_ERROR;
 #else
 	return RES_OK;
 #endif
@@ -117,55 +149,59 @@ DRESULT disk_write (BYTE drv, const BYTE *buf,	DWORD sector, BYTE count) {
  * Check the status of this drive. All we know how to say is "initialized"
  * vs "uninitialized".
  */
-DSTATUS disk_status (BYTE drv) {
-	if (drv) return STA_NOINIT;
-	return Stat;
+DSTATUS disk_status(BYTE drv) {
+	if (drv != (BYTE) 0) {
+		return (DSTATUS) STA_NOINIT;
+	}
+	return diskio_status;
 }
 
-/* disk_ioctl
+/**
  *
- * Everything else.
+ * @param drv
+ * @param ctrl
+ * @param buf
+ * @return
  */
-DRESULT disk_ioctl (BYTE drv, BYTE ctrl, void *buf) {
+DRESULT disk_ioctl(/*@unused@*/BYTE drv, BYTE ctrl, void *buf) {
 	switch (ctrl) {
-		case CTRL_SYNC:
-			return RES_OK;
-			break;
-		case GET_SECTOR_COUNT:
-			*(DWORD *)buf = emmc_dev->bd.num_blocks;
-			return RES_OK;
-			break;
-		case GET_SECTOR_SIZE:
-			*(DWORD *)buf = emmc_dev->bd.block_size;
-			return RES_OK;
-			break;
-		case GET_BLOCK_SIZE:
-			*(DWORD *)buf = emmc_dev->bd.block_size;
-			return RES_OK;
-			break;
-		default:
-			return RES_PARERR;
-			break;
+	case CTRL_SYNC:
+		return RES_OK;
+		break;
+	case GET_SECTOR_SIZE:
+		*(DWORD *) buf = (DWORD) SECTOR_SIZE;
+		return RES_OK;
+		break;
+	case GET_BLOCK_SIZE:
+		*(DWORD *) buf = (DWORD) SECTOR_SIZE;
+		return RES_OK;
+		break;
+	default:
+		return RES_PARERR;
+		break;
 	}
 	return RES_OK;
 }
 
-/*---------------------------------------------------------*/
-/* User Provided Timer Function for FatFs module           */
-/*---------------------------------------------------------*/
-DWORD get_fattime (void)
-{
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
+
+/**
+ * UTC time
+ * @return
+ */
+DWORD get_fattime(void) {
+	time_t ltime;
+	struct tm *local_time;
+	DWORD packed_time;
 
 	ltime = sys_time(NULL);
-    local_time = localtime(&ltime);
+	local_time = localtime(&ltime);
 
-    return   ((DWORD)(local_time->tm_year - 80) << 25)
-           | ((DWORD)(local_time->tm_mon + 1) << 21)
-           | ((DWORD)local_time->tm_mday << 16)
-           | ((DWORD)local_time->tm_hour << 11)
-           | ((DWORD)local_time->tm_min << 5)
-           | ((DWORD)local_time->tm_sec >> 1);
+	packed_time = ((DWORD) (local_time->tm_year + 20) << 25)
+			| ((DWORD) (local_time->tm_mon + 1) << 21)
+			| ((DWORD) local_time->tm_mday << 16)
+			| ((DWORD) local_time->tm_hour << 11)
+			| ((DWORD) local_time->tm_min << 5)
+			| ((DWORD) local_time->tm_sec >> 1);
 
+	return packed_time;
 }

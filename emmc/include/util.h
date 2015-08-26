@@ -2,9 +2,7 @@
  * @file util.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
- * Based on
- * https://github.com/jncronin/rpi-boot/blob/master/util.h
+/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +26,14 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-#include <stdint.h>
+#include <stddef.h>
 
-extern void *qmemcpy(void *dest, void *src, size_t n);
-extern void *quick_memcpy(void *dest, void *src, size_t n);
+inline static void *_memset(void *s, int c, size_t n) {
+	unsigned char* p = s;
+	while (n--)
+		*p++ = (unsigned char) c;
+	return s;
+}
 
 #endif /* UTIL_H_ */
 
