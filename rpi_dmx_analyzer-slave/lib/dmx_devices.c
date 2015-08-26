@@ -42,6 +42,8 @@ TABLE(initializer_t, devices_init)
 devices_t devices_connected __attribute__((aligned(4)));
 static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((aligned(4)));	///<
 
+static FATFS fat_fs;	///<
+
 /**
  * @ingroup dmx
  *
@@ -169,7 +171,6 @@ static int add_connected_device(const char *line) {
 void dmx_devices_read_config(void) {
 	int rc = -1;
 
-	FATFS fat_fs;
 	FIL file_object;
 #if (_FFCONF == 82786)	/* R0.09b */
 	rc = f_mount((BYTE) 0, &fat_fs);
