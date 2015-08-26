@@ -3,6 +3,7 @@ ARMGNU ?= arm-none-eabi
 COPS_COMMON = -DBARE_METAL 
 COPS_COMMON += -DENABLE_FRAMEBUFFER
 COPS_COMMON += -DRDM_CONTROLLER
+COPS_COMMON += -DUPDATE_CONFIG_FILE
 COPS_COMMON += -I"./include"
 COPS_COMMON += -I"./common/include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
@@ -11,7 +12,6 @@ COPS_COMMON += -I"../fb/include"
 COPS_COMMON += -I"../ff11/src"
 COPS_COMMON += -I"../hal-baremetal/include"
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float
-#COPS_COMMON += -I/opt/newlib/arm-none-eabi/include
 
 COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
 COPS += $(COPS_COMMON)

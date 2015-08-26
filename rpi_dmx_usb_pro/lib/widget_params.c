@@ -50,76 +50,99 @@ static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";		/
 static const char PARAMS_WIDGET_MODE[] = "widget_mode";								///<
 static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";	///<
 
-/**
- *
- * @param line
- * @param file_object_wr
- * @param name
- * @param value
- * @return
- */
+static FATFS fat_fs;	///<
+
 #ifdef UPDATE_CONFIG_FILE
-#include <stdio.h>
-static char process_line_update(const char *line, FIL file_object_wr, const char *name, const int value) {
-	char _name[64];
-	int _value;
+static char *uint8_toa(uint8_t i) {
+	/* Room for 3 digits and '\0' */
+	static char buffer[4];
+	char *p = &buffer[3];	/* points to terminating '\0' */
 
-	if (sscanf(line, "%[^=]=%d", _name, &_value) == 2) {
-		if (strncmp(_name, name, _strlen(name)) == 0) {
-			TCHAR buffer[128];
-			sprintf(buffer, "%s=%d\n", name, value);
-			f_puts(buffer, &file_object_wr);
-			return 1;
-		} else {
-			f_puts(line, &file_object_wr);
-		}
-	}
+	buffer[3] = '\0';
 
-	return 0;
+	do {
+		*--p = (char)'0' + (char)(i % 10);
+		i /= 10;
+	} while (i != 0);
+
+	return p;
 }
 
-/**
- *
- * @param name
- * @param value
- */
-static void update_config_file(const char *name, const int value) {
+static void sprintf_name_value(char *buffer, const char *name, const uint8_t value) {
+	char *p;
+	int n = 0;
+
+	while (name[n] != '\0') {
+		buffer[n] = name[n];
+		n++;
+	}
+	buffer[n++] = '=';
+
+	p = uint8_toa(value);
+
+	while (*p != '\0') {
+		buffer[n++] = *p++;
+	}
+
+	buffer[n++] = '\n';
+	buffer[n] = '\0';
+}
+
+static bool process_line_update(const char *line, FIL *file_object_wr, const char *name, const uint8_t value) {
+	uint8_t _value;
+
+	if (sscan_uint8_t(line, name, &_value) == 2) {
+		TCHAR buffer[128];
+		sprintf_name_value(buffer, name, value);
+		(void) f_puts(buffer, file_object_wr);
+		return true;
+	}
+
+	(void) f_puts(line, file_object_wr);
+
+	return false;
+}
+
+static void update_config_file(const char *name, const uint8_t value) {
 	int rc = -1;
 
-	FATFS fat_fs;
 	FIL file_object_rd;
-#if (_FFCONF == 82786)	/* R0.09b */
-	rc = f_mount((BYTE) 0, &fat_fs);
-#elif (_FFCONF == 32020)/* R0.11 */
-	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
-#else
-#error Not a recognized/tested FatFs version
-#endif
 	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
+
 	if (rc == FR_OK) {
+
 		FIL file_object_wr;
 		rc = f_open(&file_object_wr, "updates.txt", FA_WRITE | FA_CREATE_ALWAYS);
+
 		if (rc == FR_OK) {
 			TCHAR buffer[128];
-			char found = 0;
+			bool found = false;
 			for (;;) {
-				if (f_gets(buffer, sizeof(buffer), &file_object_rd) == NULL) {
+				if (f_gets(buffer, (int) sizeof(buffer), &file_object_rd) == NULL) {
 					break; // Error or end of file
 				}
 
 				if (!found) {
-					found = process_line_update((const char *) buffer, file_object_wr, name, value);
+					found = process_line_update((const char *) buffer, &file_object_wr, name, value);
+
 				} else {
-					f_puts(buffer, &file_object_wr);
+					(void) f_puts(buffer, &file_object_wr);
 				}
+
 			}
-			f_close(&file_object_wr);
+
+			if (!found) {
+				sprintf_name_value(buffer, name, value);
+				(void) f_puts(buffer, &file_object_wr);
+			}
+
+			(void) f_close(&file_object_wr);
 		}
-		f_close(&file_object_rd);
+		(void) f_close(&file_object_rd);
 	}
 }
 #else
-inline static void update_config_file(/*@unused@*/const char *name, /*@unused@*/const int value) { }
+inline static void update_config_file(/*@unused@*/const char *name, /*@unused@*/const uint8_t value) { }
 #endif
 
 /**
@@ -158,12 +181,11 @@ static void process_line_read_uint8_t(const char *line) {
 static void read_config_file(void) {
 	FRESULT rc = FR_DISK_ERR;
 
-	FATFS fat_fs;
 	FIL file_object;
 #if (_FFCONF == 82786)	/* R0.09b */
 	rc = f_mount((BYTE) 0, &fat_fs);
 #elif (_FFCONF == 32020)/* R0.11 */
-	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
+	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 1);
 #else
 #error Not a recognized/tested FatFs version
 #endif
@@ -203,7 +225,7 @@ void widget_params_get(struct _widget_params *widget_params) {
 void widget_params_set_break_time(const uint8_t break_time) {
 	dmx_usb_pro_params.break_time = break_time;
 	dmx_set_output_break_time((uint32_t) ((double) (dmx_usb_pro_params.break_time) * (double) (10.67)));
-	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, (int)break_time);
+	update_config_file(DMXUSBPRO_PARAMS_BREAK_TIME, break_time);
 }
 
 /**
@@ -214,7 +236,7 @@ void widget_params_set_break_time(const uint8_t break_time) {
 void widget_params_set_mab_time(const uint8_t mab_time) {
 	dmx_usb_pro_params.mab_time = mab_time;
 	dmx_set_output_mab_time((uint32_t) ((double) (dmx_usb_pro_params.mab_time) * (double) (10.67)));
-	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, (int) mab_time);
+	update_config_file(DMXUSBPRO_PARAMS_MAB_TIME, mab_time);
 }
 
 /**
@@ -225,7 +247,7 @@ void widget_params_set_mab_time(const uint8_t mab_time) {
 void widget_params_set_refresh_rate(const uint8_t refresh_rate) {
 	dmx_usb_pro_params.refresh_rate = refresh_rate;
 	dmx_set_output_period(refresh_rate == (uint8_t) 0 ? (uint32_t) 0 : (uint32_t) (1E6 / refresh_rate));
-	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, (int)refresh_rate);
+	update_config_file(DMXUSBPRO_PARAMS_REFRESH_RATE, refresh_rate);
 }
 
 /**
