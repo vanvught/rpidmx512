@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
@@ -73,8 +74,8 @@ inline static int _memcmp(const void *s1, const void *s2, size_t n) {
 	t1 = (unsigned char *)s1;
 	t2 = (unsigned char *)s2;
 	for (; n-- != (size_t)0; t1++, t2++) {
-		u1 = * t1;
-		u2 = * t2;
+		u1 = *t1;
+		u2 = *t2;
 		if (u1 != u2) {
 			return (int) (u1 - u2);
 		}
