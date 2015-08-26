@@ -218,7 +218,9 @@ const int32_t hardware_get_core_temperature(void) {
 void hardware_init(void) {
 	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
-	(void)console_init();
+	(void) console_init();
+
+	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
 
 	if (bcm2835_vc_get_get_board_revision() > 0x00000f) {
 		_hardware_led_f.init = led_rpiplus_init;
@@ -227,6 +229,7 @@ void hardware_init(void) {
 
 	hardware_led_init();
 	hardware_led_set(1);
+
 }
 
 /**
