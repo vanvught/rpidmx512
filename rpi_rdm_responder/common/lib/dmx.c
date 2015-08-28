@@ -56,7 +56,7 @@ typedef enum {
 	RDMDISCECS	///<
 } _dmx_state;
 
-static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));				///<
+uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));				///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
 static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
@@ -90,39 +90,6 @@ static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
 static volatile struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
 static volatile struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
-
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint8_t *dmx_get_data(void) {
-	return dmx_data;
-}
-
-/**
- * @ingroup dmx
- *
- * @param data
- * @param length
- */
-void dmx_set_data(const uint8_t *data, const uint16_t length) {
-	int i;
-	for (i = 0; i < length; i++) {
-		dmx_data[i] = data[i];
-	}
-}
-
-/**
- * @ingroup dmx
- *
- */
-void dmx_clear_data(void) {
-	uint16_t i;
-	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
-		dmx_data[i] = 0;
-	}
-}
 
 /**
  * @ingroup dmx
@@ -238,7 +205,7 @@ void dmx_set_available_false(void) {
  * @return
  */
 bool dmx_is_data_changed(void) {
-	uint32_t i;
+	uint32_t i = 0;
 	bool is_changed = false;
 
 	if (dmx_statistics.slots_in_packet != dmx_slots_in_packet_previous) {
@@ -706,11 +673,11 @@ void dmx_init(void) {
 	bcm2835_gpio_fsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_fsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
 
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);	// FIQ
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH1); // FIQ
 	bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH3); // DMX DATA
 	bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);	// IRQ
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH5); // IRQ
 #endif
 
 	for (i = 0; i < sizeof(dmx_data) / sizeof(dmx_data[0]); i++) {

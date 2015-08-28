@@ -46,6 +46,8 @@ do {															\
 	} while( BCM2835_ST->CLO - micros_now < (uint32_t)usec);	\
 } while(0);
 
+extern int printf(const char *format, ...);
+
 struct sd_scr {
 	uint32_t scr[2];
 	uint32_t sd_bus_widths;
@@ -373,10 +375,6 @@ static struct emmc_block_dev block_dev __attribute__((aligned(4)));
 
 #define MIN_FREQ 400000
 #define BCM2835_EMMC_WRITE_DELAY       (((2 * 1000000) / MIN_FREQ) + 1)
-
-#if defined (EMMC_DEBUG) || defined (SD_DEBUG)
-extern int printf(const char *format, ...);
-#endif
 
 #ifdef DEBUG
 #define EMMC_DEBUG
@@ -1005,7 +1003,7 @@ static void sd_issue_command(uint32_t command, uint32_t argument, uint32_t timeo
 		SD_TRACE("Issuing command ACMD%d", command);
 
 		if (sd_acommands[command] == SD_CMD_RESERVED(0)) {
-			SD_TRACE("Invalid command ACMD%d", command);
+			printf("SD: invalid command ACMD%d\n", command);
 			dev->last_cmd_success = 0;
 			return;
 		}
@@ -1028,7 +1026,7 @@ static void sd_issue_command(uint32_t command, uint32_t argument, uint32_t timeo
 		SD_TRACE("Issuing command CMD%d", command);
 
 		if (sd_commands[command] == SD_CMD_RESERVED(0)) {
-			SD_TRACE("Invalid command CMD%d", command);
+			printf("SD: invalid command CMD%d\n", command);
 			dev->last_cmd_success = 0;
 			return;
 		}
@@ -1139,13 +1137,13 @@ static int sd_do_data_command(int is_write, uint8_t *buf, size_t buf_size, uint3
 		if (SUCCESS(edev)) {
 			break;
 		} else {
-			SD_TRACE("Error sending CMD%d, edev->last_error = %08x", command, edev->last_error);
+			printf("SD: error sending CMD%d, edev->last_error = %08x\n", command, edev->last_error);
 			retry_count++;
 
 			if (retry_count < max_retries) {
-				SD_TRACE("Retrying...%d", retry_count);
+				printf("Retrying...%d\n", retry_count);
 			} else {
-				SD_TRACE("Giving up...%d", max_retries);
+				printf("Giving up...%d\n", max_retries);
 			}
 		}
 	}
@@ -1195,7 +1193,7 @@ int sd_card_init(void) {
 	sd_issue_command(GO_IDLE_STATE, 0, 500000);
 
 	if (FAIL(ret)) {
-		SD_TRACE("No CMD0 response");
+		printf("SD: no CMD0 response\n");
 		return SD_ERROR;
 	}
 	// Send CMD8 to the card
@@ -1214,11 +1212,12 @@ int sd_card_init(void) {
 		}
 		v2_later = 0;
 	} else if (FAIL(ret)) {
-		SD_TRACE("Failure sending CMD8 (%08x)", ret->last_interrupt);
+		printf("SD: failure sending CMD8 (%08x)\n", ret->last_interrupt);
 		return SD_ERROR;
 	} else {
 		if ((ret->last_r0 & 0xfff) != 0x1aa) {
-			SD_TRACE("Unusable card, CMD8 response %08x", ret->last_r0);
+			printf("SD: unusable card\n");
+			SD_TRACE("CMD8 response %08x", ret->last_r0);
 			return SD_ERROR;
 		} else {
 			v2_later = 1;
@@ -1236,7 +1235,8 @@ int sd_card_init(void) {
 				return SD_ERROR;
 			}
 		} else {
-			SD_TRACE("SDIO card detected - not currently supported, CMD5 returned %08x", ret->last_r0);
+			printf("SD: SDIO card detected - not currently supported\n");
+			SD_TRACE("CMD5 returned %08x", ret->last_r0);
 			return SD_ERROR;
 		}
 	}
@@ -1245,7 +1245,7 @@ int sd_card_init(void) {
     sd_issue_command(ACMD(41), 0, 500000);
 
 	if (FAIL(ret)) {
-		SD_TRACE("Inquiry ACMD41 failed");
+		printf("SD: inquiry ACMD41 failed\n");
 		return SD_ERROR;
 	}
 
@@ -1274,7 +1274,7 @@ int sd_card_init(void) {
 	    sd_issue_command(ACMD(41), 0x00ff8000 | v2_flags, 500000);
 
 		if (FAIL(ret)) {
-			SD_TRACE("Error issuing ACMD41");
+			printf("SD: error issuing ACMD41\n");
 			return SD_ERROR;
 		}
 
@@ -1381,7 +1381,7 @@ int sd_card_init(void) {
 	sd_issue_command(ALL_SEND_CID, 0, 500000);
 
 	if (FAIL(ret)) {
-		SD_TRACE("Error sending ALL_SEND_CID");
+		printf("SD: error sending ALL_SEND_CID\n");
 		return SD_ERROR;
 	}
 
@@ -1397,7 +1397,7 @@ int sd_card_init(void) {
 	sd_issue_command(SEND_RELATIVE_ADDR, 0, 500000);
 
 	if (FAIL(ret)) {
-		SD_TRACE("Error sending SEND_RELATIVE_ADDR");
+		printf("SD: error sending SEND_RELATIVE_ADDR\n");
 		return SD_ERROR;
 	}
 
@@ -1412,22 +1412,22 @@ int sd_card_init(void) {
 	uint32_t ready = (cmd3_resp >> 8) & 0x1;
 
 	if (crc_error) {
-		SD_TRACE("CRC error");
+		printf("SD: CRC error\n");
 		return SD_ERROR;
 	}
 
 	if (illegal_cmd) {
-		SD_TRACE("Illegal command");
+		printf("SD: illegal command\n");
 		return SD_ERROR;
 	}
 
 	if (error) {
-		SD_TRACE("Generic error");
+		printf("SD: generic error\n");
 		return SD_ERROR;
 	}
 
 	if (!ready) {
-		SD_TRACE("Not ready for data");
+		printf("SD: not ready for data\n");
 		return SD_ERROR;
 	}
 
@@ -1437,7 +1437,7 @@ int sd_card_init(void) {
 	sd_issue_command(SELECT_CARD, ret->card_rca << 16, 500000);
 
 	if (FAIL(ret)) {
-		SD_TRACE("Error sending CMD7");
+		printf("SD: error sending CMD7\n");
 		return SD_ERROR;
 	}
 
@@ -1445,7 +1445,7 @@ int sd_card_init(void) {
 	status = (cmd7_resp >> 9) & 0xf;
 
 	if ((status != 3) && (status != 4)) {
-		SD_TRACE("Invalid status (%d)", status);
+		printf("SD: invalid status (%d)\n", status);
 		return SD_ERROR;
 	}
 
@@ -1453,7 +1453,7 @@ int sd_card_init(void) {
 	if (!ret->card_supports_sdhc) {
 		sd_issue_command(SET_BLOCKLEN, 512, 500000);
 		if (FAIL(ret)) {
-			SD_TRACE("Error sending SET_BLOCKLEN");
+			printf("SD: error sending SET_BLOCKLEN\n");
 			return SD_ERROR;
 		}
 	}
@@ -1475,7 +1475,7 @@ int sd_card_init(void) {
 	ret->block_size = 512;
 
 	if (FAIL(ret)) {
-		SD_TRACE("Error sending SEND_SCR");
+		printf("SD: error sending SEND_SCR\n");
 		return SD_ERROR;
 	}
 
@@ -1559,7 +1559,7 @@ static int sd_ensure_data_mode(void) {
 	sd_issue_command(SEND_STATUS, edev->card_rca << 16, 500000);
 
 	if (FAIL(edev)) {
-		SD_TRACE("Error sending CMD13");
+		printf("SD: ensure_data_mode() error sending CMD13\n");
 		edev->card_rca = 0;
 		return -1;
 	}
@@ -1573,7 +1573,7 @@ static int sd_ensure_data_mode(void) {
 		// Currently in the stand-by state - select it
 		sd_issue_command(SELECT_CARD, edev->card_rca << 16, 500000);
 		if (FAIL(edev)) {
-			SD_TRACE("No response from CMD17");
+			printf("SD: ensure_data_mode() no response from CMD17\n");
 			edev->card_rca = 0;
 			return -1;
 		}
@@ -1581,7 +1581,7 @@ static int sd_ensure_data_mode(void) {
 		// In the data transfer state - cancel the transmission
 		sd_issue_command(STOP_TRANSMISSION, 0, 500000);
 		if (FAIL(edev)) {
-			SD_TRACE("No response from CMD12");
+			printf("SD: ensure_data_mode() no response from CMD12\n");
 			edev->card_rca = 0;
 			return -1;
 		}
@@ -1604,7 +1604,7 @@ static int sd_ensure_data_mode(void) {
 		sd_issue_command(SEND_STATUS, edev->card_rca << 16, 500000);
 
 		if (FAIL(edev)) {
-			SD_TRACE("No response from CMD13");
+			printf("SD: ensure_data_mode() no response from CMD13\n");
 			edev->card_rca = 0;
 			return -1;
 		}
@@ -1615,7 +1615,7 @@ static int sd_ensure_data_mode(void) {
 		SD_TRACE("%d", cur_state);
 
 		if (cur_state != 4) {
-			SD_TRACE("Unable to initialize SD card to data mode (state %d)", cur_state);
+			printf("SD: unable to initialize SD card to data mode (state %d)\n", cur_state);
 			edev->card_rca = 0;
 			return -1;
 		}

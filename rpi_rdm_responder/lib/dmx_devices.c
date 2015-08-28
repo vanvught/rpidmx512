@@ -42,6 +42,8 @@ TABLE(initializer_t, devices_init)
 devices_t devices_connected __attribute__((aligned(4)));
 static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((aligned(4)));	///<
 
+static FATFS fat_fs;	///<
+
 /**
  * @ingroup dmx
  *
@@ -167,9 +169,16 @@ static int add_connected_device(const char *line) {
  *
  */
 void dmx_devices_read_config(void) {
-	FRESULT rc = FR_DISK_ERR;
-	FIL file_object;
+	int rc = -1;
 
+	FIL file_object;
+#if (_FFCONF == 82786)	/* R0.09b */
+	rc = f_mount((BYTE) 0, &fat_fs);
+#elif (_FFCONF == 32020)/* R0.11 */
+	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 0);
+#else
+#error Not a recognized/tested FatFs version
+#endif
 	devices_connected.elements_count = 0;
 
 	rc = f_open(&file_object, "devices.txt", FA_READ);

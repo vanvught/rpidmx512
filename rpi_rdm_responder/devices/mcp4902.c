@@ -47,7 +47,6 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  * @param dmx_device_info
  */
 static void mcp4902(dmx_device_info_t * dmx_device_info) {
-	const uint8_t *dmx_data = dmx_get_data();
 	uint16_t dmx_data_index;
 
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	// 15.625MHz
