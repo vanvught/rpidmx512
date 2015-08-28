@@ -23,7 +23,9 @@ LIB =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv6zk/arm1176jzf-s/hardfp/vfp
 LIB += -L /opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
 LIB += -L"../bob-baremetal/lib"
 LIB += -L"../bcm2835-baremetal/lib"
+LIB += -L"../emmc/lib"
 LIB += -L"../fb/lib"
+LIB += -L"../ff11/lib"
 LIB += -L"../hal-baremetal/lib"
 #LIB += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
@@ -31,7 +33,9 @@ LIB7 =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv7-a/cortex-a7/hardfp/vfpv4
 LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
 LIB7 += -L"../bob-baremetal/lib7"
 LIB7 += -L"../bcm2835-baremetal/lib7"
+LIB7 += -L"../emmc/lib7"
 LIB7 += -L"../fb/lib7"
+LIB7 += -L"../ff11/lib7"
 LIB7 += -L"../hal-baremetal/lib7"
 #LIB7 += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
@@ -95,8 +99,8 @@ $(BUILD)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@		
 	
-$(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../bob-baremetal/lib/libbob.a ../hal-baremetal/lib/libhal.a ../fb/lib/libfb.a
-	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lhal -lfb -lbob -lbcm2835 -lc -lgcc
+$(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) ../bcm2835-baremetal/lib/libbcm2835.a ../bob-baremetal/lib/libbob.a ../hal-baremetal/lib/libhal.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff11/lib/libff11.a
+	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lhal -lfb -lff11 -lemmc -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
@@ -119,8 +123,8 @@ $(BUILD7)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD7)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 	
-$(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) ../bcm2835-baremetal/lib7/libbcm2835.a ../bob-baremetal/lib7/libbob.a ../hal-baremetal/lib7/libhal.a ../fb/lib7/libfb.a
-	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) -lhal -lfb -lbob -lbcm2835 -lc -lgcc
+$(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) ../bcm2835-baremetal/lib7/libbcm2835.a ../bob-baremetal/lib7/libbob.a ../hal-baremetal/lib7/libhal.a ../fb/lib7/libfb.a ../emmc/lib7/libemmc.a ../ff11/lib7/libff11.a
+	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) -lhal -lfb -lff11 -lemmc -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD7)main.elf > $(LIST7)
 
 $(TARGET7) : $(BUILD7)main.elf
