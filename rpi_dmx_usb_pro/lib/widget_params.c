@@ -50,8 +50,6 @@ static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";		/
 static const char PARAMS_WIDGET_MODE[] = "widget_mode";								///<
 static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";	///<
 
-static FATFS fat_fs;	///<
-
 #ifdef UPDATE_CONFIG_FILE
 static char *uint8_toa(uint8_t i) {
 	/* Room for 3 digits and '\0' */
@@ -69,27 +67,28 @@ static char *uint8_toa(uint8_t i) {
 }
 
 static void sprintf_name_value(char *buffer, const char *name, const uint8_t value) {
-	char *p;
-	int n = 0;
+	char *dst = buffer;
+	const char *src = name;
 
-	while (name[n] != '\0') {
-		buffer[n] = name[n];
-		n++;
+	while (*src != '\0') {
+		*dst++ = *src++;
 	}
-	buffer[n++] = '=';
 
-	p = uint8_toa(value);
+	*dst++ = '=';
+
+	char *p = uint8_toa(value);
 
 	while (*p != '\0') {
-		buffer[n++] = *p++;
+		*dst++ = *p++;
 	}
 
-	buffer[n++] = '\n';
-	buffer[n] = '\0';
+	*dst++ = '\n';
+	*dst = '\0';
 }
 
 static bool process_line_update(const char *line, FIL *file_object_wr, const char *name, const uint8_t value) {
 	uint8_t _value;
+	int i;
 
 	if (sscan_uint8_t(line, name, &_value) == 2) {
 		TCHAR buffer[128];
@@ -99,6 +98,11 @@ static bool process_line_update(const char *line, FIL *file_object_wr, const cha
 	}
 
 	(void) f_puts(line, file_object_wr);
+
+	i = (int) _strlen(line) - 1;
+	if (line[i] != (char) '\n') {
+		(void) f_putc((TCHAR) '\n', file_object_wr);
+	}
 
 	return false;
 }
@@ -180,15 +184,8 @@ static void process_line_read_uint8_t(const char *line) {
  */
 static void read_config_file(void) {
 	FRESULT rc = FR_DISK_ERR;
-
 	FIL file_object;
-#if (_FFCONF == 82786)	/* R0.09b */
-	rc = f_mount((BYTE) 0, &fat_fs);
-#elif (_FFCONF == 32020)/* R0.11 */
-	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 1);
-#else
-#error Not a recognized/tested FatFs version
-#endif
+
 	rc = f_open(&file_object, PARAMS_FILE_NAME, (BYTE) FA_READ);
 
 	if (rc == FR_OK) {

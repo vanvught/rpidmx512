@@ -70,8 +70,6 @@ static struct _rdm_device_info rdm_device_info __attribute__((aligned(4)));
 static struct _rdm_device_info rdm_sub_device_info __attribute__((aligned(4)));
 #endif
 
-static FATFS fat_fs;	///<
-
 /**
  * @ingroup rdm
  *
@@ -121,16 +119,9 @@ static void process_line_read_string(const char *line) {
  *
  */
 static void read_config_file(void) {
-	int rc = -1;
-
+	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
-#if (_FFCONF == 82786)	/* R0.09b */
-	rc = f_mount((BYTE) 0, &fat_fs);
-#elif (_FFCONF == 32020)/* R0.11 */
-	rc = f_mount(&fat_fs, (const TCHAR *)"", (BYTE) 1);
-#else
-#error Not a recognized/tested FatFs version
-#endif
+
 	rc = f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ);
 
 	if (rc == FR_OK) {

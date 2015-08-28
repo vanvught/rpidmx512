@@ -34,6 +34,7 @@
 #include "hardware.h"
 #include "console.h"
 #include "sys_time.h"
+#include "ff.h"
 
 static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
 static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
@@ -70,6 +71,8 @@ struct _hardware_revision_code {
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
+
+static FATFS fat_fs;		/* File system object */
 
 /**
  * @ingroup hal
@@ -221,6 +224,14 @@ void hardware_init(void) {
 	(void) console_init();
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
+
+#if (_FFCONF == 82786)	/* R0.09b */
+	(void) f_mount((BYTE) 0, &fat_fs);
+#elif (_FFCONF == 32020)/* R0.11 */
+	(void) f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
+#else
+#error Not a recognized/tested FatFs version
+#endif
 
 	if (bcm2835_vc_get_get_board_revision() > 0x00000f) {
 		_hardware_led_f.init = led_rpiplus_init;
