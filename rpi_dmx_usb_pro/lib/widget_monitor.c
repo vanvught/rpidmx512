@@ -85,6 +85,6 @@ void monitor_update(void) {
 			console_clear_line(MONITOR_LINE_STATS);
 		}
 
-		monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
+		monitor_dmx_data(MONITOR_LINE_DMX_DATA);
 	}
 }

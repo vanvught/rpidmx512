@@ -77,6 +77,7 @@ inline static void display_data_decimal(const int start_channel) {
 	int i = 0;
 	int offset = 0;
 	const int dmx_data_index = start_channel;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < 4; i++){
 		offset = i * 4;
@@ -101,6 +102,7 @@ inline static void display_data_hex(const int start_channel) {
 	int i = 0;
 	int offset = 0;
 	const int dmx_data_index = start_channel;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < 4; i++) {
 		uint8_t data;
@@ -127,6 +129,7 @@ inline static void display_data_percentage(const int start_channel) {
 	int i = 0;
 	int offset = 0;
 	const int dmx_data_index = start_channel;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < 4; i++){
 		offset = i * 4;

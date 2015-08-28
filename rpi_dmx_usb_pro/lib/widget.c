@@ -202,6 +202,8 @@ void widget_received_dmx_packet(void) {
 	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", length);
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
+	const uint8_t *dmx_data = dmx_get_data();
+
 	usb_send_header(RECEIVED_DMX_PACKET, length + 1);
 	usb_send_byte(0); 	// DMX Receive status
 	usb_send_data(dmx_data, length);
@@ -292,11 +294,7 @@ void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 
-	uint16_t i = 0;
-	for (i = 0; i < data_length; i++) {
-		dmx_data[i] = widget_data[i];
-	}
-
+	dmx_set_data(widget_data, data_length);
 	dmx_set_send_data_length(data_length);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, true);
@@ -377,10 +375,7 @@ static void widget_receive_dmx_on_change(void) {
 
 	receive_dmx_on_change = widget_data[0];
 
-	uint16_t i;
-	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
-		dmx_data[i] = 0;
-	}
+	dmx_clear_data();
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 

@@ -56,7 +56,7 @@ void sniffer_dmx(void) {
 
 	dmx_set_available_false();
 
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
+	monitor_dmx_data(MONITOR_LINE_DMX_DATA);
 }
 
 /**

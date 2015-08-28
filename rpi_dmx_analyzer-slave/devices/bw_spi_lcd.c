@@ -89,6 +89,7 @@ inline static void display_data_hex(device_info_t *device_info, const uint16_t s
 	char text[BW_LCD_MAX_CHARACTERS];
 	int i = 0;
 	int offset = 0;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < 4; i++) {
 		uint8_t data;

@@ -116,9 +116,10 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
  * @param line
  * @param data
  */
-void monitor_dmx_data(const int line, const uint8_t *data) {
+void monitor_dmx_data(const int line) {
 	uint16_t i;
 	uint16_t slots;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
 		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
@@ -136,7 +137,7 @@ void monitor_dmx_data(const int line, const uint8_t *data) {
 	}
 
 	for (i = (uint16_t)1; i < slots; i++) {
-		uint8_t d = data[i];
+		uint8_t d = dmx_data[i];
 		if (d == (uint8_t)0) {
 			console_puts(" 0");
 		} else {
@@ -177,7 +178,7 @@ void monitor_sniffer(void) {
 	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
 
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA, dmx_data);
+	monitor_dmx_data(MONITOR_LINE_DMX_DATA);
 	console_clear_line(MONITOR_LINE_PACKETS);
 	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets,
 			(long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);

@@ -50,6 +50,7 @@ void monitor_update(void) {
 	const uint32_t dmx_available_count_per_second = dmx_handle_data_statistics->dmx_available_count - dmx_available_count_previous;
 	const uint32_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;
 	const uint8_t *rdm_data = rdm_get_current_data();
+	const uint8_t *dmx_data = dmx_get_data();
 	uint8_t i;
 
 	monitor_time_uptime(MONITOR_LINE_TIME);

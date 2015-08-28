@@ -111,6 +111,7 @@ static bool can_send(void) {
  */
 void widget_sniffer_dmx(void) {
 	const uint8_t mode = widget_get_mode();
+	const uint8_t *dmx_data = dmx_get_data();
 
 	if (mode != MODE_RDM_SNIFFER) {
 		return;
