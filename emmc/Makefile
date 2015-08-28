@@ -4,7 +4,7 @@ COPS_COMMON  = -DBARE_METAL
 COPS_COMMON += -DSD_WRITE_SUPPORT
 COPS_COMMON += -I"./include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
-COPS_COMMON += -I"../ff9b/src"
+COPS_COMMON += -I"../ff11/src"
 COPS_COMMON += -I"../hal-baremetal/include"
 COPS_COMMON += -std=c99 -pedantic -Wall -O3 -nostartfiles -ffreestanding -mhard-float  
 
@@ -60,7 +60,7 @@ $(TARGET): Makefile $(OBJECTS)
 $(BUILD7)%.o: ./firmware/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
 
-$(BUILD)%.o: ./firmware/%.S
+$(BUILD7)%.o: ./firmware/%.S
 	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
 
 $(BUILD7)%.o: $(SOURCE)/%.c

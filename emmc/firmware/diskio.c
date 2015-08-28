@@ -33,12 +33,39 @@
 #include "sys_time.h"
 #include "diskio.h"
 
+#define CACHE_ENABLED
+
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
 #error Wrong sector size configuration
 #endif
 #define SECTOR_SIZE	512
 
+#ifdef CACHE_ENABLED
+#define CACHE_ENTRIES	(1 << 9)			///< 512 entries
+#define CACHE_MASK		(CACHE_ENTRIES - 1)	///< mask 0x01FF
+
+static uint32_t cached_blocks[CACHE_ENTRIES] __attribute__((aligned(4)));
+static uint8_t cache_buffer[SECTOR_SIZE * CACHE_ENTRIES] __attribute__((aligned(SECTOR_SIZE)));
+
+#if 0
+inline static void *_memcpy(void *dest, const void *src, size_t n) {
+	char *dp = dest;
+	const char *sp = src;
+
+	while (n-- != (size_t) 0) {
+		*dp++ = *sp++;
+	}
+
+	return dest;
+}
+#else
+extern void *memcpy32(void *dest, const void *src, size_t n);
+#endif
+#endif
+
 static volatile BYTE diskio_status = (BYTE) STA_NOINIT;
+
+///extern int printf(const char *format, ...);
 
 /**
  *
@@ -46,6 +73,12 @@ static volatile BYTE diskio_status = (BYTE) STA_NOINIT;
  */
 static inline int sdcard_init(void){
 	if (sd_card_init() == 0) {
+#ifdef CACHE_ENABLED
+		int i;
+		for (i = 0; i < CACHE_ENTRIES; i++) {
+			cached_blocks[i] = 0xFFFFFFFF;
+		}
+#endif
 		return RES_OK;
 	}
 
@@ -62,10 +95,37 @@ static inline int sdcard_init(void){
 static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 	size_t buf_size = count * SECTOR_SIZE;
 
-	if (sd_read(buf, buf_size, (uint32_t) sector) < (int) buf_size) {
-		return RES_ERROR;
-	}
+	//printf("%s:%d - sector = %d, count = %d\n", __FUNCTION__, __LINE__, sector, count);
+#ifdef CACHE_ENABLED
+	if (count == 1) {
+		int index = sector & CACHE_MASK;
+		void *cache_p = (void *)(cache_buffer + SECTOR_SIZE * index);
 
+		//printf("sector = %d, index = %d", sector, index);
+
+		if (cached_blocks[index] != sector) {
+			//printf(" not in cache\n");
+
+			if (sd_read(cache_p, buf_size, (uint32_t) sector) < (int) buf_size) {
+				return RES_ERROR;
+			}
+
+			cached_blocks[index] = sector;
+
+		} else {
+			//printf(" in cache\n");
+		}
+
+		memcpy32((uint32_t *)buf, (uint32_t *)cache_p, SECTOR_SIZE / 32);
+
+	} else {
+#endif
+		if (sd_read(buf, buf_size, (uint32_t) sector) < (int) buf_size) {
+			return RES_ERROR;
+		}
+#ifdef CACHE_ENABLED
+	}
+#endif
 	return RES_OK;
 }
 
@@ -80,10 +140,21 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     size_t buf_size = count * SECTOR_SIZE;
 
+    //printf("%s:%d - sector = %d, count = %d\n", __FUNCTION__, __LINE__, sector, count);
+
     if (sd_write((uint8_t *) buf, buf_size, sector) < buf_size) {
 		return RES_ERROR;
 	}
-
+#ifdef CACHE_ENABLED
+    int i;
+    for (i = 0; i < count; i++) {
+    	int index = (sector + i) & CACHE_MASK;
+    	//if (cached_blocks[index] == (sector + i)) {
+    		//printf("updating cache, sector = %d, index = %d\n", (sector + i), index);
+    		memcpy32((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
+    	//}
+    }
+#endif
 	return RES_OK;
 }
 #endif
@@ -104,7 +175,7 @@ DSTATUS disk_initialize(BYTE drv) {
  *
  * Read some sectors.
  */
-DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
+DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
 	if (drv || !count) {
 		return RES_PARERR;
 	}
@@ -124,7 +195,7 @@ DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, BYTE count) {
  *
  * Write some sectors.
  */
-DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, BYTE count) {
+DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
 #ifdef SD_WRITE_SUPPORT
 	if (drv || !count) {
 		return RES_PARERR;
