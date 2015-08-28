@@ -46,6 +46,7 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  */
 static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	bw_spi_dimmer_output(&dmx_device_info->device_info, dmx_data[dmx_data_index]);
 }

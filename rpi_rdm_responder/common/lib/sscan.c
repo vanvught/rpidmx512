@@ -37,34 +37,40 @@
  * @return
  */
 int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
-	int i;
-	int k = 0;
+	int k;
 
-	for (i = 0; (name[i] != (char) 0) && (buf[i] != (char) '=')	&& (buf[i] != (char) 0); i++) {
-		if (name[i] != buf[i]) {
+	const char *n = name;
+	const char *b = buf;
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
 			return 0;
 		}
 	}
 
-	if (name[i] != (char)0) {
+	if (*n != (char) 0) {
 		return 0;
 	}
 
-	i++;
-
-	while ((buf[i] != (char) 0) && (buf[i] != '\n')) {
-		if (!is_digit(buf[i])) {
-			return 1;
-		}
-		k = k * 10 + (int)buf[i] - (int)'0';
-		i++;
+	if (*b++ != (char) '=') {
+		return 0;
 	}
 
-	if (k > (int)((uint8_t)~0)) {
+	k = 0;
+
+	while ((*b != (char) 0) && (*b != '\n')) {
+		if (!is_digit(*b)) {
+			return 1;
+		}
+		k = k * 10 + (int) *b - (int) '0';
+		b++;
+	}
+
+	if (k > (int) ((uint8_t) ~0)) {
 		return 1;
 	}
 
-	*value = (uint8_t)k;
+	*value = (uint8_t) k;
 
 	return 2;
 }
@@ -78,29 +84,35 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
  * @return
  */
 int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
-	int i;
 	int k;
 
-	for (i = 0; (name[i] != (char) 0) && (buf[i] != (char) '=')	&& (buf[i] != (char) 0); i++) {
-		if (name[i] != buf[i]) {
+	const char *n = name;
+	const char *b = buf;
+	char *v = value;
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
 			return 0;
 		}
 	}
 
-	if (name[i] != (char)0) {
+	if (*n != (char) 0) {
 		return 0;
 	}
 
-	i++;
-
-	if ((buf[i] == (char) 0) || (buf[i] == '\n')) {
-		return 1;
+	if (*b++ != (char) '=') {
+		return 0;
 	}
 
 	k = 0;
 
-	while ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (k < (int)*len)) {
-		value[k++] = buf[i++];
+	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int)*len)) {
+		*v++ = *b++;
+		k++;
+	}
+
+	if ((*b  != (char) 0) &&  (*b != (char) '\n') ){
+		return 1;
 	}
 
 	*len = (uint8_t)k;

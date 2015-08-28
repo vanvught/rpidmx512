@@ -68,9 +68,12 @@ struct _total_statistics {
 	uint32_t rdm_packets;								///<
 };
 
-extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE]; //TODO remove
+//extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE]; //TODO remove
 
 extern void dmx_init(void);
+extern /*@shared@*/const uint8_t *dmx_get_data(void) ASSUME_ALIGNED;
+extern void dmx_set_data(const uint8_t *, const uint16_t);
+extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);

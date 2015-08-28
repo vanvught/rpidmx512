@@ -48,6 +48,7 @@ static void mcp23s17(dmx_device_info_t * dmx_device_info) {
 	int i;
 	uint16_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
+	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < DMX_FOOTPRINT; i++) {
 
