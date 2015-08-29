@@ -63,7 +63,7 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 	uint16_t i = 0;
 
 	if (data_length < (uint16_t) (SNIFFER_PACKET_SIZE / 2)) {
-		usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
+		widget_usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
 
 		for (i = 0; i < data_length; i++) {
 			usb_send_byte(DATA_MASK);
@@ -75,16 +75,16 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 			usb_send_byte(0x02);
 		}
 
-		usb_send_footer();
+		widget_usb_send_footer();
 	} else {
-		usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
+		widget_usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
 
 		for (i = 0; i < SNIFFER_PACKET_SIZE / 2; i++) {
 			usb_send_byte((uint8_t) DATA_MASK);
 			usb_send_byte(data[i + start]);
 		}
 
-		usb_send_footer();
+		widget_usb_send_footer();
 
 		usb_send_package(data, start + SNIFFER_PACKET_SIZE / 2, data_length - SNIFFER_PACKET_SIZE / 2);
 	}
