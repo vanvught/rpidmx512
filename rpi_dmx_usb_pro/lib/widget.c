@@ -133,7 +133,7 @@ static void widget_get_params_reply(void) {
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
 	widget_params_get(&widget_params);
-	usb_send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *) &widget_params, sizeof(struct _widget_params));
+	widget_usb_send_message(GET_WIDGET_PARAMS_REPLY, (uint8_t *) &widget_params, sizeof(struct _widget_params));
 }
 
 /**
@@ -154,7 +154,6 @@ static void widget_set_params() {
 	widget_params.break_time = widget_data[2];
 	widget_params.mab_time = widget_data[3];
 	widget_params.refresh_rate = widget_data[4];
-
 	widget_params_set(&widget_params);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
@@ -208,10 +207,10 @@ void widget_received_dmx_packet(void) {
 
 	const uint8_t *dmx_data = dmx_get_data();
 
-	usb_send_header(RECEIVED_DMX_PACKET, length + 1);
+	widget_usb_send_header(RECEIVED_DMX_PACKET, length + 1);
 	usb_send_byte(0); 	// DMX Receive status
-	usb_send_data(dmx_data, length);
-	usb_send_footer();
+	widget_usb_send_data(dmx_data, length);
+	widget_usb_send_footer();
 }
 
 /**
@@ -247,10 +246,10 @@ void widget_received_rdm_packet(void) {
 		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xCC tn:%d , cc:%.2x, pid:%d",
 				p->transaction_number, p->command_class, (p->param_id[0] << 8) + p->param_id[1]);
 
-		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+		widget_usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status
-		usb_send_data(rdm_data, message_length);
-		usb_send_footer();
+		widget_usb_send_data(rdm_data, message_length);
+		widget_usb_send_footer();
 
 		const uint16_t param_id = (p->param_id[0] << 8) + p->param_id[1];
 
@@ -265,10 +264,10 @@ void widget_received_rdm_packet(void) {
 		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
 		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xFE");
 
-		usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
+		widget_usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status
-		usb_send_data(rdm_data, message_length);
-		usb_send_footer();
+		widget_usb_send_data(rdm_data, message_length);
+		widget_usb_send_footer();
 
 		rdm_time_out_message();
 	}
@@ -298,8 +297,7 @@ void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 
-	dmx_set_data(widget_data, data_length);
-	dmx_set_send_data_length(data_length);
+	dmx_set_send_data(widget_data, data_length);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, true);
 }
@@ -436,7 +434,7 @@ static void widget_get_sn_reply(void) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
+	widget_usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
@@ -482,8 +480,8 @@ inline static void rdm_time_out_message(void) {
 	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, message_length : %d", message_length);
 	monitor_line(MONITOR_LINE_STATUS, "rdm_time_out_message");
 
-	usb_send_header(RDM_TIMEOUT, message_length);
-	usb_send_footer();
+	widget_usb_send_header(RDM_TIMEOUT, message_length);
+	widget_usb_send_footer();
 
 	widget_rdm_discovery_running = false;
 	widget_send_rdm_packet_start = 0;
@@ -508,10 +506,10 @@ static void widget_get_manufacturer_reply(void) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
-	usb_send_data(manufacturer_id, manufacturer_id_length);
-	usb_send_data((uint8_t *) manufacturer_name, manufacturer_name_length);
-	usb_send_footer();
+	widget_usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
+	widget_usb_send_data(manufacturer_id, manufacturer_id_length);
+	widget_usb_send_data((uint8_t *) manufacturer_name, manufacturer_name_length);
+	widget_usb_send_footer();
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
@@ -537,10 +535,10 @@ static void widget_get_name_reply(void) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
-	usb_send_data(device_id, device_id_length);
-	usb_send_data((uint8_t *) device_name, device_name_length);
-	usb_send_footer();
+	widget_usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
+	widget_usb_send_data(device_id, device_id_length);
+	widget_usb_send_data((uint8_t *) device_name, device_name_length);
+	widget_usb_send_footer();
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
