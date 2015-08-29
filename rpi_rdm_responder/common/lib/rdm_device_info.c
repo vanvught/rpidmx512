@@ -119,13 +119,13 @@ static void process_line_read_string(const char *line) {
  *
  */
 static void read_config_file(void) {
-	FRESULT rc = FR_DISK_ERR;
+	TCHAR buffer[128];
 	FIL file_object;
+	FRESULT rc = FR_DISK_ERR;
 
 	rc = f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ);
 
 	if (rc == FR_OK) {
-		TCHAR buffer[128];
 		for (;;) {
 			if (f_gets(buffer, sizeof buffer, &file_object) == NULL)
 				break; // Error or end of file

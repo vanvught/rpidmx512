@@ -32,21 +32,25 @@
 #include "widget_params.h"
 #include "sscan.h"
 
+///<
 static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
 
+///<
 static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 		(uint8_t) WIDGET_DEFAULT_FIRMWARE_LSB, (uint8_t) FIRMWARE_RDM,
 		(uint8_t) WIDGET_DEFAULT_BREAK_TIME, (uint8_t) WIDGET_DEFAULT_MAB_TIME,
 		(uint8_t) WIDGET_DEFAULT_REFRESH_RATE };
 
-static uint8_t dmx_send_to_host_throttle = 0;
+static uint8_t dmx_send_to_host_throttle = 0;										///<
 
-static const TCHAR PARAMS_FILE_NAME[] = "params.txt";								///< Parameters file name
-///< entries
+static const TCHAR FILE_NAME_PARAMS[] = "params.txt";								///< Parameters file name
+static const TCHAR FILE_NAME_PARAMS_BAK[] = "params.bak";							///<
+static const TCHAR FILE_NAME_UPDATES[] = "updates.txt";								///<
+
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";			///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";				///<
 static const char DMXUSBPRO_PARAMS_REFRESH_RATE[] = "dmxusbpro_refresh_rate";		///<
-///< custom entries
+
 static const char PARAMS_WIDGET_MODE[] = "widget_mode";								///<
 static const char PARAMS_DMX_SEND_TO_HOST_THROTTLE[] = "dmx_send_to_host_throttle";	///<
 
@@ -62,12 +66,12 @@ static bool needs_update[3] = { false, false, false };
 static char *uint8_toa(uint8_t i) {
 	/* Room for 3 digits and '\0' */
 	static char buffer[4];
-	char *p = &buffer[3];	/* points to terminating '\0' */
+	char *p = &buffer[3]; /* points to terminating '\0' */
 
-	buffer[3] = '\0';
+	*p = (char) '\0';
 
 	do {
-		*--p = (char)'0' + (char)(i % 10);
+		*--p = (char) '0' + (char) (i % 10);
 		i /= 10;
 	} while (i != 0);
 
@@ -78,20 +82,20 @@ static void sprintf_name_value(char *buffer, const char *name, const uint8_t val
 	char *dst = buffer;
 	const char *src = name;
 
-	while (*src != '\0') {
+	while (*src != (char) '\0') {
 		*dst++ = *src++;
 	}
 
-	*dst++ = '=';
+	*dst++ = (char) '=';
 
 	char *p = uint8_toa(value);
 
-	while (*p != '\0') {
+	while (*p != (char) '\0') {
 		*dst++ = *p++;
 	}
 
-	*dst++ = '\n';
-	*dst = '\0';
+	*dst++ = (char) '\n';
+	*dst = (char) '\0';
 }
 
 static void process_line_update(const char *line, FIL *file_object_wr) {
@@ -136,14 +140,14 @@ static void process_line_update(const char *line, FIL *file_object_wr) {
 
 static void update_config_file(void) {
 	TCHAR buffer[128];
-	int rc = -1;
-
 	FIL file_object_rd;
-	rc = f_open(&file_object_rd, PARAMS_FILE_NAME, FA_READ);
+	FIL file_object_wr;
+	FRESULT rc = FR_DISK_ERR;
+
+	rc = f_open(&file_object_rd, FILE_NAME_PARAMS, (BYTE)FA_READ);
 
 	if (rc == FR_OK) {
-		FIL file_object_wr;
-		rc = f_open(&file_object_wr, "updates.txt", FA_WRITE | FA_CREATE_ALWAYS);
+		rc = f_open(&file_object_wr, FILE_NAME_UPDATES, (BYTE)(FA_WRITE | FA_CREATE_ALWAYS));
 
 		if (rc == FR_OK) {
 
@@ -174,9 +178,9 @@ static void update_config_file(void) {
 
 			(void) f_close(&file_object_wr);
 			(void) f_close(&file_object_rd);
-			(void) f_unlink((TCHAR *) "params.bak");
-			(void) f_rename((TCHAR *) PARAMS_FILE_NAME, (TCHAR *) "params.bak");
-			(void) f_rename((TCHAR *) "updates.txt", (TCHAR *) PARAMS_FILE_NAME);
+			(void) f_unlink(FILE_NAME_PARAMS_BAK);
+			(void) f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
+			(void) f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
 		}
 	}
 }
@@ -219,7 +223,7 @@ static void read_config_file(void) {
 	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
 
-	rc = f_open(&file_object, PARAMS_FILE_NAME, (BYTE) FA_READ);
+	rc = f_open(&file_object, FILE_NAME_PARAMS, (BYTE) FA_READ);
 
 	if (rc == FR_OK) {
 		TCHAR buffer[128];
