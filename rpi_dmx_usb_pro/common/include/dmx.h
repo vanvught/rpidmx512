@@ -72,7 +72,7 @@ struct _total_statistics {
 
 extern void dmx_init(void);
 extern /*@shared@*/const uint8_t *dmx_get_data(void) ASSUME_ALIGNED;
-extern void dmx_set_data(const uint8_t *, const uint16_t);
+extern void dmx_set_send_data(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
@@ -88,7 +88,6 @@ extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) ASSUME_ALIGNED;
 extern /*@shared@*/const volatile struct _dmx_statistics *dmx_get_statistics(void) ASSUME_ALIGNED;
 extern const uint16_t dmx_get_send_data_length(void);
-extern void dmx_set_send_data_length(uint16_t);
 extern const uint32_t dmx_get_output_period(void);
 extern void dmx_set_output_period(const uint32_t);
 extern /*@shared@*/const /*@null@*/uint8_t *rdm_get_available(void) ASSUME_ALIGNED;

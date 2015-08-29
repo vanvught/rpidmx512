@@ -103,11 +103,26 @@ const uint8_t *dmx_get_data(void) {
 /**
  * @ingroup dmx
  *
+ * @param send_data_length
+ */
+static void dmx_set_send_data_length(uint16_t send_data_length) {
+	dmx_send_data_length = send_data_length;
+
+	if (dmx_output_fast_as_possible != 0) {
+		dmx_set_output_period(0);
+	}
+}
+
+/**
+ * @ingroup dmx
+ *
  * @param data
  * @param length
  */
-void dmx_set_data(const uint8_t *data, const uint16_t length) {
+void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
 	_memcpy(dmx_data, data, (size_t)length);
+
+	dmx_set_send_data_length(length);
 }
 
 /**
@@ -162,19 +177,6 @@ void dmx_set_output_period(const uint32_t period) {
  */
 const uint16_t dmx_get_send_data_length(void) {
 	return dmx_send_data_length;
-}
-
-/**
- * @ingroup dmx
- *
- * @param send_data_length
- */
-void dmx_set_send_data_length(uint16_t send_data_length) {
-	dmx_send_data_length = send_data_length;
-
-	if (dmx_output_fast_as_possible != 0) {
-		dmx_set_output_period(0);
-	}
 }
 
 /**
