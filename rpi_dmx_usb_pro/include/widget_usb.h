@@ -28,9 +28,9 @@
 
 #include <stdint.h>
 
-extern void usb_send_header(const uint8_t, const uint16_t);
-extern void usb_send_data(const uint8_t *, const uint16_t);
-extern void usb_send_footer(void);
-extern void usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
+extern void widget_usb_send_header(const uint8_t, const uint16_t);
+extern void widget_usb_send_data(const uint8_t *, const uint16_t);
+extern void widget_usb_send_footer(void);
+extern void widget_usb_send_message(const uint8_t, const uint8_t *, const uint16_t);
 
 #endif /* WIDGET_USB_H_ */
