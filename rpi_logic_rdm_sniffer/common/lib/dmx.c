@@ -56,7 +56,7 @@ typedef enum {
 	RDMDISCECS	///<
 } _dmx_state;
 
-static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));				///<
+static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));		///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
 static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
@@ -107,10 +107,7 @@ const uint8_t *dmx_get_data(void) {
  * @param length
  */
 void dmx_set_data(const uint8_t *data, const uint16_t length) {
-	int i;
-	for (i = 0; i < length; i++) {
-		dmx_data[i] = data[i];
-	}
+	_memcpy(dmx_data, data, (size_t)length);
 }
 
 /**
@@ -118,9 +115,11 @@ void dmx_set_data(const uint8_t *data, const uint16_t length) {
  *
  */
 void dmx_clear_data(void) {
-	uint16_t i;
-	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
-		dmx_data[i] = 0;
+	uint16_t i = DMX_DATA_BUFFER_SIZE;
+	uint8_t *p = dmx_data;
+
+	while (i-- != (uint16_t) 0) {
+		*p++ = (uint8_t) 0;
 	}
 }
 
@@ -238,22 +237,31 @@ void dmx_set_available_false(void) {
  * @return
  */
 bool dmx_is_data_changed(void) {
-	uint32_t i;
+	uint16_t i;
+	uint8_t *src;
+	uint8_t *dst;
 	bool is_changed = false;
 
 	if (dmx_statistics.slots_in_packet != dmx_slots_in_packet_previous) {
 		dmx_slots_in_packet_previous = dmx_statistics.slots_in_packet;
+		src = dmx_data;
+		dst = dmx_data_previous;
 		for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
-			dmx_data_previous[i] = dmx_data[i];
+			*dst++ = *src++;
 		}
 		return true;
 	}
 
+	src = dmx_data;
+	dst = dmx_data_previous;
+
 	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
-		if (dmx_data_previous[i] != dmx_data[i]) {
+		if (*dst != *src) {
+			*dst = *src;
 			is_changed = true;
-			dmx_data_previous[i] = dmx_data[i];
 		}
+		dst++;
+		src++;
 	}
 
 	return is_changed;
@@ -552,18 +560,12 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				dmx_send_state = DMXDATA;
 				uint16_t i = 0;
 				for (i = 0; i < dmx_send_data_length; i++) {
-					while (1) {
-						if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
-							break;
-						}
-					}
+					while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+						;
 					BCM2835_PL011->DR = dmx_data[i];
 				}
-				while (1) {
-					if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
-						break;
-					}
-				}
+				while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+					;
 				udelay(44);
 				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmx_send_state = IDLE;
@@ -713,7 +715,7 @@ void dmx_init(void) {
 	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);	// IRQ
 #endif
 
-	for (i = 0; i < sizeof(dmx_data) / sizeof(dmx_data[0]); i++) {
+	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++) {
 		dmx_data[i] = (uint8_t)0;
 		dmx_data_previous[i] = (uint8_t)0;
 	}

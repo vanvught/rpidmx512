@@ -50,22 +50,16 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
 	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	udelay(RDM_TRANSMIT_MAB_TIME);	// Mark After Break
+	udelay(RDM_TRANSMIT_MAB_TIME);		// Mark After Break
 
 	for (i = 0; i < data_length; i++) {
-		while (1 == 1) {
-			if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
-				break;
-			}
-		}
+		while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+			;
 		BCM2835_PL011->DR = data[i];
 	}
 
-	while (1 == 1) {
-		if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0) {
-			break;
-		}
-	}
+	while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+		;
 	udelay(44);
 }
 
@@ -81,17 +75,13 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 
 	for (i = 0; i < data_length; i++) {
-		while (1 == 1) {
-			if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0)
-				break;
-		}
+		while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+			;
 		BCM2835_PL011->DR = data[i];
 	}
 
-	while (1 == 1) {
-		if ((BCM2835_PL011->FR & PL011_FR_TXFF) == 0)
-			break;
-	}
+	while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+		;
 	udelay(44);
 }
 
@@ -227,4 +217,3 @@ void rdm_send_decrement_message_count() {
 		rdm_message_count--;
 	}
 }
-
