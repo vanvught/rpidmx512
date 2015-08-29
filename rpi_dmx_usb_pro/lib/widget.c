@@ -140,18 +140,22 @@ static void widget_get_params_reply(void) {
  * @ingroup widget
  *
  * Set Widget Parameters Request (Label=4 \ref SET_WIDGET_PARAMS)
- * This message sets the Widget configuration.
+ * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
  *
  */
 static void widget_set_params() {
+	struct _widget_params widget_params;
+
 	monitor_line(MONITOR_LINE_INFO, "SET_WIDGET_PARAMS");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	widget_params_set_break_time(widget_data[2]);
-	widget_params_set_mab_time(widget_data[3]);
-	widget_params_set_refresh_rate(widget_data[4]);
+	widget_params.break_time = widget_data[2];
+	widget_params.mab_time = widget_data[3];
+	widget_params.refresh_rate = widget_data[4];
+
+	widget_params_set(&widget_params);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
