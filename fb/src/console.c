@@ -87,12 +87,14 @@ inline static void newline() {
 
 	if (cur_y == HEIGHT / CHAR_H) {
 		/* Pointer to row = 0 */
-		uint8_t *to = (uint8_t *) (fb_addr);
+		uint16_t *to = (uint16_t *) (fb_addr);
 		/* Pointer to row = 1 */
-		uint8_t *from = to + (CHAR_H * PITCH);
+		uint16_t *from = to + (CHAR_H * WIDTH);
 		/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
-		memmove(to, from, (HEIGHT - CHAR_H) * PITCH);
-
+		i = (HEIGHT - CHAR_H) * WIDTH;
+		while (i-- != 0 ) {
+			*to++ = *from++;
+		}
 		/* Clear last row */
 		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * WIDTH);
 		for (i = 0 ; i < (CHAR_H * WIDTH) ; i++) {
@@ -125,15 +127,15 @@ inline static void draw_pixel(const int x, const int y, const uint16_t color) {
 inline static void draw_char(const int c, const int x, int y, const uint16_t fore, const uint16_t back) {
 	int i, j;
 	uint8_t line;
-	int index = c * (int) CHAR_H;
+	unsigned char *p = FONT + (c * (int) CHAR_H);
 
 	for (i = 0; i < CHAR_H; i++) {
-		line = (uint8_t) FONT[index++];
-		for (j = 0; j < CHAR_W; j++) {
+		line = *p++;
+		for (j = x; j < (CHAR_W + x); j++) {
 			if ((line & 0x1) != 0) {
-				draw_pixel(x + j, y, fore);
+				draw_pixel(j, y, fore);
 			} else {
-				draw_pixel(x + j, y, back);
+				draw_pixel(j, y, back);
 			}
 			line >>= 1;
 		}
