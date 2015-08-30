@@ -1,5 +1,5 @@
 /**
- * @file led.c
+ * @file led.h
  *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
@@ -23,47 +23,19 @@
  * THE SOFTWARE.
  */
 
+#ifndef LED_H_
+#define LED_H_
+
 #include <stdint.h>
 
-#include "bcm2835.h"
-#include "hardware.h"
+#define LED_BLINK_NORMAL	(uint32_t) (1E6 / 2)	///< 1Hz
+#define LED_BLINK_IDENTIFY	(uint32_t) (1E6 / 4)	///< 2Hz
+#define LED_BLINK_DMX_DATA	(uint32_t) (1E6 / 6)	///< 3Hz
+#define LED_BLINK_RDM_DATA	(uint32_t) (1E6 / 8)	///< 4Hz
 
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
-static uint32_t micros_previous = 0;						///<
-static uint32_t led_counter = 0;							///<
+extern void led_set_ticks_per_second(uint32_t);
+extern uint32_t ticks_per_second_get(void);
 
-/**
- * @ingroup led
- *
- * Set the ticks per second. For example 500000 (1E / 6) is blinking at 1Hz.
- *
- * @param ticks
- */
-void led_set_ticks_per_second(uint32_t ticks) {
-	ticks_per_second = ticks;
-}
+extern void led_blink(void);
 
-/**
- * @ingroup led
- *
- * @return Ticks per second.
- */
-uint32_t led_get_ticks_per_second(void) {
-	return ticks_per_second;
-}
-
-/**
- * @ingroup led
- *
- */
-void led_blink(void) {
-	const uint32_t micros_now = BCM2835_ST->CLO;
-
-	if (micros_now - micros_previous < ticks_per_second) {
-		return;
-	}
-
-	hardware_led_set((int)(led_counter++ & 0x01));
-
-	micros_previous = micros_now;
-}
+#endif /* LED_H_ */
