@@ -315,7 +315,7 @@ void console_clear_line(const int line) {
 
 	cur_x = 0;
 
-	address = (uint16_t *)(fb_addr + (line * CHAR_H * WIDTH * BYTES_PER_PIXEL));
+	address = (uint16_t *)(fb_addr) + (line * CHAR_H * WIDTH);
 
 	for (i = 0; i < (CHAR_H * WIDTH); i++) {
 		*address++ = cur_back;
