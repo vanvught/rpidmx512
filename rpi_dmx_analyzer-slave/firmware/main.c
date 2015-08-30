@@ -27,12 +27,12 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "led.h"
 #include "bw_ui.h"
 #include "ui_functions.h"
 #include "dmx.h"
 #include "dmx_devices.h"
 #include "monitor.h"
+#include "led.h"
 
 struct _poll {
 	void (*f)(void);

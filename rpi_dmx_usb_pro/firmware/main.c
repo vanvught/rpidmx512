@@ -27,7 +27,6 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "led.h"
 #include "usb.h"
 #include "util.h"
 #include "dmx.h"
@@ -35,6 +34,7 @@
 #include "rdm_device_info.h"
 #include "widget.h"
 #include "monitor.h"
+#include "led.h"
 
 struct _poll {
 	void (*f)(void);

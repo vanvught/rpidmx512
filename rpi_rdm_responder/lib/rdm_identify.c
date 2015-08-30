@@ -27,7 +27,8 @@
 #include <stdbool.h>
 
 #include "util.h"
-#include "led.h"
+
+#include "../../rpi_dmx_usb_pro/common/include/led.h"
 
 static bool rdm_identify_enabled = false;	///<
 

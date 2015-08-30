@@ -27,11 +27,11 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "led.h"
 #include "dmx.h"
 #include "dmx_devices.h"
 #include "rdm_device_info.h"
 #include "monitor.h"
+#include "led.h"
 
 // poll table
 extern void rdm_data_received(void);

@@ -27,10 +27,10 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "led.h"
 #include "dmx.h"
 #include "monitor.h"
 #include "sniffer.h"
+#include "led.h"
 
 struct _poll {
 	void (*f)(void);
