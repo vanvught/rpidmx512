@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 
 #include "util.h"
 #include "rdm_sensor_const.h"
