@@ -28,8 +28,8 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 #include <stdbool.h>
+
 #include "hardware.h"
 #include "usb.h"
 #include "util.h"
