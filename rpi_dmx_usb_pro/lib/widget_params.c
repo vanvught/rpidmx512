@@ -23,7 +23,6 @@
  */
 
 #include <stdint.h>
-#include <string.h>
 
 #include "ff.h"
 #include "util.h"
@@ -142,46 +141,48 @@ static void update_config_file(void) {
 	TCHAR buffer[128];
 	FIL file_object_rd;
 	FIL file_object_wr;
-	FRESULT rc = FR_DISK_ERR;
+	FRESULT rc_rd = FR_DISK_ERR;
+	FRESULT rc_wr = FR_DISK_ERR;
 
-	rc = f_open(&file_object_rd, FILE_NAME_PARAMS, (BYTE)FA_READ);
+	rc_rd = f_open(&file_object_rd, FILE_NAME_PARAMS, (BYTE) FA_READ);
+	rc_wr = f_open(&file_object_wr, FILE_NAME_UPDATES, (BYTE) (FA_WRITE | FA_CREATE_ALWAYS));
 
-	if (rc == FR_OK) {
-		rc = f_open(&file_object_wr, FILE_NAME_UPDATES, (BYTE)(FA_WRITE | FA_CREATE_ALWAYS));
+	if (rc_wr == FR_OK) {
 
-		if (rc == FR_OK) {
-
+		if (rc_rd == FR_OK) {
 			for (;;) {
 				if (f_gets(buffer, (int) sizeof(buffer), &file_object_rd) == NULL) {
 					break; // Error or end of file
 				}
 				process_line_update((const char *) buffer, &file_object_wr);
 			}
-
-			if (needs_update[AI_BREAK_TIME]) {
-				sprintf_name_value(buffer, DMXUSBPRO_PARAMS_BREAK_TIME, dmx_usb_pro_params.break_time);
-				(void) f_puts(buffer, &file_object_wr);
-				needs_update[AI_BREAK_TIME] = false;
-			}
-
-			if (needs_update[AI_MAB_TIME]) {
-				sprintf_name_value(buffer, DMXUSBPRO_PARAMS_MAB_TIME, dmx_usb_pro_params.mab_time);
-				(void) f_puts(buffer, &file_object_wr);
-				needs_update[AI_MAB_TIME] = false;
-			}
-
-			if (needs_update[AI_REFRESH_RATE]) {
-				sprintf_name_value(buffer, DMXUSBPRO_PARAMS_REFRESH_RATE, dmx_usb_pro_params.refresh_rate);
-				(void) f_puts(buffer, &file_object_wr);
-				needs_update[AI_REFRESH_RATE] = false;
-			}
-
-			(void) f_close(&file_object_wr);
-			(void) f_close(&file_object_rd);
-			(void) f_unlink(FILE_NAME_PARAMS_BAK);
-			(void) f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
-			(void) f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
 		}
+
+		if (needs_update[AI_BREAK_TIME]) {
+			sprintf_name_value(buffer, DMXUSBPRO_PARAMS_BREAK_TIME, dmx_usb_pro_params.break_time);
+			(void) f_puts(buffer, &file_object_wr);
+			needs_update[AI_BREAK_TIME] = false;
+		}
+
+		if (needs_update[AI_MAB_TIME]) {
+			sprintf_name_value(buffer, DMXUSBPRO_PARAMS_MAB_TIME, dmx_usb_pro_params.mab_time);
+			(void) f_puts(buffer, &file_object_wr);
+			needs_update[AI_MAB_TIME] = false;
+		}
+
+		if (needs_update[AI_REFRESH_RATE]) {
+			sprintf_name_value(buffer, DMXUSBPRO_PARAMS_REFRESH_RATE, dmx_usb_pro_params.refresh_rate);
+			(void) f_puts(buffer, &file_object_wr);
+			needs_update[AI_REFRESH_RATE] = false;
+		}
+
+		(void) f_close(&file_object_wr);
+		if (rc_rd == FR_OK) {
+			(void) f_close(&file_object_rd);
+		}
+		(void) f_unlink(FILE_NAME_PARAMS_BAK);
+		(void) f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
+		(void) f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
 	}
 }
 #else
