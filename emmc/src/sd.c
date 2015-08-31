@@ -1508,7 +1508,7 @@ int sd_card_init(void) {
 	}
 
 	SD_TRACE("&scr: %08x", &ret->scr->scr[0]);
-	SD_TRACE("SCR[0]: %08x, SCR[1]: %08x", ret->scr->scr[0], ret->scr->scr[1]);;
+	SD_TRACE("SCR[0]: %08x, SCR[1]: %08x", ret->scr->scr[0], ret->scr->scr[1]);
 	SD_TRACE("SCR: %08x%08x", __builtin_bswap32(ret->scr->scr[0]), __builtin_bswap32(ret->scr->scr[1]));
 	SD_TRACE("SCR: version %s, bus_widths %01x", sd_versions[ret->scr->sd_version], ret->scr->sd_bus_widths);
 

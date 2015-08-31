@@ -65,8 +65,6 @@ extern void *memcpy32(void *dest, const void *src, size_t n);
 
 static volatile BYTE diskio_status = (BYTE) STA_NOINIT;
 
-///extern int printf(const char *format, ...);
-
 /**
  *
  * @return
@@ -95,16 +93,12 @@ static inline int sdcard_init(void){
 static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 	size_t buf_size = count * SECTOR_SIZE;
 
-	//printf("%s:%d - sector = %d, count = %d\n", __FUNCTION__, __LINE__, sector, count);
 #ifdef CACHE_ENABLED
 	if (count == 1) {
 		int index = sector & CACHE_MASK;
 		void *cache_p = (void *)(cache_buffer + SECTOR_SIZE * index);
 
-		//printf("sector = %d, index = %d", sector, index);
-
 		if (cached_blocks[index] != sector) {
-			//printf(" not in cache\n");
 
 			if (sd_read(cache_p, buf_size, (uint32_t) sector) < (int) buf_size) {
 				return RES_ERROR;
@@ -113,7 +107,7 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 			cached_blocks[index] = sector;
 
 		} else {
-			//printf(" in cache\n");
+			// take sector from cache
 		}
 
 		memcpy32((uint32_t *)buf, (uint32_t *)cache_p, SECTOR_SIZE / 32);
@@ -140,8 +134,6 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     size_t buf_size = count * SECTOR_SIZE;
 
-    //printf("%s:%d - sector = %d, count = %d\n", __FUNCTION__, __LINE__, sector, count);
-
     if (sd_write((uint8_t *) buf, buf_size, sector) < buf_size) {
 		return RES_ERROR;
 	}
@@ -149,10 +141,7 @@ static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     int i;
     for (i = 0; i < count; i++) {
     	int index = (sector + i) & CACHE_MASK;
-    	//if (cached_blocks[index] == (sector + i)) {
-    		//printf("updating cache, sector = %d, index = %d\n", (sector + i), index);
-    		memcpy32((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
-    	//}
+    	memcpy32((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
     }
 #endif
 	return RES_OK;
