@@ -571,9 +571,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				udelay(44);
 				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmx_send_state = IDLE;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
 				break;
 			default:
 				break;
@@ -583,7 +580,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 
 	if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M3;
-		BCM2835_ST->C3 = clo + (uint32_t)1000000;;
+		BCM2835_ST->C3 = clo + (uint32_t)1000000;
 		dmx_statistics.updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
 		dmx_packets_previous = total_statistics.dmx_packets;
 	}
