@@ -375,8 +375,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		case IDLE:
 			if (data == 0xFE) {
 				dmx_receive_state = RDMDISCFE;
-				dmx_data_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+				rdm_data_buffer[rdm_data_buffer_index_head][0] = 0xFE;
+				dmx_data_index = 1;
 			}
 			break;
 #endif
@@ -403,8 +403,8 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				break;
 			case E120_SC_RDM:
 				dmx_receive_state = RDMDATA;
-				dmx_data_index = 0;
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	E120_SC_RDM;
+				rdm_data_buffer[rdm_data_buffer_index_head][0] = E120_SC_RDM;
+				dmx_data_index = 1;
 				rdm_checksum = E120_SC_RDM;
 				total_statistics.rdm_packets = total_statistics.rdm_packets + 1;
 				dmx_is_previous_break_dmx = false;
@@ -531,7 +531,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M1;
 
 		if (dmx_receive_state == DMXDATA) {
-			if (clo > dmx_fiq_micros_current + dmx_statistics.slot_to_slot) {
+			if (clo - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
 				dmx_receive_state = IDLE;
 				dmx_available = true;
 				dmx_statistics.slots_in_packet = dmx_data_index - 1;
