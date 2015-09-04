@@ -1,6 +1,10 @@
 /**
  * @file dmx.c
  *
+ * @brief This file implements the DMX512/RDM receive state-machine. It
+ * uses the Fast Interrupt Request (FIQ) for accurate timing.
+ * The Interrupt Request (IRQ) is used for sending DMX data.
+ *
  */
 /* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
@@ -626,6 +630,12 @@ void dmx_start_data(void) {
 /**
  * @ingroup dmx
  *
+ * If \ref dmx_send_always is true, then the IRQ routine is outputting DMX512.
+ * We need to wait until all data is sent. When finished the state machine is in state IDLE.
+ * At this time we can set the flag \ref dmx_send_always to false.
+ *
+ * The receiving of DMX data is stopped by disabling the FIQ.
+ *
  */
 void dmx_stop_data(void) {
 	if (dmx_send_always) {
@@ -635,17 +645,16 @@ void dmx_stop_data(void) {
 		dmx_send_always = false;
 	}
 
+	__disable_fiq();
 	dmx_receive_state = IDLE;
 	dmx_available = false;
 	dmx_statistics.slots_in_packet = 0;
-
-	__disable_fiq();
 }
 
 /**
  * @ingroup dmx
  *
- * @param port_direction
+ * @param port_direction \ref _dmx_port_direction
  * @param enable_data
  */
 void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool enable_data) {
@@ -669,8 +678,6 @@ void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool
 	if (enable_data) {
 		dmx_start_data();
 	}
-
-	return;
 }
 
 /**
@@ -691,8 +698,7 @@ static void pl011_init(void) {
 	BCM2835_GPIO->GPFSEL1 = value;
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);		// Disable pull-up/down
 	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);		// Disable pull-up/down
-	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0) {
-	}																	// Poll the "flags register" to wait for the UART to stop transmitting or receiving
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0);					// Poll the "flags register" to wait for the UART to stop transmitting or receiving
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;								// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
 	BCM2835_PL011->ICR = 0x7FF;											// Clear all interrupt status
 	BCM2835_PL011->IBRD = 1;											// UART Clock
@@ -731,6 +737,7 @@ void dmx_init(void) {
 
 	dmx_receive_state = IDLE;
 	dmx_available = false;
+
 	dmx_send_state = IDLE;
 	dmx_send_always = false;
 

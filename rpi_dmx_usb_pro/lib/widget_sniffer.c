@@ -25,16 +25,17 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
+#include "hardware.h"
 #include "util.h"
+#include "usb.h"
+#include "monitor.h"
+#include "widget.h"
+#include "widget_usb.h"
+#include "sniffer.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
-#include "widget.h"
-#include "monitor.h"
-#include "sniffer.h"
-#include "hardware.h"
-#include "usb.h"
-#include "widget_usb.h"
 
 #define	SNIFFER_PACKET			0x81	///< Label
 #define	SNIFFER_PACKET_SIZE  	200		///< Packet size

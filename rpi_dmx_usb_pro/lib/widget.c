@@ -33,15 +33,15 @@
 #include "hardware.h"
 #include "usb.h"
 #include "util.h"
+#include "monitor.h"
 #include "widget.h"
 #include "widget_params.h"
+#include "widget_usb.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 #include "rdm_send.h"
-#include "monitor.h"
-#include "widget_usb.h"
 
 #define WIDGET_DATA_BUFFER_SIZE		600											///<
 

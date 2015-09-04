@@ -27,12 +27,12 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-#include "util.h"
-#include "dmx.h"
-#include "monitor.h"
 #include "sys_time.h"
 #include "hardware.h"
+#include "util.h"
 #include "console.h"
+#include "monitor.h"
+#include "dmx.h"
 #if defined(DMX_SLAVE)
 #elif defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 #include "sniffer.h"

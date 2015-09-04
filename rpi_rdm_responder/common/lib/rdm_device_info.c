@@ -29,6 +29,7 @@
 #include "ff.h"
 #include "hardware.h"
 #include "util.h"
+#include "sscan.h"
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -36,7 +37,7 @@
 #include "rdm_device_info.h"
 #include "rdm_device_const.h"
 #include "rdm_sensor.h"
-#include "sscan.h"
+
 
 static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;

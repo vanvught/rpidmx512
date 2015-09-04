@@ -26,10 +26,10 @@
 
 #include "ff.h"
 #include "util.h"
-#include "dmx.h"
+#include "sscan.h"
 #include "widget.h"
 #include "widget_params.h"
-#include "sscan.h"
+#include "dmx.h"
 
 ///<
 static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
