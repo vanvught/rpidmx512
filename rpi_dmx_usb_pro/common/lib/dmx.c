@@ -75,7 +75,7 @@ static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
 static uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;					///<
 static volatile uint8_t dmx_send_state = IDLE;									///<
 static volatile bool dmx_send_always = false;									///<
-static uint32_t dmx_send_break_micros = (uint32_t) 0;							///<
+static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
 
 static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
@@ -570,6 +570,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 					;
 				udelay(44);
 				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
+				dmb();
 				dmx_send_state = IDLE;
 				break;
 			default:
@@ -602,8 +603,16 @@ void dmx_start_data(void) {
 	switch (dmx_port_direction) {
 	case DMX_PORT_DIRECTION_OUTP:
 		dmx_send_always = true;
-		BCM2835_ST->C1 = BCM2835_ST->CLO + 4;
+		dmx_send_state = IDLE;
+
+		const uint32_t clo = BCM2835_ST->CLO;
+		if (clo - dmx_send_break_micros > dmx_output_period)  {
+			BCM2835_ST->C1 = clo + 4;
+		} else {
+			BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros + 4;
+		}
 		BCM2835_ST->CS = BCM2835_ST_CS_M1;
+
 		break;
 	case DMX_PORT_DIRECTION_INP:
 		dmx_receive_state = IDLE;
@@ -620,13 +629,11 @@ void dmx_start_data(void) {
  */
 void dmx_stop_data(void) {
 	if (dmx_send_always) {
+		do {
+			dmb();
+		} while (dmx_send_state != IDLE);
 		dmx_send_always = false;
-		udelay(dmx_output_period);
-		dmx_send_state = IDLE;
 	}
-
-	BCM2835_ST->C1 = BCM2835_ST->CLO;
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 
 	dmx_receive_state = IDLE;
 	dmx_available = false;
