@@ -35,7 +35,7 @@
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 
-static uint8_t rdm_message_count;
+static uint8_t rdm_message_count;	///<
 
 /**
  * @ingroup rdm
