@@ -33,7 +33,8 @@
 
 #define DMX_DATA_BUFFER_SIZE					513		///< including SC
 #define RDM_DATA_BUFFER_SIZE					512		///<
-#define RDM_DATA_BUFFER_INDEX_SIZE 				0x0F	///<
+#define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
+#define RDM_DATA_BUFFER_INDEX_MASK 				(RDM_DATA_BUFFER_INDEX_ENTRIES - 1)	///<
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN				92		///< 92 us
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176		///< 176 us
@@ -67,8 +68,6 @@ struct _total_statistics {
 	uint32_t dmx_packets;								///<
 	uint32_t rdm_packets;								///<
 };
-
-//extern uint8_t dmx_data[DMX_DATA_BUFFER_SIZE]; //TODO remove
 
 extern void dmx_init(void);
 extern /*@shared@*/const uint8_t *dmx_get_data(void) ASSUME_ALIGNED;

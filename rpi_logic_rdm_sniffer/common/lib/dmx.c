@@ -83,7 +83,7 @@ static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
 
 static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_SIZE + 1][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///<
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///<
 static volatile uint16_t rdm_checksum = (uint16_t) 0;							///<
 static volatile uint32_t rdm_data_receive_end = (uint32_t) 0;					///<
 
@@ -102,6 +102,29 @@ static volatile struct _total_statistics total_statistics __attribute__((aligned
  */
 const uint8_t *dmx_get_data(void) {
 	return dmx_data;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @param period
+ */
+void dmx_set_output_period(const uint32_t period) {
+	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
+
+	if (period != 0) {
+		if (period < package_length_us) {
+			dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
+		} else {
+			dmx_output_period = period;
+		}
+
+		dmx_output_fast_as_possible = false;
+	} else {
+		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
+
+		dmx_output_fast_as_possible = true;
+	}
 }
 
 /**
@@ -154,29 +177,6 @@ const uint32_t dmx_get_output_period(void) {
 /**
  * @ingroup dmx
  *
- * @param period
- */
-void dmx_set_output_period(const uint32_t period) {
-	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
-
-	if (period != 0) {
-		if (period < package_length_us) {
-			dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
-		} else {
-			dmx_output_period = period;
-		}
-
-		dmx_output_fast_as_possible = false;
-	} else {
-		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
-
-		dmx_output_fast_as_possible = true;
-	}
-}
-
-/**
- * @ingroup dmx
- *
  * @return
  */
 const uint16_t dmx_get_send_data_length(void) {
@@ -201,7 +201,7 @@ const uint8_t *rdm_get_available(void)  {
 		return NULL;
 	} else {
 		uint16_t saved_tail = rdm_data_buffer_index_tail;
-		rdm_data_buffer_index_tail = (rdm_data_buffer_index_tail + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+		rdm_data_buffer_index_tail = (rdm_data_buffer_index_tail + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 		return &rdm_data_buffer[saved_tail][0];
 	}
 }
@@ -356,8 +356,8 @@ const volatile struct _total_statistics *dmx_get_total_statistics(void) {
 /**
  * @ingroup dmx
  *
- * Interrupt handler for continues receiving DMX data.
- * \sa dmx_receive_fiq_init
+ * Interrupt handler for continues receiving DMX512 data.
+ *
  */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
@@ -460,7 +460,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			rdm_checksum -= data;
 			const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
-				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				rdm_data_receive_end = BCM2835_ST->CLO;
 			}
 			dmx_receive_state = IDLE;
@@ -499,7 +499,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_disc_index++;
 			if (rdm_disc_index == 4) {
-				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_SIZE;
+				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				dmx_receive_state = IDLE;
 				rdm_data_receive_end = BCM2835_ST->CLO;
 #ifdef LOGIC_ANALYZER
@@ -600,10 +600,8 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 /**
  * @ingroup dmx
  *
- * The DMX port direction is set based on \ref dmx_port_direction (\ref DMX_PORT_DIRECTION_OUTP or \ref DMX_PORT_DIRECTION_INP).
- *
  */
-void dmx_start_data(void) {
+static void dmx_start_data(void) {
 	switch (dmx_port_direction) {
 	case DMX_PORT_DIRECTION_OUTP:
 		dmx_send_always = true;
@@ -637,7 +635,7 @@ void dmx_start_data(void) {
  * The receiving of DMX data is stopped by disabling the FIQ.
  *
  */
-void dmx_stop_data(void) {
+static void dmx_stop_data(void) {
 	if (dmx_send_always) {
 		do {
 			dmb();
@@ -728,8 +726,8 @@ void dmx_init(void) {
 #endif
 
 	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++) {
-		dmx_data[i] = (uint8_t)0;
-		dmx_data_previous[i] = (uint8_t)0;
+		dmx_data[i] = (uint8_t) 0;
+		dmx_data_previous[i] = (uint8_t) 0;
 	}
 
 	rdm_data_buffer_index_head = (uint16_t) 0;
@@ -741,8 +739,8 @@ void dmx_init(void) {
 	dmx_send_state = IDLE;
 	dmx_send_always = false;
 
-    BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t)1000000;
-    BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
+	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
+	BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
 
 	__enable_irq();
@@ -752,7 +750,7 @@ void dmx_init(void) {
 	bcm2835_gpio_fsel(GPIO_DMX_DATA_DIRECTION, BCM2835_GPIO_FSEL_OUTP);
 
 	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
-    BCM2835_IRQ->FIQ_CONTROL = (uint32_t)BCM2835_FIQ_ENABLE | (uint32_t)INTERRUPT_VC_UART;
+	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
 
-    dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }
