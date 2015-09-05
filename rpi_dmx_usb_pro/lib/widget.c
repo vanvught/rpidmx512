@@ -567,7 +567,7 @@ void widget_receive_data_from_host(void) {
 				widget_data[i] = usb_read_byte();
 			}
 
-			while ((AMF_END_CODE != usb_read_byte()) && (i++ < sizeof(widget_data)))
+			while ((AMF_END_CODE != usb_read_byte()) && (i++ < (sizeof(widget_data) / sizeof(widget_data[0]))))
 				;
 
 			monitor_line(MONITOR_LINE_LABEL, "L:%d:%d(%d)", label, data_length, i);
