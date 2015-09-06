@@ -635,11 +635,15 @@ static void dmx_start_data(void) {
  * The receiving of DMX data is stopped by disabling the FIQ.
  *
  */
-static void dmx_stop_data(void) {
+void dmx_stop_data(void) {
 	if (dmx_send_always) {
+		const uint32_t clo = BCM2835_ST->CLO;
 		do {
 			dmb();
-		} while (dmx_send_state != IDLE);
+			if (dmx_send_state == IDLE) {
+				break;
+			}
+		} while (BCM2835_ST->CLO - clo < dmx_output_period);
 		dmx_send_always = false;
 	}
 
