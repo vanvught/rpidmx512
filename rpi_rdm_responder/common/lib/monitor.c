@@ -221,6 +221,8 @@ void monitor_sniffer(void) {
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 void monitor_print_root_device_label(void) {
-	console_putsn(rdm_device_info_get_label(0), (int) rdm_device_info_get_label_length(0));
+	struct _rdm_device_info_data rdm_device_info_label;
+	rdm_device_info_get_label(0, &rdm_device_info_label);
+	console_putsn((const char *)rdm_device_info_label.data, (int) rdm_device_info_label.length);
 }
 #endif

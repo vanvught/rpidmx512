@@ -289,10 +289,11 @@ void widget_params_set(const struct _widget_params *widget_params) {
 /**
  * @ingroup widget
  *
- * @return
+ * @param info
  */
-const uint8_t * widget_params_get_type_id(void) {
-	return DEVICE_TYPE_ID;
+void widget_params_get_type_id(struct _widget_params_data *info) {
+	info->data = (uint8_t *) DEVICE_TYPE_ID;
+	info->length = (uint8_t) DEVICE_TYPE_ID_LENGTH;
 }
 
 /**
@@ -300,9 +301,9 @@ const uint8_t * widget_params_get_type_id(void) {
  *
  * @return
  */
-const uint8_t widget_params_get_type_id_length(void) {
-	return (uint8_t) DEVICE_TYPE_ID_LENGTH;
-}
+//const uint8_t widget_params_get_type_id_length(void) {
+//	return (uint8_t) DEVICE_TYPE_ID_LENGTH;
+//}
 
 /**
  * @ingroup widget

@@ -48,7 +48,7 @@
 static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///< Message between widget and the USB host
 static _widget_mode widget_mode = MODE_DMX_RDM;									///< \ref _widget_mode
 static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;					///< \ref _widget_send_state
-static uint32_t received_dmx_packet_period = 0;									///<
+static uint32_t widget_received_dmx_packet_period = 0;							///<
 static uint32_t widget_received_dmx_packet_start = 0;							///<
 static uint32_t widget_send_rdm_packet_start = 0;								///<
 static bool widget_rdm_discovery_running = false;								///< Is the Widget in RDM Discovery mode?
@@ -95,7 +95,7 @@ void widget_set_mode(const _widget_mode mode) {
  * @return
  */
 const uint32_t widget_get_received_dmx_packet_period(void) {
-	return received_dmx_packet_period;
+	return widget_received_dmx_packet_period;
 }
 
 /**
@@ -104,7 +104,7 @@ const uint32_t widget_get_received_dmx_packet_period(void) {
  * @param period
  */
 void widget_set_received_dmx_packet_period(uint32_t period) {
-	received_dmx_packet_period = period;
+	widget_received_dmx_packet_period = period;
 }
 
 /**
@@ -188,7 +188,7 @@ void widget_received_dmx_packet(void) {
 
 	const uint32_t micros_now = hardware_micros();
 
-	if (micros_now - widget_received_dmx_packet_start < received_dmx_packet_period) {
+	if (micros_now - widget_received_dmx_packet_start < widget_received_dmx_packet_period) {
 		return;
 	}
 
@@ -229,7 +229,7 @@ void widget_received_rdm_packet(void) {
 		return;
 	}
 
-	uint8_t *rdm_data = (uint8_t *) rdm_get_available();
+	const uint8_t *rdm_data = rdm_get_available();
 
 	if (rdm_data == NULL) {
 		return;
@@ -426,15 +426,16 @@ void widget_received_dmx_change_of_state_packet(void) {
  *
  */
 static void widget_get_sn_reply(void) {
+	struct _rdm_device_info_data rdm_device_info_sn;
+
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_PARAMS_REPLY");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const uint8_t *device_sn = rdm_device_info_get_sn();
-	const uint8_t device_sn_length = rdm_device_info_get_sn_length();
+	rdm_device_info_get_sn(&rdm_device_info_sn);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	widget_usb_send_message(GET_WIDGET_SN_REPLY, device_sn, device_sn_length);
+	widget_usb_send_message(GET_WIDGET_SN_REPLY, rdm_device_info_sn.data, rdm_device_info_sn.length);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
@@ -495,20 +496,20 @@ inline static void rdm_time_out_message(void) {
  * Get Widget Manufacturer Reply (Label = 77 \ref MANUFACTURER_LABEL)
  */
 static void widget_get_manufacturer_reply(void) {
+	struct _rdm_device_info_data rdm_device_info_manufacturer_name;
+	struct _rdm_device_info_data rdm_device_info_manufacturer_id;
+
 	monitor_line(MONITOR_LINE_INFO, "MANUFACTURER_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const char *manufacturer_name = rdm_device_info_get_manufacturer_name();
-	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
-
-	const uint8_t *manufacturer_id = rdm_device_info_get_manufacturer_id();
-	const uint8_t manufacturer_id_length = rdm_device_info_get_manufacturer_id_length();
+	rdm_device_info_get_manufacturer_name(&rdm_device_info_manufacturer_name);
+	rdm_device_info_get_manufacturer_id(&rdm_device_info_manufacturer_id);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	widget_usb_send_header(MANUFACTURER_LABEL, manufacturer_id_length + manufacturer_name_length);
-	widget_usb_send_data(manufacturer_id, manufacturer_id_length);
-	widget_usb_send_data((uint8_t *) manufacturer_name, manufacturer_name_length);
+	widget_usb_send_header(MANUFACTURER_LABEL, rdm_device_info_manufacturer_id.length + rdm_device_info_manufacturer_name.length);
+	widget_usb_send_data(rdm_device_info_manufacturer_id.data, rdm_device_info_manufacturer_id.length);
+	widget_usb_send_data(rdm_device_info_manufacturer_name.data, rdm_device_info_manufacturer_name.length);
 	widget_usb_send_footer();
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
@@ -524,20 +525,20 @@ static void widget_get_manufacturer_reply(void) {
  * Get Widget Name Reply (Label = 78 \ref GET_WIDGET_NAME_LABEL)
  */
 static void widget_get_name_reply(void) {
+	struct _rdm_device_info_data rdm_device_info_label;
+	struct _widget_params_data widget_params_type_id;
+
 	monitor_line(MONITOR_LINE_INFO, "GET_WIDGET_NAME_LABEL");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
-	const char *device_name = rdm_device_info_get_label(0);
-	const uint8_t device_name_length = rdm_device_info_get_label_length(0);
-
-	const uint8_t *device_id = widget_params_get_type_id();
-	const uint8_t device_id_length = widget_params_get_type_id_length();
+	rdm_device_info_get_label(0, &rdm_device_info_label);
+	widget_params_get_type_id(&widget_params_type_id);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	widget_usb_send_header(GET_WIDGET_NAME_LABEL, device_id_length + device_name_length);
-	widget_usb_send_data(device_id, device_id_length);
-	widget_usb_send_data((uint8_t *) device_name, device_name_length);
+	widget_usb_send_header(GET_WIDGET_NAME_LABEL, widget_params_type_id.length + rdm_device_info_label.length);
+	widget_usb_send_data(widget_params_type_id.data, widget_params_type_id.length);
+	widget_usb_send_data(rdm_device_info_label.data, rdm_device_info_label.length);
 	widget_usb_send_footer();
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);

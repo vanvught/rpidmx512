@@ -224,10 +224,11 @@ static void rdm_get_device_model_description(/*@unused@*/uint16_t sub_device) {
  * @param sub_device
  */
 static void rdm_get_manufacturer_label(/*@unused@*/uint16_t sub_device) {
-	const char *manufacturer_name = rdm_device_info_get_manufacturer_name();
-	const uint8_t manufacturer_name_length = rdm_device_info_get_manufacturer_name_length();
+	struct _rdm_device_info_data rdm_device_info_manufacturer_name;
 
-	handle_string(manufacturer_name, manufacturer_name_length);
+	rdm_device_info_get_manufacturer_name(&rdm_device_info_manufacturer_name);
+
+	handle_string((char *)rdm_device_info_manufacturer_name.data, rdm_device_info_manufacturer_name.length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
@@ -238,10 +239,11 @@ static void rdm_get_manufacturer_label(/*@unused@*/uint16_t sub_device) {
  * @param sub_device
  */
 static void rdm_get_device_label(uint16_t sub_device) {
-	const char *device_name = rdm_device_info_get_label(sub_device);
-	const uint8_t device_name_length = rdm_device_info_get_label_length(sub_device);
+	struct _rdm_device_info_data rdm_device_info_label;
 
-	handle_string(device_name, device_name_length);
+	rdm_device_info_get_label(sub_device, &rdm_device_info_label);
+
+	handle_string((const char *)rdm_device_info_label.data, rdm_device_info_label.length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 

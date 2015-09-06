@@ -23,18 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include "util.h"
-#include <dmx_devices.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
-#include "dmx.h"
+#include "util.h"
 #include "tables.h"
 #include "ff.h"
 #include "sscan.h"
+#include "dmx_devices.h"
+#include "dmx.h"
 
 TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)

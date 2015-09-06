@@ -61,11 +61,15 @@ struct _widget_params {
 	uint8_t refresh_rate;			///< DMX output rate in packets per second. Valid range is 1 to 40.
 };
 
+struct _widget_params_data {
+	/*@shared@*/uint8_t *data;
+	uint8_t length;
+};
+
 extern void widget_params_init(void);
 extern void widget_params_get(/*@out@*/struct _widget_params *);
 extern void widget_params_set(const struct _widget_params *);
-extern /*@shared@*/const uint8_t * widget_params_get_type_id(void);
-extern const uint8_t widget_params_get_type_id_length(void);
+extern void widget_params_get_type_id(struct _widget_params_data *);
 extern const uint8_t widget_params_get_throttle(void);
 extern void widget_params_set_throttle(const uint8_t);
 

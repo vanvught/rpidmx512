@@ -45,12 +45,13 @@ extern const uint16_t rdm_sub_devices_get_footprint(const uint16_t);
 extern const uint16_t rdm_sub_devices_get_dmx_start_address(const uint16_t);
 extern void rdm_sub_devices_set_dmx_start_address(const uint16_t, const uint16_t);
 
-extern /*@shared@*//*@null@*/const char * rdm_sub_devices_get_label(const uint16_t);
+//extern /*@shared@*//*@null@*/const char * rdm_sub_devices_get_label(const uint16_t);
+extern void rdm_sub_devices_get_label(const uint16_t, struct _rdm_device_info_data *);
 extern void rdm_sub_devices_set_label(const uint16_t, const uint8_t *, uint8_t);
-extern const uint8_t rdm_sub_devices_get_label_length(const uint16_t);
+//extern const uint8_t rdm_sub_devices_get_label_length(const uint16_t);
 
 extern /*@shared@*//*@null@*/const struct _rdm_sub_devices_info *rdm_sub_devices_info_get(const uint16_t);
-extern void rdm_sub_devices_info_set(const uint16_t , const struct _rdm_sub_devices_info *);
+extern void rdm_sub_devices_info_set(const uint16_t, const struct _rdm_sub_devices_info *);
 
 extern const uint8_t rdm_sub_devices_get_personality_current(const uint16_t);
 extern void rdm_sub_devices_set_personality_current(const uint16_t, const uint8_t);

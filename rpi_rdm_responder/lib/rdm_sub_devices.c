@@ -62,10 +62,11 @@ void rdm_sub_devices_set_dmx_start_address(const uint16_t sub_device, const uint
  * @ingroup rdm
  *
  * @param sub_device
- * @return
+ * @param info
  */
-const char *rdm_sub_devices_get_label(const uint16_t sub_device) {
-	return dmx_devices_get_label(sub_device);
+void rdm_sub_devices_get_label(const uint16_t sub_device, struct _rdm_device_info_data *info) {
+	info->data = (uint8_t *)dmx_devices_get_label(sub_device);
+	info->length = dmx_devices_get_label_length(sub_device);
 }
 
 /**
@@ -77,16 +78,6 @@ const char *rdm_sub_devices_get_label(const uint16_t sub_device) {
  */
 void rdm_sub_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
 	dmx_devices_set_label(sub_device, label, label_length);
-}
-
-/**
- * @ingroup rdm
- *
- * @param sub_device
- * @return
- */
-const uint8_t rdm_sub_devices_get_label_length(const uint16_t sub_device) {
-	return dmx_devices_get_label_length(sub_device);
 }
 
 /**

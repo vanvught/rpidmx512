@@ -98,13 +98,13 @@ static void process_line_read_string(const char *line) {
 				uint8_t nibble_high;
 				uint8_t nibble_low;
 
-				nibble_high = (value[0] > '9' ? (value[0] | 0x20) - 'a' + 10 : value[0] - '0') << 4;
-				nibble_low = value[1] > '9' ? (value[1] | 0x20) - 'a' + 10 : value[1] - '0';
+				nibble_high = (uint8_t)((value[0] > (char)'9' ? (value[0] | (char)0x20) - (char)'a' + (char)10 : value[0] - (char)'0')) << 4;
+				nibble_low = (uint8_t)(value[1] > (char)'9' ? (value[1] | (char)0x20) - (char)'a' + (char)10 : value[1] - (char)'0');
 
 				uid_device[0] = nibble_high | nibble_low;
 
-				nibble_high = (value[2] > '9' ? (value[2] | 0x20) - 'a' + 10 : value[2] - '0') << 4;
-				nibble_low = value[3] > '9' ? (value[3] | 0x20) - 'a' + 10 : value[3] - '0';
+				nibble_high = (uint8_t)((value[2] > (char)'9' ? (value[2] | (char)0x20) - (char)'a' + (char)10 : value[2] - (char)'0')) << 4;
+				nibble_low = (uint8_t)(value[3] > (char)'9' ? (value[3] | (char)0x20) - (char)'a' + (char)10 : value[3] - (char)'0');
 
 				uid_device[1] = nibble_high | nibble_low;
 			}
@@ -149,8 +149,7 @@ inline static uint16_t calculate_checksum(void) {
 	uint8_t i;
 	uint16_t sub_device;
 	uint8_t j;
-	char *label;
-	uint8_t label_length;
+	struct _rdm_device_info_data info;
 
 	uint16_t checksum = (rdm_device_info.dmx_start_address[0] >> 8) + rdm_device_info.dmx_start_address[1];
 	checksum += rdm_device_info.current_personality;
@@ -162,10 +161,9 @@ inline static uint16_t calculate_checksum(void) {
 	sub_device = (rdm_device_info.sub_device_count[0] << 8) + rdm_device_info.sub_device_count[1];
 
 	for (i = 1; i <= sub_device; i++) {
-		label = (char *)rdm_sub_devices_get_label(i);
-		label_length = rdm_sub_devices_get_label_length(i);
-		for (j = 0; j < label_length; j++) {
-			checksum += (uint16_t) label[i];
+		rdm_sub_devices_get_label(i, &info);
+		for (j = 0; j < info.length; j++) {
+			checksum += (uint16_t) info.data[i];
 		}
 	}
 
@@ -434,87 +432,50 @@ struct _rdm_device_info *rdm_device_info_get(const uint16_t sub_device) {
  * @ingroup rdm
  *
  * @param sub_device
- * @return
+ * @param info
  */
-const char * rdm_device_info_get_label(const uint16_t sub_device) {
+void rdm_device_info_get_label(const uint16_t sub_device, struct _rdm_device_info_data *info) {
 #ifdef RDM_RESPONDER
 	if (sub_device != RDM_ROOT_DEVICE) {
-		return rdm_sub_devices_get_label(sub_device);
+		rdm_sub_devices_get_label(sub_device, info);
+		return;
 	}
 #endif
-	return root_device_label;
+	info->data = (uint8_t *)root_device_label;
+	info->length = root_device_label_length;
 }
 
 /**
  * @ingroup rdm
  *
- * @param sub_device
- * @return
+ * @param info
  */
-const uint8_t rdm_device_info_get_label_length(const uint16_t sub_device) {
-#ifdef RDM_RESPONDER
-	if (sub_device != RDM_ROOT_DEVICE) {
-		return rdm_sub_devices_get_label_length(sub_device);
-	}
-#endif
-	return root_device_label_length;
+void rdm_device_info_get_manufacturer_name(struct _rdm_device_info_data *info) {
+	info->data = (uint8_t *)device_manufacturer_name;
+	info->length = device_manufacturer_name_length;
 }
 
 /**
  * @ingroup rdm
  *
- * @return
+ * @param info
  */
-const char * rdm_device_info_get_manufacturer_name(void) {
-	return device_manufacturer_name;
-}
-
-/**
- * @ingroup rdm
- *
- * @return
- */
-const uint8_t rdm_device_info_get_manufacturer_name_length(void) {
-	return device_manufacturer_name_length;
-}
-
-/**
- * @ingroup rdm
- *
- * @return
- */
-const uint8_t * rdm_device_info_get_manufacturer_id(void) {
+void rdm_device_info_get_manufacturer_id(struct _rdm_device_info_data *info) {
 	manufacturer_id[0] = uid_device[1];
 	manufacturer_id[1] = uid_device[0];
 
-	return manufacturer_id;
+	info->data = (uint8_t *)manufacturer_id;
+	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
 /**
  * @ingroup rdm
  *
- * @return
+ * @param info
  */
-const uint8_t rdm_device_info_get_manufacturer_id_length(void) {
-	return RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-/**
- * @ingroup rdm
- *
- * @return
- */
-const uint8_t * rdm_device_info_get_sn(void) {
-	return device_sn;
-}
-
-/**
- * @ingroup rdm
- *
- * @return
- */
-const uint8_t rdm_device_info_get_sn_length(void) {
-	return DEVICE_SN_LENGTH;
+void rdm_device_info_get_sn(struct _rdm_device_info_data *info) {
+	info->data = (uint8_t *)device_sn;
+	info->length = DEVICE_SN_LENGTH;
 }
 
 /**
@@ -560,15 +521,15 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-	_memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	(void)_memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	root_device_label_length = DEVICE_LABEL_LENGTH;
 
-	_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
+	(void)_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
 
 	read_config_file();
-#ifdef RDM_RESPONDER
 
+#ifdef RDM_RESPONDER
 	rdm_device_info.protocol_major = (uint8_t)(E120_PROTOCOL_VERSION >> 8);
 	rdm_device_info.protocol_minor = (uint8_t) E120_PROTOCOL_VERSION;
 	rdm_device_info.device_model[0] = (uint8_t) (device_model >> 8);
