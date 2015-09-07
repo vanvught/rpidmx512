@@ -19,7 +19,7 @@
  /**
   * @defgroup ft245rl The FT245R is a USB to parallel FIFO interface
   * @ingroup usb
-  * @brief TODO
+  * @brief Low level functions for the FT245R, an USB to parallel FIFO interface
   */
  
  /**
