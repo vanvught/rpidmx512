@@ -28,6 +28,7 @@
 
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MONITOR_LINE_TIME			3	///<
 #define MONITOR_LINE_WIDGET_PARMS	4	///<
@@ -43,7 +44,7 @@
 
 extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
 extern void monitor_time_uptime(const int);
-extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *);
+extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *, bool);
 extern void monitor_dmx_data(const int);
 extern void monitor_sniffer(void);
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)

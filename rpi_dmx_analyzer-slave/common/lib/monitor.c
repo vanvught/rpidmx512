@@ -33,6 +33,8 @@
 #include "console.h"
 #include "monitor.h"
 #include "dmx.h"
+#include "rdm.h"
+#include "rdm_e120.h"
 #if defined(DMX_SLAVE)
 #elif defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 #include "sniffer.h"
@@ -41,6 +43,15 @@
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 #include "rdm_device_info.h"
 #endif
+
+static uint32_t updates_per_seconde_min = UINT32_MAX;
+static uint32_t updates_per_seconde_max = (uint32_t)0;
+static uint32_t slots_in_packet_min = UINT32_MAX;
+static uint32_t slots_in_packet_max = (uint32_t)0;
+static uint32_t slot_to_slot_min = UINT32_MAX;
+static uint32_t slot_to_slot_max = (uint32_t)0;
+static uint32_t break_to_break_min = UINT32_MAX;
+static uint32_t break_to_break_max = (uint32_t)0;
 
 /**
  * @ingroup monitor
@@ -72,20 +83,19 @@ void monitor_time_uptime(const int line) {
 
 	const uint64_t uptime_seconds = hardware_uptime_seconds();
 
-	time_t ltime = 0;
-	struct tm *local_time = NULL;
+	time_t ltime;
+	struct tm *local_time;
 
 	ltime = sys_time(NULL);
 	local_time = localtime(&ltime);
 
 	console_set_cursor(0, line);
 
-	printf("Local time %.2d:%.2d:%.2d, uptime %ld days, %02ld:%02ld:%02ld\n",
+	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d\n",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(long int) (uptime_seconds / day),
-			(long int) (uptime_seconds % day) / hour,
-			(long int) (uptime_seconds % hour) / minute,
-			(long int) uptime_seconds % minute);
+			(int) (uptime_seconds / day), (int) ((uptime_seconds % day) / hour),
+			(int) ((uptime_seconds % hour) / minute),
+			(int) (uptime_seconds % minute));
 }
 
 /**
@@ -94,19 +104,51 @@ void monitor_time_uptime(const int line) {
  * @param line
  * @param data_length
  * @param data
+ * @param is_sent
  */
-void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t *data) {
-	uint8_t i;
+void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t *data, bool is_sent) {
+	uint16_t l;
+	uint8_t *p = (uint8_t *) data;
+	bool is_rdm_command = (*p == E120_SC_RDM);
+
 	console_clear_line(line);
 
-	printf("RDM Packet length : %d\n", (int) data_length);
+	printf("RDM [%s], l:%d\n", is_sent ? "Sent" : "Received", (int) data_length);
 
-	for (i = 0; i < 9; i++) {
-		printf("%.2d-%.4d:%.2X  %.2d-%.4d:%.2X %.2d-%.4d:%.2X  %.2d-%.4d:%.2X\n",
-				(int) i + 1, (int) data[i], (unsigned int) data[i],
-				(int) i + 10, (int) data[i + 9], (unsigned int) data[i + 9],
-				(int) i + 19, (int) data[i + 18], (unsigned int) data[i + 18],
-				(int) i + 28, (int) data[i + 27], (unsigned int) data[i + 27]);
+	// 26 is size of discovery message
+	for (l = 0; l < MIN(data_length, 26); l++) {
+		console_puthex(*p++);
+		(void) console_putc((int) ' ');
+	}
+
+	while (l++ < (uint16_t)26) {
+		console_puts("   ");
+	}
+
+	if (is_rdm_command) {
+		if (data_length >= 24) {
+			struct _rdm_command *cmd = (struct _rdm_command *) (data);
+			console_clear_line(line + 2);
+			printf("tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number,
+					(unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int) cmd->param_data_length);
+			console_clear_line(line + 3);
+			if (cmd->param_data_length != 0) {
+				uint8_t i = MIN(cmd->param_data_length, 16);
+				p = &cmd->param_data[0];
+				while (i-- != (uint8_t) 0) {
+					console_puthex(*p);
+					(void) console_putc((int) ' ');
+					if (_isprint((char) *p)) {
+						(void) console_putc((int) *p);
+					}
+					(void) console_putc((int) ' ');
+					p++;
+				}
+			}
+		}
+	} else {
+		console_clear_line(line + 2);
+		console_clear_line(line + 3);
 	}
 }
 
@@ -161,15 +203,6 @@ void monitor_dmx_data(const int line) {
 	}
 }
 
-static uint32_t updates_per_seconde_min = UINT32_MAX;
-static uint32_t updates_per_seconde_max = (uint32_t)0;
-static uint32_t slots_in_packet_min = UINT32_MAX;
-static uint32_t slots_in_packet_max = (uint32_t)0;
-static uint32_t slot_to_slot_min = UINT32_MAX;
-static uint32_t slot_to_slot_max = (uint32_t)0;
-static uint32_t break_to_break_min = UINT32_MAX;
-static uint32_t break_to_break_max = (uint32_t)0;
-
 /**
  * @ingroup monitor
  *
@@ -177,6 +210,10 @@ static uint32_t break_to_break_max = (uint32_t)0;
 void monitor_sniffer(void) {
 	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
+	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
+	const volatile struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
+#endif
 
 	monitor_dmx_data(MONITOR_LINE_DMX_DATA);
 	console_clear_line(MONITOR_LINE_PACKETS);
@@ -184,14 +221,11 @@ void monitor_sniffer(void) {
 			(long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
-	const volatile struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
-
 	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
 	printf("Discovery response : %ld\n", rdm_statistics->discovery_response_packets);
 	printf("GET Requests       : %ld\n", rdm_statistics->get_requests);
 	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
 #endif
-	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 
 	if ((int)dmx_statistics->updates_per_seconde != (int)0) {
 		updates_per_seconde_min = MIN(dmx_statistics->updates_per_seconde, updates_per_seconde_min);

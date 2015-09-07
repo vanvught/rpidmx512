@@ -43,16 +43,16 @@
 #include "rdm_device_info.h"
 #include "rdm_send.h"
 
-#define WIDGET_DATA_BUFFER_SIZE		600											///<
+#define WIDGET_DATA_BUFFER_SIZE		600										///<
 
-static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///< Message between widget and the USB host
-static _widget_mode widget_mode = MODE_DMX_RDM;									///< \ref _widget_mode
-static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;					///< \ref _widget_send_state
-static uint32_t widget_received_dmx_packet_period = 0;							///<
-static uint32_t widget_received_dmx_packet_start = 0;							///<
-static uint32_t widget_send_rdm_packet_start = 0;								///<
-static bool widget_rdm_discovery_running = false;								///< Is the Widget in RDM Discovery mode?
-static uint32_t widget_received_dmx_packet_count = 0; 							///<
+static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] __attribute__((aligned(4))); ///< Message between widget and the USB host
+static _widget_mode widget_mode = MODE_DMX_RDM;								///< \ref _widget_mode
+static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;				///< \ref _widget_send_state
+static uint32_t widget_received_dmx_packet_period = 0;						///<
+static uint32_t widget_received_dmx_packet_start = 0;						///<
+static uint32_t widget_send_rdm_packet_start = 0;							///<
+static bool widget_rdm_discovery_running = false;							///< Is the Widget in RDM Discovery mode?
+static uint32_t widget_received_dmx_packet_count = 0; 						///<
 
 inline static void rdm_time_out_message(void);
 
@@ -242,9 +242,8 @@ void widget_received_rdm_packet(void) {
 		const uint8_t command_class = p->command_class;
 		message_length = p->message_length + 2;
 
-		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
-		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xCC tn:%d , cc:%.2x, pid:%d",
-				p->transaction_number, p->command_class, (p->param_id[0] << 8) + p->param_id[1]);
+		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, l:%d", message_length);
+		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xCC");
 
 		widget_usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
 		usb_send_byte(0); 	// RDM Receive status
@@ -261,7 +260,7 @@ void widget_received_rdm_packet(void) {
 	} else if (rdm_data[0] == 0xFE) {
 		message_length = 24;
 
-		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, package length : %d", message_length);
+		monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, l:%d", message_length);
 		monitor_line(MONITOR_LINE_STATUS, "RECEIVED_RDM_PACKET SC:0xFE");
 
 		widget_usb_send_header(RECEIVED_DMX_PACKET, 1 + message_length);
@@ -272,7 +271,7 @@ void widget_received_rdm_packet(void) {
 		rdm_time_out_message();
 	}
 
-	monitor_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data);
+	monitor_rdm_data(MONITOR_LINE_RDM_DATA, message_length, rdm_data, false);
 }
 
 /**
@@ -329,7 +328,7 @@ static void widget_send_rdm_packet_request(const uint16_t data_length) {
 
 	widget_send_rdm_packet_start = hardware_micros();
 
-	monitor_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	monitor_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data, true);
 }
 
 /**
@@ -413,9 +412,8 @@ void widget_received_dmx_change_of_state_packet(void) {
 	if (dmx_is_data_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
 		monitor_line(MONITOR_LINE_STATUS, NULL);
-
 		// TODO widget_received_dmx_change_of_state_packet
-		monitor_line(MONITOR_LINE_INFO, "Send changed DMX data to HOST");
+		monitor_line(MONITOR_LINE_INFO, "Sent changed DMX data to HOST");
 	}
 }
 
@@ -464,7 +462,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length) {
 	widget_rdm_discovery_running = true;
 	widget_send_rdm_packet_start = hardware_micros();
 
-	monitor_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data);
+	monitor_rdm_data(MONITOR_LINE_RDM_DATA, data_length, widget_data, true);
 }
 
 /**
@@ -478,7 +476,7 @@ static void widget_send_rdm_discovery_request(uint16_t data_length) {
 inline static void rdm_time_out_message(void) {
 	const uint16_t message_length = 0;
 
-	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, message_length : %d", message_length);
+	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST, l:%d", message_length);
 	monitor_line(MONITOR_LINE_STATUS, "rdm_time_out_message");
 
 	widget_usb_send_header(RDM_TIMEOUT, message_length);
