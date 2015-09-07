@@ -17,18 +17,6 @@
   */
  
  /**
-  * @defgroup usb USB
-  * @ingroup common
-  * @brief Generic USB functions
-  */
-  
-  /**
-  * @defgroup ft245rl FT245RL
-  * @ingroup usb
-  * @brief Low level functions for the FT245R, an USB to parallel FIFO interface
-  */
-  
- /**
   * @defgroup led LED
   * @ingroup common
   * @brief Stores the ticks per second variable.
