@@ -30,13 +30,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
+#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )								///<
 
-#define TO_HEX(i)	((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
+#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
 
 #ifndef MAX
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define MAX(a,b)		(((a) > (b)) ? (a) : (b))
+#define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
 
 /**
@@ -45,7 +45,7 @@
  * @param c
  * @return
  */
-inline static bool is_digit(char c) {
+inline static bool _isdigit(char c) {
 	return (c >= (char)'0') && (c <= (char)'9');
 }
 
@@ -55,8 +55,18 @@ inline static bool is_digit(char c) {
  * @param c
  * @return
  */
-inline static bool is_xdigit(char c) {
-	return (is_digit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'));
+inline static bool _isxdigit(char c) {
+	return (_isdigit(c) || (c >= (char)'A' && c <= (char)'F') || (c >= (char)'a' && c <= (char)'f'));
+}
+
+/**
+ * @ingroup util
+ *
+ * @param c
+ * @return
+ */
+inline static bool _isprint(char c) {
+	return ((c >= (char) 32 && c <= (char) 127) ? true : false);
 }
 
 /**

@@ -94,7 +94,7 @@ static void process_line_read_string(const char *line) {
 	len = 4;
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
 		if (len == 4) {
-			if (is_xdigit(value[0]) && is_xdigit(value[1]) && is_xdigit(value[2]) && is_xdigit(value[3])) {
+			if (_isxdigit(value[0]) && _isxdigit(value[1]) && _isxdigit(value[2]) && _isxdigit(value[3])) {
 				uint8_t nibble_high;
 				uint8_t nibble_low;
 

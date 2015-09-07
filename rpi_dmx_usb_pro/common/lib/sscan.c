@@ -59,7 +59,7 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	k = 0;
 
 	while ((*b != (char) 0) && (*b != '\n')) {
-		if (!is_digit(*b)) {
+		if (!_isdigit(*b)) {
 			return 1;
 		}
 		k = k * 10 + (int) *b - (int) '0';
@@ -153,7 +153,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 
 	c = buf[3];
 
-	if (!is_digit(c) && (buf[4] != (char) ',')) {
+	if (!_isdigit(c) && (buf[4] != (char) ',')) {
 		return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
 	}
 
@@ -178,7 +178,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 
 	while ((buf[i] != (char) 0) && (buf[i] != (char) ',') && (k < 2)) {
-		if (!is_xdigit(buf[i])) {
+		if (!_isxdigit(buf[i])) {
 			return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
 		}
 		tmp[k++] = buf[i++];
@@ -201,7 +201,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 	uint16 = 0;
 
-	if (!is_digit(buf[i])) {
+	if (!_isdigit(buf[i])) {
 		return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 	}
 
@@ -216,7 +216,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	j = 0;
 
 	while (k--) {
-		if (!is_digit(tmp[j])) {
+		if (!_isdigit(tmp[j])) {
 			return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 		}
 		uint16 = uint16 * (uint16_t)10 + (uint16_t)tmp[j++] - (uint16_t) '0';
