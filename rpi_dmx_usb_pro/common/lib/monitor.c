@@ -131,17 +131,29 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 			console_clear_line(line + 2);
 			printf("tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number,
 					(unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int) cmd->param_data_length);
+			console_clear_line(line + 4);
 			console_clear_line(line + 3);
 			if (cmd->param_data_length != 0) {
-				uint8_t i = MIN(cmd->param_data_length, 16);
+				uint8_t i = MIN(cmd->param_data_length, 24);
+				uint8_t j;
+
 				p = &cmd->param_data[0];
-				while (i-- != (uint8_t) 0) {
-					console_puthex(*p);
+
+				for (j = 0 ; j < i; j++) {
+					console_puthex(*p++);
 					(void) console_putc((int) ' ');
+				}
+
+				p = &cmd->param_data[0];
+				console_set_cursor(0, line + 4);
+
+				for (j = 0 ; j < i; j++) {
 					if (_isprint((char) *p)) {
 						(void) console_putc((int) *p);
+					} else {
+						(void) console_putc((int) '.');
 					}
-					(void) console_putc((int) ' ');
+					(void) console_puts("  ");
 					p++;
 				}
 			}
@@ -149,6 +161,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 	} else {
 		console_clear_line(line + 2);
 		console_clear_line(line + 3);
+		console_clear_line(line + 4);
 	}
 }
 
