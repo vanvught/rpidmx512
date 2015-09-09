@@ -24,10 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 
 #include "hardware.h"
-#include "util.h"
 #include "usb.h"
 #include "monitor.h"
 #include "widget.h"
@@ -60,8 +58,8 @@ const struct _rdm_statistics *rdm_statistics_get(void) {
  * @param start
  * @param data_length
  */
-inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length) {
-	uint16_t i = 0;
+static void usb_send_package(const uint8_t *data, const uint16_t start, const uint16_t data_length) {
+	uint16_t i;
 
 	if (data_length < (uint16_t) (SNIFFER_PACKET_SIZE / 2)) {
 		widget_usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);
@@ -92,9 +90,9 @@ inline static void usb_send_package(const uint8_t *data, uint16_t start, uint16_
 }
 
 static bool can_send(void) {
-	const uint32_t micros = (uint32_t)hardware_micros();
+	const uint32_t micros = hardware_micros();
 
-	while (!usb_can_write() && ((uint32_t) hardware_micros() -micros < (uint32_t)1000)) {
+	while (!usb_can_write() && (hardware_micros() - micros < (uint32_t) 1000)) {
 	}
 
 	if (!usb_can_write()) {
@@ -111,10 +109,7 @@ static bool can_send(void) {
  * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_dmx(void) {
-	const uint8_t mode = widget_get_mode();
-	const uint8_t *dmx_data = dmx_get_data();
-
-	if (mode != MODE_RDM_SNIFFER) {
+	if (widget_get_mode() != MODE_RDM_SNIFFER) {
 		return;
 	}
 
@@ -131,6 +126,7 @@ void widget_sniffer_dmx(void) {
 	if (dmx_is_data_changed()) {
 		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
+		const uint8_t *dmx_data = dmx_get_data();
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		usb_send_package(dmx_data, 0, data_length);
 	}
@@ -142,9 +138,7 @@ void widget_sniffer_dmx(void) {
  * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_rdm(void) {
-	const uint8_t mode = widget_get_mode();
-
-	if (mode != MODE_RDM_SNIFFER) {
+	if (widget_get_mode() != MODE_RDM_SNIFFER) {
 		return;
 	}
 
@@ -153,12 +147,6 @@ void widget_sniffer_rdm(void) {
 	if (rdm_data == NULL) {
 		return;
 	}
-
-	if (!can_send()) {
-		return;
-	}
-
-	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 
 	uint8_t message_length = 0;
 
@@ -186,5 +174,10 @@ void widget_sniffer_rdm(void) {
 		message_length = 24;
 	}
 
+	if (!can_send()) {
+		return;
+	}
+
+	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 	usb_send_package(rdm_data, 0, message_length);
 }
