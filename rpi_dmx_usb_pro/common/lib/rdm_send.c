@@ -70,7 +70,7 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
  * @param data_length
  */
 static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
-	uint16_t i = 0;
+	uint16_t i;
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 
@@ -92,7 +92,7 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
  * @param data_length
  */
 void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length) {
-	const uint64_t delay = hardware_micros() - rdm_get_data_receive_end();
+	const uint32_t delay = hardware_micros() - rdm_get_data_receive_end();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);

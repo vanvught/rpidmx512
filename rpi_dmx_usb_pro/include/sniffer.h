@@ -25,6 +25,8 @@
 #ifndef SNIFFER_H_
 #define SNIFFER_H_
 
+#include "util.h"
+
 struct _rdm_statistics {
 	uint32_t discovery_packets;
 	uint32_t discovery_response_packets;
