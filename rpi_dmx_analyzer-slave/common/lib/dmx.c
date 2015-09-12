@@ -79,6 +79,7 @@ static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
 static uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;					///<
 static volatile uint8_t dmx_send_state = IDLE;									///<
 static volatile bool dmx_send_always = false;									///<
+static volatile uint32_t dmx_irq_micros = 0;									///<
 static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
 
 static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
@@ -94,6 +95,18 @@ static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
 static volatile struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
 static volatile struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
+
+
+//TODO
+const bool dmx_debug_get_dmx_send_always(void) {
+	dmb();
+	return dmx_send_always;
+}
+
+const uint8_t dmx_debug_get_dmx_send_state(void) {
+	dmb();
+	return dmx_send_state;
+}
 
 /**
  * @ingroup dmx
@@ -217,6 +230,7 @@ const uint8_t *rdm_get_current_data(void) {
  * @return
  */
 const bool dmx_get_available(void) {
+	dmb();
 	return dmx_available;
 }
 
@@ -226,7 +240,6 @@ const bool dmx_get_available(void) {
  * @param is_available
  */
 void dmx_set_available_false(void) {
-	dmb();
 	dmx_available = false;
 }
 
@@ -421,7 +434,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		case DMXDATA:
 			dmx_data[dmx_data_index++] = data;
 			dmx_statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-			dmb();
 		    BCM2835_ST->C1 = 2 * dmx_fiq_micros_current - dmx_fiq_micros_previous + (uint32_t)12;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 				dmx_receive_state = IDLE;
@@ -529,13 +541,13 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	bcm2835_gpio_set(GPIO_ANALYZER_CH5);
 #endif
 
-	const uint32_t clo = BCM2835_ST->CLO;
+	dmx_irq_micros = BCM2835_ST->CLO;
 
 	if (BCM2835_ST->CS & BCM2835_ST_CS_M1) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M1;
 
 		if (dmx_receive_state == DMXDATA) {
-			if (clo - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
+			if (dmx_irq_micros - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
 				dmx_receive_state = IDLE;
 				dmx_statistics.slots_in_packet = dmx_data_index - 1;
 				dmb();
@@ -545,24 +557,28 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 			} else {
-				BCM2835_ST->C1 = clo + (uint32_t) 48;
+				BCM2835_ST->C1 = dmx_irq_micros + (uint32_t) 48;
 			}
 		}
 
 		if (dmx_send_always) {
 			switch (dmx_send_state) {
 			case IDLE:
-				dmx_send_state = BREAK;
+				BCM2835_ST->C1 = dmx_irq_micros + dmx_output_break_time;
+				dmb();
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-				BCM2835_ST->C1 = clo + dmx_output_break_time;
-				dmx_send_break_micros = clo;
+				dmx_send_break_micros = dmx_irq_micros;
+				dmx_send_state = BREAK;
 				break;
 			case BREAK:
-				dmx_send_state = MAB;
+				BCM2835_ST->C1 = BCM2835_ST->CLO + dmx_output_mab_time;
+				dmb();
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-				BCM2835_ST->C1 = clo + dmx_output_mab_time;
+				dmx_send_state = MAB;
 				break;
 			case MAB:
+				BCM2835_ST->C1 = dmx_send_break_micros + dmx_output_period;
+				dmb();
 				dmx_send_state = DMXDATA;
 				uint16_t i = 0;
 				for (i = 0; i < dmx_send_data_length; i++) {
@@ -570,10 +586,8 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 						;
 					BCM2835_PL011->DR = dmx_data[i];
 				}
-				while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+				while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 					;
-				udelay(44);
-				BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros;
 				dmb();
 				dmx_send_state = IDLE;
 				break;
@@ -585,7 +599,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 
 	if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M3;
-		BCM2835_ST->C3 = clo + (uint32_t)1000000;
+		BCM2835_ST->C3 = dmx_irq_micros + (uint32_t)1000000;
 		dmx_statistics.updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
 		dmx_packets_previous = total_statistics.dmx_packets;
 	}
