@@ -58,9 +58,8 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
 		BCM2835_PL011->DR = data[i];
 	}
 
-	while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 		;
-	udelay(44);
 }
 
 /**
@@ -80,9 +79,8 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
 		BCM2835_PL011->DR = data[i];
 	}
 
-	while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 		;
-	udelay(44);
 }
 
 /**
