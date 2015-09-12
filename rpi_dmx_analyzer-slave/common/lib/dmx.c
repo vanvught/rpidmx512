@@ -226,6 +226,7 @@ const bool dmx_get_available(void) {
  * @param is_available
  */
 void dmx_set_available_false(void) {
+	dmb();
 	dmx_available = false;
 }
 
@@ -243,6 +244,8 @@ bool dmx_is_data_changed(void) {
 	uint8_t *src;
 	uint8_t *dst;
 	bool is_changed = false;
+
+	dmb();
 
 	if (dmx_statistics.slots_in_packet != dmx_slots_in_packet_previous) {
 		dmx_slots_in_packet_previous = dmx_statistics.slots_in_packet;
@@ -363,6 +366,10 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	if (BCM2835_PL011->DR & PL011_DR_BE) {
 		dmx_receive_state = BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
+#ifdef LOGIC_ANALYZER
+		bcm2835_gpio_set(GPIO_ANALYZER_CH2);	// BREAK
+		bcm2835_gpio_clr(GPIO_ANALYZER_CH4);	// IDLE
+#endif
 	} else {
 		const uint8_t data = BCM2835_PL011->DR & 0xFF;
 
@@ -414,12 +421,13 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		case DMXDATA:
 			dmx_data[dmx_data_index++] = data;
 			dmx_statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_statistics.slot_to_slot + 2;
-		    BCM2835_ST->CS = BCM2835_ST_CS_M1;
+			dmb();
+		    BCM2835_ST->C1 = 2 * dmx_fiq_micros_current - dmx_fiq_micros_previous + (uint32_t)12;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 				dmx_receive_state = IDLE;
-				dmx_available = true;
 				dmx_statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
+				dmb();
+				dmx_available = true;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
@@ -529,14 +537,15 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		if (dmx_receive_state == DMXDATA) {
 			if (clo - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
 				dmx_receive_state = IDLE;
-				dmx_available = true;
 				dmx_statistics.slots_in_packet = dmx_data_index - 1;
+				dmb();
+				dmx_available = true;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 			} else {
-				BCM2835_ST->C1 = clo + (uint32_t) 45;
+				BCM2835_ST->C1 = clo + (uint32_t) 48;
 			}
 		}
 
@@ -545,14 +554,13 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			case IDLE:
 				dmx_send_state = BREAK;
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
-				const uint32_t clo_break = BCM2835_ST->CLO;
-				BCM2835_ST->C1 = clo_break + dmx_output_break_time;
-				dmx_send_break_micros = clo_break;
+				BCM2835_ST->C1 = clo + dmx_output_break_time;
+				dmx_send_break_micros = clo;
 				break;
 			case BREAK:
 				dmx_send_state = MAB;
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-				BCM2835_ST->C1 = BCM2835_ST->CLO + dmx_output_mab_time;
+				BCM2835_ST->C1 = clo + dmx_output_mab_time;
 				break;
 			case MAB:
 				dmx_send_state = DMXDATA;
