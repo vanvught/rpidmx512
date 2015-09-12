@@ -243,9 +243,9 @@ void monitor_sniffer(void) {
 	if ((int)dmx_statistics->updates_per_seconde != (int)0) {
 		updates_per_seconde_min = MIN(dmx_statistics->updates_per_seconde, updates_per_seconde_min);
 		updates_per_seconde_max = MAX(dmx_statistics->updates_per_seconde, updates_per_seconde_max);
-		printf("\nDMX updates/sec      %2d      %2d / %2d\n\n", (int)dmx_statistics->updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
+		printf("\nDMX updates/sec     %3d     %3d / %d\n\n", (int)dmx_statistics->updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
 	} else {
-		printf("\nDMX updates/sec --     \n\n");
+		console_puts("\nDMX updates/sec --     \n\n");
 	}
 
 	if (dmx_statistics->updates_per_seconde != 0) {
@@ -258,7 +258,7 @@ void monitor_sniffer(void) {
 
 		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->slots_in_packet, (int)slots_in_packet_min, (int)slots_in_packet_max);
 		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->slot_to_slot, (int)slot_to_slot_min, (int)slot_to_slot_max);
-		printf("Break to break %8ld  %6d / %d\n", (long int)dmx_statistics->break_to_break, (int)break_to_break_min, (int)break_to_break_max);
+		printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->break_to_break, (int)break_to_break_min, (int)break_to_break_max);
 	} else {
 		console_puts("Slots in packet --     \n");
 		console_puts("Slot to slot    --     \n");
