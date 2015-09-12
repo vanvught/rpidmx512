@@ -68,7 +68,7 @@ static volatile bool dmx_available = false;										///<
 static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
-static bool dmx_output_fast_as_possible = false;								///<
+static uint32_t dmx_output_period_requested = DMX_TRANSMIT_REFRESH_DEFAULT;		///<
 static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
 static volatile uint32_t dmx_fiq_micros_current = (uint32_t) 0;					///< Timestamp FIQ
@@ -112,18 +112,16 @@ const uint8_t *dmx_get_data(void) {
 void dmx_set_output_period(const uint32_t period) {
 	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
 
+	dmx_output_period_requested = period;
+
 	if (period != 0) {
 		if (period < package_length_us) {
-			dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
+			dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
 		} else {
 			dmx_output_period = period;
 		}
-
-		dmx_output_fast_as_possible = false;
 	} else {
-		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 4);
-
-		dmx_output_fast_as_possible = true;
+		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
 	}
 }
 
@@ -135,9 +133,7 @@ void dmx_set_output_period(const uint32_t period) {
 static void dmx_set_send_data_length(uint16_t send_data_length) {
 	dmx_send_data_length = send_data_length;
 
-	if (dmx_output_fast_as_possible != 0) {
-		dmx_set_output_period(0);
-	}
+	dmx_set_output_period(dmx_output_period_requested);
 }
 
 /**
@@ -308,9 +304,7 @@ const uint32_t dmx_get_output_break_time(void) {
 void dmx_set_output_break_time(const uint32_t break_time) {
 	dmx_output_break_time = MAX((uint32_t)DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
 
-	if (dmx_output_fast_as_possible) {
-		dmx_set_output_period(0);
-	}
+	dmx_set_output_period(dmx_output_period_requested);
 }
 
 /**
@@ -330,9 +324,7 @@ const uint32_t dmx_get_output_mab_time(void) {
 void dmx_set_output_mab_time(const uint32_t mab_time) {
 	dmx_output_mab_time = MAX((uint32_t)DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 
-	if (dmx_output_fast_as_possible) {
-		dmx_set_output_period(0);
-	}
+	dmx_set_output_period(dmx_output_period_requested);
 }
 
 /**
