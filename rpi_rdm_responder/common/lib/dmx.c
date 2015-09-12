@@ -565,21 +565,19 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			switch (dmx_send_state) {
 			case IDLE:
 				BCM2835_ST->C1 = dmx_irq_micros + dmx_output_break_time;
-				dmb();
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
 				dmx_send_break_micros = dmx_irq_micros;
+				dmb();
 				dmx_send_state = BREAK;
 				break;
 			case BREAK:
-				BCM2835_ST->C1 = BCM2835_ST->CLO + dmx_output_mab_time;
-				dmb();
 				BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-				dmx_send_state = MAB;
-				break;
+				/* dmx_send_state = MAB; */
+				udelay(dmx_output_mab_time);
+				/* no break */
 			case MAB:
 				BCM2835_ST->C1 = dmx_send_break_micros + dmx_output_period;
-				dmb();
-				dmx_send_state = DMXDATA;
+				/* dmx_send_state = DMXDATA; */
 				uint16_t i = 0;
 				for (i = 0; i < dmx_send_data_length; i++) {
 					while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
@@ -592,6 +590,8 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				dmx_send_state = IDLE;
 				break;
 			default:
+				dmb();
+				dmx_send_state = IDLE;
 				break;
 			}
 		}
