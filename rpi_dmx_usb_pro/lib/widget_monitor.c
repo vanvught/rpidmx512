@@ -36,10 +36,6 @@
 
 static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 
-#include "bcm2835.h"
-extern const bool dmx_debug_get_dmx_send_always(void);
-extern const uint8_t dmx_debug_get_dmx_send_state(void);
-
 /**
  * @ingroup monitor
  */
@@ -88,13 +84,6 @@ void monitor_update(void) {
 		} else {
 			console_puts("Output");
 			console_clear_line(MONITOR_LINE_STATS);
-			if (dmx_debug_get_dmx_send_always()) {
-				console_putc((int)'T');
-			} else {
-				console_putc((int)'F');
-			}
-			console_putc((int)'0' + (int)dmx_debug_get_dmx_send_state());
-			printf(":%d", (int)(BCM2835_ST->C1 - BCM2835_ST->CLO));
 		}
 
 		monitor_dmx_data(MONITOR_LINE_DMX_DATA);
