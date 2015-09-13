@@ -76,7 +76,7 @@ static volatile uint32_t dmx_fiq_micros_previous = (uint32_t) 0;				///< Timesta
 static volatile bool dmx_is_previous_break_dmx = false;							///< Is the previous break from a DMX packet?
 static volatile uint32_t dmx_break_to_break_latest = (uint32_t) 0;				///<
 static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
-static uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;					///<
+static volatile uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;			///<
 static volatile uint8_t dmx_send_state = IDLE;									///<
 static volatile bool dmx_send_always = false;									///<
 static volatile uint32_t dmx_irq_micros = 0;									///<
@@ -95,18 +95,6 @@ static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
 static volatile struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
 static volatile struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
-
-
-//TODO
-const bool dmx_debug_get_dmx_send_always(void) {
-	dmb();
-	return dmx_send_always;
-}
-
-const uint8_t dmx_debug_get_dmx_send_state(void) {
-	dmb();
-	return dmx_send_state;
-}
 
 /**
  * @ingroup dmx
@@ -259,6 +247,11 @@ bool dmx_is_data_changed(void) {
 	bool is_changed = false;
 
 	dmb();
+	if (!dmx_available) {
+		return false;
+	}
+
+	dmx_available = false;
 
 	if (dmx_statistics.slots_in_packet != dmx_slots_in_packet_previous) {
 		dmx_slots_in_packet_previous = dmx_statistics.slots_in_packet;
@@ -376,7 +369,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 	dmx_fiq_micros_current = BCM2835_ST->CLO;
 
-	if (BCM2835_PL011->DR & PL011_DR_BE) {
+	const uint32_t dr = BCM2835_PL011->DR;
+
+	if (dr & PL011_DR_BE) {
 		dmx_receive_state = BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
 #ifdef LOGIC_ANALYZER
@@ -384,7 +379,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		bcm2835_gpio_clr(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 	} else {
-		const uint8_t data = BCM2835_PL011->DR & 0xFF;
+		const uint8_t data = dr & 0xFF;
 
 		switch (dmx_receive_state) {
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
@@ -411,7 +406,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 					dmx_is_previous_break_dmx = true;
 					dmx_break_to_break_previous = dmx_break_to_break_latest;
 				}
-
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
 			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
@@ -420,21 +414,32 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			case E120_SC_RDM:
 				dmx_receive_state = RDMDATA;
 				rdm_data_buffer[rdm_data_buffer_index_head][0] = E120_SC_RDM;
-				dmx_data_index = 1;
 				rdm_checksum = E120_SC_RDM;
+				dmx_data_index = 1;
 				total_statistics.rdm_packets = total_statistics.rdm_packets + 1;
 				dmx_is_previous_break_dmx = false;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
+			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
+#endif
 				break;
 			default:
 				dmx_receive_state = IDLE;
 				dmx_is_previous_break_dmx = false;
+#ifdef LOGIC_ANALYZER
+				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
+				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
+#endif
 				break;
 			}
 			break;
 		case DMXDATA:
-			dmx_data[dmx_data_index++] = data;
 			dmx_statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-		    BCM2835_ST->C1 = 2 * dmx_fiq_micros_current - dmx_fiq_micros_previous + (uint32_t)12;
+			if (dmx_statistics.slot_to_slot < 44) { // Broadcom BUG ? FIQ is late
+				dmx_statistics.slot_to_slot = (uint32_t)44;
+			}
+			dmx_data[dmx_data_index++] = data;
+		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_statistics.slot_to_slot + (uint32_t)12;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 				dmx_receive_state = IDLE;
 				dmx_statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
@@ -557,7 +562,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 			} else {
-				BCM2835_ST->C1 = dmx_irq_micros + (uint32_t) 48;
+				BCM2835_ST->C1 = dmx_irq_micros + dmx_statistics.slot_to_slot;
 			}
 		}
 
