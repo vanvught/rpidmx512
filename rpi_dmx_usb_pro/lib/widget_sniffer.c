@@ -113,20 +113,13 @@ void widget_sniffer_dmx(void) {
 		return;
 	}
 
-	if (!dmx_get_available()) {
-		return;
-	}
-
-	if (!can_send()) {
-		return;
-	}
-
-	dmx_set_available_false();
-
 	if (dmx_is_data_changed()) {
 		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
 		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
 		const uint8_t *dmx_data = dmx_get_data();
+		if (!can_send()) {
+			return;
+		}
 		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
 		usb_send_package(dmx_data, 0, data_length);
 	}

@@ -403,12 +403,6 @@ void widget_received_dmx_change_of_state_packet(void) {
 		return;
 	}
 
-	if (!dmx_get_available()) {
-		return;
-	}
-
-	dmx_set_available_false();
-
 	if (dmx_is_data_changed()) {
 		monitor_line(MONITOR_LINE_INFO, "RECEIVED_DMX_COS_TYPE");
 		monitor_line(MONITOR_LINE_STATUS, NULL);
