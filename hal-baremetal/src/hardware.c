@@ -67,7 +67,8 @@ struct _hardware_revision_code {
 		{ 0x000011, "Compute Module 512MB" },
 		{ 0x000012, "Model A+ 256MB      " },
 		{ 0xa01041, "Pi 2 Model B 1GB    " },
-		{ 0xa21041, "Pi 2 Model B 1GB    " }
+		{ 0xa21041, "Pi 2 Model B 1GB    " },
+		{ 0x900092, "PiZero 512MB        " }
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
