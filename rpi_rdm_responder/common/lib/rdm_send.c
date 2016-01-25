@@ -29,14 +29,16 @@
 #include "bcm2835.h"
 #include "arm/pl011.h"
 #include "hardware.h"
-#include "util.h"
-#include "dmx.h"
 #include "rdm.h"
+#if defined(RDM_RESPONDER)
+#include "dmx.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
 
 static uint8_t rdm_message_count;	///<
+#endif
 
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
 /**
  * @ingroup rdm
  *
@@ -61,7 +63,9 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
 	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 		;
 }
+#endif
 
+#if defined(RDM_RESPONDER)
 /**
  * @ingroup rdm
  *
@@ -215,3 +219,5 @@ void rdm_send_decrement_message_count() {
 		rdm_message_count--;
 	}
 }
+#endif
+
