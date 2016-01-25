@@ -43,16 +43,16 @@
 #include "rdm_device_info.h"
 #include "rdm_send.h"
 
-#define WIDGET_DATA_BUFFER_SIZE		600										///<
+#define WIDGET_DATA_BUFFER_SIZE		600							///<
 
-static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] __attribute__((aligned(4))); ///< Message between widget and the USB host
-static _widget_mode widget_mode = MODE_DMX_RDM;								///< \ref _widget_mode
-static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;				///< \ref _widget_send_state
-static uint32_t widget_received_dmx_packet_period = 0;						///<
-static uint32_t widget_received_dmx_packet_start = 0;						///<
-static uint32_t widget_send_rdm_packet_start = 0;							///<
-static bool widget_rdm_discovery_running = false;							///< Is the Widget in RDM Discovery mode?
-static uint32_t widget_received_dmx_packet_count = 0; 						///<
+static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] ALIGNED;	///< Message between widget and the USB host
+static _widget_mode widget_mode = MODE_DMX_RDM;					///< \ref _widget_mode
+static _widget_send_state receive_dmx_on_change = SEND_ALWAYS;	///< \ref _widget_send_state
+static uint32_t widget_received_dmx_packet_period = 0;			///<
+static uint32_t widget_received_dmx_packet_start = 0;			///<
+static uint32_t widget_send_rdm_packet_start = 0;				///<
+static bool widget_rdm_discovery_running = false;				///< Is the Widget in RDM Discovery mode?
+static uint32_t widget_received_dmx_packet_count = 0; 			///<
 
 inline static void rdm_time_out_message(void);
 
