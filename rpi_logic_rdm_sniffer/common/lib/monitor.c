@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #include "sys_time.h"
 #include "hardware.h"
@@ -33,12 +34,13 @@
 #include "console.h"
 #include "monitor.h"
 #include "dmx.h"
-#include "rdm.h"
-#include "rdm_e120.h"
 #if defined(DMX_SLAVE)
 #elif defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 #include "sniffer.h"
-#elif defined(RDM_RESPONDER)
+#endif
+#if defined(RDM_CONTROLLER)
+#include "rdm.h"
+#include "rdm_e120.h"
 #endif
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 #include "rdm_device_info.h"
@@ -98,6 +100,7 @@ void monitor_time_uptime(const int line) {
 			(int) (uptime_seconds % minute));
 }
 
+#if defined(RDM_CONTROLLER)
 /**
  * @ingroup monitor
  *
@@ -148,7 +151,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 				console_set_cursor(0, line + 4);
 
 				for (j = 0 ; j < i; j++) {
-					if (_isprint((char) *p)) {
+					if (isprint((int) *p)) {
 						(void) console_putc((int) *p);
 					} else {
 						(void) console_putc((int) '.');
@@ -164,6 +167,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 		console_clear_line(line + 4);
 	}
 }
+#endif
 
 /**
  * @ingroup monitor

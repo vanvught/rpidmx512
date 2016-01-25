@@ -39,6 +39,7 @@
 #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
 
+#if 0
 /**
  * @ingroup util
  *
@@ -68,6 +69,7 @@ inline static bool _isxdigit(char c) {
 inline static bool _isprint(char c) {
 	return ((c >= (char) 32 && c <= (char) 127) ? true : false);
 }
+#endif
 
 /**
  * @ingroup util
@@ -138,5 +140,7 @@ inline static size_t _strlen(const char *s) {
 #else
 #define ASSUME_ALIGNED  
 #endif
+
+#define ALIGNED  		__attribute__((aligned(4)))
 
 #endif /* UTIL_H_ */

@@ -25,10 +25,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "util.h"
+#if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
 #include "dmx_devices.h"
+#endif
 
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
 /**
  *
  * @param buf
@@ -59,7 +63,7 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	k = 0;
 
 	while ((*b != (char) 0) && (*b != '\n')) {
-		if (!_isdigit(*b)) {
+		if (!isdigit((int)*b)) {
 			return 1;
 		}
 		k = k * 10 + (int) *b - (int) '0';
@@ -119,7 +123,9 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 
 	return 2;
 }
+#endif
 
+#if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
 /**
  *
  * @param buf
@@ -153,7 +159,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 
 	c = buf[3];
 
-	if (!_isdigit(c) && (buf[4] != (char) ',')) {
+	if (!isdigit((int)c) && (buf[4] != (char) ',')) {
 		return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
 	}
 
@@ -178,7 +184,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 
 	while ((buf[i] != (char) 0) && (buf[i] != (char) ',') && (k < 2)) {
-		if (!_isxdigit(buf[i])) {
+		if (!isxdigit((int)buf[i])) {
 			return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
 		}
 		tmp[k++] = buf[i++];
@@ -201,7 +207,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 	uint16 = 0;
 
-	if (!_isdigit(buf[i])) {
+	if (!isdigit((int)buf[i])) {
 		return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 	}
 
@@ -216,7 +222,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	j = 0;
 
 	while (k--) {
-		if (!_isdigit(tmp[j])) {
+		if (!isdigit((int)tmp[j])) {
 			return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 		}
 		uint16 = uint16 * (uint16_t)10 + (uint16_t)tmp[j++] - (uint16_t) '0';
@@ -226,3 +232,4 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 
 	return 4;
 }
+#endif

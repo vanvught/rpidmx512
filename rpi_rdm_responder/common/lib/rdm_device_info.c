@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "ff.h"
 #include "hardware.h"
@@ -32,12 +33,13 @@
 #include "sscan.h"
 #include "dmx.h"
 #include "rdm.h"
-#include "rdm_e120.h"
-#include "rdm_sub_devices.h"
 #include "rdm_device_info.h"
 #include "rdm_device_const.h"
+#if defined(RDM_RESPONDER)
+#include "rdm_e120.h"
+#include "rdm_sub_devices.h"
 #include "rdm_sensor.h"
-
+#endif
 
 static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
@@ -66,8 +68,8 @@ static uint8_t device_sn[DEVICE_SN_LENGTH];									///<
 static bool is_factory_defaults = true;										///<
 static uint16_t factory_defaults_checksum = 0;								///<
 
-static struct _rdm_device_info rdm_device_info __attribute__((aligned(4)));
-static struct _rdm_device_info rdm_sub_device_info __attribute__((aligned(4)));
+static struct _rdm_device_info rdm_device_info ALIGNED;						///<
+static struct _rdm_device_info rdm_sub_device_info ALIGNED;					///<
 #endif
 
 /**
@@ -78,7 +80,7 @@ static struct _rdm_device_info rdm_sub_device_info __attribute__((aligned(4)));
  * @param line
  */
 static void process_line_read_string(const char *line) {
-	char value[8] __attribute__((aligned(4)));
+	char value[8] ALIGNED;
 	uint8_t len;
 
 	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
@@ -94,7 +96,7 @@ static void process_line_read_string(const char *line) {
 	len = 4;
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
 		if (len == 4) {
-			if (_isxdigit(value[0]) && _isxdigit(value[1]) && _isxdigit(value[2]) && _isxdigit(value[3])) {
+			if (isxdigit((int)value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
 				uint8_t nibble_high;
 				uint8_t nibble_low;
 
