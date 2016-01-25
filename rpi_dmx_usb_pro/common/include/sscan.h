@@ -28,8 +28,12 @@
 
 #include <stdint.h>
 
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
 extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
 extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+#endif
+#if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
 extern int sscan_spi(const char *, /*@out@*/char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint16_t *);
+#endif
 
 #endif /* INCLUDE_SSCAN_H_ */

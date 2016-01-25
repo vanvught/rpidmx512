@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 
+#include "util.h"
 #include "device_info.h"
 #include "rdm_sub_devices.h"
 
