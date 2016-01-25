@@ -40,7 +40,7 @@
 #define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
 #define DATA_MASK				0x80	///< If the high bit is set, this is a data byte, otherwise it's a control byte
 
-static struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
+static struct _rdm_statistics rdm_statistics ALIGNED;	///<
 
 /**
  * @ingroup widget

@@ -39,8 +39,8 @@
 TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)
 
-devices_t devices_connected __attribute__((aligned(4)));
-static struct _dmx_devices_statistics dmx_devices_statistics __attribute__((aligned(4)));	///<
+devices_t devices_connected ALIGNED;									///<
+static struct _dmx_devices_statistics dmx_devices_statistics ALIGNED;	///<
 
 /**
  * @ingroup dmx

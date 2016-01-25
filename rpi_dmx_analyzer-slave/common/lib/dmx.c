@@ -60,8 +60,8 @@ typedef enum {
 	RDMDISCECS	///<
 } _dmx_state;
 
-static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));		///<
-static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] __attribute__((aligned(4)));	///<
+static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] ALIGNED;							///<
+static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
 static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
 static volatile bool dmx_available = false;										///<
@@ -84,7 +84,7 @@ static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
 
 static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] __attribute__((aligned(4)));///<
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;///<
 static volatile uint16_t rdm_checksum = (uint16_t) 0;							///<
 static volatile uint32_t rdm_data_receive_end = (uint32_t) 0;					///<
 
@@ -93,8 +93,8 @@ static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 #endif
 
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
-static volatile struct _dmx_statistics dmx_statistics __attribute__((aligned(4)));		///<
-static volatile struct _total_statistics total_statistics __attribute__((aligned(4)));	///<
+static volatile struct _dmx_statistics dmx_statistics ALIGNED;					///<
+static volatile struct _total_statistics total_statistics ALIGNED;				///<
 
 /**
  * @ingroup dmx

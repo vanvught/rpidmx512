@@ -34,7 +34,7 @@
 #include "monitor.h"
 #include "sniffer.h"
 
-static volatile struct _rdm_statistics rdm_statistics __attribute__((aligned(4)));
+static volatile struct _rdm_statistics rdm_statistics ALIGNED;	///<
 
 /**
  * @ingroup sniffer
