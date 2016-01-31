@@ -2,11 +2,6 @@
    Files in the C namespace (ie those that do not start with an
    underscore) go in .c.  */
 
-#include <_ansi.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/fcntl.h>
-#include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
@@ -36,26 +31,32 @@ int     _lseek      _PARAMS ((int, int, int));
 int     _read       _PARAMS ((int, char *, int));
 void    initialise_monitor_handles _PARAMS ((void));
 
-void
-initialise_monitor_handles (void)
-{
+/**
+ *
+ */
+void initialise_monitor_handles(void) {
 }
 
-int
-_read (int file,
-       char * ptr,
-       int len)
-{
-  return len;
+/**
+ *
+ * @param file
+ * @param ptr
+ * @param len
+ * @return
+ */
+int _read(int file, char * ptr, int len) {
+	return len;
 }
 
-
-int
-_lseek (int file,
-    int ptr,
-    int dir)
-{
-    return 0;
+/**
+ *
+ * @param file
+ * @param ptr
+ * @param dir
+ * @return
+ */
+int _lseek(int file, int ptr, int dir) {
+	return 0;
 }
 
 #ifdef ENABLE_FRAMEBUFFER
@@ -64,6 +65,13 @@ extern int console_putc(int c);
 extern void bcm2835_uart_send(unsigned int c);
 #endif
 
+/**
+ *
+ * @param file
+ * @param ptr
+ * @param len
+ * @return
+ */
 int _write(int file, char * ptr, int len) {
 	int r;
 	for (r = 0; r < len; r++) {
@@ -81,40 +89,58 @@ int _write(int file, char * ptr, int len) {
 	return len;
 }
 
-int
-_open (const char * path,
-       int          flags,
-       ...)
-{
-    return 0;
+/**
+ *
+ * @param path
+ * @param flags
+ * @return
+ */
+int _open(const char * path, int flags, ...) {
+	return 0;
 }
 
-
-int
-_close (int file)
-{
-    return 0;
+/**
+ *
+ * @param file
+ * @return
+ */
+int _close(int file) {
+	return 0;
 }
 
-void
-_exit (int n)
-{
-    while(1);
+/**
+ *
+ * @param n
+ */
+void _exit(int n) {
+	while (1)
+		;
 }
 
-int
-_kill (int n, int m)
-{
-    return(0);
+/**
+ *
+ * @param n
+ * @param m
+ * @return
+ */
+int _kill(int n, int m) {
+	return (0);
 }
 
-int
-_getpid (int n)
-{
-  return 1;
+/**
+ *
+ * @param n
+ * @return
+ */
+int _getpid(int n) {
+	return 1;
 }
 
-
+/**
+ *
+ * @param incr
+ * @return
+ */
 caddr_t _sbrk(int incr) {
 	extern char heap_low; /* Defined by the linker */
 	extern char heap_top; /* Defined by the linker */
@@ -135,86 +161,113 @@ caddr_t _sbrk(int incr) {
 	return (caddr_t) prev_heap_end;
 }
 
-int
-_fstat (int file, struct stat * st)
-{
-  return 0;
+/**
+ *
+ * @param file
+ * @param st
+ * @return
+ */
+int _fstat(int file, struct stat * st) {
+	return 0;
 }
 
-int _stat (const char *fname, struct stat *st)
-{
-  return 0;
+/**
+ *
+ * @param fname
+ * @param st
+ * @return
+ */
+int _stat(const char *fname, struct stat *st) {
+	return 0;
 }
 
-int
-_link (void)
-{
-  return -1;
+/**
+ *
+ * @return
+ */
+int _link(void) {
+	return -1;
 }
 
-int
-_unlink (void)
-{
-  return -1;
+/**
+ *
+ * @return
+ */
+int _unlink(void) {
+	return -1;
 }
 
-void
-_raise (void)
-{
-  return;
+/**
+ *
+ */
+void _raise(void) {
+	return;
 }
 
-int
-_gettimeofday (struct timeval * tp, struct timezone * tzp)
-{
-    if(tp)
-    {
-        tp->tv_sec = 10;
-        tp->tv_usec = 0;
-    }
-    if (tzp)
-    {
-        tzp->tz_minuteswest = 0;
-        tzp->tz_dsttime = 0;
-    }
-    return 0;
+/**
+ *
+ * @param tp
+ * @param tzp
+ * @return
+ */
+int _gettimeofday(struct timeval * tp, struct timezone * tzp) {
+	if (tp) {
+		tp->tv_sec = 10;
+		tp->tv_usec = 0;
+	}
+	if (tzp) {
+		tzp->tz_minuteswest = 0;
+		tzp->tz_dsttime = 0;
+	}
+	return 0;
 }
 
-clock_t
-_times (struct tms * tp)
-{
-    clock_t timeval;
+/**
+ *
+ * @param tp
+ * @return
+ */
+clock_t _times(struct tms * tp) {
+	clock_t timeval;
 
-    timeval = 10;
-    if (tp)
-    {
-        tp->tms_utime  = timeval;   /* user time */
-        tp->tms_stime  = 0; /* system time */
-        tp->tms_cutime = 0; /* user time, children */
-        tp->tms_cstime = 0; /* system time, children */
-    }
-    return timeval;
+	timeval = 10;
+	if (tp) {
+		tp->tms_utime = timeval; /* user time */
+		tp->tms_stime = 0; /* system time */
+		tp->tms_cutime = 0; /* user time, children */
+		tp->tms_cstime = 0; /* system time, children */
+	}
+	return timeval;
 }
 
-
-int
-_isatty (int fd)
-{
-  return 1;
+/**
+ *
+ * @param fd
+ * @return
+ */
+int _isatty(int fd) {
+	return 1;
 }
 
-int
-_system (const char *s)
-{
-  if (s == NULL)
-    return 0;
-  errno = ENOSYS;
-  return -1;
+/**
+ *
+ * @param s
+ * @return
+ */
+int _system(const char *s) {
+	if (s == NULL)
+		return 0;
+	errno = ENOSYS;
+	return -1;
 }
 
-int
-_rename (const char * oldpath, const char * newpath)
-{
-  errno = ENOSYS;
-  return -1;
+/**
+ *
+ * @param oldpath
+ * @param newpath
+ * @return
+ */
+int _rename(const char * oldpath, const char * newpath) {
+	errno = ENOSYS;
+	return -1;
 }
