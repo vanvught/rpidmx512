@@ -160,9 +160,13 @@ DSTATUS disk_initialize(BYTE drv) {
 	return diskio_status;
 }
 
-/* disk_read
+/**
  *
- * Read some sectors.
+ * @param drv
+ * @param buf
+ * @param sector
+ * @param count
+ * @return
  */
 DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
 	if (drv || !count) {
@@ -180,9 +184,13 @@ DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
 	return RES_ERROR;
 }
 
-/* disk_write
+/**
  *
- * Write some sectors.
+ * @param drv
+ * @param buf
+ * @param sector
+ * @param count
+ * @return
  */
 DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
 #ifdef SD_WRITE_SUPPORT
@@ -204,10 +212,11 @@ DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
 #endif
 }
 
-/* disk_status
+/**
+ * Check the status of this drive. All we know how to say is "initialized" vs "uninitialized".
  *
- * Check the status of this drive. All we know how to say is "initialized"
- * vs "uninitialized".
+ * @param drv
+ * @return
  */
 DSTATUS disk_status(BYTE drv) {
 	if (drv != (BYTE) 0) {
