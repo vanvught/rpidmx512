@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "bcm2835.h"
 #include "bcm2835_mailbox.h"
 #include "bcm2835_vc.h"
 #include "console.h"
@@ -338,7 +339,7 @@ int console_init() {
 	mailbuffer[6] = 0;
 	mailbuffer[7] = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	fb_width  = mailbuffer[5];
@@ -381,10 +382,10 @@ int console_init() {
 
 	mailbuffer[21] = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t)&mailbuffer);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-	fb_addr = mailbuffer[19];
+	fb_addr = mailbuffer[19] & 0x3FFFFFFF;;
 	fb_size = mailbuffer[20];
 
 	if ((fb_addr == 0) || (fb_size == 0)) {
@@ -403,7 +404,7 @@ int console_init() {
 
 	mailbuffer[6] = 0;
 
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, (uint32_t) &mailbuffer);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) &mailbuffer);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
 	fb_pitch = mailbuffer[5];

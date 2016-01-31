@@ -48,6 +48,7 @@
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
+#include "arm/asm.h"
 
 #define WR	22	///< GPIO22
 #define _RD	23	///< GPIO23
@@ -58,6 +59,9 @@
  * Set the GPIOs for data to output
  */
 static void data_gpio_fsel_output() {
+#if defined(RPI2)
+	dmb();
+#endif
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
 	value |= BCM2835_GPIO_FSEL_OUTP << 6;
@@ -78,6 +82,9 @@ static void data_gpio_fsel_output() {
 	value &= ~(7 << 3);
 	value |= BCM2835_GPIO_FSEL_OUTP << 3;
 	BCM2835_GPIO->GPFSEL1 = value;
+#if defined(RPI2)
+	dmb();
+#endif
 }
 
 /**
@@ -86,6 +93,9 @@ static void data_gpio_fsel_output() {
  * Set the GPIOs for data to input
  */
 static void data_gpio_fsel_input() {
+#if defined(RPI2)
+	dmb();
+#endif
 	uint32_t value = BCM2835_GPIO->GPFSEL0;
 	value &= ~(7 << 6);
 	value |= BCM2835_GPIO_FSEL_INPT << 6;
@@ -106,6 +116,9 @@ static void data_gpio_fsel_input() {
 	value &= ~(7 << 3);
 	value |= BCM2835_GPIO_FSEL_INPT << 3;
 	BCM2835_GPIO->GPFSEL1 = value;
+#if defined(RPI2)
+	dmb();
+#endif
 }
 
 /**
@@ -145,11 +158,17 @@ void FT245RL_write_data(uint8_t data) {
 	// Raise WR to start the write.
 	bcm2835_gpio_set(WR);
 	asm volatile("nop"::);
+#if defined(RPI2)
+	dmb();
+#endif
 	// Put the data on the bus.
 	uint32_t out_gpio = ((data & ~0b00000111) << 4) | ((data & 0b00000111) << 2);
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ 0b111110011100;
 	asm volatile("nop"::);
+#if defined(RPI2)
+	dmb();
+#endif
 	// Drop WR to tell the FT245 to read the data.
 	bcm2835_gpio_clr(WR);
 }
@@ -166,6 +185,9 @@ uint8_t FT245RL_read_data() {
 	bcm2835_gpio_clr(_RD);
 	// Wait for the FT245 to respond with data.
 	asm volatile("nop"::);
+#if defined(RPI2)
+	dmb();
+#endif
 	// Read the data from the data port.
 	uint32_t in_gpio = (BCM2835_GPIO->GPLEV0 & 0b111110011100) >> 2;
 	uint8_t data = (uint8_t) ((in_gpio >> 2) & 0xF8) | (uint8_t) (in_gpio & 0x0F);
@@ -173,6 +195,9 @@ uint8_t FT245RL_read_data() {
 	bcm2835_gpio_set(_RD);
 	// Wait to prevent false 'no data' readings.
 	asm volatile("nop"::);
+#if defined(RPI2)
+	dmb();
+#endif
 	return data;
 }
 

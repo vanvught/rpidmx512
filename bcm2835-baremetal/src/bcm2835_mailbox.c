@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+
 #include "bcm2835.h"
 
 #define BCM2835_MAILBOX_STATUS_WF	0x80000000	///< Write full

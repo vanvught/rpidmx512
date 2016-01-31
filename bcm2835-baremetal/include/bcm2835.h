@@ -34,8 +34,25 @@
 	#endif
 #endif
 
-#define HIGH 0x1					///< HIGH state
-#define LOW  0x0					///< LOW state
+#if defined ( RPI2 )
+#define BCM2835_PERI_BASE		0x3F000000
+#else
+#define BCM2835_PERI_BASE		0x20000000
+#endif
+
+#define GPU_IO_BASE				0x7E000000 ///<
+#define GPU_CACHED_BASE			0x40000000 ///<
+#define GPU_UNCACHED_BASE		0xC0000000 ///<
+
+#if defined ( RPI2 )
+#define GPU_MEM_BASE	GPU_UNCACHED_BASE
+#else
+#define GPU_MEM_BASE	GPU_CACHED_BASE
+#endif
+
+
+#define HIGH 0x1				///< HIGH state
+#define LOW  0x0				///< LOW state
 
 // RPi Version 2
 #define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03, SDA when I2C in use
@@ -62,11 +79,6 @@
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
 #define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
 
-#if defined ( RPI2 )
-#define BCM2835_PERI_BASE		0x3F000000
-#else
-#define BCM2835_PERI_BASE		0x20000000
-#endif
 #define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x3000)
 #define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0xB200)
 #define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0xB880)
