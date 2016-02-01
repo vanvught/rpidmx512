@@ -2,7 +2,7 @@
  * @file sd.c
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  * Based on
  * https://github.com/jncronin/rpi-boot/blob/master/emmc.c
  *

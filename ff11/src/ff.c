@@ -4,7 +4,7 @@
 / FatFs module is a free software that opened under license policy of
 / following conditions.
 /
-/ Copyright (C) 2015, ChaN, all right reserved.
+/ Copyright (C) 2015, 2016, ChaN, all right reserved.
 /
 / 1. Redistributions of source code must retain the above copyright notice,
 /    this condition and the following disclaimer.
