@@ -6,7 +6,7 @@
  * The Interrupt Request (IRQ) is used for sending DMX data.
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -765,7 +765,9 @@ void dmx_init(void) {
 	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
 	BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
-
+#ifdef RPI2
+	dmb();
+#endif
 	__enable_irq();
 
 	pl011_init();
