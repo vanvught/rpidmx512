@@ -82,9 +82,6 @@ static void data_gpio_fsel_output() {
 	value &= ~(7 << 3);
 	value |= BCM2835_GPIO_FSEL_OUTP << 3;
 	BCM2835_GPIO->GPFSEL1 = value;
-#if defined(RPI2)
-	dmb();
-#endif
 }
 
 /**
@@ -144,6 +141,9 @@ void FT245RL_init(void) {
 	bcm2835_gpio_set(_RD);
 	// WR	low
 	bcm2835_gpio_clr(WR);
+#if defined(RPI2)
+	dmb();
+#endif
 }
 
 /**
@@ -193,11 +193,5 @@ uint8_t FT245RL_read_data() {
 	uint8_t data = (uint8_t) ((in_gpio >> 2) & 0xF8) | (uint8_t) (in_gpio & 0x0F);
 	// Bring RD# back up so the FT245 can let go of the data.
 	bcm2835_gpio_set(_RD);
-	// Wait to prevent false 'no data' readings.
-	asm volatile("nop"::);
-#if defined(RPI2)
-	dmb();
-#endif
 	return data;
 }
-
