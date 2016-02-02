@@ -2,7 +2,7 @@
  * @file bcm2835_mailbox.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "bcm2835.h"
 
 #define BCM2835_MAILBOX_STATUS_WF	0x80000000	///< Write full
-#define	 BCM2835_MAILBOX_STATUS_RE	0x40000000	///< Read empty
+#define	BCM2835_MAILBOX_STATUS_RE	0x40000000	///< Read empty
 
 /**
  * @ingroup Mailbox
@@ -38,20 +38,16 @@
  */
 uint32_t bcm2835_mailbox_read(const uint8_t channel) {
 	uint32_t data;
-	uint8_t read_channel;
 
-	while (1==1) {
-		while (BCM2835_MAILBOX ->STATUS & BCM2835_MAILBOX_STATUS_RE);
+	do {
+		while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_RE)
+			; // do nothing
 
-		data = BCM2835_MAILBOX ->READ;
-		read_channel = (uint8_t) (data & 0xf);
+		data = BCM2835_MAILBOX->READ;
 
-		if (read_channel == channel) {
-			return (data &  ~0xf);
-		}
-	}
+	} while ((uint8_t) (data & 0xf) != channel);
 
-	return 0;
+	return (data & ~0xf);
 }
 
 /**
@@ -61,6 +57,7 @@ uint32_t bcm2835_mailbox_read(const uint8_t channel) {
  * @param data
  */
 void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data) {
-	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF);
-	BCM2835_MAILBOX->WRITE = (data &  ~0xf) | (uint32_t)(channel & 0xf);
+	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF)
+		; // do nothing
+	BCM2835_MAILBOX->WRITE = (data & ~0xf) | (uint32_t) (channel & 0xf);
 }
