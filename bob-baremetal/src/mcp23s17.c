@@ -80,9 +80,10 @@ uint8_t mcp23s17_start(device_info_t *device_info) {
 	} else if (device_info->speed_hz > (uint32_t) MCP23S17_SPI_SPEED_MAX_HZ) {
 		device_info->speed_hz = (uint32_t) MCP23S17_SPI_SPEED_MAX_HZ;
 	}
-
+#ifdef __AVR_ARCH__
+#else
 	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
-
+#endif
 	mcp23s17_reg_write_byte(device_info, MCP23S17_IOCON, MCP23S17_IOCON_HAEN);
 
 	return MCP23S17_OK;

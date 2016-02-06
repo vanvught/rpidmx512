@@ -2,7 +2,7 @@
  * @file mcp23s08.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,9 +79,10 @@ uint8_t mcp23s08_start(device_info_t *device_info) {
 	} else if (device_info->speed_hz > (uint32_t) MCP23S08_SPI_SPEED_MAX_HZ) {
 		device_info->speed_hz = (uint32_t) MCP23S08_SPI_SPEED_MAX_HZ;
 	}
-
+#ifdef __AVR_ARCH__
+#else
 	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
-
+#endif
 	mcp23s08_reg_write(device_info, MCP23S08_IOCON, MCP23S08_IOCON_HAEN);
 
 	return MCP23S08_OK;
