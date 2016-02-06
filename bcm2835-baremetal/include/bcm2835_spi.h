@@ -83,8 +83,14 @@ typedef enum {
 	BCM2835_SPI_CS_NONE = 3		///< No CS, control it yourself
 } bcm2835SPIChipSelect;
 
+// The Raspberry Pi SPI runs at APB clock speed, which is equivalent to core clock speed, 250 MHz
+// This can be divided by any even number from 2 to 65536 for the desired speed.
+// The datasheet specifies that the divisor must be a power of two, but this is incorrect.
+// Odd numbers are rounded down, and 0 (or 1) is equivalent to 65536.
+// A divisor smaller than 2 is therefore impossible.
+
 typedef enum {
-	BCM2835_SPI_CLOCK_DIVIDER_65536 = 0,		///< 65536 = 262.144us = 3.814697260kHz
+	BCM2835_SPI_CLOCK_DIVIDER_65536 = 65536,	///< 65536 = 262.144us = 3.814697260kHz
 	BCM2835_SPI_CLOCK_DIVIDER_32768 = 32768,	///< 32768 = 131.072us = 7.629394531kHz
 	BCM2835_SPI_CLOCK_DIVIDER_16384 = 16384,	///< 16384 = 65.536us = 15.25878906kHz
 	BCM2835_SPI_CLOCK_DIVIDER_8192 = 8192,		///< 8192 = 32.768us = 30/51757813kHz
@@ -101,8 +107,12 @@ typedef enum {
 	BCM2835_SPI_CLOCK_DIVIDER_8 = 8,			///< 8 = 32ns = 31.25MHz
 	BCM2835_SPI_CLOCK_DIVIDER_4 = 4,			///< 4 = 16ns = 62.5MHz
 	BCM2835_SPI_CLOCK_DIVIDER_2 = 2,			///< 2 = 8ns = 125MHz, fastest you can get
-	BCM2835_SPI_CLOCK_DIVIDER_1 = 1,			///< 0 = 262.144us = 3.814697260kHz, same as 0/65536
+	BCM2835_SPI_CLOCK_DIVIDER_1 = 1,			///< 1 = 262.144us = 3.814697260kHz, same as 0/65536
+	BCM2835_SPI_CLOCK_DIVIDER_0 = 0,			///< 0 = 262.144us = 3.814697260kHz, same as 1/65536
 } bcm2835SPIClockDivider;
+
+#define BCM2835_SPI_CLOCK_MIN	4000			///< 4kHz
+#define BCM2835_SPI_CLOCK_MAX	125000000		///< 125Mhz
 
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);

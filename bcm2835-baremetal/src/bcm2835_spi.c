@@ -159,16 +159,20 @@ void bcm2835_spi_transfernb(char* tbuf, char* rbuf, const uint32_t len) {
 
 		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD) && (fifo_writes < len)) {
 			if (tbuf) {
-				BCM2835_SPI0->FIFO = (uint32_t) tbuf[fifo_writes++];
+				BCM2835_SPI0->FIFO = (uint32_t) tbuf[fifo_writes];
 			} else {
 				BCM2835_SPI0->FIFO = 0;
 			}
+			fifo_writes++;
 		}
 
 		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD) && (fifo_reads < len)) {
 			if (rbuf) {
-				rbuf[fifo_reads++] = (uint32_t) BCM2835_SPI0->FIFO;
+				rbuf[fifo_reads] = (uint32_t) BCM2835_SPI0->FIFO;
+			} else {
+				(void)BCM2835_SPI0->FIFO;
 			}
+			fifo_reads++;
 		}
 	}
 

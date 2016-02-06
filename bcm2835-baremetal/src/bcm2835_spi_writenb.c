@@ -49,15 +49,21 @@ void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
 		// Maybe wait for TXD
 		while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_TXD))
 			;
-
 		// Write to FIFO
 		BCM2835_SPI0->FIFO = (uint32_t) tbuf[i];
 
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD)) {
+			(void) BCM2835_SPI0->FIFO;
+		}
 	}
 
 	// Wait for DONE to be set
-	while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE))
-		;
+	while (!(BCM2835_SPI0->CS & BCM2835_SPI0_CS_DONE)) {
+		while ((BCM2835_SPI0->CS & BCM2835_SPI0_CS_RXD)) {
+			(void) BCM2835_SPI0->FIFO;
+		}
+	}
+
 	// Set TA = 0
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
 }
