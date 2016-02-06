@@ -2,7 +2,7 @@
  * @file bw_spi_dio.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,10 @@
 #include <device_info.h>
 #include <bw_dio.h>
 
-#define BW_DIO_SPI_BYTE_WAIT_US				0
+#define BW_DIO_SPI_BYTE_WAIT_US			0		///<
+
+#define BW_DIO_SPI_SPEED_MAX_HZ			250000	///< 250 KHz
+#define BW_DIO_SPI_SPEED_DEFAULT_HZ		250000	///< 250 kHz
 
 extern uint8_t bw_spi_dio_start(device_info_t *);
 extern void bw_spi_dio_end(void);

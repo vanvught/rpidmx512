@@ -2,7 +2,7 @@
  * @file bw_spi_lcd.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,10 @@
 #include <device_info.h>
 #include <bw_lcd.h>
 
-#define BW_LCD_SPI_BYTE_WAIT_US			10
+#define BW_LCD_SPI_BYTE_WAIT_US			10		///<
+
+#define BW_LCD_SPI_SPEED_MAX_HZ			100000	///< 100 KHz
+#define BW_LCD_SPI_SPEED_DEFAULT_HZ		100000	///< 100 kHz
 
 extern uint8_t bw_spi_lcd_start (device_info_t *);
 extern void bw_spi_lcd_end (void);
