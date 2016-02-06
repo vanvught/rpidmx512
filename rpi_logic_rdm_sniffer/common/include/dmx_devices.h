@@ -1,4 +1,8 @@
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/**
+ * @file dmx_devices.h
+ *
+ */
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +39,13 @@
 #define DMX_DEVICE_CONFIG_INVALID_START_ADDRESS 	-5	///<
 #define DMX_DEVICE_CONFIG_INVALID_DEVICE		 	-6	///<
 #define DMX_DEVICE_CONFIG_INVALID_ENTRY			 	-7	///<
+#define DMX_DEVICE_CONFIG_INVALID_SPI_SPEED			-8	///<
+#define DMX_DEVICE_CONFIG_INVALID_PIXELS			-9	///<
 
 typedef struct _dmx_device_info {
 	device_info_t device_info;
 	uint16_t dmx_start_address;
+	uint8_t pixel_count;
 	struct _rdm_sub_devices_info rdm_sub_devices_info;
 } dmx_device_info_t;
 
@@ -55,6 +62,7 @@ typedef struct _devices {
 struct _dmx_devices_statistics {
 	uint32_t function_count;
 	uint32_t dmx_available_count;
+	uint32_t dmx_missed_count;
 };
 
 extern void dmx_devices_read_config(void);

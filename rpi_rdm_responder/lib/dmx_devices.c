@@ -85,14 +85,16 @@ static int add_connected_device(const char *line) {
 		char chip_select;
 		uint8_t slave_address;
 		uint16_t dmx_start_address;
+		uint32_t spi_speed;
+		uint8_t pixel_count;
 		int rc;
 
-		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address);
+		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address, &spi_speed, &pixel_count);
 #ifdef DEBUG
 		printf("%s", line);
 		printf("%d, {%d (%s)[%d] %d %d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address);
 #endif
-		if ((rc == 4) && (len != 0)) {
+		if ((rc >= 5) && (len != 0)) {
 			int j;
 
 			if (chip_select < (char)BCM2835_SPI_CS0 || chip_select > (char)BCM2835_SPI_CS1) {
@@ -109,6 +111,20 @@ static int add_connected_device(const char *line) {
 				return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 			}
 
+			if ((spi_speed != 0) && (spi_speed < BCM2835_SPI_CLOCK_MIN || spi_speed > BCM2835_SPI_CLOCK_MAX)) {
+#ifdef DEBUG
+				printf("warning : invalid spi_speed [skipping this line]\n");
+#endif
+				return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+			}
+
+			if ((rc == 6) && (pixel_count == 0)) {
+	#ifdef DEBUG
+				printf("warning : invalid pixel_count [skipping this line]\n");
+	#endif
+				return DMX_DEVICE_CONFIG_INVALID_PIXELS;
+			}
+
 			for (j = 0; j < TABLE_LENGTH(devices); j++) {
 				if (strcmp(devices_table[j].name, device_name) == 0) {
 #ifdef DEBUG
@@ -118,7 +134,9 @@ static int add_connected_device(const char *line) {
 					devices_connected.device_entry[devices_added].devices_table_index = j;
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.chip_select = (uint8_t)chip_select;
 					devices_connected.device_entry[devices_added].dmx_device_info.device_info.slave_address = slave_address;
+					devices_connected.device_entry[devices_added].dmx_device_info.device_info.speed_hz = spi_speed;
 					devices_connected.device_entry[devices_added].dmx_device_info.dmx_start_address = dmx_start_address;
+					devices_connected.device_entry[devices_added].dmx_device_info.pixel_count = pixel_count;
 					devices_added++;
 					devices_connected.elements_count = devices_added;
 					return devices_connected.elements_count;
@@ -150,13 +168,17 @@ static int add_connected_device(const char *line) {
 #endif
 					return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 					//break;
+				case DMX_DEVICE_CONFIG_INVALID_SPI_SPEED:
+#ifdef DEBUG
+					printf("warning : invalid spi_speed [skipping this line]\n");
+#endif
+					return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+					//break;
 				default:
 					return DMX_DEVICE_CONFIG_INVALID_ENTRY;
 					//break;
 			}
 		}
-
-
 	}
 
 	return DMX_DEVICE_CONFIG_TABLE_FULL;

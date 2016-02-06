@@ -765,9 +765,7 @@ void dmx_init(void) {
 	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
 	BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
 	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
-#ifdef RPI2
-	dmb();
-#endif
+
 	__enable_irq();
 
 	pl011_init();

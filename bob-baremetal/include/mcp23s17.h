@@ -34,6 +34,9 @@
 
 #define MCP23S17_DEFAULT_SLAVE_ADDRESS	0x00
 
+#define MCP23S17_SPI_SPEED_MAX_HZ		10000000	///< 10 MHz
+#define MCP23S17_SPI_SPEED_DEFAULT_HZ	 2000000	///< 2 MHz
+
 #define MCP23S17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
 #define MCP23S17_IODIRB			0x01	///< I/O DIRECTION (IODIRB) REGISTER, 1 = Input (default), 0 = Output
 #define MCP23S17_IPOLA			0x02	///< INPUT POLARITY (IPOLA) REGISTER, 0 = Normal (default)(low reads as 0), 1 = Inverted (low reads as 1)

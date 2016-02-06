@@ -50,6 +50,8 @@
 #define GPU_MEM_BASE	GPU_CACHED_BASE
 #endif
 
+///< Speed of the core clock core_clk
+#define BCM2835_CORE_CLK_HZ		250000000	///< 250 MHz
 
 #define HIGH 0x1				///< HIGH state
 #define LOW  0x0				///< LOW state

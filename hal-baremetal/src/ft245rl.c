@@ -113,9 +113,6 @@ static void data_gpio_fsel_input() {
 	value &= ~(7 << 3);
 	value |= BCM2835_GPIO_FSEL_INPT << 3;
 	BCM2835_GPIO->GPFSEL1 = value;
-#if defined(RPI2)
-	dmb();
-#endif
 }
 
 /**

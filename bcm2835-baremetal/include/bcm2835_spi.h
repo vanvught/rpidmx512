@@ -126,7 +126,7 @@ extern void bcm2835_spi_setBitOrder(const uint8_t);
  * @param divider The desired SPI clock divider, one of ::bcm2835SPIClockDivider
  */
 inline static void bcm2835_spi_setClockDivider(const uint16_t divider) {
-	BCM2835_SPI0 ->CLK = divider;
+	BCM2835_SPI0->CLK = (uint32_t) divider;
 }
 
 /**

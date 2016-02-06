@@ -50,7 +50,7 @@ static void mcp4902(dmx_device_info_t * dmx_device_info) {
 	const uint8_t *dmx_data = dmx_get_data();
 	uint16_t dmx_data_index;
 
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	// 15.625MHz
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
@@ -78,10 +78,20 @@ static void mcp4902_init(dmx_device_info_t * dmx_device_info) {
 #ifdef DEBUG
 	printf("device init <mcp4902>\n");
 #endif
+
+	if (dmx_device_info->device_info.speed_hz == (uint32_t) 0) {
+		dmx_device_info->device_info.speed_hz = (uint32_t) MCP49X2_SPI_SPEED_DEFAULT_HZ;
+	} else if (dmx_device_info->device_info.speed_hz > (uint32_t) MCP49X2_SPI_SPEED_MAX_HZ) {
+		dmx_device_info->device_info.speed_hz = (uint32_t) MCP49X2_SPI_SPEED_MAX_HZ;
+	}
+
+	dmx_device_info->device_info.internal_clk_div = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / dmx_device_info->device_info.speed_hz);
+
 	bcm2835_spi_begin();
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	// 15.625MHz
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
+
 	bcm2835_spi_write(MCP4902_DATA(0) | 0x3000 | MCP49X2_WRITE_DAC_A);
 	bcm2835_spi_write(MCP4902_DATA(0) | 0x3000 | MCP49X2_WRITE_DAC_B);
 

@@ -126,23 +126,13 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 #endif
 
 #if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
-/**
- *
- * @param buf
- * @param spi
- * @param name
- * @param len
- * @param address
- * @param dmx
- * @return
- */
-int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *address, uint16_t *dmx) {
+int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *address, uint16_t *dmx, uint32_t *speed, uint8_t *pixels) {
 	int i;
-	int j;
 	int k;
 	char c;
 	uint16_t uint16;
-	char tmp[3];
+	uint32_t uint32;
+	char tmp[16];
 	const char SPI[] = "SPI";
 	uint8_t nibble_high;
 	uint8_t nibble_low;
@@ -172,12 +162,11 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 			name[k++] = buf[i++];
 	}
 
+	*len = (uint8_t) k;
 	name[k] = (char) 0;
 
-	*len = (uint8_t) k;
-
 	if (buf[i] != (char) ',') {
-		return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
+		return DMX_DEVICE_CONFIG_INVALID_DEVICE;
 	}
 
 	k = 0;
@@ -207,29 +196,65 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 	uint16 = 0;
 
-	if (!isdigit((int)buf[i])) {
-		return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
-	}
-
-	while ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (k < 3) && (buf[i] != (char) ' ')) {
-		tmp[k++] = buf[i++];
-	}
-
-	if (k == 0)  {
-		return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
-	}
-
-	j = 0;
-
-	while (k--) {
-		if (!isdigit((int)tmp[j])) {
+	while ((buf[i] != (char) 0) && (buf[i] != (char) ',') && (k < 3)) {
+		if (!isdigit((int)buf[i])) {
 			return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 		}
-		uint16 = uint16 * (uint16_t)10 + (uint16_t)tmp[j++] - (uint16_t) '0';
+		uint16 = uint16 * (uint16_t)10 + (uint16_t)buf[i] - (uint16_t) '0';
+		k++;
+		i++;
+	}
+
+	if (k == 0 || (buf[i] != (char) ','))  {
+		return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 	}
 
 	*dmx = uint16;
 
-	return 4;
+	k = 0;
+	i++;
+	uint32 = 0;
+
+	while ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (k < 9) && (buf[i] != (char) ' ') && (buf[i] != (char) ':')) {
+		if (!isdigit((int)buf[i])) {
+			return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+		}
+		uint32 = uint32 * (uint32_t)10 + (uint32_t)buf[i] - (uint32_t) '0';
+		k++;
+		i++;
+	}
+
+	if ((k == 0) || ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (buf[i] != (char) ' ') && (buf[i] != (char) ':'))) {
+		return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+	}
+
+	*speed = uint32;
+
+	if (buf[i] != (char) ':') {
+		*pixels = 0;
+		return 5;
+	}
+
+	k = 0;
+	i++;
+	uint16 = 0;
+
+	while ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (k < 3) && (buf[i] != (char) ' ') ) {
+		if (!isdigit((int)buf[i])) {
+			return DMX_DEVICE_CONFIG_INVALID_PIXELS;
+		}
+		uint16 = uint16 * (uint16_t)10 + (uint16_t)buf[i] - (uint16_t) '0';
+		k++;
+		i++;
+	}
+
+	if  (((k == 0) || (uint16 > (int) ((uint8_t) ~0))) || ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (buf[i] != (char) ' '))) {
+		return DMX_DEVICE_CONFIG_INVALID_PIXELS;
+	}
+
+	*pixels = (uint8_t)uint16;
+
+	return 6;
 }
+
 #endif

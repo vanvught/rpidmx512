@@ -2,7 +2,7 @@
  * @file device_info.h
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 typedef struct _device_info {
 	uint8_t chip_select;
 	uint8_t slave_address;
+	uint32_t speed_hz;
+	uint16_t internal_clk_div;	///<
 } device_info_t;
 
 #endif /* DEVICE_INFO_H_ */

@@ -50,8 +50,9 @@ inline void static mcp23s17_setup(const device_info_t *device_info)
 {
 #ifdef __AVR_ARCH__
 #else
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);	// 1.953125MHz
+	bcm2835_spi_setClockDivider(device_info->internal_clk_div);
 	bcm2835_spi_chipSelect(device_info->chip_select);
+	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 #endif
 }
 
@@ -73,6 +74,14 @@ uint8_t mcp23s17_start(device_info_t *device_info) {
 	} else {
 		device_info->slave_address = device_info->slave_address & 0x03;
 	}
+
+	if (device_info->speed_hz == (uint32_t) 0) {
+		device_info->speed_hz = (uint32_t) MCP23S17_SPI_SPEED_DEFAULT_HZ;
+	} else if (device_info->speed_hz > (uint32_t) MCP23S17_SPI_SPEED_MAX_HZ) {
+		device_info->speed_hz = (uint32_t) MCP23S17_SPI_SPEED_MAX_HZ;
+	}
+
+	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 
 	mcp23s17_reg_write_byte(device_info, MCP23S17_IOCON, MCP23S17_IOCON_HAEN);
 
