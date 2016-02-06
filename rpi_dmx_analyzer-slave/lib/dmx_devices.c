@@ -81,11 +81,11 @@ static int add_connected_device(const char *line) {
 	if (devices_connected.elements_count < (uint16_t)(sizeof(devices_connected.device_entry) / sizeof(devices_connected.device_entry[0]))) {
 
 		char device_name[65];
+		uint8_t len = sizeof(device_name) - 1;
 		char chip_select;
 		uint8_t slave_address;
 		uint16_t dmx_start_address;
 		int rc;
-		uint8_t len = 64;
 
 		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address);
 #ifdef DEBUG
@@ -177,7 +177,7 @@ void dmx_devices_read_config(void) {
 	if (rc == FR_OK) {
 		TCHAR buffer[196];
 		for(;;) {
-			if (f_gets(buffer, sizeof buffer, &file_object) == NULL)
+			if (f_gets(buffer, sizeof(buffer), &file_object) == NULL)
 				break; // Error or end of file
 			if (add_connected_device((const char *)buffer) == DMX_DEVICE_CONFIG_TABLE_FULL)
 				break;
@@ -224,6 +224,10 @@ void dmx_devices_run() {
 	dmx_devices_statistics.dmx_available_count++;
 
 	for (i = 0; i < devices_connected.elements_count; i++) {
+		if (dmx_get_available()) {
+			dmx_devices_statistics.dmx_missed_count++;
+			break;
+		}
 		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
 }

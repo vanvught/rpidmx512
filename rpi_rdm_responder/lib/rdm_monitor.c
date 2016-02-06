@@ -106,7 +106,7 @@ void monitor_update(void) {
 				(int) i + 28, (int) rdm_data[i + 27], (unsigned int) rdm_data[i + 27]);
 	}
 
-	monitor_line(MONITOR_LINE_STATS, "%ld / %ld", function_count_per_second, dmx_available_count_per_second);
+	monitor_line(MONITOR_LINE_STATS, "%ld / %ld / %ld", function_count_per_second, dmx_available_count_per_second, dmx_handle_data_statistics->dmx_missed_count);
 
 	function_count_previous = dmx_handle_data_statistics->function_count;
 	dmx_available_count_previous = dmx_handle_data_statistics->dmx_available_count;
