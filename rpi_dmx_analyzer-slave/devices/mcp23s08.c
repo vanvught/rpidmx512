@@ -68,6 +68,16 @@ static void mcp23s08(dmx_device_info_t * dmx_device_info) {
 INITIALIZER(devices, mcp23s08)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void mcp23s08_zero(dmx_device_info_t *dmx_device_info) {
+	mcp23s08_reg_write(&dmx_device_info->device_info, MCP23S08_GPIO, 0x00);
+}
+
+INITIALIZER(devices_zero, mcp23s08_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info

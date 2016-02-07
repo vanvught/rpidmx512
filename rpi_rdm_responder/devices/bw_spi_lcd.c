@@ -116,6 +116,16 @@ static void bw_spi_lcd(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_lcd)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void bw_spi_lcd_zero(dmx_device_info_t *dmx_device_info) {
+	bw_spi_lcd_cls(&(dmx_device_info->device_info));
+}
+
+INITIALIZER(devices_zero, bw_spi_lcd_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info

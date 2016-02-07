@@ -69,6 +69,17 @@ static void mcp4902(dmx_device_info_t * dmx_device_info) {
 INITIALIZER(devices, mcp4902)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void mcp4902_zero(dmx_device_info_t *dmx_device_info) {
+	bcm2835_spi_write(MCP4902_DATA(0) | 0x3000 | MCP49X2_WRITE_DAC_A);
+	bcm2835_spi_write(MCP4902_DATA(0) | 0x3000 | MCP49X2_WRITE_DAC_B);
+}
+
+INITIALIZER(devices_zero, mcp4902_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info

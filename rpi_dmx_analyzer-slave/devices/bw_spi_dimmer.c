@@ -54,6 +54,16 @@ static void bw_spi_dimmer(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_dimmer)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void bw_spi_dimmer_zero(dmx_device_info_t *dmx_device_info) {
+	bw_spi_dimmer_output(&dmx_device_info->device_info, 0);
+}
+
+INITIALIZER(devices_zero, bw_spi_dimmer_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info

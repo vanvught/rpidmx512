@@ -68,6 +68,16 @@ static void mcp23s17(dmx_device_info_t * dmx_device_info) {
 INITIALIZER(devices, mcp23s17)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void mcp23s17_zero(dmx_device_info_t *dmx_device_info) {
+	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_GPIOA, 0x0000);
+}
+
+INITIALIZER(devices_zero, mcp23s17_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info

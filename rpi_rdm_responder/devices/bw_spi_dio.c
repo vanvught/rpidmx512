@@ -68,6 +68,16 @@ static void bw_spi_dio(dmx_device_info_t *dmx_device_info) {
 INITIALIZER(devices, bw_spi_dio)
 
 /**
+ *
+ * @param dmx_device_info
+ */
+static void bw_spi_dio_zero(dmx_device_info_t *dmx_device_info) {
+	bw_spi_dio_output(&dmx_device_info->device_info, (uint8_t) 0);
+}
+
+INITIALIZER(devices_zero, bw_spi_dio_zero)
+
+/**
  * @ingroup DEV
  *
  * @param dmx_device_info
@@ -79,7 +89,7 @@ static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
 #endif
 	(void)bw_spi_dio_start(&(dmx_device_info->device_info));
 	bw_spi_dio_fsel_mask(&dmx_device_info->device_info, 0x7F);
-	bw_spi_dio_output(&dmx_device_info->device_info, 0);
+	bw_spi_dio_output(&dmx_device_info->device_info, (uint8_t) 0);
 
 	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
