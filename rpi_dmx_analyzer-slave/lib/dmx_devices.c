@@ -42,6 +42,8 @@ TABLE(initializer_t, devices_init)
 devices_t devices_connected ALIGNED;									///<
 static struct _dmx_devices_statistics dmx_devices_statistics ALIGNED;	///<
 
+static bool dmx_devices_is_init  = false;								///<
+
 /**
  * @ingroup dmx
  *
@@ -225,6 +227,7 @@ void dmx_devices_init(void) {
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
+	dmx_devices_is_init = true;
 }
 
 /**
@@ -240,10 +243,13 @@ void dmx_devices_run() {
 	if (!dmx_get_available()) {
 		dmx_statistics = dmx_get_statistics();
 		if (dmx_statistics->updates_per_seconde == 0) {
-			dmx_devices_init();
+			if (!dmx_devices_is_init)
+				dmx_devices_init();
 		}
 		return;
 	}
+
+	dmx_devices_is_init = false;
 
 	dmx_set_available_false();
 
