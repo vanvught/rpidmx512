@@ -82,12 +82,12 @@ static int add_connected_device(const char *line) {
 
 		char device_name[65];
 		uint8_t len = sizeof(device_name) - 1;
-		char chip_select;
-		uint8_t slave_address;
-		uint16_t dmx_start_address;
-		uint32_t spi_speed;
-		uint8_t pixel_count;
-		int rc;
+		char chip_select = (char) BCM2835_SPI_CS_NONE;
+		uint8_t slave_address = 0;
+		uint16_t dmx_start_address = 0;
+		uint32_t spi_speed = 0;
+		uint8_t pixel_count = 0;
+		int rc = DMX_DEVICE_CONFIG_ERROR;
 
 		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address, &spi_speed, &pixel_count);
 #ifdef DEBUG
@@ -139,7 +139,7 @@ static int add_connected_device(const char *line) {
 					devices_connected.device_entry[devices_added].dmx_device_info.pixel_count = pixel_count;
 					devices_added++;
 					devices_connected.elements_count = devices_added;
-					return devices_connected.elements_count;
+					return (int)devices_connected.elements_count;
 				}
 			}
 		} else {
@@ -189,14 +189,11 @@ static int add_connected_device(const char *line) {
  *
  */
 void dmx_devices_read_config(void) {
-	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
 
 	devices_connected.elements_count = 0;
 
-	rc = f_open(&file_object, "devices.txt", FA_READ);
-
-	if (rc == FR_OK) {
+	if (FR_OK == f_open(&file_object, "devices.txt", FA_READ)) {
 		TCHAR buffer[196];
 		for(;;) {
 			if (f_gets(buffer, sizeof(buffer), &file_object) == NULL)
@@ -204,16 +201,18 @@ void dmx_devices_read_config(void) {
 			if (add_connected_device((const char *)buffer) == DMX_DEVICE_CONFIG_TABLE_FULL)
 				break;
 		}
-		f_close(&file_object);
+		(void)f_close(&file_object);
 	} else {
-
+#ifdef DEBUG
+	printf("Cannot read file \"devices.txt\"\n");
+#endif
 	}
 #ifdef DEBUG_ANALYZER
 	// Do NOT init any devices
 	devices_connected.elements_count = 0;
 #endif
 #ifdef DEBUG
-	printf("\ndevices_connected.elements_count = %d\n\n", devices_connected.elements_count);
+	printf("devices_connected.elements_count = %d\n", devices_connected.elements_count);
 #endif
 }
 
@@ -233,11 +232,16 @@ void dmx_devices_init(void) {
  *
  */
 void dmx_devices_run() {
+	const volatile struct _dmx_statistics *dmx_statistics;
 	uint16_t i;
 
 	dmx_devices_statistics.function_count++;
 
 	if (!dmx_get_available()) {
+		dmx_statistics = dmx_get_statistics();
+		if (dmx_statistics->updates_per_seconde == 0) {
+			dmx_devices_init();
+		}
 		return;
 	}
 
@@ -326,7 +330,7 @@ const char *dmx_devices_get_label(const uint16_t sub_device) {
  */
 void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label, label, label_length);
+		(void *)_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label, label, label_length);
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label_length = label_length;
 	}
 }
@@ -438,7 +442,7 @@ const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_devi
  */
 void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		_memcpy(&(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
+		(void *)_memcpy(&(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
 	}
 }
 

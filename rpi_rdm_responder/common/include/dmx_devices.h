@@ -33,6 +33,7 @@
 #include "rdm_sub_devices.h"
 
 #define DMX_DEVICE_CONFIG_TABLE_FULL 				0	///<
+#define DMX_DEVICE_CONFIG_ERROR			 			-1	///<
 #define DMX_DEVICE_CONFIG_INVALID_PROTOCOL 			-2	///<
 #define DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT 		-3	///<
 #define DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS 	-4	///<
