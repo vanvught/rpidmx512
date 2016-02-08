@@ -95,7 +95,7 @@ static int add_connected_device(const char *line) {
 		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address, &spi_speed, &pixel_count);
 #ifdef DEBUG
 		printf("%s", line);
-		printf("%d, {%d (%s)[%d] %d %d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address);
+		printf("%d, {%d (%s)[%d] %d %d %ld:%d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address, spi_speed, pixel_count);
 #endif
 		if ((rc >= 5) && (len != 0)) {
 			int j;

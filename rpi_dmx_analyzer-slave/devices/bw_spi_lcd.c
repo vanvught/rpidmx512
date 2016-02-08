@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG
-extern int printf(const char *format, ...);
-#endif
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
@@ -132,16 +129,14 @@ INITIALIZER(devices_zero, bw_spi_lcd_zero)
  */
 static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
-#ifdef DEBUG
-	printf("device init <bw_spi_lcd_init>\n");
-#endif
+
 	(void)bw_spi_lcd_start(&(dmx_device_info->device_info));
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 	display_channels(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);
 
-	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 

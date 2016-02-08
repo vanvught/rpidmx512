@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef DEBUG
-extern int printf(const char *format, ...);
-#endif
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
@@ -76,6 +73,10 @@ INITIALIZER(devices, mcp4822)
  * @param dmx_device_info
  */
 static void mcp4822_zero(dmx_device_info_t *dmx_device_info) {
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
+	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
+	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
+
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_A);
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_B);
 }
@@ -89,9 +90,6 @@ INITIALIZER(devices_zero, mcp4822_zero)
  */
 static void mcp4822_init(dmx_device_info_t * dmx_device_info) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
-#ifdef DEBUG
-	printf("device init <mcp4822>\n");
-#endif
 
 	if (dmx_device_info->device_info.speed_hz == (uint32_t) 0) {
 		dmx_device_info->device_info.speed_hz = (uint32_t) MCP48X2_SPI_SPEED_DEFAULT_HZ;
@@ -109,9 +107,9 @@ static void mcp4822_init(dmx_device_info_t * dmx_device_info) {
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_A);
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_B);
 
-	_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 
