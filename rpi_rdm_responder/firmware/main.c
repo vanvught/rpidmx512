@@ -95,7 +95,7 @@ void notmain(void) {
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
-	printf("RDM Responder, DMX512 data analyzer for 32 channels, Devices connected : %d\n",	dmx_devices_get_devices_connected());
+	printf("RDM Responder / DMX Slave, Devices connected : %d\n", dmx_devices_get_devices_connected());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0],
 			uid_device[1], uid_device[2], uid_device[3], uid_device[4],

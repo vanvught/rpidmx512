@@ -47,29 +47,29 @@ static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURE
 static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH = sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(DEVICE_SOFTWARE_VERSION[0]) - 1;
 #endif
 
-static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";				///< Parameters file name
-static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";		///<
-static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";			///<
-static const char RDM_DEVICE_LABEL[] = "device_label";						///<
+static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";						///< Parameters file name
+static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";				///<
+static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";					///<
+static const char RDM_DEVICE_LABEL[] = "device_label";								///<
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
-static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH];					///<
-static uint8_t root_device_label_length = 0;								///<
+static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };	///<
+static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH] ALIGNED;					///<
+static uint8_t root_device_label_length = 0;										///<
 
-static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH];	///<
-static uint8_t device_manufacturer_name_length = 0;							///<
+static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH] ALIGNED;	///<
+static uint8_t device_manufacturer_name_length = 0;									///<
 
-static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH];			///<
+static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH] ALIGNED;			///<
 
-static uint8_t device_sn[DEVICE_SN_LENGTH];									///<
+static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;									///<
 
 #ifdef RDM_RESPONDER
-static bool is_factory_defaults = true;										///<
-static uint16_t factory_defaults_checksum = 0;								///<
+static bool is_factory_defaults = true;												///<
+static uint16_t factory_defaults_checksum = 0;										///<
 
-static struct _rdm_device_info rdm_device_info ALIGNED;						///<
-static struct _rdm_device_info rdm_sub_device_info ALIGNED;					///<
+static struct _rdm_device_info rdm_device_info ALIGNED;								///<
+static struct _rdm_device_info rdm_sub_device_info ALIGNED;							///<
 #endif
 
 /**
@@ -123,14 +123,12 @@ static void process_line_read_string(const char *line) {
 static void read_config_file(void) {
 	TCHAR buffer[128];
 	FIL file_object;
-	FRESULT rc = FR_DISK_ERR;
 
-	rc = f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ);
-
-	if (rc == FR_OK) {
+	if (f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ) == FR_OK) {
 		for (;;) {
-			if (f_gets(buffer, sizeof buffer, &file_object) == NULL)
+			if (f_gets(buffer, sizeof(buffer), &file_object) == NULL) {
 				break; // Error or end of file
+			}
 			process_line_read_string((const char *) buffer);
 		}
 		(void)f_close(&file_object);
@@ -500,7 +498,7 @@ void rdm_device_info_init(void) {
 	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
 	const uint16_t sub_device_count = rdm_sub_devices_get();
 #endif
-	uint8_t mac_address[6];
+	uint8_t mac_address[6] ALIGNED;
 #ifdef RDM_RESPONDER
 	if (board_model_id < 0) {
 		device_model = (uint16_t)0;
@@ -523,10 +521,10 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-	(void)_memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	(void *)_memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	root_device_label_length = DEVICE_LABEL_LENGTH;
 
-	(void)_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
+	(void *)_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
 
 	read_config_file();
@@ -554,7 +552,7 @@ void rdm_device_info_init(void) {
 
 	rdm_sensors_init();
 
-	_memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
+	(void *)_memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
 
 	rdm_sub_devices_info_init();
 
