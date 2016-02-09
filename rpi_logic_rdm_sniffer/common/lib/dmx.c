@@ -46,20 +46,6 @@
 #error You cannot have defined both RDM_CONTROLLER and LOGIC_ANALYZER
 #endif
 
-///< State of receiving DMX/RDM Bytes
-typedef enum {
-	IDLE = 0,	///<
-	BREAK,		///<
-	MAB,		///<
-	DMXDATA,	///<
-	RDMDATA,	///<
-	CHECKSUMH,	///<
-	CHECKSUML,	///<
-	RDMDISCFE,	///<
-	RDMDISCEUID,///<
-	RDMDISCECS	///<
-} _dmx_state;
-
 static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] ALIGNED;							///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
 static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
@@ -220,6 +206,16 @@ const uint8_t *rdm_get_current_data(void) {
 const bool dmx_get_available(void) {
 	dmb();
 	return dmx_available;
+}
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+const uint8_t dmx_get_receive_state(void) {
+	dmb();
+	return dmx_receive_state;
 }
 
 /**

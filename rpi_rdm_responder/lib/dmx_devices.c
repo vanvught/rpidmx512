@@ -260,11 +260,11 @@ void dmx_devices_run() {
 	dmx_devices_statistics.dmx_available_count++;
 
 	for (i = 0; i < devices_connected.elements_count; i++) {
-		if (dmx_get_available()) {
+		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
+		if (dmx_get_receive_state() == DMXDATA) {
 			dmx_devices_statistics.dmx_missed_count++;
 			break;
 		}
-		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
 	}
 }
 

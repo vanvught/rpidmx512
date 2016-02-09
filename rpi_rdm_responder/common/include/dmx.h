@@ -69,6 +69,20 @@ struct _total_statistics {
 	uint32_t rdm_packets;								///<
 };
 
+///< State of receiving DMX/RDM Bytes
+typedef enum {
+	IDLE = 0,	///<
+	BREAK,		///<
+	MAB,		///<
+	DMXDATA,	///<
+	RDMDATA,	///<
+	CHECKSUMH,	///<
+	CHECKSUML,	///<
+	RDMDISCFE,	///<
+	RDMDISCEUID,///<
+	RDMDISCECS	///<
+} _dmx_state;
+
 extern void dmx_init(void);
 extern /*@shared@*/const uint8_t *dmx_get_data(void) ASSUME_ALIGNED;
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
@@ -77,6 +91,7 @@ extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 extern const bool dmx_get_available(void);
+extern const uint8_t dmx_get_receive_state(void);
 extern void dmx_set_available_false(void);
 extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
