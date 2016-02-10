@@ -35,8 +35,8 @@
 static const char device_label[] = "mcp4902";
 static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);
 
-static const struct _rdm_personality rdm_personality = { DMX_FOOTPRINT, "Analog output 2-lines", 21 };
-static const struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* start address */0, /* sensor count */0, "", 0, &rdm_personality};
+static struct _rdm_personality rdm_personality = { DMX_FOOTPRINT, "Analog output 2-lines", 21 };
+static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* start address */0, /* sensor count */0, "", 0, &rdm_personality};
 
 /**
  * @ingroup DEV

@@ -30,14 +30,14 @@
 #include "rdm_device_info.h"
 
 struct _rdm_sub_devices_info {
-	const uint16_t dmx_footprint;
+	uint16_t dmx_footprint;								///< This field cannot be a const as we do not know the WS28xx pixel count at compile time
 	uint8_t current_personality;
 	const uint8_t personality_count;
 	uint16_t dmx_start_address;
 	const uint8_t sensor_count;
 	char device_label[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t device_label_length;
-	const struct _rdm_personality *rdm_personalities;
+	struct _rdm_personality *rdm_personalities;			///< This object cannot be a const as we do not know the WS28xx pixel count at compile time
 };
 
 extern const uint16_t rdm_sub_devices_get_footprint(const uint16_t);

@@ -46,6 +46,7 @@ extern void rdm_device_info_get_label(const uint16_t, struct _rdm_device_info_da
 extern void rdm_device_info_get_manufacturer_name(struct _rdm_device_info_data *);
 extern void rdm_device_info_get_manufacturer_id(struct _rdm_device_info_data *);
 extern void rdm_device_info_get_sn(struct _rdm_device_info_data *);
+extern const uint8_t rdm_device_info_get_ext_mon_level(void);
 
 #ifdef RDM_RESPONDER
 extern /*@shared@*/struct _rdm_device_info *rdm_device_info_get(const uint16_t) ASSUME_ALIGNED;

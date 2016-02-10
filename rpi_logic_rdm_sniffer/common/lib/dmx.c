@@ -369,7 +369,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	const uint32_t dr = BCM2835_PL011->DR;
 
 	if (dr & PL011_DR_BE) {
-		dmb();
 		dmx_receive_state = BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
 #ifdef LOGIC_ANALYZER
@@ -392,7 +391,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 		case BREAK:
 			switch (data) {
 			case DMX512_START_CODE:
-				dmb();
 				dmx_receive_state = DMXDATA;
 				dmx_data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
@@ -411,7 +409,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 				break;
 			case E120_SC_RDM:
-				dmb();
 				dmx_receive_state = RDMDATA;
 				rdm_data_buffer[rdm_data_buffer_index_head][0] = E120_SC_RDM;
 				rdm_checksum = E120_SC_RDM;
@@ -424,7 +421,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 #endif
 				break;
 			default:
-				dmb();
 				dmx_receive_state = IDLE;
 				dmx_is_previous_break_dmx = false;
 #ifdef LOGIC_ANALYZER
@@ -442,7 +438,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			dmx_data[dmx_data_index++] = data;
 		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_statistics.slot_to_slot + (uint32_t)12;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
-				dmb();
 				dmx_receive_state = IDLE;
 				dmx_statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
 				dmb();
@@ -455,7 +450,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			break;
 		case RDMDATA:
 			if (dmx_data_index > RDM_DATA_BUFFER_SIZE) {
-				dmb();
 				dmx_receive_state = IDLE;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
@@ -483,7 +477,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				rdm_data_receive_end = BCM2835_ST->CLO;
 			}
-			dmb();
 			dmx_receive_state = IDLE;
 #ifdef LOGIC_ANALYZER
 			bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
@@ -557,7 +550,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 
 		if (dmx_receive_state == DMXDATA) {
 			if (dmx_irq_micros - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
-				dmb();
 				dmx_receive_state = IDLE;
 				dmx_statistics.slots_in_packet = dmx_data_index - 1;
 				dmb();

@@ -125,7 +125,7 @@ struct _rdm_device_info {
 
 ///< Personalities
 struct _rdm_personality {
-	const uint16_t slots;
+	uint16_t slots;					///< This field cannot be a const as we do not know the WS28xx pixel count at compile time
 	/*@shared@*/const char *description;
 	const uint8_t description_len;
 };

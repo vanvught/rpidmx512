@@ -51,6 +51,7 @@ static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";						///< Paramete
 static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";				///<
 static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";					///<
 static const char RDM_DEVICE_LABEL[] = "device_label";								///<
+static const char RDM_DEVICE_EXTERNAL_MONITOR[] = "device_external_monitor";		///<
 
 // 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };	///<
@@ -64,6 +65,8 @@ static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH] ALIGNED;			///
 
 static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;									///<
 
+static uint8_t ext_mon_level = 0;													///<
+
 #ifdef RDM_RESPONDER
 static bool is_factory_defaults = true;												///<
 static uint16_t factory_defaults_checksum = 0;										///<
@@ -75,6 +78,15 @@ static struct _rdm_device_info rdm_sub_device_info ALIGNED;							///<
 /**
  * @ingroup rdm
  *
+ * @return
+ */
+const uint8_t rdm_device_info_get_ext_mon_level(void) {
+	return ext_mon_level;
+}
+
+/**
+ * @ingroup rdm
+ *
  * Process the input , parse name=value
  *
  * @param line
@@ -82,6 +94,15 @@ static struct _rdm_device_info rdm_sub_device_info ALIGNED;							///<
 static void process_line_read_string(const char *line) {
 	char value[8] ALIGNED;
 	uint8_t len;
+
+	len = 1;
+	if (sscan_char_p(line, RDM_DEVICE_EXTERNAL_MONITOR, value, &len) == 2) {
+		if (len == 1) {
+			if (isdigit((int)value[0])) {
+				ext_mon_level = (uint8_t)(value[0] - (char)'0');
+			}
+		}
+	}
 
 	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &len) == 2) {
