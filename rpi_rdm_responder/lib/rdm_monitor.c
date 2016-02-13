@@ -58,9 +58,9 @@ void monitor_update(void) {
 
 		monitor_line(MONITOR_LINE_DMX_DATA, "%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
 
-		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-		const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->slots_in_packet);
-		const uint8_t *dmx_data = dmx_get_data();
+		const uint8_t *dmx_data = dmx_get_current_data();
+		const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
+		const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->statistics.slots_in_packet);
 
 		for (i = 0; i < 16; i++) {
 			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?

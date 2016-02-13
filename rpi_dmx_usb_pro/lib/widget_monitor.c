@@ -86,6 +86,7 @@ void monitor_update(void) {
 			console_clear_line(MONITOR_LINE_STATS);
 		}
 
-		monitor_dmx_data(MONITOR_LINE_DMX_DATA);
+		const uint8_t *dmx_data = dmx_get_current_data();
+		monitor_dmx_data(dmx_data, MONITOR_LINE_DMX_DATA);
 	}
 }

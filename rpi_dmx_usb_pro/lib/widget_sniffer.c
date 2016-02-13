@@ -109,20 +109,25 @@ static bool can_send(void) {
  * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_dmx(void) {
-	if (widget_get_mode() != MODE_RDM_SNIFFER) {
+	if ((widget_get_mode() != MODE_RDM_SNIFFER) || !can_send()) {
 		return;
 	}
 
-	if (dmx_is_data_changed()) {
-		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-		const uint16_t data_length = (uint16_t)(dmx_statistics->slots_in_packet + 1);
-		const uint8_t *dmx_data = dmx_get_data();
-		if (!can_send()) {
-			return;
-		}
-		monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST");
-		usb_send_package(dmx_data, 0, data_length);
+	const uint8_t *dmx_data = dmx_is_data_changed();
+
+	if (dmx_data == NULL) {
+		return;
 	}
+
+	const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
+	const uint16_t data_length = (uint16_t)(dmx_statistics->statistics.slots_in_packet + 1);
+
+	if (!can_send()) {
+		return;
+	}
+
+	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST -> %d", data_length);
+	usb_send_package(dmx_data, 0, data_length);
 }
 
 /**
@@ -131,7 +136,7 @@ void widget_sniffer_dmx(void) {
  * This function is called from the poll table in \ref main.c
  */
 void widget_sniffer_rdm(void) {
-	if (widget_get_mode() != MODE_RDM_SNIFFER) {
+	if ((widget_get_mode() != MODE_RDM_SNIFFER) || !can_send()) {
 		return;
 	}
 
@@ -173,4 +178,19 @@ void widget_sniffer_rdm(void) {
 
 	monitor_line(MONITOR_LINE_INFO, "Send RDM data to HOST");
 	usb_send_package(rdm_data, 0, message_length);
+}
+
+void widget_sniffer_fill_transmit_buffer(void) {
+	if (!can_send()) {
+		return;
+	}
+
+	int i = 256;
+
+	while(i--) {
+		if (!can_send()) {
+			return;
+		}
+		usb_send_byte(0);
+	}
 }

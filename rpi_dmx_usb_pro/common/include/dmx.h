@@ -31,10 +31,9 @@
 
 #include "util.h"
 
-#define DMX_DATA_BUFFER_SIZE					513		///< including SC
-#define RDM_DATA_BUFFER_SIZE					512		///<
-#define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
-#define RDM_DATA_BUFFER_INDEX_MASK 				(RDM_DATA_BUFFER_INDEX_ENTRIES - 1)	///<
+#define DMX_DATA_BUFFER_SIZE					516									///< including SC, aligned 4
+#define DMX_DATA_BUFFER_INDEX_ENTRIES			(1 << 1)							///<
+#define DMX_DATA_BUFFER_INDEX_MASK 				(DMX_DATA_BUFFER_INDEX_ENTRIES - 1)	///<
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN				92		///< 92 us
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176		///< 176 us
@@ -60,8 +59,12 @@ struct _dmx_statistics {
 	uint32_t mark_after_break;							///<
 	uint32_t slots_in_packet;							///<
 	uint32_t break_to_break;							///<
-	uint32_t updates_per_seconde;						///<
 	uint32_t slot_to_slot;								///<
+};
+
+struct _dmx_data {
+	uint8_t data[DMX_DATA_BUFFER_SIZE];					///<
+	struct _dmx_statistics statistics;					///<
 };
 
 struct _total_statistics {
@@ -84,23 +87,23 @@ typedef enum {
 } _dmx_state;
 
 extern void dmx_init(void);
-extern /*@shared@*/const uint8_t *dmx_get_data(void) ASSUME_ALIGNED;
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
-extern const volatile bool dmx_get_available(void);
+extern /*@shared@*/const /*@null@*/uint8_t *dmx_get_available(void) ASSUME_ALIGNED;
+extern /*@shared@*/const uint8_t *dmx_get_current_data(void) ASSUME_ALIGNED;
+extern /*@shared@*/const uint8_t *dmx_is_data_changed(void);
 extern const volatile uint8_t dmx_get_receive_state(void);
-extern void dmx_set_available_false(void);
 extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(const uint32_t);
-extern bool dmx_is_data_changed(void);
+//extern bool dmx_is_data_changed(void);
 extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) ASSUME_ALIGNED;
-extern /*@shared@*/const volatile struct _dmx_statistics *dmx_get_statistics(void) ASSUME_ALIGNED;
+extern const volatile uint32_t dmx_get_updates_per_seconde(void);
 extern const uint16_t dmx_get_send_data_length(void);
 extern const uint32_t dmx_get_output_period(void);
 extern void dmx_set_output_period(const uint32_t);

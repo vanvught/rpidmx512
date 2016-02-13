@@ -46,11 +46,10 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  *
  * @param dmx_device_info
  */
-static void ws2812b(dmx_device_info_t * dmx_device_info) {
+static void ws2812b(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	int i;
 	uint8_t mask = 0x80;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
-	const uint8_t *dmx_data = dmx_get_data();
 
 	bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) 6400000));
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);					// Just in case we have a multiplexer
@@ -106,7 +105,7 @@ INITIALIZER(devices, ws2812b)
  *
  * @param dmx_device_info
  */
-static void ws2812b_zero(dmx_device_info_t *dmx_device_info) {
+static void ws2812b_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	int i,j;
 
 	bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) 6400000));
@@ -149,7 +148,7 @@ INITIALIZER(devices_zero, ws2812b_zero)
  *
  * @param dmx_device_info
  */
-static void ws2812b_init(dmx_device_info_t * dmx_device_info) {
+static void ws2812b_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
 	bcm2835_spi_begin();

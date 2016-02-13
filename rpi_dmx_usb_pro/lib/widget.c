@@ -182,7 +182,9 @@ void widget_received_dmx_packet(void) {
 		return;
 	}
 
-	if (!dmx_get_available()) {
+	const uint8_t *dmx_data = dmx_get_available();
+
+	if (dmx_data == NULL) {
 		return;
 	}
 
@@ -196,16 +198,12 @@ void widget_received_dmx_packet(void) {
 
 	widget_received_dmx_packet_count++;
 
-	dmx_set_available_false();
-
-	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-	const uint16_t length = (uint16_t) (dmx_statistics->slots_in_packet + 1);
+	const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
+	const uint16_t length = (uint16_t)(dmx_statistics->statistics.slots_in_packet + 1);
 
 	monitor_line(MONITOR_LINE_LABEL, "poll:RECEIVED_DMX_PACKET");
 	monitor_line(MONITOR_LINE_INFO, "Send DMX data to HOST, %d", length);
 	monitor_line(MONITOR_LINE_STATUS, NULL);
-
-	const uint8_t *dmx_data = dmx_get_data();
 
 	widget_usb_send_header(RECEIVED_DMX_PACKET, length + 1);
 	usb_send_byte(0); 	// DMX Receive status

@@ -46,8 +46,7 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  *
  * @param dmx_device_info
  */
-static void ws2801(dmx_device_info_t * dmx_device_info) {
-	const uint8_t *dmx_data = dmx_get_data();
+static void ws2801(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	const char *data = (char* )&dmx_data[dmx_device_info->dmx_start_address];
 
 	if ((((uint16_t) dmx_device_info->pixel_count * (uint16_t) WS2801_SLOTS_PER_PIXEL) + dmx_device_info->dmx_start_address - (uint16_t) 1) > (uint16_t) DMX_UNIVERSE_SIZE) {
@@ -67,7 +66,7 @@ INITIALIZER(devices, ws2801)
  *
  * @param dmx_device_info
  */
-static void ws2801_zero(dmx_device_info_t *dmx_device_info) {
+static void ws2801_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	int i;
 
 	if ((((uint16_t) dmx_device_info->pixel_count * (uint16_t) WS2801_SLOTS_PER_PIXEL) + dmx_device_info->dmx_start_address - (uint16_t) 1) > (uint16_t) DMX_UNIVERSE_SIZE) {
@@ -113,7 +112,7 @@ INITIALIZER(devices_zero, ws2801_zero)
  *
  * @param dmx_device_info
  */
-static void ws2801_init(dmx_device_info_t * dmx_device_info) {
+static void ws2801_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
 	if (dmx_device_info->device_info.speed_hz == (uint32_t) 0) {

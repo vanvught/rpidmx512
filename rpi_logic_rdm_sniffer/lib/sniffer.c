@@ -51,12 +51,13 @@ const volatile struct _rdm_statistics *rdm_statistics_get(void) {
  * This function is called from the poll table in \ref main.c
  */
 void sniffer_dmx(void) {
-	if (!dmx_get_available())
+	const uint8_t *p = dmx_get_available();
+
+	if (p == NULL) {
 		return;
+	}
 
-	dmx_set_available_false();
-
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA);
+	monitor_dmx_data(p, MONITOR_LINE_DMX_DATA);
 }
 
 /**
@@ -67,8 +68,9 @@ void sniffer_dmx(void) {
 void sniffer_rdm(void) {
 	const uint8_t *rdm_data = rdm_get_available();
 
-	if (rdm_data == NULL)
+	if (rdm_data == NULL) {
 		return;
+	}
 
 	if (rdm_data[0] == E120_SC_RDM) {
 		struct _rdm_command *p = (struct _rdm_command *) (rdm_data);

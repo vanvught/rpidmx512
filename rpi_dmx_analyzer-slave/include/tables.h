@@ -57,7 +57,7 @@
 //typedef void (*thunk_t)(void);
 #include <dmx_devices.h>
 
-typedef void (*thunk_t)(dmx_device_info_t *);
+typedef void (*thunk_t)(dmx_device_info_t *, const uint8_t *);
 /* AvV end */
 
 typedef struct {

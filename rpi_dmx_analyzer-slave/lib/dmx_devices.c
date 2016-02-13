@@ -226,7 +226,18 @@ void dmx_devices_read_config(void) {
 void dmx_devices_init(void) {
 	uint16_t i;
 	for (i = 0; i < devices_connected.elements_count; i++) {
-		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
+		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);
+	}
+}
+
+/**
+ * @ingroup dmx
+ *
+ */
+void dmx_devices_zero(void) {
+	uint16_t i;
+	for (i = 0; i < devices_connected.elements_count; i++) {
+		devices_zero_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);
 	}
 }
 
@@ -235,17 +246,18 @@ void dmx_devices_init(void) {
  *
  */
 void dmx_devices_run() {
-	const volatile struct _dmx_statistics *dmx_statistics;
+	volatile uint32_t dmx_updates_per_seconde;
 	uint16_t i;
+	const uint8_t *dmx_data = dmx_get_available();
 
 	dmx_devices_statistics.function_count++;
 
-	if (!dmx_get_available()) {
-		dmx_statistics = dmx_get_statistics();
-		if (dmx_statistics->updates_per_seconde == 0) {
+	if (dmx_data == NULL) {
+		dmx_updates_per_seconde = dmx_get_updates_per_seconde();
+		if (dmx_updates_per_seconde == 0) {
 			if (!dmx_devices_is_zero) {
 				for (i = 0; i < devices_connected.elements_count; i++) {
-					devices_zero_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
+					devices_zero_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);
 				}
 				dmx_devices_is_zero = true;
 			}
@@ -255,12 +267,10 @@ void dmx_devices_run() {
 
 	dmx_devices_is_zero = false;
 
-	dmx_set_available_false();
-
 	dmx_devices_statistics.dmx_available_count++;
 
 	for (i = 0; i < devices_connected.elements_count; i++) {
-		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info));
+		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), dmx_data);
 		if (dmx_get_receive_state() == DMXDATA) {
 			dmx_devices_statistics.dmx_missed_count++;
 			break;

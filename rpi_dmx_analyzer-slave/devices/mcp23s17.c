@@ -41,11 +41,10 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  *
  * @param dmx_device_info
  */
-static void mcp23s17(dmx_device_info_t * dmx_device_info) {
+static void mcp23s17(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	int i;
 	uint16_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address;
-	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < DMX_FOOTPRINT; i++) {
 
@@ -68,7 +67,7 @@ INITIALIZER(devices, mcp23s17)
  *
  * @param dmx_device_info
  */
-static void mcp23s17_zero(dmx_device_info_t *dmx_device_info) {
+static void mcp23s17_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_GPIOA, 0x0000);
 }
 
@@ -79,7 +78,7 @@ INITIALIZER(devices_zero, mcp23s17_zero)
  *
  * @param dmx_device_info
  */
-static void mcp23s17_init(dmx_device_info_t * dmx_device_info) {
+static void mcp23s17_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &dmx_device_info->rdm_sub_devices_info;
 
 	(void)mcp23s17_start(&(dmx_device_info->device_info));

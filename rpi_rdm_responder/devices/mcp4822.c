@@ -43,8 +43,7 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  *
  * @param dmx_device_info
  */
-static void mcp4822(dmx_device_info_t * dmx_device_info) {
-	const uint8_t *dmx_data = dmx_get_data();
+static void mcp4822(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	uint16_t dmx_data_index;
 	uint16_t data;
 
@@ -72,7 +71,7 @@ INITIALIZER(devices, mcp4822)
  *
  * @param dmx_device_info
  */
-static void mcp4822_zero(dmx_device_info_t *dmx_device_info) {
+static void mcp4822_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
@@ -88,7 +87,7 @@ INITIALIZER(devices_zero, mcp4822_zero)
  *
  * @param dmx_device_info
  */
-static void mcp4822_init(dmx_device_info_t * dmx_device_info) {
+static void mcp4822_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
 	if (dmx_device_info->device_info.speed_hz == (uint32_t) 0) {

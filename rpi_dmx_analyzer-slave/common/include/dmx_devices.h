@@ -68,6 +68,7 @@ struct _dmx_devices_statistics {
 
 extern void dmx_devices_read_config(void);
 extern void dmx_devices_init(void);
+extern void dmx_devices_zero(void);
 extern void dmx_devices_run(void);
 
 extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) ASSUME_ALIGNED;

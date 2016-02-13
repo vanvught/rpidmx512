@@ -28,6 +28,10 @@
 
 #include <stdint.h>
 
+#define RDM_DATA_BUFFER_SIZE					512									///<
+#define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
+#define RDM_DATA_BUFFER_INDEX_MASK 				(RDM_DATA_BUFFER_INDEX_ENTRIES - 1)	///<
+
 #define RDM_ROOT_DEVICE							0		///<
 
 ///< 3 Timing

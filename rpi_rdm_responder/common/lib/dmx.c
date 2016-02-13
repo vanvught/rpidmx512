@@ -46,11 +46,12 @@
 #error You cannot have defined both RDM_CONTROLLER and LOGIC_ANALYZER
 #endif
 
-static uint8_t dmx_data[DMX_DATA_BUFFER_SIZE] ALIGNED;							///<
+static volatile uint16_t dmx_data_buffer_index_head = (uint16_t) 0;				///<
+static volatile uint16_t dmx_data_buffer_index_tail = (uint16_t) 0;				///<
+static struct _dmx_data dmx_data[DMX_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;		///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
 static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
-static volatile bool dmx_available = false;										///<
 static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_REFRESH_DEFAULT;				///<
@@ -78,8 +79,8 @@ static volatile uint32_t rdm_data_receive_end = (uint32_t) 0;					///<
 static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 #endif
 
+static volatile uint32_t dmx_updates_per_seconde= (uint32_t) 0;					///<
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
-static volatile struct _dmx_statistics dmx_statistics ALIGNED;					///<
 static volatile struct _total_statistics total_statistics ALIGNED;				///<
 
 /**
@@ -87,9 +88,18 @@ static volatile struct _total_statistics total_statistics ALIGNED;				///<
  *
  * @return
  */
-const uint8_t *dmx_get_data(void) {
-	return dmx_data;
+const volatile uint32_t dmx_get_updates_per_seconde(void) {
+	return dmx_updates_per_seconde;
 }
+
+/**
+ * @ingroup dmx
+ *
+ * @return
+ */
+//const uint8_t *dmx_get_data(void) {
+//	return dmx_data[0].data;
+//}
 
 /**
  * @ingroup dmx
@@ -130,7 +140,7 @@ static void dmx_set_send_data_length(uint16_t send_data_length) {
  * @param length
  */
 void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
-	(void *)_memcpy(dmx_data, data, (size_t)length);
+	(void *)_memcpy(dmx_data[0].data, data, (size_t)length);
 
 	dmx_set_send_data_length(length);
 }
@@ -140,11 +150,11 @@ void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
  *
  */
 void dmx_clear_data(void) {
-	uint16_t i = DMX_DATA_BUFFER_SIZE;
-	uint8_t *p = dmx_data;
+	uint32_t i = sizeof(dmx_data);
+	uint32_t *p = (uint32_t *)dmx_data;
 
-	while (i-- != (uint16_t) 0) {
-		*p++ = (uint8_t) 0;
+	while (i-- != (uint32_t) 0) {
+		*p++ = (uint32_t) 0;
 	}
 }
 
@@ -167,14 +177,6 @@ const uint16_t dmx_get_send_data_length(void) {
 }
 
 /**
- *
- * @return
- */
-const volatile struct _dmx_statistics *dmx_get_statistics(void) {
-	return &dmx_statistics;
-}
-
-/**
  * @ingroup rdm
  *
  * @return
@@ -183,9 +185,9 @@ const uint8_t *rdm_get_available(void)  {
 	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail) {
 		return NULL;
 	} else {
-		uint16_t saved_tail = rdm_data_buffer_index_tail;
+		const uint8_t *p = &rdm_data_buffer[rdm_data_buffer_index_tail][0];
 		rdm_data_buffer_index_tail = (rdm_data_buffer_index_tail + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-		return &rdm_data_buffer[saved_tail][0];
+		return p;
 	}
 }
 
@@ -203,9 +205,23 @@ const uint8_t *rdm_get_current_data(void) {
  *
  * @return
  */
-const volatile bool dmx_get_available(void) {
-	dmb();
-	return dmx_available;
+const uint8_t *dmx_get_available(void)  {
+	if (dmx_data_buffer_index_head == dmx_data_buffer_index_tail) {
+		return NULL;
+	} else {
+		const uint8_t *p = dmx_data[dmx_data_buffer_index_tail].data;
+		dmx_data_buffer_index_tail = (dmx_data_buffer_index_tail + 1) & DMX_DATA_BUFFER_INDEX_MASK;
+		return p;
+	}
+}
+
+/**
+ * @ingroup rdm
+ *
+ * @return
+ */
+const uint8_t *dmx_get_current_data(void) {
+	return dmx_data[dmx_data_buffer_index_tail].data;
 }
 
 /**
@@ -223,10 +239,10 @@ const volatile uint8_t dmx_get_receive_state(void) {
  *
  * @param is_available
  */
-void dmx_set_available_false(void) {
-	dmb();
-	dmx_available = false;
-}
+//void dmx_set_available_false(void) {
+//	dmb();
+//	dmx_available = false;
+//}
 
 
 /**
@@ -237,31 +253,26 @@ void dmx_set_available_false(void) {
  *
  * @return
  */
-bool dmx_is_data_changed(void) {
+const uint8_t *dmx_is_data_changed(void) {
 	uint16_t i;
-	uint8_t *src;
-	uint8_t *dst;
+	uint8_t const *p = (uint8_t *)dmx_get_available();
+	uint8_t *src = (uint8_t *)p;
+	uint8_t *dst = dmx_data_previous;
 	bool is_changed = false;
 
-	dmb();
-	if (!dmx_available) {
-		return false;
+	if (src == NULL) {
+		return NULL;
 	}
 
-	dmx_available = false;
+	const struct _dmx_data *dmx_statistics = (struct _dmx_data *)p;
 
-	if (dmx_statistics.slots_in_packet != dmx_slots_in_packet_previous) {
-		dmx_slots_in_packet_previous = dmx_statistics.slots_in_packet;
-		src = dmx_data;
-		dst = dmx_data_previous;
+	if (dmx_statistics->statistics.slots_in_packet != dmx_slots_in_packet_previous) {
+		dmx_slots_in_packet_previous = dmx_statistics->statistics.slots_in_packet;
 		for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
 			*dst++ = *src++;
 		}
-		return true;
+		return p;
 	}
-
-	src = dmx_data;
-	dst = dmx_data_previous;
 
 	for (i = 1; i < DMX_DATA_BUFFER_SIZE; i++) {
 		if (*dst != *src) {
@@ -272,7 +283,7 @@ bool dmx_is_data_changed(void) {
 		src++;
 	}
 
-	return is_changed;
+	return (is_changed ? p : NULL);
 }
 
 /**
@@ -392,11 +403,11 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			switch (data) {
 			case DMX512_START_CODE:
 				dmx_receive_state = DMXDATA;
-				dmx_data[0] = DMX512_START_CODE;
+				dmx_data[dmx_data_buffer_index_head].data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
 				if (dmx_is_previous_break_dmx) {
-					dmx_statistics.break_to_break = dmx_break_to_break_latest - dmx_break_to_break_previous;
+					dmx_data[dmx_data_buffer_index_head].statistics.break_to_break = dmx_break_to_break_latest - dmx_break_to_break_previous;
 					dmx_break_to_break_previous = dmx_break_to_break_latest;
 
 				} else {
@@ -431,17 +442,16 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 			}
 			break;
 		case DMXDATA:
-			dmx_statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-			if (dmx_statistics.slot_to_slot < 44) { // Broadcom BUG ? FIQ is late
-				dmx_statistics.slot_to_slot = (uint32_t)44;
+			dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
+			if (dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot < 44) { // Broadcom BUG ? FIQ is late
+				dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot = (uint32_t)44;
 			}
-			dmx_data[dmx_data_index++] = data;
-		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_statistics.slot_to_slot + (uint32_t)12;
+			dmx_data[dmx_data_buffer_index_head].data[dmx_data_index++] = data;
+		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_data[0].statistics.slot_to_slot + (uint32_t)12;
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 				dmx_receive_state = IDLE;
-				dmx_statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
-				dmb();
-				dmx_available = true;
+				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
+				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
@@ -549,17 +559,16 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M1;
 
 		if (dmx_receive_state == DMXDATA) {
-			if (dmx_irq_micros - dmx_fiq_micros_current > dmx_statistics.slot_to_slot) {
+			if (dmx_irq_micros - dmx_fiq_micros_current > dmx_data[0].statistics.slot_to_slot) {
 				dmx_receive_state = IDLE;
-				dmx_statistics.slots_in_packet = dmx_data_index - 1;
-				dmb();
-				dmx_available = true;
+				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = dmx_data_index - 1;
+				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
 #ifdef LOGIC_ANALYZER
 				bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
 				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
 #endif
 			} else {
-				BCM2835_ST->C1 = dmx_irq_micros + dmx_statistics.slot_to_slot;
+				BCM2835_ST->C1 = dmx_irq_micros + dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot;
 			}
 		}
 
@@ -584,7 +593,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				for (i = 0; i < dmx_send_data_length; i++) {
 					while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
 						;
-					BCM2835_PL011->DR = dmx_data[i];
+					BCM2835_PL011->DR = dmx_data[0].data[i];
 				}
 				while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 					;
@@ -602,7 +611,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M3;
 		BCM2835_ST->C3 = dmx_irq_micros + (uint32_t)1000000;
-		dmx_statistics.updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
+		dmx_updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
 		dmx_packets_previous = total_statistics.dmx_packets;
 	}
 
@@ -668,9 +677,8 @@ void dmx_stop_data(void) {
 	__disable_fiq();
 	dmb();
 	dmx_receive_state = IDLE;
-	dmb();
-	dmx_available = false;
-	dmx_statistics.slots_in_packet = 0;
+	dmx_data[0].statistics.slots_in_packet = 0;
+	dmx_data[1].statistics.slots_in_packet = 0;
 }
 
 /**
@@ -734,7 +742,6 @@ static void pl011_init(void) {
  *
  */
 void dmx_init(void) {
-	int i;
 #ifdef LOGIC_ANALYZER
 	bcm2835_gpio_fsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_fsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
@@ -749,16 +756,15 @@ void dmx_init(void) {
 	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);	// IRQ
 #endif
 
-	for (i = 0; i < DMX_DATA_BUFFER_SIZE; i++) {
-		dmx_data[i] = (uint8_t) 0;
-		dmx_data_previous[i] = (uint8_t) 0;
-	}
+	dmx_clear_data();
+
+	dmx_data_buffer_index_head = (uint16_t) 0;
+	dmx_data_buffer_index_tail = (uint16_t) 0;
 
 	rdm_data_buffer_index_head = (uint16_t) 0;
 	rdm_data_buffer_index_tail = (uint16_t) 0;
 
 	dmx_receive_state = IDLE;
-	dmx_available = false;
 
 	dmx_send_state = IDLE;
 	dmx_send_always = false;

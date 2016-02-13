@@ -175,14 +175,13 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
  * @param line
  * @param data
  */
-void monitor_dmx_data(const int line) {
+void monitor_dmx_data(const uint8_t * dmx_data, const int line) {
 	uint16_t i;
 	uint16_t slots;
-	const uint8_t *dmx_data = dmx_get_data();
 
 	if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
-		const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
-		slots = (uint16_t) (dmx_statistics->slots_in_packet + 1);
+		const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
+		slots = (uint16_t) (dmx_statistics->statistics.slots_in_packet + 1);
 	} else {
 		slots = dmx_get_send_data_length();
 	}
@@ -227,15 +226,16 @@ void monitor_dmx_data(const int line) {
 void monitor_sniffer(void) {
 	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
-	const volatile struct _dmx_statistics *dmx_statistics = dmx_get_statistics();
+	const uint8_t *dmx_data = dmx_get_current_data();
+	const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
+	const uint32_t dmx_updates_per_seconde = dmx_get_updates_per_seconde();
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 	const volatile struct _rdm_statistics *rdm_statistics = rdm_statistics_get();
 #endif
 
-	monitor_dmx_data(MONITOR_LINE_DMX_DATA);
+	monitor_dmx_data(dmx_data, MONITOR_LINE_DMX_DATA);
 	console_clear_line(MONITOR_LINE_PACKETS);
-	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets,
-			(long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
+	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets, (long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);
@@ -244,25 +244,25 @@ void monitor_sniffer(void) {
 	printf("SET Requests       : %ld\n", rdm_statistics->set_requests);
 #endif
 
-	if ((int)dmx_statistics->updates_per_seconde != (int)0) {
-		updates_per_seconde_min = MIN(dmx_statistics->updates_per_seconde, updates_per_seconde_min);
-		updates_per_seconde_max = MAX(dmx_statistics->updates_per_seconde, updates_per_seconde_max);
-		printf("\nDMX updates/sec     %3d     %3d / %d\n\n", (int)dmx_statistics->updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
+	if ((int)dmx_updates_per_seconde != (int)0) {
+		updates_per_seconde_min = MIN(dmx_updates_per_seconde, updates_per_seconde_min);
+		updates_per_seconde_max = MAX(dmx_updates_per_seconde, updates_per_seconde_max);
+		printf("\nDMX updates/sec     %3d     %3d / %d\n\n", (int)dmx_updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
 	} else {
 		console_puts("\nDMX updates/sec --     \n\n");
 	}
 
-	if (dmx_statistics->updates_per_seconde != 0) {
-		slots_in_packet_min = MIN(dmx_statistics->slots_in_packet, slots_in_packet_min);
-		slots_in_packet_max = MAX(dmx_statistics->slots_in_packet, slots_in_packet_max);
-		slot_to_slot_min = MIN(dmx_statistics->slot_to_slot, slot_to_slot_min);
-		slot_to_slot_max = MAX(dmx_statistics->slot_to_slot, slot_to_slot_max);
-		break_to_break_min = MIN(dmx_statistics->break_to_break, break_to_break_min);
-		break_to_break_max = MAX(dmx_statistics->break_to_break, break_to_break_max);
+	if (dmx_updates_per_seconde != 0) {
+		slots_in_packet_min = MIN(dmx_statistics->statistics.slots_in_packet, slots_in_packet_min);
+		slots_in_packet_max = MAX(dmx_statistics->statistics.slots_in_packet, slots_in_packet_max);
+		slot_to_slot_min = MIN(dmx_statistics->statistics.slot_to_slot, slot_to_slot_min);
+		slot_to_slot_max = MAX(dmx_statistics->statistics.slot_to_slot, slot_to_slot_max);
+		break_to_break_min = MIN(dmx_statistics->statistics.break_to_break, break_to_break_min);
+		break_to_break_max = MAX(dmx_statistics->statistics.break_to_break, break_to_break_max);
 
-		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->slots_in_packet, (int)slots_in_packet_min, (int)slots_in_packet_max);
-		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->slot_to_slot, (int)slot_to_slot_min, (int)slot_to_slot_max);
-		printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->break_to_break, (int)break_to_break_min, (int)break_to_break_max);
+		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->statistics.slots_in_packet, (int)slots_in_packet_min, (int)slots_in_packet_max);
+		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->statistics.slot_to_slot, (int)slot_to_slot_min, (int)slot_to_slot_max);
+		printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->statistics.break_to_break, (int)break_to_break_min, (int)break_to_break_max);
 	} else {
 		console_puts("Slots in packet --     \n");
 		console_puts("Slot to slot    --     \n");

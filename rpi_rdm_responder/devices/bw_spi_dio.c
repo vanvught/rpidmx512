@@ -41,11 +41,10 @@ static struct _rdm_sub_devices_info sub_device_info = {DMX_FOOTPRINT, 1, 1, /* s
  *
  * @param dmx_device_info
  */
-static void bw_spi_dio(dmx_device_info_t *dmx_device_info) {
+static void bw_spi_dio(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	int i;
 	uint8_t data = 0;
 	uint16_t dmx_data_index = dmx_device_info->dmx_start_address ;
-	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < DMX_FOOTPRINT; i++) {
 
@@ -68,7 +67,7 @@ INITIALIZER(devices, bw_spi_dio)
  *
  * @param dmx_device_info
  */
-static void bw_spi_dio_zero(dmx_device_info_t *dmx_device_info) {
+static void bw_spi_dio_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	bw_spi_dio_output(&dmx_device_info->device_info, (uint8_t) 0);
 }
 
@@ -79,7 +78,7 @@ INITIALIZER(devices_zero, bw_spi_dio_zero)
  *
  * @param dmx_device_info
  */
-static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info) {
+static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
 	(void)bw_spi_dio_start(&(dmx_device_info->device_info));

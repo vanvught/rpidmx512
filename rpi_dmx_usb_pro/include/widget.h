@@ -80,5 +80,6 @@ extern void widget_received_rdm_packet(void);
 extern void widget_rdm_timeout(void);
 extern void widget_sniffer_rdm(void);
 extern void widget_sniffer_dmx(void);
+extern void widget_sniffer_fill_transmit_buffer(void);
 
 #endif /* WIDGET_H_ */

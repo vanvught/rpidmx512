@@ -107,6 +107,10 @@ int notmain(void) {
 
 	hardware_watchdog_init();
 
+	if (widget_get_mode() == MODE_RDM_SNIFFER) {
+		widget_sniffer_fill_transmit_buffer();	// Prevent missing first frame
+	}
+
 	events_init();
 
 	for (;;) {

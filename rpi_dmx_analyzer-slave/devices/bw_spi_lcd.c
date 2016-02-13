@@ -82,11 +82,10 @@ inline static void display_channels(device_info_t *spi_lcd_info, uint16_t start_
  * @param device_info
  * @param start_channel
  */
-inline static void display_data_hex(device_info_t *device_info, const uint16_t start_channel) {
+inline static void display_data_hex(device_info_t *device_info, const uint16_t start_channel, const uint8_t *dmx_data) {
 	char text[BW_LCD_MAX_CHARACTERS];
 	int i = 0;
 	int offset = 0;
-	const uint8_t *dmx_data = dmx_get_data();
 
 	for (i = 0; i < 4; i++) {
 		uint8_t data;
@@ -106,8 +105,8 @@ inline static void display_data_hex(device_info_t *device_info, const uint16_t s
  *
  * @param dmx_device_info
  */
-static void bw_spi_lcd(dmx_device_info_t *dmx_device_info) {
-	display_data_hex(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);
+static void bw_spi_lcd(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
+	display_data_hex(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address, dmx_data);
 }
 
 INITIALIZER(devices, bw_spi_lcd)
@@ -116,7 +115,7 @@ INITIALIZER(devices, bw_spi_lcd)
  *
  * @param dmx_device_info
  */
-static void bw_spi_lcd_zero(dmx_device_info_t *dmx_device_info) {
+static void bw_spi_lcd_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 }
 
@@ -127,7 +126,7 @@ INITIALIZER(devices_zero, bw_spi_lcd_zero)
  *
  * @param dmx_device_info
  */
-static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info) {
+static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
 	(void)bw_spi_lcd_start(&(dmx_device_info->device_info));
