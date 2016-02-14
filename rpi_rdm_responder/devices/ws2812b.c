@@ -159,7 +159,7 @@ static void ws2812b_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 
 	// WS2812B specific
-	if ((uint16_t) dmx_device_info->pixel_count * (uint16_t) WS2812B_SLOTS_PER_PIXEL > (uint16_t) DMX_UNIVERSE_SIZE) {
+	if ((dmx_device_info->pixel_count == (uint8_t)0) || ((uint16_t) dmx_device_info->pixel_count * (uint16_t) WS2812B_SLOTS_PER_PIXEL > (uint16_t) DMX_UNIVERSE_SIZE)) {
 		dmx_device_info->pixel_count = (uint8_t) ((uint16_t) DMX_UNIVERSE_SIZE / (uint16_t) WS2812B_SLOTS_PER_PIXEL);
 	}
 

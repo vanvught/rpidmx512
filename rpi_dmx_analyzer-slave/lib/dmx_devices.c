@@ -121,13 +121,6 @@ static int add_connected_device(const char *line) {
 				return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
 			}
 
-			if ((rc == 6) && (pixel_count == 0)) {
-	#ifdef DEBUG
-				printf("warning : invalid pixel_count [skipping this line]\n");
-	#endif
-				return DMX_DEVICE_CONFIG_INVALID_PIXELS;
-			}
-
 			for (j = 0; j < TABLE_LENGTH(devices); j++) {
 				if (strcmp(devices_table[j].name, device_name) == 0) {
 #ifdef DEBUG
