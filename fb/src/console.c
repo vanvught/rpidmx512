@@ -309,7 +309,7 @@ void console_clear_line(const int line) {
 	uint32_t i;
 
 	if (line > HEIGHT / CHAR_H) {
-		cur_y = 0;
+		return;
 	} else {
 		cur_y = line;
 	}

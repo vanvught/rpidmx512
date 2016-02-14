@@ -114,9 +114,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 	uint8_t *p = (uint8_t *) data;
 	bool is_rdm_command = (*p == E120_SC_RDM);
 
-	console_clear_line(line);
-
-	printf("RDM [%s], l:%d\n", is_sent ? "Sent" : "Received", (int) data_length);
+	monitor_line(line, "RDM [%s], l:%d\n", is_sent ? "Sent" : "Received", (int) data_length);
 
 	// 26 is size of discovery message
 	for (l = 0; l < MIN(data_length, 26); l++) {
@@ -131,8 +129,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 	if (is_rdm_command) {
 		if (data_length >= 24) {
 			struct _rdm_command *cmd = (struct _rdm_command *) (data);
-			console_clear_line(line + 2);
-			printf("tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number,
+			monitor_line(line + 2, "tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number,
 					(unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int) cmd->param_data_length);
 			console_clear_line(line + 4);
 			console_clear_line(line + 3);
@@ -234,8 +231,8 @@ void monitor_sniffer(void) {
 #endif
 
 	monitor_dmx_data(dmx_data, MONITOR_LINE_DMX_DATA);
-	console_clear_line(MONITOR_LINE_PACKETS);
-	printf("Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets, (long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
+
+	monitor_line(MONITOR_LINE_PACKETS, "Packets : %ld, DMX %ld, RDM %ld\n\n", (long int) total_packets, (long int) total_statistics->dmx_packets, (long int) total_statistics->rdm_packets);
 
 #if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER)
 	printf("Discovery          : %ld\n", rdm_statistics->discovery_packets);

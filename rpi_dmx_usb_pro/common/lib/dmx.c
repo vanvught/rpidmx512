@@ -89,17 +89,9 @@ static volatile struct _total_statistics total_statistics ALIGNED;				///<
  * @return
  */
 const volatile uint32_t dmx_get_updates_per_seconde(void) {
+	dmb();
 	return dmx_updates_per_seconde;
 }
-
-/**
- * @ingroup dmx
- *
- * @return
- */
-//const uint8_t *dmx_get_data(void) {
-//	return dmx_data[0].data;
-//}
 
 /**
  * @ingroup dmx
@@ -233,17 +225,6 @@ const volatile uint8_t dmx_get_receive_state(void) {
 	dmb();
 	return dmx_receive_state;
 }
-
-/**
- * @ingroup dmx
- *
- * @param is_available
- */
-//void dmx_set_available_false(void) {
-//	dmb();
-//	dmx_available = false;
-//}
-
 
 /**
  * @ingroup dmx
@@ -663,6 +644,8 @@ static void dmx_start_data(void) {
  *
  */
 void dmx_stop_data(void) {
+	int i;
+
 	if (dmx_send_always) {
 		const uint32_t clo = BCM2835_ST->CLO;
 		do {
@@ -677,8 +660,10 @@ void dmx_stop_data(void) {
 	__disable_fiq();
 	dmb();
 	dmx_receive_state = IDLE;
-	dmx_data[0].statistics.slots_in_packet = 0;
-	dmx_data[1].statistics.slots_in_packet = 0;
+
+	for (i = 0; i < DMX_DATA_BUFFER_INDEX_ENTRIES; i++) {
+		dmx_data[i].statistics.slots_in_packet = 0;
+	}
 }
 
 /**

@@ -159,7 +159,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 
 	while ((buf[i] != (char) 0) && (k < (int)*len) && (buf[i] != (char) ',')) {
-			name[k++] = buf[i++];
+			name[k++] = (char)tolower((int)buf[i++]);
 	}
 
 	*len = (uint8_t) k;
