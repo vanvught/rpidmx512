@@ -33,7 +33,7 @@
 #define WS2812B_LOW_CODE			0xC0		///< b11000000
 #define WS2812B_SLOTS_PER_PIXEL		3			///< RGB
 
-#define DMX_FOOTPRINT	510 // TODO
+#define DMX_FOOTPRINT				510			///< Overwritten by pixel count
 
 static const char device_label[] = "ws2812";
 static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);

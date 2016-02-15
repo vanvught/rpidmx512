@@ -33,7 +33,7 @@
 #define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 #define WS2801_SLOTS_PER_PIXEL		3			///< RGB
 
-#define DMX_FOOTPRINT	510 // TODO
+#define DMX_FOOTPRINT				510			///< Overwritten by pixel count
 
 static const char device_label[] = "ws2801";
 static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);
