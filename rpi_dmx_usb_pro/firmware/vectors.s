@@ -62,14 +62,14 @@ reset:
 2:	msr cpsr_c, r0
 3:
 #endif
-    @ Copy vectors (including fiq handler) to 0x0000
-    ldr   r1, =_start
-    mov   r2, #0x0000
-    ldr   r3, =reset_handler
-1:  cmp   r2, r3
-    ldrlo r0, [r1], #4
-    strlo r0, [r2], #4
-    blo   1b
+
+	@ Copy vectors to 0x0000, 16 words
+	mov r0, #0x0000
+	ldr r1, =_start
+	ldmia r1!, {r2-r9}
+	stmia r0!, {r2-r9}
+	ldmia r1!, {r2-r9}
+	stmia r0!, {r2-r9}
 
     msr CPSR_c,#MODE_IRQ|I_BIT|F_BIT 	@ IRQ Mode
     ldr r0, =__irq_stack_top
@@ -112,9 +112,9 @@ reset:
     mov   r0, #0
     ldr   r1, =__bss_start
     ldr   r2, =__bss_end
-2:  cmp   r1, r2
+4:  cmp   r1, r2
     strlo r0, [r1], #4
-    blo   2b
+    blo   4b
 
     bl notmain
 halt:
