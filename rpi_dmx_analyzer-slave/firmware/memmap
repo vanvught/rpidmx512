@@ -91,6 +91,18 @@ __svc_stack_top = .;
 . = . + __sys_stack_size; 
 __sys_stack_top = .;
 
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core1 = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core2 = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core3 = .;
+
  . = ALIGN(8);
  heap_low = .; 					/* for _sbrk */
  heap_top = __ram_end; 			/* for _sbrk */
