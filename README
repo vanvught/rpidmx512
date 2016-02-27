@@ -16,3 +16,8 @@ Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible w
 \rpi_rdm_responder
 
 Detailed information can be found here : http://www.raspberrypi-dmx.com/
+
+
+Special thanks to rst (Rene Stange), who helped me get the multi-core support working.
+Please check out Circle by rst, a C++ bare metal environment (with USB) for Raspberry Pi 1 & 2.
+https://github.com/rsta2/circle
