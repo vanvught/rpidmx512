@@ -2,7 +2,7 @@ ARMGNU ?= arm-none-eabi
 
 COPS_COMMON = -DBARE_METAL 
 COPS_COMMON += -I"./include"
-COPS_COMMON += -std=c99 -pedantic -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
 
 COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
 COPS += $(COPS_COMMON)
@@ -17,7 +17,7 @@ BUILD = build/
 BUILD7 = build7/
 
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
 
 TARGET = lib/libbcm2835.a 
 TARGET7 = lib7/libbcm2835.a
@@ -54,6 +54,9 @@ $(BUILD7)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
 
 $(BUILD7)%.o: $(SOURCE)/%.c
+	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
+
+$(BUILD7)%.o: $(SOURCE)/arm//%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
 $(TARGET7): Makefile $(OBJECTS7)

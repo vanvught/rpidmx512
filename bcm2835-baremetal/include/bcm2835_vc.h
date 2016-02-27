@@ -148,4 +148,6 @@ extern int32_t bcm2835_vc_get_get_firmware_revision(void);
 extern int32_t bcm2835_vc_get_get_board_model(void);
 extern int32_t bcm2835_vc_get_get_board_revision(void);
 
+extern int32_t bcm2835_vc_get_memory(const uint32_t);
+
 #endif /* BCM2835_VC_H_ */

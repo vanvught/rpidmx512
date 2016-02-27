@@ -48,7 +48,7 @@
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
-#include "arm/asm.h"
+#include "arm/synchronize.h"
 
 #define WR	22	///< GPIO22
 #define _RD	23	///< GPIO23

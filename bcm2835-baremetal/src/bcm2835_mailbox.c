@@ -33,6 +33,17 @@
 /**
  * @ingroup Mailbox
  *
+ */
+void bcm2835_mailbox_flush(void) {
+	while (!(BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_RE)) {
+		(void) BCM2835_MAILBOX->READ;
+		udelay(20);
+	}
+}
+
+/**
+ * @ingroup Mailbox
+ *
  * @param channel
  * @return
  */

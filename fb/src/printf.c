@@ -46,6 +46,10 @@ enum {
 	FLAG_LEFT_JUSTIFIED =	(1 << 6 )
 };
 
+#if defined (RPI2)
+static volatile int lock = 0;
+#endif
+
 /*@null@*/static char *outptr = NULL;
 
 inline static void xputch(struct context *ctx, int c) {
@@ -264,11 +268,20 @@ int vprintf(const char *fmt, va_list va) {
 int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
+
+#if defined (RPI2)
+	while (__sync_lock_test_and_set(&lock, 1) == 1);
+#endif
+
 	va_start(arp, fmt);
 
 	i = vprintf(fmt, arp);
 
 	va_end(arp);
+
+#if defined (RPI2)
+	__sync_lock_release(&lock);
+#endif
 
 	return i;
 }

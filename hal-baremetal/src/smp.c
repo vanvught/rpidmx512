@@ -1,8 +1,9 @@
+
 /**
- * @file asm.h
+ * @file smp.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +23,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#if defined (RPI2)
+#include <stdint.h>
+#include <stdbool.h>
 
-#ifndef ASM_H_
-#define ASM_H_
+#include <arm/synchronize.h>
+#include "smp.h"
 
-#if __ARM_ARCH >= 7
-	#if !defined( RPI2 )
-		#define RPI2
-	#endif
+#define SMP_CORE_MASK 			3			///<
+#define SMP_CORE_BASE			0x4000008C	///<
+
+extern void _init_core(void);
+
+static volatile bool core_is_started;		///<
+static start_fn_t start_fn;					///<
+
+/**
+ *
+ * @return
+ */
+uint32_t smp_get_core_number(void) {
+	uint32_t core_number;
+	asm volatile ("mrc p15, 0, %0, c0, c0, 5" : "=r" (core_number));
+	return (core_number & SMP_CORE_MASK);
+}
+
+/**
+ *
+ */
+void smp_core_main(void) {
+	start_fn_t temp_fn = start_fn;
+	dmb();
+	core_is_started = true;
+	temp_fn();
+	for (;;)
+		;
+}
+
+/**
+ *
+ * @param core_number
+ * @param start
+ */
+void smp_start_core(uint32_t core_number, start_fn_t start) {
+	if (core_number == 0 || core_number > 3) {
+		return;
+	}
+	start_fn = start;
+	*(uint32_t *) (SMP_CORE_BASE + (core_number * 0x10)) = (uint32_t) _init_core;
+	dmb();
+	core_is_started = false;
+	while (!core_is_started) {
+		dmb();
+	}
+}
 #endif
-
-#if defined( RPI2 )
-	#define isb() asm volatile ("isb" ::: "memory")
-	#define dsb() asm volatile ("dsb" ::: "memory")
-	#define dmb() asm volatile ("dmb" ::: "memory")
-#else
-	#define isb() asm volatile ("mcr p15, #0, %[zero], c7, c5,  #4" : : [zero] "r" (0) )
-	#define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
-	#define dmb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #5" : : [zero] "r" (0) )
-#endif
-
-#endif /* ASM_H_ */

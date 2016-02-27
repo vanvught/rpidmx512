@@ -1,0 +1,151 @@
+/**
+ * @file mmu.c
+ *
+ */
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+#if defined (RPI2)
+#include <stdint.h>
+
+#include "arm/synchronize.h"
+#include "bcm2835_vc.h"
+
+static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
+
+// [1:0] 	1 0 section
+// [2]		B
+// [3]		C
+// [4]		XN
+// [8:5]	Domain
+// [9]		IM
+// [11:10]	AP
+// [12:14]	TEX
+// [15]		APX
+// [16]		S
+// [17]		NG
+// [19:18]	0 0
+// [31:20]	base address
+
+// Access permissions (AP[11:10])
+#define AP_NO_ACCESS		0	// 00
+#define AP_SYSTEM_ACCESS	1	// 01
+#define AP_USER_RO_ACCESS	2	// 10
+#define AP_ALL_ACCESS		3	// 11
+
+// Access permissions extended (APX)
+#define APX_RW_ACCESS		0
+#define APX_RO_ACCESS		1
+
+// Domains
+#define DOMAIN_NO_ACCESS	0
+#define DOMAIN_CLIENT		1
+#define DOMAIN_MANAGER		3
+
+#define ARM_AUX_CONTROL_SMP	(1 << 6)
+
+#define ARM_TTBR_INNER_NON_CACHEABLE	((0 << 6) | (0 << 0))
+#define ARM_TTBR_INNER_WRITE_ALLOCATE	((1 << 6) | (0 << 0))
+#define ARM_TTBR_INNER_WRITE_THROUGH	((0 << 6) | (1 << 0))
+#define ARM_TTBR_INNER_WRITE_BACK		((1 << 6) | (1 << 0))
+
+#define ARM_TTBR_OUTER_NON_CACHEABLE	(0 << 3)
+#define ARM_TTBR_OUTER_WRITE_ALLOCATE	(1 << 3)
+#define ARM_TTBR_OUTER_WRITE_THROUGH	(2 << 3)
+#define ARM_TTBR_OUTER_WRITE_BACK		(3 << 3)
+
+#define TTBR_MODE	(ARM_TTBR_INNER_WRITE_BACK | ARM_TTBR_OUTER_WRITE_BACK)
+
+#define ARM_CONTROL_MMU						(1 << 0)
+#define ARM_CONTROL_STRICT_ALIGNMENT		(1 << 1)
+#define ARM_CONTROL_L1_CACHE				(1 << 2)
+#define ARM_CONTROL_BRANCH_PREDICTION		(1 << 11)
+#define ARM_CONTROL_L1_INSTRUCTION_CACHE 	(1 << 12)
+
+#define MMU_MODE	(  ARM_CONTROL_MMU			\
+			 | ARM_CONTROL_L1_CACHE			\
+			 | ARM_CONTROL_L1_INSTRUCTION_CACHE	\
+			 | ARM_CONTROL_BRANCH_PREDICTION)
+
+void mmu_enable(void) {
+
+	uint32_t entry;
+
+	uint32_t arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
+
+	for (entry = 0; entry < arm_ram; entry++) {
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+	    page_table[entry] = entry << 20 | 0x1040E;	///< 0000 0000 0000 0001 0000 0100 0000 1110
+	}
+
+	// VC ram up to 0x3F000000
+	for (; entry < 1024 - 16; entry++) {
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+	    page_table[entry] = entry << 20 | 0x10416;	///< 0000 0000 0000 0001 0000 0100 0001 0110
+	}
+
+	// 16 MB peripherals at 0x3F000000
+	for (; entry < 1024; entry++) {
+	    // shared device, never execute
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+	    page_table[entry] = entry << 20 | 0x10416;	///< 0000 0000 0000 0001 0000 0100 0001 0110
+	}
+
+	// 1 MB mailboxes at 0x40000000 Multi-core
+    // shared device, never execute
+												///< 31   27   23   19   15   11   7    3
+												///<   28   24   20   16   12    8    4    0
+    page_table[entry] = entry << 20 | 0x10416;	///< 0000 0000 0000 0001 0000 0100 0001 0110
+	++entry;
+
+	// unused rest of address space)
+	for (; entry < 4096; entry++) {
+	    page_table[entry] = 0;
+	}
+
+	clean_data_cache();
+	dmb();
+
+	uint32_t auxctrl;
+	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (auxctrl));
+	auxctrl |= ARM_AUX_CONTROL_SMP;
+	asm volatile ("mcr p15, 0, %0, c1, c0,  1" :: "r" (auxctrl));
+
+	// set domain 0 to client
+	asm volatile ("mcr p15, 0, %0, c3, c0, 0" :: "r" (DOMAIN_CLIENT << 0));
+
+	// always use TTBR0
+	asm volatile ("mcr p15, 0, %0, c2, c0, 2" :: "r" (0));
+
+	// set TTBR0
+	asm volatile ("mcr p15, 0, %0, c2, c0, 0" :: "r" (TTBR_MODE | (uint32_t) &page_table));
+
+	isb();
+
+	// enable MMU
+	uint32_t control;
+	asm volatile ("mrc p15, 0, %0, c1, c0,  0" : "=r" (control));
+	control |= MMU_MODE;
+	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (control) : "memory");
+}
+#endif

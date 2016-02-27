@@ -41,6 +41,7 @@ typedef enum {
 	BCM2835_MAILBOX_PROP_CHANNEL	= 8		///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
 } bcm2835MailboxChannels;
 
+extern void bcm2835_mailbox_flush(void);
 extern uint32_t bcm2835_mailbox_read(const uint8_t);
 extern void bcm2835_mailbox_write(const uint8_t, const uint32_t);
 
