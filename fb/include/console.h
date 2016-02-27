@@ -29,7 +29,6 @@
 #include <stdint.h>
 
 extern const uint32_t console_get_address(void);
-extern const uint32_t console_get_pitch(void);
 extern const uint32_t console_get_width(void);
 extern const uint32_t console_get_height(void);
 extern const uint32_t console_get_size(void);
@@ -52,15 +51,15 @@ extern void console_clear_line(const int);
 #define RGB(r, g, b) ((((r)>>3)<<11) | (((g)>>2)<<5) | ((b)>>3))
 
 // some RGB color definitions
-#define CONSOLE_BLACK		0x0000	///<   0,   0,   0
-#define CONSOLE_BLUE		0x001F	///<   0,   0, 255
-#define CONSOLE_GREEN		0x07E0	///<   0, 255,   0
-#define CONSOLE_CYAN		0x07FF	///<   0, 255, 255
-#define CONSOLE_RED			0xF800	///< 255,   0,   0
-#define CONSOLE_YELLOW		0xFFE0	///< 255, 255,   0
-#define CONSOLE_WHITE		0xFFFF	///< 255, 255, 255
+#define CONSOLE_BLACK	0x0000	///<   0,   0,   0
+#define CONSOLE_BLUE	0x001F	///<   0,   0, 255
+#define CONSOLE_GREEN	0x07E0	///<   0, 255,   0
+#define CONSOLE_CYAN	0x07FF	///<   0, 255, 255
+#define CONSOLE_RED		0xF800	///< 255,   0,   0
+#define CONSOLE_YELLOW	0xFFE0	///< 255, 255,   0
+#define CONSOLE_WHITE	0xFFFF	///< 255, 255, 255
 
-#define CONSOLE_OK		0						///< Call console_init() OK
+#define CONSOLE_OK							0	///< Call console_init() OK
 #define CONSOLE_FAIL_GET_RESOLUTION			-1	///<
 #define CONSOLE_FAIL_INVALID_RESOLUTION		-2	///<
 #define CONSOLE_FAIL_SETUP_FB				-3	///<
@@ -71,4 +70,3 @@ extern void console_clear_line(const int);
 #define CONSOLE_FAIL_INVALID_PITCH_DATA		-8	///<
 
 #endif
-

@@ -46,9 +46,6 @@ static int cur_x = 0;						///<
 static int cur_y = 0;						///<
 static uint16_t cur_fore = CONSOLE_WHITE;	///<
 static uint16_t cur_back = CONSOLE_BLACK;	///<
-static uint32_t fb_width;					///< Width of physical display
-static uint32_t fb_height;					///< Height of physical display
-static uint32_t fb_pitch;					///< Number of bytes between each row of the frame buffer
 static uint32_t fb_addr;					///< Address of buffer allocated by VC
 static uint32_t fb_size;					///< Size of buffer allocated by VC
 static uint32_t fb_depth;					///< Depth (bits per pixel)
@@ -61,16 +58,12 @@ const uint32_t console_get_address() {
 	return fb_addr;
 }
 
-const uint32_t console_get_pitch() {
-	return fb_pitch;
-}
-
 const uint32_t console_get_width() {
-	return fb_width;
+	return WIDTH;
 }
 
 const uint32_t console_get_height() {
-	return fb_height;
+	return HEIGHT;
 }
 
 const uint32_t console_get_size() {
@@ -348,42 +341,7 @@ void console_clear_line(const int line) {
  * @return
  */
 int console_init() {
-	uint32_t mailbuffer[64] __attribute__((aligned(16)));
-
-	mailbuffer[0] = 8 * 4;
-	mailbuffer[1] = 0;
-	mailbuffer[2] = BCM2835_VC_TAG_GET_PHYS_WH;
-	mailbuffer[3] = 8;
-	mailbuffer[4] = 0;
-	mailbuffer[5] = 0;
-	mailbuffer[6] = 0;
-	mailbuffer[7] = 0;
-
-#if defined (RPI2)
-	clean_data_cache();
-#endif
-	dsb();
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
-	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
-	invalidate_data_cache();
-#endif
-	dsb();
-
-	fb_width  = mailbuffer[5];
-	fb_height = mailbuffer[6];
-
-	if ((fb_width == 0) && (fb_height == 0)) {
-		fb_width = WIDTH;
-		fb_height = HEIGHT;
-	}
-
-	if ((fb_width == 0) || (fb_height == 0)) {
-		return CONSOLE_FAIL_INVALID_RESOLUTION;
-	}
+	uint32_t mailbuffer[32] __attribute__((aligned(16)));
 
 	mailbuffer[0] = 22 * 4;
 	mailbuffer[1] = 0;
@@ -391,14 +349,14 @@ int console_init() {
 	mailbuffer[2] = BCM2835_VC_TAG_SET_PHYS_WH;
 	mailbuffer[3] = 8;
 	mailbuffer[4] = 8;
-	mailbuffer[5] = fb_width;
-	mailbuffer[6] = fb_height;
+	mailbuffer[5] = WIDTH;
+	mailbuffer[6] = HEIGHT;
 
 	mailbuffer[7] = BCM2835_VC_TAG_SET_VIRT_WH;
 	mailbuffer[8] = 8;
 	mailbuffer[9] = 8;
-	mailbuffer[10] = fb_width;
-	mailbuffer[11] = fb_height;
+	mailbuffer[10] = WIDTH;
+	mailbuffer[11] = HEIGHT;
 
 	mailbuffer[12] = BCM2835_VC_TAG_SET_DEPTH;
 	mailbuffer[13] = 4;
@@ -427,7 +385,7 @@ int console_init() {
 #endif
 	dsb();
 
-	fb_addr = mailbuffer[19] & 0x3FFFFFFF;;
+	fb_addr = mailbuffer[19] & 0x3FFFFFFF;
 	fb_size = mailbuffer[20];
 
 	if ((fb_addr == 0) || (fb_size == 0)) {
@@ -435,36 +393,6 @@ int console_init() {
 	}
 
 	fb_depth = mailbuffer[15];
-
-	mailbuffer[0] = 7 * 4;
-	mailbuffer[1] = 0;
-
-	mailbuffer[2] = BCM2835_VC_TAG_GET_PITCH;
-	mailbuffer[3] = 4;
-	mailbuffer[4] = 0;
-	mailbuffer[5] = 0;
-
-	mailbuffer[6] = 0;
-
-#if defined (RPI2)
-	clean_data_cache();
-#endif
-	dsb();
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) &mailbuffer);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
-	invalidate_data_cache();
-#endif
-	dsb();
-
-	fb_pitch = mailbuffer[5];
-
-	if (fb_pitch == 0) {
-		return CONSOLE_FAIL_INVALID_PITCH_DATA;
-	}
 
 #if defined (RPI2)
 	lock = 0;
