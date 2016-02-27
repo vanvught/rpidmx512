@@ -31,10 +31,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "arm/synchronize.h"
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
-#include "arm/asm.h"
 #include "arm/pl011.h"
 #include "gpio.h"
 #include "util.h"

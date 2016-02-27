@@ -83,12 +83,24 @@ reset:
     ldr r0, =__svc_stack_top
     mov sp, r0
 
+    @ clear bss section
+    mov   r0, #0
+    ldr   r1, =__bss_start
+    ldr   r2, =__bss_end
+4:  cmp   r1, r2
+    strlo r0, [r1], #4
+    blo   4b
+
+#if defined ( RPI2 )
+	bl mmu_enable
+#else
     @ start L1 chache
     mrc p15, 0, r0, c1, c0, 0
     orr r0,r0,#0x0004					@ Data Cache (Bit 2)
     orr r0,r0,#0x0800					@ Branch Prediction (Bit 11)
     orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
     mcr p15, 0, r0, c1, c0, 0
+#endif
 
     @ Enable fpu
     mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
@@ -107,14 +119,6 @@ reset:
 #else
     fmxr fpexc, r0
 #endif
-
-    @ clear bss section
-    mov   r0, #0
-    ldr   r1, =__bss_start
-    ldr   r2, =__bss_end
-4:  cmp   r1, r2
-    strlo r0, [r1], #4
-    blo   4b
 
     bl notmain
 halt:
@@ -154,3 +158,51 @@ FUNC __disable_fiq
     msr cpsr_c, r1
     bx lr
 
+#if defined ( RPI2 )
+FUNC _init_core
+    @ Check for HYP mode
+	mrs	r0 , cpsr
+	eor	r0, r0, #0x1A
+	tst	r0, #0x1F
+	bic	r0 , r0 , #0x1F					@ clear mode bits
+	orr	r0 , r0 , #MODE_SVC|I_BIT|F_BIT	@ mask IRQ/FIQ bits and set SVC mode
+	bne	2f								@ branch if not HYP mode
+	orr	r0, r0, #0x100					@ mask Abort bit
+	adr	lr, 3f
+	msr	spsr_cxsf, r0
+	.word	0xE12EF30E					@ msr ELR_hyp, lr
+	.word	0xE160006E					@ eret
+2:	msr cpsr_c, r0
+3:
+    msr CPSR_c,#MODE_SVC|I_BIT|F_BIT	@ Supervisor Mode
+
+	@ Return current CPU ID (0..3)
+	mrc p15, 0, r0, c0, c0, 5 			@ r0 = Multiprocessor Affinity Register (MPIDR)
+	ands r0, #3							@ r0 = CPU ID (Bits 0..1)
+
+	cmp r0, #1							@ CPU ID == 1
+    ldreq r0, =__svc_stack_top_core1
+    beq 4f
+    cmp r0, #2							@ CPU ID == 2
+    ldreq r0, =__svc_stack_top_core2
+    beq 4f
+    ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
+4:	mov sp, r0
+
+	bl mmu_enable
+
+    @ Enable fpu
+    mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
+    orr r0,r0,#0x300000 				@ bit 20/21, Full Access, CP10
+    orr r0,r0,#0xC00000 				@ bit 22/23, Full Access, CP11
+    mcr p15, 0, r0, c1, c0, 2			@ Write Coprocessor Access Control Register
+    isb
+    mov r0,#0x40000000
+    vmsr fpexc, r0
+
+	ldr r3, =smp_core_main
+    blx r3
+halt_core:
+	wfe
+	b halt_core
+#endif

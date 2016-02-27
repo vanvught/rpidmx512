@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <arm/synchronize.h>
+#include "arm/synchronize.h"
 #include "smp.h"
 
 #define SMP_CORE_MASK 			3			///<

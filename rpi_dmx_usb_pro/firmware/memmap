@@ -67,7 +67,7 @@ SECTIONS
 PROVIDE(end = .);
 _end = .;
 
-. = ALIGN(4);
+. = ALIGN(0x300000);
 . = . + __und_stack_size; 
 __und_stack_top = .;
 
@@ -103,6 +103,6 @@ __svc_stack_top_core2 = .;
 . = . + __svc_stack_size; 
 __svc_stack_top_core3 = .;
 
- . = ALIGN(8);
+ . = ALIGN(0x400000);
  heap_low = .; 					/* for _sbrk */
  heap_top = __ram_end; 			/* for _sbrk */
