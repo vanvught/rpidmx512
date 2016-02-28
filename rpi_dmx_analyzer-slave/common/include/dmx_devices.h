@@ -62,8 +62,8 @@ typedef struct _devices {
 
 struct _dmx_devices_statistics {
 	uint32_t function_count;
-	uint32_t dmx_available_count;
-	uint32_t dmx_missed_count;
+	uint32_t run_count;
+	//uint32_t dmx_missed_count;
 };
 
 extern void dmx_devices_read_config(void);
@@ -71,7 +71,7 @@ extern void dmx_devices_init(void);
 extern void dmx_devices_zero(void);
 extern void dmx_devices_run(void);
 
-extern /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) ASSUME_ALIGNED;
+extern volatile /*@shared@*/const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) ASSUME_ALIGNED;
 extern void dmx_devices_reset_statistics(void);
 
 extern const uint16_t dmx_devices_get_devices_connected(void);

@@ -40,10 +40,10 @@ TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)
 TABLE(initializer_t, devices_zero)
 
-devices_t devices_connected ALIGNED;									///<
-static struct _dmx_devices_statistics dmx_devices_statistics ALIGNED;	///<
+devices_t devices_connected ALIGNED;											///<
+volatile static struct _dmx_devices_statistics dmx_devices_statistics ALIGNED;	///<
 
-static bool dmx_devices_is_zero  = false;								///<
+static bool dmx_devices_is_zero  = false;										///<
 
 /**
  * @ingroup dmx
@@ -58,7 +58,7 @@ devices_t *dmx_devices_get_devices(void) {
  *
  * @return
  */
-const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) {
+volatile const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) {
 	return &dmx_devices_statistics;
 }
 
@@ -68,7 +68,7 @@ const struct _dmx_devices_statistics *dmx_devices_get_statistics(void) {
  */
 void dmx_devices_reset_statistics(void) {
 	dmx_devices_statistics.function_count = 0;
-	dmx_devices_statistics.dmx_available_count = 0;
+	dmx_devices_statistics.run_count = 0;
 }
 
 /**
@@ -262,14 +262,10 @@ void dmx_devices_run() {
 
 	dmx_devices_is_zero = false;
 
-	dmx_devices_statistics.dmx_available_count++;
+	dmx_devices_statistics.run_count++;
 
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), dmx_data);
-		if (dmx_get_receive_state() == DMXDATA) {
-			dmx_devices_statistics.dmx_missed_count++;
-			break;
-		}
 	}
 }
 

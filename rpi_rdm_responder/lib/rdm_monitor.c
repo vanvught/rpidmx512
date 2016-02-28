@@ -35,7 +35,7 @@
 #include "dmx_devices.h"
 
 static uint32_t function_count_previous = 0;			///<
-static uint32_t dmx_available_count_previous = 0;		///<
+static uint32_t run_count_previous = 0;		///<
 
 /**
  * @ingroup rdm
@@ -120,12 +120,13 @@ void monitor_update(void) {
 		}
 	}
 
-	const struct _dmx_devices_statistics *dmx_handle_data_statistics = dmx_devices_get_statistics();
-	const uint32_t dmx_available_count_per_second = dmx_handle_data_statistics->dmx_available_count - dmx_available_count_previous;
+	const volatile struct _dmx_devices_statistics *dmx_handle_data_statistics = dmx_devices_get_statistics();
+	const uint32_t run_count_per_second = dmx_handle_data_statistics->run_count - run_count_previous;
 	const uint32_t function_count_per_second = dmx_handle_data_statistics->function_count - function_count_previous;
+	const uint32_t dmx_updates_per_seconde = dmx_get_updates_per_seconde();
 
-	monitor_line(MONITOR_LINE_STATS, "%ld / %ld / %ld", function_count_per_second, dmx_available_count_per_second, dmx_handle_data_statistics->dmx_missed_count);
+	monitor_line(MONITOR_LINE_STATS, "%ld / %ld[%d]", function_count_per_second, run_count_per_second, dmx_updates_per_seconde);
 
 	function_count_previous = dmx_handle_data_statistics->function_count;
-	dmx_available_count_previous = dmx_handle_data_statistics->dmx_available_count;
+	run_count_previous = dmx_handle_data_statistics->run_count;
 }

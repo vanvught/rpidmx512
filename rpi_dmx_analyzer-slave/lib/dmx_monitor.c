@@ -31,20 +31,20 @@
 #include "monitor.h"
 
 static uint32_t function_count_previous = 0;		///<
-static uint32_t dmx_available_count_previous = 0;	///<
+static uint32_t run_count_previous = 0;	///<
 
 /**
  * @ingroup monitor
  */
 void monitor_update(void) {
-	const struct _dmx_devices_statistics *dmx_devices_statistics = dmx_devices_get_statistics();
+	const volatile struct _dmx_devices_statistics *dmx_devices_statistics = dmx_devices_get_statistics();
 	const uint32_t function_count_per_second = dmx_devices_statistics->function_count - function_count_previous;
-	const uint32_t dmx_available_count_per_second = dmx_devices_statistics->dmx_available_count - dmx_available_count_previous;
+	const uint32_t run_count_per_second = dmx_devices_statistics->run_count - run_count_previous;
 
 	monitor_time_uptime(MONITOR_LINE_TIME);
 	monitor_sniffer();
-	monitor_line(MONITOR_LINE_STATS, "%ld / %ld", function_count_per_second, dmx_available_count_per_second);
+	monitor_line(MONITOR_LINE_STATS, "%ld / %ld", function_count_per_second, run_count_per_second);
 
 	function_count_previous = dmx_devices_statistics->function_count;
-	dmx_available_count_previous = dmx_devices_statistics->dmx_available_count;
+	run_count_previous = dmx_devices_statistics->run_count;
 }
