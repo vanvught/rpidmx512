@@ -2,6 +2,12 @@
  * @file synchronize.c
  *
  */
+/* This code is inspired by:
+ *
+ * Circle - A C++ bare metal environment for Raspberry Pi
+ * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
+ * https://github.com/rsta2/circle/blob/master/lib/synchronize.cpp
+ */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
