@@ -81,17 +81,26 @@
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
 #define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
 
-#define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x3000)
-#define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0xB200)
-#define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0xB880)
-#define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)
-#define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)
+#define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x003000)	///<
+#define	BCM2835_DMA0_BASE		(BCM2835_PERI_BASE + 0x007000)	///<
+#define	BCM2835_DMA1_BASE		(BCM2835_PERI_BASE + 0x007100)	///<
+#define	BCM2835_DMA2_BASE		(BCM2835_PERI_BASE + 0x007200)	///<
+#define	BCM2835_DMA3_BASE		(BCM2835_PERI_BASE + 0x007300)	///<
+#define	BCM2835_DMA4_BASE		(BCM2835_PERI_BASE + 0x007400)	///<
+#define	BCM2835_DMA5_BASE		(BCM2835_PERI_BASE + 0x007500)	///<
+#define	BCM2835_DMA6_BASE		(BCM2835_PERI_BASE + 0x007600)	///<
+#define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0x00B200)	///<
+#define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0x00B880)	///<
+#define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)	///<
+#define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)	///<
 #define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)	///< Base Physical Address of the SPI0 registers
 #define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)	///< Base Physical Address of the PL011 registers
 #define BCM2835_UART1_BASE		(BCM2835_PERI_BASE + 0x215000)	///< Base Physical Address of the UART1 registers
 #define BCM2835_EMMC_BASE		(BCM2835_PERI_BASE + 0x300000)	///< Base Physical Address of the EMMC registers
 #define BCM2835_BSC1_BASE		(BCM2835_PERI_BASE + 0x804000)	///< Base Physical Address of the BSC1 registers
 #define BCM2835_BSC2_BASE		(BCM2835_PERI_BASE + 0x805000)	///< Base Physical Address of the BSC2 registers
+#define	BCM2835_USB_BASE		(BCM2835_PERI_BASE + 0x980000)	///<
+#define	BCM2835_DMA15_BASE		(BCM2835_PERI_BASE + 0xE05000)	///<
 
 #ifdef __ASSEMBLY__
 #else
@@ -134,6 +143,18 @@ typedef struct {
 	__I uint32_t C2;			///< 0x14	System Timer Compare 2.  DO NOT USE; is used by GPU.
 	__IO uint32_t C3;			///< 0x18	System Timer Compare 3
 } BCM2835_ST_TypeDef;
+
+typedef struct {
+	__IO uint32_t CS;			///< 0x00, Control and Status
+	__IO uint32_t CONBLK_AD;	///< 0x04, Control Block Address
+	__IO uint32_t TI;			///< 0x08, Transfer Information
+	__IO uint32_t SOURCE_AD;	///< 0x0C, Source Address
+	__IO uint32_t DEST_AD;		///< 0x10, Destination Address
+	__IO uint32_t TXFR_LEN;		///< 0x14, Transfer Length
+	__IO uint32_t STRIDE;		///< 0x18, 2D Stride
+	__IO uint32_t NEXTCONBK;	///< 0x1C, Next CB Address
+	__IO uint32_t DEBUG;		///< 0x20, Debug
+} BCM2835_DMA_TypeDef;
 
 typedef struct {
 	__I uint32_t IRQ;			///< 0x00
@@ -316,6 +337,13 @@ typedef struct {
 } BCM2835_EMMC_TypeDef;
 
 #define BCM2835_ST			((BCM2835_ST_TypeDef *)   BCM2835_ST_BASE)			///< Base register address for SYSTEM TIMER
+#define BCM2835_DMA0		((BCM2835_DMA_TypeDef) *) BCM2835_DMA0_BASE)		///< Base register address for DMA Channel 0
+#define BCM2835_DMA1		((BCM2835_DMA_TypeDef) *) BCM2835_DMA1_BASE)		///< Base register address for DMA Channel 1
+#define BCM2835_DMA2		((BCM2835_DMA_TypeDef) *) BCM2835_DMA2_BASE)		///< Base register address for DMA Channel 2
+#define BCM2835_DMA3		((BCM2835_DMA_TypeDef) *) BCM2835_DMA3_BASE)		///< Base register address for DMA Channel 3
+#define BCM2835_DMA4		((BCM2835_DMA_TypeDef) *) BCM2835_DMA4_BASE)		///< Base register address for DMA Channel 4
+#define BCM2835_DMA5		((BCM2835_DMA_TypeDef) *) BCM2835_DMA5_BASE)		///< Base register address for DMA Channel 5
+#define BCM2835_DMA6		((BCM2835_DMA_TypeDef) *) BCM2835_DMA6_BASE)		///< Base register address for DMA Channel 6
 #define BCM2835_IRQ			((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)			///< Base register address for IRQ
 #define BCM2835_MAILBOX		((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)	///< Base register address for MAILBOX
 #define BCM2835_PM_WDOG		((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)	///< Base register address for WATCHDOG
