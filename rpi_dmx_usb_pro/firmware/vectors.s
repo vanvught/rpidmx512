@@ -41,7 +41,7 @@ irq_handler:		.word irq
 fiq_handler:		.word fiq
 
 reset:
-#if defined ( RPI2 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	@ Return current CPU ID (0..3)
 	mrc p15, 0, r0, c0, c0, 5 			@ r0 = Multiprocessor Affinity Register (MPIDR)
 	ands r0, #3							@ r0 = CPU ID (Bits 0..1)
@@ -91,7 +91,7 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
-#if defined ( RPI2 )
+#if defined ( RPI2 )					///<  || defined ( RPI3 ), mmu_enable is not Cortex-A53 compatible
 	bl mmu_enable
 #else
     @ start L1 chache
@@ -107,14 +107,14 @@ reset:
     orr r0,r0,#0x300000 				@ bit 20/21, Full Access, CP10
     orr r0,r0,#0xC00000 				@ bit 22/23, Full Access, CP11
     mcr p15, 0, r0, c1, c0, 2			@ Write Coprocessor Access Control Register
-#if defined ( RPI2 )
+#if defined ( RPI2 )  || defined ( RPI3 )
     isb
 #else
     mov r0,#0
     mcr p15, #0, r0, c7, c5,  #4
 #endif
     mov r0,#0x40000000
-#if defined ( RPI2 )
+#if defined ( RPI2 )  || defined ( RPI3 )
     vmsr fpexc, r0
 #else
     fmxr fpexc, r0
@@ -158,7 +158,7 @@ FUNC __disable_fiq
     msr cpsr_c, r1
     bx lr
 
-#if defined ( RPI2 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 FUNC _init_core
     @ Check for HYP mode
 	mrs	r0 , cpsr

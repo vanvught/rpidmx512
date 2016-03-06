@@ -26,10 +26,10 @@
 #ifndef SYNCHRONIZE_H_
 #define SYNCHRONIZE_H_
 
-#if __ARM_ARCH >= 7
-	#if !defined( RPI2 )
-		#define RPI2
-	#endif
+#if defined( RPI2 ) || defined ( RPI3 )
+	#define isb() asm volatile ("isb" ::: "memory")
+	#define dsb() asm volatile ("dsb" ::: "memory")
+	#define dmb() asm volatile ("dmb" ::: "memory")
 #endif
 
 #if defined( RPI2 )
@@ -39,10 +39,6 @@
 	extern void invalidate_data_cache(void) __attribute__ ((optimize (3)));
 	extern void clean_data_cache(void) __attribute__ ((optimize (3)));
 	extern void invalidate_data_cache_l1_only(void) __attribute__ ((optimize (3)));
-
-	#define isb() asm volatile ("isb" ::: "memory")
-	#define dsb() asm volatile ("dsb" ::: "memory")
-	#define dmb() asm volatile ("dmb" ::: "memory")
 #else
 	#define invalidate_instruction_cache()	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #0" : : [zero] "r" (0) )
 	#define flush_prefetch_buffer()			asm volatile ("mcr p15, #0, %[zero], c7, c5,  #4" : : [zero] "r" (0) )

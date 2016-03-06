@@ -25,26 +25,23 @@
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
-#if __ARM_ARCH >= 7
-	#if !defined( RPI2 )
-		#define RPI2
-	#endif
-	#if !defined( RPIPLUS )
-		#define RPIPLUS
+#if defined (RPI2) || defined (RPI3)
+	#if ! defined (RPIPLUS)
+	#define RPIPLUS
 	#endif
 #endif
 
-#if defined ( RPI2 )
-#define BCM2835_PERI_BASE		0x3F000000
+#if defined ( RPI2 ) || defined (RPI3)
+#define BCM2835_PERI_BASE		0x3F000000	///<
 #else
-#define BCM2835_PERI_BASE		0x20000000
+#define BCM2835_PERI_BASE		0x20000000	///<
 #endif
 
-#define GPU_IO_BASE				0x7E000000 ///<
-#define GPU_CACHED_BASE			0x40000000 ///<
-#define GPU_UNCACHED_BASE		0xC0000000 ///<
+#define GPU_IO_BASE				0x7E000000	///<
+#define GPU_CACHED_BASE			0x40000000	///<
+#define GPU_UNCACHED_BASE		0xC0000000	///<
 
-#if defined ( RPI2 )
+#if defined ( RPI2 ) || defined (RPI3)
 #define GPU_MEM_BASE	GPU_UNCACHED_BASE
 #else
 #define GPU_MEM_BASE	GPU_CACHED_BASE

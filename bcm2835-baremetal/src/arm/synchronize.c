@@ -28,7 +28,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if __ARM_ARCH >= 7
+#if defined (RPI2)
 #include <stdint.h>
 
 //

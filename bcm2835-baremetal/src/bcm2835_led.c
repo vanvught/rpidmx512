@@ -28,12 +28,18 @@
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
-#define RPIPLUS_PIN		47	///<
+#define RPIPLUS_PIN		47				///<
+
+#if defined (RPI2) || defined (RPI3)
+	#if ! defined (RPIPLUS)
+	#define RPIPLUS
+	#endif
+#endif
 
 #ifdef RPIPLUS
-#define PIN				RPIPLUS_PIN
+	#define PIN				RPIPLUS_PIN		///<
 #else
-#define PIN				16	///<
+	#define PIN				16				///<
 #endif
 
 /**
