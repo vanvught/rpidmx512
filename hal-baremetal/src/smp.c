@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if defined (RPI2)
+#if defined (RPI2) || defined (RPI3)
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -189,7 +189,16 @@ FUNC _init_core
     ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
 4:	mov sp, r0
 
+#if defined ( RPI2 )					///<  || defined ( RPI3 ), mmu_enable is not Cortex-A53 compatible
 	bl mmu_enable
+#else
+    @ start L1 chache
+    mrc p15, 0, r0, c1, c0, 0
+    orr r0,r0,#0x0004					@ Data Cache (Bit 2)
+    orr r0,r0,#0x0800					@ Branch Prediction (Bit 11)
+    orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
+    mcr p15, 0, r0, c1, c0, 0
+#endif
 
     @ Enable fpu
     mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
