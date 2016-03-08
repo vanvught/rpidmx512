@@ -8,17 +8,16 @@ COPS_COMMON += -I"./common/include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
 COPS_COMMON += -I"../bob-baremetal/include"
 COPS_COMMON += -I"../fb/include"
-#COPS_COMMON += -I"../ff9b/src"
 COPS_COMMON += -I"../ff11/src"
 COPS_COMMON += -I"../hal-baremetal/include"
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float
-#COPS_COMMON += -I/opt/newlib/arm-none-eabi/include
 
-COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
+COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
+COPS += -DRPI1
 COPS += $(COPS_COMMON)
 
 COPS7 = -mfpu=vfpv4 -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
-COPS7 += -DRPI2 -DRPIPLUS
+COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
 LIB =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv6zk/arm1176jzf-s/hardfp/vfp
@@ -29,7 +28,6 @@ LIB += -L"../emmc/lib"
 LIB += -L"../fb/lib"
 LIB += -L"../ff11/lib"
 LIB += -L"../hal-baremetal/lib"
-#LIB += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
 LIB7 =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv7-a/cortex-a7/hardfp/vfpv4
 LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4  
@@ -39,7 +37,6 @@ LIB7 += -L"../emmc/lib7"
 LIB7 += -L"../fb/lib7"
 LIB7 += -L"../ff11/lib7"
 LIB7 += -L"../hal-baremetal/lib7"
-#LIB7 += -L/opt/newlib/arm-none-eabi/lib/fpu -L/usr/lib/gcc/arm-none-eabi/4.8/fpu/
 
 SOURCE = ./
 
