@@ -51,6 +51,8 @@ void monitor_update(void) {
 	}
 
 	if (display_level > 1) {
+		monitor_print_root_device_label();
+
 		monitor_time_uptime(MONITOR_LINE_TIME);
 		monitor_line(MONITOR_LINE_PORT_DIRECTION, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 
