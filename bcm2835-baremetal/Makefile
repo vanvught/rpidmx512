@@ -2,16 +2,17 @@ ARMGNU ?= arm-none-eabi
 
 COPS_COMMON = -DBARE_METAL 
 COPS_COMMON += -I"./include"
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float  
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
 
-COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s 
+COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
+COPS += -DRPI1
 COPS += $(COPS_COMMON)
 
-COPS7 = -mfpu=vfpv4 -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
+COPS7 = -mfpu=vfpv4 -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
-COPS8 = -mfpu=vfpv4 -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7 # currently running 32-bit mode only
+COPS8 = -mfpu=vfpv4 -march=armv8-a -mtune=cortex-a53 # NEON is not enabled in vectors.s
 COPS8 += -DRPI3
 COPS8 += $(COPS_COMMON)
 
