@@ -90,9 +90,11 @@ inline static void events_check() {
  * @return
  */
 int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
+	int i = 0;
+
 	hardware_init();
 	dmx_init();
-	dmx_devices_read_config();
+	dmx_devices_init();
 
 	hardware_print_board_model();
 	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
@@ -111,7 +113,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
 
 	for (;;) {
 		hardware_watchdog_feed();
-		int i = 0;
+
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}

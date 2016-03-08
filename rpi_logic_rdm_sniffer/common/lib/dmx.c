@@ -46,11 +46,25 @@
 #error You cannot have defined both RDM_CONTROLLER and LOGIC_ANALYZER
 #endif
 
+///< State of receiving DMX/RDM Bytes
+typedef enum {
+	IDLE = 0,	///<
+	BREAK,		///<
+	MAB,		///<
+	DMXDATA,	///<
+	RDMDATA,	///<
+	CHECKSUMH,	///<
+	CHECKSUML,	///<
+	RDMDISCFE,	///<
+	RDMDISCEUID,///<
+	RDMDISCECS	///<
+} _dmx_state;
+
 static volatile uint16_t dmx_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t dmx_data_buffer_index_tail = (uint16_t) 0;				///<
 static struct _dmx_data dmx_data[DMX_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;		///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
-static volatile uint8_t dmx_receive_state = IDLE;								///< Current state of DMX receive
+static uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
 static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<

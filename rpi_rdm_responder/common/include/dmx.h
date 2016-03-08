@@ -72,20 +72,6 @@ struct _total_statistics {
 	uint32_t rdm_packets;								///<
 };
 
-///< State of receiving DMX/RDM Bytes
-typedef enum {
-	IDLE = 0,	///<
-	BREAK,		///<
-	MAB,		///<
-	DMXDATA,	///<
-	RDMDATA,	///<
-	CHECKSUMH,	///<
-	CHECKSUML,	///<
-	RDMDISCFE,	///<
-	RDMDISCEUID,///<
-	RDMDISCECS	///<
-} _dmx_state;
-
 extern void dmx_init(void);
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
@@ -95,12 +81,10 @@ extern void dmx_data_send(const uint8_t *, const uint16_t);
 extern /*@shared@*/const /*@null@*/uint8_t *dmx_get_available(void) ASSUME_ALIGNED;
 extern /*@shared@*/const uint8_t *dmx_get_current_data(void) ASSUME_ALIGNED;
 extern /*@shared@*/const uint8_t *dmx_is_data_changed(void);
-extern const volatile uint8_t dmx_get_receive_state(void);
 extern const uint32_t dmx_get_output_break_time(void);
 extern void dmx_set_output_break_time(const uint32_t);
 extern const uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(const uint32_t);
-//extern bool dmx_is_data_changed(void);
 extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) ASSUME_ALIGNED;
 extern const volatile uint32_t dmx_get_updates_per_seconde(void);

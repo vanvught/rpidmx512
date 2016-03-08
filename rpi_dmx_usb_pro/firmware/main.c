@@ -90,6 +90,8 @@ inline static void events_check() {
  * @return
  */
 int notmain(void) {
+	int i = 0;
+
 	hardware_init();
 	usb_init();
 	dmx_init();
@@ -101,8 +103,7 @@ int notmain(void) {
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d\n",	widget_get_mode());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0],
-			uid_device[1], uid_device[2], uid_device[3], uid_device[4],
-			uid_device[5]);
+			uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	monitor_print_root_device_label();
 
 	hardware_watchdog_init();
@@ -115,7 +116,6 @@ int notmain(void) {
 
 	for (;;) {
 		hardware_watchdog_feed();
-		int i = 0;
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}

@@ -184,7 +184,7 @@ static int add_connected_device(const char *line) {
  * @ingroup dmx
  *
  */
-void dmx_devices_read_config(void) {
+static void dmx_devices_read_config(void) {
 	FIL file_object;
 
 	devices_connected.elements_count = 0;
@@ -218,6 +218,9 @@ void dmx_devices_read_config(void) {
  */
 void dmx_devices_init(void) {
 	uint16_t i;
+
+	dmx_devices_read_config();
+
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);
 	}

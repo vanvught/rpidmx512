@@ -66,7 +66,6 @@ struct _dmx_devices_statistics {
 	//uint32_t dmx_missed_count;
 };
 
-extern void dmx_devices_read_config(void);
 extern void dmx_devices_init(void);
 extern void dmx_devices_zero(void);
 extern void dmx_devices_run(void);
