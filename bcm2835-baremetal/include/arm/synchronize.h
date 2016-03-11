@@ -36,7 +36,7 @@
 	#define flush_branch_target_cache() 	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #6" : : [zero] "r" (0) : "memory")
 #endif
 
-#if defined( RPI2 )
+#if defined( RPI2 )|| defined ( RPI3 )
 	extern void invalidate_data_cache(void) __attribute__ ((optimize (3)));
 	extern void clean_data_cache(void) __attribute__ ((optimize (3)));
 	extern void invalidate_data_cache_l1_only(void) __attribute__ ((optimize (3)));

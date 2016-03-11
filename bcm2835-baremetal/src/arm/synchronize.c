@@ -28,20 +28,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if defined (RPI2)
-#include <stdint.h>
 
-//
-// Cache maintenance operations for ARMv7-A
-//
-// See: ARMv7-A Architecture Reference Manual, Section B4.2.1
-//
-// NOTE: The following functions should hold all variables in CPU registers. Currently this will be
-//	 ensured using the register keyword and maximum optimation (see circle/synchronize.h).
-//
-//	 The following numbers can be determined (dynamically) using CTR, CSSELR, CCSIDR and CLIDR.
-//	 As long we use the Cortex-A7 implementation in the BCM2836 these static values will work:
-//
+#if defined (RPI2) && defined (RPI3)
+#error You cannot have defined both RPI2 and RPI3
+#endif
+
+#if defined (RPI2) || defined (RPI3)
+#include <stdint.h>
 
 #define SETWAY_LEVEL_SHIFT			1
 
@@ -51,9 +44,15 @@
 #define L1_DATA_CACHE_LINE_LENGTH	64
 #define L1_SETWAY_SET_SHIFT			6	// Log2(L1_DATA_CACHE_LINE_LENGTH)
 
+#if defined (RPI2)
 #define L2_CACHE_SETS				1024
 #define L2_CACHE_WAYS				8
 #define L2_SETWAY_WAY_SHIFT			29	// 32-Log2(L2_CACHE_WAYS)
+#elif defined (RPI3)
+#define L2_CACHE_SETS				512
+#define L2_CACHE_WAYS				16
+#define L2_SETWAY_WAY_SHIFT			28	// 32-Log2(L2_CACHE_WAYS)
+#endif
 #define L2_CACHE_LINE_LENGTH		64
 #define L2_SETWAY_SET_SHIFT			6	// Log2(L2_CACHE_LINE_LENGTH)
 
