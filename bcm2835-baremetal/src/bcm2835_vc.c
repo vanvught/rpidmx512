@@ -65,16 +65,18 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
 	vc_msg.tag.val = 0;
 	vc_msg.end_tag = 0;
 
-#if defined (RPI2)
+#if defined (RPI2)  || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();
@@ -111,16 +113,18 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
 	vc_msg.tag.val = val;
 	vc_msg.end_tag = 0;
 
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();
@@ -234,16 +238,18 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	vc_msg.tag.mac_address[0] = 0;
 	vc_msg.end_tag = 0;
 
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();
@@ -300,16 +306,18 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	vc_msg.tag.value = 0;
 	vc_msg.end_tag = 0;
 
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();
@@ -383,16 +391,18 @@ int32_t bcm2835_vc_get_memory(const uint32_t tag_id) {
 	vc_msg.tag.base_address = 0;
 	vc_msg.end_tag = 0;
 
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2) || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();

@@ -37,8 +37,8 @@ SECTIONS
 		*(.shstrtab)
 		*(.strtab)
     } > ram
-    
-   	__data_start = . ;
+
+    __data_start = . ;
     .data : 
     {
     . = ALIGN(4);
@@ -48,10 +48,10 @@ SECTIONS
     } > ram
     __data_end = . ; 
 
-	__bss_start = . ;       
-    .bss : 
+    __bss_start = . ;
+    .bss :    
     {
-    . = ALIGN(4);
+    . = ALIGN(4); 
      *(.bss*) 
     } > ram
 	__bss_end = . ;    

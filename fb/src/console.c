@@ -50,7 +50,7 @@ static uint32_t fb_addr;					///< Address of buffer allocated by VC
 static uint32_t fb_size;					///< Size of buffer allocated by VC
 static uint32_t fb_depth;					///< Depth (bits per pixel)
 
-#if defined (RPI2)
+#if defined (RPI2)  || defined (RPI3)
 static volatile int lock = 0;
 #endif
 
@@ -371,19 +371,25 @@ int console_init() {
 
 	mailbuffer[21] = 0;
 
-#if defined (RPI2)
+#if defined (RPI2)  || defined ( RPI3 )
 	clean_data_cache();
 #endif
 	dsb();
-
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
+#endif
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined (RPI2)
+#if defined (RPI2)  || defined ( RPI3 )
+	dmb();
 	invalidate_data_cache();
 #endif
 	dsb();
+
+	if (mailbuffer[1] != BCM2835_MAILBOX_SUCCESS) {
+		return CONSOLE_FAIL_SETUP_FB;
+	}
 
 	fb_addr = mailbuffer[19] & 0x3FFFFFFF;
 	fb_size = mailbuffer[20];

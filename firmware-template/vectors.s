@@ -91,7 +91,7 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
-#if defined ( RPI2 )					///<  || defined ( RPI3 ), mmu_enable is not Cortex-A53 compatible
+#if defined ( RPI2 )
 	bl mmu_enable
 #else
     @ start L1 chache
@@ -189,7 +189,7 @@ FUNC _init_core
     ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
 4:	mov sp, r0
 
-#if defined ( RPI2 )					///<  || defined ( RPI3 ), mmu_enable is not Cortex-A53 compatible
+#if defined ( RPI2 )
 	bl mmu_enable
 #else
     @ start L1 chache

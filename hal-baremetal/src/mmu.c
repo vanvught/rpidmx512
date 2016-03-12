@@ -30,9 +30,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #if defined (RPI2) || defined ( RPI3 )
+#include <stdint.h>
 
 #include "arm/synchronize.h"
 #include "bcm2835_vc.h"
