@@ -69,13 +69,13 @@ static uint32_t get_uint32_t(void) {
 
 	clean_data_cache();
 	dsb();
-	dmb();
 
+	dmb();
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
 	dmb();
+
 	invalidate_data_cache();
 	dsb();
 
@@ -84,6 +84,10 @@ static uint32_t get_uint32_t(void) {
 	}
 
 	return vc_msg.tag.value;
+}
+
+uint32_t bcm2837_gpio_virt_get_address(void) {
+	return gpiovirtbuf;
 }
 
 void bcm2837_gpio_virt_init(void) {
@@ -116,14 +120,14 @@ void bcm2837_gpio_virt_led_set(int val) {
 		return;
 	}
 
-	if (val)
+	if (val) {
 		enables++;
-	else
+	} else {
 		disables++;
+	}
 
 	enables_disables[0] = (enables << 16) | (disables << 0);
 
 	dmb();
 	*(volatile uint32_t *)gpiovirtbuf = enables_disables[0];
-	dmb();
 }
