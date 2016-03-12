@@ -29,8 +29,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if defined (RPI2)
+
 #include <stdint.h>
+
+#if defined (RPI2) || defined ( RPI3 )
 
 #include "arm/synchronize.h"
 #include "bcm2835_vc.h"
@@ -91,11 +93,17 @@ static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
 			 | ARM_CONTROL_L1_INSTRUCTION_CACHE	\
 			 | ARM_CONTROL_BRANCH_PREDICTION)
 
+static volatile uint32_t arm_ram = 0;
+
+uint32_t mmu_get_arm_ram(void) {
+	return arm_ram;
+}
+
 void mmu_enable(void) {
 
 	uint32_t entry;
 
-	uint32_t arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
+	arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
 
 	for (entry = 0; entry < arm_ram; entry++) {
 													///< 31   27   23   19   15   11   7    3
