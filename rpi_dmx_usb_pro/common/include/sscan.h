@@ -28,10 +28,18 @@
 
 #include <stdint.h>
 
-#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER) || defined(MIDI_SNIFFER)
 extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
+#endif
+
+#if defined(MIDI_SNIFFER)
+extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
+#endif
+
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
 extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
 #endif
+
 #if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
 extern int sscan_spi(const char *, /*@out@*/char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint16_t *, /*@out@*/uint32_t *, /*@out@*/uint8_t *);
 #endif

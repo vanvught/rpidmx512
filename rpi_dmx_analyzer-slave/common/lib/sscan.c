@@ -32,7 +32,7 @@
 #include "dmx_devices.h"
 #endif
 
-#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER) || defined (MIDI_SNIFFER)
 /**
  *
  * @param buf
@@ -78,7 +78,58 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 
 	return 2;
 }
+#endif
 
+#if defined (MIDI_SNIFFER)
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @return
+ */
+int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
+	int64_t k;
+
+	const char *n = name;
+	const char *b = buf;
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
+			return 0;
+		}
+	}
+
+	if (*n != (char) 0) {
+		return 0;
+	}
+
+	if (*b++ != (char) '=') {
+		return 0;
+	}
+
+	k = 0;
+
+	while ((*b != (char) 0) && (*b != '\n')) {
+		if (!isdigit((int)*b)) {
+			return 1;
+		}
+		k = k * 10 + (int64_t) *b - (int64_t) '0';
+		b++;
+	}
+
+	if (k > (int64_t) ((uint32_t) ~0)) {
+		return 1;
+	}
+
+	*value = (uint32_t) k;
+
+	return 2;
+}
+#endif
+
+
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
 /**
  *
  * @param buf
