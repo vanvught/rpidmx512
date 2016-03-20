@@ -50,28 +50,73 @@ static uint32_t fb_addr;					///< Address of buffer allocated by VC
 static uint32_t fb_size;					///< Size of buffer allocated by VC
 static uint32_t fb_depth;					///< Depth (bits per pixel)
 
+static uint16_t top_row = (uint16_t) 0;		///<
+
 #if defined (RPI2)  || defined (RPI3)
 static volatile int lock = 0;
 #endif
 
-const uint32_t console_get_address() {
+/**
+ *
+ * @return
+ */
+const uint32_t console_get_address(void) {
 	return fb_addr;
 }
 
-const uint32_t console_get_width() {
+/**
+ *
+ * @return
+ */
+const uint32_t console_get_width(void) {
 	return WIDTH;
 }
 
-const uint32_t console_get_height() {
+/**
+ *
+ * @return
+ */
+const uint32_t console_get_height(void) {
 	return HEIGHT;
 }
 
-const uint32_t console_get_size() {
+/**
+ *
+ * @return
+ */
+const uint32_t console_get_size(void) {
 	return fb_size;
 }
 
-const uint32_t console_get_depth() {
+/**
+ *
+ * @return
+ */
+const uint32_t console_get_depth(void) {
 	return fb_depth;
+}
+
+/**
+ *
+ * @return
+ */
+uint16_t console_get_top_row(void) {
+	return top_row;
+}
+
+/**
+ *
+ * @param row
+ */
+void console_set_top_row(uint16_t row) {
+	if (row > HEIGHT / CHAR_H) {
+		top_row = 0;
+	} else {
+		top_row = row;
+	}
+
+	cur_x = (int) 0;
+	cur_y = (int) row;
 }
 
 /**
@@ -80,20 +125,30 @@ const uint32_t console_get_depth() {
 inline static void newline() {
 	uint32_t i;
 	uint16_t *address;
+	uint16_t *to;
+	uint16_t *from;
 
 	cur_y++;
 	cur_x = 0;
 
 	if (cur_y == HEIGHT / CHAR_H) {
-		/* Pointer to row = 0 */
-		uint16_t *to = (uint16_t *) (fb_addr);
-		/* Pointer to row = 1 */
-		uint16_t *from = to + (CHAR_H * WIDTH);
-		/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
-		i = (HEIGHT - CHAR_H) * WIDTH;
+		if (top_row == 0) {
+			/* Pointer to row = 0 */
+			to = (uint16_t *) (fb_addr);
+			/* Pointer to row = 1 */
+			from = to + (CHAR_H * WIDTH);
+			/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
+			i = (HEIGHT - CHAR_H) * WIDTH;
+		} else {
+			to = (uint16_t *) (fb_addr) + ((CHAR_H * WIDTH) * top_row);
+			from = to + (CHAR_H * WIDTH);
+			i = (HEIGHT - CHAR_H) * WIDTH - ((CHAR_H * WIDTH) * top_row);
+		}
+
 		while (i-- != 0 ) {
 			*to++ = *from++;
 		}
+
 		/* Clear last row */
 		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * WIDTH);
 		for (i = 0 ; i < (CHAR_H * WIDTH) ; i++) {
