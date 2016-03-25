@@ -25,6 +25,8 @@
 
 #include <time.h>
 
+#include "arm/synchronize.h"
+
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_led.h"
@@ -222,7 +224,10 @@ const int32_t hardware_get_core_temperature(void) {
  *
  */
 void hardware_init(void) {
+	console_init();
+
 	hardware_init_startup_micros = bcm2835_st_read();
+
 	sys_time_init();
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
@@ -238,8 +243,10 @@ void hardware_init(void) {
 	const uint32_t board_revision = bcm2835_vc_get_get_board_revision();
 
 	if (board_revision == 0xa02082) {
+#if defined (RPI3)
 		_hardware_led_f.init = bcm2837_gpio_virt_init;
 		_hardware_led_f.set = bcm2837_gpio_virt_led_set;
+#endif
 	} else if (board_revision > 0x00000f) {
 		_hardware_led_f.init = led_rpiplus_init;
 		_hardware_led_f.set = led_rpiplus_set;
@@ -247,10 +254,6 @@ void hardware_init(void) {
 
 	hardware_led_init();
 	hardware_led_set(1);
-
-	if (CONSOLE_OK != console_init()) {
-		hardware_led_set(0);
-	}
 }
 
 /**

@@ -29,6 +29,8 @@
 #include "bcm2835.h"
 #include "mcp7941x.h"
 
+#include "arm/synchronize.h"
+
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
 static volatile uint32_t rtc_startup_seconds = 0;			///<
 
@@ -53,7 +55,7 @@ void sys_time_init(void) {
 		tmbuf.tm_year = 15;
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
-		rtc_startup_seconds = mktime(&tmbuf);
+		rtc_startup_seconds = (uint32_t)mktime(&tmbuf);
 		return;
 	}
 

@@ -52,7 +52,7 @@ static uint32_t fb_depth;					///< Depth (bits per pixel)
 
 static uint16_t top_row = (uint16_t) 0;		///<
 
-#if defined (RPI2)  || defined (RPI3)
+#if defined (RPI2)
 static volatile int lock = 0;
 #endif
 
@@ -426,21 +426,21 @@ int console_init() {
 
 	mailbuffer[21] = 0;
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined (RPI2) || defined (RPI3)
 	clean_data_cache();
-#endif
 	dsb();
-#if defined (RPI2)  || defined ( RPI3 )
-	dmb();
 #endif
+
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-#if defined (RPI2)  || defined ( RPI3 )
-	dmb();
+
+#if defined (RPI2) || defined (RPI3)
 	invalidate_data_cache();
-#endif
 	dsb();
+#else
+	dmb();
+#endif
 
 	if (mailbuffer[1] != BCM2835_MAILBOX_SUCCESS) {
 		return CONSOLE_FAIL_SETUP_FB;

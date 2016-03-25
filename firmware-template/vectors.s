@@ -91,7 +91,7 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
-#if defined ( RPI2 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	bl mmu_enable
 #else
     @ start L1 chache

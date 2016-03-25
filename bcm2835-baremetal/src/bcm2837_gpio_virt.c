@@ -27,7 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+#if defined (RPI3)
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -57,33 +57,27 @@ struct vc_msg_uint32_t {
 };
 
 static uint32_t get_uint32_t(void) {
-	struct vc_msg_uint32_t vc_msg __attribute__((aligned(16)));
+	struct vc_msg_uint32_t *vc_msg = (struct vc_msg_uint32_t *)MEM_COHERENT_REGION;
 
-	vc_msg.msg_size = sizeof(struct vc_msg_uint32_t);
-	vc_msg.request_code = 0;
-	vc_msg.tag.tag_id = RPI_FIRMWARE_FRAMEBUFFER_GET_GPIOVIRTBUF;
-	vc_msg.tag.buffer_size = 4;
-	vc_msg.tag.data_size = 0;
-	vc_msg.tag.value = 0;
-	vc_msg.end_tag = 0;
+	vc_msg->msg_size = sizeof(struct vc_msg_uint32_t);
+	vc_msg->request_code = 0;
+	vc_msg->tag.tag_id = RPI_FIRMWARE_FRAMEBUFFER_GET_GPIOVIRTBUF;
+	vc_msg->tag.buffer_size = 4;
+	vc_msg->tag.data_size = 0;
+	vc_msg->tag.value = 0;
+	vc_msg->end_tag = 0;
 
-	clean_data_cache();
-	dsb();
-
-	dmb();
 	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&vc_msg);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
 	dmb();
 
-	invalidate_data_cache();
-	dsb();
-
-	if (vc_msg.request_code != BCM2835_MAILBOX_SUCCESS) {
+	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return 0;
 	}
 
-	return vc_msg.tag.value;
+	return vc_msg->tag.value;
 }
 
 uint32_t bcm2837_gpio_virt_get_address(void) {
@@ -131,3 +125,4 @@ void bcm2837_gpio_virt_led_set(int val) {
 	dmb();
 	*(volatile uint32_t *)gpiovirtbuf = enables_disables[0];
 }
+#endif
