@@ -168,16 +168,16 @@ void sc16is740_set_format(const device_info_t *device_info, int bits, int parity
  * @return
  */
 uint8_t sc16is740_reg_read(const device_info_t *device_info, const uint8_t reg) {
-	char spiData[3];
+	char spiData[2];
 	const char SPI_DUMMY_CHAR = 0xFF;	///< Used to flush slave's shift register
 
 	spiData[0] = (char) SC16IS7X0_SPI_READ_MODE_FLAG | (char) (reg << 3);
 	spiData[1] = SPI_DUMMY_CHAR;
 
 	sc16is740_setup(device_info);
-	FUNC_PREFIX(spi_transfern(spiData, 3));
+	FUNC_PREFIX(spi_transfern(spiData, 2));
 
-	return (uint8_t) spiData[2];
+	return (uint8_t) spiData[1];
 }
 
 /**
