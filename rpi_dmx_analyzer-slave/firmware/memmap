@@ -103,6 +103,6 @@ __svc_stack_top_core2 = .;
 . = . + __svc_stack_size; 
 __svc_stack_top_core3 = .;
 
- . = ALIGN(0x400000);
+ . = ALIGN(0x500000);
  heap_low = .; 					/* for _sbrk */
  heap_top = __ram_end; 			/* for _sbrk */
