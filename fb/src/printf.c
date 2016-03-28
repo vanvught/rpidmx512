@@ -46,7 +46,7 @@ enum {
 	FLAG_LEFT_JUSTIFIED =	(1 << 6 )
 };
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 static volatile int lock = 0;
 #endif
 
@@ -269,7 +269,7 @@ int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
 
@@ -279,7 +279,7 @@ int printf(const char* fmt, ...) {
 
 	va_end(arp);
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	__sync_lock_release(&lock);
 #endif
 

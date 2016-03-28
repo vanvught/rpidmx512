@@ -52,7 +52,7 @@ static uint32_t fb_depth;					///< Depth (bits per pixel)
 
 static uint16_t top_row = (uint16_t) 0;		///<
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 static volatile int lock = 0;
 #endif
 
@@ -226,7 +226,7 @@ int console_draw_char(const int ch, const int x, const int y, const uint16_t for
  * @return
  */
 int console_putc(const int ch) {
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
 
@@ -244,7 +244,7 @@ int console_putc(const int ch) {
 		}
 	}
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	__sync_lock_release(&lock);
 #endif
 
@@ -331,7 +331,7 @@ void console_clear() {
  * @param y The new row for the cursor.
  */
 void console_set_cursor(const int x, const int y) {
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
 
@@ -345,7 +345,7 @@ void console_set_cursor(const int x, const int y) {
 	else
 		cur_y = y;
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	__sync_lock_release(&lock);
 #endif
 }
@@ -455,7 +455,7 @@ int console_init() {
 
 	fb_depth = mailbuffer[15];
 
-#if defined (RPI2)
+#if defined (ARM_ALLOW_MULTI_CORE)
 	lock = 0;
 #endif
 	return CONSOLE_OK;
