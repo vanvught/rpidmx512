@@ -32,7 +32,7 @@
 #include "dmx_devices.h"
 #endif
 
-#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER) || defined (MIDI_SNIFFER)
+#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER) || defined (MIDI_SNIFFER) || defined (MIDI_DMX_BRIDGE)
 /**
  *
  * @param buf
@@ -80,7 +80,7 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 }
 #endif
 
-#if defined (MIDI_SNIFFER)
+#if defined (MIDI_SNIFFER) || defined (MIDI_DMX_BRIDGE)
 /**
  *
  * @param buf
