@@ -16,7 +16,7 @@ COPS7 = -mfpu=vfpv4 -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vec
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
-COPS8 = -mfpu=vfpv4 -march=armv8-a -mtune=cortex-a53 # NEON is not enabled in vectors.s
+COPS8 = -mfpu=fp-armv8 -march=armv8-a -mtune=cortex-a53 # NEON is not enabled in vectors.s
 COPS8 += -DRPI3
 COPS8 += $(COPS_COMMON)
 
