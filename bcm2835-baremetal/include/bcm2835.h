@@ -51,12 +51,12 @@
 #define MEM_COHERENT_REGION		0x400000	///< On Raspberry Pi 3 we need a coherent memory region (1 section) for the property mailbox.
 #endif
 
-#if defined (RPI2) || defined (RPI3)
-#define ARM_ALLOW_MULTI_CORE				///< slower on single core if defined
-#endif
-
 ///< Speed of the core clock core_clk
+#if defined (RPI3)
+#define BCM2835_CORE_CLK_HZ		300000000	///< 300 MHz
+#else
 #define BCM2835_CORE_CLK_HZ		250000000	///< 250 MHz
+#endif
 
 #define HIGH 0x1				///< HIGH state
 #define LOW  0x0				///< LOW state

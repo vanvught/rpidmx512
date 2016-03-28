@@ -108,9 +108,15 @@ void mmu_enable(void) {
 	arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
 
 	for (entry = 0; entry < arm_ram; entry++) {
+#ifndef ARM_ALLOW_MULTI_CORE	// S = 0
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+		page_table[entry] = entry << 20 | 0x0040E;			///< 0000 0000 0000 0000 0000 0100 0000 1110
+#else							// S = 1, needed for spin locks
 													///< 31   27   23   19   15   11   7    3
 													///<   28   24   20   16   12    8    4    0
 	    page_table[entry] = entry << 20 | 0x1040E;	///< 0000 0000 0000 0001 0000 0100 0000 1110
+#endif
 	}
 
 	// VC ram up to 0x3F000000

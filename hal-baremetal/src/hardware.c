@@ -38,6 +38,7 @@
 #include "console.h"
 #include "sys_time.h"
 #include "ff.h"
+#include "smp.h"
 
 static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
 static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
@@ -224,6 +225,15 @@ const int32_t hardware_get_core_temperature(void) {
  *
  */
 void hardware_init(void) {
+#if defined ( RPI2 ) || defined ( RPI3 )
+#ifndef ARM_ALLOW_MULTI_CORE
+	// put all secondary cores to sleep
+	uint8_t core_number = 1;
+	for (core_number = 1 ; core_number < 4; core_number ++) {
+		*(uint32_t *) (SMP_CORE_BASE + (core_number * 0x10)) = (uint32_t) _init_core;
+	}
+#endif
+#endif
 	console_init();
 
 	hardware_init_startup_micros = bcm2835_st_read();

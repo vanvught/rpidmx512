@@ -23,30 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if defined (RPI2) || defined (RPI3)
+
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "arm/synchronize.h"
 #include "smp.h"
-
-#define SMP_CORE_MASK 			3			///<
-#define SMP_CORE_BASE			0x4000008C	///<
-
-extern void _init_core(void);
+#if defined (ARM_ALLOW_MULTI_CORE)
+#include <stdbool.h>
+#include "arm/synchronize.h"
 
 static volatile bool core_is_started;		///<
 static start_fn_t start_fn;					///<
-
-/**
- *
- * @return
- */
-uint32_t smp_get_core_number(void) {
-	uint32_t core_number;
-	asm volatile ("mrc p15, 0, %0, c0, c0, 5" : "=r" (core_number));
-	return (core_number & SMP_CORE_MASK);
-}
 
 /**
  *
@@ -78,3 +64,13 @@ void smp_start_core(uint32_t core_number, start_fn_t start) {
 	}
 }
 #endif
+
+/**
+ *
+ * @return
+ */
+uint32_t smp_get_core_number(void) {
+	uint32_t core_number;
+	asm volatile ("mrc p15, 0, %0, c0, c0, 5" : "=r" (core_number));
+	return (core_number & SMP_CORE_MASK);
+}

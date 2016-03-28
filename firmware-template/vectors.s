@@ -160,6 +160,7 @@ FUNC __disable_fiq
 
 #if defined ( RPI2 ) || defined ( RPI3 )
 FUNC _init_core
+#ifdef ARM_ALLOW_MULTI_CORE
     @ Check for HYP mode
 	mrs	r0 , cpsr
 	eor	r0, r0, #0x1A
@@ -189,7 +190,7 @@ FUNC _init_core
     ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
 4:	mov sp, r0
 
-#if defined ( RPI2 )
+#if defined ( RPI2 )|| defined ( RPI3 )
 	bl mmu_enable
 #else
     @ start L1 chache
@@ -211,7 +212,10 @@ FUNC _init_core
 
 	ldr r3, =smp_core_main
     blx r3
-halt_core:
-	wfe
-	b halt_core
+#else
+	dsb
+1:	wfi
+	b	1b
+#endif
+
 #endif
