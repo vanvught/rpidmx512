@@ -1,6 +1,6 @@
 Raspberry Pi DMX512 / RDM
 =======
-Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
+Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, MIDI-RDM Bridge, RDM Responder 
 ---------
 \Eagle
 \bcm2835-baremetal
@@ -18,6 +18,6 @@ Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible w
 
 Detailed information can be found here : http://www.raspberrypi-dmx.com/
 
-Special thanks to @rst2 (Rene Stange), who helped me get the multi-core support working.
+Special thanks to @rsta2 (Rene Stange), who helped me get the multi-core support working.
 Please check out Circle by rst, a C++ bare metal environment (with USB) for Raspberry Pi 1, 2 & 3.
 https://github.com/rsta2/circle
