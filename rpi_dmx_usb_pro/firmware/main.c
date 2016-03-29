@@ -36,6 +36,8 @@
 #include "monitor.h"
 #include "led.h"
 
+extern void dmx_init(void);
+
 struct _poll {
 	void (*f)(void);
 }const poll_table[] = {

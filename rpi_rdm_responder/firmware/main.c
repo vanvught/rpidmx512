@@ -33,6 +33,8 @@
 #include "monitor.h"
 #include "led.h"
 
+extern void dmx_init(void);
+
 // poll table
 extern void rdm_data_received(void);
 // events table
