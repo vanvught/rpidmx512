@@ -34,15 +34,19 @@ extern const uint32_t console_get_height(void);
 extern const uint32_t console_get_size(void);
 extern const uint32_t console_get_depth(void);
 
+extern const int console_get_line_width(void);
+
 extern int console_init(void);
 extern int console_putc(const int);
-extern void console_puts(const char *);
-extern void console_putsn(const char *s, int n);
+extern int console_puts(const char *);
+extern void console_write(const char *s, int n);
 extern void console_puthex(const uint8_t);
 extern void console_puthex_fg_bg(const uint8_t, const uint16_t, const uint16_t);
 extern void console_newline(void);
 extern void console_clear();
 extern void console_set_cursor(const int, const int);
+extern void console_save_cursor(void);
+extern void console_restore_cursor(void);
 extern int console_draw_char(const int, const int, const int, const uint16_t, const uint16_t);
 extern void console_set_fg_color(const uint16_t);
 extern void console_set_bg_color(const uint16_t);

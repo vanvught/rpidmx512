@@ -42,8 +42,10 @@ extern unsigned char FONT[];
 #define BPP					(BYTES_PER_PIXEL << 3)		///< Requested depth (bits per pixel)
 #define PITCH				(WIDTH * BYTES_PER_PIXEL)	///<
 
-static int cur_x = 0;						///<
-static int cur_y = 0;						///<
+static int current_x = 0;					///<
+static int current_y = 0;					///<
+static int saved_x = 0;						///<
+static int saved_y = 0;						///<
 static uint16_t cur_fore = CONSOLE_WHITE;	///<
 static uint16_t cur_back = CONSOLE_BLACK;	///<
 static uint32_t fb_addr;					///< Address of buffer allocated by VC
@@ -100,6 +102,14 @@ const uint32_t console_get_depth(void) {
  *
  * @return
  */
+const int console_get_line_width(void) {
+	return WIDTH / CHAR_W;
+}
+
+/**
+ *
+ * @return
+ */
 uint16_t console_get_top_row(void) {
 	return top_row;
 }
@@ -115,8 +125,8 @@ void console_set_top_row(uint16_t row) {
 		top_row = row;
 	}
 
-	cur_x = (int) 0;
-	cur_y = (int) row;
+	current_x = (int) 0;
+	current_y = (int) row;
 }
 
 /**
@@ -128,10 +138,10 @@ inline static void newline() {
 	uint16_t *to;
 	uint16_t *from;
 
-	cur_y++;
-	cur_x = 0;
+	current_y++;
+	current_x = 0;
 
-	if (cur_y == HEIGHT / CHAR_H) {
+	if (current_y == HEIGHT / CHAR_H) {
 		if (top_row == 0) {
 			/* Pointer to row = 0 */
 			to = (uint16_t *) (fb_addr);
@@ -155,7 +165,7 @@ inline static void newline() {
 			*address++ =  cur_back;
 		}
 
-		cur_y--;
+		current_y--;
 	}
 }
 
@@ -184,7 +194,7 @@ inline static void draw_char(const int c, const int x, int y, const uint16_t for
 	unsigned char *p = FONT + (c * (int) CHAR_H);
 
 	for (i = 0; i < CHAR_H; i++) {
-		line = *p++;
+		line = (uint8_t) *p++;
 		for (j = x; j < (CHAR_W + x); j++) {
 			if ((line & 0x1) != 0) {
 				draw_pixel(j, y, fore);
@@ -233,13 +243,13 @@ int console_putc(const int ch) {
 	if (ch == (int)'\n') {
 		newline();
 	} else if (ch == (int)'\r') {
-		cur_x = 0;
+		current_x = 0;
 	} else if (ch == (int)'\t') {
-		cur_x += 4;
+		current_x += 4;
 	} else {
-		draw_char(ch, cur_x * CHAR_W, cur_y * CHAR_H, cur_fore, cur_back);
-		cur_x++;
-		if (cur_x == WIDTH / CHAR_W) {
+		draw_char(ch, current_x * CHAR_W, current_y * CHAR_H, cur_fore, cur_back);
+		current_x++;
+		if (current_x == WIDTH / CHAR_W) {
 			newline();
 		}
 	}
@@ -256,12 +266,16 @@ int console_putc(const int ch) {
  * @param s
  * @return
  */
-void console_puts(const char *s) {
+int console_puts(const char *s) {
 	char c;
+	int i = 0;;
 
 	while ((c = *s++) != (char) 0) {
+		i++;
 		(void) console_putc((int) c);
 	}
+
+	return i;
 }
 
 /**
@@ -269,7 +283,7 @@ void console_puts(const char *s) {
  * @param s
  * @param n
  */
-void console_putsn(const char *s, int n) {
+void console_write(const char *s, int n) {
 	char c;
 
 	while (((c = *s++) != (char) 0) && (n-- != 0)) {
@@ -284,8 +298,8 @@ void console_putsn(const char *s, int n) {
  * @param data
  */
 void console_puthex(const uint8_t data) {
-	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
-	(void) console_putc(TO_HEX(data & 0x0F));
+	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
+	(void) console_putc((int) (TO_HEX(data & 0x0F)));
 }
 
 void console_puthex_fg_bg(const uint8_t data, const uint16_t fore, const uint16_t back) {
@@ -295,8 +309,8 @@ void console_puthex_fg_bg(const uint8_t data, const uint16_t fore, const uint16_
 	cur_fore = fore;
 	cur_back = back;
 
-	(void) console_putc(TO_HEX(((data & 0xF0) >> 4)));
-	(void) console_putc(TO_HEX(data & 0x0F));
+	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
+	(void) console_putc((int) (TO_HEX(data & 0x0F)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
@@ -320,8 +334,8 @@ void console_clear() {
 		*address++ = cur_back;
 	}
 
-	cur_x = 0;
-	cur_y = 0;
+	current_x = 0;
+	current_y = 0;
 }
 
 /**
@@ -336,20 +350,29 @@ void console_set_cursor(const int x, const int y) {
 #endif
 
 	if (x > WIDTH / CHAR_W)
-		cur_x = 0;
+		current_x = 0;
 	else
-		cur_x = x;
+		current_x = x;
 
 	if (y > HEIGHT / CHAR_H)
-		cur_y = 0;
+		current_y = 0;
 	else
-		cur_y = y;
+		current_y = y;
 
 #if defined (ARM_ALLOW_MULTI_CORE)
 	__sync_lock_release(&lock);
 #endif
 }
 
+void console_save_cursor(void) {
+	saved_y = current_y;
+	saved_x = current_x;
+}
+
+void console_restore_cursor(void) {
+	current_y = saved_y;
+	current_x = saved_x;
+}
 /**
  * Changes the foreground color of future characters printed on the console.
  *
@@ -379,10 +402,10 @@ void console_clear_line(const int line) {
 	if (line > HEIGHT / CHAR_H) {
 		return;
 	} else {
-		cur_y = line;
+		current_y = line;
 	}
 
-	cur_x = 0;
+	current_x = 0;
 
 	address = (uint16_t *)(fb_addr) + (line * CHAR_H * WIDTH);
 
@@ -416,7 +439,7 @@ int console_init() {
 	mailbuffer[12] = BCM2835_VC_TAG_SET_DEPTH;
 	mailbuffer[13] = 4;
 	mailbuffer[14] = 4;
-	mailbuffer[15] = BPP;
+	mailbuffer[15] = (uint32_t) BPP;
 
 	mailbuffer[16] = BCM2835_VC_TAG_ALLOCATE_BUFFER;
 	mailbuffer[17] = 8;
