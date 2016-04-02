@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "led.h"
 #include "midi.h"
+#include "monitor.h"
 #include "sniffer.h"
 #include "sniffer_params.h"
 
@@ -43,6 +44,42 @@ struct _poll {
 		{ midi_poll },
 		{ sniffer_midi },
 		{ led_blink } };
+
+struct _event {
+	const uint32_t period;
+	void (*f)(void);
+}const events[] = {
+		{ 1000000, monitor_update } };
+
+uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+
+/**
+ * @ingroup main
+ *
+ */
+static void events_init() {
+	int i;
+	const uint32_t mircos_now = hardware_micros();
+	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+		events_elapsed_time[i] += mircos_now;
+	}
+}
+
+/**
+ * @ingroup main
+ *
+ */
+inline static void events_check() {
+	int i;
+	const uint32_t micros_now = hardware_micros();
+	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+		if (micros_now - events_elapsed_time[i] > events[i].period) {
+			events[i].f();
+			events_elapsed_time[i] += events[i].period;
+			hardware_watchdog_feed();
+		}
+	}
+}
 
 void notmain(void) {
 	int i;
@@ -59,10 +96,14 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
+	events_init();
+
 	for (;;) {
 		hardware_watchdog_feed();
 		for (i = 0; i < (int)(sizeof(poll_table) / sizeof(poll_table[0])); i++) {
 			poll_table[i].f();
 		}
+
+		events_check();
 	}
 }
