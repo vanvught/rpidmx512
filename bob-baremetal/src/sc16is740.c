@@ -103,11 +103,11 @@ void sc16is740_set_baud(const device_info_t *device_info, const int baudrate) {
 
 /** Set the transmission format used by the serial port.
   *   @param bits      The number of bits in a word (5-8; default = 8)
-  *   @param parity    The parity used (Serial::None, Serial::Odd, Serial::Even, Serial::Forced1, Serial::Forced0; default = Serial::None)
+  *   @param parity    The parity used (\ref_serial_parity)
   *   @param stop_bits The number of stop bits (1 or 2; default = 1)
   *   @return none
   */
-void sc16is740_set_format(const device_info_t *device_info, int bits, int parity,  int stop_bits) {
+void sc16is740_set_format(const device_info_t *device_info, int bits, _serial_parity parity,  int stop_bits) {
 	char lcr = 0x00;
 
 	switch (bits) {

@@ -105,7 +105,7 @@
 // See Chapter 11 of datasheet
 #define SC16IS7X0_SPI_READ_MODE_FLAG	(0x80)
 
-typedef enum {
+typedef enum serial_parity {
 	SERIAL_PARITY_NONE,
 	SERIAL_PARITY_ODD,
 	SERIAL_PARITY_EVEN,

@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 
+#include "sc16is7x0.h"
 #include "device_info.h"
 
 extern uint8_t sc16is740_start(device_info_t *);
@@ -38,7 +39,7 @@ extern uint8_t sc16is740_reg_read(const device_info_t *, const uint8_t);
 extern void sc16is740_reg_write(const device_info_t *, const uint8_t, const uint8_t);
 extern bool sc16is740_is_connected(const device_info_t *);
 extern void sc16is740_set_baud(const device_info_t *, const int);
-extern void sc16is740_set_format(const device_info_t *, int, int,  int);
+extern void sc16is740_set_format(const device_info_t *, int, _serial_parity,  int);
 extern int sc16is740_read(const device_info_t *, void *, unsigned);
 extern int sc16is740_write(const device_info_t *, const void *, unsigned);
 
