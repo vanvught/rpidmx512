@@ -64,20 +64,20 @@ void bcm2835_uart_begin(void) {
  *
  * @param c
  */
-void bcm2835_uart_send(const uint32_t c) {
+void bcm2835_uart_send(const uint8_t c) {
 	while ((BCM2835_UART1->LSR & 0x20) == 0)
 		;
-	BCM2835_UART1 ->IO = c;
+	BCM2835_UART1->IO = (uint32_t) c;
 }
 
 /**
  * @ingroup UART
  */
-uint32_t bcm2835_uart_receive(void) {
+uint8_t bcm2835_uart_receive(void) {
 	while (1 == 1) {
 		if (BCM2835_UART1->LSR & 0x01)
 			break;
 	}
-	return (BCM2835_UART1->IO);
+	return (uint8_t) (BCM2835_UART1->IO);
 }
 

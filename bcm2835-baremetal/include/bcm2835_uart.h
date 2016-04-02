@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 extern void bcm2835_uart_begin(void);
-extern void bcm2835_uart_send(const uint32_t);
-extern uint32_t bcm2835_uart_receive(void);
+extern void bcm2835_uart_send(const uint8_t);
+extern uint8_t bcm2835_uart_receive(void);
 
 #endif /* BCM2835_UART_H_ */
