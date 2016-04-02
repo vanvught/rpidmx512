@@ -132,7 +132,7 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 
-	BCM2835_BSC1->C = BCM2835_BSC_S_DONE;
+	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 
     return reason;
 }
@@ -194,7 +194,7 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 		reason = BCM2835_I2C_REASON_ERROR_DATA;
 	}
 
-	BCM2835_BSC1->C = BCM2835_BSC_S_DONE;
+	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 
     return reason;
 }
