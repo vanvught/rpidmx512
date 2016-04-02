@@ -46,6 +46,7 @@
 #include "rdm_device_info.h"
 #endif
 
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER) || defined (DMX_SLAVE)
 static uint32_t updates_per_seconde_min = UINT32_MAX;
 static uint32_t updates_per_seconde_max = (uint32_t)0;
 static uint32_t slots_in_packet_min = UINT32_MAX;
@@ -54,6 +55,7 @@ static uint32_t slot_to_slot_min = UINT32_MAX;
 static uint32_t slot_to_slot_max = (uint32_t)0;
 static uint32_t break_to_break_min = UINT32_MAX;
 static uint32_t break_to_break_max = (uint32_t)0;
+#endif
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 static uint8_t rdm_device_info_label_length_previous = (uint8_t)0;
@@ -95,6 +97,7 @@ void monitor_time_uptime(const int line) {
 	ltime = sys_time(NULL);
 	local_time = localtime(&ltime);
 
+	console_save_cursor();
 	console_set_cursor(0, line);
 
 	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d\n",
@@ -102,6 +105,8 @@ void monitor_time_uptime(const int line) {
 			(int) (uptime_seconds / day), (int) ((uptime_seconds % day) / hour),
 			(int) ((uptime_seconds % hour) / minute),
 			(int) (uptime_seconds % minute));
+
+	console_restore_cursor();
 }
 
 #if defined(RDM_CONTROLLER)
@@ -170,6 +175,7 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 }
 #endif
 
+#if !defined(MIDI_SNIFFER)
 /**
  * @ingroup monitor
  *
@@ -219,7 +225,9 @@ void monitor_dmx_data(const uint8_t * dmx_data, const int line) {
 		}
 	}
 }
+#endif
 
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER) || defined (DMX_SLAVE)
 /**
  * @ingroup monitor
  *
@@ -270,15 +278,16 @@ void monitor_sniffer(void) {
 		console_puts("Break to break  --     \n");
 	}
 }
+#endif
 
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 void monitor_print_root_device_label(void) {
 	struct _rdm_device_info_data rdm_device_info_label;
 	rdm_device_info_get_label(RDM_ROOT_DEVICE, &rdm_device_info_label);
 	console_set_cursor(37, 2);
-	console_putsn((const char *)rdm_device_info_label.data, (int) rdm_device_info_label.length);
+	console_write((const char *)rdm_device_info_label.data, (int) rdm_device_info_label.length);
 	if (rdm_device_info_label_length_previous != rdm_device_info_label.length) {
-		console_putsn((const char *)"                                ", RDM_DEVICE_LABEL_MAX_LENGTH - rdm_device_info_label.length);
+		console_write((const char *)"                                ", RDM_DEVICE_LABEL_MAX_LENGTH - rdm_device_info_label.length);
 		rdm_device_info_label_length_previous = rdm_device_info_label.length;
 	}
 }

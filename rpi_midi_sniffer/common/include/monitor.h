@@ -26,6 +26,45 @@
 #ifndef MONITOR_H_
 #define MONITOR_H_
 
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#define MONITOR_LINE_TIME			3	///<
+#define MONITOR_LINE_WIDGET_PARMS	4	///<
+#define MONITOR_LINE_LABEL			6	///<
+#define MONITOR_LINE_INFO			7	///<
+#define MONITOR_LINE_PORT_DIRECTION	9	///<
+#define MONITOR_LINE_DMX_DATA		11	///<
+#define MONITOR_LINE_PACKETS		14	///<
+#define MONITOR_LINE_RDM_DATA		17	///<
+#define MONITOR_LINE_RDM_CC			27	///<
+#define MONITOR_LINE_STATUS			28	///<
+#define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
+
+extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
+extern void monitor_time_uptime(const int);
+
+#if defined(RDM_CONTROLLER)
+extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *, bool);
+#endif
+
+#if !defined(MIDI_SNIFFER)
+extern void monitor_dmx_data(const uint8_t *, const int);
+#endif
+
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER) || defined (DMX_SLAVE)
+extern void monitor_sniffer(void);
+#endif
+
+#if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
+extern void monitor_print_root_device_label(void);
+#endif
+
+/**
+ * @ingroup monitor
+ *
+ */
 extern void monitor_update(void);
 
 #endif /* MONITOR_H_ */

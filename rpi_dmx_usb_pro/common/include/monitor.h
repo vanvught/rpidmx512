@@ -44,9 +44,19 @@
 
 extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
 extern void monitor_time_uptime(const int);
+
+#if defined(RDM_CONTROLLER)
 extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *, bool);
+#endif
+
+#if !defined(MIDI_SNIFFER)
 extern void monitor_dmx_data(const uint8_t *, const int);
+#endif
+
+#if defined(RDM_CONTROLLER) || defined(LOGIC_ANALYZER) || defined (DMX_SLAVE)
 extern void monitor_sniffer(void);
+#endif
+
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 extern void monitor_print_root_device_label(void);
 #endif
