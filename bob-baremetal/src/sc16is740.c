@@ -244,3 +244,38 @@ bool sc16is740_is_connected(const device_info_t *device_info) {
 
   return (sc16is740_reg_read(device_info, SC16IS7X0_SPR) == TEST_CHARACTER);
 }
+
+/**
+ *
+ * @param buffer
+ * @param count
+ * @return
+ */
+int sc16is740_read(const device_info_t *device_info, void *buffer, unsigned count) {
+	uint8_t *p = (uint8_t *) buffer;
+
+	int result = 0;
+
+	while (count--) {
+		int ch = sc16is740_getc(device_info);
+		if (ch < 0) {
+			return result;
+		}
+
+		*p++ = (uint8_t) ch;
+
+		result++;
+	}
+
+	return result;
+}
+
+/**
+ *
+ * @param buffer
+ * @param count
+ * @return
+ */
+int sc16is740_write(const device_info_t *device_info, const void *buffer, unsigned count) {
+	return -1;	// TODO: not supported yet
+}

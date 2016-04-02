@@ -39,5 +39,7 @@ extern void sc16is740_reg_write(const device_info_t *, const uint8_t, const uint
 extern bool sc16is740_is_connected(const device_info_t *);
 extern void sc16is740_set_baud(const device_info_t *, const int);
 extern void sc16is740_set_format(const device_info_t *, int, int,  int);
+extern int sc16is740_read(const device_info_t *, void *, unsigned);
+extern int sc16is740_write(const device_info_t *, const void *, unsigned);
 
 #endif /* SC16IS740_H_ */
