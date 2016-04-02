@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 extern void bcm2835_pl011_begin(void);
-void bcm2835_pl011_send(const uint32_t c);
+extern void bcm2835_pl011_set_baudrate(const uint32_t);
+extern void bcm2835_pl011_send(const uint8_t c);
 
 #endif /* BCM2835_PL011_H_ */

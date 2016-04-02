@@ -29,6 +29,8 @@
 #include "bcm2835_gpio.h"
 #include "arm/pl011.h"
 
+static uint32_t pl011_baud_rate = 115200;
+
 /**
  * @ingroup PL011
  *
@@ -58,8 +60,8 @@ void bcm2835_pl011_begin(void) {
 	 */
     // UART_CLK = 3000000
     // BAUD_RATE = 115200
-	BCM2835_PL011 ->IBRD = PL011_BAUD_INT(115200);
-	BCM2835_PL011 ->FBRD = PL011_BAUD_FRAC(115200);
+	BCM2835_PL011 ->IBRD = PL011_BAUD_INT(pl011_baud_rate);
+	BCM2835_PL011 ->FBRD = PL011_BAUD_FRAC(pl011_baud_rate);
 	BCM2835_PL011 ->LCRH = PL011_LCRH_WLEN8; 		/* Set N, 8, 1, FIFO disabled */
 	BCM2835_PL011 ->CR = 0x301; 					/* Enable UART */
 }
@@ -69,11 +71,22 @@ void bcm2835_pl011_begin(void) {
  *
  * @param c
  */
-void bcm2835_pl011_send(const uint32_t c) {
+void bcm2835_pl011_send(const uint8_t c) {
 	while (1 == 1) {
 		if ((BCM2835_PL011->FR & 0x20) == 0) {
 			break;
 		}
 	}
-	BCM2835_PL011->DR = c;
+	BCM2835_PL011->DR = (uint32_t)c;
+}
+
+/**
+ * @ingroup PL011
+ *
+ * @param baudrate
+ */
+void bcm2835_pl011_set_baudrate(const uint32_t baudrate) {
+	if (baudrate > 0) {
+		pl011_baud_rate = baudrate;
+	}
 }
