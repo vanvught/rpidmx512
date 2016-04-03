@@ -60,6 +60,6 @@ struct rtc_time {
 extern uint8_t mcp7941x_start(uint8_t);
 extern void mcp7941x_end(void);
 extern void mcp7941x_get_date_time(struct rtc_time *tm);
-extern void mcp7941x_set_date_time(const struct rtc_time *tm);
+extern void mcp7941x_set_date_time(/*@out@*/const struct rtc_time *tm);
 
 #endif /* MCP7941X_H_ */

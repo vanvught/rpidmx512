@@ -54,7 +54,7 @@ struct _hardware_led {
 struct _hardware_revision_code {
 	const uint32_t value;
 	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
-}const board_version[] __attribute__((aligned(4))) = {
+} static const board_version[] __attribute__((aligned(4))) = {
 		{ 0x000000, "Model Unknown       " },
 		{ 0x000002, "Model B R1 256MB    " },
 		{ 0x000003, "Model B R1 256MB    " },
@@ -213,7 +213,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
  *
  */
 void hardware_print_board_model(){
-	console_puts(hardware_get_board_model());
+	(void) console_puts(hardware_get_board_model());
 }
 
 const int32_t hardware_get_core_temperature(void) {
@@ -234,7 +234,7 @@ void hardware_init(void) {
 	}
 #endif
 #endif
-	console_init();
+	(void) console_init();
 
 	hardware_init_startup_micros = bcm2835_st_read();
 

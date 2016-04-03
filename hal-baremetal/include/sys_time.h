@@ -33,7 +33,7 @@ extern volatile uint64_t st_startup_micros;
 extern volatile uint32_t rtc_startup_seconds;
 
 extern void sys_time_init(void);
-extern void sys_time_set(const struct tm *);
+extern void sys_time_set(/*@out@*/const struct tm *);
 extern time_t sys_time (/*@null@*/ time_t *__timer);
 
 #endif /* SYS_TIME_C_ */
