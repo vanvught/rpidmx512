@@ -25,9 +25,13 @@
 #ifndef MIDI_DESCRIPTION_H_
 #define MIDI_DESCRIPTION_H_
 
-/*@observer@*/const char *midi_description_get_type(uint8_t);
-/*@observer@*/const char *midi_description_get_control_change(uint8_t);
-/*@observer@*/const char *midi_description_get_control_function(uint8_t);
-/*@observer@*/const char *midi_description_get_key_name(uint8_t);
+#include <stdint.h>
+
+/*@observer@*/extern const char *midi_description_get_type(uint8_t);
+/*@observer@*/extern const char *midi_description_get_control_change(uint8_t);
+/*@observer@*/extern const char *midi_description_get_control_function(uint8_t);
+/*@observer@*/extern const char *midi_description_get_key_name(uint8_t);
+/*@observer@*/extern const char *midi_description_get_drum_kit_name(uint8_t);
+/*@observer@*/extern const char *midi_description_get_instrument_name(uint8_t);
 
 #endif /* MIDI_DESCRIPTION_H_ */
