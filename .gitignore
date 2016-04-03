@@ -3,8 +3,6 @@
 
 # Libraries
 lib*.a
-lib*
-
 # Executables
 *.out
 *.a
