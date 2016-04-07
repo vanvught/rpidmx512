@@ -39,38 +39,6 @@
 #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
 
-#if 0
-/**
- * @ingroup util
- *
- * @param c
- * @return
- */
-inline static bool _isdigit(char c) {
-	return (c >= (char)'0') && (c <= (char)'9');
-}
-
-/**
- * @ingroup util
- *
- * @param c
- * @return
- */
-inline static bool _isxdigit(char c) {
-	return (_isdigit(c) || (c >= (char)'A' && c <= (char)'F') || (c >= (char)'a' && c <= (char)'f'));
-}
-
-/**
- * @ingroup util
- *
- * @param c
- * @return
- */
-inline static bool _isprint(char c) {
-	return ((c >= (char) 32 && c <= (char) 127) ? true : false);
-}
-#endif
-
 /**
  * @ingroup util
  *

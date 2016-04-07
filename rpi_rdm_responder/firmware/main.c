@@ -94,8 +94,7 @@ void notmain(void) {
 	dmx_devices_init();
 	rdm_device_info_init();
 
-	hardware_print_board_model();
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("RDM Responder / DMX Slave, Devices connected : %d\n", dmx_devices_get_devices_connected());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0],

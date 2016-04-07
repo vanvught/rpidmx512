@@ -98,8 +98,7 @@ int notmain(uint32_t boot_dev, uint32_t arm_m_type, uint32_t atags) {
 	dmx_init();
 	dmx_devices_init();
 
-	hardware_print_board_model();
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("DMX Slave-Analyzer, Devices connected : %d\n", dmx_devices_get_devices_connected());
 
 	ui_start(0x00);			// User Interface

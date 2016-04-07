@@ -88,8 +88,7 @@ void notmain(void) {
 	sniffer_params_init();
 	midi_init();
 
-	hardware_print_board_model();
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("MIDI Sniffer, baudrate : %d, interface : %s", (int)midi_get_baudrate(), midi_get_description());
 
 	sniffer_init();

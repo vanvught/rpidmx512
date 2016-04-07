@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <led.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -34,7 +35,6 @@
 #include "rdm_device_info.h"
 #include "widget.h"
 #include "monitor.h"
-#include "led.h"
 
 extern void dmx_init(void);
 
@@ -100,8 +100,7 @@ int notmain(void) {
 	widget_params_init();
 	rdm_device_info_init();
 
-	hardware_print_board_model();
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d\n",	widget_get_mode());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0],
