@@ -23,31 +23,7 @@
  */
 
 #include "monitor.h"
-#include "midi.h"
-#include "console.h"
 
 void monitor_update(void) {
-	// Handle Active Sensing messages
-	switch (midi_get_active_sense_state()) {
-	case MIDI_ACTIVE_SENSE_ENABLED:
-		console_save_cursor();
-		console_set_cursor(70, 3);
-		console_set_fg_color(CONSOLE_BLACK);
-		console_set_bg_color(CONSOLE_WHITE);
-		console_puts("ACTIVE SENSING          ");
-		console_restore_cursor();
-		break;
-	case MIDI_ACTIVE_SENSE_FAILED:
-		console_save_cursor();
-		console_set_cursor(70, 3);
-		console_set_fg_color(CONSOLE_RED);
-		console_set_bg_color(CONSOLE_WHITE);
-		console_puts("ACTIVE SENSING - Failed!");
-		console_restore_cursor();
-		break;
-	default:
-		break;
-	}
-
 	monitor_time_uptime(2);
 }
