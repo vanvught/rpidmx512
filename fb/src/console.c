@@ -48,6 +48,8 @@ static int saved_x = 0;						///<
 static int saved_y = 0;						///<
 static uint16_t cur_fore = CONSOLE_WHITE;	///<
 static uint16_t cur_back = CONSOLE_BLACK;	///<
+static uint16_t saved_fore = CONSOLE_WHITE;	///<
+static uint16_t saved_back = CONSOLE_BLACK;	///<
 static uint32_t fb_addr;					///< Address of buffer allocated by VC
 static uint32_t fb_size;					///< Size of buffer allocated by VC
 static uint32_t fb_depth;					///< Depth (bits per pixel)
@@ -367,11 +369,15 @@ void console_set_cursor(const int x, const int y) {
 void console_save_cursor(void) {
 	saved_y = current_y;
 	saved_x = current_x;
+	saved_back = cur_back;
+	saved_fore = cur_fore;
 }
 
 void console_restore_cursor(void) {
 	current_y = saved_y;
 	current_x = saved_x;
+	cur_back = saved_back;
+	cur_fore = saved_fore;
 }
 /**
  * Changes the foreground color of future characters printed on the console.
