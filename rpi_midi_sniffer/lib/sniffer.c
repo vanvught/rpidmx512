@@ -38,6 +38,11 @@ void sniffer_midi(void) {
 	int i;
 
 	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
+		// Handle Active Sensing messages
+		if (midi_message->type == MIDI_TYPES_ACTIVE_SENSING) {
+			// This is handled in monitor_update();
+			return;
+		}
 		// Time stamp
 		(void) console_puts("........  ");
 		console_puthex(midi_message->type);
