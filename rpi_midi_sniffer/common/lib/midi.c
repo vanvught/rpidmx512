@@ -74,6 +74,11 @@ static uint8_t pending_message[8] ALIGNED;										///<
 
 static uint32_t midi_baudrate = 115200;											///<
 
+static uint16_t midi_active_sense_timeout = 0;									///<
+//bool static midi_active_sense_flag = false;										///<
+//bool static midi_active_sense_failed = false;									///<
+_midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_ENABLED;
+
 #if defined (MIDI_INTERFACE_UART)
 void pl011_init(void);
 void pl011_set(const uint32_t);
@@ -153,9 +158,18 @@ void midi_init(void) {
 	midi_rx_buffer_index_head = (uint16_t) 0;
 	midi_rx_buffer_index_tail = (uint16_t) 0;
 
+#if	defined (MIDI_SNIFFER)
+	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000;
+	BCM2835_ST->CS = BCM2835_ST_CS_M3;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER3_IRQn;
+
+	__enable_irq();
+#endif
+
 	reset_input();
 
 	midi_interface_f.init();
+
 }
 
 /**
@@ -231,6 +245,14 @@ uint8_t midi_get_input_channel(void) {
  */
 void midi_set_input_channel(uint8_t channel) {
 	input_channel = channel;
+}
+
+/**
+ *
+ * @return
+ */
+_midi_active_sense_state midi_get_active_sense_state(void) {
+	return midi_active_sense_state;
 }
 
 /**
@@ -327,10 +349,7 @@ static bool parse(void) {
         return false;
 	}
 
-#if 0
-    console_putc('|'); console_puthex(serial_data); console_putc('|');
-    return false;
-#endif
+    midi_active_sense_timeout = 0;
 
 	if (pending_message_index == (uint8_t) 0) {
 		// Start a new pending message
@@ -353,11 +372,13 @@ static bool parse(void) {
 
 		switch (get_type_from_status_byte(pending_message[0])) {
 		// 1 byte messages
+		case MIDI_TYPES_ACTIVE_SENSING:
+			midi_active_sense_state = MIDI_ACTIVE_SENSE_ENABLED;
+			/* no break */
 		case MIDI_TYPES_START:
 		case MIDI_TYPES_CONTINUE:
 		case MIDI_TYPES_STOP:
 		case MIDI_TYPES_CLOCK:
-		case MIDI_TYPES_ACTIVE_SENSING:
 		case MIDI_TYPES_SYSTEM_RESET:
 		case MIDI_TYPES_TUNE_REQUEST:
 			// Handle the message type directly here.
@@ -443,11 +464,13 @@ static bool parse(void) {
 			// Reception of status bytes in the middle of an uncompleted message
 			// are allowed only for interleaved Real Time message or EOX
 			switch (serial_data) {
+			case MIDI_TYPES_ACTIVE_SENSING:
+				midi_active_sense_state = MIDI_ACTIVE_SENSE_ENABLED;
+				/* no break */
 			case MIDI_TYPES_CLOCK:
 			case MIDI_TYPES_START:
 			case MIDI_TYPES_CONTINUE:
 			case MIDI_TYPES_STOP:
-			case MIDI_TYPES_ACTIVE_SENSING:
 			case MIDI_TYPES_SYSTEM_RESET:
 				// Here we will have to extract the one-byte message,
 				// pass it to the structure for being read outside
@@ -597,7 +620,23 @@ bool midi_read_channel(uint8_t channel) {
 }
 
 #if defined (MIDI_SNIFFER)
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
+	dmb();
+
+	if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
+		BCM2835_ST->CS = BCM2835_ST_CS_M3;
+		BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t)1000;
+		if (midi_active_sense_state == MIDI_ACTIVE_SENSE_ENABLED) {
+			midi_active_sense_timeout++;
+			if (midi_active_sense_timeout > 300) { // > 300 ms
+				// Turn All Notes Off
+				midi_active_sense_state = MIDI_ACTIVE_SENSE_FAILED;
+			}
+		}
+	}
+
+	dmb();
+}
 #endif
 
 /**                             MIDI_INTERFACE_UART

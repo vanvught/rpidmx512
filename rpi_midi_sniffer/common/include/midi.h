@@ -49,6 +49,12 @@
 */
 #define USE_1_BYTE_PARSING							true
 
+#define MIDI_CHANNEL_OMNI		0		///<
+#define MIDI_CHANNEL_OFF		17		///<
+
+#define MIDI_PITCHBEND_MIN		-8192	///<
+#define MIDI_PITCHBEND_MAX 		8191	///<
+
 struct _midi_message {
 	uint8_t type;													///<
 	uint8_t channel;												///<
@@ -58,23 +64,11 @@ struct _midi_message {
 	uint8_t bytes_count;											///<
 };
 
-extern void midi_init(void);
-extern void midi_set_baudrate(const uint32_t);
-extern const uint32_t midi_get_baudrate(void);
-extern const char *midi_get_description(void);
-extern void midi_set_interface(const uint8_t);
-
-extern struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;
-extern bool midi_read(void);
-extern bool midi_read_channel(uint8_t);
-extern uint8_t midi_get_input_channel(void);
-extern void midi_set_input_channel(uint8_t);
-
-#define MIDI_CHANNEL_OMNI		0		///<
-#define MIDI_CHANNEL_OFF		17		///<
-
-#define MIDI_PITCHBEND_MIN		-8192	///<
-#define MIDI_PITCHBEND_MAX 		8191	///<
+typedef enum midi_active_sense_state {
+	MIDI_ACTIVE_SENSE_NOT_ENABLED	=	0,
+	MIDI_ACTIVE_SENSE_ENABLED,
+	MIDI_ACTIVE_SENSE_FAILED
+}_midi_active_sense_state;
 
 typedef enum midi_types {
 	MIDI_TYPES_INVALIDE_TYPE 			= 0x00,	///< For notifying errors
@@ -137,5 +131,19 @@ typedef enum midi_channel_control_function {
 	MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH		= 0x44,	///< ≤63 off, ≥64 on
 	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45,	///< ≤63 off, ≥64 on
 } _midi_channel_control_function;
+
+extern void midi_init(void);
+extern void midi_set_baudrate(const uint32_t);
+extern const uint32_t midi_get_baudrate(void);
+extern const char *midi_get_description(void);
+extern void midi_set_interface(const uint8_t);
+
+extern struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;
+extern bool midi_read(void);
+extern bool midi_read_channel(uint8_t);
+extern uint8_t midi_get_input_channel(void);
+extern void midi_set_input_channel(uint8_t);
+
+extern _midi_active_sense_state midi_get_active_sense_state(void);
 
 #endif /* MIDI_H_ */
