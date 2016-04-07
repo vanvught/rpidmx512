@@ -55,25 +55,25 @@ struct _hardware_revision_code {
 	const uint32_t value;
 	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
 } static const board_version[] __attribute__((aligned(4))) = {
-		{ 0x000000, "Model Unknown       " },
-		{ 0x000002, "Model B R1 256MB    " },
-		{ 0x000003, "Model B R1 256MB    " },
-		{ 0x000004, "Model B R2 256MB    " },
-		{ 0x000005, "Model B R2 256MB    " },
-		{ 0x000006, "Model B R2 256MB    " },
-		{ 0x000007, "Model A 256MB       " },
-		{ 0x000008, "Model A 256MB       " },
-		{ 0x000009, "Model A 256MB       " },
-		{ 0x00000d, "Model B R2 512MB    " },
-		{ 0x00000e, "Model B R2 512MB    " },
-		{ 0x00000f, "Model B R2 512MB    " },
-		{ 0x000010, "Model B+ 512MB      " },
+		{ 0x000000, "Model Unknown" },
+		{ 0x000002, "Model B R1 256MB" },
+		{ 0x000003, "Model B R1 256MB" },
+		{ 0x000004, "Model B R2 256MB" },
+		{ 0x000005, "Model B R2 256MB" },
+		{ 0x000006, "Model B R2 256MB" },
+		{ 0x000007, "Model A 256MB" },
+		{ 0x000008, "Model A 256MB" },
+		{ 0x000009, "Model A 256MB" },
+		{ 0x00000d, "Model B R2 512MB" },
+		{ 0x00000e, "Model B R2 512MB" },
+		{ 0x00000f, "Model B R2 512MB" },
+		{ 0x000010, "Model B+ 512MB" },
 		{ 0x000011, "Compute Module 512MB" },
-		{ 0x000012, "Model A+ 256MB      " },
-		{ 0xa01041, "Pi 2 Model B 1GB    " },
-		{ 0xa02082, "Pi 3 Model B 1GB    " },
-		{ 0xa21041, "Pi 2 Model B 1GB    " },
-		{ 0x900092, "PiZero 512MB        " }
+		{ 0x000012, "Model A+ 256MB" },
+		{ 0xa01041, "Pi 2 Model B 1GB" },
+		{ 0xa02082, "Pi 3 Model B 1GB" },
+		{ 0xa21041, "Pi 2 Model B 1GB" },
+		{ 0x900092, "PiZero 512MB" }
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
@@ -208,13 +208,6 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	sys_time_set(&tmbuf);
 }
 
-/**
- * @ingroup hal
- *
- */
-void hardware_print_board_model(){
-	(void) console_puts(hardware_get_board_model());
-}
 
 const int32_t hardware_get_core_temperature(void) {
 	return bcm2835_vc_get_temperature() / 1000;
