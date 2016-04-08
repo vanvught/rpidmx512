@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "bcm2835.h"
 #include "sniffer_params.h"
 #include "midi.h"
 #include "midi_description.h"
@@ -33,6 +34,7 @@
 #include "console.h"
 
 static const struct _midi_message *midi_message;
+static uint32_t init_timestamp;
 
 void sniffer_midi(void) {
 	int i;
@@ -44,7 +46,15 @@ void sniffer_midi(void) {
 			return;
 		}
 		// Time stamp
-		(void) console_puts("........  ");
+		const int minute = 60;
+		const uint32_t hour = minute * 60;
+		const uint32_t delta_us = midi_message->timestamp - init_timestamp;
+		const float sec = (float)delta_us / (float)1000000;
+		const int ipart = (int) sec;
+		float fpart = sec - (float) ipart;
+		fpart = fpart * 100;
+		printf("%02d:%02d.%02d  ",(int) ((int)sec % hour) / minute, (int) sec % minute, (int)fpart);
+
 		console_puthex(midi_message->type);
 		(void) console_putc((int) ' ');
 
@@ -188,4 +198,6 @@ void sniffer_init(void) {
 	console_set_top_row(4);
 
 	midi_message = (const struct _midi_message *) midi_message_get();
+
+	init_timestamp = BCM2835_ST->CLO;
 }

@@ -56,6 +56,7 @@
 #define MIDI_PITCHBEND_MAX 		8191	///<
 
 struct _midi_message {
+	uint32_t timestamp;												///<
 	uint8_t type;													///<
 	uint8_t channel;												///<
 	uint8_t data1;													///<
@@ -65,10 +66,10 @@ struct _midi_message {
 };
 
 typedef enum midi_active_sense_state {
-	MIDI_ACTIVE_SENSE_NOT_ENABLED	=	0,
-	MIDI_ACTIVE_SENSE_ENABLED,
-	MIDI_ACTIVE_SENSE_FAILED
-}_midi_active_sense_state;
+	MIDI_ACTIVE_SENSE_NOT_ENABLED = 0,	///<
+	MIDI_ACTIVE_SENSE_ENABLED,			///<
+	MIDI_ACTIVE_SENSE_FAILED			///<
+} _midi_active_sense_state;
 
 typedef enum midi_types {
 	MIDI_TYPES_INVALIDE_TYPE 			= 0x00,	///< For notifying errors
@@ -135,7 +136,7 @@ typedef enum midi_channel_control_function {
 extern void midi_init(void);
 extern void midi_set_baudrate(const uint32_t);
 extern const uint32_t midi_get_baudrate(void);
-extern const char *midi_get_description(void);
+extern const char *midi_get_interface_description(void);
 extern void midi_set_interface(const uint8_t);
 
 extern struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;

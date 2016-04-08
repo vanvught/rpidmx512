@@ -4,15 +4,8 @@
  * @brief This file implements the MIDI receive state-machine.
  *
  */
-/* This code is inspired by:
- *
- *  @file       MIDI.cpp
+/* Parts of this code is inspired by:
  *  Project     Arduino MIDI Library
- *  @brief      MIDI Library for the Arduino
- *  @version    4.2
- *  @author     Francois Best
- *  @license    MIT - Copyright (c) 2015 Francois Best
- *
  *  https://github.com/FortySevenEffects/arduino_midi_library/blob/master/src/MIDI.cpp
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -60,24 +53,27 @@
 #error The UART is not available for this configuration
 #endif
 
-static struct _midi_message midi_message ALIGNED;								///<
+struct _midi_receive {
+	uint32_t timestamp;
+	uint8_t data;
+};
 
-static volatile uint8_t midi_rx_buffer[MIDI_RX_BUFFER_INDEX_ENTRIES] ALIGNED;	///<
-static volatile uint16_t midi_rx_buffer_index_head = (uint16_t) 0;				///<
-static volatile uint16_t midi_rx_buffer_index_tail = (uint16_t) 0;				///<
+static struct _midi_message midi_message ALIGNED;									///<
 
-static uint8_t input_channel = MIDI_CHANNEL_OMNI;								///<
-static uint8_t pending_message_index = (uint8_t) 0;								///<
-static uint8_t pending_message_expected_lenght = (uint8_t) 0;					///<
-static uint8_t running_status_rx = MIDI_TYPES_INVALIDE_TYPE;					///<
-static uint8_t pending_message[8] ALIGNED;										///<
+static volatile struct _midi_receive midi_rx_buffer[MIDI_RX_BUFFER_INDEX_ENTRIES] ALIGNED;	///<
+static volatile uint16_t midi_rx_buffer_index_head = (uint16_t) 0;					///<
+static volatile uint16_t midi_rx_buffer_index_tail = (uint16_t) 0;					///<
 
-static uint32_t midi_baudrate = 115200;											///<
+static uint8_t input_channel = MIDI_CHANNEL_OMNI;									///<
+static uint8_t pending_message_index = (uint8_t) 0;									///<
+static uint8_t pending_message_expected_lenght = (uint8_t) 0;						///<
+static uint8_t running_status_rx = MIDI_TYPES_INVALIDE_TYPE;						///<
+static uint8_t pending_message[8] ALIGNED;											///<
 
-static uint16_t midi_active_sense_timeout = 0;									///<
-//bool static midi_active_sense_flag = false;										///<
-//bool static midi_active_sense_failed = false;									///<
-_midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_ENABLED;
+static uint32_t midi_baudrate = MIDI_BAUDRATE_DEFAULT;								///<
+
+static uint16_t midi_active_sense_timeout = 0;										///<
+_midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_ENABLED;	///<
 
 #if defined (MIDI_INTERFACE_UART)
 void pl011_init(void);
@@ -111,6 +107,11 @@ static struct _midi_interface midi_interfaces_f[] = {
 
 };
 
+/**
+ * @ingroup midi
+ *
+ * @param interface
+ */
 void midi_set_interface(const uint8_t interface) {
 
 	if (interface < sizeof(midi_interfaces_f) / sizeof(midi_interfaces_f[0])) {
@@ -136,7 +137,7 @@ void midi_set_interface(const uint8_t interface) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  */
 static void reset_input(void) {
@@ -146,13 +147,15 @@ static void reset_input(void) {
 }
 
 /**
+ * * @ingroup midi
  *
  */
 void midi_init(void) {
 	uint32_t i = 0;
 
 	for (i = 0 ; i < MIDI_RX_BUFFER_INDEX_ENTRIES ; i++) {
-		midi_rx_buffer[i] = (uint8_t) 0;
+		midi_rx_buffer[i].data = (uint8_t) 0;
+		midi_rx_buffer[i].timestamp = (uint32_t) 0;
 	}
 
 	midi_rx_buffer_index_head = (uint16_t) 0;
@@ -189,7 +192,7 @@ const uint32_t midi_get_baudrate(void) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  */
 void midi_poll(void) {
@@ -197,10 +200,11 @@ void midi_poll(void) {
 }
 
 /**
+ * * @ingroup midi
  *
  * @return
  */
-const char *midi_get_description(void) {
+const char *midi_get_interface_description(void) {
 	return midi_interface_f.get();
 }
 
@@ -214,15 +218,16 @@ struct _midi_message *midi_message_get(void) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  * @param byte
  * @return
  */
-static bool raw_read(uint8_t *byte) {
+static bool raw_read(uint8_t *byte, uint32_t *timestamp) {
 	dmb();
 	if (midi_rx_buffer_index_head != midi_rx_buffer_index_tail) {
-		*byte = midi_rx_buffer[midi_rx_buffer_index_tail];
+		*byte = midi_rx_buffer[midi_rx_buffer_index_tail].data;
+		*timestamp = midi_rx_buffer[midi_rx_buffer_index_tail].timestamp;
 		midi_rx_buffer_index_tail = (midi_rx_buffer_index_tail + 1) & MIDI_RX_BUFFER_INDEX_MASK;
 		return true;
 	} else {
@@ -231,7 +236,7 @@ static bool raw_read(uint8_t *byte) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  * @return
  */
@@ -240,6 +245,7 @@ uint8_t midi_get_input_channel(void) {
 }
 
 /**
+ * @ingroup midi_in
  *
  * @param channel
  */
@@ -248,6 +254,7 @@ void midi_set_input_channel(uint8_t channel) {
 }
 
 /**
+ * * @ingroup midi_in
  *
  * @return
  */
@@ -256,7 +263,7 @@ _midi_active_sense_state midi_get_active_sense_state(void) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  * @param status_byte
  * @return
@@ -276,7 +283,7 @@ static uint8_t get_type_from_status_byte(uint8_t status_byte) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  * @param status_byte
  * @return
@@ -302,7 +309,7 @@ static bool is_channel_message(uint8_t type) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  * @param inChannel
  * @return
@@ -339,13 +346,16 @@ static void handle_null_velocity_note_on_as_note_off(void) {
 }
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  */
 static bool parse(void) {
 	uint8_t serial_data;
-    if (!raw_read(&serial_data)) {
-        // No data available.
+	uint32_t timestamp;
+	uint32_t pending_timestamp;
+
+
+    if (!raw_read(&serial_data, &timestamp)) {
         return false;
 	}
 
@@ -353,6 +363,7 @@ static bool parse(void) {
 
 	if (pending_message_index == (uint8_t) 0) {
 		// Start a new pending message
+		pending_timestamp = timestamp;
 		pending_message[0] = serial_data;
 
 		// Check for running status first
@@ -382,6 +393,7 @@ static bool parse(void) {
 		case MIDI_TYPES_SYSTEM_RESET:
 		case MIDI_TYPES_TUNE_REQUEST:
 			// Handle the message type directly here.
+			midi_message.timestamp = pending_timestamp;
 			midi_message.type = get_type_from_status_byte(pending_message[0]);
 			midi_message.channel = (uint8_t) 0;
 			midi_message.data1 = (uint8_t) 0;
@@ -429,6 +441,7 @@ static bool parse(void) {
 
 		if (pending_message_index >= (pending_message_expected_lenght - (uint8_t) 1)) {
 			// Reception complete
+			midi_message.timestamp = pending_timestamp;
 			midi_message.type = get_type_from_status_byte(pending_message[0]);
 			midi_message.channel = get_channel_from_status_byte(pending_message[0]);
 			midi_message.data1 = pending_message[1];
@@ -478,6 +491,7 @@ static bool parse(void) {
 				// interleaved into. Oh, and without killing the running status..
 				// This is done by leaving the pending message as is,
 				// it will be completed on next calls.
+				midi_message.timestamp = timestamp;
 				midi_message.type = serial_data;
 				midi_message.data1 = 0;
 				midi_message.data2 = 0;
@@ -489,8 +503,7 @@ static bool parse(void) {
 				break;
 				// End of Exclusive
 			case 0xF7:
-				if (midi_message.system_exclusive[0]
-						== MIDI_TYPES_SYSTEM_EXCLUSIVE) {
+				if (midi_message.system_exclusive[0] == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
 					// Store the last byte (EOX)
 					midi_message.system_exclusive[pending_message_index++] = 0xF7;
 					midi_message.type = MIDI_TYPES_SYSTEM_EXCLUSIVE;
@@ -646,19 +659,18 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 #if defined (MIDI_INTERFACE_UART)
 
 /**
- * @ingroup midi
+ * @ingroup midi_in
  *
  */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 
-	if (BCM2835_PL011 -> MIS & PL011_MIS_RXMIS ) {
-		do {
-			const uint32_t data = BCM2835_PL011 ->DR;
-			midi_rx_buffer[midi_rx_buffer_index_head] = (uint8_t) (data & 0xFF);
-			midi_rx_buffer_index_head = (midi_rx_buffer_index_head + 1) & MIDI_RX_BUFFER_INDEX_MASK;
-		} while (!(BCM2835_PL011 ->FR & PL011_FR_RXFE));
-	}
+	const uint32_t timestamp = BCM2835_ST->CLO;
+	const uint32_t data = BCM2835_PL011->DR;
+
+	midi_rx_buffer[midi_rx_buffer_index_head].data = (uint8_t) (data & 0xFF);
+	midi_rx_buffer[midi_rx_buffer_index_head].timestamp = timestamp;
+	midi_rx_buffer_index_head = (midi_rx_buffer_index_head + 1) & MIDI_RX_BUFFER_INDEX_MASK;
 
 	dmb();
 }
@@ -749,7 +761,7 @@ void spi_init(void) {
 void spi_poll(void) {
 	int c;
 	if ( (c = sc16is740_getc(&spi_device_info)) != -1) {
-		midi_rx_buffer[midi_rx_buffer_index_head] = (uint8_t) (c & 0xFF);
+		midi_rx_buffer[midi_rx_buffer_index_head].data = (uint8_t) (c & 0xFF);
 		midi_rx_buffer_index_head = (midi_rx_buffer_index_head + 1) & MIDI_RX_BUFFER_INDEX_MASK;
 	}
 }
