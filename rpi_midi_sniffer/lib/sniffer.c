@@ -26,7 +26,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "bcm2835.h"
+#include "hardware.h"
+
 #include "sniffer_params.h"
 #include "midi.h"
 #include "midi_description.h"
@@ -40,19 +41,20 @@ void sniffer_midi(void) {
 	int i;
 
 	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
+
 		// Handle Active Sensing messages
 		if (midi_message->type == MIDI_TYPES_ACTIVE_SENSING) {
 			// This is handled in monitor_update();
 			return;
 		}
+
 		// Time stamp
 		const int minute = 60;
-		const uint32_t hour = minute * 60;
+		const int hour = minute * 60;
 		const uint32_t delta_us = midi_message->timestamp - init_timestamp;
-		const float sec = (float)delta_us / (float)1000000;
+		const float sec = (float) delta_us / (float) 1000000;
 		const int ipart = (int) sec;
-		float fpart = sec - (float) ipart;
-		fpart = fpart * 100;
+		float fpart = (sec - (float) ipart) * (float) 100;
 		printf("%02d:%02d.%02d  ",(int) ((int)sec % hour) / minute, (int) sec % minute, (int)fpart);
 
 		console_puthex(midi_message->type);
@@ -199,5 +201,5 @@ void sniffer_init(void) {
 
 	midi_message = (const struct _midi_message *) midi_message_get();
 
-	init_timestamp = BCM2835_ST->CLO;
+	init_timestamp = hardware_micros();
 }

@@ -1,5 +1,5 @@
 /**
- * @file sscan.h
+ * @file sscan.c
  *
  */
 /* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,25 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef INCLUDE_SSCAN_H_
-#define INCLUDE_SSCAN_H_
-
 #include <stdint.h>
+#include <ctype.h>
 
-#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER) || defined(MIDI_SNIFFER) || defined (MIDI_DMX_BRIDGE)
-extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
-#endif
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @return
+ */
+int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
+	int64_t k;
 
-#if defined(MIDI_SNIFFER) || defined (MIDI_DMX_BRIDGE)
-extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
-#endif
+	const char *n = name;
+	const char *b = buf;
 
-#if defined(RDM_RESPONDER) || defined(RDM_CONTROLLER)
-extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-#endif
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
+			return 0;
+		}
+	}
 
-#if defined(RDM_RESPONDER) || defined(DMX_SLAVE)
-extern int sscan_spi(const char *, /*@out@*/char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint16_t *, /*@out@*/uint32_t *, /*@out@*/uint8_t *);
-#endif
+	if (*n != (char) 0) {
+		return 0;
+	}
 
-#endif /* INCLUDE_SSCAN_H_ */
+	if (*b++ != (char) '=') {
+		return 0;
+	}
+
+	k = 0;
+
+	while ((*b != (char) 0) && (*b != '\n')) {
+		if (!isdigit((int)*b)) {
+			return 1;
+		}
+		k = k * 10 + (int64_t) *b - (int64_t) '0';
+		b++;
+	}
+
+	if (k > (int64_t) ((uint32_t) ~0)) {
+		return 1;
+	}
+
+	*value = (uint32_t) k;
+
+	return 2;
+}
