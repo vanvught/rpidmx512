@@ -321,7 +321,7 @@ static bool input_filter(uint8_t channel) {
 	// First, check if the received message is Channel
 	if (midi_message.type >= MIDI_TYPES_NOTE_OFF && midi_message.type <= MIDI_TYPES_PITCH_BEND) {
 		// Then we need to know if we listen to it
-		if ((midi_message.channel == input_channel) || (input_channel == MIDI_CHANNEL_OMNI)) {
+		if ((midi_message.channel == channel) || (channel == MIDI_CHANNEL_OMNI)) {
 			return true;
 		} else {
 			// We don't listen to this channel
