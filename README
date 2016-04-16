@@ -1,6 +1,12 @@
-Raspberry Pi DMX512 / RDM
+Raspberry Pi DMX512 / RDM / OSC / ArtNet
 =======
-Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, MIDI-RDM Bridge, RDM Responder 
+Baremetal projects for :
+
+*. DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
+*. MIDI Sniffer, MIDI-DMX Bridge (not available, yet)
+*. OSC-SPI (WS28xx) Bridge
+*. ArtNet-DMX Node (not available, yet)
+
 ---------
 \Eagle
 \bcm2835-baremetal
@@ -12,8 +18,10 @@ Baremetal projects for DMX analyser-slave, RDM Controller with USB [Compatible w
 \firmware-template
 \hal-baremetal
 \rpi_dmx_analyzer-slave
+\rpi_circle_osc_ws28xx
+\rpi_circle_libosc
 \rpi_dmx_usb_pro
-\rpi_midi_dmx_bridge (not available, yet)
+\rpi_midi_dmx_bridge
 \rpi_rdm_responder
 
 Detailed information can be found here : http://www.raspberrypi-dmx.com/
