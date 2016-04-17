@@ -27,6 +27,7 @@
  * THE SOFTWARE.
  */
 
+#include <circle/version.h>
 #include <circle/machineinfo.h>
 #include <circle/string.h>
 #include <circle/util.h>
@@ -145,7 +146,7 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, CIPAddress *Fore
 			}
 		}
 	} else if (OSC::isMatch((const char*) Buffer, "/2")) {
-		OSCSend MsgSendInfo(&m_Socket, ForeignIP, PORT_REMOTE, "/info/os", "s", "Circle OS");
+		OSCSend MsgSendInfo(&m_Socket, ForeignIP, PORT_REMOTE, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
 		OSCSend MsgSendModel(&m_Socket, ForeignIP, PORT_REMOTE, "/info/model", "s", m_MachineInfo.GetMachineName());
 		OSCSend MsgSendSoc(&m_Socket, ForeignIP, PORT_REMOTE, "/info/soc", "s", m_MachineInfo.GetSoCName());
 		OSCSend MsgSendLedType(&m_Socket, ForeignIP, PORT_REMOTE, "/info/ledtype", "s", sLedTypes[m_LEDType]);
