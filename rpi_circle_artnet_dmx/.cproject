@@ -5,12 +5,12 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.760069752" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings/>
 				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -49,10 +49,10 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.698601678" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.2042295305" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
 								<option id="gnu.both.asm.option.include.paths.394892002" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libartnet/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libdmx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/addon}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libartnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libdmx/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1406960253" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
