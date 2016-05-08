@@ -72,7 +72,7 @@ static const char FromArtNetNode[] = "artnetnode";
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x08 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x00 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE		12							///< \ref TArtPoll \ref TArtSync
@@ -890,6 +890,12 @@ void ArtNetNode::HandleAddress(void) {
 #ifdef SENDDIAG
 		SendDiag("Setting Merge Mode HTP", ARTNET_DP_LOW);
 #endif
+		break;
+	case ARTNET_PC_CLR_0:
+		for (int i = 0; i < ARTNET_DMX_LENGTH; i++) {
+			m_OutputPorts[0].data[i] = 0;
+		}
+		m_DMX->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
 		break;
 	default:
 		break;
