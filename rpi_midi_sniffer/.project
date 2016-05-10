@@ -8,7 +8,7 @@
 		<project>fb</project>
 		<project>ff11</project>
 		<project>hal-baremetal</project>
-		<project>utils-lib</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
