@@ -37,6 +37,8 @@
 #include <circle/types.h>
 #include <stdint.h>
 
+#include "lightset.h"
+
 enum TDMXSendState
 {
 	DMXSendIdle,
@@ -47,7 +49,7 @@ enum TDMXSendState
 	DMXSendUnknown
 };
 
-class DMXSend {
+class DMXSend:public LightSet  {
 
 public:
 	DMXSend(CInterruptSystem *pInterruptSystem);

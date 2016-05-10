@@ -39,11 +39,13 @@
 #include <circle/net/netsubsystem.h>
 #include <circle/net/socket.h>
 #include <circle/net/ipaddress.h>
+#include <lightset.h>
 
 #include "blinktask.h"
 #include "packets.h"
 #include "artnet.h"
 #include "common.h"
+
 
 #define ARTNET_NODE_MAX_PORTS	1
 
@@ -166,7 +168,7 @@ struct TOutputPort {
 
 class ArtNetNode {
 public:
-	ArtNetNode(CNetSubSystem *, DMXSend *, CActLED *);
+	ArtNetNode(CNetSubSystem *, LightSet *, CActLED *);
 	~ArtNetNode(void);
 
 	const uint8_t *GetSoftwareVersion(void);
@@ -212,7 +214,8 @@ private:
 	CNetSubSystem			*m_pNet;
 	CSocket					m_Socket;
 	boolean 				m_IsDHCPUsed;
-	DMXSend					*m_DMX;
+	//DMXSend				*m_DMX;
+	LightSet    			*m_pLightSet;
 
 	CBlinkTask 				*m_pBlinkTask;
 

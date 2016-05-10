@@ -4,7 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
-		<project>libartnet</project>
+		<project>lib-artnet</project>
 		<project>rpi_circle_libartnet</project>
 		<project>rpi_circle_libdmx</project>
 	</projects>

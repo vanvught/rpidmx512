@@ -46,9 +46,11 @@
 static const char FromArtNetNode[] = "artnetnode";
 
 #include "blinktask.h"
-#include "dmxsend.h"
+//#include "dmxsend.h"
 #include "artnetnode.h"
 #include "packets.h"
+
+#include <lightset.h>
 
 #ifndef min
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -86,8 +88,8 @@ static 	CIPAddress IPAddressFrom;
  * @param pNet
  * @param pDmx
  */
-ArtNetNode::ArtNetNode(CNetSubSystem *pNet, DMXSend *pDmx, CActLED *pActLED) :
-		m_pNet(pNet), m_Socket(m_pNet, IPPROTO_UDP), m_IsDHCPUsed(true), m_DMX(pDmx) {
+ArtNetNode::ArtNetNode(CNetSubSystem *pNet, LightSet *pOutput, CActLED *pActLED) :
+		m_pNet(pNet), m_Socket(m_pNet, IPPROTO_UDP), m_IsDHCPUsed(true), m_pLightSet(pOutput) {
 
 	m_pBlinkTask = new CBlinkTask (pActLED, 1);
 
@@ -770,7 +772,8 @@ void ArtNetNode::HandleDmx(void) {
 #ifdef SENDDIAG
 				SendDiag("Send new data", ARTNET_DP_LOW);
 #endif
-				m_DMX->SetData(m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+				//m_DMX->SetData(m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+				m_pLightSet->SetData(m_OutputPorts[0].data, m_OutputPorts[0].nLength);
 			} else {
 #ifdef SENDDIAG
 				SendDiag("DMX data pending", ARTNET_DP_LOW);
@@ -808,7 +811,8 @@ void ArtNetNode::HandleSync(void) {
 #ifdef SENDDIAG
 		SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
-		m_DMX->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+		//m_DMX->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+		m_pLightSet->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
 		m_State.IsDataPending = false;
 	}
 }
@@ -895,7 +899,8 @@ void ArtNetNode::HandleAddress(void) {
 		for (int i = 0; i < ARTNET_DMX_LENGTH; i++) {
 			m_OutputPorts[0].data[i] = 0;
 		}
-		m_DMX->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+		//m_DMX->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+		m_pLightSet->SetData (m_OutputPorts[0].data, m_OutputPorts[0].nLength);
 		break;
 	default:
 		break;

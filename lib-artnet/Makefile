@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../Circle
 
-OBJS	= src/artnetnode.o  src/blinktask.o
+OBJS	= src/artnetnode.o  src/blinktask.o src/lightset.o
 
 EXTRACLEAN = src/*.o
 
