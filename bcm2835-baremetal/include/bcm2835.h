@@ -158,7 +158,7 @@ typedef struct {
 	__IO uint32_t TXFR_LEN;		///< 0x14, Transfer Length
 	__IO uint32_t STRIDE;		///< 0x18, 2D Stride
 	__IO uint32_t NEXTCONBK;	///< 0x1C, Next CB Address
-	__IO uint32_t DEBUG;		///< 0x20, Debug
+	__IO uint32_t DBG;			///< 0x20, Debug
 } BCM2835_DMA_TypeDef;
 
 typedef struct {
