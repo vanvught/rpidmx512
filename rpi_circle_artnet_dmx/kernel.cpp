@@ -38,7 +38,9 @@
 
 #include "kernel.h"
 #include "artnetnode.h"
-#include "dmxsend.h"
+
+//#include "dmxsend.h"
+#include "lightset.h"
 
 #define PARTITION				"emmc1-1"
 

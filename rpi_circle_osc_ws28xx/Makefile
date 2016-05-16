@@ -6,7 +6,7 @@ CIRCLEHOME = ../Circle
 
 OBJS	= main.o kernel.o oscws28xx.o
 
-LIBS	= ../rpi_circle_libosc/libosc.a \
+LIBS	= ../lib-osc/libosc.a \
 	$(CIRCLEHOME)/addon/WS28XX/libws28xx.a \
 	$(CIRCLEHOME)/addon/SDCard/libsdcard.a \
 	$(CIRCLEHOME)/addon/Properties/libproperties.a \
