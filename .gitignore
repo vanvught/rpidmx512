@@ -12,5 +12,6 @@ lib*.a
 *.list
 *.lst
 *.map
+*.elf
 Splint*.prefs
 
