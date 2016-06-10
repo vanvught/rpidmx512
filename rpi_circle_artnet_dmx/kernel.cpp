@@ -27,36 +27,54 @@
  * THE SOFTWARE.
  */
 
+#include <circle/interrupt.h>
+#include <circle/string.h>
+#include <circle/machineinfo.h>
 #include <circle/net/netsubsystem.h>
 #include <circle/net/socket.h>
 #include <circle/net/ipaddress.h>
 #include <circle/net/in.h>
-#include <circle/string.h>
-#include <circle/machineinfo.h>
 
 #include "Properties/propertiesfile.h"
 
 #include "kernel.h"
-#include "artnetnode.h"
 
-//#include "dmxsend.h"
+#include "artnetnode.h"
 #include "lightset.h"
+#include "dmxsend.h"
+#include "spisend.h"
 
 #define PARTITION				"emmc1-1"
 
 #define NETWORK_PROPERTIES_FILE	"network.txt"	///<
 #define ARTNET_PROPERTIES_FILE	"artnet.txt"	///<
 #define DMX_PROPERTIES_FILE		"params.txt"	///<
+#define LEDS_PROPERTIES_FILE	"devices.txt"	///<
 
 #define ARTNET_NODE_PORT		0x1936			///< The Port is always 0x1936
 
 static const char FromKernel[] = "kernel";
 
+static const char sLedTypes[3][8] = { "WS2801", "WS2812", "WS2812B" };
+
+enum TOuputType
+{
+	TOuputTypeDMX,
+	TOuputTypeSPI
+};
+
 CKernel::CKernel(void) :
-		m_Screen(m_Options.GetWidth(), m_Options.GetHeight()), m_Timer(
-				&m_Interrupt), m_Logger(m_Options.GetLogLevel(), &m_Timer), m_DWHCI(
-				&m_Interrupt, &m_Timer), m_EMMC(&m_Interrupt, &m_Timer,
-				&m_ActLED), m_Properties(NETWORK_PROPERTIES_FILE, &m_FileSystem), m_DMX (&m_Interrupt), m_HaveEMMC(false)
+		m_Screen(m_Options.GetWidth(),
+		m_Options.GetHeight()),
+		m_Timer(&m_Interrupt),
+		m_Logger(m_Options.GetLogLevel(), &m_Timer),
+		m_DWHCI(&m_Interrupt, &m_Timer),
+		m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
+		m_Properties(NETWORK_PROPERTIES_FILE, &m_FileSystem),
+		m_DMX (&m_Interrupt),
+		m_SPI (&m_Interrupt),
+		m_HaveEMMC(false),
+		m_OutputType(TOuputTypeDMX)
 {
 	m_ActLED.On();
 }
@@ -138,10 +156,7 @@ boolean CKernel::Initialize(void)
 		m_Logger.Write(FromKernel, LogError, "Invalid network configuration");
 	}
 
-	if (bOK)
-	{
-		bOK = m_DMX.Initialize ();
-	}
+	bOK =  m_DMX.Initialize ();
 
 	return bOK;
 }
@@ -207,12 +222,62 @@ boolean CKernel::Configure (void)
 		m_DMX.SetBreakTime(DmxProperties.GetNumber("dmxsend_break_time", DMX_TRANSMIT_BREAK_TIME_MIN));
 		m_DMX.SetMabTime(DmxProperties.GetNumber("dmxsend_mab_time", DMX_TRANSMIT_MAB_TIME_MIN));
 		uint32_t period = (uint32_t) 0;
+
 		uint8_t refresh_rate = (uint8_t) DmxProperties.GetNumber("dmxsend_refresh_rate", DMX_TRANSMIT_REFRESH_RATE_DEFAULT);
 		if (refresh_rate != (uint8_t) 0)
 		{
 			period = (uint32_t) (1E6 / refresh_rate);
 		}
+
 		m_DMX.SetPeriodTime(period);
+	}
+
+	CPropertiesFile LedsProperties(LEDS_PROPERTIES_FILE, &m_FileSystem);
+	if (!LedsProperties.Load())
+	{
+		m_Logger.Write(FromKernel, LogWarning, "Error loading properties from %s", LEDS_PROPERTIES_FILE);
+		m_Logger.Write(FromKernel, LogWarning, "Continuing with DMX configuration");
+	}
+	else
+	{
+		const char *pType = LedsProperties.GetString("led_type");
+		if (pType == 0)
+		{
+			m_Logger.Write(FromKernel, LogWarning, "No led_type configured");
+			m_Logger.Write(FromKernel, LogNotice, "Using default type : %s", sLedTypes[m_SPI.GetLEDType()]);
+		}
+		else
+		{
+			if (strcmp(pType, sLedTypes[WS2801]) == 0)
+			{
+				m_SPI.SetLEDType(WS2801);
+			}
+			else if (strcmp(pType, sLedTypes[WS2812]) == 0)
+			{
+				m_SPI.SetLEDType(WS2812);
+			}
+			else if (strcmp(pType, sLedTypes[WS2812B]) == 0)
+			{
+				m_SPI.SetLEDType(WS2812B);
+			}
+			else
+			{
+				m_Logger.Write(FromKernel, LogWarning, "Wrong led_type configured (%s)", pType);
+				m_Logger.Write(FromKernel, LogNotice, "Using default type : %s", sLedTypes[m_SPI.GetLEDType()]);
+			}
+		}
+
+		unsigned nLEDCount = LedsProperties.GetNumber("led_count");
+		if (nLEDCount == 0)
+		{
+			m_Logger.Write(FromKernel, LogWarning, "No or wrong led_count configured");
+			m_Logger.Write(FromKernel, LogNotice, "Using default led count : %d", m_SPI.GetLEDCount());
+		}
+		else
+		{
+			m_SPI.SetLEDCount(nLEDCount);
+		}
+
 	}
 
 	return TRUE;
@@ -223,28 +288,82 @@ TShutdownMode CKernel::Run(void)
 	m_Logger.Write(FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
 	m_Logger.Write(FromKernel, LogNotice, "%s %dMB (%s)", m_MachineInfo.GetMachineName(), m_MachineInfo.GetRAMSize(),  m_MachineInfo.GetSoCName());
 
-
-	ArtNetNode node(&m_Net, &m_DMX, &m_ActLED);
-
-	node.SetNetSwitch(0);
-	node.SetSubnetSwitch(0);
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0);
+	uint8_t NetSwitch = 0;
+	uint8_t SubnetSwitch = 0;
+	uint8_t UniverseSwitch = 0;
 
 	if (m_HaveEMMC)
 	{
-		CPropertiesFile	ArtnetProperties(ARTNET_PROPERTIES_FILE, &m_FileSystem);
+		CPropertiesFile ArtnetProperties(ARTNET_PROPERTIES_FILE, &m_FileSystem);
 		if (!ArtnetProperties.Load())
 		{
 			m_Logger.Write(FromKernel, LogWarning, "Error loading properties from %s", ARTNET_PROPERTIES_FILE);
 			m_Logger.Write(FromKernel, LogWarning, "Continuing with default Art-Net node configuration");
 
-		} else
+		}
+		else
 		{
-			node.SetNetSwitch(ArtnetProperties.GetNumber("net", 0));
-			node.SetSubnetSwitch(ArtnetProperties.GetNumber("subnet", 0));
-			node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, ArtnetProperties.GetNumber("universe", 0));
+			NetSwitch = ArtnetProperties.GetNumber("net", 0);
+			SubnetSwitch = ArtnetProperties.GetNumber("subnet", 0);
+			UniverseSwitch = ArtnetProperties.GetNumber("universe", 0);
+			// output device DMX (default) or SPI
+			const char *pOutputType = ArtnetProperties.GetString("output");
+			if (pOutputType == 0)
+			{
+				m_Logger.Write(FromKernel, LogWarning, "No output configured");
+				m_Logger.Write(FromKernel, LogNotice, "Using default output : DMX");
+			}
+			else
+			{
+				if (strcmp(pOutputType, "dmx") == 0)
+				{
+					m_OutputType = TOuputTypeDMX;
+				}
+				else if (strcmp(pOutputType, "spi") == 0)
+				{
+					m_OutputType = TOuputTypeSPI;
+				}
+				else
+				{
+					m_Logger.Write(FromKernel, LogWarning, "Wrong output configured (%s)", pOutputType);
+					m_Logger.Write(FromKernel, LogNotice, "Using default output : DMX");
+				}
+			}
 		}
 	}
+
+	ArtNetNode node(&m_Net, &m_ActLED);
+
+	if (m_OutputType == TOuputTypeDMX)
+	{
+		node.SetOutput(&m_DMX);
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, UniverseSwitch);
+	}
+	else if (m_OutputType == TOuputTypeSPI)
+	{
+		node.SetOutput(&m_SPI);
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, UniverseSwitch);
+
+		const unsigned LEDCount = m_SPI.GetLEDCount();
+
+		if (LEDCount > 170)
+		{
+			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, UniverseSwitch + 1);
+		}
+
+		if (LEDCount > 340)
+		{
+			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, UniverseSwitch + 2);
+		}
+
+		if (LEDCount > 510)
+		{
+			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, UniverseSwitch + 3);
+		}
+	}
+
+	node.SetNetSwitch(NetSwitch);
+	node.SetSubnetSwitch(SubnetSwitch);
 
 	m_Logger.Write(FromKernel, LogNotice, "Node configuration :");
 	const uint8_t *FirmwareVersion = node.GetSoftwareVersion();
@@ -260,14 +379,21 @@ TShutdownMode CKernel::Run(void)
 	m_Logger.Write(FromKernel, LogNotice, " Sub-Net    : %u", node.GetSubnetSwitch());
 	m_Logger.Write(FromKernel, LogNotice, " Universe   : %u", node.GetUniverseSwitch(0));
 
-	m_Logger.Write(FromKernel, LogNotice, "DMX Send parameters :");
-	m_Logger.Write(FromKernel, LogNotice, " Break time   : %u", m_DMX.GetBreakTime());
-	m_Logger.Write(FromKernel, LogNotice, " MAB time     : %u", m_DMX.GetMabTime());
-	m_Logger.Write(FromKernel, LogNotice, " Refresh rate : %u", (unsigned) (1E6 / m_DMX.GetPeriodTime()));
+	if (m_OutputType == TOuputTypeDMX)
+	{
+		m_Logger.Write(FromKernel, LogNotice, "DMX Send parameters :");
+		m_Logger.Write(FromKernel, LogNotice, " Break time   : %u", m_DMX.GetBreakTime());
+		m_Logger.Write(FromKernel, LogNotice, " MAB time     : %u", m_DMX.GetMabTime());
+		m_Logger.Write(FromKernel, LogNotice, " Refresh rate : %u", (unsigned) (1E6 / m_DMX.GetPeriodTime()));
+	}
+	else if (m_OutputType == TOuputTypeSPI)
+	{
+		m_Logger.Write(FromKernel, LogNotice, "Led stripe parameters :");
+		m_Logger.Write(FromKernel, LogNotice, " Type         : %s", sLedTypes[m_SPI.GetLEDType()]);
+		m_Logger.Write(FromKernel, LogNotice, " Count        : %u", m_SPI.GetLEDCount());
+	}
 
 	node.Start();
-
-	m_DMX.Start ();
 
 	while(1)
 	{

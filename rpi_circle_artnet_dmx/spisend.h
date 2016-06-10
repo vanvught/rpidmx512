@@ -1,5 +1,5 @@
 /**
- * @file lightset.h
+ * @file spisend.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,19 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSET_H_
-#define LIGHTSET_H_
+#ifndef SPISEND_H_
+#define SPISEND_H_
 
 #include <stdint.h>
+#include <circle/interrupt.h>
 
-class LightSet {
+#include "ws28xxstripe.h"
+#include "lightset.h"
+
+class SPISend: public LightSet {
 public:
-	virtual ~LightSet(void);
+	SPISend(CInterruptSystem *);
+	~SPISend(void);
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	void Start(void);
+	void Stop(void);
 
-	virtual void SetData(const uint8_t, const uint8_t *, const uint16_t)= 0;
+	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+
+	void SetLEDType(TWS28XXType);
+	const TWS28XXType GetLEDType(void);
+
+	void SetLEDCount(unsigned);
+	unsigned GetLEDCount(void);
+
+private:
+	CInterruptSystem	*m_pInterrupt;
+	CWS28XXStripe		*m_pLEDStripe;
+	TWS28XXType			m_LEDType;
+	unsigned			m_nLEDCount;
 };
 
-#endif /* LIGHTSET_H_ */
+#endif /* SPISEND_H_ */

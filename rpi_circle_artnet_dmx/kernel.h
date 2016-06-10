@@ -45,10 +45,13 @@
 #include <circle/sched/scheduler.h>
 #include <circle/usb/dwhcidevice.h>
 #include <circle/machineinfo.h>
-
+// Addon's
 #include "SDCard/emmc.h"
 #include "Properties/propertiesfile.h"
+
 #include "dmxsend.h"
+#include "spisend.h"
+
 #include "artnetnode.h"
 
 enum TShutdownMode
@@ -89,9 +92,11 @@ private:
 	CScheduler			m_Scheduler;
 	CNetSubSystem		m_Net;
 	DMXSend				m_DMX;
+	SPISend				m_SPI;
 
 	CMachineInfo 		m_MachineInfo;
 	boolean				m_HaveEMMC;
+	unsigned			m_OutputType;
 };
 
 #endif

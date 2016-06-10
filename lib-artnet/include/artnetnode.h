@@ -47,7 +47,7 @@
 #include "common.h"
 
 
-#define ARTNET_NODE_MAX_PORTS	1
+//#define ARTNET_NODE_MAX_PORTS	1
 
 /**
  * ArtPollReply packet, Field 12
@@ -115,9 +115,9 @@ struct TArtNetNodeState {
 	TNodeStatus status;							///< See \ref TNodeStatus
 	bool IsSynchronousMode;						///< ArtSync received
 	time_t ArtSyncTime;							///< Latest ArtSync received time
-	bool IsDataPending;							///< ArtDMX received and waiting for ArtSync
 	bool IsMergeMode;							///< Is the Node in merging mode?
 	bool IsChanged;								///< Is the DMX changed? Update output DMX
+	uint8_t nActivePorts;						///< Number of active ports
 };
 
 /**
@@ -153,23 +153,26 @@ struct TGenericPort {
  *
  */
 struct TOutputPort {
-	bool bIsEnabled;					///< Is the port enabled ?
-	TGenericPort port;					///< \ref TGenericPort
 	uint8_t data[ARTNET_DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
-	TMerge mergeMode;					///< \ref TMerge
 	uint8_t dataA[ARTNET_DMX_LENGTH];	///< The data received from Port A
-	uint8_t dataB[ARTNET_DMX_LENGTH];	///< The data received from Port B
 	time_t timeA;						///< The latest time of the data received from Port A
-	time_t timeB;						///< The latest time of the data received from Port B
 	uint32_t ipA;						///< The IP address for port A
+	uint8_t dataB[ARTNET_DMX_LENGTH];	///< The data received from Port B
+	time_t timeB;						///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
+	TMerge mergeMode;					///< \ref TMerge
+	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
+	bool bIsEnabled;					///< Is the port enabled ?
+	TGenericPort port;					///< \ref TGenericPort
 };
 
 class ArtNetNode {
 public:
-	ArtNetNode(CNetSubSystem *, LightSet *, CActLED *);
+	ArtNetNode(CNetSubSystem *, CActLED *);
 	~ArtNetNode(void);
+
+	void SetOutput(LightSet *);
 
 	const uint8_t *GetSoftwareVersion(void);
 
@@ -193,7 +196,7 @@ public:
 
 private:
 	void GetType(void);
-	void BuildPollReply(void);
+	void FillPollReply(void);
 	void FillDiagData(void);
 
 	void HandlePoll(void);
@@ -201,9 +204,9 @@ private:
 	void HandleSync(void);
 	void HandleAddress(void);
 
-	bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t);
-	void CheckMergeTimeouts(void);
-	bool IsDmxDataChanged(const uint8_t *, const uint16_t);
+	bool IsMergedDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
+	void CheckMergeTimeouts(const uint8_t);
+	bool IsDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
 
 	void SendPollRelply(bool);
 	void SetNetworkDetails(void);
@@ -211,23 +214,20 @@ private:
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
-	CNetSubSystem			*m_pNet;
-	CSocket					m_Socket;
-	boolean 				m_IsDHCPUsed;
-	//DMXSend				*m_DMX;
-	LightSet    			*m_pLightSet;
+	CNetSubSystem			*m_pNet;		///<
+	CSocket					m_Socket;		///<
+	boolean 				m_IsDHCPUsed;	///<
+	LightSet    			*m_pLightSet;	///<
+	CBlinkTask 				*m_pBlinkTask;	///<
 
-	CBlinkTask 				*m_pBlinkTask;
+	struct TArtNetNode		m_Node;			///< Struct describing the node
+	struct TArtNetNodeState m_State;		///< The current state of the node
 
-	struct TArtNetNode		m_Node;				///< Struct describing the node
-	struct TArtNetNodeState m_State;			///< The current state of the node
+	struct TArtNetPacket 	m_ArtNetPacket;	///< The received Art-Net package
+	struct TArtPollReply	m_PollReply;	///<
+	struct TArtDiagData		m_DiagData;		///<
 
-	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
-
-	struct TArtPollReply	m_PollReply;
-	struct TArtDiagData		m_DiagData;
-
-	struct TOutputPort		m_OutputPorts[ARTNET_NODE_MAX_PORTS];	///< Currently there is just one output port supported
+	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 };
 
 #endif /* ARTNETNODE_H_ */

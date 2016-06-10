@@ -148,9 +148,9 @@ enum TArtnetPortCommand {
 	ARTNET_PC_MERGE_HTP_1 = 0x51,	///< Set DMX Port 1 to Merge in HTP (default) mode.
 	ARTNET_PC_MERGE_HTP_2 = 0x52,	///< Set DMX Port 2 to Merge in HTP (default) mode.
 	ARTNET_PC_MERGE_HTP_3 = 0x53,	///< Set DMX Port 3 to Merge in HTP (default) mode.
-	ARTNET_PC_CLR_0 = 0x93,			///< Clear DMX Output buffer for Port 0
-	ARTNET_PC_CLR_1 = 0x93,			///< Clear DMX Output buffer for Port 1
-	ARTNET_PC_CLR_2 = 0x93,			///< Clear DMX Output buffer for Port 2
+	ARTNET_PC_CLR_0 = 0x90,			///< Clear DMX Output buffer for Port 0
+	ARTNET_PC_CLR_1 = 0x91,			///< Clear DMX Output buffer for Port 1
+	ARTNET_PC_CLR_2 = 0x92,			///< Clear DMX Output buffer for Port 2
 	ARTNET_PC_CLR_3 = 0x93,			///< Clear DMX Output buffer for Port 3
 };
 

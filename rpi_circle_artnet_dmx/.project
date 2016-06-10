@@ -7,6 +7,7 @@
 		<project>lib-artnet</project>
 		<project>rpi_circle_libartnet</project>
 		<project>rpi_circle_libdmx</project>
+		<project>rpi_circle_libws28xx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
