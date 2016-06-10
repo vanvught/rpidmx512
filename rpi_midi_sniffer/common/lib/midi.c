@@ -29,6 +29,7 @@
  * THE SOFTWARE.
  */
 
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -48,6 +49,8 @@
 #include "sc16is740.h"
 #include "device_info.h"
 #endif
+
+#include "console.h"
 
 #if defined (MIDI_DMX_BRIDGE) && defined (MIDI_INTERFACE_UART)
 #error The UART is not available for this configuration
@@ -749,7 +752,7 @@ const char *spi_get(void) {
  */
 void spi_init(void) {
 	spi_device_info.chip_select = 0;
-	spi_device_info.speed_hz = 100000;
+	spi_device_info.speed_hz = SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
 
 	sc16is740_start(&spi_device_info);
 	sc16is740_set_baud(&spi_device_info, midi_baudrate);

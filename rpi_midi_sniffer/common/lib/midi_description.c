@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "midi.h"
+#include "../../rpi_midi_sniffer/common/include/midi.h"
 
 static const char key_names[][3] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 static char key_name[8];
