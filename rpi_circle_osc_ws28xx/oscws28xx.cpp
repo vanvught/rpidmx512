@@ -33,13 +33,14 @@
 #include <circle/util.h>
 #include <circle/logger.h>
 #include <assert.h>
-#include <Properties/propertiesfile.h>
+
+#include "Properties/propertiesfile.h"
+#include "ws28xxstripe.h"
 
 #include "oscws28xx.h"
 #include "osc.h"
 #include "oscsend.h"
 #include "oscmessage.h"
-#include "ws28xxstripe.h"
 
 #define PORT_REMOTE	9000
 #define PROPERTIES_FILE		"devices.txt"
@@ -48,15 +49,16 @@ static const char FromOscWS28xx[] = "oscws28xx";
 
 static const char sLedTypes[3][8] = { "WS2801", "WS2812", "WS2812B" };
 
-COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
+COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CInterruptSystem	*pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
 :	OSCServer (pNetSubSystem, nLocalPort),
-	m_pNetSubSystem(pNetSubSystem),
-	m_pTarget(pTarget),
+	m_pNetSubSystem (pNetSubSystem),
+	m_pInterrupt (pInterrupt),
+	m_pTarget (pTarget),
 	m_pLEDStripe (0),
 	m_LEDType (WS2801),
 	m_nLEDCount (170),
-	m_Properties(PROPERTIES_FILE, pFileSystem),
-	m_Blackout(FALSE)
+	m_Properties (PROPERTIES_FILE, pFileSystem),
+	m_Blackout (FALSE)
 {
 	m_RGBColour[0] = 0;
 	m_RGBColour[1] = 0;
@@ -91,7 +93,7 @@ COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CDevice *pTarget, CFATFile
 	}
 
 	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new CWS28XXStripe(m_LEDType, m_nLEDCount);
+	m_pLEDStripe = new CWS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Initialize();
@@ -110,14 +112,15 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, CIPAddress *Fore
 	} else if (OSC::isMatch((const char*) Buffer, "/dmx1/blackout")) {
 		OSCMessage Msg(Buffer, (unsigned) BytesReceived);
 		m_Blackout = (unsigned)Msg.GetFloat(0) == 1;
+
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
+
 		if (m_Blackout) {
-			if (!m_pLEDStripe->Blackout()) {
-				CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "LED stripe blackout failed!");
-			}
+			m_pLEDStripe->Blackout();
 		} else {
-			if (!m_pLEDStripe->Update()) {
-				CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "LED stripe update failed!");
-			}
+			m_pLEDStripe->Update();
 		}
 	} else if (OSC::isMatch((const char*) Buffer, "/dmx1/*")) {
 		OSCMessage Msg(Buffer, (unsigned) BytesReceived);
@@ -136,14 +139,16 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, CIPAddress *Fore
 		ColorMessage.Format("\rR:%03u G:%03u B:%03u", (unsigned) m_RGBColour[0], (unsigned) m_RGBColour[1], (unsigned) m_RGBColour[2]);
 		m_pTarget->Write(ColorMessage, ColorMessage.GetLength());
 
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
+
 		for (unsigned j = 0; j < m_nLEDCount; j++) {
 			m_pLEDStripe->SetLED(j, m_RGBColour[0], m_RGBColour[1], m_RGBColour[2]);
 		}
 
 		if (!m_Blackout) {
-			if (!m_pLEDStripe->Update()) {
-				CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "LED stripe update failed!");
-			}
+			m_pLEDStripe->Update();
 		}
 	} else if (OSC::isMatch((const char*) Buffer, "/2")) {
 		OSCSend MsgSendInfo(&m_Socket, ForeignIP, PORT_REMOTE, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);

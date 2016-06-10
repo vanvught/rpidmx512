@@ -34,7 +34,8 @@
 #include <Properties/propertiesfile.h>
 
 #include "kernel.h"
-#include "properties.h"
+
+#include "Properties/propertiesfile.h"
 
 #include "oscws28xx.h"
 
@@ -141,7 +142,7 @@ TShutdownMode CKernel::Run (void)
 	m_Net.GetConfig ()->GetIPAddress ()->Format (&IPString);
 	m_Logger.Write (FromKernel, LogNotice, "OSC Server running at %s:%u", (const char *) IPString, OSC_SERVER_PORT);
 
-	new COSCWS28xx (&m_Net, &m_Screen, &m_FileSystem, OSC_SERVER_PORT);
+	new COSCWS28xx (&m_Net, &m_Interrupt, &m_Screen, &m_FileSystem, OSC_SERVER_PORT);
 
 	for (unsigned nCount = 0; 1; nCount++)
 	{

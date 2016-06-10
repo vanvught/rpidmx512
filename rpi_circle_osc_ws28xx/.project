@@ -5,7 +5,7 @@
 	<projects>
 		<project>Circle</project>
 		<project>lib-osc</project>
-		<project>rpi_circle_libosc</project>
+		<project>rpi_circle_libws28xx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

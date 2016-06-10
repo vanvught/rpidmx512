@@ -1,8 +1,12 @@
 /**
- * @file rdm_handle_data.h
+ * @file oscws28xx.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/*
+ * Circle - A C++ bare metal environment for Raspberry Pi
+ * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
+ */
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +27,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_HANDLE_DATA_H_
-#define RDM_HANDLE_DATA_H_
+#ifndef _oscws2801_h
+#define _oscws2801_h
 
-#include <stdint.h>
+#include <circle/interrupt.h>
+#include <circle/device.h>
+#include <circle/machineinfo.h>
+#include <circle/net/ipaddress.h>
+#include <circle/fs/fat/fatfs.h>
 
-extern const uint8_t rdm_is_muted(void);
-extern void rdm_handle_data(uint8_t *rdm_data);
+#include "ws28xxstripe.h"
 
-#endif /* RDM_HANDLE_DATA_H_ */
+#include "oscserver.h"
+
+class COSCWS28xx: public OSCServer
+{
+public:
+	COSCWS28xx(CNetSubSystem *, CInterruptSystem*, CDevice *, CFATFileSystem *, unsigned);
+	~COSCWS28xx(void);
+
+private:
+	void MessageReceived(u8 *, int, CIPAddress *);
+
+private:
+	CNetSubSystem		*m_pNetSubSystem;
+	CInterruptSystem	*m_pInterrupt;
+	CDevice				*m_pTarget;
+	CMachineInfo 		m_MachineInfo;
+	CWS28XXStripe		*m_pLEDStripe;
+	TWS28XXType			m_LEDType;
+	unsigned			m_nLEDCount;
+	CPropertiesFile		m_Properties;
+	boolean 			m_Blackout;
+
+	u8 					m_RGBColour[3];
+};
+
+#endif
