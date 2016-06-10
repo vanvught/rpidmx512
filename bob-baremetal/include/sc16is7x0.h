@@ -96,7 +96,7 @@
 /** See datasheet section 7.8 for configuring the
   * "Programmable baud rate generator"
   */
-#define SC16IS7X0_XTAL_FREQ              	14745600UL	///< On-board crystal
+#define SC16IS7X0_XTAL_FREQ              	8000000UL	///< On-board crystal
 #define SC16IS7X0_PRESCALER_1               1			///< Default prescaler after reset
 #define SC16IS7X0_PRESCALER_4            	4   		///< Selectable by setting MCR[7]
 #define SC16IS7X0_PRESCALER                 SC16IS7X0_PRESCALER_1

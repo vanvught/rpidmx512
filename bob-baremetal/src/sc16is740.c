@@ -87,6 +87,8 @@ uint8_t sc16is740_start(device_info_t *device_info) {
 	sc16is740_set_format(device_info, 8, SERIAL_PARITY_NONE, 1);
 	sc16is740_set_baud(device_info, SC16IS7X0_DEFAULT_BAUDRATE);
 
+	sc16is740_reg_write(device_info, SC16IS7X0_FCR, 0x03);
+
 	return SC16IS7X0_OK;
 }
 
