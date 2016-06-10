@@ -252,6 +252,12 @@ void DMXSend::Stop(void) {
 }
 
 
+void DMXSend::SetData(/* unused */const uint8_t nPortId, const uint8_t *data, const uint16_t length) {
+	while (!SetDataTry (data, length)) {
+		// just wait
+	}
+}
+
 /**
  *
  * @param data

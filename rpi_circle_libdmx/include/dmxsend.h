@@ -30,13 +30,13 @@
 #ifndef DMXSEND_H_
 #define DMXSEND_H_
 
-#include "dmx.h"
 #include <circle/interrupt.h>
 #include <circle/gpiopin.h>
 #include <circle/spinlock.h>
 #include <circle/types.h>
 #include <stdint.h>
 
+#include "dmx.h"
 #include "lightset.h"
 
 enum TDMXSendState
@@ -52,7 +52,7 @@ enum TDMXSendState
 class DMXSend:public LightSet  {
 
 public:
-	DMXSend(CInterruptSystem *pInterruptSystem);
+	DMXSend(CInterruptSystem *);
 	~DMXSend(void);
 
 	boolean Initialize (void);
@@ -60,8 +60,8 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	void SetData(const uint8_t *, const uint16_t);		// waits if transfer is active
-	boolean SetDataTry(const uint8_t *, const uint16_t);	// returns FALSE if transfer is active
+	void SetData(/* unused */const uint8_t, const uint8_t *, const uint16_t);	// waits if transfer is active
+	void SetData(const uint8_t *, const uint16_t);								// waits if transfer is active
 
 	void SetDataLength(const uint16_t);
 	uint16_t GetDataLength(void);
@@ -76,6 +76,7 @@ public:
 
 private:
 	void ClearOutputData(void);
+	boolean SetDataTry(const uint8_t *, const uint16_t);	// returns FALSE if transfer is active
 
 	void SerialIRQHandler (void);
 	static void SerialIRQHandler (void *pParam);
