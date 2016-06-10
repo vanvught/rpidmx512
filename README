@@ -1,11 +1,11 @@
-Raspberry Pi DMX512 / RDM / OSC / ArtNet-3
+Raspberry Pi DMX512 / RDM / OSC / ArtNet-3 / Pixel
 =======
 Baremetal projects for :
 
-*. DMX analyser-slave, RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
+*. RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
 *. MIDI Sniffer, MIDI-DMX Bridge (not available, yet)
 *. OSC-SPI (WS28xx) Bridge
-*. ArtNet-DMX Node
+*. ArtNet-DMX Node / Pixel controller
 
 ---------
 \Eagle
@@ -18,11 +18,13 @@ Baremetal projects for :
 \firmware-template
 \hal-baremetal
 \lib-artnet
+\lib-monitor
 \lib-osc
+\lib-utils
 \rpi_circle_artnet_dmx
 \rpi_circle_libdmx
+\rpi_circle_libws28xx
 \rpi_circle_osc_ws28xx
-\rpi_dmx_analyzer-slave
 \rpi_dmx_usb_pro
 \rpi_midi_dmx_bridge
 \rpi_rdm_responder
