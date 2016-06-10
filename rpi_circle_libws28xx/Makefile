@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../rpi_circle_libws28xx/include
+INCLUDE	+= -I ./include
 
 OBJS	= src/ws28xxstripe.o
 

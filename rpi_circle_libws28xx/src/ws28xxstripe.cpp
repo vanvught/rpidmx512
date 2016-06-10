@@ -1,33 +1,47 @@
-//
-// ws28xxstripe.h
-//
-// Driver for WS28XX controlled LED stripes
-// Original development by Arjan van Vught <info@raspberrypi-dmx.nl>
-//
-// Circle - A C++ bare metal environment for Raspberry Pi
-// Copyright (C) 2016  R. Stange <rsta2@o2online.de>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/**
+ * @file ws28xxstripe.cpp
+ *
+ */
+/*
+ * Circle - A C++ bare metal environment for Raspberry Pi
+ * Copyright (C) 2016  R. Stange <rsta2@o2online.de>
+ * Based on https://github.com/rsta2/circle/tree/master/addon/WS28XX
+ */
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <circle/logger.h>
 #include <circle/util.h>
 #include <assert.h>
 
 #include "ws28xxstripe.h"
 
-CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem,
-			      TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed)
+/**
+ *
+ * @param pInterruptSystem
+ * @param Type
+ * @param nLEDCount
+ * @param nClockSpeed
+ */
+CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed)
 :	m_Type (Type),
 	m_nLEDCount (nLEDCount),
 	m_bUpdating (FALSE),
@@ -59,6 +73,9 @@ CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem,
 	memset (m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
 }
 
+/**
+ *
+ */
 CWS28XXStripe::~CWS28XXStripe (void)
 {
 	while (m_bUpdating)
@@ -76,16 +93,30 @@ CWS28XXStripe::~CWS28XXStripe (void)
 	m_pBuffer = 0;
 }
 
+/**
+ *
+ * @return
+ */
 boolean CWS28XXStripe::Initialize (void)
 {
 	return m_SPIMaster.Initialize ();
 }
 
+/**
+ *
+ */
 unsigned CWS28XXStripe::GetLEDCount (void) const
 {
 	return m_nLEDCount;
 }
 
+/**
+ *
+ * @param nLEDIndex
+ * @param nRed
+ * @param nGreen
+ * @param nBlue
+ */
 void CWS28XXStripe::SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue)
 {
 	assert (!m_bUpdating);
@@ -111,6 +142,9 @@ void CWS28XXStripe::SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue)
 	}
 }
 
+/**
+ *
+ */
 void CWS28XXStripe::Update (void)
 {
 	assert (!m_bUpdating);
@@ -123,6 +157,9 @@ void CWS28XXStripe::Update (void)
 	m_SPIMaster.StartWriteRead (0, m_pBuffer, m_pReadBuffer, m_nBufSize);
 }
 
+/**
+ *
+ */
 void CWS28XXStripe::Blackout (void)
 {
 	assert (!m_bUpdating);
@@ -135,11 +172,20 @@ void CWS28XXStripe::Blackout (void)
 	m_SPIMaster.StartWriteRead (0, m_pBlackoutBuffer, m_pReadBuffer, m_nBufSize);
 }
 
+/**
+ *
+ * @return
+ */
 boolean CWS28XXStripe::IsUpdating (void) const
 {
 	return m_bUpdating;
 }
 
+/**
+ *
+ * @param nOffset
+ * @param nValue
+ */
 void CWS28XXStripe::SetColorWS2812 (unsigned nOffset, u8 nValue)
 {
 	assert (m_Type != WS2801);
@@ -162,6 +208,10 @@ void CWS28XXStripe::SetColorWS2812 (unsigned nOffset, u8 nValue)
 	}
 }
 
+/**
+ *
+ * @param bStatus
+ */
 void CWS28XXStripe::SPICompletionRoutine (boolean bStatus)
 {
 	if (!bStatus)
@@ -173,6 +223,11 @@ void CWS28XXStripe::SPICompletionRoutine (boolean bStatus)
 	m_bUpdating = FALSE;
 }
 
+/**
+ *
+ * @param bStatus
+ * @param pParam
+ */
 void CWS28XXStripe::SPICompletionStub (boolean bStatus, void *pParam)
 {
 	CWS28XXStripe *pThis = (CWS28XXStripe *) pParam;

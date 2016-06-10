@@ -1,25 +1,33 @@
-//
-// ws28xxstripe.h
-//
-// Driver for WS28XX controlled LED stripes
-// Original development by Arjan van Vught <info@raspberrypi-dmx.nl>
-//
-// Circle - A C++ bare metal environment for Raspberry Pi
-// Copyright (C) 2016  R. Stange <rsta2@o2online.de>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/**
+ * @file ws28xxstripe.h
+ *
+ */
+/*
+ * Circle - A C++ bare metal environment for Raspberry Pi
+ * Copyright (C) 2016  R. Stange <rsta2@o2online.de>
+ * Based on https://github.com/rsta2/circle/tree/master/addon/WS28XX
+ */
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #ifndef _ws28xxstripe_h
 #define _ws28xxstripe_h
 
@@ -27,8 +35,7 @@
 #include <circle/spimasterdma.h>
 #include <circle/types.h>
 
-enum TWS28XXType
-{
+enum TWS28XXType {
 	WS2801,
 	WS2812,
 	WS2812B
@@ -38,8 +45,7 @@ class CWS28XXStripe
 {
 public:
 	// nClockSpeed is only variable on WS2801, otherwise ignored
-	CWS28XXStripe (CInterruptSystem *pInterruptSystem,
-		       TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = 4000000);
+	CWS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = 4000000);
 	~CWS28XXStripe (void);
 
 	boolean Initialize (void);
@@ -63,14 +69,14 @@ private:
 	static void SPICompletionStub (boolean bStatus, void *pParam);
 
 private:
-	TWS28XXType	 m_Type;
-	unsigned	 m_nLEDCount;
-	unsigned	 m_nBufSize;
-	u8		*m_pBuffer;
-	u8		*m_pReadBuffer;
-	u8		*m_pBlackoutBuffer;
-	volatile boolean m_bUpdating;
-	CSPIMasterDMA	 m_SPIMaster;
+	TWS28XXType			m_Type;
+	unsigned			m_nLEDCount;
+	unsigned	 		m_nBufSize;
+	u8					*m_pBuffer;
+	u8					*m_pReadBuffer;
+	u8					*m_pBlackoutBuffer;
+	volatile boolean 	m_bUpdating;
+	CSPIMasterDMA	 	m_SPIMaster;
 };
 
 #endif
