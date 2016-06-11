@@ -1,0 +1,23 @@
+/**
+ * @defgroup main Raspberry Pi MIDI Sniffer
+ * @brief TODO
+ *
+ */
+ 
+/**
+  * @defgroup midi Midi library
+  * @ingroup main
+  * @brief TODO
+  */
+  
+ /**
+  * @defgroup midi_in MIDI In
+  * @ingroup midi
+  * @brief TODO
+  */
+ 
+ /**
+  * @defgroup midi_out MIDI Out
+  * @ingroup midi
+  * @brief TODO
+  */

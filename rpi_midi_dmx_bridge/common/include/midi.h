@@ -125,12 +125,12 @@ typedef enum midi_channel_control_function {
 	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_2		= 0x11, ///< MSB
 	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_3		= 0x12, ///< MSB
 	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_4		= 0x13, ///< MSB
-	MIDI_CONTROL_FUNCTION_DAMPER_PEDAL_ON_OFF	= 0x40,	///< ≤63 off, ≥64 on
-	MIDI_CONTROL_FUNCTION_PORTAMENTO_ON_OFF		= 0x41,	///< ≤63 off, ≥64 on
-	MIDI_CONTROL_FUNCTION_SOSTENUTO_ON_OFF		= 0x42,	///< ≤63 off, ≥64 on
-	MIDI_CONTROL_FUNCTION_SOFT_PEDAL_ON_OFF		= 0x43,	///< ≤63 off, ≥64 on
-	MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH		= 0x44,	///< ≤63 off, ≥64 on
-	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45,	///< ≤63 off, ≥64 on
+	MIDI_CONTROL_FUNCTION_DAMPER_PEDAL_ON_OFF	= 0x40,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_PORTAMENTO_ON_OFF		= 0x41,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_SOSTENUTO_ON_OFF		= 0x42,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_SOFT_PEDAL_ON_OFF		= 0x43,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH		= 0x44,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45,	///< 63 off, 64 on
 } _midi_channel_control_function;
 
 extern void midi_init(void);
@@ -139,7 +139,7 @@ extern const uint32_t midi_get_baudrate(void);
 extern const char *midi_get_interface_description(void);
 extern void midi_set_interface(const uint8_t);
 
-extern struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;
+extern /*@shared@*/struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;
 extern bool midi_read(void);
 extern bool midi_read_channel(uint8_t);
 extern uint8_t midi_get_input_channel(void);
