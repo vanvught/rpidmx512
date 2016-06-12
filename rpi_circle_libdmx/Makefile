@@ -4,7 +4,8 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../rpi_circle_libdmx/include -I ../lib-artnet/include
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-artnet/include
 
 OBJS	= src/dmxsend.o
 

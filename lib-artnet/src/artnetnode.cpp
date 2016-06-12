@@ -822,7 +822,7 @@ void ArtNetNode::HandleDmx(void) {
 				SendDiag("Data not changed", ARTNET_DP_LOW);
 #endif
 			}
-			// Discontinue the loop. No need to return other ports
+			// Discontinue the loop. No need to return for other ports
 			return;
 		}
 	}

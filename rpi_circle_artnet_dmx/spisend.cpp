@@ -77,6 +77,10 @@ void SPISend::Start(void)
  */
 void SPISend::Stop(void)
 {
+	while (m_pLEDStripe->IsUpdating())
+	{
+		// wait for completion
+	}
 	m_pLEDStripe->Blackout();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;

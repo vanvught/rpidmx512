@@ -4,7 +4,7 @@
  */
 /*
  * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
+ * Copyright (C) 2016  R. Stange <rsta2@o2online.de>
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -39,8 +39,7 @@
 #include "dmx.h"
 #include "lightset.h"
 
-enum TDMXSendState
-{
+enum TDMXSendState {
 	DMXSendIdle,
 	DMXSendBreak,
 	DMXSendMAB,
@@ -50,7 +49,6 @@ enum TDMXSendState
 };
 
 class DMXSend:public LightSet  {
-
 public:
 	DMXSend(CInterruptSystem *);
 	~DMXSend(void);

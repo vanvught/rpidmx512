@@ -4,7 +4,7 @@
  */
 /*
  * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
+ * Copyright (C) 2016  R. Stange <rsta2@o2online.de>
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -402,72 +402,66 @@ void DMXSend::ClearOutputData(void) {
 /**
  *
  */
-void DMXSend::SerialIRQHandler (void)
-{
+void DMXSend::SerialIRQHandler(void) {
 #ifdef DEBUG_CLICK
 	debug_click (DEBUG_CLICK_LEFT);
 #endif
 
 	DataMemBarrier ();
 
-	assert (m_State == DMXSendData);
-	uint32_t Mis = read32 (ARM_UART0_MIS);
+	assert(m_State == DMXSendData);
+	uint32_t Mis = read32(ARM_UART0_MIS);
 	if (Mis != INT_TX) {
-		CLogger::Get ()->Write (FromDMXSend, LogPanic, "Unexpected interrupt (mis 0x%X)", (unsigned) Mis);
+		CLogger::Get()->Write(FromDMXSend, LogPanic, "Unexpected interrupt (mis 0x%X)", (unsigned) Mis);
 	}
 
-	m_SpinLock.Acquire ();
+	m_SpinLock.Acquire();
 
-	for (; !(read32 (ARM_UART0_FR) & FR_TXFF_MASK); m_CurrentSlot++)
-	{
-		if (m_CurrentSlot >= m_OutputDataLength)
-		{
+	for (; !(read32(ARM_UART0_FR) & FR_TXFF_MASK); m_CurrentSlot++) {
+		if (m_CurrentSlot >= m_OutputDataLength) {
 			break;
 		}
 
-		write32 (ARM_UART0_DR, m_OutputBuffer[m_CurrentSlot]);
+		write32(ARM_UART0_DR, m_OutputBuffer[m_CurrentSlot]);
 	}
 
-	if (m_CurrentSlot >= m_OutputDataLength)
-	{
-		write32 (ARM_UART0_IMSC, read32 (ARM_UART0_IMSC) & ~INT_TX);
+	if (m_CurrentSlot >= m_OutputDataLength) {
+		write32(ARM_UART0_IMSC, read32(ARM_UART0_IMSC) & ~INT_TX);
 
 		m_State = DMXSendInterPacket;
 	}
 
-	write32 (ARM_UART0_ICR, INT_TX);
+	write32(ARM_UART0_ICR, INT_TX);
 
 	DataMemBarrier ();
 
-	m_SpinLock.Release ();
+	m_SpinLock.Release();
 }
 
 /**
  *
  * @param pParam
  */
-void DMXSend::SerialIRQHandler (void *pParam)
-{
+void DMXSend::SerialIRQHandler(void *pParam) {
 	DMXSend *pThis = (DMXSend *) pParam;
-	assert (pThis != 0);
+	assert(pThis != 0);
 
-	pThis->SerialIRQHandler ();
+	pThis->SerialIRQHandler();
 }
 
 /**
  *
  */
-void DMXSend::TimerIRQHandler (void)
-{
+void DMXSend::TimerIRQHandler(void) {
 #ifdef DEBUG_CLICK
 	debug_click (DEBUG_CLICK_RIGHT);
 #endif
 
-	m_SpinLock.Acquire ();
+	m_SpinLock.Acquire();
 
 	DataMemBarrier ();
 
-	m_TimerIRQMicros = read32 (ARM_SYSTIMER_CLO);
+	m_TimerIRQMicros = read32(ARM_SYSTIMER_CLO);
 
 #ifdef MAX_IRQ_LATENCY
 	unsigned Latency = m_TimerIRQMicros - read32 (ARM_SYSTIMER_C1);
@@ -492,23 +486,18 @@ void DMXSend::TimerIRQHandler (void)
 		m_State = DMXSendMAB;
 		break;
 	case DMXSendMAB:
-		write32 (ARM_SYSTIMER_C1, m_SendBreakMicros + m_OutputPeriod);
-		for (m_CurrentSlot = 0; !(read32 (ARM_UART0_FR) & FR_TXFF_MASK); m_CurrentSlot++)
-		{
-			if (m_CurrentSlot >= m_OutputDataLength)
-			{
+		write32(ARM_SYSTIMER_C1, m_SendBreakMicros + m_OutputPeriod);
+		for (m_CurrentSlot = 0; !(read32(ARM_UART0_FR) & FR_TXFF_MASK); m_CurrentSlot++) {
+			if (m_CurrentSlot >= m_OutputDataLength) {
 				break;
 			}
 
-			write32 (ARM_UART0_DR, m_OutputBuffer[m_CurrentSlot]);
+			write32(ARM_UART0_DR, m_OutputBuffer[m_CurrentSlot]);
 		}
-		if (m_CurrentSlot < m_OutputDataLength)
-		{
+		if (m_CurrentSlot < m_OutputDataLength) {
 			m_State = DMXSendData;
-			write32 (ARM_UART0_IMSC, read32 (ARM_UART0_IMSC) | INT_TX);
-		}
-		else
-		{
+			write32(ARM_UART0_IMSC, read32(ARM_UART0_IMSC) | INT_TX);
+		} else {
 			m_State = DMXSendInterPacket;
 		}
 		break;
@@ -534,10 +523,9 @@ void DMXSend::TimerIRQHandler (void)
  *
  * @param pParam
  */
-void DMXSend::TimerIRQHandler (void *pParam)
-{
+void DMXSend::TimerIRQHandler(void *pParam) {
 	DMXSend *pThis = (DMXSend *) pParam;
-	assert (pThis != 0);
+	assert(pThis != 0);
 
-	pThis->TimerIRQHandler ();
+	pThis->TimerIRQHandler();
 }
