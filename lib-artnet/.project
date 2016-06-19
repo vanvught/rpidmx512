@@ -4,6 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
+		<project>lib-esp8266</project>
+		<project>rpi_circle_libdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

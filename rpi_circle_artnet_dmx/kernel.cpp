@@ -337,27 +337,32 @@ TShutdownMode CKernel::Run(void)
 	if (m_OutputType == TOuputTypeDMX)
 	{
 		node.SetOutput(&m_DMX);
+		node.SetDirectUpdate(false);
 		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, UniverseSwitch);
 	}
 	else if (m_OutputType == TOuputTypeSPI)
 	{
 		node.SetOutput(&m_SPI);
+		node.SetDirectUpdate(false);
 		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, UniverseSwitch);
 
 		const unsigned LEDCount = m_SPI.GetLEDCount();
 
 		if (LEDCount > 170)
 		{
+			node.SetDirectUpdate(true);
 			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, UniverseSwitch + 1);
 		}
 
 		if (LEDCount > 340)
 		{
+			node.SetDirectUpdate(true);
 			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, UniverseSwitch + 2);
 		}
 
 		if (LEDCount > 510)
 		{
+			node.SetDirectUpdate(true);
 			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, UniverseSwitch + 3);
 		}
 	}

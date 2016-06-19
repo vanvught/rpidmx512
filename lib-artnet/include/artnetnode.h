@@ -34,20 +34,24 @@
 
 #include <stdint.h>
 #include <assert.h>
+
+#if defined (__circle__)
 #include <circle/util.h>
 #include <circle/time.h>
 #include <circle/net/netsubsystem.h>
 #include <circle/net/socket.h>
 #include <circle/net/ipaddress.h>
-#include <lightset.h>
+#else
+#include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
+#endif
 
 #include "blinktask.h"
+#include "lightset.h"
 #include "packets.h"
 #include "artnet.h"
 #include "common.h"
-
-
-//#define ARTNET_NODE_MAX_PORTS	1
 
 /**
  * ArtPollReply packet, Field 12
@@ -78,7 +82,7 @@ enum TGoodOutput {
 	GO_INCLUDES_DMX_TEXT_PACKETS = (1 << 4),	///< Bit 4 Channel includes DMX512 text packets.
 	GO_OUTPUT_IS_MERGING = (1 << 3),			///< Bit 3 Set – Output is merging ArtNet data.
 	GO_DMX_SHORT_DETECTED = (1 << 2),			///< Bit 2 Set – DMX output short detected on power up
-	GO_MERGE_MODE_LTP = (1 << 1),				///< Bit 1 Set – Merge Mode is LTP.
+	GO_MERGE_MODE_LTP = (1 << 1)				///< Bit 1 Set – Merge Mode is LTP.
 };
 
 /**
@@ -108,7 +112,7 @@ struct TArtNetNodeState {
 	uint32_t ArtPollReplyCount;					///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
 	bool SendArtDiagData;						///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
 	uint8_t Priority;							///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
-	CIPAddress IPAddressDiagSend;				///< ArtPoll : Destination IPAddress for the ArtDiag
+	uint32_t IPAddressDiagSend;					///< ArtPoll : Destination IPAddress for the ArtDiag
 	uint32_t IPAddressArtPoll;					///< ArtPoll : IPAddress for the ArtPoll package
 	bool IsMultipleControllersReqDiag;			///< ArtPoll : Multiple controllers requesting diagnostics
 	TArtNetNodeReportCode reportCode;			///< See \ref TArtNetNodeReportCode
@@ -124,19 +128,19 @@ struct TArtNetNodeState {
  *
  */
 struct TArtNetNode {
-	uint8_t MACAddressLocal[6];						///< The local MAC Address
-	uint8_t IPAddressLocal[4];						///< Local IP Address
-	uint8_t IPAddressBroadcast[4];					///< The broadcast IP Address
-	uint8_t IPDefaultGateway[4];					///< The default gateway
-	uint8_t IPSubnetMask[4];						///< The subnet mask
-	uint8_t NetSwitch;								///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch;								///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
-	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
-	uint8_t IPAddressRemote[4];						///< The remote IP Address
-	uint8_t TalkToMe;								///< Behavior of Node
-	uint8_t Status1;								///< General Status register
-	uint8_t Status2;
+	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
+	uint32_t IPAddressLocal;						///< Local IP Address
+	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
+	uint32_t IPDefaultGateway;						///< The default gateway
+	uint32_t IPSubnetMask;							///< The subnet mask
+	uint8_t  NetSwitch;								///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t  SubSwitch;								///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t  ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
+	uint8_t  LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
+	uint32_t IPAddressRemote;						///< The remote IP Address
+	uint8_t  TalkToMe;								///< Behavior of Node
+	uint8_t  Status1;								///< General Status register
+	uint8_t  Status2;
 };
 
 /**
@@ -169,7 +173,11 @@ struct TOutputPort {
 
 class ArtNetNode {
 public:
+#if defined (__circle__)
 	ArtNetNode(CNetSubSystem *, CActLED *);
+#else
+	ArtNetNode(void);
+#endif
 	~ArtNetNode(void);
 
 	void SetOutput(LightSet *);
@@ -178,6 +186,9 @@ public:
 
 	void Start(void);
 	void Stop(void);
+
+	void SetDirectUpdate(bool);
+	const bool GetDirectUpdate(void);
 
 	const char *GetShortName(void);
 	void SetShortName(const char *);
@@ -214,9 +225,11 @@ private:
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
+#if defined (__circle__)
 	CNetSubSystem			*m_pNet;		///<
 	CSocket					m_Socket;		///<
-	boolean 				m_IsDHCPUsed;	///<
+#endif
+	bool 					m_IsDHCPUsed;	///<
 	LightSet    			*m_pLightSet;	///<
 	CBlinkTask 				*m_pBlinkTask;	///<
 
@@ -228,6 +241,8 @@ private:
 	struct TArtDiagData		m_DiagData;		///<
 
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
+
+	bool					m_bDirectUpdate;
 };
 
 #endif /* ARTNETNODE_H_ */

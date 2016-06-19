@@ -34,12 +34,9 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
+#ifdef CLOGGER
+static const char FromSPISend[] = "spisend";
 #endif
-
-//static const char FromSPISend[] = "spisend";
-
 /**
  *
  */
@@ -97,29 +94,38 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 	uint16_t beginIndex = (uint16_t)0;
 	uint16_t endIndex = (uint16_t)0;
 
+	boolean bUpdate = false;
+
 	switch (nPortId)
 	{
 	case 0:
 		beginIndex = (uint16_t)0;
 		endIndex = min(m_nLEDCount, (uint16_t)(length / (uint16_t)3));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 1:
 		beginIndex = (uint16_t)170;
 		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)170 + (length / (uint16_t)3)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 2:
 		beginIndex = (uint16_t)340;
 		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)340 + (length / (uint16_t)3)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 3:
 		beginIndex = (uint16_t)510;
 		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)510 + (length / (uint16_t)3)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	default:
 		break;
 	}
 
-	//CLogger::Get ()->Write(FromSPISend, LogDebug, "%u %u %u %u:%u:%u", nPortId, beginIndex, endIndex, data[0], data[1], data[2]);
+
+#ifdef CLOGGER
+	CLogger::Get ()->Write(FromSPISend, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
+#endif
 
 	while (m_pLEDStripe->IsUpdating ())
 	{
@@ -132,7 +138,9 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 		i = i + 3;
 	}
 
-	m_pLEDStripe->Update();
+	if (bUpdate) {
+		m_pLEDStripe->Update();
+	}
 }
 
 /**

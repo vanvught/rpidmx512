@@ -95,7 +95,7 @@ enum TArtNetPortSettings {
  */
 enum TArtNetPortDir{
 	ARTNET_INPUT_PORT = 1, 		///< The input port
-	ARTNET_OUTPUT_PORT,			///< The output port
+	ARTNET_OUTPUT_PORT			///< The output port
 };
 
 /**
@@ -151,7 +151,7 @@ enum TArtnetPortCommand {
 	ARTNET_PC_CLR_0 = 0x90,			///< Clear DMX Output buffer for Port 0
 	ARTNET_PC_CLR_1 = 0x91,			///< Clear DMX Output buffer for Port 1
 	ARTNET_PC_CLR_2 = 0x92,			///< Clear DMX Output buffer for Port 2
-	ARTNET_PC_CLR_3 = 0x93,			///< Clear DMX Output buffer for Port 3
+	ARTNET_PC_CLR_3 = 0x93			///< Clear DMX Output buffer for Port 3
 };
 
 #endif /* ARTNET_H_ */

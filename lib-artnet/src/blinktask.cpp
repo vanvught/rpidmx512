@@ -17,10 +17,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "blinktask.h"
-#include <circle/sched/scheduler.h>
+
 #include <assert.h>
 
+#if defined (__circle__)
+#include <circle/sched/scheduler.h>
+#else
+extern "C" {
+#include "led.h"
+}
+#endif
+
+#include "blinktask.h"
+
+#if defined (__circle__)
 /**
  *
  * @param pActLED
@@ -78,3 +88,33 @@ void CBlinkTask::Run (void)
 		}
 	}
 }
+#else
+CBlinkTask::CBlinkTask (unsigned nFreqHz)
+:	m_bStop(false)
+{
+	SetFrequency (nFreqHz);
+}
+
+/**
+ *
+ */
+CBlinkTask::~CBlinkTask (void)
+{
+
+}
+
+/**
+ *
+ * @param nFreqHz
+ */
+void CBlinkTask::SetFrequency (unsigned nFreqHz)
+{
+	if (nFreqHz == 0)
+	{
+		led_set_ticks_per_second(0);
+	} else
+	{
+		led_set_ticks_per_second(1000000 / nFreqHz);
+	}
+}
+#endif

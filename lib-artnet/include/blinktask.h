@@ -20,9 +20,13 @@
 #ifndef _blinktask_h
 #define _blinktask_h
 
+#if defined (__circle__)
 #include <circle/actled.h>
 #include <circle/sched/task.h>
- 
+#else
+#endif
+
+#if defined (__circle__)
 class CBlinkTask : public CTask
 {
 public:
@@ -35,9 +39,25 @@ public:
 
 private:
 	CActLED *m_pActLED;
-
 	unsigned m_nusPeriod;
-	boolean m_bStop;
+	bool m_bStop;
 };
 
+#else
+class CBlinkTask
+{
+public:
+	CBlinkTask (unsigned nFreqHz);
+	~CBlinkTask (void);
+
+	void SetFrequency (unsigned nFreqHz);
+
+	void Run (void);
+
+private:
+	unsigned m_nusPeriod;
+	bool m_bStop;
+};
 #endif
+
+#endif /* */
