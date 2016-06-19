@@ -3,7 +3,6 @@
 	<name>lib-osc</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

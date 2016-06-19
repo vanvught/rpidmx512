@@ -1,12 +1,14 @@
 //
 // oscserver.cpp
 //
-#include "oscserver.h"
+#include <assert.h>
+
 #include <circle/net/socket.h>
 #include <circle/net/in.h>
 #include <circle/sched/scheduler.h>
 #include <circle/logger.h>
-#include <assert.h>
+
+#include "oscserver.h"
 
 #define STACK_SIZE	TASK_STACK_SIZE
 

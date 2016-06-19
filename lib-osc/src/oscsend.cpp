@@ -34,20 +34,54 @@
 #include <circle/logger.h>
 
 #include "oscutil.h"
-#include "udpclient.h"
 
 static const char FromOscSend[] = "oscsend";
 #else
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "UDPClient.h"
 #endif
 
 #include "oscsend.h"
 #include "oscstring.h"
 #include "oscmessage.h"
 
+/**
+ * @brief Send a OSC formatted message to the address specified.
+ *
+ * @param address The target OSC address
+ * @param port The target OSC port
+ * @param path The OSC path the message will be delivered to
+ * @param types The types of the data items in the message, types are defined in \ref osc_type
+ * @param ... The data values to be transmitted. The types of the arguments passed here must agree with the types specified in the type parameter.
+ */
+#if defined (__circle__)
+OSCSend::OSCSend(CSocket *pSocket, CIPAddress *pAddress, int port, const char *path, const char *types, ...) :
+		m_pSocket(pSocket), m_pAddress(pAddress), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
+#else
+OSCSend::OSCSend(const char *address, int port, const char *path, const char *types, ...) :
+
+		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
+#endif
+	va_list ap;
+	va_start(ap, types);
+	OSCSend::AddVarArgs(ap);
+
+	if (m_Result == 0) {
+		OSCSend::Send();
+	}
+}
+
+OSCSend::~OSCSend(void) {
+	if(m_Msg) {
+		delete m_Msg;
+	}
+}
+
+/**
+ *
+ * @param ap
+ */
 void OSCSend::AddVarArgs(va_list ap) {
 	m_Msg = new OSCMessage();
 
@@ -87,57 +121,25 @@ void OSCSend::AddVarArgs(va_list ap) {
 	va_end(ap);
 }
 
+/**
+ *
+ */
 void OSCSend::Send(void) {
 	int data_len = OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
 	char *data = (char *)m_Msg->Serialise(m_Path, 0, 0);
 
 #if defined (__circle__)
-	UDPClient client(m_pSocket, m_pAddress, m_Port);
-#else
-	UDPClient client(m_Address, m_Port);
-#endif
-
-	if (client.Send(data, data_len) != data_len) {
-		m_Result = -1;
-#if defined (__circle__)
+	int nFlag = 0;
+	if (m_pSocket->SendTo((const void *)data, (unsigned)data_len, nFlag, *m_pAddress, (u16)m_Port) != data_len) {
 		CLogger::Get ()->Write(FromOscSend, LogPanic, "Send failed");
+#else
+	if (1 != data_len) {
 #endif
+		m_Result = -1;
 	}
 
 	// Free the memory allocated by m_Msg->Serialise
 	if(data) {
 		free(data);
-	}
-}
-
-/**
- * @brief Send a OSC formatted message to the address specified.
- *
- * @param address The target OSC address
- * @param port The target OSC port
- * @param path The OSC path the message will be delivered to
- * @param types The types of the data items in the message, types are defined in \ref osc_type
- * @param ... The data values to be transmitted. The types of the arguments passed here must agree with the types specified in the type parameter.
- */
-#if defined (__circle__)
-OSCSend::OSCSend(CSocket *pSocket, CIPAddress *pAddress, int port, const char *path, const char *types, ...) :
-		m_pSocket(pSocket), m_pAddress(pAddress), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
-#else
-OSCSend::OSCSend(const char *address, int port, const char *path, const char *types, ...) :
-
-		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
-#endif
-	va_list ap;
-	va_start(ap, types);
-	OSCSend::AddVarArgs(ap);
-
-	if (m_Result == 0) {
-		OSCSend::Send();
-	}
-}
-
-OSCSend::~OSCSend(void) {
-	if(m_Msg) {
-		delete m_Msg;
 	}
 }

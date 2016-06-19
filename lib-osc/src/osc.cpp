@@ -24,8 +24,6 @@
  */
 
 #ifdef __circle__
-#include <stdint.h>
-#include <assert.h>
 #include <circle/util.h>
 
 #include "oscutil.h"

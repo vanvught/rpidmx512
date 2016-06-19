@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../Circle
 
-OBJS	= oscws28xx.o main.o kernel.o
+OBJS	= oscserver.o oscws28xx.o main.o kernel.o
 
 INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-osc/include -I ../rpi_circle_libws28xx/include
