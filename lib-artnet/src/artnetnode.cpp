@@ -48,17 +48,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-extern "C" {
 #include "wifi.h"
 #include "udp.h"
 #include "util.h"
 #include "sys_time.h"
-#define memcpy _memcpy
-#define memcmp _memcmp
-#define memset _memset
-#define strlen _strlen
-#define strncpy _strncpy
-}
 #endif
 
 //#define SENDDIAG
