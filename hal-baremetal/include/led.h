@@ -33,9 +33,17 @@
 #define LED_BLINK_DMX_DATA	(uint32_t) (1E6 / 6)	///< 3Hz
 #define LED_BLINK_RDM_DATA	(uint32_t) (1E6 / 8)	///< 4Hz
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void led_set_ticks_per_second(uint32_t);
 extern uint32_t ticks_per_second_get(void);
 
 extern void led_blink(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LED_H_ */

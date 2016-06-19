@@ -41,6 +41,11 @@ struct hardware_time {
 	uint16_t year;		///< Year			[1970-....]
 };
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void hardware_init(void);
 extern void hardware_reboot(void);
 extern void hardware_led_init(void);
@@ -91,5 +96,9 @@ inline static void hardware_watchdog_feed(void) {
 inline static void hardware_watchdog_stop(void) {
 	watchdog_stop();
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HARDWARE_H_ */

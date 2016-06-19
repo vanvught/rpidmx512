@@ -57,7 +57,13 @@ uint32_t led_get_ticks_per_second(void) {
  *
  */
 void led_blink(void) {
+	if (ticks_per_second == 0) {
+		return;
+	}
+
 	const uint32_t micros_now = BCM2835_ST->CLO;
+
+
 
 	if (micros_now - micros_previous < ticks_per_second) {
 		return;

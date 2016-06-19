@@ -42,13 +42,18 @@
 #define MONITOR_LINE_STATUS			28	///<
 #define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
 extern void monitor_time_uptime(const int);
 
-/**
- * @ingroup monitor
- *
- */
 extern void monitor_update(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MONITOR_H_ */

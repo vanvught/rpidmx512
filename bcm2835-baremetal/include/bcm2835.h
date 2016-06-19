@@ -360,6 +360,10 @@ typedef struct {
 #define BCM2835_BSC1		((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)		///< Base register address for I2C (BSC1)
 #define BCM2835_BSC2		((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)		///< Base register address for I2C (BSC2)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup TIMER
  *
@@ -402,6 +406,10 @@ extern void __disable_irq(void);
  *
  */
 extern void __enable_irq(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

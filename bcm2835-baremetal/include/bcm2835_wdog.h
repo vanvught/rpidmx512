@@ -26,8 +26,16 @@
 #ifndef BCM2835_WDOG_H_
 #define BCM2835_WDOG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void watchdog_init(void);
 extern void watchdog_feed(void);
 extern void watchdog_stop(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BCM2835_WDOG_H_ */

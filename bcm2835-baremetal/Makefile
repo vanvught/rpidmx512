@@ -23,8 +23,8 @@ BUILD7 = build7/
 BUILD8 = build8/
 
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) 
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) 
 
 TARGET = lib/libbcm2835.a 
 TARGET7 = lib7/libbcm2835.a
@@ -72,7 +72,7 @@ $(BUILD7)%.o: $(SOURCE)/%.S
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
-$(BUILD7)%.o: $(SOURCE)/arm//%.c
+$(BUILD7)%.o: $(SOURCE)/arm/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
 $(TARGET7): Makefile $(OBJECTS7)
@@ -87,7 +87,7 @@ $(BUILD8)%.o: $(SOURCE)/%.S
 $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
 
-$(BUILD8)%.o: $(SOURCE)/arm//%.c
+$(BUILD8)%.o: $(SOURCE)/arm/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
 
 $(TARGET8): Makefile $(OBJECTS8)
