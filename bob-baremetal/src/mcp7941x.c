@@ -24,6 +24,7 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #ifdef __AVR_ARCH__
 #include "avr_i2c.h"
@@ -41,7 +42,7 @@
 #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
-static uint8_t i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
+static uint8_t i2c_mcp7941x_slave_address __attribute__((aligned(4))) = (uint8_t)MCP7941X_DEFAULT_SLAVE_ADDRESS ;
 
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
@@ -71,7 +72,7 @@ uint8_t mcp7941x_start(const uint8_t slave_address) {
 	FUNC_PREFIX(i2c_begin());
 
 	if (slave_address == (uint8_t) 0) {
-		i2c_mcp7941x_slave_address = MCP7941X_DEFAULT_SLAVE_ADDRESS;
+		i2c_mcp7941x_slave_address = (uint8_t)MCP7941X_DEFAULT_SLAVE_ADDRESS;
 	} else {
 		i2c_mcp7941x_slave_address = slave_address;
 	}
