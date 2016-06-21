@@ -4,6 +4,7 @@ COPS_COMMON = -DBARE_METAL
 COPS_COMMON += -DENABLE_FRAMEBUFFER
 COPS_COMMON += -DMIDI_DMX_BRIDGE
 COPS_COMMON += -DMIDI_INTERFACE_SPI
+#
 COPS_COMMON += -I"./include"
 COPS_COMMON += -I"./common/include"
 COPS_COMMON += -I"../bcm2835-baremetal/include"
@@ -24,7 +25,7 @@ COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
 LIB =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv6zk/arm1176jzf-s/hardfp/vfp
-LIB += -L /opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
+LIB += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
 LIB += -L"../bob-baremetal/lib"
 LIB += -L"../bcm2835-baremetal/lib"
 LIB += -L"../emmc/lib"
