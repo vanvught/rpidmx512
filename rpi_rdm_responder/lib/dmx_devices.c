@@ -24,7 +24,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include "bcm2835.h"
@@ -35,6 +34,9 @@
 #include "sscan.h"
 #include "dmx_devices.h"
 #include "dmx.h"
+
+extern int sscan_spi(const char *, char *, char *, uint8_t *, uint8_t *, uint16_t *, uint32_t *, uint8_t *);
+
 
 TABLE(initializer_t, devices)
 TABLE(initializer_t, devices_init)
