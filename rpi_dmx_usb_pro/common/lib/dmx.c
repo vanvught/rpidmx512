@@ -156,7 +156,7 @@ void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
  *
  */
 void dmx_clear_data(void) {
-	uint32_t i = sizeof(dmx_data);
+	uint32_t i = sizeof(dmx_data) / sizeof(uint32_t);
 	uint32_t *p = (uint32_t *)dmx_data;
 
 	while (i-- != (uint32_t) 0) {
