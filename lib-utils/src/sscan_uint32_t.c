@@ -24,7 +24,8 @@
  */
 
 #include <stdint.h>
-#include <ctype.h>
+
+#include "util.h"
 
 /**
  *
@@ -56,7 +57,7 @@ int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 	k = 0;
 
 	while ((*b != (char) 0) && (*b != '\n')) {
-		if (!isdigit((int)*b)) {
+		if (!isdigit((int )*b)) {
 			return 1;
 		}
 		k = k * 10 + (int64_t) *b - (int64_t) '0';

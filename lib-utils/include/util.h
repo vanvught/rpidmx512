@@ -2,7 +2,7 @@
  * @file util.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -35,18 +34,31 @@
 #define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
 
 #ifndef MAX
-#define MAX(a,b)		(((a) > (b)) ? (a) : (b))
-#define MIN(a,b)		(((a) < (b)) ? (a) : (b))
+#define MAX(a,b)		(((a) > (b)) ? (a) : (b))											///<
+#define MIN(a,b)		(((a) < (b)) ? (a) : (b))											///<
 #endif
 
-/**
- * @ingroup util
- *
- * @param s1
- * @param s2
- * @param n
- * @return
- */
+#define isdigit(c)		((c) >= '0' && (c) <= '9' ? 1 : 0)									///<
+#define isxdigit(c)		(isdigit(c) || ((unsigned) (c) | 32) - 'a' < 6)						///<
+#define isprint(c)		(((c) >= ' ' && (c) <= '~') ? 1 : 0)								///<
+#define isupper(c)		((c) >= 'A' && (c) <= 'Z')											///<
+#define islower(c)		((c) >= 'a' && (c) <= 'z')											///<
+#define isalpha(c)		(isupper(c) || islower(c))											///<
+#define tolower(c)		(isupper(c) ? ((c) + 32) : (c))										///<
+#define toupper(c)		(islower(c) ? ((c) - 32) : (c))										///<
+
+
+#define memcpy			_memcpy
+#define memcmp			_memcmp
+#define memset			_memset
+#define strlen			_strlen
+#define strncpy			_strncpy
+#define strcmp			_strcmp
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 inline static int _memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
 	unsigned char *t1, *t2;
@@ -64,16 +76,9 @@ inline static int _memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-/**
- * @ingroup util
- *
- * @param dest
- * @param src
- * @param n
- */
 inline static void *_memcpy(void *dest, const void *src, size_t n) {
-	char *dp = dest;
-	const char *sp = src;
+	char *dp = (char *)dest;
+	const char *sp = (const char *)src;
 
 	while (n-- != (size_t) 0) {
 		*dp++ = *sp++;
@@ -82,12 +87,16 @@ inline static void *_memcpy(void *dest, const void *src, size_t n) {
 	return dest;
 }
 
-/**
- * @ingroup util
- *
- * @param s
- * @return
- */
+inline static void *_memset (void *dest, int c, size_t n) {
+	char *dp = (char *)dest;
+
+	while (n-- != (size_t) 0) {
+		*dp++ = (char) c;
+	}
+
+	return dest;
+}
+
 inline static size_t _strlen(const char *s) {
 	const char *p = s;
 
@@ -98,15 +107,47 @@ inline static size_t _strlen(const char *s) {
 	return (size_t) (s - p);
 }
 
+inline static char *_strncpy(char *s1, const char *s2, size_t n)
+ {
+	char *s = s1;
+
+	while (n > 0 && *s2 != '\0') {
+		*s++ = *s2++;
+		--n;
+	}
+
+	while (n > 0) {
+		*s++ = '\0';
+		--n;
+	}
+	return s1;
+}
+
+inline static int _strcmp(const char *s1, const char *s2) {
+	char *p1 = (char *) s1;
+	char *p2 = (char *) s2;
+
+	for (; *p1 == *p2; p1++, p2++) {
+		if (*p1 == '\0') {
+			return 0;
+		}
+	}
+	return (int) ((*(unsigned char *) p1 < *(unsigned char *) p2) ? -1 : +1);
+}
+
+#ifdef __cplusplus
+}
+#endif
+
 #define GCC_VERSION (__GNUC__ * 10000 \
                    + __GNUC_MINOR__ * 100 \
                    + __GNUC_PATCHLEVEL__)
 
 #if GCC_VERSION > 40899
-// 4.9 supports assume_aligned, 4.8 does not. 
+// 4.9 supports assume_aligned, 4.8 does not.
 #define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
 #else
-#define ASSUME_ALIGNED  
+#define ASSUME_ALIGNED
 #endif
 
 #define ALIGNED  		__attribute__((aligned(4)))

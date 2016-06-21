@@ -24,7 +24,8 @@
  */
 
 #include <stdint.h>
-#include <ctype.h>
+
+#include "util.h"
 
 /**
  *
