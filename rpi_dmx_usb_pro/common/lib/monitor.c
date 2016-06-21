@@ -26,10 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include <ctype.h>
 
-#include "sys_time.h"
-#include "hardware.h"
 #include "util.h"
 #include "console.h"
 #include "monitor.h"
@@ -60,54 +57,6 @@ static uint32_t break_to_break_max = (uint32_t)0;
 #if defined(RDM_CONTROLLER) || defined(RDM_RESPONDER)
 static uint8_t rdm_device_info_label_length_previous = (uint8_t)0;
 #endif
-
-/**
- * @ingroup monitor
- *
- * @param line
- * @param fmt
- */
-void monitor_line(const int line, const char *fmt, ...) {
-	va_list va;
-
-	console_clear_line(line);
-
-	if (fmt != NULL) {
-		va_start(va, fmt);
-		(void) vprintf(fmt, va);
-		va_end(va);
-	}
-}
-
-/**
- * @ingroup monitor
- *
- * @param line
- */
-void monitor_time_uptime(const int line) {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
-
-	const uint64_t uptime_seconds = hardware_uptime_seconds();
-
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = sys_time(NULL);
-	local_time = localtime(&ltime);
-
-	console_save_cursor();
-	console_set_cursor(0, line);
-
-	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d\n",
-			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(int) (uptime_seconds / day), (int) ((uptime_seconds % day) / hour),
-			(int) ((uptime_seconds % hour) / minute),
-			(int) (uptime_seconds % minute));
-
-	console_restore_cursor();
-}
 
 #if defined(RDM_CONTROLLER)
 /**
