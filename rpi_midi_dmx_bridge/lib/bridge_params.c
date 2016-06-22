@@ -22,14 +22,14 @@
  * THE SOFTWARE.
  */
 
-#include <midi.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "ff.h"
-#include "util.h"
+#include "read_config_file.h"
 #include "sscan.h"
+#include "util.h"
+#include "midi.h"
 #include "dmx.h"
 #include "bridge.h"
 #include "bridge_params.h"
@@ -40,15 +40,14 @@ TABLE(initializer_t, modes)
 TABLE(initializer_t, modes_monitor)
 TABLE(initializer_t, modes_init)
 
-static const TCHAR FILE_NAME_PARAMS[] = "params.txt";			///< Parameters file name
-
-static const char PARAMS_BREAK_TIME[] = "dmx_break_time";		///<
-static const char PARAMS_MAB_TIME[] = "dmx_mab_time";			///<
-static const char PARAMS_REFRESH_RATE[] = "dmx_refresh_rate";	///<
-static const char PARAMS_START_ADDRESS[] = "dmx_start_address";	///<
-static const char PARAMS_BAUDRATE[] = "midi_baudrate";			///<
-static const char PARAMS_CHANNEL[] = "midi_channel";			///<
-static const char PARAMS_MODE[] = "bridge_mode";				///<
+static const char PARAMS_FILE_NAME[] ALIGNED = "params.txt";			///< Parameters file name
+static const char PARAMS_BREAK_TIME[] ALIGNED = "dmx_break_time";		///<
+static const char PARAMS_MAB_TIME[] ALIGNED = "dmx_mab_time";			///<
+static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmx_refresh_rate";	///<
+static const char PARAMS_START_ADDRESS[] ALIGNED = "dmx_start_address";	///<
+static const char PARAMS_BAUDRATE[] ALIGNED = "midi_baudrate";			///<
+static const char PARAMS_CHANNEL[] ALIGNED = "midi_channel";			///<
+static const char PARAMS_MODE[] ALIGNED = "bridge_mode";				///<
 
 static uint8_t bridge_params_break_time = BRIDGE_PARAMS_DEFAULT_BREAK_TIME;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
 static uint8_t bridge_params_mab_time = BRIDGE_PARAMS_DEFAULT_MAB_TIME;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
@@ -99,28 +98,6 @@ static void process_line_read(const char *line) {
 			} else {
 				bridge_params_dmx_start_address = (uint16_t) value32;
 			}
-	}
-}
-
-/**
- *
- */
-static void read_config_file(void) {
-	FRESULT rc = FR_DISK_ERR;
-	FIL file_object;
-
-	rc = f_open(&file_object, FILE_NAME_PARAMS, (BYTE) FA_READ);
-
-	if (rc == FR_OK) {
-		TCHAR buffer[128];
-		for (;;) {
-			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL)
-				break; // Error or end of file
-			(void) process_line_read((const char *) buffer);
-		}
-		(void) f_close(&file_object);
-	} else {
-		// nothing to do here
 	}
 }
 
@@ -185,7 +162,7 @@ void bridge_params_init(void) {
 	int j;
 	char mode_function_name[] = "mode_xxx";
 
-	read_config_file();
+	read_config_file(PARAMS_FILE_NAME, &process_line_read);
 
 	period = 0;
 

@@ -25,16 +25,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "midi.h"
+#include "read_config_file.h"
 #include "sscan.h"
-#include "ff.h"
+#include "midi.h"
 
-static const TCHAR FILE_NAME_PARAMS[] = "params.txt";							///< Parameters file name
+static const char PARAMS_FILE_NAME[] ALIGNED = "params.txt";	///< Parameters file name
+static const char PARAMS_BAUDRATE[] ALIGNED = "baudrate";		///<
+static const char PARAMS_INTERFACE[] ALIGNED = "interface";		///<
 
-static const char PARAMS_BAUDRATE[] = "baudrate";								///<
-static const char PARAMS_INTERFACE[] = "interface";								///<
-
-static uint32_t midi_baudrate = MIDI_BAUDRATE_DEFAULT;
+static uint32_t midi_baudrate = MIDI_BAUDRATE_DEFAULT;			///<
 #if defined (MIDI_DMX_BRIDGE)
 static uint8_t midi_interface = 0;	///< SPI
 #else
@@ -79,27 +78,8 @@ static void process_line_read(const char *line) {
 }
 
 
-static void read_config_file(void) {
-	FRESULT rc = FR_DISK_ERR;
-	FIL file_object;
-
-	rc = f_open(&file_object, FILE_NAME_PARAMS, (BYTE) FA_READ);
-
-	if (rc == FR_OK) {
-		TCHAR buffer[128];
-		for (;;) {
-			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL)
-				break; // Error or end of file
-			(void) process_line_read((const char *) buffer);
-		}
-		(void) f_close(&file_object);
-	} else {
-		// nothing to do here
-	}
-}
-
 void sniffer_params_init(void) {
-	read_config_file();
+	read_config_file(PARAMS_FILE_NAME, &process_line_read);
 
 	midi_set_interface(midi_interface);
 	midi_set_baudrate(midi_baudrate);
