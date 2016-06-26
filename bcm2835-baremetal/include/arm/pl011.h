@@ -55,14 +55,36 @@
 #define PL011_LCRH_WLEN5 		((uint32_t)(0x00<<5))	///< Word length 5 bits
 #define PL011_LCRH_SPS			((uint32_t)(1 << 7))	///< Sticky parity select
 
+#define PL011_CR_CTSEN			((uint32_t)(1<<15))		///< Set to 1 to enable CTS hardware flow control
+#define PL011_CR_RTSEN			((uint32_t)(1<<14))		///< Set to 1 to enable RTS hardware flow control
+#define PL011_CR_OUT2			((uint32_t)(1<<13))		///< Set to 1 to set out2 to 0
+#define PL011_CR_OUT1			((uint32_t)(1<<12))		///< Set to 1 to set out1 to 0
+#define PL011_CR_RTS			((uint32_t)(1<<11))		///< Set to 1 to set the RTS pin low
+#define PL011_CR_DTR			((uint32_t)(1<<10))		///< Set to 1 to set the DTR pin low
+#define PL011_CR_RXE			((uint32_t)(1<<9))		///< Set to 1 to enable receiving
+#define PL011_CR_TXE			((uint32_t)(1<<8))		///< Set to 1 to enable transmitting
+#define PL011_CR_LBE			((uint32_t)(1<<7))		///< Set to 1 to enable loopback
+#define PL011_CR_SIRLP			((uint32_t)(1<<2))		///< Sets SIR IrDA mode (unused?)
+#define PL011_CR_SIREN			((uint32_t)(1<<1))		///< Enables SIR IrDA mode (unused?)
+#define PL011_CR_UARTEN			((uint32_t)(1<<0))		///< Set to 1 to enable the UART
+
+#define PL011_IFLS_TXIFLSEL_1_8	((uint32_t)(0<<0))	///<
+#define PL011_IFLS_TXIFLSEL_1_4	((uint32_t)(1<<0))	///<
+#define PL011_IFLS_TXIFLSEL_1_2	((uint32_t)(2<<0))	///<
+#define PL011_IFLS_TXIFLSEL_3_4	((uint32_t)(3<<0))	///<
+#define PL011_IFLS_TXIFLSEL_7_8	((uint32_t)(4<<0))	///<
+
 #define PL011_IMSC_RXIM			((uint32_t)(1 << 4))	///<
+#define PL011_IMSC_TXIM			((uint32_t)(1 << 5))	/// < Transmit interrupt mask bit, if 1: this interrupt is enabled
 #define PL011_IMSC_FEIM 		((uint32_t)(1 << 7))	///<
 #define PL011_IMSC_BEIM 		((uint32_t)(1 << 9))	///<
 
 #define PL011_MIS_RXMIS			((uint32_t)(1 << 4))	///<
+#define PL011_MIS_TXMIS   		((uint32_t)(1 << 5))	///< Transmit interrupt status
 #define PL011_MIS_FEMIS			((uint32_t)(1 << 7))	///<
 
 #define PL011_ICRC_RXIC			((uint32_t)(1 << 4))	///<
+#define PL011_ICR_TXIC			((uint32_t)(1 << 5))	///< Transmit interrupt clear
 #define PL011_ICR_FEIC 			((uint32_t)(1 << 7))	///<
 
 #define PL011_BAUD_INT(x) 		(3000000 / (16 * (x)))
