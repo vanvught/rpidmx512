@@ -1,8 +1,8 @@
 /**
- * @file sscan.h
+ * @file sscan.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef SSCAN_H_
-#define SSCAN_H_
-
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "util.h"
 
-extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
-extern int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
-extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
-extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @return
+ */
+int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
+	int32_t k;
 
-#ifdef __cplusplus
+	const char *n = name;
+	const char *b = buf;
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
+			return 0;
+		}
+	}
+
+	if (*n != (char) 0) {
+		return 0;
+	}
+
+	if (*b++ != (char) '=') {
+		return 0;
+	}
+
+	k = 0;
+
+	while ((*b != (char) 0) && (*b != '\n')) {
+		if (!isdigit((int )*b)) {
+			return 1;
+		}
+		k = k * 10 + (int32_t) *b - (int32_t) '0';
+		b++;
+	}
+
+	if (k > (int32_t) ((uint16_t) ~0)) {
+		return 1;
+	}
+
+	*value = (uint16_t) k;
+
+	return 2;
 }
-#endif
-
-#endif /* SSCAN_H_ */

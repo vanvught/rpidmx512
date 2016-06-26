@@ -1,6 +1,7 @@
 ARMGNU ?= arm-none-eabi
 
 COPS_COMMON = -I"./include"
+COPS_COMMON += -I"../ff11/src"
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s

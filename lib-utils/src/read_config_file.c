@@ -1,6 +1,5 @@
 /**
- * @file sscan.h
- *
+ * @file read_config_file.c
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -23,22 +22,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef SSCAN_H_
-#define SSCAN_H_
+#include <stdbool.h>
+#include <stddef.h>
 
-#include <stdint.h>
+#include "read_config_file.h"
+#include "ff.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+bool read_config_file(const char *file_name, funcptr pfi) {
+	FRESULT rc = FR_DISK_ERR;
+	FIL file_object;
 
-extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
-extern int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
-extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
-extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+	rc = f_open(&file_object, (TCHAR *)file_name, (BYTE) FA_READ);
 
-#ifdef __cplusplus
+	if (rc == FR_OK) {
+		TCHAR buffer[128];
+		for (;;) {
+			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL) {
+				break; // Error or end of file
+			}
+			(void) pfi((const char *) buffer);
+		}
+		(void) f_close(&file_object);
+	} else {
+		return false;
+	}
+
+	return true;
 }
-#endif
-
-#endif /* SSCAN_H_ */
