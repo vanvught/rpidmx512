@@ -39,7 +39,8 @@
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176		///< 176 us
 #define DMX_TRANSMIT_MAB_TIME_MIN				12		///< 12 us
 #define DMX_TRANSMIT_MAB_TIME_MAX				1E6		///< 1s
-#define DMX_TRANSMIT_REFRESH_DEFAULT			(uint32_t)(1E6 / 40)	///< 25000 us
+#define DMX_TRANSMIT_REFRESH_RATE_DEFAULT		40		///< 40 Hz
+#define DMX_TRANSMIT_PERIOD_DEFAULT				(uint32_t)(1E6 / DMX_TRANSMIT_REFRESH_RATE_DEFAULT)	///< 25000 us
 #define DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN	1204	///< us
 
 #define DMX_MIN_SLOT_VALUE 						0		///< The minimum value a DMX512 slot can take.
@@ -72,6 +73,12 @@ struct _total_statistics {
 	uint32_t rdm_packets;								///<
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void dmx_init(void);
+
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
@@ -94,5 +101,9 @@ extern /*@shared@*/const /*@null@*/uint8_t *rdm_get_available(void) ASSUME_ALIGN
 extern /*@shared@*/const uint8_t *rdm_get_current_data(void) ASSUME_ALIGNED;
 extern void rdm_available_set(const uint8_t);
 extern const uint32_t rdm_get_data_receive_end(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DMX_H_ */
