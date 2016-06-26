@@ -8,7 +8,11 @@
 #include <errno.h>
 #include <reent.h>
 
+#include "console.h"
+
 unsigned int heap_end = 0x00;
+
+#if 1
 
 /* Forward prototypes.  */
 int     _system     _PARAMS ((const char *));
@@ -271,3 +275,4 @@ int _rename(const char * oldpath, const char * newpath) {
 	errno = ENOSYS;
 	return -1;
 }
+#endif

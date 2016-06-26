@@ -97,6 +97,14 @@ inline static void hardware_watchdog_stop(void) {
 	watchdog_stop();
 }
 
+/**
+ *
+ * @param usec
+ */
+inline static void hardware_delay_us(const uint64_t usec) {
+	udelay(usec);
+}
+
 #ifdef __cplusplus
 }
 #endif

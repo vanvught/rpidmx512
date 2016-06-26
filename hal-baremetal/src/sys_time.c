@@ -27,6 +27,7 @@
 #include <time.h>
 
 #include "bcm2835.h"
+#include "arm/synchronize.h"
 #include "mcp7941x.h"
 
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
@@ -92,7 +93,9 @@ void sys_time_set(const struct tm *tmbuf) {
  * @return  The value of time in seconds since the Epoch
  */
 time_t sys_time(time_t *__timer) {
+	dmb();
 	time_t elapsed = (time_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
+	dmb();
 
 	elapsed = elapsed + rtc_startup_seconds;
 
