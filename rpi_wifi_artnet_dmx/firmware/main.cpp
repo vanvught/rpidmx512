@@ -42,12 +42,9 @@
 #include "console.h"
 
 extern "C" {
-void notmain(void);
-}
-
 
 void notmain(void) {
-	uint8_t output_type = OUTPUT_TYPE_DMX;
+	uint8_t output_type;
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
@@ -57,18 +54,21 @@ void notmain(void) {
 
 	output_type = artnet_params_get_output_type();
 
-	if (output_type == OUTPUT_TYPE_DMX) {
-		dmx_params_init();
-	} else if (output_type == OUTPUT_TYPE_SPI) {
+	if (output_type == OUTPUT_TYPE_SPI) {
 		devices_params_init();
+	} else {
+		output_type = OUTPUT_TYPE_DMX;
+		dmx_params_init();
 	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("Wifi ArtNet 3 Node DMX Output");
+	printf("WiFi ArtNet 3 Node DMX Output");
 
 	console_set_top_row(4);
 
+	hardware_watchdog_init();
 	(void)wifi_init();
+	hardware_watchdog_stop();
 
 	printf("sdk_version : %s\n", system_get_sdk_version());
 	printf("cpu freq    : %d\n\n", system_get_cpu_freq());
@@ -92,12 +92,12 @@ void notmain(void) {
 
 	if (network_params_init()) {
 		if (network_params_is_use_dhcp()) {
-			wifi_begin(network_params_get_ssid(), network_params_get_password());
+			wifi_station(network_params_get_ssid(), network_params_get_password());
 		} else {
 			ip_config.ip.addr = network_params_get_ip_address();
 			ip_config.netmask.addr = network_params_get_net_mask();
 			ip_config.gw.addr = network_params_get_default_gateway();
-			//wifi_begin_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
+			wifi_station_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
 		}
 
 		printf("\nWiFi mode   : %s\n\n", wifi_get_opmode() == WIFI_STA ? "Station" : "Access Point");
@@ -130,7 +130,6 @@ void notmain(void) {
 		if (refresh_rate != (uint8_t) 0) {
 			period = (uint32_t) (1E6 / refresh_rate);
 		}
-
 
 		dmx.SetPeriodTime(period);
 
@@ -192,4 +191,6 @@ void notmain(void) {
 		node.HandlePacket();
 		led_blink();
 	}
+}
+
 }

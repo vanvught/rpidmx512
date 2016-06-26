@@ -74,7 +74,7 @@ _wifi_mode wifi_get_opmode(void) {
  * @param macaddr
  * @return
  */
-bool wifi_get_macaddr(uint8_t *macaddr) {
+bool wifi_get_macaddr(const uint8_t *macaddr) {
 	assert(macaddr != NULL);
 
 	if (macaddr == NULL) {
@@ -94,7 +94,7 @@ bool wifi_get_macaddr(uint8_t *macaddr) {
  * @param info
  * @return
  */
-bool wifi_get_ip_info(struct ip_info *info) {
+bool wifi_get_ip_info(const struct ip_info *info) {
 	assert(info != NULL);
 
 	if (info == NULL) {
@@ -168,7 +168,7 @@ const char *system_get_sdk_version(void) {
  * @param ssid
  * @param password
  */
-void wifi_begin(const char *ssid, const char *password) {
+void wifi_station(const char *ssid, const char *password) {
 	assert(ssid != NULL);
 	assert(password != NULL);
 
@@ -179,4 +179,26 @@ void wifi_begin(const char *ssid, const char *password) {
 
 	esp8266_write_str(password);
 	esp8266_write_byte((uint8_t)(0));
+}
+
+/**
+ *
+ * @param ssid
+ * @param ssid
+ * @param
+ */
+void wifi_station_ip(const char *ssid, const char *password, const struct ip_info *info) {
+	assert(ssid != NULL);
+	assert(password != NULL);
+	assert(password != NULL);
+
+	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA_IP);
+
+	esp8266_write_str(ssid);
+	esp8266_write_byte((uint8_t)(0));
+
+	esp8266_write_str(password);
+	esp8266_write_byte((uint8_t)(0));
+
+	esp8266_write_bytes((const uint8_t *)info, 12);	//TODO sizeof
 }

@@ -57,14 +57,16 @@ extern "C" {
 extern bool wifi_init(void);
 extern _wifi_mode wifi_get_opmode(void);
 
-extern bool wifi_get_macaddr(uint8_t *);
-extern bool wifi_get_ip_info(struct ip_info *);
+extern bool wifi_get_macaddr(const uint8_t *);
+extern bool wifi_get_ip_info(const struct ip_info *);
 extern /*@shared@*/const char *wifi_station_get_hostname(void);
 
 extern const uint8_t system_get_cpu_freq(void);
 extern /*@shared@*/const char *system_get_sdk_version(void);
 
-extern void wifi_begin(const char *, const char *);
+extern void wifi_station(const char *, const char *);
+extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
+
 extern void wifi_soft_ap(void);
 
 #ifdef __cplusplus
