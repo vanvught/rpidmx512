@@ -92,7 +92,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x03 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x04 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE		12							///< \ref TArtPoll \ref TArtSync
@@ -155,6 +155,8 @@ ArtNetNode::ArtNetNode(void) :
 	m_State.reportCode = ARTNET_RCPOWEROK;
 	m_State.nActivePorts = 0;
 	m_State.status = ARTNET_STANDBY;
+
+	m_tOpCodePrevious = OP_NOT_DEFINED;
 
 	FillPollReply();
 	FillDiagData();
@@ -426,7 +428,6 @@ void ArtNetNode::SetNetworkDetails(void) {
 	const uint8_t bit1 = (m_IsDHCPUsed ? 1 : 0) << 1;	// Bit 1 : Clr = Node is IP is manually configured , Set = Node’s IP is DHCP configured.
 	m_Node.Status2 = bit1 | 1 << 2 | 1 << 3;			// Bit 2 : Set : Node is DHCP capable
 														// Bit 3 : Set : Node supports 15 bit Port-Address (Art-Net 3)
-
 }
 
 /**
@@ -522,38 +523,43 @@ int ArtNetNode::HandlePacket(void) {
 	const int nBytesReceived = udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &IPAddressFrom, &nForeignPort) ;
 #endif
 
-	if (nBytesReceived < 0) {
 #if defined (__circle__)
+	if (nBytesReceived < 0) {
 		CLogger::Get()->Write(FromArtNetNode, LogPanic, "Cannot receive");
-#else
-#endif
 		return nBytesReceived;
 	}
-
-	m_ArtNetPacket.length = nBytesReceived;
+#endif
 
 	if (nBytesReceived == 0) {
-		m_ArtNetPacket.IPAddressFrom = 0;
 		return 0;
 	}
 
+	m_ArtNetPacket.length = nBytesReceived;
 	m_ArtNetPacket.IPAddressFrom = IPAddressFrom;
 
+	GetType();
+
 	if (m_State.IsSynchronousMode) {
-#if defined (__circle__)
-		const time_t now = CTimer::Get ()->GetTime ();
-#else
-		const time_t now = sys_time(NULL);
-#endif
-		if (now - m_State.ArtSyncTime >= 4) {
+		if ((m_ArtNetPacket.OpCode == OP_DMX) && (m_tOpCodePrevious == OP_DMX)) {
+			// WiFi UDP : We have missed the OP_SYNC
 			m_State.IsSynchronousMode = false;
-#ifdef SENDDIAG
-			SendDiag("Leaving Synchronous Mode", ARTNET_DP_LOW);
+			for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+				m_OutputPorts[i].IsDataPending = false;
+			}
+		} else {
+#if defined (__circle__)
+			const time_t now = CTimer::Get()->GetTime();
+#else
+			const time_t now = sys_time(NULL);
 #endif
+			if (now - m_State.ArtSyncTime >= 4) {
+				m_State.IsSynchronousMode = false;
+#ifdef SENDDIAG
+				SendDiag("Leaving Synchronous Mode", ARTNET_DP_LOW);
+#endif
+			}
 		}
 	}
-
-	GetType();
 
 	switch (m_ArtNetPacket.OpCode) {
 	case OP_POLL:
@@ -579,6 +585,8 @@ int ArtNetNode::HandlePacket(void) {
 		SendPollRelply(false);
 		m_State.IsChanged = false;
 	}
+
+	m_tOpCodePrevious = m_ArtNetPacket.OpCode;
 
 	return m_ArtNetPacket.length;
 }

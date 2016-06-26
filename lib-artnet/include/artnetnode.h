@@ -243,6 +243,8 @@ private:
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 
 	bool					m_bDirectUpdate;
+
+	TOpCodes				m_tOpCodePrevious;
 };
 
 #endif /* ARTNETNODE_H_ */
