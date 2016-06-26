@@ -132,6 +132,11 @@ typedef enum
 #define BCM2835_VC_TAG_TEST_PALETTE				0x0004400b	///<
 #define BCM2835_VC_TAG_SET_PALETTE				0x0004800b	///<
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int32_t bcm2835_vc_get_clock_rate(const uint32_t);
 extern int32_t bcm2835_vc_set_clock_rate(const uint32_t, const uint32_t);
 
@@ -149,5 +154,9 @@ extern int32_t bcm2835_vc_get_get_board_model(void);
 extern int32_t bcm2835_vc_get_get_board_revision(void);
 
 extern int32_t bcm2835_vc_get_memory(const uint32_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BCM2835_VC_H_ */

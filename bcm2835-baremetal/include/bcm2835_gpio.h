@@ -49,6 +49,11 @@ typedef enum {
 	BCM2835_GPIO_PUD_UP 	= 0x02	///< 0b10, Enable Pull Up control
 } bcm2835PUDControl;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup GPIO
  *
@@ -137,5 +142,9 @@ inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
 extern void bcm2835_gpio_fsel(const uint8_t pin, const uint8_t mode);
 
 extern void bcm2835_gpio_set_pud(const uint8_t, const uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BCM2835_GPIO_H_ */
