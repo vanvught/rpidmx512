@@ -1,5 +1,5 @@
 /**
- * @file sbrk.c
+ * @file devices_params.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,26 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include <sys/time.h>
+#ifndef DEVICES_PARAMS_H_
+#define DEVICES_PARAMS_H_
 
-unsigned int heap_end = 0x00;
+#include <stdint.h>
 
-caddr_t _sbrk(int incr) {
-	extern char heap_low; /* Defined by the linker */
-	extern char heap_top; /* Defined by the linker */
+#include "ws28xx.h"
+#include "util.h"
 
-	char *prev_heap_end;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	if (heap_end == 0) {
-		heap_end = (unsigned int)&heap_low;
-	}
-	prev_heap_end = (char *)heap_end;
+extern const bool devices_params_init(void);
 
-	if (heap_end + incr > (unsigned int)&heap_top) {
-		/* Heap and stack collision */
-		return (caddr_t) 0;
-	}
+extern const _ws28xxx_type devices_params_get_led_type(void);
+extern const uint16_t devices_params_get_led_count(void);
 
-	heap_end += incr;
-	return (caddr_t) prev_heap_end;
+extern /*@shared@*/const char *devices_params_get_led_type_string(void) ASSUME_ALIGNED;
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* DEVICES_PARAMS_H_ */
