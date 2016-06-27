@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "ff.h"
+#include "read_config_file.h"
 #include "hardware.h"
 #include "util.h"
 #include "sscan.h"
@@ -46,7 +46,7 @@ static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURE
 static const uint8_t DEVICE_SOFTWARE_VERSION_LENGTH = sizeof(DEVICE_SOFTWARE_VERSION) / sizeof(DEVICE_SOFTWARE_VERSION[0]) - 1;
 #endif
 
-static const TCHAR RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";						///< Parameters file name
+static const char RDM_DEVICE_FILE_NAME[] = "rdm_device.txt";						///< Parameters file name
 static const char RDM_DEVICE_MANUFACTURER_NAME[] = "manufacturer_name";				///<
 static const char RDM_DEVICE_MANUFACTURER_ID[] = "manufacturer_id";					///<
 static const char RDM_DEVICE_LABEL[] = "device_label";								///<
@@ -131,29 +131,6 @@ static void process_line_read_string(const char *line) {
 				uid_device[1] = nibble_high | nibble_low;
 			}
 		}
-	}
-}
-
-/**
- * @ingroup rdm
- *
- * Read the configuration file from the sdcard and process each line.
- *
- */
-static void read_config_file(void) {
-	TCHAR buffer[128];
-	FIL file_object;
-
-	if (f_open(&file_object, RDM_DEVICE_FILE_NAME, FA_READ) == FR_OK) {
-		for (;;) {
-			if (f_gets(buffer, sizeof(buffer), &file_object) == NULL) {
-				break; // Error or end of file
-			}
-			process_line_read_string((const char *) buffer);
-		}
-		(void)f_close(&file_object);
-	} else {
-		// nothing to do here
 	}
 }
 
@@ -547,7 +524,7 @@ void rdm_device_info_init(void) {
 	(void *)_memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
 
-	read_config_file();
+	read_config_file(RDM_DEVICE_FILE_NAME, &process_line_read_string);
 
 #ifdef RDM_RESPONDER
 	rdm_device_info.protocol_major = (uint8_t)(E120_PROTOCOL_VERSION >> 8);

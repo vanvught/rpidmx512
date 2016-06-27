@@ -30,7 +30,7 @@
 #include "bcm2835_spi.h"
 #include "util.h"
 #include "tables.h"
-#include "ff.h"
+#include "read_config_file.h"
 #include "sscan.h"
 #include "dmx_devices.h"
 #include "dmx.h"
@@ -79,7 +79,7 @@ void dmx_devices_reset_statistics(void) {
  * @param line
  * @return
  */
-static int add_connected_device(const char *line) {
+static void add_connected_device(const char *line) {
 #ifdef DEBUG
 	printf("%d < %d\n", devices_connected.elements_count, ((uint16_t)(sizeof(devices_connected.device_entry) / sizeof(devices_connected.device_entry[0]))));
 #endif
@@ -106,21 +106,21 @@ static int add_connected_device(const char *line) {
 #ifdef DEBUG
 				printf("warning : invalid chip_select [skipping this line]\n");
 #endif
-				return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
+				//return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
 			}
 
 			if (dmx_start_address == (uint16_t)0 || dmx_start_address > (uint16_t)DMX_UNIVERSE_SIZE) {
 #ifdef DEBUG
 				printf("warning : invalid dmx_start_address [skipping this line]\n");
 #endif
-				return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
+				//return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
 			}
 
 			if ((spi_speed != 0) && (spi_speed < BCM2835_SPI_CLOCK_MIN || spi_speed > BCM2835_SPI_CLOCK_MAX)) {
 #ifdef DEBUG
 				printf("warning : invalid spi_speed [skipping this line]\n");
 #endif
-				return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+				//return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
 			}
 
 			for (j = 0; j < TABLE_LENGTH(devices); j++) {
@@ -137,7 +137,7 @@ static int add_connected_device(const char *line) {
 					devices_connected.device_entry[devices_added].dmx_device_info.pixel_count = pixel_count;
 					devices_added++;
 					devices_connected.elements_count = devices_added;
-					return (int)devices_connected.elements_count;
+					//return (int)devices_connected.elements_count;
 				}
 			}
 		} else {
@@ -146,46 +146,47 @@ static int add_connected_device(const char *line) {
 #ifdef DEBUG
 					printf("warning : invalid protocol. [skipping this line]\n");
 #endif
-					return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
-					//break;
+					//return DMX_DEVICE_CONFIG_INVALID_PROTOCOL;
+					break;
 				case DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT:
 #ifdef DEBUG
 					printf("warning : invalid chip_select [skipping this line]\n");
 #endif
-					return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
-					//break;
+					//return DMX_DEVICE_CONFIG_INVALID_CHIP_SELECT;
+					break;
 				case DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS:
 #ifdef DEBUG
 					printf("warning : invalid slave_address [skipping this line]\n");
 #endif
-					return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
-					//break;
+					//return DMX_DEVICE_CONFIG_INVALID_SLAVE_ADDRESS;
+					break;
 				case DMX_DEVICE_CONFIG_INVALID_START_ADDRESS:
 #ifdef DEBUG
 					printf("warning : invalid dmx_start_address [skipping this line]\n");
 #endif
-					return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
-					//break;
+					//return DMX_DEVICE_CONFIG_INVALID_START_ADDRESS;
+					break;
 				case DMX_DEVICE_CONFIG_INVALID_SPI_SPEED:
 #ifdef DEBUG
 					printf("warning : invalid spi_speed [skipping this line]\n");
 #endif
-					return DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
-					//break;
+					// DMX_DEVICE_CONFIG_INVALID_SPI_SPEED;
+					break;
 				default:
-					return DMX_DEVICE_CONFIG_INVALID_ENTRY;
-					//break;
+					//return DMX_DEVICE_CONFIG_INVALID_ENTRY;
+					break;
 			}
 		}
 	}
 
-	return DMX_DEVICE_CONFIG_TABLE_FULL;
+	//return DMX_DEVICE_CONFIG_TABLE_FULL;
 }
 
 /**
  * @ingroup dmx
  *
  */
+/*
 static void dmx_devices_read_config(void) {
 	FIL file_object;
 
@@ -213,6 +214,7 @@ static void dmx_devices_read_config(void) {
 	printf("devices_connected.elements_count = %d\n", devices_connected.elements_count);
 #endif
 }
+*/
 
 /**
  * @ingroup dmx
@@ -221,7 +223,7 @@ static void dmx_devices_read_config(void) {
 void dmx_devices_init(void) {
 	uint16_t i;
 
-	dmx_devices_read_config();
+	read_config_file("devices.txt", &add_connected_device);
 
 	for (i = 0; i < devices_connected.elements_count; i++) {
 		devices_init_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);

@@ -6,10 +6,10 @@ COPS_COMMON += -DARTNET_DMX
 COPS_COMMON += -I"./include"
 COPS_COMMON += -I"./common/include"
 COPS_COMMON += -I"./devices/include"
-COPS_COMMON += -I"../bcm2835-baremetal/include"
-COPS_COMMON += -I"../bob-baremetal/include"
+COPS_COMMON += -I"../lib-bcm2835/include"
+COPS_COMMON += -I"../lib-bob/include"
 COPS_COMMON += -I"../fb/include"
-COPS_COMMON += -I"../hal-baremetal/include"
+COPS_COMMON += -I"../lib-hal/include"
 COPS_COMMON += -I"../lib-artnet/include"
 COPS_COMMON += -I"../lib-esp8266/include"
 COPS_COMMON += -I"../lib-monitor/include"
@@ -26,12 +26,12 @@ COPS7 += $(COPS_COMMON)
 
 LIB =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv6zk/arm1176jzf-s/hardfp/vfp
 LIB += -L /opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
-LIB += -L"../bob-baremetal/lib"
-LIB += -L"../bcm2835-baremetal/lib"
+LIB += -L"../lib-bob/lib"
+LIB += -L"../lib-bcm2835/lib"
 LIB += -L"../emmc/lib"
 LIB += -L"../fb/lib"
 LIB += -L"../ff11/lib"
-LIB += -L"../hal-baremetal/lib"
+LIB += -L"../lib-hal/lib"
 LIB += -L"../lib-artnet/lib"
 LIB += -L"../lib-esp8266/lib"
 LIB += -L"../lib-utils/lib"
@@ -39,12 +39,12 @@ LIB += -L"../lib-monitor/lib"
 
 LIB7 =  -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv7-a/cortex-a7/hardfp/vfpv4
 LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
-LIB7 += -L"../bob-baremetal/lib7"
-LIB7 += -L"../bcm2835-baremetal/lib7"
+LIB7 += -L"../lib-bob/lib7"
+LIB7 += -L"../lib-bcm2835/lib7"
 LIB7 += -L"../emmc/lib7"
 LIB7 += -L"../fb/lib7"
 LIB7 += -L"../ff11/lib7"
-LIB7 += -L"../hal-baremetal/lib7"
+LIB7 += -L"../lib-hal/lib7"
 LIB7 += -L"../lib-artnet/lib7"
 LIB7 += -L"../lib-esp8266/lib7"
 LIB7 += -L"../lib-utils/lib7"
@@ -115,7 +115,7 @@ $(BUILD)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@		
 	
-$(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) ../lib-artnet/lib/libartnet.a ../lib-esp8266/lib/libesp8266.a ../lib-utils/lib/libutils.a ../lib-monitor/lib/libmonitor.a ../bob-baremetal/lib/libbob.a ../bcm2835-baremetal/lib/libbcm2835.a ../hal-baremetal/lib/libhal.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff11/lib/libff11.a
+$(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) ../lib-artnet/lib/libartnet.a ../lib-esp8266/lib/libesp8266.a ../lib-utils/lib/libutils.a ../lib-monitor/lib/libmonitor.a ../lib-bob/lib/libbob.a ../lib-bcm2835/lib/libbcm2835.a ../lib-hal/lib/libhal.a ../fb/lib/libfb.a ../emmc/lib/libemmc.a ../ff11/lib/libff11.a
 	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB) -lartnet -lesp8266 -lutils -lmonitor -lhal -lfb -lff11 -lemmc -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 
@@ -142,7 +142,7 @@ $(BUILD7)%.o: $(SOURCE)firmware/lib/%.c
 $(BUILD7)%.o: $(SOURCE)lib/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 	
-$(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) ../lib-artnet/lib7/libartnet.a ../lib-esp8266/lib7/libesp8266.a ../lib-utils/lib7/libutils.a ../lib-monitor/lib7/libmonitor.a ../bob-baremetal/lib7/libbob.a ../bcm2835-baremetal/lib7/libbcm2835.a ../hal-baremetal/lib7/libhal.a ../fb/lib7/libfb.a ../emmc/lib7/libemmc.a ../ff11/lib7/libff11.a
+$(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) ../lib-artnet/lib7/libartnet.a ../lib-esp8266/lib7/libesp8266.a ../lib-utils/lib7/libutils.a ../lib-monitor/lib7/libmonitor.a ../lib-bob/lib7/libbob.a ../lib-bcm2835/lib7/libbcm2835.a ../lib-hal/lib7/libhal.a ../fb/lib7/libfb.a ../emmc/lib7/libemmc.a ../ff11/lib7/libff11.a
 	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) -lartnet -lesp8266 -lutils -lmonitor -lhal -lfb -lff11 -lemmc -lbob -lbcm2835 -lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD7)main.elf | $(PREFIX)c++filt > $(LIST7)
 
