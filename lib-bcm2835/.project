@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>bcm2835-baremetal</name>
+	<name>lib-bcm2835</name>
 	<comment></comment>
 	<projects>
 	</projects>

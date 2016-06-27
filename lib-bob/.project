@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>hal-baremetal</name>
+	<name>lib-bob</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
-		<project>bob-baremetal</project>
-		<project>fb</project>
+		<project>lib-bcm2835</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

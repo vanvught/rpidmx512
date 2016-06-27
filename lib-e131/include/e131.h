@@ -1,8 +1,9 @@
 /**
- * @file monitor.h
+ * @file e131.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +24,58 @@
  * THE SOFTWARE.
  */
 
-#ifndef MONITOR_H_
-#define MONITOR_H_
+#ifndef E131_H_
+#define E131_H_
 
-#include <stdarg.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#define MONITOR_LINE_TIME			3	///<
-#define MONITOR_LINE_WIDGET_PARMS	4	///<
-#define MONITOR_LINE_LABEL			6	///<
-#define MONITOR_LINE_INFO			7	///<
-#define MONITOR_LINE_PORT_DIRECTION	9	///<
-#define MONITOR_LINE_DMX_DATA		11	///<
-#define MONITOR_LINE_PACKETS		14	///<
-#define MONITOR_LINE_RDM_DATA		17	///<
-#define MONITOR_LINE_RDM_CC			27	///<
-#define MONITOR_LINE_STATUS			28	///<
-#define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
-
-#ifdef __cplusplus
-extern "C" {
+#if  ! defined (PACKED)
+#define PACKED __attribute__((packed))
 #endif
 
-extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
-extern void monitor_time_uptime(const int);
+#define E131_DEFAULT_PORT	5568	///<
 
-extern void monitor_update(void);
+/**
+ * union of supported E1.31 packets
+ */
+struct TE131 {
+	/* Root Layer */
+	uint16_t PreAmbleSize;
+	uint16_t PostAmbleSize;
+	uint8_t acn_id[12];
+	uint16_t root_flength;
+	uint32_t root_vector;
+	uint8_t cid[16];
 
-#ifdef __cplusplus
-}
-#endif
+	/* Frame Layer */
+	uint16_t frame_flength;
+	uint32_t frame_vector;
+	uint8_t source_name[64];
+	uint8_t priority;
+	uint16_t reserved;
+	uint8_t sequence_number;
+	uint8_t options;
+	uint16_t universe;
 
-#endif /* MONITOR_H_ */
+	/* DMP Layer */
+	uint16_t dmp_flength;
+	uint8_t dmp_vector;
+	uint8_t type;
+	uint16_t first_address;
+	uint16_t address_increment;
+	uint16_t property_value_count;
+	uint8_t property_values[513];
+}PACKED;
+
+/**
+ *
+ */
+struct TE131Packet {
+	int length;				///<
+	uint32_t IPAddressFrom;	///<
+	uint32_t IPAddressTo;	///<
+	struct TE131 E131;		///<
+};
+
+
+#endif /* E131_H_ */

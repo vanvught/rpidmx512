@@ -1,9 +1,9 @@
 ARMGNU ?= arm-none-eabi
 
 COPS_COMMON = -I"./include"
-COPS_COMMON += -I"../hal-baremetal/include"
 COPS_COMMON += -I"../lib-esp8266/include"
 COPS_COMMON += -I"../lib-utils/include"
+COPS_COMMON += -I"../lib-hal/include"
 COPS_COMMON += -Wall -Werror -fno-exceptions -fno-unwind-tables -fno-rtti -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s

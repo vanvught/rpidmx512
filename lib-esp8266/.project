@@ -3,7 +3,7 @@
 	<name>lib-esp8266</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
+		<project>lib-bcm2835</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

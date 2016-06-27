@@ -3,7 +3,8 @@
 	<name>lib-utils</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
+		<project>fb</project>
+		<project>ff11</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

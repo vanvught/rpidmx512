@@ -3,8 +3,9 @@
 	<name>emmc</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
 		<project>ff11</project>
+		<project>lib-bcm2835</project>
+		<project>lib-hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

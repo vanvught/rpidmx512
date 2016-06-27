@@ -1,8 +1,8 @@
 /**
- * @file monitor.h
+ * @file e131bridge.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef MONITOR_H_
-#define MONITOR_H_
+#ifndef E131BRIDGE_H_
+#define E131BRIDGE_H_
 
-#include <stdarg.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <assert.h>
+#include <circle/util.h>
+#include <circle/time.h>
+#include <circle/net/netsubsystem.h>
+#include <circle/net/socket.h>
+#include <circle/net/ipaddress.h>
 
-#define MONITOR_LINE_TIME			3	///<
-#define MONITOR_LINE_WIDGET_PARMS	4	///<
-#define MONITOR_LINE_LABEL			6	///<
-#define MONITOR_LINE_INFO			7	///<
-#define MONITOR_LINE_PORT_DIRECTION	9	///<
-#define MONITOR_LINE_DMX_DATA		11	///<
-#define MONITOR_LINE_PACKETS		14	///<
-#define MONITOR_LINE_RDM_DATA		17	///<
-#define MONITOR_LINE_RDM_CC			27	///<
-#define MONITOR_LINE_STATUS			28	///<
-#define MONITOR_LINE_STATS			29	///< last line when HEIGHT = 480 and CHAR_H = 16, 480/16 = 30, line starts at 0
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "e131.h"
+#include "blinktask.h"
+#include "lightset.h"
 
-extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
-extern void monitor_time_uptime(const int);
+class E131Bridge {
+public:
+	E131Bridge(CNetSubSystem *, CActLED *);
+	~E131Bridge(void);
 
-extern void monitor_update(void);
+	void SetOutput(LightSet *);
 
-#ifdef __cplusplus
-}
-#endif
+	int HandlePacket(void);
 
-#endif /* MONITOR_H_ */
+private:
+	CNetSubSystem		*m_pNet;
+	CSocket				m_Socket;
+	LightSet    		*m_pLightSet;
+
+	CBlinkTask 			*m_pBlinkTask;
+
+	struct TE131Packet	m_E131Packet;
+};
+
+
+#endif /* E131BRIDGE_H_ */

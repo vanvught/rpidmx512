@@ -1,12 +1,13 @@
 ARMGNU ?= arm-none-eabi
 
-COPS_COMMON = -DBARE_METAL 
-COPS_COMMON += -I"./include"
-COPS_COMMON += -I"../bcm2835-baremetal/include"
-COPS_COMMON += -I"../bob-baremetal/include"
-COPS_COMMON += -I"../fb/include"
-COPS_COMMON += -I"../ff11/src"
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
+INCLUDES := -I./include
+INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
+
+DEFINES := $(addprefix -D,$(DEFINES))
+
+COPS_COMMON = -DBARE_METAL $(DEFINES)
+COPS_COMMON += $(INCLUDES)
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -22,17 +23,20 @@ COPS8 += $(COPS_COMMON)
 
 SOURCE = ./src
 
+CURR_DIR := $(notdir $(patsubst %/,%,$(CURDIR)))
+LIB_NAME := $(patsubst lib-%,%,$(CURR_DIR))
+
 BUILD = build/
 BUILD7 = build7/
 BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) 
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c))
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c))
 
-TARGET = lib/libhal.a 
-TARGET7 = lib7/libhal.a
-TARGET8 = lib8/libhal.a
+TARGET = lib/lib$(LIB_NAME).a 
+TARGET7 = lib7/lib$(LIB_NAME).a
+TARGET8 = lib8/lib$(LIB_NAME).a
 
 LIST = lib.list
 LIST7 = lib7.list
@@ -58,21 +62,15 @@ clean :
 
 # ARM v6
 
-$(BUILD)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
-
 $(BUILD)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
 	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
-
-# ARM v7
 	
-$(BUILD7)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
-
+# ARM v7	
+	
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
@@ -81,13 +79,12 @@ $(TARGET7): Makefile $(OBJECTS7)
 	$(ARMGNU)-objdump -D $(TARGET7) > $(LIST7)
 	
 # ARM v8	
-	
-$(BUILD8)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@		
 
 $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
 
 $(TARGET8): Makefile $(OBJECTS8)
 	$(ARMGNU)-ar -r $(TARGET8) $(OBJECTS8) 
-	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)		
+	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)	
+
+	
