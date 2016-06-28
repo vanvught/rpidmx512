@@ -3,15 +3,9 @@
 	<name>rpi_wifi_artnet_dmx</name>
 	<comment></comment>
 	<projects>
-		<project>emmc</project>
-		<project>fb</project>
-		<project>ff11</project>
+		<project>firmware-template</project>
 		<project>lib-artnet</project>
-		<project>lib-bcm2835</project>
-		<project>lib-bob</project>
-		<project>lib-esp8266</project>
 		<project>lib-hal</project>
-		<project>lib-monitor</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>

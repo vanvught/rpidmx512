@@ -20,9 +20,9 @@ COPS8 += $(COPS_COMMON)
 
 SOURCE = ./src
 
-BUILD = build/
-BUILD7 = build7/
-BUILD8 = build8/
+BUILD = lib/
+BUILD7 = lib7/
+BUILD8 = lib8/
 
 OBJECTS := $(patsubst $(SOURCE)/%.cpp,$(BUILD)%.o,$(wildcard $(SOURCE)/*.cpp)) 
 OBJECTS7 := $(patsubst $(SOURCE)/%.cpp,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.cpp))

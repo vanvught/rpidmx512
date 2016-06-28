@@ -5,6 +5,6 @@ LIBS = utils monitor
 #
 SRCDIR = common/lib firmware lib
 #
-EXTRA_INCLUDES = ../ff11/src
+EXTRA_INCLUDES = ../lib-ff11/src
 
 include ../firmware-template/Rules.mk

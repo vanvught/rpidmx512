@@ -1,3 +1,4 @@
+#
 DEFINES = RDM_RESPONDER
 #
 LIBS = utils monitor

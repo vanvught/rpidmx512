@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>lib-utils</name>
+	<name>lib-emmc</name>
 	<comment></comment>
 	<projects>
+		<project>firmware-template</project>
+		<project>lib-bcm2835</project>
 		<project>lib-ff11</project>
+		<project>lib-hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

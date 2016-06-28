@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>lib-utils</name>
+	<name>lib-ff11</name>
 	<comment></comment>
 	<projects>
-		<project>lib-ff11</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

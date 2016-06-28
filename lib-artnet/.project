@@ -5,7 +5,10 @@
 	<projects>
 		<project>Circle</project>
 		<project>lib-esp8266</project>
+		<project>lib-hal</project>
+		<project>lib-utils</project>
 		<project>rpi_circle_libdmx</project>
+		<project>rpi_wifi_artnet_dmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

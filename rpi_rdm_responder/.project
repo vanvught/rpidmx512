@@ -3,11 +3,10 @@
 	<name>rpi_rdm_responder</name>
 	<comment></comment>
 	<projects>
-		<project>bcm2835-baremetal</project>
-		<project>bob-baremetal</project>
-		<project>fb</project>
-		<project>ff11</project>
+		<project>firmware-template</project>
 		<project>lib-hal</project>
+		<project>lib-monitor</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

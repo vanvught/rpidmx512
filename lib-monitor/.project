@@ -3,8 +3,10 @@
 	<name>lib-monitor</name>
 	<comment></comment>
 	<projects>
-		<project>fb</project>
+		<project>lib-bcm2835</project>
+		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

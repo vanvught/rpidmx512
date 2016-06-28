@@ -32,7 +32,9 @@
 #include "bcm2835_vc.h"
 #include "arm/pl011.h"
 #include "dmx.h"
+#ifdef DEBUG
 #include "monitor.h"
+#endif
 #include "dmxsend.h"
 #include "util.h"
 

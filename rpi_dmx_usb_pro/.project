@@ -3,11 +3,8 @@
 	<name>rpi_dmx_usb_pro</name>
 	<comment></comment>
 	<projects>
-		<project>emmc</project>
-		<project>fb</project>
-		<project>ff11</project>
-		<project>lib-bcm2835</project>
-		<project>lib-bob</project>
+		<project>firmware-template</project>
+		<project>lib-ff11</project>
 		<project>lib-hal</project>
 		<project>lib-monitor</project>
 		<project>lib-utils</project>

@@ -30,9 +30,9 @@ BUILD = build/
 BUILD7 = build7/
 BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) 
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c))
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S))
 
 TARGET = lib/lib$(LIB_NAME).a 
 TARGET7 = lib7/lib$(LIB_NAME).a
@@ -63,28 +63,37 @@ clean :
 # ARM v6
 
 $(BUILD)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@
+	
+$(BUILD)%.o: $(SOURCE)/%.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET): Makefile $(OBJECTS)
-	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
+	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS)
 	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
 	
 # ARM v7	
 	
 $(BUILD7)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
+	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
+	
+$(BUILD7)%.o: $(SOURCE)/%.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET7): Makefile $(OBJECTS7)
-	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7) 
+	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7)
 	$(ARMGNU)-objdump -D $(TARGET7) > $(LIST7)
 	
 # ARM v8	
 
 $(BUILD8)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
+	$(ARMGNU)-gcc $(COPS8) $< -c -o $@
+	
+$(BUILD8)%.o: $(SOURCE)/%.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET8): Makefile $(OBJECTS8)
-	$(ARMGNU)-ar -r $(TARGET8) $(OBJECTS8) 
-	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)	
+	$(ARMGNU)-ar -r $(TARGET8) $(OBJECTS8)
+	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)
 
 	
