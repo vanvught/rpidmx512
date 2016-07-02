@@ -1,36 +1,21 @@
-Raspberry Pi DMX512 / RDM / OSC / ArtNet-3 / Pixel
+Raspberry Pi DMX512 / RDM / MIMI / OSC / ArtNet-3 / Pixel
 =======
-Baremetal projects for :
 
-*. RDM Controller with USB [Compatible with Enttec USB Pro protocol], Logic RDM Sniffer, RDM Responder 
-*. MIDI Sniffer, MIDI-DMX Bridge
+*. RDM Controller with USB [Compatible with Enttec USB Pro protocol], 
+
+*. ArtNet 3 DMX Node / Pixel (WS28xx) controller
+*. WiFi ArtNet 3 DMX Node / Pixel (WS28xx) controller
+
+*. RDM Responder 
+*. Logic RDM Sniffer,
+
+*. MIDI Sniffer,
+*. MIDI-DMX Bridge
+
 *. OSC-SPI (WS28xx) Bridge
-*. ArtNet-DMX Node / Pixel controller
 
----------
-\Eagle
-\bcm2835-baremetal
-\bob-baremetal
-\emmc
-\fb
-\ff9b
-\firmware
-\firmware-template
-\hal-baremetal
-\lib-artnet
-\lib-monitor
-\lib-osc
-\lib-utils
-\rpi_circle_artnet_dmx
-\rpi_circle_libdmx
-\rpi_circle_libws28xx
-\rpi_circle_osc_ws28xx
-\rpi_dmx_usb_pro
-\rpi_midi_dmx_bridge
-\rpi_rdm_responder
 
 Detailed information can be found here : http://www.raspberrypi-dmx.com/
 
 Special thanks to @rsta2 (Rene Stange), who helped me get the multi-core support working.
-Please check out Circle by rst, a C++ bare metal environment (with USB) for Raspberry Pi 1, 2 & 3.
 https://github.com/rsta2/circle
