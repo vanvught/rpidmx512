@@ -1,5 +1,5 @@
 /**
- * @file sscan.c
+ * @file sscan_char_p.c
  *
  */
 /* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,7 +23,9 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  *
@@ -39,6 +41,11 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 	const char *n = name;
 	const char *b = buf;
 	char *v = value;
+
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(value != NULL);
+	assert(len != NULL);
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {

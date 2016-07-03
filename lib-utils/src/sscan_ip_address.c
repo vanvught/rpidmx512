@@ -1,5 +1,5 @@
 /**
- * @file sscan_uin32_t.c
+ * @file sscan_ip_address.c
  *
  */
 /* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -28,22 +28,21 @@
 
 #include "util.h"
 
-/**
- *
- * @param buf
- * @param name
- * @param value
- * @return
- */
-int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
-	int64_t k;
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
+
+int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 
 	const char *n = name;
 	const char *b = buf;
+	int i, j, k;
+	_pcast32 cast32;
 
 	assert(buf != NULL);
 	assert(name != NULL);
-	assert(value != NULL);
+	assert(ip_address != NULL);
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
@@ -59,21 +58,49 @@ int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 		return 0;
 	}
 
-	k = 0;
+	for (i = 0 ; i < 3 ; i++) {
+		j = 0;
+		k = 0;
+
+		while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
+			if (j == 3) {
+				return 0;
+			}
+
+			if (!isdigit((int )*b)) {
+				return 0;
+			}
+
+			j++;
+			k = k * 10 + (int) *b - (int) '0';
+			b++;
+		}
+
+		cast32.u8[i] = k;
+		b++;
+
+	}
+
+	j= 0;
+	k= 0;
 
 	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
-		if (!isdigit((int )*b)) {
-			return 1;
+		if (j == 3) {
+			return 0;
 		}
-		k = k * 10 + (int64_t) *b - (int64_t) '0';
+
+		if (!isdigit((int )*b)) {
+			return 0;
+		}
+
+		j++;
+		k = k * 10 + (int) *b - (int) '0';
 		b++;
 	}
 
-	if (k > (int64_t) ((uint32_t) ~0)) {
-		return 1;
-	}
+	cast32.u8[i] = k;
 
-	*value = (uint32_t) k;
+	*ip_address = cast32.u32;
 
-	return 2;
+	return 1;
 }

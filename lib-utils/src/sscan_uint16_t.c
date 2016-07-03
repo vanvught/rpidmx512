@@ -1,5 +1,5 @@
 /**
- * @file sscan.c
+ * @file sscan_uint16_t.c
  *
  */
 /* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "util.h"
@@ -40,6 +41,10 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 	const char *n = name;
 	const char *b = buf;
 
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(value != NULL);
+
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
 			return 0;
@@ -56,7 +61,7 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
 		if (!isdigit((int )*b)) {
 			return 1;
 		}
