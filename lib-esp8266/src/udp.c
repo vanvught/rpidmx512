@@ -28,12 +28,7 @@
 #include <stddef.h>
 
 #include "esp8266.h"
-
-typedef enum commands {
-  CMD_WIFI_UDP_BEGIN = 4,
-  CMD_WIFI_UDP_RECEIVE = 3,
-  CMD_WIFI_UDP_SEND = 11
-} _commands;
+#include "esp8266_cmd.h"
 
 /**
  *
@@ -65,7 +60,7 @@ uint16_t udp_recvfrom(const uint8_t *buffer, const uint16_t length, uint32_t *ip
 	bytes_received = esp8266_read_byte();
 	bytes_received |= (esp8266_read_byte() << 8);
 
-	if (bytes_received) {
+	if (bytes_received != 0) {
 
 		if (ip_address != NULL) {
 			*ip_address = esp8266_read_word();

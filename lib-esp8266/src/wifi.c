@@ -30,23 +30,11 @@
 #include <stdio.h>
 
 #include "esp8266.h"
+#include "esp8266_cmd.h"
 #include "wifi.h"
 
 static char wifi_hostname[HOST_NAME_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
-
-typedef enum  commands{
-  CMD_WIFI_MAC_ADDRESS = 1,
-  CMD_WIFI_IP_INFO = 2,
-  CMD_WIFI_HOST_NAME = 5,
-  CMD_WIFI_STATUS = 7,
-  CMD_SYSTEM_CPU_FREQ = 6,
-  CMD_SYSTEM_SDK_VERSION = 8,
-  CMD_WIFI_MODE = 9,
-  CMD_WIFI_MODE_STA = 10,
-  CMD_WIFI_MODE_STA_IP = 12
-} _commands;
-
 
 /**
  *
@@ -55,7 +43,7 @@ typedef enum  commands{
  */
 bool wifi_init(void) {
 	esp8266_init();
-	esp8266_write_4bits((uint8_t) 0);
+	esp8266_write_4bits((uint8_t) CMD_NOP);
 	return true;	// TODO
 }
 
@@ -103,7 +91,7 @@ bool wifi_get_ip_info(const struct ip_info *info) {
 
 	esp8266_write_4bits((uint8_t)CMD_WIFI_IP_INFO);
 
-	esp8266_read_bytes((const uint8_t *)info, 12);	//TODO sizeof
+	esp8266_read_bytes((const uint8_t *)info, sizeof(struct ip_info));
 
 	return true;
 }
@@ -200,5 +188,5 @@ void wifi_station_ip(const char *ssid, const char *password, const struct ip_inf
 	esp8266_write_str(password);
 	esp8266_write_byte((uint8_t)(0));
 
-	esp8266_write_bytes((const uint8_t *)info, 12);	//TODO sizeof
+	esp8266_write_bytes((const uint8_t *)info, sizeof(struct ip_info));
 }

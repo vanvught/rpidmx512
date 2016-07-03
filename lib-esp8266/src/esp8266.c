@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <stdint.h>
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
