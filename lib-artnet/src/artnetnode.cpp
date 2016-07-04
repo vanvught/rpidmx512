@@ -424,6 +424,7 @@ void ArtNetNode::SetNetworkDetails(void) {
 	m_Node.IPDefaultGateway = ip_config.gw.addr;
 	m_Node.IPAddressBroadcast = ip_config.ip.addr | ~ip_config.netmask.addr;
 	wifi_get_macaddr(m_Node.MACAddressLocal);
+	m_IsDHCPUsed = wifi_is_dhcp_used();
 #endif
 	const uint8_t bit1 = (m_IsDHCPUsed ? 1 : 0) << 1;	// Bit 1 : Clr = Node is IP is manually configured , Set = Node’s IP is DHCP configured.
 	m_Node.Status2 = bit1 | 1 << 2 | 1 << 3;			// Bit 2 : Set : Node is DHCP capable

@@ -36,6 +36,8 @@
 static char wifi_hostname[HOST_NAME_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
+static bool is_dhcp_used = false;
+
 /**
  *
  * @param mode
@@ -167,6 +169,8 @@ void wifi_station(const char *ssid, const char *password) {
 
 	esp8266_write_str(password);
 	esp8266_write_byte((uint8_t)(0));
+
+	is_dhcp_used = true;
 }
 
 /**
@@ -189,4 +193,14 @@ void wifi_station_ip(const char *ssid, const char *password, const struct ip_inf
 	esp8266_write_byte((uint8_t)(0));
 
 	esp8266_write_bytes((const uint8_t *)info, sizeof(struct ip_info));
+
+	is_dhcp_used = false;
+}
+
+/**
+ *
+ * @return
+ */
+bool wifi_is_dhcp_used(void) {
+	return is_dhcp_used;
 }

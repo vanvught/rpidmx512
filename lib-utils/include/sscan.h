@@ -36,7 +36,7 @@ extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
 extern int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
 extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
 extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-extern int int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
+extern int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
 
 #ifdef __cplusplus
 }

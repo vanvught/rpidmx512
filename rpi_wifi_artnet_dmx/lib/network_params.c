@@ -113,6 +113,7 @@ const char *network_params_get_password(void) {
 static void process_line_read(const char *line) {
 	uint8_t len = 32;
 	uint8_t value8;
+	uint32_t value32;
 
 	if (sscan_char_p(line, PARAMS_SSID, network_params_ssid, &len) == 2) {
 		return;
@@ -129,6 +130,15 @@ static void process_line_read(const char *line) {
 		}
 	}
 
+	if (sscan_ip_address(line, PARAMS_IP_ADDRESS, &value32) == 1) {
+		network_params_ip_address = value32;
+	} else if (sscan_ip_address(line, PARAMS_NET_MASK, &value32) == 1) {
+		network_params_net_mask = value32;
+	} else if (sscan_ip_address(line, PARAMS_DEFAULT_GATEWAY, &value32) == 1) {
+		network_params_default_gateway = value32;
+	} else if (sscan_ip_address(line, PARAMS_NAME_SERVER, &value32) == 1) {
+		network_params_name_server = value32;
+	}
 }
 
 /**

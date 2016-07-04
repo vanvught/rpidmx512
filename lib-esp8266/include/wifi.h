@@ -69,6 +69,8 @@ extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
 
 extern void wifi_soft_ap(void);
 
+extern bool wifi_is_dhcp_used(void);
+
 #ifdef __cplusplus
 }
 #endif
