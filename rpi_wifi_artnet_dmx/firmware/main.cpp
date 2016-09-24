@@ -69,31 +69,15 @@ void notmain(void) {
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("WiFi ArtNet 3 Node DMX Output");
 
-	console_set_top_row(4);
+	console_set_top_row(3);
 
 	hardware_watchdog_init();
 	(void)wifi_init();
 	hardware_watchdog_stop();
 
-	printf("sdk_version : %s\n", system_get_sdk_version());
-	printf("cpu freq    : %d\n\n", system_get_cpu_freq());
-	printf("WiFi mode   : %s\n\n", wifi_get_opmode() == WIFI_STA ? "Station" : "Access Point");
-
-	if (wifi_get_macaddr(mac_address)) {
-		printf("MAC address : "MACSTR "\n", MAC2STR(mac_address));
-	} else {
-		printf("Error : wifi_get_macaddr\n");
-	}
-
-	printf("hostname    : %s\n", wifi_station_get_hostname());
-
-	if (wifi_get_ip_info(&ip_config)) {
-		printf("ip-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
-		printf("netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
-		printf("gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
-	} else {
-		printf("Error : wifi_get_ip_info\n");
-	}
+	printf("ESP8266 information\n");
+	printf(" sdk_version : %s\n", system_get_sdk_version());
+	printf(" cpu freq    : %d\n\n", system_get_cpu_freq());
 
 	if (network_params_init()) {
 		if (network_params_is_use_dhcp()) {
@@ -104,16 +88,24 @@ void notmain(void) {
 			ip_config.gw.addr = network_params_get_default_gateway();
 			wifi_station_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
 		}
+	}
 
-		printf("\nWiFi mode   : %s\n\n", wifi_get_opmode() == WIFI_STA ? "Station" : "Access Point");
+	printf("WiFi mode : %s\n", wifi_get_opmode() == WIFI_STA ? "Station" : "Access Point");
 
-		if (wifi_get_ip_info(&ip_config)) {
-			printf("ip-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
-			printf("netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
-			printf("gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
-		} else {
-			printf("Error : wifi_get_ip_info\n");
-		}
+	if (wifi_get_macaddr(mac_address)) {
+		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
+	} else {
+		printf("Error : wifi_get_macaddr\n");
+	}
+
+	printf(" hostname    : %s\n", wifi_station_get_hostname());
+
+	if (wifi_get_ip_info(&ip_config)) {
+		printf(" ip-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
+		printf(" netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
+		printf(" gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
+	} else {
+		printf("Error : wifi_get_ip_info\n");
 	}
 
 	udp_begin(6454);
@@ -167,22 +159,22 @@ void notmain(void) {
 	node.SetSubnetSwitch(artnet_params_get_subnet());
 	node.SetNetSwitch(artnet_params_get_net());
 
-	printf("\nNode configuration :\n");
+	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = node.GetSoftwareVersion();
 	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" Short name : %s\n", node.GetShortName());
 	printf(" Long name  : %s\n", node.GetLongName());
 	printf(" Net        : %d\n", node.GetNetSwitch());
 	printf(" Sub-Net    : %d\n", node.GetSubnetSwitch());
-	printf(" Universe   : %d\n", node.GetUniverseSwitch(0));
+	printf(" Universe   : %d\n\n", node.GetUniverseSwitch(0));
 
 	if (output_type == OUTPUT_TYPE_DMX) {
-		printf("DMX Send parameters :\n");
+		printf("DMX Send parameters\n");
 		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
 		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
 		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
 	} else if (output_type == OUTPUT_TYPE_SPI) {
-		printf("Led stripe parameters :\n");
+		printf("Led stripe parameters\n");
 		printf(" Type         : %s\n", devices_params_get_led_type_string());
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
