@@ -35,7 +35,7 @@
 #include "esp8266_peri.h" //TODO replace by SDK defines
 #include "esp8266_rpi.h"
 
-//#define DEBUG
+#define DEBUG
 
 #if !defined(DEBUG)
 #define printf(...) (void *)0
@@ -385,7 +385,9 @@ void wifi_event_cb(System_Event_t *evt) {
 /**
  *
  */
-void setup_wifi_ap_mode(void) {
+void setup_wifi_ap_mode(const char *ap_passsword) {
+	printf("setup_wifi_ap_mode\n");
+
 	struct softap_config config_new;
     struct softap_config config_current;
     struct ip_info ip;
@@ -400,12 +402,12 @@ void setup_wifi_ap_mode(void) {
 	config_new.max_connection = 2;			/* Max number of stations allowed to connect in, max 4 */
 	config_new.ssid_len = sprintf(config_new.ssid, "AvV-ArtNet-%X", system_get_chip_id());
 
-	if (strlen(WIFI_AP_PASSWORD) == 0) {
+	if (strlen(ap_passsword) == 0) {
 		config_new.authmode = AUTH_OPEN;	/* authenticate mode : open */
 		*config_new.password = 0;
 	} else {
 		config_new.authmode = AUTH_WPA_WPA2_PSK;
-		strcpy(config_new.password, WIFI_AP_PASSWORD);
+		strcpy(config_new.password, ap_passsword);
 	}
 
     wifi_softap_get_config(&config_current);
@@ -616,6 +618,24 @@ void wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_inf
 	wifi_get_ip_info(STATION_IF, &g_ipconfig);
 }
 
+void handle_wifi_mode_ap() {
+	printf("handle_wifi_mode_ap\n");
+
+	char password[32];
+	uint8_t d;
+	unsigned i = 0;
+
+	while (((d = _read_byte()) != 0) && (i < 31)) {
+		password[i++] = d;
+	}
+	password[i] = '\0';
+
+	printf("ap_password : [%s]\n", password);
+
+	setup_wifi_ap_mode(password);
+
+}
+
 void rpi_read_ssid_password(char *ssid, char *password) {
 	uint8_t d;
 	unsigned i = 0;
@@ -691,6 +711,8 @@ void IRAM_ATTR reply_with_udp_packet(void) {
  *
  */
 void IRAM_ATTR handle_udp_packet(void) {
+	printf("handle_udp_packet\n");
+
 	struct sockaddr_in address_remote;
 	int slen = sizeof(address_remote);
 
@@ -786,7 +808,7 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 void IRAM_ATTR task_rpi(void *pvParameters) {
 	printf("rpi-interface\n");
 
-	setup_wifi_ap_mode();
+	setup_wifi_ap_mode(WIFI_AP_PASSWORD);
 
 	g_host_name = (char *) wifi_station_get_hostname();
 	g_host_name_length = strlen(g_host_name);
@@ -838,6 +860,11 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 			break;
 		case CMD_UDP_BEGIN:
 			handle_udp_begin();
+			vTaskDelay(10000 / portTICK_RATE_MS);
+			state = WAIT_FOR_CMD;
+			break;
+		case CMD_WIFI_MODE_AP:
+			handle_wifi_mode_ap();
 			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE_STA:
@@ -904,6 +931,6 @@ void user_init(void) {
 	GPES = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 	GPOC = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 
-	xTaskCreate(task_rpi, "rpi-interface", 256, NULL, 2, &g_task_rpi_handle);
+	xTaskCreate(task_rpi, "rpi-interface", 512, NULL, 2, &g_task_rpi_handle);
 }
 

@@ -1,5 +1,5 @@
 /**
- * @file esp8266_cmd.h
+ * @file ap_params.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef ESP8266_CMD_H_
-#define ESP8266_CMD_H_
+#ifndef AP_PARAMS_H_
+#define AP_PARAMS_H_
 
-typedef enum commands {
-	CMD_NOP = 0,
-	//
-	CMD_WIFI_MAC_ADDRESS = 1,
-	CMD_WIFI_IP_INFO = 2,
-	CMD_WIFI_HOST_NAME = 5,
-	CMD_WIFI_STATUS = 7,
-	CMD_SYSTEM_CPU_FREQ = 6,
-	CMD_SYSTEM_SDK_VERSION = 8,
-	CMD_WIFI_MODE = 9,
-	CMD_WIFI_MODE_STA = 10,
-	CMD_WIFI_MODE_STA_IP = 13,
-	CMD_WIFI_MODE_AP = 11,
-	//
-	CMD_WIFI_UDP_BEGIN = 4,
-	CMD_WIFI_UDP_RECEIVE = 3,
-	CMD_WIFI_UDP_SEND = 12,
-	//
-	CMD_ESP_OTA_START = 15
-} _commands;
+#include <stdbool.h>
 
-#endif /* ESP8266_CMD_H_ */
+#include "util.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern const bool ap_params_init(void);
+extern /*@shared@*/const char *ap_params_get_password(void) ASSUME_ALIGNED;
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+#endif /* AP_PARAMS_H_ */

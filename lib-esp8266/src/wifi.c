@@ -43,9 +43,14 @@ static bool is_dhcp_used = false;
  * @param mode
  * @return
  */
-bool wifi_init(void) {
+bool wifi_init(const char *password) {
 	esp8266_init();
-	esp8266_write_4bits((uint8_t) CMD_NOP);
+	//esp8266_write_4bits((uint8_t) CMD_NOP);
+
+	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_AP);
+	esp8266_write_str(password);
+	esp8266_write_byte((uint8_t)(0));
+
 	return true;	// TODO
 }
 

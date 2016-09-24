@@ -1,5 +1,5 @@
 /**
- * @file esp8266_cmd.h
+ * @file ap_params.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef ESP8266_CMD_H_
-#define ESP8266_CMD_H_
+#include <stdint.h>
+#include <stdbool.h>
 
-typedef enum commands {
-	CMD_NOP = 0,
-	//
-	CMD_WIFI_MAC_ADDRESS = 1,
-	CMD_WIFI_IP_INFO = 2,
-	CMD_WIFI_HOST_NAME = 5,
-	CMD_WIFI_STATUS = 7,
-	CMD_SYSTEM_CPU_FREQ = 6,
-	CMD_SYSTEM_SDK_VERSION = 8,
-	CMD_WIFI_MODE = 9,
-	CMD_WIFI_MODE_STA = 10,
-	CMD_WIFI_MODE_STA_IP = 13,
-	CMD_WIFI_MODE_AP = 11,
-	//
-	CMD_WIFI_UDP_BEGIN = 4,
-	CMD_WIFI_UDP_RECEIVE = 3,
-	CMD_WIFI_UDP_SEND = 12,
-	//
-	CMD_ESP_OTA_START = 15
-} _commands;
+#include "ap_params.h"
+#include "read_config_file.h"
+#include "sscan.h"
 
-#endif /* ESP8266_CMD_H_ */
+static const char PARAMS_FILE_NAME[] ALIGNED = "ap.txt";	///< Parameters file name
+static const char PARAMS_PASSWORD[] ALIGNED = "password";	///<
+
+static char ap_params_password[34] ALIGNED;			///<
+
+/**
+ *
+ * @return
+ */
+const char *ap_params_get_password(void) {
+	return ap_params_password;
+}
+
+/**
+ *
+ * @param line
+ */
+static void process_line_read(const char *line) {
+	uint8_t len = 32;
+
+	if (sscan_char_p(line, PARAMS_PASSWORD, ap_params_password, &len) == 2) {
+		return;
+	}
+
+
+}
+
+/**
+ *
+ */
+const bool ap_params_init(void) {
+	uint32_t i;
+
+	for  (i = 0; i < sizeof(ap_params_password) / sizeof(char) ; i++) {
+		ap_params_password[i] = (char)0;
+	}
+
+	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+}
+

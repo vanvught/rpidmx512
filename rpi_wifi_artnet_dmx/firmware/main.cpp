@@ -33,6 +33,7 @@
 #include "dmx_params.h"
 #include "dmxsend.h"
 #include "spisend.h"
+#include "ap_params.h"
 #include "network_params.h"
 #include "devices_params.h"
 
@@ -50,6 +51,7 @@ void notmain(void) {
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
+	char *ap_password = NULL;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -71,8 +73,18 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
+	if (ap_params_init()) {
+		ap_password = (char *)ap_params_get_password();
+	}
+
 	hardware_watchdog_init();
-	(void)wifi_init();
+
+	if (ap_password == NULL) {
+		(void) wifi_init("");
+	} else {
+		(void) wifi_init(ap_password);
+	}
+
 	hardware_watchdog_stop();
 
 	printf("ESP8266 information\n");
@@ -90,7 +102,13 @@ void notmain(void) {
 		}
 	}
 
-	printf("WiFi mode : %s\n", wifi_get_opmode() == WIFI_STA ? "Station" : "Access Point");
+	if (wifi_get_opmode() == WIFI_STA) {
+		printf("WiFi mode : Station\n");
+	} else {
+		printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+	}
+
+
 
 	if (wifi_get_macaddr(mac_address)) {
 		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));

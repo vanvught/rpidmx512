@@ -54,7 +54,7 @@ typedef enum wifiphy_phy_mode {
 extern "C" {
 #endif
 
-extern bool wifi_init(void);
+extern bool wifi_init(const char *);
 extern _wifi_mode wifi_get_opmode(void);
 
 extern bool wifi_get_macaddr(const uint8_t *);
