@@ -32,8 +32,8 @@
 /*
  *      RPi					ESP8266		Logic Analyzer
  *
- * 11	GPIO17	--      ->	GPIO4		white
- * 13	GPIO27	<-      --	GPIO5		grey
+ * 11	GPIO17	--      ->	GPIO5		orange
+ * 13	GPIO27	<-      --	GPIO4		red
  *
  * 15	GPIO22	<- DATA ->	GPI012		purple
  * 16	GPIO23	<- DATA ->	GPI013		blue
