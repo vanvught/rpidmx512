@@ -26,6 +26,8 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
+#include "arm/synchronize.h"
+
 #include "hardware.h"
 
 static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
@@ -60,6 +62,10 @@ void led_blink(void) {
 	if (ticks_per_second == 0) {
 		return;
 	}
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
+#endif
 
 	const uint32_t micros_now = BCM2835_ST->CLO;
 

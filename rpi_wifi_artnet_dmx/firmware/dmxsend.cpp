@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
+
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "arm/synchronize.h"
 #include "bcm2835.h"
@@ -58,7 +60,6 @@ static uint8_t m_OutputBuffer[DMX_DATA_BUFFER_SIZE] ALIGNED;	///< SC + UNIVERSE 
 static volatile TDMXSendState m_State = DMXSendIdle;
 static volatile uint32_t m_SendBreakMicros;
 static volatile unsigned m_CurrentSlot;
-static volatile uint32_t m_TimerIRQMicros;
 
 /**
  * Timer interrupt
@@ -68,19 +69,23 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 #if DEBUG
 	bcm2835_gpio_set(21);
 #endif
-	m_TimerIRQMicros = BCM2835_ST->CLO;
+	const uint32_t m_TimerIRQMicros = BCM2835_ST->CLO;
+
+	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 
 	switch (m_State) {
 	case DMXSendIdle:
 	case DMXSendInterPacket:
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN | PL011_LCRH_BRK;
 		BCM2835_ST->C1 = m_TimerIRQMicros + m_OutputBreakTime;
+		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN | PL011_LCRH_BRK;
 		m_SendBreakMicros = m_TimerIRQMicros;
+		dmb();
 		m_State = DMXSendBreak;
 		break;
 	case DMXSendBreak:
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN;
 		BCM2835_ST->C1 = m_TimerIRQMicros + m_OutputMabTime;
+		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN;
+		dmb();
 		m_State = DMXSendMAB;
 		break;
 	case DMXSendMAB:
@@ -103,6 +108,8 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 
 		break;
 	case DMXSendData:
+		printf("Output period too short (brk %d, mab %d, period %d, dlen %d, slot %d)\n",
+				(int)m_OutputBreakTime, (int)m_OutputMabTime, (int)m_OutputPeriod, (int)m_OutputDataLength, (int)m_CurrentSlot);
 		assert (0);
 		break;
 	default:
@@ -110,7 +117,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		break;
 	}
 
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 #if DEBUG
 	bcm2835_gpio_clr(21);
 #endif

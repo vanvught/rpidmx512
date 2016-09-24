@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "bcm2835_gpio.h"
+
 #include "artnetnode.h"
 #include "artnet_params.h"
 #include "dmx_params.h"
@@ -48,6 +50,9 @@ void notmain(void) {
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
+
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
 
 	hardware_init();
 	artnet_params_init();
@@ -173,13 +178,13 @@ void notmain(void) {
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters :\n");
-		printf(" Break time   : %d\n", (int)dmx.GetBreakTime());
-		printf(" MAB time     : %d\n", (int)dmx.GetMabTime());
+		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
+		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
 		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
 	} else if (output_type == OUTPUT_TYPE_SPI) {
 		printf("Led stripe parameters :\n");
 		printf(" Type         : %s\n", devices_params_get_led_type_string());
-		printf(" Count        : %d\n", (int)spi.GetLEDCount());
+		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
 	hardware_watchdog_init();
