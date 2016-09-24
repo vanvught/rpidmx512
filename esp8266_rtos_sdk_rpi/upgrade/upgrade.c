@@ -9,7 +9,7 @@
  * 2015/7/3, v1.0 create this file.
 *******************************************************************************/
 //#include "version.h"
-#include "user_config.h"
+//#include "user_config.h"
 
 #include "esp_common.h"
 #include "lwip/mem.h"
@@ -25,7 +25,7 @@
 #define UPGRADE_DATA_SEG_LEN 1460
 #define UPGRADE_RETRY_TIMES 30
 
-LOCAL os_timer_t upgrade_10s;
+//LOCAL os_timer_t upgrade_10s;
 LOCAL uint32 totallength = 0;
 LOCAL uint32 sumlength = 0;
 LOCAL BOOL flash_erased=0;

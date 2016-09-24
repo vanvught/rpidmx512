@@ -186,15 +186,6 @@ uint8_t IRAM_ATTR rpi_read_4bits(void) {
 
 /**
  *
- * @return
- */
-/*static IRAM_ATTR uint8_t IRAM_ATTR rpi_read_byte(void) {
-	data_gpio_fsel_input();
-	return _read_byte();
-}*/
-
-/**
- *
  * @param p
  * @param nLength
  */
@@ -325,7 +316,6 @@ void IRAM_ATTR task_udp(void *pvParameters) {
 		if ((len = recvfrom(g_sock_fd, g_udp_receive[g_head].data, UDP_BUFFER_SIZE, 0, (struct sockaddr * )&address_remote, &slen)) == -1) {
 			printf("ERROR: recvfrom!\n");
 		} else {
-			//printf("%d:%d\n", g_head, len); //TODO DEBUG
 			g_udp_receive[g_head].len = len;
 			g_udp_receive[g_head].ip_address = address_remote.sin_addr.s_addr;
 			g_udp_receive[g_head].port = address_remote.sin_port;
@@ -701,8 +691,6 @@ void IRAM_ATTR reply_with_udp_packet(void) {
  *
  */
 void IRAM_ATTR handle_udp_packet(void) {
-	//printf("handle_udp_packet\n");	//TODO DEBUG
-
 	struct sockaddr_in address_remote;
 	int slen = sizeof(address_remote);
 
@@ -780,7 +768,7 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 
 	printf("url : %s\n", (char *) update->url);
 
-/*
+
 	if (system_upgrade_start(update) == false) {
 		printf("OTA : Could not start upgrade\n");
 		free(update->url);
@@ -788,7 +776,7 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 	} else {
 		printf("OTA : Upgrading...\n");
 	}
-*/
+
 }
 
 /**
@@ -894,6 +882,7 @@ void user_init(void) {
 
 	printf("CPU frequency : %d MHz\n", system_get_cpu_freq());
 	printf("SDK version : %s\n", g_sdk_version);
+
 	system_print_meminfo();
 
 	GPF(ESP8266_RPI_CTRL_IN) = GPFFS(GPFFS_GPIO(ESP8266_RPI_CTRL_IN));

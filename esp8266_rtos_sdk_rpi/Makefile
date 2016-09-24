@@ -1,17 +1,15 @@
 #############################################################
 #
-# Root Level Makefile ESP8266 + RTOS
+# Root Level Makefile
+#
+# Version 2.0
 #
 # (c) by CHERTS <sleuthhound@gmail.com>
 #
 #############################################################
 
-VERBOSE ?=1
-
 BUILD_BASE	= build
 FW_BASE		= firmware
-
-TOOLS_ROOT ?= c:/Espressif
 
 # Base directory for the compiler
 XTENSA_TOOLS_ROOT ?= c:/Espressif/xtensa-lx106-elf/bin
@@ -22,14 +20,22 @@ SDK_TOOLS	?= c:/Espressif/utils/ESP8266
 
 # esptool path and port
 ESPTOOL ?= $(SDK_TOOLS)/esptool.exe
-ESPPORT ?= COM24
+ESPPORT ?= COM25
 # Baud rate for programmer
 BAUD ?= 115200
 
+# BOOT = none
+# BOOT = old - boot_v1.1
+# BOOT = new - boot_v1.2+
+BOOT?=new
+# APP = 0 - eagle.flash.bin + eagle.irom0text.bin
+# APP = 1 - user1.bin
+# APP = 2 - user2.bin
+APP?=1
 # SPI_SPEED = 40, 26, 20, 80
 SPI_SPEED ?= 40
-# SPI_MODE: qio, qout, dio, dout
-SPI_MODE ?= qio
+# SPI_MODE: QIO, QOUT, DIO, DOUT
+SPI_MODE ?= QIO
 # SPI_SIZE_MAP
 # 0 : 512 KB (256 KB + 256 KB)
 # 1 : 256 KB
@@ -38,7 +44,27 @@ SPI_MODE ?= qio
 # 4 : 4096 KB (512 KB + 512 KB)
 # 5 : 2048 KB (1024 KB + 1024 KB)
 # 6 : 4096 KB (1024 KB + 1024 KB)
-SPI_SIZE_MAP ?= 0
+SPI_SIZE_MAP ?= 2
+
+ifeq ($(BOOT), new)
+    boot = new
+else
+    ifeq ($(BOOT), old)
+        boot = old
+    else
+        boot = none
+    endif
+endif
+
+ifeq ($(APP), 1)
+    app = 1
+else
+    ifeq ($(APP), 2)
+        app = 2
+    else
+        app = 0
+    endif
+endif
 
 ifeq ($(SPI_SPEED), 26.7)
     freqdiv = 1
@@ -63,8 +89,8 @@ ifeq ($(SPI_MODE), QOUT)
     flashimageoptions += -fm qout
 else
     ifeq ($(SPI_MODE), DIO)
-		mode = 2
-		flashimageoptions += -fm dio
+	mode = 2
+	flashimageoptions += -fm dio
     else
         ifeq ($(SPI_MODE), DOUT)
             mode = 3
@@ -76,6 +102,8 @@ else
     endif
 endif
 
+addr = 0x01000
+
 ifeq ($(SPI_SIZE_MAP), 1)
   size_map = 1
   flash = 256
@@ -85,30 +113,48 @@ else
     size_map = 2
     flash = 1024
     flashimageoptions += -fs 8m
+    ifeq ($(app), 2)
+      addr = 0x81000
+    endif
   else
     ifeq ($(SPI_SIZE_MAP), 3)
       size_map = 3
       flash = 2048
       flashimageoptions += -fs 16m
+      ifeq ($(app), 2)
+        addr = 0x81000
+      endif
     else
       ifeq ($(SPI_SIZE_MAP), 4)
-		size_map = 4
-		flash = 4096
-		flashimageoptions += -fs 32m
+	size_map = 4
+	flash = 4096
+	flashimageoptions += -fs 32m
+        ifeq ($(app), 2)
+          addr = 0x81000
+        endif
       else
         ifeq ($(SPI_SIZE_MAP), 5)
           size_map = 5
           flash = 2048
           flashimageoptions += -fs 16m
+          ifeq ($(app), 2)
+            addr = 0x101000
+          endif
         else
           ifeq ($(SPI_SIZE_MAP), 6)
             size_map = 6
             flash = 4096
             flashimageoptions += -fs 32m
+            ifeq ($(app), 2)
+              addr = 0x101000
+            endif
           else
             size_map = 0
             flash = 512
             flashimageoptions += -fs 4m
+            ifeq ($(app), 2)
+              addr = 0x41000
+            endif
           endif
         endif
       endif
@@ -117,25 +163,55 @@ else
 endif
 
 # name for the target project
-TARGET		= app
+TARGET = app
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES	= user
+MODULES	= user upgrade
 EXTRA_INCDIR = include
 
-#LIBS       = cirom gccirom hal phy pp net80211 wpa main freertos lwip udhcp
-# linking libgccirom.a instead of libgcc.a causes reset when working with flash memory (ie spi_flash_erase_sector)
-LIBS		= gcc hal phy pp net80211 wpa crypto main freertos lwip minic #espconn
+# libraries used in this project, mainly provided by the SDK
+LIBS = gcc hal phy pp net80211 wpa crypto main freertos lwip minic espconn smartconfig airkiss
 
 # compiler flags using during compilation of source files
-CFLAGS		= -g -save-temps -std=gnu90 -Os -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -mno-serialize-volatile -D__ets__ -DICACHE_FLASH
-CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions
+CFLAGS = -g -save-temps -std=gnu90 -Os -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -mno-serialize-volatile -D__ets__ -DICACHE_FLASH
 
 # linker flags used to generate the main object file
-LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
+LDFLAGS = -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 # linker script used for the above linkier step
-LD_SCRIPT	= eagle.app.v6.ld
+LD_SCRIPT = eagle.app.v6.ld
+
+ifneq ($(boot), none)
+ifneq ($(app),0)
+    ifeq ($(size_map), 6)
+      LD_SCRIPT = eagle.app.v6.$(boot).2048.ld
+    else
+      ifeq ($(size_map), 5)
+        LD_SCRIPT = eagle.app.v6.$(boot).2048.ld
+      else
+        ifeq ($(size_map), 4)
+          LD_SCRIPT = eagle.app.v6.$(boot).1024.app$(app).ld
+        else
+          ifeq ($(size_map), 3)
+            LD_SCRIPT = eagle.app.v6.$(boot).1024.app$(app).ld
+          else
+            ifeq ($(size_map), 2)
+              LD_SCRIPT = eagle.app.v6.$(boot).1024.app$(app).ld
+            else
+              ifeq ($(size_map), 0)
+                LD_SCRIPT = eagle.app.v6.$(boot).512.app$(app).ld
+              endif
+            endif
+	      endif
+	    endif
+	  endif
+	endif
+	BIN_NAME = user$(app).$(flash).$(boot).$(size_map)
+	CFLAGS += -DAT_UPGRADE_SUPPORT
+endif
+else
+    app = 0
+endif
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
@@ -143,10 +219,10 @@ SDK_LDDIR	= ld
 SDK_INCDIR	= extra_include include include/espressif include/json include/udhcp include/lwip include/lwip/lwip include/lwip/ipv4 include/lwip/ipv6
 
 # select which tools to use as compiler, librarian and linker
-CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-CXX		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
-AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
-LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+CC	:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+CXX	:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
+AR	:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
+LD	:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
 OBJCOPY := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objcopy
 OBJDUMP := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objdump
 
@@ -166,11 +242,11 @@ TARGET_OUT	:= $(addprefix $(BUILD_BASE)/,$(TARGET).out)
 
 LD_SCRIPT	:= $(addprefix -T$(SDK_BASE)/$(SDK_LDDIR)/,$(LD_SCRIPT))
 
-INCDIR	:= $(addprefix -I,$(SRC_DIR))
+INCDIR		:= $(addprefix -I,$(SRC_DIR))
 EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 
-V ?= $(VERBOSE)
+V ?= 1
 ifeq ("$(V)","1")
 Q :=
 vecho := @true
@@ -191,22 +267,51 @@ $1/%.o: %.cpp
 	$(Q) $(CXX) $(INCDIR) $(MODULE_INCDIR) $(EXTRA_INCDIR) $(SDK_INCDIR) $(CXXFLAGS)  -c $$< -o $$@
 endef
 
-.PHONY: all checkdirs clean firmware flashonefile flash flashinit rebuild
+.PHONY: all checkdirs clean flash flashboot flashinit rebuild
 
 all: checkdirs $(TARGET_OUT)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
 	$(Q) $(LD) -L$(SDK_LIBDIR) $(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(LIBS) $(APP_AR) -Wl,--end-group -o $@
-	$(vecho) "------------------------------------------------------------------------------"
-	$(vecho) "Section info:"
-	$(Q) $(OBJDUMP) -h -j .data -j .rodata -j .bss -j .text -j .irom0.text $@ 
-	$(vecho) "------------------------------------------------------------------------------"
-	$(Q) $(ESPTOOL) elf2image $(TARGET_OUT) -o$(FW_BASE)/ $(flashimageoptions)
-	$(vecho) "------------------------------------------------------------------------------"
-	$(vecho) "Generate 0x00000.bin and 0x20000.bin successully in folder $(FW_BASE)."
-	$(vecho) "0x00000.bin-------->0x00000"
-	$(vecho) "0x20000.bin-------->0x20000"
+	$(vecho) "Run objcopy, please wait..."
+	$(Q) $(OBJCOPY) --only-section .text -O binary $@ eagle.app.v6.text.bin
+	$(Q) $(OBJCOPY) --only-section .data -O binary $@ eagle.app.v6.data.bin
+	$(Q) $(OBJCOPY) --only-section .rodata -O binary $@ eagle.app.v6.rodata.bin
+	$(Q) $(OBJCOPY) --only-section .irom0.text -O binary $@ eagle.app.v6.irom0text.bin
+	$(vecho) "objcopy done"
+	$(vecho) "Run gen_appbin.exe"
+ifeq ($(app), 0)
+	$(Q) $(SDK_TOOLS)/gen_appbin.exe $@ 0 $(mode) $(freqdiv) $(size_map) $(app)
+	$(Q) mv eagle.app.flash.bin $(FW_BASE)/eagle.flash.bin
+	$(Q) mv eagle.app.v6.irom0text.bin $(FW_BASE)/eagle.irom0text.bin
+	$(Q) rm eagle.app.v6.*
+	$(vecho) "No boot needed."
+	$(vecho) "Generate eagle.flash.bin and eagle.irom0text.bin successully in folder $(FW_BASE)"
+	$(vecho) "eagle.flash.bin-------->0x00000"
+	$(vecho) "eagle.irom0text.bin---->0x10000"
+else
+    ifneq ($(boot), new)
+	$(Q) $(SDK_TOOLS)/gen_appbin.exe $@ 1 $(mode) $(freqdiv) $(size_map) $(app)
+	$(vecho) "Support boot_v1.1 and +"
+    else
+	$(Q) $(SDK_TOOLS)/gen_appbin.exe $@ 2 $(mode) $(freqdiv) $(size_map) $(app)
+    	ifeq ($(size_map), 6)
+		$(vecho) "Support boot_v1.4 and +"
+        else
+            ifeq ($(size_map), 5)
+		$(vecho) "Support boot_v1.4 and +"
+            else
+		$(vecho) "Support boot_v1.2 and +"
+            endif
+        endif
+    endif
+	$(Q) mv eagle.app.flash.bin $(FW_BASE)/upgrade/$(BIN_NAME).bin
+	$(Q) rm eagle.app.v6.*
+	$(vecho) "Generate $(BIN_NAME).bin successully in folder $(FW_BASE)/upgrade"
+	$(vecho) "boot.bin------->0x00000"
+	$(vecho) "$(BIN_NAME).bin--->$(addr)"
+endif
 	$(vecho) "Done"
 
 $(APP_AR): $(OBJ)
@@ -220,16 +325,41 @@ $(BUILD_DIR):
 
 $(FW_BASE):
 	$(Q) mkdir -p $@
+	$(Q) mkdir -p $@/upgrade
 
-flashonefile: all
-	$(SDK_TOOLS)/gen_flashbin.exe $(FW_BASE)/0x00000.bin $(FW_BASE)/0x20000.bin 0x20000
-	$(Q) mv eagle.app.flash.bin $(FW_BASE)/
-	$(vecho) "Generate eagle.app.flash.bin successully in folder $(FW_BASE)."
-	$(vecho) "eagle.app.flash.bin-------->0x00000"
-	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(FW_BASE)/eagle.app.flash.bin
+flashboot:
+ifeq ($(app), 0)
+	$(vecho) "No boot needed."
+else
+    ifneq ($(boot), new)
+	$(vecho) "Flash boot_v1.1 and +"
+	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.1.bin
+    else
+    	ifeq ($(size_map), 6)
+		$(vecho) "Flash boot_v1.5 and +"
+		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.6.bin
+        else
+            ifeq ($(size_map), 5)
+		$(vecho) "Flash boot_v1.5 and +"
+		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.6.bin
+            else
+		$(vecho) "Flash boot_v1.2 and +"
+		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.5.bin
+            endif
+        endif
+    endif
+endif
 
 flash: all
-	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(FW_BASE)/0x00000.bin 0x20000 $(FW_BASE)/0x20000.bin
+ifeq ($(app), 0) 
+	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(FW_BASE)/eagle.flash.bin 0x10000 $(FW_BASE)/eagle.irom0text.bin
+else
+ifeq ($(boot), none)
+	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(FW_BASE)/eagle.flash.bin 0x10000 $(FW_BASE)/eagle.irom0text.bin
+else
+	$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) $(addr) $(FW_BASE)/upgrade/$(BIN_NAME).bin
+endif
+endif
 
 # ===============================================================
 # From http://bbs.espressif.com/viewtopic.php?f=10&t=305
@@ -251,26 +381,16 @@ flash: all
 
 # FLASH SIZE
 flashinit:
-	$(vecho) "Flash init data:"
-	$(vecho) "Default config (Clear SDK settings):"
-	$(vecho) "blank.bin-------->0x3e000"
-	$(vecho) "blank.bin-------->0x3fc000"
-	$(vecho) "esp_init_data_default.bin-------->0x3fc000"
-	$(ESPTOOL) -p $(ESPPORT) write_flash $(flashimageoptions) \
-		0x3e000 $(SDK_BASE)/bin/blank.bin \
-		0x3fc000 $(SDK_BASE)/bin/esp_init_data_default.bin \
-		0x3fe000 $(SDK_BASE)/bin/blank.bin
+	$(vecho) "Flash init data default and blank data."
+	$(ESPTOOL) -p $(ESPPORT) write_flash $(flashimageoptions) 0xfc000 $(SDK_BASE)/bin/esp_init_data_default.bin 0xfe000 $(SDK_BASE)/bin/blank.bin
 
 rebuild: clean all
 
 clean:
-	$(Q) rm -f $(APP_AR)
-	$(Q) rm -f $(TARGET_OUT)
-	$(Q) rm -f *.bin
-	$(Q) rm -f *.sym
-	$(Q) rm -f *.ii
 	$(Q) rm -f *.i
 	$(Q) rm -f *.s
+	$(Q) rm -f $(APP_AR)
+	$(Q) rm -f $(TARGET_OUT)
 	$(Q) rm -rf $(BUILD_DIR)
 	$(Q) rm -rf $(BUILD_BASE)
 	$(Q) rm -rf $(FW_BASE)
