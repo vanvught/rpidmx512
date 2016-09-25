@@ -77,6 +77,8 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
+	console_status(CONSOLE_YELLOW, "Starting Wifi ...");
+
 	(void) wifi_init(ap_password);
 
 	hardware_watchdog_stop();
@@ -86,6 +88,7 @@ void notmain(void) {
 	printf(" cpu freq    : %d\n\n", system_get_cpu_freq());
 
 	if (network_params_init()) {
+		console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
 		if (network_params_is_use_dhcp()) {
 			wifi_station(network_params_get_ssid(), network_params_get_password());
 		} else {
@@ -96,7 +99,9 @@ void notmain(void) {
 		}
 	}
 
-	if (wifi_get_opmode() == WIFI_STA) {
+	const _wifi_mode opmode = wifi_get_opmode();
+
+	if (opmode == WIFI_STA) {
 		printf("WiFi mode : Station\n");
 	} else {
 		printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
@@ -108,21 +113,32 @@ void notmain(void) {
 		console_error("wifi_get_macaddr");
 	}
 
-	printf(" hostname    : %s\n", wifi_station_get_hostname());
+	printf(" Hostname    : %s\n", wifi_station_get_hostname());
 
 	if (wifi_get_ip_info(&ip_config)) {
-		printf(" ip-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
-		printf(" netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
-		printf(" gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
+		printf(" IP-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
+		printf(" Netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
+		printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
+		if (opmode == WIFI_STA) {
+			const _wifi_station_status status = wifi_station_get_connect_status();
+			printf("      Status : %s\n", wifi_station_status(status));
+			if (status != WIFI_STATION_GOT_IP){
+				console_error("Not connected!");
+				for(;;);
+			}
+		}
 	} else {
 		console_error("wifi_get_ip_info");
 	}
 
+	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	udp_begin(6454);
 
 	ArtNetNode node;
 	DMXSend dmx;
 	SPISend spi;
+
+	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet_params_get_universe());
 
@@ -192,7 +208,11 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
+	console_status(CONSOLE_YELLOW, "Starting the Node ...");
+
 	node.Start();
+
+	console_status(CONSOLE_GREEN, "Node started");
 
 	for (;;) {
 		hardware_watchdog_feed();
