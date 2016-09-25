@@ -324,6 +324,44 @@ int console_error(const char *s) {
 	return i;
 }
 
+/**
+ *
+ */
+int console_status(uint16_t const color, const char *s) {
+	char c;
+	int i = 0;;
+
+	uint16_t const fore_current = cur_fore;
+	uint16_t const back_current = cur_back;
+	int const s_y = current_y;
+	int const s_x = current_x;
+
+#if defined (ARM_ALLOW_MULTI_CORE)
+	while (__sync_lock_test_and_set(&lock, 1) == 1);
+#endif
+
+	console_clear_line(29);
+
+	cur_fore = color;
+	cur_back = CONSOLE_BLACK;
+
+	while ((c = *s++) != (char) 0) {
+		i++;
+		(void) console_putc((int) c);
+	}
+
+	current_y = s_y;
+	current_x = s_x;
+
+	cur_fore = fore_current;
+	cur_back = back_current;
+
+#if defined (ARM_ALLOW_MULTI_CORE)
+	__sync_lock_release(&lock);
+#endif
+
+	return i;
+}
 
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 

@@ -65,6 +65,7 @@ extern int console_init(void);
 extern int console_putc(const int);
 extern int console_puts(const char *);
 extern int console_error(const char *);
+extern int console_status(uint16_t const, const char *);
 extern void console_write(const char *, int);
 extern void console_puthex(const uint8_t);
 extern void console_puthex_fg_bg(const uint8_t, const uint16_t, const uint16_t);
