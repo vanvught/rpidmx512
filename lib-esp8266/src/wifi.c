@@ -44,6 +44,8 @@ static bool is_dhcp_used = false;
  * @return
  */
 bool wifi_init(const char *password) {
+	assert(password != NULL);
+
 	esp8266_init();
 	//esp8266_write_4bits((uint8_t) CMD_NOP);
 
@@ -187,7 +189,7 @@ void wifi_station(const char *ssid, const char *password) {
 void wifi_station_ip(const char *ssid, const char *password, const struct ip_info *info) {
 	assert(ssid != NULL);
 	assert(password != NULL);
-	assert(password != NULL);
+	assert(info != NULL);
 
 	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA_IP);
 
