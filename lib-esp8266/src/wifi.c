@@ -204,6 +204,45 @@ void wifi_station_ip(const char *ssid, const char *password, const struct ip_inf
 	is_dhcp_used = false;
 }
 
+/*
+ *
+ */
+const _wifi_station_status wifi_station_get_connect_status(void) {
+	esp8266_write_4bits((uint8_t) CMD_WIFI_MODE_STA_STATUS);
+	return esp8266_read_byte();
+}
+
+/**
+ *
+ * @param status
+ * @return
+ */
+/*@observer@*/const char *wifi_station_status(_wifi_station_status status) {
+	switch (status) {
+	case WIFI_STATION_IDLE:
+		return "ESP8266 station idle";
+		break;
+	case WIFI_STATION_CONNECTING:
+		return "ESP8266 station is connecting to AP";
+		break;
+	case WIFI_STATION_WRONG_PASSWORD:
+		return "The password is wrong";
+		break;
+	case WIFI_STATION_NO_AP_FOUND:
+		return "ESP8266 station can not find the target AP";
+		break;
+	case WIFI_STATION_CONNECT_FAIL:
+		return "ESP8266 station fail to connect to AP";
+		break;
+	case WIFI_STATION_GOT_IP:
+		return "ESP8266 station got IP address from AP";
+		break;
+	default:
+		return "Unknown Status";
+		break;
+	}
+}
+
 /**
  *
  * @return

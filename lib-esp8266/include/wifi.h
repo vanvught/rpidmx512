@@ -38,6 +38,15 @@ typedef enum wifi_mode {
 	WIFI_AP_STA = 3
 } _wifi_mode;
 
+typedef enum wifi_station_status {
+	WIFI_STATION_IDLE = 0,        /**< ESP8266 station idle */
+	WIFI_STATION_CONNECTING,      /**< ESP8266 station is connecting to AP*/
+	WIFI_STATION_WRONG_PASSWORD,  /**< the password is wrong*/
+	WIFI_STATION_NO_AP_FOUND,     /**< ESP8266 station can not find the target AP*/
+	WIFI_STATION_CONNECT_FAIL,    /**< ESP8266 station fail to connect to AP*/
+	WIFI_STATION_GOT_IP           /**< ESP8266 station got IP address from AP*/
+} _wifi_station_status;
+
 typedef enum wifiphy_phy_mode {
 	WIFI_PHY_MODE_11B = 1,
 	WIFI_PHY_MODE_11G = 2,
@@ -66,8 +75,8 @@ extern /*@shared@*/const char *system_get_sdk_version(void);
 
 extern void wifi_station(const char *, const char *);
 extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
-
-extern void wifi_soft_ap(void);
+extern const _wifi_station_status wifi_station_get_connect_status(void);
+extern /*@observer@*/const char *wifi_station_status(_wifi_station_status);
 
 extern bool wifi_is_dhcp_used(void);
 

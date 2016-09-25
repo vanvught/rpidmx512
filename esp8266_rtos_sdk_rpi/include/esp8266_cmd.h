@@ -28,19 +28,24 @@
 
 typedef enum commands {
 	WAIT_FOR_CMD = 0,
+	//
 	CMD_CPU_FREQ = 6,
 	CMD_SDK_VERSION = 8,
-	CMD_WIFI_STATUS = 7,
+	//
 	CMD_WIFI_MODE = 9,
 	CMD_WIFI_MODE_STA = 10,
 	CMD_WIFI_MODE_STA_IP = 13,
+	CMD_WIFI_MODE_STA_STATUS = 7,
 	CMD_WIFI_MODE_AP = 11,
+	//
 	CMD_MAC_ADDRESS = 1,
 	CMD_IP_CONFIG = 2,
 	CMD_HOST_NAME = 5,
+	//
 	CMD_UDP_BEGIN = 4,
 	CMD_UDP_RECEIVE = 3,
 	CMD_UPD_SEND = 12,
+	//
 	CMD_OTA_START = 15
 } _commands;
 

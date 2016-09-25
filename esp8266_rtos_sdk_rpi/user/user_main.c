@@ -41,12 +41,12 @@
 #define printf(...) (void *)0
 #endif
 
+#define OTA_UPDATE_PORT		8888
+
 /************************************************************************
 *
 *
 ************************************************************************/
-#define WIFI_AP_PASSWORD	""	//TODO
-#define OTA_UPDATE_PORT		8888
 
 typedef enum conn_state {
 	WIFI_NOT_CONNECTED,
@@ -91,37 +91,38 @@ struct _udp_data {
   char data[UDP_BUFFER_SIZE];
 } LOCAL g_udp_receive[DATA_BUFFER_INDEX_ENTRIES];
 
-
-uint32 ICACHE_FLASH_ATTR user_rf_cal_sector_set(void)
-{
+/*
+ *
+ */
+uint32 ICACHE_FLASH_ATTR user_rf_cal_sector_set(void) {
 	flash_size_map size_map = system_get_flash_size_map();
-    uint32 rf_cal_sec = 0;
+	uint32 rf_cal_sec = 0;
 
-    switch (size_map) {
-        case FLASH_SIZE_4M_MAP_256_256:
-            rf_cal_sec = 128 - 8;
-            break;
+	switch (size_map) {
+	case FLASH_SIZE_4M_MAP_256_256:
+		rf_cal_sec = 128 - 8;
+		break;
 
-        case FLASH_SIZE_8M_MAP_512_512:
-            rf_cal_sec = 256 - 5;
-            break;
+	case FLASH_SIZE_8M_MAP_512_512:
+		rf_cal_sec = 256 - 5;
+		break;
 
-        case FLASH_SIZE_16M_MAP_512_512:
-        case FLASH_SIZE_16M_MAP_1024_1024:
-            rf_cal_sec = 512 - 5;
-            break;
+	case FLASH_SIZE_16M_MAP_512_512:
+	case FLASH_SIZE_16M_MAP_1024_1024:
+		rf_cal_sec = 512 - 5;
+		break;
 
-        case FLASH_SIZE_32M_MAP_512_512:
-        case FLASH_SIZE_32M_MAP_1024_1024:
-            rf_cal_sec = 1024 - 5;
-            break;
+	case FLASH_SIZE_32M_MAP_512_512:
+	case FLASH_SIZE_32M_MAP_1024_1024:
+		rf_cal_sec = 1024 - 5;
+		break;
 
-        default:
-            rf_cal_sec = 0;
-            break;
-    }
+	default:
+		rf_cal_sec = 0;
+		break;
+	}
 
-    return rf_cal_sec;
+	return rf_cal_sec;
 }
 
 /**
@@ -487,8 +488,10 @@ void setup_wifi_st_mode(const char *ssid, const char *password, struct ip_info *
 		wifi_station_dhcpc_start();
 	}
 
+	wifi_station_set_auto_connect(0);
+	wifi_station_set_reconnect_policy(0);
+
 	wifi_station_connect();
-	wifi_station_set_auto_connect(1);
 
 	printf("ESP8266 in STA mode configured.\n");
 }
@@ -498,7 +501,7 @@ void setup_wifi_st_mode(const char *ssid, const char *password, struct ip_info *
  */
 void reply_with_wifi_mode(void) {
 	printf("reply_with_wifi_mode :");
-	const uint8_t mode = wifi_get_opmode();
+	const uint8_t mode = (uint8_t) wifi_get_opmode();
 	printf("%d\n", mode);
 	rpi_write_bytes((uint8_t *) &mode, 1);
 }
@@ -584,7 +587,9 @@ void wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_inf
 		conn_state = WIFI_CONNECTING;
 	}
 
-	while (conn_state == WIFI_CONNECTING) {
+	uint8_t i = 0;
+
+	while ((conn_state == WIFI_CONNECTING) && (i++ < 10)) {
 		switch (wifi_station_get_connect_status()) {
 		case STATION_GOT_IP:
 			wifi_get_ip_info(STATION_IF, ip_config);
@@ -608,10 +613,10 @@ void wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_inf
 			break;
 		default:
 			conn_state = WIFI_CONNECTING;
-			printf("WiFi connecting...\n");
+			printf("%d:WiFi connecting...\n", i);
 		}
 
-		vTaskDelay(1000 / portTICK_RATE_MS);
+		vTaskDelay(5000 / portTICK_RATE_MS);
 	}
 
 	wifi_get_macaddr(STATION_IF, (uint8_t *) g_hwmac);
@@ -686,6 +691,16 @@ void handle_wifi_mode_sta_dhcp(void) {
 
 	rpi_read_ssid_password(ssid, password);
 	wifi_mode_sta_connect(ssid, password, &ip_config);
+}
+
+/**
+ *
+ */
+void ICACHE_FLASH_ATTR reply_with_wifi_station_status(void) {
+	printf("reply_with_wifi_station_status :");
+	const uint8_t status = (uint8_t) wifi_station_get_connect_status();
+	printf("%d\n", status);
+	rpi_write_bytes((uint8_t *) &status, 1);
 }
 
 /**
@@ -808,7 +823,7 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 void IRAM_ATTR task_rpi(void *pvParameters) {
 	printf("rpi-interface\n");
 
-	setup_wifi_ap_mode(WIFI_AP_PASSWORD);
+	setup_wifi_ap_mode("");
 
 	g_host_name = (char *) wifi_station_get_hostname();
 	g_host_name_length = strlen(g_host_name);
@@ -873,6 +888,10 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 			break;
 		case CMD_WIFI_MODE_STA_IP:
 			handle_wifi_mode_sta_static_ip();
+			state = WAIT_FOR_CMD;
+			break;
+		case CMD_WIFI_MODE_STA_STATUS:
+			reply_with_wifi_station_status();
 			state = WAIT_FOR_CMD;
 			break;
 		case CMD_UDP_RECEIVE:
