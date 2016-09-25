@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -293,6 +294,37 @@ void console_write(const char *s, int n) {
 	}
 }
 
+/**
+ *
+ * @param s
+ * @return
+ */
+int console_error(const char *s) {
+	char c;
+	int i = 0;;
+
+	uint16_t fore_current = cur_fore;
+	uint16_t back_current = cur_back;
+
+	cur_fore = CONSOLE_RED;
+	cur_back = CONSOLE_BLACK;
+
+	(void) console_puts("Error <");
+
+	while ((c = *s++) != (char) 0) {
+		i++;
+		(void) console_putc((int) c);
+	}
+
+	(void) console_puts(">\n");
+
+	cur_fore = fore_current;
+	cur_back = back_current;
+
+	return i;
+}
+
+
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
 /**
@@ -304,6 +336,9 @@ void console_puthex(const uint8_t data) {
 	(void) console_putc((int) (TO_HEX(data & 0x0F)));
 }
 
+/**
+ *
+ */
 void console_puthex_fg_bg(const uint8_t data, const uint16_t fore, const uint16_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
@@ -366,6 +401,9 @@ void console_set_cursor(const int x, const int y) {
 #endif
 }
 
+/**
+ *
+ */
 void console_save_cursor(void) {
 	saved_y = current_y;
 	saved_x = current_x;
@@ -373,12 +411,32 @@ void console_save_cursor(void) {
 	saved_fore = cur_fore;
 }
 
+/**
+ *
+ */
 void console_restore_cursor(void) {
 	current_y = saved_y;
 	current_x = saved_x;
 	cur_back = saved_back;
 	cur_fore = saved_fore;
 }
+
+/**
+ *
+ */
+void console_save_color(void) {
+	saved_back = cur_back;
+	saved_fore = cur_fore;
+}
+
+/**
+ *
+ */
+void console_restore_color(void) {
+	cur_back = saved_back;
+	cur_fore = saved_fore;
+}
+
 /**
  * Changes the foreground color of future characters printed on the console.
  *
