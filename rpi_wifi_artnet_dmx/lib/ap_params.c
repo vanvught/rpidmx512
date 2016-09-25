@@ -33,7 +33,7 @@
 static const char PARAMS_FILE_NAME[] ALIGNED = "ap.txt";	///< Parameters file name
 static const char PARAMS_PASSWORD[] ALIGNED = "password";	///<
 
-static char ap_params_password[34] ALIGNED;			///<
+static char ap_params_password[34] ALIGNED;					///<
 
 /**
  *

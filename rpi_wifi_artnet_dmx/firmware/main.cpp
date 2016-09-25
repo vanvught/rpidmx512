@@ -28,15 +28,6 @@
 
 #include "bcm2835_gpio.h"
 
-#include "artnetnode.h"
-#include "artnet_params.h"
-#include "dmx_params.h"
-#include "dmxsend.h"
-#include "spisend.h"
-#include "ap_params.h"
-#include "network_params.h"
-#include "devices_params.h"
-
 #include "hardware.h"
 #include "led.h"
 #include "monitor.h"
@@ -44,14 +35,22 @@
 #include "udp.h"
 #include "console.h"
 
+#include "artnet_params.h"
+#include "dmx_params.h"
+#include "ap_params.h"
+#include "network_params.h"
+#include "devices_params.h"
+#include "dmxsend.h"
+#include "spisend.h"
+#include "artnetnode.h"
+
 extern "C" {
 
 void notmain(void) {
-	uint8_t output_type;
+	_output_type output_type;
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
-	char *ap_password = NULL;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -73,17 +72,12 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
-	if (ap_params_init()) {
-		ap_password = (char *)ap_params_get_password();
-	}
+	(void) ap_params_init();
+	const char *ap_password = ap_params_get_password();
 
 	hardware_watchdog_init();
 
-	if (ap_password == NULL) {
-		(void) wifi_init("");
-	} else {
-		(void) wifi_init(ap_password);
-	}
+	(void) wifi_init(ap_password);
 
 	hardware_watchdog_stop();
 
@@ -108,12 +102,10 @@ void notmain(void) {
 		printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
 	}
 
-
-
 	if (wifi_get_macaddr(mac_address)) {
 		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
 	} else {
-		printf("Error : wifi_get_macaddr\n");
+		console_error("wifi_get_macaddr");
 	}
 
 	printf(" hostname    : %s\n", wifi_station_get_hostname());
@@ -123,7 +115,7 @@ void notmain(void) {
 		printf(" netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
 		printf(" gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
 	} else {
-		printf("Error : wifi_get_ip_info\n");
+		console_error("wifi_get_ip_info");
 	}
 
 	udp_begin(6454);
@@ -141,7 +133,8 @@ void notmain(void) {
 		dmx.SetBreakTime(dmx_params_get_break_time());
 		dmx.SetMabTime(dmx_params_get_mab_time());
 
-		uint8_t refresh_rate = dmx_params_get_refresh_rate();
+		const uint8_t refresh_rate = dmx_params_get_refresh_rate();
+
 		if (refresh_rate != (uint8_t) 0) {
 			period = (uint32_t) (1E6 / refresh_rate);
 		}

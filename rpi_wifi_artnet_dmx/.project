@@ -6,6 +6,7 @@
 		<project>firmware-template</project>
 		<project>lib-artnet</project>
 		<project>lib-hal</project>
+		<project>lib-monitor</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
