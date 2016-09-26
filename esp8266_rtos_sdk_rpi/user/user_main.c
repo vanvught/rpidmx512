@@ -29,19 +29,16 @@
 #include <esp_common.h>
 #include <freertos/task.h>
 #include <lwip/sockets.h>
-#include <upgrade.h>
 
 #include "esp8266_cmd.h"
 #include "esp8266_peri.h" //TODO replace by SDK defines
 #include "esp8266_rpi.h"
 
-#define DEBUG
+//#define DEBUG
 
 #if !defined(DEBUG)
 #define printf(...) (void *)0
 #endif
-
-#define OTA_UPDATE_PORT		8888
 
 /************************************************************************
 *
@@ -67,29 +64,14 @@ LOCAL uint8_t g_hwmac[6];
 LOCAL struct ip_info g_ipconfig;
 LOCAL char *g_host_name;
 LOCAL uint32_t g_host_name_length;
-LOCAL int32 g_sock_fd;
+LOCAL int32 g_sock_fd = -1;
 LOCAL int16_t g_port_udp_begin;
-LOCAL xTaskHandle g_task_udp_handle = NULL;
 LOCAL xTaskHandle g_task_rpi_handle = NULL;
-LOCAL uint8_t g_head = 0;
-LOCAL uint8_t g_tail = 0;
-LOCAL char *g_update_file = NULL;
-LOCAL const char *g_user1_bin = "user1.bin";
-LOCAL const char *g_user2_bin = "user2.bin";
-
-#define DATA_BUFFER_INDEX_ENTRIES     (1 << 3)
-#define DATA_BUFFER_INDEX_MASK        (DATA_BUFFER_INDEX_ENTRIES - 1)
 
 #define UDP_BUFFER_SIZE	800
 
+LOCAL int8_t g_recvfrom_buffer[UDP_BUFFER_SIZE];
 LOCAL int8_t g_sendto_buffer[UDP_BUFFER_SIZE];
-
-struct _udp_data {
-  uint16_t len;
-  uint32_t ip_address;
-  uint16_t port;
-  char data[UDP_BUFFER_SIZE];
-} LOCAL g_udp_receive[DATA_BUFFER_INDEX_ENTRIES];
 
 /*
  *
@@ -167,7 +149,7 @@ inline static uint8_t _read_byte(void) {
  *
  * @return
  */
-uint8_t IRAM_ATTR rpi_read_4bits(void) {
+static const uint8_t IRAM_ATTR rpi_read_4bits(void) {
 	data_gpio_fsel_input();
 
 	while (!(GPI & (uint32_t) (1 << ESP8266_RPI_CTRL_IN))) {
@@ -206,7 +188,7 @@ static void IRAM_ATTR rpi_read_bytes(uint8_t *p, uint16_t nLength) {
  *
  * @param
  */
-static uint16_t IRAM_ATTR rpi_read_halfword(void) {
+static const uint16_t IRAM_ATTR rpi_read_halfword(void) {
 	uint16_t data;
 
 	data_gpio_fsel_input();
@@ -221,7 +203,7 @@ static uint16_t IRAM_ATTR rpi_read_halfword(void) {
  *
  * @param
  */
-static uint32_t IRAM_ATTR rpi_read_word(void) {
+static const uint32_t IRAM_ATTR rpi_read_word(void) {
 	uint32_t data;
 
 	data_gpio_fsel_input();
@@ -232,6 +214,10 @@ static uint32_t IRAM_ATTR rpi_read_word(void) {
 	data |= _read_byte() << 24;
 
 	return data;
+}
+
+const uint32_t ota_rpi_read_word(void) {
+	return rpi_read_word();
 }
 
 /**
@@ -277,55 +263,6 @@ static void IRAM_ATTR rpi_write_bytes(uint8_t *p, uint16_t nLength) {
 		GPOC = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 		_p++;
 	}
-}
-
-/**
- *
- * @param pvParameters
- */
-void IRAM_ATTR task_udp(void *pvParameters) {
-	int32 ret;
-	struct sockaddr_in server_addr, address_remote;
-	int slen = sizeof(address_remote);
-
-	printf("udp-interface, port : %d\n", g_port_udp_begin);
-
-    do {
-		g_sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-		if (g_sock_fd == -1) {
-			printf("ERROR: Failed to create sock!\n");
-			vTaskDelay(1000 / portTICK_RATE_MS);
-		}
-	} while (g_sock_fd == -1);
-
-    memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(g_port_udp_begin);
-	server_addr.sin_len = sizeof(server_addr);
-
-    do {
-		ret = bind(g_sock_fd, (struct sockaddr * )&server_addr, sizeof(server_addr));
-		if (ret != 0) {
-			printf("ERROR: Failed to bind sock! - %d\n", ret);
-			vTaskDelay(1000 / portTICK_RATE_MS);
-		}
-	} while (ret != 0);
-
-	while (1) {
-		size_t len;
-		if ((len = recvfrom(g_sock_fd, g_udp_receive[g_head].data, UDP_BUFFER_SIZE, 0, (struct sockaddr * )&address_remote, &slen)) == -1) {
-			printf("ERROR: recvfrom!\n");
-		} else {
-			g_udp_receive[g_head].len = len;
-			g_udp_receive[g_head].ip_address = address_remote.sin_addr.s_addr;
-			g_udp_receive[g_head].port = address_remote.sin_port;
-			g_head = (g_head + 1) & DATA_BUFFER_INDEX_MASK;
-		}
-	}
-
-	g_task_udp_handle = NULL;
-	vTaskDelete(NULL);
 }
 
 /**
@@ -385,10 +322,9 @@ void wifi_event_cb(System_Event_t *evt) {
 
 /**
  *
+ * @param ap_passsword
  */
 void setup_wifi_ap_mode(const char *ap_passsword) {
-	printf("setup_wifi_ap_mode\n");
-
 	struct softap_config config_new;
     struct softap_config config_current;
     struct ip_info ip;
@@ -499,8 +435,9 @@ void setup_wifi_st_mode(const char *ssid, const char *password, struct ip_info *
 /**
  *
  */
-void reply_with_wifi_mode(void) {
+void ICACHE_FLASH_ATTR reply_with_wifi_mode(void) {
 	printf("reply_with_wifi_mode :");
+
 	const uint8_t mode = (uint8_t) wifi_get_opmode();
 	printf("%d\n", mode);
 	rpi_write_bytes((uint8_t *) &mode, 1);
@@ -509,7 +446,7 @@ void reply_with_wifi_mode(void) {
 /**
  *
  */
-void reply_with_mac_address(void) {
+void ICACHE_FLASH_ATTR reply_with_mac_address(void) {
 	printf("reply_with_mac_address\n");
 	rpi_write_bytes(g_hwmac, 6);
 }
@@ -517,7 +454,7 @@ void reply_with_mac_address(void) {
 /**
  *
  */
-void reply_with_ip_config(void) {
+void ICACHE_FLASH_ATTR reply_with_ip_config(void) {
 	printf("reply_with_ip_config\n");
 	rpi_write_bytes((uint8_t *) &g_ipconfig, 12);
 }
@@ -525,8 +462,9 @@ void reply_with_ip_config(void) {
 /**
  *
  */
-void reply_with_hostname(void) {
+void ICACHE_FLASH_ATTR reply_with_hostname(void) {
   printf("reply_with_hostname : %s[%d]\n	", g_host_name, g_host_name_length);
+
   rpi_write_bytes((uint8_t *)g_host_name, g_host_name_length);
   rpi_write_bytes((uint8_t *)&gc_zero, 1);
 }
@@ -534,8 +472,9 @@ void reply_with_hostname(void) {
 /**
  *
  */
-void reply_with_sdk_version(void) {
+void ICACHE_FLASH_ATTR reply_with_sdk_version(void) {
   printf("reply_with_sdk_version : %s[%d]\n", g_sdk_version, g_sdk_version_length);
+
   rpi_write_bytes((uint8_t *)g_sdk_version, g_sdk_version_length);
   rpi_write_bytes((uint8_t *)&gc_zero, 1);
 }
@@ -543,8 +482,9 @@ void reply_with_sdk_version(void) {
 /**
  *
  */
-void reply_with_cpu_freq(void) {
+void ICACHE_FLASH_ATTR reply_with_cpu_freq(void) {
   printf("reply_with_cpufreq\n");
+
   g_cpu_freq = system_get_cpu_freq();
   rpi_write_bytes((uint8_t *)&g_cpu_freq, 1);
 }
@@ -553,22 +493,52 @@ void reply_with_cpu_freq(void) {
  *
  */
 void handle_udp_begin(void) {
-	printf("handle_udp_begin - ");
+	printf("handle_udp_begin\n");
 
 	g_port_udp_begin = rpi_read_halfword();
 
-	printf("xTaskCreate (%d)\n"), g_port_udp_begin;
-
-	if (g_task_udp_handle != NULL) {
+	if (g_sock_fd != -1) {
 		close(g_sock_fd);
-		vTaskDelete(g_task_udp_handle);
-		g_task_udp_handle = NULL;
+		g_sock_fd = -1;
 	}
 
-	xTaskCreate(task_udp, "udp-interface", 256, NULL, 2, &g_task_udp_handle);
+	int32 ret;
+	struct sockaddr_in server_addr, address_remote;
+	int slen = sizeof(address_remote);
+    int recv_timeout = 2;
+
+    do {
+		g_sock_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if (g_sock_fd == -1) {
+			printf("ERROR: Failed to create sock!\n");
+			vTaskDelay(1000 / portTICK_RATE_MS);
+		}
+	} while (g_sock_fd == -1);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(g_port_udp_begin);
+	server_addr.sin_len = sizeof(server_addr);
+
+    do {
+		ret = bind(g_sock_fd, (struct sockaddr * )&server_addr, sizeof(server_addr));
+		if (ret != 0) {
+			printf("ERROR: Failed to bind sock! - %d\n", ret);
+			vTaskDelay(1000 / portTICK_RATE_MS);
+		}
+	} while (ret != 0);
+
+    setsockopt(g_sock_fd,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout));
 }
 
-void wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_info *ip_config) {
+/**
+ *
+ * @param ssid
+ * @param password
+ * @param ip_config
+ */
+void ICACHE_FLASH_ATTR wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_info *ip_config) {
 	struct station_config sta_config;
 
 	_conn_state conn_state = WIFI_NOT_CONNECTED;
@@ -623,7 +593,10 @@ void wifi_mode_sta_connect(const char *ssid, const char *password, struct ip_inf
 	wifi_get_ip_info(STATION_IF, &g_ipconfig);
 }
 
-void handle_wifi_mode_ap() {
+/**
+ *
+ */
+void ICACHE_FLASH_ATTR handle_wifi_mode_ap() {
 	printf("handle_wifi_mode_ap\n");
 
 	char password[32];
@@ -641,7 +614,12 @@ void handle_wifi_mode_ap() {
 
 }
 
-void rpi_read_ssid_password(char *ssid, char *password) {
+/**
+ *
+ * @param ssid
+ * @param password
+ */
+void ICACHE_FLASH_ATTR rpi_read_ssid_password(char *ssid, char *password) {
 	uint8_t d;
 	unsigned i = 0;
 
@@ -663,8 +641,12 @@ void rpi_read_ssid_password(char *ssid, char *password) {
 	printf("pwd : %s\n", password);
 }
 
-void handle_wifi_mode_sta_static_ip(void) {
+/**
+ *
+ */
+void ICACHE_FLASH_ATTR handle_wifi_mode_sta_static_ip(void) {
 	printf("handle_wifi_mode_sta_static_ip\n");
+
 	char ssid[32];
 	char password[32];
 	struct ip_info ip_config;
@@ -677,7 +659,7 @@ void handle_wifi_mode_sta_static_ip(void) {
 /**
  *
  */
-void handle_wifi_mode_sta_dhcp(void) {
+void ICACHE_FLASH_ATTR handle_wifi_mode_sta_dhcp(void) {
 	printf("handle_wifi_mode_sta_dhcp\n");
 
 	char ssid[32];
@@ -697,9 +679,9 @@ void handle_wifi_mode_sta_dhcp(void) {
  *
  */
 void ICACHE_FLASH_ATTR reply_with_wifi_station_status(void) {
-	printf("reply_with_wifi_station_status :");
+	printf("reply_with_wifi_station_status");
+
 	const uint8_t status = (uint8_t) wifi_station_get_connect_status();
-	printf("%d\n", status);
 	rpi_write_bytes((uint8_t *) &status, 1);
 }
 
@@ -707,18 +689,20 @@ void ICACHE_FLASH_ATTR reply_with_wifi_station_status(void) {
  *
  */
 void IRAM_ATTR reply_with_udp_packet(void) {
-	if (g_head == g_tail) {
-		uint16_t data = 0;
+	struct sockaddr_in address_remote;
+	int slen = sizeof(address_remote);
+	size_t len;
+
+	if ((len = recvfrom(g_sock_fd, g_recvfrom_buffer, UDP_BUFFER_SIZE, 0, (struct sockaddr * )&address_remote, &slen)) == -1) {
+		const uint16_t data = 0;
 		rpi_write_bytes((uint8_t *) &data, 2);
 	} else {
-		uint16_t len = g_udp_receive[g_tail].len;
 		rpi_write_bytes((uint8_t *) &len, 2);
-		uint32_t ip = g_udp_receive[g_tail].ip_address;
+		const uint32_t ip = address_remote.sin_addr.s_addr;
 		rpi_write_bytes((uint8_t *) &ip, 4);
-		uint16_t port = g_udp_receive[g_tail].port;
+		const uint16_t port = address_remote.sin_port;
 		rpi_write_bytes((uint8_t *) &port, 2);
-		rpi_write_bytes((uint8_t *) g_udp_receive[g_tail].data, len);
-		g_tail = (g_tail + 1) & DATA_BUFFER_INDEX_MASK;
+		rpi_write_bytes((uint8_t *) g_recvfrom_buffer, len);
 	}
 }
 
@@ -746,82 +730,12 @@ void IRAM_ATTR handle_udp_packet(void) {
 }
 
 
-void ICACHE_FLASH_ATTR ota_finished_callback(void *arg) {
-	struct upgrade_server_info *update = arg;
-
-	if (update->upgrade_flag == true) {
-		printf("OTA : Success, rebooting\n");
-		system_upgrade_reboot();
-	} else {
-		printf("OTA : Failed\n");
-	}
-
-	free(update->url);
-	free(update);
-}
-
-/**
- *
- */
-void ICACHE_FLASH_ATTR handle_ota_start(void) {
-	printf("handle_ota_start\n");
-
-	struct sockaddr_in remote_ip;
-
-	const uint32 server_ip = rpi_read_word();
-
-	if (g_task_udp_handle != NULL) {
-		close(g_sock_fd);
-		vTaskDelete(g_task_udp_handle);
-		g_task_udp_handle = NULL;
-	}
-
-	const uint8_t user_bin = system_upgrade_userbin_check();
-
-	switch (user_bin) {
-	case UPGRADE_FW_BIN1:
-		g_update_file = (char *)g_user2_bin;
-		break;
-	case UPGRADE_FW_BIN2:
-		g_update_file = (char *)g_user1_bin;
-		break;
-	default:
-		printf("Invalid userbin number : %d\n", user_bin);
-		for(;;);
-	}
-
-	bzero(&remote_ip, sizeof(struct sockaddr_in));
-	remote_ip.sin_family = AF_INET;
-	remote_ip.sin_addr.s_addr = server_ip;
-	remote_ip.sin_port = htons(OTA_UPDATE_PORT);
-
-	struct upgrade_server_info* update = (struct upgrade_server_info *) zalloc(sizeof(struct upgrade_server_info));
-	update->url = (uint8 *) zalloc(128);		/* the url of upgrading server */
-	update->check_cb = ota_finished_callback;	/* callback of upgrading */
-	update->check_times = 10000;				/* time out of upgrading, unit : ms */
-	update->sockaddrin = remote_ip;				/* socket of upgrading */
-
-	sprintf((char *) update->url, "GET /%s HTTP/1.1\r\nHost: "IPSTR":%d\r\nConnection: close\r\n\r\n\r", g_update_file, IP2STR(server_ip), OTA_UPDATE_PORT);
-
-	printf("url : %s\n", (char *) update->url);
-
-
-	if (system_upgrade_start(update) == false) {
-		printf("OTA : Could not start upgrade\n");
-		free(update->url);
-		free(update);
-	} else {
-		printf("OTA : Upgrading...\n");
-	}
-
-}
-
 /**
  *
  * @param pvParameters
  */
 void IRAM_ATTR task_rpi(void *pvParameters) {
-	printf("rpi-interface\n");
+	printf("task_rpi\n");
 
 	setup_wifi_ap_mode("");
 
@@ -842,74 +756,57 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 		printf("Ctrl pin is low\n");
 	}
 
-	_commands state = WAIT_FOR_CMD;
-
 	while (1) {
+		_commands state = rpi_read_4bits();
 		switch (state) {
-		case WAIT_FOR_CMD:
-			state = rpi_read_4bits();
-			break;
 		case CMD_SDK_VERSION:
 			reply_with_sdk_version();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_CPU_FREQ:
 			reply_with_cpu_freq();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_HOST_NAME:
 			reply_with_hostname();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE:
 			reply_with_wifi_mode();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_MAC_ADDRESS:
 			reply_with_mac_address();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_IP_CONFIG:
 			reply_with_ip_config();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_UDP_BEGIN:
 			handle_udp_begin();
 			vTaskDelay(10000 / portTICK_RATE_MS);
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE_AP:
 			handle_wifi_mode_ap();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE_STA:
 			handle_wifi_mode_sta_dhcp();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE_STA_IP:
 			handle_wifi_mode_sta_static_ip();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_WIFI_MODE_STA_STATUS:
 			reply_with_wifi_station_status();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_UDP_RECEIVE:
 			reply_with_udp_packet();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_UPD_SEND:
 			handle_udp_packet();
-			state = WAIT_FOR_CMD;
 			break;
 		case CMD_OTA_START:
 			handle_ota_start();
-			state = WAIT_FOR_CMD;
 			break;
 		default:
-			state = WAIT_FOR_CMD;
 			break;
 		}
+
+		taskYIELD();
 	}
 
 	vTaskDelete(NULL);
@@ -952,4 +849,3 @@ void user_init(void) {
 
 	xTaskCreate(task_rpi, "rpi-interface", 512, NULL, 2, &g_task_rpi_handle);
 }
-
