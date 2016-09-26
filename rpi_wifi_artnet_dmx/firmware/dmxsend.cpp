@@ -33,6 +33,7 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 #include "arm/pl011.h"
+
 #include "dmx.h"
 #ifdef DEBUG
 #include "monitor.h"
@@ -66,7 +67,7 @@ static volatile unsigned m_CurrentSlot;
  */
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
-#if DEBUG
+#ifdef DEBUG
 	bcm2835_gpio_set(21);
 #endif
 	const uint32_t m_TimerIRQMicros = BCM2835_ST->CLO;
@@ -117,7 +118,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		break;
 	}
 
-#if DEBUG
+#ifdef DEBUG
 	bcm2835_gpio_clr(21);
 #endif
 	dmb();
@@ -128,7 +129,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
  */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
-#if DEBUG
+#ifdef DEBUG
 	bcm2835_gpio_set(20);
 #endif
 	assert(m_State == DMXSendData);
@@ -150,7 +151,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 		BCM2835_PL011->ICR = PL011_ICR_TXIC;
 	}
-#if DEBUG
+#ifdef DEBUG
 	bcm2835_gpio_clr(20);
 #endif
 	dmb();
@@ -215,7 +216,8 @@ DMXSend::DMXSend(void) {
 	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
 
 	dmb();
-#if DEBUG
+
+#ifdef DEBUG
 	value = BCM2835_GPIO->GPFSEL1;
 	value &= ~(7 << 27);
 	value |= BCM2835_GPIO_FSEL_OUTP << 27;
@@ -422,12 +424,13 @@ bool DMXSend::SetDataTry(const uint8_t *data, const uint16_t length) {
  * @param data
  * @param length
  */
+
 void DMXSend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length) {
 	while (!SetDataTry (data, length)) {
 		// just wait
 	}
-#if DEBUG
+
+#if DEBUG_
 	monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d", nPortId, data[0], data[1], data[2], length);
 #endif
 }
-

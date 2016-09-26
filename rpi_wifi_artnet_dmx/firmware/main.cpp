@@ -188,12 +188,13 @@ void notmain(void) {
 
 	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = node.GetSoftwareVersion();
-	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name : %s\n", node.GetShortName());
-	printf(" Long name  : %s\n", node.GetLongName());
-	printf(" Net        : %d\n", node.GetNetSwitch());
-	printf(" Sub-Net    : %d\n", node.GetSubnetSwitch());
-	printf(" Universe   : %d\n\n", node.GetUniverseSwitch(0));
+	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" Short name   : %s\n", node.GetShortName());
+	printf(" Long name    : %s\n", node.GetLongName());
+	printf(" Net          : %d\n", node.GetNetSwitch());
+	printf(" Sub-Net      : %d\n", node.GetSubnetSwitch());
+	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
+	printf(" Active ports : %d\n\n", node.GetActiveOutputPorts());
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
