@@ -211,6 +211,20 @@ const uint8_t *ArtNetNode::GetSoftwareVersion(void) {
 /**
  *
  */
+const uint8_t ArtNetNode::GetActiveOutputPorts(void) {
+	return m_State.nActivePorts;
+}
+
+/**
+ *
+ */
+const uint8_t ArtNetNode::GetActiveInputPorts(void) {
+	return 0;
+}
+
+/**
+ *
+ */
 void ArtNetNode::Start(void) {
 	assert(m_pLightSet != 0);
 

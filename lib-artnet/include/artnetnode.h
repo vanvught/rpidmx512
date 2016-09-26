@@ -201,6 +201,9 @@ public:
 	const uint8_t GetNetSwitch(void);
 	void SetNetSwitch(const uint8_t);
 
+	const uint8_t GetActiveOutputPorts(void);
+	const uint8_t GetActiveInputPorts(void);
+
 	void SendDiag(const char *, TPriorityCodes);
 
 	int HandlePacket(void);
