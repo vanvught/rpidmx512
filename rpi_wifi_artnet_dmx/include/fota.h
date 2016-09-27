@@ -1,5 +1,5 @@
 /**
- * @file network_params.h
+ * @file fota.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,32 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORK_PARAMS_H_
-#define NETWORK_PARAMS_H_
+
+#ifndef FOTA_H_
+#define FOTA_H_
 
 #include <stdint.h>
-#include <stdbool.h>
-
-#include "util.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool network_params_init(void);
-
-extern const bool network_params_is_use_dhcp(void);
-
-extern const uint32_t network_params_get_ip_address(void);
-extern const uint32_t network_params_get_net_mask(void);
-extern const uint32_t network_params_get_default_gateway(void);
-extern const uint32_t network_params_get_name_server(void);
-
-extern /*@shared@*/const char *network_params_get_ssid(void) ASSUME_ALIGNED;
-extern /*@shared@*/const char *network_params_get_password(void) ASSUME_ALIGNED;
+extern void fota(const uint32_t);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NETWORK_PARAMS_H_ */
+#endif /* FOTA_H_ */

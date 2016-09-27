@@ -1,5 +1,5 @@
 /**
- * @file ap_params.c
+ * @file ap_params.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -40,7 +40,5 @@ extern /*@shared@*/const char *ap_params_get_password(void) ASSUME_ALIGNED;
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif /* AP_PARAMS_H_ */

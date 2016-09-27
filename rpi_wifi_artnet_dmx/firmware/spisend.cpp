@@ -103,7 +103,7 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 	}
 
 
-	monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
+	//monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
 
 	for (j = beginIndex; j < endIndex; j++) {
 		ws28xx_set_led(j, data[i], data[i + 1], data[i + 2]);

@@ -35,14 +35,16 @@
 #include "udp.h"
 #include "console.h"
 
-#include "artnet_params.h"
-#include "dmx_params.h"
 #include "ap_params.h"
 #include "network_params.h"
-#include "devices_params.h"
-#include "dmxsend.h"
-#include "spisend.h"
+#include "artnet_params.h"
 #include "artnetnode.h"
+#include "dmx_params.h"
+#include "dmxsend.h"
+#include "devices_params.h"
+#include "spisend.h"
+#include "fota_params.h"
+#include "fota.h"
 
 extern "C" {
 
@@ -131,6 +133,12 @@ void notmain(void) {
 		console_error("wifi_get_ip_info");
 	}
 
+	if (fota_params_init()) {
+		console_newline();
+		fota(fota_params_get_server());
+		for(;;);
+	}
+
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	udp_begin(6454);
 
@@ -207,7 +215,9 @@ void notmain(void) {
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
-	hardware_watchdog_init();
+	if (output_type == OUTPUT_TYPE_DMX) {
+		hardware_watchdog_init();
+	}
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
 
@@ -216,7 +226,9 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, "Node started");
 
 	for (;;) {
-		hardware_watchdog_feed();
+		if (output_type == OUTPUT_TYPE_DMX) {
+			hardware_watchdog_feed();
+		}
 		node.HandlePacket();
 		led_blink();
 	}

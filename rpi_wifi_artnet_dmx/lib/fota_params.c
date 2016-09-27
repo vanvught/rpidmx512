@@ -1,5 +1,5 @@
 /**
- * @file network_params.h
+ * @file fota_params.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,32 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORK_PARAMS_H_
-#define NETWORK_PARAMS_H_
-
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "read_config_file.h"
+#include "sscan.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static const char PARAMS_FILE_NAME[] ALIGNED = "fota.txt";		///< Parameters file name
+static const char PARAMS_SERVER[] ALIGNED = "server";			///<
 
-extern const bool network_params_init(void);
+static uint32_t fota_params_server = (uint32_t)0;				///<
 
-extern const bool network_params_is_use_dhcp(void);
-
-extern const uint32_t network_params_get_ip_address(void);
-extern const uint32_t network_params_get_net_mask(void);
-extern const uint32_t network_params_get_default_gateway(void);
-extern const uint32_t network_params_get_name_server(void);
-
-extern /*@shared@*/const char *network_params_get_ssid(void) ASSUME_ALIGNED;
-extern /*@shared@*/const char *network_params_get_password(void) ASSUME_ALIGNED;
-
-#ifdef __cplusplus
+/**
+ *
+ * @return
+ */
+const uint32_t fota_params_get_server(void) {
+	return fota_params_server;
 }
-#endif
 
-#endif /* NETWORK_PARAMS_H_ */
+/**
+ *
+ * @param line
+ */
+static void process_line_read(const char *line) {
+	uint32_t value32;
+
+	if (sscan_ip_address(line, PARAMS_SERVER, &value32) == 1) {
+		fota_params_server = value32;
+	}
+}
+
+/**
+ *
+ */
+const bool fota_params_init(void) {
+
+	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+}

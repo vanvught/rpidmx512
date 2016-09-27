@@ -1,5 +1,5 @@
 /**
- * @file esp8266_ota.h
+ * @file esp8266_fota.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef ESP8266_OTA_H_
-#define ESP8266_OTA_H_
+#ifndef ESP8266_FOTA_H_
+#define ESP8266_FOTA_H_
 
 #include <stdint.h>
 
@@ -32,11 +32,11 @@
 extern "C" {
 #endif
 
-extern void esp8266_ota_start(uint32_t);
-extern void esp8266_ota_status(/*@out@*/char *, /*@out@*/uint16_t *);
+extern void esp8266_fota_start(const uint32_t);
+extern void esp8266_fota_status(/*@out@*/char *, /*@out@*/uint16_t *);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* ESP8266_OTA_H_ */
+#endif /* ESP8266_FOTA_H_ */

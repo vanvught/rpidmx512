@@ -46,7 +46,7 @@ typedef enum commands {
 	CMD_WIFI_UDP_RECEIVE = 3,
 	CMD_WIFI_UDP_SEND = 12,
 	//
-	CMD_ESP_OTA_START = 15
+	CMD_ESP_FOTA_START = 15
 } _commands;
 
 #endif /* ESP8266_CMD_H_ */

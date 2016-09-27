@@ -1,5 +1,5 @@
 /**
- * @file network_params.h
+ * @file esp8266_ota.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,32 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORK_PARAMS_H_
-#define NETWORK_PARAMS_H_
-
+#include <assert.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <stddef.h>
 
-#include "util.h"
+#include "esp8266.h"
+#include "esp8266_cmd.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern const bool network_params_init(void);
-
-extern const bool network_params_is_use_dhcp(void);
-
-extern const uint32_t network_params_get_ip_address(void);
-extern const uint32_t network_params_get_net_mask(void);
-extern const uint32_t network_params_get_default_gateway(void);
-extern const uint32_t network_params_get_name_server(void);
-
-extern /*@shared@*/const char *network_params_get_ssid(void) ASSUME_ALIGNED;
-extern /*@shared@*/const char *network_params_get_password(void) ASSUME_ALIGNED;
-
-#ifdef __cplusplus
+/**
+ *
+ * @param server_ip_address
+ */
+void esp8266_fota_start(const uint32_t server_ip_address) {
+	esp8266_write_4bits((uint8_t) CMD_ESP_FOTA_START);
+	esp8266_write_word(server_ip_address);
 }
-#endif
 
-#endif /* NETWORK_PARAMS_H_ */
+/**
+ *
+ * @param status
+ * @param len
+ */
+void esp8266_fota_status(char *status, uint16_t *len) {
+	uint16_t i = 0;
+	uint8_t ch;
+
+	char *p = status;
+	uint16_t max_len = *len;
+
+	assert(status != NULL);
+	assert(len != NULL);
+
+	esp8266_write_4bits((uint8_t) CMD_NOP);
+
+	while ((ch = esp8266_read_byte()) != (uint8_t) 0) {
+		if (i < max_len) {
+			*p++ = (char) ch;
+		}
+		i++;
+	}
+
+	status[i]= '\0';
+	status[max_len] = '\0';
+
+	*len = i;
+}

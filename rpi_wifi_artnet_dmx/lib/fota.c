@@ -1,5 +1,5 @@
 /**
- * @file esp8266_ota.c
+ * @file fota.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,44 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdint.h>
-#include <stddef.h>
+#include <stdbool.h>
 
-#include "esp8266.h"
-#include "esp8266_cmd.h"
+#include "fota_params.h"
+#include "esp8266_fota.h"
 
-/**
- *
- * @param server_ip_address
- */
-void esp8266_ota_start(uint32_t server_ip_address) {
-	esp8266_write_4bits((uint8_t) CMD_ESP_OTA_START);
-	esp8266_write_word(server_ip_address);
-}
+#include "hardware.h"
+#include "console.h"
 
-/**
- *
- * @param status
- * @param len
- */
-void esp8266_ota_status(char *status, uint16_t *len) {
-	uint16_t i = 0;
-	uint8_t ch;
+void fota(const uint32_t server_ip_address) {
+	char message[64];
+	uint16_t len;
+	char last_first_char = ' ';
 
-	char *p = status;
-	uint16_t max_len = *len;
+	console_status(CONSOLE_YELLOW, "Starting FOTA ...");
 
-	assert(status != NULL);
-	assert(len != NULL);
+	esp8266_fota_start(server_ip_address);
 
-	while ((ch = esp8266_read_byte()) != (uint8_t) 0) {
-		if (i < max_len) {
-			*p++ = (char) ch;
+	do {
+		len = sizeof(message) / sizeof(char);
+		esp8266_fota_status(message, &len);
+		if (len != 0) {
+			console_puts(message);
+			console_newline();
+			last_first_char = message[0];
 		}
-		i++;
+	} while (len != 0);
+
+	if (last_first_char == 'S') {
+		console_status(CONSOLE_GREEN, "FOTA Done!");
+	} else {
+		console_status(CONSOLE_RED, "FOTA Failed!");
 	}
 
-	status[max_len] = '\0';
-	*len = i;
+	for (;;)
+		;
 }
