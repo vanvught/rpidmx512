@@ -34,7 +34,7 @@
 #include "esp8266_peri.h" //TODO replace by SDK defines
 #include "esp8266_rpi.h"
 
-#define DEBUG
+//#define DEBUG
 
 #if !defined(DEBUG)
 #define printf(...) (void *)0
@@ -116,14 +116,6 @@ static inline void data_gpio_fsel_input(void) {
 
 /**
  *
- */
-void ota_wait_for_rpi(void) {
-	while (GPI & (uint32_t) (1 << ESP8266_RPI_CTRL_IN)) {
-	}
-}
-
-/**
- *
  * @return
  */
 inline static uint8_t _read_byte(void) {
@@ -177,14 +169,6 @@ static const uint8_t IRAM_ATTR rpi_read_4bits(void) {
 
 /**
  *
- * @return
- */
-uint8_t ota_rpi_read_4bits(void) {
-	return rpi_read_4bits();
-}
-
-/**
- *
  * @param p
  * @param nLength
  */
@@ -232,10 +216,7 @@ static const uint32_t IRAM_ATTR rpi_read_word(void) {
 	return data;
 }
 
-/**
- *
- */
-const uint32_t ICACHE_FLASH_ATTR ota_rpi_read_word(void) {
+const uint32_t ota_rpi_read_word(void) {
 	return rpi_read_word();
 }
 
@@ -282,14 +263,6 @@ static void IRAM_ATTR rpi_write_bytes(uint8_t *p, uint16_t nLength) {
 		GPOC = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 		_p++;
 	}
-}
-
-/**
- *
- */
-void ICACHE_FLASH_ATTR ota_rpi_write_bytes(uint8_t *p, uint16_t nLength)  {
-	rpi_write_bytes(p, nLength);
-	return;
 }
 
 /**
@@ -706,7 +679,7 @@ void ICACHE_FLASH_ATTR handle_wifi_mode_sta_dhcp(void) {
  *
  */
 void ICACHE_FLASH_ATTR reply_with_wifi_station_status(void) {
-	printf("reply_with_wifi_station_status\n");
+	printf("reply_with_wifi_station_status");
 
 	const uint8_t status = (uint8_t) wifi_station_get_connect_status();
 	rpi_write_bytes((uint8_t *) &status, 1);

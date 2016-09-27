@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "network_params.h"
 #include "read_config_file.h"
 #include "sscan.h"
 #include "util.h"

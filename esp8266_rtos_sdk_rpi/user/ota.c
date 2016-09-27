@@ -38,18 +38,6 @@ LOCAL const char *g_user1_bin = "user1.bin";
 LOCAL const char *g_user2_bin = "user2.bin";
 
 extern const uint32_t ota_rpi_read_word(void);
-extern void ota_rpi_write_bytes(const uint8_t *, uint16_t);
-extern uint8_t ota_rpi_read_4bits(void);
-
-static void ota_status(const char *s) {
-	const uint8_t zero = (uint8_t) 0;
-	uint16_t len = strlen(s);
-
-	(void)ota_rpi_read_4bits();
-
-	ota_rpi_write_bytes(s, len);
-	ota_rpi_write_bytes((uint8_t *)&zero, 1);
-}
 
 /**
  *
@@ -59,18 +47,13 @@ void ICACHE_FLASH_ATTR ota_finished_callback(void *arg) {
 
 	if (update->upgrade_flag == true) {
 		printf("OTA : Success, rebooting\n");
-		ota_status("Success, rebooting");
-		ota_status("\0");
 		system_upgrade_reboot();
 	} else {
 		printf("OTA : Failed\n");
-		ota_status("Failed");
 	}
 
 	free(update->url);
 	free(update);
-
-	ota_status("\0");
 }
 
 /**
@@ -83,8 +66,6 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 	const uint32 server_ip = ota_rpi_read_word();
 	const uint8_t user_bin = system_upgrade_userbin_check();
 
-	ota_status("status :");
-
 	switch (user_bin) {
 	case UPGRADE_FW_BIN1:
 		g_update_file = (char *)g_user2_bin;
@@ -94,11 +75,8 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 		break;
 	default:
 		printf("Invalid userbin number : %d\n", user_bin);
-		ota_status("Invalid userbin number");
 		for(;;);
 	}
-
-	ota_status(g_update_file);
 
 	bzero(&remote_ip, sizeof(struct sockaddr_in));
 	remote_ip.sin_family = AF_INET;
@@ -114,19 +92,13 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 	sprintf((char *) update->url, "GET /%s HTTP/1.1\r\nHost: "IPSTR":%d\r\nConnection: close\r\n\r\n\r", g_update_file, IP2STR(server_ip), OTA_UPDATE_PORT);
 
 	printf("url : %s\n", (char *) update->url);
-	ota_status((char *) update->url);
 
 	if (system_upgrade_start(update) == false) {
 		printf("OTA : Could not start upgrade\n");
-		ota_status("Could not start upgrade");
 		free(update->url);
 		free(update);
 	} else {
 		printf("OTA : Upgrading...\n");
-		ota_status("Upgrading...");
-		for (;;) {
-			vTaskDelay(1000000 / portTICK_RATE_MS);
-		}
 	}
 
 }
