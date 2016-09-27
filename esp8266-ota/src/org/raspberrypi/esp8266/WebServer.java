@@ -26,6 +26,7 @@
  */
 package org.raspberrypi.esp8266;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class WebServer {
 	public String getServerTime() {
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-		//dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		// dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return dateFormat.format(calendar.getTime());
 	}
 
@@ -62,7 +63,7 @@ public class WebServer {
 	 * @param dir
 	 * @throws Exception
 	 */
-	public void start(String dir) throws Exception  {
+	public void start(String dir) throws Exception {
 		String[] filesList = new String[2];
 
 		filesList[0] = dir + "user1.bin";
@@ -84,14 +85,14 @@ public class WebServer {
 				System.out.println("Waiting for connection.....");
 				clientSocket = serverSocket.accept();
 				clientSocket.setSoTimeout(100);
-				
+
 				System.out.println(getServerTime() + " - Incoming connection from " + clientSocket.getRemoteSocketAddress());
 
 				InputStream in = clientSocket.getInputStream();
-				OutputStream out = clientSocket.getOutputStream();
+				OutputStream out = new BufferedOutputStream(clientSocket.getOutputStream());
 
 				StringBuilder requestBuilder = new StringBuilder();
-				
+
 				while (!requestBuilder.toString().contains("\r\n\r")) {
 					int done = in.read(buffer);
 					requestBuilder.append(new String(buffer, 0, done, Charset.defaultCharset()));
@@ -105,9 +106,9 @@ public class WebServer {
 
 				String url = parts[1];
 				System.out.println("Received request " + request);
-				
+
 				int fileListIndex = 0;
-				
+
 				if (url.toLowerCase().contains("user1.bin")) {
 					fileListIndex = 0;
 				} else if (url.toLowerCase().contains("user2.bin")) {
@@ -117,39 +118,49 @@ public class WebServer {
 					System.err.println("Invalid request; user1.bin or user2.bin is not requested");
 					break;
 				}
-				
+
 				File file = new File(filesList[fileListIndex]);
 
 				// The reply is the same for the HEAD and GET request
 				String reply = String.format("HTTP/1.0 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n", file.length());
-				out.write(reply.getBytes("ASCII"));
 
-				if (parts[0].equals("GET")) {
-					// The files are checked in main.
-					// A FileNotFoundException is never thrown.
-					FileInputStream ios = new FileInputStream(file);
+				try {
+					out.write(reply.getBytes("ASCII"));
 
-					int read = 0;
-					int totalDone = 0;
+					if (parts[0].equals("GET")) {
+						// The files are checked in main.
+						// A FileNotFoundException is never thrown.
+						FileInputStream ios = new FileInputStream(file);
 
-					while ((read = ios.read(buffer)) != -1) {
-						out.write(buffer, 0, read);
-						totalDone += read;
-						int percent = (int) ((totalDone * 100) / file.length());
-						System.out.print("\r" + percent + "%");
+						int read = 0;
+						int totalDone = 0;
+
+						while ((read = ios.read(buffer)) != -1) {
+							out.write(buffer, 0, read);
+							totalDone += read;
+							int percent = (int) ((totalDone * 100) / file.length());
+							System.out.print("\r" + percent + "%");
+						}
+
+						ios.close();
+
+						System.out.println("\r\nFile sent successfully\n" + totalDone);
+						// After a successful sent, the server will be ended.
+						break;
+
 					}
 
-					ios.close();
-					out.flush();
-					out.close();
-					in.close();
-
-					System.out.println("\r\nFile sent successfully\n" + totalDone);
-					// After a successful sent, the server will be ended.
-					break;
-					
+				} catch (IOException ioExecption) {
+					System.out.println("\nRemote side closed connection...restart\n");
+				} finally {
+					try {
+						out.flush();
+						out.close();
+						in.close();
+					} catch (Exception e) {
+					}
 				}
-				
+
 				// There is no check for HTTP Header "Connection:"
 				// Always closing the session.
 				clientSocket.close();
