@@ -1,5 +1,5 @@
 /**
- * @file esp8266_rpi.h
+ * @file debug.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,10 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef ESP8266_RPI_H_
-#define ESP8266_RPI_H_
+#ifndef DEBUG_H_
+#define DEBUG_H_
 
-#define ESP8266_RPI_CTRL_IN		5
-#define ESP8266_RPI_CTRL_OUT	4
+#include <stdarg.h>
 
-#endif /* ESP8266_RPI_H_ */
+//#define DEBUG
+
+#if !defined(DEBUG)
+#define printf(...) (void *)0
+#endif
+
+#endif /* DEBUG_H_ */

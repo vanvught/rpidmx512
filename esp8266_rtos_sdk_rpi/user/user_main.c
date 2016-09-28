@@ -30,6 +30,8 @@
 #include <freertos/task.h>
 #include <lwip/sockets.h>
 
+#include "debug.h"
+
 #include "esp8266_cmd.h"
 #include "esp8266_peri.h" //TODO replace by SDK defines
 #include "esp8266_rpi.h"

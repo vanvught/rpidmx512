@@ -170,7 +170,7 @@ MODULES	= user upgrade
 EXTRA_INCDIR = include
 
 # libraries used in this project, mainly provided by the SDK
-LIBS = gcc hal phy pp net80211 wpa crypto main freertos lwip minic espconn smartconfig airkiss
+LIBS = gcc hal phy pp net80211 wpa crypto main freertos lwip minic espconn
 
 # compiler flags using during compilation of source files
 CFLAGS = -g -save-temps -std=gnu90 -Os -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals -mno-serialize-volatile -D__ets__ -DICACHE_FLASH
@@ -312,6 +312,8 @@ else
 	$(vecho) "boot.bin------->0x00000"
 	$(vecho) "$(BIN_NAME).bin--->$(addr)"
 endif
+	$(vecho) "Section info:"
+	$(Q) $(OBJDUMP) -h -j .data -j .rodata -j .bss -j .text -j .irom0.text $@ 
 	$(vecho) "Done"
 
 $(APP_AR): $(OBJ)

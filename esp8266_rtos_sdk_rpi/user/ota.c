@@ -31,6 +31,8 @@
 #include <lwip/sockets.h>
 #include <upgrade.h>
 
+#include "debug.h"
+
 #define OTA_UPDATE_PORT		8888
 
 LOCAL char *g_update_file = NULL;
@@ -41,7 +43,7 @@ extern const uint32_t ota_rpi_read_word(void);
 extern void ota_rpi_write_bytes(const uint8_t *, uint16_t);
 extern uint8_t ota_rpi_read_4bits(void);
 
-static void ota_status(const char *s) {
+static void ICACHE_FLASH_ATTR ota_status(const char *s) {
 	const uint8_t zero = (uint8_t) 0;
 	uint16_t len = strlen(s);
 
@@ -58,12 +60,12 @@ void ICACHE_FLASH_ATTR ota_finished_callback(void *arg) {
 	struct upgrade_server_info *update = arg;
 
 	if (update->upgrade_flag == true) {
-		printf("OTA : Success, rebooting\n");
+		printf("Success, rebooting\n");
 		ota_status("Success, rebooting");
 		ota_status("\0");
 		system_upgrade_reboot();
 	} else {
-		printf("OTA : Failed\n");
+		printf("Failed\n");
 		ota_status("Failed");
 	}
 
@@ -111,18 +113,19 @@ void ICACHE_FLASH_ATTR handle_ota_start(void) {
 	update->check_times = 10000;				/* time out of upgrading, unit : ms */
 	update->sockaddrin = remote_ip;				/* socket of upgrading */
 
-	sprintf((char *) update->url, "GET /%s HTTP/1.1\r\nHost: "IPSTR":%d\r\nConnection: close\r\n\r\n\r", g_update_file, IP2STR(server_ip), OTA_UPDATE_PORT);
+	sprintf((char *) update->url, "GET /%s HTTP/1.1\r\nHost: %d.%d.%d.%d:%d\r\nConnection: close\r\n\r\n\r",
+			g_update_file, (server_ip & 0xff), (server_ip & 0xff00) >> 8, (server_ip & 0xff0000) >> 16, (server_ip >> 24) & 0xff, OTA_UPDATE_PORT);
 
 	printf("url : %s\n", (char *) update->url);
 	ota_status((char *) update->url);
 
 	if (system_upgrade_start(update) == false) {
-		printf("OTA : Could not start upgrade\n");
+		printf("Could not start upgrade\n");
 		ota_status("Could not start upgrade");
 		free(update->url);
 		free(update);
 	} else {
-		printf("OTA : Upgrading...\n");
+		printf("Upgrading...\n");
 		ota_status("Upgrading...");
 		for (;;) {
 			vTaskDelay(1000000 / portTICK_RATE_MS);
