@@ -1,5 +1,5 @@
 /**
- * @file fota.c
+ * @file software_version.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,40 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include "fota_params.h"
-#include "esp8266_fota.h"
+static const char SOFTWARE_VERSION[] = "0.9";
 
-#include "hardware.h"
-#include "console.h"
+/*
+ * 0.9	September 2016		Initial release for testing
+ */
 
-void fota(const uint32_t server_ip_address) {
-	char message[80];
-	uint16_t len;
-	char last_first_char = ' ';
-
-	(void) console_status(CONSOLE_YELLOW, "Starting FOTA ...");
-
-	esp8266_fota_start(server_ip_address);
-
-	do {
-		len = sizeof(message) / sizeof(char);
-		esp8266_fota_status(message, &len);
-		if (len != 0) {
-			(void) console_puts(message);
-			console_newline();
-			last_first_char = message[0];
-		}
-	} while (len != 0);
-
-	if (last_first_char == 'S') {
-		(void) console_status(CONSOLE_GREEN, "FOTA Done!");
-	} else {
-		(void) console_status(CONSOLE_RED, "FOTA Failed!");
-	}
-
-	for (;;)
-		;
-}
+#endif /* SOFTWARE_VERSION_H_ */

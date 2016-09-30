@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <software_version.h>
+
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
@@ -45,6 +47,8 @@
 #include "spisend.h"
 #include "fota_params.h"
 #include "fota.h"
+
+#define ESP822_FIRMWARE_VERSION_LENGTH	64
 
 extern "C" {
 
@@ -70,7 +74,7 @@ void notmain(void) {
 	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("WiFi ArtNet 3 Node DMX Output");
+	printf("WiFi ArtNet 3 Node DMX Output [V%s]", SOFTWARE_VERSION);
 
 	console_set_top_row(3);
 
@@ -81,13 +85,13 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, "Starting Wifi ...");
 
-	(void) wifi_init(ap_password);
+	wifi_init(ap_password);
 
 	hardware_watchdog_stop();
 
 	printf("ESP8266 information\n");
-	printf(" sdk_version : %s\n", system_get_sdk_version());
-	printf(" cpu freq    : %d\n\n", system_get_cpu_freq());
+	printf(" SDK      : %s\n", system_get_sdk_version());
+	printf(" Firmware : %s\n\n", wifi_get_firmware_version());
 
 	if (network_params_init()) {
 		console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
