@@ -36,12 +36,6 @@
 #include "esp8266_peri.h" //TODO replace by SDK defines
 #include "esp8266_rpi.h"
 
-#define DEBUG
-
-#if !defined(DEBUG)
-#define printf(...) (void *)0
-#endif
-
 /************************************************************************
 *
 *
@@ -58,10 +52,14 @@ typedef enum conn_state {
 *
 *
 ************************************************************************/
+LOCAL const char COMPILED_STRING[] = "Compiled on "__DATE__" at "__TIME__;
+LOCAL const uint16_t g_compiled_string_length = (uint32) sizeof(COMPILED_STRING) - 1;
+
 LOCAL const uint8_t gc_zero = (uint8_t) 0;
+
 LOCAL char *g_sdk_version;
 LOCAL uint32_t g_sdk_version_length;
-LOCAL uint8_t g_cpu_freq;
+
 LOCAL uint8_t g_hwmac[6];
 LOCAL struct ip_info g_ipconfig;
 LOCAL char *g_host_name;
@@ -511,11 +509,12 @@ void ICACHE_FLASH_ATTR reply_with_sdk_version(void) {
 /**
  *
  */
-void ICACHE_FLASH_ATTR reply_with_cpu_freq(void) {
-  printf("reply_with_cpufreq\n");
+void ICACHE_FLASH_ATTR reply_with_firmware_version(void) {
+  printf("reply_with_firmware_version : %s[%d]\n", COMPILED_STRING, g_compiled_string_length);
 
-  g_cpu_freq = system_get_cpu_freq();
-  rpi_write_bytes((uint8_t *)&g_cpu_freq, 1);
+  rpi_write_bytes((uint8_t *)COMPILED_STRING, g_compiled_string_length);
+  rpi_write_bytes((uint8_t *)&gc_zero, 1);
+
 }
 
 /**
@@ -791,8 +790,8 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 		case CMD_SDK_VERSION:
 			reply_with_sdk_version();
 			break;
-		case CMD_CPU_FREQ:
-			reply_with_cpu_freq();
+		case CMD_FIRMWARE_VERSION:
+			reply_with_firmware_version();
 			break;
 		case CMD_HOST_NAME:
 			reply_with_hostname();
@@ -845,7 +844,7 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
  *
  */
 void user_init(void) {
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("%s\n", COMPILED_STRING);
 
 	system_update_cpu_freq(SYS_CPU_160MHZ);
 
@@ -876,5 +875,5 @@ void user_init(void) {
 	GPES = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 	GPOC = (uint32_t) (1 << ESP8266_RPI_CTRL_OUT);
 
-	xTaskCreate(task_rpi, "rpi-interface", 512, NULL, 2, &g_task_rpi_handle);
+	xTaskCreate(task_rpi, "rpi-interface", 512, NULL, 4, &g_task_rpi_handle);
 }
