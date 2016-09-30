@@ -41,6 +41,15 @@
 *
 ************************************************************************/
 
+#define PASSWORD_MAX_LENGTH	32
+#define SSID_MAX_LENGTH		32
+#define UDP_BUFFER_SIZE		800
+
+/************************************************************************
+*
+*
+************************************************************************/
+
 typedef enum conn_state {
 	WIFI_NOT_CONNECTED,
 	WIFI_CONNECTING,
@@ -67,8 +76,6 @@ LOCAL uint32_t g_host_name_length;
 LOCAL int32 g_sock_fd = -1;
 LOCAL int16_t g_port_udp_begin;
 LOCAL xTaskHandle g_task_rpi_handle = NULL;
-
-#define UDP_BUFFER_SIZE	800
 
 LOCAL int8_t g_recvfrom_buffer[UDP_BUFFER_SIZE];
 LOCAL int8_t g_sendto_buffer[UDP_BUFFER_SIZE];
@@ -627,11 +634,11 @@ void ICACHE_FLASH_ATTR wifi_mode_sta_connect(const char *ssid, const char *passw
 void ICACHE_FLASH_ATTR handle_wifi_mode_ap() {
 	printf("handle_wifi_mode_ap\n");
 
-	char password[32];
+	char password[PASSWORD_MAX_LENGTH + 1];
 	uint8_t d;
 	unsigned i = 0;
 
-	while (((d = _read_byte()) != 0) && (i < 31)) {
+	while (((d = _read_byte()) != 0) && (i < PASSWORD_MAX_LENGTH)) {
 		password[i++] = d;
 	}
 	password[i] = '\0';
@@ -653,14 +660,14 @@ void ICACHE_FLASH_ATTR rpi_read_ssid_password(char *ssid, char *password) {
 
 	data_gpio_fsel_input();
 
-	while (((d = _read_byte()) != 0) && (i < 31)) {
+	while (((d = _read_byte()) != 0) && (i < SSID_MAX_LENGTH)) {
 		ssid[i++] = d;
 	}
 	ssid[i] = '\0';
 
 	i = 0;
 
-	while (((d = _read_byte()) != 0) && (i < 31)) {
+	while (((d = _read_byte()) != 0) && (i < PASSWORD_MAX_LENGTH)) {
 		password[i++] = d;
 	}
 	password[i] = '\0';
@@ -675,8 +682,8 @@ void ICACHE_FLASH_ATTR rpi_read_ssid_password(char *ssid, char *password) {
 void ICACHE_FLASH_ATTR handle_wifi_mode_sta_static_ip(void) {
 	printf("handle_wifi_mode_sta_static_ip\n");
 
-	char ssid[32];
-	char password[32];
+	char ssid[SSID_MAX_LENGTH + 1];
+	char password[PASSWORD_MAX_LENGTH + 1];
 	struct ip_info ip_config;
 
 	rpi_read_ssid_password(ssid, password);
@@ -690,11 +697,10 @@ void ICACHE_FLASH_ATTR handle_wifi_mode_sta_static_ip(void) {
 void ICACHE_FLASH_ATTR handle_wifi_mode_sta_dhcp(void) {
 	printf("handle_wifi_mode_sta_dhcp\n");
 
-	char ssid[32];
-	char password[32];
+	char ssid[SSID_MAX_LENGTH + 1];
+	char password[PASSWORD_MAX_LENGTH + 1];
 	struct ip_info ip_config;
 
-	// DHCP
 	ip_config.ip.addr = 0;
 	ip_config.gw.addr = 0;
 	ip_config.netmask.addr = 0;
