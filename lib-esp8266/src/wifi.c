@@ -35,6 +35,7 @@
 
 static char wifi_hostname[HOST_NAME_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
+static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
 static bool is_dhcp_used = false;
 
@@ -43,17 +44,15 @@ static bool is_dhcp_used = false;
  * @param mode
  * @return
  */
-bool wifi_init(const char *password) {
+void wifi_init(const char *password) {
 	assert(password != NULL);
 
 	esp8266_init();
-	//esp8266_write_4bits((uint8_t) CMD_NOP);
 
 	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_AP);
 	esp8266_write_str(password);
-	esp8266_write_byte((uint8_t)(0));
 
-	return true;	// TODO
+	return;
 }
 
 /**
@@ -110,54 +109,39 @@ bool wifi_get_ip_info(const struct ip_info *info) {
  * @return
  */
 const char *wifi_station_get_hostname(void) {
-	unsigned i;
-	uint8_t ch;
+	uint16_t len = HOST_NAME_MAX;
 
 	esp8266_write_4bits((uint8_t) CMD_WIFI_HOST_NAME);
-
-	i = 0;
-	while ((ch = esp8266_read_byte()) != (uint8_t) 0) {
-		if (i < HOST_NAME_MAX) {
-			wifi_hostname[i] = (char) ch;
-		}
-		i++;
-	}
-
-	wifi_hostname[HOST_NAME_MAX] = '\0';
+	esp8266_read_str(wifi_hostname, &len);
 
 	return wifi_hostname;
 }
 
-/**
- *
- * @return
- */
-const uint8_t system_get_cpu_freq(void) {
-	esp8266_write_4bits((uint8_t)CMD_SYSTEM_CPU_FREQ);
-	return esp8266_read_byte();
-}
 
 /**
  *
  * @return
  */
 const char *system_get_sdk_version(void) {
-	unsigned i;
-	uint8_t ch;
-	
+	uint16_t len = SDK_VERSION_MAX;
+
 	esp8266_write_4bits((uint8_t)CMD_SYSTEM_SDK_VERSION);
-	
-	i = 0;
-	while((ch = esp8266_read_byte()) != (uint8_t) 0) {
-		if (i < SDK_VERSION_MAX) {
-			sdk_version[i] = (char) ch;
-		}
-		i++;
-	}
-	
-	sdk_version[SDK_VERSION_MAX] = '\0';
+	esp8266_read_str(sdk_version, &len);
 
 	return sdk_version;
+}
+
+/**
+ *
+ * @return
+ */
+const char *wifi_get_firmware_version(void) {
+	uint16_t len = FIRMWARE_VERSION_MAX;
+
+	esp8266_write_4bits((uint8_t)CMD_SYSTEM_FIRMWARE_VERSION);
+	esp8266_read_str(firmware_version, &len);
+
+	return firmware_version;
 }
 
 /**
@@ -172,10 +156,7 @@ void wifi_station(const char *ssid, const char *password) {
 	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA);
 
 	esp8266_write_str(ssid);
-	esp8266_write_byte((uint8_t)(0));
-
 	esp8266_write_str(password);
-	esp8266_write_byte((uint8_t)(0));
 
 	is_dhcp_used = true;
 }
@@ -194,10 +175,7 @@ void wifi_station_ip(const char *ssid, const char *password, const struct ip_inf
 	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA_IP);
 
 	esp8266_write_str(ssid);
-	esp8266_write_byte((uint8_t)(0));
-
 	esp8266_write_str(password);
-	esp8266_write_byte((uint8_t)(0));
 
 	esp8266_write_bytes((const uint8_t *)info, sizeof(struct ip_info));
 
@@ -241,6 +219,8 @@ const _wifi_station_status wifi_station_get_connect_status(void) {
 		return "Unknown Status";
 		break;
 	}
+
+	return "Unknown Status";
 }
 
 /**

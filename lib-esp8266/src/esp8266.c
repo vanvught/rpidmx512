@@ -30,7 +30,7 @@
 #include "arm/synchronize.h"
 
 /*
- *      RPi					ESP8266		Logic Analyzer
+ *      RP					ESP8266		Logic Analyzer
  *
  * 11	GPIO17	--      ->	GPIO5		orange
  * 13	GPIO27	<-      --	GPIO4		red
@@ -241,6 +241,8 @@ void esp8266_write_str(const char *data) {
 		p++;
 	}
 
+	_write_byte(0);
+
 	dmb();
 }
 
@@ -337,4 +339,33 @@ uint32_t esp8266_read_word(void) {
 	dmb();
 
 	return u32.u32;
+}
+
+/**
+ *
+ * @param s
+ * @param len
+ */
+void esp8266_read_str(char *s, uint16_t *len) {
+	const char *p = s;
+	uint8_t ch;
+	uint16_t n = *len;
+
+	data_gpio_fsel_input();
+
+	while ((ch = _read_byte()) != (uint8_t) 0) {
+		if (n > 0) {
+			*s++ = (char) ch;
+			n--;
+		}
+	}
+
+	*len = (uint16_t)(s - p);
+
+	while (n > 0) {
+		*s++ = '\0';
+		--n;
+	}
+
+	dmb();
 }

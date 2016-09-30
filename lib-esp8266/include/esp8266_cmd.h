@@ -29,7 +29,7 @@
 typedef enum commands {
 	CMD_NOP = 0,
 	//
-	CMD_SYSTEM_CPU_FREQ = 6,
+	CMD_SYSTEM_FIRMWARE_VERSION = 6,
 	CMD_SYSTEM_SDK_VERSION = 8,
 	//
 	CMD_WIFI_MODE = 9,

@@ -45,6 +45,7 @@ extern uint8_t esp8266_read_byte(void);
 extern void esp8266_read_bytes(const uint8_t *, const uint16_t);
 extern uint16_t esp8266_read_halfword(void);
 extern uint32_t esp8266_read_word(void);
+extern void esp8266_read_str(char *, uint16_t *);
 
 #ifdef __cplusplus
 }

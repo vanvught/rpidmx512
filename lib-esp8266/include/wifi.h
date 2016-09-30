@@ -56,22 +56,21 @@ typedef enum wifiphy_phy_mode {
 #define STATION_IF	0x00
 #define SOFTAP_IF	0x01
 
-#define HOST_NAME_MAX	255
-#define SDK_VERSION_MAX	255
+#define HOST_NAME_MAX			255
+#define SDK_VERSION_MAX			255
+#define FIRMWARE_VERSION_MAX	255
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern bool wifi_init(const char *);
+extern void wifi_init(const char *);
 extern _wifi_mode wifi_get_opmode(void);
 
 extern bool wifi_get_macaddr(const uint8_t *);
 extern bool wifi_get_ip_info(const struct ip_info *);
 extern /*@shared@*/const char *wifi_station_get_hostname(void);
-
-extern const uint8_t system_get_cpu_freq(void);
-extern /*@shared@*/const char *system_get_sdk_version(void);
+extern /*@shared@*/const char *wifi_get_firmware_version(void);
 
 extern void wifi_station(const char *, const char *);
 extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
@@ -79,6 +78,8 @@ extern const _wifi_station_status wifi_station_get_connect_status(void);
 extern /*@observer@*/const char *wifi_station_status(_wifi_station_status);
 
 extern bool wifi_is_dhcp_used(void);
+
+extern /*@shared@*/const char *system_get_sdk_version(void);
 
 #ifdef __cplusplus
 }

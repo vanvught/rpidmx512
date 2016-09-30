@@ -45,26 +45,9 @@ void esp8266_fota_start(const uint32_t server_ip_address) {
  * @param len
  */
 void esp8266_fota_status(char *status, uint16_t *len) {
-	uint16_t i = 0;
-	uint8_t ch;
-
-	char *p = status;
-	uint16_t max_len = *len;
-
 	assert(status != NULL);
 	assert(len != NULL);
 
 	esp8266_write_4bits((uint8_t) CMD_NOP);
-
-	while ((ch = esp8266_read_byte()) != (uint8_t) 0) {
-		if (i < max_len) {
-			*p++ = (char) ch;
-		}
-		i++;
-	}
-
-	status[i]= '\0';
-	status[max_len] = '\0';
-
-	*len = i;
+	esp8266_read_str(status, len);
 }
