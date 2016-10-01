@@ -7,6 +7,7 @@
 There are hardware 2 options :
 
 **1.** `Windows` `Linux` `MacOs` Using a USB-UART converter. For example the "[USB to UART](http://www.bitwizard.nl/shop/usb-boards/USB-to-UART)" board.
+
 <img src="http://www.bitwizard.nl/shop/image/cache/data/shop_pics/ftdi-serial/2.0/dsc04554_small-74x74.jpg" /> 
 
 **2.** `Linux` Using the Raspberry Pi
