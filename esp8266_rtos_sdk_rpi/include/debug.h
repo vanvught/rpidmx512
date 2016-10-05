@@ -32,6 +32,11 @@
 
 #if !defined(DEBUG)
 #define printf(...) (void *)0
+#else
+#if defined(ICACHE_FLASH_ATTR)
+#undef ICACHE_FLASH_ATTR
+#endif
+#define ICACHE_FLASH_ATTR	__attribute__((section(".irom0.text")))
 #endif
 
 #endif /* DEBUG_H_ */

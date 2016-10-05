@@ -29,6 +29,7 @@
 #include <esp_common.h>
 #include <freertos/task.h>
 #include <lwip/sockets.h>
+#include <lwip/igmp.h>
 
 #include "debug.h"
 
@@ -527,7 +528,7 @@ void ICACHE_FLASH_ATTR reply_with_firmware_version(void) {
 /**
  *
  */
-void handle_udp_begin(void) {
+void ICACHE_FLASH_ATTR handle_udp_begin(void) {
 	printf("handle_udp_begin\n");
 
 	g_port_udp_begin = rpi_read_halfword();
@@ -565,6 +566,33 @@ void handle_udp_begin(void) {
 	} while (ret != 0);
 
     setsockopt(g_sock_fd,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout));
+}
+
+/**
+ *
+ */
+void ICACHE_FLASH_ATTR handle_udp_join_group(void) {
+	printf("handle_udp_join_group\n");
+
+	struct ip_addr ipgroup;
+	struct ip_info local_ip;
+
+	const WIFI_MODE mode = wifi_get_opmode();
+
+	if (mode & STATION_MODE) {
+		wifi_get_ip_info(STATION_IF, &local_ip);
+	} else {
+		wifi_get_ip_info(SOFTAP_IF, &local_ip);
+	}
+
+	ipaddr_aton("239.255.0.1", &ipgroup);
+
+	const uint8_t iret = igmp_joingroup(&local_ip.ip,(struct ip_addr *)(&ipgroup));
+
+	if (iret != ERR_OK) {
+		printf("Could not join\n");
+	}
+
 }
 
 /**
@@ -814,6 +842,9 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 		case CMD_UDP_BEGIN:
 			handle_udp_begin();
 			vTaskDelay(10000 / portTICK_RATE_MS);
+			break;
+		case CMD_UPD_JOIN_GROUP:
+			handle_udp_join_group();
 			break;
 		case CMD_WIFI_MODE_AP:
 			handle_wifi_mode_ap();

@@ -45,6 +45,7 @@ typedef enum commands {
 	CMD_UDP_BEGIN = 4,
 	CMD_UDP_RECEIVE = 3,
 	CMD_UPD_SEND = 12,
+	CMD_UPD_JOIN_GROUP = 14,
 	//
 	CMD_OTA_START = 15
 } _commands;

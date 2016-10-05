@@ -33,6 +33,7 @@ extern "C" {
 #endif
 
 extern void udp_begin(const uint16_t);
+extern void udp_joingroup(const uint32_t);
 extern uint16_t udp_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
 extern void udp_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
 

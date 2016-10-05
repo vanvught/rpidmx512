@@ -45,6 +45,7 @@ typedef enum commands {
 	CMD_WIFI_UDP_BEGIN = 4,
 	CMD_WIFI_UDP_RECEIVE = 3,
 	CMD_WIFI_UDP_SEND = 12,
+	CMD_WIFI_UDP_JOIN_GROUP = 14,
 	//
 	CMD_ESP_FOTA_START = 15
 } _commands;
