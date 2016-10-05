@@ -228,13 +228,15 @@ private:
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
+	CBlinkTask 				*m_pBlinkTask;	///<
 #if defined (__circle__)
 	CNetSubSystem			*m_pNet;		///<
 	CSocket					m_Socket;		///<
+#else
+	CBlinkTask				m_BlinkTask;
 #endif
 	bool 					m_IsDHCPUsed;	///<
 	LightSet    			*m_pLightSet;	///<
-	CBlinkTask 				*m_pBlinkTask;	///<
 
 	struct TArtNetNode		m_Node;			///< Struct describing the node
 	struct TArtNetNodeState m_State;		///< The current state of the node

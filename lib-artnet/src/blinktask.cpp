@@ -89,10 +89,9 @@ void CBlinkTask::Run (void)
 	}
 }
 #else
-CBlinkTask::CBlinkTask (unsigned nFreqHz)
-:	m_bStop(false)
+CBlinkTask::CBlinkTask (void)
 {
-	SetFrequency (nFreqHz);
+
 }
 
 /**

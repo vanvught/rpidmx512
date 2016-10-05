@@ -116,9 +116,12 @@ ArtNetNode::ArtNetNode(CNetSubSystem *pNet, CActLED *pActLED) :
 	m_pBlinkTask = new CBlinkTask (pActLED, 1);
 #else
 ArtNetNode::ArtNetNode(void) :
+		m_pBlinkTask(0),
 		m_IsDHCPUsed(true),
 		m_pLightSet(0),
 		m_bDirectUpdate(false) {
+
+	m_pBlinkTask = &m_BlinkTask;
 #endif
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 

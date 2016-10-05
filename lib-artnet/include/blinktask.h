@@ -47,16 +47,10 @@ private:
 class CBlinkTask
 {
 public:
-	CBlinkTask (unsigned nFreqHz);
+	CBlinkTask (void);
 	~CBlinkTask (void);
 
 	void SetFrequency (unsigned nFreqHz);
-
-	void Run (void);
-
-private:
-	unsigned m_nusPeriod;
-	bool m_bStop;
 };
 #endif
 
