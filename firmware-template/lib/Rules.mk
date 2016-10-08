@@ -7,7 +7,7 @@ DEFINES := $(addprefix -D,$(DEFINES))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES)
 COPS_COMMON += $(INCLUDES)
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -30,9 +30,9 @@ BUILD = build/
 BUILD7 = build7/
 BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.cpp,$(BUILD)%.o,$(wildcard $(SOURCE)/*.cpp)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.cpp,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.cpp)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.cpp,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.cpp)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S))
 
 TARGET = lib/lib$(LIB_NAME).a 
 TARGET7 = lib7/lib$(LIB_NAME).a
@@ -65,35 +65,44 @@ clean :
 $(BUILD)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
 	
+$(BUILD)%.o: $(SOURCE)/%.cpp
+	$(ARMGNU)-g++ $(COPS) -fno-rtti $< -c -o $@		
+	
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS)
-	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
+	$(ARMGNU)-objdump -D $(TARGET) | $(ARMGNU)-c++filt > $(LIST)
 	
 # ARM v7	
 	
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
 	
+$(BUILD7)%.o: $(SOURCE)/%.cpp
+	$(ARMGNU)-g++ $(COPS7) -fno-rtti $< -c -o $@		
+	
 $(BUILD7)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET7): Makefile $(OBJECTS7)
 	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7)
-	$(ARMGNU)-objdump -D $(TARGET7) > $(LIST7)
+	$(ARMGNU)-objdump -D $(TARGET7) | $(ARMGNU)-c++filt > $(LIST7)
 	
 # ARM v8	
 
 $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@
 	
+$(BUILD8)%.o: $(SOURCE)/%.cpp
+	$(ARMGNU)-g++ $(COPS8) -fno-rtti $< -c -o $@	
+	
 $(BUILD8)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET8): Makefile $(OBJECTS8)
 	$(ARMGNU)-ar -r $(TARGET8) $(OBJECTS8)
-	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)
+	$(ARMGNU)-objdump -D $(TARGET8) | $(ARMGNU)-c++filt > $(LIST8)
 
 	

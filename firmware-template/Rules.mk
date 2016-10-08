@@ -36,14 +36,14 @@ COPS_COMMON += -I../lib-hal/include
 COPS_COMMON += -I../lib-bob/include
 COPS_COMMON += -I../lib-fb/include
 COPS_COMMON += -I../lib-bcm2835/include
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
 
-COPS = -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
+COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
 COPS += $(COPS_COMMON)
 
 # NEON is not enabled in vectors.s
-COPS7 = -mfpu=vfpv4 -mfloat-abi=hard -march=armv7-a -mtune=cortex-a7
+COPS7 = -mfpu=vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
