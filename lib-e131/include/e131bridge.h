@@ -28,7 +28,6 @@
 
 #include "e131.h"
 #include "lightset.h"
-#include "../../lib-hal/include/blinktask.h"
 
 class E131Bridge {
 public:
@@ -45,11 +44,11 @@ public:
 	int HandlePacket(void);
 
 private:
+	bool IsValid(void);
 	void HandleDmx(void);
 
 private:
 	LightSet *m_pLightSet;
-	CBlinkTask m_BlinkTask;
 
 	struct TE131Packet m_E131Packet;
 };

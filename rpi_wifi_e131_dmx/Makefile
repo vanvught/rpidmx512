@@ -1,7 +1,7 @@
 #
 DEFINES = E131_DMX
 #
-LIBS = monitor e131 dmx lightset utils c++
+LIBS = monitor e131 dmx dmxmonitor lightset esp8266 utils c++
 #
 SRCDIR = firmware lib common/lib
 

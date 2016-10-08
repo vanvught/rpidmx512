@@ -60,11 +60,11 @@ struct TE131 {
 	/* DMP Layer */
 	uint16_t dmp_flength;
 	uint8_t dmp_vector;
-	uint8_t type;
-	uint16_t first_address;
-	uint16_t address_increment;
-	uint16_t property_value_count;
-	uint8_t property_values[513];
+	uint8_t dmp_type;
+	uint16_t dmp_first_address;
+	uint16_t dmp_address_increment;
+	uint16_t dmp_property_value_count;
+	uint8_t dmp_property_values[513];
 }PACKED;
 
 /**
