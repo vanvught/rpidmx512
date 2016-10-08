@@ -23,10 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <spisend.h>
 #include <stdio.h>
 #include <stdint.h>
 
-#include <software_version.h>
+#include "software_version.h"
 
 #include "bcm2835_gpio.h"
 
@@ -44,7 +45,6 @@
 #include "dmx_params.h"
 #include "dmxsend.h"
 #include "devices_params.h"
-#include "spisend.h"
 #include "fota_params.h"
 #include "fota.h"
 

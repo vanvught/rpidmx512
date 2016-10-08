@@ -1,8 +1,8 @@
 #
-DEFINES = ARTNET_DMX
+DEFINES = ARTNET_DMX NDEBUG
 #
-LIBS = utils monitor artnet esp8266
+LIBS = monitor artnet dmx ws28xx lightset esp8266 utils c++
 #
-SRCDIR = devices firmware lib
+SRCDIR = firmware lib
 
 include ../firmware-template/Rules.mk
