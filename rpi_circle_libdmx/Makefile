@@ -5,7 +5,7 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
-INCLUDE	+= -I ../lib-artnet/include
+INCLUDE	+= -I ../lib-artnet/include -I ../lib-lightset/include
 
 OBJS	= src/dmxsend.o
 
