@@ -7,6 +7,7 @@
 		<project>lib-bcm2835</project>
 		<project>lib-ff11</project>
 		<project>lib-hal</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
