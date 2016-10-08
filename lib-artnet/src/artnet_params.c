@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
+#include <artnet_params.h>
 #include <stdint.h>
 
-#include "artnet_params.h"
 #include "read_config_file.h"
 #include "sscan.h"
 #include "util.h"

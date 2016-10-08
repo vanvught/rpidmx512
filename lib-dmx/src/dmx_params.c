@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
+#include <dmx_params.h>
 #include <stdint.h>
 
-#include "dmx_params.h"
 #include "read_config_file.h"
 #include "sscan.h"
 #include "util.h"

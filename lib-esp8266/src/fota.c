@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
+#include <fota_params.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "fota_params.h"
 #include "esp8266_fota.h"
 
 #include "hardware.h"

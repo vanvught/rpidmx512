@@ -1,5 +1,5 @@
 /**
- * @file devices_params.h
+ * @file ap_params.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,27 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICES_PARAMS_H_
-#define DEVICES_PARAMS_H_
-
+#include <ap_params.h>
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "ws28xx.h"
-#include "util.h"
+#include "read_config_file.h"
+#include "sscan.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static const char PARAMS_FILE_NAME[] ALIGNED = "ap.txt";	///< Parameters file name
+static const char PARAMS_PASSWORD[] ALIGNED = "password";	///<
 
-extern const bool devices_params_init(void);
+static char ap_params_password[34] ALIGNED;					///<
 
-extern const _ws28xxx_type devices_params_get_led_type(void);
-extern const uint16_t devices_params_get_led_count(void);
-
-extern /*@shared@*/const char *devices_params_get_led_type_string(void) ASSUME_ALIGNED;
-
-#ifdef __cplusplus
+/**
+ *
+ * @return
+ */
+const char *ap_params_get_password(void) {
+	return ap_params_password;
 }
-#endif
 
-#endif /* DEVICES_PARAMS_H_ */
+/**
+ *
+ * @param line
+ */
+static void process_line_read(const char *line) {
+	uint8_t len = 32;
+
+	if (sscan_char_p(line, PARAMS_PASSWORD, ap_params_password, &len) == 2) {
+		return;
+	}
+
+
+}
+
+/**
+ *
+ */
+const bool ap_params_init(void) {
+	uint32_t i;
+
+	for  (i = 0; i < sizeof(ap_params_password) / sizeof(char) ; i++) {
+		ap_params_password[i] = (char)0;
+	}
+
+	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+}
+
