@@ -34,8 +34,10 @@
 #include "debug.h"
 
 #include "esp8266_cmd.h"
-#include "esp8266_peri.h" //TODO replace by SDK defines
+#include "esp8266_peri.h"
 #include "esp8266_rpi.h"
+
+#include "driver/uart0.h"
 
 /************************************************************************
 *
@@ -483,6 +485,7 @@ void ICACHE_FLASH_ATTR reply_with_wifi_mode(void) {
  */
 void ICACHE_FLASH_ATTR reply_with_mac_address(void) {
 	printf("reply_with_mac_address\n");
+
 	rpi_write_bytes(g_hwmac, 6);
 }
 
@@ -491,6 +494,7 @@ void ICACHE_FLASH_ATTR reply_with_mac_address(void) {
  */
 void ICACHE_FLASH_ATTR reply_with_ip_config(void) {
 	printf("reply_with_ip_config\n");
+
 	rpi_write_bytes((uint8_t *) &g_ipconfig, 12);
 }
 
@@ -797,7 +801,8 @@ void IRAM_ATTR handle_udp_packet(void) {
  * @param pvParameters
  */
 void IRAM_ATTR task_rpi(void *pvParameters) {
-	printf("task_rpi\n");
+	uart0_puts("task_rpi");
+	uart0_puts("\r\n");
 
 	setup_wifi_ap_mode("");
 
@@ -817,6 +822,8 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
 	if (!(GPI & (uint32_t) (1 << ESP8266_RPI_CTRL_IN))) {
 		printf("Ctrl pin is low\n");
 	}
+
+	printf("Free heap size  : %d\n", system_get_free_heap_size());
 
 	while (1) {
 		_commands state = rpi_read_4bits();
@@ -881,7 +888,8 @@ void IRAM_ATTR task_rpi(void *pvParameters) {
  *
  */
 void user_init(void) {
-	printf("%s\n", COMPILED_STRING);
+	uart0_puts(COMPILED_STRING);
+	uart0_puts("\r\n");
 
 	system_update_cpu_freq(SYS_CPU_160MHZ);
 
@@ -890,6 +898,7 @@ void user_init(void) {
 
 	printf("CPU frequency : %d MHz\n", system_get_cpu_freq());
 	printf("SDK version : %s\n", g_sdk_version);
+	printf("Free heap size  : %d\n", system_get_free_heap_size());
 
 	system_print_meminfo();
 

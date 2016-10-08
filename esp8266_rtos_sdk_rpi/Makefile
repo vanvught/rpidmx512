@@ -166,7 +166,7 @@ endif
 TARGET = app
 
 # which modules (subdirectories) of the project to include in compiling
-MODULES	= user upgrade
+MODULES	= driver user upgrade
 EXTRA_INCDIR = include
 
 # libraries used in this project, mainly provided by the SDK
