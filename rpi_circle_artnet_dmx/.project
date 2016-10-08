@@ -5,6 +5,7 @@
 	<projects>
 		<project>Circle</project>
 		<project>lib-artnet</project>
+		<project>lib-lightset</project>
 		<project>rpi_circle_libartnet</project>
 		<project>rpi_circle_libdmx</project>
 		<project>rpi_circle_libws28xx</project>
