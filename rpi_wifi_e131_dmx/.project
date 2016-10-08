@@ -5,6 +5,8 @@
 	<projects>
 		<project>firmware-template</project>
 		<project>lib-c++</project>
+		<project>lib-dmx</project>
+		<project>lib-e131</project>
 		<project>lib-esp8266</project>
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>
