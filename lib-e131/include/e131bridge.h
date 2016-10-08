@@ -27,8 +27,8 @@
 #define E131BRIDGE_H_
 
 #include "e131.h"
-#include "blinktask.h"
 #include "lightset.h"
+#include "../../lib-hal/include/blinktask.h"
 
 class E131Bridge {
 public:

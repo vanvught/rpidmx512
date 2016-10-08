@@ -29,10 +29,10 @@
 #include "e131.h"
 #include "e131bridge.h"
 
-#include "blinktask.h"
 #include "lightset.h"
 
 #include "udp.h"
+#include "../../lib-hal/include/blinktask.h"
 
 static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x00 };	///<
 
