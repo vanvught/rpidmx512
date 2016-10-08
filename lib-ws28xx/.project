@@ -3,9 +3,7 @@
 	<name>lib-ws28xx</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-monitor</project>
-		<project>lib-utils</project>
+		<project>lib-lightset</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -23,6 +21,7 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
