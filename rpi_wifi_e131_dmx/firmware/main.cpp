@@ -37,7 +37,7 @@ void notmain(void) {
 	hardware_init();
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("DMX Real-time Monitor [V%s]", SOFTWARE_VERSION);
+	printf("WiFi sACN E.131 DMX Out [V%s]", SOFTWARE_VERSION);
 }
 
 }

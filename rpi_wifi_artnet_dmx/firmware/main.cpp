@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,6 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <ap_params.h>
+#include <artnet_params.h>
+#include <devices_params.h>
+#include <dmx_params.h>
+#include <fota.h>
+#include <fota_params.h>
+#include <network_params.h>
 #include <spisend.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -38,15 +45,8 @@
 #include "udp.h"
 #include "console.h"
 
-#include "ap_params.h"
-#include "network_params.h"
-#include "artnet_params.h"
 #include "artnetnode.h"
-#include "dmx_params.h"
 #include "dmxsend.h"
-#include "devices_params.h"
-#include "fota_params.h"
-#include "fota.h"
 
 #define ESP822_FIRMWARE_VERSION_LENGTH	64
 
@@ -74,7 +74,7 @@ void notmain(void) {
 	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("WiFi ArtNet 3 Node DMX Output [V%s]", SOFTWARE_VERSION);
+	printf("WiFi ArtNet 3 Node DMX Output / Pixel controller [V%s]", SOFTWARE_VERSION);
 
 	console_set_top_row(3);
 
