@@ -1,0 +1,18 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ../lib-lightset/include
+
+OBJS	= src/lightset.o
+
+EXTRACLEAN = src/*.o
+
+liblightset.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D liblightset.a | $(PREFIX)c++filt > liblightset.lst
+
+include $(CIRCLEHOME)/Rules.mk

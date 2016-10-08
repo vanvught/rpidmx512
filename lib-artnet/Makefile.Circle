@@ -4,9 +4,9 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../lib-artnet/include
+INCLUDE	+= -I ../lib-artnet/include -I ../lib-lightset/include
 
-OBJS	= src/artnetnode.o  src/blinktask.o src/lightset.o
+OBJS	= src/artnetnode.o  src/blinktask.o
 
 EXTRACLEAN = src/*.o
 
