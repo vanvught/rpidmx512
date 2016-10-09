@@ -1,5 +1,5 @@
 /**
- * @file artnet_params.c
+ * @file artnetparams.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <artnet_params.h>
 #include <stdint.h>
 
 #include "read_config_file.h"
 #include "sscan.h"
 #include "util.h"
+
+#include "artnetparams.h"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";	///< Parameters file name
 static const char PARAMS_NET[] ALIGNED = "net";					///<
@@ -36,42 +37,10 @@ static const char PARAMS_SUBNET[] ALIGNED = "subnet";			///<
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";		///<
 static const char PARAMS_OUTPUT[] ALIGNED = "output";			///<
 
-static uint8_t artnet_params_net ALIGNED = 0;								///<
-static uint8_t artnet_params_subnet ALIGNED = 0;							///<
-static uint8_t artnet_params_universe ALIGNED = 0;							///<
-static _output_type artnet_params_output_type ALIGNED = OUTPUT_TYPE_DMX;	///<
-
-/**
- *
- * @return
- */
-const _output_type artnet_params_get_output_type(void) {
-	return artnet_params_output_type;
-}
-
-/**
- *
- * @return
- */
-const uint8_t artnet_params_get_net(void) {
-	return artnet_params_net;
-}
-
-/**
- *
- * @return
- */
-const uint8_t artnet_params_get_subnet(void) {
-	return artnet_params_subnet;
-}
-
-/**
- *
- * @return
- */
-const uint8_t artnet_params_get_universe(void) {
-	return artnet_params_universe;
-}
+static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
+static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
+static uint8_t ArtNetParamsUniverse ALIGNED = 0;						///<
+static _output_type ArtNetParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
 
 /**
  *
@@ -83,14 +52,14 @@ static void process_line_read(const char *line) {
 	uint8_t value8;
 
 	if (sscan_uint8_t(line, PARAMS_NET, &value8) == 2) {
-		artnet_params_net = value8;
+		ArtNetParamsNet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_SUBNET, &value8) == 2) {
-		artnet_params_subnet = value8;
+		ArtNetParamsSubnet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_UNIVERSE, &value8) == 2) {
-		artnet_params_universe = value8;
+		ArtNetParamsUniverse = value8;
 	} else if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
 		if(memcmp(value, "spi", 3) == 0) {
-			artnet_params_output_type = OUTPUT_TYPE_SPI;
+			ArtNetParamsOutputType = OUTPUT_TYPE_SPI;
 		}
 	}
 }
@@ -98,6 +67,56 @@ static void process_line_read(const char *line) {
 /**
  *
  */
-void artnet_params_init(void) {
-	(void)read_config_file(PARAMS_FILE_NAME, &process_line_read);
+ArtNetParams::ArtNetParams(void) {
+	ArtNetParamsNet = 0;
+	ArtNetParamsSubnet = 0;
+	ArtNetParamsUniverse = 0;
+	ArtNetParamsOutputType= OUTPUT_TYPE_DMX;
 }
+
+/**
+ *
+ */
+ArtNetParams::~ArtNetParams(void) {
+}
+
+/**
+ *
+ * @return
+ */
+const _output_type ArtNetParams::GetOutputType(void) {
+	return ArtNetParamsOutputType;
+}
+
+/**
+ *
+ * @return
+ */
+const uint8_t ArtNetParams::GetNet(void) {
+	return ArtNetParamsNet;
+}
+
+/**
+ *
+ * @return
+ */
+const uint8_t ArtNetParams::GetSubnet(void) {
+	return ArtNetParamsSubnet;
+}
+
+/**
+ *
+ * @return
+ */
+const uint8_t ArtNetParams::GetUniverse(void) {
+	return ArtNetParamsUniverse;
+}
+
+/**
+ *
+ */
+bool ArtNetParams::Load(void) {
+	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+}
+
+

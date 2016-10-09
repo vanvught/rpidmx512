@@ -1,5 +1,5 @@
 /**
- * @file artnet_params.h
+ * @file artnetparams.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,28 @@
  * THE SOFTWARE.
  */
 
-
-#ifndef ARTNET_PARAMS_H_
-#define ARTNET_PARAMS_H_
+#ifndef ARTNETPARAMS_H_
+#define ARTNETPARAMS_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI
 } _output_type;
 
+class ArtNetParams {
+public:
+	ArtNetParams(void);
+	~ArtNetParams(void);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	bool Load(void);
 
-extern void artnet_params_init(void);
-extern const _output_type artnet_params_get_output_type(void);
-extern const uint8_t artnet_params_get_net(void);
-extern const uint8_t artnet_params_get_subnet(void);
-extern const uint8_t artnet_params_get_universe(void);
+	const _output_type GetOutputType(void);
+	const uint8_t GetNet(void);
+	const uint8_t GetSubnet(void);
+	const uint8_t GetUniverse(void);
+};
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* ARTNET_PARAMS_H_ */
+#endif /* ARTNETPARAMS_H_ */

@@ -24,7 +24,7 @@
  */
 
 #include <ap_params.h>
-#include <artnet_params.h>
+#include <artnetparams.h>
 #include <devices_params.h>
 #include <dmx_params.h>
 #include <fota.h>
@@ -57,14 +57,17 @@ void notmain(void) {
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
+	ArtNetParams artnetparams;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
 
 	hardware_init();
-	artnet_params_init();
 
-	output_type = artnet_params_get_output_type();
+	// Discard return value. On failing, we use defaults.
+	(void) artnetparams.Load();
+
+	output_type = artnetparams.GetOutputType();
 
 	if (output_type == OUTPUT_TYPE_SPI) {
 		devices_params_init();
@@ -152,7 +155,7 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet_params_get_universe());
+	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		node.SetOutput(&dmx);
@@ -177,7 +180,7 @@ void notmain(void) {
 		node.SetDirectUpdate(true);
 
 		const uint16_t led_count = spi.GetLEDCount();
-		const uint8_t universe = artnet_params_get_universe();
+		const uint8_t universe = artnetparams.GetUniverse();
 
 		if (led_count > 170) {
 			node.SetDirectUpdate(true);
@@ -195,8 +198,8 @@ void notmain(void) {
 		}
 	}
 
-	node.SetSubnetSwitch(artnet_params_get_subnet());
-	node.SetNetSwitch(artnet_params_get_net());
+	node.SetSubnetSwitch(artnetparams.GetSubnet());
+	node.SetNetSwitch(artnetparams.GetNet());
 
 	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = node.GetSoftwareVersion();
