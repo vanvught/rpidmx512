@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file inet.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef INET_H_
+#define INET_H_
 
-static const char SOFTWARE_VERSION[] = "0.2";
+#include <stdint.h>
 
-/*
- * 0.1	October 2016
- */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* SOFTWARE_VERSION_H_ */
+extern int inet_aton(const char *, uint32_t *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* INET_H_ */

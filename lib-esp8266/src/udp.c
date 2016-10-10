@@ -46,7 +46,7 @@ void udp_begin(const uint16_t port) {
  */
 void udp_joingroup(const uint32_t ip_address) {
 	esp8266_write_4bits((uint8_t)CMD_WIFI_UDP_JOIN_GROUP);
-	//esp8266_write_word(ip_address);
+	esp8266_write_word(ip_address);
 }
 
 /**

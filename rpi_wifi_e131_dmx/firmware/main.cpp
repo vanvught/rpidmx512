@@ -32,6 +32,7 @@
 
 #include "wifi.h"
 #include "udp.h"
+#include "inet.h"
 
 #include "ap_params.h"
 #include "network_params.h"
@@ -39,7 +40,9 @@
 #include "fota.h"
 
 #include "e131bridge.h"
+#include "e131params.h"
 #include "dmxsend.h"
+#include "dmx_params.h"
 #include "dmxmonitor.h"
 
 #include "software_version.h"
@@ -47,10 +50,20 @@
 extern "C" {
 
 void notmain(void) {
+	_output_type output_type;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
+	E131Params e131params;
 
 	hardware_init();
+
+	(void)e131params.Load();
+
+	output_type = e131params.GetOutputType();
+
+	if (output_type == OUTPUT_TYPE_DMX) {
+		dmx_params_init();
+	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("WiFi sACN E.131 DMX Out [V%s]", SOFTWARE_VERSION);
@@ -126,13 +139,30 @@ void notmain(void) {
 	udp_begin(5568);
 
 	console_status(CONSOLE_YELLOW, "Join group ...");
-	udp_joingroup(0);
+
+	uint32_t group_ip;
+	(void)inet_aton("239.255.0.0", &group_ip);
+	const uint16_t universe = e131params.GetUniverse();
+	group_ip = group_ip | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
+	udp_joingroup(group_ip);
 
 	E131Bridge bridge;
 	DMXSend dmx;
 	DMXMonitor monitor;
 
-	bridge.SetOutput(&dmx);
+	if (output_type == OUTPUT_TYPE_MONITOR) {
+		bridge.SetOutput(&monitor);
+		console_set_top_row(20);
+	} else {
+		bridge.SetOutput(&dmx);
+	}
+
+	printf("\nBridge configuration\n");
+	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
+	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" Universe     : %d\n", universe);
+	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip));
+	printf(" Unicast ip   : " IPSTR "\n", IP2STR(ip_config.ip.addr));
 
 	hardware_watchdog_init();
 

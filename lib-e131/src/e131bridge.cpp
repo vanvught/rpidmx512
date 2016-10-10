@@ -34,7 +34,7 @@
 
 #include "util.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x00 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x02 };	///<
 static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 #define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))

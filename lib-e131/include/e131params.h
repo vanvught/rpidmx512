@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file e131params.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,13 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef E131PARAMS_H_
+#define E131PARAMS_H_
 
-static const char SOFTWARE_VERSION[] = "0.2";
+#include <stdint.h>
+#include <stdbool.h>
 
-/*
- * 0.1	October 2016
- */
+typedef enum {
+	OUTPUT_TYPE_DMX,
+	OUTPUT_TYPE_SPI,
+	OUTPUT_TYPE_MONITOR
+} _output_type;
 
-#endif /* SOFTWARE_VERSION_H_ */
+class E131Params {
+public:
+	E131Params(void);
+	~E131Params(void);
+
+	bool Load(void);
+
+	const _output_type GetOutputType(void);
+	const uint16_t GetUniverse(void);
+};
+
+#endif /* E131PARAMS_H_ */

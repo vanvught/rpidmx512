@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file inet_aton.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,69 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
 
-static const char SOFTWARE_VERSION[] = "0.2";
+#include "util.h"
 
-/*
- * 0.1	October 2016
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
+
+/**
+ *
+ * @param cp
+ * @param ip_address
+ * @return returns nonzero if the address is valid, zero if not.
  */
+int inet_aton(const char *cp, uint32_t *ip_address) {
+	const char *b = cp;
+	int i, j, k;
+	_pcast32 cast32;
 
-#endif /* SOFTWARE_VERSION_H_ */
+	for (i = 0 ; i < 3 ; i++) {
+			j = 0;
+			k = 0;
+
+			while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
+				if (j == 3) {
+					return 0;
+				}
+
+				if (!isdigit((int )*b)) {
+					return 0;
+				}
+
+				j++;
+				k = k * 10 + (int) *b - (int) '0';
+				b++;
+			}
+
+			cast32.u8[i] = k;
+			b++;
+
+		}
+
+		j= 0;
+		k= 0;
+
+		while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+			if (j == 3) {
+				return 0;
+			}
+
+			if (!isdigit((int )*b)) {
+				return 0;
+			}
+
+			j++;
+			k = k * 10 + (int) *b - (int) '0';
+			b++;
+		}
+
+		cast32.u8[i] = k;
+
+		*ip_address = cast32.u32;
+
+		return 1;
+}
