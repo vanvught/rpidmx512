@@ -49,7 +49,7 @@ DMXMonitor::~DMXMonitor(void) {
  *
  */
 void DMXMonitor::Start(void) {
-	for (int i = TOP_ROW; i < (TOP_ROW + 33); i++) {
+	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
 		console_clear_line(i);
 	}
 
