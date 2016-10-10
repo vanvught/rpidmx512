@@ -581,6 +581,8 @@ void ICACHE_FLASH_ATTR handle_udp_join_group(void) {
 	struct ip_addr ipgroup;
 	struct ip_info local_ip;
 
+	const uint32_t ip_address = rpi_read_word();
+
 	const WIFI_MODE mode = wifi_get_opmode();
 
 	if (mode & STATION_MODE) {
@@ -589,7 +591,8 @@ void ICACHE_FLASH_ATTR handle_udp_join_group(void) {
 		wifi_get_ip_info(SOFTAP_IF, &local_ip);
 	}
 
-	ipaddr_aton("239.255.0.1", &ipgroup);
+	ipgroup.addr = ip_address;
+	//ipaddr_aton("239.255.0.1", &ipgroup);
 
 	const uint8_t iret = igmp_joingroup(&local_ip.ip,(struct ip_addr *)(&ipgroup));
 
