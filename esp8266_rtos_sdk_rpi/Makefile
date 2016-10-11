@@ -246,7 +246,7 @@ INCDIR		:= $(addprefix -I,$(SRC_DIR))
 EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 
-V ?= 1
+V ?= 0
 ifeq ("$(V)","1")
 Q :=
 vecho := @true
@@ -307,6 +307,7 @@ else
         endif
     endif
 	$(Q) mv eagle.app.flash.bin $(FW_BASE)/upgrade/$(BIN_NAME).bin
+	$(Q) cp $(FW_BASE)/upgrade/$(BIN_NAME).bin bin/upgrade/user$(app).bin
 	$(Q) rm eagle.app.v6.*
 	$(vecho) "Generate $(BIN_NAME).bin successully in folder $(FW_BASE)/upgrade"
 	$(vecho) "boot.bin------->0x00000"
@@ -346,7 +347,7 @@ else
 		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.6.bin
             else
 		$(vecho) "Flash boot_v1.2 and +"
-		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 $(SDK_BASE)/bin/boot_v1.5.bin
+		$(ESPTOOL) -p $(ESPPORT) -b $(BAUD) write_flash $(flashimageoptions) 0x00000 bin/boot_v1.5.bin
             endif
         endif
     endif
@@ -384,7 +385,7 @@ endif
 # FLASH SIZE
 flashinit:
 	$(vecho) "Flash init data default and blank data."
-	$(ESPTOOL) -p $(ESPPORT) write_flash $(flashimageoptions) 0xfc000 $(SDK_BASE)/bin/esp_init_data_default.bin 0xfe000 $(SDK_BASE)/bin/blank.bin
+	$(ESPTOOL) -p $(ESPPORT) write_flash $(flashimageoptions) 0xfc000 bin/esp_init_data_default.bin 0xfe000 bin/blank.bin
 
 rebuild: clean all flashinit flash
 
