@@ -39,10 +39,11 @@
 #include "fota_params.h"
 #include "fota.h"
 
+#include "e131.h"
 #include "e131bridge.h"
 #include "e131params.h"
 #include "dmxsend.h"
-#include "dmx_params.h"
+#include "dmxparams.h"
 #include "dmxmonitor.h"
 
 #include "software_version.h"
@@ -57,13 +58,9 @@ void notmain(void) {
 
 	hardware_init();
 
-	(void)e131params.Load();
+	(void) e131params.Load();
 
 	output_type = e131params.GetOutputType();
-
-	if (output_type == OUTPUT_TYPE_DMX) {
-		dmx_params_init();
-	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
 	printf("WiFi sACN E.131 DMX Out [V%s]", SOFTWARE_VERSION);
@@ -136,7 +133,7 @@ void notmain(void) {
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
-	udp_begin(5568);
+	udp_begin(E131_DEFAULT_PORT);
 
 	console_status(CONSOLE_YELLOW, "Join group ...");
 
@@ -150,19 +147,43 @@ void notmain(void) {
 	DMXSend dmx;
 	DMXMonitor monitor;
 
+	bridge.setUniverse(universe);
+
 	if (output_type == OUTPUT_TYPE_MONITOR) {
 		bridge.SetOutput(&monitor);
 		console_set_top_row(20);
 	} else {
 		bridge.SetOutput(&dmx);
+
+		DMXParams dmxparams;
+
+		(void) dmxparams.Load();
+
+		dmx.SetBreakTime(dmxparams.GetBreakTime());
+		dmx.SetMabTime(dmxparams.GetMabTime());
+
+		const uint8_t refresh_rate = dmxparams.GetRefreshRate();
+		uint32_t period = (uint32_t) 0;
+
+		if (refresh_rate != (uint8_t) 0) {
+			period = (uint32_t) (1E6 / refresh_rate);
+		}
+		dmx.SetPeriodTime(period);
 	}
 
 	printf("\nBridge configuration\n");
 	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
 	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Universe     : %d\n", universe);
+	printf(" Universe     : %d\n", bridge.getUniverse());
 	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip));
-	printf(" Unicast ip   : " IPSTR "\n", IP2STR(ip_config.ip.addr));
+	printf(" Unicast ip   : " IPSTR "\n\n", IP2STR(ip_config.ip.addr));
+
+	if (output_type == OUTPUT_TYPE_DMX) {
+		printf("DMX Send parameters\n");
+		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
+		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
+		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
+	}
 
 	hardware_watchdog_init();
 
@@ -173,7 +194,7 @@ void notmain(void) {
 
 	for (;;) {
 		hardware_watchdog_feed();
-		bridge.HandlePacket();
+		(void) bridge.HandlePacket();
 		led_blink();
 	}
 }
