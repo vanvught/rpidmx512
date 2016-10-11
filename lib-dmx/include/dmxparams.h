@@ -1,5 +1,5 @@
 /**
- * @file dmx_params.h
+ * @file dmxparams.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_PARAMS_H_
-#define DMX_PARAMS_H_
+#ifndef DMXPARAMS_H_
+#define DMXPARAMS_H_
 
 #include <stdint.h>
 
@@ -38,17 +38,17 @@
 
 #define DMX_PARAMS_DEFAULT_REFRESH_RATE	40	///<
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class DMXParams {
+public:
+	DMXParams(void);
+	~DMXParams(void);
 
-extern void dmx_params_init(void);
-extern const uint8_t dmx_params_get_break_time(void);
-extern const uint8_t dmx_params_get_mab_time(void);
-extern const uint8_t dmx_params_get_refresh_rate(void);
+	bool Load(void);
 
-#ifdef __cplusplus
-}
-#endif
+	const uint8_t GetBreakTime(void);
+	const uint8_t GetMabTime(void);
+	const uint8_t GetRefreshRate(void);
+};
 
-#endif /* DMX_PARAMS_H_ */
+
+#endif /* DMXPARAMS_H_ */
