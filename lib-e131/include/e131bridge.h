@@ -26,6 +26,8 @@
 #ifndef E131BRIDGE_H_
 #define E131BRIDGE_H_
 
+#include <stdint.h>
+
 #include "e131.h"
 #include "lightset.h"
 
@@ -41,6 +43,9 @@ public:
 	void Start(void);
 	void Stop(void);
 
+	const uint16_t getUniverse(void);
+	void setUniverse(const uint16_t);
+
 	int HandlePacket(void);
 
 private:
@@ -49,6 +54,8 @@ private:
 
 private:
 	LightSet *m_pLightSet;
+	uint16_t m_nUniverse;
+	uint8_t m_nLastSequenceNumber;
 
 	struct TE131Packet m_E131Packet;
 };

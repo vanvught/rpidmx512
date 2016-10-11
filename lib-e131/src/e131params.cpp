@@ -29,22 +29,14 @@
 #include "sscan.h"
 #include "util.h"
 
+#include "e131.h"
 #include "e131params.h"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";				///< Parameters file name
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
 static const char PARAMS_OUTPUT[] ALIGNED = "output";					///<
 
-/**
- * 6.7 Universe
- * The Universe is a 16-bit field that defines the universe number of the data carried in the packet. Universe
- * values shall be limited to the range 1 to 63999. Universe value 0 and those between 64000 and 65535 are
- * reserved for future use. See Section 8 for more information.
- */
-#define DEFAULT_UNIVERSE	1
-#define MAX_UNIVERSE		63999
-
-static uint16_t E131ParamsUniverse ALIGNED = DEFAULT_UNIVERSE; 			///<
+static uint16_t E131ParamsUniverse ALIGNED = E131_DEFAULT_UNIVERSE;	///<
 static _output_type E131ParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
 
 /**
@@ -58,8 +50,8 @@ static void process_line_read(const char *line) {
 	uint16_t value16;
 
 	if (sscan_uint16_t(line, PARAMS_UNIVERSE, &value16) == 2) {
-		if (value16 == 0 || value16 > MAX_UNIVERSE) {
-			E131ParamsUniverse = DEFAULT_UNIVERSE;
+		if (value16 == 0 || value16 > E131_MAX_UNIVERSE) {
+			E131ParamsUniverse = E131_DEFAULT_UNIVERSE;
 		} else {
 			E131ParamsUniverse = value16;
 		}
@@ -74,7 +66,7 @@ static void process_line_read(const char *line) {
  *
  */
 E131Params::E131Params(void) {
-	E131ParamsUniverse = DEFAULT_UNIVERSE;
+	E131ParamsUniverse = E131_DEFAULT_UNIVERSE;
 	E131ParamsOutputType = OUTPUT_TYPE_DMX;
 }
 
