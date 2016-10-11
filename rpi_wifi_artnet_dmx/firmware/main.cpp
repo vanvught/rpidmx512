@@ -26,7 +26,7 @@
 #include <ap_params.h>
 #include <artnetparams.h>
 #include <devices_params.h>
-#include <dmxparams.h>
+#include <dmx_params.h>
 #include <fota.h>
 #include <fota_params.h>
 #include <network_params.h>
@@ -58,7 +58,6 @@ void notmain(void) {
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
 	ArtNetParams artnetparams;
-	DMXParams dmxparams;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -74,7 +73,7 @@ void notmain(void) {
 		devices_params_init();
 	} else {
 		output_type = OUTPUT_TYPE_DMX;
-		(void) dmxparams.Load();
+		dmx_params_init();
 	}
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
@@ -162,10 +161,10 @@ void notmain(void) {
 		node.SetOutput(&dmx);
 		node.SetDirectUpdate(false);
 
-		dmx.SetBreakTime(dmxparams.GetBreakTime());
-		dmx.SetMabTime(dmxparams.GetMabTime());
+		dmx.SetBreakTime(dmx_params_get_break_time());
+		dmx.SetMabTime(dmx_params_get_mab_time());
 
-		const uint8_t refresh_rate = dmxparams.GetRefreshRate();
+		const uint8_t refresh_rate = dmx_params_get_refresh_rate();
 
 		if (refresh_rate != (uint8_t) 0) {
 			period = (uint32_t) (1E6 / refresh_rate);
