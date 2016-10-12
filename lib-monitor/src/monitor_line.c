@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include "console.h"
 
@@ -37,11 +38,11 @@
 void monitor_line(const int line, const char *fmt, ...) {
 	va_list va;
 
+	assert(fmt != NULL);
+
 	console_clear_line(line);
 
-	if (fmt != NULL) {
-		va_start(va, fmt);
-		(void) vprintf(fmt, va);
-		va_end(va);
-	}
+	va_start(va, fmt);
+	(void) vprintf(fmt, va);
+	va_end(va);
 }
