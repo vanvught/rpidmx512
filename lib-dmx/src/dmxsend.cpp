@@ -253,7 +253,9 @@ DMXSend::~DMXSend(void) {
  *
  */
 void DMXSend::Start(void) {
-	assert(m_State == DMXSendIdle);
+	if (m_State != DMXSendIdle) {
+		return;
+	}
 
 	__enable_irq();
 	__enable_fiq();
