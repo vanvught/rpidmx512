@@ -495,6 +495,16 @@ void console_set_bg_color(const uint16_t back) {
 
 /**
  *
+ * @param fore
+ * @param back
+ */
+void console_set_fg_bg_color(const uint16_t fore, const uint16_t back) {
+	cur_fore = fore;
+	cur_back = back;
+}
+
+/**
+ *
  * @param line
  */
 void console_clear_line(const int line) {

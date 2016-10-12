@@ -81,6 +81,7 @@ extern void console_restore_color(void);
 extern int console_draw_char(const int, const int, const int, const uint16_t, const uint16_t);
 extern void console_set_fg_color(const uint16_t);
 extern void console_set_bg_color(const uint16_t);
+extern void console_set_fg_bg_color(const uint16_t, const uint16_t);
 extern void console_clear_line(const int);
 
 extern uint16_t console_get_top_row(void);
