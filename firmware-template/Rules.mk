@@ -30,12 +30,12 @@ LIB7DEP = $(addsuffix /lib7/lib, $(LIBDEP))
 LIB7DEP := $(join $(LIB7DEP), $(LIBS))
 LIB7DEP := $(addsuffix .a, $(LIB7DEP))
 
-COPS_COMMON = -DBARE_METAL $(DEFINES)
+COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -I../lib-hal/include
+COPS_COMMON += -I../lib-bcm2835/include
 COPS_COMMON += -I../lib-bob/include
 COPS_COMMON += -I../lib-fb/include
-COPS_COMMON += -I../lib-bcm2835/include
+COPS_COMMON += -I../lib-hal/include
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
