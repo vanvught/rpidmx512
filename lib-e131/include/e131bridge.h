@@ -31,6 +31,8 @@
 #include "e131.h"
 #include "lightset.h"
 
+#include "sys_time.h"
+
 class E131Bridge {
 public:
 	E131Bridge(void);
@@ -50,12 +52,17 @@ public:
 
 private:
 	bool IsValid(void);
+	void SetNetworkDataLossCondition(void);
+	void CheckNetworkDataLoss(void);
 	void HandleDmx(void);
 
 private:
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
 	uint8_t m_nLastSequenceNumber;
+	time_t m_nLastPacketTimeStamp;
+	bool m_bNetworkDataLoss;
+	uint8_t m_nPriority;
 
 	struct TE131Packet m_E131Packet;
 };

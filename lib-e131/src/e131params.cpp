@@ -36,7 +36,7 @@ static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";				///< Parameters fi
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
 static const char PARAMS_OUTPUT[] ALIGNED = "output";					///<
 
-static uint16_t E131ParamsUniverse ALIGNED = E131_DEFAULT_UNIVERSE;	///<
+static uint16_t E131ParamsUniverse ALIGNED = E131_UNIVERSE_DEFAULT;	///<
 static _output_type E131ParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
 
 /**
@@ -50,8 +50,8 @@ static void process_line_read(const char *line) {
 	uint16_t value16;
 
 	if (sscan_uint16_t(line, PARAMS_UNIVERSE, &value16) == 2) {
-		if (value16 == 0 || value16 > E131_MAX_UNIVERSE) {
-			E131ParamsUniverse = E131_DEFAULT_UNIVERSE;
+		if (value16 == 0 || value16 > E131_UNIVERSE_MAX) {
+			E131ParamsUniverse = E131_UNIVERSE_DEFAULT;
 		} else {
 			E131ParamsUniverse = value16;
 		}
@@ -66,7 +66,7 @@ static void process_line_read(const char *line) {
  *
  */
 E131Params::E131Params(void) {
-	E131ParamsUniverse = E131_DEFAULT_UNIVERSE;
+	E131ParamsUniverse = E131_UNIVERSE_DEFAULT;
 	E131ParamsOutputType = OUTPUT_TYPE_DMX;
 }
 

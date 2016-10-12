@@ -40,13 +40,28 @@
 #define E131_DEFAULT_PORT		5568	///<
 
 /**
+ * 6.4 Priority
+ *
+ * No priority outside the range of 0 to 200 shall be transmitted on the network.
+ * Priority increases with numerical value, i.e., 200 is a higher priority than 100.
+ */
+#define E131_PRIORITY_LOWEST		1	///<
+#define E131_PRIORITY_HIGHEST		200	///<
+
+/**
+ * 6.6 Options
+ */
+#define E131_OPTIONS_MASK_PREVIEW_DATA		(1<<7)		///< Preview_Data: Bit 7 (most significant bit)
+#define E131_OPTIONS_MASK_STREAM_TERMINATED	(1<<6)		///< Stream_Terminated: Bit 6
+
+/**
  * 6.7 Universe
  * The Universe is a 16-bit field that defines the universe number of the data carried in the packet. Universe
  * values shall be limited to the range 1 to 63999. Universe value 0 and those between 64000 and 65535 are
  * reserved for future use. See Section 8 for more information.
  */
-#define E131_DEFAULT_UNIVERSE	1		///<
-#define E131_MAX_UNIVERSE		63999	///<
+#define E131_UNIVERSE_DEFAULT	1		///<
+#define E131_UNIVERSE_MAX		63999	///<
 
 /**
  * Root Layer (See Section 5)
