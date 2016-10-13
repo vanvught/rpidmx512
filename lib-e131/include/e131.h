@@ -34,6 +34,22 @@
 #endif
 
 /**
+ * The maximum length of the DMX data
+ */
+enum {
+	E131_DMX_LENGTH = 512
+};
+
+/**
+ * Merge is implemented in either LTP or HTP mode
+ */
+enum TMerge {
+	E131_MERGE_HTP,		///< Highest Takes Precedence (HTP)
+	E131_MERGE_LTP		///< Latest Takes Precedence (LTP)
+};
+
+
+/**
  * When multicast addressing is used, the UDP destination Port shall be set to the standard ACN-SDT
  * multicast port (5568).
  */

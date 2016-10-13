@@ -35,7 +35,7 @@
 #include "util.h"
 #include "sys_time.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x04 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x05 };	///<
 static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 #define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
@@ -44,8 +44,20 @@ static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45,
  *
  */
 E131Bridge::E131Bridge(void) :
-		m_pLightSet(0), m_nUniverse(E131_UNIVERSE_DEFAULT), m_nLastSequenceNumber(0),
-		m_nLastPacketTimeStamp(sys_time_ms(NULL)), m_bNetworkDataLoss(true), m_nPriority(E131_PRIORITY_LOWEST) {
+		m_pLightSet(0),
+		m_nUniverse(E131_UNIVERSE_DEFAULT),
+		m_nLastSequenceNumber(0),
+		m_nLastPacketTimeStamp(sys_time_ms(NULL)) {
+
+	m_OutputPort.mergeMode = E131_MERGE_HTP;
+	m_OutputPort.length = (uint16_t) 0;
+
+	m_OutputPort.sourceA.ip = (uint32_t) 0;
+	m_OutputPort.sourceB.ip = (uint32_t) 0;
+
+	m_State.IsMergeMode = false;
+	m_State.IsNetworkDataLoss = true;
+	m_State.nPriority = E131_PRIORITY_LOWEST;
 }
 
 /**
@@ -107,12 +119,68 @@ void E131Bridge::setUniverse(const uint16_t nUniverse) {
 	m_nUniverse = nUniverse;
 }
 
+
+/**
+ *
+ */
+void E131Bridge::CheckMergeTimeouts(void) {
+
+	const time_t now = sys_time(NULL);
+
+	const time_t timeOutA = now - m_OutputPort.sourceA.time;
+	const time_t timeOutB = now - m_OutputPort.sourceB.time;
+
+	if (timeOutA > (time_t)MERGE_TIMEOUT_SECONDS) {
+		m_OutputPort.sourceA.ip = 0;
+		m_State.IsMergeMode = false;
+	}
+
+	if (timeOutB > (time_t)MERGE_TIMEOUT_SECONDS) {
+		m_OutputPort.sourceB.ip = 0;
+		m_State.IsMergeMode = false;
+	}
+}
+
+/**
+ *
+ * @param pData
+ * @param nLength
+ * @return
+ */
+bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
+	bool isChanged = false;
+
+	uint8_t *src = (uint8_t *)pData;
+	uint8_t *dst = (uint8_t *)m_OutputPort.data;
+
+	if (nLength != m_OutputPort.length) {
+		m_OutputPort.length = nLength;
+		for (unsigned i = 0 ; i < E131_DMX_LENGTH; i++) {
+			*dst++ = *src++;
+		}
+		return true;
+	}
+
+	for (unsigned i = 0; i < E131_DMX_LENGTH; i++) {
+		if (*dst != *src) {
+			*dst = *src;
+			isChanged = true;
+		}
+		dst++;
+		src++;
+	}
+
+	return isChanged;
+}
+
 /**
  *
  */
 void E131Bridge::HandleDmx(void) {
 	uint8_t *p = m_E131Packet.E131.DMPLayer.PropertyValues;
 	uint16_t slots = SWAP_UINT16(m_E131Packet.E131.DMPLayer.PropertyValueCount);
+
+	bool sendNewData = false;
 
 	if ((m_E131Packet.E131.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
 		// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
@@ -125,16 +193,20 @@ void E131Bridge::HandleDmx(void) {
 		return;
 	}
 
-	if (slots > (uint16_t)513) {
-		return;
+	if (m_State.IsMergeMode) {
+		CheckMergeTimeouts();
 	}
 
 	// Skip DMX Start Code
 	p++;
 	slots--;
 
-	m_pLightSet->SetData(0, p, slots);
+	sendNewData = IsDmxDataChanged(p, slots);
 
+	if (sendNewData) {
+		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+
+	}
 }
 
 /**
@@ -232,8 +304,8 @@ int E131Bridge::HandlePacket(void) {
  */
 void E131Bridge::SetNetworkDataLossCondition(void) {
 	m_pLightSet->Stop();
-	m_bNetworkDataLoss = true;
-	m_nPriority = E131_PRIORITY_LOWEST;
+	m_State.IsNetworkDataLoss = true;
+	m_State.nPriority = E131_PRIORITY_LOWEST;
 }
 
 /**
@@ -242,12 +314,12 @@ void E131Bridge::SetNetworkDataLossCondition(void) {
  */
 void E131Bridge::CheckNetworkDataLoss(void) {
 	const time_t currentTimeStamp = sys_time_ms(NULL);
-	bool currentState = m_bNetworkDataLoss;
+	bool currentState = m_State.IsNetworkDataLoss;
 
 	if ((currentTimeStamp - m_nLastPacketTimeStamp) > 2500) {
 		SetNetworkDataLossCondition();
 	} else {
-		m_bNetworkDataLoss = false;
+		m_State.IsNetworkDataLoss = false;
 		if (currentState) {
 			m_pLightSet->Start();
 		}

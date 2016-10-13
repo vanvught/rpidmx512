@@ -33,6 +33,43 @@
 
 #include "sys_time.h"
 
+#define MERGE_TIMEOUT_SECONDS		10							///<
+
+/**
+ *
+ */
+struct TE131BridgeState {
+	uint8_t nPriority;
+	bool IsNetworkDataLoss;
+	bool IsMergeMode;				///< Is the Bridge in merging mode?
+};
+
+/**
+ *
+ */
+struct TSource {
+	uint8_t lastSequenceNumber;
+	uint8_t data[E131_DMX_LENGTH];	///< The data received from source
+	time_t time;					///< The latest time of the data received from source
+	uint32_t ip;					///< The IP address for source
+	uint8_t cid[16];				///< Sender's CID. Sender's unique ID
+};
+
+/**
+ * struct to represent an output port
+ *
+ */
+struct TOutputPort {
+	uint8_t data[E131_DMX_LENGTH];	///< Data sent
+	uint16_t length;				///< Length of sent DMX data
+	TMerge mergeMode;				///< \ref TMerge
+	struct TSource sourceA;
+	struct TSource sourceB;
+};
+
+/**
+ *
+ */
 class E131Bridge {
 public:
 	E131Bridge(void);
@@ -54,6 +91,8 @@ private:
 	bool IsValid(void);
 	void SetNetworkDataLossCondition(void);
 	void CheckNetworkDataLoss(void);
+	void CheckMergeTimeouts(void);
+	bool IsDmxDataChanged(const uint8_t *, const uint16_t);
 	void HandleDmx(void);
 
 private:
@@ -61,8 +100,9 @@ private:
 	uint16_t m_nUniverse;
 	uint8_t m_nLastSequenceNumber;
 	time_t m_nLastPacketTimeStamp;
-	bool m_bNetworkDataLoss;
-	uint8_t m_nPriority;
+
+	struct TE131BridgeState m_State;
+	struct TOutputPort		m_OutputPort;
 
 	struct TE131Packet m_E131Packet;
 };
