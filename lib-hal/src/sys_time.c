@@ -109,22 +109,11 @@ time_t sys_time(time_t *__timer) {
 /**
  * @ingroup time
  *
- *  Returns the time as the number of milliseconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
- *  If \ref __timer is non-NULL, the return value is also stored in the memory pointed to by __timer.
- *
- * @param __timer
- * @return  The value of time in milliseconds since the Epoch
  */
-time_t sys_time_ms(time_t *__timer) {
+const uint32_t millis(void) {
 	dmb();
-	time_t elapsed = (time_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E3);
+	const uint32_t elapsed = (uint32_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E3);
 	dmb();
-
-	elapsed = elapsed + rtc_startup_seconds;
-
-	if (__timer != NULL ) {
-		*__timer = elapsed;
-	}
 
 	return elapsed;
 }

@@ -39,7 +39,8 @@ extern "C" {
 extern void sys_time_init(void);
 extern void sys_time_set(/*@out@*/const struct tm *);
 extern time_t sys_time (/*@null@*/ time_t *);
-extern time_t sys_time_ms(/*@null@*/ time_t *);
+
+extern const uint32_t millis();
 
 #ifdef __cplusplus
 }
