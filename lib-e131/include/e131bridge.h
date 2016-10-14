@@ -34,6 +34,7 @@
 #include "sys_time.h"
 
 #define MERGE_TIMEOUT_SECONDS		10							///<
+#define PRIORITY_TIMEOUT_SECONDS	10							///<
 
 /**
  *
@@ -48,11 +49,11 @@ struct TE131BridgeState {
  *
  */
 struct TSource {
-	uint8_t lastSequenceNumber;
-	uint8_t data[E131_DMX_LENGTH];	///< The data received from source
-	time_t time;					///< The latest time of the data received from source
+	uint32_t time;					///< The latest time of the data received from source
 	uint32_t ip;					///< The IP address for source
+	uint8_t data[E131_DMX_LENGTH];	///< The data received from source
 	uint8_t cid[16];				///< Sender's CID. Sender's unique ID
+	uint8_t sequenceNumber;
 };
 
 /**
@@ -88,18 +89,22 @@ public:
 	int HandlePacket(void);
 
 private:
-	bool IsValid(void);
+	const bool IsValidPackage(void);
 	void SetNetworkDataLossCondition(void);
 	void CheckNetworkDataLoss(void);
 	void CheckMergeTimeouts(void);
-	bool IsDmxDataChanged(const uint8_t *, const uint16_t);
+	const bool IsPriorityTimeOut(void);
+	const bool isIpCidMatch(const struct TSource *);
+	const bool IsDmxDataChanged(const uint8_t *, const uint16_t);
+	const bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t );
 	void HandleDmx(void);
 
 private:
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
-	uint8_t m_nLastSequenceNumber;
-	time_t m_nLastPacketTimeStamp;
+
+	uint32_t m_nCurrentPacketMillis;
+	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
 	struct TOutputPort		m_OutputPort;
