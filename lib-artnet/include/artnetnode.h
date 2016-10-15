@@ -237,6 +237,7 @@ private:
 #endif
 	bool 					m_IsDHCPUsed;	///<
 	LightSet    			*m_pLightSet;	///<
+	time_t 					m_nCurrentPacketTime;
 
 	struct TArtNetNode		m_Node;			///< Struct describing the node
 	struct TArtNetNodeState m_State;		///< The current state of the node

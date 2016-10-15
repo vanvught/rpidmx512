@@ -92,7 +92,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x04 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x05 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE		12							///< \ref TArtPoll \ref TArtSync
@@ -548,6 +548,12 @@ int ArtNetNode::HandlePacket(void) {
 	}
 #endif
 
+#if defined (__circle__)
+	m_nCurrentPacketTime = CTimer::Get()->GetTime();
+#else
+	m_nCurrentPacketTime = sys_time(NULL);
+#endif
+
 	if (nBytesReceived == 0) {
 		return 0;
 	}
@@ -565,12 +571,7 @@ int ArtNetNode::HandlePacket(void) {
 				m_OutputPorts[i].IsDataPending = false;
 			}
 		} else {
-#if defined (__circle__)
-			const time_t now = CTimer::Get()->GetTime();
-#else
-			const time_t now = sys_time(NULL);
-#endif
-			if (now - m_State.ArtSyncTime >= 4) {
+			if (m_nCurrentPacketTime - m_State.ArtSyncTime >= 4) {
 				m_State.IsSynchronousMode = false;
 #ifdef SENDDIAG
 				SendDiag("Leaving Synchronous Mode", ARTNET_DP_LOW);
@@ -754,13 +755,8 @@ bool ArtNetNode::IsMergedDmxDataChanged(const uint8_t nPortId, const uint8_t *pD
  *
  */
 void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
-#if defined (__circle__)
-	const time_t now = CTimer::Get()->GetTime();
-#else
-	const time_t now = sys_time(NULL);
-#endif
-	const time_t timeOutA = now - m_OutputPorts[nPortId].timeA;
-	const time_t timeOutB = now - m_OutputPorts[nPortId].timeB;
+	const time_t timeOutA = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeA;
+	const time_t timeOutB = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeB;
 
 	if (timeOutA > (time_t)MERGE_TIMEOUT_SECONDS) {
 		m_OutputPorts[nPortId].ipA = 0;
@@ -862,39 +858,24 @@ void ArtNetNode::HandleDmx(void) {
 				SendDiag("1. first packet recv on this port", ARTNET_DP_LOW);
 #endif
 				m_OutputPorts[i].ipA = m_ArtNetPacket.IPAddressFrom;
-#if defined (__circle__)
-				m_OutputPorts[i].timeA = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeA = sys_time(NULL);
-#endif
+				m_OutputPorts[i].timeA = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataA, packet->Data, data_length);
-
 				sendNewData = IsDmxDataChanged(i, packet->Data, data_length);
 
 			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB == 0) {
 #ifdef SENDDIAG
 				SendDiag("2. continued transmission from the same ip (source A)", ARTNET_DP_LOW);
 #endif
-#if defined (__circle__)
-				m_OutputPorts[i].timeA = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeA = sys_time(NULL);
-#endif
+				m_OutputPorts[i].timeA = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataA, packet->Data, data_length);
-
 				sendNewData = IsDmxDataChanged(i, packet->Data, data_length);
 
 			} else if (ipA == 0 && ipB == m_ArtNetPacket.IPAddressFrom) {
 #ifdef SENDDIAG
 				SendDiag("3. continued transmission from the same ip (source B)", ARTNET_DP_LOW);
 #endif
-#if defined (__circle__)
-				m_OutputPorts[i].timeB = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeB = sys_time(NULL);
-#endif
+				m_OutputPorts[i].timeB = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataB, packet->Data, data_length);
-
 				sendNewData = IsDmxDataChanged(i, packet->Data, data_length);
 
 			} else if (ipA != m_ArtNetPacket.IPAddressFrom && ipB == 0) {
@@ -902,57 +883,33 @@ void ArtNetNode::HandleDmx(void) {
 				SendDiag("4. new source, start the merge", ARTNET_DP_LOW);
 #endif
 				m_OutputPorts[i].ipB = m_ArtNetPacket.IPAddressFrom;
-#if defined (__circle__)
-				m_OutputPorts[i].timeB = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeB = sys_time(NULL);
-#endif
+				m_OutputPorts[i].timeB = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataB, packet->Data, data_length);
-
-				// merge, newest data is port B
 				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataB, data_length);
 
-			} else if (ipA == 0 && ipB == m_ArtNetPacket.IPAddressFrom) {
+			} else if (ipA == 0 && ipB != m_ArtNetPacket.IPAddressFrom) {
 #ifdef SENDDIAG
 				SendDiag("5. new source, start the merge", ARTNET_DP_LOW);
 #endif
 				m_OutputPorts[i].ipA = m_ArtNetPacket.IPAddressFrom;
-#if defined (__circle__)
-				m_OutputPorts[i].timeB = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeB = sys_time(NULL);
-#endif
-
-				memcpy(&m_OutputPorts[i].dataB, packet->Data, data_length);
-				// merge, newest data is port A
+				m_OutputPorts[i].timeA = m_nCurrentPacketTime;
+				memcpy(&m_OutputPorts[i].dataA, packet->Data, data_length);
 				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataA, data_length);
 
 			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB != m_ArtNetPacket.IPAddressFrom) {
 #ifdef SENDDIAG
 				SendDiag("6. continue merge", ARTNET_DP_LOW);
 #endif
-#if defined (__circle__)
-				m_OutputPorts[i].timeA = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeA = sys_time(NULL);
-#endif
-
+				m_OutputPorts[i].timeA = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataA, packet->Data, data_length);
-				// merge, newest data is port A
 				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataA, data_length);
 
 			} else if (ipA != m_ArtNetPacket.IPAddressFrom && ipB == m_ArtNetPacket.IPAddressFrom) {
 #ifdef SENDDIAG
 				SendDiag("7. continue merge", ARTNET_DP_LOW);
 #endif
-#if defined (__circle__)
-				m_OutputPorts[i].timeB = CTimer::Get()->GetTime();
-#else
-				m_OutputPorts[i].timeB = sys_time(NULL);
-#endif
-
+				m_OutputPorts[i].timeB = m_nCurrentPacketTime;
 				memcpy(&m_OutputPorts[i].dataB, packet->Data, data_length);
-				// merge, newest data is port B
 				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataB, data_length);
 
 			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB == m_ArtNetPacket.IPAddressFrom) {
