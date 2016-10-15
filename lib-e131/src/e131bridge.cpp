@@ -27,6 +27,8 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include <stdio.h>
+
 #include "e131.h"
 #include "e131bridge.h"
 #include "lightset.h"
@@ -35,7 +37,7 @@
 #include "util.h"
 #include "sys_time.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x06 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x07 };	///<
 static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 #define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
@@ -251,7 +253,55 @@ const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
  *
  */
 void E131Bridge::HandleDmx(void) {
-	if (m_E131Packet.E131.FrameLayer.Priority < m_State.nPriority) {
+	const uint8_t *p = &m_E131Packet.E131.DMPLayer.PropertyValues[1];
+	const uint16_t slots = SWAP_UINT16(m_E131Packet.E131.DMPLayer.PropertyValueCount) - (uint16_t)1;
+	const uint32_t ipA = m_OutputPort.sourceA.ip;
+	const uint32_t ipB = m_OutputPort.sourceB.ip;
+	struct TSource *pSourceA = &m_OutputPort.sourceA;
+	struct TSource *pSourceB = &m_OutputPort.sourceB;
+	const bool isSourceA = isIpCidMatch(pSourceA);
+	const bool isSourceB = isIpCidMatch(pSourceB);
+
+	bool sendNewData = false;
+
+	// 6.9.2 Sequence Numbering
+	// Having first received a packet with sequence number A, a second packet with sequence number B
+	// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
+	// the packet containing sequence number B shall be deemed out of sequence and discarded
+	if (isSourceA) {
+		const int8_t diff = (int8_t) (m_E131Packet.E131.FrameLayer.SequenceNumber - pSourceA->sequenceNumber);
+		pSourceA->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
+		if ((diff <= (int8_t) 0) && (diff > (int8_t) -20)) {
+			return;
+		}
+	} else if (isSourceB) {
+		const int8_t diff = (int8_t) (m_E131Packet.E131.FrameLayer.SequenceNumber - pSourceB->sequenceNumber);
+		pSourceB->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
+		if ((diff <= (int8_t) 0) && (diff > (int8_t) -20)) {
+			return;
+		}
+	}
+
+	// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
+	// server preview applications and shall not be used to generate live output.
+	if ((m_E131Packet.E131.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
+		return;
+	}
+
+	// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
+	// Any property values in these packets shall be ignored.
+	if ((m_E131Packet.E131.FrameLayer.Options & E131_OPTIONS_MASK_STREAM_TERMINATED) != 0) {
+		if (isSourceA || isSourceB) {
+			SetNetworkDataLossCondition();
+		}
+		return;
+	}
+
+	if (m_State.IsMergeMode) {
+		CheckMergeTimeouts();
+	}
+
+	if (m_E131Packet.E131.FrameLayer.Priority < m_State.nPriority ){
 		if (!IsPriorityTimeOut()) {
 			return;
 		}
@@ -263,35 +313,6 @@ void E131Bridge::HandleDmx(void) {
 		m_State.nPriority = m_E131Packet.E131.FrameLayer.Priority;
 	}
 
-	if ((m_E131Packet.E131.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
-		// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
-		// server preview applications and shall not be used to generate live output.
-		return;
-	} else if ((m_E131Packet.E131.FrameLayer.Options & E131_OPTIONS_MASK_STREAM_TERMINATED) != 0) {
-		// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
-		// Any property values in these packets shall be ignored.
-		SetNetworkDataLossCondition();
-		return;
-	}
-
-	uint8_t *p = m_E131Packet.E131.DMPLayer.PropertyValues;
-	uint16_t slots = SWAP_UINT16(m_E131Packet.E131.DMPLayer.PropertyValueCount);
-	// Skip DMX Start Code
-	p++;
-	slots--;
-
-	const uint32_t ipA = m_OutputPort.sourceA.ip;
-	const uint32_t ipB = m_OutputPort.sourceB.ip;
-
-	struct TSource *pSourceA = &m_OutputPort.sourceA;
-	struct TSource *pSourceB = &m_OutputPort.sourceB;
-
-	bool sendNewData = false;
-
-	if (m_State.IsMergeMode) {
-		CheckMergeTimeouts();
-	}
-
 	if ((ipA == 0) && (ipB == 0)) {
 		//printf("1. First package from Source\n");
 		pSourceA->ip = m_E131Packet.IPAddressFrom;
@@ -301,21 +322,21 @@ void E131Bridge::HandleDmx(void) {
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
-	} else if (isIpCidMatch(pSourceA) && (ipB == 0)) {
+	} else if (isSourceA && (ipB == 0)) {
 		//printf("2. Continue package from SourceA\n");
 		pSourceA->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
 		pSourceA->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
-	} else if ((ipA == 0) && isIpCidMatch(pSourceB)) {
+	} else if ((ipA == 0) && isSourceB) {
 		//printf("3. Continue package from SourceB\n");
 		pSourceB->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
 		pSourceB->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
-	} else if ((!isIpCidMatch(pSourceA)) && (ipB == 0)) {
+	} else if (!isSourceA && (ipB == 0)) {
 		//printf("4. New ip, start merging\n");
 		pSourceB->ip = m_E131Packet.IPAddressFrom;
 		pSourceB->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
@@ -325,7 +346,7 @@ void E131Bridge::HandleDmx(void) {
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceB->data, slots);
 
-	} else if ((ipA == 0) && (!isIpCidMatch(pSourceB))) {
+	} else if ((ipA == 0) && !isSourceB) {
 		//printf("5. New ip, start merging\n");
 		pSourceA->ip = m_E131Packet.IPAddressFrom;
 		pSourceA->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
@@ -335,25 +356,25 @@ void E131Bridge::HandleDmx(void) {
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceA->data, slots);
 
-	} else if (isIpCidMatch(pSourceA) && (!isIpCidMatch(pSourceB))) {
+	} else if (isSourceA && !isSourceB) {
 		//printf("6. Continue merging\n");
 		pSourceA->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
 		pSourceA->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceA->data, slots);
 
-	} else if ((!isIpCidMatch(pSourceA)) && isIpCidMatch(pSourceB)) {
+	} else if (!isSourceA && isSourceB) {
 		//printf("7. Continue merging\n");
 		pSourceB->sequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
 		pSourceB->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceB->data, slots);
 
-	} else if (isIpCidMatch(pSourceA) && isIpCidMatch(pSourceB)) {
+	} else if (isSourceA && isSourceB) {
 		//printf("8. Source matches both buffers, this shouldn't be happening!\n");
 		return;
 
-	} else if ((!isIpCidMatch(pSourceA)) && (!isIpCidMatch(pSourceB))) {
+	} else if (!isSourceA && !isSourceB) {
 		//printf("9. More than two sources, discarding data\n");
 		return;
 
@@ -382,18 +403,6 @@ const bool E131Bridge::IsValidPackage(void) {
 	}
 
 	// Frame layer
-
-	// 6.9.2 Sequence Numbering
-	// Having first received a packet with sequence number A, a second packet with sequence number B
-	// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
-	// the packet containing sequence number B shall be deemed out of sequence and discarded
-//	const int8_t diff = (int8_t)(m_E131Packet.E131.FrameLayer.SequenceNumber - m_nLastSequenceNumber);
-//
-//	m_nLastSequenceNumber = m_E131Packet.E131.FrameLayer.SequenceNumber;
-//
-//	if ((diff <= (int8_t)0) && (diff > (int8_t)-20)) {
-//		return false;
-//	}
 
 	// 8.2 Association of Multicast Addresses and Universe
 	// Note: The identity of the universe shall be determined by the universe number in the
