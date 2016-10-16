@@ -37,7 +37,7 @@
 #include "util.h"
 #include "sys_time.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x07 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x00, 0x08 };	///<
 static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 #define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
@@ -486,4 +486,20 @@ void E131Bridge::SetNetworkDataLossCondition(void) {
 	m_State.IsMergeMode = false;
 	m_OutputPort.sourceA.ip = (uint32_t) 0;
 	m_OutputPort.sourceB.ip = (uint32_t) 0;
+}
+
+/**
+ *
+ * @return
+ */
+const TMerge E131Bridge::getMergeMode(void) {
+	return m_OutputPort.mergeMode;
+}
+
+/**
+ *
+ * @param mergeMode
+ */
+void E131Bridge::setMergeMode(TMerge mergeMode) {
+	m_OutputPort.mergeMode = mergeMode;
 }

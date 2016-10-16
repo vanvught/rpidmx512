@@ -44,6 +44,7 @@ public:
 
 	const _output_type GetOutputType(void);
 	const uint16_t GetUniverse(void);
+	const TMerge GetMergeMode(void);
 };
 
 #endif /* E131PARAMS_H_ */

@@ -26,7 +26,7 @@
 #ifndef SOFTWARE_VERSION_H_
 #define SOFTWARE_VERSION_H_
 
-static const char SOFTWARE_VERSION[] = "0.7";
+static const char SOFTWARE_VERSION[] = "0.8";
 
 /*
  * 0.1	October 2016

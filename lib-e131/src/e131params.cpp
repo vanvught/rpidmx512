@@ -32,12 +32,14 @@
 #include "e131.h"
 #include "e131params.h"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";				///< Parameters file name
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
-static const char PARAMS_OUTPUT[] ALIGNED = "output";					///<
+static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";			///< Parameters file name
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";			///<
+static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";		///<
+static const char PARAMS_OUTPUT[] ALIGNED = "output";				///<
 
 static uint16_t E131ParamsUniverse ALIGNED = E131_UNIVERSE_DEFAULT;	///<
 static _output_type E131ParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
+static TMerge E131ParamsMergeMode = E131_MERGE_HTP;					///<
 
 /**
  *
@@ -45,7 +47,7 @@ static _output_type E131ParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
  */
 static void process_line_read(const char *line) {
 	char value[8] ALIGNED;
-	uint8_t len = 3;
+	uint8_t len;
 
 	uint16_t value16;
 
@@ -55,9 +57,19 @@ static void process_line_read(const char *line) {
 		} else {
 			E131ParamsUniverse = value16;
 		}
-	} else if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
+	}
+
+	len = 3;
+	if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
 		if(memcmp(value, "mon", 3) == 0) {
 			E131ParamsOutputType = OUTPUT_TYPE_MONITOR;
+		}
+	}
+
+	len = 3;
+	if (sscan_char_p(line, PARAMS_MERGE_MODE, value, &len) == 2) {
+		if(memcmp(value, "ltp", 3) == 0) {
+			E131ParamsMergeMode = E131_MERGE_LTP;
 		}
 	}
 }
@@ -98,4 +110,12 @@ const uint16_t E131Params::GetUniverse(void) {
  */
 const _output_type E131Params::GetOutputType(void) {
 	return E131ParamsOutputType;
+}
+
+/**
+ *
+ * @return
+ */
+const TMerge E131Params::GetMergeMode(void) {
+	return E131ParamsMergeMode;
 }

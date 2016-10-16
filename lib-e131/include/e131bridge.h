@@ -86,12 +86,14 @@ public:
 	const uint16_t getUniverse(void);
 	void setUniverse(const uint16_t);
 
+	const TMerge getMergeMode(void);
+	void setMergeMode(TMerge);
+
 	int HandlePacket(void);
 
 private:
 	const bool IsValidPackage(void);
 	void SetNetworkDataLossCondition(void);
-	void CheckNetworkDataLoss(void);
 	void CheckMergeTimeouts(void);
 	const bool IsPriorityTimeOut(void);
 	const bool isIpCidMatch(const struct TSource *);

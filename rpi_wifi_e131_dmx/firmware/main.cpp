@@ -148,6 +148,7 @@ void notmain(void) {
 	DMXMonitor monitor;
 
 	bridge.setUniverse(universe);
+	bridge.setMergeMode(e131params.GetMergeMode());
 
 	if (output_type == OUTPUT_TYPE_MONITOR) {
 		bridge.SetOutput(&monitor);
@@ -175,6 +176,7 @@ void notmain(void) {
 	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
 	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" Universe     : %d\n", bridge.getUniverse());
+	printf(" Merge mode   : %s\n", bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
 	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip));
 	printf(" Unicast ip   : " IPSTR "\n\n", IP2STR(ip_config.ip.addr));
 
