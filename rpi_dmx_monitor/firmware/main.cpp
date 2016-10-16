@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../../lib-dmxmonitor/include/dmxmonitor.h"
+#include "dmxmonitor.h"
 #include "hardware.h"
 #include "led.h"
 #include "dmx.h"
