@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "../../lib-ws28xx/include/ws28xx.h"
+#include "ws28xx.h"
 #include "lightset.h"
 
 class SPISend: public LightSet {

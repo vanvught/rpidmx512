@@ -7,7 +7,8 @@
 #define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 
 typedef enum ws28xxx_type{
-	WS2801,
+	WS2801 = 0,
+	WS2811,
 	WS2812,
 	WS2812B
 } _ws28xxx_type;

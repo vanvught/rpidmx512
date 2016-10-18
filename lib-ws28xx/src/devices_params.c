@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <devices_params.h>
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "devices_params.h"
 #include "ws28xx.h"
 #include "read_config_file.h"
 #include "sscan.h"
@@ -36,10 +36,12 @@ static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";			///< Parameters 
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";				///<
 static const char PARAMS_LED_COUNT[] ALIGNED = "led_count";				///<
 
-static const char led_types[3][8] ALIGNED = { "WS2801", "WS2812", "WS2812B" };
+#define LED_TYPES_COUNT 			4	///<
+#define LED_TYPES_MAX_NAME_LENGTH 	8	///<
+static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B" };
 
 static _ws28xxx_type devices_params_led_type = WS2801;					///<
-static uint16_t devices_params_led_count = 170;							///< 1 DMX Universe
+static uint16_t devices_params_led_count = 170;							///< 1 DMX Universe = 512 / 3
 
 /**
  *
@@ -72,26 +74,17 @@ const char *devices_params_get_led_type_string(void) {
 static void process_line_read(const char *line) {
 	uint16_t value16;
 	uint8_t len;
-	char *p_type;
+	char buffer[16] ALIGNED;
 
-	p_type = (char *)led_types[WS2801];
-	len = 6;
-	if (sscan_char_p(line, PARAMS_LED_TYPE, p_type, &len) == 2) {
-		devices_params_led_type = WS2801;
-		return;
-	}
-
-	p_type = (char *)led_types[WS2812];
-	len = 6;
-	if (sscan_char_p(line, PARAMS_LED_TYPE, p_type, &len) == 2) {
-		devices_params_led_type = WS2812;
-		return;
-	}
-
-	p_type = (char *)led_types[WS2812B];
 	len = 7;
-	if (sscan_char_p(line, PARAMS_LED_TYPE, p_type, &len) == 2) {
-		devices_params_led_type = WS2812B;
+	if (sscan_char_p(line, PARAMS_LED_TYPE, buffer, &len) == 2) {
+		uint8_t i;
+		for (i = 0; i < (uint8_t) LED_TYPES_COUNT; i++) {
+			if (memcmp(buffer, led_types[i], len) == 0) {
+				devices_params_led_type = i;
+				return;
+			}
+		}
 		return;
 	}
 
