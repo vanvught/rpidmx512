@@ -1,5 +1,6 @@
 /**
- * @file sniffer_params.h
+ * @file software_version.h
+ *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef SNIFFER_PARAMS_H_
-#define SNIFFER_PARAMS_H_
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-extern void sniffer_params_init(void);
-extern const uint8_t sniffer_params_get_interface(void);
-extern const uint32_t sniffer_params_get_baudrate(void);
+static const char SOFTWARE_VERSION[] = "1.1";
 
-#endif /* SNIFFER_PARAMS_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

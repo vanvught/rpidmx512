@@ -55,6 +55,7 @@ void sniffer_midi(void) {
 		const float sec = (float) delta_us / (float) 1000000;
 		const int ipart = (int) sec;
 		float fpart = (sec - (float) ipart) * (float) 100;
+
 		printf("%02d:%02d.%02d  ",(int) ((int)sec % hour) / minute, (int) sec % minute, (int)fpart);
 
 		console_puthex(midi_message->type);
@@ -183,8 +184,7 @@ void sniffer_init(void) {
 	//                          1234567890123456789012345678901234567890
 	const char header_line[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
 
-	console_set_bg_color(CONSOLE_WHITE);
-	console_set_fg_color(CONSOLE_BLACK);
+	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
 
 	console_set_cursor(0, 3);
 
@@ -194,8 +194,7 @@ void sniffer_init(void) {
 		(void) console_putc((int) ' ');
 	}
 
-	console_set_bg_color(CONSOLE_BLACK);
-	console_set_fg_color(CONSOLE_WHITE);
+	console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_WHITE);
 
 	console_set_top_row(4);
 

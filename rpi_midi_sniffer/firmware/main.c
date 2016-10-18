@@ -27,13 +27,14 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "console.h"
 #include "led.h"
 #include "midi.h"
 #include "monitor.h"
 #include "sniffer.h"
 #include "sniffer_params.h"
 
-#include "console.h"
+#include "software_version.h"
 
 // Poll table
 extern void midi_poll(void);
@@ -89,7 +90,7 @@ void notmain(void) {
 	midi_init();
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("MIDI Sniffer, baudrate : %d, interface : %s", (int)midi_get_baudrate(), midi_get_interface_description());
+	printf("MIDI Sniffer, baudrate : %d, interface : %s [V%s]", (int)midi_get_baudrate(), midi_get_interface_description(), SOFTWARE_VERSION);
 
 	sniffer_init();
 

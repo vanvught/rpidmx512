@@ -44,7 +44,7 @@ static uint8_t midi_interface = 1;	///< UART
  *
  * @return
  */
-uint8_t sniffer_params_get_interface(void) {
+const uint8_t sniffer_params_get_interface(void) {
 	return midi_interface;
 }
 
@@ -52,7 +52,7 @@ uint8_t sniffer_params_get_interface(void) {
  *
  * @return
  */
-uint32_t sniffer_params_get_baudrate(void) {
+const uint32_t sniffer_params_get_baudrate(void) {
 	return midi_baudrate;
 }
 
@@ -79,7 +79,7 @@ static void process_line_read(const char *line) {
 
 
 void sniffer_params_init(void) {
-	read_config_file(PARAMS_FILE_NAME, &process_line_read);
+	(void) read_config_file(PARAMS_FILE_NAME, &process_line_read);
 
 	midi_set_interface(midi_interface);
 	midi_set_baudrate(midi_baudrate);

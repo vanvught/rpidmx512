@@ -44,7 +44,7 @@ struct _drum_kits {			// Channel 10
 	{ 49, "Classical Kit"  }
 };
 
-static const char instrument_names[128][32] __attribute__((aligned(4))) = {
+static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 	"Grand Piano", "Brite Piano", "Electronic Grand Piano", "Honky Tonk Piano", "Electronic Piano 1", "Electronic Piano 2", "Harpsichord", "Clavinet",	//   1-  8 Pianoforte
 	"Celesta", "Glocken", "MusicBox", "Vibes", "Marimba", "Xylophone", "Tubular Bells", "Dulcimer", 													//   9- 16 Chromatic percussion
 	"Drawbar Organ", "Percussive Organ", "Rock Organ", "Church Organ", "Reed Organ", "Accordion", "Harmonica", "Tango Accordion",						//  17- 24 Organ
@@ -68,7 +68,7 @@ static const char instrument_names[128][32] __attribute__((aligned(4))) = {
  * @param number
  * @return
  */
-const char *midi_description_get_drum_kit_name(uint8_t number) {
+/*@observer@*/ const char *midi_description_get_drum_kit_name(uint8_t number) {
 	const uint8_t array_length = sizeof(drum_kits) / sizeof(drum_kits[0]);
 	uint8_t i;
 
@@ -81,6 +81,9 @@ const char *midi_description_get_drum_kit_name(uint8_t number) {
 	return (const char *) "Percussion";
 }
 
+/**
+ *
+ */
 const char *midi_description_get_instrument_name(uint8_t number) {
 	if (number > 127) {
 		return (const char *) "";
@@ -242,13 +245,19 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
+/**
+ *
+ * @param key_number
+ * @return
+ */
 /*@observer@*/const char *midi_description_get_key_name(uint8_t key_number) {
+	int	note = (int)(key_number % 12);
+	int	octave = (int)(key_number / 12);
+
+
 	if (key_number > 127) {
 		return "";
 	}
-
-	int	note = key_number % 12;
-	int	octave = key_number / 12;
 
 	sprintf(key_name, "%s%d", key_names[note], octave);
 
