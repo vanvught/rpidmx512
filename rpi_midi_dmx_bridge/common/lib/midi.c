@@ -156,7 +156,7 @@ static void reset_input(void) {
 void midi_init(void) {
 	uint32_t i = 0;
 
-	for (i = 0 ; i < MIDI_RX_BUFFER_INDEX_ENTRIES ; i++) {
+	for (i = 0; i < (uint32_t) MIDI_RX_BUFFER_INDEX_ENTRIES; i++) {
 		midi_rx_buffer[i].data = (uint8_t) 0;
 		midi_rx_buffer[i].timestamp = (uint32_t) 0;
 	}
@@ -623,7 +623,7 @@ bool midi_read(void) {
  * @return
  */
 bool midi_read_channel(uint8_t channel) {
-	if (channel >= MIDI_CHANNEL_OFF)
+	if (channel >= (uint8_t) MIDI_CHANNEL_OFF)
 		return false; // MIDI Input disabled.
 
 	if (!parse())
