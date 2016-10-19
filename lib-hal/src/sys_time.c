@@ -28,6 +28,7 @@
 
 #include "bcm2835.h"
 #include "arm/synchronize.h"
+
 #include "mcp7941x.h"
 
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
@@ -66,7 +67,7 @@ void sys_time_init(void) {
 	tmbuf.tm_sec = tm_rtc.tm_sec;
 	tmbuf.tm_mday = tm_rtc.tm_mday;
 	tmbuf.tm_wday = tm_rtc.tm_mday;
-	tmbuf.tm_mon = tm_rtc.tm_mon;
+	tmbuf.tm_mon = tm_rtc.tm_mon + 1;	// RTC month starts with 0, mktime month start with 1
 	tmbuf.tm_year = tm_rtc.tm_year;
 	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 

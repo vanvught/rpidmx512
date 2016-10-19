@@ -48,9 +48,10 @@ struct _hardware_led {
 	void (*set)(const int);		///< Pointer to function for LED ACCT on/off
 }static _hardware_led_f = { led_init, led_set };
 
-#define MAX_NAME_LENGTH 20		///< Length for model name
+#define MAX_NAME_LENGTH 24		///< Length for model name
 
 ///< Reference http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
+///< Reference http://elinux.org/RPi_HardwareHistory
 struct _hardware_revision_code {
 	const uint32_t value;
 	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
@@ -61,19 +62,23 @@ struct _hardware_revision_code {
 		{ 0x000004, "Model B R2 256MB" },
 		{ 0x000005, "Model B R2 256MB" },
 		{ 0x000006, "Model B R2 256MB" },
-		{ 0x000007, "Model A 256MB" },
-		{ 0x000008, "Model A 256MB" },
-		{ 0x000009, "Model A 256MB" },
+		{ 0x000007, "Model A R2 256MB" },
+		{ 0x000008, "Model A R2 256MB" },
+		{ 0x000009, "Model A R2 256MB" },
 		{ 0x00000d, "Model B R2 512MB" },
 		{ 0x00000e, "Model B R2 512MB" },
 		{ 0x00000f, "Model B R2 512MB" },
 		{ 0x000010, "Model B+ 512MB" },
 		{ 0x000011, "Compute Module 512MB" },
-		{ 0x000012, "Model A+ 256MB" },
-		{ 0xa01041, "Pi 2 Model B 1GB" },
-		{ 0xa02082, "Pi 3 Model B 1GB" },
-		{ 0xa21041, "Pi 2 Model B 1GB" },
-		{ 0x900092, "PiZero 512MB" }
+		{ 0x000012, "Model A+ 256MB V1.1" },
+		{ 0x900021, "Model A+ 512MB" },
+		{ 0xa01041, "Pi 2 Model B 1GB V1.1" },
+		{ 0xa21041, "Pi 2 Model B 1GB V1.1" },
+		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },
+		{ 0x900092, "PiZero 512MB V1.2" },
+		{ 0x900093, "PiZero 512MB V1.3" },
+		{ 0xa22082, "Pi 3 Model B 1GB V1.2" },
+		{ 0xa02082, "Pi 3 Model B 1GB V1.2" }
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
@@ -184,12 +189,13 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	struct rtc_time tm_rtc;
 	struct tm tmbuf;
 
+
 	tm_rtc.tm_hour = (int)tm_hw->hour;
 	tm_rtc.tm_min = (int)tm_hw->minute;
 	tm_rtc.tm_sec = (int)tm_hw->second;
 	tm_rtc.tm_mday = (int)tm_hw->day;
 	//tm_rtc.tm_wday = // TODO
-	tm_rtc.tm_mon = (int)tm_hw->month;
+	tm_rtc.tm_mon = (int)tm_hw->month - 1;
 	tm_rtc.tm_year = (int)tm_hw->year - 2000;	// RTC stores 2 digits only
 
 	if (mcp7941x_start(0x00) != MCP7941X_ERROR) {
@@ -201,7 +207,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	tmbuf.tm_sec = tm_rtc.tm_sec;
 	tmbuf.tm_mday = tm_rtc.tm_mday;
 	tmbuf.tm_wday = tm_rtc.tm_wday;
-	tmbuf.tm_mon = tm_rtc.tm_mon;
+	tmbuf.tm_mon = (int)tm_hw->month;
 	tmbuf.tm_year = tm_rtc.tm_year;
 	tmbuf.tm_isdst = 0;
 

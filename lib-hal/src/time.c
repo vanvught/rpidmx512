@@ -90,7 +90,7 @@ struct tm *localtime(const time_t *pTime) {
 		nMonth++;
 	}
 
-	Tm.tm_mon = nMonth;
+	Tm.tm_mon = nMonth + 1; // Bug fix 2016-10-19
 	Tm.tm_mday = Time + 1;
 
 	return &Tm;
