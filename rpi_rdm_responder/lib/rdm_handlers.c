@@ -734,7 +734,7 @@ static void rdm_get_real_time_clock(uint16_t sub_device) {
 	rdm_response->param_data_length = 7;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 7;
 
-	const uint16_t year = local_time->tm_year + 2000;
+	const uint16_t year = local_time->tm_year + 1900;	// Bug fix 2016-10-19
 
 	rdm_response->param_data[0] = (uint8_t)(year >> 8);
 	rdm_response->param_data[1] = (uint8_t)(year);

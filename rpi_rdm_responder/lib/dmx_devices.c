@@ -94,9 +94,13 @@ static void add_connected_device(const char *line) {
 		uint8_t pixel_count = 0;
 		int rc = DMX_DEVICE_CONFIG_ERROR;
 
-		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address, &spi_speed, &pixel_count);
+		memset(device_name, 0, sizeof(device_name));
+
 #ifdef DEBUG
 		printf("%s", line);
+#endif
+		rc = sscan_spi(line, &chip_select, device_name, &len, &slave_address, &dmx_start_address, &spi_speed, &pixel_count);
+#ifdef DEBUG
 		printf("%d, {%d (%s)[%d] %d %d %ld:%d}\n", rc, chip_select, device_name, len, slave_address, dmx_start_address, spi_speed, pixel_count);
 #endif
 		if ((rc >= 5) && (len != 0)) {
