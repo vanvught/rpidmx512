@@ -33,6 +33,8 @@
 #include "monitor.h"
 #include "led.h"
 
+#include "software_version.h"
+
 extern void dmx_init(void);
 
 // poll table
@@ -94,7 +96,7 @@ void notmain(void) {
 	rdm_device_info_init();
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("RDM Responder / DMX Slave, Devices connected : %d\n", dmx_devices_get_devices_connected());
+	printf("RDM Responder / DMX Slave, Devices connected : %d [V%s]\n", dmx_devices_get_devices_connected(), SOFTWARE_VERSION);
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0],
 			uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
