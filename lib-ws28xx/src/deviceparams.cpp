@@ -1,5 +1,5 @@
 /**
- * @file devices_params.c
+ * @file devicesparams.cpp
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,9 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "devices_params.h"
+#include "deviceparams.h"
 #include "ws28xx.h"
 #include "read_config_file.h"
 #include "sscan.h"
@@ -45,30 +44,6 @@ static uint16_t devices_params_led_count = 170;							///< 1 DMX Universe = 512 
 
 /**
  *
- * @return
- */
-const _ws28xxx_type devices_params_get_led_type(void) {
-	return devices_params_led_type;
-}
-
-/**
- *
- * @return
- */
-const uint16_t devices_params_get_led_count(void) {
-	return devices_params_led_count;
-}
-
-/**
- *
- * @return
- */
-const char *devices_params_get_led_type_string(void) {
-	return led_types[devices_params_led_type];
-}
-
-/**
- *
  * @param line
  */
 static void process_line_read(const char *line) {
@@ -79,9 +54,9 @@ static void process_line_read(const char *line) {
 	len = 7;
 	if (sscan_char_p(line, PARAMS_LED_TYPE, buffer, &len) == 2) {
 		uint8_t i;
-		for (i = 0; i < (uint8_t) LED_TYPES_COUNT; i++) {
+		for (i = 0; i < LED_TYPES_COUNT; i++) {
 			if (memcmp(buffer, led_types[i], len) == 0) {
-				devices_params_led_type = i;
+				devices_params_led_type = (_ws28xxx_type) i;
 				return;
 			}
 		}
@@ -97,8 +72,46 @@ static void process_line_read(const char *line) {
 
 /**
  *
+ */
+DeviceParams::DeviceParams(void) {
+	devices_params_led_type = WS2801;
+	devices_params_led_count = 170;
+}
+
+/**
+ *
+ */
+DeviceParams::~DeviceParams(void) {
+}
+
+/**
+ *
  * @return
  */
-const bool devices_params_init(void) {
+bool DeviceParams::Load(void) {
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+}
+
+/**
+ *
+ * @return
+ */
+const _ws28xxx_type DeviceParams::GetLedType(void) {
+	return devices_params_led_type;
+}
+
+/**
+ *
+ * @return
+ */
+const uint16_t DeviceParams::GetLedCount(void) {
+	return devices_params_led_count;
+}
+
+/**
+ *
+ * @return
+ */
+const char* DeviceParams::GetLedTypeString(void) {
+	return led_types[devices_params_led_type];
 }

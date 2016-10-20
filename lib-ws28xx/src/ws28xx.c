@@ -44,7 +44,7 @@ const _ws28xxx_type ws28xx_get_led_type(void) {
  * @param value
  */
 static void set_color_ws281x(uint16_t offset, const uint8_t value) {
-	//const uint8_t high_code = led_type == WS2812 ? WS2812_HIGH_CODE : WS2812B_HIGH_CODE;
+	assert(led_type != WS2801);
 	uint8_t mask;
 
 	assert(offset + 7 < sizeof(spi_buffer));

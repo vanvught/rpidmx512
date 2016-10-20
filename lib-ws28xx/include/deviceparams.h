@@ -1,5 +1,5 @@
 /**
- * @file devices_params.h
+ * @file devicesparams.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICES_PARAMS_H_
-#define DEVICES_PARAMS_H_
+#ifndef DEVICEPARAMS_H_
+#define DEVICEPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ws28xx.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class DeviceParams {
+public:
+	DeviceParams(void);
+	~DeviceParams(void);
 
-extern const bool devices_params_init(void);
+	bool Load(void);
 
-extern const _ws28xxx_type devices_params_get_led_type(void);
-extern const uint16_t devices_params_get_led_count(void);
+	const _ws28xxx_type GetLedType(void);
+	const uint16_t GetLedCount(void);
 
-extern /*@shared@*/const char *devices_params_get_led_type_string(void) ASSUME_ALIGNED;
+	const char *GetLedTypeString(void) ASSUME_ALIGNED;
+};
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* DEVICES_PARAMS_H_ */
+#endif /* DEVICEPARAMS_H_ */
