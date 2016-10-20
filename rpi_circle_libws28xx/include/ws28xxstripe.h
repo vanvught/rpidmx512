@@ -37,6 +37,7 @@
 
 enum TWS28XXType {
 	WS2801,
+	WS2811,
 	WS2812,
 	WS2812B
 };
@@ -63,7 +64,7 @@ public:
 	boolean IsUpdating (void) const;
 
 private:
-	void SetColorWS2812 (unsigned nOffset, u8 nValue);
+	void SetColorWS28xx (unsigned nOffset, u8 nValue);
 
 	void SPICompletionRoutine (boolean bStatus);
 	static void SPICompletionStub (boolean bStatus, void *pParam);

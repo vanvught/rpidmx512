@@ -47,30 +47,27 @@ CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Ty
 	m_bUpdating (FALSE),
 	m_SPIMaster (pInterruptSystem, m_Type == WS2801 ? nClockSpeed : 6400000, 0, 0)
 {
-	assert (m_Type <= WS2812B);
-	assert (m_nLEDCount > 0);
+	assert(m_Type <= WS2812B);
+	assert(m_nLEDCount > 0);
 
 	m_nBufSize = m_nLEDCount * 3;
-	if (   m_Type == WS2812
-	    || m_Type == WS2812B)
-	{
+	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B) {
 		m_nBufSize *= 8;
 	}
-	
-	m_pBuffer = new u8[m_nBufSize];
-	assert (m_pBuffer != 0);
 
-	for (unsigned nLEDIndex = 0; nLEDIndex < m_nLEDCount; nLEDIndex++)
-	{
-		SetLED (nLEDIndex, 0, 0, 0);
+	m_pBuffer = new u8[m_nBufSize];
+	assert(m_pBuffer != 0);
+
+	for (unsigned nLEDIndex = 0; nLEDIndex < m_nLEDCount; nLEDIndex++) {
+		SetLED(nLEDIndex, 0, 0, 0);
 	}
 
 	m_pReadBuffer = new u8[m_nBufSize];
-	assert (m_pReadBuffer != 0);
+	assert(m_pReadBuffer != 0);
 
 	m_pBlackoutBuffer = new u8[m_nBufSize];
-	assert (m_pBlackoutBuffer != 0);
-	memset (m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
+	assert(m_pBlackoutBuffer != 0);
+	memset(m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
 }
 
 /**
@@ -117,28 +114,30 @@ unsigned CWS28XXStripe::GetLEDCount (void) const
  * @param nGreen
  * @param nBlue
  */
-void CWS28XXStripe::SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue)
-{
-	assert (!m_bUpdating);
+void CWS28XXStripe::SetLED(unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue) {
+	assert(!m_bUpdating);
 
-	assert (m_pBuffer != 0);
-	assert (nLEDIndex < m_nLEDCount);
+	assert(m_pBuffer != 0);
+	assert(nLEDIndex < m_nLEDCount);
 	unsigned nOffset = nLEDIndex * 3;
 
-	if (m_Type == WS2801)
-	{
-		assert (nOffset+2 < m_nBufSize);
-		m_pBuffer[nOffset]   = nRed;
-		m_pBuffer[nOffset+1] = nGreen;
-		m_pBuffer[nOffset+2] = nBlue;
-	}
-	else
-	{
+	if (m_Type == WS2801) {
+		assert(nOffset + 2 < m_nBufSize);
+		m_pBuffer[nOffset] = nRed;
+		m_pBuffer[nOffset + 1] = nGreen;
+		m_pBuffer[nOffset + 2] = nBlue;
+	} else if (m_Type == WS2811) {
 		nOffset *= 8;
 
-		SetColorWS2812 (nOffset,    nGreen);
-		SetColorWS2812 (nOffset+8,  nRed);
-		SetColorWS2812 (nOffset+16, nBlue);
+		SetColorWS28xx(nOffset, nRed);
+		SetColorWS28xx(nOffset + 8, nGreen);
+		SetColorWS28xx(nOffset + 16, nBlue);
+	} else {
+		nOffset *= 8;
+
+		SetColorWS28xx(nOffset, nGreen);
+		SetColorWS28xx(nOffset + 8, nRed);
+		SetColorWS28xx(nOffset + 16, nBlue);
 	}
 }
 
@@ -186,21 +185,16 @@ boolean CWS28XXStripe::IsUpdating (void) const
  * @param nOffset
  * @param nValue
  */
-void CWS28XXStripe::SetColorWS2812 (unsigned nOffset, u8 nValue)
-{
-	assert (m_Type != WS2801);
-	u8 nHighCode = m_Type == WS2812 ? 0xF0 : 0xF8;
+void CWS28XXStripe::SetColorWS28xx(unsigned nOffset, u8 nValue) {
+	assert(m_Type != WS2801);
+	u8 nHighCode = m_Type == WS2812B ? 0xF8 : 0xF0;
 
-	assert (nOffset+7 < m_nBufSize);
+	assert(nOffset + 7 < m_nBufSize);
 
-	for (u8 nMask = 0x80; nMask != 0; nMask >>= 1)
-	{
-		if (nValue & nMask)
-		{
+	for (u8 nMask = 0x80; nMask != 0; nMask >>= 1) {
+		if (nValue & nMask) {
 			m_pBuffer[nOffset] = nHighCode;
-		}
-		else
-		{
+		} else {
 			m_pBuffer[nOffset] = 0xC0;
 		}
 
