@@ -29,6 +29,7 @@
 
 #include <circle/interrupt.h>
 #include <circle/string.h>
+#include <circle/util.h>
 #include <circle/machineinfo.h>
 #include <circle/net/netsubsystem.h>
 #include <circle/net/socket.h>
@@ -55,7 +56,7 @@
 
 static const char FromKernel[] = "kernel";
 
-static const char sLedTypes[3][8] = { "WS2801", "WS2812", "WS2812B" };
+static const char sLedTypes[4][8] = { "WS2801", "WS2811", "WS2812", "WS2812B" };
 
 enum TOuputType
 {
@@ -251,6 +252,10 @@ boolean CKernel::Configure (void)
 			if (strcmp(pType, sLedTypes[WS2801]) == 0)
 			{
 				m_SPI.SetLEDType(WS2801);
+			}
+			else if (strcmp(pType, sLedTypes[WS2811]) == 0)
+			{
+				m_SPI.SetLEDType(WS2811);
 			}
 			else if (strcmp(pType, sLedTypes[WS2812]) == 0)
 			{
