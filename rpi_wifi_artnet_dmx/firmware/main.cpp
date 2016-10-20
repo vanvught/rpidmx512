@@ -25,7 +25,7 @@
 
 #include <ap_params.h>
 #include <artnetparams.h>
-#include <devices_params.h>
+#include <deviceparams.h>
 #include <dmxparams.h>
 #include <fota.h>
 #include <fota_params.h>
@@ -59,6 +59,7 @@ void notmain(void) {
 	struct ip_info ip_config;
 	ArtNetParams artnetparams;
 	DMXParams dmxparams;
+	DeviceParams deviceparms;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -71,7 +72,7 @@ void notmain(void) {
 	output_type = artnetparams.GetOutputType();
 
 	if (output_type == OUTPUT_TYPE_SPI) {
-		devices_params_init();
+		(void) deviceparms.Load();
 	} else {
 		output_type = OUTPUT_TYPE_DMX;
 		(void) dmxparams.Load();
@@ -174,8 +175,8 @@ void notmain(void) {
 		dmx.SetPeriodTime(period);
 
 	} else if (output_type == OUTPUT_TYPE_SPI) {
-		spi.SetLEDCount(devices_params_get_led_count());
-		spi.SetLEDType(devices_params_get_led_type());
+		spi.SetLEDCount(deviceparms.GetLedCount());
+		spi.SetLEDType(deviceparms.GetLedType());
 
 		node.SetOutput(&spi);
 		node.SetDirectUpdate(true);
@@ -219,7 +220,7 @@ void notmain(void) {
 		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
 	} else if (output_type == OUTPUT_TYPE_SPI) {
 		printf("Led stripe parameters\n");
-		printf(" Type         : %s\n", devices_params_get_led_type_string());
+		printf(" Type         : %s\n", deviceparms.GetLedTypeString());
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
