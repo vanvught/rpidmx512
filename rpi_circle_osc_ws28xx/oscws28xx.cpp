@@ -47,7 +47,7 @@
 
 static const char FromOscWS28xx[] = "oscws28xx";
 
-static const char sLedTypes[3][8] = { "WS2801", "WS2812", "WS2812B" };
+static const char sLedTypes[4][8] = { "WS2801", "WS2811", "WS2812", "WS2812B" };
 
 COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CInterruptSystem	*pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
 :	OSCServer (pNetSubSystem, nLocalPort),
@@ -74,6 +74,8 @@ COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CInterruptSystem	*pInterru
 		} else {
 			if (strcmp(pType, sLedTypes[WS2801]) == 0) {
 				m_LEDType = WS2801;
+			} else if (strcmp(pType, sLedTypes[WS2811]) == 0) {
+				m_LEDType = WS2811;
 			} else if (strcmp(pType, sLedTypes[WS2812]) == 0) {
 				m_LEDType = WS2812;
 			} else if (strcmp(pType, sLedTypes[WS2812B]) == 0) {
