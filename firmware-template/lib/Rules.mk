@@ -5,7 +5,7 @@ INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
-COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
+COPS_COMMON = -DBARE_METAL $(DEFINES) -DNDEBUG
 COPS_COMMON += $(INCLUDES)
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables
 

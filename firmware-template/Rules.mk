@@ -48,7 +48,6 @@ COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
 LIB6 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-#LIB += -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv6zk/arm1176jzf-s/hardfp/vfp
 LIB6 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
 LIB6 += -L../lib-hal/lib
 LIB6 += -L../lib-fb/lib
@@ -58,7 +57,6 @@ LIB6 += -L../lib-bob/lib
 LIB6 += -L../lib-bcm2835/lib
 
 LIB7 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-#LIB7 += -L/opt/gnuarm-hardfp/arm-none-eabi/lib/armv7-a/cortex-a7/hardfp/vfpv4
 LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
 LIB7 += -L../lib-hal/lib7
 LIB7 += -L../lib-fb/lib7
