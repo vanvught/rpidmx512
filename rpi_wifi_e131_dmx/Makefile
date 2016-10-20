@@ -1,5 +1,5 @@
 #
-DEFINES = E131_DMX
+DEFINES = E131_DMX NDEBUG
 #
 LIBS = monitor e131 dmx dmxmonitor lightset esp8266 utils c++
 #
