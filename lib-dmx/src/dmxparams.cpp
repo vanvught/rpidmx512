@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#include <dmxparams.h>
+#include "dmxparams.h"
 
 #include "read_config_file.h"
 #include "sscan.h"
