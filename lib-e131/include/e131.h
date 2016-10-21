@@ -29,10 +29,6 @@
 
 #include <stdint.h>
 
-#if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
-
 /**
  * The maximum length of the DMX data
  */
@@ -78,64 +74,55 @@ enum TMerge {
  */
 #define E131_UNIVERSE_DEFAULT	1		///<
 #define E131_UNIVERSE_MAX		63999	///<
-
 /**
- * Root Layer (See Section 5)
+ * BSR E1.31 — 201x / Revision 1.15 02 Jan 2016
+ * 9.1 Association of Multicast Addresses and Universe
+ *
+ * Universe numbers between 64000 and 65535, excluding universe 64214 (which is used for E1.31 Universe Discovery),
+ * are reserved for future use and shall not be used by E1.31 devices except as specified in future standards
+ * designed to coexist with E1.31 when use of these universes is called for specifically.
  */
-struct TRootLayer {
-	uint16_t PreAmbleSize;				///< Define RLP Preamble Size. Fixed 0x0010
-	uint16_t PostAmbleSize;				///< RLP Post-amble Size. Fixed 0x0000
-	uint8_t ACNPacketIdentifier[12];  	///< ACN Packet Identifier
-	uint16_t FlagsLength; 				///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
-	uint32_t Vector;					///< Identifies RLP Data as 1.31 Protocol PDU 0x00000004
-	uint8_t Cid[16];					///< Sender's CID. Sender's unique ID
-}PACKED;
+#define E131_DISCOVERY_UNIVERSE						64214			///< Universe Discovery
 
-/**
- * E1.31 Framing Layer (See Section 6)
- */
-struct TFrameLayer {
-	uint16_t FLagsLength;				///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
-	uint32_t Vector;					///< Identifies 1.31 data as DMP Protocol PDU. Fixed 0x00000002
-	uint8_t SourceName[64];				///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
-	uint8_t Priority;					///< Data priority if multiple sources. 0-200, default of 100
-	uint16_t Reserved;					///< Reserved. Transmitter Shall Send 0. Receivers Shall Ignore
-	uint8_t SequenceNumber;				///< Sequence Number. To detect duplicate or out of order packets
-	uint8_t Options;					///< Options Flags Bit. 7 = Preview_Data Bit 6 = Stream_Terminated
-	uint16_t Universe;					///< Universe Number. Identifier for a distinct stream of DMX Data
-}PACKED;
 
-/**
- * DMP Layer (See Section 7)
- */
-struct TDMPLayer {
-	uint16_t FlagsLength;				///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
-	uint8_t Vector;						///< Identifies DMP Set Property Message PDU. Fixed 0x02
-	uint8_t Type;						///< Identifies format of address and data. Fixed 0xa1
-	uint16_t FirstAddressProperty;		///< Indicates DMX START Code is at DMP address 0. Fixed 0x0000
-	uint16_t AddressIncrement;			///< Indicates each property is 1 octet 0x0001
-	uint16_t PropertyValueCount;		///< Indicates 1+ the number of slots in packet. 0x0001 -- 0x0201
-	uint8_t PropertyValues[513];		///< DMX512-A START Code + data. START Code + Data
-}PACKED;
+#define E131_MERGE_TIMEOUT_SECONDS		10							///<
+#define E131_PRIORITY_TIMEOUT_SECONDS	10							///<
 
-/**
- * The E1.31 packet
- */
-struct TE131 {
-	struct TRootLayer RootLayer;		///< E1.31 shall use the ACN Root Layer Protocol as defined in the ANSI E1.17 [ACN] “ACN Architecture” document.
-	struct TFrameLayer FrameLayer;		///<
-	struct TDMPLayer DMPLayer;			///< In DMP terms the DMX packet is treated at the DMP layer as a set property message for an array of up to 513 one-octet virtually addressed properties.
-}PACKED;
+#define E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS	10				///<
 
 /**
  *
  */
-struct TE131Packet {
-	int length;				///<
-	uint32_t IPAddressFrom;	///<
-	uint32_t IPAddressTo;	///<
-	struct TE131 E131;		///<
+enum TVectorRoot {
+	E131_VECTOR_ROOT_DATA		= 0x00000004,	///<
+	E131_VECTOR_ROOT_EXTENDED	= 0x00000008	///<
 };
 
+/**
+ *
+ */
+enum TVectorExtended {
+	E131_VECTOR_EXTENDED_SYNCHRONIZATION	= 0x00000001,	///<
+	E131_VECTOR_EXTENDED_DISCOVERY			= 0x00000002	///<
+};
+
+/**
+ *
+ */
+enum TVectorDMP {
+	E131_VECTOR_DMP_SET_PROPERTY	= 0x02			///< (Informative)
+};
+
+#define VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST 0x00000001
+
+/**
+ *
+ */
+enum TVectorData {
+	E131_VECTOR_DATA_PACKET	= 0x00000002	///<
+};
+
+#define E131_CID_LENGTH			16
+#define E131_SOURCE_NAME_LENGTH	64
 
 #endif /* E131_H_ */

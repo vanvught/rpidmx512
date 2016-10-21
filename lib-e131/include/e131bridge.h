@@ -29,20 +29,18 @@
 #include <stdint.h>
 
 #include "e131.h"
+#include "packets.h"
+
 #include "lightset.h"
-
-#include "sys_time.h"
-
-#define MERGE_TIMEOUT_SECONDS		10							///<
-#define PRIORITY_TIMEOUT_SECONDS	10							///<
 
 /**
  *
  */
 struct TE131BridgeState {
 	uint8_t nPriority;
-	bool IsNetworkDataLoss;
+	bool IsNetworkDataLoss;			///<
 	bool IsMergeMode;				///< Is the Bridge in merging mode?
+	bool IsTransmitting;			///<
 };
 
 /**
@@ -89,10 +87,20 @@ public:
 	const TMerge getMergeMode(void);
 	void setMergeMode(TMerge);
 
+	const uint8_t *GetCid(void);
+	void setCid(const uint8_t[E131_CID_LENGTH]);
+
+	const char *GetSourceName(void);
+	void setSourceName(const char[E131_SOURCE_NAME_LENGTH]);
+
 	int HandlePacket(void);
 
 private:
-	const bool IsValidPackage(void);
+	void FillDiscoveryPacket(void);
+
+	const bool IsValidRoot(void);
+	const bool IsValidDataPacket(void);
+
 	void SetNetworkDataLossCondition(void);
 	void CheckMergeTimeouts(void);
 	const bool IsPriorityTimeOut(void);
@@ -104,14 +112,17 @@ private:
 private:
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
+	uint8_t m_Cid[E131_CID_LENGTH];
+	char m_SourceName[E131_SOURCE_NAME_LENGTH];
 
 	uint32_t m_nCurrentPacketMillis;
 	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
-	struct TOutputPort		m_OutputPort;
+	struct TOutputPort m_OutputPort;
 
 	struct TE131Packet m_E131Packet;
+	struct TE131DiscoveryPacket m_E131DiscoveryPacket;
 };
 
 #endif /* E131BRIDGE_H_ */

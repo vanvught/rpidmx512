@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
 encoding//include/e131.h=UTF-8
 encoding//include/e131bridge.h=UTF-8
+encoding//include/packets.h=UTF-8
 encoding//src/e131bridge.cpp=UTF-8
