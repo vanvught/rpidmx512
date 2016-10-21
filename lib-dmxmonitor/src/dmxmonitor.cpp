@@ -65,7 +65,9 @@ void DMXMonitor::Start(void) {
  *
  */
 void DMXMonitor::Stop(void) {
-
+	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
+		console_clear_line(i);
+	}
 }
 
 /**
