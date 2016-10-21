@@ -62,6 +62,8 @@ static void data_gpio_fsel_output(void) {
 	value &= ~(7 << 15);
 	value |= BCM2835_GPIO_FSEL_OUTP << 15;
 	BCM2835_GPIO->GPFSEL2 = value;
+
+	dmb();
 }
 
 /**
@@ -80,6 +82,8 @@ static void data_gpio_fsel_input(void) {
 	value &= ~(7 << 15);
 	value |= BCM2835_GPIO_FSEL_INPT << 15;
 	BCM2835_GPIO->GPFSEL2 = value;
+
+	dmb();
 }
 
 /**
@@ -198,7 +202,6 @@ void esp8266_write_word(const uint32_t word) {
 	_write_byte(u32.u8[2]);
 	_write_byte(u32.u8[3]);
 
-
 	dmb();
 }
 
@@ -220,7 +223,6 @@ void esp8266_write_bytes(const uint8_t *data, const uint16_t len) {
 		_write_byte(d);
 		p++;
 	}
-
 
 	dmb();
 }

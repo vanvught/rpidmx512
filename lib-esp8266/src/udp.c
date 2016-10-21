@@ -30,6 +30,8 @@
 #include "esp8266.h"
 #include "esp8266_cmd.h"
 
+#include "util.h"
+
 /**
  *
  * @param port
@@ -66,27 +68,15 @@ uint16_t udp_recvfrom(const uint8_t *buffer, const uint16_t length, uint32_t *ip
 
 	esp8266_write_4bits((uint8_t)CMD_WIFI_UDP_RECEIVE);
 
-	bytes_received = esp8266_read_byte();
-	bytes_received |= (esp8266_read_byte() << 8);
+	bytes_received = esp8266_read_halfword();
 
 	if (bytes_received != 0) {
-
-		if (ip_address != NULL) {
-			*ip_address = esp8266_read_word();
-		}
-
-		if (port != NULL) {
-			*port = esp8266_read_halfword();
-		}
-
-		esp8266_read_bytes(buffer, length);
+		*ip_address = esp8266_read_word();
+		*port = esp8266_read_halfword();
+		esp8266_read_bytes(buffer, MIN(bytes_received, length));
 	} else {
-		if (ip_address != NULL) {
-			*ip_address = 0;
-		}
-		if (port != NULL) {
-			*port = 0;
-		}
+		*ip_address = 0;
+		*port = 0;
 	}
 
 	return bytes_received;
