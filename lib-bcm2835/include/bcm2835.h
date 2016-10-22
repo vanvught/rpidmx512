@@ -97,6 +97,7 @@
 #define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0x00B200)	///<
 #define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0x00B880)	///<
 #define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)	///<
+#define BCM2835_HW_RNG_BASE		(BCM2835_PERI_BASE + 0x104000)	///<
 #define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)	///<
 #define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)	///< Base Physical Address of the SPI0 registers
 #define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)	///< Base Physical Address of the PL011 registers
@@ -304,6 +305,14 @@ typedef struct {
 	__IO uint32_t WDOG;			///< 0x24
 } BCM2835_PM_WDOG_TypeDef;
 
+/// Defines for Hardware Random Generator\n
+typedef struct {
+	__IO uint32_t CTRL;		///< 0x00
+	__IO uint32_t STATUS;	///< 0x04
+	__I uint32_t DATA;		///< 0x08
+} BCM2835_HW_RNG_TypeDef;
+
+
 /// Defines for EMMC\n
 typedef struct {
 	__IO uint32_t ARG2;				///< 0x00
@@ -352,6 +361,7 @@ typedef struct {
 #define BCM2835_IRQ			((BCM2835_IRQ_TypeDef *)  BCM2835_IRQ_BASE)			///< Base register address for IRQ
 #define BCM2835_MAILBOX		((BCM2835_MAILBOX_TypeDef *) BCM2835_MAILBOX_BASE)	///< Base register address for MAILBOX
 #define BCM2835_PM_WDOG		((BCM2835_PM_WDOG_TypeDef *) BCM2835_PM_WDOG_BASE)	///< Base register address for WATCHDOG
+#define BCM2835_HW_RNG		((BCM2835_HW_RNG_TypeDef *) BCM2835_HW_RNG_BASE)	///< Base register address for HW RNG
 #define BCM2835_GPIO		((BCM2835_GPIO_TypeDef *) BCM2835_GPIO_BASE)		///< Base register address for GPIO
 #define BCM2835_SPI0		((BCM2835_SPI_TypeDef *)  BCM2835_SPI0_BASE)		///< Base register address for SPI
 #define BCM2835_PL011		((BCM2835_PL011_TypeDef *) BCM2835_PL011_BASE)		///< Base register address for PL011
