@@ -31,7 +31,9 @@
 #include "bcm2835_vc.h"
 #include "bcm2835_led.h"
 #include "bcm2835_wdog.h"
+#include "bcm2835_rng.h"
 #include "bcm2837_gpio_virt.h"
+
 #include "mcp7941x.h"
 
 #include "hardware.h"
@@ -238,6 +240,8 @@ void hardware_init(void) {
 	hardware_init_startup_micros = bcm2835_st_read();
 
 	sys_time_init();
+
+	bcm2835_rng_init();
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
 

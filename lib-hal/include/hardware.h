@@ -31,6 +31,7 @@
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
+#include "bcm2835_rng.h"
 
 struct hardware_time {
 	uint8_t second;		///< Seconds.		[0-59]
@@ -103,6 +104,14 @@ inline static void hardware_watchdog_stop(void) {
  */
 inline static void hardware_delay_us(const uint64_t usec) {
 	udelay(usec);
+}
+
+/**
+ *
+ * @return
+ */
+inline static uint32_t hardware_random_number(void) {
+	return bcm2835_rng_get_number();
 }
 
 #ifdef __cplusplus
