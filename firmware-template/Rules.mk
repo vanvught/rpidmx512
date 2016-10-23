@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-LIBS += hal ff11 emmc fb bob bcm2835 
+LIBS += hal uuid ff11 emmc fb bob bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -19,7 +19,7 @@ LIB7  = $(addprefix -L../lib-,$(LIBS))
 LIB7 := $(addsuffix /lib7, $(LIB7))
 
 # The variable for the ld -l flag 
-LDLIBS := $(addprefix -l,$(LIBS)) 
+LDLIBS := $(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
 LIBDEP = $(addprefix ../lib-,$(LIBS))
@@ -32,10 +32,6 @@ LIB7DEP := $(addsuffix .a, $(LIB7DEP))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -I../lib-bcm2835/include
-COPS_COMMON += -I../lib-bob/include
-COPS_COMMON += -I../lib-fb/include
-COPS_COMMON += -I../lib-hal/include
 COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
@@ -49,21 +45,9 @@ COPS7 += $(COPS_COMMON)
 
 LIB6 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
 LIB6 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
-LIB6 += -L../lib-hal/lib
-LIB6 += -L../lib-fb/lib
-LIB6 += -L../lib-ff11/lib
-LIB6 += -L../lib-emmc/lib
-LIB6 += -L../lib-bob/lib
-LIB6 += -L../lib-bcm2835/lib
 
 LIB7 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
 LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
-LIB7 += -L../lib-hal/lib7
-LIB7 += -L../lib-fb/lib7
-LIB7 += -L../lib-ff11/lib7
-LIB7 += -L../lib-emmc/lib7
-LIB7 += -L../lib-bob/lib7
-LIB7 += -L../lib-bcm2835/lib7
 
 SOURCE = ./
 
@@ -134,7 +118,7 @@ $(BUILD)vectors.o : firmware/vectors.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
-	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) -lgcc  #-lc -lgcc
+	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) -lgcc #-lc -lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf

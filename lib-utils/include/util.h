@@ -135,6 +135,8 @@ inline static int _strcmp(const char *s1, const char *s2) {
 	return (int) ((*(unsigned char *) p1 < *(unsigned char *) p2) ? -1 : +1);
 }
 
+extern const uint32_t hex_uint32(const char *);
+
 #ifdef __cplusplus
 }
 #endif

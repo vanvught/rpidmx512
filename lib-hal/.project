@@ -9,6 +9,7 @@
 		<project>lib-fb</project>
 		<project>lib-ff11</project>
 		<project>lib-utils</project>
+		<project>lib-uuid</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
