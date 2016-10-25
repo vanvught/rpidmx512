@@ -60,23 +60,23 @@ public class DiscoverySniffer {
 					System.err.println("Invalid Discovery Packet\n");
 					continue;
 				}
-				System.out.printf("Preamble size : %02x%02x\n", dp.getData()[0], dp.getData()[1]);
+				System.out.printf("Preamble size : %02x%02x[%d]\n", dp.getData()[0], dp.getData()[1], dp.getData()[1]);
 				System.out.printf("Post size : %02x%02x\n", dp.getData()[2], dp.getData()[3]);
 				System.out.print("ACN Packet id : ");
 				for (int i = 4; i < 15; i++) {
 					System.out.printf("%c", dp.getData()[i]);
 				}
-				System.out.printf("\nFlagd and Length : %02x%02x[%d]\n", dp.getData()[16], dp.getData()[17], dp.getData()[17]);
+				System.out.printf("\nFlags and Length : %02x%02x[%d]\n", dp.getData()[16], dp.getData()[17], dp.getData()[17]);
 				System.out.printf("Vector : %02x%02x%02x%02x\n", dp.getData()[18], dp.getData()[19], dp.getData()[20], dp.getData()[21]);
 				System.out.print("CID : ");
-				for (int i = 22; i < 37; i++) {
+				for (int i = 22; i < 38; i++) {
 					if (((i - 22) == 4) || ((i - 22) == 6) || ((i - 22) == 8) || ((i - 22) == 10)) {
 						System.out.print('-');
 					}
-					System.out.printf("%x", dp.getData()[i]);
+					System.out.printf("%02x", dp.getData()[i]);
 				}
 				// Framing
-				System.out.printf("\nFlagd and Length : %02x%02x[%d]\n", dp.getData()[38], dp.getData()[39], dp.getData()[39]);
+				System.out.printf("\nFlags and Length : %02x%02x[%d]\n", dp.getData()[38], dp.getData()[39], dp.getData()[39]);
 				System.out.printf("Vector : %02x%02x%02x%02x\n", dp.getData()[40], dp.getData()[41], dp.getData()[42], dp.getData()[43]);
 				System.out.print("Source Name : ");
 				for (int i = 44; i < 107; i++) {
@@ -88,7 +88,7 @@ public class DiscoverySniffer {
 					}
 				}
 				// Discovery
-				System.out.printf("\nFlagd and Length : %02x%02x[%d]\n", dp.getData()[112], dp.getData()[113], dp.getData()[113]);
+				System.out.printf("\nFlags and Length : %02x%02x[%d]\n", dp.getData()[112], dp.getData()[113], dp.getData()[113]);
 				System.out.printf("Vector : %02x%02x%02x%02x\n", dp.getData()[114], dp.getData()[115], dp.getData()[116], dp.getData()[117]);
 				System.out.printf("Page : %02x\n", dp.getData()[118]);
 				System.out.printf("Last Page : %02x\n", dp.getData()[119]);
