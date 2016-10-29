@@ -27,12 +27,15 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "hardware_uuid.h"
+
 #include "led.h"
 #include "console.h"
 
 #include "wifi.h"
 #include "udp.h"
 #include "inet.h"
+#include "uuid.h"
 
 #include "ap_params.h"
 #include "network_params.h"
@@ -55,10 +58,21 @@ void notmain(void) {
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
 	E131Params e131params;
+	uuid_t uuid;
+	char uuid_str[UUID_STRING_LENGTH + 1];
 
 	hardware_init();
 
 	(void) e131params.Load();
+
+	if (e131params.isHaveCustomCid()) {
+		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
+		uuid_str[UUID_STRING_LENGTH] = '\0';
+		uuid_parse((const char *)uuid_str, uuid);
+	} else {
+		hardware_uuid(uuid);
+		uuid_unparse(uuid, uuid_str);
+	}
 
 	output_type = e131params.GetOutputType();
 
@@ -147,6 +161,7 @@ void notmain(void) {
 	DMXSend dmx;
 	DMXMonitor monitor;
 
+	bridge.setCid(uuid);
 	bridge.setUniverse(universe);
 	bridge.setMergeMode(e131params.GetMergeMode());
 
@@ -175,6 +190,7 @@ void notmain(void) {
 	printf("\nBridge configuration\n");
 	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
 	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" CID          : %s\n", uuid_str);
 	printf(" Universe     : %d\n", bridge.getUniverse());
 	printf(" Merge mode   : %s\n", bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
 	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip));
@@ -189,14 +205,11 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
-	console_status(CONSOLE_YELLOW, "Starting the Bridge ...");
-	bridge.Start();
-
-	console_status(CONSOLE_GREEN, "Bridge started");
+	console_status(CONSOLE_GREEN, "Bridge is running");
 
 	for (;;) {
 		hardware_watchdog_feed();
-		(void) bridge.HandlePacket();
+		(void) bridge.Run();
 		led_blink();
 	}
 }
