@@ -36,6 +36,8 @@
 #include "widget.h"
 #include "monitor.h"
 
+#include "software_version.h"
+
 extern void dmx_init(void);
 
 struct _poll {
@@ -101,7 +103,7 @@ int notmain(void) {
 	rdm_device_info_init();
 
 	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d\n",	widget_get_mode());
+	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d [V%s]\n",	widget_get_mode(), SOFTWARE_VERSION);
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0],
 			uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
