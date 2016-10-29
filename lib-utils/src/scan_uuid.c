@@ -1,5 +1,5 @@
 /**
- * @file sscan.h
+ * @file scan_uuid.c
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,24 +23,72 @@
  * THE SOFTWARE.
  */
 
-#ifndef SSCAN_H_
-#define SSCAN_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "util.h"
 
-extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
-extern int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
-extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
-extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-extern int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
-extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
+	int k;
 
-#ifdef __cplusplus
+	const char *n = name;
+	const char *b = buf;
+	char *v = value;
+
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(value != NULL);
+	assert(len != NULL);
+
+	if (*len != 36) {
+		return 0;
+	}
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
+			return 0;
+		}
+	}
+
+	if (*n != (char) 0) {
+		return 0;
+	}
+
+	if (*b++ != (char) '=') {
+		return 0;
+	}
+
+	//
+	k = 0;
+
+	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
+		const char ch = *b;
+		if ((k == 8) || (k == 13) || (k == 18) || (k == 23)) {
+			if (ch != '-') {
+				*len = (uint8_t)k;
+				return 1;
+			}
+		} else if (!isxdigit(ch)) {
+			*len = (uint8_t)k;
+			return 1;
+		}
+		*v++ = *b++;
+		k++;
+	}
+
+	if (k != 36) {
+		*len = (uint8_t)k;
+		return 1;
+	}
+
+	if ((*b != (char) 0) && (*b != (char) '\n')) {
+		*len = (uint8_t)k;
+		return 1;
+	}
+
+	*len = (uint8_t)36;
+
+	return 2;
+
 }
-#endif
 
-#endif /* SSCAN_H_ */
