@@ -29,9 +29,8 @@
 #include <stdint.h>
 
 #include "e131.h"
-#include "packets.h"
-
 #include "lightset.h"
+#include "e131packets.h"
 
 /**
  *
@@ -41,6 +40,11 @@ struct TE131BridgeState {
 	bool IsNetworkDataLoss;			///<
 	bool IsMergeMode;				///< Is the Bridge in merging mode?
 	bool IsTransmitting;			///<
+	bool IsSynchronized;			///< “Synchronized” or an “Unsynchronized” state.
+	bool IsForcedSynchronized;		///<
+	uint32_t SynchronizationTime;	///<
+	uint32_t DiscoveryTime;			///<
+	uint16_t DiscoveryPacketLength;	///<
 };
 
 /**
@@ -50,8 +54,8 @@ struct TSource {
 	uint32_t time;					///< The latest time of the data received from source
 	uint32_t ip;					///< The IP address for source
 	uint8_t data[E131_DMX_LENGTH];	///< The data received from source
-	uint8_t cid[16];				///< Sender's CID. Sender's unique ID
-	uint8_t sequenceNumber;
+	uint8_t cid[E131_CID_LENGTH];	///< Sender's CID. Sender's unique ID
+	uint8_t sequenceNumberData;
 };
 
 /**
@@ -62,8 +66,9 @@ struct TOutputPort {
 	uint8_t data[E131_DMX_LENGTH];	///< Data sent
 	uint16_t length;				///< Length of sent DMX data
 	TMerge mergeMode;				///< \ref TMerge
-	struct TSource sourceA;
-	struct TSource sourceB;
+	bool IsDataPending;				///<
+	struct TSource sourceA;			///<
+	struct TSource sourceB;			///<
 };
 
 /**
@@ -78,9 +83,6 @@ public:
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	void Start(void);
-	void Stop(void);
-
 	const uint16_t getUniverse(void);
 	void setUniverse(const uint16_t);
 
@@ -93,9 +95,12 @@ public:
 	const char *GetSourceName(void);
 	void setSourceName(const char[E131_SOURCE_NAME_LENGTH]);
 
-	int HandlePacket(void);
+	int Run(void);
 
 private:
+	void Start(void);
+	void Stop(void);
+
 	void FillDiscoveryPacket(void);
 
 	const bool IsValidRoot(void);
@@ -107,7 +112,11 @@ private:
 	const bool isIpCidMatch(const struct TSource *);
 	const bool IsDmxDataChanged(const uint8_t *, const uint16_t);
 	const bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t );
+
+	void SendDiscoveryPacket(void);
+
 	void HandleDmx(void);
+	void HandleSynchronization(void);
 
 private:
 	LightSet *m_pLightSet;
@@ -115,13 +124,15 @@ private:
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
 
+	uint32_t m_DiscoveryIpAddress;
+
 	uint32_t m_nCurrentPacketMillis;
 	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
 	struct TOutputPort m_OutputPort;
 
-	struct TE131Packet m_E131Packet;
+	struct TE131 m_E131;
 	struct TE131DiscoveryPacket m_E131DiscoveryPacket;
 };
 

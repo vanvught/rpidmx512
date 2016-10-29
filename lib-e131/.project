@@ -5,6 +5,7 @@
 	<projects>
 		<project>lib-esp8266</project>
 		<project>lib-lightset</project>
+		<project>lib-uuid</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

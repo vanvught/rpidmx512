@@ -25,28 +25,25 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "e131.h"
+#include "e131packets.h"
 #include "e131bridge.h"
-#include "packets.h"
-
 
 #include "lightset.h"
+
+#include "inet.h"
 #include "udp.h"
 
 #include "util.h"
 #include "sys_time.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x00 };	///<
-static const uint8_t ACN_PACKET_IDENTIFIER[12] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x01 };	///<
+static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
-#ifndef SWAP_UINT16
-#  define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
-#endif
-#ifndef SWAP_UINT32
-#  define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
-#endif
+#define DEFAULT_SOURCE_NAME  "Raspberry Pi Wifi sACN E1.31 http://www.raspberrypi-dmx.org"
 
 /**
  *
@@ -59,14 +56,25 @@ E131Bridge::E131Bridge(void) :
 
 	memset(&m_OutputPort, 0, sizeof(struct TOutputPort));
 	m_OutputPort.mergeMode = E131_MERGE_HTP;
+	m_OutputPort.IsDataPending = false;
 
 	memset(&m_State, 0, sizeof(struct TE131BridgeState));
-	m_State.IsMergeMode = false;
 	m_State.IsNetworkDataLoss = true;
-	m_State.nPriority = E131_PRIORITY_LOWEST;
+	m_State.IsMergeMode = false;
 	m_State.IsTransmitting = false;
+	m_State.IsSynchronized = false;
+	m_State.IsForcedSynchronized = false;
+	m_State.nPriority = E131_PRIORITY_LOWEST;
+	m_State.DiscoveryTime = 0;
 
-	//FillDiscoveryPacket();
+	m_DiscoveryIpAddress = 0;
+	(void)inet_aton("239.255.0.0", &m_DiscoveryIpAddress);
+	m_DiscoveryIpAddress = m_DiscoveryIpAddress | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF00) << 8));
+
+	memset(m_SourceName, 0, sizeof(m_SourceName));
+	strncpy(m_SourceName, DEFAULT_SOURCE_NAME, sizeof(m_SourceName));
+
+	FillDiscoveryPacket();
 }
 
 /**
@@ -86,6 +94,10 @@ E131Bridge::~E131Bridge(void) {
 void E131Bridge::Start(void) {
 	assert(m_pLightSet != 0);
 
+	if (m_State.IsTransmitting) {
+		return;
+	}
+
 	m_pLightSet->Start();
 	m_State.IsTransmitting = true;
 }
@@ -95,36 +107,16 @@ void E131Bridge::Start(void) {
  */
 void E131Bridge::Stop(void) {
 	m_pLightSet->Stop();
+	//
+	m_State.IsNetworkDataLoss = true;
+	m_State.IsMergeMode = false;
 	m_State.IsTransmitting = false;
-}
-
-/**
- *
- */
-void E131Bridge::FillDiscoveryPacket(void) {
-	memset(&m_E131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
-	// Root Layer (See Section 5)
-	m_E131DiscoveryPacket.RootLayer.PreAmbleSize = SWAP_UINT16(0x10);
-	memcpy(m_E131DiscoveryPacket.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, 12);
-	m_E131DiscoveryPacket.RootLayer.FlagsLength = SWAP_UINT16(0 | 0x07); //TODO
-	m_E131DiscoveryPacket.RootLayer.Vector = SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED);
-	uint8_t *s = m_Cid;
-	uint8_t *d = &m_E131DiscoveryPacket.RootLayer.Cid[E131_CID_LENGTH -1];
-	for (uint8_t i = 0 ; i < E131_CID_LENGTH; i++) {
-		*d = *s;
-		d++;
-		s++;
-	}
-
-	// E1.31 Framing Layer (See Section 6)
-	m_E131DiscoveryPacket.FrameLayer.FLagsLength = SWAP_UINT16(0 | 0x07); //TODO
-	m_E131DiscoveryPacket.FrameLayer.Vector = SWAP_UINT32(E131_VECTOR_EXTENDED_DISCOVERY);
-	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, m_SourceName, E131_SOURCE_NAME_LENGTH);
-
-	// Universe Discovery Layer (See Section 8)
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.FlagsLength = SWAP_UINT16(0 | 0x07); //TODO
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.Vector = SWAP_UINT32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
-	//m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = SWAP_UINT32(m_nUniverse);
+	m_State.IsSynchronized = false;
+	m_State.IsForcedSynchronized = false;
+	m_State.nPriority = E131_PRIORITY_LOWEST;
+	//
+	m_OutputPort.length = 0;
+	m_OutputPort.IsDataPending = false;
 }
 
 /**
@@ -140,6 +132,7 @@ const uint8_t *E131Bridge::GetSoftwareVersion(void) {
  */
 void E131Bridge::SetOutput(LightSet *pLightSet) {
 	assert(pLightSet != 0);
+
 	m_pLightSet = pLightSet;
 }
 
@@ -156,6 +149,8 @@ const uint16_t E131Bridge::getUniverse() {
  * @param nUniverse
  */
 void E131Bridge::setUniverse(const uint16_t nUniverse) {
+	assert((nUniverse > E131_UNIVERSE_DEFAULT) && (nUniverse < E131_UNIVERSE_MAX));
+
 	m_nUniverse = nUniverse;
 }
 
@@ -172,7 +167,10 @@ const uint8_t* E131Bridge::GetCid(void) {
  * @param
  */
 void E131Bridge::setCid(const uint8_t aCid[E131_CID_LENGTH]) {
+	assert(aCid != 0);
+
 	memcpy(m_Cid, aCid, E131_CID_LENGTH);
+	memcpy(m_E131DiscoveryPacket.RootLayer.Cid, aCid, E131_CID_LENGTH);
 }
 
 /**
@@ -189,24 +187,54 @@ const char* E131Bridge::GetSourceName(void) {
  */
 void E131Bridge::setSourceName(const char aSourceName[E131_SOURCE_NAME_LENGTH]) {
 	memcpy(m_SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
+	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
+}
+
+/**
+ *
+ * @return
+ */
+const TMerge E131Bridge::getMergeMode(void) {
+	return m_OutputPort.mergeMode;
+}
+
+/**
+ *
+ * @param mergeMode
+ */
+void E131Bridge::setMergeMode(TMerge mergeMode) {
+	m_OutputPort.mergeMode = mergeMode;
 }
 
 /**
  *
  */
-void E131Bridge::CheckMergeTimeouts(void) {
-	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort.sourceA.time;
-	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort.sourceB.time;
+void E131Bridge::FillDiscoveryPacket(void) {
+	uint16_t root_layer_length = sizeof(struct TRootLayer);
+	uint16_t framing_layer_size = sizeof(struct TDiscoveryFrameLayer);
+	uint16_t discovery_layer_size = sizeof(struct TUniverseDiscoveryLayer) - (511 * 2);
 
-	if (timeOutA > (uint32_t)(E131_MERGE_TIMEOUT_SECONDS * 1000)) {
-		m_OutputPort.sourceA.ip = 0;
-		m_State.IsMergeMode = false;
-	}
+	m_State.DiscoveryPacketLength = root_layer_length + framing_layer_size + discovery_layer_size;
 
-	if (timeOutB > (uint32_t)(E131_MERGE_TIMEOUT_SECONDS * 1000)) {
-		m_OutputPort.sourceB.ip = 0;
-		m_State.IsMergeMode = false;
-	}
+	memset(&m_E131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
+
+	// Root Layer (See Section 5)
+	m_E131DiscoveryPacket.RootLayer.PreAmbleSize = SWAP_UINT16(0x10);
+	memcpy(m_E131DiscoveryPacket.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, E131_PACKET_IDENTIFIER_LENGTH);
+	m_E131DiscoveryPacket.RootLayer.FlagsLength = SWAP_UINT16((0x07 << 12) | (m_State.DiscoveryPacketLength));
+	m_E131DiscoveryPacket.RootLayer.Vector = SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED);
+	memcpy(m_E131DiscoveryPacket.RootLayer.Cid, m_Cid, E131_CID_LENGTH);
+
+
+	// E1.31 Framing Layer (See Section 6)
+	m_E131DiscoveryPacket.FrameLayer.FLagsLength = SWAP_UINT16((0x07 << 12) | (framing_layer_size + discovery_layer_size) );
+	m_E131DiscoveryPacket.FrameLayer.Vector = SWAP_UINT32(E131_VECTOR_EXTENDED_DISCOVERY);
+	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, m_SourceName, E131_SOURCE_NAME_LENGTH);
+
+	// Universe Discovery Layer (See Section 8)
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.FlagsLength = SWAP_UINT16((0x07 << 12) | discovery_layer_size);
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.Vector = SWAP_UINT32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = SWAP_UINT16(m_nUniverse);
 }
 
 /**
@@ -277,6 +305,24 @@ const bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16
 
 /**
  *
+ */
+void E131Bridge::CheckMergeTimeouts(void) {
+	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort.sourceA.time;
+	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort.sourceB.time;
+
+	if (timeOutA > (uint32_t)(E131_MERGE_TIMEOUT_SECONDS * 1000)) {
+		m_OutputPort.sourceA.ip = 0;
+		m_State.IsMergeMode = false;
+	}
+
+	if (timeOutB > (uint32_t)(E131_MERGE_TIMEOUT_SECONDS * 1000)) {
+		m_OutputPort.sourceB.ip = 0;
+		m_State.IsMergeMode = false;
+	}
+}
+
+/**
+ *
  * @return
  */
 const bool E131Bridge::IsPriorityTimeOut(void) {
@@ -309,11 +355,11 @@ const bool E131Bridge::IsPriorityTimeOut(void) {
  * @return
  */
 const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
-	if (source->ip != m_E131Packet.IPAddressFrom) {
+	if (source->ip != m_E131.IPAddressFrom) {
 		return false;
 	}
 
-	if (memcmp(source->cid, m_E131Packet.E131.RootLayer.Cid, 16) != 0) {
+	if (memcmp(source->cid, m_E131.E131Packet.Raw.RootLayer.Cid, E131_CID_LENGTH) != 0) {
 		return false;
 	}
 
@@ -324,8 +370,8 @@ const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
  *
  */
 void E131Bridge::HandleDmx(void) {
-	const uint8_t *p = &m_E131Packet.E131.DataPacket.DMPLayer.PropertyValues[1];
-	const uint16_t slots = SWAP_UINT16(m_E131Packet.E131.DataPacket.DMPLayer.PropertyValueCount) - (uint16_t)1;
+	const uint8_t *p = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
+	const uint16_t slots = SWAP_UINT16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - (uint16_t)1;
 	const uint32_t ipA = m_OutputPort.sourceA.ip;
 	const uint32_t ipB = m_OutputPort.sourceB.ip;
 	struct TSource *pSourceA = &m_OutputPort.sourceA;
@@ -340,14 +386,14 @@ void E131Bridge::HandleDmx(void) {
 	// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
 	// the packet containing sequence number B shall be deemed out of sequence and discarded
 	if (isSourceA) {
-		const int8_t diff = (int8_t) (m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber - pSourceA->sequenceNumber);
-		pSourceA->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		const int8_t diff = (int8_t) (m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceA->sequenceNumberData);
+		pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		if ((diff <= (int8_t) 0) && (diff > (int8_t) -20)) {
 			return;
 		}
 	} else if (isSourceB) {
-		const int8_t diff = (int8_t) (m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber - pSourceB->sequenceNumber);
-		pSourceB->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		const int8_t diff = (int8_t) (m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceB->sequenceNumberData);
+		pSourceB->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		if ((diff <= (int8_t) 0) && (diff > (int8_t) -20)) {
 			return;
 		}
@@ -355,63 +401,80 @@ void E131Bridge::HandleDmx(void) {
 
 	// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
 	// server preview applications and shall not be used to generate live output.
-	if ((m_E131Packet.E131.DataPacket.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
+	if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
 		return;
 	}
 
 	// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
 	// Any property values in these packets shall be ignored.
-	if ((m_E131Packet.E131.DataPacket.FrameLayer.Options & E131_OPTIONS_MASK_STREAM_TERMINATED) != 0) {
+	if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_STREAM_TERMINATED) != 0) {
 		if (isSourceA || isSourceB) {
-			SetNetworkDataLossCondition();
+			if (!m_State.IsMergeMode) {
+				SetNetworkDataLossCondition();
+			}
 		}
 		return;
+	}
+
+	// This bit indicates whether to lock or revert to an unsynchronized state when synchronization is lost
+	// (See Section 11 on Universe Synchronization and 11.1 for discussion on synchronization states).
+	// When set to 0, components that had been operating in a synchronized state shall not update with any new packets
+	// until synchronization resumes.
+	// When set to 1, once synchronization has been lost, components that had been operating in a synchronized state
+	// need not wait for a new E1.31 Synchronization Packet in order to update to the next E1.31 Data Packet.
+	if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_FORCE_SYNCHRONIZATION) == 0) {
+		m_State.IsForcedSynchronized = true;
+		if (m_State.IsSynchronized) {
+			return;
+		}
+	} else {
+		m_State.IsForcedSynchronized = false;
 	}
 
 	if (m_State.IsMergeMode) {
 		CheckMergeTimeouts();
 	}
 
-	if (m_E131Packet.E131.DataPacket.FrameLayer.Priority < m_State.nPriority ){
+	if (m_E131.E131Packet.Data.FrameLayer.Priority < m_State.nPriority ){
 		if (!IsPriorityTimeOut()) {
 			return;
 		}
-		m_State.nPriority = m_E131Packet.E131.DataPacket.FrameLayer.Priority;
-	} else if (m_E131Packet.E131.DataPacket.FrameLayer.Priority > m_State.nPriority) {
+		m_State.nPriority = m_E131.E131Packet.Data.FrameLayer.Priority;
+	} else if (m_E131.E131Packet.Data.FrameLayer.Priority > m_State.nPriority) {
 		m_OutputPort.sourceA.ip = 0;
 		m_OutputPort.sourceB.ip = 0;
 		m_State.IsMergeMode = false;
-		m_State.nPriority = m_E131Packet.E131.DataPacket.FrameLayer.Priority;
+		m_State.nPriority = m_E131.E131Packet.Data.FrameLayer.Priority;
 	}
 
 	if ((ipA == 0) && (ipB == 0)) {
 		//printf("1. First package from Source\n");
-		pSourceA->ip = m_E131Packet.IPAddressFrom;
-		pSourceA->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
-		memcpy(pSourceA->cid, m_E131Packet.E131.RootLayer.Cid, 16);
+		pSourceA->ip = m_E131.IPAddressFrom;
+		pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
+		memcpy(pSourceA->cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 		pSourceA->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
 	} else if (isSourceA && (ipB == 0)) {
 		//printf("2. Continue package from SourceA\n");
-		pSourceA->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		pSourceA->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
 	} else if ((ipA == 0) && isSourceB) {
 		//printf("3. Continue package from SourceB\n");
-		pSourceB->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		pSourceB->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		pSourceB->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
 		sendNewData = IsDmxDataChanged(p, slots);
 
 	} else if (!isSourceA && (ipB == 0)) {
 		//printf("4. New ip, start merging\n");
-		pSourceB->ip = m_E131Packet.IPAddressFrom;
-		pSourceB->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
-		memcpy(m_OutputPort.sourceB.cid, m_E131Packet.E131.RootLayer.Cid, 16);
+		pSourceB->ip = m_E131.IPAddressFrom;
+		pSourceB->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
+		memcpy(m_OutputPort.sourceB.cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 		pSourceB->time = m_nCurrentPacketMillis;
 		m_State.IsMergeMode = true;
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
@@ -419,9 +482,9 @@ void E131Bridge::HandleDmx(void) {
 
 	} else if ((ipA == 0) && !isSourceB) {
 		//printf("5. New ip, start merging\n");
-		pSourceA->ip = m_E131Packet.IPAddressFrom;
-		pSourceA->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
-		memcpy(m_OutputPort.sourceA.cid, m_E131Packet.E131.RootLayer.Cid, 16);
+		pSourceA->ip = m_E131.IPAddressFrom;
+		pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
+		memcpy(m_OutputPort.sourceA.cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 		pSourceA->time = m_nCurrentPacketMillis;
 		m_State.IsMergeMode = true;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
@@ -429,14 +492,14 @@ void E131Bridge::HandleDmx(void) {
 
 	} else if (isSourceA && !isSourceB) {
 		//printf("6. Continue merging\n");
-		pSourceA->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		pSourceA->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceA->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceA->data, slots);
 
 	} else if (!isSourceA && isSourceB) {
 		//printf("7. Continue merging\n");
-		pSourceB->sequenceNumber = m_E131Packet.E131.DataPacket.FrameLayer.SequenceNumber;
+		pSourceB->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 		pSourceB->time = m_nCurrentPacketMillis;
 		memcpy((void *)pSourceB->data, (const void *)p, slots);
 		sendNewData = IsMergedDmxDataChanged(pSourceB->data, slots);
@@ -455,9 +518,50 @@ void E131Bridge::HandleDmx(void) {
 	}
 
 	if (sendNewData) {
-		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+		if (!m_State.IsSynchronized) {
+			Start();
+			m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+		} else {
+			m_OutputPort.IsDataPending = true;
+		}
+
 
 	}
+}
+
+/**
+ *
+ */
+void E131Bridge::HandleSynchronization(void) {
+	if (m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber != SWAP_UINT16(m_nUniverse)) {
+		return;
+	}
+
+	m_State.IsSynchronized = true;
+	m_State.SynchronizationTime = m_nCurrentPacketMillis;
+
+	if (m_OutputPort.IsDataPending) {
+		Start();
+		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+		m_OutputPort.IsDataPending = false;
+	}
+}
+
+/**
+ *
+ */
+void E131Bridge::SetNetworkDataLossCondition(void) {
+	Stop();
+	m_OutputPort.sourceA.ip = (uint32_t) 0;
+	m_OutputPort.sourceB.ip = (uint32_t) 0;
+}
+
+/**
+ *
+ */
+void E131Bridge::SendDiscoveryPacket(void) {
+	udp_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
 /**
@@ -467,12 +571,12 @@ void E131Bridge::HandleDmx(void) {
 const bool E131Bridge::IsValidRoot(void) {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
-	if (memcmp(m_E131Packet.E131.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, 12) != 0) {
+	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, 12) != 0) {
 		return false;
 	}
 	
-	if (m_E131Packet.E131.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_DATA)) {
-			// && (m_E131Packet.E131.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED)) ) {
+	if (m_E131.E131Packet.Raw.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_DATA)
+			 && (m_E131.E131Packet.Raw.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED)) ) {
 		return false;
 	}
 
@@ -489,7 +593,7 @@ const bool E131Bridge::IsValidDataPacket(void) {
 	// 8.2 Association of Multicast Addresses and Universe
 	// Note: The identity of the universe shall be determined by the universe number in the
 	// packet and not assumed from the multicast address.
-	if (m_E131Packet.E131.DataPacket.FrameLayer.Universe != SWAP_UINT16(m_nUniverse)) {
+	if (m_E131.E131Packet.Data.FrameLayer.Universe != SWAP_UINT16(m_nUniverse)) {
 		return false;
 	}
 
@@ -497,25 +601,25 @@ const bool E131Bridge::IsValidDataPacket(void) {
 
 	// The DMP Layer's Vector shall be set to 0x02, which indicates a DMP Set Property message by
 	// transmitters. Receivers shall discard the packet if the received value is not 0x02.
-	if (m_E131Packet.E131.DataPacket.DMPLayer.Vector != (uint8_t)E131_VECTOR_DMP_SET_PROPERTY) {
+	if (m_E131.E131Packet.Data.DMPLayer.Vector != (uint8_t)E131_VECTOR_DMP_SET_PROPERTY) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's Address Type and Data Type to 0xa1. Receivers shall discard the
 	// packet if the received value is not 0xa1.
-	if (m_E131Packet.E131.DataPacket.DMPLayer.Type != (uint8_t)0xa1) {
+	if (m_E131.E131Packet.Data.DMPLayer.Type != (uint8_t)0xa1) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's First Property Address to 0x0000. Receivers shall discard the
 	// packet if the received value is not 0x0000.
-	if (m_E131Packet.E131.DataPacket.DMPLayer.FirstAddressProperty != SWAP_UINT16((uint16_t)0x0000)) {
+	if (m_E131.E131Packet.Data.DMPLayer.FirstAddressProperty != SWAP_UINT16((uint16_t)0x0000)) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's Address Increment to 0x0001. Receivers shall discard the packet if
 	// the received value is not 0x0001.
-	if (m_E131Packet.E131.DataPacket.DMPLayer.AddressIncrement != SWAP_UINT16((uint16_t)0x0001)) {
+	if (m_E131.E131Packet.Data.DMPLayer.AddressIncrement != SWAP_UINT16((uint16_t)0x0001)) {
 		return false;
 	}
 
@@ -525,25 +629,23 @@ const bool E131Bridge::IsValidDataPacket(void) {
 /**
  *
  */
-int E131Bridge::HandlePacket(void) {
-	const char *packet = (char *) &(m_E131Packet.E131);
+int E131Bridge::Run(void) {
+	const char *packet = (char *) &(m_E131.E131Packet);
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131Packet.E131), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = millis();
 
-	if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) > 2500) {
-		SetNetworkDataLossCondition();
-	} else {
-		if (m_State.IsNetworkDataLoss) {
-			Start();
-		}
-		m_State.IsNetworkDataLoss = false;
+	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
+		SendDiscoveryPacket();
 	}
 
 	if (nBytesReceived == 0) {
+		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+			SetNetworkDataLossCondition();
+		}
 		return 0;
 	}
 
@@ -553,44 +655,27 @@ int E131Bridge::HandlePacket(void) {
 
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
 
-	//const uint32_t nVector = SWAP_UINT32(m_E131Packet.E131.RootLayer.Vector);
-
-	//if (nVector == E131_VECTOR_ROOT_DATA) {
-	if (!IsValidDataPacket()) {
-		return 0;
+	if (m_State.IsSynchronized && !m_State.IsForcedSynchronized) {
+		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+			m_State.IsSynchronized = false;
+		}
 	}
-	HandleDmx();
-	//} else if (nVector == E131_VECTOR_ROOT_EXTENDED) {
-	//
-	//}
+
+	const uint32_t nRootVector = SWAP_UINT32(m_E131.E131Packet.Raw.RootLayer.Vector);
+
+	if (nRootVector == E131_VECTOR_ROOT_DATA) {
+		if (!IsValidDataPacket()) {
+			return 0;
+		}
+		HandleDmx();
+	} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
+		const uint32_t nFramingVector = SWAP_UINT32(m_E131.E131Packet.Raw.FrameLayer.Vector);
+
+		if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
+			HandleSynchronization();
+		}
+
+	}
 
 	return nBytesReceived;
-}
-
-/**
- *
- */
-void E131Bridge::SetNetworkDataLossCondition(void) {
-	Stop();
-	m_State.IsNetworkDataLoss = true;
-	m_State.nPriority = E131_PRIORITY_LOWEST;
-	m_State.IsMergeMode = false;
-	m_OutputPort.sourceA.ip = (uint32_t) 0;
-	m_OutputPort.sourceB.ip = (uint32_t) 0;
-}
-
-/**
- *
- * @return
- */
-const TMerge E131Bridge::getMergeMode(void) {
-	return m_OutputPort.mergeMode;
-}
-
-/**
- *
- * @param mergeMode
- */
-void E131Bridge::setMergeMode(TMerge mergeMode) {
-	m_OutputPort.mergeMode = mergeMode;
 }
