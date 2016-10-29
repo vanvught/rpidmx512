@@ -138,9 +138,7 @@ void FT245RL_init(void) {
 	bcm2835_gpio_set(_RD);
 	// WR	low
 	bcm2835_gpio_clr(WR);
-#if defined(RPI2)
 	dmb();
-#endif
 }
 
 /**
@@ -154,18 +152,16 @@ void FT245RL_write_data(uint8_t data) {
 	data_gpio_fsel_output();
 	// Raise WR to start the write.
 	bcm2835_gpio_set(WR);
-	asm volatile("nop"::);
-#if defined(RPI2)
 	dmb();
-#endif
+	asm volatile("nop"::);
+	dmb();
 	// Put the data on the bus.
 	uint32_t out_gpio = ((data & ~0b00000111) << 4) | ((data & 0b00000111) << 2);
 	BCM2835_GPIO->GPSET0 = out_gpio;
 	BCM2835_GPIO->GPCLR0 = out_gpio ^ 0b111110011100;
-	asm volatile("nop"::);
-#if defined(RPI2)
 	dmb();
-#endif
+	asm volatile("nop"::);
+	dmb();
 	// Drop WR to tell the FT245 to read the data.
 	bcm2835_gpio_clr(WR);
 }
@@ -181,14 +177,41 @@ uint8_t FT245RL_read_data() {
 	data_gpio_fsel_input();
 	bcm2835_gpio_clr(_RD);
 	// Wait for the FT245 to respond with data.
-	asm volatile("nop"::);
-#if defined(RPI2)
 	dmb();
-#endif
+	asm volatile("nop"::);
+	dmb();
 	// Read the data from the data port.
 	uint32_t in_gpio = (BCM2835_GPIO->GPLEV0 & 0b111110011100) >> 2;
 	uint8_t data = (uint8_t) ((in_gpio >> 2) & 0xF8) | (uint8_t) (in_gpio & 0x0F);
 	// Bring RD# back up so the FT245 can let go of the data.
 	bcm2835_gpio_set(_RD);
 	return data;
+}
+
+/**
+ * @ingroup ft245rl
+ *
+ * Read RXF#
+ *
+ * @return
+ */
+bool FT245RL_data_available(void) {
+#if defined(RPI2)
+	dmb();
+#endif
+	return (!(BCM2835_GPIO->GPLEV0 & (1 << 25)));
+}
+
+/**
+ * @ingroup ft245rl
+ *
+ * Read TXE#
+ *
+ * @return
+ */
+bool FT245RL_can_write(void) {
+#if defined(RPI2)
+	dmb();
+#endif
+	return (!(BCM2835_GPIO->GPLEV0 & (1 << 24)));
 }
