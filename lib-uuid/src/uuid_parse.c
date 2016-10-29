@@ -112,7 +112,7 @@ int uuid_parse(const char *in, uuid_t uu) {
 	const char *cp;
 	char buf[3];
 
-	if (strlen(in) != 36)
+	if (strlen(in) != UUID_STRING_LENGTH)
 		return -1;
 	for (i = 0, cp = in; i <= 36; i++, cp++) {
 		if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {

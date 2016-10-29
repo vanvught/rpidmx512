@@ -34,8 +34,15 @@
 #define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
 
 #ifndef MAX
-#define MAX(a,b)		(((a) > (b)) ? (a) : (b))											///<
-#define MIN(a,b)		(((a) < (b)) ? (a) : (b))											///<
+#  define MAX(a,b)		(((a) > (b)) ? (a) : (b))											///<
+#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))											///<
+#endif
+
+#ifndef SWAP_UINT16
+#  define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
+#endif
+#ifndef SWAP_UINT32
+#  define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
 #endif
 
 #define isdigit(c)		((c) >= '0' && (c) <= '9' ? 1 : 0)									///<
@@ -46,7 +53,6 @@
 #define isalpha(c)		(isupper(c) || islower(c))											///<
 #define tolower(c)		(isupper(c) ? ((c) + 32) : (c))										///<
 #define toupper(c)		(islower(c) ? ((c) - 32) : (c))										///<
-
 
 #define memcpy			_memcpy
 #define memcmp			_memcmp

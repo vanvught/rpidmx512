@@ -35,7 +35,7 @@ static const char NO_MAC[] = "nomacadr";
 static const char EXT_UID[] = ".uid";
 static const char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
 
-#define UUID_STRING_LENGTH	(sizeof(DUMMY_UUID) - 1)
+//#define UUID_STRING_LENGTH	(sizeof(DUMMY_UUID) - 1)
 
 bool hardware_uuid(uuid_t out) {
 	char file_name[16];	///< mac:8, .:1 ,uud:3 ,'\0':1

@@ -127,6 +127,7 @@ static void process_line_read(const char *line) {
 		if (value8 == 0) {
 			network_params_use_dhcp = false;
 		}
+		return;
 	}
 
 	if (sscan_ip_address(line, PARAMS_IP_ADDRESS, &value32) == 1) {

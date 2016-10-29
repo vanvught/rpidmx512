@@ -31,6 +31,8 @@ typedef unsigned char uuid_t[16];
 #define UUID_TYPE_DCE_TIME   1
 #define UUID_TYPE_DCE_RANDOM 4
 
+#define UUID_STRING_LENGTH	36		///<
+
 #ifdef __cplusplus
 extern "C" {
 #endif
