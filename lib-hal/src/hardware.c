@@ -42,8 +42,8 @@
 #include "ff.h"
 #include "smp.h"
 
-static const char FIRMWARE_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
-static const uint8_t FIRMWARE_COPYRIGHT_LENGTH = (sizeof(FIRMWARE_COPYRIGHT) / sizeof(FIRMWARE_COPYRIGHT[0])) - 1;	///< Length of \ref FIRMWARE_COPYRIGHT
+static const char BROADCOM_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
+static const uint8_t BROADCOM_COPYRIGHT_LENGTH = (sizeof(BROADCOM_COPYRIGHT) / sizeof(BROADCOM_COPYRIGHT[0])) - 1;	///< Length of \ref BROADCOM_COPYRIGHT
 
 struct _hardware_led {
 	void (*init)(void);			///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
@@ -59,28 +59,31 @@ struct _hardware_revision_code {
 	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
 } static const board_version[] __attribute__((aligned(4))) = {
 		{ 0x000000, "Model Unknown" },
-		{ 0x000002, "Model B R1 256MB" },
-		{ 0x000003, "Model B R1 256MB" },
-		{ 0x000004, "Model B R2 256MB" },
-		{ 0x000005, "Model B R2 256MB" },
-		{ 0x000006, "Model B R2 256MB" },
-		{ 0x000007, "Model A R2 256MB" },
-		{ 0x000008, "Model A R2 256MB" },
-		{ 0x000009, "Model A R2 256MB" },
-		{ 0x00000d, "Model B R2 512MB" },
-		{ 0x00000e, "Model B R2 512MB" },
-		{ 0x00000f, "Model B R2 512MB" },
-		{ 0x000010, "Model B+ 512MB" },
+		{ 0x000002, "Pi 1 Model B R1 256MB" },
+		{ 0x000003, "Pi 1 Model B R1 256MB" },
+		{ 0x000004, "Pi 1 Model B R2 256MB" },
+		{ 0x000005, "Pi 1 Model B R2 256MB" },
+		{ 0x000006, "Pi 1 Model B R2 256MB" },
+		{ 0x000007, "Pi 1 Model A R2 256MB" },
+		{ 0x000008, "Pi 1 Model A R2 256MB" },
+		{ 0x000009, "Pi 1 Model A R2 256MB" },
+		{ 0x00000d, "Pi 1 Model B R2 512MB" },
+		{ 0x00000e, "Pi 1 Model B R2 512MB" },
+		{ 0x00000f, "Pi 1 Model B R2 512MB" },
+		{ 0x000010, "Pi 1 Model B+ 512MB V1.x" },
 		{ 0x000011, "Compute Module 512MB" },
-		{ 0x000012, "Model A+ 256MB V1.1" },
-		{ 0x900021, "Model A+ 512MB" },
+		{ 0x000012, "Pi 1 Model A+ 256MB V1.1" },
+		{ 0x000013, "Pi 1 Model B+ 512MB V1.2" },
+		{ 0x000014, "Compute Module 512MB" },
+		{ 0x900021, "Pi 1 Model A+ 512MB" },
+		{ 0xa01040, "Pi 2 Model B 1GB V1.0" },
 		{ 0xa01041, "Pi 2 Model B 1GB V1.1" },
 		{ 0xa21041, "Pi 2 Model B 1GB V1.1" },
-		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },
-		{ 0x900092, "PiZero 512MB V1.2" },
-		{ 0x900093, "PiZero 512MB V1.3" },
-		{ 0xa22082, "Pi 3 Model B 1GB V1.2" },
-		{ 0xa02082, "Pi 3 Model B 1GB V1.2" }
+		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },		///< 2 Model B (with BCM2837)
+		{ 0x900092, "Pi Zero 512MB V1.2" },
+		{ 0x900093, "Pi Zero 512MB V1.3" },
+		{ 0xa02082, "Pi 3 Model B 1GB V1.2" },
+		{ 0xa22082, "Pi 3 Model B 1GB V1.2" }
 };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
@@ -111,7 +114,7 @@ const int32_t hardware_get_firmware_revision(void) {
  * @return
  */
 const char *hardware_get_firmware_copyright(void) {
-	return FIRMWARE_COPYRIGHT;
+	return BROADCOM_COPYRIGHT;
 }
 
 /**
@@ -120,7 +123,7 @@ const char *hardware_get_firmware_copyright(void) {
  * @return
  */
 const uint8_t hardware_get_firmware_copyright_length(void) {
-	return FIRMWARE_COPYRIGHT_LENGTH;
+	return BROADCOM_COPYRIGHT_LENGTH;
 }
 
 /**
@@ -255,7 +258,7 @@ void hardware_init(void) {
 
 	const uint32_t board_revision = bcm2835_vc_get_get_board_revision();
 
-	if (board_revision == 0xa02082) {
+	if ((board_revision == 0xa02082) || (board_revision == 0xa22082)) {
 #if defined (RPI3)
 		_hardware_led_f.init = bcm2837_gpio_virt_init;
 		_hardware_led_f.set = bcm2837_gpio_virt_led_set;

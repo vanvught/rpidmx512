@@ -25,12 +25,6 @@
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
-#if defined (RPI2) || defined (RPI3)
-	#if ! defined (RPIPLUS)
-	#define RPIPLUS
-	#endif
-#endif
-
 #if defined ( RPI2 ) || defined (RPI3)
 #define BCM2835_PERI_BASE		0x3F000000	///<
 #else
