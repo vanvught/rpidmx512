@@ -57,7 +57,8 @@ inline static void *_memcpy(void *dest, const void *src, size_t n) {
 	return dest;
 }
 #else
-extern void *memcpy32(void *dest, const void *src, size_t n);
+//extern void *memcpy32(void *dest, const void *src, size_t n);
+#include "arm/arm.h"
 #endif
 #endif
 
@@ -108,7 +109,7 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 			// take sector from cache
 		}
 
-		memcpy32((uint32_t *)buf, (uint32_t *)cache_p, SECTOR_SIZE / 32);
+		memcpy_blk((uint32_t *)buf, (uint32_t *)cache_p, SECTOR_SIZE / 32);
 
 	} else {
 #endif
@@ -139,7 +140,7 @@ static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
     int i;
     for (i = 0; i < count; i++) {
     	int index = (sector + i) & CACHE_MASK;
-    	memcpy32((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
+    	memcpy_blk((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
     }
 #endif
 	return RES_OK;
