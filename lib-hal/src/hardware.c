@@ -30,11 +30,8 @@
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_led.h"
-#include "bcm2835_wdog.h"
 #include "bcm2835_rng.h"
 #include "bcm2837_gpio_virt.h"
-
-#include "mcp7941x.h"
 
 #include "hardware.h"
 #include "console.h"
@@ -42,49 +39,10 @@
 #include "ff.h"
 #include "smp.h"
 
-static const char BROADCOM_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright (c) 2012 Broadcom";					///<
-static const uint8_t BROADCOM_COPYRIGHT_LENGTH = (sizeof(BROADCOM_COPYRIGHT) / sizeof(BROADCOM_COPYRIGHT[0])) - 1;	///< Length of \ref BROADCOM_COPYRIGHT
-
 struct _hardware_led {
 	void (*init)(void);			///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
 	void (*set)(const int);		///< Pointer to function for LED ACCT on/off
 }static _hardware_led_f = { led_init, led_set };
-
-#define MAX_NAME_LENGTH 24		///< Length for model name
-
-///< Reference http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
-///< Reference http://elinux.org/RPi_HardwareHistory
-struct _hardware_revision_code {
-	const uint32_t value;
-	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
-} static const board_version[] __attribute__((aligned(4))) = {
-		{ 0x000000, "Model Unknown" },
-		{ 0x000002, "Pi 1 Model B R1 256MB" },
-		{ 0x000003, "Pi 1 Model B R1 256MB" },
-		{ 0x000004, "Pi 1 Model B R2 256MB" },
-		{ 0x000005, "Pi 1 Model B R2 256MB" },
-		{ 0x000006, "Pi 1 Model B R2 256MB" },
-		{ 0x000007, "Pi 1 Model A R2 256MB" },
-		{ 0x000008, "Pi 1 Model A R2 256MB" },
-		{ 0x000009, "Pi 1 Model A R2 256MB" },
-		{ 0x00000d, "Pi 1 Model B R2 512MB" },
-		{ 0x00000e, "Pi 1 Model B R2 512MB" },
-		{ 0x00000f, "Pi 1 Model B R2 512MB" },
-		{ 0x000010, "Pi 1 Model B+ 512MB V1.x" },
-		{ 0x000011, "Compute Module 512MB" },
-		{ 0x000012, "Pi 1 Model A+ 256MB V1.1" },
-		{ 0x000013, "Pi 1 Model B+ 512MB V1.2" },
-		{ 0x000014, "Compute Module 512MB" },
-		{ 0x900021, "Pi 1 Model A+ 512MB" },
-		{ 0xa01040, "Pi 2 Model B 1GB V1.0" },
-		{ 0xa01041, "Pi 2 Model B 1GB V1.1" },
-		{ 0xa21041, "Pi 2 Model B 1GB V1.1" },
-		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },		///< 2 Model B (with BCM2837)
-		{ 0x900092, "Pi Zero 512MB V1.2" },
-		{ 0x900093, "Pi Zero 512MB V1.3" },
-		{ 0xa02082, "Pi 3 Model B 1GB V1.2" },
-		{ 0xa22082, "Pi 3 Model B 1GB V1.2" }
-};
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
@@ -102,75 +60,6 @@ const uint64_t hardware_uptime_seconds(void) {
 /**
  * @ingroup hal
  *
- * @return
- */
-const int32_t hardware_get_firmware_revision(void) {
-	return bcm2835_vc_get_get_firmware_revision();
-}
-
-/**
- * @ingroup hal
- *
- * @return
- */
-const char *hardware_get_firmware_copyright(void) {
-	return BROADCOM_COPYRIGHT;
-}
-
-/**
- * @ingroup hal
- *
- * @return
- */
-const uint8_t hardware_get_firmware_copyright_length(void) {
-	return BROADCOM_COPYRIGHT_LENGTH;
-}
-
-/**
- * @ingroup hal
- *
- * @return
- */
-const int32_t hardware_get_board_model_id(void) {
-	return bcm2835_vc_get_get_board_revision();
-}
-
-/**
- * @ingroup hal
- *
- * @return
- */
-const char *hardware_get_board_model(void) {
-	const uint8_t array_length = sizeof(board_version) / sizeof(board_version[0]);
-	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
-
-	uint8_t i;
-
-	if (revision_code <= 0) {
-		return board_version[0].name;
-	}
-
-	for (i = 1; i < array_length; i++) {
-		if ((uint32_t)revision_code == board_version[i].value) {
-			return board_version[i].name;
-		}
-	}
-
-	return board_version[0].name;
-}
-
-/**
- * @ingroup hal
- *
- * @return
- */
-const uint8_t hardware_get_board_model_length(void) {
-	return MAX_NAME_LENGTH;
-}
-
-/**
- * @ingroup hal
- *
  */
 void hardware_led_init(void) {
 	_hardware_led_f.init();
@@ -183,40 +72,6 @@ void hardware_led_init(void) {
  */
 void hardware_led_set(const int state) {
 	_hardware_led_f.set(state);
-}
-
-/**
- * @ingroup hal
- *
- * @param tm_hw
- */
-void hardware_rtc_set(const struct hardware_time *tm_hw) {
-	struct rtc_time tm_rtc;
-	struct tm tmbuf;
-
-
-	tm_rtc.tm_hour = (int)tm_hw->hour;
-	tm_rtc.tm_min = (int)tm_hw->minute;
-	tm_rtc.tm_sec = (int)tm_hw->second;
-	tm_rtc.tm_mday = (int)tm_hw->day;
-	//tm_rtc.tm_wday = // TODO
-	tm_rtc.tm_mon = (int)tm_hw->month - 1;
-	tm_rtc.tm_year = (int)tm_hw->year - 2000;	// RTC stores 2 digits only
-
-	if (mcp7941x_start(0x00) != MCP7941X_ERROR) {
-		mcp7941x_set_date_time(&tm_rtc);
-	}
-
-	tmbuf.tm_hour = tm_rtc.tm_hour;
-	tmbuf.tm_min = tm_rtc.tm_min;
-	tmbuf.tm_sec = tm_rtc.tm_sec;
-	tmbuf.tm_mday = tm_rtc.tm_mday;
-	tmbuf.tm_wday = tm_rtc.tm_wday;
-	tmbuf.tm_mon = (int)tm_hw->month;
-	tmbuf.tm_year = tm_rtc.tm_year;
-	tmbuf.tm_isdst = 0;
-
-	sys_time_set(&tmbuf);
 }
 
 
@@ -270,15 +125,4 @@ void hardware_init(void) {
 
 	hardware_led_init();
 	hardware_led_set(1);
-}
-
-/**
- * @ingroup hal
- *
- */
-void hardware_reboot(void) {
-	hardware_led_set(1);
-	watchdog_init();
-	for (;;)
-		;
 }
