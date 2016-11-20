@@ -22,9 +22,9 @@ BUILD = build/
 BUILD7 = build7/
 BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) 
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) 
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) 
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.S))
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) 
 
 TARGET = lib/libbcm2835.a 
 TARGET7 = lib7/libbcm2835.a
@@ -34,7 +34,7 @@ LIST = lib.list
 LIST7 = lib7.list
 LIST8 = lib8.list
 
-all : builddirs $(TARGET) $(TARGET7)  # $(TARGET8)
+all : builddirs $(TARGET) $(TARGET7) $(TARGET8)
 
 .PHONY: clean builddirs
 
@@ -57,8 +57,14 @@ clean :
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
+$(BUILD)%.o: $(SOURCE)/arm/%.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@	
+
 $(BUILD)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@	
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@
+	
+$(BUILD)%.o: $(SOURCE)/arm/%.c
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@			
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
@@ -67,7 +73,10 @@ $(TARGET): Makefile $(OBJECTS)
 # ARM v7	
 	
 $(BUILD7)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@
+	
+$(BUILD7)%.o: $(SOURCE)/arm/%.S
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@			
 
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
@@ -82,7 +91,10 @@ $(TARGET7): Makefile $(OBJECTS7)
 # ARM v8	
 	
 $(BUILD8)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@		
+	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@
+		
+$(BUILD8)%.o: $(SOURCE)/arm/%.S
+	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@				
 
 $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	

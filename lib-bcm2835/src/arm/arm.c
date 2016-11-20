@@ -1,8 +1,8 @@
 /**
- * @file bcm2835_spi_write.S
+ * @file arm.c
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
-#include "bcm2835_spi.h"
+#include <stdbool.h>
 
-.macro FUNC name
-.text
-.code 32
-.global \name
-\name:
-.endm
+#include "arm/synchronize.h"
 
-FUNC bcm2835_spi_write
-@ void bcm2835_spi_write(uint16_t data)
-ldr	r3, =BCM2835_SPI0_BASE
-ldr	r1, [r3]
-orr	r1, r1, #BCM2835_SPI0_CS_CLEAR
-str	r1, [r3]
-ldr	r1, [r3]
-orr	r1, r1, #BCM2835_SPI0_CS_TA
-str	r1, [r3]
-cs_txd_loop:
-    ldr	r1, [r3]
-    tst	r1, #BCM2835_SPI0_CS_TXD
-    beq	cs_txd_loop
-lsr	r1, r0, #8
-uxtb	r0, r0
-str	r1, [r3, #BCM2835_SPI0_FIFO]
-str	r0, [r3, #BCM2835_SPI0_FIFO]
-cs_done:
- 	ldr	r1, [r3]
- 	tst	r1, #BCM2835_SPI0_CS_DONE
- 	beq	cs_done
-ldr	r1, [r3]
-bic	r1, r1, #BCM2835_SPI0_CS_TA
-str	r1, [r3]
-bx lr
+/**
+ *
+ * @param routine
+ * @param vector
+ * @return
+ */
+bool arm_install_handler(unsigned routine, unsigned *vector) {
+	const unsigned vec = ((routine - (unsigned)vector - 0x8)>>2);
+
+	if (vec & 0xff000000) {
+		return false;
+	}
+
+	*vector = 0xea000000 | vec;
+
+	invalidate_instruction_cache();
+	isb();
+
+	return true;
+}

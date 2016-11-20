@@ -1,8 +1,8 @@
 /**
- * @file bcm2835_wdog.h
+ * @file memcpy_blk.S
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef BCM2835_WDOG_H_
-#define BCM2835_WDOG_H_
+.macro FUNC name
+.text
+.code 32
+.global \name
+\name:
+.endm
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-extern void bcm2835_watchdog_init(void);
-extern void bcm2835_watchdog_feed(void);
-extern void bcm2835_watchdog_stop(void);
+FUNC memcpy_blk
+	push 	{r4-r10,lr}
 
-#ifdef __cplusplus
-}
-#endif
+.Lloop:
+	ldmia	r1!, {r3-r10}
+	stmia	r0!, {r3-r10}
+	subs	r2, #1
+	bne	.Lloop
 
-#endif /* BCM2835_WDOG_H_ */
+	pop 	{r4-r10,pc}

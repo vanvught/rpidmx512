@@ -1,8 +1,8 @@
 /**
- * @file bcm2835_wdog.h
+ * @file arm.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef BCM2835_WDOG_H_
-#define BCM2835_WDOG_H_
+
+#ifndef ARM_H_
+#define ARM_H_
+
+#include <stddef.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void bcm2835_watchdog_init(void);
-extern void bcm2835_watchdog_feed(void);
-extern void bcm2835_watchdog_stop(void);
+typedef enum arm_vector {
+	ARM_VECTOR_RESET = 0x00,			///< Reset
+	ARM_VECTOR_UNDEF = 0x04,			///< Undefined Instruction
+	ARM_VECTOR_SWI = 0x08,				///< Software Interrupt (SWI)
+	ARM_VECTOR_PREFETCH_ABORT = 0x0C,	///< Prefetch Abort
+	ARM_VECTOR_DATA_ABORT = 0x10,		///< Data Abort
+	ARM_VECTOR_RESERVED = 0x14,			///< Reserved
+	ARM_VECTOR_IRQ = 0x18,				///< Interrupt (IRQ)
+	ARM_VECTOR_FIQ = 0x1C				///< Fast Interrupt (FIQ)
+} _arm_vector;
+
+#define ARM_VECTOR(x)	(unsigned *)(x)
+
+extern bool arm_install_handler(unsigned routine, unsigned *vector);
+
+/**
+ * Copy 8 words = 32 bytes
+ */
+extern void *memcpy_blk(void *, const void *, size_t);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* BCM2835_WDOG_H_ */
+#endif /* ARM_H_ */

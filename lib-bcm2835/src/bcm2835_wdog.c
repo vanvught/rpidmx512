@@ -50,7 +50,7 @@ inline static void bcm2835_wdog_start(const uint32_t timeout) {
  * @ingroup watchdog
  *
  */
-void watchdog_stop(void) {
+void bcm2835_watchdog_stop(void) {
 	BCM2835_PM_WDOG->RSTC = BCM2835_PM_WDOG_PASSWORD | BCM2835_PM_WDOG_RSTC_RESET;
 }
 
@@ -60,7 +60,7 @@ void watchdog_stop(void) {
  * @ingroup watchdog
  *
  */
-void watchdog_init(void) {
+void bcm2835_watchdog_init(void) {
 	bcm2835_wdog_start(WDOG_TIMEOUT);
 }
 
@@ -68,6 +68,6 @@ void watchdog_init(void) {
  * @ingroup watchdog
  *
  */
-void watchdog_feed(void) {
+void bcm2835_watchdog_feed(void) {
 	bcm2835_wdog_start(WDOG_TIMEOUT);
 }
