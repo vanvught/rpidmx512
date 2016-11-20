@@ -56,6 +56,6 @@
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr) {
 	console_set_fg_color(CONSOLE_RED);
 	printf("assertion \"%s\" failed: file \"%s\", line %d%s%s\n", failedexpr, file, line, func ? ", function: " : "", func ? func : "");
-	watchdog_stop();
+	bcm2835_watchdog_stop();
 	for(;;);
 }

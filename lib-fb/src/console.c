@@ -28,9 +28,12 @@
 #include <string.h>
 
 #include "arm/synchronize.h"
+#include "arm/arm.h"
+
 #include "bcm2835.h"
 #include "bcm2835_mailbox.h"
 #include "bcm2835_vc.h"
+
 #include "console.h"
 
 extern unsigned char FONT[];
@@ -134,12 +137,24 @@ void console_set_top_row(uint16_t row) {
 
 /**
  *
+ * @param address
+ */
+static void clear_row(uint32_t *address) {
+	uint16_t i;
+	const uint32_t value = ((uint32_t)cur_back << 16) | (uint32_t)cur_back;
+	for (i = 0 ; i < (CHAR_H * WIDTH) / 2 ; i++) {
+		*address++ =  value;
+	}
+}
+
+/**
+ *
  */
 inline static void newline() {
 	uint32_t i;
-	uint16_t *address;
-	uint16_t *to;
-	uint16_t *from;
+	uint32_t *address;
+	uint32_t *to;
+	uint32_t *from;
 
 	current_y++;
 	current_x = 0;
@@ -147,26 +162,22 @@ inline static void newline() {
 	if (current_y == HEIGHT / CHAR_H) {
 		if (top_row == 0) {
 			/* Pointer to row = 0 */
-			to = (uint16_t *) (fb_addr);
+			to = (uint32_t *) (fb_addr);
 			/* Pointer to row = 1 */
-			from = to + (CHAR_H * WIDTH);
+			from = to + (CHAR_H * WIDTH) / 2;
 			/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
-			i = (HEIGHT - CHAR_H) * WIDTH;
+			i = ((HEIGHT - CHAR_H) * WIDTH) / 2;
 		} else {
-			to = (uint16_t *) (fb_addr) + ((CHAR_H * WIDTH) * top_row);
-			from = to + (CHAR_H * WIDTH);
-			i = (HEIGHT - CHAR_H) * WIDTH - ((CHAR_H * WIDTH) * top_row);
+			to = (uint32_t *) (fb_addr) + ((CHAR_H * WIDTH) * top_row) / 2;
+			from = to + (CHAR_H * WIDTH) / 2;
+			i = ((HEIGHT - CHAR_H) * WIDTH - ((CHAR_H * WIDTH) * top_row)) / 2;
 		}
 
-		while (i-- != 0 ) {
-			*to++ = *from++;
-		}
+		memcpy_blk(to, from, i/8);
 
 		/* Clear last row */
-		address = (uint16_t *)(fb_addr) + ((HEIGHT - CHAR_H) * WIDTH);
-		for (i = 0 ; i < (CHAR_H * WIDTH) ; i++) {
-			*address++ =  cur_back;
-		}
+		address = (uint32_t *)(fb_addr) + ((HEIGHT - CHAR_H) * WIDTH) / 2;
+		clear_row(address);
 
 		current_y--;
 	}
@@ -508,8 +519,7 @@ void console_set_fg_bg_color(const uint16_t fore, const uint16_t back) {
  * @param line
  */
 void console_clear_line(const int line) {
-	uint16_t *address;
-	uint32_t i;
+	uint32_t *address;
 
 	if (line > HEIGHT / CHAR_H) {
 		return;
@@ -519,11 +529,8 @@ void console_clear_line(const int line) {
 
 	current_x = 0;
 
-	address = (uint16_t *)(fb_addr) + (line * CHAR_H * WIDTH);
-
-	for (i = 0; i < (CHAR_H * WIDTH); i++) {
-		*address++ = cur_back;
-	}
+	address = (uint32_t *)(fb_addr) + (line * CHAR_H * WIDTH) / 2;
+	clear_row(address);
 }
 
 /**
