@@ -62,8 +62,6 @@ static void data_gpio_fsel_output(void) {
 	value &= ~(7 << 15);
 	value |= BCM2835_GPIO_FSEL_OUTP << 15;
 	BCM2835_GPIO->GPFSEL2 = value;
-
-	dmb();
 }
 
 /**
@@ -82,8 +80,6 @@ static void data_gpio_fsel_input(void) {
 	value &= ~(7 << 15);
 	value |= BCM2835_GPIO_FSEL_INPT << 15;
 	BCM2835_GPIO->GPFSEL2 = value;
-
-	dmb();
 }
 
 /**
