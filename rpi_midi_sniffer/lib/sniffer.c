@@ -28,11 +28,10 @@
 
 #include "hardware.h"
 
-#include "sniffer_params.h"
 #include "midi.h"
-#include "midi_description.h"
-
 #include "console.h"
+
+#include "midi_description.h"
 
 static const struct _midi_message *midi_message;
 static uint32_t init_timestamp;
@@ -167,7 +166,18 @@ void sniffer_midi(void) {
 				break;
 				// > 3 bytes messages
 			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
-				(void) console_putc((int) '\n'); //TODO Not implemented, yet
+				printf(", [%d] ",(int) midi_message->bytes_count);
+				{
+					uint8_t c;
+					for (c = 0; c < MIN(midi_message->bytes_count, 16); c++) {
+						console_puthex(midi_message->system_exclusive[c]);
+						console_putc(' ');
+					}
+					if (c < midi_message->bytes_count) {
+						console_puts("..");
+					}
+				}
+				console_putc('\n');
 				break;
 			case MIDI_TYPES_INVALIDE_TYPE:
 			default:
@@ -184,7 +194,7 @@ void sniffer_init(void) {
 	//                          1234567890123456789012345678901234567890
 	const char header_line[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
 
-	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
+	console_set_fg_bg_color(CONSOLE_BLACK,CONSOLE_WHITE);
 
 	console_set_cursor(0, 3);
 
@@ -194,7 +204,7 @@ void sniffer_init(void) {
 		(void) console_putc((int) ' ');
 	}
 
-	console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_WHITE);
+	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
 
 	console_set_top_row(4);
 

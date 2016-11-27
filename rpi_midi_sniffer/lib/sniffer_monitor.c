@@ -32,7 +32,7 @@ void monitor_update(void) {
 	case MIDI_ACTIVE_SENSE_ENABLED:
 		console_save_cursor();
 		console_set_cursor(70, 3);
-		console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_WHITE);
+		console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_CYAN);
 		(void) console_puts("ACTIVE SENSING          ");
 		console_restore_cursor();
 		break;
