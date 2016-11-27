@@ -538,7 +538,7 @@ void console_clear_line(const int line) {
  * @return
  */
 int console_init() {
-	uint32_t mailbuffer[32] __attribute__((aligned(16)));
+	uint32_t *mailbuffer = (uint32_t *)MEM_COHERENT_REGION;
 
 	mailbuffer[0] = 22 * 4;
 	mailbuffer[1] = 0;
@@ -568,21 +568,26 @@ int console_init() {
 
 	mailbuffer[21] = 0;
 
-#if defined (RPI2) || defined (RPI3)
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
+#endif
+
 	dsb();
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
 #endif
 
 	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)&mailbuffer);
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)mailbuffer);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined (RPI3)
-	invalidate_data_cache();
-	dsb();
-#else
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
+	invalidate_data_cache();
 #endif
+
+	dmb();
 
 	if (mailbuffer[1] != BCM2835_MAILBOX_SUCCESS) {
 		return CONSOLE_FAIL_SETUP_FB;
