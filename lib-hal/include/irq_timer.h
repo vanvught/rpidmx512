@@ -33,7 +33,15 @@ typedef enum irq_timers {
 
 typedef void (*thunk_irq_timer_t)(const uint32_t);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void irq_timer_set(const _irq_timers, thunk_irq_timer_t);
 extern void irq_timer_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* IRQ_TIMER_H_ */

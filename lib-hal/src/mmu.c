@@ -146,13 +146,11 @@ void mmu_enable(void) {
 	    page_table[entry] = 0;
 	}
 
-#if defined (RPI3) // strongly ordered
 	//B = 0, C = 0, TEX = 0, S = 1
 	entry = MEM_COHERENT_REGION / MEGABYTE ;
 												///< 31   27   23   19   15   11   7    3
 												///<   28   24   20   16   12    8    4    0
 	page_table[entry] = entry << 20 | 0x10412;	///< 0000 0000 0000 0001 0000 0100 0001 0010
-#endif
 
 	clean_data_cache();
 	dmb();

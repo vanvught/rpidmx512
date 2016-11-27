@@ -114,10 +114,8 @@ void hardware_init(void) {
 	const uint32_t board_revision = bcm2835_vc_get_get_board_revision();
 
 	if ((board_revision == 0xa02082) || (board_revision == 0xa22082)) {
-#if defined (RPI3)
 		_hardware_led_f.init = bcm2837_gpio_virt_init;
 		_hardware_led_f.set = bcm2837_gpio_virt_led_set;
-#endif
 	} else if (board_revision > 0x00000f) {
 		_hardware_led_f.init = led_rpiplus_init;
 		_hardware_led_f.set = led_rpiplus_set;
