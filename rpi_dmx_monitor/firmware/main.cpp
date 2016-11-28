@@ -58,11 +58,11 @@ void notmain(void) {
 
 	hardware_init();
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("DMX Real-time Monitor");
-
 	dmx_init();
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("DMX Real-time Monitor");
 
 	DMXMonitor dmx_monitor;
 
