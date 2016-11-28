@@ -634,6 +634,8 @@ static void dmx_start_data(void) {
 		dmb();
 
 		__enable_fiq();
+
+		dmb();
 		break;
 	default:
 		break;
@@ -711,26 +713,34 @@ void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool
  *
  */
 static void pl011_init(void) {
-	uint32_t value;
+	uint32_t ibrd = 12;
 
 	dmb();
 
-	(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
+	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) == 3000000) {
+		(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
+		ibrd = 1;
+	}
+
 	BCM2835_PL011->CR = 0;												// Disable everything
-	value = BCM2835_GPIO->GPFSEL1;
-	value &= ~(7 << 12);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 12;								// Pin 14 PL011_TXD
-	value &= ~(7 << 15);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 15;								// Pin 15 PL011_RXD
-	BCM2835_GPIO->GPFSEL1 = value;
-	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);		// Disable pull-up/down
-	bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);		// Disable pull-up/down
+
+	dmb();
+
+    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
+
+    // Disable pull-up/down
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+
 	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 		;																// Poll the "flags register" to wait for the UART to stop transmitting or receiving
+
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;								// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
 	BCM2835_PL011->ICR = 0x7FF;											// Clear all interrupt status
-	BCM2835_PL011->IBRD = 1;											// UART Clock
-	BCM2835_PL011->FBRD = 0;											// 4000000 (4MHz)
+	BCM2835_PL011->IBRD = ibrd;											//
+	BCM2835_PL011->FBRD = 0;											//
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;			// Set 8, N, 2, FIFO disabled
 	BCM2835_PL011->CR = 0x301;											// Enable UART
 
@@ -740,8 +750,6 @@ static void pl011_init(void) {
 	dmb();
 
 	arm_install_handler((unsigned)fiq_dmx_in_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
-
-	dmb();
 }
 
 /**
