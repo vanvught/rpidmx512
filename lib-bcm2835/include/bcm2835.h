@@ -41,9 +41,7 @@
 #define GPU_MEM_BASE	GPU_CACHED_BASE
 #endif
 
-#if defined (RPI3)
-#define MEM_COHERENT_REGION		0x400000	///< On Raspberry Pi 3 we need a coherent memory region (1 section) for the property mailbox.
-#endif
+#define MEM_COHERENT_REGION		0x400000	///<
 
 ///< Speed of the core clock core_clk
 #if defined (RPI3)

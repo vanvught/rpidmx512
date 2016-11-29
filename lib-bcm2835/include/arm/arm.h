@@ -23,16 +23,11 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef ARM_H_
 #define ARM_H_
 
 #include <stddef.h>
 #include <stdbool.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum arm_vector {
 	ARM_VECTOR_RESET = 0x00,			///< Reset
@@ -47,6 +42,9 @@ typedef enum arm_vector {
 
 #define ARM_VECTOR(x)	(unsigned *)(x)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern bool arm_install_handler(unsigned routine, unsigned *vector);
 
 /**

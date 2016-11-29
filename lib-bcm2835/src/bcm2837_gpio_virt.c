@@ -27,7 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#if defined (RPI3)
+//#if defined (RPI3)
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -125,4 +125,4 @@ void bcm2837_gpio_virt_led_set(int val) {
 	dmb();
 	*(volatile uint32_t *)gpiovirtbuf = enables_disables[0];
 }
-#endif
+//#endif

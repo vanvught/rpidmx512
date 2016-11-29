@@ -54,29 +54,24 @@ struct vc_msg_uint32 {
  * @return
  */
 inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
-#if defined ( RPI3 )
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
-#else
-	struct vc_msg_uint32 p  __attribute__((aligned(16)));
-	struct vc_msg_uint32 *vc_msg = &p;
-#endif
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 4; /* we're just sending the clock ID which is one word long */
+	vc_msg->tag.data_size = 4;
 	vc_msg->tag.dev_id = dev_id;
 	vc_msg->tag.val = 0;
 	vc_msg->end_tag = 0;
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 
 	dsb();
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 #endif
 
@@ -84,7 +79,7 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
@@ -112,29 +107,24 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
  * @return
  */
 inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_id, const uint32_t val) {
-#if defined ( RPI3 )
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
-#else
-	struct vc_msg_uint32 p  __attribute__((aligned(16)));
-	struct vc_msg_uint32 *vc_msg = &p;
-#endif
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
 	vc_msg->request_code = 0;
 	vc_msg->tag.tag_id = tag_id;
 	vc_msg->tag.buffer_size = 8;
-	vc_msg->tag.data_size = 8; /* we're sending the clock ID and the new rates which is a total of 2 words */
+	vc_msg->tag.data_size = 8;
 	vc_msg->tag.dev_id = dev_id;
 	vc_msg->tag.val = val;
 	vc_msg->end_tag = 0;
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 
 	dsb();
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 #endif
 
@@ -142,7 +132,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
@@ -171,6 +161,23 @@ int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
 	return bcm2835_vc_get(BCM2835_VC_TAG_GET_CLOCK_RATE, clock_id);
 }
 
+
+struct vc_msg_tag_set_clock_rate {
+	uint32_t tag_id;		///< the message id
+	uint32_t buffer_size;	///< size of the buffer (which in this case is always 8 bytes)
+	uint32_t data_size;		///< amount of data being sent or received
+	uint32_t dev_id;		///< the ID of the clock
+	uint32_t val;			///< the value rate (in Hz) to set
+	uint32_t skip_turbo;	///<
+};
+
+struct vc_msg_set_clock_rate {
+	uint32_t msg_size;				///< simply, sizeof(struct vc_msg)
+	uint32_t request_code;			///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
+	struct vc_msg_tag_set_clock_rate tag;	///< the tag structure above to make
+	uint32_t end_tag;				///< an end identifier, should be set to NULL
+};
+
 /**
  * @ingroup VideoCore
  *
@@ -181,7 +188,49 @@ int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
  * @return rate (in Hz). A rate of 0 is returned if the clock does not exist.
  */
 int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_rate) {
-	return bcm2835_vc_set(BCM2835_VC_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
+	struct vc_msg_set_clock_rate *vc_msg = (struct vc_msg_set_clock_rate *)MEM_COHERENT_REGION;
+
+	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
+	vc_msg->request_code = 0;
+	vc_msg->tag.tag_id = BCM2835_VC_TAG_SET_CLOCK_RATE;
+	vc_msg->tag.buffer_size = 12;
+	vc_msg->tag.data_size = 12;
+	vc_msg->tag.dev_id = clock_id;
+	vc_msg->tag.val = clock_rate;
+	vc_msg->tag.skip_turbo = 0;
+	vc_msg->end_tag = 0;
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	clean_data_cache();
+#endif
+
+	dsb();
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
+#endif
+
+	bcm2835_mailbox_flush();
+	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
+	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
+	invalidate_data_cache();
+#endif
+
+	dmb();
+
+	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
+		return -1;
+	}
+
+	if (vc_msg->tag.dev_id != clock_id) {
+		return -1;
+	}
+
+	return (int32_t) vc_msg->tag.val;
+	//return bcm2835_vc_set(BCM2835_VC_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
 }
 
 int32_t bcm2835_vc_get_temperature(void) {
@@ -248,12 +297,7 @@ struct vc_msg_board_mac_address {
  * @return
  */
 int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
-#if defined ( RPI3 )
 	struct vc_msg_board_mac_address *vc_msg = (struct vc_msg_board_mac_address *)MEM_COHERENT_REGION;
-#else
-	struct vc_msg_board_mac_address p __attribute__((aligned(16)));
-	struct vc_msg_board_mac_address *vc_msg = &p;;
-#endif
 
 	vc_msg->msg_size = sizeof(struct vc_msg_board_mac_address);
 	vc_msg->request_code = 0;
@@ -263,13 +307,13 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	vc_msg->tag.mac_address[0] = 0;
 	vc_msg->end_tag = 0;
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 
 	dsb();
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 #endif
 
@@ -277,7 +321,7 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
@@ -326,12 +370,7 @@ struct vc_msg_uint32_t {
  * @return
  */
 inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
-#if defined ( RPI3 )
 	struct vc_msg_uint32_t *vc_msg = (struct vc_msg_uint32_t *)MEM_COHERENT_REGION;
-#else
-	struct vc_msg_uint32_t p __attribute__((aligned(16)));
-	struct vc_msg_uint32_t *vc_msg = &p;;
-#endif
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32_t);
 	vc_msg->request_code = 0;
@@ -341,13 +380,13 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	vc_msg->tag.value = 0;
 	vc_msg->end_tag = 0;
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 
 	dsb();
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 #endif
 
@@ -355,7 +394,7 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
@@ -417,12 +456,7 @@ struct vc_msg_board_ram {
  * @return
  */
 int32_t bcm2835_vc_get_memory(const uint32_t tag_id) {
-#if defined ( RPI3 )
 	struct vc_msg_board_ram *vc_msg = (struct vc_msg_board_ram *)MEM_COHERENT_REGION;
-#else
-	struct vc_msg_board_ram p __attribute__((aligned(16)));
-	struct vc_msg_board_ram *vc_msg = &p;;
-#endif
 
 	if ((tag_id != BCM2835_VC_TAG_GET_ARM_MEMORY) && (tag_id != BCM2835_VC_TAG_GET_VC_MEMORY)) {
 		return -1;
@@ -436,13 +470,13 @@ int32_t bcm2835_vc_get_memory(const uint32_t tag_id) {
 	vc_msg->tag.base_address = 0;
 	vc_msg->end_tag = 0;
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	clean_data_cache();
 #endif
 
 	dsb();
 
-#if defined (RPI2)  || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 #endif
 
@@ -450,7 +484,7 @@ int32_t bcm2835_vc_get_memory(const uint32_t tag_id) {
 	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
 	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
 
-#if defined (RPI2) || defined ( RPI3 )
+#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
