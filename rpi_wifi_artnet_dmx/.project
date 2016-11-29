@@ -7,8 +7,10 @@
 		<project>lib-artnet</project>
 		<project>lib-c++</project>
 		<project>lib-dmx</project>
+		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-lightset</project>
 		<project>lib-monitor</project>
 		<project>lib-utils</project>
 		<project>lib-ws28xx</project>

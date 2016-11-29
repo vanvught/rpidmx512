@@ -23,37 +23,39 @@
  * THE SOFTWARE.
  */
 
-#include <ap_params.h>
-#include <artnetparams.h>
-#include <deviceparams.h>
-#include <dmxparams.h>
-#include <fota.h>
-#include <fota_params.h>
-#include <network_params.h>
-#include <spisend.h>
 #include <stdio.h>
 #include <stdint.h>
-
-#include "software_version.h"
 
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
 #include "led.h"
 #include "monitor.h"
-#include "wifi.h"
-#include "udp.h"
 #include "console.h"
 
 #include "artnetnode.h"
-#include "dmxsend.h"
+#include "artnetparams.h"
 
-#define ESP822_FIRMWARE_VERSION_LENGTH	64
+#include "dmxsend.h"
+#include "dmxparams.h"
+
+#include "spisend.h"
+#include "deviceparams.h"
+
+#include "wifi.h"
+#include "udp.h"
+#include "ap_params.h"
+#include "network_params.h"
+
+#include "fota.h"
+#include "fota_params.h"
+
+#include "software_version.h"
 
 extern "C" {
 
 void notmain(void) {
-	_output_type output_type;
+	_output_type output_type = OUTPUT_TYPE_DMX;
 	uint32_t period = (uint32_t) 0;
 	uint8_t mac_address[6];
 	struct ip_info ip_config;
@@ -78,8 +80,8 @@ void notmain(void) {
 		(void) dmxparams.Load();
 	}
 
-	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("WiFi ArtNet 3 Node DMX Output / Pixel controller [V%s]", SOFTWARE_VERSION);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("WiFi ArtNet 3 Node DMX Output / Pixel controller {4 DMX Universes}");
 
 	console_set_top_row(3);
 
