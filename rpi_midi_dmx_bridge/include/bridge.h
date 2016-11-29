@@ -29,8 +29,8 @@
 #include "tables.h"
 
 extern void bridge(void);
-extern void bridge_set_func(thunk_t);
-extern /*@shared@*/ thunk_t bridge_get_func(void);
+extern void bridge_set_func(thunk_irq_timer_t);
+extern /*@shared@*/ thunk_irq_timer_t bridge_get_func(void);
 extern void bridge_init(void);
 
 #endif /* BRIDGE_H_ */

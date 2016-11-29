@@ -5,6 +5,7 @@
 	<projects>
 		<project>firmware-template</project>
 		<project>lib-hal</project>
+		<project>lib-midi</project>
 		<project>lib-monitor</project>
 		<project>lib-utils</project>
 	</projects>

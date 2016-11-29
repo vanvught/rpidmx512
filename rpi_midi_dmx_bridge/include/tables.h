@@ -53,10 +53,10 @@
  * simply (table_foo_end - table_foo_start).
  */
 
-typedef void (*thunk_t)(void);
+typedef void (*thunk_irq_timer_t)(void);
 
 typedef struct {
-	thunk_t f;
+	thunk_irq_timer_t f;
 	const char * name;
 } initializer_t;
 

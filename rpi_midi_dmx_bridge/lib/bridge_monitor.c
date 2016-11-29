@@ -25,11 +25,33 @@
 #include <stddef.h>
 
 #include "tables.h"
+#include "console.h"
 #include "monitor.h"
+#include "midi.h"
 
-static /*@null@*/ thunk_t bridge_monitor_func = NULL;
+static /*@null@*/ thunk_irq_timer_t bridge_monitor_func = NULL;
 
 void monitor_update(void) {
+	// Handle Active Sensing messages
+	switch (midi_get_active_sense_state()) {
+	case MIDI_ACTIVE_SENSE_ENABLED:
+		console_save_cursor();
+		console_set_cursor(70, 4);
+		console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_CYAN);
+		(void) console_puts("ACTIVE SENSING          ");
+		console_restore_cursor();
+		break;
+	case MIDI_ACTIVE_SENSE_FAILED:
+		console_save_cursor();
+		console_set_cursor(70, 4);
+		console_set_fg_bg_color(CONSOLE_RED, CONSOLE_WHITE);
+		(void) console_puts("ACTIVE SENSING - Failed!");
+		console_restore_cursor();
+		break;
+	default:
+		break;
+	}
+
 	monitor_time_uptime(3);
 
 	if (bridge_monitor_func != NULL) {
@@ -41,7 +63,7 @@ void monitor_update(void) {
  *
  * @param func
  */
-void bridge_monitor_set_func(thunk_t func) {
+void bridge_monitor_set_func(thunk_irq_timer_t func) {
 	bridge_monitor_func = func;
 }
 
@@ -49,6 +71,6 @@ void bridge_monitor_set_func(thunk_t func) {
  *
  * @return
  */
-/*@shared@*/thunk_t bridge_monitor_get_func(void) {
+/*@shared@*/thunk_irq_timer_t bridge_monitor_get_func(void) {
 	return bridge_monitor_func;
 }

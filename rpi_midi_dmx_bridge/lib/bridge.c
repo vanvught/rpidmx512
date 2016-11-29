@@ -25,11 +25,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <stdio.h>
+
 #include "tables.h"
 #include "console.h"
 #include "bridge_params.h"
 
-static /*@null@*/ thunk_t bridge_func = NULL;
+static /*@null@*/ thunk_irq_timer_t bridge_func = NULL;
 
 /**
  *
@@ -44,7 +46,7 @@ void bridge(void) {
  *
  * @param func
  */
-void bridge_set_func(thunk_t func) {
+void bridge_set_func(thunk_irq_timer_t func) {
 	bridge_func = func;
 }
 
@@ -52,7 +54,7 @@ void bridge_set_func(thunk_t func) {
  *
  * @return
  */
-/*@shared@*/ thunk_t bridge_get_func(void) {
+/*@shared@*/ thunk_irq_timer_t bridge_get_func(void) {
 	return bridge_func;
 }
 

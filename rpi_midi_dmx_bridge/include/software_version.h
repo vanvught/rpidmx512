@@ -1,8 +1,8 @@
 /**
- * @file gpio.h
+ * @file software_version.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,9 @@
  * THE SOFTWARE.
  */
 
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#ifndef GPIO_H_
-#define GPIO_H_
+static const char SOFTWARE_VERSION[] = "1.1";
 
-#ifdef LOGIC_ANALYZER
-#include "bcm2835.h"
-#endif
-
-#define GPIO_DMX_DATA_DIRECTION		18	///<  RPI_V2_GPIO_P1_12
-
-#ifdef LOGIC_ANALYZER
-#define GPIO_ANALYZER_CH1			RPI_V2_GPIO_P1_23	///< CLK
-#define GPIO_ANALYZER_CH2			RPI_V2_GPIO_P1_21	///< MISO
-#define GPIO_ANALYZER_CH3			RPI_V2_GPIO_P1_19	///< MOSI
-#define GPIO_ANALYZER_CH4			RPI_V2_GPIO_P1_24	///< CE0
-#define GPIO_ANALYZER_CH5			RPI_V2_GPIO_P1_26	///< CE1
-#endif
-
-
-#endif /* GPIO_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

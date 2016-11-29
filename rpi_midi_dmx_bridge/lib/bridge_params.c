@@ -45,7 +45,6 @@ static const char PARAMS_BREAK_TIME[] ALIGNED = "dmx_break_time";		///<
 static const char PARAMS_MAB_TIME[] ALIGNED = "dmx_mab_time";			///<
 static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmx_refresh_rate";	///<
 static const char PARAMS_START_ADDRESS[] ALIGNED = "dmx_start_address";	///<
-static const char PARAMS_BAUDRATE[] ALIGNED = "midi_baudrate";			///<
 static const char PARAMS_CHANNEL[] ALIGNED = "midi_channel";			///<
 static const char PARAMS_MODE[] ALIGNED = "bridge_mode";				///<
 
@@ -53,7 +52,6 @@ static uint8_t bridge_params_break_time = BRIDGE_PARAMS_DEFAULT_BREAK_TIME;		///
 static uint8_t bridge_params_mab_time = BRIDGE_PARAMS_DEFAULT_MAB_TIME;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
 static uint8_t bridge_params_refresh_rate = BRIDGE_PARAMS_DEFAULT_REFRESH_RATE;	///< DMX output rate in packets per second. Valid range is 1 to 40.
 static uint16_t bridge_params_dmx_start_address = 1;							///<
-static uint32_t bridge_params_midi_baudrate = MIDI_BAUDRATE_DEFAULT;			///<
 static uint8_t bridge_params_midi_channel = MIDI_CHANNEL_OMNI;					///<
 static uint8_t bridge_params_bridge_mode = 0;									///<
 static uint8_t bridge_params_table_index = 0;									///<
@@ -86,18 +84,12 @@ static void process_line_read(const char *line) {
 		bridge_params_bridge_mode = value8;
 	}
 
-	if (sscan_uint32_t(line, PARAMS_BAUDRATE, &value32) == 2) {
-		if (value32 == 0) {
-			bridge_params_midi_baudrate = MIDI_BAUDRATE_DEFAULT;
+	if (sscan_uint32_t(line, PARAMS_START_ADDRESS, &value32) == 2) {
+		if (bridge_params_dmx_start_address > DMX_UNIVERSE_SIZE) {
+			bridge_params_dmx_start_address = (uint16_t) DMX_UNIVERSE_SIZE;
 		} else {
-			bridge_params_midi_baudrate = value32;
+			bridge_params_dmx_start_address = (uint16_t) value32;
 		}
-	} else if (sscan_uint32_t(line, PARAMS_START_ADDRESS, &value32) == 2) {
-			if (bridge_params_dmx_start_address > DMX_UNIVERSE_SIZE) {
-				bridge_params_dmx_start_address = (uint16_t) DMX_UNIVERSE_SIZE;
-			} else {
-				bridge_params_dmx_start_address = (uint16_t) value32;
-			}
 	}
 }
 
@@ -174,8 +166,9 @@ void bridge_params_init(void) {
 	dmx_set_output_break_time((uint32_t) ((double) (bridge_params_break_time) * (double) (10.67)));
 	dmx_set_output_mab_time((uint32_t) ((double) (bridge_params_mab_time) * (double) (10.67)));
 
-	midi_set_interface(0);		// SPI
-	midi_set_baudrate(bridge_params_midi_baudrate);
+	// It is expected that there is always a default 'mode_0.c' implementation.
+	bridge_set_func(modes_table[0].f);
+	bridge_monitor_set_func(modes_monitor_table[0].f);
 
 	sprintf(mode_function_name, "mode_%d", (int)bridge_params_bridge_mode);
 

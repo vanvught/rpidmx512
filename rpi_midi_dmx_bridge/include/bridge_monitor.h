@@ -28,8 +28,8 @@
 
 #include "tables.h"
 
-extern void bridge_monitor_set_func(thunk_t func);
-extern /*@shared@*/thunk_t bridge_monitor_get_func(void);
+extern void bridge_monitor_set_func(thunk_irq_timer_t func);
+extern /*@shared@*/thunk_irq_timer_t bridge_monitor_get_func(void);
 
 
 #endif /* BRIDGE_MONITOR_H_ */
