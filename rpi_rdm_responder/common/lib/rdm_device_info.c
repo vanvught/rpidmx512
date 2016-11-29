@@ -491,7 +491,7 @@ const uint8_t * rdm_device_info_get_uuid(void) {
 void rdm_device_info_init(void) {
 #ifdef RDM_RESPONDER
 	uint16_t device_model;
-	const int32_t board_model_id = hardware_get_board_model_id();
+	const int32_t board_model_id = hardware_board_get_model_id();
 	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
 	const uint16_t sub_device_count = rdm_sub_devices_get();
 #endif

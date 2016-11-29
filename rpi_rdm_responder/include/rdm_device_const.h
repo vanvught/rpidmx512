@@ -3,7 +3,7 @@
  *
  * @brief These definitions are private for the RDM Responder
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,25 @@
 #ifndef RDM_DEVICE_CONST_H_
 #define RDM_DEVICE_CONST_H_
 
+#include <stdint.h>
+
+#include "util.h"
+
 #include "rdm.h"
 #include "sofware_version_id.h"
 
-static const char DEVICE_LABEL[] = "Raspberry Pi";				///<
-static const char DEVICE_MANUFACTURER_NAME[] = "AvV";			///<
-static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const char DEVICE_SUPPORTED_LANGUAGE[] = "en";			///<
-static const char DEVICE_SOFTWARE_VERSION[] = "1.0";			///<
+static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi";				///<
+static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";			///<
+static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
+static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";			///<
+static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.3";			///<
 
-#define DEFAULT_DMX_START_ADDRESS		1						///<
-#define DEFAULT_CURRENT_PERSONALITY		1						///<
-#define DMX_FOOTPRINT					32						///<
+#define DEFAULT_DMX_START_ADDRESS		1	///<
+#define DEFAULT_CURRENT_PERSONALITY		1	///<
+#define DMX_FOOTPRINT					32	///<
 
-static const struct _rdm_personality rdm_personalities[] = {
-		{ (uint16_t)32, "RDM Responder / DMX Analyzer", (uint8_t)28 }
+static const struct _rdm_personality rdm_personalities[] ALIGNED = {
+		{ (uint16_t)DMX_FOOTPRINT, "RDM Responder / DMX Controller", (uint8_t)30 }
 		};
 
 #endif /* RDM_DEVICE_CONST_H_ */

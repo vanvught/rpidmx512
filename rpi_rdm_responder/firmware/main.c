@@ -27,13 +27,19 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "led.h"
+
+#include "monitor.h"
+
 #include "dmx.h"
 #include "dmx_devices.h"
 #include "rdm_device_info.h"
-#include "monitor.h"
-#include "led.h"
+#include "rdm_monitor.h"
+#include "rdm_device_const.h"
 
-#include "software_version.h"
+
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 extern void dmx_init(void);
 
@@ -88,18 +94,22 @@ inline static void events_check() {
 	}
 }
 
+#include "console.h"
+
 void notmain(void) {
 	int i;
 
 	hardware_init();
+
 	dmx_init();
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+
 	rdm_device_info_init();
 
-	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("RDM Responder / DMX Slave, Devices connected : %d [V%s]\n", dmx_devices_get_devices_connected(), SOFTWARE_VERSION);
+	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("RDM Responder / DMX Slave, Devices connected : %d\n", dmx_devices_get_devices_connected());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
-	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0],
-			uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	monitor_print_root_device_label();
 
 	hardware_watchdog_init();
@@ -107,9 +117,9 @@ void notmain(void) {
 	events_init();
 
 	for (;;) {
-		hardware_watchdog_feed();
 		for (i = 0; i < (int)(sizeof(poll_table) / sizeof(poll_table[0])); i++) {
 			poll_table[i].f();
+			hardware_watchdog_feed();
 		}
 
 		events_check();

@@ -28,11 +28,15 @@
 #include "console.h"
 #include "monitor.h"
 #include "util.h"
+
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_device_info.h"
 #include "rdm_handle_data.h"
+#include "rdm_monitor.h"
+
 #include "dmx_devices.h"
+
 
 static uint32_t function_count_previous = 0;			///<
 static uint32_t run_count_previous = 0;		///<
@@ -62,11 +66,10 @@ void monitor_update(void) {
 
 		const uint8_t *dmx_data = dmx_get_current_data();
 		const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
-		const uint16_t slots_in_packet = (uint16_t) (dmx_statistics->statistics.slots_in_packet);
+		const uint16_t slots_in_packet = (dmx_get_updates_per_seconde() == 0) ? (uint16_t) 0 : (uint16_t) (dmx_statistics->statistics.slots_in_packet);
 
 		for (i = 0; i < 16; i++) {
-			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?
-							(dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
+			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
 			if (i < slots_in_packet) {
 				uint8_t data = dmx_data[index];
 				if (data == 0) {
@@ -84,8 +87,7 @@ void monitor_update(void) {
 		printf("\n%.3d-%.3d : ", (int)((dmx_start_address + 16) & 0x1FF), (int)((dmx_start_address + 31) & 0x1FF));
 
 		for (i = 16; i < 32; i++) {
-			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ?
-							(dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
+			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);
 			if (i < slots_in_packet) {
 				uint8_t data = dmx_data[index];
 				if (data == 0) {

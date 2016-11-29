@@ -26,16 +26,21 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "arm/synchronize.h"
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
+
 #include "util.h"
 #include "tables.h"
 #include "read_config_file.h"
 #include "sscan.h"
+
 #include "dmx_devices.h"
 #include "dmx.h"
 
 extern int sscan_spi(const char *, char *, char *, uint8_t *, uint8_t *, uint16_t *, uint32_t *, uint8_t *);
+
+volatile static bool is_devices_zero = false;
 
 
 TABLE(initializer_t, devices)
@@ -44,8 +49,6 @@ TABLE(initializer_t, devices_zero)
 
 devices_t devices_connected ALIGNED;											///<
 volatile static struct _dmx_devices_statistics dmx_devices_statistics ALIGNED;	///<
-
-static bool dmx_devices_is_zero  = false;										///<
 
 /**
  * @ingroup dmx
@@ -245,7 +248,7 @@ void dmx_devices_zero(void) {
 		devices_zero_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), NULL);
 	}
 
-	dmx_devices_is_zero = true;
+	is_devices_zero = true;
 }
 
 /**
@@ -254,30 +257,30 @@ void dmx_devices_zero(void) {
  */
 void dmx_devices_run() {
 	uint16_t i;
-	volatile uint32_t dmx_updates_per_seconde;
-	const uint8_t *dmx_data = dmx_get_available();
 
 	dmx_devices_statistics.function_count++;
 
-	if (dmx_data == NULL) {
-		dmx_updates_per_seconde = dmx_get_updates_per_seconde();
+	if (dmx_get_updates_per_seconde() == 0) {
+		if (!is_devices_zero) {
+			dmx_devices_zero();
+		} else {
+			return;
+		}
+	} else {
+		const uint8_t *dmx_data = dmx_is_data_changed();
 
-		if (dmx_updates_per_seconde == 0) {
-			if (!dmx_devices_is_zero) {
-				dmx_devices_zero();
-			}
+		if (dmx_data == NULL) {
+			return;
 		}
 
-		return;
-	}
+		for (i = 0; i < devices_connected.elements_count; i++) {
+			devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), dmx_data);
+		}
 
-	dmx_devices_is_zero = false;
+		is_devices_zero = false;
+	}
 
 	dmx_devices_statistics.run_count++;
-
-	for (i = 0; i < devices_connected.elements_count; i++) {
-		devices_table[devices_connected.device_entry[i].devices_table_index].f(&(devices_connected.device_entry[i].dmx_device_info), dmx_data);
-	}
 }
 
 /**

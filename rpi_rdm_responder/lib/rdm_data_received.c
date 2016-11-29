@@ -36,17 +36,21 @@
  * The function is registered in the poll table \file main.c
  */
 void rdm_data_received(void) {
-	uint8_t *rdm_data = (uint8_t *)rdm_get_available();
+	uint8_t *rdm_data = (uint8_t *) rdm_get_available();
 
 	if (rdm_data == NULL) {
 		return;
 	}
 
-	const struct _rdm_command *rdm_cmd = (struct _rdm_command *)rdm_data;
+	if (rdm_data[0] == 0xFE) {
+		return;
+	}
 
-	const uint8_t command_class = rdm_cmd->command_class;
+	if (rdm_data[0] == E120_SC_RDM) {
+		const struct _rdm_command *rdm_cmd = (struct _rdm_command *) rdm_data;
+		const uint8_t command_class = rdm_cmd->command_class;
 
-	switch (command_class) {
+		switch (command_class) {
 		case E120_DISCOVERY_COMMAND:
 		case E120_GET_COMMAND:
 		case E120_SET_COMMAND:
@@ -54,5 +58,6 @@ void rdm_data_received(void) {
 			break;
 		default:
 			break;
+		}
 	}
 }

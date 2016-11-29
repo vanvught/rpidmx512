@@ -30,8 +30,8 @@
 #include "dmx_devices.h"
 
 int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *address, uint16_t *dmx, uint32_t *speed, uint8_t *pixels) {
-	int i;
-	int k;
+	int i = 0;
+	int k = 0;
 	char c;
 	uint16_t uint16;
 	uint32_t uint32;

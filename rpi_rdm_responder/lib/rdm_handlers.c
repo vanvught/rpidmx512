@@ -211,8 +211,8 @@ static void rdm_get_device_info(uint16_t sub_device) {
  * @param sub_device
  */
 static void rdm_get_device_model_description(/*@unused@*/uint16_t sub_device) {
-	const char *board_model = hardware_get_board_model();
-	const uint8_t board_model_length = hardware_get_board_model_length();
+	const char *board_model = hardware_board_get_model();
+	const uint8_t board_model_length = hardware_board_get_model_length();
 
 	handle_string(board_model, board_model_length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
@@ -361,7 +361,7 @@ static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device) {
 		return;
 	}
 
-	boot_software_version_id = hardware_get_firmware_revision();
+	boot_software_version_id = hardware_firmware_get_revision();
 
 	rdm_command->param_data_length = RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
@@ -388,8 +388,8 @@ static void rdm_get_boot_software_version_label(/*@unused@*/uint16_t sub_device)
 		return;
 	}
 
-	firmware_copyright = hardware_get_firmware_copyright();
-	firmware_copyright_length = hardware_get_firmware_copyright_length();
+	firmware_copyright = hardware_firmware_get_copyright();
+	firmware_copyright_length = hardware_firmware_get_copyright_length();
 
 	handle_string(firmware_copyright, firmware_copyright_length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);

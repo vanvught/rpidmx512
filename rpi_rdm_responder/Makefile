@@ -1,7 +1,7 @@
 #
 DEFINES = RDM_RESPONDER
 #
-LIBS = utils monitor
+LIBS = dmx utils monitor
 #
 SRCDIR = common/lib devices firmware lib
 
