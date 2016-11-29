@@ -34,9 +34,12 @@
 #include "usb.h"
 #include "util.h"
 #include "monitor.h"
+
 #include "widget.h"
 #include "widget_params.h"
 #include "widget_usb.h"
+#include "widget_monitor.h"
+
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"

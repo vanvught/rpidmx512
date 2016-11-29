@@ -1,8 +1,8 @@
 /**
- * @file rdm_handle_data.h
+ * @file widget_monitor.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_HANDLE_DATA_H_
-#define RDM_HANDLE_DATA_H_
+#ifndef WIDGET_MONITOR_H_
+#define WIDGET_MONITOR_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
-extern const uint8_t rdm_is_muted(void);
-extern void rdm_handle_data(uint8_t *rdm_data);
+extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *, bool);
 
-#endif /* RDM_HANDLE_DATA_H_ */
+extern void monitor_update(void);
+
+#endif /* WIDGET_MONITOR_H_ */

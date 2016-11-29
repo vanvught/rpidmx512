@@ -1,7 +1,7 @@
 #
 DEFINES = RDM_CONTROLLER UPDATE_CONFIG_FILE
 #
-LIBS = utils monitor
+LIBS = dmx utils monitor
 #
 SRCDIR = common/lib firmware lib
 #

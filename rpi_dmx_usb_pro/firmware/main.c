@@ -30,15 +30,19 @@
 #include "hardware.h"
 #include "usb.h"
 #include "util.h"
-#include "dmx.h"
-#include "widget_params.h"
-#include "rdm_device_info.h"
-#include "widget.h"
 #include "monitor.h"
 
-#include "software_version.h"
+#include "dmx.h"
 
-extern void dmx_init(void);
+#include "rdm_monitor.h"
+#include "rdm_device_info.h"
+#include "rdm_device_const.h"
+
+#include "widget_params.h"
+#include "widget.h"
+
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 struct _poll {
 	void (*f)(void);
@@ -98,15 +102,17 @@ int notmain(void) {
 
 	hardware_init();
 	usb_init();
+
 	dmx_init();
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+
 	widget_params_init();
 	rdm_device_info_init();
 
-	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d [V%s]\n",	widget_get_mode(), SOFTWARE_VERSION);
+	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d\n",	widget_get_mode());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
-	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0],
-			uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	monitor_print_root_device_label();
 
 	hardware_watchdog_init();
