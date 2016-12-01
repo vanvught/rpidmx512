@@ -1,8 +1,8 @@
 #
-DEFINES = E131_DMX NDEBUG
+DEFINES = NDEBUG
 #
-LIBS = monitor e131 dmx dmxmonitor lightset esp8266 c++
+LIBS = e131 dmx dmxmonitor monitor lightset esp8266 c++
 #
-SRCDIR = firmware lib common/lib
+SRCDIR = firmware
 
 include ../firmware-template/Rules.mk

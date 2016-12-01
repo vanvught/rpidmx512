@@ -54,12 +54,13 @@
 extern "C" {
 
 void notmain(void) {
-	_output_type output_type;
-	uint8_t mac_address[6];
+	_output_type output_type = OUTPUT_TYPE_MONITOR;
+	uint8_t mac_address[6] ALIGNED;
 	struct ip_info ip_config;
 	E131Params e131params;
+	DMXParams dmxparams;
 	uuid_t uuid;
-	char uuid_str[UUID_STRING_LENGTH + 1];
+	char uuid_str[UUID_STRING_LENGTH + 1] ALIGNED;
 
 	hardware_init();
 
@@ -76,8 +77,15 @@ void notmain(void) {
 
 	output_type = e131params.GetOutputType();
 
-	printf("%s Compiled on %s at %s\n", hardware_get_board_model(), __DATE__, __TIME__);
-	printf("WiFi sACN E.131 DMX Out [V%s]", SOFTWARE_VERSION);
+	if (output_type == OUTPUT_TYPE_MONITOR) {
+		//
+	} else {
+		output_type = OUTPUT_TYPE_DMX;
+		(void) dmxparams.Load();
+	}
+
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("WiFi sACN E.131 DMX Out / Real-time DMX Monitor");
 
 	console_set_top_row(3);
 
@@ -170,10 +178,6 @@ void notmain(void) {
 		console_set_top_row(20);
 	} else {
 		bridge.SetOutput(&dmx);
-
-		DMXParams dmxparams;
-
-		(void) dmxparams.Load();
 
 		dmx.SetBreakTime(dmxparams.GetBreakTime());
 		dmx.SetMabTime(dmxparams.GetMabTime());
