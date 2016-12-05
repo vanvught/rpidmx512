@@ -1,5 +1,11 @@
 /**
- * @file artnetparams.h
+ * @file artnettimecode.cpp
+ *
+ */
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ *
+ * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,31 +29,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETPARAMS_H_
-#define ARTNETPARAMS_H_
+#include "artnettimecode.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+ArtNetTimeCode::~ArtNetTimeCode (void)
+{
 
-typedef enum {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
-} _output_type;
-
-class ArtNetParams {
-public:
-	ArtNetParams(void);
-	~ArtNetParams(void);
-
-	bool Load(void);
-
-	const _output_type GetOutputType(void);
-	const uint8_t GetNet(void);
-	const uint8_t GetSubnet(void);
-	const uint8_t GetUniverse(void);
-
-	const bool IsUseTimeCode(void);
-};
-
-#endif /* ARTNETPARAMS_H_ */
+}

@@ -1,5 +1,5 @@
 /**
- * @file artnetparams.h
+ * @file artnettimecode.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,31 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETPARAMS_H_
-#define ARTNETPARAMS_H_
+#ifndef ARTNETTIMECODE_H_
+#define ARTNETTIMECODE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-typedef enum {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
-} _output_type;
+#if  ! defined (PACKED)
+#define PACKED __attribute__((packed))
+#endif
 
-class ArtNetParams {
+struct TArtNetTimeCode {
+	uint8_t Frames;			///< Frames time. 0 – 29 depending on mode.
+	uint8_t Seconds;		///< Seconds. 0 - 59.
+	uint8_t Minutes;		///< Minutes. 0 - 59.
+	uint8_t Hours;			///< Hours. 0 - 59.
+	uint8_t Type;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+} PACKED;
+
+
+class ArtNetTimeCode {
 public:
-	ArtNetParams(void);
-	~ArtNetParams(void);
+	virtual ~ArtNetTimeCode(void);
 
-	bool Load(void);
+	virtual void Start(void)= 0;
+	virtual void Stop(void)= 0;
 
-	const _output_type GetOutputType(void);
-	const uint8_t GetNet(void);
-	const uint8_t GetSubnet(void);
-	const uint8_t GetUniverse(void);
-
-	const bool IsUseTimeCode(void);
+	virtual void Handler(const struct TArtNetTimeCode *)= 0;
 };
 
-#endif /* ARTNETPARAMS_H_ */
+
+#endif /* ARTNETTIMECODE_H_ */

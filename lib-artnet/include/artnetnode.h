@@ -47,11 +47,14 @@
 #include <time.h>
 #endif
 
-#include "blinktask.h"
-#include "lightset.h"
-#include "packets.h"
 #include "artnet.h"
+#include "packets.h"
 #include "common.h"
+
+#include "lightset.h"
+#include "artnettimecode.h"
+
+#include "blinktask.h"
 
 /**
  * ArtPollReply packet, Field 12
@@ -182,6 +185,8 @@ public:
 
 	void SetOutput(LightSet *);
 
+	void SetTimeCodeHandler(ArtNetTimeCode *);
+
 	const uint8_t *GetSoftwareVersion(void);
 
 	void Start(void);
@@ -217,6 +222,7 @@ private:
 	void HandleDmx(void);
 	void HandleSync(void);
 	void HandleAddress(void);
+	void HandleTimeCode(void);
 
 	bool IsMergedDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
 	void CheckMergeTimeouts(const uint8_t);
@@ -228,23 +234,26 @@ private:
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
-	CBlinkTask 				*m_pBlinkTask;	///<
+	CBlinkTask 				*m_pBlinkTask;		///<
 #if defined (__circle__)
-	CNetSubSystem			*m_pNet;		///<
-	CSocket					m_Socket;		///<
+	CNetSubSystem			*m_pNet;			///<
+	CSocket					m_Socket;			///<
 #else
 	CBlinkTask				m_BlinkTask;
 #endif
-	bool 					m_IsDHCPUsed;	///<
-	LightSet    			*m_pLightSet;	///<
+	bool 					m_IsDHCPUsed;		///<
+
+	LightSet    			*m_pLightSet;		///<
+	ArtNetTimeCode			*m_pArtNetTimeCode;	///<
+
 	time_t 					m_nCurrentPacketTime;
 
-	struct TArtNetNode		m_Node;			///< Struct describing the node
-	struct TArtNetNodeState m_State;		///< The current state of the node
+	struct TArtNetNode		m_Node;				///< Struct describing the node
+	struct TArtNetNodeState m_State;			///< The current state of the node
 
-	struct TArtNetPacket 	m_ArtNetPacket;	///< The received Art-Net package
-	struct TArtPollReply	m_PollReply;	///<
-	struct TArtDiagData		m_DiagData;		///<
+	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
+	struct TArtPollReply	m_PollReply;		///<
+	struct TArtDiagData		m_DiagData;			///<
 
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 

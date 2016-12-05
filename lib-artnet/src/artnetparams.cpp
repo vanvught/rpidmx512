@@ -36,11 +36,13 @@ static const char PARAMS_NET[] ALIGNED = "net";					///<
 static const char PARAMS_SUBNET[] ALIGNED = "subnet";			///<
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";		///<
 static const char PARAMS_OUTPUT[] ALIGNED = "output";			///<
+static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";	///<
 
 static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
 static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
 static uint8_t ArtNetParamsUniverse ALIGNED = 0;						///<
 static _output_type ArtNetParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
+static bool ArtNetParamsUseTimeCode = false;							///<
 
 /**
  *
@@ -51,6 +53,13 @@ static void process_line_read(const char *line) {
 	uint8_t len = 3;
 	uint8_t value8;
 
+	if (sscan_uint8_t(line, PARAMS_TIMECODE, &value8) == 2) {
+		if (value8 != 0) {
+			ArtNetParamsUseTimeCode = true;
+		}
+		return;
+	}
+
 	if (sscan_uint8_t(line, PARAMS_NET, &value8) == 2) {
 		ArtNetParamsNet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_SUBNET, &value8) == 2) {
@@ -60,8 +69,11 @@ static void process_line_read(const char *line) {
 	} else if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
 		if(memcmp(value, "spi", 3) == 0) {
 			ArtNetParamsOutputType = OUTPUT_TYPE_SPI;
+		} else if(memcmp(value, "mon", 3) == 0) {
+			ArtNetParamsOutputType = OUTPUT_TYPE_MONITOR;
 		}
 	}
+
 }
 
 /**
@@ -110,6 +122,14 @@ const uint8_t ArtNetParams::GetSubnet(void) {
  */
 const uint8_t ArtNetParams::GetUniverse(void) {
 	return ArtNetParamsUniverse;
+}
+
+/**
+ *
+ * @return
+ */
+const bool ArtNetParams::IsUseTimeCode(void) {
+	return ArtNetParamsUseTimeCode;
 }
 
 /**

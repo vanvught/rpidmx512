@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <assert.h>
 
+#undef __circle__
+
 #if defined (__circle__)
 #include <circle/util.h>
 #include <circle/time.h>
@@ -54,14 +56,16 @@
 #include "sys_time.h"
 #endif
 
-//#define SENDDIAG
-
-#include "blinktask.h"
 #include "artnetnode.h"
 #include "packets.h"
+
 #include "lightset.h"
+#include "artnettimecode.h"
+
+#include "blinktask.h"
 
 #if defined (__circle__)
+//#define SENDDIAG
 static const char FromArtNetNode[] = "artnetnode";
 #endif
 
@@ -92,11 +96,11 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x05 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x06 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
-#define ARTNET_MIN_HEADER_SIZE		12							///< \ref TArtPoll \ref TArtSync
-#define MERGE_TIMEOUT_SECONDS		10							///<
+#define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
+#define ARTNET_MERGE_TIMEOUT_SECONDS	10						///<
 
 #define PORT_IN_STATUS_DISABLED_MASK	0x08
 
@@ -111,6 +115,7 @@ ArtNetNode::ArtNetNode(CNetSubSystem *pNet, CActLED *pActLED) :
 		m_Socket(m_pNet, IPPROTO_UDP),
 		m_IsDHCPUsed(true),
 		m_pLightSet(0),
+		m_ArtNetTimeCode(0),
 		m_bDirectUpdate(false) {
 
 	m_pBlinkTask = new CBlinkTask (pActLED, 1);
@@ -119,6 +124,7 @@ ArtNetNode::ArtNetNode(void) :
 		m_pBlinkTask(0),
 		m_IsDHCPUsed(true),
 		m_pLightSet(0),
+		m_pArtNetTimeCode(0),
 		m_bDirectUpdate(false) {
 
 	m_pBlinkTask = &m_BlinkTask;
@@ -593,6 +599,9 @@ int ArtNetNode::HandlePacket(void) {
 	case OP_ADDRESS:
 		HandleAddress();
 		break;
+	case OP_TIMECODE:
+		HandleTimeCode();
+		break;
 	default:
 		// ArtNet but OpCode is not implemented
 		// Just skip ... no error
@@ -758,12 +767,12 @@ void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
 	const time_t timeOutA = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeA;
 	const time_t timeOutB = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeB;
 
-	if (timeOutA > (time_t)MERGE_TIMEOUT_SECONDS) {
+	if (timeOutA > (time_t)ARTNET_MERGE_TIMEOUT_SECONDS) {
 		m_OutputPorts[nPortId].ipA = 0;
 		m_State.IsMergeMode = false;
 	}
 
-	if (timeOutB > (time_t)MERGE_TIMEOUT_SECONDS) {
+	if (timeOutB > (time_t)ARTNET_MERGE_TIMEOUT_SECONDS) {
 		m_OutputPorts[nPortId].ipB = 0;
 		m_State.IsMergeMode = false;
 	}
@@ -1133,4 +1142,27 @@ void ArtNetNode::HandleAddress(void) {
 	}
 
 	SendPollRelply(true);
+}
+
+/**
+ *
+ */
+void ArtNetNode::HandleTimeCode(void) {
+	const struct TArtTimeCode *packet = (struct TArtTimeCode *) &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
+
+	if (packet->ProtVerLo != (uint8_t) ARTNET_PROTOCOL_REVISION) {
+		return;
+	}
+
+	if (m_pArtNetTimeCode != 0) {
+		m_pArtNetTimeCode->Handler((struct TArtNetTimeCode *)&packet->Frames);
+	}
+}
+
+/**
+ *
+ * @param pArtNetTimeCode
+ */
+void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
+	m_pArtNetTimeCode = pArtNetTimeCode;
 }

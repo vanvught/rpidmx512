@@ -51,6 +51,8 @@ enum TOpCodes {
 	OP_DMX = 0x5000,		///< This is an ArtDmx data packet. It contains zero start code DMX512 information for a single Universe.
 	OP_SYNC = 0x5200,		///< This is an ArtSync data packet. It is used to force synchronous transfer of ArtDmx packets to a node’s output.
 	OP_ADDRESS = 0x6000,	///< This is an ArtAddress packet. It contains remote programming information for a Node.
+	OP_TIMECODE = 0x9700,	///< This is an ArtTimeCode packet. It is used to transport time code over the network.
+	OP_TIMESYNC = 0x9800,	///< Used to synchronise real time date and clock
 	OP_NOT_DEFINED = 0x0000	///< OP_NOT_DEFINED
 };
 
@@ -174,15 +176,38 @@ struct TArtAddress {
 }PACKED;
 
 /**
+ * ArtTimeCode packet definition
+ *
+ * ArtTimeCode allows time code to be transported over the network.
+ * The data format is compatible with both longitudinal time code and MIDI time code.
+ * The four key types of Film, EBU, Drop Frame and SMPTE are also encoded.
+ *
+ */
+struct TArtTimeCode {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;		///< Ignore by receiver, set to zero by sender
+	uint8_t Filler2;		///< Ignore by receiver, set to zero by sender
+	uint8_t Frames;			///< Frames time. 0 – 29 depending on mode.
+	uint8_t Seconds;		///< Seconds. 0 - 59.
+	uint8_t Minutes;		///< Minutes. 0 - 59.
+	uint8_t Hours;			///< Hours. 0 - 59.
+	uint8_t Type;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+}PACKED;
+
+/**
  * union of supported artnet packets
  */
-union UArtPacket{
-  struct TArtPoll ArtPoll;			///< ArtPoll packet
-  struct TArtPollReply ArtPollReply;///< ArtPollReply packet
-  struct TArtDmx ArtDmx;			///< ArtDmx packet
-  struct TArtDiagData ArtDiagData;	///< ArtDiagData packet
-  struct TArtSync ArtSync;			///< ArtSync packet
-  struct TArtAddress ArtAddress;	///< ArtAddress packet
+union UArtPacket {
+	struct TArtPoll ArtPoll;			///< ArtPoll packet
+	struct TArtPollReply ArtPollReply;	///< ArtPollReply packet
+	struct TArtDmx ArtDmx;				///< ArtDmx packet
+	struct TArtDiagData ArtDiagData;	///< ArtDiagData packet
+	struct TArtSync ArtSync;			///< ArtSync packet
+	struct TArtAddress ArtAddress;		///< ArtAddress packet
+	struct TArtTimeCode ArtTimeCode;	///< ArtTimeCode packet
 };
 
 
