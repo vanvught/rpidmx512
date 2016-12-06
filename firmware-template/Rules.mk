@@ -123,7 +123,7 @@ endef
 
 THISDIR = $(CURDIR)
 
-all : builddirs $(TARGET) $(TARGET7) $(TARGET8)
+all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
 	
 .PHONY: clean builddirs
 
@@ -147,7 +147,7 @@ $(BUILD)vectors.o : firmware/vectors.S
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
 	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) -lgcc
-	$(ARMGNU)-objdump -D $(BUILD)main.elf > $(LIST)
+	$(ARMGNU)-objdump -D $(BUILD)main.elf | $(ARMGNU)-c++filt > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
 	$(ARMGNU)-objcopy $(BUILD)main.elf -O binary $(TARGET)
@@ -159,7 +159,7 @@ $(BUILD7)vectors.o : firmware/vectors.S
 	
 $(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
 	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) -lgcc
-	$(ARMGNU)-objdump -D $(BUILD7)main.elf > $(LIST7)
+	$(ARMGNU)-objdump -D $(BUILD7)main.elf | $(ARMGNU)-c++filt > $(LIST7)
 
 $(TARGET7) : $(BUILD7)main.elf
 	$(ARMGNU)-objcopy $(BUILD7)main.elf -O binary $(TARGET7)
@@ -171,7 +171,7 @@ $(BUILD8)vectors.o : firmware/vectors.S
 	
 $(BUILD8)main.elf : Makefile $(LINKER) $(BUILD8)vectors.o $(OBJECTS8) $(LIB7DEP)
 	$(ARMGNU)-ld $(BUILD8)vectors.o $(OBJECTS8) -Map $(MAP8) -T $(LINKER) -o $(BUILD8)main.elf $(LIB8) $(LDLIBS) -lgcc
-	$(ARMGNU)-objdump -D $(BUILD8)main.elf > $(LIST8)
+	$(ARMGNU)-objdump -D $(BUILD8)main.elf | $(ARMGNU)-c++filt > $(LIST8)
 
 $(TARGET8) : $(BUILD8)main.elf
 	$(ARMGNU)-objcopy $(BUILD8)main.elf -O binary $(TARGET8)	

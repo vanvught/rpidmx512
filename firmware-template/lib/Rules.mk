@@ -42,7 +42,7 @@ LIST = lib.list
 LIST7 = lib7.list
 LIST8 = lib8.list
 
-all : builddirs $(TARGET) $(TARGET7) $(TARGET8)
+all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
 
 .PHONY: clean builddirs
 
@@ -84,7 +84,7 @@ $(BUILD7)%.o: $(SOURCE)/%.cpp
 	$(ARMGNU)-g++ $(COPS7) -fno-rtti $< -c -o $@		
 	
 $(BUILD7)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET7): Makefile $(OBJECTS7)
 	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7)
