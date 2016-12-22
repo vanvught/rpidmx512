@@ -39,7 +39,8 @@ enum TWS28XXType {
 	WS2801,
 	WS2811,
 	WS2812,
-	WS2812B
+	WS2812B,
+	WS2813
 };
 
 class CWS28XXStripe

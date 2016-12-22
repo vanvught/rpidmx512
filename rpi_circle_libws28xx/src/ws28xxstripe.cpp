@@ -51,7 +51,7 @@ CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Ty
 	assert(m_nLEDCount > 0);
 
 	m_nBufSize = m_nLEDCount * 3;
-	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B) {
+	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B || m_Type == WS2813) {
 		m_nBufSize *= 8;
 	}
 

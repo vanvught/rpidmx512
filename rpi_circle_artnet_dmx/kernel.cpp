@@ -56,7 +56,7 @@
 
 static const char FromKernel[] = "kernel";
 
-static const char sLedTypes[4][8] = { "WS2801", "WS2811", "WS2812", "WS2812B" };
+static const char sLedTypes[5][8] = { "WS2801", "WS2811", "WS2812", "WS2812B", "WS2813" };
 
 enum TOuputType
 {
@@ -264,6 +264,10 @@ boolean CKernel::Configure (void)
 			else if (strcmp(pType, sLedTypes[WS2812B]) == 0)
 			{
 				m_SPI.SetLEDType(WS2812B);
+			}
+			else if (strcmp(pType, sLedTypes[WS2813]) == 0)
+			{
+				m_SPI.SetLEDType(WS2813);
 			}
 			else
 			{
