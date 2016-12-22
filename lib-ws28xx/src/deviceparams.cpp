@@ -35,9 +35,9 @@ static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";			///< Parameters 
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";				///<
 static const char PARAMS_LED_COUNT[] ALIGNED = "led_count";				///<
 
-#define LED_TYPES_COUNT 			4	///<
+#define LED_TYPES_COUNT 			5	///<
 #define LED_TYPES_MAX_NAME_LENGTH 	8	///<
-static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B" };
+static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0" };
 
 static _ws28xxx_type devices_params_led_type = WS2801;					///<
 static uint16_t devices_params_led_count = 170;							///< 1 DMX Universe = 512 / 3

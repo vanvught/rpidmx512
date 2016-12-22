@@ -1,9 +1,36 @@
 
+/**
+ * @file ws28xx.cpp
+ *
+ */
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <assert.h>
 #include <stdint.h>
 
 #include "ws28xx.h"
+
 #include "util.h"
+
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
 #include "arm/synchronize.h"
@@ -14,6 +41,8 @@
 #define WS2812_LOW_CODE				0xC0		///< b11000000
 #define WS2812B_HIGH_CODE			0xF8		///< b11111000
 #define WS2812B_LOW_CODE			0xC0		///< b11000000
+#define WS2813_HIGH_CODE			0xF0		///< b11110000
+#define WS2813_LOW_CODE				0xC0		///< b11000000
 
 static uint16_t led_count ALIGNED;
 static _ws28xxx_type led_type ALIGNED = WS2812B;
@@ -128,11 +157,14 @@ void ws28xx_init(const uint16_t count, const _ws28xxx_type type, const uint32_t 
 	case WS2812B:
 		_led_high_code = WS2812B_HIGH_CODE;
 		break;
+	case WS2813:
+		_led_high_code = WS2813_HIGH_CODE;
+		break;
 	default:
 		break;
 	}
 
-	if (led_type == WS2811 || led_type == WS2812 || led_type == WS2812B) {
+	if (led_type == WS2811 || led_type == WS2812 || led_type == WS2812B || led_type == WS2813) {
 		buf_len *= 8;
 	}
 

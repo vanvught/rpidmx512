@@ -10,7 +10,8 @@ typedef enum ws28xxx_type{
 	WS2801 = 0,
 	WS2811,
 	WS2812,
-	WS2812B
+	WS2812B,
+	WS2813
 } _ws28xxx_type;
 
 #ifdef __cplusplus

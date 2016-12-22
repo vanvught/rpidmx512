@@ -27,7 +27,8 @@
 #include <stdbool.h>
 
 #include "ws28xx.h"
-#include "monitor.h"
+
+//#include "monitor.h"
 #include "spisend.h"
 #include "util.h"
 
