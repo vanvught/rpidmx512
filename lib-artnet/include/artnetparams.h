@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum {
+typedef enum  {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
@@ -42,10 +42,11 @@ public:
 
 	bool Load(void);
 
-	const _output_type GetOutputType(void);
 	const uint8_t GetNet(void);
 	const uint8_t GetSubnet(void);
 	const uint8_t GetUniverse(void);
+
+	const _output_type GetOutputType(void);
 
 	const bool IsUseTimeCode(void);
 };

@@ -65,7 +65,7 @@ struct TArtPoll {
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
 	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
 	uint8_t TalkToMe;		///< Set behavior of Node
-	uint8_t Priority;		///< The lowest priority of diagnostics message that should be sent. See \ref
+	uint8_t Priority;		///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
 }PACKED;
 
 /**

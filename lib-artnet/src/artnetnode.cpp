@@ -32,8 +32,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#undef __circle__
-
 #if defined (__circle__)
 #include <circle/util.h>
 #include <circle/time.h>
@@ -96,7 +94,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x06 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x07 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -106,8 +104,6 @@ static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x
 
 /**
  *
- * @param pNet
- * @param pDmx
  */
 #if defined (__circle__)
 ArtNetNode::ArtNetNode(CNetSubSystem *pNet, CActLED *pActLED) :
@@ -115,7 +111,7 @@ ArtNetNode::ArtNetNode(CNetSubSystem *pNet, CActLED *pActLED) :
 		m_Socket(m_pNet, IPPROTO_UDP),
 		m_IsDHCPUsed(true),
 		m_pLightSet(0),
-		m_ArtNetTimeCode(0),
+		m_pArtNetTimeCode(0),
 		m_bDirectUpdate(false) {
 
 	m_pBlinkTask = new CBlinkTask (pActLED, 1);
@@ -131,13 +127,6 @@ ArtNetNode::ArtNetNode(void) :
 #endif
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 
-	// Factory node configuration
-	SetShortName((const char *)NODE_DEFAULT_SHORT_NAME);
-	SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
-	SetNetSwitch(NODE_DEFAULT_NET_SWITCH);
-	SetSubnetSwitch(NODE_DEFAULT_SUBNET_SWITCH);
-	SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, NODE_DEFAULT_UNIVERSE);
-
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
 		m_OutputPorts[i].port.nStatus = (uint8_t) 0;
 		m_OutputPorts[i].port.nPortAddress = (uint16_t) 0;
@@ -151,7 +140,7 @@ ArtNetNode::ArtNetNode(void) :
 	}
 
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	SetNetworkDetails();					// m_Node.status2 is set here
+	m_Node.Status2 = STATUS2_DHCP_CAPABLE | STATUS2_PORT_ADDRESS_15BIT;
 
 	m_State.IsSynchronousMode = false;
 	m_State.SendArtDiagData = false;
@@ -166,6 +155,15 @@ ArtNetNode::ArtNetNode(void) :
 	m_State.status = ARTNET_STANDBY;
 
 	m_tOpCodePrevious = OP_NOT_DEFINED;
+
+	SetNetworkDetails();
+
+	// Factory node configuration
+	SetShortName((const char *)NODE_DEFAULT_SHORT_NAME);
+	SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
+	SetNetSwitch(NODE_DEFAULT_NET_SWITCH);
+	SetSubnetSwitch(NODE_DEFAULT_SUBNET_SWITCH);
+	SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, NODE_DEFAULT_UNIVERSE);
 
 	FillPollReply();
 	FillDiagData();
@@ -238,15 +236,14 @@ void ArtNetNode::Start(void) {
 	assert(m_pLightSet != 0);
 
 #if defined (__circle__)
-	if (!m_Socket.Bind(NODE_UDP_PORT) < 0) {
-#if defined (__circle__)
+	if (m_Socket.Bind(NODE_UDP_PORT) < 0) {
 		CLogger::Get()->Write(FromArtNetNode, LogPanic, "Cannot bind socket (port %u)", NODE_UDP_PORT);
-#else
-#endif
 	} else {
+	#if CIRCLE_MAJOR_VERSION >= 27
+		m_Socket.SetOptionBroadcast(TRUE);
+	#endif
 #endif
 		m_PollReply.NumPortsLo = m_State.nActivePorts;
-		// All DMX output ports
 		for (unsigned i = 0 ; i < ARTNET_MAX_PORTS; i++) {
 			if (m_OutputPorts[i].bIsEnabled) {
 				m_PollReply.PortTypes[i] = ARTNET_ENABLE_OUTPUT | ARTNET_PORT_DMX;
@@ -273,7 +270,7 @@ void ArtNetNode::Stop(void) {
 
 /**
  *
- * @param nPortIndex
+ * @param nPortId
  * @return
  */
 const uint8_t ArtNetNode::GetUniverseSwitch(const uint8_t nPortId) {
@@ -291,8 +288,8 @@ const uint8_t ArtNetNode::GetUniverseSwitch(const uint8_t nPortId) {
 
 /**
  *
- * @param id
- * @param dir \ref TArtNetPortDir
+ * @param nPortIndex
+ * @param dir
  * @param nAddress
  * @return
  */
@@ -401,6 +398,10 @@ void ArtNetNode::SetShortName(const char *pName) {
 	memcpy (m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
 }
 
+/**
+ *
+ * @return
+ */
 const char *ArtNetNode::GetLongName(void) {
 	return (const char *)m_Node.LongName;
 }
@@ -449,9 +450,8 @@ void ArtNetNode::SetNetworkDetails(void) {
 	wifi_get_macaddr(m_Node.MACAddressLocal);
 	m_IsDHCPUsed = wifi_is_dhcp_used();
 #endif
-	const uint8_t bit1 = (m_IsDHCPUsed ? 1 : 0) << 1;	// Bit 1 : Clr = Node is IP is manually configured , Set = Node’s IP is DHCP configured.
-	m_Node.Status2 = bit1 | 1 << 2 | 1 << 3;			// Bit 2 : Set : Node is DHCP capable
-														// Bit 3 : Set : Node supports 15 bit Port-Address (Art-Net 3)
+	const uint8_t dhcp = m_IsDHCPUsed ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY;	// Node is IP is manually configured , Node’s IP is DHCP configured.
+	m_Node.Status2 = m_Node.Status2 | dhcp;
 }
 
 /**
@@ -621,7 +621,7 @@ int ArtNetNode::HandlePacket(void) {
 
 /**
  *
- * @param response
+ * @param bResponse
  */
 void ArtNetNode::SendPollRelply(const bool bResponse) {
 
@@ -656,7 +656,7 @@ void ArtNetNode::SendPollRelply(const bool bResponse) {
 /**
  *
  * @param text
- * @param priority
+ * @param nPriority
  */
 void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 	if (!m_State.SendArtDiagData) {
@@ -688,8 +688,9 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 
 /**
  *
- * @param p
- * @param data_length
+ * @param nPortId
+ * @param pData
+ * @param nLength
  * @return
  */
 bool ArtNetNode::IsDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
@@ -720,8 +721,9 @@ bool ArtNetNode::IsDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, c
 
 /**
  * merge the data from two sources
- * @param p
- * @param data_length
+ * @param nPortId
+ * @param pData
+ * @param nLength
  * @return
  */
 bool ArtNetNode::IsMergedDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {

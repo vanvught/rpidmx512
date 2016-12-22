@@ -76,6 +76,21 @@ enum TStatus1 {
 };
 
 /**
+ * ArtPollReply packet, Field 40
+ */
+enum TStatus2 {
+	STATUS2_WEB_BROWSER_SUPPORT = (1 << 0),		///< Bit 0, Set = Product supports web browser configuration
+	STATUS2_IP_MANUALY = (0 << 1),				///< Bit 1, Clr = Node’s IP is manually configured.
+	STATUS2_IP_DHCP = (1 << 1),					///< Bit 1, Set = Node’s IP is DHCP configured.
+	STATUS2_DHCP_NOT_CAPABLE = (0 << 2),		///< Bit 2, Clr = Node is not DHCP capable.
+	STATUS2_DHCP_CAPABLE = (1 << 2),			///< Bit 2, Set = Node is DHCP capable.
+	STATUS2_PORT_ADDRESS_8BIT = (0 << 3),		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
+	STATUS2_PORT_ADDRESS_15BIT = (1 << 3),		///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
+	STATUS2_SACN_NO_SWITCH = (0 << 4),			///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
+	STATUS2_SACN_ABLE_TO_SWITCH = (1 << 4)		///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+};
+
+/**
  * Defines output status of the node.
  */
 enum TGoodOutput {

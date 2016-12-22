@@ -1,5 +1,5 @@
 /**
- * @file artnetparams.c
+ * @file artnetparams.cpp
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "read_config_file.h"
 #include "sscan.h"
@@ -31,12 +32,12 @@
 
 #include "artnetparams.h"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";	///< Parameters file name
-static const char PARAMS_NET[] ALIGNED = "net";					///<
-static const char PARAMS_SUBNET[] ALIGNED = "subnet";			///<
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";		///<
-static const char PARAMS_OUTPUT[] ALIGNED = "output";			///<
-static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";	///<
+static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";			///< Parameters file name
+static const char PARAMS_NET[] ALIGNED = "net";							///<
+static const char PARAMS_SUBNET[] ALIGNED = "subnet";					///<
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
+static const char PARAMS_OUTPUT[] ALIGNED = "output";					///< dmx {default}, spi, mon
+static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";			///< Use the TimeCode call-back handler, 0 {default}
 
 static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
 static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
@@ -84,6 +85,7 @@ ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsSubnet = 0;
 	ArtNetParamsUniverse = 0;
 	ArtNetParamsOutputType= OUTPUT_TYPE_DMX;
+	ArtNetParamsUseTimeCode = false;
 }
 
 /**
