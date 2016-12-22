@@ -1,7 +1,7 @@
 #
 DEFINES = NDEBUG
 #
-LIBS = artnet dmx ws28xx monitor lightset esp8266 c++
+LIBS = artnet dmx ws28xx dmxmonitor monitor lightset esp8266 c++
 #
 SRCDIR = firmware
 

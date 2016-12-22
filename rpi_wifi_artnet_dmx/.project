@@ -7,6 +7,7 @@
 		<project>lib-artnet</project>
 		<project>lib-c++</project>
 		<project>lib-dmx</project>
+		<project>lib-dmxmonitor</project>
 		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>

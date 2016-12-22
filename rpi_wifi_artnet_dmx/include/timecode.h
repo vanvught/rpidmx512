@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file timecode.cpp
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef TIMECODE_H_
+#define TIMECODE_H_
 
-static const char SOFTWARE_VERSION[] = "1.5";
+#include "artnettimecode.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+class TimeCode: public ArtNetTimeCode {
+public:
+	TimeCode(void);
+	~TimeCode(void);
+
+	void Start(void);
+	void Stop(void);
+
+	void Handler(const struct TArtNetTimeCode *);
+};
+
+
+
+#endif /* TIMECODE_H_ */

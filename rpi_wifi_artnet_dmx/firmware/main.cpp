@@ -39,8 +39,12 @@
 #include "dmxsend.h"
 #include "dmxparams.h"
 
+#include "dmxmonitor.h"
+
 #include "spisend.h"
 #include "deviceparams.h"
+
+#include "timecode.h"
 
 #include "wifi.h"
 #include "udp.h"
@@ -68,14 +72,13 @@ void notmain(void) {
 
 	hardware_init();
 
-	// Discard return value. On failing, we use defaults.
 	(void) artnetparams.Load();
 
 	output_type = artnetparams.GetOutputType();
 
 	if (output_type == OUTPUT_TYPE_SPI) {
 		(void) deviceparms.Load();
-	} else {
+	} else if (output_type != OUTPUT_TYPE_MONITOR){
 		output_type = OUTPUT_TYPE_DMX;
 		(void) dmxparams.Load();
 	}
@@ -156,8 +159,15 @@ void notmain(void) {
 	ArtNetNode node;
 	DMXSend dmx;
 	SPISend spi;
+	DMXMonitor monitor;
+	TimeCode timecode;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
+
+	if (artnetparams.IsUseTimeCode()) {
+		timecode.Start();
+		node.SetTimeCodeHandler(&timecode);
+	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
@@ -200,6 +210,9 @@ void notmain(void) {
 			node.SetDirectUpdate(true);
 			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
 		}
+	} else if (output_type == OUTPUT_TYPE_MONITOR) {
+		node.SetOutput(&monitor);
+		console_set_top_row(20);
 	}
 
 	node.SetSubnetSwitch(artnetparams.GetSubnet());
@@ -213,7 +226,11 @@ void notmain(void) {
 	printf(" Net          : %d\n", node.GetNetSwitch());
 	printf(" Sub-Net      : %d\n", node.GetSubnetSwitch());
 	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
-	printf(" Active ports : %d\n\n", node.GetActiveOutputPorts());
+	printf(" Active ports : %d", node.GetActiveOutputPorts());
+
+	if (output_type != OUTPUT_TYPE_MONITOR) {
+		console_puts("\n\n");
+	}
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
@@ -226,9 +243,7 @@ void notmain(void) {
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
-	if (output_type == OUTPUT_TYPE_DMX) {
-		hardware_watchdog_init();
-	}
+	hardware_watchdog_init();
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
 
@@ -237,10 +252,8 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, "Node started");
 
 	for (;;) {
-		if (output_type == OUTPUT_TYPE_DMX) {
-			hardware_watchdog_feed();
-		}
-		node.HandlePacket();
+		hardware_watchdog_feed();
+		(void)node.HandlePacket();
 		led_blink();
 	}
 }
