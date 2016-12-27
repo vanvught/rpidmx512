@@ -1,6 +1,6 @@
 # Raspberry Pi Time Code Reader/LTC #
 
-This is a prototype. Currently supported frame rates: 24fps and 25fps
+This is a prototype.
 
 The output is on an external attached monitor. 
 
