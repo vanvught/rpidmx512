@@ -46,8 +46,17 @@
 
 #include "software_version.h"
 
-static const char types[4][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE" };
-static uint8_t prev_type = 0xFF;	///< Invalid type. Force initial update.
+typedef enum _timecode_types {
+	TC_TYPE_FILM = 0,
+	TC_TYPE_EBU,
+	TC_TYPE_DF,
+	TC_TYPE_SMPTE,
+	TC_TYPE_UNKNOWN,
+	TC_TYPE_INVALID = 255
+} timecode_types;
+
+static const char types[5][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE", "-----" };
+static timecode_types prev_type = TC_TYPE_INVALID;	///< Invalid type. Force initial update.
 
 #define ONE_TIME_MIN        150	///< 417us/2 = 208us
 #define ONE_TIME_MAX       	300	///< 521us/2 = 260us
@@ -79,6 +88,8 @@ static volatile uint32_t ltc_updates_per_seconde= (uint32_t) 0;
 static volatile uint32_t ltc_updates_previous = (uint32_t) 0;
 static volatile uint32_t ltc_updates = (uint32_t) 0;
 
+static volatile uint32_t led_counter = (uint32_t) 0;
+
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 
@@ -86,8 +97,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
 
 	dmb();
-	ltc_updates_per_seconde = ltc_updates - ltc_updates_previous + 1;
+	ltc_updates_per_seconde = ltc_updates - ltc_updates_previous;
 	ltc_updates_previous = ltc_updates;
+
+	if ((ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
+		hardware_led_set((int) (led_counter++ & 0x01));
+	} else {
+		hardware_led_set(0);
+	}
 
 	dmb();
 }
@@ -222,7 +239,7 @@ void notmain(void) {
 	timecode[8] = '.';
 	timecode[11] = '\0';
 
-	uint8_t type = 0;
+	uint8_t type = TC_TYPE_UNKNOWN;
 
 	for (;;) {
 		dmb();
@@ -232,15 +249,18 @@ void notmain(void) {
 			console_set_cursor(2,5);
 			console_puts((char *)timecode);
 
+			type = TC_TYPE_UNKNOWN;
+
+			dmb();
 			if (is_drop_frame_flag_set) {
-				type = 2;
+				type = TC_TYPE_DF;
 			} else {
 				if (ltc_updates_per_seconde == 24) {
-					type = 0;
+					type = TC_TYPE_FILM;
 				} else if (ltc_updates_per_seconde == 25) {
-					type = 1;
+					type = TC_TYPE_EBU;
 				} else if (ltc_updates_per_seconde == 30) {
-					type = 3;
+					type = TC_TYPE_SMPTE;
 				}
 			}
 
