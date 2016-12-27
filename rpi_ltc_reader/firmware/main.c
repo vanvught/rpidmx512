@@ -34,21 +34,25 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
 #include "arm/arm.h"
 #include "arm/synchronize.h"
+
+#include "bcm2835.h"
+#include "bcm2835_gpio.h"
 
 #include "hardware.h"
 #include "console.h"
 #include "util.h"
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
+#include "software_version.h"
 
-#define ONE_TIME_MIN        150	///<
-#define ONE_TIME_MAX       	300	///<
-#define ZERO_TIME_MIN      	500	///<
-#define ZERO_TIME_MAX      	600	///<
+static const char types[4][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE" };
+static uint8_t prev_type = 0xFF;	///< Invalid type. Force initial update.
+
+#define ONE_TIME_MIN        150	///< 417us/2 = 208us
+#define ONE_TIME_MAX       	300	///< 521us/2 = 260us
+#define ZERO_TIME_MIN      	400	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
+#define ZERO_TIME_MAX      	600	///< 24 FPS * 80 bits = 1920Hz, 1E6/1920Hz = 521us
 
 #define END_DATA_POSITION	63	///<
 #define END_SYNC_POSITION	77	///<
@@ -67,13 +71,32 @@ static volatile bool timecode_valid = false;
 
 static volatile uint8_t timecode_bits[8] ALIGNED;
 static volatile char timecode[12] ALIGNED;
+static volatile bool is_drop_frame_flag_set = false;
 
 static volatile bool timecode_available = false;
 
+static volatile uint32_t ltc_updates_per_seconde= (uint32_t) 0;
+static volatile uint32_t ltc_updates_previous = (uint32_t) 0;
+static volatile uint32_t ltc_updates = (uint32_t) 0;
+
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
+	dmb();
+
+	BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
+
+	dmb();
+	ltc_updates_per_seconde = ltc_updates - ltc_updates_previous + 1;
+	ltc_updates_previous = ltc_updates;
+
+	dmb();
+}
+
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
-	//bcm2835_gpio_set(RPI_V2_GPIO_P1_11);
-
+#ifdef DEBUG
+	bcm2835_gpio_set(RPI_V2_GPIO_P1_11);
+#endif
 	irq_us_current = BCM2835_ST->CLO;
 
 	BCM2835_GPIO->GPEDS0 = 1 << RPI_V2_GPIO_P1_13;
@@ -130,11 +153,13 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			if (timecode_sync) {
 				timecode_sync = false;
 				timecode_valid = true;
-				//dmb();
 			}
 		}
 
 		if (timecode_valid) {
+			dmb();
+			ltc_updates++;
+
 			timecode_valid = false;
 
 			timecode[10] = (timecode_bits[0] & 0x0F) + '0';	// frames
@@ -146,29 +171,33 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			timecode[1] = (timecode_bits[6] & 0x0F) + '0';	// hours
 			timecode[0] = (timecode_bits[7] & 0x03) + '0';	// 10's of hours
 
+			is_drop_frame_flag_set = (timecode_bits[1] & (1 << 2));
+
 			dmb();
 			timecode_available = true;
 		}
 	}
 
 	irq_us_previous = irq_us_current;
-
-	//bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
+#ifdef DEBUG
+	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
+#endif
 	dmb();
 }
 
 void notmain(void) {
 	hardware_init();
 
-	printf("%s [%x]\n", hardware_board_get_model(), (unsigned int) hardware_board_get_model_id());
-	printf("Compiled on %s at %s\n", __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("TimeCode LTC Reader");
 
-	//bcm2835_gpio_fsel(RPI_V2_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
+	console_set_top_row(3);
+
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_13, BCM2835_GPIO_FSEL_INPT);
-	//bcm2835_gpio_fsel(RPI_V2_GPIO_P1_15, BCM2835_GPIO_FSEL_OUTP);
-
-	//bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
-	//bcm2835_gpio_clr(RPI_V2_GPIO_P1_15);
+#ifdef DEBUG
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
+#endif
 
 	// Rising Edge
 	BCM2835_GPIO->GPREN0 = 1 << RPI_V2_GPIO_P1_13;
@@ -177,26 +206,50 @@ void notmain(void) {
 	// Clear status bit
 	BCM2835_GPIO->GPEDS0 = 1 << RPI_V2_GPIO_P1_13;
 
-	BCM2835_GPIO->GPREN1 = 0;
-	BCM2835_GPIO->GPFEN1 = 0;
-	BCM2835_GPIO->GPEDS1 = 0;
-
 	BCM2835_IRQ->IRQ_ENABLE2 = BCM2835_GPIO0_IRQn;
 	dmb();
 
 	__enable_irq();
+
+	BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
+	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | 1; // TODO replace with #define
+
+	__enable_fiq();
 
 	timecode[2] = ':';
 	timecode[5] = ':';
 	timecode[8] = '.';
 	timecode[11] = '\0';
 
+	uint8_t type = 0;
+
 	for (;;) {
 		dmb();
 		if (timecode_available) {
 			timecode_available = false;
+
 			console_set_cursor(2,5);
 			console_puts((char *)timecode);
+
+			if (is_drop_frame_flag_set) {
+				type = 2;
+			} else {
+				if (ltc_updates_per_seconde == 24) {
+					type = 0;
+				} else if (ltc_updates_per_seconde == 25) {
+					type = 1;
+				} else if (ltc_updates_per_seconde == 30) {
+					type = 3;
+				}
+			}
+
+			if (prev_type != type) {
+				console_set_cursor(2, 6);
+				console_puts(types[type]);
+				prev_type = type;
+			}
+
 		}
 	}
 }

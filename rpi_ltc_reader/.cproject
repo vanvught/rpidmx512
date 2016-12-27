@@ -50,8 +50,24 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.2064851789.1536461292" name="/" resourcePath="include">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1141786362" name="cdt.managedbuild.toolchain.gnu.cross.base" superClass="cdt.managedbuild.toolchain.gnu.cross.base" unusedChildren="">
+							<option id="cdt.managedbuild.option.gnu.cross.prefix.1686735451.1533552205" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix.1686735451"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.631530011.1734408236" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path.631530011"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.708638083" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler.1906704422">
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1844498149" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1709897419" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler.259861228"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.504933781" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker.2008546216"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.693701709" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker.1757762644"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.640182620" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver.771781256"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1138910211" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler.1597798160">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2118241393" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
-						<entry excluding="include|lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -63,9 +79,7 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/blinker07"/>
-		</configuration>
+		<configuration configurationName="Default"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
