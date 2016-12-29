@@ -513,6 +513,7 @@ static bool parse(void) {
 				return false;
 			}
 
+			midi_message.timestamp = timestamp;
 			midi_message.type = get_type_from_status_byte(pending_message[0]);
 
 			if (is_channel_message(midi_message.type)) {

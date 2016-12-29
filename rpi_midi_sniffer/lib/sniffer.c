@@ -27,11 +27,12 @@
 #include <stdio.h>
 
 #include "hardware.h"
-
-#include "midi.h"
 #include "console.h"
 
+#include "midi.h"
 #include "midi_description.h"
+
+#include "sniffer_mtc.h"
 
 static const struct _midi_message *midi_message;
 static uint32_t init_timestamp;
@@ -178,6 +179,9 @@ void sniffer_midi(void) {
 					}
 				}
 				console_putc('\n');
+				if ((midi_message->system_exclusive[1] == 0x7F) && (midi_message->system_exclusive[2] == 0x7F) && (midi_message->system_exclusive[3] == 0x01)) {
+					sniffer_tmc(midi_message);
+				}
 				break;
 			case MIDI_TYPES_INVALIDE_TYPE:
 			default:

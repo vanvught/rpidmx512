@@ -1,6 +1,5 @@
 /**
- * @file software_version.h
- *
+ * @file sniffer_mtc.h
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -23,9 +22,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef SNIFFER_MTC_H_
+#define SNIFFER_MTC_H_
 
-static const char SOFTWARE_VERSION[] = "1.3";
+#include "midi.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+extern void sniffer_tmc(const struct _midi_message *);
+
+#endif /* SNIFFER_MTC_H_ */
