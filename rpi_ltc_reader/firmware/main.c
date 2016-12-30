@@ -44,7 +44,11 @@
 #include "console.h"
 #include "util.h"
 
+#include "bw_i2c_lcd.h"
+
 #include "software_version.h"
+
+#define GPIO_PIN		RPI_V2_GPIO_P1_21
 
 typedef enum _timecode_types {
 	TC_TYPE_FILM = 0,
@@ -79,7 +83,7 @@ static volatile bool timecode_sync = false;
 static volatile bool timecode_valid = false;
 
 static volatile uint8_t timecode_bits[8] ALIGNED;
-static volatile char timecode[12] ALIGNED;
+static volatile char timecode[BW_LCD_MAX_CHARACTERS] ALIGNED;
 static volatile bool is_drop_frame_flag_set = false;
 
 static volatile bool timecode_available = false;
@@ -116,7 +120,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 #endif
 	irq_us_current = BCM2835_ST->CLO;
 
-	BCM2835_GPIO->GPEDS0 = 1 << RPI_V2_GPIO_P1_13;
+	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
 	dmb();
 
 	bit_time = irq_us_current - irq_us_previous;
@@ -205,23 +209,26 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 void notmain(void) {
 	hardware_init();
 
+	bw_i2c_lcd_start(0);
+	bw_i2c_lcd_cls();
+
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("TimeCode LTC Reader");
 
 	console_set_top_row(3);
 
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_13, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_gpio_fsel(GPIO_PIN, BCM2835_GPIO_FSEL_INPT);
 #ifdef DEBUG
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
 #endif
 
 	// Rising Edge
-	BCM2835_GPIO->GPREN0 = 1 << RPI_V2_GPIO_P1_13;
+	BCM2835_GPIO->GPREN0 = 1 << GPIO_PIN;
 	// Falling Edge
-	BCM2835_GPIO->GPFEN0 = 1 << RPI_V2_GPIO_P1_13;
+	BCM2835_GPIO->GPFEN0 = 1 << GPIO_PIN;
 	// Clear status bit
-	BCM2835_GPIO->GPEDS0 = 1 << RPI_V2_GPIO_P1_13;
+	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
 
 	BCM2835_IRQ->IRQ_ENABLE2 = BCM2835_GPIO0_IRQn;
 	dmb();
@@ -230,16 +237,24 @@ void notmain(void) {
 
 	BCM2835_ST->CS = BCM2835_ST_CS_M1;
 	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
-	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | 1; // TODO replace with #define
+	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_TIMER1;
 
 	__enable_fiq();
+
+	uint8_t i;
+
+	for (i= 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
+		timecode[i] = ' ';
+	}
 
 	timecode[2] = ':';
 	timecode[5] = ':';
 	timecode[8] = '.';
-	timecode[11] = '\0';
 
 	uint8_t type = TC_TYPE_UNKNOWN;
+
+	bw_i2c_lcd_text_line_1((char *)timecode, BW_LCD_MAX_CHARACTERS);
+	bw_i2c_lcd_text_line_2(types[type], 5);
 
 	for (;;) {
 		dmb();
@@ -247,7 +262,9 @@ void notmain(void) {
 			timecode_available = false;
 
 			console_set_cursor(2,5);
-			console_puts((char *)timecode);
+			console_write((char *)timecode, 11);
+
+			bw_i2c_lcd_text_line_1((char *)timecode, BW_LCD_MAX_CHARACTERS);
 
 			type = TC_TYPE_UNKNOWN;
 
@@ -265,9 +282,12 @@ void notmain(void) {
 			}
 
 			if (prev_type != type) {
+				prev_type = type;
+
 				console_set_cursor(2, 6);
 				console_puts(types[type]);
-				prev_type = type;
+
+				bw_i2c_lcd_text_line_2(types[type], 5);
 			}
 
 		}
