@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file ltc_reader.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
 
-static const char SOFTWARE_VERSION[] = "0.4";
+#ifndef LTC_READER_H_
+#define LTC_READER_H_
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include <stdbool.h>
+
+#include "bcm2835.h"
+
+#define ONE_TIME_MIN        150	///< 417us/2 = 208us
+#define ONE_TIME_MAX       	300	///< 521us/2 = 260us
+#define ZERO_TIME_MIN      	380	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
+#define ZERO_TIME_MAX      	600	///< 24 FPS * 80 bits = 1920Hz, 1E6/1920Hz = 521us
+
+#define END_DATA_POSITION	63	///<
+#define END_SYNC_POSITION	77	///<
+#define END_SMPTE_POSITION	80	///<
+
+#define GPIO_PIN			RPI_V2_GPIO_P1_21
+
+typedef enum _timecode_types {
+	TC_TYPE_FILM = 0,
+	TC_TYPE_EBU,
+	TC_TYPE_DF,
+	TC_TYPE_SMPTE,
+	TC_TYPE_UNKNOWN,
+	TC_TYPE_INVALID = 255
+} timecode_types;
+
+struct _ltc_reader_output {
+	bool console_output;
+	bool lcd_output;
+	bool midi_output;
+	bool artnet_output;
+} ltc_reader_output;
+
+void ltc_reader(void);
+void ltc_reader_init(const struct _ltc_reader_output *);
+
+#endif /* LTC_READER_H_ */

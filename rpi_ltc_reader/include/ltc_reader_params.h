@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file ltc_reader_params.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef LTC_READER_PARAMS_H_
+#define LTC_READER_PARAMS_H_
 
-static const char SOFTWARE_VERSION[] = "0.4";
+#include <stdbool.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+extern const bool ltc_reader_params_is_console_output(void);
+extern const bool ltc_reader_params_is_lcd_output(void);
+extern const bool ltc_reader_params_is_midi_output(void);
+extern const bool ltc_reader_params_is_artnet_output(void);
+
+extern void ltc_reader_params_init(void) ;
+
+#endif /* LTC_READER_PARAMS_H_ */

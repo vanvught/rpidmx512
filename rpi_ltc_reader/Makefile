@@ -3,6 +3,6 @@ DEFINES =
 #
 LIBS = utils
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../firmware-template/Rules.mk

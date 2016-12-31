@@ -2,14 +2,6 @@
  * @file main.c
  *
  */
-/*
- * Parts of this code is inspired by:
- * http://forum.arduino.cc/index.php/topic,8237.0.html
- *
- * References :
- * https://en.wikipedia.org/wiki/Linear_timecode
- * http://www.philrees.co.uk/articles/timecode.htm
- */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,265 +24,53 @@
  */
 
 #include <stdio.h>
-#include <stdbool.h>
-
-#include "arm/arm.h"
-#include "arm/synchronize.h"
-
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
 
 #include "hardware.h"
 #include "console.h"
-#include "util.h"
 
-#include "bw_i2c_lcd.h"
+#include "ltc_reader.h"
+#include "ltc_reader_params.h"
 
 #include "software_version.h"
 
-#define GPIO_PIN		RPI_V2_GPIO_P1_21
+static struct _ltc_reader_output output;
 
-typedef enum _timecode_types {
-	TC_TYPE_FILM = 0,
-	TC_TYPE_EBU,
-	TC_TYPE_DF,
-	TC_TYPE_SMPTE,
-	TC_TYPE_UNKNOWN,
-	TC_TYPE_INVALID = 255
-} timecode_types;
-
-static const char types[5][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE", "-----" };
-static timecode_types prev_type = TC_TYPE_INVALID;	///< Invalid type. Force initial update.
-
-#define ONE_TIME_MIN        150	///< 417us/2 = 208us
-#define ONE_TIME_MAX       	300	///< 521us/2 = 260us
-#define ZERO_TIME_MIN      	400	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
-#define ZERO_TIME_MAX      	600	///< 24 FPS * 80 bits = 1920Hz, 1E6/1920Hz = 521us
-
-#define END_DATA_POSITION	63	///<
-#define END_SYNC_POSITION	77	///<
-#define END_SMPTE_POSITION	80	///<
-
-static volatile uint32_t irq_us_previous = 0;
-static volatile uint32_t irq_us_current = 0;
-
-static volatile uint32_t bit_time = 0;
-static volatile uint32_t total_bits = 0;
-static volatile bool ones_bit_count = false;
-static volatile uint32_t current_bit = 0;
-static volatile uint32_t sync_count = 0;
-static volatile bool timecode_sync = false;
-static volatile bool timecode_valid = false;
-
-static volatile uint8_t timecode_bits[8] ALIGNED;
-static volatile char timecode[BW_LCD_MAX_CHARACTERS] ALIGNED;
-static volatile bool is_drop_frame_flag_set = false;
-
-static volatile bool timecode_available = false;
-
-static volatile uint32_t ltc_updates_per_seconde= (uint32_t) 0;
-static volatile uint32_t ltc_updates_previous = (uint32_t) 0;
-static volatile uint32_t ltc_updates = (uint32_t) 0;
-
-static volatile uint32_t led_counter = (uint32_t) 0;
-
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
-	dmb();
-
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
-
-	dmb();
-	ltc_updates_per_seconde = ltc_updates - ltc_updates_previous;
-	ltc_updates_previous = ltc_updates;
-
-	if ((ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
-		hardware_led_set((int) (led_counter++ & 0x01));
+static void handle_bool(const bool b) {
+	if (b) {
+		console_save_color();
+		console_set_fg_color(CONSOLE_GREEN);
+		console_puts("Yes");
+		console_restore_color();
 	} else {
-		hardware_led_set(0);
+		console_puts("No");
 	}
-
-	dmb();
-}
-
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
-	dmb();
-#ifdef DEBUG
-	bcm2835_gpio_set(RPI_V2_GPIO_P1_11);
-#endif
-	irq_us_current = BCM2835_ST->CLO;
-
-	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
-	dmb();
-
-	bit_time = irq_us_current - irq_us_previous;
-
-	if ((bit_time < ONE_TIME_MIN) || (bit_time > ZERO_TIME_MAX)) {
-		// Interrupt outside specifications;
-		total_bits = 0;
-	} else {
-		if (ones_bit_count) {
-			ones_bit_count = false;
-		} else {
-			if (bit_time > ZERO_TIME_MIN) {
-				current_bit = 0;
-				sync_count = 0;
-			} else {
-
-				current_bit = 1;
-				ones_bit_count = true;
-				sync_count++;
-
-				if (sync_count == 12) {
-					sync_count = 0;
-					timecode_sync = true;
-					total_bits = END_SYNC_POSITION;
-				}
-			}
-
-			if (total_bits <= END_DATA_POSITION) {
-				timecode_bits[0] = timecode_bits[0] >> 1;
-				int n;
-				for (n = 1; n < 8; n++) {
-					if (timecode_bits[n] & 1) {
-						timecode_bits[n - 1] |= 0x80;
-					}
-					timecode_bits[n] = timecode_bits[n] >> 1;
-				}
-
-				if (current_bit == 1) {
-					timecode_bits[7] |= 0x80;
-				}
-			}
-
-			total_bits++;
-		}
-
-		if (total_bits == END_SMPTE_POSITION) {
-
-			total_bits = 0;
-			ones_bit_count = false;
-
-			if (timecode_sync) {
-				timecode_sync = false;
-				timecode_valid = true;
-			}
-		}
-
-		if (timecode_valid) {
-			dmb();
-			ltc_updates++;
-
-			timecode_valid = false;
-
-			timecode[10] = (timecode_bits[0] & 0x0F) + '0';	// frames
-			timecode[9] = (timecode_bits[1] & 0x03) + '0';	// 10's of frames
-			timecode[7] = (timecode_bits[2] & 0x0F) + '0';	// seconds
-			timecode[6] = (timecode_bits[3] & 0x07) + '0';	// 10's of seconds
-			timecode[4] = (timecode_bits[4] & 0x0F) + '0';	// minutes
-			timecode[3] = (timecode_bits[5] & 0x07) + '0';	// 10's of minutes
-			timecode[1] = (timecode_bits[6] & 0x0F) + '0';	// hours
-			timecode[0] = (timecode_bits[7] & 0x03) + '0';	// 10's of hours
-
-			is_drop_frame_flag_set = (timecode_bits[1] & (1 << 2));
-
-			dmb();
-			timecode_available = true;
-		}
-	}
-
-	irq_us_previous = irq_us_current;
-#ifdef DEBUG
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
-#endif
-	dmb();
 }
 
 void notmain(void) {
 	hardware_init();
 
-	bw_i2c_lcd_start(0);
-	bw_i2c_lcd_cls();
+	ltc_reader_params_init();
+
+	output.console_output = ltc_reader_params_is_console_output();
+	output.lcd_output = ltc_reader_params_is_lcd_output();
+	output.midi_output = ltc_reader_params_is_midi_output();
+	output.artnet_output = ltc_reader_params_is_artnet_output();
+
+	ltc_reader_init(&output);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("TimeCode LTC Reader");
+	printf("SMPTE TimeCode LTC Reader");
 
 	console_set_top_row(3);
 
-	bcm2835_gpio_fsel(GPIO_PIN, BCM2835_GPIO_FSEL_INPT);
-#ifdef DEBUG
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
-#endif
-
-	// Rising Edge
-	BCM2835_GPIO->GPREN0 = 1 << GPIO_PIN;
-	// Falling Edge
-	BCM2835_GPIO->GPFEN0 = 1 << GPIO_PIN;
-	// Clear status bit
-	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
-
-	BCM2835_IRQ->IRQ_ENABLE2 = BCM2835_GPIO0_IRQn;
-	dmb();
-
-	__enable_irq();
-
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
-	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_TIMER1;
-
-	__enable_fiq();
-
-	uint8_t i;
-
-	for (i= 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
-		timecode[i] = ' ';
-	}
-
-	timecode[2] = ':';
-	timecode[5] = ':';
-	timecode[8] = '.';
-
-	uint8_t type = TC_TYPE_UNKNOWN;
-
-	bw_i2c_lcd_text_line_1((char *)timecode, BW_LCD_MAX_CHARACTERS);
-	bw_i2c_lcd_text_line_2(types[type], 5);
+	console_set_cursor(0, 15);
+	console_puts("Console output   : "); handle_bool(output.console_output); console_putc('\n');
+	console_puts("LCD (i2c) output : "); handle_bool(output.lcd_output); console_putc('\n');
+	console_puts("MIDI output      : "); handle_bool(output.midi_output); console_putc('\n');
+	console_puts("ArtNet output    : "); handle_bool(output.artnet_output);
 
 	for (;;) {
-		dmb();
-		if (timecode_available) {
-			timecode_available = false;
-
-			console_set_cursor(2,5);
-			console_write((char *)timecode, 11);
-
-			bw_i2c_lcd_text_line_1((char *)timecode, BW_LCD_MAX_CHARACTERS);
-
-			type = TC_TYPE_UNKNOWN;
-
-			dmb();
-			if (is_drop_frame_flag_set) {
-				type = TC_TYPE_DF;
-			} else {
-				if (ltc_updates_per_seconde == 24) {
-					type = TC_TYPE_FILM;
-				} else if (ltc_updates_per_seconde == 25) {
-					type = TC_TYPE_EBU;
-				} else if (ltc_updates_per_seconde == 30) {
-					type = TC_TYPE_SMPTE;
-				}
-			}
-
-			if (prev_type != type) {
-				prev_type = type;
-
-				console_set_cursor(2, 6);
-				console_puts(types[type]);
-
-				bw_i2c_lcd_text_line_2(types[type], 5);
-			}
-
-		}
+		ltc_reader();
 	}
 }
 
