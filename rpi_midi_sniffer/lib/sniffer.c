@@ -157,6 +157,7 @@ void sniffer_midi(void) {
 				// 2 bytes messages
 			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
 				printf(", Message number %d, Data %d\n", (int) ((midi_message->data1 & 0x70) >> 4), (int) (midi_message->data1 & 0x0F));
+				sniffer_mtc_qf(midi_message);
 				break;
 			case MIDI_TYPES_SONG_SELECT:
 				printf(", Song id number %d\n",(int) midi_message->data1);
@@ -180,7 +181,7 @@ void sniffer_midi(void) {
 				}
 				console_putc('\n');
 				if ((midi_message->system_exclusive[1] == 0x7F) && (midi_message->system_exclusive[2] == 0x7F) && (midi_message->system_exclusive[3] == 0x01)) {
-					sniffer_tmc(midi_message);
+					sniffer_mtc(midi_message);
 				}
 				break;
 			case MIDI_TYPES_INVALIDE_TYPE:

@@ -27,6 +27,7 @@
 
 #include "midi.h"
 
-extern void sniffer_tmc(const struct _midi_message *);
+extern void sniffer_mtc(const struct _midi_message *);
+extern void sniffer_mtc_qf(const struct _midi_message *);
 
 #endif /* SNIFFER_MTC_H_ */

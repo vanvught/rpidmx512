@@ -46,6 +46,4 @@ void monitor_update(void) {
 	default:
 		break;
 	}
-
-	monitor_time_uptime(2);
 }
