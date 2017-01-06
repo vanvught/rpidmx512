@@ -2,7 +2,7 @@
  * @file bw_spi_dimmer.c
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifdef __AVR_ARCH__
-#include "avr_spi.h"
-#else
 #include "bcm2835.h"
-#ifdef BARE_METAL
 #include "bcm2835_spi.h"
-#endif
-#endif
-#include "device_info.h"
+
 #include "bw.h"
+#include "bw_dimmer.h"
 #include "bw_spi_dimmer.h"
+
+#include "device_info.h"
 
 /**
  * @ingroup SPI-AO
@@ -41,12 +38,9 @@
  * @param device_info
  */
 inline void static dimmer_spi_setup(const device_info_t *device_info) {
-#ifdef __AVR_ARCH__
-#else
 	bcm2835_spi_setClockDivider(device_info->internal_clk_div);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
-#endif
 }
 
 /**
@@ -56,10 +50,6 @@ inline void static dimmer_spi_setup(const device_info_t *device_info) {
  * @return
  */
 uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
-#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
-	if (bcm2835_init() != 1)
-	return 1;
-#endif
 	FUNC_PREFIX(spi_begin());
 
 	if (device_info->slave_address == (uint8_t) 0) {

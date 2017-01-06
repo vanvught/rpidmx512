@@ -2,7 +2,7 @@
  * @file bw_i2c_dio.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,11 @@
 
 #include <stdint.h>
 
-#include <device_info.h>
-#include <bw_dio.h>
+#include "device_info.h"
 
-#define BW_DIO_I2C_BYTE_WAIT_US				0
+#define BW_DIO_I2C_BYTE_WAIT_US		0
 
 extern uint8_t bw_i2c_dio_start(device_info_t *);
-extern void bw_i2c_dio_end(void);
 
 extern void bw_i2c_dio_fsel_mask(const device_info_t *, const uint8_t);
 extern void bw_i2c_dio_output(const device_info_t *, const uint8_t);

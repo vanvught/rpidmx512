@@ -2,7 +2,7 @@
  * @file bw_7fets.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,14 @@
 
 #define BW_7FETS_DEFAULT_SLAVE_ADDRESS	0x88	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
 
-typedef enum
-{
-	BW_7FETS_PIN_IO0	= (1 << 0),	///< 0b00000001, Pin2 	OUT0
-	BW_7FETS_PIN_IO1	= (1 << 1),	///< 0b00000010, Pin4 	OUT1
-	BW_7FETS_PIN_IO2	= (1 << 2),	///< 0b00000100, Pin6 	OUT2
-	BW_7FETS_PIN_IO3	= (1 << 3),	///< 0b00001000, Pin8 	OUT3
-	BW_7FETS_PIN_IO4	= (1 << 4),	///< 0b00010000, Pin10 	OUT4
-	BW_7FETS_PIN_IO5	= (1 << 5),	///< 0b00100000, Pin12	OUT5
-	BW_7FETS_PIN_IO6	= (1 << 6),	///< 0b01000000	 Pin14	OUT6
+typedef enum {
+	BW_7FETS_PIN_IO0 = (1 << 0),	///< 0b00000001, Pin2 	OUT0
+	BW_7FETS_PIN_IO1 = (1 << 1),	///< 0b00000010, Pin4 	OUT1
+	BW_7FETS_PIN_IO2 = (1 << 2),	///< 0b00000100, Pin6 	OUT2
+	BW_7FETS_PIN_IO3 = (1 << 3),	///< 0b00001000, Pin8 	OUT3
+	BW_7FETS_PIN_IO4 = (1 << 4),	///< 0b00010000, Pin10 	OUT4
+	BW_7FETS_PIN_IO5 = (1 << 5),	///< 0b00100000, Pin12	OUT5
+	BW_7FETS_PIN_IO6 = (1 << 6),	///< 0b01000000	 Pin14	OUT6
 } bw_spi_7fets_Pin;
 
 #endif /* BW_7FETS_H_ */

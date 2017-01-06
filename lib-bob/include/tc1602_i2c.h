@@ -32,11 +32,12 @@
 
 #include "device_info.h"
 
-extern uint8_t tc1602_i2c_start (device_info_t *);
+extern uint8_t tc1602_i2c_start(device_info_t *);
+
+extern void tc1602_i2c_cls(const device_info_t *);
+
 extern void tc1602_i2c_text(const device_info_t *, const char *, uint8_t);
 extern void tc1602_i2c_text_line_1(const device_info_t *, const char *, const uint8_t);
 extern void tc1602_i2c_text_line_2(const device_info_t *, const char *, const uint8_t);
-extern void tc1602_i2c_cls(const device_info_t *);
-//extern void tc1602_i2c_set_backlight(const device_info_t *, const uint8_t);
 
 #endif /* TC1602_I2C_H_ */

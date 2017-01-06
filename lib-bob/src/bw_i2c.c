@@ -2,7 +2,7 @@
  * @file bw_i2c.c
  *
  */
-/* Copyright (C) 2015 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2016 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifdef __AVR_ARCH__
-#include <avr_i2c.h>
-#else
-#include <bcm2835.h>
+
+#include "bcm2835.h"
+
 #ifdef BARE_METAL
-#include <bcm2835_i2c.h>
+#include "bcm2835_i2c.h"
 #endif
-#endif
-#include <device_info.h>
-#include <bw.h>
+
+#include "bw.h"
+
+#include "device_info.h"
 
 extern int printf(const char *format, ...);
 
@@ -44,12 +44,12 @@ extern int printf(const char *format, ...);
 void bw_i2c_read_id(const device_info_t *device_info) {
 	char cmd[] = { BW_PORT_READ_ID_STRING };
 	char buf[BW_ID_STRING_LENGTH];
-	FUNC_PREFIX(i2c_setSlaveAddress(device_info->slave_address >> 1));
-#ifdef __AVR_ARCH__
-#else
+
+	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
-#endif
-	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
-	FUNC_PREFIX(i2c_read(buf, BW_ID_STRING_LENGTH));
+
+	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
+
 	printf("[%s]\n", buf);
 }

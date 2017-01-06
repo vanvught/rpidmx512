@@ -2,7 +2,7 @@
  * @file bw_spi_relay.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,7 @@
 
 #include <stdint.h>
 
-#include <device_info.h>
-#include <bw_relay.h>
+#include "device_info.h"
 
 #define BW_RELAY_SPI_BYTE_WAIT_US		0		///<
 
@@ -38,6 +37,7 @@
 
 extern uint8_t bw_spi_relay_start(device_info_t *);
 extern void bw_spi_relay_end(void);
+
 extern void bw_spi_relay_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_RELAY_H_ */

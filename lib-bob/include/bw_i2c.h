@@ -2,7 +2,7 @@
  * @file bw_i2c.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2917 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef BW_I2C_H_
 #define BW_I2C_H_
 
-#include <device_info.h>
+#include "device_info.h"
 
 extern void bw_i2c_read_id(const device_info_t *device_info);
 
