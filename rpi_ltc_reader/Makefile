@@ -1,7 +1,7 @@
 #
 DEFINES = 
 #
-LIBS = utils
+LIBS = lcd utils
 #
 SRCDIR = firmware lib
 

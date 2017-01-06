@@ -10,7 +10,7 @@
  * https://en.wikipedia.org/wiki/Linear_timecode
  * http://www.philrees.co.uk/articles/timecode.htm
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,20 +33,20 @@
 
 #include <stdint.h>
 
-#include "hardware.h"
-#include "console.h"
-
-#include "ltc_reader.h"
-#include "ltc_reader_params.h"
-
 #include "arm/synchronize.h"
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 
-#include "util.h"
-#include "bw_i2c_lcd.h"
+#include "hardware.h"
+#include "console.h"
+#include "lcd.h"
 
-static volatile char timecode[BW_LCD_MAX_CHARACTERS] ALIGNED;
+#include "util.h"
+
+#include "ltc_reader.h"
+#include "ltc_reader_params.h"
+
+static volatile char timecode[LCD_MAX_CHARACTERS] ALIGNED;
 
 static const struct _ltc_reader_output *output;
 
@@ -65,7 +65,7 @@ static volatile bool timecode_sync = false;
 static volatile bool timecode_valid = false;
 
 static volatile uint8_t timecode_bits[8] ALIGNED;
-static volatile char timecode[BW_LCD_MAX_CHARACTERS] ALIGNED;
+static volatile char timecode[LCD_MAX_CHARACTERS] ALIGNED;
 static volatile bool is_drop_frame_flag_set = false;
 
 static volatile bool timecode_available = false;
@@ -97,14 +97,11 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
-#ifdef DEBUG
-	bcm2835_gpio_set(RPI_V2_GPIO_P1_11);
-#endif
 	irq_us_current = BCM2835_ST->CLO;
 
 	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
-	dmb();
 
+	dmb();
 	bit_time = irq_us_current - irq_us_previous;
 
 	if ((bit_time < ONE_TIME_MIN) || (bit_time > ZERO_TIME_MAX)) {
@@ -135,13 +132,13 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 				int n;
 				for (n = 1; n < 8; n++) {
 					if (timecode_bits[n] & 1) {
-						timecode_bits[n - 1] |= 0x80;
+						timecode_bits[n - 1] |= (uint8_t) 0x80;
 					}
 					timecode_bits[n] = timecode_bits[n] >> 1;
 				}
 
 				if (current_bit == 1) {
-					timecode_bits[7] |= 0x80;
+					timecode_bits[7] |= (uint8_t) 0x80;
 				}
 			}
 
@@ -182,9 +179,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	}
 
 	irq_us_previous = irq_us_current;
-#ifdef DEBUG
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
-#endif
 	dmb();
 }
 
@@ -204,7 +198,7 @@ void ltc_reader(void) {
 		}
 
 		if (output->lcd_output) {
-			bw_i2c_lcd_text_line_1((char *) timecode, BW_LCD_MAX_CHARACTERS);
+			lcd_text_line_1((char *) timecode, LCD_MAX_CHARACTERS);
 		}
 
 		type = TC_TYPE_UNKNOWN;
@@ -231,7 +225,7 @@ void ltc_reader(void) {
 			}
 
 			if (output->lcd_output) {
-				bw_i2c_lcd_text_line_2(types[type], 5);
+				lcd_text_line_2(types[type], 5);
 			}
 		}
 
@@ -242,18 +236,16 @@ void ltc_reader(void) {
  *
  */
 void ltc_reader_init(const struct _ltc_reader_output *out) {
+	output = out;
 
 	bcm2835_gpio_fsel(GPIO_PIN, BCM2835_GPIO_FSEL_INPT);
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_11, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_11);
-
 	// Rising Edge
 	BCM2835_GPIO->GPREN0 = 1 << GPIO_PIN;
 	// Falling Edge
 	BCM2835_GPIO->GPFEN0 = 1 << GPIO_PIN;
 	// Clear status bit
 	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
-
+	// Enable GPIO IRQ
 	BCM2835_IRQ->IRQ_ENABLE2 = BCM2835_GPIO0_IRQn;
 
 	dmb();
@@ -276,5 +268,7 @@ void ltc_reader_init(const struct _ltc_reader_output *out) {
 	timecode[5] = ':';
 	timecode[8] = '.';
 
-	output = out;
+	if (output->lcd_output) {
+		lcd_cls();
+	}
 }
