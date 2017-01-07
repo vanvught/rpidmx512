@@ -1,5 +1,4 @@
 # Raspberry Pi SMPTE TimeCode Reader/LTC #
-
 This is a prototype.
 
 The output is on an external attached monitor and/or LCD i2c (http://www.bitwizard.nl/wiki/LCD)
