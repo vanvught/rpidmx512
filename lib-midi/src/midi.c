@@ -8,7 +8,7 @@
  *  Project     Arduino MIDI Library
  *  https://github.com/FortySevenEffects/arduino_midi_library/blob/master/src/MIDI.cpp
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,14 +73,14 @@ static _midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_
 
 static bool midi_active_sense = false;
 
-void pl011_init(void);
-void pl011_set(const uint32_t);
-void pl011_poll(void);
-const char * pl011_get(void);
-void spi_init(void);
-void spi_set(const uint32_t);
-void spi_poll(void);
-const char * spi_get(void);
+static void pl011_init(void);
+static void pl011_set(const uint32_t);
+static void pl011_poll(void);
+static const char * pl011_get(void);
+static void spi_init(void);
+static void spi_set(const uint32_t);
+static void spi_poll(void);
+static const char * spi_get(void);
 
 static device_info_t spi_device_info;
 
@@ -644,7 +644,7 @@ void __attribute__((interrupt("FIQ"))) fiq_midi_in_handler(void) {
  *
  * @return
  */
-const char *pl011_get(void) {
+static const char *pl011_get(void) {
 	return "UART";
 }
 
@@ -654,7 +654,7 @@ const char *pl011_get(void) {
  * Configure PL011 for MIDI transmission. Enable the UART.
  *
  */
-void pl011_init(void) {
+static void pl011_init(void) {
 	uint32_t value;
 
 	dmb();
@@ -691,11 +691,11 @@ void pl011_init(void) {
 /**
  *
  */
-void pl011_poll(void) {
+static void pl011_poll(void) {
 	// Nothing to do here. We have the FIQ routine.
 }
 
-void pl011_set(const uint32_t baudrate) {
+static void pl011_set(const uint32_t baudrate) {
 	midi_baudrate = baudrate;
 }
 
@@ -703,14 +703,14 @@ void pl011_set(const uint32_t baudrate) {
  *
  */
 
-const char *spi_get(void) {
+static const char *spi_get(void) {
 	return "SPI";
 }
 
 /**
  *
  */
-void spi_init(void) {
+static void spi_init(void) {
 	spi_device_info.chip_select = 0;
 	spi_device_info.speed_hz = SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
 
@@ -721,7 +721,7 @@ void spi_init(void) {
 /**
  *
  */
-void spi_poll(void) {
+static void spi_poll(void) {
 	int c;
 	if ( (c = sc16is740_getc(&spi_device_info)) != -1) {
 		midi_rx_buffer[midi_rx_buffer_index_head].data = (uint8_t) (c & 0xFF);
@@ -734,7 +734,7 @@ void spi_poll(void) {
  *
  * @param baudrate
  */
-void spi_set(const uint32_t baudrate) {
+static void spi_set(const uint32_t baudrate) {
 	sc16is740_set_baud(&spi_device_info, baudrate);
 	midi_baudrate = baudrate;
 }

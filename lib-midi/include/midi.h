@@ -135,6 +135,13 @@ typedef enum midi_channel_control_function {
 	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45,	///< 63 off, 64 on
 } _midi_channel_control_function;
 
+typedef enum _midi_timecode_type {
+	MIDI_TC_TYPE_FILM = 0,
+	MIDI_TC_TYPE_EBU,
+	MIDI_TC_TYPE_DF,
+	MIDI_TC_TYPE_SMPTE
+} _midi_timecode_type;
+
 extern void midi_init(void);
 extern void midi_set_baudrate(const uint32_t);
 extern const uint32_t midi_get_baudrate(void);
