@@ -7,7 +7,7 @@
  * https://github.com/raspberrypi/linux/blob/02ce9572cc77c65f49086bbc4281233bd3fa48b7/drivers/gpio/gpio-bcm-virt.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-//#if defined (RPI3)
+
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "arm/synchronize.h"
+
 #include "bcm2835.h"
 #include "bcm2835_mailbox.h"
 
@@ -56,6 +57,11 @@ struct vc_msg_uint32_t {
 	uint32_t end_tag;					///< an end identifier, should be set to NULL
 };
 
+/**
+ * @ingroup GPIO
+ *
+ * @return
+ */
 static uint32_t get_uint32_t(void) {
 	struct vc_msg_uint32_t *vc_msg = (struct vc_msg_uint32_t *)MEM_COHERENT_REGION;
 
@@ -80,10 +86,19 @@ static uint32_t get_uint32_t(void) {
 	return vc_msg->tag.value;
 }
 
+/**
+ * @ingroup GPIO
+ *
+ * @return
+ */
 uint32_t bcm2837_gpio_virt_get_address(void) {
 	return gpiovirtbuf;
 }
 
+/**
+ * @ingroup GPIO
+ *
+ */
 void bcm2837_gpio_virt_init(void) {
 	int i;
 
@@ -95,6 +110,11 @@ void bcm2837_gpio_virt_init(void) {
 	gpiovirtbuf &= 0x3FFFFFFF;
 }
 
+/**
+ * @ingroup GPIO
+ *
+ * @param val
+ */
 void bcm2837_gpio_virt_led_set(int val) {
 	uint16_t enables, disables;
 	int16_t diff;
@@ -125,4 +145,3 @@ void bcm2837_gpio_virt_led_set(int val) {
 	dmb();
 	*(volatile uint32_t *)gpiovirtbuf = enables_disables[0];
 }
-//#endif

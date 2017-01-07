@@ -5,7 +5,7 @@
  * ARM to VC
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,20 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "arm/synchronize.h"
+
 #include "bcm2835.h"
 #include "bcm2835_mailbox.h"
 #include "bcm2835_vc.h"
 
 struct vc_msg_tag_uint32 {
-	uint32_t tag_id;		///< the message id
-	uint32_t buffer_size;	///< size of the buffer (which in this case is always 8 bytes)
-	uint32_t data_size;		///< amount of data being sent or received
-	uint32_t dev_id;		///< the ID of the clock/voltage to get or set
-	uint32_t val;			///< the value (e.g. rate (in Hz)) to set
+	uint32_t tag_id;				///< the message id
+	uint32_t buffer_size;			///< size of the buffer (which in this case is always 8 bytes)
+	uint32_t data_size;				///< amount of data being sent or received
+	uint32_t dev_id;				///< the ID of the clock/voltage to get or set
+	uint32_t val;					///< the value (e.g. rate (in Hz)) to set
 };
 
 struct vc_msg_uint32 {
@@ -163,12 +166,12 @@ int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
 
 
 struct vc_msg_tag_set_clock_rate {
-	uint32_t tag_id;		///< the message id
-	uint32_t buffer_size;	///< size of the buffer (which in this case is always 8 bytes)
-	uint32_t data_size;		///< amount of data being sent or received
-	uint32_t dev_id;		///< the ID of the clock
-	uint32_t val;			///< the value rate (in Hz) to set
-	uint32_t skip_turbo;	///<
+	uint32_t tag_id;				///< the message id
+	uint32_t buffer_size;			///< size of the buffer (which in this case is always 8 bytes)
+	uint32_t data_size;				///< amount of data being sent or received
+	uint32_t dev_id;				///< the ID of the clock
+	uint32_t val;					///< the value rate (in Hz) to set
+	uint32_t skip_turbo;			///<
 };
 
 struct vc_msg_set_clock_rate {
@@ -276,10 +279,10 @@ int32_t bcm2835_vc_set_power_state(const uint32_t dev_id, const uint32_t state) 
 }
 
 struct vc_msg_tag_board_mac_address {
-	uint32_t tag_id;			///< the message id
-	uint32_t buffer_size;		///< size of the buffer (which in this case is always 8 bytes)
-	uint32_t data_size;			///< amount of data being sent or received
-	uint8_t  mac_address[6];	///< MAC address
+	uint32_t tag_id;							///< the message id
+	uint32_t buffer_size;						///< size of the buffer (which in this case is always 8 bytes)
+	uint32_t data_size;							///< amount of data being sent or received
+	uint8_t  mac_address[6];					///< MAC address
 
 };
 
@@ -349,18 +352,18 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 }
 
 struct vc_msg_tag_uint32_t {
-	uint32_t tag_id;			///< the message id
-	uint32_t buffer_size;		///< size of the buffer (which in this case is always 8 bytes)
-	uint32_t data_size;			///< amount of data being sent or received
-	uint32_t value;				///<
+	uint32_t tag_id;				///< the message id
+	uint32_t buffer_size;			///< size of the buffer (which in this case is always 8 bytes)
+	uint32_t data_size;				///< amount of data being sent or received
+	uint32_t value;					///<
 
 };
 
 struct vc_msg_uint32_t {
-	uint32_t msg_size;					///< simply, sizeof(struct vc_msg)
-	uint32_t request_code;				///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
-	struct vc_msg_tag_uint32_t tag;		///< the tag structure above to make
-	uint32_t end_tag;					///< an end identifier, should be set to NULL
+	uint32_t msg_size;				///< simply, sizeof(struct vc_msg)
+	uint32_t request_code;			///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
+	struct vc_msg_tag_uint32_t tag;	///< the tag structure above to make
+	uint32_t end_tag;				///< an end identifier, should be set to NULL
 };
 
 /**
@@ -443,10 +446,10 @@ struct vc_msg_tag_ram {
 };
 
 struct vc_msg_board_ram {
-	uint32_t msg_size;							///< simply, sizeof(struct vc_msg)
-	uint32_t request_code;						///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
-	struct vc_msg_tag_ram tag;					///< the tag structure above to make
-	uint32_t end_tag;							///< an end identifier, should be set to NULL
+	uint32_t msg_size;			///< simply, sizeof(struct vc_msg)
+	uint32_t request_code;		///< holds various information like the success and number of bytes returned (refer to mailboxes wiki)
+	struct vc_msg_tag_ram tag;	///< the tag structure above to make
+	uint32_t end_tag;			///< an end identifier, should be set to NULL
 };
 
 /**

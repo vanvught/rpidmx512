@@ -2,7 +2,7 @@
  * @file bcm2835_spi_write.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,6 @@
 
 #include "bcm2835_spi.h"
 
-
-/**
- * @ingroup SPI
- *
- * Transfers any number of bytes to the currently selected SPI slave.
- * Asserts the currently selected CS pins (as previously set by \ref bcm2835_spi_chipSelect)
- * during the transfer.
- *
- * @param tbuf Buffer of bytes to send.
- * @param len Number of bytes in the tbuf buffer, and the number of bytes to send.
- */
 
 /**
  * @ingroup SPI

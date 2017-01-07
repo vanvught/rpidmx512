@@ -2,7 +2,7 @@
  * @file bcm2835_i2c.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #define BCM2835_I2C_H_
 
 #include <stdint.h>
+
+#include "bcm2835.h"
 
 #define BCM2835_BSC_C_I2CEN 		0x00008000 ///< I2C Enable, 0 = disabled, 1 = enabled
 #define BCM2835_BSC_C_INTR 			0x00000400 ///< Interrupt on RX
@@ -79,7 +81,7 @@ extern uint8_t bcm2835_i2c_read(/*@out@*/char*, const uint32_t);
  * @param addr buffer for read.
  */
 inline static void bcm2835_i2c_setSlaveAddress(const uint8_t addr) {
-	BCM2835_BSC1 ->A = addr;
+	BCM2835_BSC1->A = addr;
 }
 
 /**
@@ -89,7 +91,7 @@ inline static void bcm2835_i2c_setSlaveAddress(const uint8_t addr) {
  * @param divider The desired I2C clock divider, one of \ref bcm2835I2CClockDivider
  */
 inline static void bcm2835_i2c_setClockDivider(const uint16_t divider) {
-	BCM2835_BSC1 ->DIV = divider;
+	BCM2835_BSC1->DIV = divider;
 }
 
 #endif /* BCM2835_I2C_H_ */

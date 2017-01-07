@@ -2,7 +2,7 @@
  * @file bcm2835_mailbox.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,10 @@
  * @brief The following lists the currently defined mailbox channels.
  */
 typedef enum {
-	BCM2835_MAILBOX_POWER_CHANNEL	= 0,	///< For use by the power management interface
-	BCM2835_MAILBOX_FB_CHANNEL		= 1,	///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
-	BCM2835_MAILBOX_VCHIQ_CHANNEL	= 3,    ///< For use by the VCHIQ interface
-	BCM2835_MAILBOX_PROP_CHANNEL	= 8		///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+	BCM2835_MAILBOX_POWER_CHANNEL 	= 0,	///< For use by the power management interface
+	BCM2835_MAILBOX_FB_CHANNEL 		= 1,	///< https://github.com/raspberrypi/firmware/wiki/Mailbox-framebuffer-interface
+	BCM2835_MAILBOX_VCHIQ_CHANNEL 	= 3,    ///< For use by the VCHIQ interface
+	BCM2835_MAILBOX_PROP_CHANNEL 	= 8		///< https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
 } bcm2835MailboxChannels;
 
 extern void bcm2835_mailbox_flush(void);

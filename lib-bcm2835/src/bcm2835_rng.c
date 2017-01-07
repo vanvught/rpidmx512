@@ -8,7 +8,7 @@
  * https://github.com/raspberrypi/linux/blob/rpi-3.6.y/drivers/char/hw_random/bcm2708-rng.c
  * https://github.com/rsta2/circle/blob/4354aa20130f1d7daf12e87616823de3d80a9e28/lib/bcmrandom.cpp
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

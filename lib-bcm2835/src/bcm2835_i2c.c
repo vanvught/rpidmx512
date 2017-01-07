@@ -2,7 +2,7 @@
  * @file bcm2835_i2c.c
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,22 +38,9 @@
  * Default the I2C speed to 100 kHz.
  */
 void bcm2835_i2c_begin(void) {
-	uint32_t value;
 	/* BSC1 is on GPIO 2 & 3 */
-
-	value = BCM2835_GPIO->GPFSEL0;
-	value &= ~(7 << 6);
-	value |= BCM2835_GPIO_FSEL_INPT << 6;	// Pin 2, GPIO Input
-	value &= ~(7 << 9);
-	value |= BCM2835_GPIO_FSEL_INPT << 9;	// Pin 3, GPIO Input
-	BCM2835_GPIO->GPFSEL0 = value;
-
-	value = BCM2835_GPIO->GPFSEL0;
-	value &= ~(7 << 6);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 6;	// Pin 2, Set SDA pin to alternate function 0 for I2C
-	value &= ~(7 << 9);
-	value |= BCM2835_GPIO_FSEL_ALT0 << 9;	// Pin 3, Set SCL pin to alternate function 0 for I2C
-	BCM2835_GPIO->GPFSEL0 = value;
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_ALT0);
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_ALT0);
 
 	BCM2835_BSC1->DIV = BCM2835_I2C_CLOCK_DIVIDER_2500; // Default the I2C speed to 100 kHz
 }
@@ -66,15 +53,9 @@ void bcm2835_i2c_begin(void) {
  * are returned to their default INPUT behavior.
  */
 void bcm2835_i2c_end(void) {
-	uint32_t value;
 	/* BSC1 is on GPIO 2 & 3 */
-
-	value = BCM2835_GPIO->GPFSEL0;
-	value &= ~(7 << 6);
-	value |= BCM2835_GPIO_FSEL_INPT << 6;	// Pin 2, GPIO Input
-	value &= ~(7 << 9);
-	value |= BCM2835_GPIO_FSEL_INPT << 9;	// Pin 3, GPIO Input
-	BCM2835_GPIO->GPFSEL0 = value;
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_03, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_05, BCM2835_GPIO_FSEL_INPT);
 }
 
 /**
@@ -109,7 +90,6 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
 	// Transfer is over when BCM2835_BSC_S_DONE
 	while (!(BCM2835_BSC1 ->S & BCM2835_BSC_S_DONE)) {
 		while ((remaining != (uint32_t)0) && (BCM2835_BSC1 ->S & BCM2835_BSC_S_TXD)) {
-			// Write to FIFO
 			BCM2835_BSC1 ->FIFO = (uint32_t)buf[i];
 			i++;
 			remaining--;
@@ -163,7 +143,6 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
 		// we must empty the FIFO as it is populated and not use any delay
 		while (BCM2835_BSC1->S & BCM2835_BSC_S_RXD) {
-			// Read from FIFO, no barrier
 			buf[i] = (char)BCM2835_BSC1 ->FIFO;
 			i++;
 			remaining--;
@@ -172,7 +151,6 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 
 	// transfer has finished - grab any remaining stuff in FIFO
 	while ((remaining != (uint32_t)0) && (BCM2835_BSC1 ->S & BCM2835_BSC_S_RXD)) {
-		// Read from FIFO, no barrier
 		buf[i] = (char)BCM2835_BSC1 ->FIFO;
 		i++;
 		remaining--;

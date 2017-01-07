@@ -27,13 +27,6 @@
  */
 
 /**
- * @defgroup DMX512 dmx512
- * @ingroup PL011
- * @brief TODO
- *
- */
-
-/**
  * @defgroup SPI spi
  * @ingroup Firmware
  * @brief TODO

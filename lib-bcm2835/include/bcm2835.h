@@ -2,7 +2,7 @@
  * @file bcm2835.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,6 +111,10 @@
 #define INTERRUPT_AUX		(ARM_IRQ1_BASE + 29)	///<
 
 #define ARM_IRQ2_BASE		32						///<
+#define INTERRUPT_GPIO0		(ARM_IRQ2_BASE + 17)
+#define INTERRUPT_GPIO1		(ARM_IRQ2_BASE + 18)
+#define INTERRUPT_GPIO2		(ARM_IRQ2_BASE + 19)
+#define INTERRUPT_GPIO3		(ARM_IRQ2_BASE + 20)
 #define INTERRUPT_VC_UART	(ARM_IRQ2_BASE + 25)	///< UART Interrupt
 
 typedef enum {
@@ -119,6 +123,7 @@ typedef enum {
 	BCM2835_TIMER3_IRQn = 1	<< (INTERRUPT_TIMER3 - ARM_IRQ1_BASE),		///<
 	BCM2835_UART1_IRQn  = 1 << (INTERRUPT_AUX - ARM_IRQ1_BASE),			///<
 	// ARM_IRQ2_BASE
+	BCM2835_GPIO0_IRQn    = 1 << (INTERRUPT_GPIO0 - ARM_IRQ2_BASE),		///<
 	BCM2835_VC_UART_IRQn  = 1 << (INTERRUPT_VC_UART - ARM_IRQ2_BASE)	///<
 } BCM2835_IRQn_TypeDef;
 
