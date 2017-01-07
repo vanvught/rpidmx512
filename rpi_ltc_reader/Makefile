@@ -1,7 +1,7 @@
 #
 DEFINES = 
 #
-LIBS = lcd utils
+LIBS = lcd midi utils
 #
 SRCDIR = firmware lib
 

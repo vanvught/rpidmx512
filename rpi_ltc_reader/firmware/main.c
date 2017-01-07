@@ -27,7 +27,9 @@
 
 #include "hardware.h"
 #include "console.h"
+
 #include "lcd.h"
+#include "midi_send.h"
 
 #include "ltc_reader.h"
 #include "ltc_reader_params.h"
@@ -56,6 +58,10 @@ void notmain(void) {
 	output.lcd_output = ltc_reader_params_is_lcd_output();
 	output.midi_output = ltc_reader_params_is_midi_output();
 	output.artnet_output = ltc_reader_params_is_artnet_output();
+
+	if(output.midi_output) {
+		midi_send_init();
+	}
 
 	if (output.lcd_output) {
 		output.lcd_output = lcd_detect();

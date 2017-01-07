@@ -3,10 +3,10 @@
 	<name>rpi_ltc_reader</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-lcd</project>
+		<project>lib-midi</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
