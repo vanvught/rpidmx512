@@ -6,6 +6,7 @@
 		<project>lib-bcm2835</project>
 		<project>lib-esp8266</project>
 		<project>lib-hal</project>
+		<project>lib-lcd</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
