@@ -2,7 +2,7 @@
  * @file esp8266.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,12 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "arm/synchronize.h"
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
-#include "arm/synchronize.h"
 
 /*
  *      RP					ESP8266		Logic Analyzer
@@ -39,7 +41,7 @@
  * 16	GPIO23	<- DATA ->	GPI013		blue
  * 18	GPIO24	<- DATA ->	GPI014		green
  * 22	GPIO25	<- DATA ->	GPI015		yellow
-  */
+ */
 
 typedef union pcast32 {
 	uint32_t u32;
@@ -352,13 +354,13 @@ void esp8266_read_str(char *s, uint16_t *len) {
 	data_gpio_fsel_input();
 
 	while ((ch = _read_byte()) != (uint8_t) 0) {
-		if (n > 0) {
+		if (n > (uint16_t) 0) {
 			*s++ = (char) ch;
 			n--;
 		}
 	}
 
-	*len = (uint16_t)(s - p);
+	*len = (uint16_t) (s - p);
 
 	while (n > 0) {
 		*s++ = '\0';
@@ -366,4 +368,40 @@ void esp8266_read_str(char *s, uint16_t *len) {
 	}
 
 	dmb();
+}
+
+/**
+ *
+ * @return
+ */
+const bool esp8266_detect(void) {
+	esp8266_init();
+
+	data_gpio_fsel_output();
+
+	// send a CMD_NOP
+	const uint32_t out_gpio = (0x00 & 0x0F) << 22;
+	BCM2835_GPIO->GPSET0 = out_gpio;
+	BCM2835_GPIO->GPCLR0 = out_gpio ^ (0x0F << 22);
+
+	bcm2835_gpio_set(17);// Tell that we have data available. Wait for ack, wait for 0 -> 1
+
+	uint32_t micros_now = BCM2835_ST->CLO;
+
+	// wait 0.5 second for the ESP8266 to respond
+	while ((!(BCM2835_GPIO->GPLEV0 & (1 << 27))) && (BCM2835_ST->CLO - micros_now < (uint32_t) 500000))
+		;
+
+	if (!(BCM2835_GPIO->GPLEV0 & (1 << 27))) {
+		return false;
+	}
+
+	bcm2835_gpio_clr(17); // we acknowledge, and wait for zero
+
+	while (BCM2835_GPIO->GPLEV0 & (1 << 27))
+		;
+
+	dmb();
+
+	return true;
 }

@@ -2,7 +2,7 @@
  * @file esp8266.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,15 @@
 #define ESP8266_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern void esp8266_init(void);
+
+extern const bool esp8266_detect(void);
 
 extern void esp8266_write_4bits(const uint8_t);
 extern void esp8266_write_byte(const uint8_t);

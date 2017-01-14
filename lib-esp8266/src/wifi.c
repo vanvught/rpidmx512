@@ -227,6 +227,14 @@ const _wifi_station_status wifi_station_get_connect_status(void) {
  *
  * @return
  */
-bool wifi_is_dhcp_used(void) {
+const bool wifi_is_dhcp_used(void) {
 	return is_dhcp_used;
+}
+
+/**
+ *
+ * @return
+ */
+const bool wifi_detect(void) {
+	return esp8266_detect();
 }
