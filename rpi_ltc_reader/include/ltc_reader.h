@@ -58,7 +58,15 @@ struct _ltc_reader_output {
 	bool artnet_output;
 } ltc_reader_output;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void ltc_reader(void);
 void ltc_reader_init(const struct _ltc_reader_output *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LTC_READER_H_ */

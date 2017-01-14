@@ -3,6 +3,7 @@
 	<name>rpi_ltc_reader</name>
 	<comment></comment>
 	<projects>
+		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-lcd</project>

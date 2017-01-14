@@ -29,7 +29,13 @@
 #include "console.h"
 
 #include "lcd.h"
+
 #include "midi_send.h"
+
+#include "wifi.h"
+#include "udp.h"
+#include "ap_params.h"
+#include "network_params.h"
 
 #include "ltc_reader.h"
 #include "ltc_reader_params.h"
@@ -37,6 +43,8 @@
 #include "software_version.h"
 
 static struct _ltc_reader_output output = { true, false, false, false };
+
+extern "C" {
 
 static void handle_bool(const bool b) {
 	if (b) {
@@ -67,6 +75,10 @@ void notmain(void) {
 		output.lcd_output = lcd_detect();
 	}
 
+	if (output.artnet_output) {
+		output.artnet_output = wifi_detect();
+	}
+
 	ltc_reader_init(&output);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
@@ -78,10 +90,74 @@ void notmain(void) {
 	console_puts("Console output : "); handle_bool(output.console_output); console_putc('\n');
 	console_puts("LCD output     : "); handle_bool(output.lcd_output); console_putc('\n');
 	console_puts("MIDI output    : "); handle_bool(output.midi_output); console_putc('\n');
-	console_puts("ArtNet output  : "); handle_bool(output.artnet_output);
+	console_puts("ArtNet output  : "); handle_bool(output.artnet_output);console_puts(" (not implemented)");
+
+	if (output.artnet_output) {
+		uint8_t mac_address[6];
+		struct ip_info ip_config;
+
+		(void) ap_params_init();
+		const char *ap_password = ap_params_get_password();
+
+		console_status(CONSOLE_YELLOW, "Starting Wifi ...");
+
+		wifi_init(ap_password);
+
+		printf("ESP8266 information\n");
+		printf(" SDK      : %s\n", system_get_sdk_version());
+		printf(" Firmware : %s\n\n", wifi_get_firmware_version());
+
+		if (network_params_init()) {
+			console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
+			if (network_params_is_use_dhcp()) {
+				wifi_station(network_params_get_ssid(), network_params_get_password());
+			} else {
+				ip_config.ip.addr = network_params_get_ip_address();
+				ip_config.netmask.addr = network_params_get_net_mask();
+				ip_config.gw.addr = network_params_get_default_gateway();
+				wifi_station_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
+			}
+		}
+
+		const _wifi_mode opmode = wifi_get_opmode();
+
+		if (opmode == WIFI_STA) {
+			printf("WiFi mode : Station\n");
+		} else {
+			printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+		}
+
+		if (wifi_get_macaddr(mac_address)) {
+			printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
+		} else {
+			console_error("wifi_get_macaddr");
+		}
+
+		printf(" Hostname    : %s\n", wifi_station_get_hostname());
+
+		if (wifi_get_ip_info(&ip_config)) {
+			printf(" IP-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
+			printf(" Netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
+			printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
+			if (opmode == WIFI_STA) {
+				const _wifi_station_status status = wifi_station_get_connect_status();
+				printf("      Status : %s\n", wifi_station_status(status));
+				if (status != WIFI_STATION_GOT_IP){
+					console_error("Not connected!");
+					for(;;);
+				}
+			}
+		} else {
+			console_error("wifi_get_ip_info");
+		}
+
+		console_status(CONSOLE_YELLOW, "Starting UDP ...");
+		udp_begin(6454);
+	}
 
 	for (;;) {
 		ltc_reader();
 	}
 }
 
+}

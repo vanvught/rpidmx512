@@ -1,7 +1,7 @@
 #
 DEFINES = 
 #
-LIBS = lcd midi utils
+LIBS = midi esp8266 utils
 #
 SRCDIR = firmware lib
 
