@@ -37,10 +37,18 @@ struct _midi_send_tc {
 	_midi_timecode_type rate;
 } ;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void midi_send_init(void);
 
 extern void midi_send_tc(const struct _midi_send_tc *);
 
 extern void midi_send_raw(const uint8_t *, const int16_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MIDI_SEND_H_ */

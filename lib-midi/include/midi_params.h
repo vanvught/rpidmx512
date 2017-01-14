@@ -29,8 +29,16 @@
 
 #include "midi_interface.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void midi_params_init(void);
 extern const _midi_interfaces midi_params_get_interface(void);
 extern const uint32_t midi_params_get_baudrate(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MIDI_PARAMS_H_ */

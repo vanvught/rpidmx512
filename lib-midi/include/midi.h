@@ -2,7 +2,7 @@
  * @file midi.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ typedef enum midi_types {
 	MIDI_TYPES_CONTINUE					= 0xFB,	///< System Real Time - Continue
 	MIDI_TYPES_STOP						= 0xFC,	///< System Real Time - Stop
 	MIDI_TYPES_ACTIVE_SENSING			= 0xFE,	///< System Real Time - Active Sensing
-	MIDI_TYPES_SYSTEM_RESET				= 0xFF,	///< System Real Time - System Reset
+	MIDI_TYPES_SYSTEM_RESET				= 0xFF	///< System Real Time - System Reset
 } _midi_types;
 
 typedef enum midi_channel_mode_message {
@@ -132,7 +132,7 @@ typedef enum midi_channel_control_function {
 	MIDI_CONTROL_FUNCTION_SOSTENUTO_ON_OFF		= 0x42,	///< 63 off, 64 on
 	MIDI_CONTROL_FUNCTION_SOFT_PEDAL_ON_OFF		= 0x43,	///< 63 off, 64 on
 	MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH		= 0x44,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45,	///< 63 off, 64 on
+	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45	///< 63 off, 64 on
 } _midi_channel_control_function;
 
 typedef enum _midi_timecode_type {
@@ -141,6 +141,10 @@ typedef enum _midi_timecode_type {
 	MIDI_TC_TYPE_DF,
 	MIDI_TC_TYPE_SMPTE
 } _midi_timecode_type;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern void midi_init(void);
 extern void midi_set_baudrate(const uint32_t);
@@ -158,5 +162,9 @@ extern _midi_active_sense_state midi_get_active_sense_state(void);
 
 extern const bool midi_active_get_sense(void);
 extern void midi_active_set_sense(const bool);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MIDI_H_ */
