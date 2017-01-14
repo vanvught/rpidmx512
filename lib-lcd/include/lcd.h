@@ -38,6 +38,11 @@ typedef enum _lcd_types {
 	LCD_TYPE_UNKNOWN
 } lcd_types;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const bool lcd_detect(void);
 
 extern void lcd_cls(void);
@@ -45,5 +50,9 @@ extern void lcd_cls(void);
 extern void lcd_text(const char *, const uint8_t);
 extern void lcd_text_line_1(const char *, const uint8_t);
 extern void lcd_text_line_2(const char *, const uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LCD_H_ */
