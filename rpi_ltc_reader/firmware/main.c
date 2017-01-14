@@ -70,7 +70,7 @@ void notmain(void) {
 	ltc_reader_init(&output);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("SMPTE TimeCode LTC Reader");
+	printf("SMPTE TimeCode LTC Reader / Converter");
 
 	console_set_top_row(3);
 

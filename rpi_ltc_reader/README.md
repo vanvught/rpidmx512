@@ -1,9 +1,9 @@
 # Raspberry Pi SMPTE TimeCode Reader/LTC #
 This is a prototype.
 
-The output is on an external attached monitor and/or LCD i2c (http://www.bitwizard.nl/wiki/LCD)
+The output is on an external attached monitor and/or LCD I2C (http://www.bitwizard.nl/wiki/LCD) and/or MIDI.
 
-Features to be implemented can be : MIDI out, ArtNet out.
+Feature to be implemented can be ArtNet out.
 
 The Dout is connected to GPI09 (pin 21 on the RPi GPIO header). 
 

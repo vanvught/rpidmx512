@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "arm/synchronize.h"
 
@@ -56,7 +57,7 @@ static volatile char timecode[LCD_MAX_CHARACTERS] ALIGNED;
 
 static const struct _ltc_reader_output *output;
 
-static const char types[5][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE", "-----" };
+static const char types[5][12] ALIGNED = {"Film 24fps " , "EBU 25fps  " , "DF 29.97fps" , "SMPTE 30fps", "----- -----" };
 static timecode_types prev_type = TC_TYPE_INVALID;	///< Invalid type. Force initial update.
 
 static volatile uint32_t irq_us_previous = 0;
@@ -84,6 +85,9 @@ static volatile uint32_t led_counter = (uint32_t) 0;
 
 static volatile struct _midi_send_tc midi_timecode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
+/**
+ *
+ */
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 
@@ -103,6 +107,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
 }
 
+/**
+ *
+ */
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
 	irq_us_current = BCM2835_ST->CLO;
@@ -113,7 +120,6 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	bit_time = irq_us_current - irq_us_previous;
 
 	if ((bit_time < ONE_TIME_MIN) || (bit_time > ZERO_TIME_MAX)) {
-		// Interrupt outside specifications;
 		total_bits = 0;
 	} else {
 		if (ones_bit_count) {
@@ -251,7 +257,7 @@ void ltc_reader(void) {
 			}
 
 			if (output->lcd_output) {
-				lcd_text_line_2(types[type], 5);
+				lcd_text_line_2(types[type], MIN((sizeof(types[0]) / sizeof(char))-1, LCD_MAX_CHARACTERS));
 			}
 		}
 
@@ -271,6 +277,8 @@ void ltc_reader(void) {
  *
  */
 void ltc_reader_init(const struct _ltc_reader_output *out) {
+	assert(out != NULL);
+
 	output = out;
 
 	bcm2835_gpio_fsel(GPIO_PIN, BCM2835_GPIO_FSEL_INPT);
