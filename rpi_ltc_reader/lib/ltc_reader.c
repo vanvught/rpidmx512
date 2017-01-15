@@ -60,8 +60,8 @@ static const struct _ltc_reader_output *output;
 static const char types[5][12] ALIGNED = {"Film 24fps " , "EBU 25fps  " , "DF 29.97fps" , "SMPTE 30fps", "----- -----" };
 static timecode_types prev_type = TC_TYPE_INVALID;	///< Invalid type. Force initial update.
 
-static volatile uint32_t irq_us_previous = 0;
-static volatile uint32_t irq_us_current = 0;
+static volatile uint32_t fiq_us_previous = 0;
+static volatile uint32_t fiq_us_current = 0;
 
 static volatile uint32_t bit_time = 0;
 static volatile uint32_t total_bits = 0;
@@ -85,23 +85,38 @@ static volatile uint32_t led_counter = (uint32_t) 0;
 
 static volatile struct _midi_send_tc midi_timecode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
+static volatile uint32_t midi_quarter_frame_us = (uint32_t) 0;
+static volatile bool midi_quarter_frame_message = false;
+static volatile uint8_t midi_quarter_frame_piece ALIGNED = 0;
+
 /**
  *
  */
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 	dmb();
 
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
+	const uint32_t clo = BCM2835_ST->CLO;
 
-	dmb();
-	ltc_updates_per_seconde = ltc_updates - ltc_updates_previous;
-	ltc_updates_previous = ltc_updates;
+	if (BCM2835_ST->CS & BCM2835_ST_CS_M1) {
+		BCM2835_ST->CS = BCM2835_ST_CS_M1;
+		BCM2835_ST->C1 = clo + (uint32_t) 1000000;
 
-	if ((ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
-		hardware_led_set((int) (led_counter++ & 0x01));
-	} else {
-		hardware_led_set(0);
+		dmb();
+		ltc_updates_per_seconde = ltc_updates - ltc_updates_previous;
+		ltc_updates_previous = ltc_updates;
+
+		if ((ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
+			hardware_led_set((int) (led_counter++ & 0x01));
+		} else {
+			hardware_led_set(0);
+		}
+
+	} else if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
+		BCM2835_ST->CS = BCM2835_ST_CS_M3;
+		BCM2835_ST->C3 = clo + midi_quarter_frame_us;
+
+		dmb();
+		midi_quarter_frame_message = true;
 	}
 
 	dmb();
@@ -110,14 +125,14 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 /**
  *
  */
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 	dmb();
-	irq_us_current = BCM2835_ST->CLO;
+	fiq_us_current = BCM2835_ST->CLO;
 
 	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
 
 	dmb();
-	bit_time = irq_us_current - irq_us_previous;
+	bit_time = fiq_us_current - fiq_us_previous;
 
 	if ((bit_time < ONE_TIME_MIN) || (bit_time > ZERO_TIME_MAX)) {
 		total_bits = 0;
@@ -195,7 +210,7 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		}
 	}
 
-	irq_us_previous = irq_us_current;
+	fiq_us_previous = fiq_us_current;
 	dmb();
 }
 
@@ -234,11 +249,6 @@ void ltc_reader(void) {
 			}
 		}
 
-		if (output->midi_output) {
-			midi_timecode.rate = type;
-			midi_send_tc((struct _midi_send_tc *)&midi_timecode);
-		}
-
 		if (output->console_output) {
 			console_set_cursor(2, 5);
 			console_write((char *) timecode, 11);
@@ -251,6 +261,15 @@ void ltc_reader(void) {
 		if (prev_type != type) {
 			prev_type = type;
 
+			if (output->midi_output) {
+				midi_timecode.rate = type;
+				midi_send_tc((struct _midi_send_tc *)&midi_timecode);
+
+				midi_quarter_frame_piece = 0;
+				midi_quarter_frame_us = limit_us / (uint32_t) 4;
+				BCM2835_ST->C3 = now_us + midi_quarter_frame_us;
+			}
+
 			if (output->console_output) {
 				console_set_cursor(2, 6);
 				console_puts(types[type]);
@@ -259,16 +278,61 @@ void ltc_reader(void) {
 			if (output->lcd_output) {
 				lcd_text_line_2(types[type], MIN((sizeof(types[0]) / sizeof(char))-1, LCD_MAX_CHARACTERS));
 			}
+
 		}
 
-
 		const uint32_t delta_us = BCM2835_ST->CLO - now_us;
+
 		if (limit_us == 0) {
 			sprintf(limit_warning, "-----:%.5d", (int) delta_us);
 			console_status(CONSOLE_CYAN, limit_warning);
 		} else {
 			sprintf(limit_warning, "%.5d:%.5d", (int) limit_us, (int) delta_us);
 			console_status(delta_us < limit_us ? CONSOLE_YELLOW : CONSOLE_RED, limit_warning);
+		}
+	}
+
+	if ((output->midi_output) && (ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
+		dmb();
+		if (midi_quarter_frame_message) {
+			dmb();
+			midi_quarter_frame_message = false;
+
+			uint8_t bytes[2] = { 0xF1, 0x00 };
+			uint8_t data = midi_quarter_frame_piece << 4;
+
+			switch (midi_quarter_frame_piece) {
+				case 0:
+					bytes[1] = data | (midi_timecode.frame & 0x0F);
+					break;
+				case 1:
+					bytes[1] = data | ((midi_timecode.frame & 0x10) >> 4);
+					break;
+				case 2:
+					bytes[1] = data | (midi_timecode.second & 0x0F);
+					break;
+				case 3:
+					bytes[1] = data | ((midi_timecode.second & 0x30) >> 4);
+					break;
+				case 4:
+					bytes[1] = data | (midi_timecode.minute & 0x0F);
+					break;
+				case 5:
+					bytes[1] = data | ((midi_timecode.minute & 0x30) >> 4);
+					break;
+				case 6:
+					bytes[1] = data | (midi_timecode.hour & 0x0F);
+					break;
+				case 7:
+					bytes[1] = data | (midi_timecode.rate << 1) |((midi_timecode.hour & 0x10) >> 4);;
+					break;
+
+				default:
+					break;
+			}
+
+			midi_send_raw(bytes, 2);
+			midi_quarter_frame_piece = (midi_quarter_frame_piece + (uint8_t) 1) & (uint8_t) 0x07;
 		}
 	}
 }
@@ -288,20 +352,21 @@ void ltc_reader_init(const struct _ltc_reader_output *out) {
 	BCM2835_GPIO->GPFEN0 = 1 << GPIO_PIN;
 	// Clear status bit
 	BCM2835_GPIO->GPEDS0 = 1 << GPIO_PIN;
-	// Enable GPIO IRQ
-	BCM2835_IRQ->IRQ_ENABLE2 = BCM2835_GPIO0_IRQn;
-
-	dmb();
-	__enable_irq();
-
-	BCM2835_ST->CS = BCM2835_ST_CS_M1;
-	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
-	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_TIMER1;
+	// Enable GPIO FIQ
+	BCM2835_IRQ->FIQ_CONTROL = BCM2835_FIQ_ENABLE | INTERRUPT_GPIO0;
 
 	dmb();
 	__enable_fiq();
 
-	uint8_t i;
+	BCM2835_ST->CS = BCM2835_ST_CS_M1 + BCM2835_ST_CS_M3;
+	BCM2835_ST->C1 = BCM2835_ST->CLO + (uint32_t) 1000000;
+	BCM2835_ST->C3 = BCM2835_ST->CLO;
+	BCM2835_IRQ->IRQ_ENABLE1 = BCM2835_TIMER1_IRQn + BCM2835_TIMER3_IRQn;
+
+	dmb();
+	__enable_irq();
+
+	int i;
 
 	for (i= 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
 		timecode[i] = ' ';

@@ -86,11 +86,11 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
-	console_set_cursor(0, 15);
+	console_set_cursor(0, 12);
 	console_puts("Console output : "); handle_bool(output.console_output); console_putc('\n');
 	console_puts("LCD output     : "); handle_bool(output.lcd_output); console_putc('\n');
 	console_puts("MIDI output    : "); handle_bool(output.midi_output); console_putc('\n');
-	console_puts("ArtNet output  : "); handle_bool(output.artnet_output);console_puts(" (not implemented)");
+	console_puts("ArtNet output  : "); handle_bool(output.artnet_output);console_puts(" (not implemented)\n");
 
 	if (output.artnet_output) {
 		uint8_t mac_address[6];
@@ -103,7 +103,7 @@ void notmain(void) {
 
 		wifi_init(ap_password);
 
-		printf("ESP8266 information\n");
+		printf("\nESP8266 information\n");
 		printf(" SDK      : %s\n", system_get_sdk_version());
 		printf(" Firmware : %s\n\n", wifi_get_firmware_version());
 
@@ -153,6 +153,8 @@ void notmain(void) {
 
 		console_status(CONSOLE_YELLOW, "Starting UDP ...");
 		udp_begin(6454);
+
+		console_status(CONSOLE_GREEN, "Wifi is started");
 	}
 
 	for (;;) {
