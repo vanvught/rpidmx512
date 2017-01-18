@@ -28,7 +28,15 @@
 
 #include "util.h"
 
-int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
+/**
+ *
+ * @param buf
+ * @param name
+ * @param value
+ * @param len
+ * @return
+ */
+const int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
 	int k;
 
 	const char *n = name;

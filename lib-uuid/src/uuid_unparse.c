@@ -58,6 +58,8 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
+#include <assert.h>
 
 #include "uuid.h"
 #include "uuid_internal.h"
@@ -81,6 +83,8 @@ static const char *fmt_upper = "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X
 static void uuid_unpack(const uuid_t in, struct uuid *uu) {
 	const uint8_t *ptr = in;
 	uint32_t tmp;
+
+	assert(uu != NULL);
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
@@ -112,7 +116,11 @@ static void uuid_unpack(const uuid_t in, struct uuid *uu) {
 static void uuid_unparse_x(const uuid_t uu, char *out, const char *fmt) {
 	struct uuid uuid;
 
+	assert(out != NULL);
+	assert(fmt != NULL);
+
 	uuid_unpack(uu, &uuid);
+
 	sprintf(out, fmt, uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
 			uuid.clock_seq >> 8, uuid.clock_seq & 0xFF, uuid.node[0],
 			uuid.node[1], uuid.node[2], uuid.node[3], uuid.node[4],

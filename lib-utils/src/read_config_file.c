@@ -24,13 +24,24 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <assert.h>
 
 #include "read_config_file.h"
+
 #include "ff.h"
 
-bool read_config_file(const char *file_name, funcptr pfi) {
+/**
+ *
+ * @param file_name
+ * @param pfi
+ * @return
+ */
+const bool read_config_file(const char *file_name, funcptr pfi) {
 	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
+
+	assert(file_name != NULL);
+	assert(pfi != NULL);
 
 	rc = f_open(&file_object, (TCHAR *)file_name, (BYTE) FA_READ);
 

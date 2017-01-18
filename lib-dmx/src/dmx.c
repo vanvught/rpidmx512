@@ -713,11 +713,10 @@ void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool
  *
  */
 static void pl011_init(void) {
-	uint32_t ibrd = 12;
+	uint32_t ibrd = 12;													// Default UART CLOCK 48Mhz
 
-	dmb();
-
-	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) == 3000000) {
+	// Work around BROADCOM firmware bug
+	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) != 48000000) {
 		(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
 		ibrd = 1;
 	}
@@ -733,6 +732,8 @@ static void pl011_init(void) {
     // Disable pull-up/down
     bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
     bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+
+    dmb();
 
 	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
 		;																// Poll the "flags register" to wait for the UART to stop transmitting or receiving

@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,6 +158,12 @@ inline static void format_int(struct context *ctx, long int arg) {
 	}
 }
 
+/**
+ *
+ * @param fmt
+ * @param va
+ * @return
+ */
 int vprintf(const char *fmt, va_list va) {
 	struct context ctx;
 	long int l;
@@ -265,6 +271,11 @@ int vprintf(const char *fmt, va_list va) {
 	return ctx.total;
 }
 
+/**
+ *
+ * @param fmt
+ * @return
+ */
 int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
@@ -286,6 +297,12 @@ int printf(const char* fmt, ...) {
 	return i;
 }
 
+/**
+ *
+ * @param buffer
+ * @param fmt
+ * @return
+ */
 int sprintf(char *buffer, const char *fmt, ...) {
 	int i;
 	va_list arp;

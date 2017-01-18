@@ -3,7 +3,7 @@
 	<name>lib-utils</name>
 	<comment></comment>
 	<projects>
-		<project>lib-emmc</project>
+		<project>lib-bcm2835</project>
 		<project>lib-ff11</project>
 	</projects>
 	<buildSpec>

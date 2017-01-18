@@ -27,15 +27,23 @@
 
 #include "util.h"
 
+/**
+ *
+ * @param s
+ * @return
+ */
 const uint32_t hex_uint32(const char *s) {
 	uint32_t ret = 0;
+	uint8_t nibble;
 
-	while (*s != 0) {
+	while (*s != '\0') {
 		char d = *s;
-		if (!isxdigit(d)) {
+
+		if (!isxdigit((int) d)) {
 			break;
 		}
-		uint8_t nibble = d > '9' ? (d | 0x20) - 'a' + 10 : d - '0';
+
+		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t)'a' + (uint8_t)10 : (uint8_t)(d - '0');
 		ret = (ret << 4) | nibble;
 		s++;
 	}

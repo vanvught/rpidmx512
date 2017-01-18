@@ -32,7 +32,7 @@ LIST = lib.list
 LIST7 = lib7.list
 LIST8 = lib8.list
 
-all : builddirs $(TARGET) $(TARGET7) $(TARGET8)
+all : builddirs $(TARGET) $(TARGET7) #$(TARGET8)
 
 .PHONY: clean builddirs
 

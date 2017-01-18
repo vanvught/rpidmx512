@@ -3,6 +3,7 @@
 	<name>lib-fb</name>
 	<comment></comment>
 	<projects>
+		<project>firmware-template</project>
 		<project>lib-bcm2835</project>
 	</projects>
 	<buildSpec>

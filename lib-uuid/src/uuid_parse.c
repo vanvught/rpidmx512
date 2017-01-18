@@ -58,6 +58,8 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
+#include <assert.h>
 
 #include "uuid.h"
 #include "uuid_internal.h"
@@ -72,6 +74,8 @@
 static void uuid_pack(const struct uuid *uu, uuid_t ptr) {
 	uint32_t tmp;
 	unsigned char *out = ptr;
+
+	assert(uu != NULL);
 
 	tmp = uu->time_low;
 	out[3] = (unsigned char) tmp;
@@ -112,27 +116,41 @@ int uuid_parse(const char *in, uuid_t uu) {
 	const char *cp;
 	char buf[3];
 
-	if (strlen(in) != UUID_STRING_LENGTH)
+	assert(in != NULL);
+
+	if (strlen(in) != UUID_STRING_LENGTH) {
 		return -1;
-	for (i = 0, cp = in; i <= 36; i++, cp++) {
-		if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-			if (*cp == '-')
-				continue;
-			else
-				return -1;
-		}
-		if (i == 36)
-			if (*cp == 0)
-				continue;
-		if (!isxdigit(*cp))
-			return -1;
 	}
+
+	for (i = 0, cp = in; i <= 36; i++, cp++) {
+
+		if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+			if (*cp == '-') {
+				continue;
+			} else {
+				return -1;
+			}
+		}
+
+		if (i == 36) {
+			if (*cp == 0) {
+				continue;
+			}
+		}
+
+		if (!isxdigit(*cp)) {
+			return -1;
+		}
+	}
+
 	uuid.time_low = hex_uint32(in);
 	uuid.time_mid = hex_uint32(in + 9);
 	uuid.time_hi_and_version = hex_uint32(in + 14);
 	uuid.clock_seq = hex_uint32(in + 19);
+
 	cp = in + 24;
 	buf[2] = 0;
+
 	for (i = 0; i < 6; i++) {
 		buf[0] = *cp++;
 		buf[1] = *cp++;
@@ -140,6 +158,7 @@ int uuid_parse(const char *in, uuid_t uu) {
 	}
 
 	uuid_pack(&uuid, uu);
+
 	return 0;
 }
 

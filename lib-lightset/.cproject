@@ -134,4 +134,5 @@
 			<resource resourceType="PROJECT" workspacePath="/lib-lightset"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

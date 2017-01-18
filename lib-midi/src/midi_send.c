@@ -75,6 +75,7 @@ static void pl011_init(void) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param data
  * @param length
@@ -91,6 +92,11 @@ static void send(const uint8_t *data, uint16_t length) {
 	}
 }
 
+/**
+ * @ingroup midi
+ *
+ * @param tc
+ */
 void midi_send_tc(const struct _midi_send_tc *tc) {
 	uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
@@ -103,6 +109,7 @@ void midi_send_tc(const struct _midi_send_tc *tc) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param data
  * @param length
@@ -112,7 +119,7 @@ void midi_send_raw(const uint8_t *data, const int16_t length) {
 }
 
 /**
- * * @ingroup midi
+ * @ingroup midi
  *
  */
 void midi_send_init(void) {

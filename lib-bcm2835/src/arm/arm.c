@@ -2,7 +2,7 @@
  * @file arm.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
  * @param vector
  * @return
  */
-bool arm_install_handler(unsigned routine, unsigned *vector) {
+const bool arm_install_handler(unsigned routine, unsigned *vector) {
 	const unsigned vec = ((routine - (unsigned)vector - 0x8)>>2);
 
 	if (vec & 0xff000000) {

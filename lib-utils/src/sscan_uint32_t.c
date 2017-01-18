@@ -2,7 +2,7 @@
  * @file sscan_uin32_t.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
  * @param value
  * @return
  */
-int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
+const int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 	int64_t k;
 
 	const char *n = name;

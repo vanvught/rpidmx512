@@ -64,6 +64,7 @@ static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 };
 
 /**
+ * @ingroup midi
  *
  * @param number
  * @return
@@ -82,7 +83,10 @@ static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 }
 
 /**
+ * @ingroup midi
  *
+ * @param number
+ * @return
  */
 const char *midi_description_get_instrument_name(uint8_t number) {
 	if (number > 127) {
@@ -93,6 +97,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param type
  * @return
@@ -149,6 +154,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param data
  * @return
@@ -177,6 +183,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param data
  * @return
@@ -246,6 +253,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 }
 
 /**
+ * @ingroup midi
  *
  * @param key_number
  * @return
@@ -255,7 +263,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	int	octave = (int)(key_number / 12);
 
 
-	if (key_number > 127) {
+	if (key_number > (uint8_t) 127) {
 		return "";
 	}
 

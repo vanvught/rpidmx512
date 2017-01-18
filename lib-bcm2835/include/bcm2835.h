@@ -384,7 +384,7 @@ extern void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
  *
  * @return
  */
-inline static uint64_t bcm2835_st_read(void) {
+/*@unused@*/inline static uint64_t bcm2835_st_read(void) {
 	return *(volatile uint64_t *) (BCM2835_ST_BASE + 0x04);
 }
 

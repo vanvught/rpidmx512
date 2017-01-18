@@ -3,7 +3,6 @@
 	<name>lib-bob</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

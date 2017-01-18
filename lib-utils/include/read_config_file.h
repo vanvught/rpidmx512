@@ -33,7 +33,7 @@ typedef void (*funcptr)(const char *);
 extern "C" {
 #endif
 
-extern bool read_config_file(const char *, funcptr);
+extern const bool read_config_file(const char *, funcptr);
 
 #ifdef __cplusplus
 }

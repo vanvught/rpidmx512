@@ -68,7 +68,7 @@ uint8_t bw_i2c_lcd_start(device_info_t *device_info) {
  */
 void bw_i2c_lcd_set_cursor(const device_info_t *device_info, const uint8_t line, const uint8_t pos) {
 	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
-	cmd[1] = ((line && 0b11) << 5) | (pos && 0b11111);
+	cmd[1] = ((line & 0x03) << 5) | (pos & 0x1f);
 
 	lcd_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
