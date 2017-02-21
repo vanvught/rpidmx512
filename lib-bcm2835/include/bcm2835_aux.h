@@ -1,8 +1,8 @@
 /**
- * @file bcm2835_dma.c
+ * @file bcm2835_aux.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,5 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
-#include "bcm2835_dma.h"
+#ifndef BCM2835_AUX_H_
+#define BCM2835_AUX_H_
+
+#define BCM2835_AUX_ENABLE_UART1	0x01
+#define BCM2835_AUX_ENABLE_SPI0		0x02	///< SPI0 (SPI1 in the device)
+#define BCM2835_AUX_ENABLE_SPI1		0x04	///< SPI1 (SPI2 in the device)
+
+#endif /* BCM2835_AUX_H_ */
