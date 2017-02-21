@@ -30,9 +30,6 @@
 
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
 
-#define BW_UI_OK 						0
-#define BW_UI_ERROR						1
-
 #define BW_UI_MAX_CHARACTERS			16
 #define BW_UI_MAX_LINES					2
 

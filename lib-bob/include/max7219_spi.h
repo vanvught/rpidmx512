@@ -1,8 +1,8 @@
 /**
- * @file tc1602_i2c.h
+ * @file max7219_spi.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef TC1602_I2C_H_
-#define TC1602_I2C_H_
-
-#define TC1602_I2C_DEFAULT_SLAVE_ADDRESS	0x27	///<
+#ifndef MAX7219_SPI_H_
+#define MAX7219_SPI_H_
 
 #include <stdint.h>
 
 #include "device_info.h"
 
-extern void tc1602_i2c_start(device_info_t *);
+#define MAX7219_SPI_SPEED_MAX_HZ			10000000	///< 10 MHz
+#define MAX7219_SPI_SPEED_DEFAULT_HZ	 	2000000		///< 2 MHz
 
-extern void tc1602_i2c_cls(const device_info_t *);
+extern void max7219_spi_start(device_info_t *);
+extern void max7219_spi_write_reg(const device_info_t *, const uint8_t, const uint8_t);
 
-extern void tc1602_i2c_text(const device_info_t *, const char *, uint8_t);
-extern void tc1602_i2c_text_line_1(const device_info_t *, const char *, const uint8_t);
-extern void tc1602_i2c_text_line_2(const device_info_t *, const char *, const uint8_t);
-
-#endif /* TC1602_I2C_H_ */
+#endif /* MAX7219_SPI_H_ */

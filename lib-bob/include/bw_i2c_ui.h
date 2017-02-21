@@ -30,9 +30,7 @@
 
 #include "device_info.h"
 
-#define BW_UI_I2C_BYTE_WAIT_US			14
-
-extern uint8_t bw_i2c_ui_start (device_info_t *);
+extern void bw_i2c_ui_start (device_info_t *);
 extern void bw_i2c_ui_reinit(const device_info_t *);
 
 extern void bw_i2c_ui_cls(const device_info_t *);
@@ -41,6 +39,9 @@ extern void bw_i2c_ui_set_cursor(const device_info_t *, const uint8_t, const uin
 extern void bw_i2c_ui_text(const device_info_t *, const char *, const uint8_t);
 extern void bw_i2c_ui_text_line_1(const device_info_t *, const char *, const uint8_t);
 extern void bw_i2c_ui_text_line_2(const device_info_t *, const char *, const uint8_t);
+
+extern void bw_i2c_ui_set_startup_message_line_1(const device_info_t *, /*@unused@*/const char *, uint8_t);
+extern void bw_i2c_ui_set_startup_message_line_2(const device_info_t *, /*@unused@*/const char *, uint8_t);
 
 extern void bw_i2c_ui_get_contrast(const device_info_t *, uint8_t *);
 extern void bw_i2c_ui_set_contrast(const device_info_t *, const uint8_t);

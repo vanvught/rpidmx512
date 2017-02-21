@@ -2,7 +2,7 @@
  * @file tc1602_i2c.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 
 #include "bcm2835.h"
-
-#ifdef BARE_METAL
 #include "bcm2835_i2c.h"
-#endif
 
 #include "tc1602.h"
 #include "tc1602_i2c.h"
@@ -107,12 +105,8 @@ static void write_reg(const device_info_t *device_info, const uint8_t reg) {
  * @param device_info
  * @return
  */
-uint8_t tc1602_i2c_start(device_info_t *device_info) {
-#if !defined(BARE_METAL)
-	if bcm2835_init() != 1) {
-		return 1;
-	}
-#endif
+void tc1602_i2c_start(device_info_t *device_info) {
+
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
@@ -127,8 +121,6 @@ uint8_t tc1602_i2c_start(device_info_t *device_info) {
 	write_cmd(device_info, TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 	write_cmd(device_info, TC1602_IC_ENTRY_MODE | TC1602_IC_ENTRY_MODE_INC);	///< Cursor move direction
-
-	return 0;
 }
 
 /**
@@ -180,7 +172,4 @@ void tc1602_i2c_cls(const device_info_t *device_info) {
 	write_cmd(device_info, TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 }
-
-
-
 

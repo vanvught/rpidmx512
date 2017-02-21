@@ -30,9 +30,7 @@
 
 #include "device_info.h"
 
-#define BW_LCD_I2C_BYTE_WAIT_US	37
-
-extern uint8_t bw_i2c_lcd_start(device_info_t *);
+extern void bw_i2c_lcd_start(device_info_t *);
 extern void bw_i2c_lcd_reinit(const device_info_t *);
 
 extern void bw_i2c_lcd_cls(const device_info_t *);
@@ -41,6 +39,9 @@ extern void bw_i2c_lcd_set_cursor(const device_info_t *, const uint8_t, const ui
 extern void bw_i2c_lcd_text(const device_info_t *, const char *, uint8_t);
 extern void bw_i2c_lcd_text_line_1(const device_info_t *, const char *, const uint8_t);
 extern void bw_i2c_lcd_text_line_2(const device_info_t *, const char *, const uint8_t);
+
+extern void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *, /*@unused@*/const char *, uint8_t);
+extern void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *, /*@unused@*/const char *, uint8_t);
 
 extern void bw_i2c_lcd_get_backlight(const device_info_t *, uint8_t *);
 extern void bw_i2c_lcd_set_backlight(const device_info_t *, const uint8_t);

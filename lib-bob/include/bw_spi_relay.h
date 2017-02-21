@@ -30,14 +30,10 @@
 
 #include "device_info.h"
 
-#define BW_RELAY_SPI_BYTE_WAIT_US		0		///<
+#define BW_RELAY_SPI_SPEED_MAX_HZ		90000	///< 90 KHz
+#define BW_RELAY_SPI_SPEED_DEFAULT_HZ	90000	///< 90 kHz
 
-#define BW_RELAY_SPI_SPEED_MAX_HZ		100000	///< 100 KHz
-#define BW_RELAY_SPI_SPEED_DEFAULT_HZ	100000	///< 100 kHz
-
-extern uint8_t bw_spi_relay_start(device_info_t *);
-extern void bw_spi_relay_end(void);
-
+extern void bw_spi_relay_start(device_info_t *);
 extern void bw_spi_relay_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_RELAY_H_ */

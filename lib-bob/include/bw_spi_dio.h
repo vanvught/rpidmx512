@@ -30,15 +30,10 @@
 
 #include "device_info.h"
 
-#define BW_DIO_SPI_BYTE_WAIT_US		0
+#define BW_DIO_SPI_SPEED_MAX_HZ			90000	///< 90 KHz
+#define BW_DIO_SPI_SPEED_DEFAULT_HZ		90000	///< 90 kHz
 
-#define BW_DIO_SPI_SPEED_MAX_HZ			250000	///< 250 KHz
-#define BW_DIO_SPI_SPEED_DEFAULT_HZ		250000	///< 250 kHz
-
-extern uint8_t bw_spi_dio_start(device_info_t *);
-extern void bw_spi_dio_end(void);
-
-extern void bw_spi_dio_fsel_mask(const device_info_t *, const uint8_t);
+extern void bw_spi_dio_start(device_info_t *);
 extern void bw_spi_dio_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_DIO_H_ */

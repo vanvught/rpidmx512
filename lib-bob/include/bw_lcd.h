@@ -28,9 +28,6 @@
 
 #define BW_LCD_DEFAULT_SLAVE_ADDRESS	0x82	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
 
-#define BW_LCD_OK						0
-#define BW_LCD_ERROR					1
-
 #define BW_LCD_MAX_CHARACTERS			16
 #define BW_LCD_MAX_LINES				2
 

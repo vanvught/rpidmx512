@@ -30,18 +30,16 @@
 
 #include "device_info.h"
 
-#define BW_LCD_SPI_BYTE_WAIT_US			10		///<
+#define BW_LCD_SPI_SPEED_MAX_HZ			90000	///< 90 KHz
+#define BW_LCD_SPI_SPEED_DEFAULT_HZ		90000	///< 90 kHz
 
-#define BW_LCD_SPI_SPEED_MAX_HZ			100000	///< 100 KHz
-#define BW_LCD_SPI_SPEED_DEFAULT_HZ		100000	///< 100 kHz
-
-extern uint8_t bw_spi_lcd_start (device_info_t *);
-extern void bw_spi_lcd_end (void);
+extern void bw_spi_lcd_start (device_info_t *);
 extern void bw_spi_lcd_reinit(const device_info_t *);
 
 extern void bw_spi_lcd_cls(const device_info_t *);
 
 extern void bw_spi_lcd_set_cursor(const device_info_t *, uint8_t, uint8_t);
+
 extern void bw_spi_lcd_text(const device_info_t *, const char *, uint8_t);
 extern void bw_spi_lcd_text_line_1(const device_info_t *, const char *, const uint8_t);
 extern void bw_spi_lcd_text_line_2(const device_info_t *, const char *, const uint8_t);

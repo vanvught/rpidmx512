@@ -29,30 +29,10 @@
 #include <stdint.h>
 #include <device_info.h>
 
-#define MCP23S08_OK						0
-#define MCP23S08_ERROR					1
-
 #define MCP23S08_DEFAULT_SLAVE_ADDRESS	0x00
 
 #define MCP23S08_SPI_SPEED_MAX_HZ		10000000	///< 10 MHz
 #define MCP23S08_SPI_SPEED_DEFAULT_HZ	 2000000	///< 2 MHz
-
-#define MCP23S08_IODIR					0x00	///< I/O DIRECTION (IODIR) REGISTER
-#define MCP23S08_IPOL					0x01	///< INPUT POLARITY (IPOL) REGISTER
-#define MCP23S08_GPINTEN				0x02	///< INTERRUPT-ON-CHANGE CONTROL (GPINTEN) REGISTER
-#define MCP23S08_DEFVAL					0x03	///< DEFAULT COMPARE (DEFVAL) REGISTER FOR INTERRUPT-ON-CHANGE
-#define MCP23S08_INTCON					0x04	///< INTERRUPT CONTROL (INTCON) REGISTER
-#define MCP23S08_IOCON					0x05	///< CONFIGURATION (IOCON) REGISTER
-#define MCP23S08_GPPU					0x06	///< PULL-UP RESISTOR CONFIGURATION (GPPU) REGISTER
-#define MCP23S08_INTF					0x07	///< INTERRUPT FLAG (INTF) REGISTER
-#define MCP23S08_INTCAP					0x08	///< INTERRUPT CAPTURE (INTCAP) REGISTER
-#define MCP23S08_GPIO					0x09	///< PORT (GPIO) REGISTER
-#define MCP23S08_OLAT					0x0A	///< OUTPUT LATCH REGISTER (OLAT)
-
-#define MCP23S08_CMD_WRITE				0x40
-#define MCP23S08_CMD_READ				0x41
-
-#define MCP23S08_IOCON_HAEN				(uint8_t)(1 << 3)
 
 typedef enum {
 	MCP23S08_PIN_GP0 = (1 << 0),	///< 0b00000001, Bidirectional I/O pin.
@@ -70,8 +50,7 @@ typedef enum {
 	MCP23S08_FSEL_INPT = 1,			///< Input
 } mcp23s08FunctionSelect;
 
-extern uint8_t mcp23s08_start(device_info_t *);
-extern void mcp23s08_end (void);
+extern void mcp23s08_start(device_info_t *);
 extern uint8_t mcp23s08_reg_read(const device_info_t *, const uint8_t);
 extern void mcp23s08_reg_write(const device_info_t *, const uint8_t, const uint8_t);
 extern void mcp23s08_gpio_fsel(const device_info_t *, const uint8_t, const uint8_t);

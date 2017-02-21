@@ -30,14 +30,10 @@
 
 #include "device_info.h"
 
-#define BW_DIMMER_SPI_BYTE_WAIT_US		0		///<
+#define BW_DIMMER_SPI_SPEED_MAX_HZ		90000	///< 90 KHz
+#define BW_DIMMER_SPI_SPEED_DEFAULT_HZ	90000	///< 90 kHz
 
-#define BW_DIMMER_SPI_SPEED_MAX_HZ		100000	///< 100 KHz
-#define BW_DIMMER_SPI_SPEED_DEFAULT_HZ	100000	///< 100 kHz
-
-extern uint8_t bw_spi_dimmer_start(device_info_t *);
-extern void bw_spi_dimmer_end(void);
-
+extern void bw_spi_dimmer_start(device_info_t *);
 extern void bw_spi_dimmer_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_DIMMER_H_ */

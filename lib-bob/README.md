@@ -7,11 +7,11 @@ Supported devices are :
 - BitWizard User Interface with 16 x 2 LC ([http://bitwizard.nl/shop/expansion-boards/Raspberry-Pi-User-Interface-with-16-x-2-LCD](http://bitwizard.nl/shop/expansion-boards/Raspberry-Pi-User-Interface-with-16-x-2-LCD))
 - BitWizard 7FETs SPI ([http://bitwizard.nl/shop/expansion-boards/7FETs](http://bitwizard.nl/shop/expansion-boards/7FETs))
 - BitWizard Dimmer SPI ([http://bitwizard.nl/shop/expansion-boards/Dimmer](http://bitwizard.nl/shop/expansion-boards/Dimmer))
-- BitWizard Relay SPI Relay (http://bitwizard.nl/shop/expansion-boards/Relay)
+- BitWizard Relay SPI Relay ([http://bitwizard.nl/shop/expansion-boards/Relay](http://bitwizard.nl/shop/expansion-boards/Relay))
+- MAX7219 Serially Interfaced, 8-Digit LED Display Drivers ([https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf](https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf))
 - Microchip MCP23S08 8-Bit I/O Expander with Serial Interface ([http://ww1.microchip.com/downloads/en/DeviceDoc/21919e.pdf](http://ww1.microchip.com/downloads/en/DeviceDoc/21919e.pdf)) 
 - Microchip MCP23S17 16-Bit I/O Expander with Serial Interface ([http://www.microchip.com/wwwproducts/en/MCP23S17](http://www.microchip.com/wwwproducts/en/MCP23S17))
 - Microschip MCP7941x RTC I2C ([http://ww1.microchip.com/downloads/en/DeviceDoc/22266A.pdf](http://ww1.microchip.com/downloads/en/DeviceDoc/22266A.pdf))
 - NXP SC16IS740 Single UART I2C ([http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf](http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf))
 - LCD Module TC1602A ([https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf](https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf))
-
-
+- 8x 7-Segment module (MAX7219 / serieel) ([https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel](https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel))

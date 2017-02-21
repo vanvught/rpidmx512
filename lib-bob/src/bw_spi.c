@@ -2,7 +2,7 @@
  * @file bw_spi.c
  *
  */
-/* Copyright (C) 2014 by Arjan van Vught <pm @ http://www.raspberrypi.org/forum/>
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifdef __AVR_ARCH__
-#include <avr_spi.h>
-#else
-#include <bcm2835.h>
-#ifdef BARE_METAL
-#include <bcm2835_spi.h>
-#endif
-#endif
+#include "bcm2835_spi.h"
+#include "bcm2835_aux_spi.h"
+
 #include <device_info.h>
+
 #include <bw.h>
 
 extern int printf(const char *format, ...);
@@ -43,13 +39,18 @@ extern int printf(const char *format, ...);
  */
 void bw_spi_read_id(const device_info_t *device_info) {
 	char buf[BW_ID_STRING_LENGTH];
+
 	buf[0] = device_info->slave_address | 1;
 	buf[1] = BW_PORT_READ_ID_STRING;
-#ifdef __AVR_ARCH__
-#else
-	bcm2835_spi_chipSelect(device_info->chip_select);
-	bcm2835_spi_setClockDivider(5000); // 50 kHz
-#endif
-	FUNC_PREFIX(spi_transfern(buf, BW_ID_STRING_LENGTH));
+
+	if (device_info->chip_select == (uint8_t) 2) {
+		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
+		bcm2835_aux_spi_transfern(buf, BW_ID_STRING_LENGTH);
+	} else {
+		bcm2835_spi_setClockDivider(5000);
+		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_transfern(buf, BW_ID_STRING_LENGTH);
+	}
+
 	printf("[%.20s]\n", &buf[2]);
 }

@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835.h"
+#include <stdint.h>
+
 #include "bcm2835_spi.h"
+#include "bcm2835_aux_spi.h"
 
 #include "bw.h"
 #include "bw_dimmer.h"
@@ -36,21 +38,9 @@
  * @ingroup SPI-AO
  *
  * @param device_info
- */
-inline void static dimmer_spi_setup(const device_info_t *device_info) {
-	bcm2835_spi_setClockDivider(device_info->internal_clk_div);
-	bcm2835_spi_chipSelect(device_info->chip_select);
-	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
-}
-
-/**
- * @ingroup SPI-AO
- *
- * @param device_info
  * @return
  */
-uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
-	FUNC_PREFIX(spi_begin());
+void bw_spi_dimmer_start(device_info_t *device_info) {
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIMMER_DEFAULT_SLAVE_ADDRESS;
@@ -61,11 +51,14 @@ uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
 	} else if (device_info->speed_hz > (uint32_t) BW_DIMMER_SPI_SPEED_MAX_HZ) {
 		device_info->speed_hz = (uint32_t) BW_DIMMER_SPI_SPEED_MAX_HZ;
 	}
-#ifdef __AVR_ARCH__
-#else
-	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
-#endif
-	return 0;
+
+	if (device_info->chip_select == (uint8_t) 2) {
+		bcm2835_aux_spi_begin();
+		device_info->internal_clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
+	} else {
+		bcm2835_spi_begin();
+		device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
+	}
 }
 
 /**
@@ -76,19 +69,17 @@ uint8_t bw_spi_dimmer_start(device_info_t *device_info) {
  */
 void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];
+
 	cmd[0] = (char)device_info->slave_address;
 	cmd[1] = (char)BW_PORT_WRITE_DIMMER;
 	cmd[2] = (char)value;
 
-	dimmer_spi_setup(device_info);
-	FUNC_PREFIX(spi_writenb(cmd, sizeof(cmd) / sizeof(char)));
-	udelay(BW_DIMMER_SPI_BYTE_WAIT_US);
-}
-
-/**
- * @ingroup SPI-AO
- *
- */
-void bw_spi_dimmer_end(void) {
-	FUNC_PREFIX(spi_end());
+	if (device_info->chip_select == (uint8_t) 2) {
+		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
+		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	} else {
+		bcm2835_spi_setClockDivider(device_info->internal_clk_div);
+		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	}
 }

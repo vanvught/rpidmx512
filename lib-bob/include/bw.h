@@ -2,7 +2,7 @@
  * @file bw.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,16 +66,5 @@
 #define BW_PORT_WRITE_DIMMER				0x10	///< intensity
 
 #define BW_ID_STRING_LENGTH					20
-
-#ifdef __AVR_ARCH__
-#include <util/delay.h>
-#define udelay _delay_us
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#ifndef BARE_METAL
-#define udelay bcm2835_delayMicroseconds
-#endif
-#endif
 
 #endif /* BW_H_ */

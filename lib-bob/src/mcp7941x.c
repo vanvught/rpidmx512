@@ -2,7 +2,7 @@
  * @file mcp7941x.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,22 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef __AVR_ARCH__
-#include "avr_i2c.h"
-#else
 #include "bcm2835.h"
-#ifdef BARE_METAL
 #include "bcm2835_i2c.h"
-#endif
-#endif
+
 #include "mcp7941x.h"
 
-#ifdef __AVR_ARCH__
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#endif
+/** Time and Configuration Registers (TCR) **/
+#define MCP7941X_RTCC_TCR_SECONDS				0x00
+#define MCP7941X_RTCC_TCR_MINUTES				0x01
+#define MCP7941X_RTCC_TCR_HOURS					0x02
+#define MCP7941X_RTCC_TCR_DAY					0x03
+#define MCP7941X_RTCC_TCR_DATE					0x04
+#define MCP7941X_RTCC_TCR_MONTH					0x05
+#define MCP7941X_RTCC_TCR_YEAR					0x06
+
+#define MCP7941X_RTCC_BIT_ST					0x80
+#define MCP7941X_RTCC_BIT_VBATEN				0x08
 
 static uint8_t i2c_mcp7941x_slave_address __attribute__((aligned(4))) = (uint8_t)MCP7941X_DEFAULT_SLAVE_ADDRESS ;
 
@@ -51,11 +52,8 @@ static uint8_t i2c_mcp7941x_slave_address __attribute__((aligned(4))) = (uint8_t
  *
  */
 void inline static mcp7941x_setup(void) {
-	FUNC_PREFIX(i2c_setSlaveAddress(i2c_mcp7941x_slave_address));
-#ifdef __AVR_ARCH__
-#else
+	bcm2835_i2c_setSlaveAddress(i2c_mcp7941x_slave_address);
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
-#endif
 }
 
 /**
@@ -65,11 +63,8 @@ void inline static mcp7941x_setup(void) {
  * @return
  */
 uint8_t mcp7941x_start(const uint8_t slave_address) {
-#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
-	if (bcm2835_init() != 1)
-		return MCP7941X_ERROR;
-#endif
-	FUNC_PREFIX(i2c_begin());
+
+	bcm2835_i2c_begin();
 
 	if (slave_address == (uint8_t) 0) {
 		i2c_mcp7941x_slave_address = (uint8_t)MCP7941X_DEFAULT_SLAVE_ADDRESS;
@@ -79,18 +74,11 @@ uint8_t mcp7941x_start(const uint8_t slave_address) {
 
 	mcp7941x_setup();
 
-	if (bcm2835_i2c_write(NULL, 0) == 0)
+	if (bcm2835_i2c_write(NULL, 0) == 0) {
 		return MCP7941X_OK;
+	}
 
 	return MCP7941X_ERROR;
-}
-
-/**
- *  @ingroup I2C-RTC
- *
- */
-void mcp7941x_end(void) {
-	FUNC_PREFIX(i2c_end());
 }
 
 /**
@@ -104,8 +92,8 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 
 	mcp7941x_setup();
 
-	(void) FUNC_PREFIX(i2c_write(cmd, sizeof(cmd)/sizeof(char)));
-	(void) FUNC_PREFIX(i2c_read(reg, sizeof(reg)/sizeof(char)));
+	(void) bcm2835_i2c_write(cmd, sizeof(cmd)/sizeof(char));
+	(void) bcm2835_i2c_read(reg, sizeof(reg)/sizeof(char));
 
 	t->tm_sec = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
 	t->tm_min = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
@@ -147,5 +135,5 @@ void mcp7941x_set_date_time(const struct rtc_time *t) {
 
 	mcp7941x_setup();
 
-	(void) FUNC_PREFIX(i2c_write(data, sizeof(data)/sizeof(data[0])));
+	(void) bcm2835_i2c_write(data, sizeof(data)/sizeof(data[0]));
 }

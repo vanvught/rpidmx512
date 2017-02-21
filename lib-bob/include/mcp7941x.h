@@ -31,19 +31,7 @@
 #define MCP7941X_OK								0
 #define MCP7941X_ERROR							1
 
-#define  MCP7941X_DEFAULT_SLAVE_ADDRESS			0x6F
-
-/** Time and Configuration Registers (TCR) **/
-#define MCP7941X_RTCC_TCR_SECONDS				0x00
-#define MCP7941X_RTCC_TCR_MINUTES				0x01
-#define MCP7941X_RTCC_TCR_HOURS					0x02
-#define MCP7941X_RTCC_TCR_DAY					0x03
-#define MCP7941X_RTCC_TCR_DATE					0x04
-#define MCP7941X_RTCC_TCR_MONTH					0x05
-#define MCP7941X_RTCC_TCR_YEAR					0x06
-
-#define MCP7941X_RTCC_BIT_ST					0x80
-#define MCP7941X_RTCC_BIT_VBATEN				0x08
+#define MCP7941X_DEFAULT_SLAVE_ADDRESS			0x6F
 
 struct rtc_time {
 	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
@@ -58,7 +46,6 @@ struct rtc_time {
 };
 
 extern uint8_t mcp7941x_start(uint8_t);
-extern void mcp7941x_end(void);
 extern void mcp7941x_get_date_time(struct rtc_time *tm);
 extern void mcp7941x_set_date_time(/*@out@*/const struct rtc_time *tm);
 

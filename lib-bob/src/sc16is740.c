@@ -6,7 +6,7 @@
  *
  * https://developer.mbed.org/components/SC16IS750-I2C-or-SPI-to-UART-bridge/
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,36 +29,21 @@
 
 #include <stdbool.h>
 
-#ifdef __AVR_ARCH__
-#include "util/delay.h"
-#include "avr_spi.h"
-#else
 #include "bcm2835.h"
-#ifdef BARE_METAL
 #include "bcm2835_spi.h"
-#endif
-#endif
-#include "device_info.h"
+
 #include "sc16is740.h"
 #include "sc16is7x0.h"
 
-#ifdef __AVR_ARCH__
-#define FUNC_PREFIX(x) avr_##x
-#else
-#define FUNC_PREFIX(x) bcm2835_##x
-#endif
+#include "device_info.h"
 
 /**
  *
  * @param device_info
  */
 inline static void sc16is740_setup(const device_info_t *device_info) {
-#ifdef __AVR_ARCH__
-#else
 	bcm2835_spi_setClockDivider(device_info->internal_clk_div);
 	bcm2835_spi_chipSelect(device_info->chip_select);
-	bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
-#endif
 }
 
 /**
@@ -66,12 +51,9 @@ inline static void sc16is740_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-uint8_t sc16is740_start(device_info_t *device_info) {
-#if !defined(BARE_METAL) && !defined(__AVR_ARCH__)
-	if (bcm2835_init() != 1)
-		return SC16IS7x0_ERROR;
-#endif
-	FUNC_PREFIX(spi_begin());
+void sc16is740_start(device_info_t *device_info) {
+
+	bcm2835_spi_begin();
 
 	if (device_info->speed_hz == (uint32_t) 0) {
 		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
@@ -79,17 +61,12 @@ uint8_t sc16is740_start(device_info_t *device_info) {
 		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ;
 	}
 
-#ifdef __AVR_ARCH__
-#else
 	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
-#endif
 
 	sc16is740_set_format(device_info, 8, SERIAL_PARITY_NONE, 1);
 	sc16is740_set_baud(device_info, SC16IS7X0_DEFAULT_BAUDRATE);
 
 	sc16is740_reg_write(device_info, SC16IS7X0_FCR, 0x03);
-
-	return SC16IS7X0_OK;
 }
 
 void sc16is740_set_baud(const device_info_t *device_info, const int baudrate) {
@@ -177,7 +154,7 @@ uint8_t sc16is740_reg_read(const device_info_t *device_info, const uint8_t reg) 
 	spiData[1] = SPI_DUMMY_CHAR;
 
 	sc16is740_setup(device_info);
-	FUNC_PREFIX(spi_transfern(spiData, 2));
+	bcm2835_spi_transfern(spiData, 2);
 
 	return (uint8_t) spiData[1];
 }
@@ -194,7 +171,7 @@ void sc16is740_reg_write(const device_info_t *device_info, const uint8_t reg, co
 	spiData[1] = (char) value;
 
 	sc16is740_setup(device_info);
-	FUNC_PREFIX(spi_writenb(spiData, 2));
+	bcm2835_spi_writenb(spiData, 2);
 }
 
 /**

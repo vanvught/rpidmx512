@@ -34,6 +34,8 @@
 
 #include "device_info.h"
 
+#define BW_LCD_I2C_BYTE_WAIT_US	37
+
 /**
  *
  * @param device_info
@@ -49,14 +51,12 @@ inline static void lcd_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-uint8_t bw_i2c_lcd_start(device_info_t *device_info) {
+void bw_i2c_lcd_start(device_info_t *device_info) {
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 	}
-
-	return BW_LCD_OK;
 }
 
 /**
@@ -68,11 +68,11 @@ uint8_t bw_i2c_lcd_start(device_info_t *device_info) {
  */
 void bw_i2c_lcd_set_cursor(const device_info_t *device_info, const uint8_t line, const uint8_t pos) {
 	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
+
 	cmd[1] = ((line & 0x03) << 5) | (pos & 0x1f);
 
 	lcd_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	//udelay(BW_LCD_I2C_BYTE_WAIT_US);
 }
 
 /**
@@ -96,7 +96,6 @@ void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 
 	lcd_i2c_setup(device_info);
 	bcm2835_i2c_write(data, length + 1);
-	//udelay(BW_LCD_I2C_BYTE_WAIT_US);
 }
 
 /**
@@ -108,6 +107,7 @@ void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t
  */
 void bw_i2c_lcd_text_line_1(const device_info_t *device_info, const char *text, const uint8_t length) {
 	bw_i2c_lcd_set_cursor(device_info, 0, 0);
+	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bw_i2c_lcd_text(device_info, text, length);
 }
 
@@ -120,6 +120,7 @@ void bw_i2c_lcd_text_line_1(const device_info_t *device_info, const char *text, 
  */
 void bw_i2c_lcd_text_line_2(const device_info_t *device_info, const char *text, const uint8_t length) {
 	bw_i2c_lcd_set_cursor(device_info, 1, 0);
+	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bw_i2c_lcd_text(device_info, text, length);
 }
 
@@ -133,7 +134,6 @@ void bw_i2c_lcd_cls(const device_info_t *device_info) {
 
 	lcd_i2c_setup(device_info);
 	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	//udelay(BW_LCD_I2C_BYTE_WAIT_US);
 }
 
 /**
@@ -147,7 +147,7 @@ void bw_i2c_lcd_set_contrast(const device_info_t *device_info, const uint8_t val
 
 	cmd[1] = value;
 	lcd_i2c_setup(device_info);
-	FUNC_PREFIX(i2c_write(cmd, sizeof(cmd) / sizeof(char)));
+	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
 }
 
 /**

@@ -1,8 +1,8 @@
 /**
- * @file bw_spi_relay.c
+ * @file max7219_spi.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,53 +28,22 @@
 #include "bcm2835_spi.h"
 #include "bcm2835_aux_spi.h"
 
-#include "bw.h"
-#include "bw_relay.h"
-#include "bw_spi_relay.h"
+#include "max7219.h"
+#include "max7219_spi.h"
 
 #include "device_info.h"
 
-#define BW_RELAY_SPI_BYTE_WAIT_US		0		///<
-
 /**
- * @ingroup SPI-DO
- *
- * @param device_info
- * @param mask
- */
-inline static void bw_spi_relay_fsel_mask(const device_info_t *device_info,	const uint8_t mask) {
-	char cmd[3];
-
-	cmd[0] = (char) device_info->slave_address;
-	cmd[1] = (char) BW_PORT_WRITE_IO_DIRECTION;
-	cmd[2] = (char) mask;
-
-	if (device_info->chip_select == (uint8_t) 2) {
-		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
-		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
-	} else {
-		bcm2835_spi_setClockDivider(device_info->internal_clk_div);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
-	}
-}
-
-/**
- * @ingroup SPI-DO
  *
  * @param device_info
  * @return
  */
-void bw_spi_relay_start(device_info_t *device_info) {
-
-	if (device_info->slave_address == (uint8_t) 0) {
-		device_info->slave_address = BW_RELAY_DEFAULT_SLAVE_ADDRESS;
-	}
+void max7219_spi_start(device_info_t *device_info) {
 
 	if (device_info->speed_hz == (uint32_t) 0) {
-		device_info->speed_hz = (uint32_t) BW_RELAY_SPI_SPEED_DEFAULT_HZ;
-	} else if (device_info->speed_hz > (uint32_t) BW_RELAY_SPI_SPEED_MAX_HZ) {
-		device_info->speed_hz = (uint32_t) BW_RELAY_SPI_SPEED_MAX_HZ;
+		device_info->speed_hz = (uint32_t) MAX7219_SPI_SPEED_DEFAULT_HZ;
+	} else if (device_info->speed_hz > (uint32_t) MAX7219_SPI_SPEED_MAX_HZ) {
+		device_info->speed_hz = (uint32_t) MAX7219_SPI_SPEED_MAX_HZ;
 	}
 
 	if (device_info->chip_select == (uint8_t) 2) {
@@ -84,30 +53,23 @@ void bw_spi_relay_start(device_info_t *device_info) {
 		bcm2835_spi_begin();
 		device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
-
-	bw_spi_relay_fsel_mask(device_info, 0x7F);
 }
 
 /**
- * @ingroup SPI-DO
  *
  * @param device_info
- * @param pins
+ * @param reg
+ * @param data
  */
-void bw_spi_relay_output(const device_info_t *device_info, const uint8_t pins) {
-	char cmd[3];
-
-	cmd[0] = (char) device_info->slave_address;
-	cmd[1] = (char) BW_PORT_WRITE_SET_ALL_OUTPUTS;
-	cmd[2] = (char) pins;
+void max7219_spi_write_reg(const device_info_t *device_info, const uint8_t reg, const uint8_t data) {
+	const uint16_t spi_data = ((uint16_t) reg << 8) | (uint16_t) data;
 
 	if (device_info->chip_select == (uint8_t) 2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
-		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+		bcm2835_aux_spi_write(spi_data);
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal_clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+		bcm2835_spi_write(spi_data);
 	}
 }
-

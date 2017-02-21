@@ -1,8 +1,8 @@
 /**
- * @file tc1602_i2c.h
+ * @file d8x7segment.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef TC1602_I2C_H_
-#define TC1602_I2C_H_
-
-#define TC1602_I2C_DEFAULT_SLAVE_ADDRESS	0x27	///<
-
-#include <stdint.h>
+#ifndef D8X7SEGMENT_H_
+#define D8X7SEGMENT_H_
 
 #include "device_info.h"
 
-extern void tc1602_i2c_start(device_info_t *);
+extern void d8x7segment_init(const device_info_t *);
+extern void d8x7segment_cls(const device_info_t *);
+extern void d8x7segment_int(const device_info_t *, int32_t);
 
-extern void tc1602_i2c_cls(const device_info_t *);
-
-extern void tc1602_i2c_text(const device_info_t *, const char *, uint8_t);
-extern void tc1602_i2c_text_line_1(const device_info_t *, const char *, const uint8_t);
-extern void tc1602_i2c_text_line_2(const device_info_t *, const char *, const uint8_t);
-
-#endif /* TC1602_I2C_H_ */
+#endif /* D8X7SEGMENT_H_ */

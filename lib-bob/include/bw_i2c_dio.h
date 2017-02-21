@@ -30,10 +30,7 @@
 
 #include "device_info.h"
 
-#define BW_DIO_I2C_BYTE_WAIT_US		0
-
-extern uint8_t bw_i2c_dio_start(device_info_t *);
-
+extern void bw_i2c_dio_start(device_info_t *);
 extern void bw_i2c_dio_fsel_mask(const device_info_t *, const uint8_t);
 extern void bw_i2c_dio_output(const device_info_t *, const uint8_t);
 

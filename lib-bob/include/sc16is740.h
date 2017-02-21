@@ -29,9 +29,10 @@
 #include <stdbool.h>
 
 #include "sc16is7x0.h"
+
 #include "device_info.h"
 
-extern uint8_t sc16is740_start(device_info_t *);
+extern void sc16is740_start(device_info_t *);
 extern int sc16is740_getc(const device_info_t *);
 extern bool sc16is740_is_readable(const device_info_t *);
 extern bool sc16is740_is_writable(const device_info_t *);

@@ -34,6 +34,8 @@
 
 #include "device_info.h"
 
+#define BW_DIO_I2C_BYTE_WAIT_US		0
+
 /**
  * @ingroup I2C-DIO
  *
@@ -50,14 +52,12 @@ inline static void dio_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-uint8_t bw_i2c_dio_start(device_info_t *device_info) {
+void bw_i2c_dio_start(device_info_t *device_info) {
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
 	}
-
-	return 0;
 }
 
 /**
@@ -68,6 +68,7 @@ uint8_t bw_i2c_dio_start(device_info_t *device_info) {
  */
 void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[2];
+
 	cmd[0] = BW_PORT_WRITE_IO_DIRECTION;
 	cmd[1] = mask;
 
@@ -83,6 +84,7 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
  */
 void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[2];
+
 	cmd[0] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
 	cmd[1] = pins;
 

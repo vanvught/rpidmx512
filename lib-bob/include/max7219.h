@@ -1,5 +1,5 @@
 /**
- * @file bw_i2c.c
+ * @file max7219.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,38 @@
  * THE SOFTWARE.
  */
 
-#include "bcm2835_i2c.h"
+#ifndef MAX7219_H_
+#define MAX7219_H_
 
-#include "device_info.h"
+#define MAX7219_OK					0
+#define MAX7219_ERROR				1
 
-#include "bw.h"
+// https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf
 
-extern int printf(const char *format, ...);
+#define MAX7219_REG_NOOP			0x00	///<
+#define MAX7219_REG_DIGIT0			0x01	///<
+#define MAX7219_REG_DIGIT1			0x02	///<
+#define MAX7219_REG_DIGIT2			0x03	///<
+#define MAX7219_REG_DIGIT3			0x04	///<
+#define MAX7219_REG_DIGIT4			0x05	///<
+#define MAX7219_REG_DIGIT5			0x06	///<
+#define MAX7219_REG_DIGIT6			0x07	///<
+#define MAX7219_REG_DIGIT7			0x08	///<
+#define MAX7219_REG_DECODE_MODE		0x09	///<
+	#define MAX7219_DECODE_MODE_CODEB	0xFF	///< Code B decode for digits 7–0
+#define MAX7219_REG_INTENSITY		0x0A	///<
+#define MAX7219_REG_SCAN_LIMIT		0x0B	///<
+#define MAX7219_REG_SHUTDOWN		0x0C	///<
+	#define MAX7219_SHUTDOWN_MODE		0x00	///<
+	#define MAX7219_SHUTDOWN_NORMAL_OP	0x01	///<
+#define MAX7219_REG_DISPLAY_TEST	0x0F	///<
 
-/**
- * @ingroup I2C
- * Prints the identification string.
- * @param device_info
- */
-void bw_i2c_read_id(const device_info_t *device_info) {
-	char cmd[] = { BW_PORT_READ_ID_STRING };
-	char buf[BW_ID_STRING_LENGTH];
+#define MAX7219_CHAR_NEGATIVE		0x0A	///<
+#define MAX7219_CHAR_E				0x0B	///<
+#define MAX7219_CHAR_H				0x0C	///<
+#define MAX7219_CHAR_L				0x0D	///<
+#define MAX7219_CHAR_P				0x0E	///<
+#define MAX7219_CHAR_BLANK			0x0F	///<
 
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
 
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-
-	printf("[%s]\n", buf);
-}
+#endif /* MAX7219_H_ */
