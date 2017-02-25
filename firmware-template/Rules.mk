@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-LIBS += hal uuid ff11 emmc fb bob utils bcm2835
+LIBS += hal uuid ff11 emmc fb lcd bob utils bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -131,7 +131,7 @@ buildlibs:
 	cd .. && ./makeall-lib.sh && cd $(THISDIR)
 
 builddirs:
-	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS) $(BUILD8_DIRS)
+	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS) # $(BUILD8_DIRS)
 
 clean :
 	rm -rf $(BUILD_DIRS) $(BUILD7_DIRS) $(BUILD8_DIRS)
