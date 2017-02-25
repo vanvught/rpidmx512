@@ -26,6 +26,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #include "console.h"
 
@@ -34,6 +35,7 @@ struct context {
 	int prec;
 	int width;
 	int total;
+	int capacity;
 };
 
 enum {
@@ -52,23 +54,25 @@ static volatile int lock = 0;
 
 /*@null@*/static char *outptr = NULL;
 
-inline static void xputch(struct context *ctx, int c) {
+inline static void xputch(struct context *ctx, const int c) {
 	ctx->total++;
 
 	if (outptr != NULL) {
-		*outptr++ = (char) c;
+		if (ctx->total < ctx->capacity) {
+			*outptr++ = (char) c;
+		}
 		return;
 	}
 
-	(void)console_putc(c);
+	(void) console_putc(c);
 }
 
-inline static bool is_digit(char c) {
-	return (c >= (char)'0') && (c <= (char)'9');
+inline static bool is_digit(const char c) {
+	return (c >= (char) '0') && (c <= (char) '9');
 }
 
 inline static void format_hex(struct context *ctx, unsigned int arg) {
-	char buffer[16];
+	char buffer[32] __attribute__((aligned(4)));
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
 	char alpha;
@@ -114,7 +118,7 @@ inline static void format_hex(struct context *ctx, unsigned int arg) {
 }
 
 inline static void format_int(struct context *ctx, long int arg) {
-	char buffer[16];
+	char buffer[32] __attribute__((aligned(4)));
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
 
@@ -164,13 +168,14 @@ inline static void format_int(struct context *ctx, long int arg) {
  * @param va
  * @return
  */
-int vprintf(const char *fmt, va_list va) {
+static int _vprintf(const int size, const char *fmt, va_list va) {
 	struct context ctx;
 	long int l;
 	int j;
 	const char *s;
 
 	ctx.total = 0;
+	ctx.capacity = size;
 
 	while (*fmt != (char)0) {
 
@@ -243,8 +248,8 @@ int vprintf(const char *fmt, va_list va) {
 				xputch(&ctx, (int)' ');
 			}
 
-			while ((((ctx.flag & FLAG_PRECISION) == 0) || (ctx.prec != 0)) && (*s != (char)0)) {
-				xputch(&ctx, (int )*s++);
+			while ((((ctx.flag & FLAG_PRECISION) == 0) || (ctx.prec != 0)) && (*s != (char) 0)) {
+				xputch(&ctx, (int) *s++);
 				ctx.prec--;
 			}
 
@@ -286,7 +291,7 @@ int printf(const char* fmt, ...) {
 
 	va_start(arp, fmt);
 
-	i = vprintf(fmt, arp);
+	i = _vprintf(INT_MAX, fmt, arp);
 
 	va_end(arp);
 
@@ -299,22 +304,102 @@ int printf(const char* fmt, ...) {
 
 /**
  *
- * @param buffer
+ * @param format
+ * @param ap
+ * @return
+ */
+int vprintf(const char *fmt, va_list arp) {
+	int i;
+
+	i = _vprintf(INT_MAX, fmt, arp);
+
+	return i;
+}
+
+/**
+ *
+ * @param str
  * @param fmt
  * @return
  */
-int sprintf(char *buffer, const char *fmt, ...) {
+int sprintf(char *str, const char *fmt, ...) {
 	int i;
 	va_list arp;
 
-	outptr = buffer;
+	outptr = str;
 	va_start(arp, fmt);
 
-	i = vprintf(fmt, arp);
+	i = _vprintf(INT_MAX, fmt, arp);
 
 	va_end(arp);
 
-	*outptr = (char)0;
+	*outptr = (char) 0;
+	outptr = NULL;
+
+	return i;
+}
+
+/**
+ *
+ * @param str
+ * @param fmt
+ * @param ap
+ * @return
+ */
+int vsprintf(char *str, const char *fmt, va_list ap) {
+	int i;
+
+	outptr = str;
+
+	i = _vprintf(INT_MAX, fmt, ap);
+
+	*outptr = (char) 0;
+	outptr = NULL;
+
+	return i;
+}
+
+/**
+ *
+ * @param str
+ * @param size
+ * @param fmt
+ * @return
+ */
+int snprintf(char *str, size_t size, const char *fmt, ...) {
+	int i;
+	va_list arp;
+
+	outptr = str;
+	va_start(arp, fmt);
+
+	i = _vprintf((int) size, fmt, arp);
+
+	va_end(arp);
+
+	*outptr = (char) 0;
+	outptr = NULL;
+
+	return i;
+
+}
+
+/**
+ *
+ * @param str
+ * @param size
+ * @param fmt
+ * @param ap
+ * @return
+ */
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
+	int i;
+
+	outptr = str;
+
+	i = _vprintf((int) size, fmt, ap);
+
+	*outptr = (char) 0;
 	outptr = NULL;
 
 	return i;
