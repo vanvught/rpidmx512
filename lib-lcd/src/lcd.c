@@ -26,8 +26,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdarg.h>
+#include <stdio.h>
 
+#include "bcm2835.h"
 #include "bcm2835_i2c.h"
+
+#include "lcd.h"
 
 #include "bw_ui.h"
 #include "bw_i2c_ui.h"
@@ -107,6 +112,10 @@ const bool lcd_detect(void) {
 	if (i2c_detect(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
 		bw_i2c_ui_start(&device_info);
+		bw_i2c_ui_set_backlight(&device_info, 64);
+		udelay(100);
+		bw_i2c_ui_set_contrast(&device_info, 64);
+		udelay(100);
 		//
 		lcd_cls_f = bw_i2c_ui_cls;
 		lcd_text_f = bw_i2c_ui_text;
@@ -121,6 +130,10 @@ const bool lcd_detect(void) {
 	if (i2c_detect(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 		bw_i2c_lcd_start(&device_info);
+		bw_i2c_lcd_set_backlight(&device_info, 64);
+		udelay(100);
+		bw_i2c_lcd_set_contrast(&device_info, 64);
+		udelay(100);
 		//
 		lcd_cls_f = bw_i2c_lcd_cls;
 		lcd_text_f = bw_i2c_lcd_text;
@@ -182,4 +195,48 @@ void lcd_text_line_1(const char *text, const uint8_t length) {
  */
 void lcd_text_line_2(const char *text, const uint8_t length) {
 	lcd_text_line_2_f(&device_info, text, length);
+}
+
+/**
+ *
+ * @param format
+ * @return
+ */
+int lcd_printf_line_1(const char *format, ...) {
+	int i;
+	char buffer[LCD_MAX_CHARACTERS + 1] __attribute__((aligned(4)));
+
+	va_list arp;
+
+	va_start(arp, format);
+
+	i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+
+	va_end(arp);
+
+	lcd_text_line_1_f(&device_info, buffer, i);
+
+	return i;
+}
+
+/**
+ *
+ * @param format
+ * @return
+ */
+int lcd_printf_line_2(const char *format, ...) {
+	int i;
+	char buffer[LCD_MAX_CHARACTERS + 1] __attribute__((aligned(4)));
+
+	va_list arp;
+
+	va_start(arp, format);
+
+	i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+
+	va_end(arp);
+
+	lcd_text_line_2_f(&device_info, buffer, i);
+
+	return i;
 }

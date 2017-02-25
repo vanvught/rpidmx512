@@ -27,6 +27,7 @@
 #define LCD_H_
 
 #include <stdbool.h>
+#include <stdarg.h>
 
 #define LCD_MAX_CHARACTERS	16
 #define LCD_MAX_LINES		2
@@ -50,6 +51,9 @@ extern void lcd_cls(void);
 extern void lcd_text(const char *, const uint8_t);
 extern void lcd_text_line_1(const char *, const uint8_t);
 extern void lcd_text_line_2(const char *, const uint8_t);
+
+extern int lcd_printf_line_1(const char *, ...);
+extern int lcd_printf_line_2(const char *, ...);
 
 #ifdef __cplusplus
 }
