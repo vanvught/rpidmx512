@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "bw_ui.h"
+
 #include "device_info.h"
 
 extern void bw_i2c_ui_start (device_info_t *);
@@ -51,5 +53,8 @@ extern void bw_i2c_ui_set_backlight(const device_info_t *, const uint8_t);
 
 extern char bw_i2c_ui_read_button(const device_info_t *, const BwUiButtons);
 extern char bw_i2c_ui_read_button_last(const device_info_t *);
+
+extern const uint16_t bw_i2c_ui_read_adc(const device_info_t *);
+extern const uint16_t bw_i2c_ui_read_adc_avg(const device_info_t *);
 
 #endif /* BW_I2C_UI_H_ */
