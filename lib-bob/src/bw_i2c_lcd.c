@@ -30,11 +30,29 @@
 
 #include "bw.h"
 #include "bw_lcd.h"
-#include "bw_i2c_lcd.h"
 
 #include "device_info.h"
 
 #define BW_LCD_I2C_BYTE_WAIT_US	37
+
+static uint32_t i2c_write_us = (uint32_t) 0;
+
+/**
+ *
+ * @param buffer
+ * @param size
+ */
+inline static void i2c_write(const char *buffer, const uint32_t size) {
+	const uint32_t elapsed = BCM2835_ST->CLO - i2c_write_us;
+
+	if (elapsed < BW_LCD_I2C_BYTE_WAIT_US) {
+		udelay(BW_LCD_I2C_BYTE_WAIT_US - elapsed);
+	}
+
+	(void) bcm2835_i2c_write(buffer, size);
+
+	i2c_write_us = BCM2835_ST->CLO;
+}
 
 /**
  *
@@ -57,6 +75,8 @@ void bw_i2c_lcd_start(device_info_t *device_info) {
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 	}
+
+	i2c_write_us = BCM2835_ST->CLO;
 }
 
 /**
@@ -67,12 +87,12 @@ void bw_i2c_lcd_start(device_info_t *device_info) {
  * @param pos
  */
 void bw_i2c_lcd_set_cursor(const device_info_t *device_info, const uint8_t line, const uint8_t pos) {
-	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
+	char cmd[] = { (char) BW_PORT_WRITE_MOVE_CURSOR, (char) 0x00 };
 
-	cmd[1] = ((line & 0x03) << 5) | (pos & 0x1f);
+	cmd[1] = (char) ((line & 0x03) << 5) | (pos & 0x1f);
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -84,7 +104,9 @@ void bw_i2c_lcd_set_cursor(const device_info_t *device_info, const uint8_t line,
  */
 void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t length) {
 	uint8_t i;
-	char data[BW_LCD_MAX_CHARACTERS + 1] = { BW_PORT_WRITE_DISPLAY_DATA };
+	char data[BW_LCD_MAX_CHARACTERS + 1];
+
+	data[0] = (char) BW_PORT_WRITE_DISPLAY_DATA;
 
 	if (length > (uint8_t) BW_LCD_MAX_CHARACTERS) {
 		length = (uint8_t) BW_LCD_MAX_CHARACTERS;
@@ -95,7 +117,7 @@ void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 	}
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(data, length + 1);
+	i2c_write(data, length + 1);
 }
 
 /**
@@ -107,7 +129,6 @@ void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t
  */
 void bw_i2c_lcd_text_line_1(const device_info_t *device_info, const char *text, const uint8_t length) {
 	bw_i2c_lcd_set_cursor(device_info, 0, 0);
-	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bw_i2c_lcd_text(device_info, text, length);
 }
 
@@ -120,7 +141,6 @@ void bw_i2c_lcd_text_line_1(const device_info_t *device_info, const char *text, 
  */
 void bw_i2c_lcd_text_line_2(const device_info_t *device_info, const char *text, const uint8_t length) {
 	bw_i2c_lcd_set_cursor(device_info, 1, 0);
-	udelay(BW_LCD_I2C_BYTE_WAIT_US);
 	bw_i2c_lcd_text(device_info, text, length);
 }
 
@@ -130,10 +150,10 @@ void bw_i2c_lcd_text_line_2(const device_info_t *device_info, const char *text, 
  * @param device_info
  */
 void bw_i2c_lcd_cls(const device_info_t *device_info) {
-	char cmd[] = { BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
+	char cmd[] = { (char) BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -143,11 +163,12 @@ void bw_i2c_lcd_cls(const device_info_t *device_info) {
  * @param value
  */
 void bw_i2c_lcd_set_contrast(const device_info_t *device_info, const uint8_t value) {
-	char cmd[] = { BW_PORT_WRITE_SET_CONTRAST, 0x00 };
+	char cmd[] = { (char) BW_PORT_WRITE_SET_CONTRAST, (char) 0x00 };
 
-	cmd[1] = value;
+	cmd[1] = (char) value;
+
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -157,11 +178,12 @@ void bw_i2c_lcd_set_contrast(const device_info_t *device_info, const uint8_t val
  * @param value
  */
 void bw_i2c_lcd_set_backlight(const device_info_t *device_info, const uint8_t value) {
-	char cmd[] = { BW_PORT_WRITE_SET_BACKLIGHT, 0x00 };
+	char cmd[] = { (char) BW_PORT_WRITE_SET_BACKLIGHT, (char) 0x00 };
 
-	cmd[1] = value;
+	cmd[1] = (char) value;
+
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -172,11 +194,11 @@ void bw_i2c_lcd_set_backlight(const device_info_t *device_info, const uint8_t va
  * @param length
  */
 void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
-	const char cmd[] = { BW_PORT_WRITE_STARTUPMESSAGE_LINE1, 0xFF };
+	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
 		lcd_i2c_setup(device_info);
-		bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+		i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
 
 	}
@@ -190,11 +212,11 @@ void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@
  * @param length
  */
 void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
-	const char cmd[] = { BW_PORT_WRITE_STARTUPMESSAGE_LINE2, 0xFF };
+	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE2, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
 		lcd_i2c_setup(device_info);
-		bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+		i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
 
 	}
@@ -207,11 +229,12 @@ void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, /*@
  * @param value
  */
 void bw_i2c_lcd_set_backlight_temp(const device_info_t *device_info, const uint8_t value) {
-	char cmd[] = { BW_PORT_WRITE_SET_BACKLIGHT_TEMP, 0x00 };
+	char cmd[] = { (char) BW_PORT_WRITE_SET_BACKLIGHT_TEMP, (char) 0x00 };
 
-	cmd[1] = value;
+	cmd[1] = (char) value;
+
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -221,11 +244,11 @@ void bw_i2c_lcd_set_backlight_temp(const device_info_t *device_info, const uint8
  * @param value
  */
 void bw_i2c_lcd_get_backlight(const device_info_t *device_info, uint8_t *value) {
-	const char cmd[] = { BW_PORT_READ_CURRENT_BACKLIGHT };
+	const char cmd[] = { (char) BW_PORT_READ_CURRENT_BACKLIGHT };
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read((char *)value, 1);
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	(void) bcm2835_i2c_read((char *)value, 1);
 }
 
 /**
@@ -235,11 +258,11 @@ void bw_i2c_lcd_get_backlight(const device_info_t *device_info, uint8_t *value) 
  * @param value
  */
 void bw_i2c_lcd_get_contrast(const device_info_t *device_info, uint8_t *value) {
-	const char cmd[] = { BW_PORT_READ_CURRENT_CONTRAST };
+	const char cmd[] = { (char) BW_PORT_READ_CURRENT_CONTRAST };
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read((char *)value, 1);
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	(void) bcm2835_i2c_read((char *)value, 1);
 }
 
 /**
@@ -248,8 +271,8 @@ void bw_i2c_lcd_get_contrast(const device_info_t *device_info, uint8_t *value) {
  * @param device_info
  */
 void bw_i2c_lcd_reinit(const device_info_t *device_info) {
-	const char cmd[] = { BW_PORT_WRITE_REINIT_LCD, ' ' };
+	const char cmd[] = { (char) BW_PORT_WRITE_REINIT_LCD, ' ' };
 
 	lcd_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }

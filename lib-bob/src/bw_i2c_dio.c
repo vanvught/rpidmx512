@@ -30,7 +30,6 @@
 
 #include "bw.h"
 #include "bw_dio.h"
-#include "bw_i2c_dio.h"
 
 #include "device_info.h"
 
@@ -69,11 +68,11 @@ void bw_i2c_dio_start(device_info_t *device_info) {
 void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[2];
 
-	cmd[0] = BW_PORT_WRITE_IO_DIRECTION;
-	cmd[1] = mask;
+	cmd[0] = (char) BW_PORT_WRITE_IO_DIRECTION;
+	cmd[1] = (char) mask;
 
 	dio_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -85,9 +84,9 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[2];
 
-	cmd[0] = BW_PORT_WRITE_SET_ALL_OUTPUTS;
-	cmd[1] = pins;
+	cmd[0] = (char) BW_PORT_WRITE_SET_ALL_OUTPUTS;
+	cmd[1] = (char) pins;
 
 	dio_i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
+	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }

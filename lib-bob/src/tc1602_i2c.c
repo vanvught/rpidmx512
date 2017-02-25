@@ -61,7 +61,7 @@ static void lcd_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @param data
  */
-static void lcd_toggle_enable(const device_info_t *device_info, const uint8_t data) {
+static void lcd_toggle_enable(const uint8_t data) {
 	i2c_write(data | TC1602_EN | TC1602_BACKLIGHT);
 	i2c_write((data & ~TC1602_EN) | TC1602_BACKLIGHT);
 }
@@ -75,7 +75,7 @@ static void write_4bits(const device_info_t *device_info, const uint8_t data) {
 	lcd_i2c_setup(device_info);
 
 	i2c_write(data);
-	lcd_toggle_enable(device_info, data);
+	lcd_toggle_enable(data);
 }
 
 /**
@@ -84,8 +84,8 @@ static void write_4bits(const device_info_t *device_info, const uint8_t data) {
  * @param data
  */
 static void write_cmd(const device_info_t *device_info, const uint8_t cmd) {
-	write_4bits(device_info, (cmd & 0xF0));
-	write_4bits(device_info, ((cmd << 4) & 0xF0));
+	write_4bits(device_info, cmd & (uint8_t) 0xF0);
+	write_4bits(device_info, (cmd << 4) & (uint8_t) 0xF0);
 	udelay(EXEC_TIME_CMD);
 }
 
@@ -95,8 +95,8 @@ static void write_cmd(const device_info_t *device_info, const uint8_t cmd) {
  * @param data
  */
 static void write_reg(const device_info_t *device_info, const uint8_t reg) {
-	write_4bits(device_info, TC1602_RS | (reg & 0xF0));
-	write_4bits(device_info, TC1602_RS | ((reg << 4) & 0xF0));
+	write_4bits(device_info, (uint8_t) TC1602_RS | (reg & (uint8_t) 0xF0));
+	write_4bits(device_info, (uint8_t) TC1602_RS | ((reg << 4) & (uint8_t) 0xF0));
 	udelay(EXEC_TIME_REG);
 }
 
@@ -113,14 +113,14 @@ void tc1602_i2c_start(device_info_t *device_info) {
 		device_info->slave_address = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
-	write_cmd(device_info, 0x33);	///< 110011 Initialize
-	write_cmd(device_info, 0x32);	///< 110010 Initialize
+	write_cmd(device_info, (uint8_t) 0x33);	///< 110011 Initialize
+	write_cmd(device_info, (uint8_t) 0x32);	///< 110010 Initialize
 
-	write_cmd(device_info, TC1602_IC_FUNC | TC1602_IC_FUNC_4BIT | TC1602_IC_FUNC_2LINE | TC1602_IC_FUNC_5x8DOTS); ///< Data length, number of lines, font size
-	write_cmd(device_info, TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON | TC1602_IC_DISPLAY_CURSOR_OFF | TC1602_IC_DISPLAY_BLINK_OFF);	///< Display On,Cursor Off, Blink Off
-	write_cmd(device_info, TC1602_IC_CLS);
+	write_cmd(device_info, (uint8_t) (TC1602_IC_FUNC | TC1602_IC_FUNC_4BIT | TC1602_IC_FUNC_2LINE | TC1602_IC_FUNC_5x8DOTS)); ///< Data length, number of lines, font size
+	write_cmd(device_info, (uint8_t) (TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON | TC1602_IC_DISPLAY_CURSOR_OFF | TC1602_IC_DISPLAY_BLINK_OFF));	///< Display On,Cursor Off, Blink Off
+	write_cmd(device_info, (uint8_t) TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
-	write_cmd(device_info, TC1602_IC_ENTRY_MODE | TC1602_IC_ENTRY_MODE_INC);	///< Cursor move direction
+	write_cmd(device_info, (uint8_t) (TC1602_IC_ENTRY_MODE | TC1602_IC_ENTRY_MODE_INC));	///< Cursor move direction
 }
 
 /**
@@ -137,7 +137,7 @@ void tc1602_i2c_text(const device_info_t *device_info, const char *data, uint8_t
 	}
 
 	for (i = 0; i < length; i++) {
-		write_reg(device_info, data[i]);
+		write_reg(device_info, (uint8_t) data[i]);
 	}
 
 }
@@ -169,7 +169,7 @@ void tc1602_i2c_text_line_2(const device_info_t *device_info, const char *data, 
  * @param device_info
  */
 void tc1602_i2c_cls(const device_info_t *device_info) {
-	write_cmd(device_info, TC1602_IC_CLS);
+	write_cmd(device_info, (uint8_t) TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 }
 

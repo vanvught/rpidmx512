@@ -97,9 +97,9 @@ void bw_spi_dio_start(device_info_t *device_info) {
 void bw_spi_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[3];
 
-	cmd[0] = (char)device_info->slave_address;
-	cmd[1] = (char)BW_PORT_WRITE_SET_ALL_OUTPUTS;
-	cmd[2] = (char)pins;
+	cmd[0] = (char) device_info->slave_address;
+	cmd[1] = (char) BW_PORT_WRITE_SET_ALL_OUTPUTS;
+	cmd[2] = (char) pins;
 
 	if (device_info->chip_select == (uint8_t) 2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);

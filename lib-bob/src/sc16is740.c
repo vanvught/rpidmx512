@@ -70,13 +70,14 @@ void sc16is740_start(device_info_t *device_info) {
 }
 
 void sc16is740_set_baud(const device_info_t *device_info, const int baudrate) {
-	unsigned long divisor = SC16IS7X0_BAUDRATE_DIVISOR(baudrate);
+	unsigned long divisor = (unsigned long) SC16IS7X0_BAUDRATE_DIVISOR(baudrate);
 	uint8_t lcr;
 
 	lcr = sc16is740_reg_read(device_info, SC16IS7X0_LCR);
+
 	sc16is740_reg_write(device_info, SC16IS7X0_LCR, lcr | LCR_ENABLE_DIV);
-	sc16is740_reg_write(device_info, SC16IS7X0_DLL, (divisor & 0xFF));
-	sc16is740_reg_write(device_info, SC16IS7X0_DLH, ((divisor >> 8) & 0xFF));
+	sc16is740_reg_write(device_info, SC16IS7X0_DLL, (uint8_t) (divisor & 0xFF));
+	sc16is740_reg_write(device_info, SC16IS7X0_DLH, (uint8_t) ((divisor >> 8) & 0xFF));
 	sc16is740_reg_write(device_info, SC16IS7X0_LCR, lcr);
 }
 
@@ -209,7 +210,7 @@ int sc16is740_getc(const device_info_t *device_info) {
 	    return -1;
 	  }
 
-	  return sc16is740_reg_read(device_info, SC16IS7X0_RHR);
+	  return (int) sc16is740_reg_read(device_info, SC16IS7X0_RHR);
 }
 
 /**
@@ -217,11 +218,11 @@ int sc16is740_getc(const device_info_t *device_info) {
  * @return
  */
 bool sc16is740_is_connected(const device_info_t *device_info) {
-  const char TEST_CHARACTER = 'A';
+	const uint8_t TEST_CHARACTER = (uint8_t) 'A';
 
-  sc16is740_reg_write(device_info, SC16IS7X0_SPR, TEST_CHARACTER);
+	sc16is740_reg_write(device_info, SC16IS7X0_SPR, TEST_CHARACTER);
 
-  return (sc16is740_reg_read(device_info, SC16IS7X0_SPR) == TEST_CHARACTER);
+	return (sc16is740_reg_read(device_info, SC16IS7X0_SPR) == TEST_CHARACTER);
 }
 
 /**
@@ -255,6 +256,6 @@ int sc16is740_read(const device_info_t *device_info, void *buffer, unsigned coun
  * @param count
  * @return
  */
-int sc16is740_write(const device_info_t *device_info, const void *buffer, unsigned count) {
+int sc16is740_write(/*@unused@*/const device_info_t *device_info, /*@unused@*/const void *buffer, /*@unused@*/unsigned count) {
 	return -1;	// TODO: not supported yet
 }

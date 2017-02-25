@@ -70,9 +70,9 @@ void bw_spi_dimmer_start(device_info_t *device_info) {
 void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
 	char cmd[3];
 
-	cmd[0] = (char)device_info->slave_address;
-	cmd[1] = (char)BW_PORT_WRITE_DIMMER;
-	cmd[2] = (char)value;
+	cmd[0] = (char) device_info->slave_address;
+	cmd[1] = (char) BW_PORT_WRITE_DIMMER;
+	cmd[2] = (char) value;
 
 	if (device_info->chip_select == (uint8_t) 2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
