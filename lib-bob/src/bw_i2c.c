@@ -23,28 +23,36 @@
  * THE SOFTWARE.
  */
 
+#include <stddef.h>
+
+#include "bcm2835.h"
 #include "bcm2835_i2c.h"
 
 #include "device_info.h"
 
 #include "bw.h"
 
-extern int printf(const char *format, ...);
+#define I2C_DELAY_WRITE_READ_US		100
 
 /**
  * @ingroup I2C
- * Prints the identification string.
+ *
+ * Gets the identification string.
+ *
  * @param device_info
+ * @param id
  */
-void bw_i2c_read_id(const device_info_t *device_info) {
-	char cmd[] = { BW_PORT_READ_ID_STRING };
-	char buf[BW_ID_STRING_LENGTH];
+void bw_i2c_read_id(const device_info_t *device_info, char *id) {
+	char cmd[] = { (char) BW_PORT_READ_ID_STRING };
+
+	if (id == NULL) {
+		return;
+	}
 
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+	bcm2835_i2c_setClockDivider(2500);
 
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(char));
-	bcm2835_i2c_read(buf, BW_ID_STRING_LENGTH);
-
-	printf("[%s]\n", buf);
+	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	udelay(I2C_DELAY_WRITE_READ_US);
+	(void) bcm2835_i2c_read(id, BW_ID_STRING_LENGTH);
 }
