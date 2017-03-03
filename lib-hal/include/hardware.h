@@ -65,7 +65,7 @@ extern void hardware_rtc_set(const struct hardware_time *);
  *
  * @return
  */
-inline static uint32_t hardware_micros(void) {
+/*@unused@*/inline static uint32_t hardware_micros(void) {
 	return BCM2835_ST->CLO;
 }
 
@@ -73,28 +73,28 @@ inline static uint32_t hardware_micros(void) {
  *
  * @param mac_address
  */
-inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
+/*@unused@*/inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
 /**
  *
  */
-inline static void hardware_watchdog_init(void) {
+/*@unused@*/inline static void hardware_watchdog_init(void) {
 	bcm2835_watchdog_init();
 }
 
 /**
  *
  */
-inline static void hardware_watchdog_feed(void) {
+/*@unused@*/inline static void hardware_watchdog_feed(void) {
 	bcm2835_watchdog_feed();
 }
 
 /**
  *
  */
-inline static void hardware_watchdog_stop(void) {
+/*@unused@*/inline static void hardware_watchdog_stop(void) {
 	bcm2835_watchdog_stop();
 }
 
@@ -102,7 +102,7 @@ inline static void hardware_watchdog_stop(void) {
  *
  * @param usec
  */
-inline static void hardware_delay_us(const uint64_t usec) {
+/*@unused@*/inline static void hardware_delay_us(const uint64_t usec) {
 	udelay(usec);
 }
 
@@ -110,7 +110,7 @@ inline static void hardware_delay_us(const uint64_t usec) {
  *
  * @return
  */
-inline static uint32_t hardware_random_number(void) {
+/*@unused@*/inline static uint32_t hardware_random_number(void) {
 	return bcm2835_rng_get_number();
 }
 

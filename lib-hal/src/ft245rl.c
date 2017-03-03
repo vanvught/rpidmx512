@@ -148,7 +148,7 @@ void FT245RL_init(void) {
  *
  * @param data
  */
-void FT245RL_write_data(uint8_t data) {
+void FT245RL_write_data(const uint8_t data) {
 	data_gpio_fsel_output();
 	// Raise WR to start the write.
 	bcm2835_gpio_set(WR);
@@ -173,7 +173,7 @@ void FT245RL_write_data(uint8_t data) {
  *
  * @return
  */
-uint8_t FT245RL_read_data() {
+const uint8_t FT245RL_read_data() {
 	data_gpio_fsel_input();
 	bcm2835_gpio_clr(_RD);
 	// Wait for the FT245 to respond with data.
@@ -195,7 +195,7 @@ uint8_t FT245RL_read_data() {
  *
  * @return
  */
-bool FT245RL_data_available(void) {
+const bool FT245RL_data_available(void) {
 #if defined(RPI2)
 	dmb();
 #endif
@@ -209,7 +209,7 @@ bool FT245RL_data_available(void) {
  *
  * @return
  */
-bool FT245RL_can_write(void) {
+const bool FT245RL_can_write(void) {
 #if defined(RPI2)
 	dmb();
 #endif

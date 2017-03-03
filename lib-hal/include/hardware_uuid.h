@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-extern bool hardware_uuid(uuid_t);
+extern const bool hardware_uuid(uuid_t);
 
 #ifdef __cplusplus
 }

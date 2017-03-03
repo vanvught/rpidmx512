@@ -66,7 +66,7 @@ void bcm2835_i2c_end(void) {
  * @param len size of the buffer
  * @return ::BCM2835_I2C_REASON_OK if successful; BCM2835_I2C_REASON_ERROR_* otherwise. Reference \ref bcm2835I2CReasonCodes
  */
-uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
+uint8_t bcm2835_i2c_write(/*@null@*/ const char *buf, const uint32_t len) {
 	uint32_t remaining = len;
 	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
@@ -125,10 +125,10 @@ uint8_t bcm2835_i2c_write(/*@null@*/ const char * buf, const uint32_t len) {
  * @param len size of the buffer
  * @return ::BCM2835_I2C_REASON_OK if successful; BCM2835_I2C_REASON_ERROR_* otherwise. Reference \ref bcm2835I2CReasonCodes
  */
-uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
+uint8_t bcm2835_i2c_read(char *buf, const uint32_t len) {
 	uint32_t remaining = len;
-	uint32_t i = 0;
 	uint8_t reason = BCM2835_I2C_REASON_OK;
+	uint8_t *p = (uint8_t *)buf;
 
     // Clear FIFO
     BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
@@ -143,16 +143,14 @@ uint8_t bcm2835_i2c_read(char* buf, const uint32_t len) {
 	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
 		// we must empty the FIFO as it is populated and not use any delay
 		while (BCM2835_BSC1->S & BCM2835_BSC_S_RXD) {
-			buf[i] = (char)BCM2835_BSC1 ->FIFO;
-			i++;
+			*p++ = (uint8_t) (BCM2835_BSC1->FIFO & 0xFF);
 			remaining--;
 		}
 	}
 
 	// transfer has finished - grab any remaining stuff in FIFO
 	while ((remaining != (uint32_t)0) && (BCM2835_BSC1 ->S & BCM2835_BSC_S_RXD)) {
-		buf[i] = (char)BCM2835_BSC1 ->FIFO;
-		i++;
+		*p++ = (uint8_t) (BCM2835_BSC1->FIFO & 0xFF);
 		remaining--;
 	}
 

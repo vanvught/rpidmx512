@@ -55,6 +55,7 @@ void sys_time_init(void) {
 		tmbuf.tm_mon = 1;
 		tmbuf.tm_year = 16;
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
+		//tmbuf.tm_yday = 0;
 
 		rtc_startup_seconds = (uint32_t)mktime(&tmbuf);
 		return;

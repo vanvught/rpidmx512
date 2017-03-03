@@ -62,7 +62,7 @@ extern "C" {
  *
  * @param pin GPIO number.
  */
-inline static void bcm2835_gpio_set(const uint8_t pin) {
+/*@unused@*/inline static void bcm2835_gpio_set(const uint8_t pin) {
 	BCM2835_GPIO->GPSET0 = (uint32_t) (1 << pin);
 }
 
@@ -73,7 +73,7 @@ inline static void bcm2835_gpio_set(const uint8_t pin) {
  *
  * @param pin GPIO number.
  */
-inline static void bcm2835_gpio_clr(const uint8_t pin) {
+/*@unused@*/inline static void bcm2835_gpio_clr(const uint8_t pin) {
 	BCM2835_GPIO ->GPCLR0 = (uint32_t) (1 << pin);
 }
 
@@ -85,7 +85,7 @@ inline static void bcm2835_gpio_clr(const uint8_t pin) {
  * @param pin GPIO number
  * @param on \ref HIGH sets the output to HIGH and \ref LOW to LOW.
  */
-inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
+/*@unused@*/inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
 	if (on != 0) {
 		bcm2835_gpio_set(pin);
 	} else {
@@ -99,7 +99,7 @@ inline static void bcm2835_gpio_write(const uint8_t pin, const uint8_t on) {
  * @param pin
  * @return
  */
-inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
+/*@unused@*/inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
 	uint32_t value = BCM2835_GPIO ->GPLEV0; // TODO BUG pin > 32
 	return (value & (1 << pin)) ? (uint8_t)HIGH : (uint8_t)LOW;
 }
@@ -113,7 +113,7 @@ inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
  *
  * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
  */
-inline static void bcm2835_gpio_pud(const uint8_t pud) {
+/*@unused@*/inline static void bcm2835_gpio_pud(const uint8_t pud) {
 	BCM2835_GPIO ->GPPUD = pud;
 }
 
@@ -123,7 +123,7 @@ inline static void bcm2835_gpio_pud(const uint8_t pud) {
  * @param pin
  * @param on
  */
-inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
+/*@unused@*/inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
 	BCM2835_GPIO ->GPPUDCLK0 = (uint32_t)((on ? 1 : 0) << pin);
 }
 
