@@ -60,7 +60,6 @@ struct _hardware_revision_code {
 		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },		///< 2 Model B (with BCM2837)
 		{ 0x900092, "Pi Zero 512MB V1.2" },
 		{ 0x900093, "Pi Zero 512MB V1.3" },
-		{ 0x9000c1, "Pi Zero W 512MB" },
 		{ 0xa02082, "Pi 3 Model B 1GB V1.2" },
 		{ 0xa22082, "Pi 3 Model B 1GB V1.2" }
 };
