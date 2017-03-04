@@ -85,7 +85,7 @@ void notmain(void) {
 	}
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("WiFi sACN E.131 DMX Out / Real-time DMX Monitor");
+	printf("WiFi sACN E1.31 DMX Out / Real-time DMX Monitor");
 
 	console_set_top_row(3);
 
