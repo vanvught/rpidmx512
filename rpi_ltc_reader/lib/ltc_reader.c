@@ -43,7 +43,11 @@
 #include "hardware.h"
 #include "console.h"
 
+#include "gpio.h"
+
 #include "lcd.h"
+
+#include "display_7segment.h"
 
 #include "midi.h"
 #include "midi_send.h"
@@ -111,7 +115,9 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 			hardware_led_set(0);
 		}
 
-	} else if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
+	}
+	
+	if (BCM2835_ST->CS & BCM2835_ST_CS_M3) {
 		BCM2835_ST->CS = BCM2835_ST_CS_M3;
 		BCM2835_ST->C3 = clo + midi_quarter_frame_us;
 
@@ -258,6 +264,10 @@ void ltc_reader(void) {
 			lcd_text_line_1((char *) timecode, LCD_MAX_CHARACTERS);
 		}
 
+		if (output->segment_output) {
+			display_7segment((const char *) timecode);
+		}
+
 		if (prev_type != type) {
 			prev_type = type;
 
@@ -326,7 +336,6 @@ void ltc_reader(void) {
 				case 7:
 					bytes[1] = data | (midi_timecode.rate << 1) |((midi_timecode.hour & 0x10) >> 4);;
 					break;
-
 				default:
 					break;
 			}
@@ -341,6 +350,8 @@ void ltc_reader(void) {
  *
  */
 void ltc_reader_init(const struct _ltc_reader_output *out) {
+	int i;
+	
 	assert(out != NULL);
 
 	output = out;
@@ -366,9 +377,7 @@ void ltc_reader_init(const struct _ltc_reader_output *out) {
 	dmb();
 	__enable_irq();
 
-	int i;
-
-	for (i= 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
+	for (i = 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
 		timecode[i] = ' ';
 	}
 

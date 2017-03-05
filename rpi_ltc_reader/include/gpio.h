@@ -1,8 +1,8 @@
 /**
- * @file ltc_reader_params.h
+ * @file gpio.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC_READER_PARAMS_H_
-#define LTC_READER_PARAMS_H_
+#ifndef GPIO_H_
+#define GPIO_H_
 
-#include <stdbool.h>
+#include "bcm2835.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define GPIO_PIN	RPI_V2_GPIO_P1_21
 
-extern const bool ltc_reader_params_is_console_output(void);
-extern const bool ltc_reader_params_is_lcd_output(void);
-extern const bool ltc_reader_params_is_7segment_output(void);
-extern const bool ltc_reader_params_is_midi_output(void);
-extern const bool ltc_reader_params_is_artnet_output(void);
-
-extern void ltc_reader_params_init(void) ;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LTC_READER_PARAMS_H_ */
+#endif /* GPIO_H_ */

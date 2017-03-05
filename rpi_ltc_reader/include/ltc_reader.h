@@ -29,8 +29,6 @@
 
 #include <stdbool.h>
 
-#include "bcm2835.h"
-
 #define ONE_TIME_MIN        150	///< 417us/2 = 208us
 #define ONE_TIME_MAX       	300	///< 521us/2 = 260us
 #define ZERO_TIME_MIN      	380	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
@@ -39,8 +37,6 @@
 #define END_DATA_POSITION	63	///<
 #define END_SYNC_POSITION	77	///<
 #define END_SMPTE_POSITION	80	///<
-
-#define GPIO_PIN			RPI_V2_GPIO_P1_21
 
 typedef enum _timecode_types {
 	TC_TYPE_FILM = 0,
@@ -54,9 +50,10 @@ typedef enum _timecode_types {
 struct _ltc_reader_output {
 	bool console_output;
 	bool lcd_output;
+	bool segment_output;
 	bool midi_output;
 	bool artnet_output;
-} ltc_reader_output;
+};
 
 #ifdef __cplusplus
 extern "C" {

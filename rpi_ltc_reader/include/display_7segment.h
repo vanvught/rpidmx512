@@ -1,8 +1,8 @@
 /**
- * @file ltc_reader_params.h
+ * @file display_7segment.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC_READER_PARAMS_H_
-#define LTC_READER_PARAMS_H_
-
-#include <stdbool.h>
+#ifndef DISPLAY_7SEGMENT_H_
+#define DISPLAY_7SEGMENT_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool ltc_reader_params_is_console_output(void);
-extern const bool ltc_reader_params_is_lcd_output(void);
-extern const bool ltc_reader_params_is_7segment_output(void);
-extern const bool ltc_reader_params_is_midi_output(void);
-extern const bool ltc_reader_params_is_artnet_output(void);
-
-extern void ltc_reader_params_init(void) ;
+extern void display_7segment_init(void);
+extern void display_7segment(const char *);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LTC_READER_PARAMS_H_ */
+#endif /* DISPLAY_7SEGMENT_H_ */
