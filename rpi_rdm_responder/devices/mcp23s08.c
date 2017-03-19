@@ -23,12 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
+
 #include "mcp23s08.h"
 
-#define DMX_FOOTPRINT	8
+#define MCP23S08_IODIR	0x00	///< I/O DIRECTION (IODIR) REGISTER
+#define MCP23S08_GPIO	0x09	///< PORT (GPIO) REGISTER
+
+#define DMX_FOOTPRINT	8		///<
 
 static const char device_label[] = "mcp23s08";
 static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);

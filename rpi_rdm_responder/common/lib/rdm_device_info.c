@@ -489,20 +489,21 @@ const uint8_t * rdm_device_info_get_uuid(void) {
  *
  */
 void rdm_device_info_init(void) {
+	uint8_t mac_address[6] ALIGNED;
+
 #ifdef RDM_RESPONDER
 	uint16_t device_model;
+	uint32_t software_version_id;
+	uint16_t sub_device_count;
 	const int32_t board_model_id = hardware_board_get_model_id();
-	const uint32_t software_version_id = rdm_device_info_get_software_version_id();
-	const uint16_t sub_device_count = rdm_sub_devices_get();
-#endif
-	uint8_t mac_address[6] ALIGNED;
-#ifdef RDM_RESPONDER
+
 	if (board_model_id < 0) {
 		device_model = (uint16_t)0;
 	} else {
 		device_model = (uint16_t)board_model_id;
 	}
 #endif
+
 	if (hardware_get_mac_address(mac_address) == 0) {
 		uid_device[2] = mac_address[2];
 		uid_device[3] = mac_address[3];
@@ -527,6 +528,12 @@ void rdm_device_info_init(void) {
 	read_config_file(RDM_DEVICE_FILE_NAME, &process_line_read_string);
 
 #ifdef RDM_RESPONDER
+	rdm_sensors_init();
+	rdm_sub_devices_info_init();
+
+	software_version_id = rdm_device_info_get_software_version_id();
+	sub_device_count = rdm_sub_devices_get();
+
 	rdm_device_info.protocol_major = (uint8_t)(E120_PROTOCOL_VERSION >> 8);
 	rdm_device_info.protocol_minor = (uint8_t) E120_PROTOCOL_VERSION;
 	rdm_device_info.device_model[0] = (uint8_t) (device_model >> 8);
@@ -547,11 +554,7 @@ void rdm_device_info_init(void) {
 	rdm_device_info.sub_device_count[1] = (uint8_t) sub_device_count;
 	rdm_device_info.sensor_count = rdm_sensors_get_count();
 
-	rdm_sensors_init();
-
 	(void *)_memcpy(&rdm_sub_device_info, &rdm_device_info, sizeof(struct _rdm_device_info));
-
-	rdm_sub_devices_info_init();
 
 	factory_defaults_checksum = calculate_checksum();
 	is_factory_defaults = true;

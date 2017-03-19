@@ -33,7 +33,8 @@
 #include "rdm_e120.h"
 #include "hardware.h"
 
-static const struct _rdm_sensor_defintion rdm_sensor_defintions[] __attribute__((aligned(4))) = { {
+static const struct _rdm_sensor_defintion rdm_sensor_defintions[] __attribute__((aligned(4))) = {
+		{
 		(uint8_t) 0,
 		(uint8_t) E120_SENS_TEMPERATURE,
 		(uint8_t) E120_UNITS_CENTIGRADE,
@@ -43,8 +44,10 @@ static const struct _rdm_sensor_defintion rdm_sensor_defintions[] __attribute__(
 		(int16_t) RDM_SENSOR_TEMPERATURE_ABS_ZERO,
 		(int16_t) 85,
 		(uint8_t) RDM_SENSOR_RECORDED_SUPPORTED | RDM_SENSOR_LOW_HIGH_DETECT,
-		"CPU", /* description length */3 }
-		};
+		"CPU", /* description length */3
+		}
+
+};
 
 #define RDM_SENSORS_COUNT	(sizeof(rdm_sensor_defintions) / sizeof(rdm_sensor_defintions[0]))
 

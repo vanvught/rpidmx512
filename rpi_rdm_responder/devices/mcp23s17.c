@@ -23,12 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
+
 #include "mcp23s17.h"
 
-#define DMX_FOOTPRINT	16
+#define MCP23S17_IODIRA	0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
+#define MCP23S17_GPIOA	0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
+
+#define DMX_FOOTPRINT	16		///<
 
 static const char device_label[] = "mcp23s17";
 static const uint8_t device_label_len = MIN(sizeof(device_label) / sizeof(device_label[0]), RDM_DEVICE_LABEL_MAX_LENGTH);

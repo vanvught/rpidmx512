@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
+
+#include "bw_lcd.h"
 #include "bw_spi_lcd.h"
 
 #define DMX_FOOTPRINT	4

@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
+
 #include "bcm2835.h"
 #include "bcm2835_spi.h"
 

@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "tables.h"
 #include "util.h"
 #include "dmx.h"
+
+#include "bw_7fets.h"
 #include "bw_spi_7fets.h"
 
 #define DMX_FOOTPRINT	7
