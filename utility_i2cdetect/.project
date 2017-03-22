@@ -6,6 +6,7 @@
 		<project>lib-bcm2835</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-i2c</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
