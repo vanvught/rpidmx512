@@ -34,6 +34,7 @@
 #define BW_DIO_SPI_SPEED_DEFAULT_HZ		90000	///< 90 kHz
 
 extern void bw_spi_dio_start(device_info_t *);
+extern void bw_spi_dio_fsel_mask(const device_info_t *, const uint8_t);
 extern void bw_spi_dio_output(const device_info_t *, const uint8_t);
 
 #endif /* BW_SPI_DIO_H_ */

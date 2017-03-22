@@ -29,10 +29,11 @@
 #define TC1602_I2C_DEFAULT_SLAVE_ADDRESS	0x27	///<
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "device_info.h"
 
-extern void tc1602_i2c_start(device_info_t *);
+extern const bool tc1602_i2c_start(device_info_t *);
 
 extern void tc1602_i2c_cls(const device_info_t *);
 

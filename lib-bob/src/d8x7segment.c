@@ -53,7 +53,7 @@ void d8x7segment_cls(const device_info_t *device_info) {
 
 	do {
 		max7219_spi_write_reg(device_info, i, MAX7219_CHAR_BLANK);
-	} while (--i > 0);
+	} while (--i > (uint8_t) 0);
 }
 
 /**

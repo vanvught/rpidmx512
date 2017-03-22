@@ -1,6 +1,5 @@
-
 /**
- * @file pcf8591_i2c.c
+ * @file mcp9808.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,64 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef MCP9808_H_
+#define MCP9808_H_
 
-#include "bcm2835_i2c.h"
-
-#include "pcf8591.h"
-#include "pcf8591_i2c.h"
+#include <stdbool.h>
 
 #include "device_info.h"
 
-/**
- *
- * @param device_info
- */
-static void i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
-}
+#define MCP9808_I2C_DEFAULT_SLAVE_ADDRESS	0x18	///<
 
-/**
- *
- * @param device_info
- */
-void pcf8591_i2c_start(device_info_t *device_info) {
-	bcm2835_i2c_begin();
+extern const bool mcp9808_start(device_info_t *);
+extern const float mcp9808_get_temperature(const device_info_t *);
 
-	if (device_info->slave_address == (uint8_t) 0) {
-		device_info->slave_address = PCF8591_I2C_DEFAULT_SLAVE_ADDRESS;
-	}
-}
-
-/**
- *
- * @param
- * @param data
- */
-void pcf8591_i2c_dac_write(device_info_t *device_info, const uint8_t data) {
-	char cmd[2] = { (char) PCF8591_DAC_ENABLE, (char) 0x00 };
-
-	cmd[1] = (char) data;
-
-	i2c_setup(device_info);
-	bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
-
-}
-
-/**
- *
- * @param device_info
- * @param channel
- * @return
- */
-const uint8_t pcf8591_i2c_adc_read(device_info_t *device_info, const uint8_t channel) {
-	char data = (uint8_t) channel;
-
-	i2c_setup(device_info);
-	bcm2835_i2c_write(&data, 1);
-	bcm2835_i2c_read(&data, 1);
-	bcm2835_i2c_read(&data, 1);
-
-	return (uint8_t) data;
-}
+#endif /* MCP9808_H_ */

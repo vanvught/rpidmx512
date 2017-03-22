@@ -1,8 +1,8 @@
 /**
- * @file device_info.h
+ * @file htu21d.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_INFO_H_
-#define DEVICE_INFO_H_
+#ifndef HTU21D_H_
+#define HTU21D_H_
 
-#include <stdint.h>
 #include <stdbool.h>
 
-typedef struct _device_info {
-	uint8_t chip_select;		///<
-	uint8_t slave_address;		///<
-	uint32_t speed_hz;			///<
-	uint16_t internal_clk_div;	///<
-	bool fast_mode;				///< I2C Fast Mode 400KHz
-} device_info_t;
+#include "device_info.h"
 
-#endif /* DEVICE_INFO_H_ */
+#define HTU21D_I2C_DEFAULT_SLAVE_ADDRESS	0x40	///<
+
+extern const bool htu21d_start(device_info_t *);
+extern const float htu21d_get_temperature(const device_info_t *);
+extern const float htu21d_get_humidity(const device_info_t *);
+
+#endif /* HTU21D_H_ */

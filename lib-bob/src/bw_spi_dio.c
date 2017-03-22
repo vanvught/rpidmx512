@@ -40,29 +40,6 @@
  * @ingroup SPI-DIO
  *
  * @param device_info
- * @param mask
- */
-inline static void bw_spi_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
-	char cmd[3];
-
-	cmd[0] = (char)device_info->slave_address;
-	cmd[1] = (char)BW_PORT_WRITE_IO_DIRECTION;
-	cmd[2] = (char)mask;
-
-	if (device_info->chip_select == (uint8_t) 2) {
-		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
-		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
-	} else {
-		bcm2835_spi_setClockDivider(device_info->internal_clk_div);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
-	}
-}
-
-/**
- * @ingroup SPI-DIO
- *
- * @param device_info
  * @return
  */
 void bw_spi_dio_start(device_info_t *device_info) {
@@ -86,6 +63,29 @@ void bw_spi_dio_start(device_info_t *device_info) {
 	}
 
 	bw_spi_dio_fsel_mask(device_info, 0x7F);
+}
+
+/**
+ * @ingroup SPI-DIO
+ *
+ * @param device_info
+ * @param mask
+ */
+void bw_spi_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
+	char cmd[3];
+
+	cmd[0] = (char)device_info->slave_address;
+	cmd[1] = (char)BW_PORT_WRITE_IO_DIRECTION;
+	cmd[2] = (char)mask;
+
+	if (device_info->chip_select == (uint8_t) 2) {
+		bcm2835_aux_spi_setClockDivider(device_info->internal_clk_div);
+		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	} else {
+		bcm2835_spi_setClockDivider(device_info->internal_clk_div);
+		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	}
 }
 
 /**

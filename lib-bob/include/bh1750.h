@@ -1,6 +1,5 @@
-
 /**
- * @file pcf8591_i2c.h
+ * @file bh1750.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,20 +23,16 @@
  * THE SOFTWARE.
  */
 
+#ifndef BH1750_H_
+#define BH1750_H_
 
-#ifndef PCF8591_I2C_H_
-#define PCF8591_I2C_H_
-
-#define PCF8591_I2C_DEFAULT_SLAVE_ADDRESS	0x48	///<
-
-#include <stdint.h>
+#include <stdbool.h>
 
 #include "device_info.h"
 
-extern void pcf8591_i2c_start(device_info_t *);
+#define BH1750_I2C_DEFAULT_SLAVE_ADDRESS	0x23	///<
 
-extern void pcf8591_i2c_dac_write(device_info_t *, const uint8_t);
-extern const uint8_t pcf8591_i2c_adc_read(device_info_t *, const uint8_t);
+extern const bool bh1750_start(device_info_t *);
+extern const uint16_t bh1750_get_level(const device_info_t *);
 
-
-#endif /* PCF8591_I2C_H_ */
+#endif /* BH1750_H_ */

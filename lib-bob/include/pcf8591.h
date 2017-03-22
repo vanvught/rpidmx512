@@ -28,13 +28,20 @@
 #ifndef PCF8591_H_
 #define PCF8591_H_
 
-#define PCF8591_DAC_ENABLE			0x40
+#define PCF8591_DEFAULT_SLAVE_ADDRESS	0x48	///<
 
-#define PCF8591_ADC_CH0				0x40
-#define PCF8591_ADC_CH1				0x41
-#define PCF8591_ADC_CH2				0x42
-#define PCF8591_ADC_CH3				0x43
+#define PCF8591_ADC_CH0		0x40	///<
+#define PCF8591_ADC_CH1		0x41	///<
+#define PCF8591_ADC_CH2		0x42	///<
+#define PCF8591_ADC_CH3		0x43	///<
 
-#define PCF8591_ADC_AUTO_INC_MASK	0x44
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "device_info.h"
+
+extern const bool pcf8591_start(device_info_t *);
+extern void pcf8591_dac_write(device_info_t *, const uint8_t);
+extern const uint8_t pcf8591_adc_read(device_info_t *, const uint8_t);
 
 #endif /* PCF8591_H_ */
