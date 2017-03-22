@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-LIBS += hal uuid ff11 emmc fb lcd bob utils bcm2835
+LIBS += hal uuid ff11 emmc fb lcd bob i2c utils bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
