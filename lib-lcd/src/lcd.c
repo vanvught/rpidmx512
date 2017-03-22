@@ -32,6 +32,8 @@
 #include "bcm2835.h"
 #include "bcm2835_i2c.h"
 
+#include "i2c.h"
+
 #include "lcd.h"
 
 #include "bw_ui.h"
@@ -69,27 +71,6 @@ static void(*lcd_text_f)(const device_info_t *, const char *, const uint8_t) = _
 static void(*lcd_text_line_1_f)(const device_info_t *, const char *, const uint8_t) = _lcd_text_line_1;
 static void(*lcd_text_line_2_f)(const device_info_t *, const char *, const uint8_t) = _lcd_text_line_2;
 
-static const bool i2c_detect(const uint8_t address) {
-	char buf;
-	uint8_t ret;
-
-	/* Set slave address */
-	bcm2835_i2c_setSlaveAddress(address);
-
-	/* Probe this address */
-	if ((address >= (uint8_t) 0x30 && address <= (uint8_t) 0x37) || (address >= (uint8_t) 0x50 && address <= (uint8_t) 0x5F)) {
-		ret = bcm2835_i2c_read(&buf, 1);
-	} else {
-		ret = bcm2835_i2c_write(NULL, 0);
-	}
-
-	if (ret == 0) {
-		return true;
-	}
-
-	return false;
-}
-
 /**
  *
  * @param lcd_info
@@ -109,7 +90,7 @@ const bool lcd_detect(void) {
 	bcm2835_i2c_begin();
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
 
-	if (i2c_detect(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
+	if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
 		bw_i2c_ui_start(&device_info);
 		bw_i2c_ui_set_backlight(&device_info, 64);
@@ -127,7 +108,7 @@ const bool lcd_detect(void) {
 		return true;
 	}
 
-	if (i2c_detect(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
+	if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 		bw_i2c_lcd_start(&device_info);
 		bw_i2c_lcd_set_backlight(&device_info, 64);
@@ -146,7 +127,7 @@ const bool lcd_detect(void) {
 	}
 
 
-	if (i2c_detect(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
+	if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		device_info.slave_address = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
 		tc1602_i2c_start(&device_info);
 		//
