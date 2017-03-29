@@ -39,8 +39,6 @@
 #include "device_info.h"
 
 #define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))
-#define CEILING_NEG(X) ((X-(int)(X)) < 0 ? (int)(X-1) : (int)(X))
-#define CEILING(X) ( ((X) > 0) ? CEILING_POS(X) : CEILING_NEG(X) )
 
 struct _ina219_info {
 	float current_lsb;
@@ -74,7 +72,7 @@ struct _ina219_info {
 #define INA219_CONFIG_MODE_MASK				0x0007	///< Operating Mode Mask
 //#define INA219_CONFIG_MODE_SHIFT			0		///< Operating Mode Shift
 
-#define INA219_READ_REG_DELAY_US	(800)
+#define INA219_READ_REG_DELAY_US	800		///<
 
 /**
  *
@@ -134,10 +132,7 @@ const bool ina219_start(device_info_t *device_info) {
  */
 void ina219_configure(const device_info_t *device_info, ina219_range_t range, ina219_gain_t gain, ina219_bus_res_t bus_res, ina219_shunt_res_t shunt_res, ina219_mode_t mode) {
 	const uint8_t i = device_info->slave_address & 0x0F;
-
-	uint16_t config = 0;
-
-	config |= (range | gain| bus_res | shunt_res | mode);
+	const uint16_t config = range | gain| bus_res | shunt_res | mode;
 
 	switch (range) {
 	case INA219_RANGE_32V:
@@ -175,18 +170,16 @@ void ina219_configure(const device_info_t *device_info, ina219_range_t range, in
  */
 void ina219_calibrate(const device_info_t *device_info, float r_shunt_value, float i_max_expected) {
 	const uint8_t i = device_info->slave_address & 0x0F;
+	const float minimum_lsb = i_max_expected / 32767;
 
 	uint16_t calibration_value;
-	float minimum_lsb;
 
 	ina219_info[i].r_shunt = r_shunt_value;
-
-	minimum_lsb = i_max_expected / 32767;
 
 	ina219_info[i].current_lsb = (float) ((uint16_t) (minimum_lsb * 100000000));
 	ina219_info[i].current_lsb /= 100000000;
 	ina219_info[i].current_lsb /= 0.0001;
-	ina219_info[i].current_lsb = (float) CEILING(ina219_info[i].current_lsb);
+	ina219_info[i].current_lsb = (float) CEILING_POS(ina219_info[i].current_lsb);
 	ina219_info[i].current_lsb *= 0.0001;
 
 	ina219_info[i].power_lsb = ina219_info[i].current_lsb * 20;
@@ -203,13 +196,13 @@ void ina219_calibrate(const device_info_t *device_info, float r_shunt_value, flo
  * @return
  */
 const int16_t ina219_get_shunt_voltage_raw(const device_info_t *device_info) {
-	uint16_t voltage;
+	int16_t voltage;
 
 	i2c_setup(device_info);
 
-	voltage = i2c_read_reg_uint16_delayus(INA219_REG_SHUNTVOLTAGE, (uint32_t) INA219_READ_REG_DELAY_US);
+	voltage = (int16_t) i2c_read_reg_uint16_delayus(INA219_REG_SHUNTVOLTAGE, (uint32_t) INA219_READ_REG_DELAY_US);
 
-	return ((int16_t) voltage);
+	return voltage;
 }
 
 /**
@@ -405,7 +398,7 @@ const float ina219_get_shunt_current(const device_info_t *device_info) {
 
 	i2c_setup(device_info);
 
-	return ((float) i2c_read_reg_uint16(INA219_REG_CURRENT) * ina219_info[i].current_lsb);
+	return ((float)((int16_t)i2c_read_reg_uint16_delayus(INA219_REG_CURRENT, (uint32_t) INA219_READ_REG_DELAY_US)) * ina219_info[i].current_lsb);
 }
 
 /**
@@ -418,7 +411,7 @@ const float ina219_get_bus_power(const device_info_t *device_info) {
 
 	i2c_setup(device_info);
 
-	return ((float) i2c_read_reg_uint16(INA219_REG_POWER) * ina219_info[i].power_lsb);
+	return ((float)((int16_t)i2c_read_reg_uint16_delayus(INA219_REG_POWER, (uint32_t) INA219_READ_REG_DELAY_US)) * ina219_info[i].power_lsb);
 }
 
 /**
