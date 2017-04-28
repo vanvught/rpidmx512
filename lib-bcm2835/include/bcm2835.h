@@ -54,25 +54,33 @@
 #define LOW  0x0				///< LOW state
 
 // RPi Version 2
-#define RPI_V2_GPIO_P1_03      2  ///< Version 2, Pin P1-03, SDA when I2C in use
-#define RPI_V2_GPIO_P1_05      3  ///< Version 2, Pin P1-05, SCL when I2C in use
-#define RPI_V2_GPIO_P1_07      4  ///< Version 2, Pin P1-07
-#define RPI_V2_GPIO_P1_08     14  ///< Version 2, Pin P1-08, defaults to ALT function 0 PL011_TXD
-#define RPI_V2_GPIO_P1_10     15  ///< Version 2, Pin P1-10, defaults to ALT function 0 PL011_RXD
-#define RPI_V2_GPIO_P1_11     17  ///< Version 2, Pin P1-11
-#define RPI_V2_GPIO_P1_12     18  ///< Version 2, Pin P1-12
-#define RPI_V2_GPIO_P1_13     27  ///< Version 2, Pin P1-13
-#define RPI_V2_GPIO_P1_15     22  ///< Version 2, Pin P1-15
-#define RPI_V2_GPIO_P1_16     23  ///< Version 2, Pin P1-16
-#define RPI_V2_GPIO_P1_18     24  ///< Version 2, Pin P1-18
-#define RPI_V2_GPIO_P1_19     10  ///< Version 2, Pin P1-19, MOSI when SPI0 in use
-#define RPI_V2_GPIO_P1_21      9  ///< Version 2, Pin P1-21, MISO when SPI0 in use
-#define RPI_V2_GPIO_P1_22     25  ///< Version 2, Pin P1-22
-#define RPI_V2_GPIO_P1_23     11  ///< Version 2, Pin P1-23, CLK when SPI0 in use
-#define RPI_V2_GPIO_P1_24      8  ///< Version 2, Pin P1-24, CE0 when SPI0 in use
-#define RPI_V2_GPIO_P1_26      7  ///< Version 2, Pin P1-26, CE1 when SPI0 in use
+#define RPI_V2_GPIO_P1_03	2	///< Version 2, Pin P1-03, SDA when I2C in use
+#define RPI_V2_GPIO_P1_05	3	///< Version 2, Pin P1-05, SCL when I2C in use
+#define RPI_V2_GPIO_P1_07	4	///< Version 2, Pin P1-07
+#define RPI_V2_GPIO_P1_08	14  ///< Version 2, Pin P1-08, defaults to ALT function 0 PL011_TXD
+#define RPI_V2_GPIO_P1_10	15  ///< Version 2, Pin P1-10, defaults to ALT function 0 PL011_RXD
+#define RPI_V2_GPIO_P1_11	17  ///< Version 2, Pin P1-11, CE1 when SPI1 in use
+#define RPI_V2_GPIO_P1_12	18  ///< Version 2, Pin P1-12, CE0 when SPI1 in use
+#define RPI_V2_GPIO_P1_13	27  ///< Version 2, Pin P1-13
+#define RPI_V2_GPIO_P1_15	22  ///< Version 2, Pin P1-15
+#define RPI_V2_GPIO_P1_16	23  ///< Version 2, Pin P1-16
+#define RPI_V2_GPIO_P1_18	24  ///< Version 2, Pin P1-18
+#define RPI_V2_GPIO_P1_19	10  ///< Version 2, Pin P1-19, MOSI when SPI0 in use
+#define RPI_V2_GPIO_P1_21	9	///< Version 2, Pin P1-21, MISO when SPI0 in use
+#define RPI_V2_GPIO_P1_22	25	///< Version 2, Pin P1-22
+#define RPI_V2_GPIO_P1_23	11  ///< Version 2, Pin P1-23, CLK when SPI0 in use
+#define RPI_V2_GPIO_P1_24	8	///< Version 2, Pin P1-24, CE0 when SPI0 in use
+#define RPI_V2_GPIO_P1_26	7	///< Version 2, Pin P1-26, CE1 when SPI0 in use
+#define RPI_V2_GPIO_P1_29	5	///< Version 2, Pin P1-29,
+#define RPI_V2_GPIO_P1_31	6	///< Version 2, Pin P1-31,
+#define RPI_V2_GPIO_P1_32	12	///< Version 2, Pin P1-32,
+#define RPI_V2_GPIO_P1_33	13	///< Version 2, Pin P1-33,
+#define RPI_V2_GPIO_P1_35	19	///< Version 2, Pin P1-35, MISO when SPI1 in use
+#define RPI_V2_GPIO_P1_36	16	///< Version 2, Pin P1-36, CE2 when SPI1 in use
+#define RPI_V2_GPIO_P1_37	26	///< Version 2, Pin P1-37,
+#define RPI_V2_GPIO_P1_38	20	///< Version 2, Pin P1-38, MOSI when SPI1 in use
+#define RPI_V2_GPIO_P1_40	21	///< Version 2, Pin P1-40, CLK when SPI1 in use
 
-// System Timer
 #define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))	///< System Timer Match 0. DO NOT USE; is used by GPU.
 #define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))	///< System Timer Match 1
 #define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
@@ -87,7 +95,7 @@
 #define	BCM2835_DMA5_BASE		(BCM2835_PERI_BASE + 0x007500)	///<
 #define	BCM2835_DMA6_BASE		(BCM2835_PERI_BASE + 0x007600)	///<
 #define BCM2835_IRQ_BASE		(BCM2835_PERI_BASE + 0x00B200)	///<
-#define BCM2835_MAILBOX_BASE 	(BCM2835_PERI_BASE + 0x00B880)	///<
+#define BCM2835_MAILBOX_BASE	(BCM2835_PERI_BASE + 0x00B880)	///<
 #define BCM2835_PM_WDOG_BASE	(BCM2835_PERI_BASE + 0x100000)	///<
 #define BCM2835_HW_RNG_BASE		(BCM2835_PERI_BASE + 0x104000)	///<
 #define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)	///<

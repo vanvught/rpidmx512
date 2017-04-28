@@ -79,10 +79,10 @@ static uint32_t speed;
 void bcm2835_aux_spi_begin(void) {
 	dmb();
 
-	bcm2835_gpio_fsel(16, BCM2835_GPIO_FSEL_ALT4);	// SPI1_CE2_N
-	bcm2835_gpio_fsel(19, BCM2835_GPIO_FSEL_ALT4);	// SPI1_MISO
-	bcm2835_gpio_fsel(20, BCM2835_GPIO_FSEL_ALT4);	// SPI1_MOSI
-	bcm2835_gpio_fsel(21, BCM2835_GPIO_FSEL_ALT4);	// SPI1_SCLK
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_36, BCM2835_GPIO_FSEL_ALT4);	// SPI1_CE2_N
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_35, BCM2835_GPIO_FSEL_ALT4);	// SPI1_MISO
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_38, BCM2835_GPIO_FSEL_ALT4);	// SPI1_MOSI
+	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_40, BCM2835_GPIO_FSEL_ALT4);	// SPI1_SCLK
 
 	bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(1000000));	// Default 1MHz SPI
 
