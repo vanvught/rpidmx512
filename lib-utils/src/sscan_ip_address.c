@@ -74,7 +74,7 @@ const int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_addre
 				return 0;
 			}
 
-			if (!isdigit((int )*b)) {
+			if (isdigit((int) *b) == 0) {
 				return 0;
 			}
 
@@ -83,7 +83,7 @@ const int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_addre
 			b++;
 		}
 
-		cast32.u8[i] = k;
+		cast32.u8[i] = (uint8_t) k;
 		b++;
 
 	}
@@ -96,7 +96,7 @@ const int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_addre
 			return 0;
 		}
 
-		if (!isdigit((int )*b)) {
+		if (isdigit((int) *b) == 0) {
 			return 0;
 		}
 
@@ -105,7 +105,7 @@ const int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_addre
 		b++;
 	}
 
-	cast32.u8[i] = k;
+	cast32.u8[i] = (uint8_t) k;
 
 	*ip_address = cast32.u32;
 

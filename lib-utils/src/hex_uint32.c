@@ -2,7 +2,7 @@
  * @file hex_uint32.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,11 +39,11 @@ const uint32_t hex_uint32(const char *s) {
 	while (*s != '\0') {
 		char d = *s;
 
-		if (!isxdigit((int) d)) {
+		if (isxdigit((int) d) == 0) {
 			break;
 		}
 
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t)'a' + (uint8_t)10 : (uint8_t)(d - '0');
+		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
 		ret = (ret << 4) | nibble;
 		s++;
 	}

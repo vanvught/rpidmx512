@@ -62,7 +62,7 @@ const int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 	k = 0;
 
 	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
-		if (!isdigit((int )*b)) {
+		if (isdigit((int) *b) == 0) {
 			return 1;
 		}
 		k = k * 10 + (int32_t) *b - (int32_t) '0';

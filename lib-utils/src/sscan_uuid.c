@@ -76,8 +76,8 @@ const int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *le
 				*len = (uint8_t)k;
 				return 1;
 			}
-		} else if (!isxdigit(ch)) {
-			*len = (uint8_t)k;
+		} else if (isxdigit((int) ch) == 0) {
+			*len = (uint8_t) k;
 			return 1;
 		}
 		*v++ = *b++;
