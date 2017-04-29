@@ -24,9 +24,12 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "bcm2835.h"
 #include "bcm2835_i2c.h"
+
+#include "i2c.h"
 
 #include "bw.h"
 #include "bw_ui.h"
@@ -43,7 +46,7 @@ static uint32_t i2c_write_us = (uint32_t) 0;
  * @param buffer
  * @param size
  */
-inline static void i2c_write(const char *buffer, const uint32_t size) {
+inline static void _i2c_write(const char *buffer, const uint32_t size) {
 	const uint32_t elapsed = BCM2835_ST->CLO - i2c_write_us;
 
 	if (elapsed < BW_UI_I2C_BYTE_WAIT_US) {
@@ -72,7 +75,7 @@ inline static void ui_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-void bw_i2c_ui_start(device_info_t *device_info) {
+const bool bw_i2c_ui_start(device_info_t *device_info) {
 	char cmd[2];
 
 	bcm2835_i2c_begin();
@@ -83,17 +86,23 @@ void bw_i2c_ui_start(device_info_t *device_info) {
 
 	ui_i2c_setup(device_info);
 
+	if (!i2c_is_connected(device_info->slave_address >> 1)) {
+		return false;
+	}
+
 	cmd[0] = (char) BW_PORT_WRITE_ADC_SET_CHANNEL0;
 	cmd[1] = (char) 0x46;
 
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 
 	cmd[0] = (char) BW_PORT_WRITE_ADC_SET_CHANNELS_READ;
 	cmd[1] = (char) 1;
 
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 
 	i2c_write_us = BCM2835_ST->CLO;
+
+	return true;
 }
 
 /**
@@ -108,7 +117,7 @@ void bw_i2c_ui_set_cursor(const device_info_t *device_info, const uint8_t line, 
 	cmd[1] = (char) (((line & 0x03) << 5) | (pos & 0x1f));
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -132,7 +141,7 @@ void bw_i2c_ui_text(const device_info_t *device_info, const char *text, uint8_t 
 	}
 
 	ui_i2c_setup(device_info);
-	i2c_write(data, length + 1);
+	_i2c_write(data, length + 1);
 }
 
 /**
@@ -166,7 +175,7 @@ void bw_i2c_ui_cls(const device_info_t *device_info) {
 	const char cmd[] = { (char) BW_PORT_WRITE_CLEAR_SCREEN, (char) ' ' };
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -179,7 +188,7 @@ void bw_i2c_ui_set_contrast(const device_info_t *device_info, const uint8_t valu
 	cmd[1] = (char) value;
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -192,7 +201,7 @@ void bw_i2c_ui_set_backlight(const device_info_t *device_info, const uint8_t val
 	cmd[1] = (char) value;
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -205,7 +214,7 @@ void bw_i2c_ui_set_backlight_temp(const device_info_t *device_info, const uint8_
 	cmd[1] = (char) value;
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 /**
@@ -220,7 +229,7 @@ void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@u
 
 	if (length == (uint8_t) 0) {
 		ui_i2c_setup(device_info);
-		i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+		_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
 
 	}
@@ -238,7 +247,7 @@ void bw_i2c_ui_set_startup_message_line_2(const device_info_t *device_info, /*@u
 
 	if (length == (uint8_t) 0) {
 		ui_i2c_setup(device_info);
-		i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+		_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
 
 	}
@@ -253,7 +262,7 @@ void bw_i2c_ui_get_backlight(const device_info_t *device_info, uint8_t *value) {
 	const char cmd[] = { (char) BW_PORT_READ_CURRENT_BACKLIGHT };
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	(void) bcm2835_i2c_read((char *) value, 1);
 }
 
@@ -266,7 +275,7 @@ void bw_i2c_ui_get_contrast(const device_info_t *device_info, uint8_t *value) {
 	const char cmd[] = { (char) BW_PORT_READ_CURRENT_CONTRAST };
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	(void) bcm2835_i2c_read((char *) value, 1);
 }
 
@@ -278,7 +287,7 @@ void bw_i2c_ui_reinit(const device_info_t *device_info) {
 	char cmd[] = { (char) BW_PORT_WRITE_REINIT_LCD, (char) ' ' };
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
 // UI specific
@@ -300,7 +309,7 @@ char bw_i2c_ui_read_button(const device_info_t *device_info, const BwUiButtons b
 	cmd[1] = (char) 0xFF;
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	udelay(BW_UI_I2C_DELAY_WRITE_READ_US);
 	(void) bcm2835_i2c_read(buf, sizeof(buf) / sizeof(buf[0]));
 
@@ -317,7 +326,7 @@ char bw_i2c_ui_read_button_last(const device_info_t *device_info) {
 	char buf[1];
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	udelay(BW_UI_I2C_DELAY_WRITE_READ_US);
 	(void) bcm2835_i2c_read(buf, sizeof(buf) / sizeof(buf[0]));
 
@@ -330,7 +339,7 @@ inline static const uint16_t read_adc(const device_info_t *device_info, const ui
 	char buf[2];
 
 	ui_i2c_setup(device_info);
-	i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	udelay(BW_UI_I2C_DELAY_WRITE_READ_US);
 	(void) bcm2835_i2c_read(buf, sizeof(buf) / sizeof(buf[0]));
 

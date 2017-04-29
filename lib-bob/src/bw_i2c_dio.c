@@ -28,6 +28,8 @@
 #include "bcm2835.h"
 #include "bcm2835_i2c.h"
 
+#include "i2c.h"
+
 #include "bw.h"
 #include "bw_dio.h"
 
@@ -51,12 +53,20 @@ inline static void dio_i2c_setup(const device_info_t *device_info) {
  * @param device_info
  * @return
  */
-void bw_i2c_dio_start(device_info_t *device_info) {
+const bool bw_i2c_dio_start(device_info_t *device_info) {
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
 	}
+
+	dio_i2c_setup(device_info);
+
+	if (!i2c_is_connected(device_info->slave_address >> 1)) {
+		return false;
+	}
+
+	return true;
 }
 
 /**

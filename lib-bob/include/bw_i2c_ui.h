@@ -27,12 +27,13 @@
 #define BW_I2C_UI_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "bw_ui.h"
 
 #include "device_info.h"
 
-extern void bw_i2c_ui_start (device_info_t *);
+extern const bool bw_i2c_ui_start(device_info_t *);
 extern void bw_i2c_ui_reinit(const device_info_t *);
 
 extern void bw_i2c_ui_cls(const device_info_t *);

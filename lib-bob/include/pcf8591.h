@@ -41,7 +41,7 @@
 #include "device_info.h"
 
 extern const bool pcf8591_start(device_info_t *);
-extern void pcf8591_dac_write(device_info_t *, const uint8_t);
-extern const uint8_t pcf8591_adc_read(device_info_t *, const uint8_t);
+extern void pcf8591_dac_write(const device_info_t *, const uint8_t);
+extern const uint8_t pcf8591_adc_read(const device_info_t *, const uint8_t);
 
 #endif /* PCF8591_H_ */
