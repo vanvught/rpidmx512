@@ -33,11 +33,8 @@ typedef struct _device_info {
 	uint8_t chip_select;		///<
 	uint8_t slave_address;		///<
 	uint32_t speed_hz;			///<
+	uint16_t internal_clk_div;	///<
 	bool fast_mode;				///< I2C Fast Mode 400KHz
-	struct _internal {
-		uint8_t adc_channel;	///<
-		uint16_t clk_div;		///<
-	} internal;
 } device_info_t;
 
 #endif /* DEVICE_INFO_H_ */

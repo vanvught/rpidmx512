@@ -74,7 +74,7 @@ const bool pcf8591_start(device_info_t *device_info) {
  * @param
  * @param data
  */
-void pcf8591_dac_write(const device_info_t *device_info, const uint8_t data) {
+void pcf8591_dac_write(device_info_t *device_info, const uint8_t data) {
 	char cmd[2] = { (char) PCF8591_DAC_ENABLE, (char) 0x00 };
 
 	cmd[1] = (char) data;
@@ -90,7 +90,7 @@ void pcf8591_dac_write(const device_info_t *device_info, const uint8_t data) {
  * @param channel
  * @return
  */
-const uint8_t pcf8591_adc_read(const device_info_t *device_info, const uint8_t channel) {
+const uint8_t pcf8591_adc_read(device_info_t *device_info, const uint8_t channel) {
 	char data = (uint8_t) channel;
 
 	i2c_setup(device_info);

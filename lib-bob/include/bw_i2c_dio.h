@@ -27,11 +27,10 @@
 #define BW_I2C_DIO_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "device_info.h"
 
-extern const bool bw_i2c_dio_start(device_info_t *);
+extern void bw_i2c_dio_start(device_info_t *);
 extern void bw_i2c_dio_fsel_mask(const device_info_t *, const uint8_t);
 extern void bw_i2c_dio_output(const device_info_t *, const uint8_t);
 
