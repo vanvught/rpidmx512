@@ -88,7 +88,7 @@ static void add_connected_device(const char *line) {
 #endif
 	if (devices_connected.elements_count < (uint16_t)(sizeof(devices_connected.device_entry) / sizeof(devices_connected.device_entry[0]))) {
 
-		char device_name[65];
+		char device_name[65] ALIGNED;
 		uint8_t len = sizeof(device_name) - 1;
 		char chip_select = (char) BCM2835_SPI_CS_NONE;
 		uint8_t slave_address = 0;
@@ -355,7 +355,7 @@ const char *dmx_devices_get_label(const uint16_t sub_device) {
  */
 void dmx_devices_set_label(const uint16_t sub_device, const uint8_t *label, uint8_t label_length) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		(void *)_memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label, label, label_length);
+		(void *) memcpy(devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label, label, label_length);
 		devices_connected.device_entry[sub_device - 1].dmx_device_info.rdm_sub_devices_info.device_label_length = label_length;
 	}
 }
@@ -467,7 +467,7 @@ const struct _rdm_sub_devices_info *dmx_devices_info_get(const uint16_t sub_devi
  */
 void dmx_devices_info_set(const uint16_t sub_device, const struct _rdm_sub_devices_info *sub_devices_info) {
 	if ((sub_device != 0) || (sub_device < devices_connected.elements_count)) {
-		(void *)_memcpy(&(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
+		(void *) memcpy(&(devices_connected.device_entry[sub_device - 1].dmx_device_info).rdm_sub_devices_info, sub_devices_info, sizeof(struct _rdm_sub_devices_info));
 	}
 }
 

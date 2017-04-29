@@ -42,9 +42,7 @@ extern "C" {
 #endif
 
 extern void midi_send_init(void);
-
 extern void midi_send_tc(const struct _midi_send_tc *);
-
 extern void midi_send_raw(const uint8_t *, const int16_t);
 
 #ifdef __cplusplus

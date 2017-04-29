@@ -53,10 +53,10 @@ struct _rdm_sensor_value {
 	int16_t recorded;
 };
 
-#define RDM_SENSOR_TEMPERATURE_RANGE_MIN	-32768		///<
-#define RDM_SENSOR_TEMPERATURE_RANGE_MAX	+32767		///<
-#define RDM_SENSOR_TEMPERATURE_NORMAL_MIN	-32768		///<
-#define RDM_SENSOR_TEMPERATURE_NORMAL_MAX	+32767		///<
+#define RDM_SENSOR_RANGE_MIN	-32768		///<
+#define RDM_SENSOR_RANGE_MAX	+32767		///<
+#define RDM_SENSOR_NORMAL_MIN	-32768		///<
+#define RDM_SENSOR_NORMAL_MAX	+32767		///<
 
 #define RDM_SENSOR_TEMPERATURE_ABS_ZERO		-273		///<
 
@@ -65,9 +65,9 @@ struct _rdm_sensor_value {
 
 extern const uint8_t rdm_sensors_get_count(void);
 extern void rdm_sensors_init(void);
-extern /*@shared@*/const struct _rdm_sensor_defintion /*@null@*/*rdm_sensors_get_defintion(uint8_t);
-extern /*@shared@*/struct _rdm_sensor_value /*@null@*/*rdm_sensors_get_value(uint8_t);
-extern void rdm_sensors_set_value(uint8_t);
-extern void rmd_sensors_record(uint8_t);
+extern /*@shared@*//*@null@*/const struct _rdm_sensor_defintion *rdm_sensors_get_defintion(const uint8_t);
+extern /*@shared@*/struct _rdm_sensor_value /*@null@*/*rdm_sensors_get_value(const uint8_t);
+extern void rdm_sensors_set_value(const uint8_t);
+extern void rmd_sensors_record(const uint8_t);
 
 #endif /* RDM_SENSOR_H_ */

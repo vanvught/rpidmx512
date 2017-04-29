@@ -89,9 +89,9 @@ static void bw_spi_dio_init(dmx_device_info_t *dmx_device_info, const uint8_t *d
 	bw_spi_dio_fsel_mask(&dmx_device_info->device_info, 0x7F);
 	bw_spi_dio_output(&dmx_device_info->device_info, (uint8_t) 0);
 
-	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *) memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *) memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 

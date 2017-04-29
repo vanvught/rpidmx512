@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )								///<
 
@@ -45,31 +46,43 @@
 #  define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
 #endif
 
-#define isdigit(c)		((c) >= (int)'0' && (c) <= (int)'9' ? 1 : 0)	///<
-#define isxdigit(c)		(isdigit(c) || ((c) | 32) - 'a' < 6)			///<
-#define isprint(c)		(((c) >= (int)' ' && (c) <= (int)'~') ? 1 : 0)	///<
-#define isupper(c)		((c) >= (int)'A' && (c) <= (int)'Z')			///<
-#define islower(c)		((c) >= (int)'a' && (c) <= (int)'z')			///<
-#define isalpha(c)		(isupper(c) || islower(c))						///<
-#define tolower(c)		(isupper(c) ? ((c) + 32) : (c))					///<
-#define toupper(c)		(islower(c) ? ((c) - 32) : (c))					///<
-
-#define memcpy			_memcpy
-#define memcmp			_memcmp
-#define memset			_memset
-#define strlen			_strlen
-#define strcpy			_strncpy
-#define strncpy			_strncpy
-#define strcmp			_strcmp
-#define strncmp			_strncmp
-#define strcasecmp		_strcasecmp
-#define strncasecmp		_strncasecmp
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*@unused@*/inline static int _memcmp(const void *s1, const void *s2, size_t n) {
+/*@unused@*/inline static int isdigit(const int c) {
+	return (c >= (int) '0' && c <= (int) '9') ? 1 : 0;
+}
+
+/*@unused@*/inline static int isxdigit(const int c) {
+	return ((isdigit(c) != 0) || (((unsigned) c | 32) - (int) 'a' < 6)) ? 1 : 0;
+}
+
+/*@unused@*/inline static int isprint(const int c) {
+	return ((c >= (int) ' ' && c <= (int) '~')) ? 1 : 0;
+}
+
+/*@unused@*/inline static int isupper(const int c) {
+	return (c >= (int) 'A' && c <= (int) 'Z') ? 1 : 0;
+}
+
+/*@unused@*/inline static int islower(const int c) {
+	return (c >= (int) 'a' && c <= (int) 'z') ? 1 : 0;
+}
+
+/*@unused@*/inline static int isalpha(const int c) {
+	return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0;
+}
+
+/*@unused@*/inline static int tolower(const int c) {
+	return ((isupper(c) != 0) ? (c + 32) : c);
+}
+
+/*@unused@*/inline static int toupper(const int c) {
+	return ((islower(c) != 0) ? (c - 32) : c);
+}
+
+/*@unused@*/inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
 	unsigned char *t1, *t2;
 
@@ -87,7 +100,7 @@ extern "C" {
 	return 0;
 }
 
-/*@unused@*/inline static void *_memcpy(void *dest, const void *src, size_t n) {
+/*@unused@*/inline static void *memcpy(/*@only@*/void *dest, const void *src, size_t n) {
 	char *dp = (char *)dest;
 	const char *sp = (const char *)src;
 
@@ -98,7 +111,26 @@ extern "C" {
 	return dest;
 }
 
-/*@unused@*/inline static void *_memset (void *dest, int c, size_t n) {
+/*@unused@*/inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
+	char *dp = (char *) dst;
+	const char *sp = (const char *) src;
+
+	if (dp < sp) {
+		while (n-- != (size_t) 0) {
+			*dp++ = *sp++;
+		}
+	} else {
+		sp += n;
+		dp += n;
+		while (n-- != (size_t) 0) {
+			*--dp = *--sp;
+		}
+	}
+
+	return dst;
+}
+
+/*@unused@*/inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
 	char *dp = (char *)dest;
 
 	while (n-- != (size_t) 0) {
@@ -108,7 +140,7 @@ extern "C" {
 	return dest;
 }
 
-/*@unused@*/inline static size_t _strlen(const char *s) {
+/*@unused@*/inline static size_t strlen(const char *s) {
 	const char *p = s;
 
 	while (*s != (char)0) {
@@ -118,15 +150,15 @@ extern "C" {
 	return (size_t) (s - p);
 }
 
-/*@unused@*/inline static char *_strcpy(char *s1, const char *s2) {
+/*@unused@*/inline static char *strcpy(/*@only@*/char *s1, const char *s2) {
 	char *s = s1;
 
 	while ((*s++ = *s2++) != '\0')
 		;
-	return (s1);
+	return s1;
 }
 
-/*@unused@*/inline static char *_strncpy(char *s1, const char *s2, size_t n) {
+/*@unused@*/inline static char *strncpy(/*@only@*/char *s1, const char *s2, size_t n) {
 	char *s = s1;
 
 	while (n > 0 && *s2 != '\0') {
@@ -142,7 +174,7 @@ extern "C" {
 	return s1;
 }
 
-/*@unused@*/inline static int _strcmp(const char *s1, const char *s2) {
+/*@unused@*/inline static int strcmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -155,7 +187,7 @@ extern "C" {
 	return (int) (*p1 - *p2);
 }
 
-/*@unused@*/inline static int _strncmp(const char *s1, const char *s2, size_t n) {
+/*@unused@*/inline static int strncmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -170,26 +202,26 @@ extern "C" {
 	return 0;
 }
 
-/*@unused@*/inline static int _strcasecmp(const char *s1, const char *s2) {
+/*@unused@*/inline static int strcasecmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
-	for (; tolower(*p1) == tolower(*p2); p1++, p2++) {
+	for (; tolower((int) *p1) == tolower((int) *p2); p1++, p2++) {
 		if (*p1 == (unsigned char) '\0') {
 			return 0;
 		}
 	}
 
-	return (int) (tolower(*p1) - tolower(*p2));
+	return (int) (tolower((int) *p1) - tolower((int) *p2));
 }
 
-/*@unused@*/inline static int _strncasecmp(const char *s1, const char *s2, size_t n) {
+/*@unused@*/inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
 	for (; n > 0; p1++, p2++, --n) {
-		if (tolower(*p1) != tolower(*p2)) {
-			return (int) (tolower(*p1) - tolower(*p2));
+		if (tolower((int) *p1) != tolower((int) *p2)) {
+			return (int) (tolower((int) *p1) - tolower((int) *p2));
 		} else if (*p1 == (unsigned char) '\0') {
 			return 0;
 		}

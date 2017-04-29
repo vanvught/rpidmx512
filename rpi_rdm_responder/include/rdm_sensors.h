@@ -1,8 +1,8 @@
 /**
- * @file device_info.h
+ * @file rdm_sensors.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_INFO_H_
-#define DEVICE_INFO_H_
+#ifndef RDM_SENSORS_H_
+#define RDM_SENSORS_H_
 
-#include <stdint.h>
 #include <stdbool.h>
 
-typedef struct _device_info {
-	uint8_t chip_select;		///<
-	uint8_t slave_address;		///<
-	uint32_t speed_hz;			///<
-	bool fast_mode;				///< I2C Fast Mode 400KHz
-	struct _internal {
-		uint8_t adc_channel;	///<
-		uint16_t clk_div;		///<
-	} internal;
-} device_info_t;
+#include "rdm_sensor.h"
 
-#endif /* DEVICE_INFO_H_ */
+extern const uint8_t rdm_sensors_get_count(void);
+extern const bool rdm_sensors_add(const struct _rdm_sensor_defintion *, const void *);
+
+#endif /* RDM_SENSORS_H_ */

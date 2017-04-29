@@ -40,9 +40,9 @@ struct _rdm_device_info_data {
 
 extern void rdm_device_info_init(void);
 extern/*@shared@*/const uint8_t * rdm_device_info_get_uuid(void);
-extern void rdm_device_info_get_label(const uint16_t, struct _rdm_device_info_data *);
-extern void rdm_device_info_get_manufacturer_name(struct _rdm_device_info_data *);
-extern void rdm_device_info_get_manufacturer_id(struct _rdm_device_info_data *);
+extern void rdm_device_info_get_label(const uint16_t, /*@out@*/struct _rdm_device_info_data *);
+extern void rdm_device_info_get_manufacturer_name(/*@out@*/struct _rdm_device_info_data *);
+extern void rdm_device_info_get_manufacturer_id(/*@out@*/struct _rdm_device_info_data *);
 extern void rdm_device_info_get_sn(struct _rdm_device_info_data *);
 extern const uint8_t rdm_device_info_get_ext_mon_level(void);
 
@@ -63,5 +63,8 @@ extern const uint8_t rdm_device_info_get_supported_language_length(void);
 extern void rdm_device_info_set_dmx_start_address(const uint16_t, const uint16_t);
 extern void rdm_device_info_set_label(const uint16_t, const uint8_t *, uint8_t);
 extern void rdm_device_info_set_personality_current(const uint16_t, const uint8_t);
+
+extern const uint16_t rdm_device_info_get_product_category(void);
+extern const uint16_t rdm_device_info_get_product_detail(void);
 
 #endif /* RDM_DEVICE_INFO_H_ */

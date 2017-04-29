@@ -51,7 +51,7 @@ static void mcp4822(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data
 	uint16_t dmx_data_index;
 	uint16_t data;
 
-	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal.clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
@@ -76,7 +76,7 @@ INITIALIZER(devices, mcp4822)
  * @param dmx_device_info
  */
 static void mcp4822_zero(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
-	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal.clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
@@ -100,19 +100,19 @@ static void mcp4822_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx
 		dmx_device_info->device_info.speed_hz = (uint32_t) MCP48X2_SPI_SPEED_MAX_HZ;
 	}
 
-	dmx_device_info->device_info.internal_clk_div = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / dmx_device_info->device_info.speed_hz);
+	dmx_device_info->device_info.internal.clk_div = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / dmx_device_info->device_info.speed_hz);
 
 	bcm2835_spi_begin();
-	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal_clk_div);
+	bcm2835_spi_setClockDivider(dmx_device_info->device_info.internal.clk_div);
 	bcm2835_spi_chipSelect(dmx_device_info->device_info.chip_select);
 	bcm2835_spi_setChipSelectPolarity(dmx_device_info->device_info.chip_select, LOW);
 
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_A);
 	bcm2835_spi_write(MCP4822_DATA(0) | 0x3000 | MCP48X2_WRITE_DAC_B);
 
-	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *) memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *) memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 

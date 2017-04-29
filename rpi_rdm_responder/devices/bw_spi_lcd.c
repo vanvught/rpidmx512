@@ -133,13 +133,13 @@ INITIALIZER(devices_zero, bw_spi_lcd_zero)
 static void bw_spi_lcd_init(dmx_device_info_t *dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &(dmx_device_info)->rdm_sub_devices_info;
 
-	(void)bw_spi_lcd_start(&(dmx_device_info->device_info));
+	(void) bw_spi_lcd_start(&(dmx_device_info->device_info));
 	bw_spi_lcd_cls(&(dmx_device_info->device_info));
 	display_channels(&(dmx_device_info->device_info), dmx_device_info->dmx_start_address);
 
-	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *) memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *) memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 

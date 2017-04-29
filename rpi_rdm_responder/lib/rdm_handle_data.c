@@ -65,14 +65,14 @@ void rdm_handle_data(uint8_t *rdm_data) {
 
 	monitor_line(MONITOR_LINE_RDM_CC, "Command class [%.2X]:%d, param_id [%.2x%.2x]:%d", command_class, command_class, rdm_cmd->param_id[0], rdm_cmd->param_id[1], param_id);
 
-	if (_memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0) {
+	if (memcmp(rdm_cmd->destination_uid, UID_ALL, RDM_UID_SIZE) == 0) {
 		rdm_packet_is_broadcast = true;
 	}
 
-	if ((_memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (_memcmp(&rdm_cmd->destination_uid[2], UID_ALL, 4) == 0)) {
+	if ((memcmp(rdm_cmd->destination_uid, uid_device, 2) == 0) && (memcmp(&rdm_cmd->destination_uid[2], UID_ALL, 4) == 0)) {
 		rdm_packet_is_vendorcast = true;
 		rdm_packet_is_for_me = true;
-	} else if (_memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0) {
+	} else if (memcmp(rdm_cmd->destination_uid, uid_device, RDM_UID_SIZE) == 0) {
 		rdm_packet_is_for_me = true;
 	}
 
@@ -84,7 +84,7 @@ void rdm_handle_data(uint8_t *rdm_data) {
 
 			if (!rdm_muted) {
 
-				if ((_memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (_memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
+				if ((memcmp(rdm_cmd->param_data, uid_device, RDM_UID_SIZE) <= 0) && (memcmp(uid_device, rdm_cmd->param_data + 6, RDM_UID_SIZE) <= 0)) {
 					monitor_line(MONITOR_LINE_STATUS, "E120_DISC_UNIQUE_BRANCH");
 
 					struct _rdm_discovery_msg *p = (struct _rdm_discovery_msg *) (rdm_data);

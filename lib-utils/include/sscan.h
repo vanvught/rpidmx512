@@ -38,6 +38,7 @@ extern const int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *)
 extern const int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
 extern const int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
 extern const int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+extern const int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
 
 #ifdef __cplusplus
 }

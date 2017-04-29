@@ -43,6 +43,7 @@ static uint8_t *rdm_handlers_rdm_data;
 //static void rdm_get_queued_message(void);
 static void rdm_get_supported_parameters(uint16_t);
 static void rdm_get_device_info(uint16_t);
+static void rdm_get_product_detail_id_list(uint16_t);
 static void rdm_get_device_model_description(uint16_t);
 static void rdm_get_manufacturer_label(uint16_t);
 static void rdm_get_device_label(uint16_t);
@@ -84,6 +85,7 @@ static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))
 //		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, true },
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, false},
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, false},
+		{E120_PRODUCT_DETAIL_ID_LIST, 	   &rdm_get_product_detail_id_list,     NULL,						 0, true },
 		{E120_DEVICE_MODEL_DESCRIPTION,    &rdm_get_device_model_description,   NULL,                        0, true },
 		{E120_MANUFACTURER_LABEL,          &rdm_get_manufacturer_label,         NULL,                        0, true },
 		{E120_DEVICE_LABEL,                &rdm_get_device_label,               &rdm_set_device_label,       0, true },
@@ -108,6 +110,7 @@ static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))
 static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[]__attribute__((aligned(4))) = {
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, true },
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, true },
+		{E120_PRODUCT_DETAIL_ID_LIST, 	   &rdm_get_product_detail_id_list,     NULL,						 0, true },
 		{E120_SOFTWARE_VERSION_LABEL,      &rdm_get_software_version_label,     NULL,                        0, true },
 		{E120_DMX_PERSONALITY,		       &rdm_get_personality,                &rdm_set_personality,        0, true },
 		{E120_DMX_PERSONALITY_DESCRIPTION, &rdm_get_personality_description,    NULL,                        1, true },
@@ -200,7 +203,23 @@ static void rdm_get_device_info(uint16_t sub_device) {
 	rdm_response->param_data_length = sizeof(struct _rdm_device_info);
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + rdm_response->param_data_length;
 
-	_memcpy(device_info, rdm_device_info, sizeof(struct _rdm_device_info));
+	(void *) memcpy(device_info, rdm_device_info, sizeof(struct _rdm_device_info));
+
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
+ *
+ * @param sub_device
+ */
+static void rdm_get_product_detail_id_list(/*@unused@*/uint16_t sub_device) {
+	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
+	const uint16_t product_detail = rdm_device_info_get_product_detail();
+
+	rdm_response->param_data_length = 2;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+	rdm_response->param_data[0] = (uint8_t) (product_detail >> 8);
+	rdm_response->param_data[1] = (uint8_t) (product_detail & 0xFF);
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -361,14 +380,14 @@ static void rdm_get_boot_software_version_id(/*@unused@*/uint16_t sub_device) {
 		return;
 	}
 
-	boot_software_version_id = hardware_firmware_get_revision();
+	boot_software_version_id = (uint32_t) hardware_firmware_get_revision();
 
 	rdm_command->param_data_length = RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
 	rdm_command->message_length = RDM_MESSAGE_MINIMUM_SIZE + RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH;
-	rdm_command->param_data[0] = (uint8_t)(boot_software_version_id >> 24);
-	rdm_command->param_data[1] = (uint8_t)(boot_software_version_id >> 16);
-	rdm_command->param_data[2] = (uint8_t)(boot_software_version_id >> 8);
-	rdm_command->param_data[3] = (uint8_t)boot_software_version_id;
+	rdm_command->param_data[0] = (uint8_t) (boot_software_version_id >> 24);
+	rdm_command->param_data[1] = (uint8_t) (boot_software_version_id >> 16);
+	rdm_command->param_data[2] = (uint8_t) (boot_software_version_id >> 8);
+	rdm_command->param_data[3] = (uint8_t) boot_software_version_id;
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -600,7 +619,8 @@ static void rdm_get_sensor_value(uint16_t sub_device) {
 
 	const uint8_t sensor_requested = rdm_command->param_data[0];
 
-	if ((sensor_requested != RDM_SENSORS_ALL) && (sensor_requested + 1 > rdm_sensors_get_count())) {
+
+	if ((sensor_requested == RDM_SENSORS_ALL) || (sensor_requested + 1 > rdm_sensors_get_count())) {
 		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -655,6 +675,24 @@ static void rdm_set_sensor_value(bool was_broadcast, uint16_t sub_device) {
 	}
 
 	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (sensor_requested == RDM_SENSORS_ALL) {
+		rdm_response->param_data_length = 9;
+		rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
+		rdm_response->param_data[0] = (uint8_t) 0;
+		rdm_response->param_data[1] = (uint8_t) 0;
+		rdm_response->param_data[2] = (uint8_t) 0;
+		rdm_response->param_data[3] = (uint8_t) 0;
+		rdm_response->param_data[4] = (uint8_t) 0;
+		rdm_response->param_data[5] = (uint8_t) 0;
+		rdm_response->param_data[6] = (uint8_t) 0;
+		rdm_response->param_data[7] = (uint8_t) 0;
+		rdm_response->param_data[8] = (uint8_t) 0;
+
+		rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+		return;
+	}
+
 	const struct _rdm_sensor_value *sensor_value = rdm_sensors_get_value(sensor_requested);
 
 	rdm_response->param_data_length = 9;

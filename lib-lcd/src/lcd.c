@@ -80,7 +80,6 @@ const bool lcd_detect(void) {
 	device_info.chip_select = (uint8_t) 0;
 	device_info.slave_address = (uint8_t) 0;
 	device_info.speed_hz = (uint32_t) 0;
-	device_info.internal_clk_div= (uint16_t) 0;
 
 	lcd_cls_f = _lcd_cls;
 	lcd_text_f = _lcd_text;

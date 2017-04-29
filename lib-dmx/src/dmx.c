@@ -144,7 +144,7 @@ static void dmx_set_send_data_length(uint16_t send_data_length) {
  * @param length
  */
 void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
-	(void *)_memcpy(dmx_data[0].data, data, (size_t)length);
+	(void *)memcpy(dmx_data[0].data, data, (size_t)length);
 
 	dmx_set_send_data_length(length);
 }

@@ -2,7 +2,7 @@
  * @file rdm_sub_devices.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,10 +45,8 @@ extern const uint16_t rdm_sub_devices_get_footprint(const uint16_t);
 extern const uint16_t rdm_sub_devices_get_dmx_start_address(const uint16_t);
 extern void rdm_sub_devices_set_dmx_start_address(const uint16_t, const uint16_t);
 
-//extern /*@shared@*//*@null@*/const char * rdm_sub_devices_get_label(const uint16_t);
 extern void rdm_sub_devices_get_label(const uint16_t, struct _rdm_device_info_data *);
 extern void rdm_sub_devices_set_label(const uint16_t, const uint8_t *, uint8_t);
-//extern const uint8_t rdm_sub_devices_get_label_length(const uint16_t);
 
 extern /*@shared@*//*@null@*/const struct _rdm_sub_devices_info *rdm_sub_devices_info_get(const uint16_t);
 extern void rdm_sub_devices_info_set(const uint16_t, const struct _rdm_sub_devices_info *);

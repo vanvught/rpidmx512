@@ -156,12 +156,12 @@ static void ws2811_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_
 
 	bcm2835_spi_begin();
 
-	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *) memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *) memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 
-	// WS2812 specific
+	// WS2811 specific
 	if ((dmx_device_info->pixel_count == (uint8_t)0) || ((uint16_t) dmx_device_info->pixel_count * (uint16_t) WS2811_SLOTS_PER_PIXEL > (uint16_t) DMX_UNIVERSE_SIZE)) {
 		dmx_device_info->pixel_count = (uint8_t) ((uint16_t) DMX_UNIVERSE_SIZE / (uint16_t) WS2811_SLOTS_PER_PIXEL);
 	}

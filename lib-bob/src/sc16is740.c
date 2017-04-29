@@ -42,7 +42,7 @@
  * @param device_info
  */
 inline static void sc16is740_setup(const device_info_t *device_info) {
-	bcm2835_spi_setClockDivider(device_info->internal_clk_div);
+	bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 	bcm2835_spi_chipSelect(device_info->chip_select);
 }
 
@@ -61,7 +61,7 @@ void sc16is740_start(device_info_t *device_info) {
 		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ;
 	}
 
-	device_info->internal_clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
+	device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 
 	sc16is740_set_format(device_info, 8, SERIAL_PARITY_NONE, 1);
 	sc16is740_set_baud(device_info, SC16IS7X0_DEFAULT_BAUDRATE);

@@ -87,13 +87,13 @@ INITIALIZER(devices_zero, mcp23s17_zero)
 static void mcp23s17_init(dmx_device_info_t * dmx_device_info, const uint8_t *dmx_data) {
 	struct _rdm_sub_devices_info *rdm_sub_devices_info =  &dmx_device_info->rdm_sub_devices_info;
 
-	(void)mcp23s17_start(&(dmx_device_info->device_info));
+	(void) mcp23s17_start(&(dmx_device_info->device_info));
 	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_IODIRA, 0x0000);
 	mcp23s17_reg_write(&dmx_device_info->device_info, MCP23S17_GPIOA, 0x0000);
 
-	(void *)_memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
+	(void *) memcpy(rdm_sub_devices_info, &sub_device_info, sizeof(struct _rdm_sub_devices_info));
 	dmx_device_info->rdm_sub_devices_info.dmx_start_address = dmx_device_info->dmx_start_address;
-	(void *)_memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
+	(void *) memcpy(dmx_device_info->rdm_sub_devices_info.device_label, device_label, device_label_len);
 	dmx_device_info->rdm_sub_devices_info.device_label_length = device_label_len;
 }
 
