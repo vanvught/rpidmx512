@@ -75,6 +75,27 @@ void i2c_write_uint16(const uint16_t data) {
  * @param reg
  * @param data
  */
+void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
+	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
+	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
+
+	BCM2835_BSC1->DLEN = (uint32_t) 2;
+	BCM2835_BSC1->FIFO = (uint32_t) reg;
+	BCM2835_BSC1->FIFO = (uint32_t) data;
+
+	BCM2835_BSC1->C = (uint32_t) (BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
+
+	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
+	}
+
+	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
+}
+
+/**
+ *
+ * @param reg
+ * @param data
+ */
 void i2c_write_reg_uint16(const uint8_t reg, const uint16_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
 	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);

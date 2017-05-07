@@ -41,7 +41,7 @@ struct device_details {
 		{ 0x45, "BW:3 FETs" },
 		{ 0x46, "BW:Temp" },
 		{ 0x47, "BW:Relay" },
-		{ 0x48, "PCF8591 {8-bit A/D and D/A} | BW:Motor" },
+		{ 0x48, "PCF8591 {8-bit A/D and D/A} | ADS1x1x {A/D} | BW:Motor" },
 		{ 0x4A, "BW:User Interface (UI)" },
 		{ 0x4B, "BW:7 segment" },
 		{ 0x4D, "BW:Pushbutton" },
@@ -53,7 +53,7 @@ struct device_details {
 		{ 0x70, "TCA9548A {I2C Multiplexer}"}
 		};
 
-const char *i2c_lookup_device(const uint8_t slave_address) {
+/*@observer@*/const char *i2c_lookup_device(const uint8_t slave_address) {
 	int i = 0;
 	int j = (int) (sizeof(devices) / sizeof(struct device_details));
 
