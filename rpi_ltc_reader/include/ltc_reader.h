@@ -50,6 +50,7 @@ typedef enum _timecode_types {
 struct _ltc_reader_output {
 	bool console_output;
 	bool lcd_output;
+	bool oled_output;
 	bool segment_output;
 	bool midi_output;
 	bool artnet_output;

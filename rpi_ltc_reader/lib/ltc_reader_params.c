@@ -33,12 +33,14 @@
 static const char PARAMS_FILE_NAME[] ALIGNED = "ltc.txt";				///< Parameters file name
 static const char PARAMS_CONSOLE_OUTPUT[] ALIGNED = "console_output";	///<
 static const char PARAMS_LCD_OUTPUT[] ALIGNED = "lcd_output";			///<
+static const char PARAMS_OLED_OUTPUT[] ALIGNED = "oled_output";			///<
 static const char PARAMS_7SEGMENT_OUTPUT[] ALIGNED = "7segment_output";	///<
 static const char PARAMS_MIDI_OUTPUT[] ALIGNED = "midi_output";			///<
 static const char PARAMS_ARTNET_OUTPUT[] ALIGNED = "artnet_output";		///<
 
 static bool params_console_output = true;
 static bool params_lcd_output = true;
+static bool params_oled_output = true;
 static bool params_7segment_output = false;
 static bool params_midi_output = false;
 static bool params_artnet_output = false;
@@ -57,6 +59,14 @@ const bool ltc_reader_params_is_console_output(void) {
  */
 const bool ltc_reader_params_is_lcd_output(void) {
 	return params_lcd_output;
+}
+
+/**
+ *
+ * @return
+ */
+const bool ltc_reader_params_is_oled_output(void) {
+	return params_oled_output;
 }
 
 /**
@@ -100,6 +110,13 @@ static void process_line_read(const char *line) {
 	if (sscan_uint8_t(line, PARAMS_LCD_OUTPUT, &value8) == 2) {
 		if (value8 == 0) {
 			params_lcd_output = false;
+		}
+		return;
+	}
+
+	if (sscan_uint8_t(line, PARAMS_OLED_OUTPUT, &value8) == 2) {
+		if (value8 == 0) {
+			params_oled_output = false;
 		}
 		return;
 	}

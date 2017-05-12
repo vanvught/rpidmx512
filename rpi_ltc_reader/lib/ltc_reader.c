@@ -46,7 +46,7 @@
 #include "gpio.h"
 
 #include "lcd.h"
-
+#include "display_oled.h"
 #include "display_7segment.h"
 
 #include "midi.h"
@@ -264,6 +264,10 @@ void ltc_reader(void) {
 			lcd_text_line_1((char *) timecode, LCD_MAX_CHARACTERS);
 		}
 
+		if(output->oled_output) {
+			display_oled_line_1((char *) timecode, 11);
+		}
+
 		if (output->segment_output) {
 			display_7segment((const char *) timecode);
 		}
@@ -287,6 +291,10 @@ void ltc_reader(void) {
 
 			if (output->lcd_output) {
 				lcd_text_line_2(types[type], MIN((sizeof(types[0]) / sizeof(char))-1, LCD_MAX_CHARACTERS));
+			}
+
+			if (output->oled_output) {
+				display_oled_line_2(types[type]);
 			}
 
 		}

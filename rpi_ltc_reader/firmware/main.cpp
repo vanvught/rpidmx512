@@ -29,7 +29,7 @@
 #include "console.h"
 
 #include "lcd.h"
-
+#include "display_oled.h"
 #include "display_7segment.h"
 
 #include "midi_send.h"
@@ -66,6 +66,7 @@ void notmain(void) {
 
 	output.console_output = ltc_reader_params_is_console_output();
 	output.lcd_output = ltc_reader_params_is_lcd_output();
+	output.oled_output = ltc_reader_params_is_oled_output();
 	output.segment_output = ltc_reader_params_is_7segment_output();
 	output.midi_output = ltc_reader_params_is_midi_output();
 	output.artnet_output = ltc_reader_params_is_artnet_output();
@@ -76,6 +77,10 @@ void notmain(void) {
 
 	if (output.lcd_output) {
 		output.lcd_output = lcd_detect();
+	}
+
+	if (output.oled_output) {
+		output.oled_output = display_oled_init();
 	}
 
 	if (output.segment_output) {
@@ -96,6 +101,7 @@ void notmain(void) {
 	console_set_cursor(0, 8);
 	console_puts("Console output   : "); handle_bool(output.console_output); console_putc('\n');
 	console_puts("LCD output       : "); handle_bool(output.lcd_output); console_putc('\n');
+	console_puts("OLED output      : "); handle_bool(output.oled_output); console_putc('\n');
 	console_puts("7-Segment output : "); handle_bool(output.segment_output); console_putc('\n');
 	console_puts("MIDI output      : "); handle_bool(output.midi_output); console_putc('\n');
 	console_puts("ArtNet output    : "); handle_bool(output.artnet_output);console_puts(" (not implemented)\n");

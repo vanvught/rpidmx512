@@ -1,8 +1,8 @@
 /**
- * @file ltc_reader_params.h
+ * @file display_oled.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC_READER_PARAMS_H_
-#define LTC_READER_PARAMS_H_
-
+#include <stdint.h>
 #include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "software_version.h"
 
-extern const bool ltc_reader_params_is_console_output(void);
-extern const bool ltc_reader_params_is_lcd_output(void);
-extern const bool ltc_reader_params_is_oled_output(void);
-extern const bool ltc_reader_params_is_7segment_output(void);
-extern const bool ltc_reader_params_is_midi_output(void);
-extern const bool ltc_reader_params_is_artnet_output(void);
+#include "ltc_reader_params.h"
 
-extern void ltc_reader_params_init(void) ;
+#include "oled.h"
 
-#ifdef __cplusplus
+static oled_info_t oled_info;
+
+/**
+ *
+ */
+bool display_oled_init(void) {
+	oled_info.slave_address = (uint8_t) 0;
+	oled_info.type = OLED_PANEL_128x64;
+
+	if (!oled_start(&oled_info)) {
+		return false;
+	}
+
+	oled_set_cursor(&oled_info, 3, 0);
+	oled_puts(&oled_info, "SMPTE TimeCode LTC");
+
+	oled_set_cursor(&oled_info, 4, 0);
+	oled_printf(&oled_info, "MIDI output : %s", ltc_reader_params_is_midi_output() ? "Yes" : "No");
+
+	oled_set_cursor(&oled_info, 7, 0);
+	oled_printf(&oled_info, "[V%s]", SOFTWARE_VERSION);
+
+	return true;
 }
-#endif
 
-#endif /* LTC_READER_PARAMS_H_ */
+/**
+ *
+ * @param s
+ * @param n
+ */
+void display_oled_line_1(const char *s, int n) {
+	oled_set_cursor(&oled_info, 0, 0);
+	oled_write(&oled_info, s, n);
+}
+
+/**
+ *
+ * @param s
+ */
+void display_oled_line_2(const char *s) {
+	oled_set_cursor(&oled_info, 1, 0);
+	oled_puts(&oled_info, s);
+}
