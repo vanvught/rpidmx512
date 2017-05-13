@@ -5,6 +5,7 @@
 	<projects>
 		<project>firmware-template</project>
 		<project>lib-artnet</project>
+		<project>lib-bob</project>
 		<project>lib-c++</project>
 		<project>lib-dmx</project>
 		<project>lib-dmxmonitor</project>

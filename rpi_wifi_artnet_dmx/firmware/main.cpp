@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,16 @@
 #include "fota.h"
 #include "fota_params.h"
 
+#include "oled.h"
+
 #include "software_version.h"
+
+#define OLED_CONNECTED(b,f)	\
+do {						\
+	if(b) {					\
+		f;					\
+	}						\
+} while (0);
 
 extern "C" {
 
@@ -66,11 +75,18 @@ void notmain(void) {
 	ArtNetParams artnetparams;
 	DMXParams dmxparams;
 	DeviceParams deviceparms;
+	oled_info_t oled_info;
+	bool oled_connected;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
 
 	hardware_init();
+
+	oled_info.slave_address = 0;
+	oled_info.type = OLED_PANEL_128x64;
+
+	oled_connected = oled_start(&oled_info);
 
 	(void) artnetparams.Load();
 
@@ -86,6 +102,8 @@ void notmain(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("WiFi ArtNet 3 Node DMX Output / Pixel controller {4 DMX Universes}");
 
+	OLED_CONNECTED(oled_connected, oled_puts(&oled_info, "WiFi ArtNet 3"));
+
 	console_set_top_row(3);
 
 	(void) ap_params_init();
@@ -94,6 +112,7 @@ void notmain(void) {
 	hardware_watchdog_init();
 
 	console_status(CONSOLE_YELLOW, "Starting Wifi ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting Wifi ..."));
 
 	wifi_init(ap_password);
 
@@ -105,6 +124,7 @@ void notmain(void) {
 
 	if (network_params_init()) {
 		console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Changing to Station mode ..."));
 		if (network_params_is_use_dhcp()) {
 			wifi_station(network_params_get_ssid(), network_params_get_password());
 		} else {
@@ -127,6 +147,7 @@ void notmain(void) {
 		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
 	} else {
 		console_error("wifi_get_macaddr");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
 	}
 
 	printf(" Hostname    : %s\n", wifi_station_get_hostname());
@@ -138,22 +159,35 @@ void notmain(void) {
 		if (opmode == WIFI_STA) {
 			const _wifi_station_status status = wifi_station_get_connect_status();
 			printf("      Status : %s\n", wifi_station_status(status));
-			if (status != WIFI_STATION_GOT_IP){
+			if (status != WIFI_STATION_GOT_IP) {
+				printf("SSID : %s\n", network_params_get_ssid());
 				console_error("Not connected!");
-				for(;;);
+				if (oled_connected) {
+					oled_set_cursor(&oled_info, 2, 0);
+					oled_puts(&oled_info, wifi_station_status(status));
+					oled_set_cursor(&oled_info, 5, 0);
+					oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
+					oled_status(&oled_info, "<Not connected!>");
+				}
+				for (;;)
+					;
 			}
 		}
 	} else {
 		console_error("wifi_get_ip_info");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
 	}
 
 	if (fota_params_init()) {
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
 		console_newline();
 		fota(fota_params_get_server());
 		for(;;);
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
+
 	udp_begin(6454);
 
 	ArtNetNode node;
@@ -163,6 +197,7 @@ void notmain(void) {
 	TimeCode timecode;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
 
 	if (artnetparams.IsUseTimeCode()) {
 		timecode.Start();
@@ -243,13 +278,51 @@ void notmain(void) {
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
+	if (oled_connected) {
+		oled_set_cursor(&oled_info, 0, 14);
+
+		switch (output_type) {
+		case OUTPUT_TYPE_DMX:
+			oled_puts(&oled_info, "DMX Out");
+			break;
+		case OUTPUT_TYPE_SPI:
+			oled_puts(&oled_info, "Pixel");
+			break;
+		case OUTPUT_TYPE_MONITOR:
+			oled_puts(&oled_info, "Monitor");
+			break;
+		default:
+			break;
+		}
+
+		oled_set_cursor(&oled_info, 1, 0);
+		if (opmode == WIFI_STA) {
+			oled_puts(&oled_info, "Station");
+		} else {
+			oled_printf(&oled_info, "AP (%s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+		}
+
+		oled_set_cursor(&oled_info, 2, 0);
+		oled_printf(&oled_info, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
+		oled_set_cursor(&oled_info, 3, 0);
+		oled_printf(&oled_info, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
+		oled_set_cursor(&oled_info, 4, 0);
+		oled_printf(&oled_info, "SN: %s", node.GetShortName());
+		oled_set_cursor(&oled_info, 5, 0);
+		oled_printf(&oled_info, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), node.GetUniverseSwitch(0));
+		oled_set_cursor(&oled_info, 6, 0);
+		oled_printf(&oled_info, "Active ports: %d", node.GetActiveOutputPorts());
+	}
+
 	hardware_watchdog_init();
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting the Node ..."));
 
 	node.Start();
 
 	console_status(CONSOLE_GREEN, "Node started");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Node started"));
 
 	for (;;) {
 		hardware_watchdog_feed();
