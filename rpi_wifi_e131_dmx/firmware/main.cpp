@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,16 @@
 #include "dmxparams.h"
 #include "dmxmonitor.h"
 
+#include "oled.h"
+
 #include "software_version.h"
+
+#define OLED_CONNECTED(b,f)	\
+do {						\
+	if(b) {					\
+		f;					\
+	}						\
+} while (0);
 
 extern "C" {
 
@@ -61,8 +70,15 @@ void notmain(void) {
 	DMXParams dmxparams;
 	uuid_t uuid;
 	char uuid_str[UUID_STRING_LENGTH + 1] ALIGNED;
+	oled_info_t oled_info;
+	bool oled_connected;
 
 	hardware_init();
+
+	oled_info.slave_address = 0;
+	oled_info.type = OLED_PANEL_128x64;
+
+	oled_connected = oled_start(&oled_info);
 
 	(void) e131params.Load();
 
@@ -87,6 +103,8 @@ void notmain(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("WiFi sACN E1.31 DMX Out / Real-time DMX Monitor");
 
+	OLED_CONNECTED(oled_connected, oled_puts(&oled_info, "WiFi sACN E1.31"));
+
 	console_set_top_row(3);
 
 	(void) ap_params_init();
@@ -95,6 +113,7 @@ void notmain(void) {
 	hardware_watchdog_init();
 
 	console_status(CONSOLE_YELLOW, "Starting Wifi ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting Wifi ..."));
 
 	wifi_init(ap_password);
 
@@ -106,6 +125,8 @@ void notmain(void) {
 
 	if (network_params_init()) {
 		console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Changing to Station mode ..."));
+
 		if (network_params_is_use_dhcp()) {
 			wifi_station(network_params_get_ssid(), network_params_get_password());
 		} else {
@@ -128,6 +149,7 @@ void notmain(void) {
 		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
 	} else {
 		console_error("wifi_get_macaddr");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
 	}
 
 	printf(" Hostname    : %s\n", wifi_station_get_hostname());
@@ -140,24 +162,37 @@ void notmain(void) {
 			const _wifi_station_status status = wifi_station_get_connect_status();
 			printf("      Status : %s\n", wifi_station_status(status));
 			if (status != WIFI_STATION_GOT_IP){
+				printf("SSID : %s\n", network_params_get_ssid());
 				console_error("Not connected!");
+				if (oled_connected) {
+					oled_set_cursor(&oled_info, 2, 0);
+					oled_puts(&oled_info, wifi_station_status(status));
+					oled_set_cursor(&oled_info, 5, 0);
+					oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
+					oled_status(&oled_info, "<Not connected!>");
+				}
 				for(;;);
 			}
 		}
 	} else {
 		console_error("wifi_get_ip_info");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
 	}
 
 	if (fota_params_init()) {
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
 		console_newline();
 		fota(fota_params_get_server());
 		for(;;);
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
+
 	udp_begin(E131_DEFAULT_PORT);
 
 	console_status(CONSOLE_YELLOW, "Join group ...");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Join group ..."));
 
 	uint32_t group_ip;
 	(void)inet_aton("239.255.0.0", &group_ip);
@@ -207,9 +242,42 @@ void notmain(void) {
 		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
 	}
 
+	if (oled_connected) {
+		oled_set_cursor(&oled_info, 0, 18);
+
+		switch (output_type) {
+		case OUTPUT_TYPE_DMX:
+			oled_puts(&oled_info, "DMX");
+			break;
+		case OUTPUT_TYPE_MONITOR:
+			oled_puts(&oled_info, "Mon");
+			break;
+		default:
+			break;
+		}
+
+		oled_set_cursor(&oled_info, 1, 0);
+		if (opmode == WIFI_STA) {
+			oled_printf(&oled_info, "S: %s", network_params_get_ssid());
+		} else {
+			oled_printf(&oled_info, "AP (%s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+		}
+
+		oled_set_cursor(&oled_info, 2, 0);
+		oled_puts(&oled_info, "CID: ");
+		oled_puts(&oled_info, uuid_str);
+		oled_set_cursor(&oled_info, 4, 0);
+		oled_printf(&oled_info, "U: %d M: %s", bridge.getUniverse(), bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
+		oled_set_cursor(&oled_info, 5, 0);
+		oled_printf(&oled_info, "M: " IPSTR "", IP2STR(group_ip));
+		oled_set_cursor(&oled_info, 6, 0);
+		oled_printf(&oled_info, "U: " IPSTR "", IP2STR(ip_config.ip.addr));
+	}
+
 	hardware_watchdog_init();
 
 	console_status(CONSOLE_GREEN, "Bridge is running");
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Bridge is running"));
 
 	for (;;) {
 		hardware_watchdog_feed();
