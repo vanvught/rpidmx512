@@ -349,6 +349,16 @@ static void _format_string(struct context *ctx, const char *s) {
 	}
 }
 
+static void _format_pointer(struct context *ctx, unsigned int arg) {
+	ctx->width = 8;
+	ctx->flag = FLAG_ZERO_PADDED;
+
+	_xputch(ctx, (int) '0');
+	_xputch(ctx, (int) 'x');
+
+	_format_hex(ctx, arg);
+}
+
 /**
  *
  * @param fmt
@@ -426,6 +436,9 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 		case 'f':
 			f = (float) va_arg(va, double);
 			_format_float(&ctx, f);
+			break;
+		case 'p':
+			_format_pointer(&ctx, va_arg(va, unsigned int));
 			break;
 		case 's':
 			s = va_arg(va, const char *);
