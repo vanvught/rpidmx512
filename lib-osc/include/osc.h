@@ -2,7 +2,7 @@
  * @file osc.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,14 @@
 
 #include <stdint.h>
 
+#define OSC_MAX_MSG_SIZE 1024 //TODO
+
+#define OSC_DEFAULT_INCOMING_PORT	8000
+#define OSC_DEFAULT_OUTGOING_PORT	9000
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define OSC_MAX_MSG_SIZE 1024 //TODO
 
 typedef struct {
 	/** The number of seconds since Jan 1st 1900 in the UTC timezone. */

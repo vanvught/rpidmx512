@@ -3,6 +3,9 @@
 	<name>lib-osc</name>
 	<comment></comment>
 	<projects>
+		<project>Circle</project>
+		<project>lib-esp8266</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

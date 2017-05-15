@@ -40,6 +40,7 @@ static const char FromOscSend[] = "oscsend";
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "udp.h"
 #endif
 
 #include "oscsend.h"
@@ -59,7 +60,7 @@ static const char FromOscSend[] = "oscsend";
 OSCSend::OSCSend(CSocket *pSocket, CIPAddress *pAddress, int port, const char *path, const char *types, ...) :
 		m_pSocket(pSocket), m_pAddress(pAddress), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
 #else
-OSCSend::OSCSend(const char *address, int port, const char *path, const char *types, ...) :
+OSCSend::OSCSend(const int address, const int port, const char *path, const char *types, ...) :
 
 		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
 #endif
@@ -132,11 +133,11 @@ void OSCSend::Send(void) {
 	int nFlag = 0;
 	if (m_pSocket->SendTo((const void *)data, (unsigned)data_len, nFlag, *m_pAddress, (u16)m_Port) != data_len) {
 		CLogger::Get ()->Write(FromOscSend, LogPanic, "Send failed");
-#else
-	if (1 != data_len) {
-#endif
 		m_Result = -1;
 	}
+#else
+	udp_sendto((const uint8_t *)data, (const uint16_t) data_len, m_Address, (uint16_t)m_Port);
+#endif
 
 	// Free the memory allocated by m_Msg->Serialise
 	if(data) {

@@ -30,11 +30,12 @@
 
 #include "oscutil.h"
 #else
-#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <assert.h>
 #include <stdio.h>
+#include <assert.h>
+
+#include "util.h"
 #endif
 
 #include "oscmessage.h"

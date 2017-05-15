@@ -44,7 +44,7 @@ public:
 #if defined (__circle__)
 	OSCSend(CSocket *, CIPAddress *, int, const char *, const char *, ...);
 #else
-	OSCSend(const char *, int, const char *, const char *, ...);
+	OSCSend(const int, const int, const char *, const char *, ...);
 #endif
 	~OSCSend(void);
 
@@ -57,9 +57,9 @@ private:
 	CSocket *m_pSocket;
 	CIPAddress *m_pAddress;
 #else
-	const char *m_Address;
+	const int m_Address;
 #endif
-	int m_Port;
+	const int m_Port;
 	const char *m_Path;
 	const char *m_Types;
 	OSCMessage *m_Msg;
