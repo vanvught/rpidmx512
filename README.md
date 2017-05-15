@@ -1,5 +1,5 @@
 # Raspberry Pi #
-## DMX512 / RDM / ArtNet-3 / sACN E1.31 / Pixel controller / MIDI / SMPTE / OSC##
+## DMX512 / RDM / ArtNet-3 / sACN E1.31 / Pixel controller / MIDI / SMPTE / OSC ##
 
 Raspberry Pi **Open Source** solutions:
 
@@ -12,7 +12,8 @@ Raspberry Pi **Open Source** solutions:
 - MIDI Sniffer {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_midi_sniffer.zip?raw=true)}
 - MIDI-DMX Bridge {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_midi_dmx_bridge.zip?raw=true)}
 - **SMPTE** Timecode LTC Reader {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_ltc_reader.zip?raw=true)}
-- OSC-SPI (WS28xx) Bridge {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_circle_osc_ws28xx.zip?raw=true)}
+- OSC Pixel (WS28xx) Conroller {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_circle_osc_ws28xx.zip?raw=true)}
+- **OSC Wifi** Pixel (WS28xx) Controller {[SDCard](https://github.com/vanvught/rpidmx512/blob/master/sdcard/rpi_wifi_osc_ws28xx.zip?raw=true)}
 
 
 All implementations are fully according to the standards. And successfully used in live lighting shows.
