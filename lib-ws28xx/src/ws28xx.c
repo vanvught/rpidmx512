@@ -48,7 +48,9 @@ static uint16_t led_count ALIGNED;
 static _ws28xxx_type led_type ALIGNED = WS2812B;
 static uint8_t _led_high_code ALIGNED = WS2812B_HIGH_CODE;
 
-static uint8_t spi_buffer[4 * 512 * 3 * 8] ALIGNED;	///<
+static uint8_t spi_buffer[4 * 512 * 3 * 8] ALIGNED;
+static uint8_t blackout_buffer[4 * 512 * 3 * 8] ALIGNED;
+
 static uint16_t buf_len ALIGNED;
 
 /**
@@ -128,7 +130,16 @@ void ws28xx_set_led(const uint16_t index, const uint8_t red, const uint8_t green
  */
 void ws28xx_update(void) {
 	dmb();
-	bcm2835_spi_writenb((char *)spi_buffer, buf_len);
+	bcm2835_spi_writenb((char *) spi_buffer, buf_len);
+	dmb();
+}
+
+/**
+ *
+ */
+void ws28xx_blackout(void) {
+	dmb();
+	bcm2835_spi_writenb((char *) blackout_buffer, buf_len);
 	dmb();
 }
 
@@ -171,6 +182,8 @@ void ws28xx_init(const uint16_t count, const _ws28xxx_type type, const uint32_t 
 	for (i = 0; i < led_count; i++) {
 		ws28xx_set_led(i, 0, 0, 0);
 	}
+
+	memset(blackout_buffer, led_type == WS2801 ? 0 : 0xC0, sizeof(blackout_buffer));
 
 	bcm2835_spi_begin();
 

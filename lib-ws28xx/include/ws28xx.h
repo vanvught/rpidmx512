@@ -21,6 +21,7 @@ extern "C" {
 extern void ws28xx_init(const uint16_t, const _ws28xxx_type, const uint32_t);
 extern void ws28xx_set_led(const uint16_t, const uint8_t, const uint8_t, const uint8_t);
 extern void ws28xx_update(void);
+extern void ws28xx_blackout(void);
 extern const uint16_t ws28xx_get_led_count(void);
 extern const _ws28xxx_type ws28xx_get_led_type(void);
 
