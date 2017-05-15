@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@ struct hardware_time {
 	uint16_t year;		///< Year			[1970-....]
 };
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +57,7 @@ extern const uint8_t hardware_firmware_get_copyright_length(void);
 extern const int32_t hardware_board_get_model_id(void);
 extern /*@shared@*/const char *hardware_board_get_model(void);
 extern const uint8_t hardware_board_get_model_length(void);
+extern /*@shared@*/const char *hardware_board_get_soc(void);
 extern const int32_t hardware_get_core_temperature(void);
 extern void hardware_rtc_set(const struct hardware_time *);
 
