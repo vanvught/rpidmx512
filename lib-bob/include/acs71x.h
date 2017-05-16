@@ -67,5 +67,6 @@ extern const int16_t acs71x_get_current_dc(const acs71x_info_t *);
 
 extern /*@shared@*//*@null@*/const char *acs71x_get_chip_name(const acs71x_info_t *);
 extern /*@shared@*//*@null@*/const char *acs71x_get_adc_name(const acs71x_info_t *);
+extern const uint8_t acs71x_get_range(const acs71x_info_t *);
 
 #endif /* ACS71X_H_ */

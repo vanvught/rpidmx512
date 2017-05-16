@@ -33,6 +33,15 @@
 #define ADS1115_CH2						0x02	///<
 #define ADS1115_CH3						0x03	///<
 
+#define ADS1115_MV_6P144    			((float) 0.187500)
+#define ADS1115_MV_4P096  				((float) 0.125000)
+#define ADS1115_MV_2P048				((float) 0.062500)
+#define ADS1115_MV_1P024			    ((float) 0.031250)
+#define ADS1115_MV_0P512  				((float) 0.015625)
+#define ADS1115_MV_0P256  			  	((float) 0.007813)
+#define ADS1115_MV_0P256B   			((float) 0.007813)
+#define ADS1115_MV_0P256C				((float) 0.007813)
+
 typedef enum ads1115_data_rate {
 	ADS1115_DATA_RATE_8 = 0x0000,		///< 8 samples per second
 	ADS1115_DATA_RATE_16 = 0x0020,		///< 16 samples per second

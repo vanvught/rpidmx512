@@ -36,6 +36,7 @@
 #include "ads1115.h"		///< 16-bit
 
 static const char acs71x_name[5][14] __attribute__((aligned(4))) = {"ACS712ELC-05\0", "ACS712ELC-20B", "ACS712ELC-30A", "ACS711EX-15\0\0\0", "ACS711EX-31\0\0\0"};
+static const uint8_t acs71x_range[5] __attribute__((aligned(4))) = { 5, 20, 30, 15, 31};
 static const uint16_t acs71x_sensitivity_mv[5] = {185, 100, 66, 136, 68};
 
 enum adc_range {
@@ -145,6 +146,19 @@ const char *acs71x_get_adc_name(const acs71x_info_t *acs71x_info) {
 
 /**
  *
+ * @param acs71x_info
+ * @return
+ */
+const uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
+	if (acs71x_info->type >= (sizeof(acs71x_range) / sizeof(acs71x_range[0]))) {
+		return 0;
+	}
+
+	return acs71x_range[acs71x_info->type];
+}
+
+/**
+ *
  * @param acs712_info
  * @return
  */
@@ -189,4 +203,3 @@ const int16_t acs71x_get_current_dc(const acs71x_info_t *acs71x_info) {
 
 	return (int16_t) (numerator / denominator);
 }
-
