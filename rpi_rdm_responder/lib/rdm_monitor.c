@@ -27,6 +27,8 @@
 
 #include "console.h"
 #include "monitor.h"
+#include "oled.h"
+
 #include "util.h"
 
 #include "dmx.h"
@@ -36,7 +38,6 @@
 #include "rdm_monitor.h"
 
 #include "dmx_devices.h"
-
 
 static uint32_t function_count_previous = 0;			///<
 static uint32_t run_count_previous = 0;		///<
@@ -50,13 +51,13 @@ void monitor_update(void) {
 
 	const uint8_t display_level = rdm_device_info_get_ext_mon_level();
 
+	monitor_print_root_device_label();
+
 	if (display_level == 0) {
 		return;
 	}
 
 	if (display_level > 1) {
-		monitor_print_root_device_label();
-
 		monitor_time_uptime(MONITOR_LINE_TIME);
 		monitor_line(MONITOR_LINE_PORT_DIRECTION, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
 

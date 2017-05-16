@@ -30,6 +30,7 @@
 #include "led.h"
 
 #include "monitor.h"
+#include "oled.h"
 
 #include "dmx.h"
 #include "dmx_devices.h"
@@ -38,6 +39,12 @@
 #include "rdm_monitor.h"
 #include "rdm_device_const.h"
 
+#define OLED_CONNECTED(b,f)	\
+do {						\
+	if(b) {					\
+		f;					\
+	}						\
+} while (0);
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
@@ -98,20 +105,47 @@ inline static void events_check() {
 #include "console.h"
 
 void notmain(void) {
+	oled_info_t oled_info;
+	bool oled_connected;
 	int i;
 
 	hardware_init();
 
+	oled_info.slave_address = 0;
+	oled_info.type = OLED_PANEL_128x64;
+
+	oled_connected = oled_start(&oled_info);
+
+	if (oled_connected) {
+		monitor_set_oled(&oled_info);
+	} else {
+		monitor_set_oled(NULL);
+	}
+
 	dmx_init();
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
-	rdm_device_info_init();
+	rdm_device_info_init(true);
 
 	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("RDM Responder / DMX Slave, Devices connected : %d, Sensors connected : %d\n", dmx_devices_get_devices_connected(), rdm_sensors_get_count());
 	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	monitor_print_root_device_label();
+
+	if (oled_connected) {
+		oled_set_cursor(&oled_info,0,0);
+		oled_printf(&oled_info, "[V%s] RDM Responder", DEVICE_SOFTWARE_VERSION);
+		oled_set_cursor(&oled_info,1,0);
+		oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+		oled_set_cursor(&oled_info,2,0);
+		oled_puts(&oled_info, "L:");
+		// 2 and 3 = Device label
+		oled_set_cursor(&oled_info,4,0);
+		oled_printf(&oled_info,"Devices: %d", dmx_devices_get_devices_connected());
+		oled_set_cursor(&oled_info,5,0);
+		oled_printf(&oled_info,"Sensors: %d", rdm_sensors_get_count());
+	}
 
 	hardware_watchdog_init();
 

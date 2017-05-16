@@ -127,26 +127,8 @@ static void process_line_read_string(const char *line) {
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
 		if (len == 4) {
 			const uint16_t v = (uint16_t) hex_uint32(value);
-
 			uid_device[0] = (uint8_t) (v >> 8);
 			uid_device[1] = (uint8_t) (v & 0xFF);
-
-			/*
-			if (isxdigit((int)value[0]) && isxdigit((int)value[1]) && isxdigit((int)value[2]) && isxdigit((int)value[3])) {
-				uint8_t nibble_high;
-				uint8_t nibble_low;
-
-				nibble_high = (uint8_t)((value[0] > (char)'9' ? (value[0] | (char)0x20) - (char)'a' + (char)10 : value[0] - (char)'0')) << 4;
-				nibble_low = (uint8_t)(value[1] > (char)'9' ? (value[1] | (char)0x20) - (char)'a' + (char)10 : value[1] - (char)'0');
-
-				uid_device[0] = nibble_high | nibble_low;
-
-				nibble_high = (uint8_t)((value[2] > (char)'9' ? (value[2] | (char)0x20) - (char)'a' + (char)10 : value[2] - (char)'0')) << 4;
-				nibble_low = (uint8_t)(value[3] > (char)'9' ? (value[3] | (char)0x20) - (char)'a' + (char)10 : value[3] - (char)'0');
-
-				uid_device[1] = nibble_high | nibble_low;
-			}
-			*/
 		}
 		return;
 	}
@@ -542,7 +524,7 @@ const uint8_t * rdm_device_info_get_uuid(void) {
  * @ingroup rdm
  *
  */
-void rdm_device_info_init(void) {
+void rdm_device_info_init(const bool init) {
 	uint8_t mac_address[6] ALIGNED;
 
 #ifdef RDM_RESPONDER
@@ -583,8 +565,10 @@ void rdm_device_info_init(void) {
 
 #ifdef RDM_RESPONDER
 	rdm_identify_on();
-	rdm_sensors_init();
-	rdm_sub_devices_info_init();
+	if (init) {
+		rdm_sensors_init();
+		rdm_sub_devices_info_init();
+	}
 
 	software_version_id = rdm_device_info_get_software_version_id();
 	sub_device_count = rdm_sub_devices_get();

@@ -331,7 +331,7 @@ static void rdm_set_factory_defaults(bool was_broadcast, /*@unused@*/uint16_t su
 		return;
 	}
 
-	rdm_device_info_init();
+	rdm_device_info_init(false);
 
 	if(was_broadcast) {
 		return;

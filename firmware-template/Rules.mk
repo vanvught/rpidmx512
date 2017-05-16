@@ -123,7 +123,7 @@ endef
 
 THISDIR = $(CURDIR)
 
-all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
+all : builddirs prerequisites $(TARGET) $(TARGET7) # $(TARGET8)
 	
 .PHONY: clean builddirs
 
@@ -133,7 +133,7 @@ buildlibs:
 builddirs:
 	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS) # $(BUILD8_DIRS)
 
-clean :
+clean:
 	rm -rf $(BUILD_DIRS) $(BUILD7_DIRS) $(BUILD8_DIRS)
 	rm -f $(TARGET) $(TARGET7) $(TARGET8)
 	rm -f $(BUILD)*.elf $(BUILD7)*.elf $(BUILD8)*.elf

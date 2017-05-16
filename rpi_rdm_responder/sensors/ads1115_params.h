@@ -1,9 +1,7 @@
 /**
- * @file rdm_device_const.h
- *
- * @brief These definitions are private for the RDM Responder
+ * @file ads1115_params.h
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef ADS1115_PARAMS_H_
+#define ADS1115_PARAMS_H_
 
-#ifndef RDM_DEVICE_CONST_H_
-#define RDM_DEVICE_CONST_H_
+#include <stdbool.h>
 
-#include <stdint.h>
+#include <acs71x.h>
 
-#include "util.h"
+struct _ads1115_ch_info {
+	bool calibrate;			///<
+	struct _ch0 {
+		bool is_connected;	///<
+		acs71x_type_t type; ///<
+	} ch0;
+	struct _ch1 {
+		bool is_connected;	///<
+		acs71x_type_t type; ///<
+	} ch1;
+	struct _ch2 {
+		bool is_connected;	///<
+		acs71x_type_t type; ///<
+	} ch2;
+	struct _ch3 {
+		bool is_connected;	///<
+		acs71x_type_t type; ///<
+	} ch3;
+};
 
-#include "rdm.h"
-#include "sofware_version_id.h"
+extern /*@shared@*/const struct _ads1115_ch_info *ads1115_params_get_ch_info(void);
+extern void ads1115_params_init(void);
 
-static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi";				///<
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";			///<
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";			///<
-static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.6";			///<
-
-#define DEFAULT_DMX_START_ADDRESS		1	///<
-#define DEFAULT_CURRENT_PERSONALITY		1	///<
-#define DMX_FOOTPRINT					32	///<
-
-static const struct _rdm_personality rdm_personalities[] ALIGNED = {
-		{ (uint16_t) DMX_FOOTPRINT, "RDM Responder / DMX Controller", (uint8_t) 30 } };
-
-#endif /* RDM_DEVICE_CONST_H_ */
+#endif /* ADS1115_PARAMS_H_ */
