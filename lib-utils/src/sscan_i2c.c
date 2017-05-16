@@ -60,7 +60,7 @@ const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address,
 	b++;
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != (char) ',') && (k < 2)) {
+	while ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
 			return 0;
 		}
@@ -82,8 +82,9 @@ const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address,
 		*address = nibble_low;
 	}
 
+	*channel = (uint8_t) 0;
+
 	if (*b++ != (char) ':') {
-		*channel = (uint8_t) 0;
 		return 1;
 	}
 
