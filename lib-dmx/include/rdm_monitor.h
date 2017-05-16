@@ -26,7 +26,9 @@
 #ifndef RDM_MONITOR_H_
 #define RDM_MONITOR_H_
 
-extern void monitor_print_root_device_label(void);
+#include "oled.h"
 
+extern void monitor_print_root_device_label(void);
+extern void monitor_set_oled(/*@null@*/const oled_info_t *);
 
 #endif /* RDM_MONITOR_H_ */
