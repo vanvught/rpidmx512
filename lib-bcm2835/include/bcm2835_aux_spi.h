@@ -43,7 +43,7 @@ extern const uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t);
 extern void bcm2835_aux_spi_write(const uint16_t);
 extern void bcm2835_aux_spi_writenb(const char *, const uint32_t);
 
-extern void bcm2835_aux_spi_transfernb(const char *, char *, const uint32_t);
+extern void bcm2835_aux_spi_transfernb(const char *, /*@null@*/char *, const uint32_t);
 extern void bcm2835_aux_spi_transfern(char *, const uint32_t);
 
 #ifdef __cplusplus

@@ -153,7 +153,7 @@ extern void bcm2835_spi_setBitOrder(const uint8_t);
 }
 
 extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
-extern void bcm2835_spi_transfernb(char*, char*, const uint32_t);
+extern void bcm2835_spi_transfernb(char*, /*@null@*/char*, const uint32_t);
 extern void bcm2835_spi_transfern(char*, const uint32_t);
 extern void bcm2835_spi_writenb(const char*, const uint32_t);
 extern void bcm2835_spi_write(const uint16_t data);

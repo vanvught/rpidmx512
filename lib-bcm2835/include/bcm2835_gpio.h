@@ -100,8 +100,8 @@ extern "C" {
  * @return
  */
 /*@unused@*/inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
-	uint32_t value = BCM2835_GPIO ->GPLEV0; // TODO BUG pin > 32
-	return (value & (1 << pin)) ? (uint8_t)HIGH : (uint8_t)LOW;
+	uint32_t value = BCM2835_GPIO->GPLEV0; // TODO BUG pin > 32
+	return (value & (1 << pin)) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
 /**
@@ -124,7 +124,7 @@ extern "C" {
  * @param on
  */
 /*@unused@*/inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (uint32_t)((on ? 1 : 0) << pin);
+	BCM2835_GPIO ->GPPUDCLK0 = (uint32_t)(((on != 0) ? 1 : 0) << pin);
 }
 
 #define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
