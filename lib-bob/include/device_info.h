@@ -29,12 +29,18 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum spi_cs {
+	SPI_CS0,
+	SPI_CS1,
+	SPI_CS2
+} spi_cs_t;
+
 typedef struct _device_info {
-	uint8_t chip_select;		///<
+	spi_cs_t chip_select;		///<
 	uint8_t slave_address;		///<
 	uint32_t speed_hz;			///<
 	bool fast_mode;				///< I2C Fast Mode 400KHz
-	struct _internal {
+	struct _device_info_internal {
 		uint8_t adc_channel;	///<
 		uint16_t clk_div;		///<
 	} internal;

@@ -1,5 +1,5 @@
 /**
- * @file bw_spi.c
+ * @file ads1015.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,54 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#ifndef ADS1015_H_
+#define ADS1015_H_
 
-#include "bcm2835_spi.h"
-#include "bcm2835_aux_spi.h"
+#define ADS1015_DEFAULT_SLAVE_ADDRESS	0x48	///<
 
-#include <device_info.h>
+#define ADS1015_CH0						0x00	///<
+#define ADS1015_CH1						0x01	///<
+#define ADS1015_CH2						0x02	///<
+#define ADS1015_CH3						0x03	///<
 
-#include <bw.h>
+typedef enum ads1015_data_rate {
+	ADS1015_DATA_RATE_128 = 0x0000,		///< 128 samples per second
+	ADS1015_DATA_RATE_250 = 0x0020,		///< 250 samples per second
+	ADS1015_DATA_RATE_490 = 0x0040,		///< 490 samples per second
+	ADS1015_DATA_RATE_920 = 0x0060,		///< 920 samples per second
+	ADS1015_DATA_RATE_1600 = 0x0080,	///< 1600 samples per second (default)
+	ADS1015_DATA_RATE_2400 = 0x00a0,	///< 2400 samples per second
+	ADS1015_DATA_RATE_3300 = 0x00c0,	///< 3300 samples per second
+} ads1015_data_rate_t;
 
-/**
- * @ingroup SPI
- *
- * Gets the identification string.
- *
- * @param device_info
- * @param id
- */
-void bw_spi_read_id(const device_info_t *device_info, char *id) {
-	char buffer[BW_ID_STRING_LENGTH + 2];
-	char *s1, *s2;
-	int n = BW_ID_STRING_LENGTH;
+#include <stdint.h>
+#include <stdbool.h>
 
-	if (id == NULL) {
-		return;
-	}
+#include "device_info.h"
 
-	buffer[0] = (char) (device_info->slave_address | 1);
-	buffer[1] = (char) BW_PORT_READ_ID_STRING;
+extern const bool ads1015_start(device_info_t *);
+extern const uint16_t ads1015_read(const device_info_t *, const uint8_t);
 
-	if (device_info->chip_select >= SPI_CS2) {
-		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
-		bcm2835_aux_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
-	} else {
-		bcm2835_spi_setClockDivider(5000);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
-	}
+extern const ads1015_data_rate_t ads1015_get_data_rate(const device_info_t *);
+extern void ads1015_set_data_rate(const device_info_t *, const ads1015_data_rate_t);
 
-	s1 = (char *) id;
-	s2 = (char *) &buffer[2];
-
-	while (n > 0 && *s2 != '\0') {
-		*s1++ = *s2++;
-		--n;
-	}
-
-	while (n > 0) {
-		*s1++ = '\0';
-		--n;
-	}
-}
+#endif /* ADS1015_H_ */

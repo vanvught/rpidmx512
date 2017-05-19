@@ -46,7 +46,8 @@ void max7219_spi_start(device_info_t *device_info) {
 		device_info->speed_hz = (uint32_t) MAX7219_SPI_SPEED_MAX_HZ;
 	}
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select >= SPI_CS2) {
+		device_info->chip_select = SPI_CS2;
 		bcm2835_aux_spi_begin();
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
@@ -64,7 +65,7 @@ void max7219_spi_start(device_info_t *device_info) {
 void max7219_spi_write_reg(const device_info_t *device_info, const uint8_t reg, const uint8_t data) {
 	const uint16_t spi_data = ((uint16_t) reg << 8) | (uint16_t) data;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_write(spi_data);
 	} else {

@@ -27,12 +27,17 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
+#include "bcm2835.h"
+#include "bcm2835_gpio.h"
 #include "bcm2835_i2c.h"
+#include "bcm2835_aux_spi.h"
+#include "bcm2835_spi.h"
+
 #include "i2c.h"
-
-#include "device_info.h"
-
 #include "oled.h"
+
+#define OLED_RST						RPI_V2_GPIO_P1_33	/* P1-33, GPIO13 */
+#define	OLED_DC							RPI_V2_GPIO_P1_37	/* P1-37, GPIO26 */
 
 #define OLED_FONT_CHAR_W				6
 #define OLED_FONT_CHAR_H				8
@@ -167,41 +172,51 @@ static uint8_t oled_font[] __attribute__((aligned(4))) = {
 
 static const uint8_t oled_128x64_init[] __attribute__((aligned(4))) = {
 		SSD1306_CMD_DISPLAY_OFF,
-		SSD1306_CMD_SET_DISPLAYCLOCKDIV, 0x80, 	// The suggested value
-		SSD1306_CMD_SET_MULTIPLEX, 0x3F,		// 1/64
-		SSD1306_CMD_SET_DISPLAYOFFSET, 0x00,	// No offset
-		SSD1306_CMD_SET_STARTLINE | 0x00,		// line #0
+		SSD1306_CMD_SET_DISPLAYCLOCKDIV, 0x80, 		// The suggested value
+		SSD1306_CMD_SET_MULTIPLEX, 0x3F,			// 1/64
+		SSD1306_CMD_SET_DISPLAYOFFSET, 0x00,		// No offset
+		(uint8_t) SSD1306_CMD_SET_STARTLINE | 0x00,	// line #0
 		SSD1306_CMD_SET_CHARGEPUMP, 0x14,
-		SSD1306_CMD_SET_MEMORYMODE,	0x00,		// Horizontal addressing
-		SSD1306_CMD_SEGREMAP | 0x01,			// Flip horizontally
-		SSD1306_CMD_COMSCAN_DEC,				// Flip vertically
+		SSD1306_CMD_SET_MEMORYMODE, 0x00,			// Horizontal addressing
+		(uint8_t) SSD1306_CMD_SEGREMAP | 0x01,		// Flip horizontally
+		SSD1306_CMD_COMSCAN_DEC,					// Flip vertically
 		SSD1306_CMD_SET_COMPINS, 0x12,
-		SSD1306_CMD_SET_CONTRAST, 0x7F,			// 0x00 to 0xFF
-		SSD1306_CMD_SET_PRECHARGE,0xF1,
+		SSD1306_CMD_SET_CONTRAST, 0x7F,				// 0x00 to 0xFF
+		SSD1306_CMD_SET_PRECHARGE, 0xF1,
 		SSD1306_CMD_SET_VCOMDETECT, 0x40,
 		SSD1306_CMD_DISPLAY_NORMAL,
-		SSD1306_CMD_DISPLAY_ON
-		};
+		SSD1306_CMD_DISPLAY_ON };
 
 static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 		SSD1306_CMD_DISPLAY_OFF,
-		SSD1306_CMD_SET_DISPLAYCLOCKDIV, 0x80, 	// The suggested value
-		SSD1306_CMD_SET_MULTIPLEX, 0x1F,		// 1/32
-		SSD1306_CMD_SET_DISPLAYOFFSET, 0x00,	// No offset
-		SSD1306_CMD_SET_STARTLINE | 0x00,		// line #0
+		SSD1306_CMD_SET_DISPLAYCLOCKDIV, 0x80, 		// The suggested value
+		SSD1306_CMD_SET_MULTIPLEX, 0x1F,			// 1/32
+		SSD1306_CMD_SET_DISPLAYOFFSET, 0x00,		// No offset
+		(uint8_t) SSD1306_CMD_SET_STARTLINE | 0x00,	// line #0
 		SSD1306_CMD_SET_CHARGEPUMP, 0x14,
-		SSD1306_CMD_SET_MEMORYMODE,	0x00,		// Horizontal addressing
-		SSD1306_CMD_SEGREMAP | 0x01,			// Flip horizontally
-		SSD1306_CMD_COMSCAN_DEC,				// Flip vertically
+		SSD1306_CMD_SET_MEMORYMODE, 0x00,			// Horizontal addressing
+		(uint8_t) SSD1306_CMD_SEGREMAP | 0x01,		// Flip horizontally
+		SSD1306_CMD_COMSCAN_DEC,					// Flip vertically
 		SSD1306_CMD_SET_COMPINS, 0x02,
-		SSD1306_CMD_SET_CONTRAST, 0x7F,			// 0x00 to 0xFF
-		SSD1306_CMD_SET_PRECHARGE,0xF1,
+		SSD1306_CMD_SET_CONTRAST, 0x7F,				// 0x00 to 0xFF
+		SSD1306_CMD_SET_PRECHARGE, 0xF1,
 		SSD1306_CMD_SET_VCOMDETECT, 0x40,
 		SSD1306_CMD_DISPLAY_NORMAL,
-		SSD1306_CMD_DISPLAY_ON
-		};
+		SSD1306_CMD_DISPLAY_ON };
 
 static uint8_t clear_buffer[1025] __attribute__((aligned(4)));
+
+/**
+ *
+ */
+static void reset(void) {
+	bcm2835_gpio_fsel(OLED_RST, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set(OLED_RST);
+	udelay(1000);
+	bcm2835_gpio_clr(OLED_RST);
+	udelay(10000);
+	bcm2835_gpio_set(OLED_RST);
+}
 
 /**
  *
@@ -218,8 +233,50 @@ static void i2c_setup(const oled_info_t *oled_info) {
  * @param cmd
  */
 static void _send_command(const oled_info_t *oled_info, uint8_t cmd) {
-	i2c_setup(oled_info);
-	i2c_write_reg_uint8(SSD1306_COMMAND_MODE, cmd);
+	char spi_data[0];
+
+	if (oled_info->protocol == OLED_PROTOCOL_SPI) {
+		bcm2835_gpio_clr(OLED_DC);
+		spi_data[0] = (char) cmd;
+		if (oled_info->chip_select == OLED_SPI_CS2) {
+			bcm2835_aux_spi_setClockDivider(oled_info->internal.clk_div);
+			bcm2835_aux_spi_transfernb(spi_data, NULL, 1);
+		} else {
+			bcm2835_spi_setClockDivider(oled_info->internal.clk_div);
+			bcm2835_spi_chipSelect(oled_info->chip_select);
+			bcm2835_spi_transfernb(spi_data, NULL, 1);
+		}
+	} else {
+		i2c_setup(oled_info);
+		i2c_write_reg_uint8(SSD1306_COMMAND_MODE, cmd);
+	}
+}
+
+/**
+ *
+ * @param oled_info
+ * @param data
+ * @param len
+ */
+static void _send_data(const oled_info_t *oled_info, const uint8_t *data, const uint32_t len) {
+	uint8_t *p;
+	uint32_t l;
+
+	if (oled_info->protocol == OLED_PROTOCOL_SPI) {
+		p = (uint8_t *)data + 1;
+		l = len - 1;
+		bcm2835_gpio_set(OLED_DC);
+		if (oled_info->chip_select == OLED_SPI_CS2) {
+			bcm2835_aux_spi_setClockDivider(oled_info->internal.clk_div);
+			bcm2835_aux_spi_transfernb((char *)p, NULL, l);
+		} else {
+			bcm2835_spi_setClockDivider(oled_info->internal.clk_div);
+			bcm2835_spi_chipSelect(oled_info->chip_select);
+			bcm2835_spi_transfernb((char *)p, NULL, l);
+		}
+	} else {
+		(void) bcm2835_i2c_write((const char *) data, len);
+	}
 }
 
 /**
@@ -236,13 +293,13 @@ void oled_clear(const oled_info_t *oled_info) {
 		_send_command(oled_info, SSD1306_CMD_SET_PAGEADDR);
 		_send_command(oled_info, 0);		// Page start address (0 = reset)
 		_send_command(oled_info, 7);		// Page end address
-		(void) bcm2835_i2c_write((const char *) &clear_buffer, (SSD1306_LCD_WIDTH * 64 / 8) + 1);
+		_send_data(oled_info, (const uint8_t *) &clear_buffer, (SSD1306_LCD_WIDTH * 64 / 8) + 1);
 		break;
 	case OLED_PANEL_128x32:
 		_send_command(oled_info, SSD1306_CMD_SET_PAGEADDR);
 		_send_command(oled_info, 0);		// Page start address (0 = reset)
 		_send_command(oled_info, 3);		// Page end address
-		(void) bcm2835_i2c_write((const char *) &clear_buffer, (SSD1306_LCD_WIDTH * 32 / 8) + 1);
+		_send_data(oled_info, (const uint8_t *) &clear_buffer, (SSD1306_LCD_WIDTH * 32 / 8) + 1);
 		break;
 	default:
 		break;
@@ -312,7 +369,7 @@ int oled_putc(const oled_info_t *oled_info, const int c) {
 
 	base = oled_font + (uint8_t) (OLED_FONT_CHAR_W + 1) * i;
 
-	(void) bcm2835_i2c_write((const char *) base, (uint32_t) (OLED_FONT_CHAR_W + 1));
+	_send_data(oled_info, (const uint8_t*) base, (uint32_t) (OLED_FONT_CHAR_W + 1));
 
 	return c;
 }
@@ -380,13 +437,13 @@ int oled_printf(const oled_info_t *oled_info, const char *format, ...) {
 void oled_clear_line(const oled_info_t *oled_info, const int line) {
 	int i;
 
-	oled_set_cursor(oled_info, line, 0);
+	oled_set_cursor(oled_info, (uint8_t) line, (uint8_t) 0);
 
 	for (i = 0; i < (SSD1306_LCD_WIDTH / OLED_FONT_CHAR_W); i++) {
-		oled_putc(oled_info, ' ');
+		(void) oled_putc(oled_info, (int) ' ');
 	}
 
-	oled_set_cursor(oled_info, line, 0);
+	oled_set_cursor(oled_info, (uint8_t) line, (uint8_t) 0);
 
 }
 
@@ -419,16 +476,40 @@ void oled_status(const oled_info_t *oled_info, const char *s) {
 const bool oled_start(oled_info_t *oled_info) {
 	int i;
 
-	bcm2835_i2c_begin();
+	if (oled_info->protocol == OLED_PROTOCOL_I2C) {
+		bcm2835_i2c_begin();
 
-	if (oled_info->slave_address == (uint8_t) 0) {
-		oled_info->slave_address = OLED_DEFAULT_SLAVE_ADDRESS;
+		if (oled_info->slave_address == (uint8_t) 0) {
+			oled_info->slave_address = OLED_I2C_SLAVE_ADDRESS_DEFAULT;
+		}
+
+		i2c_setup(oled_info);
+
+		if (!i2c_is_connected(oled_info->slave_address)) {
+			return false;
+		}
+	} else if (oled_info->protocol == OLED_PROTOCOL_SPI) {
+		if (oled_info->speed_hz == (uint32_t) 0) {
+			oled_info->speed_hz = (uint32_t) OLED_SPI_SPEED_DEFAULT_HZ;
+		} else if (oled_info->speed_hz > (uint32_t) OLED_SPI_SPEED_MAX_HZ) {
+			oled_info->speed_hz = (uint32_t) OLED_SPI_SPEED_MAX_HZ;
+		}
+
+		if (oled_info->chip_select >= OLED_SPI_CS2) {
+			oled_info->chip_select = OLED_SPI_CS2;
+			bcm2835_aux_spi_begin();
+			oled_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(oled_info->speed_hz);
+		} else {
+			bcm2835_spi_begin();
+			oled_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / oled_info->speed_hz);
+		}
+		bcm2835_gpio_fsel(OLED_DC, BCM2835_GPIO_FSEL_OUTP);
+	} else {
+		return false;
 	}
 
-	i2c_setup(oled_info);
-
-	if (!i2c_is_connected(oled_info->slave_address)) {
-		return false;
+	if (oled_info->reset) {
+		reset();
 	}
 
 	switch (oled_info->type) {
@@ -444,7 +525,6 @@ const bool oled_start(oled_info_t *oled_info) {
 		break;
 	default:
 		return false;
-		break;
 	}
 
 	for (i = 0; i < (int) sizeof(clear_buffer); i++) {

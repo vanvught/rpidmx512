@@ -56,7 +56,8 @@ void bw_spi_lcd_start(device_info_t *device_info) {
 		device_info->speed_hz = (uint32_t) BW_LCD_SPI_SPEED_MAX_HZ;
 	}
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select >= SPI_CS2) {
+		device_info->chip_select = SPI_CS2;
 		bcm2835_aux_spi_begin();
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
@@ -78,7 +79,7 @@ void bw_spi_lcd_set_cursor(const device_info_t *device_info, const uint8_t line,
 	cmd[0] = (char) device_info->slave_address;
 	cmd[2] = (char) (((line & 0x03) << 5) | (pos & 0x1f));
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -110,7 +111,7 @@ void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 		data[i + 2] = text[i];
 	}
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(data, length + 2);
 	} else {
@@ -182,7 +183,7 @@ void bw_spi_lcd_cls(const device_info_t *device_info) {
 
 	cmd[0] = (char) device_info->slave_address;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -204,7 +205,7 @@ void bw_spi_lcd_set_contrast(const device_info_t *device_info, const uint8_t val
 	cmd[0] = (char) device_info->slave_address;
 	cmd[2] = (char) value;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -226,7 +227,7 @@ void bw_spi_lcd_set_backlight(const device_info_t *device_info,	const uint8_t va
 	cmd[0] = (char) device_info->slave_address;
 	cmd[2] = (char) value;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -246,7 +247,7 @@ void bw_spi_lcd_reinit(const device_info_t *device_info) {
 
 	cmd[0] = (char) device_info->slave_address;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -267,7 +268,7 @@ void bw_spi_lcd_get_backlight(const device_info_t *device_info, uint8_t *value) 
 
 	cmd[0] = (char) (device_info->slave_address | 1);
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
 		bcm2835_aux_spi_transfern(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
@@ -290,7 +291,7 @@ void bw_spi_lcd_get_contrast(const device_info_t *device_info, uint8_t *value) {
 
 	cmd[0] = (char) (device_info->slave_address | 1);
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
 		bcm2835_aux_spi_transfern(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {

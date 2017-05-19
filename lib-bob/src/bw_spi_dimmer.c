@@ -52,7 +52,8 @@ void bw_spi_dimmer_start(device_info_t *device_info) {
 		device_info->speed_hz = (uint32_t) BW_DIMMER_SPI_SPEED_MAX_HZ;
 	}
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select >= SPI_CS2) {
+		device_info->chip_select = SPI_CS2;
 		bcm2835_aux_spi_begin();
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
@@ -74,7 +75,7 @@ void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value)
 	cmd[1] = (char) BW_PORT_WRITE_DIMMER;
 	cmd[2] = (char) value;
 
-	if (device_info->chip_select == (uint8_t) 2) {
+	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	} else {
