@@ -210,12 +210,12 @@ static uint8_t clear_buffer[1025] __attribute__((aligned(4)));
  *
  */
 static void reset(void) {
-	bcm2835_gpio_fsel(OLED_RST, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_set(OLED_RST);
 	udelay(1000);
 	bcm2835_gpio_clr(OLED_RST);
 	udelay(10000);
 	bcm2835_gpio_set(OLED_RST);
+	udelay(10000);
 }
 
 /**
@@ -275,6 +275,7 @@ static void _send_data(const oled_info_t *oled_info, const uint8_t *data, const 
 			bcm2835_spi_transfernb((char *)p, NULL, l);
 		}
 	} else {
+		i2c_setup(oled_info);
 		(void) bcm2835_i2c_write((const char *) data, len);
 	}
 }
@@ -358,8 +359,6 @@ void oled_set_cursor(const oled_info_t *oled_info, const uint8_t row, const uint
 int oled_putc(const oled_info_t *oled_info, const int c) {
 	uint8_t i;
 	uint8_t *base;
-
-	i2c_setup(oled_info);
 
 	if (c < 32 || c > 127) {
 		i = (uint8_t) 0;
@@ -503,13 +502,15 @@ const bool oled_start(oled_info_t *oled_info) {
 			bcm2835_spi_begin();
 			oled_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / oled_info->speed_hz);
 		}
+		bcm2835_gpio_fsel(OLED_RST, BCM2835_GPIO_FSEL_OUTP);
+		bcm2835_gpio_set(OLED_RST);
 		bcm2835_gpio_fsel(OLED_DC, BCM2835_GPIO_FSEL_OUTP);
+
+		if (oled_info->reset) {
+			reset();
+		}
 	} else {
 		return false;
-	}
-
-	if (oled_info->reset) {
-		reset();
 	}
 
 	switch (oled_info->type) {

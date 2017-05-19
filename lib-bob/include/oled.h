@@ -29,6 +29,13 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
+#define OLED_CONNECTED(b,f)	\
+do {						\
+	if(b) {					\
+		f;					\
+	}						\
+} while (0);
+
 #define OLED_I2C_SLAVE_ADDRESS_DEFAULT	0x3C	///<
 
 #define OLED_SPI_SPEED_MAX_HZ			8000000	///< 8 MHz
