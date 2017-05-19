@@ -53,8 +53,8 @@ static FATFS fat_fs;		/* File system object */
  *
  * @return The board uptime in seconds
  */
-const uint64_t hardware_uptime_seconds(void) {
-	return (((bcm2835_st_read() - hardware_init_startup_micros) / 1E6));
+const uint32_t hardware_uptime_seconds(void) {
+	return (uint32_t)(bcm2835_st_read() - hardware_init_startup_micros) / (uint32_t) 1000000;
 }
 
 /**

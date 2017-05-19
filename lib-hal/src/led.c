@@ -30,7 +30,7 @@
 
 #include "hardware.h"
 
-static uint32_t ticks_per_second = (uint32_t) (1E6 / 2);	///< Blinking at 1Hz
+static uint32_t ticks_per_second = (uint32_t) (1000000 / 2);///< Blinking at 1Hz
 static uint32_t micros_previous = 0;						///<
 static uint32_t led_counter = 0;							///<
 

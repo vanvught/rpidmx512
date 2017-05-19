@@ -50,7 +50,7 @@ extern void hardware_init(void);
 extern void hardware_reboot(void);
 extern void hardware_led_init(void);
 extern void hardware_led_set(const int);
-extern const uint64_t hardware_uptime_seconds(void);
+extern const uint32_t hardware_uptime_seconds(void);
 extern const int32_t hardware_firmware_get_revision(void);
 extern /*@shared@*/const char *hardware_firmware_get_copyright(void);
 extern const uint8_t hardware_firmware_get_copyright_length(void);

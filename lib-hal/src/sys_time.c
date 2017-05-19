@@ -96,12 +96,12 @@ void sys_time_set(const struct tm *tmbuf) {
  */
 time_t sys_time(time_t *__timer) {
 	dmb();
-	time_t elapsed = (time_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E6);
+	time_t elapsed = (time_t) ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000000);
 	dmb();
 
 	elapsed = elapsed + rtc_startup_seconds;
 
-	if (__timer != NULL ) {
+	if (__timer != NULL) {
 		*__timer = elapsed;
 	}
 
@@ -114,7 +114,7 @@ time_t sys_time(time_t *__timer) {
  */
 const uint32_t millis(void) {
 	dmb();
-	const uint32_t elapsed = (uint32_t)((bcm2835_st_read() - sys_time_init_startup_micros) / 1E3);
+	const uint32_t elapsed = ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000);
 	dmb();
 
 	return elapsed;
