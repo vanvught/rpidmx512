@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-LIBS += hal uuid ff11 emmc fb lcd bob i2c utils bcm2835
+LIBS += hal uuid fb lcd bob i2c utils ff11 emmc bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -146,7 +146,7 @@ $(BUILD)vectors.o : firmware/vectors.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
-	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) -lgcc
+	$(ARMGNU)-ld $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) #-lgcc
 	$(ARMGNU)-objdump -D $(BUILD)main.elf | $(ARMGNU)-c++filt > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
@@ -158,7 +158,7 @@ $(BUILD7)vectors.o : firmware/vectors.S
 	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD7)vectors.o
 	
 $(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
-	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) -lgcc
+	$(ARMGNU)-ld $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) #-lgcc
 	$(ARMGNU)-objdump -D $(BUILD7)main.elf | $(ARMGNU)-c++filt > $(LIST7)
 
 $(TARGET7) : $(BUILD7)main.elf
@@ -170,7 +170,7 @@ $(BUILD8)vectors.o : firmware/vectors.S
 	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD8)vectors.o
 	
 $(BUILD8)main.elf : Makefile $(LINKER) $(BUILD8)vectors.o $(OBJECTS8) $(LIB7DEP)
-	$(ARMGNU)-ld $(BUILD8)vectors.o $(OBJECTS8) -Map $(MAP8) -T $(LINKER) -o $(BUILD8)main.elf $(LIB8) $(LDLIBS) -lgcc
+	$(ARMGNU)-ld $(BUILD8)vectors.o $(OBJECTS8) -Map $(MAP8) -T $(LINKER) -o $(BUILD8)main.elf $(LIB8) $(LDLIBS) #-lgcc
 	$(ARMGNU)-objdump -D $(BUILD8)main.elf | $(ARMGNU)-c++filt > $(LIST8)
 
 $(TARGET8) : $(BUILD8)main.elf

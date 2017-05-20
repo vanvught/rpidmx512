@@ -22,9 +22,9 @@ BUILD = build/
 BUILD7 = build7/
 BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) 
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.S))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) 
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
+OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c))  $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
+OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
 
 TARGET = lib/libbcm2835.a 
 TARGET7 = lib7/libbcm2835.a
@@ -39,18 +39,12 @@ all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p build build7 build8 lib lib7 lib8
+	@mkdir -p build lib build7 lib7 # build8 lib8
 
 clean :
-	rm -f $(BUILD)*.o
-	rm -f $(BUILD7)*.o
-	rm -f $(BUILD8)*.o
-	rm -f $(TARGET)
-	rm -f $(TARGET7)
-	rm -f $(TARGET8)	
-	rm -f $(LIST)
-	rm -f $(LIST7)
-	rm -f $(LIST8)	
+	rm -rf $(BUILD) $(BUILD7) $(BUILD8)
+	rm -f $(TARGET) $(TARGET7) $(TARGET8)	
+	rm -f $(LIST) $(LIST7) $(LIST8)	
 
 # ARM v6
 
@@ -58,6 +52,9 @@ $(BUILD)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(BUILD)%.o: $(SOURCE)/arm/%.S
+	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@
+	
+$(BUILD)%.o: $(SOURCE)/arm/aeabi/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@	
 
 $(BUILD)%.o: $(SOURCE)/%.c
@@ -65,6 +62,9 @@ $(BUILD)%.o: $(SOURCE)/%.c
 	
 $(BUILD)%.o: $(SOURCE)/arm/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@			
+
+$(BUILD)%.o: $(SOURCE)/arm/aeabi/%.c
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@		
 
 $(TARGET): Makefile $(OBJECTS)
 	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
@@ -76,12 +76,18 @@ $(BUILD7)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@
 	
 $(BUILD7)%.o: $(SOURCE)/arm/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@			
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@
+	
+$(BUILD7)%.o: $(SOURCE)/arm/aeabi/%.S
+	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@					
 
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
 $(BUILD7)%.o: $(SOURCE)/arm/%.c
+	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
+
+$(BUILD7)%.o: $(SOURCE)/arm/aeabi/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
 
 $(TARGET7): Makefile $(OBJECTS7)
@@ -96,10 +102,16 @@ $(BUILD8)%.o: $(SOURCE)/%.S
 $(BUILD8)%.o: $(SOURCE)/arm/%.S
 	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@				
 
+$(BUILD8)%.o: $(SOURCE)/arm/aeabi/%.S
+	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@	
+
 $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
 
 $(BUILD8)%.o: $(SOURCE)/arm/%.c
+	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
+
+$(BUILD8)%.o: $(SOURCE)/arm/aeabi/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
 
 $(TARGET8): Makefile $(OBJECTS8)

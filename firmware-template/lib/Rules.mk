@@ -47,18 +47,12 @@ all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p build build7 build8 lib lib7 lib8
+	@mkdir -p build lib build7 lib7 # build8 lib8
 
 clean :
-	rm -f $(BUILD)*.o
-	rm -f $(BUILD7)*.o
-	rm -f $(BUILD8)*.o
-	rm -f $(TARGET)
-	rm -f $(TARGET7)
-	rm -f $(TARGET8)	
-	rm -f $(LIST)
-	rm -f $(LIST7)
-	rm -f $(LIST8)	
+	rm -rf $(BUILD) $(BUILD7) $(BUILD8)
+	rm -f $(TARGET) $(TARGET7) $(TARGET8)	
+	rm -f $(LIST) $(LIST7) $(LIST8)	
 
 # ARM v6
 
