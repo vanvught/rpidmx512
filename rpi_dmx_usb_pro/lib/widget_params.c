@@ -130,7 +130,7 @@ static void process_line_update(const char *line, FIL *file_object_wr) {
 	}
 
 	(void) f_puts(line, file_object_wr);
-	i = (int) _strlen(line) - 1;
+	i = (int) strlen(line) - 1;
 	if (line[i] != (char) '\n') {
 		(void) f_putc((TCHAR) '\n', file_object_wr);
 	}
