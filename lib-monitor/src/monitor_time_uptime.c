@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "console.h"
 #include "hardware.h"
@@ -36,14 +37,11 @@
  * @param line
  */
 void monitor_time_uptime(const int line) {
-	const uint32_t minute = 60;
-	const uint32_t hour = minute * 60;
-	const uint32_t day = hour * 24;
-
-	const uint64_t uptime_seconds = hardware_uptime_seconds();
-
+	uint32_t time, days, hours, minutes, seconds;
 	time_t ltime;
 	struct tm *local_time;
+
+	time = hardware_uptime_seconds();
 
 	ltime = sys_time(NULL);
 	local_time = localtime(&ltime);
@@ -51,11 +49,16 @@ void monitor_time_uptime(const int line) {
 	console_save_cursor();
 	console_set_cursor(0, line);
 
-	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d\n",
+	days = time / ((uint32_t) 24 * (uint32_t) 3600);
+	time -= days * ((uint32_t) 24 * (uint32_t) 3600);
+	hours = time / (uint32_t) 3600;
+	time -= hours * (uint32_t) 3600;
+	minutes = time / (uint32_t) 60;
+	seconds = time - minutes * (uint32_t) 60;
+
+	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,
-			(int) (uptime_seconds / day), (int) ((uptime_seconds % day) / hour),
-			(int) ((uptime_seconds % hour) / minute),
-			(int) (uptime_seconds % minute));
+			(int) days, (int) hours, (int) minutes, (int) seconds);
 
 	console_restore_cursor();
 }
