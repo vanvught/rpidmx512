@@ -149,7 +149,7 @@ extern "C" {
 extern void midi_init(void);
 extern void midi_set_baudrate(const uint32_t);
 extern const uint32_t midi_get_baudrate(void);
-extern const char *midi_get_interface_description(void);
+extern /*@shared@*/const char *midi_get_interface_description(void);
 extern void midi_set_interface(const _midi_interfaces);
 
 extern /*@shared@*/struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;

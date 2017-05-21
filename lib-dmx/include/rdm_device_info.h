@@ -38,7 +38,11 @@ struct _rdm_device_info_data {
 	uint8_t length;
 };
 
+#ifdef RDM_RESPONDER
 extern void rdm_device_info_init(const bool);
+#else
+extern void rdm_device_info_init(void);
+#endif
 extern/*@shared@*/const uint8_t * rdm_device_info_get_uuid(void);
 extern void rdm_device_info_get_label(const uint16_t, /*@out@*/struct _rdm_device_info_data *);
 extern void rdm_device_info_get_manufacturer_name(/*@out@*/struct _rdm_device_info_data *);
