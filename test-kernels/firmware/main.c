@@ -33,7 +33,9 @@
 #include "irq_timer.h"
 #include "console.h"
 #include "wifi.h"
+
 #include "lcd.h"
+#include "oled.h"
 
 #include "software_version.h"
 
@@ -44,77 +46,83 @@ static const char *gpfsel_names[] = { "IN", "OUT ", "ALT5", "ALT4", "ALT0", "ALT
 
 static volatile unsigned led_state = 0;
 
-void led_handler(const uint32_t clo) {
-	const int state = led_state++ & 0x01;
+static void led_handler(const uint32_t clo) {
+	const unsigned state = led_state++ & (unsigned) 0x01;
 
-	console_set_cursor(0, 24);
-	console_putc((int) '0' + state);
-	hardware_led_set(state);
+	console_set_cursor(1, 26);
+	(void) console_putc((int) '0' + state);
+	hardware_led_set((int) state);
 
 	BCM2835_ST->C3 = clo + (uint32_t) 1000000;
 }
 
-void handle_rc(int rc) {
+static void handle_rc(const int32_t rc) {
 	console_save_color();
 	if (rc < 0) {
 		console_set_fg_color(CONSOLE_RED);
-		console_puts("Failed ");
+		(void) console_puts("Failed ");
 	} else {
 		console_set_fg_color(CONSOLE_GREEN);
-		console_puts("OK ");
+		(void) console_puts("OK ");
 	}
 	console_restore_color();
 }
 
 void notmain(void) {
+	int32_t arm_ram;
+	int32_t vc_ram;
+	int32_t arm_clock;
+	int32_t vc_clock;
+	int32_t uart_clock;
+	uint8_t mac_address[6];
+	uint32_t n, i, val;
+	oled_info_t oled_info = { OLED_128x32_I2C_DEFAULT };
+
 	hardware_init();
 
-	printf("[V%s] %s [%x]\n\n", SOFTWARE_VERSION, hardware_board_get_model(), (unsigned int)hardware_board_get_model_id());
+	printf("[V%s] %s [%x] SoC: %s\n\n", SOFTWARE_VERSION, hardware_board_get_model(), (unsigned int) hardware_board_get_model_id(), hardware_board_get_soc());
 #if defined (RPI1)
-	console_puts("kernel.img : ");
+	(void) console_puts("kernel.img : ");
 #elif defined (RPI2)
-	console_puts("kernel7.img : ");
+	(void) console_puts("kernel7.img : ");
 #elif defined (RPI3)
-	console_puts("kernel8.img : ");
+	(void) console_puts("kernel8.img : ");
 #else
-	console_puts("Unknown kernel : ");
+	(void) console_puts("Unknown kernel : ");
 #endif
 	printf("Compiled on %s at %s\n\n", __DATE__, __TIME__);
 
-	uint32_t arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
+	arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
 	handle_rc(arm_ram);
-	printf("ARM RAM : %d MB\n", (int)arm_ram);
+	printf("ARM RAM : %d MB\n", (int) arm_ram);
 
-	uint32_t vc_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_VC_MEMORY) / 1024 / 1024;	///< MB
+	vc_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_VC_MEMORY) / 1024 / 1024;	///< MB
 	handle_rc(vc_ram);
-	printf("VC RAM  : %d MB\n", (int)vc_ram);
+	printf("VC RAM  : %d MB\n", (int) vc_ram);
 
-	uint32_t arm_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_ARM);
+	arm_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_ARM);
 	handle_rc(arm_clock);
-	printf("ARM CLOCK  : %d MHz\n", (int)arm_clock);
+	printf("ARM CLOCK  : %d MHz\n", (int) arm_clock);
 
-	uint32_t vc_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
+	vc_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_CORE);
 	handle_rc(vc_clock);
-	printf("VC CLOCK   : %d MHz\n", (int)vc_clock);
+	printf("VC CLOCK   : %d MHz\n", (int) vc_clock);
 
-	uint32_t uart_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART);
+	uart_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART);
 	handle_rc(uart_clock);
-	printf("UART CLOCK : %d MHz\n", (int)uart_clock);
+	printf("UART CLOCK : %d MHz\n", (int) uart_clock);
 
-	uint8_t mac_address[6];
 	handle_rc(bcm2835_vc_get_board_mac_address(mac_address));
-	printf("MAC : %.2x%.2x:%.2x%.2x%.2x%.2x\n\n", mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
+	printf("MAC : %.2x%.2x:%.2x%.2x%.2x%.2x\n\n", (unsigned int) mac_address[0], (unsigned int) mac_address[1], (unsigned int) mac_address[2], (unsigned int) mac_address[3], (unsigned int) mac_address[4], (unsigned int) mac_address[5]);
 
-	unsigned int n, i, val;
+	for (n = 0; n < 6; n++) {							// Loop for GPFSEL0 to GPFSEL5
+		val = *((uint32_t *) BCM2835_GPIO_BASE + n) & (n < 5 ? 0x3fffffff : 0x00000fff);
+		printf("GPFSEL%d ", (int) n);
 
-	for (n = 0; n < 6; n++) {								// Loop for GPFSEL0 to GPFSEL5
-		val = *((unsigned int *) BCM2835_GPIO_BASE + n) & (n < 5 ? 0x3fffffff : 0x00000fff);
-		printf("GPFSEL%d ", n);
-
-		for (i = 0; i < 10; i++) {							// Loop for the 9 bit-triplets in each GPFSELn register
-			int fsel_num = n * 10 + i;						// The logical FSEL number
-			int bit_pos = i * 3;							// The position of the least significant bit in the triplet
-			unsigned int triplet = (val >> bit_pos) & 0x7;	// Extract the bit- triplet
+		for (i = 0; i < 10; i++) {						// Loop for the 9 bit-triplets in each GPFSELn register
+			uint32_t fsel_num = n * 10 + i;				// The logical FSEL number
+			uint32_t bit_pos = i * 3;					// The position of the least significant bit in the triplet
+			uint32_t triplet = (val >> bit_pos) & 0x7;	// Extract the bit- triplet
 
 			if (triplet == 0) {
 				int in_value;
@@ -125,23 +133,27 @@ void notmain(void) {
 					uint32_t value = BCM2835_GPIO->GPLEV1;
 					in_value = (value & (1 << (fsel_num - 32))) ? 1 : 0;
 				}
-				printf("%2d:%s:%d ", fsel_num, gpfsel_names[triplet], in_value);
+				printf("%2d:%s:%d ", (int) fsel_num, gpfsel_names[triplet], in_value);
 			} else {
-				printf("%2d:%s ", fsel_num, gpfsel_names[triplet]);
+				printf("%2d:%s ", (int) fsel_num, gpfsel_names[triplet]);
 			}
 
-			if (n == 5 && i == 3) {							// break out of loop after FSEL53 (last triplet)
+			if (n == 5 && i == 3) {						// break out of loop after FSEL53 (last triplet)
 				break;
 			}
 		}
 
-		console_puts("\n");
+		(void) console_puts("\n");
 	}
 
-	console_puts("\n");
+	(void) console_puts("\n");
 
 	if (lcd_detect()) {
-		console_puts("I2C LCD 16x2 found\n");
+		(void) console_puts("I2C LCD 16x2 found\n");
+	}
+
+	if (oled_start(&oled_info)) {
+		(void) console_puts("OLED display found\n");
 	}
 
 	irq_timer_init();
@@ -150,17 +162,17 @@ void notmain(void) {
 
 	if (wifi_detect()) {
 		wifi_init("");
-		console_puts("ESP8266 information\n");
+		(void) console_puts("\nESP8266 information\n");
 		printf(" SDK      : %s\n", system_get_sdk_version());
 		printf(" Firmware : %s\n\n", wifi_get_firmware_version());
 	} else {
 		console_save_color();
 		console_set_fg_color(CONSOLE_RED);
-		console_puts("\nFailed connecting to ESP8266\n");
+		(void) console_puts("\nFailed connecting to ESP8266\n");
 		console_restore_color();
 	}
 
-	while (1) {
+	for(;;) {
 	}
 
 }
