@@ -46,4 +46,9 @@ typedef struct _device_info {
 	} internal;
 } device_info_t;
 
+#define DEVICE_INFO_I2C_DEFAULT			SPI_CS0, (uint8_t) 0, 0, true, { (uint8_t) 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS0_DEFAULT		SPI_CS0, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS1_DEFAULT		SPI_CS1, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS2_DEFAULT		SPI_CS2, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
+
 #endif /* DEVICE_INFO_H_ */
