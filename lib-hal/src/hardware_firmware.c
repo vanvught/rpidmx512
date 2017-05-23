@@ -2,7 +2,7 @@
  * @file hardware_firmware.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ const int32_t hardware_firmware_get_revision(void) {
  *
  * @return
  */
-const char *hardware_firmware_get_copyright(void) {
+/*@shared@*/const char *hardware_firmware_get_copyright(void) {
 	return BROADCOM_COPYRIGHT;
 }
 

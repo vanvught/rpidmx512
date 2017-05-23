@@ -88,7 +88,7 @@ const int32_t hardware_board_get_model_id(void) {
  *
  * @return
  */
-const char *hardware_board_get_model(void) {
+/*@shared@*/const char *hardware_board_get_model(void) {
 	const uint8_t array_length = sizeof(board_version) / sizeof(board_version[0]);
 	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
 
@@ -121,7 +121,7 @@ const uint8_t hardware_board_get_model_length(void) {
  *
  * @return
  */
-const char *hardware_board_get_soc(void) {
+/*@shared@*/const char *hardware_board_get_soc(void) {
 	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
 	_soc_type type;
 
@@ -129,8 +129,8 @@ const char *hardware_board_get_soc(void) {
 		return soc_name[SOC_TYPE_UNKNOWN];
 	}
 
-	if (revision_code & (1 << 23)) {
-		type = (_soc_type) ((revision_code >> 12) & 0xF);
+	if ((revision_code & ((int32_t) 1 << 23)) == ((int32_t) 1 << 23)) {
+		type = (_soc_type) (((uint32_t) revision_code >> 12) & 0xF);
 		if (type > SOC_TYPE_UNKNOWN) {
 			return soc_name[SOC_TYPE_UNKNOWN];
 		} else {
@@ -139,6 +139,4 @@ const char *hardware_board_get_soc(void) {
 	} else {
 		return soc_name[SOC_TYPE_BCM2835];
 	}
-
-	return soc_name[SOC_TYPE_UNKNOWN];
 }

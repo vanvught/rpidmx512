@@ -51,7 +51,7 @@ const bool hardware_uuid(uuid_t out) {
 		sprintf(file_name, "%02x%02x%02x%02x", (unsigned int) mac[2], (unsigned int) mac[3], (unsigned int) mac[4], (unsigned int) mac[5]);
 	}
 
-	memcpy(&file_name[8], EXT_UID, 4);
+	(void) memcpy(&file_name[8], EXT_UID, 4);
 
 	file_name[12] = '\0';
 
@@ -78,7 +78,7 @@ const bool hardware_uuid(uuid_t out) {
 	}
 
 	if (!have_uuid) {
-		uuid_parse(DUMMY_UUID, out);
+		(void) uuid_parse(DUMMY_UUID, out);
 	}
 
 	return have_uuid;

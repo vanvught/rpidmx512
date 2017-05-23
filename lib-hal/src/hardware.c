@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
 #include "bcm2835_rng.h"
 #include "bcm2837_gpio_virt.h"
 
-#include "hardware.h"
 #include "console.h"
 #include "sys_time.h"
 #include "ff.h"
@@ -84,6 +83,7 @@ const int32_t hardware_get_core_temperature(void) {
  *
  */
 void hardware_init(void) {
+	int32_t board_revision;
 #if defined ( RPI2 ) || defined ( RPI3 )
 #ifndef ARM_ALLOW_MULTI_CORE
 	// put all secondary cores to sleep
@@ -111,7 +111,7 @@ void hardware_init(void) {
 #error Not a recognized/tested FatFs version
 #endif
 
-	const uint32_t board_revision = bcm2835_vc_get_get_board_revision();
+	board_revision = bcm2835_vc_get_get_board_revision();
 
 	if ((board_revision == 0xa02082) || (board_revision == 0xa22082)) {
 		_hardware_led_f.init = bcm2837_gpio_virt_init;

@@ -48,9 +48,5 @@ const bool i2c_is_connected(const uint8_t address) {
 		ret = bcm2835_i2c_write(NULL, 0);
 	}
 
-	if (ret == (uint8_t) 0) {
-		return true;
-	} else {
-		return false;
-	}
+	return (ret == (uint8_t) 0) ? true : false;
 }

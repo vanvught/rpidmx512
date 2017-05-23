@@ -44,7 +44,7 @@ void i2c_write(const uint8_t data) {
 
 	BCM2835_BSC1->C = (uint32_t) (BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
 
-	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
+	while ((BCM2835_BSC1->S & BCM2835_BSC_S_DONE) != BCM2835_BSC_S_DONE) {
 	}
 
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
@@ -64,7 +64,7 @@ void i2c_write_uint16(const uint16_t data) {
 
 	BCM2835_BSC1->C = (uint32_t) (BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
 
-	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
+	while ((BCM2835_BSC1->S & BCM2835_BSC_S_DONE) != BCM2835_BSC_S_DONE) {
 	}
 
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
@@ -85,7 +85,7 @@ void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
 
 	BCM2835_BSC1->C = (uint32_t) (BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
 
-	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
+	while ((BCM2835_BSC1->S & BCM2835_BSC_S_DONE) != BCM2835_BSC_S_DONE) {
 	}
 
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
@@ -107,7 +107,7 @@ void i2c_write_reg_uint16(const uint8_t reg, const uint16_t data) {
 
 	BCM2835_BSC1->C = (uint32_t) (BCM2835_BSC_C_I2CEN | BCM2835_BSC_C_ST);
 
-	while (!(BCM2835_BSC1->S & BCM2835_BSC_S_DONE)) {
+	while ((BCM2835_BSC1->S & BCM2835_BSC_S_DONE) != BCM2835_BSC_S_DONE) {
 	}
 
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
