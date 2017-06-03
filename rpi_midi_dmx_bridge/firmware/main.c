@@ -35,6 +35,7 @@
 
 #include "dmx.h"
 
+#include "midi.h"
 #include "midi_params.h"
 
 #include "bridge.h"
@@ -46,7 +47,6 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 extern void bridge_params_init(void);
-extern void midi_init(void);
 extern void dmx_init(void);
 
 // Poll table
@@ -54,7 +54,7 @@ extern void midi_poll(void);
 
 struct _poll {
 	void (*f)(void);
-}static const poll_table[] = {
+}static const poll_table[] ALIGNED = {
 		{ midi_poll },
 		{ bridge },
 		{ led_blink } };
@@ -64,19 +64,19 @@ extern void monitor_update(void);
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
-}static const events[] = {
+}static const events[] ALIGNED = {
 		{ 1000000, monitor_update } };
 
-uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
  * @ingroup main
  *
  */
 static void events_init() {
-	int i;
+	size_t i;
 	const uint32_t mircos_now = hardware_micros();
-	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		events_elapsed_time[i] += mircos_now;
 	}
 }
@@ -86,9 +86,9 @@ static void events_init() {
  *
  */
 inline static void events_check() {
-	int i;
+	size_t i;
 	const uint32_t micros_now = hardware_micros();
-	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		if (micros_now - events_elapsed_time[i] > events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
@@ -98,14 +98,12 @@ inline static void events_check() {
 }
 
 void notmain(void) {
-	oled_info_t oled_info;
-	bool oled_connected;
+	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	bool oled_connected = false;
+	uint8_t midi_channel = 0;
 	int i;
 
 	hardware_init();
-
-	oled_info.slave_address = 0;
-	oled_info.type = OLED_PANEL_128x64;
 
 	oled_connected = oled_start(&oled_info);
 
@@ -117,26 +115,27 @@ void notmain(void) {
 	midi_set_interface(MIDI_INTERFACE_IN_SPI);
 	midi_set_baudrate(midi_params_get_baudrate());
 	midi_active_set_sense(true);
-	midi_init();
+	midi_init(MIDI_DIRECTION_INPUT);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("MIDI In : Baudrate : %d, Interface : %s, mode : %d\n", (int) midi_get_baudrate(), midi_get_interface_description(),
-			bridge_params_get_bridge_mode());
+	printf("MIDI In : Baudrate : %d, Interface : %s, mode : %d\n", (int) midi_get_baudrate(), midi_get_interface_description(), (int) bridge_params_get_bridge_mode());
 	printf("DMX Out : BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
 			(int) bridge_params_get_break_time(), (int) dmx_get_output_break_time(),
 			(int) bridge_params_get_mab_time(), (int) dmx_get_output_mab_time(),
 			(int) bridge_params_get_refresh_rate(), (int) (1000000 / dmx_get_output_period()));
 
 	if (oled_connected) {
-		oled_set_cursor(&oled_info,0,0);
+		midi_channel = bridge_params_get_midi_channel();
+
+		oled_set_cursor(&oled_info, 0, 0);
 		(void) oled_printf(&oled_info, "[V%s] MIDI->DMX", SOFTWARE_VERSION);
-		oled_set_cursor(&oled_info,2,0);
+		oled_set_cursor(&oled_info, 2, 0);
 		(void) oled_printf(&oled_info, "MIDI In: %d", (int) midi_get_baudrate());
-		oled_set_cursor(&oled_info,3,0);
+		oled_set_cursor(&oled_info, 3, 0);
 		(void) oled_printf(&oled_info, "Mode: %d", (int) bridge_params_get_bridge_mode());
-		oled_set_cursor(&oled_info,4,0);
-		(void) oled_printf(&oled_info, "Chl: %d %s", bridge_params_get_midi_channel(), bridge_params_get_midi_channel() == 0 ? "<OMNI>" : "");
-		oled_set_cursor(&oled_info,6,0);
+		oled_set_cursor(&oled_info, 4, 0);
+		(void) oled_printf(&oled_info, "Chl: %d %s", midi_channel, midi_channel == 0 ? "<OMNI>" : "");
+		oled_set_cursor(&oled_info, 6, 0);
 		(void) oled_printf(&oled_info, "DMX Address: %d", (int) bridge_params_get_dmx_start_address());
 	}
 

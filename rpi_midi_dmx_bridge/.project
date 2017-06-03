@@ -3,7 +3,7 @@
 	<name>rpi_midi_dmx_bridge</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
+		<project>lib-dmx</project>
 		<project>lib-hal</project>
 		<project>lib-midi</project>
 		<project>lib-monitor</project>

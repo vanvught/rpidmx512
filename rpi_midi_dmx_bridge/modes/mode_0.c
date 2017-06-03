@@ -56,7 +56,7 @@ void mode_0(void) {
 	uint8_t dmx_index = (uint8_t) 0;
 	bool dmx_new_data = false;
 
-	if (midi_get_active_sense_state() == MIDI_ACTIVE_SENSE_FAILED) {
+	if (midi_active_get_sense_state() == MIDI_ACTIVE_SENSE_FAILED) {
 		if (!midi_active_sense_failed) {
 			dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 			midi_active_sense_failed = true;
@@ -129,7 +129,7 @@ void mode_0_init(void) {
 	midi_message = (const struct _midi_message *) midi_message_get();
 	midi_channel = bridge_params_get_midi_channel();
 
-	midi_active_sense_failed = (midi_get_active_sense_state() == MIDI_ACTIVE_SENSE_FAILED);
+	midi_active_sense_failed = (midi_active_get_sense_state() == MIDI_ACTIVE_SENSE_FAILED);
 
 	dmx_start_address = bridge_params_get_dmx_start_address();
 	dmx_max_slot = (dmx_start_address + (uint16_t) 127) <= DMX_UNIVERSE_SIZE ? (dmx_start_address + (uint16_t) 127) : DMX_UNIVERSE_SIZE + (uint16_t) 1; // SC
