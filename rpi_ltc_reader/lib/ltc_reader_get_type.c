@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file ltc_reader_get_type.c
  *
  */
 /* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include "ltc_reader.h"
 
-static const char SOFTWARE_VERSION[] = "1.2";
+#include "util.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+static const char types[5][TC_TYPE_MAX_LENGTH + 1] ALIGNED =
+	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
+
+/**
+ *
+ * @param type
+ * @return
+ */
+const char *ltc_reader_get_type(const timecode_types type) {
+	if (type > TC_TYPE_UNKNOWN) {
+		return types[TC_TYPE_UNKNOWN];
+	}
+
+	return types[type];
+}

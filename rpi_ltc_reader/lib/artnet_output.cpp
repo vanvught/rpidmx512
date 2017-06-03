@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file artnet_output.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stddef.h>
+#include <stdint.h>
 
-static const char SOFTWARE_VERSION[] = "1.2";
+#include "midi.h"
+#include "ltc_reader.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnetnode.h"
+
+static ArtNetNode *_node = NULL;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ *
+ * @param tc
+ * @param type
+ */
+void artnet_output(const struct _midi_send_tc *tc) {
+	struct TArtNetTimeCode ArtNetTimeCode;
+
+	if (_node != NULL) {
+		ArtNetTimeCode.Frames = tc->frame;
+		ArtNetTimeCode.Hours = tc->hour;
+		ArtNetTimeCode.Minutes = tc->minute;
+		ArtNetTimeCode.Seconds = tc->second;
+		ArtNetTimeCode.Type = (uint8_t) tc->rate;
+
+		_node->SendTimeCode(&ArtNetTimeCode);
+	}
+}
+
+/**
+ *
+ * @param node
+ */
+void artnet_output_set_node(const ArtNetNode *node) {
+	_node = (ArtNetNode *) node;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+
+

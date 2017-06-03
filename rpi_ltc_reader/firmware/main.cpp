@@ -32,19 +32,22 @@
 #include "display_oled.h"
 #include "display_7segment.h"
 
-#include "midi_send.h"
-
-#include "wifi.h"
-#include "udp.h"
-#include "ap_params.h"
-#include "network_params.h"
+#include "midi_sender.h"
+#include "midi_reader.h"
 
 #include "ltc_reader.h"
 #include "ltc_reader_params.h"
 
+#include "artnetnode.h"
+#include "artnetreader.h"
+#include "artnet_output.h"
+
+#include "wifi.h"
+#include "wifi_udp.h"
+
 #include "software_version.h"
 
-static struct _ltc_reader_output output = { true, false, false, false };
+static struct _ltc_reader_output output = { true, false, false, false, false, false };
 
 extern "C" {
 
@@ -52,17 +55,24 @@ static void handle_bool(const bool b) {
 	if (b) {
 		console_save_color();
 		console_set_fg_color(CONSOLE_GREEN);
-		console_puts("Yes");
+		(void) console_puts("Yes");
 		console_restore_color();
 	} else {
-		console_puts("No");
+		(void) console_puts("No");
 	}
 }
 
 void notmain(void) {
+	struct ip_info ip_config;
+	ltc_reader_source_t source = LTC_READER_SOURCE_LTC;
+	ArtNetNode node;
+	ArtNetReader reader;
+
 	hardware_init();
 
 	ltc_reader_params_init();
+
+	source = ltc_reader_params_get_source();
 
 	output.console_output = ltc_reader_params_is_console_output();
 	output.lcd_output = ltc_reader_params_is_lcd_output();
@@ -71,8 +81,50 @@ void notmain(void) {
 	output.midi_output = ltc_reader_params_is_midi_output();
 	output.artnet_output = ltc_reader_params_is_artnet_output();
 
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("SMPTE TimeCode LTC Reader / Protocol converter");
+
+	console_set_top_row(3);
+
+	switch (source) {
+		case LTC_READER_SOURCE_ARTNET:
+			output.artnet_output = false;
+			break;
+		case LTC_READER_SOURCE_MIDI:
+			output.midi_output = false;
+			break;
+		default:
+			break;
+	}
+
+	if (output.artnet_output || (source == LTC_READER_SOURCE_ARTNET) ) {
+		if (wifi(&ip_config)) {
+			console_status(CONSOLE_YELLOW, "Starting UDP ...");
+			wifi_udp_begin(6454);
+
+			console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
+
+			node.SetOutput(NULL);
+			node.SetDirectUpdate(false);
+
+			node.SetShortName("AvV Art-Net Node");
+			node.SetLongName("Raspberry Pi Art-Net 3 Node TimeCode");
+
+			console_status(CONSOLE_YELLOW, "Starting Node ...");
+
+			node.Start();
+
+			console_status(CONSOLE_GREEN, "ArtNet started");
+		} else {
+			output.artnet_output = false;
+			if (source == LTC_READER_SOURCE_ARTNET) {
+				source = LTC_READER_SOURCE_LTC;
+			}
+		}
+	}
+
 	if(output.midi_output) {
-		midi_send_init();
+		midi_sender_init();
 	}
 
 	if (output.lcd_output) {
@@ -88,91 +140,66 @@ void notmain(void) {
 	}
 
 	if (output.artnet_output) {
-		output.artnet_output = wifi_detect();
+		artnet_output_set_node(&node);
 	}
 
-	ltc_reader_init(&output);
+	console_set_cursor(0, 15);
+	(void) console_puts("Source : ");
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("SMPTE TimeCode LTC Reader / Converter");
-
-	console_set_top_row(3);
-
-	console_set_cursor(0, 8);
-	console_puts("Console output   : "); handle_bool(output.console_output); console_putc('\n');
-	console_puts("LCD output       : "); handle_bool(output.lcd_output); console_putc('\n');
-	console_puts("OLED output      : "); handle_bool(output.oled_output); console_putc('\n');
-	console_puts("7-Segment output : "); handle_bool(output.segment_output); console_putc('\n');
-	console_puts("MIDI output      : "); handle_bool(output.midi_output); console_putc('\n');
-	console_puts("ArtNet output    : "); handle_bool(output.artnet_output);console_puts(" (not implemented)\n");
-
-	if (output.artnet_output) {
-		uint8_t mac_address[6];
-		struct ip_info ip_config;
-
-		(void) ap_params_init();
-		const char *ap_password = ap_params_get_password();
-
-		console_status(CONSOLE_YELLOW, "Starting Wifi ...");
-
-		wifi_init(ap_password);
-
-		printf("\nESP8266 information\n");
-		printf(" SDK      : %s\n", system_get_sdk_version());
-		printf(" Firmware : %s\n\n", wifi_get_firmware_version());
-
-		if (network_params_init()) {
-			console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
-			if (network_params_is_use_dhcp()) {
-				wifi_station(network_params_get_ssid(), network_params_get_password());
-			} else {
-				ip_config.ip.addr = network_params_get_ip_address();
-				ip_config.netmask.addr = network_params_get_net_mask();
-				ip_config.gw.addr = network_params_get_default_gateway();
-				wifi_station_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
-			}
-		}
-
-		const _wifi_mode opmode = wifi_get_opmode();
-
-		if (opmode == WIFI_STA) {
-			printf("WiFi mode : Station\n");
-		} else {
-			printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
-		}
-
-		if (wifi_get_macaddr(mac_address)) {
-			printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
-		} else {
-			console_error("wifi_get_macaddr");
-		}
-
-		printf(" Hostname    : %s\n", wifi_station_get_hostname());
-
-		if (wifi_get_ip_info(&ip_config)) {
-			printf(" IP-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
-			printf(" Netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
-			printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
-			if (opmode == WIFI_STA) {
-				const _wifi_station_status status = wifi_station_get_connect_status();
-				printf("      Status : %s\n", wifi_station_status(status));
-				if (status != WIFI_STATION_GOT_IP){
-					console_error("Not connected!");
-					for(;;);
-				}
-			}
-		} else {
-			console_error("wifi_get_ip_info");
-		}
-
-		console_status(CONSOLE_YELLOW, "Starting UDP ...");
-		udp_begin(6454);
-
-		console_status(CONSOLE_GREEN, "Wifi is started");
+	switch (source) {
+	case LTC_READER_SOURCE_ARTNET:
+		(void) console_puts("Art-Net");
+		node.SetTimeCodeHandler(&reader);
+		reader.Start(&output);
+		break;
+	case LTC_READER_SOURCE_MIDI:
+		(void) console_puts("MIDI");
+		midi_reader_init(&output);
+		printf(", baudrate : %d, interface : %s", (int) midi_get_baudrate(), midi_get_interface_description());
+		break;
+	default:
+		ltc_reader_init(&output);
+		(void) console_puts("LTC");
+		break;
 	}
+
+	(void) console_puts("\n\nConsole output   : ");
+	handle_bool(output.console_output);
+	(void) console_puts("\nLCD output       : ");
+	handle_bool(output.lcd_output);
+	(void) console_puts("\nOLED output      : ");
+	handle_bool(output.oled_output);
+	(void) console_puts("\n7-Segment output : ");
+	handle_bool(output.segment_output);
+	(void) console_puts("\nMIDI output      : ");
+	handle_bool(output.midi_output);
+	if (output.midi_output) {
+		printf(", baudrate : %d, interface : %s", (int) midi_get_baudrate(), midi_get_interface_description());
+	}
+	(void) console_puts("\nArtNet output    : ");
+	handle_bool(output.artnet_output);
 
 	for (;;) {
-		ltc_reader();
+		switch (source) {
+		case LTC_READER_SOURCE_LTC:
+			ltc_reader();
+			break;
+		case LTC_READER_SOURCE_ARTNET:
+			// Handles MIDI Quarter Frame output messages.
+			reader.Run();
+			break;
+		case LTC_READER_SOURCE_MIDI:
+			midi_reader();
+			break;
+		default:
+			break;
+		}
+
+		if (output.artnet_output || (source == LTC_READER_SOURCE_ARTNET)) {
+			// For all cases when ArtNet is enabled -> handles OpPoll / OpPollReply
+			// When source == LTC_READER_SOURCE_ARTNET -> handle OpTimeCode
+			(void) node.HandlePacket();
+		}
 	}
 }
 

@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file midi_sender.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include "midi.h"
+#include "midi_params.h"
 
-static const char SOFTWARE_VERSION[] = "1.2";
-
-#endif /* SOFTWARE_VERSION_H_ */
+void midi_sender_init(void) {
+	midi_params_init();
+	midi_set_interface(midi_params_get_interface());
+	midi_set_baudrate(midi_params_get_baudrate());
+	midi_init(MIDI_DIRECTION_OUTPUT);
+}

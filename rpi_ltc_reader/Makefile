@@ -1,8 +1,10 @@
 #
-DEFINES = 
+DEFINES = LTC_READER MIDI_INTERFACE_UART MIDI_INTERFACE_SPI NDEBUG
 #
-LIBS = midi esp8266
+LIBS = midi artnet lightset c++
 #
 SRCDIR = firmware lib
 
 include ../firmware-template/Rules.mk
+
+prerequisites:

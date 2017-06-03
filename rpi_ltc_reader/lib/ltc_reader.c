@@ -50,18 +50,25 @@
 #include "display_7segment.h"
 
 #include "midi.h"
-#include "midi_send.h"
 
 #include "ltc_reader.h"
 #include "ltc_reader_params.h"
 
 #include "util.h"
 
-static volatile char timecode[LCD_MAX_CHARACTERS] ALIGNED;
+#define ONE_TIME_MIN        150	///< 417us/2 = 208us
+#define ONE_TIME_MAX       	300	///< 521us/2 = 260us
+#define ZERO_TIME_MIN      	380	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
+#define ZERO_TIME_MAX      	600	///< 24 FPS * 80 bits = 1920Hz, 1E6/1920Hz = 521us
+
+#define END_DATA_POSITION	63	///<
+#define END_SYNC_POSITION	77	///<
+#define END_SMPTE_POSITION	80	///<
+
+static volatile char timecode[TC_CODE_MAX_LENGTH] ALIGNED;
 
 static const struct _ltc_reader_output *output;
 
-static const char types[5][12] ALIGNED = {"Film 24fps " , "EBU 25fps  " , "DF 29.97fps" , "SMPTE 30fps", "----- -----" };
 static timecode_types prev_type = TC_TYPE_INVALID;	///< Invalid type. Force initial update.
 
 static volatile uint32_t fiq_us_previous = 0;
@@ -76,12 +83,11 @@ static volatile bool timecode_sync = false;
 static volatile bool timecode_valid = false;
 
 static volatile uint8_t timecode_bits[8] ALIGNED;
-static volatile char timecode[LCD_MAX_CHARACTERS] ALIGNED;
 static volatile bool is_drop_frame_flag_set = false;
 
 static volatile bool timecode_available = false;
 
-static volatile uint32_t ltc_updates_per_seconde= (uint32_t) 0;
+static volatile uint32_t ltc_updates_per_second= (uint32_t) 0;
 static volatile uint32_t ltc_updates_previous = (uint32_t) 0;
 static volatile uint32_t ltc_updates = (uint32_t) 0;
 
@@ -92,6 +98,8 @@ static volatile struct _midi_send_tc midi_timecode = { 0, 0, 0, 0, MIDI_TC_TYPE_
 static volatile uint32_t midi_quarter_frame_us = (uint32_t) 0;
 static volatile bool midi_quarter_frame_message = false;
 static volatile uint8_t midi_quarter_frame_piece ALIGNED = 0;
+
+extern void artnet_output(const struct _midi_send_tc *);
 
 /**
  *
@@ -106,10 +114,10 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {
 		BCM2835_ST->C1 = clo + (uint32_t) 1000000;
 
 		dmb();
-		ltc_updates_per_seconde = ltc_updates - ltc_updates_previous;
+		ltc_updates_per_second = ltc_updates - ltc_updates_previous;
 		ltc_updates_previous = ltc_updates;
 
-		if ((ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
+		if ((ltc_updates_per_second >= 24) && (ltc_updates_per_second <= 30)) {
 			hardware_led_set((int) (led_counter++ & 0x01));
 		} else {
 			hardware_led_set(0);
@@ -228,6 +236,7 @@ void ltc_reader(void) {
 	uint32_t limit_us = (uint32_t) 0;
 	uint32_t now_us = (uint32_t) 0;
 	char limit_warning[16] ALIGNED;
+	char *p_type;
 
 	dmb();
 	if (timecode_available) {
@@ -243,40 +252,46 @@ void ltc_reader(void) {
 			type = TC_TYPE_DF;
 			limit_us = (uint32_t)((double)1000000 / (double)30);
 		} else {
-			if (ltc_updates_per_seconde == 24) {
+			if (ltc_updates_per_second == 24) {
 				type = TC_TYPE_FILM;
 				limit_us = (uint32_t)((double)1000000 / (double)24);
-			} else if (ltc_updates_per_seconde == 25) {
+			} else if (ltc_updates_per_second == 25) {
 				type = TC_TYPE_EBU;
 				limit_us = (uint32_t)((double)1000000 / (double)25);
-			} else if (ltc_updates_per_seconde == 30) {
+			} else if (ltc_updates_per_second == 30) {
 				limit_us = (uint32_t)((double)1000000 / (double)30);
 				type = TC_TYPE_SMPTE;
 			}
 		}
 
+		midi_timecode.rate = type;
+
 		if (output->console_output) {
-			console_set_cursor(2, 5);
-			console_write((char *) timecode, 11);
+			console_set_cursor(2, 24);
+			console_write((char *) timecode, TC_CODE_MAX_LENGTH);
 		}
 
 		if (output->lcd_output) {
-			lcd_text_line_1((char *) timecode, LCD_MAX_CHARACTERS);
+			lcd_text_line_1((char *) timecode, TC_CODE_MAX_LENGTH);
 		}
 
 		if(output->oled_output) {
-			display_oled_line_1((char *) timecode, 11);
+			display_oled_line_1((char *) timecode, TC_CODE_MAX_LENGTH);
 		}
 
 		if (output->segment_output) {
 			display_7segment((const char *) timecode);
 		}
 
+		if (output->artnet_output) {
+			artnet_output((struct _midi_send_tc *)&midi_timecode);
+		}
+
 		if (prev_type != type) {
+			p_type = (char *) ltc_reader_get_type((timecode_types) type);
 			prev_type = type;
 
 			if (output->midi_output) {
-				midi_timecode.rate = type;
 				midi_send_tc((struct _midi_send_tc *)&midi_timecode);
 
 				midi_quarter_frame_piece = 0;
@@ -285,16 +300,16 @@ void ltc_reader(void) {
 			}
 
 			if (output->console_output) {
-				console_set_cursor(2, 6);
-				console_puts(types[type]);
+				console_set_cursor(2, 25);
+				console_puts(p_type);
 			}
 
 			if (output->lcd_output) {
-				lcd_text_line_2(types[type], MIN((sizeof(types[0]) / sizeof(char))-1, LCD_MAX_CHARACTERS));
+				lcd_text_line_2(p_type, TC_TYPE_MAX_LENGTH);
 			}
 
 			if (output->oled_output) {
-				display_oled_line_2(types[type]);
+				display_oled_line_2(p_type);
 			}
 
 		}
@@ -302,15 +317,15 @@ void ltc_reader(void) {
 		const uint32_t delta_us = BCM2835_ST->CLO - now_us;
 
 		if (limit_us == 0) {
-			sprintf(limit_warning, "-----:%.5d", (int) delta_us);
+			sprintf(limit_warning, "%.2d:-----:%.5d", (int) ltc_updates_per_second, (int) delta_us);
 			console_status(CONSOLE_CYAN, limit_warning);
 		} else {
-			sprintf(limit_warning, "%.5d:%.5d", (int) limit_us, (int) delta_us);
+			sprintf(limit_warning, "%.2d:%.5d:%.5d", (int) ltc_updates_per_second, (int) limit_us, (int) delta_us);
 			console_status(delta_us < limit_us ? CONSOLE_YELLOW : CONSOLE_RED, limit_warning);
 		}
 	}
 
-	if ((output->midi_output) && (ltc_updates_per_seconde >= 24) && (ltc_updates_per_seconde <= 30)) {
+	if ((output->midi_output) && (ltc_updates_per_second >= 24) && (ltc_updates_per_second <= 30)) {
 		dmb();
 		if (midi_quarter_frame_message) {
 			dmb();

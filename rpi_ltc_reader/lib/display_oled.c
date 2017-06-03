@@ -32,27 +32,46 @@
 
 #include "oled.h"
 
-static oled_info_t oled_info;
+static oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
 
 /**
  *
  */
-bool display_oled_init(void) {
-	oled_info.slave_address = (uint8_t) 0;
-	oled_info.type = OLED_PANEL_128x64;
+const bool display_oled_init(void) {
+	uint8_t line = 4;
+	ltc_reader_source_t source;
 
 	if (!oled_start(&oled_info)) {
 		return false;
 	}
 
-	oled_set_cursor(&oled_info, 3, 0);
-	oled_puts(&oled_info, "SMPTE TimeCode LTC");
+	source = ltc_reader_params_get_source();
 
-	oled_set_cursor(&oled_info, 4, 0);
-	oled_printf(&oled_info, "MIDI output : %s", ltc_reader_params_is_midi_output() ? "Yes" : "No");
+	oled_set_cursor(&oled_info, 3, 0);
+	switch (source) {
+		case LTC_READER_SOURCE_ARTNET:
+			(void) oled_puts(&oled_info, "TimeCode ArtNet");
+			break;
+		case LTC_READER_SOURCE_MIDI:
+			(void) oled_puts(&oled_info, "TimeCode MIDI");
+			break;
+		default:
+			(void) oled_puts(&oled_info, "SMPTE TimeCode LTC");
+			break;
+	}
+
+	if (source != LTC_READER_SOURCE_MIDI) {
+		oled_set_cursor(&oled_info, line++, 0);
+		(void) oled_printf(&oled_info, "MIDI output : %s", ltc_reader_params_is_midi_output() ? "Yes" : "No");
+	}
+
+	if (source != LTC_READER_SOURCE_ARTNET) {
+		oled_set_cursor(&oled_info, line, 0);
+		(void) oled_printf(&oled_info, "ArtNet output : %s", ltc_reader_params_is_artnet_output() ? "Yes" : "No");
+	}
 
 	oled_set_cursor(&oled_info, 7, 0);
-	oled_printf(&oled_info, "[V%s]", SOFTWARE_VERSION);
+	(void) oled_printf(&oled_info, "[V%s]", SOFTWARE_VERSION);
 
 	return true;
 }
@@ -73,5 +92,5 @@ void display_oled_line_1(const char *s, int n) {
  */
 void display_oled_line_2(const char *s) {
 	oled_set_cursor(&oled_info, 1, 0);
-	oled_puts(&oled_info, s);
+	(void) oled_puts(&oled_info, s);
 }

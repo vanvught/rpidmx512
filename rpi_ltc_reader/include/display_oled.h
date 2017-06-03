@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-extern bool display_oled_init(void);
+extern const bool display_oled_init(void);
 extern void display_oled_line_1(const char *, int);
 extern void display_oled_line_2(const char *);
 

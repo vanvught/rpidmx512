@@ -28,6 +28,12 @@
 
 #include <stdbool.h>
 
+typedef enum ltc_reader_source {
+	LTC_READER_SOURCE_LTC,
+	LTC_READER_SOURCE_ARTNET,
+	LTC_READER_SOURCE_MIDI
+} ltc_reader_source_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +44,8 @@ extern const bool ltc_reader_params_is_oled_output(void);
 extern const bool ltc_reader_params_is_7segment_output(void);
 extern const bool ltc_reader_params_is_midi_output(void);
 extern const bool ltc_reader_params_is_artnet_output(void);
+
+extern const ltc_reader_source_t ltc_reader_params_get_source(void);
 
 extern void ltc_reader_params_init(void) ;
 

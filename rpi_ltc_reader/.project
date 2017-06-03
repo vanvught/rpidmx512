@@ -3,12 +3,16 @@
 	<name>rpi_ltc_reader</name>
 	<comment></comment>
 	<projects>
+		<project>lib-artnet</project>
+		<project>lib-bcm2835</project>
 		<project>lib-bob</project>
+		<project>lib-c++</project>
 		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-lcd</project>
 		<project>lib-midi</project>
+		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -26,6 +30,7 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>

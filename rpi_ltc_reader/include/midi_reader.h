@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file midi_reader.h
  *
  */
 /* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
 
-static const char SOFTWARE_VERSION[] = "1.2";
+#ifndef MIDI_READER_H_
+#define MIDI_READER_H_
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "ltc_reader.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void midi_reader(void);
+extern void midi_reader_init(const struct _ltc_reader_output *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MIDI_READER_H_ */

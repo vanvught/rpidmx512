@@ -29,15 +29,6 @@
 
 #include <stdbool.h>
 
-#define ONE_TIME_MIN        150	///< 417us/2 = 208us
-#define ONE_TIME_MAX       	300	///< 521us/2 = 260us
-#define ZERO_TIME_MIN      	380	///< 30 FPS * 80 bits = 2400Hz, 1E6/2400Hz = 417us
-#define ZERO_TIME_MAX      	600	///< 24 FPS * 80 bits = 1920Hz, 1E6/1920Hz = 521us
-
-#define END_DATA_POSITION	63	///<
-#define END_SYNC_POSITION	77	///<
-#define END_SMPTE_POSITION	80	///<
-
 typedef enum _timecode_types {
 	TC_TYPE_FILM = 0,
 	TC_TYPE_EBU,
@@ -56,12 +47,16 @@ struct _ltc_reader_output {
 	bool artnet_output;
 };
 
+#define TC_CODE_MAX_LENGTH	11
+#define TC_TYPE_MAX_LENGTH	11
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ltc_reader(void);
-void ltc_reader_init(const struct _ltc_reader_output *);
+extern void ltc_reader(void);
+extern void ltc_reader_init(const struct _ltc_reader_output *);
+extern /*@shared@*/const char *ltc_reader_get_type(const timecode_types);
 
 #ifdef __cplusplus
 }
