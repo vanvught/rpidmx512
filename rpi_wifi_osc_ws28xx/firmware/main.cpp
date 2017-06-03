@@ -25,7 +25,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-
 #include "hardware.h"
 #include "led.h"
 #include "console.h"
@@ -35,24 +34,12 @@
 
 #include "deviceparams.h"
 
-#include "wifi.h"
-#include "udp.h"
-#include "ap_params.h"
-#include "network_params.h"
-
-#include "fota.h"
-#include "fota_params.h"
-
 #include "oled.h"
 
-#include "software_version.h"
+#include "wifi.h"
+#include "wifi_udp.h"
 
-#define OLED_CONNECTED(b,f)	\
-do {						\
-	if(b) {					\
-		f;					\
-	}						\
-} while (0);
+#include "software_version.h"
 
 extern "C" {
 
@@ -60,20 +47,15 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
 void notmain(void) {
-	uint8_t mac_address[6];
 	struct ip_info ip_config;
 	DeviceParams deviceparms;
 	OSCParams oscparms;
 	uint16_t incoming_port;
 	uint16_t outgoing_port;
-
-	oled_info_t oled_info;
-	bool oled_connected;
+	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	bool oled_connected = false;
 
 	hardware_init();
-
-	oled_info.slave_address = 0;
-	oled_info.type = OLED_PANEL_128x64;
 
 	oled_connected = oled_start(&oled_info);
 
@@ -90,91 +72,17 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
-	(void) ap_params_init();
-	const char *ap_password = ap_params_get_password();
-
-	hardware_watchdog_init();
-
-	console_status(CONSOLE_YELLOW, "Starting Wifi ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting Wifi ..."));
-
-	wifi_init(ap_password);
-
-	hardware_watchdog_stop();
-
-	printf("ESP8266 information\n");
-	printf(" SDK      : %s\n", system_get_sdk_version());
-	printf(" Firmware : %s\n\n", wifi_get_firmware_version());
-
-	if (network_params_init()) {
-		console_status(CONSOLE_YELLOW, "Changing to Station mode ...");
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Changing to Station mode ..."));
-		if (network_params_is_use_dhcp()) {
-			wifi_station(network_params_get_ssid(), network_params_get_password());
-		} else {
-			ip_config.ip.addr = network_params_get_ip_address();
-			ip_config.netmask.addr = network_params_get_net_mask();
-			ip_config.gw.addr = network_params_get_default_gateway();
-			wifi_station_ip(network_params_get_ssid(), network_params_get_password(), &ip_config);
-		}
-	}
-
-	const _wifi_mode opmode = wifi_get_opmode();
-
-	if (opmode == WIFI_STA) {
-		printf("WiFi mode : Station\n");
-	} else {
-		printf("WiFi mode : Access Point (authenticate mode : %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
-	}
-
-	if (wifi_get_macaddr(mac_address)) {
-		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
-	} else {
-		console_error("wifi_get_macaddr");
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
-	}
-
-	printf(" Hostname    : %s\n", wifi_station_get_hostname());
-
-	if (wifi_get_ip_info(&ip_config)) {
-		printf(" IP-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
-		printf(" Netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
-		printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
-		if (opmode == WIFI_STA) {
-			const _wifi_station_status status = wifi_station_get_connect_status();
-			printf("      Status : %s\n", wifi_station_status(status));
-			if (status != WIFI_STATION_GOT_IP) {
-				printf("SSID : %s\n", network_params_get_ssid());
-				console_error("Not connected!");
-				if (oled_connected) {
-					oled_set_cursor(&oled_info, 2, 0);
-					oled_puts(&oled_info, wifi_station_status(status));
-					oled_set_cursor(&oled_info, 5, 0);
-					oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
-					oled_status(&oled_info, "<Not connected!>");
-				}
-				for (;;)
-					;
-			}
-		}
-	} else {
-		console_error("wifi_get_ip_info");
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
-	}
-
-	if (fota_params_init()) {
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
-		console_newline();
-		fota(fota_params_get_server());
-		for(;;);
+	if (!wifi(&ip_config)) {
+		for (;;)
+			;
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
 
-	udp_begin(incoming_port);
+	wifi_udp_begin(incoming_port);
 
-	udp_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, outgoing_port);
+	wifi_udp_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, outgoing_port);
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
@@ -184,21 +92,22 @@ void notmain(void) {
 
 	if (oled_connected) {
 		oled_set_cursor(&oled_info, 1, 0);
-		if (opmode == WIFI_STA) {
-			oled_puts(&oled_info, "Station");
+		if (wifi_get_opmode() == WIFI_STA) {
+			(void) oled_printf(&oled_info, "S: %s", wifi_get_ssid());
 		} else {
-			oled_printf(&oled_info, "AP (%s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+			(void) oled_printf(&oled_info, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
+
 		oled_set_cursor(&oled_info, 2, 0);
-		oled_printf(&oled_info, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
+		(void) oled_printf(&oled_info, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
 		oled_set_cursor(&oled_info, 3, 0);
-		oled_printf(&oled_info, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
+		(void) oled_printf(&oled_info, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
 		oled_set_cursor(&oled_info, 4, 0);
-		oled_printf(&oled_info, "I: %4d O: %4d", (int) incoming_port, (int) outgoing_port);
+		(void) oled_printf(&oled_info, "I: %4d O: %4d", (int) incoming_port, (int) outgoing_port);
 		oled_set_cursor(&oled_info, 5, 0);
-		oled_printf(&oled_info, "Led type: %s", deviceparms.GetLedTypeString());
+		(void) oled_printf(&oled_info, "Led type: %s", deviceparms.GetLedTypeString());
 		oled_set_cursor(&oled_info, 6, 0);
-		oled_printf(&oled_info, "Led count: %d", (int) deviceparms.GetLedCount());
+		(void) oled_printf(&oled_info, "Led count: %d", (int) deviceparms.GetLedCount());
 	}
 
 	console_set_top_row(16);

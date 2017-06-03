@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "udp.h"
 #include "ip_address.h"
 
 #include "oscws28xx.h"
@@ -43,6 +42,8 @@
 #include "deviceparams.h"
 
 #include "console.h"
+
+#include "wifi_udp.h"
 
 #include "software_version.h"
 
@@ -83,7 +84,7 @@ void OSCWS28xx::Run(void) {
 	uint16_t from_port;
 	uint32_t from_ip;
 
-	const int len = udp_recvfrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+	const int len = wifi_udp_recvfrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
 
 	if (len == 0) {
 		return;
