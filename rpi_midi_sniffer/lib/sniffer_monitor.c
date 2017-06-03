@@ -28,7 +28,7 @@
 
 void monitor_update(void) {
 	// Handle Active Sensing messages
-	switch (midi_get_active_sense_state()) {
+	switch (midi_active_get_sense_state()) {
 	case MIDI_ACTIVE_SENSE_ENABLED:
 		console_save_cursor();
 		console_set_cursor(70, 3);
