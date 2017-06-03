@@ -33,7 +33,7 @@
 #define OLED_CONNECTED(b,f)	\
 do {						\
 	if(b) {					\
-		f;					\
+		(void) f;			\
 	}						\
 } while (0);
 

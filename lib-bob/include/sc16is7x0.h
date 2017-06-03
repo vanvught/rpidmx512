@@ -2,7 +2,7 @@
  * @file sc16is7x0.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,27 @@
 #define SC16IS7X0_DLL        (0x00)
 #define SC16IS7X0_DLH        (0X01)
 
+//FIFO size
+#define SC16IS7X0_FIFO_RX    64
+#define SC16IS7X0_FIFO_TX    64
+
+
+/** See section 8.3 of the datasheet for definitions
+  * of bits in the FIFO Control Register (FCR)
+  */
+#define FCR_RX_IRQ_60                 (3 << 6)
+#define FCR_RX_IRQ_56                 (2 << 6)
+#define FCR_RX_IRQ_16                 (1 << 6)
+#define FCR_RX_IRQ_8                  (0 << 6)
+//TX Level only accessible when EFR[4] is set
+#define FCR_TX_IRQ_56                 (3 << 4)
+#define FCR_TX_IRQ_32                 (2 << 4)
+#define FCR_TX_IRQ_16                 (1 << 4)
+#define FCR_TX_IRQ_8                  (0 << 4)
+//#define FCR_RESERVED                (1 << 3)
+#define FCR_TX_FIFO_RST               (1 << 2)
+#define FCR_RX_FIFO_RST               (1 << 1)
+#define FCR_ENABLE_FIFO               (1 << 0)
 
 /** See section 8.4 of the datasheet for definitions
   * of bits in the Line Control Register (LCR)

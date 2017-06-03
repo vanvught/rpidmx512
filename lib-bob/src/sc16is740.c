@@ -28,14 +28,14 @@
  */
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "bcm2835.h"
-#include "bcm2835_spi.h"
-
-#include "sc16is740.h"
 #include "sc16is7x0.h"
 
+#include "bcm2835_spi.h"
 #include "device_info.h"
+
+static char buffer_tx[SC16IS7X0_FIFO_TX + 1] __attribute__((aligned(4)));
 
 /**
  *
@@ -49,26 +49,170 @@ inline static void sc16is740_setup(const device_info_t *device_info) {
 /**
  *
  * @param device_info
+ * @param reg
  * @return
  */
-void sc16is740_start(device_info_t *device_info) {
+uint8_t sc16is740_reg_read(const device_info_t *device_info, const uint8_t reg) {
+	char spiData[2];
+	const char SPI_DUMMY_CHAR = (char) 0xFF;	///< Used to flush slave's shift register
 
-	bcm2835_spi_begin();
+	spiData[0] = (char) SC16IS7X0_SPI_READ_MODE_FLAG | (char) (reg << 3);
+	spiData[1] = SPI_DUMMY_CHAR;
 
-	if (device_info->speed_hz == (uint32_t) 0) {
-		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
-	} else if (device_info->speed_hz > (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ) {
-		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ;
-	}
+	sc16is740_setup(device_info);
+	bcm2835_spi_transfern(spiData, 2);
 
-	device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
-
-	sc16is740_set_format(device_info, 8, SERIAL_PARITY_NONE, 1);
-	sc16is740_set_baud(device_info, SC16IS7X0_DEFAULT_BAUDRATE);
-
-	sc16is740_reg_write(device_info, SC16IS7X0_FCR, 0x03);
+	return (uint8_t) spiData[1];
 }
 
+/**
+ *
+ * @param device_info
+ * @param reg
+ * @param value
+ */
+void sc16is740_reg_write(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
+	char spiData[2];
+	spiData[0] = (char) (reg << 3);
+	spiData[1] = (char) value;
+
+	sc16is740_setup(device_info);
+	bcm2835_spi_writenb(spiData, 2);
+}
+
+/**
+ *
+ * @param device_info
+ * @return
+ */
+bool sc16is740_is_readable(const device_info_t *device_info) {
+	if ((sc16is740_reg_read(device_info, SC16IS7X0_LSR) & LSR_DR) == LSR_DR) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ *
+ * @return
+ */
+bool sc16is740_is_writable(const device_info_t *device_info) {
+	if ((sc16is740_reg_read(device_info, SC16IS7X0_LSR) & LSR_THRE) == LSR_THRE) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ *
+ * @param device_info
+ * @return
+ */
+int sc16is740_getc(const device_info_t *device_info) {
+	  if (!sc16is740_is_readable(device_info)) {
+	    return -1;
+	  }
+
+	  return (int) sc16is740_reg_read(device_info, SC16IS7X0_RHR);
+}
+
+/**
+ *
+ * @param device_info
+ * @param value
+ * @return
+ */
+int sc16is740_putc(const device_info_t *device_info, const int value) {
+	while (sc16is740_reg_read(device_info, SC16IS7X0_TXLVL) == 0) {
+
+	}
+
+	sc16is740_reg_write(device_info, SC16IS7X0_THR, (uint8_t) value);
+
+	return value;
+}
+
+/**
+ *
+ * @return
+ */
+bool sc16is740_is_connected(const device_info_t *device_info) {
+	const uint8_t TEST_CHARACTER = (uint8_t) 'A';
+
+	sc16is740_reg_write(device_info, SC16IS7X0_SPR, TEST_CHARACTER);
+
+	return (sc16is740_reg_read(device_info, SC16IS7X0_SPR) == TEST_CHARACTER);
+}
+
+/**
+ *
+ * @param buffer
+ * @param count
+ * @return
+ */
+int sc16is740_read(const device_info_t *device_info, void *buffer, unsigned count) {
+	uint8_t *p = (uint8_t *) buffer;
+
+	int result = 0;
+
+	while (count-- != 0) {
+		int ch = sc16is740_getc(device_info);
+		if (ch < 0) {
+			return result;
+		}
+
+		*p++ = (uint8_t) ch;
+
+		result++;
+	}
+
+	return result;
+}
+
+/**
+ *
+ * @param buffer
+ * @param count
+ * @return
+ */
+int sc16is740_write(const device_info_t *device_info, const void *buffer, unsigned count) {
+	int result = 0;
+	uint8_t fifo_space;
+	uint8_t i;
+	char *src = (char *) buffer;
+	char *dst;
+
+	while (count > 0) {
+		while ((fifo_space = sc16is740_reg_read(device_info, SC16IS7X0_TXLVL)) == 0) {
+		}
+
+		if ((unsigned) fifo_space > count) {
+			fifo_space = (uint8_t) count;
+		}
+
+		dst = &buffer_tx[1];
+
+		for (i = 0; i < fifo_space; i++) {
+			*dst++ = *src++;
+		}
+
+		sc16is740_setup(device_info);
+		bcm2835_spi_writenb(buffer_tx, fifo_space + 1);
+
+		count -= (unsigned) fifo_space;
+
+	}
+
+	return result;
+}
+
+/**
+ *
+ * @param device_info
+ * @param baudrate
+ */
 void sc16is740_set_baud(const device_info_t *device_info, const int baudrate) {
 	unsigned long divisor = (unsigned long) SC16IS7X0_BAUDRATE_DIVISOR(baudrate);
 	uint8_t lcr;
@@ -88,7 +232,7 @@ void sc16is740_set_baud(const device_info_t *device_info, const int baudrate) {
   *   @return none
   */
 void sc16is740_set_format(const device_info_t *device_info, int bits, _serial_parity parity,  int stop_bits) {
-	char lcr = 0x00;
+	uint8_t lcr = 0x00;
 
 	switch (bits) {
 	case 5:
@@ -144,118 +288,24 @@ void sc16is740_set_format(const device_info_t *device_info, int bits, _serial_pa
 /**
  *
  * @param device_info
- * @param reg
  * @return
  */
-uint8_t sc16is740_reg_read(const device_info_t *device_info, const uint8_t reg) {
-	char spiData[2];
-	const char SPI_DUMMY_CHAR = 0xFF;	///< Used to flush slave's shift register
+void sc16is740_start(device_info_t *device_info) {
 
-	spiData[0] = (char) SC16IS7X0_SPI_READ_MODE_FLAG | (char) (reg << 3);
-	spiData[1] = SPI_DUMMY_CHAR;
+	bcm2835_spi_begin();
 
-	sc16is740_setup(device_info);
-	bcm2835_spi_transfern(spiData, 2);
-
-	return (uint8_t) spiData[1];
-}
-
-/**
- *
- * @param device_info
- * @param reg
- * @param value
- */
-void sc16is740_reg_write(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
-	char spiData[2];
-	spiData[0] = (char) (reg << 3);
-	spiData[1] = (char) value;
-
-	sc16is740_setup(device_info);
-	bcm2835_spi_writenb(spiData, 2);
-}
-
-/**
- *
- * @param device_info
- * @return
- */
-bool sc16is740_is_readable(const device_info_t *device_info) {
-	if (sc16is740_reg_read(device_info, SC16IS7X0_LSR) & LSR_DR) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-/**
- *
- * @return
- */
-bool sc16is740_is_writable(const device_info_t *device_info) {
-	if (sc16is740_reg_read(device_info, SC16IS7X0_LSR) & LSR_THRE) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-/**
- *
- * @param device_info
- * @return
- */
-int sc16is740_getc(const device_info_t *device_info) {
-	  if (!sc16is740_is_readable(device_info)) {
-	    return -1;
-	  }
-
-	  return (int) sc16is740_reg_read(device_info, SC16IS7X0_RHR);
-}
-
-/**
- *
- * @return
- */
-bool sc16is740_is_connected(const device_info_t *device_info) {
-	const uint8_t TEST_CHARACTER = (uint8_t) 'A';
-
-	sc16is740_reg_write(device_info, SC16IS7X0_SPR, TEST_CHARACTER);
-
-	return (sc16is740_reg_read(device_info, SC16IS7X0_SPR) == TEST_CHARACTER);
-}
-
-/**
- *
- * @param buffer
- * @param count
- * @return
- */
-int sc16is740_read(const device_info_t *device_info, void *buffer, unsigned count) {
-	uint8_t *p = (uint8_t *) buffer;
-
-	int result = 0;
-
-	while (count--) {
-		int ch = sc16is740_getc(device_info);
-		if (ch < 0) {
-			return result;
-		}
-
-		*p++ = (uint8_t) ch;
-
-		result++;
+	if (device_info->speed_hz == (uint32_t) 0) {
+		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
+	} else if (device_info->speed_hz > (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ) {
+		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_MAX_HZ;
 	}
 
-	return result;
-}
+	device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 
-/**
- *
- * @param buffer
- * @param count
- * @return
- */
-int sc16is740_write(/*@unused@*/const device_info_t *device_info, /*@unused@*/const void *buffer, /*@unused@*/unsigned count) {
-	return -1;	// TODO: not supported yet
+	sc16is740_set_format(device_info, 8, SERIAL_PARITY_NONE, 1);
+	sc16is740_set_baud(device_info, SC16IS7X0_DEFAULT_BAUDRATE);
+
+	sc16is740_reg_write(device_info, SC16IS7X0_FCR, (uint8_t) (FCR_ENABLE_FIFO | FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
+
+	buffer_tx[0] = (char) (SC16IS7X0_THR << 3);
 }
