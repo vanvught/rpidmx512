@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ extern void midi_poll(void);
 
 struct _poll {
 	void (*f)(void);
-}const poll_table[] = {
+}static const poll_table[] ALIGNED = {
 		{ midi_poll },
 		{ sniffer_midi },
 		{ led_blink } };
@@ -55,19 +55,19 @@ struct _poll {
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
-}const events[] = {
+} static const events[] ALIGNED = {
 		{ 1000000, monitor_update } };
 
-uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
  * @ingroup main
  *
  */
 static void events_init() {
-	int i;
+	size_t i;
 	const uint32_t mircos_now = hardware_micros();
-	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		events_elapsed_time[i] += mircos_now;
 	}
 }
@@ -77,9 +77,9 @@ static void events_init() {
  *
  */
 inline static void events_check() {
-	int i;
+	size_t i;
 	const uint32_t micros_now = hardware_micros();
-	for (i = 0; i < (int)(sizeof(events) / sizeof(events[0])); i++) {
+	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		if (micros_now - events_elapsed_time[i] > events[i].period) {
 			events[i].f();
 			events_elapsed_time[i] += events[i].period;
@@ -97,7 +97,7 @@ void notmain(void) {
 	midi_set_interface(midi_params_get_interface());
 	midi_set_baudrate(midi_params_get_baudrate());
 	midi_active_set_sense(true);
-	midi_init();
+	midi_init(MIDI_DIRECTION_INPUT);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("MIDI Sniffer, baudrate : %d, interface : %s", (int)midi_get_baudrate(), midi_get_interface_description());
