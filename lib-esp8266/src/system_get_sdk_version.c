@@ -1,8 +1,8 @@
 /**
- * @file ip_address.h
+ * @file wifi.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef IP_ADDRESS_H_
-#define IP_ADDRESS_H_
-
+#include <assert.h>
 #include <stdint.h>
 
-struct ip_addr {
-    uint32_t addr;
-};
+#include "wifi.h"
 
-typedef struct ip_addr ip_addr_t;
+#include "esp8266.h"
+#include "esp8266_cmd.h"
 
-struct ip_info {
-    struct ip_addr ip;
-    struct ip_addr netmask;
-    struct ip_addr gw;
-};
+static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
-/** 255.255.255.255 */
-#define IPADDR_NONE         ((uint32_t)0xffffffffUL)
-/** 0.0.0.0 */
-#define IPADDR_ANY          ((uint32_t)0x00000000UL)
 
-#define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
+/**
+ *
+ * @return
+ */
+const char *system_get_sdk_version(void) {
+	uint16_t len = SDK_VERSION_MAX;
 
-#define MAC2STR(mac) (uint8_t)mac[0], (uint8_t)mac[1], (uint8_t)mac[2], (uint8_t)mac[3], (uint8_t)mac[4], (uint8_t)mac[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+	esp8266_write_4bits((uint8_t) CMD_SYSTEM_SDK_VERSION);
+	esp8266_read_str(sdk_version, &len);
 
-#endif /* IP_ADDRESS_H_ */
+	return sdk_version;
+}
+

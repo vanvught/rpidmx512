@@ -2,7 +2,7 @@
  * @file wifi.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,218 +23,136 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
 
-#include "esp8266.h"
-#include "esp8266_cmd.h"
 #include "wifi.h"
 
-static char wifi_hostname[HOST_NAME_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
-static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
-static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
+#include "console.h"
+#include "oled.h"
 
-static bool is_dhcp_used = false;
+#include "ap_params.h"
+#include "network_params.h"
+#include "fota.h"
+#include "fota_params.h"
 
-/**
- *
- * @param mode
- * @return
- */
-void wifi_init(const char *password) {
-	assert(password != NULL);
+#include "util.h"
 
-	esp8266_init();
+static const char *WIFI_NOT_CONNECTED ALIGNED = "Wifi not connected";
+static const char *STARTING_WIFI ALIGNED = "Starting Wifi ...";
+static const char *CHANGING_TO_STATION_MODE ALIGNED = "Changing to Station mode ...";
+static const char *WIFI_STARTED ALIGNED = "Wifi started";
 
-	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_AP);
-	esp8266_write_str(password);
+static 	_wifi_mode opmode = WIFI_OFF;
+static const char *ssid = NULL;
 
-	return;
-}
+const bool wifi(const struct ip_info *info) {
+	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	bool oled_connected = false;
+	uint8_t mac_address[6] ALIGNED;
+	char *ap_password = NULL;
+	struct ip_info ip_config;
 
-/**
- *
- * @return
- */
-_wifi_mode wifi_get_opmode(void) {
-	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE);
-	return esp8266_read_byte();
-}
+	oled_connected = oled_start(&oled_info);
 
-/**
- *
- * @param if_index
- * @param macaddr
- * @return
- */
-bool wifi_get_macaddr(const uint8_t *macaddr) {
-	assert(macaddr != NULL);
-
-	if (macaddr == NULL) {
+	if (!wifi_detect()){
+		(void) console_status(CONSOLE_YELLOW, WIFI_NOT_CONNECTED);
+		OLED_CONNECTED(oled_connected, oled_puts(&oled_info, WIFI_NOT_CONNECTED));
 		return false;
 	}
 
-	esp8266_write_4bits((uint8_t)CMD_WIFI_MAC_ADDRESS);
+	(void) ap_params_init();
+	ap_password = (char *) ap_params_get_password();
 
-	esp8266_read_bytes(macaddr, 6);	//TODO define
+	(void) console_status(CONSOLE_YELLOW, STARTING_WIFI);
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, STARTING_WIFI));
+
+	wifi_ap_init(ap_password);
+
+	printf("ESP8266 information\n");
+	printf(" SDK      : %s\n", system_get_sdk_version());
+	printf(" Firmware : %s\n\n", wifi_get_firmware_version());
+
+	if (network_params_init()) {
+		(void) console_status(CONSOLE_YELLOW, CHANGING_TO_STATION_MODE);
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, CHANGING_TO_STATION_MODE));
+		ssid = network_params_get_ssid();
+		if (network_params_is_use_dhcp()) {
+			wifi_station(ssid, network_params_get_password());
+		} else {
+			ip_config.ip.addr = network_params_get_ip_address();
+			ip_config.netmask.addr = network_params_get_net_mask();
+			ip_config.gw.addr = network_params_get_default_gateway();
+			wifi_station_ip(ssid, network_params_get_password(), &ip_config);
+		}
+	}
+
+	opmode = wifi_get_opmode();
+
+	if (opmode == WIFI_STA) {
+		printf("WiFi mode : Station (AP: %s)\n", network_params_get_ssid());
+	} else {
+		printf("WiFi mode : Access Point (authenticate mode: %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
+	}
+
+	if (wifi_get_macaddr(mac_address)) {
+		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
+	} else {
+		(void) console_error("wifi_get_macaddr");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
+	}
+
+	printf(" Hostname    : %s\n", wifi_get_hostname());
+
+	if (wifi_get_ip_info(&ip_config)) {
+		printf(" IP-address  : " IPSTR "\n", IP2STR(ip_config.ip.addr));
+		printf(" Netmask     : " IPSTR "\n", IP2STR(ip_config.netmask.addr));
+		printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
+		if (opmode == WIFI_STA) {
+			const _wifi_station_status status = wifi_station_get_connect_status();
+			printf("      Status : %s\n", wifi_station_status(status));
+			if (status != WIFI_STATION_GOT_IP) {
+				(void) console_error("Not connected!");
+				if (oled_connected) {
+					oled_set_cursor(&oled_info, 2, 0);
+					(void) oled_puts(&oled_info, wifi_station_status(status));
+					oled_set_cursor(&oled_info, 5, 0);
+					(void) oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
+					oled_status(&oled_info, "E: Not connected!");
+				}
+				for (;;)
+					;
+			}
+		}
+	} else {
+		(void) console_error("wifi_get_ip_info");
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
+	}
+
+	if (fota_params_init()) {
+		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
+		console_newline();
+		fota(fota_params_get_server());
+		for (;;)
+			;
+	}
+
+	(void) console_status(CONSOLE_GREEN, WIFI_STARTED);
+	OLED_CONNECTED(oled_connected, oled_status(&oled_info, WIFI_STARTED));
+
+	memcpy((void *)info, (const void *)&ip_config, sizeof(struct ip_info));
 
 	return true;
 }
 
 /**
  *
- * @param if_index
- * @param info
  * @return
  */
-bool wifi_get_ip_info(const struct ip_info *info) {
-	assert(info != NULL);
-
-	if (info == NULL) {
-		return false;
+const char *wifi_get_ssid(void) {
+	if (opmode == WIFI_STA ||opmode == WIFI_STA) {
+		return ssid;
+	} else {
+		return NULL;
 	}
-
-	esp8266_write_4bits((uint8_t)CMD_WIFI_IP_INFO);
-
-	esp8266_read_bytes((const uint8_t *)info, sizeof(struct ip_info));
-
-	return true;
-}
-
-/**
- *
- * @return
- */
-const char *wifi_station_get_hostname(void) {
-	uint16_t len = HOST_NAME_MAX;
-
-	esp8266_write_4bits((uint8_t) CMD_WIFI_HOST_NAME);
-	esp8266_read_str(wifi_hostname, &len);
-
-	return wifi_hostname;
-}
-
-
-/**
- *
- * @return
- */
-const char *system_get_sdk_version(void) {
-	uint16_t len = SDK_VERSION_MAX;
-
-	esp8266_write_4bits((uint8_t)CMD_SYSTEM_SDK_VERSION);
-	esp8266_read_str(sdk_version, &len);
-
-	return sdk_version;
-}
-
-/**
- *
- * @return
- */
-const char *wifi_get_firmware_version(void) {
-	uint16_t len = FIRMWARE_VERSION_MAX;
-
-	esp8266_write_4bits((uint8_t)CMD_SYSTEM_FIRMWARE_VERSION);
-	esp8266_read_str(firmware_version, &len);
-
-	return firmware_version;
-}
-
-/**
- *
- * @param ssid
- * @param password
- */
-void wifi_station(const char *ssid, const char *password) {
-	assert(ssid != NULL);
-	assert(password != NULL);
-
-	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA);
-
-	esp8266_write_str(ssid);
-	esp8266_write_str(password);
-
-	is_dhcp_used = true;
-}
-
-/**
- *
- * @param ssid
- * @param ssid
- * @param
- */
-void wifi_station_ip(const char *ssid, const char *password, const struct ip_info *info) {
-	assert(ssid != NULL);
-	assert(password != NULL);
-	assert(info != NULL);
-
-	esp8266_write_4bits((uint8_t)CMD_WIFI_MODE_STA_IP);
-
-	esp8266_write_str(ssid);
-	esp8266_write_str(password);
-
-	esp8266_write_bytes((const uint8_t *)info, sizeof(struct ip_info));
-
-	is_dhcp_used = false;
-}
-
-/*
- *
- */
-const _wifi_station_status wifi_station_get_connect_status(void) {
-	esp8266_write_4bits((uint8_t) CMD_WIFI_MODE_STA_STATUS);
-	return esp8266_read_byte();
-}
-
-/**
- *
- * @param status
- * @return
- */
-/*@observer@*/const char *wifi_station_status(_wifi_station_status status) {
-	switch (status) {
-	case WIFI_STATION_IDLE:
-		return "ESP8266 station idle";
-		break;
-	case WIFI_STATION_CONNECTING:
-		return "ESP8266 station is connecting to AP";
-		break;
-	case WIFI_STATION_WRONG_PASSWORD:
-		return "The password is wrong";
-		break;
-	case WIFI_STATION_NO_AP_FOUND:
-		return "ESP8266 station can not find the target AP";
-		break;
-	case WIFI_STATION_CONNECT_FAIL:
-		return "ESP8266 station fail to connect to AP";
-		break;
-	case WIFI_STATION_GOT_IP:
-		return "ESP8266 station got IP address from AP";
-		break;
-	default:
-		return "Unknown Status";
-		break;
-	}
-
-	return "Unknown Status";
-}
-
-/**
- *
- * @return
- */
-const bool wifi_is_dhcp_used(void) {
-	return is_dhcp_used;
-}
-
-/**
- *
- * @return
- */
-const bool wifi_detect(void) {
-	return esp8266_detect();
 }

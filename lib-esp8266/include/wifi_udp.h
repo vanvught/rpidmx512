@@ -1,8 +1,8 @@
 /**
- * @file udp.h
+ * @file wifi_udp.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef UDP_H_
-#define UDP_H_
+#ifndef WIFI_UDP_H_
+#define WIFI_UDP_H_
 
 #include <stdint.h>
 
@@ -32,13 +32,13 @@
 extern "C" {
 #endif
 
-extern void udp_begin(const uint16_t);
-extern void udp_joingroup(const uint32_t);
-extern uint16_t udp_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
-extern void udp_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
+extern void wifi_udp_begin(const uint16_t);
+extern void wifi_udp_joingroup(const uint32_t);
+extern uint16_t wifi_udp_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
+extern void wifi_udp_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* UDP_H_ */
+#endif /* WIFI_UDP_H_ */

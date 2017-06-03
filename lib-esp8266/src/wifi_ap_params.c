@@ -1,8 +1,8 @@
 /**
- * @file ap_params.c
+ * @file wifi_ap_params.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,8 +63,8 @@ static void process_line_read(const char *line) {
 const bool ap_params_init(void) {
 	uint32_t i;
 
-	for  (i = 0; i < sizeof(ap_params_password) / sizeof(char) ; i++) {
-		ap_params_password[i] = (char)0;
+	for (i = 0; i < sizeof(ap_params_password) / sizeof(char); i++) {
+		ap_params_password[i] = (char) 0;
 	}
 
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);

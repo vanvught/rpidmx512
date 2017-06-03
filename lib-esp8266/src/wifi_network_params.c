@@ -1,8 +1,8 @@
 /**
- * @file network_params.c
+ * @file wifi_network_params.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,13 +40,12 @@ static const char PARAMS_SSID[] ALIGNED = "ssid";						///<
 static const char PARAMS_PASSWORD[] ALIGNED = "password";				///<
 
 static bool network_params_use_dhcp = true;								///<
-static uint32_t network_params_ip_address = (uint32_t)0;				///<
-static uint32_t network_params_net_mask = (uint32_t)0;					///<
-static uint32_t network_params_default_gateway = (uint32_t)0;			///<
-static uint32_t network_params_name_server = (uint32_t)0;				///<
+static uint32_t network_params_ip_address = (uint32_t) 0;				///<
+static uint32_t network_params_net_mask = (uint32_t) 0;					///<
+static uint32_t network_params_default_gateway = (uint32_t) 0;			///<
+static uint32_t network_params_name_server = (uint32_t) 0;				///<
 static char network_params_ssid[34] ALIGNED;							///<
 static char network_params_password[34] ALIGNED;						///<
-
 
 /**
  *
@@ -147,9 +146,9 @@ static void process_line_read(const char *line) {
 const bool network_params_init(void) {
 	uint32_t i;
 
-	for  (i = 0; i < sizeof(network_params_ssid) / sizeof(char) ; i++) {
-		network_params_ssid[i] = (char)0;
-		network_params_password[i] = (char)0;
+	for (i = 0; i < sizeof(network_params_ssid) / sizeof(char); i++) {
+		network_params_ssid[i] = (char) 0;
+		network_params_password[i] = (char) 0;
 	}
 
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);

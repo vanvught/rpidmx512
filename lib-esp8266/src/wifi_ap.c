@@ -1,8 +1,8 @@
 /**
- * @file ip_address.h
+ * @file wifi_ap_init.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef IP_ADDRESS_H_
-#define IP_ADDRESS_H_
+#include <assert.h>
+#include <stddef.h>
 
-#include <stdint.h>
+#include "wifi.h"
 
-struct ip_addr {
-    uint32_t addr;
-};
+#include "esp8266.h"
+#include "esp8266_cmd.h"
 
-typedef struct ip_addr ip_addr_t;
+static bool is_ap_open = true;
 
-struct ip_info {
-    struct ip_addr ip;
-    struct ip_addr netmask;
-    struct ip_addr gw;
-};
+/**
+ *
+ * @param mode
+ * @return
+ */
+void wifi_ap_init(const char *password) {
+	esp8266_init();
 
-/** 255.255.255.255 */
-#define IPADDR_NONE         ((uint32_t)0xffffffffUL)
-/** 0.0.0.0 */
-#define IPADDR_ANY          ((uint32_t)0x00000000UL)
+	esp8266_write_4bits((uint8_t) CMD_WIFI_MODE_AP);
+	esp8266_write_str(password == NULL ? "" : password);
 
-#define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
+	if (password != NULL) {
+		if (*password != '\0') {
+			is_ap_open = false;
+		}
+	}
 
-#define MAC2STR(mac) (uint8_t)mac[0], (uint8_t)mac[1], (uint8_t)mac[2], (uint8_t)mac[3], (uint8_t)mac[4], (uint8_t)mac[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+	return;
+}
 
-#endif /* IP_ADDRESS_H_ */
+/**
+ *
+ * @return
+ */
+const bool wifi_ap_is_open(void) {
+	return is_ap_open;
+}
+
