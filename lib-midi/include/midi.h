@@ -33,7 +33,7 @@
 
 #include "util.h"
 
-#define MIDI_RX_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
+#define MIDI_RX_BUFFER_INDEX_ENTRIES			(1 << 6)							///<
 #define MIDI_RX_BUFFER_INDEX_MASK 				(MIDI_RX_BUFFER_INDEX_ENTRIES - 1)	///<
 
 #define MIDI_BAUDRATE_DEFAULT					31250
@@ -135,18 +135,31 @@ typedef enum midi_channel_control_function {
 	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45	///< 63 off, 64 on
 } _midi_channel_control_function;
 
-typedef enum _midi_timecode_type {
+typedef enum midi_timecode_type {
 	MIDI_TC_TYPE_FILM = 0,
 	MIDI_TC_TYPE_EBU,
 	MIDI_TC_TYPE_DF,
 	MIDI_TC_TYPE_SMPTE
 } _midi_timecode_type;
 
+typedef enum midi_direction {
+	MIDI_DIRECTION_INPUT 	= (1 << 0),
+	MIDI_DIRECTION_OUTPUT	= (1 << 1)
+} _midi_direction;
+
+struct _midi_send_tc {
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+	uint8_t frame;
+	_midi_timecode_type rate;
+} ;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void midi_init(void);
+extern void midi_init(const _midi_direction);
 extern void midi_set_baudrate(const uint32_t);
 extern const uint32_t midi_get_baudrate(void);
 extern /*@shared@*/const char *midi_get_interface_description(void);
@@ -158,10 +171,12 @@ extern bool midi_read_channel(uint8_t);
 extern uint8_t midi_get_input_channel(void);
 extern void midi_set_input_channel(uint8_t);
 
-extern _midi_active_sense_state midi_get_active_sense_state(void);
-
+extern _midi_active_sense_state midi_active_get_sense_state(void);
 extern const bool midi_active_get_sense(void);
 extern void midi_active_set_sense(const bool);
+
+extern void midi_send_tc(const struct _midi_send_tc *);
+extern void midi_send_raw(const uint8_t *, const uint16_t);
 
 #ifdef __cplusplus
 }
