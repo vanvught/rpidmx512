@@ -40,7 +40,7 @@ static const char FromOscSend[] = "oscsend";
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "udp.h"
+#include "wifi_udp.h"
 #endif
 
 #include "oscsend.h"
@@ -136,7 +136,7 @@ void OSCSend::Send(void) {
 		m_Result = -1;
 	}
 #else
-	udp_sendto((const uint8_t *)data, (const uint16_t) data_len, m_Address, (uint16_t)m_Port);
+	wifi_udp_sendto((const uint8_t *)data, (const uint16_t) data_len, m_Address, (uint16_t)m_Port);
 #endif
 
 	// Free the memory allocated by m_Msg->Serialise

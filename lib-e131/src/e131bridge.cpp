@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include "lightset.h"
 
 #include "inet.h"
-#include "udp.h"
+#include "wifi_udp.h"
 
 #include "util.h"
 #include "sys_time.h"
@@ -560,7 +560,7 @@ void E131Bridge::SetNetworkDataLossCondition(void) {
  *
  */
 void E131Bridge::SendDiscoveryPacket(void) {
-	udp_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+	wifi_udp_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
 	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
@@ -634,7 +634,7 @@ int E131Bridge::Run(void) {
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = wifi_udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = millis();
 
