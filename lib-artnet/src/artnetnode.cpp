@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <assert.h>
 
+#undef __circle__
+
 #if defined (__circle__)
 #include <circle/util.h>
 #include <circle/time.h>
@@ -47,8 +49,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
+
 #include "wifi.h"
-#include "udp.h"
+#include "wifi_udp.h"
 #include "util.h"
 #include "sys_time.h"
 #endif
@@ -93,7 +96,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x07 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x08 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -155,17 +158,8 @@ ArtNetNode::ArtNetNode(void) :
 
 	m_tOpCodePrevious = OP_NOT_DEFINED;
 
-	SetNetworkDetails();
-
-	// Factory node configuration
 	SetShortName((const char *)NODE_DEFAULT_SHORT_NAME);
 	SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
-	SetNetSwitch(NODE_DEFAULT_NET_SWITCH);
-	SetSubnetSwitch(NODE_DEFAULT_SUBNET_SWITCH);
-	SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, NODE_DEFAULT_UNIVERSE);
-
-	FillPollReply();
-	FillDiagData();
 }
 
 /**
@@ -179,6 +173,7 @@ ArtNetNode::~ArtNetNode(void) {
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 	memset(&m_PollReply, 0, sizeof (struct TArtPollReply));
 	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
+	memset(&m_TimeCodeData, 0, sizeof (struct TArtTimeCode));
 }
 
 /**
@@ -186,7 +181,6 @@ ArtNetNode::~ArtNetNode(void) {
  * @param pLightSet
  */
 void ArtNetNode::SetOutput(LightSet *pLightSet) {
-	assert(pLightSet != 0);
 	m_pLightSet = pLightSet;
 }
 
@@ -232,7 +226,11 @@ const uint8_t ArtNetNode::GetActiveInputPorts(void) {
  *
  */
 void ArtNetNode::Start(void) {
-	assert(m_pLightSet != 0);
+	SetNetworkDetails();
+
+	FillPollReply();
+	FillDiagData();
+	FillTimeCodeData();
 
 #if defined (__circle__)
 	if (m_Socket.Bind(NODE_UDP_PORT) < 0) {
@@ -242,6 +240,7 @@ void ArtNetNode::Start(void) {
 		m_Socket.SetOptionBroadcast(TRUE);
 	#endif
 #endif
+
 		m_PollReply.NumPortsLo = m_State.nActivePorts;
 		for (unsigned i = 0 ; i < ARTNET_MAX_PORTS; i++) {
 			if (m_OutputPorts[i].bIsEnabled) {
@@ -253,7 +252,9 @@ void ArtNetNode::Start(void) {
 	}
 #endif
 
-	m_pLightSet->Start();
+	if (m_pLightSet != NULL) {
+		m_pLightSet->Start();
+	}
 
 	SendPollRelply(false);	// send a reply on startup
 }
@@ -262,7 +263,9 @@ void ArtNetNode::Start(void) {
  *
  */
 void ArtNetNode::Stop(void) {
-	m_pLightSet->Stop();
+	if (m_pLightSet != NULL) {
+		m_pLightSet->Stop();
+	}
 	m_pBlinkTask->SetFrequency(0);
 	m_State.status = ARTNET_OFF;
 }
@@ -447,7 +450,7 @@ void ArtNetNode::SetNetworkDetails(void) {
 	m_Node.IPDefaultGateway = ip_config.gw.addr;
 	m_Node.IPAddressBroadcast = ip_config.ip.addr | ~ip_config.netmask.addr;
 	wifi_get_macaddr(m_Node.MACAddressLocal);
-	m_IsDHCPUsed = wifi_is_dhcp_used();
+	m_IsDHCPUsed = wifi_station_is_dhcp_used();
 #endif
 	const uint8_t dhcp = m_IsDHCPUsed ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY;	// Node is IP is manually configured , Node’s IP is DHCP configured.
 	m_Node.Status2 = m_Node.Status2 | dhcp;
@@ -516,6 +519,19 @@ void ArtNetNode::FillDiagData(void) {
 /**
  *
  */
+void ArtNetNode::FillTimeCodeData(void) {
+	memset(&m_TimeCodeData, 0, sizeof (struct TArtTimeCode));
+
+	memcpy (m_TimeCodeData.Id, (const char *)NODE_ID, sizeof m_TimeCodeData.Id);
+
+	m_TimeCodeData.OpCode = OP_TIMECODE;
+	m_TimeCodeData.ProtVerHi = (uint8_t) 0;							// high byte of the Art-Net protocol revision number.
+	m_TimeCodeData.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
+}
+
+/**
+ *
+ */
 void ArtNetNode::GetType(void) {
 	char *data = (char *)&(m_ArtNetPacket.ArtPacket);
 
@@ -543,7 +559,7 @@ int ArtNetNode::HandlePacket(void) {
 	const int nBytesReceived = m_Socket.ReceiveFrom ((void *)packet, sizeof m_ArtNetPacket.ArtPacket, MSG_DONTWAIT, &IPAddressFrom, &nForeignPort);
 #else
 	uint32_t IPAddressFrom;
-	const int nBytesReceived = udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = wifi_udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &IPAddressFrom, &nForeignPort) ;
 #endif
 
 #if defined (__circle__)
@@ -590,10 +606,14 @@ int ArtNetNode::HandlePacket(void) {
 		HandlePoll();
 		break;
 	case OP_DMX:
-		HandleDmx();
+		if (m_pLightSet != NULL) {
+			HandleDmx();
+		}
 		break;
 	case OP_SYNC:
-		HandleSync();
+		if (m_pLightSet != NULL) {
+			HandleSync();
+		}
 		break;
 	case OP_ADDRESS:
 		HandleAddress();
@@ -648,7 +668,7 @@ void ArtNetNode::SendPollRelply(const bool bResponse) {
 	char report[ARTNET_REPORT_LENGTH];
 	sprintf(report, "%04x [%04d] RPi AvV", (int)m_State.reportCode, (int)m_State.ArtPollReplyCount);
 	strncpy((char *)m_PollReply.NodeReport, report, strlen(report) < ARTNET_REPORT_LENGTH ? strlen(report) : ARTNET_REPORT_LENGTH);
-	udp_sendto((const uint8_t *)&(m_PollReply), (const uint16_t)sizeof (struct TArtPollReply), m_Node.IPAddressBroadcast, (uint16_t)NODE_UDP_PORT);
+	wifi_udp_sendto((const uint8_t *)&(m_PollReply), (const uint16_t)sizeof (struct TArtPollReply), m_Node.IPAddressBroadcast, (uint16_t)NODE_UDP_PORT);
 #endif
 }
 
@@ -681,7 +701,7 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 		CLogger::Get()->Write(FromArtNetNode, LogError, "Cannot send");
 	}
 #else
-	udp_sendto((const uint8_t *)&(m_DiagData), (const uint16_t)size, m_State.IPAddressDiagSend, (uint16_t)NODE_UDP_PORT);
+	wifi_udp_sendto((const uint8_t *)&(m_DiagData), (const uint16_t)size, m_State.IPAddressDiagSend, (uint16_t)NODE_UDP_PORT);
 #endif
 }
 
@@ -1166,4 +1186,26 @@ void ArtNetNode::HandleTimeCode(void) {
  */
 void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 	m_pArtNetTimeCode = pArtNetTimeCode;
+}
+
+/**
+ *
+ * @param pArtNetTimeCode
+ */
+void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
+	if (pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ) {
+		return;
+	}
+	memcpy(&m_TimeCodeData.Frames, pArtNetTimeCode, sizeof (struct TArtNetTimeCode));
+
+#if defined (__circle__)
+	CIPAddress BroadcastIP;
+	BroadcastIP.Set (m_Node.IPAddressBroadcast);
+
+	if ((m_Socket.SendTo((const void *)&(m_TimeCodeData), (unsigned)sizeof (struct TArtTimeCode), MSG_DONTWAIT, BroadcastIP, (u16)NODE_UDP_PORT)) != sizeof (struct TArtPollReply)) {
+		CLogger::Get()->Write(FromArtNetNode, LogPanic, "Cannot send");
+	}
+#else
+	wifi_udp_sendto((const uint8_t *) &(m_TimeCodeData), (const uint16_t) sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, (uint16_t) NODE_UDP_PORT);
+#endif
 }

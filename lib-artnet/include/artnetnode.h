@@ -225,13 +225,16 @@ public:
 	const uint8_t GetActiveInputPorts(void);
 
 	void SendDiag(const char *, TPriorityCodes);
+	void SendTimeCode(const struct TArtNetTimeCode *);
 
 	int HandlePacket(void);
 
 private:
 	void GetType(void);
+
 	void FillPollReply(void);
 	void FillDiagData(void);
+	void FillTimeCodeData(void);
 
 	void HandlePoll(void);
 	void HandleDmx(void);
@@ -269,6 +272,7 @@ private:
 	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
 	struct TArtPollReply	m_PollReply;		///<
 	struct TArtDiagData		m_DiagData;			///<
+	struct TArtTimeCode		m_TimeCodeData;		///<
 
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 
