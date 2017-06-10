@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <assert.h>
 
 extern "C" void __cxa_pure_virtual(void) {

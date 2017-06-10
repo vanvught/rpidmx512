@@ -26,9 +26,9 @@
 #include <stdlib.h>
 
 void operator delete(void *p) {
-	//free(p);
+	free(p);
 }
 
 void operator delete[](void *p) {
-	//free(p);
+	free(p);
 }

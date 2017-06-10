@@ -26,11 +26,9 @@
 #include <stdlib.h>
 
 void *operator new(unsigned size) {
-	//return malloc(size);
-	return NULL;
+	return malloc(size);
 }
 
 void *operator new[](unsigned size) {
-	//return malloc(size);
-	return NULL;
+	return malloc(size);
 }
