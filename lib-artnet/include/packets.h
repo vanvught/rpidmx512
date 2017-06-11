@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,12 @@ enum TOpCodes {
 	OP_DMX = 0x5000,		///< This is an ArtDmx data packet. It contains zero start code DMX512 information for a single Universe.
 	OP_SYNC = 0x5200,		///< This is an ArtSync data packet. It is used to force synchronous transfer of ArtDmx packets to a node’s output.
 	OP_ADDRESS = 0x6000,	///< This is an ArtAddress packet. It contains remote programming information for a Node.
+	OP_TODREQUEST = 0x8000,	///< This is an ArtTodRequest packet. It is used to request a Table of Devices (ToD) for RDM discovery.
+	OP_TODDATA = 0x8100, 	///< This is an ArtTodData packet. It is used to send a Table of Devices (ToD) for RDM discovery.
+	OP_TODCONTROL =	0x8200, ///< This is an ArtTodControl packet. It is used to send RDM discovery control messages
+	OP_RDM = 0x8300, 		///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
 	OP_TIMECODE = 0x9700,	///< This is an ArtTimeCode packet. It is used to transport time code over the network.
-	OP_TIMESYNC = 0x9800,	///< Used to synchronise real time date and clock
+	OP_TIMESYNC = 0x9800,	///< Used to synchronize real time date and clock
 	OP_NOT_DEFINED = 0x0000	///< OP_NOT_DEFINED
 };
 
@@ -198,16 +202,148 @@ struct TArtTimeCode {
 }PACKED;
 
 /**
+ *
+ */
+struct TArtTimeSync {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;		///< Ignore by receiver, set to zero by sender
+	uint8_t Filler2;		///< Ignore by receiver, set to zero by sender
+	uint8_t Prog;			///<
+	uint8_t tm_sec;			///<
+	uint8_t tm_min;			///<
+	uint8_t tm_hour;		///<
+	uint8_t tm_mday;		///<
+	uint8_t tm_mon;			///<
+	uint8_t tm_year_hi;		///<
+	uint8_t tm_year_lo;		///<
+	uint8_t tm_wday;		///<
+	uint8_t tm_isdst;		///<
+}PACKED;
+
+/**
+ * ArtTodRequest packet definition
+ *
+ * This packet is used to request the Table of RDM Devices (TOD).
+ * A Node receiving this packet must not interpret it as forcing full discovery.
+ * Full discovery is only initiated at power on or when an ArtTodControl.AtcFlush is received.
+ * The response is ArtTodData.
+ */
+struct TArtTodRequest {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;		///< Pad length to match ArtPoll.
+	uint8_t Filler2;		///< Pad length to match ArtPoll.
+	uint8_t Spare1;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare2;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare3;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare6;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare7;			///< Transmit as zero, receivers don’t test.
+	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+	uint8_t Command;		///< 0x00 TodFull Send the entire TOD.
+	uint8_t AddCount;		///< The array size of the Address field. Max value is 32.
+	uint8_t Address[32];	///< This array defines the low byte of the Port-Address of the Output Gateway nodes that must respond to this packet.
+}PACKED;
+
+/**
+ * ArtTodControl packet definition
+ *
+ * The ArtTodControl packet is used to send RDM control parameters over Art-Net.
+ * The response is ArtTodData.
+ */
+struct TArtTodControl {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;		///< Pad length to match ArtPoll.
+	uint8_t Filler2;		///< Pad length to match ArtPoll.
+	uint8_t Spare1;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare2;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare3;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare6;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare7;			///< Transmit as zero, receivers don’t test.
+	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+	uint8_t Command;		///< 0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
+	uint8_t Address;		///< The low byte of the 15 bit Port-Address of the DMX Port that should action this command.
+}PACKED;
+
+/**
+ * ArtTodData packet definition
+ */
+struct TArtTodData {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t RdmVer;			///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
+	uint8_t Port;			///< Physical Port. Range 1-4.
+	uint8_t Spare1;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare2;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare3;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare6;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare7;			///< Transmit as zero, receivers don’t test.
+	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+	uint8_t CommandResponse;///< 0x00 TodFull The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
+	uint8_t Address;		///< The low 8 bits of the Port-Address of the Output Gateway DMX Port that generated this packet. The high nibble is the Sub-Net switch. The low nibble corresponds to the Universe.
+	uint8_t UidTotalHi;		///< The total number of RDM devices discovered by this Universe.
+	uint8_t UidTotalLo;
+	uint8_t BlockCount; 	///< The index number of this packet. When UidTotal exceeds 200, multiple ArtTodData packets are used.
+	uint8_t UidCount;		///< The number of UIDs encoded in this packet. This is the index of the following array.
+	uint8_t Tod[200][6];	///< 48 bit An array of RDM UID.
+}PACKED;
+
+/**
+ * 	ArtRdm packet definition
+ *
+ * 	The ArtRdm packet is used to transport all non-discovery RDM messages over Art-Net.
+ */
+struct TArtRdm {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t RdmVer;			///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
+	uint8_t Filler2;		///< Pad length to match ArtPoll.
+	uint8_t Spare1;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare2;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare3;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare6;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare7;			///< Transmit as zero, receivers don’t test.
+	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
+	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
+	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
+	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
+}PACKED;
+
+/**
  * union of supported artnet packets
  */
 union UArtPacket {
-	struct TArtPoll ArtPoll;			///< ArtPoll packet
-	struct TArtPollReply ArtPollReply;	///< ArtPollReply packet
-	struct TArtDmx ArtDmx;				///< ArtDmx packet
-	struct TArtDiagData ArtDiagData;	///< ArtDiagData packet
-	struct TArtSync ArtSync;			///< ArtSync packet
-	struct TArtAddress ArtAddress;		///< ArtAddress packet
-	struct TArtTimeCode ArtTimeCode;	///< ArtTimeCode packet
+	struct TArtPoll ArtPoll;				///< ArtPoll packet
+	struct TArtPollReply ArtPollReply;		///< ArtPollReply packet
+	struct TArtDmx ArtDmx;					///< ArtDmx packet
+	struct TArtDiagData ArtDiagData;		///< ArtDiagData packet
+	struct TArtSync ArtSync;				///< ArtSync packet
+	struct TArtAddress ArtAddress;			///< ArtAddress packet
+	struct TArtTimeCode ArtTimeCode;		///< ArtTimeCode packet
+	struct TArtTimeSync ArtTimeSync;		///< ArtTimeSync packet
+	struct TArtTodRequest ArtTodRequest;	///< ArtTodRequest packet
+	struct TArtTodControl ArtTodControl;	///< ArtTodControl packet
+	struct TArtTodData ArtTodData;			///< ArtTodData packet
+	struct TArtRdm ArtRdm;					///< ArtRdm packet
 };
 
 

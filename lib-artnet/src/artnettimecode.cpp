@@ -31,7 +31,6 @@
 
 #include "artnettimecode.h"
 
-ArtNetTimeCode::~ArtNetTimeCode (void)
-{
+ArtNetTimeCode::~ArtNetTimeCode(void) {
 
 }

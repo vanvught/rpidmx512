@@ -2,4 +2,3 @@ eclipse.preferences.version=1
 encoding//include/artnet.h=UTF-8
 encoding//include/artnetnode.h=UTF-8
 encoding//include/packets.h=UTF-8
-encoding//src/artnetnode.cpp=UTF-8

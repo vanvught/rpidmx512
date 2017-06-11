@@ -1,71 +1,63 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
-		<cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.770162941">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.770162941" moduleId="org.eclipse.cdt.core.settings" name="Circle">
+		<cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625" moduleId="org.eclipse.cdt.core.settings" name="rpi">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.770162941" name="Circle" parent="org.eclipse.cdt.build.core.emptycfg">
-					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.770162941.759024278" name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1763199751" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
-							<option id="cdt.managedbuild.option.gnu.cross.prefix.1771230771" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
-							<option id="cdt.managedbuild.option.gnu.cross.path.1006161466" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.180612911" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder arguments="-f Makefile.Circle" command="make" id="cdt.managedbuild.builder.gnu.cross.600689371" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.645017625" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option id="gnu.c.compiler.option.include.paths.466968979" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625" name="rpi" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.513480504" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+							<option id="cdt.managedbuild.option.gnu.cross.prefix.1843511646" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.1917533357" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1523206879" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+							<builder id="cdt.managedbuild.builder.gnu.cross.401199610" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1420361499" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option id="gnu.c.compiler.option.include.paths.381544522" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libdmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/addon}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-wifi/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.891674006" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__circle__=0"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.579444895" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.272354303" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.416145039" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option id="gnu.cpp.compiler.option.include.paths.297868760" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1509546674" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.include.paths.1846812570" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libdmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/addon}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-wifi/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.193338716" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__circle__=0"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1672044734" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2086813026" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1480685007" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.2068033279" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.897291002" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.608711071" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1010749637" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1389375833" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1399891273" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.601384246" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
-								<option id="gnu.both.asm.option.include.paths.224942476" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1255912423" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.401809781" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<option id="gnu.both.asm.option.include.paths.1690783251" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_circle_libdmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-wifi/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.744017035" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.265493715" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -77,8 +69,8 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
-		<cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993" moduleId="org.eclipse.cdt.core.settings" name="RPi">
+		<cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790" moduleId="org.eclipse.cdt.core.settings" name="Circle">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -90,63 +82,50 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993" name="RPi" parent="org.eclipse.cdt.build.core.emptycfg">
-					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993." name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.810103746" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
-							<option id="cdt.managedbuild.option.gnu.cross.prefix.625338229" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
-							<option id="cdt.managedbuild.option.gnu.cross.path.2066776244" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.2016598352" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder id="cdt.managedbuild.builder.gnu.cross.367414243" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.89467812" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option id="gnu.c.compiler.option.include.paths.476119951" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790" name="Circle" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1852159757" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+							<option id="cdt.managedbuild.option.gnu.cross.prefix.1952385372" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.1246758714" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1213009646" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+							<builder arguments="-f Makefile.Circle" command="make" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.1459381303" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.468402217" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option id="gnu.c.compiler.option.include.paths.1718015270" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.564726609" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BAREMETAL=1"/>
-								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1632919823" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1734937188" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1349972715" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option id="gnu.cpp.compiler.option.preprocessor.def.675063824" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL=1"/>
-									<listOptionValue builtIn="false" value="BAREMETAL=1"/>
-								</option>
-								<option id="gnu.cpp.compiler.option.include.paths.427378551" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.309344152" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.include.paths.1065163567" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.535257511" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.703868216" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1009578782" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">
-								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1612564381" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1567063678" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.614103924" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.672489621" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1656288845" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
-								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1571980975" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
-									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
-									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
-								</inputType>
-							</tool>
-							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1869731852" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
-							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1096128568" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
-								<option id="gnu.both.asm.option.include.paths.789441958" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1531134124" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1906289602" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<option id="gnu.both.asm.option.include.paths.1411732102" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-wifi/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1926354901" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1966256987" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
@@ -156,37 +135,30 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="rpi_circle_libartnet.null.499673174" name="rpi_circle_libartnet"/>
+		<project id="lib-artnet.null.1427530791" name="lib-artnet"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Circle"/>
-		<configuration configurationName="RPi">
-			<resource resourceType="PROJECT" workspacePath="/lib-artnet"/>
-		</configuration>
-		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/rpi_circle_libartnet"/>
-		</configuration>
-	</storageModule>
+	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993;cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1349972715;cdt.managedbuild.tool.gnu.cpp.compiler.input.535257511">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.;cdt.managedbuild.tool.gnu.cross.c.compiler.468402217;cdt.managedbuild.tool.gnu.c.compiler.input.1734937188">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993;cdt.managedbuild.toolchain.gnu.cross.base.2108680912.580894879.2061679993.;cdt.managedbuild.tool.gnu.cross.c.compiler.89467812;cdt.managedbuild.tool.gnu.c.compiler.input.1632919823">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.799595051;cdt.managedbuild.toolchain.gnu.cross.base.799595051.1867855422;cdt.managedbuild.tool.gnu.cross.c.compiler.615260095;cdt.managedbuild.tool.gnu.c.compiler.input.963635196">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.770162941;cdt.managedbuild.toolchain.gnu.cross.base.770162941.759024278;cdt.managedbuild.tool.gnu.cross.cpp.compiler.416145039;cdt.managedbuild.tool.gnu.cpp.compiler.input.1672044734">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.309344152;cdt.managedbuild.tool.gnu.cpp.compiler.input.703868216">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.770162941;cdt.managedbuild.toolchain.gnu.cross.base.770162941.759024278;cdt.managedbuild.tool.gnu.cross.c.compiler.645017625;cdt.managedbuild.tool.gnu.c.compiler.input.579444895">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625;cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1509546674;cdt.managedbuild.tool.gnu.cpp.compiler.input.2086813026">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
-		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
-			<path value=""/>
-		</doc-comment-owner>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625;cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625.;cdt.managedbuild.tool.gnu.cross.c.compiler.1420361499;cdt.managedbuild.tool.gnu.c.compiler.input.272354303">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.799595051;cdt.managedbuild.toolchain.gnu.cross.base.799595051.1867855422;cdt.managedbuild.tool.gnu.cross.cpp.compiler.507012177;cdt.managedbuild.tool.gnu.cpp.compiler.input.323789632">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

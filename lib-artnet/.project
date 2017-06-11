@@ -3,10 +3,6 @@
 	<name>lib-artnet</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
-		<project>lib-hal</project>
-		<project>lib-lightset</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
