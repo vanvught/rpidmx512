@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-LIBS += hal uuid fb lcd bob i2c utils ff11 emmc bcm2835
+LIBS += hal uuid lcd esp8266 bob i2c fb utils ff11 emmc bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -37,7 +37,7 @@ LIB8DEP := $(addsuffix .a, $(LIB8DEP))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -53,14 +53,14 @@ COPS8 = -mfpu=vfpv4 -march=armv8-a -mtune=cortex-a53
 COPS8 += -DRPI3
 COPS8 += $(COPS_COMMON)
 
-LIB6 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-LIB6 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
+#LIB6 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
+#LIB6 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
 
-LIB7 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
+#LIB7 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
+#LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
 
-LIB8 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-LIB8 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv8-a/cortex-a53/hardfp/fp-armv8/
+#LIB8 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
+#LIB8 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv8-a/cortex-a53/hardfp/fp-armv8/
 
 SOURCE = ./
 
@@ -102,7 +102,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(ARMGNU)-gcc $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti $(COPS) -c $$< -o $$@	
+	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS) -c $$< -o $$@	
 endef
 
 define compile-objects7
@@ -110,7 +110,7 @@ $(BUILD7)$1/%.o: $(SOURCE)$1/%.c
 	$(ARMGNU)-gcc $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $(SOURCE)$1/%.cpp
-	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti $(COPS7) -c $$< -o $$@		
+	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS7) -c $$< -o $$@		
 endef
 
 define compile-objects8
@@ -118,7 +118,7 @@ $(BUILD8)$1/%.o: $(SOURCE)$1/%.c
 	$(ARMGNU)-gcc $(COPS8) -c $$< -o $$@
 	
 $(BUILD8)$1/%.o: $(SOURCE)$1/%.cpp
-	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti $(COPS8) -c $$< -o $$@		
+	$(ARMGNU)-g++ -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS8) -c $$< -o $$@		
 endef
 
 THISDIR = $(CURDIR)

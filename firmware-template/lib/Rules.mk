@@ -7,7 +7,7 @@ DEFINES := $(addprefix -D,$(DEFINES))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) -DNDEBUG
 COPS_COMMON += $(INCLUDES)
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -60,7 +60,7 @@ $(BUILD)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS) $< -c -o $@
 	
 $(BUILD)%.o: $(SOURCE)/%.cpp
-	$(ARMGNU)-g++ $(COPS) -fno-rtti $< -c -o $@		
+	$(ARMGNU)-g++ $(COPS) -fno-rtti -std=c++11 $< -c -o $@		
 	
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
@@ -75,7 +75,7 @@ $(BUILD7)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS7) $< -c -o $@
 	
 $(BUILD7)%.o: $(SOURCE)/%.cpp
-	$(ARMGNU)-g++ $(COPS7) -fno-rtti $< -c -o $@		
+	$(ARMGNU)-g++ $(COPS7) -fno-rtti -std=c++11 $< -c -o $@		
 	
 $(BUILD7)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
@@ -90,7 +90,7 @@ $(BUILD8)%.o: $(SOURCE)/%.c
 	$(ARMGNU)-gcc $(COPS8) $< -c -o $@
 	
 $(BUILD8)%.o: $(SOURCE)/%.cpp
-	$(ARMGNU)-g++ $(COPS8) -fno-rtti $< -c -o $@	
+	$(ARMGNU)-g++ $(COPS8) -fno-rtti -std=c++11 $< -c -o $@	
 	
 $(BUILD8)%.o: $(SOURCE)/%.S
 	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
