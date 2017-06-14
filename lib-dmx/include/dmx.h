@@ -80,6 +80,7 @@ extern "C" {
 extern void dmx_init(void);
 
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
+extern void dmx_set_send_data_without_sc(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);

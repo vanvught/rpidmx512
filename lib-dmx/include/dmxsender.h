@@ -1,8 +1,8 @@
 /**
- * @file rdm_send.h
+ * @file dmxsender.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_SEND_H_
-#define RDM_SEND_H_
+#ifndef DMXSENDER_H_
+#define DMXSENDER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-#ifdef __cplusplus
-}
-#endif
-#ifdef RDM_RESPONDER
-extern void rdm_send_discovery_respond_message(const uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack(uint8_t *);
-extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
-extern void rdm_send_increment_message_count(void);
-extern void rdm_send_decrement_message_count(void);
-#endif
-#endif /* RDM_SEND_H_ */
+#include "lightset.h"
+
+class DMXSender: public LightSet {
+public:
+	DMXSender(void);
+	~DMXSender(void);
+
+	void Start(void);
+	void Stop(void);
+
+	void SetBreakTime(const uint32_t);
+	const uint32_t GetBreakTime(void);
+
+	void SetMabTime(const uint32_t);
+	const uint32_t GetMabTime(void);
+
+	void SetPeriodTime(const uint32_t);
+	const uint32_t GetPeriodTime(void);
+
+	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+private:
+	bool m_bIsStarted;
+};
+
+#endif /* DMXSENDER_H_ */

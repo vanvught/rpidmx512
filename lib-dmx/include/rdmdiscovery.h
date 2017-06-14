@@ -1,8 +1,8 @@
 /**
- * @file rdm_send.h
+ * @file rdmddiscovery.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_SEND_H_
-#define RDM_SEND_H_
+#ifndef RDMDISCOVERY_H_
+#define RDMDISCOVERY_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-#ifdef __cplusplus
-}
-#endif
-#ifdef RDM_RESPONDER
-extern void rdm_send_discovery_respond_message(const uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack(uint8_t *);
-extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
-extern void rdm_send_increment_message_count(void);
-extern void rdm_send_decrement_message_count(void);
-#endif
-#endif /* RDM_SEND_H_ */
+#include "rdm.h"
+#include "rdmtod.h"
+#include "rdmmessage.h"
+
+class RDMDiscovery: public RDMTod {
+public:
+	RDMDiscovery(void);
+	~RDMDiscovery(void);
+
+	void SetUid(const uint8_t *);
+	const char *GetUid(void);
+
+	void Full(void);
+
+private:
+	bool FindDevices(uint64_t, uint64_t);
+	bool QuickFind(const uint8_t *);
+
+	bool IsValidDiscoveryResponse(const uint8_t *, uint8_t *);
+
+	void PrintUid(const uint64_t);
+	void PrintUid(uint8_t *);
+	const uint8_t *ConvertUid(const uint64_t);
+	const uint64_t ConvertUid(const uint8_t *);
+
+private:
+	uint8_t m_Uid[RDM_UID_SIZE];
+	RDMMessage m_UnMute;
+	RDMMessage m_Mute;
+	RDMMessage m_DiscUniqueBranch;
+};
+
+#endif /* RDMDISCOVERY_H_ */

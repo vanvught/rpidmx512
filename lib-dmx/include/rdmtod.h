@@ -1,8 +1,8 @@
 /**
- * @file rdm_send.h
+ * @file rdmtod.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_SEND_H_
-#define RDM_SEND_H_
+#ifndef RDMTOD_H_
+#define RDMTOD_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-#ifdef __cplusplus
-}
-#endif
-#ifdef RDM_RESPONDER
-extern void rdm_send_discovery_respond_message(const uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack(uint8_t *);
-extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
-extern void rdm_send_increment_message_count(void);
-extern void rdm_send_decrement_message_count(void);
-#endif
-#endif /* RDM_SEND_H_ */
+#include "rdm.h"
+
+#define TOD_TABLE_SIZE	200
+
+struct TRdmTod {
+	uint8_t uid[RDM_UID_SIZE];
+};
+
+class RDMTod {
+public:
+	 RDMTod(void);
+	 ~RDMTod(void);
+
+	 void Reset(void);
+	 bool AddUid(const uint8_t *);
+	 const uint8_t GetUidCount(void);
+	 void Copy(uint8_t *);
+
+	 bool Delete(const uint8_t *);
+	 bool Exist(const uint8_t *);
+
+	 void Dump(void);
+	 void Dump(uint8_t);
+private:
+	 uint8_t m_entries;
+	 TRdmTod *m_pTable;
+};
+
+
+#endif /* RDMTOD_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file rdm_send.h
+ * @file rdmmessage.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_SEND_H_
-#define RDM_SEND_H_
+#ifndef RDMMESSAGE_H_
+#define RDMMESSAGE_H_
 
-#include <stdint.h>
+#include "rdm.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-#ifdef __cplusplus
-}
-#endif
-#ifdef RDM_RESPONDER
-extern void rdm_send_discovery_respond_message(const uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack(uint8_t *);
-extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
-extern void rdm_send_increment_message_count(void);
-extern void rdm_send_decrement_message_count(void);
-#endif
-#endif /* RDM_SEND_H_ */
+class RDMMessage {
+public:
+	RDMMessage(void);
+	~RDMMessage(void);
+
+	void SetSrcUid(const uint8_t *);
+	void SetDstUid(const uint8_t *);
+
+	void SetCc(const uint8_t);
+	void SetPid(const uint16_t);
+
+	void SetSubDevice(const uint16_t);
+
+	void SetPd(const uint8_t *, const uint8_t);
+
+	void Send(void);
+
+	static void SendRaw(const uint8_t *, const uint8_t);
+	static const uint8_t *Receive(void);
+	static const uint8_t *ReceiveTimeOut(const uint32_t);
+
+	static void Print(const uint8_t *);
+
+public:
+	static uint8_t m_TransactionNumber;
+
+private:
+	_rdm_command *m_pRdmCommand;
+};
+
+#endif /* RDMMESSAGE_H_ */
