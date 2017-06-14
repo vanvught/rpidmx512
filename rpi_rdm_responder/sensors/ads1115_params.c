@@ -29,7 +29,6 @@
 #include "sscan.h"
 
 #include "ads1115_params.h"
-
 #include "acs71x.h"
 
 #include "util.h"

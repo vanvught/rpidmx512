@@ -58,16 +58,21 @@ void monitor_update(void) {
 	}
 
 	if (display_level > 1) {
-		monitor_time_uptime(MONITOR_LINE_TIME);
-		monitor_line(MONITOR_LINE_PORT_DIRECTION, "%s", dmx_get_port_direction() == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
-
+		const _dmx_port_direction port_direction = dmx_get_port_direction();
 		const uint16_t dmx_start_address = rdm_device_info_get_dmx_start_address(0);
-
-		monitor_line(MONITOR_LINE_DMX_DATA, "%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
-
 		const uint8_t *dmx_data = dmx_get_current_data();
 		const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
-		const uint16_t slots_in_packet = (dmx_get_updates_per_seconde() == 0) ? (uint16_t) 0 : (uint16_t) (dmx_statistics->statistics.slots_in_packet);
+		const uint32_t updates_per_seconde = dmx_get_updates_per_seconde();
+		const uint16_t slots_in_packet = (updates_per_seconde == 0) ? (uint16_t) 0 : (uint16_t) (dmx_statistics->statistics.slots_in_packet);
+
+		monitor_time_uptime(MONITOR_LINE_TIME);
+		monitor_line(MONITOR_LINE_PORT_DIRECTION, "%s", port_direction == DMX_PORT_DIRECTION_INP ? "Input" : "Output");
+
+		if(port_direction == DMX_PORT_DIRECTION_INP) {
+			printf(" %.2d:%.3d", (int) updates_per_seconde, (int) slots_in_packet);
+		}
+
+		monitor_line(MONITOR_LINE_DMX_DATA, "%.3d-%.3d : ", dmx_start_address, (dmx_start_address + 15) & 0x1FF);
 
 		for (i = 0; i < 16; i++) {
 			uint16_t index = (dmx_start_address + i <= (uint16_t) DMX_UNIVERSE_SIZE) ? (dmx_start_address + i) : (dmx_start_address + i - (uint16_t) DMX_UNIVERSE_SIZE);

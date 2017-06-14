@@ -26,8 +26,6 @@
 #include <stdint.h>
 
 #include "ads1115.h"
-#include "ads1115_params.h"
-
 #include "acs71x.h"
 
 #include "dmx_devices.h"
@@ -38,6 +36,7 @@
 #include "tables.h"
 
 #include "rdm_e120.h"
+#include "ads1115_params.h"
 
 static struct _ads1115_ch_info *ads1115_ch_info;
 

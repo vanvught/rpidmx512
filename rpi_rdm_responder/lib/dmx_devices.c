@@ -269,6 +269,10 @@ void dmx_devices_run() {
 	} else {
 		const uint8_t *dmx_data = dmx_is_data_changed();
 
+		if(is_devices_zero) {
+			dmx_data = dmx_get_current_data();
+		}
+
 		if (dmx_data == NULL) {
 			return;
 		}

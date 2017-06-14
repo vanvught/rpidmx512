@@ -34,17 +34,11 @@
 
 #include "dmx.h"
 #include "dmx_devices.h"
+
 #include "rdm_sensors.h"
 #include "rdm_device_info.h"
 #include "rdm_monitor.h"
 #include "rdm_device_const.h"
-
-#define OLED_CONNECTED(b,f)	\
-do {						\
-	if(b) {					\
-		f;					\
-	}						\
-} while (0);
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
@@ -58,7 +52,7 @@ extern void rdm_identify(void);
 
 struct _poll {
 	void (*f)(void);
-}const poll_table[] = {
+}static const poll_table[] ALIGNED = {
 		{ rdm_data_received },
 		{ dmx_devices_run },
 		{ led_blink }
@@ -67,19 +61,19 @@ struct _poll {
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
-}const events[] = {
+}static const events[] ALIGNED = {
 		{  500000, rdm_identify },
 		{ 1000000, monitor_update }
 		};
 
-uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
  * @ingroup main
  *
  */
 static void events_init() {
-	int i;
+	size_t i;
 	const uint32_t mircos_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		events_elapsed_time[i] += mircos_now;
@@ -91,7 +85,7 @@ static void events_init() {
  *
  */
 inline static void events_check() {
-	int i;
+	size_t i;
 	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
 		if (micros_now - events_elapsed_time[i] > events[i].period) {
@@ -102,49 +96,45 @@ inline static void events_check() {
 	}
 }
 
-#include "console.h"
-
 void notmain(void) {
-	oled_info_t oled_info;
-	bool oled_connected;
+	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	bool oled_connected = false;
 	int i;
-
-	hardware_init();
-
-	oled_info.slave_address = 0;
-	oled_info.type = OLED_PANEL_128x64;
+	uint8_t *uid_device;
 
 	oled_connected = oled_start(&oled_info);
-
-	if (oled_connected) {
-		monitor_set_oled(&oled_info);
-	} else {
-		monitor_set_oled(NULL);
-	}
+	monitor_set_oled(oled_connected ? &oled_info : NULL);
 
 	dmx_init();
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 
 	rdm_device_info_init(true);
 
+	uid_device = (uint8_t *) rdm_device_info_get_uuid();
+
 	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("RDM Responder / DMX Slave, Devices connected : %d, Sensors connected : %d\n", dmx_devices_get_devices_connected(), rdm_sensors_get_count());
-	const uint8_t *uid_device = rdm_device_info_get_uuid();
-	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+	printf("RDM Responder / DMX Slave, Devices connected : %d, Sensors connected : %d\n", (int) dmx_devices_get_devices_connected(), (int) rdm_sensors_get_count());
+	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label :",
+			(unsigned int) uid_device[0], (unsigned int) uid_device[1],
+			(unsigned int) uid_device[2], (unsigned int) uid_device[3],
+			(unsigned int) uid_device[4], (unsigned int) uid_device[5]);
 	monitor_print_root_device_label();
 
 	if (oled_connected) {
-		oled_set_cursor(&oled_info,0,0);
-		oled_printf(&oled_info, "[V%s] RDM Responder", DEVICE_SOFTWARE_VERSION);
-		oled_set_cursor(&oled_info,1,0);
-		oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
-		oled_set_cursor(&oled_info,2,0);
-		oled_puts(&oled_info, "L:");
+		oled_set_cursor(&oled_info, 0, 0);
+		(void) oled_printf(&oled_info, "[V%s] RDM Responder", DEVICE_SOFTWARE_VERSION);
+		oled_set_cursor(&oled_info, 1, 0);
+		(void) oled_printf(&oled_info, "UUID: %.2x%.2x:%.2x%.2x%.2x%.2x",
+				(unsigned int) uid_device[0], (unsigned int) uid_device[1],
+				(unsigned int) uid_device[2], (unsigned int) uid_device[3],
+				(unsigned int) uid_device[4], (unsigned int) uid_device[5]);
+		oled_set_cursor(&oled_info, 2, 0);
+		(void) oled_puts(&oled_info, "L:");
 		// 2 and 3 = Device label
-		oled_set_cursor(&oled_info,4,0);
-		oled_printf(&oled_info,"Devices: %d", dmx_devices_get_devices_connected());
-		oled_set_cursor(&oled_info,5,0);
-		oled_printf(&oled_info,"Sensors: %d", rdm_sensors_get_count());
+		oled_set_cursor(&oled_info, 4, 0);
+		(void) oled_printf(&oled_info, "Devices: %d", dmx_devices_get_devices_connected());
+		oled_set_cursor(&oled_info, 5, 0);
+		(void) oled_printf(&oled_info, "Sensors: %d", rdm_sensors_get_count());
 	}
 
 	hardware_watchdog_init();
