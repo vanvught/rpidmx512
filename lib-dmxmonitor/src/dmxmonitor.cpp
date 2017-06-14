@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "console.h"
@@ -34,7 +35,7 @@
 /**
  *
  */
-DMXMonitor::DMXMonitor(void) {
+DMXMonitor::DMXMonitor(void) : m_bIsStarted(false) {
 
 }
 
@@ -49,6 +50,12 @@ DMXMonitor::~DMXMonitor(void) {
  *
  */
 void DMXMonitor::Start(void) {
+	if(m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+
 	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
 		console_clear_line(i);
 	}
@@ -56,8 +63,9 @@ void DMXMonitor::Start(void) {
 	console_set_cursor(0, TOP_ROW);
 	console_puts("    00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31\n");
 
-	for (int i = 1; i < (int)(16 * 32) ; i = i + (int)32) {
-		printf("%3d\n", i);
+	for (int i = 1; i < (int) (16 * 32); i = i + (int) 32) {
+		printf("%3d ", i);
+		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n");
 	}
 }
 
@@ -65,8 +73,15 @@ void DMXMonitor::Start(void) {
  *
  */
 void DMXMonitor::Stop(void) {
-	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
-		console_clear_line(i);
+	if(!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+
+	for (int i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
+		console_set_cursor(4, i);
+		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
 	}
 }
 

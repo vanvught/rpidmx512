@@ -26,6 +26,9 @@
 #ifndef DMXMONITOR_H_
 #define DMXMONITOR_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "lightset.h"
 
 class DMXMonitor: public LightSet {
@@ -37,6 +40,8 @@ public:
 	void Stop(void);
 
 	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+private:
+	bool m_bIsStarted;
 };
 
 #endif /* DMXMONITOR_H_ */
