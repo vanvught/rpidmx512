@@ -41,28 +41,33 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
-#include "dmxsend.h"
+#include "dmxsender.h"
 #include "dmxparams.h"
 #include "dmxmonitor.h"
 
 #include "wifi.h"
 #include "wifi_udp.h"
 
+#include "util.h"
+
 #include "software_version.h"
 
 extern "C" {
+
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
 	_output_type output_type = OUTPUT_TYPE_MONITOR;
 	E131Params e131params;
 	DMXParams dmxparams;
+	DMXSender dmx;
+	DMXMonitor monitor;
 	uuid_t uuid;
 	char uuid_str[UUID_STRING_LENGTH + 1] ALIGNED;
 	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
 	bool oled_connected = false;
 	struct ip_info ip_config;
-
-	hardware_init();
 
 	oled_connected = oled_start(&oled_info);
 
@@ -113,8 +118,6 @@ void notmain(void) {
 	wifi_udp_joingroup(group_ip);
 
 	E131Bridge bridge;
-	DMXSend dmx;
-	DMXMonitor monitor;
 
 	bridge.setCid(uuid);
 	bridge.setUniverse(universe);
@@ -186,10 +189,10 @@ void notmain(void) {
 		(void) oled_printf(&oled_info, "U: " IPSTR "", IP2STR(ip_config.ip.addr));
 	}
 
-	hardware_watchdog_init();
-
 	console_status(CONSOLE_GREEN, "Bridge is running");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Bridge is running"));
+
+	hardware_watchdog_init();
 
 	for (;;) {
 		hardware_watchdog_feed();
