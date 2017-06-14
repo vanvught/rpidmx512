@@ -56,8 +56,6 @@ void notmain(void) {
 	uint32_t break_to_break_min = UINT32_MAX;
 	uint32_t break_to_break_max = (uint32_t)0;
 
-	hardware_init();
-
 	dmx_init();
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 

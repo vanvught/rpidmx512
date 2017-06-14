@@ -1,8 +1,10 @@
 #
 DEFINES = MONITOR_DMX NDEBUG
 #
-LIBS = dmx monitor utils dmxmonitor lightset c++
+LIBS = dmx monitor dmxmonitor lightset c++
 #
-SRCDIR = firmware common/lib
+SRCDIR = firmware
 
 include ../firmware-template/Rules.mk
+
+prerequisites:
