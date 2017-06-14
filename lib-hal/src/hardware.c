@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <time.h>
 
 #include "arm/synchronize.h"
@@ -84,6 +85,7 @@ const int32_t hardware_get_core_temperature(void) {
  */
 void hardware_init(void) {
 	int32_t board_revision;
+
 #if defined ( RPI2 ) || defined ( RPI3 )
 #ifndef ARM_ALLOW_MULTI_CORE
 	// put all secondary cores to sleep

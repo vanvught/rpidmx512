@@ -171,6 +171,15 @@ void mmu_enable(void) {
 
 	isb();
 
+	invalidate_data_cache_l1_only();
+
+	// required if MMU was previously enabled and not properly reset
+	invalidate_instruction_cache();
+	flush_branch_target_cache();
+	asm volatile ("mcr p15, 0, %0, c8, c7,  0" : : "r" (0)); // invalidate unified TLB
+	dsb();
+	flush_prefetch_buffer();
+
 	// enable MMU
 	uint32_t control;
 	asm volatile ("mrc p15, 0, %0, c1, c0,  0" : "=r" (control));

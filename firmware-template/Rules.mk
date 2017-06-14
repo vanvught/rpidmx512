@@ -37,7 +37,7 @@ LIB8DEP := $(addsuffix .a, $(LIB8DEP))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fstack-usage
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -52,15 +52,6 @@ COPS7 += $(COPS_COMMON)
 COPS8 = -mfpu=vfpv4 -march=armv8-a -mtune=cortex-a53
 COPS8 += -DRPI3
 COPS8 += $(COPS_COMMON)
-
-#LIB6 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-#LIB6 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv6zk/arm1176jzf-s/hardfp/vfp  
-
-#LIB7 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-#LIB7 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv7-a/cortex-a7/hardfp/vfpv4 
-
-#LIB8 += -L/usr/lib/gcc/arm-none-eabi/4.9.3/fpu
-#LIB8 += -L/opt/gnuarm-hardfp/lib/gcc/arm-none-eabi/4.9.3/armv8-a/cortex-a53/hardfp/fp-armv8/
 
 SOURCE = ./
 
@@ -134,9 +125,8 @@ builddirs:
 	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS) # $(BUILD8_DIRS)
 
 clean:
-	rm -rf $(BUILD_DIRS) $(BUILD7_DIRS) $(BUILD8_DIRS)
+	rm -rf $(BUILD) $(BUILD7) $(BUILD8)
 	rm -f $(TARGET) $(TARGET7) $(TARGET8)
-	rm -f $(BUILD)*.elf $(BUILD7)*.elf $(BUILD8)*.elf
 	rm -f $(MAP) $(MAP7) $(MAP8)
 	rm -f $(LIST) $(LIST7) $(LIST8)
 
