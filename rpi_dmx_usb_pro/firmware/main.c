@@ -50,7 +50,7 @@ static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_S
 
 struct _poll {
 	void (*f)(void);
-}const poll_table[] ALIGNED = {
+}static const poll_table[] ALIGNED = {
 		{ widget_receive_data_from_host },
 		{ widget_received_dmx_packet },
 		{ widget_received_dmx_change_of_state_packet },
@@ -63,10 +63,10 @@ struct _poll {
 struct _event {
 	const uint32_t period;
 	void (*f)(void);
-}const events[] ALIGNED = {
+}static const events[] ALIGNED = {
 		{ 1000000, monitor_update } };
 
-uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
+static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
 /**
  * @ingroup main
@@ -102,17 +102,11 @@ inline static void events_check() {
  * @return
  */
 int notmain(void) {
-	oled_info_t oled_info;
-	bool oled_connected;
+	oled_info_t oled_info  = { OLED_128x64_SPI_CS2_DEFAULT };
+	bool oled_connected = false;
 	int i = 0;
 	_widget_mode widget_mode;
-
-	hardware_init();
-
-	oled_info.type = OLED_PANEL_128x64;
-	oled_info.protocol = OLED_PROTOCOL_SPI;
-	oled_info.chip_select = OLED_SPI_CS2;
-	oled_info.speed_hz = 0;
+	const uint8_t *uid_device;
 
 	oled_connected = oled_start(&oled_info);
 	monitor_set_oled(oled_connected ? &oled_info : NULL);
@@ -126,23 +120,23 @@ int notmain(void) {
 	rdm_device_info_init();
 
 	widget_mode = widget_get_mode();
+	uid_device = (const uint8_t *)rdm_device_info_get_uuid();
 
 	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", widget_mode, widget_mode_names[widget_mode]);
-	const uint8_t *uid_device = rdm_device_info_get_uuid();
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, Label : ", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	monitor_print_root_device_label();
 
 	if (oled_connected) {
 		oled_set_cursor(&oled_info,0,0);
-		oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
+		(void) oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
 		oled_set_cursor(&oled_info,1,0);
-		oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+		(void) oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 		oled_set_cursor(&oled_info,2,0);
 		oled_puts(&oled_info, "L:");
 		// 2 and 3 = Device label
 		oled_set_cursor(&oled_info,5,0);
-		oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
+		(void) oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
 	}
 
 	hardware_watchdog_init();
