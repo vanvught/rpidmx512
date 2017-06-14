@@ -3,7 +3,6 @@
 	<name>lib-lightset</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

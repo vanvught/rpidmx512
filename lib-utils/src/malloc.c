@@ -110,7 +110,7 @@ void *malloc(size_t size) {
 
 	header->next = 0;
 #ifdef MEM_DEBUG
-	printf("malloc: pBlockHeader = %p\n", header);
+	printf("malloc: pBlockHeader = %p, size = %d\n", header, (int) size);
 #endif
 	return (void *)header->data;
 }
@@ -129,8 +129,7 @@ void free(void *p) {
 	struct block_header *header = (struct block_header *) ((void *) p - sizeof(struct block_header));
 
 #ifdef MEM_DEBUG
-	printf("_free: pBlockHeader = %p\n", header);
-	printf("_free: pBlock = %p\n", p);
+	printf("free: pBlockHeader = %p, pBlock = %p\n", header, p);
 #endif
 
 	if (header->magic != BLOCK_MAGIC) {

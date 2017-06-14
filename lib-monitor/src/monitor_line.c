@@ -26,16 +26,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include <assert.h>
 
 #include "console.h"
 
-/**
- * @ingroup monitor
- *
- * @param line
- * @param fmt
- */
 void monitor_line(const int line, const char *fmt, ...) {
 	va_list va;
 

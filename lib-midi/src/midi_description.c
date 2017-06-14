@@ -1,7 +1,7 @@
 /**
  * @file midi_description.c
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,8 @@
 
 #include "midi.h"
 
-static const char key_names[][3] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-static char key_name[8];
+static const char key_names[][3] __attribute__((aligned(4))) = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+static char key_name[8] __attribute__((aligned(4)));
 
 struct _drum_kits {			// Channel 10
 	const uint8_t program;
@@ -63,12 +63,6 @@ static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 	"Fret Noise", "Breath Noise", "Seashore", "Tweet", "Telephone", "Helicopter", "Applause", "Gunshot"													// 121-128 Sound effects
 };
 
-/**
- * @ingroup midi
- *
- * @param number
- * @return
- */
 /*@observer@*/ const char *midi_description_get_drum_kit_name(uint8_t number) {
 	const uint8_t array_length = sizeof(drum_kits) / sizeof(drum_kits[0]);
 	uint8_t i;
@@ -82,12 +76,6 @@ static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 	return (const char *) "Percussion";
 }
 
-/**
- * @ingroup midi
- *
- * @param number
- * @return
- */
 const char *midi_description_get_instrument_name(uint8_t number) {
 	if (number > 127) {
 		return (const char *) "";
@@ -96,12 +84,6 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	return (const char *)instrument_names[number];
 }
 
-/**
- * @ingroup midi
- *
- * @param type
- * @return
- */
 /*@observer@*/const char *midi_description_get_type(uint8_t type) {
 	switch (type) {
 	case MIDI_TYPES_INVALIDE_TYPE:
@@ -153,12 +135,6 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/**
- * @ingroup midi
- *
- * @param data
- * @return
- */
 /*@observer@*/const char *midi_description_get_control_change(uint8_t data) {
 	switch (data) {
 	case MIDI_CONTROL_CHANGE_ALL_SOUND_OFF:
@@ -182,12 +158,6 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/**
- * @ingroup midi
- *
- * @param data
- * @return
- */
 /*@observer@*/const char *midi_description_get_control_function(uint8_t data) {
 	if (data >= 0x14 && data <= 0x1F) {
 		return "Undefined";
@@ -252,12 +222,6 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/**
- * @ingroup midi
- *
- * @param key_number
- * @return
- */
 /*@observer@*/const char *midi_description_get_key_name(uint8_t key_number) {
 	int	note = (int)(key_number % 12);
 	int	octave = (int)(key_number / 12);

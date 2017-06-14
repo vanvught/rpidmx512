@@ -31,11 +31,6 @@
 #include "hardware.h"
 #include "sys_time.h"
 
-/**
- * @ingroup monitor
- *
- * @param line
- */
 void monitor_time_uptime(const int line) {
 	uint32_t time, days, hours, minutes, seconds;
 	time_t ltime;
