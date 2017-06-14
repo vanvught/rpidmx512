@@ -91,6 +91,8 @@ inline static void events_check() {
 void notmain(void) {
 	int i;
 
+	hardware_init();
+
 	midi_params_init();
 	midi_set_interface(midi_params_get_interface());
 	midi_set_baudrate(midi_params_get_baudrate());
