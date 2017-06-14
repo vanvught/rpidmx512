@@ -68,8 +68,6 @@ void notmain(void) {
 	ArtNetNode node;
 	ArtNetReader reader;
 
-	hardware_init();
-
 	ltc_reader_params_init();
 
 	source = ltc_reader_params_get_source();
