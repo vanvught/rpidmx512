@@ -103,8 +103,6 @@ void notmain(void) {
 	uint8_t midi_channel = 0;
 	int i;
 
-	hardware_init();
-
 	oled_connected = oled_start(&oled_info);
 
 	bridge_params_init();
