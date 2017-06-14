@@ -55,8 +55,6 @@ void notmain(void) {
 	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
 	bool oled_connected = false;
 
-	hardware_init();
-
 	oled_connected = oled_start(&oled_info);
 
 	(void) oscparms.Load();
