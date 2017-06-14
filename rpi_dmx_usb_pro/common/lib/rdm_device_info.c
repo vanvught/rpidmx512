@@ -559,8 +559,8 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-		(void *)memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
-		root_device_label_length = DEVICE_LABEL_LENGTH;
+	(void *)memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	root_device_label_length = DEVICE_LABEL_LENGTH;
 
 	(void *)memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
