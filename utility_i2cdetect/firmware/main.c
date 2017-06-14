@@ -42,8 +42,6 @@ void notmain(void) {
 	uint8_t i, j;
 	uint8_t address;
 
-	hardware_init();
-
 	bcm2835_i2c_begin();
 	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
 
