@@ -78,8 +78,6 @@ void notmain(void) {
 	uint32_t n, i, val;
 	oled_info_t oled_info = { OLED_128x32_I2C_DEFAULT };
 
-	hardware_init();
-
 	printf("[V%s] %s [%x] SoC: %s\n\n", SOFTWARE_VERSION, hardware_board_get_model(), (unsigned int) hardware_board_get_model_id(), hardware_board_get_soc());
 #if defined (RPI1)
 	(void) console_puts("kernel.img : ");
@@ -161,7 +159,6 @@ void notmain(void) {
 	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
 
 	if (wifi_detect()) {
-		wifi_init("");
 		(void) console_puts("\nESP8266 information\n");
 		printf(" SDK      : %s\n", system_get_sdk_version());
 		printf(" Firmware : %s\n\n", wifi_get_firmware_version());
