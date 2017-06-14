@@ -2,7 +2,7 @@
  * @file artnetparams.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,17 +38,17 @@ static const char PARAMS_SUBNET[] ALIGNED = "subnet";					///<
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
 static const char PARAMS_OUTPUT[] ALIGNED = "output";					///< dmx {default}, spi, mon
 static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";			///< Use the TimeCode call-back handler, 0 {default}
+static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";			///< Use the TimeSync call-back handler, 0 {default}
+static const char PARAMS_RDM[] ALIGNED = "enable_rdm";					///< Enable RDM, 0 {default}
 
 static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
 static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
 static uint8_t ArtNetParamsUniverse ALIGNED = 0;						///<
 static _output_type ArtNetParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
 static bool ArtNetParamsUseTimeCode = false;							///<
+static bool ArtNetParamsUseTimeSync = false;							///<
+static bool ArtNetParamsEnableRdm = false;								///<
 
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	char value[8] ALIGNED;
 	uint8_t len = 3;
@@ -57,6 +57,20 @@ static void process_line_read(const char *line) {
 	if (sscan_uint8_t(line, PARAMS_TIMECODE, &value8) == 2) {
 		if (value8 != 0) {
 			ArtNetParamsUseTimeCode = true;
+		}
+		return;
+	}
+
+	if (sscan_uint8_t(line, PARAMS_TIMESYNC, &value8) == 2) {
+		if (value8 != 0) {
+			ArtNetParamsUseTimeSync = true;
+		}
+		return;
+	}
+
+	if (sscan_uint8_t(line, PARAMS_RDM, &value8) == 2) {
+		if (value8 != 0) {
+			ArtNetParamsEnableRdm = true;
 		}
 		return;
 	}
@@ -77,9 +91,6 @@ static void process_line_read(const char *line) {
 
 }
 
-/**
- *
- */
 ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsNet = 0;
 	ArtNetParamsSubnet = 0;
@@ -88,57 +99,37 @@ ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsUseTimeCode = false;
 }
 
-/**
- *
- */
 ArtNetParams::~ArtNetParams(void) {
 }
 
-/**
- *
- * @return
- */
 const _output_type ArtNetParams::GetOutputType(void) {
 	return ArtNetParamsOutputType;
 }
 
-/**
- *
- * @return
- */
 const uint8_t ArtNetParams::GetNet(void) {
 	return ArtNetParamsNet;
 }
 
-/**
- *
- * @return
- */
 const uint8_t ArtNetParams::GetSubnet(void) {
 	return ArtNetParamsSubnet;
 }
 
-/**
- *
- * @return
- */
 const uint8_t ArtNetParams::GetUniverse(void) {
 	return ArtNetParamsUniverse;
 }
 
-/**
- *
- * @return
- */
 const bool ArtNetParams::IsUseTimeCode(void) {
 	return ArtNetParamsUseTimeCode;
 }
 
-/**
- *
- */
+const bool ArtNetParams::IsUseTimeSync(void) {
+	return ArtNetParamsUseTimeSync;
+}
+
+const bool ArtNetParams::IsRdm(void) {
+	return ArtNetParamsEnableRdm;
+}
+
 bool ArtNetParams::Load(void) {
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
 }
-
-

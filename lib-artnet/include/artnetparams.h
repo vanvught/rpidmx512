@@ -2,7 +2,13 @@
  * @file artnetparams.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ *
+ * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
+ *
+ */
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +55,9 @@ public:
 	const _output_type GetOutputType(void);
 
 	const bool IsUseTimeCode(void);
+	const bool IsUseTimeSync(void);
+
+	const bool IsRdm(void);
 };
 
 #endif /* ARTNETPARAMS_H_ */

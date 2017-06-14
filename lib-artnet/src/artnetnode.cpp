@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x09 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0A };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -1148,10 +1148,14 @@ void ArtNetNode::HandleTodControl(void) {
 	const uint16_t portAddress = (uint16_t)(packet->Net << 8) | (uint16_t)(packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
+		m_pLightSet->Stop();
+
 		if (packet->Command == (uint8_t) 0x01) {	// AtcFlush
 			m_pArtNetRdm->Full();
 		}
 		SendTod();
+
+		m_pLightSet->Start();
 	}
 }
 
@@ -1208,6 +1212,8 @@ void ArtNetNode::HandleRdm(void) {
 	const uint16_t portAddress = (uint16_t) (packet->Net << 8) | (uint16_t) (packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
+		m_pLightSet->Stop();
+
 		const uint8_t *response = (uint8_t *) m_pArtNetRdm->Handler(packet->RdmPacket);
 		if (response != 0) {
 			packet->RdmVer = 0x01;
@@ -1221,6 +1227,8 @@ void ArtNetNode::HandleRdm(void) {
 		} else {
 			//printf("No response\n");
 		}
+
+		m_pLightSet->Start();
 	}
 }
 
@@ -1359,4 +1367,3 @@ int ArtNetNode::HandlePacket(void) {
 
 	return m_ArtNetPacket.length;
 }
-
