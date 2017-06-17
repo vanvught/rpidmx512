@@ -3,7 +3,7 @@ DEFINES = NDEBUG
 #
 LIBS = artnet dmx ws28xx dmxmonitor monitor lightset c++
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../firmware-template/Rules.mk
 

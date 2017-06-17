@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,23 +55,14 @@ static void itoa_base10(int arg, char *buf) {
 	*n = (char) '0' + (char) (arg % 10);
 }
 
-/**
- *
- */
 TimeCode::TimeCode(void) {
 
 }
 
-/**
- *
- */
 TimeCode::~TimeCode(void) {
 	this->Stop();
 }
 
-/**
- *
- */
 void TimeCode::Start(void) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
@@ -80,18 +71,11 @@ void TimeCode::Start(void) {
 	console_restore_cursor();
 }
 
-/**
- *
- */
 void TimeCode::Stop(void) {
 	console_set_cursor(COLUMN, ROW);
 	console_puts("                 ");
 }
 
-/**
- *
- * @param ArtNetTimeCode
- */
 void TimeCode::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	itoa_base10(ArtNetTimeCode->Hours, (char *) &timecode[0]);
 	itoa_base10(ArtNetTimeCode->Minutes, (char *) &timecode[3]);

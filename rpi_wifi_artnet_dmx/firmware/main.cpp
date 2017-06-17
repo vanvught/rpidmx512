@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <dmxsend.h.txt>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -36,8 +37,8 @@
 #include "artnetnode.h"
 #include "artnetparams.h"
 
-#include "dmxsend.h"
 #include "dmxparams.h"
+#include "dmxsender.h"
 
 #include "dmxmonitor.h"
 
@@ -45,14 +46,20 @@
 #include "deviceparams.h"
 
 #include "timecode.h"
+#include "timesync.h"
+#include "artnetdiscovery.h"
 
 #include "oled.h"
 
 #include "wifi.h"
 #include "wifi_udp.h"
+
 #include "software_version.h"
 
 extern "C" {
+
+void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
+void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
 	_output_type output_type = OUTPUT_TYPE_DMX;
@@ -66,8 +73,6 @@ void notmain(void) {
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
-
-	hardware_init();
 
 	oled_connected = oled_start(&oled_info);
 
@@ -83,9 +88,24 @@ void notmain(void) {
 	}
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("WiFi ArtNet 3 Node DMX Output / Pixel controller {4 DMX Universes}");
 
-	OLED_CONNECTED(oled_connected, oled_puts(&oled_info, "WiFi ArtNet 3"));
+	console_puts("WiFi ArtNet 3 Node ");
+	console_set_fg_color(output_type == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("DMX Output");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_puts(" / ");
+	console_set_fg_color(artnetparams.IsRdm() ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("RDM");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_puts(" / ");
+	console_set_fg_color(output_type == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_puts(" / ");
+	console_set_fg_color(output_type == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Pixel controller");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_puts(" {4 Universes}");
 
 	console_set_top_row(3);
 
@@ -103,17 +123,24 @@ void notmain(void) {
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "UDP started"));
 
 	ArtNetNode node;
-	DMXSend dmx;
+	DMXSender dmx;
 	SPISend spi;
 	DMXMonitor monitor;
 	TimeCode timecode;
+	TimeSync timesync;
+	ArtNetDiscovery discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
 
-	if (artnetparams.IsUseTimeCode()) {
+	if (artnetparams.IsUseTimeCode() || output_type == OUTPUT_TYPE_MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
+	}
+
+	if (artnetparams.IsUseTimeSync() || output_type == OUTPUT_TYPE_MONITOR) {
+		timesync.Start();
+		node.SetTimeSyncHandler(&timesync);
 	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
@@ -128,11 +155,15 @@ void notmain(void) {
 		const uint8_t refresh_rate = dmxparams.GetRefreshRate();
 
 		if (refresh_rate != (uint8_t) 0) {
-			period = (uint32_t) (1E6 / refresh_rate);
+			period = (uint32_t) (1000000 / refresh_rate);
 		}
 
 		dmx.SetPeriodTime(period);
 
+		if(artnetparams.IsRdm()) {
+			node.SetRdmHandler(&discovery);
+			node.SetLongName("Raspberry Pi Art-Net 3 Node RDM Controller");
+		}
 	} else if (output_type == OUTPUT_TYPE_SPI) {
 		spi.SetLEDCount(deviceparms.GetLedCount());
 		spi.SetLEDType(deviceparms.GetLedType());
@@ -191,11 +222,16 @@ void notmain(void) {
 	}
 
 	if (oled_connected) {
-		oled_set_cursor(&oled_info, 0, 14);
+		oled_set_cursor(&oled_info, 0, 0);
+		oled_puts(&oled_info, "WiFi ArtNet 3 ");
 
 		switch (output_type) {
 		case OUTPUT_TYPE_DMX:
-			oled_puts(&oled_info, "DMX Out");
+			if (artnetparams.IsRdm()) {
+				oled_puts(&oled_info, "RDM");
+			} else {
+				oled_puts(&oled_info, "DMX Out");
+			}
 			break;
 		case OUTPUT_TYPE_SPI:
 			oled_puts(&oled_info, "Pixel");
@@ -226,8 +262,6 @@ void notmain(void) {
 		(void) oled_printf(&oled_info, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
-	hardware_watchdog_init();
-
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting the Node ..."));
 
@@ -236,9 +270,17 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, "Node started");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Node started"));
 
+	hardware_watchdog_init();
+
 	for (;;) {
 		hardware_watchdog_feed();
-		(void)node.HandlePacket();
+
+		(void) node.HandlePacket();
+
+		if (output_type == OUTPUT_TYPE_MONITOR) {
+			timesync.ShowSystemTime();
+		}
+
 		led_blink();
 	}
 }
