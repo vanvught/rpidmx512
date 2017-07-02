@@ -13,11 +13,11 @@ COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
 COPS += $(COPS_COMMON)
 
-COPS7 = -mfpu=vfpv4 -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
+COPS7 = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 #-fopt-info-vec-optimized
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
-COPS8 = -mfpu=fp-armv8 -march=armv8-a -mtune=cortex-a53 # NEON is not enabled in vectors.s
+COPS8 = -mfpu=neon-fp-armv8 -march=armv8-a -mtune=cortex-a53 #-fopt-info-vec-optimized 
 COPS8 += -DRPI3
 COPS8 += $(COPS_COMMON)
 

@@ -122,7 +122,10 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
-#if defined ( RPI2 ) || defined ( RPI3 )
+	bl vfp_init
+
+@#if defined ( RPI2 ) || defined ( RPI3 ) || defined ( ENABLE_MMU )
+#if defined ( ENABLE_MMU )
 	bl mmu_enable
 #else
     @ start L1 chache
@@ -133,25 +136,8 @@ reset:
     mcr p15, 0, r0, c1, c0, 0
 #endif
 
-    @ Enable fpu
-    mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
-    orr r0,r0,#0x300000 				@ bit 20/21, Full Access, CP10
-    orr r0,r0,#0xC00000 				@ bit 22/23, Full Access, CP11
-    mcr p15, 0, r0, c1, c0, 2			@ Write Coprocessor Access Control Register
-#if defined ( RPI2 )  || defined ( RPI3 )
-    isb
-#else
-    mov r0,#0
-    mcr p15, #0, r0, c7, c5,  #4
-#endif
-    mov r0,#0x40000000
-#if defined ( RPI2 )  || defined ( RPI3 )
-    vmsr fpexc, r0
-#else
-    fmxr fpexc, r0
-#endif
-
 	bl hardware_init
+
     bl notmain
 halt:
 	wfe
@@ -165,30 +151,6 @@ fiq:
 
 FUNC hang
     b hang
-
-FUNC __enable_irq
-    mrs r0, cpsr
-    bic r0, r0, #I_BIT
-    msr cpsr_c, r0
-    bx lr
-
-FUNC __disable_irq
-    mrs r1, CPSR
-    orr r1, r1, #I_BIT
-    msr cpsr_c, r1
-    bx lr
-
-FUNC __enable_fiq
-    mrs r0, cpsr
-    bic r0, r0, #F_BIT
-    msr cpsr_c, r0
-    bx lr
-
-FUNC __disable_fiq
-    mrs r1, cpsr
-    orr r1, r1, #F_BIT
-    msr cpsr_c, r1
-    bx lr
 
 #if defined ( RPI2 ) || defined ( RPI3 )
 FUNC _init_core
@@ -222,17 +184,6 @@ FUNC _init_core
     ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
 4:	mov sp, r0
 
-#if defined ( RPI2 )|| defined ( RPI3 )
-	bl mmu_enable
-#else
-    @ start L1 chache
-    mrc p15, 0, r0, c1, c0, 0
-    orr r0,r0,#0x0004					@ Data Cache (Bit 2)
-    orr r0,r0,#0x0800					@ Branch Prediction (Bit 11)
-    orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
-    mcr p15, 0, r0, c1, c0, 0
-#endif
-
     @ Enable fpu
     mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
     orr r0,r0,#0x300000 				@ bit 20/21, Full Access, CP10
@@ -241,6 +192,8 @@ FUNC _init_core
     isb
     mov r0,#0x40000000
     vmsr fpexc, r0
+
+	bl mmu_enable
 
 	ldr r3, =smp_core_main
     blx r3
