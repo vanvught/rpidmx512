@@ -30,7 +30,6 @@
  * THE SOFTWARE.
  */
 
-#if defined (RPI2) || defined ( RPI3 )
 #include <stdint.h>
 
 #include "arm/synchronize.h"
@@ -70,7 +69,13 @@ static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
 #define DOMAIN_CLIENT		1
 #define DOMAIN_MANAGER		3
 
-#define ARM_AUX_CONTROL_SMP	(1 << 6)
+
+//  Auxiliary Control register
+#if defined (RPI1)
+#define ARM_AUX_CONTROL_CACHE_SIZE	(1 << 6)	// restrict cache size to 16K (no page coloring)
+#else
+#define ARM_AUX_CONTROL_SMP			(1 << 6)
+#endif
 
 #define ARM_TTBR_INNER_NON_CACHEABLE	((0 << 6) | (0 << 0))
 #define ARM_TTBR_INNER_WRITE_ALLOCATE	((1 << 6) | (0 << 0))
@@ -101,6 +106,10 @@ uint32_t mmu_get_arm_ram(void) {
 	return arm_ram;
 }
 
+const uint32_t *mmu_get_page_table(void) {
+	return (uint32_t *) &page_table;
+}
+
 void mmu_enable(void) {
 
 	uint32_t entry;
@@ -111,7 +120,7 @@ void mmu_enable(void) {
 #ifndef ARM_ALLOW_MULTI_CORE	// S = 0
 													///< 31   27   23   19   15   11   7    3
 													///<   28   24   20   16   12    8    4    0
-		page_table[entry] = entry << 20 | 0x0040E;			///< 0000 0000 0000 0000 0000 0100 0000 1110
+		page_table[entry] = entry << 20 | 0x0040E;	///< 0000 0000 0000 0000 0000 0100 0000 1110
 #else							// S = 1, needed for spin locks
 													///< 31   27   23   19   15   11   7    3
 													///<   28   24   20   16   12    8    4    0
@@ -119,14 +128,6 @@ void mmu_enable(void) {
 #endif
 	}
 
-	// VC ram up to 0x3F000000
-	for (; entry < 1024 - 16; entry++) {
-													///< 31   27   23   19   15   11   7    3
-													///<   28   24   20   16   12    8    4    0
-	    page_table[entry] = entry << 20 | 0x10416;	///< 0000 0000 0000 0001 0000 0100 0001 0110
-	}
-
-	// 16 MB peripherals at 0x3F000000
 	for (; entry < 1024; entry++) {
 	    // shared device, never execute
 													///< 31   27   23   19   15   11   7    3
@@ -136,9 +137,9 @@ void mmu_enable(void) {
 
 	// 1 MB mailboxes at 0x40000000 Multi-core
     // shared device, never execute
-												///< 31   27   23   19   15   11   7    3
-												///<   28   24   20   16   12    8    4    0
-    page_table[entry] = entry << 20 | 0x10416;	///< 0000 0000 0000 0001 0000 0100 0001 0110
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+    page_table[entry] = entry << 20 | 0x10416;		///< 0000 0000 0000 0001 0000 0100 0001 0110
 	++entry;
 
 	// unused rest of address space)
@@ -157,7 +158,11 @@ void mmu_enable(void) {
 
 	uint32_t auxctrl;
 	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (auxctrl));
+#if defined (RPI1)
+	auxctrl |= ARM_AUX_CONTROL_CACHE_SIZE;
+#else
 	auxctrl |= ARM_AUX_CONTROL_SMP;
+#endif
 	asm volatile ("mcr p15, 0, %0, c1, c0,  1" :: "r" (auxctrl));
 
 	// set domain 0 to client
@@ -171,7 +176,11 @@ void mmu_enable(void) {
 
 	isb();
 
+#ifndef ARM_ALLOW_MULTI_CORE
+	invalidate_data_cache();
+#else
 	invalidate_data_cache_l1_only();
+#endif
 
 	// required if MMU was previously enabled and not properly reset
 	invalidate_instruction_cache();
@@ -186,4 +195,4 @@ void mmu_enable(void) {
 	control |= MMU_MODE;
 	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (control) : "memory");
 }
-#endif
+
