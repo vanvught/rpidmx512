@@ -28,7 +28,7 @@
 
 #include "arm/synchronize.h"
 
-#include "bcm2835.h"
+#include "bcm2835_st.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_led.h"
 #include "bcm2835_rng.h"
@@ -40,49 +40,30 @@
 #include "smp.h"
 
 struct _hardware_led {
-	void (*init)(void);			///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
-	void (*set)(const int);		///< Pointer to function for LED ACCT on/off
+	void (*init)(void);		///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
+	void (*set)(const int);	///< Pointer to function for LED ACCT on/off
 }static _hardware_led_f = { led_init, led_set };
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 static FATFS fat_fs;		/* File system object */
 
-/**
- * @ingroup hal
- *
- * @return The board uptime in seconds
- */
-const uint32_t hardware_uptime_seconds(void) {
-	return (uint32_t)(bcm2835_st_read() - hardware_init_startup_micros) / (uint32_t) 1000000;
+const uint64_t hardware_uptime_seconds(void) {
+	return (uint64_t) (bcm2835_st_read() - hardware_init_startup_micros) / (uint64_t) 1000000;
 }
 
-/**
- * @ingroup hal
- *
- */
 void hardware_led_init(void) {
 	_hardware_led_f.init();
 }
 
-/**
- * @ingroup hal
- *
- * @param state
- */
 void hardware_led_set(const int state) {
 	_hardware_led_f.set(state);
 }
-
 
 const int32_t hardware_get_core_temperature(void) {
 	return bcm2835_vc_get_temperature() / 1000;
 }
 
-/**
- * @ingroup hal
- *
- */
 void hardware_init(void) {
 	int32_t board_revision;
 

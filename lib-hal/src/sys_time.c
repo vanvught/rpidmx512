@@ -26,13 +26,13 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "bcm2835.h"
+#include "bcm2835_st.h"
 #include "arm/synchronize.h"
 
 #include "mcp7941x.h"
 
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
-static volatile uint32_t rtc_startup_seconds = 0;			///<
+static volatile time_t rtc_startup_seconds = 0;				///<
 
 /**
  * @ingroup time
@@ -57,7 +57,7 @@ void sys_time_init(void) {
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 		//tmbuf.tm_yday = 0;
 
-		rtc_startup_seconds = (uint32_t)mktime(&tmbuf);
+		rtc_startup_seconds = mktime(&tmbuf);
 		return;
 	}
 
@@ -72,7 +72,7 @@ void sys_time_init(void) {
 	tmbuf.tm_year = tm_rtc.tm_year;
 	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
-	rtc_startup_seconds = (uint32_t)mktime(&tmbuf);
+	rtc_startup_seconds = mktime(&tmbuf);
 }
 
 /**
@@ -82,7 +82,7 @@ void sys_time_init(void) {
  */
 void sys_time_set(const struct tm *tmbuf) {
 	sys_time_init_startup_micros = bcm2835_st_read();
-	rtc_startup_seconds = (uint32_t)mktime((struct tm *) tmbuf);
+	rtc_startup_seconds = mktime((struct tm *) tmbuf);
 }
 
 /**
@@ -96,7 +96,7 @@ void sys_time_set(const struct tm *tmbuf) {
  */
 time_t sys_time(time_t *__timer) {
 	dmb();
-	time_t elapsed = (time_t) ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000000);
+	time_t elapsed = (time_t) ((bcm2835_st_read() - sys_time_init_startup_micros) / (uint64_t) 1000000);
 	dmb();
 
 	elapsed = elapsed + rtc_startup_seconds;
