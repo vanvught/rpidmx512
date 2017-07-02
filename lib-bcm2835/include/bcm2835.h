@@ -53,7 +53,6 @@
 #define HIGH 0x1				///< HIGH state
 #define LOW  0x0				///< LOW state
 
-// RPi Version 2
 #define RPI_V2_GPIO_P1_03	2	///< Version 2, Pin P1-03, SDA when I2C in use
 #define RPI_V2_GPIO_P1_05	3	///< Version 2, Pin P1-05, SCL when I2C in use
 #define RPI_V2_GPIO_P1_07	4	///< Version 2, Pin P1-07
@@ -81,11 +80,6 @@
 #define RPI_V2_GPIO_P1_38	20	///< Version 2, Pin P1-38, MOSI when SPI1 in use
 #define RPI_V2_GPIO_P1_40	21	///< Version 2, Pin P1-40, CLK when SPI1 in use
 
-#define BCM2835_ST_CS_M0		((uint32_t)(1 << 0))	///< System Timer Match 0. DO NOT USE; is used by GPU.
-#define BCM2835_ST_CS_M1		((uint32_t)(1 << 1))	///< System Timer Match 1
-#define BCM2835_ST_CS_M2		((uint32_t)(1 << 2))	///< System Timer Match 2. DO NOT USE; is used by GPU.
-#define BCM2835_ST_CS_M3		((uint32_t)(1 << 3))	///< System Timer Match 3
-
 #define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x003000)	///<
 #define	BCM2835_DMA0_BASE		(BCM2835_PERI_BASE + 0x007000)	///<
 #define	BCM2835_DMA1_BASE		(BCM2835_PERI_BASE + 0x007100)	///<
@@ -100,6 +94,7 @@
 #define BCM2835_HW_RNG_BASE		(BCM2835_PERI_BASE + 0x104000)	///<
 #define BCM2835_GPIO_BASE		(BCM2835_PERI_BASE + 0x200000)	///<
 #define BCM2835_SPI0_BASE		(BCM2835_PERI_BASE + 0x204000)	///< Base Physical Address of the SPI0 registers
+#define BCM2835_BSC0_BASE 		(BCM2835_PERI_BASE + 0x205000)	///< Base Physical Address of the BSC0 registers
 #define BCM2835_PL011_BASE		(BCM2835_PERI_BASE + 0x201000)	///< Base Physical Address of the PL011 registers
 #define BCM2835_AUX_BASE		(BCM2835_PERI_BASE + 0x215000)	///< Base Physical Address of the AUX registers
 #define BCM2835_UART1_BASE		(BCM2835_PERI_BASE + 0x215000)	///< Base Physical Address of the AUX_UART1 registers
@@ -397,59 +392,23 @@ typedef struct {
 #define BCM2835_SPI1	((BCM2835_AUX_SPI_TypeDef *) BCM2835_SPI1_BASE)		///< Base register address for AUX_SPI1
 #define BCM2835_SPI2	((BCM2835_AUX_SPI_TypeDef *) BCM2835_SPI2_BASE)		///< Base register address for AUX_SPI2
 #define BCM2835_EMMC	((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)		///< Base register address for EMMC
+#define BCM2835_BSC0	((BCM2835_BSC_TypeDef *)  BCM2835_BSC0_BASE)		///< Base register address for I2C (BSC0)
 #define BCM2835_BSC1	((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)		///< Base register address for I2C (BSC1)
-#define BCM2835_BSC2	((BCM2835_BSC_TypeDef *)  BCM2835_BSC2_BASE)		///< Base register address for I2C (BSC2)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @ingroup TIMER
- *
- * @param offset_micros
- * @param micros
- */
-extern void bcm2835_st_delay(uint64_t offset_micros, uint64_t micros);
-
-/**
- * @ingroup TIMER
- *
- * @return
- */
-/*@unused@*/inline static uint64_t bcm2835_st_read(void) {
-	return *(volatile uint64_t *) (BCM2835_ST_BASE + 0x04);
-}
-
-/**
- * @ingroup TIMER
- *
- * @param usec
- */
-extern void udelay(const uint64_t usec);
-
-/**
- *
- */
-extern void __disable_fiq(void);
-/**
- *
- */
-extern void __enable_fiq(void);
-
-/**
- *
- */
-extern void __disable_irq(void);
-
-/**
- *
- */
-extern void __enable_irq(void);
+extern void udelay(const uint32_t);
 
 #ifdef __cplusplus
 }
 #endif
+
+#define	__enable_irq()	asm volatile ("cpsie i")
+#define	__disable_irq()	asm volatile ("cpsid i")
+#define	__enable_fiq()	asm volatile ("cpsie f")
+#define	__disable_fiq()	asm volatile ("cpsid f")
 
 #endif
 
