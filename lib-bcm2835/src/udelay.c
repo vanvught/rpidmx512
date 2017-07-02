@@ -1,8 +1,8 @@
 /**
- * @file udelay.S
+ * @file udelay.c
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <bcm2835.h>
+#include <stdint.h>
 
-.macro FUNC name
-.text
-.code 32
-.global \name
-\name:
-.endm
+#include "bcm2835.h"
 
-FUNC udelay
-	push {r4, r5, lr}
-	mov r5,r0
-	ldr r4,=BCM2835_ST_BASE
-    ldrd r2,r3,[r4,#4]
-4:  ldrd r0,r1,[r4,#4]
-    sub r1,r0,r2
-    cmp r1,r5
-    bls 4b
-    pop {r4, r5, pc}
+void udelay(const uint32_t d) {
+	const uint32_t clo = BCM2835_ST->CLO;
+	while ((BCM2835_ST->CLO - clo) < d) {
+	}
+}
