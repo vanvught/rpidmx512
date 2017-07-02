@@ -9,9 +9,9 @@
 	.align	4
 
 __aeabi_uidiv:
-	clz  r3, r0             	/* r3 ← CLZ(r0) Count leading zeroes of N */
-    clz  r2, r1             	/* r2 ← CLZ(r1) Count leading zeroes of D */
-    rsb	r3, r3, r2				/* r3 ← R2 - r3 */
+	clz  r3, r0             	/* r3 ← CLZ(r0) Count leading zeroes of num */
+    clz  r2, r1             	/* r2 ← CLZ(r1) Count leading zeroes of den */
+    rsb	r3, r3, r2				/* r3 ← r2 - r3 */
     mov r2, #0              	/* r2 ← 0 */
     cmp	r3, #0
   	blt .Lquit
