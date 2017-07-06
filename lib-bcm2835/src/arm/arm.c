@@ -34,7 +34,7 @@
  * @return
  */
 const bool arm_install_handler(unsigned routine, unsigned *vector) {
-	const unsigned vec = ((routine - (unsigned)vector - 0x8)>>2);
+	const unsigned vec = ((routine - (unsigned) vector - 0x8) >> 2);
 
 	if (vec & 0xff000000) {
 		return false;

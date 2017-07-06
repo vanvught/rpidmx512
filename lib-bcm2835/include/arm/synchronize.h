@@ -2,7 +2,7 @@
  * @file synchronize.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@
 
 #ifndef SYNCHRONIZE_H_
 #define SYNCHRONIZE_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if defined( RPI2 ) || defined ( RPI3 )
 	#define isb() asm volatile ("isb" ::: "memory")
@@ -49,8 +53,16 @@
 	#define flush_prefetch_buffer()			asm volatile ("mcr p15, #0, %[zero], c7, c5,  #4" : : [zero] "r" (0) )
 	#define flush_branch_target_cache()		asm volatile ("mcr p15, #0, %[zero], c7, c5,  #6" : : [zero] "r" (0) )
 
-	#define invalidate_data_cache()			asm volatile ("mcr p15, #0, %[zero], c7, c6,  #0" : : [zero] "r" (0) )
-	#define clean_data_cache()				asm volatile ("mcr p15, #0, %[zero], c7, c10, #0" : : [zero] "r" (0) )
+	#define invalidate_data_cache()			asm volatile ("mcr p15, 0, %0, c7, c6,  0\n" \
+														  "mcr p15, 0, %0, c7, c10, 4\n" : : "r" (0) : "memory")
+
+
+	#define clean_data_cache()				asm volatile ("mcr p15, 0, %0, c7, c10, 0\n" \
+														  "mcr p15, 0, %0, c7, c10, 4\n" : : "r" (0) : "memory")
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* SYNCHRONIZE_H_ */
