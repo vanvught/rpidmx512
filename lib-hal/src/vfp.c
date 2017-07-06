@@ -4,7 +4,7 @@
  * @brief
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,11 @@
 #include "arm/synchronize.h"
 
 void vfp_init(void) {
-	// Coprocessor Access Control Register
-	unsigned nCACR;
-	__asm volatile ("mrc p15, 0, %0, c1, c0, 2" : "=r" (nCACR));
-	nCACR |= 3 << 20;	// cp10 (single precision)
-	nCACR |= 3 << 22;	// cp11 (double precision)
-	__asm volatile ("mcr p15, 0, %0, c1, c0, 2" : : "r" (nCACR));
+	unsigned cacr;		// Coprocessor Access Control Register
+	__asm volatile ("mrc p15, 0, %0, c1, c0, 2" : "=r" (cacr));
+	cacr |= 3 << 20;	// bit 20/21, Full Access, CP10
+	cacr |= 3 << 22;	// bit 22/23, Full Access, CP11
+	__asm volatile ("mcr p15, 0, %0, c1, c0, 2" : : "r" (cacr));
 	isb();
 
 #define VFP_FPEXC_EN	(1 << 30)

@@ -30,6 +30,7 @@
 #include "arm/synchronize.h"
 
 #include "bcm2835.h"
+#include "bcm2835_st.h"
 
 #include "irq_timer.h"
 

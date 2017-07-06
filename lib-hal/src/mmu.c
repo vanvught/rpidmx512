@@ -113,6 +113,7 @@ const uint32_t *mmu_get_page_table(void) {
 void mmu_enable(void) {
 
 	uint32_t entry;
+	uint32_t entries;
 
 	arm_ram = bcm2835_vc_get_memory(BCM2835_VC_TAG_GET_ARM_MEMORY) / 1024 / 1024;	///< MB
 
@@ -147,11 +148,21 @@ void mmu_enable(void) {
 	    page_table[entry] = 0;
 	}
 
+	//B = 0, C = 0, TEX = 0, S = 0
+	entry = BCM2835_PERI_BASE / MEGABYTE;
+	entries = entry + (0x1000000 / MEGABYTE);
+
+	for (; entry < entries; entry++) {
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+		page_table[entry] = entry << 20 | 0x00412;	///< 0000 0000 0000 0000 0000 0100 0001 0010
+	}
+
 	//B = 0, C = 0, TEX = 0, S = 1
 	entry = MEM_COHERENT_REGION / MEGABYTE ;
-												///< 31   27   23   19   15   11   7    3
-												///<   28   24   20   16   12    8    4    0
-	page_table[entry] = entry << 20 | 0x10412;	///< 0000 0000 0000 0001 0000 0100 0001 0010
+													///< 31   27   23   19   15   11   7    3
+													///<   28   24   20   16   12    8    4    0
+	page_table[entry] = entry << 20 | 0x10412;		///< 0000 0000 0000 0001 0000 0100 0001 0010
 
 	clean_data_cache();
 	dmb();

@@ -63,13 +63,9 @@ void led_blink(void) {
 		return;
 	}
 
-#if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
-#endif
 
 	const uint32_t micros_now = BCM2835_ST->CLO;
-
-
 
 	if (micros_now - micros_previous < ticks_per_second) {
 		return;
