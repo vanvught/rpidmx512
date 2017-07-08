@@ -161,6 +161,9 @@ void notmain(void) {
 		dmx.SetPeriodTime(period);
 
 		if(artnetparams.IsRdm()) {
+			if (artnetparams.IsRdmDiscovery()) {
+				discovery.Full();
+			}
 			node.SetRdmHandler(&discovery);
 			node.SetLongName("Raspberry Pi Art-Net 3 Node RDM Controller");
 		}
