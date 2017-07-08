@@ -23,23 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <artnetparams.h>
+#include <read_config_file.h>
+#include <sscan.h>
+#include <util.h>
 
-#include "read_config_file.h"
-#include "sscan.h"
-#include "util.h"
-
-#include "artnetparams.h"
-
-static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";			///< Parameters file name
-static const char PARAMS_NET[] ALIGNED = "net";							///<
-static const char PARAMS_SUBNET[] ALIGNED = "subnet";					///<
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";				///<
-static const char PARAMS_OUTPUT[] ALIGNED = "output";					///< dmx {default}, spi, mon
-static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";			///< Use the TimeCode call-back handler, 0 {default}
-static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";			///< Use the TimeSync call-back handler, 0 {default}
-static const char PARAMS_RDM[] ALIGNED = "enable_rdm";					///< Enable RDM, 0 {default}
+static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";					///< Parameters file name
+static const char PARAMS_NET[] ALIGNED = "net";									///<
+static const char PARAMS_SUBNET[] ALIGNED = "subnet";							///<
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";						///<
+static const char PARAMS_OUTPUT[] ALIGNED = "output";							///< dmx {default}, spi, mon
+static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";					///< Use the TimeCode call-back handler, 0 {default}
+static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";					///< Use the TimeSync call-back handler, 0 {default}
+static const char PARAMS_RDM[] ALIGNED = "enable_rdm";							///< Enable RDM, 0 {default}
+static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";	///< 0 {default}
 
 static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
 static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
@@ -48,6 +45,7 @@ static _output_type ArtNetParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
 static bool ArtNetParamsUseTimeCode = false;							///<
 static bool ArtNetParamsUseTimeSync = false;							///<
 static bool ArtNetParamsEnableRdm = false;								///<
+static bool ArtNetParamsRdmDiscovery = false;							///<
 
 static void process_line_read(const char *line) {
 	char value[8] ALIGNED;
@@ -75,6 +73,13 @@ static void process_line_read(const char *line) {
 		return;
 	}
 
+	if (sscan_uint8_t(line, PARAMS_RDM_DISCOVERY, &value8) == 2) {
+		if (value8 != 0) {
+			ArtNetParamsRdmDiscovery = true;
+		}
+		return;
+	}
+
 	if (sscan_uint8_t(line, PARAMS_NET, &value8) == 2) {
 		ArtNetParamsNet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_SUBNET, &value8) == 2) {
@@ -97,6 +102,8 @@ ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsUniverse = 0;
 	ArtNetParamsOutputType= OUTPUT_TYPE_DMX;
 	ArtNetParamsUseTimeCode = false;
+	ArtNetParamsEnableRdm = false;
+	ArtNetParamsRdmDiscovery = false;
 }
 
 ArtNetParams::~ArtNetParams(void) {
@@ -128,6 +135,10 @@ const bool ArtNetParams::IsUseTimeSync(void) {
 
 const bool ArtNetParams::IsRdm(void) {
 	return ArtNetParamsEnableRdm;
+}
+
+const bool ArtNetParams::IsRdmDiscovery(void) {
+	return ArtNetParamsRdmDiscovery;
 }
 
 bool ArtNetParams::Load(void) {

@@ -636,8 +636,8 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 bool ArtNetNode::IsDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
-	uint32_t *src = (uint32_t *)pData;
-	uint32_t *dst = (uint32_t *)m_OutputPorts[nPortId].data;
+	uint32_t *src = (uint32_t *) pData;
+	uint32_t *dst = (uint32_t *) m_OutputPorts[nPortId].data;
 
 	if (nLength != m_OutputPorts[nPortId].nLength) {
 		m_OutputPorts[nPortId].nLength = nLength;

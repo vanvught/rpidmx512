@@ -58,6 +58,7 @@ public:
 	const bool IsUseTimeSync(void);
 
 	const bool IsRdm(void);
+	const bool IsRdmDiscovery(void);
 };
 
 #endif /* ARTNETPARAMS_H_ */
