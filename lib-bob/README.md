@@ -20,6 +20,8 @@ Supported devices are :
 - HTU21D Temperature & Humidity Sensor I2C ([https://opencircuit.nl/Product/11408/HTU21D-Luchtvochtigheid-en-temperatuur-sensor-GY-21](https://opencircuit.nl/Product/11408/HTU21D-Luchtvochtigheid-en-temperatuur-sensor-GY-21))
 - LCD Module TC1602A ([https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/](https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/))
 - MAX7219 8-Digit LED Display Driver SPI ([https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf](https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf))
+- MAX7219 8x 7-Segment module SPI ([https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel](https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel))
+- MAX7219 Dot matrix module SPI ([https://opencircuit.nl/Product/11511/MAX7219-4x-Dot-matrix-module](https://opencircuit.nl/Product/11511/MAX7219-4x-Dot-matrix-module))
 - MCP9808 Temperature Sensor I2C ([https://www.hobbyelectronica.nl/product/mcp9808-precieze-i2c-temperatuur/](https://www.hobbyelectronica.nl/product/mcp9808-precieze-i2c-temperatuur/))
 - MCP23S08 8-Bit I/O Expander SPI ([http://ww1.microchip.com/downloads/en/DeviceDoc/21919e.pdf](http://ww1.microchip.com/downloads/en/DeviceDoc/21919e.pdf)) 
 - MCP23S17 16-Bit I/O Expander SPI ([http://www.microchip.com/wwwproducts/en/MCP23S17](http://www.microchip.com/wwwproducts/en/MCP23S17))
@@ -28,4 +30,4 @@ Supported devices are :
 - OLED display 128 x 64 SSD1306 I2C ([https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C](https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C))
 - SC16IS740 Single UART I2C ([http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf](http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf))
 - PCF8591 8-bit A/D and D/A converter I2C ([https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module](https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module))
-- 8x 7-Segment module MAX7219 SPI ([https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel](https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel))
+

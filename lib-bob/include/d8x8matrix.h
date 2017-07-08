@@ -1,8 +1,8 @@
 /**
- * @file device_info.h
+ * @file d8x8matrix.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_INFO_H_
-#define DEVICE_INFO_H_
+#ifndef D8X8MATRIX_H_
+#define D8X8MATRIX_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "device_info.h"
 
-typedef enum spi_cs {
-	SPI_CS0,
-	SPI_CS1,
-	SPI_CS2
-} spi_cs_t;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct _device_info {
-	spi_cs_t chip_select;		///<
-	uint8_t slave_address;		///<
-	uint32_t speed_hz;			///<
-	bool fast_mode;				///< I2C Fast Mode 400KHz
-	struct _device_info_internal {
-		uint8_t adc_channel;	///<
-		uint16_t clk_div;		///<
-		uint8_t count;			///<
-	} internal;
-} device_info_t;
+extern void d8x8matrix_init(const device_info_t *, const uint8_t);
+extern void d8x8matrix_cls(const device_info_t *);
+extern void d8x8matrix_write(const device_info_t *, const char *s, uint8_t);
 
-#define DEVICE_INFO_I2C_DEFAULT			SPI_CS0, (uint8_t) 0, 0, true, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS0_DEFAULT		SPI_CS0, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS1_DEFAULT		SPI_CS1, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS2_DEFAULT		SPI_CS2, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
+#ifdef __cplusplus
+}
+#endif
 
-#endif /* DEVICE_INFO_H_ */
+#endif /* D8X8MATRIX_H_ */
