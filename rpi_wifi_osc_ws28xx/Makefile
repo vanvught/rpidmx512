@@ -1,5 +1,5 @@
 #
-DEFINES = NDEBUG
+DEFINES = ENABLE_MMU NDEBUG
 #
 LIBS = osc ws28xx lightset c++
 #
