@@ -26,12 +26,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "rdm.h"
 #include "dmx.h"
+
+#include "rdm.h"
 #include "rdm_e120.h"
 #include "rdm_device_info.h"
-
 #include "rdm_send.h"
+#include "rdm_queued_message.h"
 
 #include "hardware.h"
 
@@ -42,13 +43,15 @@
  * @param response_type
  * @param value
  */
-static void rdm_send_respond_message(uint8_t *rdm_data, uint8_t response_type, uint16_t value) {
+static void rdm_send_respond_message(uint8_t *rdm_data, const uint8_t response_type, const uint16_t value) {
 	uint8_t i;
 	uint16_t rdm_checksum;
 	uint8_t *uid_device;
 	uint64_t delay;
 
 	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_data;
+
+	rdm_response->message_count = rdm_queued_message_get_count();
 
 	switch (response_type) {
 	case E120_RESPONSE_TYPE_ACK:

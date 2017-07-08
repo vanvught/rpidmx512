@@ -35,8 +35,6 @@
 #include "dmx.h"
 #include "rdm_e120.h"
 
-static uint8_t rdm_message_count;	///<
-
 /**
  * @ingroup rdm
  *
@@ -101,26 +99,4 @@ void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data
 	rdm_send_no_break(data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
-}
-
-/**
- * @ingroup rdm
- *
- * Increment the queued message count
- */
-void rdm_send_increment_message_count() {
-	if (rdm_message_count != RDM_MESSAGE_COUNT_MAX) {
-		rdm_message_count++;
-	}
-}
-
-/**
- * @ingroup rdm
- *
- * Decrement the queued message count
- */
-void rdm_send_decrement_message_count() {
-	if (rdm_message_count != 0) {
-		rdm_message_count--;
-	}
 }

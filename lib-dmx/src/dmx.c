@@ -36,6 +36,7 @@
 #include "arm/pl011.h"
 
 #include "bcm2835.h"
+#include "bcm2835_st.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 
