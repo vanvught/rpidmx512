@@ -38,6 +38,8 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#include "rdm_device_info.h"
+
 static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
 
 static uint32_t updates_per_seconde_min = UINT32_MAX;
@@ -152,10 +154,17 @@ static void monitor_sniffer(void) {
 void monitor_update(void) {
 	const uint8_t widget_mode = widget_get_mode();
 	struct _widget_params widget_params;
+	const uint8_t display_level = rdm_device_info_get_ext_mon_level();
+
+	if (widget_mode != MODE_RDM_SNIFFER && display_level == 0) {
+		return;
+	}
 
 	widget_params_get(&widget_params);
 
-	monitor_time_uptime(MONITOR_LINE_TIME);
+	if (display_level > 1) {
+		monitor_time_uptime(MONITOR_LINE_TIME);
+	}
 
 	console_clear_line(MONITOR_LINE_INFO);
 
@@ -213,11 +222,15 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 	uint16_t l;
 	uint8_t *p = (uint8_t *) data;
 	bool is_rdm_command = (*p == E120_SC_RDM);
+	const uint8_t display_level = rdm_device_info_get_ext_mon_level();
 
 	monitor_line(line, "RDM [%s], l:%d\n", is_sent ? "Sent" : "Received", (int) data_length);
 
-	// 26 is size of discovery message
-	for (l = 0; l < MIN(data_length, 26); l++) {
+	if (display_level == 0) {
+		return;
+	}
+
+	for (l = 0; l < MIN(data_length, 28); l++) {
 		console_puthex(*p++);
 		(void) console_putc((int) ' ');
 	}
