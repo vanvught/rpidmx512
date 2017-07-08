@@ -2,7 +2,7 @@
  * @file rdm_handlers.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "sys_time.h"
-#include "hardware.h"
-#include "util.h"
 #include "dmx.h"
+
 #include "rdm.h"
 #include "rdm_send.h"
 #include "rdm_sub_devices.h"
@@ -37,10 +35,15 @@
 #include "rdm_device_info.h"
 #include "rdm_identify.h"
 #include "rdm_sensor.h"
+#include "rdm_queued_message.h"
+
+#include "sys_time.h"
+#include "hardware.h"
+#include "util.h"
 
 static uint8_t *rdm_handlers_rdm_data;
 
-//static void rdm_get_queued_message(void);
+static void rdm_get_queued_message(uint16_t);
 static void rdm_get_supported_parameters(uint16_t);
 static void rdm_get_device_info(uint16_t);
 static void rdm_get_product_detail_id_list(uint16_t);
@@ -71,6 +74,7 @@ static void rdm_set_identify_device(bool , uint16_t);
 static void rdm_get_real_time_clock(uint16_t);
 static void rdm_set_real_time_clock(bool , uint16_t);
 static void rdm_set_reset_device(bool , uint16_t);
+static void rdm_get_identify_mode(uint16_t);
 
 struct _pid_definition
 {
@@ -82,7 +86,7 @@ struct _pid_definition
 };
 
 static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))) = {
-//		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, true },
+		{E120_QUEUED_MESSAGE,              &rdm_get_queued_message,             NULL,                        1, true },
 		{E120_SUPPORTED_PARAMETERS,        &rdm_get_supported_parameters,       NULL,                        0, false},
 		{E120_DEVICE_INFO,                 &rdm_get_device_info,                NULL,                        0, false},
 		{E120_PRODUCT_DETAIL_ID_LIST, 	   &rdm_get_product_detail_id_list,     NULL,						 0, true },
@@ -104,7 +108,8 @@ static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))
 		{E120_DEVICE_HOURS,                &rdm_get_device_hours,    	        &rdm_set_device_hours,       0, true },
 		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, true },
 		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, false},
-		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, true }
+		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, true },
+		{E137_1_IDENTIFY_MODE,			   &rdm_get_identify_mode,				NULL,						 0, true }
 };
 
 static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[]__attribute__((aligned(4))) = {
@@ -117,6 +122,24 @@ static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[]__attribute__((
 		{E120_DMX_START_ADDRESS,           &rdm_get_dmx_start_address,          &rdm_set_dmx_start_address,  0, true },
 		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, true }
 };
+
+/**
+ * @ingroup rdm_handlers
+ *
+ * @param name
+ * @param lenght
+ */
+inline static void handle_string(const char *name, const uint8_t lenght) {
+	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
+	uint8_t i;
+
+	rdm_response->param_data_length = lenght;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + lenght;
+
+	for (i = 0; i < lenght; i++) {
+		rdm_response->param_data[i] = (uint8_t) name[i];
+	}
+}
 
 /**
  * @ingroup rdm_handlers
@@ -160,33 +183,13 @@ static void rdm_get_supported_parameters(uint16_t sub_device) {
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
 
-#if 0
-static void rdm_get_queued_message(void)
-{
-	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
-	rdm_response->port_id = E120_STATUS_MESSAGES;
-	rdm_response->param_data_length = 0;
-
-	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
-}
-#endif
-
 /**
  * @ingroup rdm_handlers
  *
- * @param name
- * @param lenght
+ * @param sub_device
  */
-inline static void handle_string(const char *name, const uint8_t lenght) {
-	struct _rdm_command *rdm_response = (struct _rdm_command *) rdm_handlers_rdm_data;
-	uint8_t i;
-
-	rdm_response->param_data_length = lenght;
-	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + lenght;
-
-	for (i = 0; i < lenght; i++) {
-		rdm_response->param_data[i] = (uint8_t) name[i];
-	}
+static void rdm_get_queued_message(/*@unused@*/uint16_t sub_device) {
+	rdm_queued_message_handler(rdm_handlers_rdm_data);
 }
 
 /**
@@ -209,6 +212,7 @@ static void rdm_get_device_info(uint16_t sub_device) {
 }
 
 /**
+ * @ingroup rdm_handlers
  *
  * @param sub_device
  */
@@ -250,7 +254,6 @@ static void rdm_get_manufacturer_label(/*@unused@*/uint16_t sub_device) {
 	handle_string((char *)rdm_device_info_manufacturer_name.data, rdm_device_info_manufacturer_name.length);
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
-
 
 /**
  * @ingroup rdm_handlers
@@ -698,14 +701,14 @@ static void rdm_set_sensor_value(bool was_broadcast, uint16_t sub_device) {
 	rdm_response->param_data_length = 9;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
 	rdm_response->param_data[0] = sensor_value->sensor_requested;
-	rdm_response->param_data[1] = (uint8_t)(sensor_value->present >> 8);
-	rdm_response->param_data[2] = (uint8_t)sensor_value->present;
-	rdm_response->param_data[3] = (uint8_t)(sensor_value->lowest_detected >> 8);
-	rdm_response->param_data[4] = (uint8_t)sensor_value->lowest_detected;
-	rdm_response->param_data[5] = (uint8_t)(sensor_value->highest_detected >> 8);
-	rdm_response->param_data[6] = (uint8_t)sensor_value->highest_detected;
-	rdm_response->param_data[7] = (uint8_t)(sensor_value->recorded >> 8);
-	rdm_response->param_data[8] = (uint8_t)sensor_value->recorded;
+	rdm_response->param_data[1] = (uint8_t) (sensor_value->present >> 8);
+	rdm_response->param_data[2] = (uint8_t) sensor_value->present;
+	rdm_response->param_data[3] = (uint8_t) (sensor_value->lowest_detected >> 8);
+	rdm_response->param_data[4] = (uint8_t) sensor_value->lowest_detected;
+	rdm_response->param_data[5] = (uint8_t) (sensor_value->highest_detected >> 8);
+	rdm_response->param_data[6] = (uint8_t) sensor_value->highest_detected;
+	rdm_response->param_data[7] = (uint8_t) (sensor_value->recorded >> 8);
+	rdm_response->param_data[8] = (uint8_t) sensor_value->recorded;
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
@@ -751,6 +754,20 @@ static void rdm_get_identify_device(uint16_t sub_device) {
 	rdm_response->param_data_length = 1;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
 	rdm_response->param_data[0] = rdm_identify_is_enabled();
+
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
+/**
+ *
+ * @param sub_device
+ */
+static void rdm_get_identify_mode(uint16_t sub_device) {
+	struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	rdm_response->param_data_length = 1;
+	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
+	rdm_response->param_data[0] = (uint8_t) 0; // “Quiet Identify” mode
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
