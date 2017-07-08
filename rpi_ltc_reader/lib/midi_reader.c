@@ -27,14 +27,15 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "midi.h"
-#include "midi_params.h"
-
-#include "midi_mtc.h"
-#include "ltc_reader.h"
-
 #include "bcm2835.h"
 #include "arm/synchronize.h"
+
+#include "midi.h"
+#include "midi_params.h"
+#include "midi_mtc.h"
+
+#include "ltc_reader.h"
+
 #include "irq_timer.h"
 #include "hardware.h"
 #include "led.h"

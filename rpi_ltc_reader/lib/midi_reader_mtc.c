@@ -29,12 +29,13 @@
 #include "midi_params.h"
 #include "midi_description.h"
 
+#include "ltc_reader.h"
+
+#include "console.h"
 #include "lcd.h"
 #include "display_oled.h"
 #include "display_7segment.h"
-#include "console.h"
-
-#include "ltc_reader.h"
+#include "display_matrix.h"
 
 extern void artnet_output(const struct _midi_send_tc *);
 
@@ -86,6 +87,10 @@ static void update(const uint8_t type) {
 
 	if (output->segment_output) {
 		display_7segment((const char *) timecode);
+	}
+
+	if (output->matrix_output) {
+		display_matrix((const char *) timecode);
 	}
 
 	if (type != prev_type) {

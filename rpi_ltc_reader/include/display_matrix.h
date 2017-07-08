@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file display_matrix.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef DISPLAY_MATRIX_H_
+#define DISPLAY_MATRIX_H_
 
-static const char SOFTWARE_VERSION[] = "1.4";
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* SOFTWARE_VERSION_H_ */
+extern void display_matrix_init(void);
+extern void display_matrix(const char *);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DISPLAY_MATRIX_H_ */

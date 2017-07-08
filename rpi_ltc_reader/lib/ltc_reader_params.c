@@ -39,6 +39,7 @@ static const char PARAMS_OLED_OUTPUT[] ALIGNED = "oled_output";			///<
 static const char PARAMS_7SEGMENT_OUTPUT[] ALIGNED = "7segment_output";	///<
 static const char PARAMS_MIDI_OUTPUT[] ALIGNED = "midi_output";			///<
 static const char PARAMS_ARTNET_OUTPUT[] ALIGNED = "artnet_output";		///<
+static const char PARAMS_MATRIX_OUTPUT[] ALIGNED = "matrix_output";		///<
 static const char PARAMS_SOURCE[] ALIGNED = "source";					///<
 
 static bool params_console_output = true;
@@ -47,69 +48,42 @@ static bool params_oled_output = true;
 static bool params_7segment_output = false;
 static bool params_midi_output = false;
 static bool params_artnet_output = false;
+static bool params_matrix_output = false;
 
 static ltc_reader_source_t params_source = LTC_READER_SOURCE_LTC;
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_console_output(void) {
 	return params_console_output;
 }
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_lcd_output(void) {
 	return params_lcd_output;
 }
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_oled_output(void) {
 	return params_oled_output;
 }
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_7segment_output(void) {
 	return params_7segment_output;
 }
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_midi_output(void) {
 	return params_midi_output;
 }
 
-/**
- *
- * @return
- */
 const bool ltc_reader_params_is_artnet_output(void) {
 	return params_artnet_output;
 }
 
-/**
- *
- * @return
- */
+const bool ltc_reader_params_is_matrix_output(void) {
+	return params_matrix_output;
+}
+
 const ltc_reader_source_t ltc_reader_params_get_source(void) {
 	return params_source;
 }
 
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	uint8_t value8;
 	char source[16];
@@ -157,6 +131,13 @@ static void process_line_read(const char *line) {
 		return;
 	}
 
+	if (sscan_uint8_t(line, PARAMS_MATRIX_OUTPUT, &value8) == 2) {
+		if (value8 == 1) {
+			params_matrix_output = true;
+		}
+		return;
+	}
+
 	if (sscan_char_p(line, PARAMS_SOURCE, source, &len) == 2) {
 		if (strncasecmp(source, "artnet", len) == 0) {
 			params_source = LTC_READER_SOURCE_ARTNET;
@@ -166,9 +147,6 @@ static void process_line_read(const char *line) {
 	}
 }
 
-/**
- *
- */
 void ltc_reader_params_init(void) {
 	(void) read_config_file(PARAMS_FILE_NAME, &process_line_read);
 }

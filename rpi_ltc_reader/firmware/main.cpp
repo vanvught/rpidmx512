@@ -31,6 +31,7 @@
 #include "lcd.h"
 #include "display_oled.h"
 #include "display_7segment.h"
+#include "display_matrix.h"
 
 #include "midi_sender.h"
 #include "midi_reader.h"
@@ -47,7 +48,7 @@
 
 #include "software_version.h"
 
-static struct _ltc_reader_output output = { true, false, false, false, false, false };
+static struct _ltc_reader_output output = { true, false, false, false, false, false, false };
 
 extern "C" {
 
@@ -78,6 +79,7 @@ void notmain(void) {
 	output.segment_output = ltc_reader_params_is_7segment_output();
 	output.midi_output = ltc_reader_params_is_midi_output();
 	output.artnet_output = ltc_reader_params_is_artnet_output();
+	output.matrix_output = ltc_reader_params_is_matrix_output();
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("SMPTE TimeCode LTC Reader / Protocol converter");
@@ -141,6 +143,10 @@ void notmain(void) {
 		artnet_output_set_node(&node);
 	}
 
+	if (output.matrix_output) {
+		display_matrix_init();
+	}
+
 	console_set_cursor(0, 15);
 	(void) console_puts("Source : ");
 
@@ -169,6 +175,8 @@ void notmain(void) {
 	handle_bool(output.oled_output);
 	(void) console_puts("\n7-Segment output : ");
 	handle_bool(output.segment_output);
+	(void) console_puts("\n8-Matrix output  : ");
+	handle_bool(output.matrix_output);
 	(void) console_puts("\nMIDI output      : ");
 	handle_bool(output.midi_output);
 	if (output.midi_output) {

@@ -45,6 +45,7 @@ struct _ltc_reader_output {
 	bool segment_output;
 	bool midi_output;
 	bool artnet_output;
+	bool matrix_output;
 };
 
 #define TC_CODE_MAX_LENGTH	11

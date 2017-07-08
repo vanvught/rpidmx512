@@ -38,21 +38,23 @@
 #include "arm/synchronize.h"
 
 #include "bcm2835.h"
+#include "bcm2835_st.h"
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
-#include "console.h"
 
 #include "gpio.h"
-
-#include "lcd.h"
-#include "display_oled.h"
-#include "display_7segment.h"
 
 #include "midi.h"
 
 #include "ltc_reader.h"
 #include "ltc_reader_params.h"
+
+#include "console.h"
+#include "lcd.h"
+#include "display_oled.h"
+#include "display_7segment.h"
+#include "display_matrix.h"
 
 #include "util.h"
 
@@ -285,6 +287,10 @@ void ltc_reader(void) {
 
 		if (output->artnet_output) {
 			artnet_output((struct _midi_send_tc *)&midi_timecode);
+		}
+
+		if (output->matrix_output) {
+			display_matrix((const char *) timecode);
 		}
 
 		if (prev_type != type) {

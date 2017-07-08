@@ -26,6 +26,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "arm/synchronize.h"
+#include "bcm2835.h"
+#include "irq_timer.h"
+#include "hardware.h"
+
 #include "ltc_reader.h"
 
 #include "artnetreader.h"
@@ -35,13 +40,9 @@
 #include "lcd.h"
 #include "display_oled.h"
 #include "display_7segment.h"
-#include "midi.h"
+#include "display_matrix.h"
 
-#include "arm/synchronize.h"
-#include "bcm2835.h"
-#include "irq_timer.h"
-#include "hardware.h"
-#include "led.h"
+#include "midi.h"
 
 #include "util.h"
 
@@ -241,6 +242,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 
 	if (m_pOutput->segment_output) {
 		display_7segment((const char *) timecode);
+	}
+
+	if (m_pOutput->matrix_output) {
+		display_matrix((const char *) timecode);
 	}
 
 	if ((m_PrevType != ArtNetTimeCode->Type)) {

@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file display_matrix.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
 
-static const char SOFTWARE_VERSION[] = "1.4";
+#include "d8x8matrix.h"
+#include "device_info.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "util.h"
+
+#define SEGMENTS	8
+
+static device_info_t device_info;
+
+static uint8_t buffer[SEGMENTS] ALIGNED;
+
+/**
+ *
+ */
+void display_matrix_init(void) {
+	device_info.chip_select = 2;
+	device_info.speed_hz = 0;
+
+	d8x8matrix_init(&device_info, SEGMENTS);
+	d8x8matrix_cls(&device_info);
+}
+
+/**
+ *
+ * @param timecode
+ */
+void display_matrix(const char *timecode) {
+	buffer[0] = (uint8_t) (timecode[0]);
+	buffer[1] = (uint8_t) (timecode[1]);
+	buffer[2] = (uint8_t) (timecode[3]);
+	buffer[3] = (uint8_t) (timecode[4]);
+	buffer[4] = (uint8_t) (timecode[6]);
+	buffer[5] = (uint8_t) (timecode[7]);
+	buffer[6] = (uint8_t) (timecode[9]);
+	buffer[7] = (uint8_t) (timecode[10]);
+
+	d8x8matrix_write(&device_info, (char *)buffer, SEGMENTS);
+}
