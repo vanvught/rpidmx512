@@ -158,7 +158,8 @@ void notmain(void) {
 	}
 
 	if (oled_connected) {
-		oled_set_cursor(&oled_info, 0, 18);
+		oled_set_cursor(&oled_info, 0, 0);
+		oled_puts(&oled_info, "WiFi sACN E1.31 ");
 
 		switch (output_type) {
 		case OUTPUT_TYPE_DMX:

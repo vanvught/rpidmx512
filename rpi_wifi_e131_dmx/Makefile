@@ -1,5 +1,5 @@
 #
-DEFINES = NDEBUG
+DEFINES = ENABLE_MMU NDEBUG
 #
 LIBS = e131 dmx dmxmonitor monitor lightset c++
 #
