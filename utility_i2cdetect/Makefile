@@ -1,5 +1,5 @@
 #
-DEFINES = 
+DEFINES = ENABLE_MMU
 #
 LIBS = utils
 #
