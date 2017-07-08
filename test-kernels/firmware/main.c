@@ -152,6 +152,7 @@ void notmain(void) {
 
 	if (oled_start(&oled_info)) {
 		(void) console_puts("OLED display found\n");
+		oled_puts(&oled_info, hardware_board_get_model());
 	}
 
 	irq_timer_init();
