@@ -28,7 +28,7 @@
 
 static const unsigned days_of_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-static int isleapyear(unsigned year) {
+static int isleapyear(const unsigned year) {
 	if (year % 100 == 0) {
 		return year % 400 == 0;
 	}
@@ -36,8 +36,8 @@ static int isleapyear(unsigned year) {
 	return year % 4 == 0;
 }
 
-static unsigned getdaysofmonth(unsigned month, unsigned year) {
-	if (month == 1 && isleapyear(year)) {
+static unsigned getdaysofmonth(const unsigned month, const unsigned year) {
+	if ((month == 1) && isleapyear(year)) {
 		return 29;
 	}
 

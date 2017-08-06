@@ -94,7 +94,7 @@ void sys_time_set(const struct tm *tmbuf) {
  * @param __timer
  * @return  The value of time in seconds since the Epoch
  */
-time_t sys_time(time_t *__timer) {
+time_t time(time_t *__timer) {
 	dmb();
 	time_t elapsed = (time_t) ((bcm2835_st_read() - sys_time_init_startup_micros) / (uint64_t) 1000000);
 	dmb();

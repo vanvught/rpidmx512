@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_C_
-#define SYS_TIME_C_
+#ifndef SYS_TIME_H
+#define SYS_TIME_H
 
 #include <stdint.h>
 #include <time.h>
@@ -38,7 +38,6 @@ extern "C" {
 
 extern void sys_time_init(void);
 extern void sys_time_set(/*@out@*/const struct tm *);
-extern time_t sys_time (/*@null@*/ time_t *);
 
 extern const uint32_t millis();
 
@@ -46,4 +45,4 @@ extern const uint32_t millis();
 }
 #endif
 
-#endif /* SYS_TIME_C_ */
+#endif /* SYS_TIME_H */
