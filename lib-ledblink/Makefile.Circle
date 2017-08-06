@@ -1,0 +1,18 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ../lib-ledblink/include
+
+OBJS	= src/ledblink.o
+
+EXTRACLEAN = src/*.o
+
+libledblink.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libledblink.a | $(PREFIX)c++filt > libledblink.lst
+
+include $(CIRCLEHOME)/Rules.mk
