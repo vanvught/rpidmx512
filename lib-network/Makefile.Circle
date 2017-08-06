@@ -1,0 +1,18 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ../lib-network/include
+
+OBJS	= src/rpi_circle.o
+
+EXTRACLEAN = src/*.o
+
+libnetwork.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libnetwork.a | $(PREFIX)c++filt > libnetwork.lst
+
+include $(CIRCLEHOME)/Rules.mk
