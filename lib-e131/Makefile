@@ -1,4 +1,4 @@
 #
-EXTRA_INCLUDES = ../lib-lightset/include ../lib-hal/include ../lib-utils/include ../lib-uuid/include ../lib-esp8266/include
+EXTRA_INCLUDES = ../lib-lightset/include ../lib-hal/include ../lib-properties/include ../lib-utils/include ../lib-uuid/include ../lib-esp8266/include
 #
 include ../firmware-template/lib/Rules.mk

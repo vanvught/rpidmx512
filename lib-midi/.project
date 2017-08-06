@@ -6,6 +6,7 @@
 		<project>lib-bcm2835</project>
 		<project>lib-bob</project>
 		<project>lib-hal</project>
+		<project>lib-properties</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
