@@ -2,7 +2,7 @@
  * @file oscparams.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,18 @@
 
 #include <stdint.h>
 
+#if defined(__linux__) || defined (__CYGWIN__)
+#define ALIGNED
+#include <string.h>
+#else
+#include "util.h"
+#endif
+
 #include "osc.h"
 #include "oscparams.h"
 
 #include "read_config_file.h"
 #include "sscan.h"
-#include "util.h"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";				///< Parameters file name
 static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";		///<

@@ -2,7 +2,7 @@
  * @file oscstring.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifdef __circle__
 #include <stdint.h>
 #include <assert.h>
-#include <circle/util.h>
 
+#ifdef __circle__
+#include <circle/util.h>
 #include "oscutil.h"
+#elif defined(__linux__) || defined (__CYGWIN__)
+#include <string.h>
 #else
 #include "util.h"
 #endif

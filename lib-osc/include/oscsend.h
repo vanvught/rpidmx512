@@ -2,7 +2,7 @@
  * @file oscsend.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,10 @@
 #ifndef OSCSEND_CPP_
 #define OSCSEND_CPP_
 
-#ifdef __circle__
 #include <stdint.h>
-#include <circle/util.h>
+
+#ifdef __circle__
 #include <circle/stdarg.h>
-#include <circle/net/socket.h>
-#include <circle/net/ipaddress.h>
 #else
 #include <stdarg.h>
 #endif
@@ -39,13 +37,8 @@
 #include "oscmessage.h"
 
 class OSCSend {
-
 public:
-#if defined (__circle__)
-	OSCSend(CSocket *, CIPAddress *, int, const char *, const char *, ...);
-#else
 	OSCSend(const int, const int, const char *, const char *, ...);
-#endif
 	~OSCSend(void);
 
 private:
@@ -53,17 +46,11 @@ private:
 	void Send(void);
 
 private:
-#if defined (__circle__)
-	CSocket *m_pSocket;
-	CIPAddress *m_pAddress;
-#else
 	const int m_Address;
-#endif
 	const int m_Port;
 	const char *m_Path;
 	const char *m_Types;
 	OSCMessage *m_Msg;
-
 	int m_Result;
 };
 

@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ./include
+INCLUDE	+= -I ./include -I ../lib-network/include
 
 OBJS = src/osc.o src/oscaddress.o src/oscblob.o src/oscmessage.o src/oscsend.o src/oscstring.o src/oscutil.o src/pattern_match.o
 
