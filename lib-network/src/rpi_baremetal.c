@@ -5,7 +5,7 @@
 #endif
 #if defined (BARE_METAL)
 /**
- * @file rpi_baremetal.cpp
+ * @file rpi_baremetal.c
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -30,6 +30,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include "util.h"
@@ -45,8 +46,6 @@ static uint32_t _local_ip;
 static uint32_t _netmask;
 static uint32_t _broadcast_ip;
 static bool _is_dhcp_used;
-
-extern "C" {
 
 void network_init(void) {
 	struct ip_info info;;

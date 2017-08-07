@@ -5,7 +5,7 @@
 #endif
 #if defined(__linux__) || defined (__CYGWIN__)
 /**
- * @file linux.cpp
+ * @file linux.c
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include <arpa/inet.h>
@@ -54,8 +55,7 @@ static bool _is_dhcp_used;
 
 static int _socket;
 
-extern "C" {
-
+#if defined(__linux__)
 static bool is_dhclient(const char *if_name) {
 	char cmd[255];
 	char buf[1024];
@@ -81,6 +81,7 @@ static bool is_dhclient(const char *if_name) {
 
     return false;
 }
+#endif
 
 static int if_get_by_address(const char *ip, char *name, size_t len) {
 	struct ifaddrs *addrs, *iap;
@@ -185,7 +186,9 @@ void network_init(const char *s) {
 
 	gethostname(_hostname, HOST_NAME_MAX);
 
+#if defined(__linux__)	
 	_is_dhcp_used = is_dhclient(if_name);
+#endif
 }
 
 void network_begin(const uint16_t port) {
@@ -243,7 +246,7 @@ uint16_t network_recvfrom(const uint8_t *packet, const uint16_t size, uint32_t *
 
 	int recv_len;
 	struct sockaddr_in si_other;
-	unsigned int slen = sizeof(si_other);
+	socklen_t slen = sizeof(si_other);
 
 
 	if ((recv_len = recvfrom(_socket, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
@@ -269,7 +272,5 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 		perror("sendto");
 		exit(EXIT_FAILURE);
 	}
-}
-
 }
 #endif

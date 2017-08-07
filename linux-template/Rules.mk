@@ -67,7 +67,7 @@ all : builddirs prerequisites $(TARGET) $(TARGET7)
 .PHONY: clean builddirs
 
 buildlibs:
-	cd .. && ./makeall-lib.sh && cd $(THISDIR)
+	cd .. && ./makeall_linux-lib.sh && cd $(THISDIR)
 
 builddirs:
 	@mkdir -p $(BUILD_DIRS)

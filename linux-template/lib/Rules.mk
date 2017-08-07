@@ -49,6 +49,6 @@ $(BUILD)%.o: $(SOURCE)/%.cpp
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(AS) $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
-$(TARGET): Makefile $(OBJECTS)
+$(TARGET): Makefile.Linux $(OBJECTS)
 	$(AR) -r $(TARGET) $(OBJECTS)
 	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > $(LIST)
