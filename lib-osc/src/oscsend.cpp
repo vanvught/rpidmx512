@@ -31,7 +31,7 @@
 #include <circle/stdarg.h>
 #include "oscutil.h"
 static const char FromOscSend[] = "oscsend";
-#elif defined (__linux) || defined (__CYGWIN__)
+#elif defined (__linux__) || defined (__CYGWIN__)
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>

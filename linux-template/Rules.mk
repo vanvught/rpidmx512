@@ -74,7 +74,7 @@ builddirs:
 
 clean:
 	rm -rf $(BUILD)
-	rm $(TARGET)
+	rm -f $(TARGET)
 
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS)

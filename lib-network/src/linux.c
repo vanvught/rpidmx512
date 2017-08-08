@@ -180,7 +180,7 @@ void network_init(const char *s) {
 	}
 
 	if (setsockopt(_socket, SOL_SOCKET, SO_BROADCAST, (char*) &true_flag, sizeof(int)) == -1) {
-		perror("setsockopt");
+		perror("setsockopt(SO_BROADCAST)");
 		exit(EXIT_FAILURE);
 	}
 
