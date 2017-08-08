@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>lib-bob</project>
-		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-osc</project>

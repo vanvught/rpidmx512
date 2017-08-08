@@ -37,12 +37,12 @@
 #include "oled.h"
 
 #include "wifi.h"
-#include "wifi_udp.h"
+#include "network.h"
 
 #include "software_version.h"
 
 extern "C" {
-
+extern void network_init(void);
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
@@ -75,12 +75,14 @@ void notmain(void) {
 			;
 	}
 
+	network_init();
+
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
 
-	wifi_udp_begin(incoming_port);
+	network_begin(incoming_port);
 
-	wifi_udp_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, outgoing_port);
+	network_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, outgoing_port);
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
