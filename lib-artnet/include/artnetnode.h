@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,17 +33,10 @@
 #define ARTNETNODE_H_
 
 #include <stdint.h>
-#include <assert.h>
 
 #if defined (__circle__)
-#include <circle/util.h>
 #include <circle/time.h>
-#include <circle/net/netsubsystem.h>
-#include <circle/net/socket.h>
-#include <circle/net/ipaddress.h>
 #else
-#include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 #endif
 
@@ -52,11 +45,11 @@
 #include "common.h"
 
 #include "lightset.h"
+#include "ledblink.h"
+
 #include "artnettimecode.h"
 #include "artnettimesync.h"
 #include "artnetrdm.h"
-
-#include "blinktask.h"
 
 /**
  * ArtPollReply packet, Field 12
@@ -151,7 +144,6 @@ struct TArtNetNode {
 	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
 	uint32_t IPAddressLocal;						///< Local IP Address
 	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
-	uint32_t IPDefaultGateway;						///< The default gateway
 	uint32_t IPSubnetMask;							///< The subnet mask
 	uint8_t  NetSwitch;								///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 	uint8_t  SubSwitch;								///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
@@ -193,14 +185,11 @@ struct TOutputPort {
 
 class ArtNetNode {
 public:
-#if defined (__circle__)
-	ArtNetNode(CNetSubSystem *, CActLED *);
-#else
 	ArtNetNode(void);
-#endif
 	~ArtNetNode(void);
 
 	void SetOutput(LightSet *);
+	void SetLedBlink(LedBlink *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
 	void SetTimeSyncHandler(ArtNetTimeSync *);
@@ -262,16 +251,11 @@ private:
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
-	CBlinkTask 				*m_pBlinkTask;		///<
-#if defined (__circle__)
-	CNetSubSystem			*m_pNet;			///<
-	CSocket					m_Socket;			///<
-#else
-	CBlinkTask				m_BlinkTask;
-#endif
 	bool 					m_IsDHCPUsed;		///<
 
 	LightSet    			*m_pLightSet;		///<
+	LedBlink				*m_pLedBlink;		///<
+
 	ArtNetTimeCode			*m_pArtNetTimeCode;	///<
 	ArtNetTimeSync			*m_pArtNetTimeSync;	///<
 	ArtNetRdm				*m_pArtNetRdm;		///<

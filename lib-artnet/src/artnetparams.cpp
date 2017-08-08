@@ -23,10 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <artnetparams.h>
-#include <read_config_file.h>
-#include <sscan.h>
-#include <util.h>
+#include <stdint.h>
+
+#if defined(__linux__) || defined (__CYGWIN__)
+#define ALIGNED
+#include <string.h>
+#else
+#include "util.h"
+#endif
+
+#include "artnetparams.h"
+
+#include "read_config_file.h"
+#include "sscan.h"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";					///< Parameters file name
 static const char PARAMS_NET[] ALIGNED = "net";									///<
