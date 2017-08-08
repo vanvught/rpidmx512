@@ -1,5 +1,11 @@
 #!/bin/bash
-DIR=rpi_*
+
+cd Circle
+make -f Makefile $1 $2 || exit
+
+cd ..
+
+DIR=rpi_circle_*
 for f in $DIR
 do
 	echo "[$f]"

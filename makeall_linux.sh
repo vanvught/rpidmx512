@@ -4,7 +4,7 @@ for f in $DIR
 do
 	echo "[$f]"
 	if [ -d $f ]; then
-		if [[ $f != *"circle"* ]]; then
+		if [[ $f != *"lib"* ]]; then
 			cd "$f"
 			if [ -f Makefile ]
 				then
