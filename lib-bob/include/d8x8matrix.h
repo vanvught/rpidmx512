@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-extern void d8x8matrix_init(const device_info_t *, const uint8_t);
+extern void d8x8matrix_init(const device_info_t *, const uint8_t, const uint8_t);
 extern void d8x8matrix_cls(const device_info_t *);
 extern void d8x8matrix_write(const device_info_t *, const char *s, uint8_t);
 

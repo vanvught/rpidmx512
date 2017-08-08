@@ -35,13 +35,15 @@
  *
  * @param device_info
  */
-void d8x7segment_init(const device_info_t *device_info) {
+void d8x7segment_init(const device_info_t *device_info, const uint8_t intensity) {
 	(void) max7219_spi_start((device_info_t *)device_info);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_SHUTDOWN, MAX7219_SHUTDOWN_NORMAL_OP);
 	max7219_spi_write_reg(device_info, MAX7219_REG_DISPLAY_TEST, 0);
 	max7219_spi_write_reg(device_info, MAX7219_REG_DECODE_MODE, MAX7219_DECODE_MODE_CODEB);
 	max7219_spi_write_reg(device_info, MAX7219_REG_SCAN_LIMIT, 7);
+
+	max7219_spi_write_reg(device_info, MAX7219_REG_INTENSITY, intensity & 0x0F);
 }
 
 /**

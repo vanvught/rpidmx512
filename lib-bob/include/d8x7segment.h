@@ -28,7 +28,7 @@
 
 #include "device_info.h"
 
-extern void d8x7segment_init(const device_info_t *);
+extern void d8x7segment_init(const device_info_t *, const uint8_t);
 extern void d8x7segment_cls(const device_info_t *);
 extern void d8x7segment_int(const device_info_t *, int32_t);
 

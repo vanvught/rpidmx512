@@ -42,7 +42,7 @@
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
-static uint8_t rotate(uint8_t r, uint8_t x) {
+static uint8_t rotate(const uint8_t r, const uint8_t x) {
 	uint8_t y;
 	uint8_t set, b;
 
@@ -124,7 +124,7 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 	}
 }
 
-void d8x8matrix_init(const device_info_t *device_info, const uint8_t count) {
+void d8x8matrix_init(const device_info_t *device_info, const uint8_t count, const uint8_t intensity) {
 	device_info_t *p = (device_info_t *)device_info;
 
 	p->internal.count = MIN(count, sizeof(spi_data) / 2);
@@ -135,6 +135,8 @@ void d8x8matrix_init(const device_info_t *device_info, const uint8_t count) {
 	write_all(device_info, MAX7219_REG_DISPLAY_TEST, 0);
 	write_all(device_info, MAX7219_REG_DECODE_MODE, 0);
 	write_all(device_info, MAX7219_REG_SCAN_LIMIT, 7);
+
+	write_all(device_info, MAX7219_REG_INTENSITY, intensity & 0x0F);
 
 	d8x8matrix_cls(device_info);
 }
