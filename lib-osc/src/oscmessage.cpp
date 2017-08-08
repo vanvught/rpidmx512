@@ -63,8 +63,6 @@ static unsigned next_pow2(unsigned x)
 	return x + 1;
 }
 
-#define osc_pow2_over(a,b)	a = ((b > a) ? (next_pow2(a)) : a)
-
 typedef union pcast32 {
 	int32_t i;
 	float f;
@@ -388,7 +386,6 @@ OSCBlob OSCMessage::GetBlob(unsigned argc) {
 }
 
 void *OSCMessage::Serialise(const char *path, void *to, unsigned * size) {
-
 	int i, argc;
 	char *types, *ptr;
 	unsigned s = OSCString::Size(path) + OSCString::Size(m_Types) + m_Datalen;
@@ -436,25 +433,20 @@ signed OSCMessage::ArgValidate(osc_type type, void *data, unsigned size) {
 	case OSC_NIL:
 	case OSC_INFINITUM:
 		return 0;
-
 	case OSC_INT32:
 	case OSC_FLOAT:
 	case OSC_MIDI:
 	case OSC_CHAR:
 		return size >= 4 ? 4 : -OSC_INVALID_SIZE;
-
 	case OSC_INT64:
 	case OSC_TIMETAG:
 	case OSC_DOUBLE:
 		return size >= 8 ? 8 : -OSC_INVALID_SIZE;
-
 	case OSC_STRING:
 	case OSC_SYMBOL:
 		return OSCString::Validate(data, size);
-
 	case OSC_BLOB:
 		return OSCBlob::Validate(data, size);
-
 	default:
 		return -OSC_INVALID_TYPE;
 	}
@@ -471,18 +463,15 @@ void OSCMessage::ArgNetworkEndian(osc_type type, void *data)
 	case OSC_CHAR:
 		*(int32_t *) data = __builtin_bswap32(*(int32_t *) data);
 		break;
-
 	case OSC_TIMETAG:
 		*(uint32_t *) data = __builtin_bswap32(*(uint32_t *) data);
 		data = ((uint32_t *) data) + 1;
 		*(uint32_t *) data = __builtin_bswap32(*(uint32_t *) data);
 		break;
-
 	case OSC_INT64:
 	case OSC_DOUBLE:
 		*(int64_t *) data = __builtin_bswap64(*(int64_t *) data);
 		break;
-
 	case OSC_STRING:
 	case OSC_SYMBOL:
 	case OSC_MIDI:
@@ -507,18 +496,15 @@ void OSCMessage::ArgHostEndian(osc_type type, void *data)
     case OSC_CHAR:
         *(int32_t *) data = __builtin_bswap32(*(int32_t *) data);
         break;
-
     case OSC_TIMETAG:
         *(int32_t *) data = __builtin_bswap32(*(int32_t *) data);
         data = ((int32_t *) data) + 1;
         *(int32_t *) data = __builtin_bswap32(*(int32_t *) data);
         break;
-
     case OSC_INT64:
     case OSC_DOUBLE:
         *(int64_t *) data = __builtin_bswap64(*(int64_t *) data);
         break;
-
     case OSC_STRING:
     case OSC_SYMBOL:
     case OSC_MIDI:
@@ -528,7 +514,6 @@ void OSCMessage::ArgHostEndian(osc_type type, void *data)
     case OSC_INFINITUM:
         /* these are fine */
         break;
-
     default:
         /* Unknown type */
         break;
@@ -543,10 +528,13 @@ void *OSCMessage::AddData(unsigned s) {
 
     void *new_data = 0;
 
-    if (!new_datasize)
+    if (!new_datasize) {
         new_datasize = OSC_DEF_DATA_SIZE;
+    }
 
-    osc_pow2_over(new_datasize, new_datalen);
+	if (new_datalen > new_datasize) {
+		new_datasize  = next_pow2(new_datalen);
+	}
 
     new_data = realloc(m_Data, new_datasize);
 

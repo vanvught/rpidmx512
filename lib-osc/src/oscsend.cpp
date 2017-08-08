@@ -58,7 +58,7 @@ static const char FromOscSend[] = "oscsend";
  * @param ... The data values to be transmitted. The types of the arguments passed here must agree with the types specified in the type parameter.
  */
 OSCSend::OSCSend(const int address, const int port, const char *path, const char *types, ...) :
-		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(0) {
+		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(-1) {
 
 	va_list ap;
 	va_start(ap, types);
@@ -86,26 +86,27 @@ void OSCSend::AddVarArgs(va_list ap) {
 		switch (*m_Types++) {
 		case OSC_INT32: {
 			int32_t i = va_arg(ap, int32_t);
-			m_Msg->AddInt32(i);
-			m_Result = m_Msg->GetResult();
+			m_Result = m_Msg->AddInt32(i);
 			break;
 		}
 		case OSC_FLOAT: {
 			float f = (float) va_arg(ap, double);
-			m_Msg->AddFloat(f);
-			m_Result = m_Msg->GetResult();
+			m_Result = m_Msg->AddFloat(f);
 			break;
 		}
 		case OSC_STRING: {
 			char *s = va_arg(ap, char *);
-			m_Msg->AddString(s);
-			m_Result = m_Msg->GetResult();
+			m_Result = m_Msg->AddString(s);
 			break;
 		}
-		default: {
-			m_Result = -1;
+		default:
 			break;
 		}
+
+		if(m_Result != 0) {
+#if defined (__linux__) || defined (__CYGWIN__)
+			fprintf(stderr, "AddVarArgs: %d\n", m_Result);
+#endif
 		}
 	}
 
