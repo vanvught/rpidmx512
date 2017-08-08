@@ -24,11 +24,11 @@
  */
 
 #include <stdint.h>
+#include <time.h>
 
 #include "timesync.h"
 #include "artnettimesync.h"
 
-#include "sys_time.h"
 #include "hardware.h"
 #include "console.h"
 
@@ -99,7 +99,7 @@ void TimeSync::ShowSystemTime(void) {
 	time_t ltime;
 	struct tm *local_time;
 
-	ltime = sys_time(NULL);
+	ltime = time(NULL);
 	local_time = localtime(&ltime);
 
 	if (m_nSecondsPrevious == local_time->tm_sec) {

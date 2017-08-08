@@ -12,6 +12,8 @@
 		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-lcd</project>
+		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>
 		<project>lib-utils</project>

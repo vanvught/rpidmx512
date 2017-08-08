@@ -23,40 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include <dmxsend.h.txt>
 #include <stdio.h>
 #include <stdint.h>
 
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
-#include "led.h"
 #include "monitor.h"
 #include "console.h"
 
 #include "artnetnode.h"
+#include "artnetdiscovery.h"
 #include "artnetparams.h"
 
 #include "dmxparams.h"
 #include "dmxsender.h"
-
 #include "dmxmonitor.h"
 
 #include "spisend.h"
 #include "deviceparams.h"
 
+#include "ledblinktask.h"
+
 #include "timecode.h"
 #include "timesync.h"
-#include "artnetdiscovery.h"
 
 #include "oled.h"
 
 #include "wifi.h"
-#include "wifi_udp.h"
+#include "network.h"
 
 #include "software_version.h"
 
 extern "C" {
+extern void network_init(void);
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
@@ -70,6 +70,7 @@ void notmain(void) {
 	DeviceParams deviceparms;
 	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
 	bool oled_connected = false;
+	LedBlinkTask ledblinktask;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -114,13 +115,7 @@ void notmain(void) {
 			;
 	}
 
-	console_status(CONSOLE_YELLOW, "Starting UDP ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
-
-	wifi_udp_begin(6454);
-
-	console_status(CONSOLE_YELLOW, "UDP started");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "UDP started"));
+	network_init();
 
 	ArtNetNode node;
 	DMXSender dmx;
@@ -132,6 +127,8 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
+
+	node.SetLedBlink(&ledblinktask);
 
 	if (artnetparams.IsUseTimeCode() || output_type == OUTPUT_TYPE_MONITOR) {
 		timecode.Start();
@@ -284,7 +281,7 @@ void notmain(void) {
 			timesync.ShowSystemTime();
 		}
 
-		led_blink();
+		ledblinktask.Run();
 	}
 }
 

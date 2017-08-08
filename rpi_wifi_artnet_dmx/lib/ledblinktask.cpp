@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file ledblinktask.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include "led.h"
 
-static const char SOFTWARE_VERSION[] = "2.1";
+#include "ledblinktask.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+LedBlinkTask::LedBlinkTask(void) {
+}
+
+LedBlinkTask::~LedBlinkTask(void) {
+}
+
+void LedBlinkTask::SetFrequency(unsigned nFreqHz) {
+	if (nFreqHz == 0) {
+		led_set_ticks_per_second(0);
+	} else {
+		led_set_ticks_per_second(1000000 / nFreqHz);
+	}
+}
+
+void LedBlinkTask::Run(void) {
+	led_blink();
+}
