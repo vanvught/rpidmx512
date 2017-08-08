@@ -24,6 +24,7 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #if defined(__linux__) || defined (__CYGWIN__)
