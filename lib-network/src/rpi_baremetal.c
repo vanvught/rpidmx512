@@ -99,5 +99,4 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
 }
 
-}
 #endif
