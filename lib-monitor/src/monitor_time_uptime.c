@@ -29,27 +29,26 @@
 
 #include "console.h"
 #include "hardware.h"
-#include "sys_time.h"
 
 void monitor_time_uptime(const int line) {
-	uint32_t time, days, hours, minutes, seconds;
+	uint32_t uptime, days, hours, minutes, seconds;
 	time_t ltime;
 	struct tm *local_time;
 
-	time = hardware_uptime_seconds();
+	uptime = hardware_uptime_seconds();
 
-	ltime = sys_time(NULL);
+	ltime = time(NULL);
 	local_time = localtime(&ltime);
 
 	console_save_cursor();
 	console_set_cursor(0, line);
 
-	days = time / ((uint32_t) 24 * (uint32_t) 3600);
-	time -= days * ((uint32_t) 24 * (uint32_t) 3600);
-	hours = time / (uint32_t) 3600;
-	time -= hours * (uint32_t) 3600;
-	minutes = time / (uint32_t) 60;
-	seconds = time - minutes * (uint32_t) 60;
+	days = uptime / ((uint32_t) 24 * (uint32_t) 3600);
+	uptime -= days * ((uint32_t) 24 * (uint32_t) 3600);
+	hours = uptime / (uint32_t) 3600;
+	uptime -= hours * (uint32_t) 3600;
+	minutes = uptime / (uint32_t) 60;
+	seconds = uptime - minutes * (uint32_t) 60;
 
 	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d",
 			local_time->tm_hour, local_time->tm_min, local_time->tm_sec,

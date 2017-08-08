@@ -261,7 +261,7 @@ DWORD get_fattime(void) {
 	struct tm *local_time;
 	DWORD packed_time;
 
-	ltime = sys_time(NULL);
+	ltime = time(NULL);
 	local_time = localtime(&ltime);
 
 	packed_time = ((DWORD) (local_time->tm_year + 20) << 25)
