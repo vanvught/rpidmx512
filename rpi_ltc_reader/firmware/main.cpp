@@ -136,7 +136,7 @@ void notmain(void) {
 	}
 
 	if (output.segment_output) {
-		display_7segment_init();
+		display_7segment_init(ltc_reader_params_get_max7219_intensity());
 	}
 
 	if (output.artnet_output) {
@@ -144,7 +144,7 @@ void notmain(void) {
 	}
 
 	if (output.matrix_output) {
-		display_matrix_init();
+		display_matrix_init(ltc_reader_params_get_max7219_intensity());
 	}
 
 	console_set_cursor(0, 15);

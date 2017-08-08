@@ -26,11 +26,13 @@
 #ifndef DISPLAY_MATRIX_H_
 #define DISPLAY_MATRIX_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void display_matrix_init(void);
+extern void display_matrix_init(const uint8_t);
 extern void display_matrix(const char *);
 
 #ifdef __cplusplus

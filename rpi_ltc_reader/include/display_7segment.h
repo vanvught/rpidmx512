@@ -26,11 +26,13 @@
 #ifndef DISPLAY_7SEGMENT_H_
 #define DISPLAY_7SEGMENT_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void display_7segment_init(void);
+extern void display_7segment_init(const uint8_t);
 extern void display_7segment(const char *);
 
 #ifdef __cplusplus

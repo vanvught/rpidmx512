@@ -48,6 +48,8 @@ extern const bool ltc_reader_params_is_matrix_output(void);
 
 extern const ltc_reader_source_t ltc_reader_params_get_source(void);
 
+extern const uint8_t ltc_reader_params_get_max7219_intensity(void);
+
 extern void ltc_reader_params_init(void) ;
 
 #ifdef __cplusplus

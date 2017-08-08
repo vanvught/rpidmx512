@@ -39,11 +39,11 @@ static uint8_t buffer[SEGMENTS] ALIGNED;
 /**
  *
  */
-void display_matrix_init(void) {
+void display_matrix_init(const uint8_t intensity) {
 	device_info.chip_select = 2;
 	device_info.speed_hz = 0;
 
-	d8x8matrix_init(&device_info, SEGMENTS);
+	d8x8matrix_init(&device_info, SEGMENTS, intensity);
 	d8x8matrix_cls(&device_info);
 }
 

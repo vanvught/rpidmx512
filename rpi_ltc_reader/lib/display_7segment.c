@@ -37,11 +37,11 @@ static device_info_t device_info;
 /**
  *
  */
-void display_7segment_init(void) {
+void display_7segment_init(const uint8_t intensity) {
 	device_info.chip_select = 2;
 	device_info.speed_hz = 0;
 
-	d8x7segment_init(&device_info);
+	d8x7segment_init(&device_info, intensity);
 	d8x7segment_cls(&device_info);
 
 	max7219_spi_write_reg(&device_info, MAX7219_REG_DIGIT6, (uint8_t) 0x80);
