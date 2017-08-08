@@ -4,13 +4,13 @@
 
 CIRCLEHOME = ../Circle
 
-OBJS	= spisend.o main.o kernel.o
+OBJS	= blinktask.o spisend.o main.o kernel.o
 
 INCLUDE	+= -I ./include
-INCLUDE	+= -I ../rpi_circle_libdmx/include -I ../rpi_circle_libws28xx/include -I ../lib-artnet/include
-INCLUDE	+= -I ../lib-artnet/include -I ../lib-lightset/include
+INCLUDE	+= -I ../rpi_circle_libdmx/include -I ../rpi_circle_libws28xx/include
+INCLUDE	+= -I ../lib-artnet/include -I ../lib-lightset/include -I ../lib-ledblink/include -I ../lib-network/include
 
-LIBS = ../rpi_circle_libdmx/libdmx.a ../rpi_circle_libws28xx/libws28xx.a ../lib-artnet/libartnet.a ../lib-lightset/liblightset.a
+LIBS = ../rpi_circle_libdmx/libdmx.a ../rpi_circle_libws28xx/libws28xx.a ../lib-artnet/libartnet.a ../lib-lightset/liblightset.a ../lib-ledblink/libledblink.a ../lib-network/libnetwork.a
 
 LIBS += $(CIRCLEHOME)/addon/SDCard/libsdcard.a \
 	$(CIRCLEHOME)/addon/Properties/libproperties.a \

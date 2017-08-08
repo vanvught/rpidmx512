@@ -49,6 +49,7 @@
 #include "SDCard/emmc.h"
 #include "Properties/propertiesfile.h"
 
+#include "blinktask.h"
 #include "dmxsend.h"
 #include "spisend.h"
 
@@ -97,6 +98,7 @@ private:
 	CMachineInfo 		m_MachineInfo;
 	boolean				m_HaveEMMC;
 	unsigned			m_OutputType;
+	CBlinkTask 			m_BlinkTask;
 };
 
 #endif

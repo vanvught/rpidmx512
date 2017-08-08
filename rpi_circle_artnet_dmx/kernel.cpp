@@ -41,9 +41,15 @@
 #include "kernel.h"
 
 #include "artnetnode.h"
-#include "lightset.h"
+
+#include "blinktask.h"
 #include "dmxsend.h"
 #include "spisend.h"
+
+extern "C" {
+extern void network_init(CNetSubSystem *);
+}
+#include "network.h"
 
 #define PARTITION				"emmc1-1"
 
@@ -75,7 +81,8 @@ CKernel::CKernel(void) :
 		m_DMX (&m_Interrupt),
 		m_SPI (&m_Interrupt),
 		m_HaveEMMC(false),
-		m_OutputType(TOuputTypeDMX)
+		m_OutputType(TOuputTypeDMX),
+		m_BlinkTask(&m_ActLED, 0)
 {
 	m_ActLED.On();
 }
@@ -341,7 +348,11 @@ TShutdownMode CKernel::Run(void)
 		}
 	}
 
-	ArtNetNode node(&m_Net, &m_ActLED);
+	network_init(&m_Net);
+
+	ArtNetNode node;
+
+	node.SetLedBlink(&m_BlinkTask);
 
 	if (m_OutputType == TOuputTypeDMX)
 	{
