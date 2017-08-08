@@ -1,8 +1,13 @@
+#if 0
+#if !defined (__linux__) || !defined (__CYGWIN__)
+#define __linux__
+#endif
+#endif
 /**
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,28 +32,72 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "console.h"
 #include "dmxmonitor.h"
 
+#if defined (__linux__) || defined (__CYGWIN__)
+#include <time.h>
+#include <sys/time.h>
+#else
+#include "console.h"
 #define TOP_ROW		3
+#endif
 
-/**
- *
- */
-DMXMonitor::DMXMonitor(void) : m_bIsStarted(false) {
+DMXMonitor::DMXMonitor(void) : m_bIsStarted(false)
+#if defined (__linux__) || defined (__CYGWIN__)
+	, m_nMaxChannels(32)
+#endif
+{
 
 }
 
-/**
- *
- */
 DMXMonitor::~DMXMonitor(void) {
 	this->Stop();
 }
 
-/**
- *
- */
+#if defined (__linux__) || defined (__CYGWIN__)
+void DMXMonitor::SetMaxDmxChannels(const uint16_t nMaxChannels) {
+	m_nMaxChannels = nMaxChannels;
+}
+
+void DMXMonitor::Start(void) {
+	if(m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+	puts("00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31");
+}
+
+void DMXMonitor::Stop(void) {
+	if(!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+	puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+}
+
+void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16_t nLength) {
+	struct timeval tv;
+	uint8_t *p = (uint8_t *)pData;
+	int j;
+
+	gettimeofday(&tv, NULL);
+	struct tm tm = *localtime(&tv.tv_sec);
+
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld DMX %d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, nLength, m_nMaxChannels);
+
+	for (j = 0; (j < m_nMaxChannels) && (j < nLength); j++) {
+		const uint8_t d = *p++;
+		printf("%2x ", d);
+	}
+
+	for (; j < m_nMaxChannels; j++) {
+		printf("-- ");
+	}
+	printf("\n");
+}
+#else
 void DMXMonitor::Start(void) {
 	if(m_bIsStarted) {
 		return;
@@ -69,9 +118,6 @@ void DMXMonitor::Start(void) {
 	}
 }
 
-/**
- *
- */
 void DMXMonitor::Stop(void) {
 	if(!m_bIsStarted) {
 		return;
@@ -85,9 +131,6 @@ void DMXMonitor::Stop(void) {
 	}
 }
 
-/**
- *
- */
 void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16_t nLength) {
 	uint8_t row = TOP_ROW;
 	uint8_t *p = (uint8_t *)pData;
@@ -120,3 +163,4 @@ void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16
 	}
 
 }
+#endif
