@@ -49,9 +49,8 @@ static const char FromOscWS28xx[] = "oscws28xx";
 
 static const char sLedTypes[4][8] = { "WS2801", "WS2811", "WS2812", "WS2812B" };
 
-COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CInterruptSystem	*pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
-:	OSCServer (pNetSubSystem, nLocalPort),
-	m_pNetSubSystem (pNetSubSystem),
+COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
+:	OSCServer (nLocalPort),
 	m_pInterrupt (pInterrupt),
 	m_pTarget (pTarget),
 	m_pLEDStripe (0),
@@ -102,15 +101,14 @@ COSCWS28xx::COSCWS28xx (CNetSubSystem *pNetSubSystem, CInterruptSystem	*pInterru
 }
 
 COSCWS28xx::~COSCWS28xx(void) {
-	m_pNetSubSystem = 0;
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, CIPAddress *ForeignIP) {
+void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, u32 ForeignIP) {
 
 	if (OSC::isMatch((const char*) Buffer, "/ping")) {
-		OSCSend MsgSend(&m_Socket, ForeignIP, PORT_REMOTE, "/pong", 0);
+		OSCSend MsgSend(ForeignIP, PORT_REMOTE, "/pong", 0);
 	} else if (OSC::isMatch((const char*) Buffer, "/dmx1/blackout")) {
 		OSCMessage Msg(Buffer, (unsigned) BytesReceived);
 		m_Blackout = (unsigned)Msg.GetFloat(0) == 1;
@@ -153,10 +151,10 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, CIPAddress *Fore
 			m_pLEDStripe->Update();
 		}
 	} else if (OSC::isMatch((const char*) Buffer, "/2")) {
-		OSCSend MsgSendInfo(&m_Socket, ForeignIP, PORT_REMOTE, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
-		OSCSend MsgSendModel(&m_Socket, ForeignIP, PORT_REMOTE, "/info/model", "s", m_MachineInfo.GetMachineName());
-		OSCSend MsgSendSoc(&m_Socket, ForeignIP, PORT_REMOTE, "/info/soc", "s", m_MachineInfo.GetSoCName());
-		OSCSend MsgSendLedType(&m_Socket, ForeignIP, PORT_REMOTE, "/info/ledtype", "s", sLedTypes[m_LEDType]);
-		OSCSend MsgSendLedCount(&m_Socket, ForeignIP, PORT_REMOTE, "/info/ledcount", "i", m_nLEDCount);
+		OSCSend MsgSendInfo(ForeignIP, PORT_REMOTE, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
+		OSCSend MsgSendModel(ForeignIP, PORT_REMOTE, "/info/model", "s", m_MachineInfo.GetMachineName());
+		OSCSend MsgSendSoc(ForeignIP, PORT_REMOTE, "/info/soc", "s", m_MachineInfo.GetSoCName());
+		OSCSend MsgSendLedType(ForeignIP, PORT_REMOTE, "/info/ledtype", "s", sLedTypes[m_LEDType]);
+		OSCSend MsgSendLedCount(ForeignIP, PORT_REMOTE, "/info/ledcount", "i", m_nLEDCount);
 	}
 }

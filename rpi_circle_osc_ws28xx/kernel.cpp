@@ -31,13 +31,18 @@
 #include <circle/net/ipaddress.h>
 #include <circle/net/in.h>
 #include <circle/string.h>
-#include <Properties/propertiesfile.h>
-
-#include "kernel.h"
 
 #include "Properties/propertiesfile.h"
 
+#include "kernel.h"
+
+
 #include "oscws28xx.h"
+
+extern "C" {
+extern void network_init(CNetSubSystem *);
+}
+#include "network.h"
 
 #define PARTITION			"emmc1-1"
 #define PROPERTIES_FILE		"network.txt"
@@ -138,16 +143,17 @@ TShutdownMode CKernel::Run (void)
 {
 	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
 
+	network_init(&m_Net);
+
 	CString IPString;
 	m_Net.GetConfig ()->GetIPAddress ()->Format (&IPString);
 	m_Logger.Write (FromKernel, LogNotice, "OSC Server running at %s:%u", (const char *) IPString, OSC_SERVER_PORT);
 
-	new COSCWS28xx (&m_Net, &m_Interrupt, &m_Screen, &m_FileSystem, OSC_SERVER_PORT);
+	new COSCWS28xx (&m_Interrupt, &m_Screen, &m_FileSystem, OSC_SERVER_PORT);
 
 	for (unsigned nCount = 0; 1; nCount++)
 	{
 		m_Scheduler.Yield ();
-
 		m_Screen.Rotor (0, nCount);
 	}
 

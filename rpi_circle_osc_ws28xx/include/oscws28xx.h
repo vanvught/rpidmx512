@@ -33,7 +33,6 @@
 #include <circle/interrupt.h>
 #include <circle/device.h>
 #include <circle/machineinfo.h>
-#include <circle/net/ipaddress.h>
 #include <circle/fs/fat/fatfs.h>
 
 #include "ws28xxstripe.h"
@@ -43,14 +42,13 @@
 class COSCWS28xx: public OSCServer
 {
 public:
-	COSCWS28xx(CNetSubSystem *, CInterruptSystem*, CDevice *, CFATFileSystem *, unsigned);
+	COSCWS28xx(CInterruptSystem*, CDevice *, CFATFileSystem *, unsigned);
 	~COSCWS28xx(void);
 
 private:
-	void MessageReceived(u8 *, int, CIPAddress *);
+	void MessageReceived(u8 *, int, u32);
 
 private:
-	CNetSubSystem		*m_pNetSubSystem;
 	CInterruptSystem	*m_pInterrupt;
 	CDevice				*m_pTarget;
 	CMachineInfo 		m_MachineInfo;
