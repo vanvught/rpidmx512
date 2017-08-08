@@ -781,7 +781,7 @@ static void rdm_get_real_time_clock(uint16_t sub_device) {
 	time_t ltime;
 	struct tm *local_time;
 
-	ltime = time(NULL);
+	ltime = sys_time(NULL);
     local_time = localtime(&ltime);
 
     struct _rdm_command *rdm_response = (struct _rdm_command *)rdm_handlers_rdm_data;

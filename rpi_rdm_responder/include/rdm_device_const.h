@@ -38,7 +38,7 @@ static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi";				///<
 static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";			///<
 static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";			///<
-static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.9";			///<
+static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.8";			///<
 
 #define DEFAULT_DMX_START_ADDRESS		1	///<
 #define DEFAULT_CURRENT_PERSONALITY		1	///<
