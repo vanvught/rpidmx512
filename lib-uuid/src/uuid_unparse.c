@@ -61,7 +61,7 @@
 #include <stddef.h>
 #include <assert.h>
 
-#include "uuid.h"
+#include "uuid/uuid.h"
 #include "uuid_internal.h"
 
 #include "util.h"

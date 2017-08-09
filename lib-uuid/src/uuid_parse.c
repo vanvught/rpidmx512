@@ -61,7 +61,7 @@
 #include <stddef.h>
 #include <assert.h>
 
-#include "uuid.h"
+#include "uuid/uuid.h"
 #include "uuid_internal.h"
 
 #include "util.h"
@@ -118,7 +118,7 @@ int uuid_parse(const char *in, uuid_t uu) {
 
 	assert(in != NULL);
 
-	if (strlen(in) != UUID_STRING_LENGTH) {
+	if (strlen(in) != 36) {
 		return -1;
 	}
 

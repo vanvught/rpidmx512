@@ -25,9 +25,10 @@
 
 #include <stdint.h>
 
-#include "uuid.h"
 #include "bcm2835_rng.h"
 #include "util.h"
+
+#include "uuid/uuid.h"
 
 typedef union pcast32 {
 	uuid_t uuid;
