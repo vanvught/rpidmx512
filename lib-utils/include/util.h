@@ -39,11 +39,13 @@
 #  define MIN(a,b)		(((a) < (b)) ? (a) : (b))											///<
 #endif
 
+#if 0
 #ifndef SWAP_UINT16
 #  define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
 #endif
 #ifndef SWAP_UINT32
 #  define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
+#endif
 #endif
 
 #ifdef __cplusplus
