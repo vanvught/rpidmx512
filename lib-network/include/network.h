@@ -50,6 +50,7 @@ extern bool network_is_dhcp_used(void);
 extern void network_begin(uint16_t);
 extern uint16_t network_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
 extern void network_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
+extern void network_joingroup(const uint32_t);
 
 #ifdef __cplusplus
 }

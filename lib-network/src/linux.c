@@ -42,6 +42,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <limits.h>
+#include <errno.h>
 
 #include "network.h"
 
@@ -184,6 +185,15 @@ void network_init(const char *s) {
 		exit(EXIT_FAILURE);
 	}
 
+	struct timeval recv_timeout;
+	recv_timeout.tv_sec = 0;
+	recv_timeout.tv_usec = 10;
+
+	if (setsockopt(_socket,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout))== -1) {
+		perror("setsockopt(SO_RCVTIMEO)");
+		exit(EXIT_FAILURE);
+	}
+
 	gethostname(_hostname, HOST_NAME_MAX);
 
 #if defined(__linux__)	
@@ -250,8 +260,12 @@ uint16_t network_recvfrom(const uint8_t *packet, const uint16_t size, uint32_t *
 
 
 	if ((recv_len = recvfrom(_socket, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
-		perror("recvfrom");
-		exit(EXIT_FAILURE);
+		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+			perror("recvfrom");
+			exit(EXIT_FAILURE);
+		} else {
+			return 0;
+		}
 	}
 
 	*from_ip = si_other.sin_addr.s_addr;
@@ -269,8 +283,22 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 	si_other.sin_port = htons(remote_port);
 
 	if (sendto(_socket, packet, size, 0, (struct sockaddr*) &si_other, slen) == -1) {
+		struct in_addr in;
+		in.s_addr = to_ip;
+		printf("network_sendto(%p, %d, %s, %d)\n", packet, size, inet_ntoa(in), remote_port);
 		perror("sendto");
 		exit(EXIT_FAILURE);
 	}
 }
+
+void network_joingroup(const uint32_t ip) {
+	struct ip_mreq mreq;
+	mreq.imr_multiaddr.s_addr = ip;
+	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+	if (setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+		perror("setsockopt(IP_ADD_MEMBERSHIP)");
+		exit(EXIT_FAILURE);
+	}
+}
+
 #endif
