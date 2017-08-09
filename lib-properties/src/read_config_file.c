@@ -1,7 +1,7 @@
 /**
  * @file read_config_file.c
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,13 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "read_config_file.h"
 
-#if defined(__linux__) || defined (__CYGWIN__)
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-
 const bool read_config_file(const char *file_name, funcptr pfi) {
+	char buffer[128];
 	FILE *fp;
 
 	assert(file_name != NULL);
@@ -42,9 +39,8 @@ const bool read_config_file(const char *file_name, funcptr pfi) {
 	fp = fopen(file_name, "r");
 
 	if (fp != NULL) {
-		char buffer[128];
 		for (;;) {
-			if (fgets(buffer, (int) sizeof(buffer), fp) == NULL) {
+			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
 				break; // Error or end of file
 			}
 			(void) pfi((const char *) buffer);
@@ -56,31 +52,3 @@ const bool read_config_file(const char *file_name, funcptr pfi) {
 
 	return true;
 }
-#else
-#include "ff.h"
-
-const bool read_config_file(const char *file_name, funcptr pfi) {
-	FRESULT rc = FR_DISK_ERR;
-	FIL file_object;
-
-	assert(file_name != NULL);
-	assert(pfi != NULL);
-
-	rc = f_open(&file_object, (TCHAR *)file_name, (BYTE) FA_READ);
-
-	if (rc == FR_OK) {
-		TCHAR buffer[128];
-		for (;;) {
-			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL) {
-				break; // Error or end of file
-			}
-			(void) pfi((const char *) buffer);
-		}
-		(void) f_close(&file_object);
-	} else {
-		return false;
-	}
-
-	return true;
-}
-#endif

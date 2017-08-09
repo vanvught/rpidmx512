@@ -3,7 +3,6 @@
 	<name>lib-properties</name>
 	<comment></comment>
 	<projects>
-		<project>lib-ff11</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
