@@ -27,6 +27,20 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#include <netinet/in.h>
+
+extern "C" {
+extern uint32_t millis(void);
+}
+
+#if defined(__linux__) || defined (__CYGWIN__)
+#include <string.h>
+#include <sys/param.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#else
+#include "util.h"
+#endif
 
 #include "e131.h"
 #include "e131packets.h"
@@ -34,13 +48,9 @@
 
 #include "lightset.h"
 
-#include "inet.h"
-#include "wifi_udp.h"
+#include "network.h"
 
-#include "util.h"
-#include "sys_time.h"
-
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x01 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x02 };	///<
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 #define DEFAULT_SOURCE_NAME  "Raspberry Pi Wifi sACN E1.31 http://www.raspberrypi-dmx.org"
@@ -68,8 +78,10 @@ E131Bridge::E131Bridge(void) :
 	m_State.DiscoveryTime = 0;
 
 	m_DiscoveryIpAddress = 0;
-	(void)inet_aton("239.255.0.0", &m_DiscoveryIpAddress);
-	m_DiscoveryIpAddress = m_DiscoveryIpAddress | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF00) << 8));
+
+	struct in_addr addr;
+	(void)inet_aton("239.255.0.0", &addr);
+	m_DiscoveryIpAddress = addr.s_addr | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF00) << 8));
 
 	memset(m_SourceName, 0, sizeof(m_SourceName));
 	strncpy(m_SourceName, DEFAULT_SOURCE_NAME, sizeof(m_SourceName));
@@ -219,22 +231,22 @@ void E131Bridge::FillDiscoveryPacket(void) {
 	memset(&m_E131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
 
 	// Root Layer (See Section 5)
-	m_E131DiscoveryPacket.RootLayer.PreAmbleSize = SWAP_UINT16(0x10);
+	m_E131DiscoveryPacket.RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
 	memcpy(m_E131DiscoveryPacket.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, E131_PACKET_IDENTIFIER_LENGTH);
-	m_E131DiscoveryPacket.RootLayer.FlagsLength = SWAP_UINT16((0x07 << 12) | (m_State.DiscoveryPacketLength));
-	m_E131DiscoveryPacket.RootLayer.Vector = SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED);
+	m_E131DiscoveryPacket.RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (m_State.DiscoveryPacketLength));
+	m_E131DiscoveryPacket.RootLayer.Vector = __builtin_bswap32(E131_VECTOR_ROOT_EXTENDED);
 	memcpy(m_E131DiscoveryPacket.RootLayer.Cid, m_Cid, E131_CID_LENGTH);
 
 
 	// E1.31 Framing Layer (See Section 6)
-	m_E131DiscoveryPacket.FrameLayer.FLagsLength = SWAP_UINT16((0x07 << 12) | (framing_layer_size + discovery_layer_size) );
-	m_E131DiscoveryPacket.FrameLayer.Vector = SWAP_UINT32(E131_VECTOR_EXTENDED_DISCOVERY);
+	m_E131DiscoveryPacket.FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (framing_layer_size + discovery_layer_size) );
+	m_E131DiscoveryPacket.FrameLayer.Vector = __builtin_bswap32(E131_VECTOR_EXTENDED_DISCOVERY);
 	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, m_SourceName, E131_SOURCE_NAME_LENGTH);
 
 	// Universe Discovery Layer (See Section 8)
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.FlagsLength = SWAP_UINT16((0x07 << 12) | discovery_layer_size);
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.Vector = SWAP_UINT32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
-	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = SWAP_UINT16(m_nUniverse);
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | discovery_layer_size);
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.Vector = __builtin_bswap32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
+	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = __builtin_bswap16(m_nUniverse);
 }
 
 /**
@@ -371,7 +383,7 @@ const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
  */
 void E131Bridge::HandleDmx(void) {
 	const uint8_t *p = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
-	const uint16_t slots = SWAP_UINT16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - (uint16_t)1;
+	const uint16_t slots = __builtin_bswap16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - (uint16_t)1;
 	const uint32_t ipA = m_OutputPort.sourceA.ip;
 	const uint32_t ipB = m_OutputPort.sourceB.ip;
 	struct TSource *pSourceA = &m_OutputPort.sourceA;
@@ -533,7 +545,7 @@ void E131Bridge::HandleDmx(void) {
  *
  */
 void E131Bridge::HandleSynchronization(void) {
-	if (m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber != SWAP_UINT16(m_nUniverse)) {
+	if (m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber != __builtin_bswap16(m_nUniverse)) {
 		return;
 	}
 
@@ -560,7 +572,7 @@ void E131Bridge::SetNetworkDataLossCondition(void) {
  *
  */
 void E131Bridge::SendDiscoveryPacket(void) {
-	wifi_udp_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+	network_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
 	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
@@ -575,8 +587,8 @@ const bool E131Bridge::IsValidRoot(void) {
 		return false;
 	}
 	
-	if (m_E131.E131Packet.Raw.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_DATA)
-			 && (m_E131.E131Packet.Raw.RootLayer.Vector != SWAP_UINT32(E131_VECTOR_ROOT_EXTENDED)) ) {
+	if (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(E131_VECTOR_ROOT_DATA)
+			 && (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(E131_VECTOR_ROOT_EXTENDED)) ) {
 		return false;
 	}
 
@@ -593,7 +605,7 @@ const bool E131Bridge::IsValidDataPacket(void) {
 	// 8.2 Association of Multicast Addresses and Universe
 	// Note: The identity of the universe shall be determined by the universe number in the
 	// packet and not assumed from the multicast address.
-	if (m_E131.E131Packet.Data.FrameLayer.Universe != SWAP_UINT16(m_nUniverse)) {
+	if (m_E131.E131Packet.Data.FrameLayer.Universe != __builtin_bswap16(m_nUniverse)) {
 		return false;
 	}
 
@@ -613,13 +625,13 @@ const bool E131Bridge::IsValidDataPacket(void) {
 
 	// Transmitters shall set the DMP Layer's First Property Address to 0x0000. Receivers shall discard the
 	// packet if the received value is not 0x0000.
-	if (m_E131.E131Packet.Data.DMPLayer.FirstAddressProperty != SWAP_UINT16((uint16_t)0x0000)) {
+	if (m_E131.E131Packet.Data.DMPLayer.FirstAddressProperty != __builtin_bswap16((uint16_t)0x0000)) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's Address Increment to 0x0001. Receivers shall discard the packet if
 	// the received value is not 0x0001.
-	if (m_E131.E131Packet.Data.DMPLayer.AddressIncrement != SWAP_UINT16((uint16_t)0x0001)) {
+	if (m_E131.E131Packet.Data.DMPLayer.AddressIncrement != __builtin_bswap16((uint16_t)0x0001)) {
 		return false;
 	}
 
@@ -634,7 +646,7 @@ int E131Bridge::Run(void) {
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = wifi_udp_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = network_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = millis();
 
@@ -643,7 +655,7 @@ int E131Bridge::Run(void) {
 	}
 
 	if (nBytesReceived == 0) {
-		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (uint32_t)(E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
 			SetNetworkDataLossCondition();
 		}
 		return 0;
@@ -661,7 +673,7 @@ int E131Bridge::Run(void) {
 		}
 	}
 
-	const uint32_t nRootVector = SWAP_UINT32(m_E131.E131Packet.Raw.RootLayer.Vector);
+	const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
 	if (nRootVector == E131_VECTOR_ROOT_DATA) {
 		if (!IsValidDataPacket()) {
@@ -669,7 +681,7 @@ int E131Bridge::Run(void) {
 		}
 		HandleDmx();
 	} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
-		const uint32_t nFramingVector = SWAP_UINT32(m_E131.E131Packet.Raw.FrameLayer.Vector);
+		const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
 
 		if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
 			HandleSynchronization();

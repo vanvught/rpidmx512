@@ -24,34 +24,41 @@
  */
 
 #include <stdint.h>
+#include <uuid/uuid.h>
+
+#if defined(__linux__) || defined (__CYGWIN__)
+#define ALIGNED
+#include <string.h>
+#else
+#include "util.h"
+#endif
 
 #include "read_config_file.h"
 #include "sscan.h"
-#include "util.h"
-
-#include "uuid.h"
 
 #include "e131.h"
 #include "e131params.h"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";			///< Parameters file name
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";			///<
-static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";		///<
-static const char PARAMS_OUTPUT[] ALIGNED = "output";				///<
-static const char PARAMS_CID[] ALIGNED = "cid";						///<
+#define UUID_STRING_LENGTH	36
 
-static uint16_t E131ParamsUniverse ALIGNED = E131_UNIVERSE_DEFAULT;	///<
-static _output_type E131ParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
-static TMerge E131ParamsMergeMode = E131_MERGE_HTP;					///<
-static char E131ParamsCidString[UUID_STRING_LENGTH + 1] ALIGNED;
-static bool E131HaveCustomCid = false;
+static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
+static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
+static const char PARAMS_OUTPUT[] ALIGNED = "output";
+static const char PARAMS_CID[] ALIGNED = "cid";
+
+static uint16_t E131ParamsUniverse ALIGNED;
+static _output_type E131ParamsOutputType ALIGNED;
+static TMerge E131ParamsMergeMode;
+static char E131ParamsCidString[UUID_STRING_LENGTH + 2] ALIGNED;
+static bool E131HaveCustomCid;
 
 /**
  *
  * @param line
  */
 static void process_line_read(const char *line) {
-	char value[UUID_STRING_LENGTH + 2] ALIGNED;
+	char value[UUID_STRING_LENGTH + 2];
 	uint8_t len;
 
 	uint16_t value16;
@@ -95,8 +102,10 @@ static void process_line_read(const char *line) {
  */
 E131Params::E131Params(void) {
 	E131ParamsUniverse = E131_UNIVERSE_DEFAULT;
+	E131ParamsMergeMode = E131_MERGE_HTP;					///<
 	E131ParamsOutputType = OUTPUT_TYPE_DMX;
-	memset(E131ParamsCidString, 0, UUID_STRING_LENGTH);
+	memset(E131ParamsCidString, 0, sizeof(E131ParamsCidString));
+	E131HaveCustomCid = false;
 }
 
 /**
