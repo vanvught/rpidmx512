@@ -26,7 +26,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "uuid.h"
+#include "uuid/uuid.h"
+
 #include "hardware.h"
 #include "ff.h"
 #include "util.h"
@@ -36,13 +37,13 @@ static const char EXT_UID[] ALIGNED = ".uid";
 static const char DUMMY_UUID[] ALIGNED = "01234567-89ab-cdef-0134-567890abcedf";
 
 const bool hardware_uuid(uuid_t out) {
-	char file_name[16] ALIGNED;	///< mac:8, .:1 ,uud:3 ,'\0':1
-	uint8_t mac[8] ALIGNED;
+	char file_name[16];	///< mac:8, .:1 ,uud:3 ,'\0':1
+	uint8_t mac[8];
 	bool have_uuid = false;
 
 	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
-	TCHAR buffer[128] ALIGNED;
+	TCHAR buffer[128];
 
 	if (hardware_get_mac_address(mac) != 0) {
 		// There is no MAC-address
@@ -58,7 +59,6 @@ const bool hardware_uuid(uuid_t out) {
 	rc = f_open(&file_object, (TCHAR *)file_name, (BYTE) FA_READ);
 
 	if (rc == FR_OK) {
-		TCHAR buffer[128];
 		if (f_gets(buffer, (int) sizeof(buffer), &file_object) != NULL) {
 			if (uuid_parse((char *)buffer, out) == 0) {
 				have_uuid = true;

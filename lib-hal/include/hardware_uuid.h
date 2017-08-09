@@ -26,8 +26,7 @@
 #define HARDWARE_UUID_H_
 
 #include <stdbool.h>
-
-#include "uuid.h"
+#include <uuid/uuid.h>
 
 #ifdef __cplusplus
 extern "C" {
