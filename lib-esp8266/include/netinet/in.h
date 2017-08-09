@@ -1,8 +1,8 @@
 /**
- * @file inet.h
+ * @file in.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef INET_H_
-#define INET_H_
+#ifndef IN_H_
+#define IN_H_
 
 #include <stdint.h>
+
+typedef uint32_t in_addr_t;
+
+struct in_addr {
+    in_addr_t s_addr;
+};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int inet_aton(const char *, uint32_t *);
+extern int inet_aton(const char *, struct in_addr *);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* INET_H_ */
+#endif /* IN_H_ */

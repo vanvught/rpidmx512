@@ -85,7 +85,9 @@ int inet_aton(const char *cp, uint32_t *ip_address) {
 
 		cast32.u8[i] = k;
 
-		*ip_address = cast32.u32;
+		if (ip_address != 0) {
+			*ip_address = cast32.u32;
+		}
 
 		return 1;
 }
