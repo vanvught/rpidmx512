@@ -75,8 +75,9 @@ const bool E131Uuid::GetHardwareUuid(uuid_t out) {
 				m_bHaveUuid = true;
 			}
 		} else {
-			printf("Cannot read content\n");
+#if defined(__linux__) || defined (__CYGWIN__)
 			perror("fgets");
+#endif
 		}
 		(void) fclose(fp);
 	} else {
@@ -89,7 +90,7 @@ const bool E131Uuid::GetHardwareUuid(uuid_t out) {
 			}
 			(void) fclose(fp);
 		} else {
-#ifndef NDEBUG
+#if defined(__linux__) || defined (__CYGWIN__)
 			perror("fopen");
 #endif
 		}

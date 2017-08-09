@@ -2,7 +2,7 @@
  * @file oscparams.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,18 +38,13 @@
 #include "read_config_file.h"
 #include "sscan.h"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";				///< Parameters file name
-static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";		///<
-static const char PARAMS_OUTGOING_PORT[] ALIGNED = "outgoing_port";		///<
+static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";
+static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";
+static const char PARAMS_OUTGOING_PORT[] ALIGNED = "outgoing_port";
 
-static uint16_t OSCParamsIncomingPort ALIGNED = OSC_DEFAULT_INCOMING_PORT;
-static uint16_t OSCParamsOutgoingPort ALIGNED = OSC_DEFAULT_OUTGOING_PORT;
+static uint16_t OSCParamsIncomingPort ALIGNED;
+static uint16_t OSCParamsOutgoingPort ALIGNED;
 
-
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	uint16_t value16;
 
@@ -60,24 +55,14 @@ static void process_line_read(const char *line) {
 	}
 }
 
-/**
- *
- */
 OSCParams::OSCParams(void) {
 	OSCParamsIncomingPort = OSC_DEFAULT_INCOMING_PORT;
 	OSCParamsOutgoingPort = OSC_DEFAULT_OUTGOING_PORT;
 }
 
-/**
- *
- */
 OSCParams::~OSCParams(void) {
 }
 
-/**
- *
- * @return
- */
 bool OSCParams::Load(void) {
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
 }
