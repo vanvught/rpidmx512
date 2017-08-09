@@ -43,6 +43,9 @@ public:
 
 #if defined (__linux__) || defined (__CYGWIN__)
 	void SetMaxDmxChannels(const uint16_t);
+
+private:
+	void DisplayDateTime(const char *);
 #endif
 
 private:

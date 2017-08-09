@@ -55,6 +55,14 @@ DMXMonitor::~DMXMonitor(void) {
 }
 
 #if defined (__linux__) || defined (__CYGWIN__)
+void DMXMonitor::DisplayDateTime(const char *pString) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	struct tm tm = *localtime(&tv.tv_sec);
+
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld %s\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, pString);
+}
+
 void DMXMonitor::SetMaxDmxChannels(const uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
@@ -65,7 +73,8 @@ void DMXMonitor::Start(void) {
 	}
 
 	m_bIsStarted = true;
-	puts("00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31");
+	DisplayDateTime("Start");
+
 }
 
 void DMXMonitor::Stop(void) {
@@ -74,7 +83,7 @@ void DMXMonitor::Stop(void) {
 	}
 
 	m_bIsStarted = false;
-	puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+	DisplayDateTime("Stop");
 }
 
 void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16_t nLength) {
