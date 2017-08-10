@@ -246,13 +246,9 @@ private:
 	void SendPollRelply(bool);
 	void SendTod(void);
 
-	void SetNetworkDetails(void);
-
 	uint16_t MakePortAddress(const uint16_t);
 
 private:
-	bool 					m_IsDHCPUsed;		///<
-
 	LightSet    			*m_pLightSet;		///<
 	LedBlink				*m_pLedBlink;		///<
 
@@ -264,11 +260,10 @@ private:
 	struct TArtNetNodeState m_State;			///< The current state of the node
 
 	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
-
 	struct TArtPollReply	m_PollReply;		///<
 	struct TArtDiagData		m_DiagData;			///<
 	struct TArtTimeCode		m_TimeCodeData;		///<
-	TArtTodData				*m_pTodData;		///<
+	struct TArtTodData		*m_pTodData;		///<
 
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 

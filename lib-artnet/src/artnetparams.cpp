@@ -47,17 +47,17 @@ static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";					///< Use the T
 static const char PARAMS_RDM[] ALIGNED = "enable_rdm";							///< Enable RDM, 0 {default}
 static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";	///< 0 {default}
 
-static uint8_t ArtNetParamsNet ALIGNED = 0;								///<
-static uint8_t ArtNetParamsSubnet ALIGNED = 0;							///<
-static uint8_t ArtNetParamsUniverse ALIGNED = 0;						///<
-static _output_type ArtNetParamsOutputType ALIGNED = OUTPUT_TYPE_DMX;	///<
-static bool ArtNetParamsUseTimeCode = false;							///<
-static bool ArtNetParamsUseTimeSync = false;							///<
-static bool ArtNetParamsEnableRdm = false;								///<
-static bool ArtNetParamsRdmDiscovery = false;							///<
+static uint8_t ArtNetParamsNet ALIGNED;
+static uint8_t ArtNetParamsSubnet ALIGNED;
+static uint8_t ArtNetParamsUniverse ALIGNED;
+static _output_type ArtNetParamsOutputType ALIGNED;
+static bool ArtNetParamsUseTimeCode;
+static bool ArtNetParamsUseTimeSync;
+static bool ArtNetParamsEnableRdm;
+static bool ArtNetParamsRdmDiscovery;
 
 static void process_line_read(const char *line) {
-	char value[8] ALIGNED;
+	char value[8];
 	uint8_t len = 3;
 	uint8_t value8;
 
@@ -111,6 +111,7 @@ ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsUniverse = 0;
 	ArtNetParamsOutputType= OUTPUT_TYPE_DMX;
 	ArtNetParamsUseTimeCode = false;
+	ArtNetParamsUseTimeSync = false;
 	ArtNetParamsEnableRdm = false;
 	ArtNetParamsRdmDiscovery = false;
 }

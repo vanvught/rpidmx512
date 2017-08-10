@@ -37,7 +37,7 @@
 #include <circle/time.h>
 #include <circle/timer.h>
 #include <circle/version.h>
-#elif defined (__linux) || defined (__CYGWIN__)
+#elif defined (__linux__) || defined (__CYGWIN__)
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -74,21 +74,19 @@ union uip {
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
-#define bytes_to_short(h,l) ( ((h << 8) & 0xff00) | (l & 0x00FF) );
-
 #define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
 
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 #define NODE_UDP_PORT				0x1936						///< The Port is always 0x1936
 
 #define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"			///< The array represents a null terminated short name for the Node.
-#define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node DMX Out"	///< The array represents a null terminated long name for the Node.
+#define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node http://www.raspberrypi-dmx.org"	///< The array represents a null terminated long name for the Node.
 #define NODE_DEFAULT_NET_SWITCH		0							///<
 #define NODE_DEFAULT_SUBNET_SWITCH	0							///<
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0B };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0C };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -100,7 +98,6 @@ static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x
  *
  */
 ArtNetNode::ArtNetNode(void) :
-		m_IsDHCPUsed(true),
 		m_pLightSet(0),
 		m_pLedBlink(0),
 		m_pArtNetTimeCode(0),
@@ -157,7 +154,9 @@ ArtNetNode::~ArtNetNode(void) {
 		m_pLedBlink = 0;
 	}
 
-	delete m_pTodData;
+	if (m_pTodData == 0) {
+		delete m_pTodData;
+	}
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 	memset(&m_PollReply, 0, sizeof (struct TArtPollReply));
@@ -224,7 +223,10 @@ const uint8_t ArtNetNode::GetActiveInputPorts(void) {
  *
  */
 void ArtNetNode::Start(void) {
-	SetNetworkDetails();
+	m_Node.IPAddressLocal = network_get_ip();
+	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~network_get_netmask();
+	network_get_macaddr(m_Node.MACAddressLocal);
+	m_Node.Status2 = m_Node.Status2 | (network_is_dhcp_used() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
 
 	FillPollReply();
 	FillDiagData();
@@ -233,6 +235,7 @@ void ArtNetNode::Start(void) {
 	network_begin(NODE_UDP_PORT);
 
 	m_PollReply.NumPortsLo = m_State.nActivePorts;
+
 	for (unsigned i = 0 ; i < ARTNET_MAX_PORTS; i++) {
 		if (m_OutputPorts[i].bIsEnabled) {
 			m_PollReply.PortTypes[i] = ARTNET_ENABLE_OUTPUT | ARTNET_PORT_DMX;
@@ -405,18 +408,6 @@ void ArtNetNode::SetLongName(const char *pName) {
 
 	memset((void *)m_PollReply.LongName, 0, ARTNET_LONG_NAME_LENGTH);
 	memcpy (m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
-}
-
-/**
- *
- */
-void ArtNetNode::SetNetworkDetails(void) {
-	m_Node.IPAddressLocal = network_get_ip();
-	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~network_get_netmask();
-	network_get_macaddr(m_Node.MACAddressLocal);
-	m_IsDHCPUsed = network_is_dhcp_used();
-	// Node is IP is manually configured , Node’s IP is DHCP configured.
-	m_Node.Status2 = m_Node.Status2 | (m_IsDHCPUsed ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
 }
 
 /**
@@ -723,7 +714,7 @@ void ArtNetNode::HandlePoll(void) {
 void ArtNetNode::HandleDmx(void) {
 	const struct TArtDmx *packet = (struct TArtDmx *)&(m_ArtNetPacket.ArtPacket.ArtDmx);
 
-	unsigned data_length = (unsigned) bytes_to_short(packet->LengthHi, packet->Length);
+	unsigned data_length = (unsigned) ((packet->LengthHi << 8) & 0xff00) | (packet->Length);
 	data_length = min(data_length, ARTNET_DMX_LENGTH);
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
