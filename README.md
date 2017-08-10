@@ -23,3 +23,12 @@ Detailed information can be found here : [http://www.raspberrypi-dmx.org](http:/
 The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3.
 
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
+
+## Linux ##
+### DMX512 / ArtNet-3 / sACN E1.31 / OSC ###
+
+Linux **Open Source** solutions:
+
+- **ArtNet 3** Real-time DMX Monitor
+- sACN **E.131** Real-time DMX Monitor
+- **OSC** Real-time Sniffer
