@@ -36,7 +36,7 @@
 
 #include "common.h"
 
-#if  ! defined (PACKED)
+#if  !defined (PACKED)
 #define PACKED __attribute__((packed))
 #endif
 
@@ -57,6 +57,8 @@ enum TOpCodes {
 	OP_RDM = 0x8300, 		///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
 	OP_TIMECODE = 0x9700,	///< This is an ArtTimeCode packet. It is used to transport time code over the network.
 	OP_TIMESYNC = 0x9800,	///< Used to synchronize real time date and clock
+	OP_IPPROG = 0xF800,		///< This is an ArtIpProg packet. It is used to re-programme the IP, Mask and Port address of the Node.
+	OP_IPPROGREPLY = 0xF900,///< This is an ArtIpProgReply packet. It is returned by the node to acknowledge receipt of an ArtIpProg packet.
 	OP_NOT_DEFINED = 0x0000	///< OP_NOT_DEFINED
 };
 
@@ -300,7 +302,7 @@ struct TArtTodData {
 	uint8_t UidTotalLo;
 	uint8_t BlockCount; 	///< The index number of this packet. When UidTotal exceeds 200, multiple ArtTodData packets are used.
 	uint8_t UidCount;		///< The number of UIDs encoded in this packet. This is the index of the following array.
-	uint8_t Tod[200][6];	///< 48 bit An array of RDM UID.
+	uint8_t Tod[200][6];	///< 48 bit An array of RDM UID. // TODO #define
 }PACKED;
 
 /**
@@ -325,7 +327,73 @@ struct TArtRdm {
 	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
 	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
 	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
-	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
+	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode. // TODO #define
+}PACKED;
+
+/**
+ * ArtIpProg packet definition
+ */
+struct TArtIpProg {
+	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;	///< The OpCode defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the OpCode listing.
+	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;	///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;	///< Pad length to match ArtPoll.
+	uint8_t Filler2;	///< Pad length to match ArtPoll.
+	uint8_t Command;	///< Defines the how this packet is processed.
+	uint8_t Filler4;	///< Set to zero. Pads data structure for word alignment.
+	uint8_t ProgIpHi;	///< IP Address to be programmed into Node if enabled by Command Field
+	uint8_t ProgIp2;
+	uint8_t ProgIp1;
+	uint8_t ProgIpLo;
+	uint8_t ProgSmHi;	///< Subnet mask to be programmed into Node if enabled by Command Field
+	uint8_t ProgSm2;
+	uint8_t ProgSm1;
+	uint8_t ProgSmLo;
+	uint8_t ProgPortHi;	///< PortAddress to be programmed into Node if enabled by Command Field
+	uint8_t ProgPortlo;
+	uint8_t Spare1_8[8];///< Transmit as zero, receivers don’t test.
+}PACKED;
+
+/**
+ * ArtIpProgReply packet definition
+ */
+struct TArtIpProgReply {
+	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;	///< The OpCode defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the OpCode listing.
+	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;	///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t Filler1;	///< Pad length to match ArtPoll.
+	uint8_t Filler2;	///< Pad length to match ArtPoll.
+	uint8_t Filler3;	///< Pad length to match ArtIpProg.
+	uint8_t Filler4;	///< Pad length to match ArtIpProg.
+	uint8_t ProgIpHi;	///< IP Address to be programmed into Node if enabled by Command Field
+	uint8_t ProgIp2;
+	uint8_t ProgIp1;
+	uint8_t ProgIpLo;
+	uint8_t ProgSmHi;	///< Subnet mask to be programmed into Node if enabled by Command Field
+	uint8_t ProgSm2;
+	uint8_t ProgSm1;
+	uint8_t ProgSmLo;
+	uint8_t ProgPortHi;	///< PortAddress to be programmed into Node if enabled by Command Field
+	uint8_t ProgPortlo;
+	uint8_t Status;		///< Bit 6 DHCP enabled.
+	uint8_t Spare2_8[7];///< Transmit as zero, receivers don’t test.
+}PACKED;
+
+/**
+ * ArtTrigger packet definition
+ */
+struct TArtTrigger {
+	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;	///< OpPollReply \ref TOpCodes
+	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;	///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t OemCodeHi;	///< The manufacturer code (high byte) of nodes that shall accept this trigger.
+	uint8_t OemCodeLo;	///< The manufacturer code (low byte) of nodes that shall accept this trigger.
+	uint8_t Key;		///< The Trigger Key.
+	uint8_t SubKey;		///< The Trigger SubKey.
+	uint8_t Data[512];	///< The interpretation of the payload is defined by the Key. // TODO #define
 }PACKED;
 
 /**
@@ -344,6 +412,9 @@ union UArtPacket {
 	struct TArtTodControl ArtTodControl;	///< ArtTodControl packet
 	struct TArtTodData ArtTodData;			///< ArtTodData packet
 	struct TArtRdm ArtRdm;					///< ArtRdm packet
+	struct TArtIpProg ArtIpProg;			///< ArtIpProg packet
+	struct TArtIpProgReply ArtIpProgReply;	///< ArtIpProgReply packet
+	struct TArtTrigger ArtTrigger;			///< ArtTrigger packet
 };
 
 

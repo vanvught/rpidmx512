@@ -58,8 +58,41 @@
 #include "artnetrdm.h"
 #include "artnettimecode.h"
 #include "artnettimesync.h"
+#include "artnetipprog.h"
 
 #include "network.h"
+
+/**
+ * Defines output status of the node.
+ */
+enum TGoodOutput {
+	GO_DATA_IS_BEING_TRANSMITTED = (1 << 7),	///< Bit 7 Set – Data is being transmitted.
+	GO_INCLUDES_DMX_TEST_PACKETS = (1 << 6),	///< Bit 6 Set – Channel includes DMX512 test packets.
+	GO_INCLUDES_DMX_SIP = (1 << 5),				///< Bit 5 Set – Channel includes DMX512 SIP’s.
+	GO_INCLUDES_DMX_TEXT_PACKETS = (1 << 4),	///< Bit 4 Channel includes DMX512 text packets.
+	GO_OUTPUT_IS_MERGING = (1 << 3),			///< Bit 3 Set – Output is merging ArtNet data.
+	GO_DMX_SHORT_DETECTED = (1 << 2),			///< Bit 2 Set – DMX output short detected on power up
+	GO_MERGE_MODE_LTP = (1 << 1)				///< Bit 1 Set – Merge Mode is LTP.
+};
+
+/**
+ *
+ */
+enum TProgram {
+	PROGRAM_NO_CHANGE = 0x7F,					///<
+	PROGRAM_DEFAULTS = 0x00,					///<
+	PROGRAM_CHANGE_MASK = 0x80					///<
+};
+
+/**
+ *
+ */
+enum TTalkToMe {
+	TTM_SEND_ARP_ON_CHANGE = (1 << 1),			///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
+	TTM_SEND_DIAG_MESSAGES = (1 << 2),			///< Bit 2 set : Send me diagnostics messages.
+	TTM_SEND_DIAG_UNICAST = (1 << 3)			///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).
+												///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
+};
 
 union uip {
 	uint32_t u32;
@@ -76,8 +109,7 @@ union uip {
 
 #define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
 
-#define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-#define NODE_UDP_PORT				0x1936						///< The Port is always 0x1936
+#define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 
 #define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"			///< The array represents a null terminated short name for the Node.
 #define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node http://www.raspberrypi-dmx.org"	///< The array represents a null terminated long name for the Node.
@@ -86,7 +118,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0C };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0D };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -103,6 +135,7 @@ ArtNetNode::ArtNetNode(void) :
 		m_pArtNetTimeCode(0),
 		m_pArtNetTimeSync(0),
 		m_pArtNetRdm(0),
+		m_pArtNetIpProg(0),
 		m_bDirectUpdate(false) {
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
@@ -154,8 +187,12 @@ ArtNetNode::~ArtNetNode(void) {
 		m_pLedBlink = 0;
 	}
 
-	if (m_pTodData == 0) {
+	if (m_pTodData != 0) {
 		delete m_pTodData;
+	}
+
+	if (m_pIpProgReply != 0) {
+		delete m_pIpProgReply;
 	}
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
@@ -226,13 +263,13 @@ void ArtNetNode::Start(void) {
 	m_Node.IPAddressLocal = network_get_ip();
 	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~network_get_netmask();
 	network_get_macaddr(m_Node.MACAddressLocal);
-	m_Node.Status2 = m_Node.Status2 | (network_is_dhcp_used() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
+	m_Node.Status2 = (m_Node.Status2 & ~(1 << 1)) | (network_is_dhcp_used() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
 
 	FillPollReply();
 	FillDiagData();
 	FillTimeCodeData();
 
-	network_begin(NODE_UDP_PORT);
+	network_begin(ARTNET_UDP_PORT);
 
 	m_PollReply.NumPortsLo = m_State.nActivePorts;
 
@@ -435,7 +472,7 @@ void ArtNetNode::FillPollReply(void) {
 
 	ip.u32 = m_Node.IPAddressLocal;
 	memcpy(m_PollReply.IPAddress, ip.u8, sizeof m_PollReply.IPAddress);
-	m_PollReply.Port = (uint16_t) NODE_UDP_PORT;
+	m_PollReply.Port = (uint16_t) ARTNET_UDP_PORT;
 	m_PollReply.VersInfoH = DEVICE_SOFTWARE_VERSION[0];
 	m_PollReply.VersInfoL = DEVICE_SOFTWARE_VERSION[1];
 	m_PollReply.NetSwitch = m_Node.NetSwitch;
@@ -500,7 +537,7 @@ void ArtNetNode::GetType(void) {
 	}
 
 	if (memcmp(data, "Art-Net\0", 8) == 0) {
-		m_ArtNetPacket.OpCode = (TOpCodes) ((data[9] << 8) + data[8]);
+		m_ArtNetPacket.OpCode = (TOpCodes) ((uint16_t)(data[9] << 8) + data[8]);
 	} else {
 		m_ArtNetPacket.OpCode = OP_NOT_DEFINED;
 	}
@@ -531,7 +568,7 @@ void ArtNetNode::SendPollRelply(const bool bResponse) {
 	sprintf(report, "%04x [%04d] RPi AvV", (int)m_State.reportCode, (int)m_State.ArtPollReplyCount);
 	strncpy((char *)m_PollReply.NodeReport, report, strlen(report) < ARTNET_REPORT_LENGTH ? strlen(report) : ARTNET_REPORT_LENGTH);
 #endif
-	network_sendto((const uint8_t *)&(m_PollReply), (const uint16_t)sizeof (struct TArtPollReply), m_Node.IPAddressBroadcast, (uint16_t)NODE_UDP_PORT);
+	network_sendto((const uint8_t *)&(m_PollReply), (const uint16_t)sizeof (struct TArtPollReply), m_Node.IPAddressBroadcast, (uint16_t)ARTNET_UDP_PORT);
 }
 
 /**
@@ -556,7 +593,7 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 
 	unsigned size = sizeof(struct TArtDiagData) - sizeof(m_DiagData.Data) + m_DiagData.LengthLo;
 
-	network_sendto((const uint8_t *)&(m_DiagData), (const uint16_t)size, m_State.IPAddressDiagSend, (uint16_t)NODE_UDP_PORT);
+	network_sendto((const uint8_t *)&(m_DiagData), (const uint16_t)size, m_State.IPAddressDiagSend, (uint16_t)ARTNET_UDP_PORT);
 }
 
 /**
@@ -1032,7 +1069,7 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	}
 	memcpy(&m_TimeCodeData.Frames, pArtNetTimeCode, sizeof (struct TArtNetTimeCode));
 
-	network_sendto((const uint8_t *) &(m_TimeCodeData), (const uint16_t) sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, (uint16_t) NODE_UDP_PORT);
+	network_sendto((const uint8_t *) &(m_TimeCodeData), (const uint16_t) sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
 }
 
 /**
@@ -1045,7 +1082,7 @@ void ArtNetNode::HandleTimeSync(void) {
 
 	packet->Prog = (uint8_t) 0;
 
-	network_sendto((const uint8_t *) packet, (const uint16_t) sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, (uint16_t) NODE_UDP_PORT);
+	network_sendto((const uint8_t *) packet, (const uint16_t) sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
 }
 
 /**
@@ -1105,7 +1142,7 @@ void ArtNetNode::SendTod(void) {
 
 	const uint16_t length = (uint16_t) sizeof(struct TArtTodData) - (uint16_t) (sizeof m_pTodData->Tod) + (uint16_t) (discovered * 6);
 
-	network_sendto((const uint8_t *) m_pTodData, (const uint16_t) length, m_Node.IPAddressBroadcast, (uint16_t) NODE_UDP_PORT);
+	network_sendto((const uint8_t *) m_pTodData, (const uint16_t) length, m_Node.IPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
 }
 
 /**
@@ -1126,7 +1163,7 @@ void ArtNetNode::HandleRdm(void) {
 			memcpy((uint8_t *) packet->RdmPacket, &response[1], nMessageLength);
 
 			const uint16_t nLength = (uint16_t) sizeof(struct TArtRdm) - (uint16_t) sizeof(packet->RdmPacket) + nMessageLength;
-			network_sendto((const uint8_t *) packet, (const uint16_t) nLength, m_ArtNetPacket.IPAddressFrom, (uint16_t) NODE_UDP_PORT);
+			network_sendto((const uint8_t *) packet, (const uint16_t) nLength, m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
 		} else {
 			//printf("No response\n");
 		}
@@ -1156,16 +1193,51 @@ void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm) {
 	}
 }
 
+void ArtNetNode::HandleIpProg(void) {
+	struct TArtIpProg *packet = (struct TArtIpProg *) &(m_ArtNetPacket.ArtPacket.ArtIpProg);
+	bool bRestartNode = false;
+
+	m_pArtNetIpProg->Handler((const TArtNetIpProg *)&packet->Command, (TArtNetIpProgReply *)&m_pIpProgReply->ProgIpHi, &bRestartNode);
+
+	network_sendto((const uint8_t *)m_pIpProgReply, (const uint16_t)sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, (uint16_t)ARTNET_UDP_PORT);
+
+	if (bRestartNode) {
+		Stop();
+		Start();
+	}
+
+}
+
+void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
+	m_pArtNetIpProg = pArtNetIpProg;
+
+	if(pArtNetIpProg != 0) {
+		m_pIpProgReply = new TArtIpProgReply;
+		if (m_pIpProgReply != 0) {
+			memset(m_pIpProgReply, 0, sizeof(struct TArtIpProgReply));
+			memcpy(m_pIpProgReply->Id, (const char *) NODE_ID, sizeof(m_pIpProgReply->Id));
+			m_pIpProgReply->OpCode = OP_IPPROGREPLY;
+			m_pIpProgReply->ProtVerHi = (uint8_t) 0;// high byte of the Art-Net protocol revision number.
+			m_pIpProgReply->ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
+		} else {
+			m_pArtNetIpProg = 0;
+		}
+	}
+}
+
+
+void ArtNetNode::HandleTrigger(void) {
+}
+
 /**
  *
  * @return
  */
 int ArtNetNode::HandlePacket(void) {
 	const char *packet = (char *)&(m_ArtNetPacket.ArtPacket);
-	uint16_t	nForeignPort;
-	uint32_t IPAddressFrom;
+	uint16_t nForeignPort;
 
-	const int nBytesReceived = network_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = network_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &m_ArtNetPacket.IPAddressFrom, &nForeignPort) ;
 
 #if defined (__circle__)
 	m_nCurrentPacketTime = CTimer::Get()->GetTime();
@@ -1178,7 +1250,6 @@ int ArtNetNode::HandlePacket(void) {
 	}
 
 	m_ArtNetPacket.length = nBytesReceived;
-	m_ArtNetPacket.IPAddressFrom = IPAddressFrom;
 
 	GetType();
 
@@ -1204,13 +1275,11 @@ int ArtNetNode::HandlePacket(void) {
 		HandlePoll();
 		break;
 	case OP_DMX:
-
 		if (m_pLightSet != 0) {
 			HandleDmx();
 		}
 		break;
 	case OP_SYNC:
-
 		if (m_pLightSet != 0) {
 			HandleSync();
 		}
@@ -1241,6 +1310,11 @@ int ArtNetNode::HandlePacket(void) {
 	case OP_RDM:
 		if (m_pArtNetRdm != 0) {
 			HandleRdm();
+		}
+		break;
+	case OP_IPPROG:
+		if (m_pArtNetIpProg != 0) {
+			HandleIpProg();
 		}
 		break;
 	default:

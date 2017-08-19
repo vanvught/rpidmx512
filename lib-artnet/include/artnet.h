@@ -154,4 +154,38 @@ enum TArtnetPortCommand {
 	ARTNET_PC_CLR_3 = 0x93			///< Clear DMX Output buffer for Port 3
 };
 
+/**
+ * ArtPollReply packet, Field 12
+ */
+enum TStatus1 {
+	STATUS1_INDICATOR_MASK = (3 << 6),			///< 0b11 bit 7-6, Indicator state.
+	STATUS1_INDICATOR_LOCATE_MODE = (1 << 6),	///< 0b01 Indicators in Locate Mode.
+	STATUS1_INDICATOR_MUTE_MODE = (2 << 6),		///< 0b10 Indicators in Mute Mode.
+	STATUS1_INDICATOR_NORMAL_MODE = (3 << 6),	///< 0b11 Indicators in Normal Mode.
+	STATUS1_PAP_MASK = (3 << 4),				///< 0b11 bit 5-4, Port Address Programming Authority
+	STATUS1_PAP_UNKNOWN = (0 << 4),				///< 0b00 Port Address Programming Authority unknown.
+	STATUS1_PAP_FRONT_PANEL = (1 << 4),			///< 0b01 All Port Address set by front panel controls.
+	STATUS1_PAP_NETWORK = (2 << 4),				///< 0b10 All or part of Port Address programmed by network or Web browser.
+	STATUS1_PAP_NOTUSED = (3 << 4),				///< 0b11 Not used.
+	STATUS1_NORMAL_FIRMWARE_BOOT = (0 << 2),	///< 0 = Normal firmware boot (from flash).
+	STATUS1_ROM_BOOT = (1 << 2),				///< 1 = Booted from ROM.
+	STATUS1_RDM_CAPABLE = (1 << 1),				///< 1 = Capable of Remote Device Management
+	STATUS1_UBEA_PRESENT = (1 << 0)				///< 1 = UBEA present
+};
+
+/**
+ * ArtPollReply packet, Field 40
+ */
+enum TStatus2 {
+	STATUS2_WEB_BROWSER_SUPPORT = (1 << 0),		///< Bit 0, Set = Product supports web browser configuration
+	STATUS2_IP_MANUALY = (0 << 1),				///< Bit 1, Clr = Node’s IP is manually configured.
+	STATUS2_IP_DHCP = (1 << 1),					///< Bit 1, Set = Node’s IP is DHCP configured.
+	STATUS2_DHCP_NOT_CAPABLE = (0 << 2),		///< Bit 2, Clr = Node is not DHCP capable.
+	STATUS2_DHCP_CAPABLE = (1 << 2),			///< Bit 2, Set = Node is DHCP capable.
+	STATUS2_PORT_ADDRESS_8BIT = (0 << 3),		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
+	STATUS2_PORT_ADDRESS_15BIT = (1 << 3),		///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
+	STATUS2_SACN_NO_SWITCH = (0 << 4),			///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
+	STATUS2_SACN_ABLE_TO_SWITCH = (1 << 4)		///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+};
+
 #endif /* ARTNET_H_ */

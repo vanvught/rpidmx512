@@ -37,6 +37,7 @@
 #if defined (__circle__)
 #include <circle/time.h>
 #else
+#include <stdbool.h>
 #include <time.h>
 #endif
 
@@ -50,72 +51,7 @@
 #include "artnettimecode.h"
 #include "artnettimesync.h"
 #include "artnetrdm.h"
-
-/**
- * ArtPollReply packet, Field 12
- */
-enum TStatus1 {
-	STATUS1_INDICATOR_MASK = (3 << 6),			///< 0b11 bit 7-6, Indicator state.
-	STATUS1_INDICATOR_LOCATE_MODE = (1 << 6),	///< 0b01 Indicators in Locate Mode.
-	STATUS1_INDICATOR_MUTE_MODE = (2 << 6),		///< 0b10 Indicators in Mute Mode.
-	STATUS1_INDICATOR_NORMAL_MODE = (3 << 6),	///< 0b11 Indicators in Normal Mode.
-	STATUS1_PAP_MASK = (3 << 4),				///< 0b11 bit 5-4, Port Address Programming Authority
-	STATUS1_PAP_UNKNOWN = (0 << 4),				///< 0b00 Port Address Programming Authority unknown.
-	STATUS1_PAP_FRONT_PANEL = (1 << 4),			///< 0b01 All Port Address set by front panel controls.
-	STATUS1_PAP_NETWORK = (2 << 4),				///< 0b10 All or part of Port Address programmed by network or Web browser.
-	STATUS1_PAP_NOTUSED = (3 << 4),				///< 0b11 Not used.
-	STATUS1_NORMAL_FIRMWARE_BOOT = (0 << 2),	///< 0 = Normal firmware boot (from flash).
-	STATUS1_ROM_BOOT = (1 << 2),				///< 1 = Booted from ROM.
-	STATUS1_RDM_CAPABLE = (1 << 1),				///< 1 = Capable of Remote Device Management
-	STATUS1_UBEA_PRESENT = (1 << 0)				///< 1 = UBEA present
-};
-
-/**
- * ArtPollReply packet, Field 40
- */
-enum TStatus2 {
-	STATUS2_WEB_BROWSER_SUPPORT = (1 << 0),		///< Bit 0, Set = Product supports web browser configuration
-	STATUS2_IP_MANUALY = (0 << 1),				///< Bit 1, Clr = Node’s IP is manually configured.
-	STATUS2_IP_DHCP = (1 << 1),					///< Bit 1, Set = Node’s IP is DHCP configured.
-	STATUS2_DHCP_NOT_CAPABLE = (0 << 2),		///< Bit 2, Clr = Node is not DHCP capable.
-	STATUS2_DHCP_CAPABLE = (1 << 2),			///< Bit 2, Set = Node is DHCP capable.
-	STATUS2_PORT_ADDRESS_8BIT = (0 << 3),		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
-	STATUS2_PORT_ADDRESS_15BIT = (1 << 3),		///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
-	STATUS2_SACN_NO_SWITCH = (0 << 4),			///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
-	STATUS2_SACN_ABLE_TO_SWITCH = (1 << 4)		///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
-};
-
-/**
- * Defines output status of the node.
- */
-enum TGoodOutput {
-	GO_DATA_IS_BEING_TRANSMITTED = (1 << 7),	///< Bit 7 Set – Data is being transmitted.
-	GO_INCLUDES_DMX_TEST_PACKETS = (1 << 6),	///< Bit 6 Set – Channel includes DMX512 test packets.
-	GO_INCLUDES_DMX_SIP = (1 << 5),				///< Bit 5 Set – Channel includes DMX512 SIP’s.
-	GO_INCLUDES_DMX_TEXT_PACKETS = (1 << 4),	///< Bit 4 Channel includes DMX512 text packets.
-	GO_OUTPUT_IS_MERGING = (1 << 3),			///< Bit 3 Set – Output is merging ArtNet data.
-	GO_DMX_SHORT_DETECTED = (1 << 2),			///< Bit 2 Set – DMX output short detected on power up
-	GO_MERGE_MODE_LTP = (1 << 1)				///< Bit 1 Set – Merge Mode is LTP.
-};
-
-/**
- *
- */
-enum TProgram {
-	PROGRAM_NO_CHANGE = 0x7F,					///<
-	PROGRAM_DEFAULTS = 0x00,					///<
-	PROGRAM_CHANGE_MASK = 0x80					///<
-};
-
-/**
- *
- */
-enum TTalkToMe {
-	TTM_SEND_ARP_ON_CHANGE = (1 << 1),			///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
-	TTM_SEND_DIAG_MESSAGES = (1 << 2),			///< Bit 2 set : Send me diagnostics messages.
-	TTM_SEND_DIAG_UNICAST = (1 << 3)			///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).
-												///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
-};
+#include "artnetipprog.h"
 
 /**
  *
@@ -194,6 +130,7 @@ public:
 	void SetTimeCodeHandler(ArtNetTimeCode *);
 	void SetTimeSyncHandler(ArtNetTimeSync *);
 	void SetRdmHandler(ArtNetRdm *);
+	void SetIpProgHandler(ArtNetIpProg *);
 
 	const uint8_t *GetSoftwareVersion(void);
 
@@ -238,6 +175,8 @@ private:
 	void HandleTodRequest(void);
 	void HandleTodControl(void);
 	void HandleRdm(void);
+	void HandleIpProg(void);
+	void HandleTrigger(void);
 
 	bool IsMergedDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
 	void CheckMergeTimeouts(const uint8_t);
@@ -255,6 +194,8 @@ private:
 	ArtNetTimeCode			*m_pArtNetTimeCode;	///<
 	ArtNetTimeSync			*m_pArtNetTimeSync;	///<
 	ArtNetRdm				*m_pArtNetRdm;		///<
+	ArtNetIpProg			*m_pArtNetIpProg;	///<
+	//ArtNetTrigger			*m_pArtNetTrigger;	///<
 
 	struct TArtNetNode		m_Node;				///< Struct describing the node
 	struct TArtNetNodeState m_State;			///< The current state of the node
@@ -264,6 +205,7 @@ private:
 	struct TArtDiagData		m_DiagData;			///<
 	struct TArtTimeCode		m_TimeCodeData;		///<
 	struct TArtTodData		*m_pTodData;		///<
+	struct TArtIpProgReply	*m_pIpProgReply;	///<
 
 	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
 

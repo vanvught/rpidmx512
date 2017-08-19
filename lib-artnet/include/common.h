@@ -111,4 +111,11 @@ enum {
 	ARTNET_IP_SIZE = 4
 };
 
+/**
+ * The Port is always 0x1936
+ */
+enum {
+	ARTNET_UDP_PORT = 0x1936
+};
+
 #endif /* COMMON_H_ */
