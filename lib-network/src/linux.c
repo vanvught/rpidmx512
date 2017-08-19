@@ -1,4 +1,4 @@
-#if 0
+#if 1
 #if !defined(__linux__)
 #define __linux__
 #endif
@@ -46,6 +46,7 @@
 
 #include "network.h"
 
+static char _if_name[IFNAMSIZ];
 static char _hostname[HOST_NAME_MAX + 1];
 static uint8_t _net_macaddr[NETWORK_MAC_SIZE];
 static uint32_t _local_ip;
@@ -54,7 +55,7 @@ static uint32_t _netmask;
 static uint32_t _broadcast_ip;
 static bool _is_dhcp_used;
 
-static int _socket;
+static int _socket = -1;
 
 #if defined(__linux__)
 static bool is_dhclient(const char *if_name) {
@@ -123,6 +124,7 @@ static int if_details(const char *iface) {
     strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
 
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
+    	perror("ioctl(fd, SIOCGIFADDR, &ifr)");
     	close(fd);
     	return -2;
     }
@@ -130,6 +132,7 @@ static int if_details(const char *iface) {
     _local_ip =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
 	if (ioctl(fd, SIOCGIFBRDADDR, &ifr) < 0) {
+		perror("ioctl(fd, SIOCGIFBRDADDR, &ifr)");
     	close(fd);
     	return -3;
     }
@@ -137,6 +140,7 @@ static int if_details(const char *iface) {
 	_broadcast_ip =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
+    	perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");
     	close(fd);
     	return -4;
     }
@@ -144,6 +148,7 @@ static int if_details(const char *iface) {
     _netmask =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) {
+    	perror("ioctl(fd, SIOCGIFHWADDR, &ifr)");
     	close(fd);
     	return -5;
     }
@@ -156,23 +161,46 @@ static int if_details(const char *iface) {
     return 0;
 }
 
-void network_init(const char *s) {
-	assert(s != NULL);
-
-	char if_name[IFNAMSIZ];
+int network_init(const char *s) {
 	int result;
-	int true_flag = true;
 
-	if (if_get_by_address(s, if_name, sizeof(if_name)) == 0) {
-	} else {
-		strncpy(if_name, s, IFNAMSIZ);
+	if (s != NULL) {
+		if (if_get_by_address(s, _if_name, sizeof(_if_name)) == 0) {
+		} else {
+			strncpy(_if_name, s, IFNAMSIZ);
+		}
 	}
 
-	result = if_details(if_name);
+#ifndef NDEBUG
+	printf("network_init, _if_name = %s\n", _if_name);
+#endif
+
+	result = if_details(_if_name);
 
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
-		exit(EXIT_FAILURE);
+	}
+#if defined(__linux__)
+	else {
+		_is_dhcp_used = is_dhclient(_if_name);
+	}
+#endif
+
+	gethostname(_hostname, HOST_NAME_MAX);
+
+	return result;
+}
+
+void network_begin(const uint16_t port) {
+	struct sockaddr_in si_me;
+	int true_flag = true;
+
+#ifndef NDEBUG
+	printf("network_begin, _socket = %d, port = %d\n", _socket, port);
+#endif
+
+	if (_socket > 0) {
+		close(_socket);
 	}
 
 	if ((_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -193,18 +221,6 @@ void network_init(const char *s) {
 		perror("setsockopt(SO_RCVTIMEO)");
 		exit(EXIT_FAILURE);
 	}
-
-	gethostname(_hostname, HOST_NAME_MAX);
-
-#if defined(__linux__)	
-	_is_dhcp_used = is_dhclient(if_name);
-#endif
-}
-
-void network_begin(const uint16_t port) {
-	assert(_socket > 0);
-
-	struct sockaddr_in si_me;
 
     memset((char *) &si_me, 0, sizeof(si_me));
 
@@ -262,10 +278,9 @@ uint16_t network_recvfrom(const uint8_t *packet, const uint16_t size, uint32_t *
 	if ((recv_len = recvfrom(_socket, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
-			exit(EXIT_FAILURE);
-		} else {
-			return 0;
+			//exit(EXIT_FAILURE);
 		}
+		return 0;
 	}
 
 	*from_ip = si_other.sin_addr.s_addr;
@@ -278,16 +293,18 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
 
+#ifndef NDEBUG
+	struct in_addr in;
+	in.s_addr = to_ip;
+	printf("network_sendto(%p, %d, %s, %d)\n", packet, size, inet_ntoa(in), remote_port);
+#endif
+
     si_other.sin_family = AF_INET;
 	si_other.sin_addr.s_addr = to_ip;
 	si_other.sin_port = htons(remote_port);
 
 	if (sendto(_socket, packet, size, 0, (struct sockaddr*) &si_other, slen) == -1) {
-		struct in_addr in;
-		in.s_addr = to_ip;
-		printf("network_sendto(%p, %d, %s, %d)\n", packet, size, inet_ntoa(in), remote_port);
 		perror("sendto");
-		exit(EXIT_FAILURE);
 	}
 }
 
@@ -297,8 +314,59 @@ void network_joingroup(const uint32_t ip) {
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	if (setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
 		perror("setsockopt(IP_ADD_MEMBERSHIP)");
-		exit(EXIT_FAILURE);
 	}
+}
+
+void network_set_ip(const uint32_t ip) {
+    struct ifreq ifr;
+    struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
+    int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+
+    strncpy(ifr.ifr_name, _if_name, IFNAMSIZ);
+
+    ifr.ifr_addr.sa_family = AF_INET;
+
+
+    addr->sin_addr.s_addr = ip;
+    if (ioctl(fd, SIOCSIFADDR, &ifr) == -1) {
+    	perror("ioctl-SIOCSIFADDR");
+    	return;
+    }
+
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1) {
+    	perror("ioctl-SIOCGIFFLAGS");
+    	return;
+    }
+
+    strncpy(ifr.ifr_name, _if_name, IFNAMSIZ);
+    ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1) {
+    	perror("ioctl-SIOCGIFFLAGS");
+    	return;
+    }
+
+    close(fd);
+
+    _is_dhcp_used = false;
+    _local_ip = ip;
+}
+
+void network_end(void) {
+#ifndef NDEBUG
+	printf("network_end, _socket = %d\n", _socket);
+#endif
+
+	if (_socket > 0) {
+		close(_socket);
+	}
+	_socket = -1;
+
+	_local_ip = 0;
+	_gw = 0;
+	_netmask = 0;
+	_broadcast_ip = 0;
+	_is_dhcp_used = false;
 }
 
 #endif

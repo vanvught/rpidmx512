@@ -103,4 +103,8 @@ void network_joingroup(const uint32_t ip) {
 	wifi_udp_joingroup(ip);
 }
 
+void network_end(void) {
+
+}
+
 #endif
