@@ -30,6 +30,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef enum {
+	I2C_CLOCK_DIVIDER_100kHz	= 2500,		///< 2500 = 10us = 100 kHz
+	I2C_CLOCK_DIVIDER_400kHz	= 626		///< 622 = 2.504us = 399.3610 kHz
+} I2CClockDivider;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void i2c_begin(void);
+extern void i2c_set_address(const uint8_t);
+extern void i2c_set_clockdivider(const uint16_t);
+
 extern const bool i2c_is_connected(const uint8_t);
 
 extern const uint16_t i2c_read_uint16(void);
@@ -37,11 +50,16 @@ extern const uint16_t i2c_read_reg_uint16(const uint8_t);
 extern const uint16_t i2c_read_reg_uint16_delayus(const uint8_t, const uint32_t);
 
 extern void i2c_write(const uint8_t);
+extern void i2c_write_nb(const char *, const uint32_t);
 extern void i2c_write_reg_uint8(const uint8_t, const uint8_t);
 extern void i2c_write_uint16(const uint16_t);
 extern void i2c_write_reg_uint16(const uint8_t, const uint16_t);
 extern void i2c_write_reg_uint16_mask(const uint8_t, const uint16_t, const uint16_t);
 
 extern /*@observer@*/const char *i2c_lookup_device(const uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* I2C_H_ */

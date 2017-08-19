@@ -28,7 +28,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#if defined(__linux__) || defined (__CYGWIN__)
+#include "bcm2835.h"
+extern void udelay(const int);
+#else
 #include "bcm2835_i2c.h"
+#endif
 
 /**
  *

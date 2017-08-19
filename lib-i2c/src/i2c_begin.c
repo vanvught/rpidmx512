@@ -1,5 +1,5 @@
 /**
- * @file i2c_read.c
+ * @file i2c_begin.c
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,57 +23,33 @@
  * THE SOFTWARE.
  */
 
-
-#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 #include "bcm2835.h"
+
 #if defined(__linux__) || defined (__CYGWIN__)
-extern void udelay(const int);
+static bool _begin = false;
 #else
 #include "bcm2835_i2c.h"
 #endif
 
-/**
- *
- * @return
- */
-const uint16_t i2c_read_uint16(void) {
-	uint8_t buf[2] = { 0, 0 };
+void i2c_begin(void) {
+#if defined(__linux__) || defined (__CYGWIN__)
+	if (_begin) {
+		return;
+	}
 
-	(void) bcm2835_i2c_read((char *) buf, (uint32_t) 2);
+	if (bcm2835_init() != 1) {
+		printf("bcm2835_init() failed\n");
+	} else {
+		_begin = true;
+	}
 
-	return (uint16_t) ((uint16_t) buf[0] << 8 | (uint16_t) buf[1]);
-}
-
-/**
- *
- * @param reg
- * @return
- */
-const uint16_t i2c_read_reg_uint16(const uint8_t reg) {
-	uint8_t buf[2] = { 0, 0 };
-
-	buf[0] = reg;
-
-	(void) bcm2835_i2c_write((char *) &buf[0], (uint32_t) 1);
-
-	return i2c_read_uint16();
-}
-
-/**
- *
- * @param reg
- * @param delayus
- * @return
- */
-const uint16_t i2c_read_reg_uint16_delayus(const uint8_t reg, const uint32_t delayus) {
-	uint8_t buf[2] = { 0, 0 };
-
-	buf[0] = reg;
-
-	(void) bcm2835_i2c_write((char *) &buf[0], (uint32_t) 1);
-
-	udelay((uint64_t) delayus);
-
-	return i2c_read_uint16();
+	if (bcm2835_i2c_begin() != 1) {
+		printf("bcm2835_i2c_begin() failed\n");
+	}
+#else
+	bcm2835_i2c_begin();
+#endif
 }
