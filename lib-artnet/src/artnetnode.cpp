@@ -84,16 +84,6 @@ enum TProgram {
 	PROGRAM_CHANGE_MASK = 0x80					///<
 };
 
-/**
- *
- */
-enum TTalkToMe {
-	TTM_SEND_ARP_ON_CHANGE = (1 << 1),			///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
-	TTM_SEND_DIAG_MESSAGES = (1 << 2),			///< Bit 2 set : Send me diagnostics messages.
-	TTM_SEND_DIAG_UNICAST = (1 << 3)			///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).
-												///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
-};
-
 union uip {
 	uint32_t u32;
 	uint8_t u8[4];
@@ -118,7 +108,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0D };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0E };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -706,7 +696,7 @@ void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
 void ArtNetNode::HandlePoll(void) {
 	const struct TArtPoll *packet = (struct TArtPoll *)&(m_ArtNetPacket.ArtPacket.ArtPoll);
 
-	if (packet->TalkToMe & TTM_SEND_ARP_ON_CHANGE) {
+	if (packet->TalkToMe & TTM_SEND_ARTP_ON_CHANGE) {
 		m_State.SendArtPollReplyOnChange = true;
 	} else {
 		m_State.SendArtPollReplyOnChange = false;
@@ -1195,17 +1185,25 @@ void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm) {
 
 void ArtNetNode::HandleIpProg(void) {
 	struct TArtIpProg *packet = (struct TArtIpProg *) &(m_ArtNetPacket.ArtPacket.ArtIpProg);
-	bool bRestartNode = false;
 
-	m_pArtNetIpProg->Handler((const TArtNetIpProg *)&packet->Command, (TArtNetIpProgReply *)&m_pIpProgReply->ProgIpHi, &bRestartNode);
+	m_pArtNetIpProg->Handler((const TArtNetIpProg *)&packet->Command, (TArtNetIpProgReply *)&m_pIpProgReply->ProgIpHi);
 
 	network_sendto((const uint8_t *)m_pIpProgReply, (const uint16_t)sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, (uint16_t)ARTNET_UDP_PORT);
 
-	if (bRestartNode) {
-		Stop();
-		Start();
-	}
+	memcpy(ip.u8, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
 
+	if (ip.u32 != m_Node.IPAddressLocal) {
+		// Update Node network details
+		m_Node.IPAddressLocal = network_get_ip();
+		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~network_get_netmask();
+		m_Node.Status2 = (m_Node.Status2 & ~(1 << 1)) | (network_is_dhcp_used() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
+		// Update PollReply for new IPAddress
+		memcpy(m_PollReply.IPAddress, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
+
+		if (m_State.SendArtPollReplyOnChange) {
+			SendPollRelply(true);
+		}
+	}
 }
 
 void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {

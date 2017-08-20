@@ -1,8 +1,32 @@
-/*
- * artnetcontroller.cpp
+/**
+ * @file artnetcontroller.cpp
  *
- *  Created on: Aug 11, 2017
- *      Author: pi
+ */
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ *
+ * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
+ *
+ */
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #include <stdint.h>
@@ -15,6 +39,8 @@
 #include "util.h"
 #endif
 
+#include "artnet.h"
+
 #include "artnetcontroller.h"
 #include "artnetpolltable.h"
 
@@ -25,22 +51,21 @@
 #define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
 #define ARTNET_ID					"Art-Net"
 
-ArtNetController::ArtNetController(void) : m_nLastPollTime(0), m_nPollInterVal(8) {
+#define POLL_INTERVAL_MIN			8	//< Seconds
+
+ArtNetController::ArtNetController(void) : m_nLastPollTime(0), m_IPAddressLocal(0), m_IPAddressBroadcast(0), m_nPollInterVal(POLL_INTERVAL_MIN) {
 	m_pArtNetPacket = new (struct TArtNetPacket);
 
 	memset((void *) &m_ArtNetPoll, 0, sizeof(struct TArtPoll));
 	memcpy((void *) &m_ArtNetPoll, (const char *) ARTNET_ID, 8);
 	m_ArtNetPoll.OpCode = OP_POLL;
 	m_ArtNetPoll.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;
-	m_ArtNetPoll.TalkToMe = (1 << 1);///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
+	m_ArtNetPoll.TalkToMe = TTM_SEND_ARTP_ON_CHANGE;
 
 	memset((void *) &m_ArtIpProg, 0, sizeof(struct TArtIpProg));
 	memcpy((void *) &m_ArtIpProg, (const char *) ARTNET_ID, 8);
 	m_ArtIpProg.OpCode = OP_IPPROG;
 	m_ArtIpProg.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;
-
-	m_IPAddressLocal = network_get_ip();
-	m_IPAddressBroadcast = m_IPAddressLocal | ~network_get_netmask();
 }
 
 ArtNetController::~ArtNetController(void) {
@@ -48,6 +73,9 @@ ArtNetController::~ArtNetController(void) {
 }
 
 void ArtNetController::Start(void) {
+	m_IPAddressLocal = network_get_ip();
+	m_IPAddressBroadcast = m_IPAddressLocal | ~network_get_netmask();
+
 	network_begin(ARTNET_UDP_PORT);
 }
 
@@ -55,7 +83,7 @@ void ArtNetController::Stop(void) {
 }
 
 void ArtNetController::SetPollInterval(const uint8_t nPollInterval) {
-	if (nPollInterval < 8) {
+	if (nPollInterval < POLL_INTERVAL_MIN) {
 		return;
 	}
 
@@ -79,8 +107,9 @@ void ArtNetController::HandlePollReply(void) {
 	time_t ltime = time(NULL);
 	struct tm tm = *localtime(&ltime);
 
+#ifndef NDEBUG
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
+#endif
 	if (!Add(&m_pArtNetPacket->ArtPacket.ArtPollReply)) {
 		SendIpProg();
 	}
@@ -94,7 +123,7 @@ void ArtNetController::HandleIpProgReply(void) {
 	Add(&m_pArtNetPacket->ArtPacket.ArtIpProgReply);
 }
 
-void ArtNetController::SendIpProg(const uint32_t nIp, const struct TArtNetIpProg *pArtNetIpProg) {
+void ArtNetController::SendIpProg(const uint32_t nRemoteIp, const struct TArtNetIpProg *pArtNetIpProg) {
 	struct TArtIpProg ArtIpProg;
 
 	memset((void *) &ArtIpProg, 0, sizeof(struct TArtIpProg));
@@ -104,7 +133,7 @@ void ArtNetController::SendIpProg(const uint32_t nIp, const struct TArtNetIpProg
 
 	memcpy(&ArtIpProg.Command, pArtNetIpProg, sizeof (struct TArtNetIpProg));
 
-	network_sendto((const uint8_t *)&ArtIpProg, sizeof(struct TArtIpProg), nIp, ARTNET_UDP_PORT);
+	network_sendto((const uint8_t *)&ArtIpProg, sizeof(struct TArtIpProg), nRemoteIp, ARTNET_UDP_PORT);
 }
 
 int ArtNetController::Run(void) {

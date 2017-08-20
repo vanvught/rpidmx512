@@ -188,4 +188,13 @@ enum TStatus2 {
 	STATUS2_SACN_ABLE_TO_SWITCH = (1 << 4)		///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
 };
 
+/**
+ *
+ */
+enum TTalkToMe {
+	TTM_SEND_ARTP_ON_CHANGE = (1 << 1),			///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
+	TTM_SEND_DIAG_MESSAGES = (1 << 2),			///< Bit 2 set : Send me diagnostics messages.
+	TTM_SEND_DIAG_UNICAST = (1 << 3)			///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).											///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
+};
+
 #endif /* ARTNET_H_ */
