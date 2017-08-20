@@ -1,3 +1,8 @@
+#if 0
+#if !defined(__linux__)
+#define __linux__
+#endif
+#endif
 /**
  * @file i2c_begin.c
  *
@@ -29,6 +34,9 @@
 #include "bcm2835.h"
 
 #if defined(__linux__) || defined (__CYGWIN__)
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
 static bool _begin = false;
 #else
 #include "bcm2835_i2c.h"
@@ -40,8 +48,14 @@ void i2c_begin(void) {
 		return;
 	}
 
+	if (getuid() != 0) {
+		printf("Error: Not started with 'root'\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (bcm2835_init() != 1) {
 		printf("bcm2835_init() failed\n");
+		exit(EXIT_FAILURE);
 	} else {
 		_begin = true;
 	}
