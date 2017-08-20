@@ -112,6 +112,8 @@ static int if_details(const char *iface) {
     int fd;
     struct ifreq ifr;
 
+    assert(iface != NULL);
+
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 
     if (fd < 0) {
@@ -164,11 +166,11 @@ static int if_details(const char *iface) {
 int network_init(const char *s) {
 	int result;
 
-	if (s != NULL) {
-		if (if_get_by_address(s, _if_name, sizeof(_if_name)) == 0) {
-		} else {
-			strncpy(_if_name, s, IFNAMSIZ);
-		}
+	assert(s != NULL);
+
+	if (if_get_by_address(s, _if_name, sizeof(_if_name)) == 0) {
+	} else {
+		strncpy(_if_name, s, IFNAMSIZ);
 	}
 
 #ifndef NDEBUG
@@ -238,6 +240,7 @@ const bool network_get_macaddr(/*@out@*/const uint8_t *macaddr) {
 	assert(macaddr != NULL);
 
 	memcpy((void *)macaddr, _net_macaddr, NETWORK_MAC_SIZE);
+
 	return true;
 }
 
@@ -293,6 +296,8 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
 
+	assert(_socket != -1);
+
 #ifndef NDEBUG
 	struct in_addr in;
 	in.s_addr = to_ip;
@@ -310,8 +315,12 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 
 void network_joingroup(const uint32_t ip) {
 	struct ip_mreq mreq;
+
+	assert(_socket != -1);
+
 	mreq.imr_multiaddr.s_addr = ip;
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
 	if (setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
 		perror("setsockopt(IP_ADD_MEMBERSHIP)");
 	}
@@ -321,6 +330,11 @@ void network_set_ip(const uint32_t ip) {
     struct ifreq ifr;
     struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+
+    if (fd == -1) {
+    	perror("socket(PF_INET, SOCK_DGRAM, IPPROTO_IP)");
+    	return;
+    }
 
     strncpy(ifr.ifr_name, _if_name, IFNAMSIZ);
 
@@ -360,6 +374,7 @@ void network_end(void) {
 	if (_socket > 0) {
 		close(_socket);
 	}
+
 	_socket = -1;
 
 	_local_ip = 0;
