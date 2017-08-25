@@ -1,8 +1,3 @@
-#if 1
-#if !defined(__linux__)
-#define __linux__
-#endif
-#endif
 #if defined(__linux__) || defined (__CYGWIN__)
 /**
  * @file linux.c
@@ -182,7 +177,7 @@ int network_init(const char *s) {
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
 	}
-#if defined(__linux__)
+#if !defined (__CYGWIN__)
 	else {
 		_is_dhcp_used = is_dhclient(_if_name);
 	}
@@ -326,6 +321,7 @@ void network_joingroup(const uint32_t ip) {
 	}
 }
 
+#if defined(__linux__)
 void network_set_ip(const uint32_t ip) {
     struct ifreq ifr;
     struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
@@ -365,6 +361,7 @@ void network_set_ip(const uint32_t ip) {
     _is_dhcp_used = false;
     _local_ip = ip;
 }
+#endif
 
 void network_end(void) {
 #ifndef NDEBUG

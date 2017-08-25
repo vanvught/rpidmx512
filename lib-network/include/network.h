@@ -43,8 +43,10 @@
 #define IP2STR3(addr) (uint8_t)(addr[0]), (uint8_t)(addr[1]), (uint8_t)(addr[2]), (uint8_t)(addr[3])
 #define IPSTR3 "%.3d.%.3d.%.3d.%.3d"
 
+#ifndef MAC2STR
 #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

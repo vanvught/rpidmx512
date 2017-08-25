@@ -1,8 +1,3 @@
-#if 0
-#if !defined(BARE_METAL)
-#define BARE_METAL
-#endif
-#endif
 #if defined (BARE_METAL)
 /**
  * @file rpi_baremetal.c

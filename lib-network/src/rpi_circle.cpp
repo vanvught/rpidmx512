@@ -1,8 +1,3 @@
-#if 0
-#if !defined(__circle__)
-#define __circle__
-#endif
-#endif
 #if defined (__circle__)
 /**
  * @file rpi_circle.cpp
