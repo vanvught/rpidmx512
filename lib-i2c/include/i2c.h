@@ -45,6 +45,7 @@ extern void i2c_set_clockdivider(const uint16_t);
 
 extern const bool i2c_is_connected(const uint8_t);
 
+extern const uint16_t i2c_read_uint8(void);
 extern const uint16_t i2c_read_uint16(void);
 extern const uint16_t i2c_read_reg_uint16(const uint8_t);
 extern const uint16_t i2c_read_reg_uint16_delayus(const uint8_t, const uint32_t);

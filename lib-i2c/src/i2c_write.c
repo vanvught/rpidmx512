@@ -43,6 +43,13 @@ void i2c_write(const uint8_t data) {
 	buffer[0] = data;
  	bcm2835_i2c_write(buffer, 1);
 }
+
+void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
+	char buffer[4];
+	buffer[0] = reg;
+	buffer[1] = data;
+	bcm2835_i2c_write(buffer, 2);
+}
 #else
 void i2c_write(const uint8_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
