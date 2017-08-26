@@ -38,6 +38,6 @@ Sample output :
 	10-08-2017 11:37:58.859499 DMX 512:16 33  0  0 33  0  0 33  0  0 33  0  0 33  0  0 33
 
 
-<img src="https://raw.githubusercontent.com/vanvught/rpidmx512/master/linux_artnet/DMX-Workshop.png" />
+<img src="https://raw.githubusercontent.com/vanvught/rpidmx512/master/linux_artnet/DMX-Workshop.PNG" />
 
 [http://www.raspberrypi-dmx.org/raspberry-pi-art-net-dmx-out](http://www.raspberrypi-dmx.org/raspberry-pi-art-net-dmx-out)

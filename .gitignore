@@ -6,6 +6,7 @@ lib*.a
 # Executables
 *.out
 *.a
+*.exe
 
 # Others 
 *.bak

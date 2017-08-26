@@ -1,4 +1,4 @@
-# Raspberry Pi #
+# Raspberry Pi Baremetal #
 ## DMX512 / RDM / ArtNet-3 / sACN E1.31 / Pixel controller / MIDI / SMPTE / OSC ##
 
 Raspberry Pi **Open Source** solutions:
@@ -25,7 +25,7 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3.
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
 
 ## Linux ##
-### DMX512 / ArtNet-3 / sACN E1.31 / OSC ###
+### DMX / ArtNet-3 / sACN E1.31 / OSC ###
 
 Linux **Open Source** solutions:
 
