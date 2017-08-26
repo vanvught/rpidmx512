@@ -1,4 +1,4 @@
-## Open source Raspberry Pi Baremetal C library for standard C functions##
+## Open source Raspberry Pi Baremetal C library for standard C functions ##
 
 *ctype.h* functions :
   
