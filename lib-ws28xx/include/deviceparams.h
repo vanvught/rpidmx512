@@ -28,7 +28,8 @@
 
 #include <stdint.h>
 
-#include "ws28xx.h"
+#include "ws28xxstripe.h"
+
 #include "util.h"
 
 class DeviceParams {
@@ -38,7 +39,7 @@ public:
 
 	bool Load(void);
 
-	const _ws28xxx_type GetLedType(void);
+	const TWS28XXType GetLedType(void);
 	const uint16_t GetLedCount(void);
 
 	const char *GetLedTypeString(void) ASSUME_ALIGNED;

@@ -25,48 +25,44 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
-#include "ws28xx.h"
+#include "ws28xxstripe.h"
 
 //#include "monitor.h"
 #include "spisend.h"
 #include "util.h"
 
-/**
- *
- */
-SPISend::SPISend(void) : m_led_type(WS2801), m_led_count(170) {
+SPISend::SPISend(void) :
+		m_pLEDStripe(0),
+		m_LEDType(WS2801),
+		m_nLEDCount(170),
+		m_nBeginIndexPortId1(170),
+		m_nBeginIndexPortId2(340),
+		m_nBeginIndexPortId3(510),
+		m_nChannelsPerLed(3) {
 }
 
-/**
- *
- */
 SPISend::~SPISend(void)
 {
 	this->Stop();
 }
 
-/**
- *
- */
 void SPISend::Start(void) {
-	ws28xx_init(m_led_count, m_led_type, 0);
+	assert(m_pLEDStripe == 0);
+	m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_LEDType, 0);
+	assert(m_pLEDStripe != 0);
+
+	m_pLEDStripe->Blackout();
 }
 
-/**
- *
- */
 void SPISend::Stop(void)
 {
-
+	m_pLEDStripe->Blackout();
+	delete m_pLEDStripe;
+	m_pLEDStripe = 0;
 }
 
-/**
- *
- * @param nPortId
- * @param data
- * @param length
- */
 void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length)
 {
 	uint16_t i = 0;
@@ -77,27 +73,26 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 
 	bool bUpdate = false;
 
-	switch (nPortId)
-	{
+	switch (nPortId) {
 	case 0:
-		beginIndex = (uint16_t)0;
-		endIndex = MIN(m_led_count, (uint16_t)(length / (uint16_t)3));
-		bUpdate = (endIndex == m_led_count);
+		beginIndex = (uint16_t) 0;
+		endIndex = MIN(m_nLEDCount, (uint16_t) (length / (uint16_t) m_nChannelsPerLed));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 1:
-		beginIndex = (uint16_t)170;
-		endIndex = MIN(m_led_count, (uint16_t)((uint16_t)170 + (length / (uint16_t)3)));
-		bUpdate = (endIndex == m_led_count);
+		beginIndex = (uint16_t) m_nBeginIndexPortId1;
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 2:
-		beginIndex = (uint16_t)340;
-		endIndex = MIN(m_led_count, (uint16_t)((uint16_t)340 + (length / (uint16_t)3)));
-		bUpdate = (endIndex == m_led_count);
+		beginIndex = (uint16_t) m_nBeginIndexPortId2;
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 3:
-		beginIndex = (uint16_t)510;
-		endIndex = MIN(m_led_count, (uint16_t)((uint16_t)510 + (length / (uint16_t)3)));
-		bUpdate = (endIndex == m_led_count);
+		beginIndex = (uint16_t) m_nBeginIndexPortId3;
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	default:
 		break;
@@ -106,43 +101,43 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 
 	//monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
 
-	for (j = beginIndex; j < endIndex; j++) {
-		ws28xx_set_led(j, data[i], data[i + 1], data[i + 2]);
-		i = i + 3;
+	if (m_LEDType == SK6812W) {
+		for (j = beginIndex; j < endIndex; j++) {
+			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2], data[i + 3]);
+			i = i + 4;
+		}
+	} else {
+		for (j = beginIndex; j < endIndex; j++) {
+			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2]);
+			i = i + 3;
+		}
 	}
 
 	if (bUpdate) {
-		ws28xx_update();
+		m_pLEDStripe->Update();
 	}
 }
 
-/**
- *
- * @param type
- */
-void SPISend::SetLEDType(_ws28xxx_type type) {
-	m_led_type = type;
+void SPISend::SetLEDType(TWS28XXType type) {
+	m_LEDType = type;
+
+	if (type == SK6812W) {
+		m_nBeginIndexPortId1 = 128;
+		m_nBeginIndexPortId2 = 256;
+		m_nBeginIndexPortId3 = 384;
+
+		m_nChannelsPerLed = 4;
+	}
 }
 
-/**
- *
- * @return
- */
-const _ws28xxx_type SPISend::GetLEDType(void) {
-	return m_led_type;
+const TWS28XXType SPISend::GetLEDType(void) {
+	return m_LEDType;
 }
 
-/**
- *
- * @param count
- */
 void SPISend::SetLEDCount(const uint16_t count) {
-	m_led_count = count;
+	m_nLEDCount = count;
 }
 
-/**
- *
- */
 const uint16_t SPISend::GetLEDCount(void) {
-	return m_led_count;
+	return m_nLEDCount;
 }

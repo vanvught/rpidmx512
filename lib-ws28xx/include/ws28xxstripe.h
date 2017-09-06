@@ -1,8 +1,8 @@
 /**
- * @file spisend.h
+ * @file ws28xxstripe.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef SPISEND_H_
-#define SPISEND_H_
+#ifndef WS28XXSTRIPE_H_
+#define WS28XXSTRIPE_H_
 
 #include <stdint.h>
 
-#include "ws28xxstripe.h"
+#define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
+#define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 
-#include "lightset.h"
+enum TWS28XXType {
+	WS2801 = 0,
+	WS2811,
+	WS2812,
+	WS2812B,
+	WS2813,
+	SK6812,
+	SK6812W
+} ;
 
-class SPISend: public LightSet {
+class WS28XXStripe {
 public:
-	SPISend(void);
-	~SPISend(void);
+	WS28XXStripe(const uint16_t nLEDCount, const TWS28XXType Type, const uint32_t nClockSpeed);
+	~WS28XXStripe(void);
 
-	void Start(void);
-	void Stop(void);
+	unsigned GetLEDCount(void) const;
+	TWS28XXType GetLEDType(void) const;
 
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);	// nIndex is 0-based
+	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);	// nIndex is 0-based
 
-	void SetLEDType(const TWS28XXType);
-	const TWS28XXType GetLEDType(void);
-
-	void SetLEDCount(const uint16_t);
-	const uint16_t GetLEDCount(void);
+	void Update(void);
+	void Blackout(void);
 
 private:
-	WS28XXStripe	*m_pLEDStripe;
-	TWS28XXType		m_LEDType;
-	uint16_t		m_nLEDCount;
+	void SetColorWS28xx(unsigned nOffset, uint8_t nValue);
 
-	uint16_t		m_nBeginIndexPortId1;
-	uint16_t		m_nBeginIndexPortId2;
-	uint16_t		m_nBeginIndexPortId3;
-
-	uint16_t		m_nChannelsPerLed;
+private:
+	TWS28XXType	m_Type;
+	unsigned	m_nLEDCount;
+	unsigned	m_nBufSize;
+	uint8_t		*m_pBuffer;
+	uint8_t		*m_pBlackoutBuffer;
+	uint8_t		m_nHighCode;
 };
 
-#endif /* SPISEND_H_ */
+
+
+#endif /* WS28XXSTRIPE_H_ */
