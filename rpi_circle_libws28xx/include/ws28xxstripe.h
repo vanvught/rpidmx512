@@ -40,7 +40,9 @@ enum TWS28XXType {
 	WS2811,
 	WS2812,
 	WS2812B,
-	WS2813
+	WS2813,
+	SK6812,
+	SK6812W
 };
 
 class CWS28XXStripe
@@ -55,7 +57,8 @@ public:
 	unsigned GetLEDCount (void) const;
 
 	// must not be called when DMA operation is active
-	void SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue);		// nIndex is 0-based
+	void SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue);				// nIndex is 0-based
+	void SetLED (unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue, u8 nWhite);	// nIndex is 0-based
 
 	// must not be called when DMA operation is active
 	void Update (void);

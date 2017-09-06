@@ -47,11 +47,16 @@ CWS28XXStripe::CWS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Ty
 	m_bUpdating (FALSE),
 	m_SPIMaster (pInterruptSystem, m_Type == WS2801 ? nClockSpeed : 6400000, 0, 0)
 {
-	assert(m_Type <= WS2812B);
+	assert(m_Type <= SK6812W);
 	assert(m_nLEDCount > 0);
 
-	m_nBufSize = m_nLEDCount * 3;
-	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B || m_Type == WS2813) {
+	if (m_Type == SK6812W) {
+		m_nBufSize = m_nLEDCount * 4;
+	} else {
+		m_nBufSize = m_nLEDCount * 3;
+	}
+
+	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B || m_Type == WS2813 || m_Type == SK6812 || m_Type == SK6812W) {
 		m_nBufSize *= 8;
 	}
 
@@ -138,6 +143,25 @@ void CWS28XXStripe::SetLED(unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue) {
 		SetColorWS28xx(nOffset, nGreen);
 		SetColorWS28xx(nOffset + 8, nRed);
 		SetColorWS28xx(nOffset + 16, nBlue);
+	}
+}
+
+void CWS28XXStripe::SetLED(unsigned nLEDIndex, u8 nRed, u8 nGreen, u8 nBlue, u8 nWhite) {
+	assert(!m_bUpdating);
+
+	assert(m_pBuffer != 0);
+	assert(nLEDIndex < m_nLEDCount);
+	assert(m_Type == SK6812W);
+
+	unsigned nOffset = nLEDIndex * 4;
+
+	if (m_Type == SK6812W) {
+		nOffset *= 8;
+
+		SetColorWS28xx(nOffset, nGreen);
+		SetColorWS28xx(nOffset + 8, nRed);
+		SetColorWS28xx(nOffset + 16, nBlue);
+		SetColorWS28xx(nOffset + 24, nWhite);
 	}
 }
 
@@ -229,3 +253,4 @@ void CWS28XXStripe::SPICompletionStub (boolean bStatus, void *pParam)
 
 	pThis->SPICompletionRoutine (bStatus);
 }
+
