@@ -32,26 +32,15 @@
 #define LCD_MAX_CHARACTERS	16
 #define LCD_MAX_LINES		2
 
-typedef enum _lcd_types {
-	LCD_BW_UI = 0,
-	LCD_BW_LCD,
-	LCD_TC1602_PCF8574T,
-	LCD_TYPE_UNKNOWN
-} lcd_types;
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern const bool lcd_detect(void);
-
 extern void lcd_cls(void);
-
-extern void lcd_text(const char *, const uint8_t);
-extern void lcd_text_line_1(const char *, const uint8_t);
-extern void lcd_text_line_2(const char *, const uint8_t);
-
+extern void lcd_text(const char *, uint8_t);
+extern void lcd_text_line_1(const char *, uint8_t);
+extern void lcd_text_line_2(const char *, uint8_t);
 extern int lcd_printf_line_1(const char *, ...);
 extern int lcd_printf_line_2(const char *, ...);
 

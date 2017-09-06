@@ -1,8 +1,8 @@
 /**
- * @file lcd_detect.c
+ * @file lcd.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "bcm2835.h"
-#include "bcm2835_i2c.h"
-
 #include "i2c.h"
 
 #include "lcd.h"
@@ -45,7 +42,16 @@
 
 #include "device_info.h"
 
-#include "util.h"
+#ifndef ALIGNED
+#define ALIGNED	__attribute__((aligned(4)))
+#endif
+
+#if defined(__linux__) || defined (__CYGWIN__)
+extern void bcm2835_delayMicroseconds (const uint64_t);
+#define udelay bcm2835_delayMicroseconds
+#else
+extern void udelay(const uint64_t);
+#endif
 
 static const char lcd_detect_line1[] ALIGNED = "lcd_detect";
 #define LCD_DETECT_LINE1_LENGTH			(sizeof (lcd_detect_line1) / sizeof(char)) - 1
@@ -62,20 +68,15 @@ static const char lcd_detect_line2_tc1602[] ALIGNED = "tc1602_i2c_lcd";
 static device_info_t device_info = { (uint8_t) 0, (uint8_t) 0, (uint32_t) 0, (uint16_t) 0 };
 
 static void _lcd_cls(/*@unused@*/const device_info_t *device_info) {}
-static void _lcd_text(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/const uint8_t length) {}
-static void _lcd_text_line_1(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/const uint8_t length) {}
-static void _lcd_text_line_2(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/const uint8_t length) {}
+static void _lcd_text(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/uint8_t length) {}
+static void _lcd_text_line_1(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/uint8_t length) {}
+static void _lcd_text_line_2(/*@unused@*/const device_info_t *device_info, /*@unused@*/const char *text, /*@unused@*/uint8_t length) {}
 
 static void(*lcd_cls_f)(const device_info_t *) = _lcd_cls;
-static void(*lcd_text_f)(const device_info_t *, const char *, const uint8_t) = _lcd_text;
-static void(*lcd_text_line_1_f)(const device_info_t *, const char *, const uint8_t) = _lcd_text_line_1;
-static void(*lcd_text_line_2_f)(const device_info_t *, const char *, const uint8_t) = _lcd_text_line_2;
+static void(*lcd_text_f)(const device_info_t *, const char *, uint8_t) = _lcd_text;
+static void(*lcd_text_line_1_f)(const device_info_t *, const char *, uint8_t) = _lcd_text_line_1;
+static void(*lcd_text_line_2_f)(const device_info_t *, const char *, uint8_t) = _lcd_text_line_2;
 
-/**
- *
- * @param lcd_info
- * @return
- */
 const bool lcd_detect(void) {
 	device_info.chip_select = (uint8_t) 0;
 	device_info.slave_address = (uint8_t) 0;
@@ -86,8 +87,8 @@ const bool lcd_detect(void) {
 	lcd_text_line_1_f = _lcd_text_line_1;
 	lcd_text_line_2_f = _lcd_text_line_2;
 
-	bcm2835_i2c_begin();
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
+	i2c_begin();
+	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
 
 	if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
@@ -143,79 +144,43 @@ const bool lcd_detect(void) {
 	return false;
 }
 
-/**
- *
- */
 void lcd_cls(void) {
 	lcd_cls_f(&device_info);
 }
 
-/**
- *
- * @param text
- * @param length
- */
-void lcd_text(const char *text, const uint8_t length) {
+void lcd_text(const char *text, uint8_t length) {
 	lcd_text_f(&device_info, text, length);
 }
 
-/**
- *
- * @param text
- * @param length
- */
-void lcd_text_line_1(const char *text, const uint8_t length) {
+void lcd_text_line_1(const char *text, uint8_t length) {
 	lcd_text_line_1_f(&device_info, text, length);
 }
 
-/**
- *
- * @param text
- * @param length
- */
-void lcd_text_line_2(const char *text, const uint8_t length) {
+void lcd_text_line_2(const char *text, uint8_t length) {
 	lcd_text_line_2_f(&device_info, text, length);
 }
 
-/**
- *
- * @param format
- * @return
- */
 int lcd_printf_line_1(const char *format, ...) {
 	int i;
-	char buffer[LCD_MAX_CHARACTERS + 1] __attribute__((aligned(4)));
+	char buffer[LCD_MAX_CHARACTERS + 1];
 
 	va_list arp;
-
 	va_start(arp, format);
-
 	i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
-
 	va_end(arp);
-
 	lcd_text_line_1_f(&device_info, buffer, i);
 
 	return i;
 }
 
-/**
- *
- * @param format
- * @return
- */
 int lcd_printf_line_2(const char *format, ...) {
 	int i;
-	char buffer[LCD_MAX_CHARACTERS + 1] __attribute__((aligned(4)));
+	char buffer[LCD_MAX_CHARACTERS + 1];
 
 	va_list arp;
-
 	va_start(arp, format);
-
 	i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
-
 	va_end(arp);
-
 	lcd_text_line_2_f(&device_info, buffer, i);
 
 	return i;
