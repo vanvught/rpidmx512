@@ -1,0 +1,4 @@
+#
+EXTRA_INCLUDES = ../lib-i2c/include ../lib-bcm2835_raspbian/include
+#
+include ../linux-template/lib/Rules.mk
