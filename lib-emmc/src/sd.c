@@ -373,16 +373,17 @@ static struct emmc_block_dev block_dev __attribute__((aligned(4)));
 #define MIN_FREQ 400000
 #define BCM2835_EMMC_WRITE_DELAY       (((2 * 1000000) / MIN_FREQ) + 1)
 
-#if defined (EMMC_DEBUG) || defined (SD_DEBUG)
-extern int printf(const char *format, ...);
-#endif
+//#define EMMC_DEBUG
+//#define SD_DEBUG
 
 #ifdef DEBUG
 #define EMMC_DEBUG
 #define SD_DEBUG
 #endif
 
-//#define EMMC_DEBUG
+#if defined (EMMC_DEBUG) || defined (SD_DEBUG)
+extern int printf(const char *format, ...);
+#endif
 
 #ifdef EMMC_DEBUG
 #define EMMC_TRACE(...)     {										\
@@ -392,8 +393,6 @@ extern int printf(const char *format, ...);
 #else
 #define EMMC_TRACE(...)
 #endif
-
-//#define SD_DEBUG
 
 #ifdef SD_DEBUG
 #define SD_TRACE(...)     {											\
@@ -1049,7 +1048,8 @@ static void sd_issue_command(uint32_t command, uint32_t argument, uint32_t timeo
 		}
 		else
 		{
-			for(int i = 0; i < SD_ERR_RSVD; i++)
+			int i;
+			for(i = 0; i < SD_ERR_RSVD; i++)
 			{
 				if(dev->last_error & (1 << (i + 16)))
 				{
@@ -1175,6 +1175,8 @@ int sd_card_init(void) {
 	}
 
 	base_clock = bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_EMMC);
+
+	SD_TRACE("base_clock = %d", base_clock);
 
 	if (base_clock < 0) {
 		SD_TRACE("Could not get the base clock");
@@ -1445,7 +1447,9 @@ int sd_card_init(void) {
 	uint32_t cmd7_resp = ret->last_r0;
 	status = (cmd7_resp >> 9) & 0xf;
 
-	if ((status != 3) && (status != 4)) {
+	SD_TRACE("Status (%d)", status);
+
+	if ((status != 2) && (status != 3) && (status != 4)) {
 		SD_TRACE("Invalid status (%d)", status);
 		return SD_ERROR;
 	}
@@ -1453,6 +1457,7 @@ int sd_card_init(void) {
 	// If not an SDHC card, ensure BLOCKLEN is 512 bytes
 	if (!ret->card_supports_sdhc) {
 		sd_issue_command(SET_BLOCKLEN, 512, 500000);
+		SD_TRACE("CMD16 response: %08x, Statud %d", ret->last_r0, (ret->last_r0 >> 9) & 0xf);
 		if (FAIL(ret)) {
 			SD_TRACE("Error sending SET_BLOCKLEN");
 			return SD_ERROR;
@@ -1472,6 +1477,7 @@ int sd_card_init(void) {
 	ret->blocks_to_transfer = 1;
 
 	sd_issue_command(SEND_SCR, 0, 500000);
+	SD_TRACE("ACMD51 response: %08x, Status %d", ret->last_r0, (ret->last_r0 >> 9) & 0xf);
 
 	ret->block_size = 512;
 
@@ -1532,7 +1538,7 @@ int sd_card_init(void) {
 #endif
 
     SD_TRACE("Found a valid version %s SD card", sd_versions[ret->scr->sd_version]);
-	SD_TRACE("Setup successful (status %d)", status);
+	SD_TRACE("Setup successful (status %d)", (ret->last_r0 >> 9) & 0xf);
 
 	emmc_reset_interrupt_register();
 
