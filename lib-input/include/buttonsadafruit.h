@@ -35,6 +35,8 @@ public:
 	ButtonsAdafruit(void);
 	~ButtonsAdafruit(void);
 
+	bool Start(void);
+
 	bool IsAvailable(void);
 	int GetChar(void);
 

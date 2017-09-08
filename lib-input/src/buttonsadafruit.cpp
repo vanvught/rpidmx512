@@ -47,7 +47,13 @@
 
 #define MASK_GPLEV0  (uint32_t)((1 << PIN_L) | (1 << PIN_R)  | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
 
-ButtonsAdafruit::ButtonsAdafruit(void): m_PrevChar(INPUT_KEY_NOT_DEFINED) {
+ButtonsAdafruit::ButtonsAdafruit(void): m_rMaskedBits(0), m_PrevChar(INPUT_KEY_NOT_DEFINED) {
+}
+
+ButtonsAdafruit::~ButtonsAdafruit(void) {
+}
+
+bool ButtonsAdafruit::Start(void) {
 #if defined(__linux__)
 	bcm2835_init();
 #endif
@@ -58,9 +64,8 @@ ButtonsAdafruit::ButtonsAdafruit(void): m_PrevChar(INPUT_KEY_NOT_DEFINED) {
 	InitGpioPin(PIN_D);
 	InitGpioPin(PIN_A);
 	InitGpioPin(PIN_B);
-}
 
-ButtonsAdafruit::~ButtonsAdafruit(void) {
+	return true;
 }
 
 bool ButtonsAdafruit::IsAvailable(void) {

@@ -56,10 +56,15 @@ extern void udelay(const uint64_t);
 #define BW_PORT_READ_BUTTON_6			0x45
 
 ButtonsBw::ButtonsBw(void): m_nSlaveAddress(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
-	i2c_begin();
 }
 
 ButtonsBw::~ButtonsBw(void) {
+}
+
+bool ButtonsBw::Start(void) {
+	i2c_begin();
+
+	return true;
 }
 
 bool ButtonsBw::IsAvailable(void) {

@@ -35,6 +35,8 @@ public:
 	KbLinux(void);
 	~KbLinux(void);
 
+	bool Start(void);
+
 	bool IsAvailable(void);
 	int GetChar(void);
 

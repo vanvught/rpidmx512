@@ -32,6 +32,8 @@ class InputSet {
 public:
 	virtual ~InputSet(void);
 
+	virtual bool Start(void)= 0;
+
 	virtual bool IsAvailable(void)= 0;
 	virtual int GetChar(void)= 0;
 

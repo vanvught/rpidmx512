@@ -38,14 +38,20 @@
 #define STDIN	(int) 0
 
 KbLinux::KbLinux(void): m_nBytesWaiting(0), m_nState(0) {
-	struct termios term;
-    tcgetattr(STDIN, &term);
-    term.c_lflag &= ~ICANON;
-    tcsetattr(STDIN, TCSANOW, &term);
-    setbuf(stdin, NULL);
 }
 
 KbLinux::~KbLinux(void) {
+}
+
+bool KbLinux::Start(void) {
+	struct termios term;
+
+	tcgetattr(STDIN, &term);
+    term.c_lflag &= ~ICANON;
+    tcsetattr(STDIN, TCSANOW, &term);
+    setbuf(stdin, NULL);
+
+    return true;
 }
 
 bool KbLinux::IsAvailable(void) {
@@ -78,3 +84,4 @@ int KbLinux::GetChar(void) {
 }
 
 #endif
+

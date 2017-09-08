@@ -37,6 +37,8 @@ public:
 	ButtonsBw(void);
 	~ButtonsBw(void);
 
+	bool Start(void);
+
 	bool IsAvailable(void);
 	int GetChar(void);
 

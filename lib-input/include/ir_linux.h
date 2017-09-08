@@ -36,6 +36,8 @@ public:
 	IrLinux(void);
 	~IrLinux(void);
 
+	bool Start(void);
+
 	bool IsAvailable(void);
 	int GetChar(void);
 
@@ -43,7 +45,7 @@ private:
 	int m_nFd;
 	struct sockaddr_un m_Addr;
 	char m_Buffer[128];
-	int m_PrevChar;
+	char m_Code[32];
 };
 
 #endif /* IR_LINUX_H_ */

@@ -1,3 +1,4 @@
+//#define __linux__
 #if defined(__linux__)
 /**
  * @file ir_linux.cpp
@@ -38,8 +39,17 @@
 
 #include "input.h"
 
-IrLinux::IrLinux(void) : m_nFd(-1), m_PrevChar(INPUT_KEY_NOT_DEFINED) {
+IrLinux::IrLinux(void) : m_nFd(-1) {
+}
 
+IrLinux::~IrLinux(void) {
+	if (m_nFd != -1) {
+		close(m_nFd);
+	}
+	m_nFd = -1;
+}
+
+bool IrLinux::Start(void) {
 	memset(&m_Addr, '\0', sizeof(m_Addr));
 	strcpy(m_Addr.sun_path, "/var/run/lirc/lircd");
 
@@ -47,50 +57,60 @@ IrLinux::IrLinux(void) : m_nFd(-1), m_PrevChar(INPUT_KEY_NOT_DEFINED) {
 
 	if (m_nFd == -1) {
 		perror("socket");
-		return;
+		return false;
 	}
 
 	int flags = fcntl(m_nFd, F_GETFL, 0);
 
 	if (flags < 0) {
 		perror("fcntl");
-		return;
+		return false;
 	}
 
 	flags |= O_NONBLOCK;
 
 	if (fcntl(m_nFd, F_SETFL, flags) != 0) {
 		perror("fcntl");
-		return;
+		return false;
 	}
 
 	m_Addr.sun_family=AF_UNIX;
 
 	if (connect(m_nFd, (struct sockaddr *) &m_Addr, sizeof(m_Addr)) == -1) {
 		perror("connect");
-		return;
+		return false;
 	}
-}
 
-IrLinux::~IrLinux(void) {
-	close(m_nFd);
+	return true;
 }
 
 bool IrLinux::IsAvailable(void) {
 	const bool b = read(m_nFd, m_Buffer, sizeof(m_Buffer)) > 0 ? true : false;
-	if (!b) {
-		m_PrevChar = INPUT_KEY_NOT_DEFINED;
+
+	if (b) {
+		int sequence;
+		char prefix[32];
+
+		if (sscanf(m_Buffer, "%s %x %s", prefix, &sequence, m_Code) != 3) {
+			return false;
+		}
+
+		// demping
+		if (sequence % 2 != 0) {
+			return false;
+		}
 	}
+
 	return b;
 }
 
 int IrLinux::GetChar(void) {
-	char *p = strchr(m_Buffer,  '_');
-	char *space = strchr(p, ' ');
-	*space = '\0';
 	int ch;
+	char *p = strchr(m_Code,  '_');
 
-	puts(p);
+	if (p == NULL) {
+		return INPUT_KEY_NOT_DEFINED;
+	}
 
 	if (strcmp(p, "_OK") == 0) {
 		ch = INPUT_KEY_ENTER;
@@ -107,12 +127,6 @@ int IrLinux::GetChar(void) {
 	} else {
 		ch = INPUT_KEY_NOT_DEFINED;
 	}
-
-	if (m_PrevChar == ch) {
-		return INPUT_KEY_NOT_DEFINED;
-	}
-
-	m_PrevChar = ch;
 
 	return ch;
 
