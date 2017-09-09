@@ -39,8 +39,8 @@
 #define OLED_RST						RPI_V2_GPIO_P1_33	/* P1-33, GPIO13 */
 #define	OLED_DC							RPI_V2_GPIO_P1_37	/* P1-37, GPIO26 */
 
-#define OLED_FONT_CHAR_W				6
-#define OLED_FONT_CHAR_H				8
+#define OLED_FONT8x6_CHAR_W				6
+#define OLED_FONT8x6_CHAR_H				8
 
 #define SSD1306_COMMAND_MODE			0x00
 #define SSD1306_DATA_MODE				0x40
@@ -320,14 +320,14 @@ void oled_set_cursor(const oled_info_t *oled_info, const uint8_t row, const uint
 	// row is 8 pixels tall; must set to byte sized row
 	switch (oled_info->type) {
 	case OLED_PANEL_128x64:
-		if (row > (64 / OLED_FONT_CHAR_H)) {
+		if (row > (64 / OLED_FONT8x6_CHAR_H)) {
 			_row = 0;
 		} else {
 			_row = row;
 		}
 		break;
 	case OLED_PANEL_128x32:
-		if (row > (32 / OLED_FONT_CHAR_H)) {
+		if (row > (32 / OLED_FONT8x6_CHAR_H)) {
 			_row = 0;
 		} else {
 			_row = row;
@@ -339,10 +339,10 @@ void oled_set_cursor(const oled_info_t *oled_info, const uint8_t row, const uint
 	}
 
 	// _col is 1 pixel wide; can set to any pixel column
-	if (col > SSD1306_LCD_WIDTH / OLED_FONT_CHAR_W) {
+	if (col > SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W) {
 		_col = 0;
 	} else  {
-		_col = col * OLED_FONT_CHAR_W;
+		_col = col * OLED_FONT8x6_CHAR_W;
 	}
 
 	_send_command(oled_info, (uint8_t) SSD1306_CMD_SET_LOWCOLUMN | (_col & 0XF));
@@ -366,9 +366,9 @@ int oled_putc(const oled_info_t *oled_info, const int c) {
 		i = (uint8_t) c - 32;
 	}
 
-	base = oled_font + (uint8_t) (OLED_FONT_CHAR_W + 1) * i;
+	base = oled_font + (uint8_t) (OLED_FONT8x6_CHAR_W + 1) * i;
 
-	_send_data(oled_info, (const uint8_t*) base, (uint32_t) (OLED_FONT_CHAR_W + 1));
+	_send_data(oled_info, (const uint8_t*) base, (uint32_t) (OLED_FONT8x6_CHAR_W + 1));
 
 	return c;
 }
@@ -413,7 +413,7 @@ void oled_write(const oled_info_t *oled_info, const char *s, int n) {
  */
 int oled_printf(const oled_info_t *oled_info, const char *format, ...) {
 	int i;
-	char buffer[(SSD1306_LCD_WIDTH / OLED_FONT_CHAR_W) + 1] __attribute__((aligned(4)));
+	char buffer[(SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W) + 1] __attribute__((aligned(4)));
 
 	va_list arp;
 
@@ -438,7 +438,7 @@ void oled_clear_line(const oled_info_t *oled_info, const int line) {
 
 	oled_set_cursor(oled_info, (uint8_t) line, (uint8_t) 0);
 
-	for (i = 0; i < (SSD1306_LCD_WIDTH / OLED_FONT_CHAR_W); i++) {
+	for (i = 0; i < (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W); i++) {
 		(void) oled_putc(oled_info, (int) ' ');
 	}
 
@@ -464,7 +464,7 @@ void oled_status(const oled_info_t *oled_info, const char *s) {
 		break;
 	}
 
-	oled_write(oled_info, s, (SSD1306_LCD_WIDTH / OLED_FONT_CHAR_W));
+	oled_write(oled_info, s, (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W));
 }
 
 /**

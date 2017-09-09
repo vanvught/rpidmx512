@@ -139,7 +139,8 @@ typedef enum midi_timecode_type {
 	MIDI_TC_TYPE_FILM = 0,
 	MIDI_TC_TYPE_EBU,
 	MIDI_TC_TYPE_DF,
-	MIDI_TC_TYPE_SMPTE
+	MIDI_TC_TYPE_SMPTE,
+	MIDI_TC_TYPE_UNKNOWN = 255
 } _midi_timecode_type;
 
 typedef enum midi_direction {

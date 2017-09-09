@@ -1,4 +1,4 @@
 #
-EXTRA_INCLUDES = ../lib-ff11/src ../lib-utils/include
+EXTRA_INCLUDES = ../lib-utils/include
 #
 include ../firmware-template/lib/Rules.mk

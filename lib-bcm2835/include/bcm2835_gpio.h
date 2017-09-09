@@ -100,32 +100,35 @@ extern "C" {
  * @return
  */
 /*@unused@*/inline static uint8_t bcm2835_gpio_lev(const uint8_t pin) {
-	uint32_t value = BCM2835_GPIO->GPLEV0; // TODO BUG pin > 32
+	const uint32_t value = BCM2835_GPIO->GPLEV0; // TODO BUG pin > 32
+	return (value & (1 << pin)) ? (uint8_t) HIGH : (uint8_t) LOW;
+}
+
+
+/**
+ * @ingroup GPIO
+ *
+ * See if an event detection bit is set
+ *
+ * @param pin
+ * @return
+ */
+/*@unused@*/inline static uint8_t bcm2835_gpio_eds(const uint8_t pin) {
+	const uint32_t value = BCM2835_GPIO->GPEDS0; // TODO BUG pin > 32
 	return (value & (1 << pin)) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
 /**
  * @ingroup GPIO
  *
- * Sets the Pull-up/down register for the given pin. This is
- * used with \ref bcm2835_gpio_pudclk to set the  Pull-up/down resistor for the given pin.
- * However, it is usually more convenient to use \ref bcm2835_gpio_set_pud.
- *
- * @param pud The desired Pull-up/down mode. One of BCM2835_GPIO_PUD_* from \ref bcm2835PUDControl
- */
-/*@unused@*/inline static void bcm2835_gpio_pud(const uint8_t pud) {
-	BCM2835_GPIO ->GPPUD = pud;
-}
-
-/**
- * @ingroup GPIO
+ * Write a 1 to clear the bit in EDS
  *
  * @param pin
- * @param on
  */
-/*@unused@*/inline static void bcm2835_gpio_pudclk(const uint8_t pin, const uint8_t on) {
-	BCM2835_GPIO ->GPPUDCLK0 = (uint32_t)(((on != 0) ? 1 : 0) << pin);
+/*@unused@*/inline static void bcm2835_gpio_set_eds(const uint8_t pin) {
+	BCM2835_GPIO->GPEDS0 = (1 << pin); // TODO BUG pin > 32
 }
+
 
 #define BCM2835_PERI_SET_BITS(a, v, m)		a = ((a) & ~(m)) | ((v) & (m));
 
@@ -140,9 +143,11 @@ extern "C" {
  * @param pin GPIO number.
  * @param mode Mode to set the pin to, one of BCM2835_GPIO_FSEL_* from \ref bcm2835FunctionSelect
  */
-extern void bcm2835_gpio_fsel(const uint8_t pin, const uint8_t mode);
+extern void bcm2835_gpio_fsel(const uint8_t, const uint8_t);
 
 extern void bcm2835_gpio_set_pud(const uint8_t, const uint8_t);
+
+extern void bcm2835_gpio_len(const uint8_t);
 
 #ifdef __cplusplus
 }

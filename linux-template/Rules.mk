@@ -6,7 +6,7 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS +=  network properties
+LIBS += network properties
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -28,8 +28,8 @@ LDLIBS := $(addprefix -l,$(LIBS))
 # The variables for the dependency check 
 LIBDEP = $(addprefix ../lib-,$(LIBS))
 LIBDEP := $(addsuffix /lib_linux/lib, $(LIBDEP))
-LIBDEP := $(join $(LIB6DEP), $(LIBS))
-LIBDEP := $(addsuffix .a, $(LIB6DEP))
+LIBDEP := $(join $(LIBDEP), $(LIBS))
+LIBDEP := $(addsuffix .a, $(LIBDEP))
 
 COPS = $(DEFINES) #-DNDEBUG
 COPS += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
@@ -43,8 +43,6 @@ BUILD = build_linux/
 
 C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
-C_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-C_OBJECTS7 += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 
 BUILD_DIRS := $(addprefix build_linux/,$(SRCDIR))
 
@@ -62,7 +60,7 @@ endef
 
 THISDIR = $(CURDIR)
 
-all : builddirs prerequisites $(TARGET) $(TARGET7)
+all : builddirs prerequisites $(TARGET)
 	
 .PHONY: clean builddirs
 
@@ -77,7 +75,6 @@ clean:
 	rm -f $(TARGET)
 
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS)
-
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

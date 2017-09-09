@@ -114,6 +114,10 @@ typedef enum {
 #define BCM2835_SPI_CLOCK_MIN	4000			///< 4kHz
 #define BCM2835_SPI_CLOCK_MAX	125000000		///< 125Mhz
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
 extern void bcm2835_spi_setBitOrder(const uint8_t);
@@ -157,6 +161,10 @@ extern void bcm2835_spi_transfernb(char*, /*@null@*/char*, const uint32_t);
 extern void bcm2835_spi_transfern(char*, const uint32_t);
 extern void bcm2835_spi_writenb(const char*, const uint32_t);
 extern void bcm2835_spi_write(const uint16_t data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

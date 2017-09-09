@@ -69,6 +69,10 @@ typedef enum {
 	BCM2835_I2C_REASON_ERROR_DATA 	= 0x04		///< Not all data is sent / received
 } bcm2835I2CReasonCodes;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
 extern uint8_t bcm2835_i2c_write(/*@null@*/const char *, const uint32_t);
@@ -93,5 +97,8 @@ extern uint8_t bcm2835_i2c_read(/*@out@*/char*, const uint32_t);
 /*@unused@*/inline static void bcm2835_i2c_setClockDivider(const uint16_t divider) {
 	BCM2835_BSC1->DIV = divider;
 }
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BCM2835_I2C_H_ */
