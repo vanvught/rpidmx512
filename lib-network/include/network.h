@@ -37,15 +37,11 @@
 #define NETWORK_IP_SIZE		4
 #define NETWORK_MAC_SIZE	6
 
-#ifndef IP2STR
 #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
 #define IPSTR "%d.%d.%d.%d"
-#endif
 
-#ifndef IP2STR3
 #define IP2STR3(addr) (uint8_t)(addr[0]), (uint8_t)(addr[1]), (uint8_t)(addr[2]), (uint8_t)(addr[3])
 #define IPSTR3 "%.3d.%.3d.%.3d.%.3d"
-#endif
 
 #ifndef MAC2STR
 #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
