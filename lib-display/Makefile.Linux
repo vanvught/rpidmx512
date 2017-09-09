@@ -1,0 +1,6 @@
+#
+DEFINES = RASPPI
+#
+EXTRA_INCLUDES = ../lib-i2c/include
+#
+include ../linux-template/lib/Rules.mk
