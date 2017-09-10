@@ -28,13 +28,13 @@
 
 #include <stdint.h>
 
-#include "ws28xx.h"
+#include "ws28xxstripe.h"
 
 #define FRAME_BUFFER_SIZE	1024
 
 class OSCWS28xx  {
 public:
-	OSCWS28xx(const int, const int, const _ws28xxx_type, const char *);
+	OSCWS28xx(const int, const int, const TWS28XXType, const char *);
 	~OSCWS28xx(void);
 
 	void Start(void);
@@ -42,17 +42,18 @@ public:
 
 	void Run(void);
 private:
+	WS28XXStripe	*m_pLEDStripe;
 	char m_Os[32];
 	const char *m_pModel;
 	const char *m_pSoC;
 	int m_OutgoingPort;
 	unsigned int m_nLEDCount;
-	_ws28xxx_type m_nLEDType;
+	TWS28XXType m_nLEDType;
 	const char *m_LEDType;
 	uint8_t m_packet[FRAME_BUFFER_SIZE];
 	bool m_Blackout;
 
-	uint8_t	m_RGBColour[3];
+	uint8_t	m_RGBWColour[4];
 };
 
 #endif /* OSCWS28XX_H_ */

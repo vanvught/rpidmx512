@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "hardware.h"
 #include "util.h"
@@ -35,14 +36,14 @@
 #include "oscmessage.h"
 #include "oscws28xx.h"
 
-#include "ws28xx.h"
-
 #include "network.h"
 #include "ip_address.h"
 
+#include "ws28xxstripe.h"
+
 #include "software_version.h"
 
-OSCWS28xx::OSCWS28xx(const int OutgoingPort, const int nLEDCount, const _ws28xxx_type nLEDType, const char *sLEDType) : m_Blackout(false) {
+OSCWS28xx::OSCWS28xx(const int OutgoingPort, const int nLEDCount, const TWS28XXType nLEDType, const char *sLEDType) : m_pLEDStripe(0), m_Blackout(false)  {
 	m_OutgoingPort = OutgoingPort;
 	m_nLEDCount = nLEDCount;
 	m_nLEDType = nLEDType;
@@ -57,7 +58,12 @@ OSCWS28xx::~OSCWS28xx(void) {
 }
 
 void OSCWS28xx::Start(void) {
-	ws28xx_init(m_nLEDCount, m_nLEDType, 0);
+	assert(m_pLEDStripe == 0);
+	m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_nLEDType, 0);
+	assert(m_pLEDStripe != 0);
+
+	m_pLEDStripe->Blackout();
+
 	console_save_cursor();
 	console_set_cursor(80, 0);
 	console_set_fg_color(CONSOLE_CYAN);
@@ -66,8 +72,12 @@ void OSCWS28xx::Start(void) {
 }
 
 void OSCWS28xx::Stop(void) {
-	ws28xx_blackout();
+	m_pLEDStripe->Blackout();
+	delete m_pLEDStripe;
+	m_pLEDStripe = 0;
+
 	m_Blackout = true;
+
 	console_save_cursor();
 	console_set_cursor(80, 0);
 	console_set_fg_color(CONSOLE_YELLOW);
@@ -93,11 +103,11 @@ void OSCWS28xx::Run(void) {
 		console_save_cursor();
 		console_set_cursor(80, 0);
 		if (m_Blackout) {
-			ws28xx_blackout();
+			m_pLEDStripe->Blackout();
 			console_set_fg_color(CONSOLE_YELLOW);
 			console_puts("blackout  ");
 		} else {
-			ws28xx_update();
+			m_pLEDStripe->Update();
 			console_set_fg_color(CONSOLE_CYAN);
 			console_puts("outputting");
 		}
@@ -111,23 +121,33 @@ void OSCWS28xx::Run(void) {
 
 		const unsigned index = dmx_channel - 1;	// DMX channel starts with 1
 
-		if (index < 3) {
-			m_RGBColour[index] = dmx_value;
+		if (index < 4) {
+			m_RGBWColour[index] = dmx_value;
 		}
 
-		for (unsigned j = 0; j < m_nLEDCount; j++) {
-			ws28xx_set_led(j, m_RGBColour[0], m_RGBColour[1], m_RGBColour[2]);
+		if (m_nLEDType == SK6812W) {
+			for (unsigned j = 0; j < m_nLEDCount; j++) {
+				m_pLEDStripe->SetLED(j, m_RGBWColour[0], m_RGBWColour[1], m_RGBWColour[2], m_RGBWColour[3]);
+			}
+		} else {
+			for (unsigned j = 0; j < m_nLEDCount; j++) {
+				m_pLEDStripe->SetLED(j, m_RGBWColour[0], m_RGBWColour[1], m_RGBWColour[2]);
+			}
 		}
+
 
 		if (!m_Blackout) {
-			ws28xx_update();
+			m_pLEDStripe->Update();
 		}
 
 		console_save_cursor();
 		console_set_cursor(80, 1);
-		console_puthex_fg_bg(m_RGBColour[0], CONSOLE_RED, CONSOLE_BLACK);
-		console_puthex_fg_bg(m_RGBColour[1], CONSOLE_GREEN, CONSOLE_BLACK);
-		console_puthex_fg_bg(m_RGBColour[2], CONSOLE_BLUE, CONSOLE_BLACK);
+		console_puthex_fg_bg(m_RGBWColour[0], CONSOLE_RED, CONSOLE_BLACK);
+		console_puthex_fg_bg(m_RGBWColour[1], CONSOLE_GREEN, CONSOLE_BLACK);
+		console_puthex_fg_bg(m_RGBWColour[2], CONSOLE_BLUE, CONSOLE_BLACK);
+		if (m_nLEDType == SK6812W) {
+			console_puthex_fg_bg(m_RGBWColour[3], CONSOLE_WHITE, CONSOLE_BLACK);
+		}
 		console_restore_cursor();
 	} else if (OSC::isMatch((const char*) m_packet, "/2")) {
 		OSCSend MsgSendInfo(from_ip, m_OutgoingPort, "/info/os", "s", m_Os);

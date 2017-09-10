@@ -4,8 +4,11 @@
 	<comment></comment>
 	<projects>
 		<project>lib-bob</project>
+		<project>lib-c++</project>
+		<project>lib-display</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-network</project>
 		<project>lib-osc</project>
 		<project>lib-utils</project>
 		<project>lib-ws28xx</project>
