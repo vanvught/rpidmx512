@@ -48,7 +48,7 @@
 #include "timecode.h"
 #include "timesync.h"
 
-#include "oled.h"
+#include "display.h"
 
 #include "wifi.h"
 #include "network.h"
@@ -68,14 +68,14 @@ void notmain(void) {
 	ArtNetParams artnetparams;
 	DMXParams dmxparams;
 	DeviceParams deviceparms;
-	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	Display display;
 	bool oled_connected = false;
 	LedBlinkTask ledblinktask;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
 
-	oled_connected = oled_start(&oled_info);
+	oled_connected = display.isDetected();
 
 	(void) artnetparams.Load();
 
@@ -126,7 +126,7 @@ void notmain(void) {
 	ArtNetDiscovery discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Setting Node parameters ..."));
+	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
 
 	node.SetLedBlink(&ledblinktask);
 
@@ -174,19 +174,32 @@ void notmain(void) {
 		const uint16_t led_count = spi.GetLEDCount();
 		const uint8_t universe = artnetparams.GetUniverse();
 
-		if (led_count > 170) {
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
-		}
-
-		if (led_count > 340) {
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
-		}
-
-		if (led_count > 510) {
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+		if (spi.GetLEDType() == SK6812W) {
+			if (led_count > 128) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
+			}
+			if (led_count > 256) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
+			}
+			if (led_count > 384) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+			}
+		} else {
+			if (led_count > 170) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
+			}
+			if (led_count > 340) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
+			}
+			if (led_count > 510) {
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+			}
 		}
 	} else if (output_type == OUTPUT_TYPE_MONITOR) {
 		node.SetOutput(&monitor);
@@ -222,53 +235,46 @@ void notmain(void) {
 	}
 
 	if (oled_connected) {
-		oled_set_cursor(&oled_info, 0, 0);
-		oled_puts(&oled_info, "WiFi ArtNet 3 ");
+		display.Write(1, "WiFi ArtNet 3 ");
 
 		switch (output_type) {
 		case OUTPUT_TYPE_DMX:
 			if (artnetparams.IsRdm()) {
-				oled_puts(&oled_info, "RDM");
+				display.PutString("RDM");
 			} else {
-				oled_puts(&oled_info, "DMX Out");
+				display.PutString("DMX Out");
 			}
 			break;
 		case OUTPUT_TYPE_SPI:
-			oled_puts(&oled_info, "Pixel");
+			display.PutString("Pixel");
 			break;
 		case OUTPUT_TYPE_MONITOR:
-			oled_puts(&oled_info, "Monitor");
+			display.PutString("Monitor");
 			break;
 		default:
 			break;
 		}
 
-		oled_set_cursor(&oled_info, 1, 0);
 		if (wifi_get_opmode() == WIFI_STA) {
-			(void) oled_printf(&oled_info, "S: %s", wifi_get_ssid());
+			(void) display.Printf(2, "S: %s", wifi_get_ssid());
 		} else {
-			(void) oled_printf(&oled_info, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
+			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
-		oled_set_cursor(&oled_info, 2, 0);
-		(void) oled_printf(&oled_info, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
-		oled_set_cursor(&oled_info, 3, 0);
-		(void) oled_printf(&oled_info, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
-		oled_set_cursor(&oled_info, 4, 0);
-		(void) oled_printf(&oled_info, "SN: %s", node.GetShortName());
-		oled_set_cursor(&oled_info, 5, 0);
-		(void) oled_printf(&oled_info, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), node.GetUniverseSwitch(0));
-		oled_set_cursor(&oled_info, 6, 0);
-		(void) oled_printf(&oled_info, "Active ports: %d", node.GetActiveOutputPorts());
+		(void) (void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
+		(void) (void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
+		(void) (void) display.Printf(5, "SN: %s", node.GetShortName());
+		(void) (void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), node.GetUniverseSwitch(0));
+		(void) (void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting the Node ..."));
+	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting the Node ..."));
 
 	node.Start();
 
 	console_status(CONSOLE_GREEN, "Node started");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Node started"));
+	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
 
 	hardware_watchdog_init();
 
