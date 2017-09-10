@@ -62,7 +62,7 @@ extern void network_init(CNetSubSystem *);
 
 static const char FromKernel[] = "kernel";
 
-static const char sLedTypes[5][8] = { "WS2801", "WS2811", "WS2812", "WS2812B", "WS2813" };
+static const char sLedTypes[7][8] = { "WS2801", "WS2811", "WS2812", "WS2812B", "WS2813", "SK6812", "SK6812W" };
 
 enum TOuputType
 {
@@ -276,6 +276,14 @@ boolean CKernel::Configure (void)
 			{
 				m_SPI.SetLEDType(WS2813);
 			}
+			else if (strcmp(pType, sLedTypes[SK6812]) == 0)
+			{
+				m_SPI.SetLEDType(SK6812);
+			}
+			else if (strcmp(pType, sLedTypes[SK6812W]) == 0)
+			{
+				m_SPI.SetLEDType(SK6812W);
+			}
 			else
 			{
 				m_Logger.Write(FromKernel, LogWarning, "Wrong led_type configured (%s)", pType);
@@ -368,22 +376,41 @@ TShutdownMode CKernel::Run(void)
 
 		const unsigned LEDCount = m_SPI.GetLEDCount();
 
-		if (LEDCount > 170)
+		if (m_SPI.GetLEDType() == SK6812W)
 		{
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, UniverseSwitch + 1);
+			if (LEDCount > 128)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, UniverseSwitch + 1);
+			}
+			if (LEDCount > 256)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, UniverseSwitch + 2);
+			}
+			if (LEDCount > 384)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, UniverseSwitch + 3);
+			}
 		}
-
-		if (LEDCount > 340)
+		else
 		{
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, UniverseSwitch + 2);
-		}
-
-		if (LEDCount > 510)
-		{
-			node.SetDirectUpdate(true);
-			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, UniverseSwitch + 3);
+			if (LEDCount > 170)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, UniverseSwitch + 1);
+			}
+			if (LEDCount > 340)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, UniverseSwitch + 2);
+			}
+			if (LEDCount > 510)
+			{
+				node.SetDirectUpdate(true);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, UniverseSwitch + 3);
+			}
 		}
 	}
 

@@ -53,6 +53,12 @@ private:
 	CWS28XXStripe		*m_pLEDStripe;
 	TWS28XXType			m_LEDType;
 	unsigned			m_nLEDCount;
+
+	unsigned			m_nBeginIndexPortId1;
+	unsigned			m_nBeginIndexPortId2;
+	unsigned			m_nBeginIndexPortId3;
+
+	unsigned			m_nChannelsPerLed;
 };
 
 #endif /* SPISEND_H_ */

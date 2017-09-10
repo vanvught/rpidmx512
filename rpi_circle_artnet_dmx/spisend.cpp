@@ -44,7 +44,11 @@ SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
 	m_pInterrupt (pInterruptSystem),
 	m_pLEDStripe (0),
 	m_LEDType (WS2801),
-	m_nLEDCount (170)
+	m_nLEDCount (170),
+	m_nBeginIndexPortId1 (170),
+	m_nBeginIndexPortId2 (340),
+	m_nBeginIndexPortId3 (510),
+	m_nChannelsPerLed (3)
 {
 }
 
@@ -91,31 +95,31 @@ void SPISend::Stop(void)
  */
 void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length)
 {
-	uint16_t beginIndex = (uint16_t)0;
-	uint16_t endIndex = (uint16_t)0;
+	uint16_t beginIndex = (uint16_t) 0;
+	uint16_t endIndex = (uint16_t) 0;
 
 	boolean bUpdate = false;
 
 	switch (nPortId)
 	{
 	case 0:
-		beginIndex = (uint16_t)0;
-		endIndex = min(m_nLEDCount, (uint16_t)(length / (uint16_t)3));
+		beginIndex = (uint16_t) 0;
+		endIndex = min(m_nLEDCount, (uint16_t)(length / (uint16_t) m_nChannelsPerLed));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 1:
-		beginIndex = (uint16_t)170;
-		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)170 + (length / (uint16_t)3)));
+		beginIndex = (uint16_t) m_nBeginIndexPortId1;
+		endIndex = min(m_nLEDCount, (uint16_t)(beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 2:
-		beginIndex = (uint16_t)340;
-		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)340 + (length / (uint16_t)3)));
+		beginIndex = (uint16_t) m_nBeginIndexPortId2;
+		endIndex = min(m_nLEDCount, (uint16_t)(beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 3:
-		beginIndex = (uint16_t)510;
-		endIndex = min(m_nLEDCount, (uint16_t)((uint16_t)510 + (length / (uint16_t)3)));
+		beginIndex = (uint16_t) m_nBeginIndexPortId3;
+		endIndex = min(m_nLEDCount, (uint16_t)(beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	default:
@@ -133,9 +137,23 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 	}
 
 	unsigned i = 0;
-	for (unsigned j = beginIndex; j < endIndex; j++) {
-		m_pLEDStripe->SetLED(j, data[i], data[i+1], data[i+2]);
-		i = i + 3;
+
+	if (m_LEDType == SK6812W)
+	{
+		for (unsigned j = beginIndex; j < endIndex; j++)
+		{
+			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2], data[i + 3]);
+			i = i + 4;
+		}
+
+	}
+	else
+	{
+		for (unsigned j = beginIndex; j < endIndex; j++)
+		{
+			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2]);
+			i = i + 3;
+		}
 	}
 
 	if (bUpdate) {
@@ -150,6 +168,14 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 void SPISend::SetLEDType(TWS28XXType LEDType)
 {
 	m_LEDType = LEDType;
+
+	if (LEDType == SK6812W) {
+		m_nBeginIndexPortId1 = 128;
+		m_nBeginIndexPortId2 = 256;
+		m_nBeginIndexPortId3 = 384;
+
+		m_nChannelsPerLed = 4;
+	}
 }
 
 /**
