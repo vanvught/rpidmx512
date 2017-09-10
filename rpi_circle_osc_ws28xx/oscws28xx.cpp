@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@
 
 static const char FromOscWS28xx[] = "oscws28xx";
 
-static const char sLedTypes[4][8] = { "WS2801", "WS2811", "WS2812", "WS2812B" };
+static const char sLedTypes[7][8] = { "WS2801", "WS2811", "WS2812", "WS2812B", "WS2813", "SK6812", "SK6812W" };
 
 COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
 :	OSCServer (nLocalPort),
@@ -59,9 +59,10 @@ COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, CFATFile
 	m_Properties (PROPERTIES_FILE, pFileSystem),
 	m_Blackout (FALSE)
 {
-	m_RGBColour[0] = 0;
-	m_RGBColour[1] = 0;
-	m_RGBColour[2] = 0;
+	m_RGBWColour[0] = 0;
+	m_RGBWColour[1] = 0;
+	m_RGBWColour[2] = 0;
+	m_RGBWColour[3] = 0;
 
 	if (!m_Properties.Load()) {
 		CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "Error loading properties from %s (line %u)", PROPERTIES_FILE, m_Properties.GetErrorLine());
@@ -79,6 +80,12 @@ COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, CFATFile
 				m_LEDType = WS2812;
 			} else if (strcmp(pType, sLedTypes[WS2812B]) == 0) {
 				m_LEDType = WS2812B;
+			} else if (strcmp(pType, sLedTypes[WS2813]) == 0) {
+				m_LEDType = WS2813;
+			} else if (strcmp(pType, sLedTypes[SK6812]) == 0) {
+				m_LEDType = SK6812;
+			} else if (strcmp(pType, sLedTypes[SK6812W]) == 0) {
+				m_LEDType = SK6812W;
 			} else {
 				CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "Wrong led_type configured (%s)", pType);
 			}
@@ -131,20 +138,30 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, u32 ForeignIP) {
 
 		const unsigned index = dmx_channel - 1;	// DMX channel starts with 1
 
-		if (index < 3) {
-			m_RGBColour[index] = dmx_value;
+		if (index < 4) {
+			m_RGBWColour[index] = dmx_value;
 		}
 
 		CString ColorMessage;
-		ColorMessage.Format("\rR:%03u G:%03u B:%03u", (unsigned) m_RGBColour[0], (unsigned) m_RGBColour[1], (unsigned) m_RGBColour[2]);
+		if (m_LEDType == SK6812W) {
+			ColorMessage.Format("\rR:%03u G:%03u B:%03u W:%03u", (unsigned) m_RGBWColour[0], (unsigned) m_RGBWColour[1], (unsigned) m_RGBWColour[2], (unsigned) m_RGBWColour[3]);
+		} else {
+			ColorMessage.Format("\rR:%03u G:%03u B:%03u", (unsigned) m_RGBWColour[0], (unsigned) m_RGBWColour[1], (unsigned) m_RGBWColour[2]);
+		}
 		m_pTarget->Write(ColorMessage, ColorMessage.GetLength());
 
 		while (m_pLEDStripe->IsUpdating()) {
 			// wait for completion
 		}
 
-		for (unsigned j = 0; j < m_nLEDCount; j++) {
-			m_pLEDStripe->SetLED(j, m_RGBColour[0], m_RGBColour[1], m_RGBColour[2]);
+		if (m_LEDType == SK6812W) {
+			for (unsigned j = 0; j < m_nLEDCount; j++) {
+				m_pLEDStripe->SetLED(j, m_RGBWColour[0], m_RGBWColour[1], m_RGBWColour[2], m_RGBWColour[3]);
+			}
+		} else {
+			for (unsigned j = 0; j < m_nLEDCount; j++) {
+				m_pLEDStripe->SetLED(j, m_RGBWColour[0], m_RGBWColour[1], m_RGBWColour[2]);
+			}
 		}
 
 		if (!m_Blackout) {
