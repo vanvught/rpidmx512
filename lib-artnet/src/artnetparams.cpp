@@ -27,15 +27,19 @@
 
 #if defined(__linux__) || defined (__CYGWIN__)
 #define ALIGNED
+#include <stdio.h>
 #include <string.h>
 #else
 #include "util.h"
 #endif
 
 #include "artnetparams.h"
+#include "common.h"
 
 #include "read_config_file.h"
 #include "sscan.h"
+
+#define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";					///< Parameters file name
 static const char PARAMS_NET[] ALIGNED = "net";									///<
@@ -46,6 +50,8 @@ static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";					///< Use the T
 static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";					///< Use the TimeSync call-back handler, 0 {default}
 static const char PARAMS_RDM[] ALIGNED = "enable_rdm";							///< Enable RDM, 0 {default}
 static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";	///< 0 {default}
+static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";				///<
+static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";				///<
 
 static uint8_t ArtNetParamsNet ALIGNED;
 static uint8_t ArtNetParamsSubnet ALIGNED;
@@ -55,10 +61,12 @@ static bool ArtNetParamsUseTimeCode;
 static bool ArtNetParamsUseTimeSync;
 static bool ArtNetParamsEnableRdm;
 static bool ArtNetParamsRdmDiscovery;
+static uint8_t ArtNetParamsShortName[ARTNET_SHORT_NAME_LENGTH] ALIGNED;
+static uint8_t ArtNetParamsLongName[ARTNET_LONG_NAME_LENGTH] ALIGNED;
 
 static void process_line_read(const char *line) {
-	char value[8];
-	uint8_t len = 3;
+	char value[128];
+	uint8_t len;
 	uint8_t value8;
 
 	if (sscan_uint8_t(line, PARAMS_TIMECODE, &value8) == 2) {
@@ -89,18 +97,32 @@ static void process_line_read(const char *line) {
 		return;
 	}
 
+	len = ARTNET_SHORT_NAME_LENGTH;
+	if (sscan_char_p(line, PARAMS_NODE_SHORT_NAME, value, &len) == 2) {
+		strncpy((char *)ArtNetParamsShortName, value, len);
+	}
+
+	len = ARTNET_LONG_NAME_LENGTH;
+	if (sscan_char_p(line, PARAMS_NODE_LONG_NAME, value, &len) == 2) {
+		strncpy((char *)ArtNetParamsLongName, value, len);
+	}
+
+	len = 3;
+	if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
+		if (memcmp(value, "spi", 3) == 0) {
+			ArtNetParamsOutputType = OUTPUT_TYPE_SPI;
+		} else if (memcmp(value, "mon", 3) == 0) {
+			ArtNetParamsOutputType = OUTPUT_TYPE_MONITOR;
+		}
+		return;
+	}
+
 	if (sscan_uint8_t(line, PARAMS_NET, &value8) == 2) {
 		ArtNetParamsNet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_SUBNET, &value8) == 2) {
 		ArtNetParamsSubnet = value8;
 	} else if (sscan_uint8_t(line, PARAMS_UNIVERSE, &value8) == 2) {
 		ArtNetParamsUniverse = value8;
-	} else if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
-		if(memcmp(value, "spi", 3) == 0) {
-			ArtNetParamsOutputType = OUTPUT_TYPE_SPI;
-		} else if(memcmp(value, "mon", 3) == 0) {
-			ArtNetParamsOutputType = OUTPUT_TYPE_MONITOR;
-		}
 	}
 
 }
@@ -114,6 +136,9 @@ ArtNetParams::ArtNetParams(void) {
 	ArtNetParamsUseTimeSync = false;
 	ArtNetParamsEnableRdm = false;
 	ArtNetParamsRdmDiscovery = false;
+
+	memset(ArtNetParamsShortName, 0, ARTNET_SHORT_NAME_LENGTH);
+	memset(ArtNetParamsLongName, 0, ARTNET_LONG_NAME_LENGTH);
 }
 
 ArtNetParams::~ArtNetParams(void) {
@@ -151,6 +176,33 @@ const bool ArtNetParams::IsRdmDiscovery(void) {
 	return ArtNetParamsRdmDiscovery;
 }
 
+
+const uint8_t *ArtNetParams::GetShortName(void) {
+	return ArtNetParamsShortName;
+}
+
+const uint8_t *ArtNetParams::GetLongName(void) {
+	return ArtNetParamsLongName;
+}
+
 bool ArtNetParams::Load(void) {
 	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
 }
+
+#if defined(__linux__) || defined (__CYGWIN__)
+void ArtNetParams::Dump(void) {
+	printf("Node params (\'%s\'):\n", PARAMS_FILE_NAME);
+	printf(" Short name : [%s]\n", ArtNetParamsShortName);
+	printf(" Long name : [%s]\n", ArtNetParamsLongName);
+	printf(" Net : %d\n", ArtNetParamsNet);
+	printf(" Sub-Net : %d\n", ArtNetParamsSubnet);
+	printf(" Universe : %d\n", ArtNetParamsUniverse);
+	printf(" RDM Enabled : %s\n", BOOL2STRING(ArtNetParamsEnableRdm));
+	if (ArtNetParamsEnableRdm) {
+		printf("    Discovery : %s\n", BOOL2STRING(ArtNetParamsRdmDiscovery));
+	}
+	printf(" TimeCode enabled : %s\n", BOOL2STRING(ArtNetParamsUseTimeCode));
+	printf(" TimeSync enabled : %s\n", BOOL2STRING(ArtNetParamsUseTimeSync));
+	printf(" Output : %d\n", (int) ArtNetParamsOutputType);
+}
+#endif

@@ -104,10 +104,10 @@ void ArtNetController::SendPoll(void) {
 }
 
 void ArtNetController::HandlePollReply(void) {
+#ifndef NDEBUG
 	time_t ltime = time(NULL);
 	struct tm tm = *localtime(&ltime);
 
-#ifndef NDEBUG
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
 	if (!Add(&m_pArtNetPacket->ArtPacket.ArtPollReply)) {

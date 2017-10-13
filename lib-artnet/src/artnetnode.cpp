@@ -108,7 +108,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0							///<
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0E };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0F };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -126,6 +126,8 @@ ArtNetNode::ArtNetNode(void) :
 		m_pArtNetTimeSync(0),
 		m_pArtNetRdm(0),
 		m_pArtNetIpProg(0),
+		m_pTodData(0),
+		m_pIpProgReply(0),
 		m_bDirectUpdate(false) {
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));

@@ -52,6 +52,9 @@ public:
 	const uint8_t GetSubnet(void);
 	const uint8_t GetUniverse(void);
 
+	const uint8_t *GetShortName(void);
+	const uint8_t *GetLongName(void);
+
 	const _output_type GetOutputType(void);
 
 	const bool IsUseTimeCode(void);
@@ -59,6 +62,10 @@ public:
 
 	const bool IsRdm(void);
 	const bool IsRdmDiscovery(void);
+
+#if defined(__linux__) || defined (__CYGWIN__)
+	void Dump(void);
+#endif
 };
 
 #endif /* ARTNETPARAMS_H_ */
