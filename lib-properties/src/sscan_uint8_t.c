@@ -33,15 +33,10 @@
 #include "util.h"
 #endif
 
-/**
- *
- * @param buf
- * @param name
- * @param value
- * @return
- */
-const int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
-	int k;
+#include "sscan.h"
+
+int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
+	int16_t k;
 
 	const char *n = name;
 	const char *b = buf;
@@ -52,33 +47,37 @@ const int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
-			return 0;
+			return SSCAN_NAME_ERROR;
 		}
 	}
 
 	if (*n != (char) 0) {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	if (*b++ != (char) '=') {
-		return 0;
+		return SSCAN_NAME_ERROR;
+	}
+
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	k = 0;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+	do {
 		if (isdigit((int) *b) == 0) {
 			return 1;
 		}
-		k = k * 10 + (int) *b - (int) '0';
+		k = k * 10 + (int16_t) *b - (int16_t) '0';
 		b++;
-	}
+	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\n'));
 
-	if (k > (int) ((uint8_t) ~0)) {
+	if (k > (int16_t) ((uint8_t) ~0)) {
 		return 1;
 	}
 
 	*value = (uint8_t) k;
 
-	return 2;
+	return SSCAN_OK;
 }

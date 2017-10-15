@@ -1,8 +1,8 @@
 /**
- * @file sscan_uint16_t.c
+ * @file sscan_float.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #if defined(__linux__) || defined (__CYGWIN__)
 #include <ctype.h>
@@ -35,8 +36,10 @@
 
 #include "sscan.h"
 
-int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
-	int32_t k;
+int sscan_float(const char *buf, const char *name, float *value) {
+	float k, f;
+	uint32_t div;
+	bool is_negative = false;
 
 	const char *n = name;
 	const char *b = buf;
@@ -59,6 +62,11 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 		return SSCAN_NAME_ERROR;
 	}
 
+	if (*b == (char) '-') {
+		b++;
+		is_negative = true;
+	}
+
 	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
 		return SSCAN_VALUE_ERROR;
 	}
@@ -67,17 +75,43 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 
 	do {
 		if (isdigit((int) *b) == 0) {
-			return 1;
+			return SSCAN_VALUE_ERROR;
 		}
-		k = k * 10 + (int32_t) *b - (int32_t) '0';
+		k = k * 10 + (float) *b - (float) '0';
 		b++;
-	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\n'));
+	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0) && (*b != '\n'));
 
-	if (k > (int32_t) ((uint16_t) ~0)) {
-		return 1;
+	if (*b != '.') {
+		if (is_negative) {
+			*value = (float) 0 - k;
+		} else {
+			*value = k;
+		}
+		return SSCAN_OK;
 	}
 
-	*value = (uint16_t) k;
+	f = k;
+
+	k = 0;
+	div = 1;
+	b++;
+
+	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+		if (isdigit((int) *b) == 0) {
+			return SSCAN_VALUE_ERROR;
+		}
+		k = k * 10 + (float) *b - (float) '0';
+		div = div * 10;
+		b++;
+	}
+
+	f = f + (k / div);
+
+	if (is_negative) {
+		*value = (float) 0 - f;
+	} else {
+		*value = f;
+	}
 
 	return SSCAN_OK;
 }

@@ -33,7 +33,9 @@
 #include "util.h"
 #endif
 
-const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8_t *channel) {
+#include "sscan.h"
+
+int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8_t *channel) {
 	int k = 0;
 	char *n = name;
 	const char *b = buf;
@@ -59,7 +61,7 @@ const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address,
 	}
 
 	*len = (uint8_t) k;
-	*n = (char) 0;
+	*n = (char) SSCAN_NAME_ERROR;
 
 
 	b++;
@@ -67,7 +69,7 @@ const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address,
 
 	while ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
-			return 0;
+			return SSCAN_NAME_ERROR;
 		}
 		tmp[k] = *b;
 		k++;
@@ -75,7 +77,7 @@ const int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address,
 	}
 
 	if ((*b != (char) ':') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	if (k == 2) {

@@ -33,15 +33,9 @@
 #include "util.h"
 #endif
 
-/**
- *
- * @param buf
- * @param name
- * @param value
- * @param len
- * @return
- */
-const int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
+#include "sscan.h"
+
+int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
 	int k;
 
 	const char *n = name;
@@ -59,19 +53,18 @@ const int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *le
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
-			return 0;
+			return SSCAN_NAME_ERROR;
 		}
 	}
 
 	if (*n != (char) 0) {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	if (*b++ != (char) '=') {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
-	//
 	k = 0;
 
 	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
@@ -101,7 +94,6 @@ const int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *le
 
 	*len = (uint8_t)36;
 
-	return 2;
+	return SSCAN_OK;
 
 }
-

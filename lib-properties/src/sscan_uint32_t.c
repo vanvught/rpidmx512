@@ -33,14 +33,9 @@
 #include "util.h"
 #endif
 
-/**
- *
- * @param buf
- * @param name
- * @param value
- * @return
- */
-const int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
+#include "sscan.h"
+
+int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 	int64_t k;
 
 	const char *n = name;
@@ -52,27 +47,31 @@ const int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
-			return 0;
+			return SSCAN_NAME_ERROR;
 		}
 	}
 
 	if (*n != (char) 0) {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	if (*b++ != (char) '=') {
-		return 0;
+		return SSCAN_NAME_ERROR;
+	}
+
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	k = 0;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+	do {
 		if (isdigit((int) *b) == 0) {
 			return 1;
 		}
 		k = k * 10 + (int64_t) *b - (int64_t) '0';
 		b++;
-	}
+	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\n'));
 
 	if (k > (int64_t) ((uint32_t) ~0)) {
 		return 1;
@@ -80,5 +79,5 @@ const int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 
 	*value = (uint32_t) k;
 
-	return 2;
+	return SSCAN_OK;
 }

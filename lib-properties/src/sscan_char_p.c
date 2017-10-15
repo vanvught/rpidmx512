@@ -27,15 +27,9 @@
 #include <stddef.h>
 #include <assert.h>
 
-/**
- *
- * @param buf
- * @param name
- * @param value
- * @param len
- * @return
- */
-const int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
+#include "sscan.h"
+
+int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 	int k;
 
 	const char *n = name;
@@ -49,30 +43,30 @@ const int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
-			return 0;
+			return SSCAN_NAME_ERROR;
 		}
 	}
 
 	if (*n != (char) 0) {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	if (*b++ != (char) '=') {
-		return 0;
+		return SSCAN_NAME_ERROR;
 	}
 
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int)*len)) {
+	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
 		*v++ = *b++;
 		k++;
 	}
 
-	if ((*b  != (char) 0) &&  (*b != (char) '\n') ){
+	if ((*b != (char) 0) && (*b != (char) '\n')) {
 		return 1;
 	}
 
-	*len = (uint8_t)k;
+	*len = (uint8_t) k;
 
-	return 2;
+	return SSCAN_OK;
 }

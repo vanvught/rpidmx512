@@ -38,14 +38,7 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-/**
- *
- * @param buf
- * @param name
- * @param ip_address
- * @return
- */
-const int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
+int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 
 	const char *n = name;
 	const char *b = buf;

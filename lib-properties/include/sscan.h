@@ -28,17 +28,22 @@
 
 #include <stdint.h>
 
+#define SSCAN_NAME_ERROR	0
+#define SSCAN_VALUE_ERROR	1
+#define SSCAN_OK			2
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
-extern const int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
-extern const int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
-extern const int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-extern const int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
-extern const int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-extern const int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
+extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
+extern int sscan_uint16_t(const char *, const char *, /*@out@*/uint16_t *);
+extern int sscan_uint32_t(const char *, const char *, /*@out@*/uint32_t *);
+extern int sscan_float(const char *, const char *, /*@out@*/float *);
+extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+extern int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
+extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
+extern int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
 
 #ifdef __cplusplus
 }
