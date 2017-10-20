@@ -1,6 +1,0 @@
-#
-DEFINES = RASPPI
-#
-EXTRA_INCLUDES = ../lib-l6470/include ../lib-lightset/include ../lib-properties/include ../lib-bcm2835_raspbian/include
-#
-include ../linux-template/lib/Rules.mk
