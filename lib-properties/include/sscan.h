@@ -46,6 +46,30 @@ extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint
 extern int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
 
 #ifdef __cplusplus
+class Sscan {
+public:
+	inline static int Uint8(const char *a, const char *b, uint8_t *c) {
+		return sscan_uint8_t(a, b, c);
+	}
+
+	inline static int Uint16(const char *a, const char *b, uint16_t *c) {
+		return sscan_uint16_t(a, b, c);
+	}
+
+	inline static int Uint32(const char *a, const char *b, uint32_t *c) {
+		return sscan_uint32_t(a, b, c);
+	}
+
+	inline static int Float(const char *a, const char *b, float *c) {
+		return sscan_float(a, b, c);
+	}
+
+	inline static int Char(const char *a, const char *b, char *c, uint8_t *d) {
+		return sscan_char_p(a, b, c, d);
+	}
+
+private:
+};
 }
 #endif
 
