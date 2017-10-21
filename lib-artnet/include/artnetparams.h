@@ -35,11 +35,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum  {
+#include "artnetnode.h"
+#include "common.h"
+
+enum  tOutputType {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
-} _output_type;
+};
 
 class ArtNetParams {
 public:
@@ -51,21 +54,45 @@ public:
 	const uint8_t GetNet(void);
 	const uint8_t GetSubnet(void);
 	const uint8_t GetUniverse(void);
-
 	const uint8_t *GetShortName(void);
 	const uint8_t *GetLongName(void);
-
-	const _output_type GetOutputType(void);
+	const tOutputType GetOutputType(void);
+	const uint8_t *GetManufacturerId(void);
 
 	const bool IsUseTimeCode(void);
 	const bool IsUseTimeSync(void);
-
 	const bool IsRdm(void);
 	const bool IsRdmDiscovery(void);
 
+	void Set(ArtNetNode *);
 #if defined(__linux__) || defined (__CYGWIN__)
 	void Dump(void);
 #endif
+
+private:
+	bool isMaskSet(uint16_t);
+	const uint16_t HexUint16(const char *);
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+private:
+    uint32_t m_bSetList;
+    uint8_t m_nNet;
+    uint8_t m_nSubnet;
+    uint8_t m_nUniverse;
+    tOutputType m_tOutputType;
+    bool m_bUseTimeCode;
+    bool m_bUseTimeSync;
+    bool m_bEnableRdm;
+    bool m_bRdmDiscovery;
+    uint8_t m_aShortName[ARTNET_SHORT_NAME_LENGTH];
+	uint8_t m_aLongName[ARTNET_LONG_NAME_LENGTH];
+	uint8_t m_aManufacturerId[2];
+	uint8_t m_aOemValue[2];
 };
 
 #endif /* ARTNETPARAMS_H_ */

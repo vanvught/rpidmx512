@@ -83,8 +83,10 @@ struct TArtNetNode {
 	uint32_t IPSubnetMask;							///< The subnet mask
 	uint8_t  NetSwitch;								///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 	uint8_t  SubSwitch;								///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t  Oem[2];								///< The Oem word describes the equipment vendor and the feature set available.
 	uint8_t  ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
 	uint8_t  LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
+	uint8_t  Esta[ARTNET_ESTA_SIZE];				///< The ESTA manufacturer code.
 	uint32_t IPAddressRemote;						///< The remote IP Address
 	uint8_t  TalkToMe;								///< Behavior of Node
 	uint8_t  Status1;								///< General Status register
@@ -150,6 +152,10 @@ public:
 	void SetSubnetSwitch(const uint8_t);
 	const uint8_t GetNetSwitch(void);
 	void SetNetSwitch(const uint8_t);
+	void SetManufacturerId(const uint8_t *);
+	const uint8_t *GetManufacturerId(void);
+	void SetOemValue(const uint8_t *);
+	const uint8_t *GetOemValue(void);
 
 	const uint8_t GetActiveOutputPorts(void);
 	const uint8_t GetActiveInputPorts(void);

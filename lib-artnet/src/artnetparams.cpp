@@ -24,22 +24,37 @@
  */
 
 #include <stdint.h>
+#include <assert.h>
 
 #if defined(__linux__) || defined (__CYGWIN__)
 #define ALIGNED
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #else
 #include "util.h"
 #endif
 
 #include "artnetparams.h"
+#include "artnetnode.h"
 #include "common.h"
 
-#include "read_config_file.h"
+#include "readconfigfile.h"
 #include "sscan.h"
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
+
+#define SET_LONG_NAME_MASK	1<<0
+#define SET_SHORT_NAME_MASK	1<<1
+#define SET_NET_MASK		1<<2
+#define SET_SUBNET_MASK		1<<3
+#define SET_UNIVERSE_MASK	1<<4
+#define SET_RDM_MASK		1<<5
+#define SET_TIMECODE_MASK	1<<6
+#define SET_TIMESYNC_MASK	1<<7
+#define SET_OUTPUT_MASK		1<<8
+#define SET_ID_MASK			1<<9
+#define SET_OEM_VALUE_MASK	1<<10
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";					///< Parameters file name
 static const char PARAMS_NET[] ALIGNED = "net";									///<
@@ -52,157 +67,289 @@ static const char PARAMS_RDM[] ALIGNED = "enable_rdm";							///< Enable RDM, 0 
 static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";	///< 0 {default}
 static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";				///<
 static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";				///<
+static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";	///<
+static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";				///<
 
-static uint8_t ArtNetParamsNet ALIGNED;
-static uint8_t ArtNetParamsSubnet ALIGNED;
-static uint8_t ArtNetParamsUniverse ALIGNED;
-static _output_type ArtNetParamsOutputType ALIGNED;
-static bool ArtNetParamsUseTimeCode;
-static bool ArtNetParamsUseTimeSync;
-static bool ArtNetParamsEnableRdm;
-static bool ArtNetParamsRdmDiscovery;
-static uint8_t ArtNetParamsShortName[ARTNET_SHORT_NAME_LENGTH] ALIGNED;
-static uint8_t ArtNetParamsLongName[ARTNET_LONG_NAME_LENGTH] ALIGNED;
+void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
 
-static void process_line_read(const char *line) {
+	((ArtNetParams *) p)->callbackFunction(s);
+}
+
+void ArtNetParams::callbackFunction(const char *pLine) {
 	char value[128];
 	uint8_t len;
 	uint8_t value8;
 
-	if (sscan_uint8_t(line, PARAMS_TIMECODE, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_TIMECODE, &value8) == 2) {
 		if (value8 != 0) {
-			ArtNetParamsUseTimeCode = true;
+			m_bUseTimeCode = true;
+			m_bSetList |= SET_TIMECODE_MASK;
 		}
 		return;
 	}
 
-	if (sscan_uint8_t(line, PARAMS_TIMESYNC, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_TIMESYNC, &value8) == 2) {
 		if (value8 != 0) {
-			ArtNetParamsUseTimeSync = true;
+			m_bUseTimeSync = true;
+			m_bSetList |= SET_TIMESYNC_MASK;
 		}
 		return;
 	}
 
-	if (sscan_uint8_t(line, PARAMS_RDM, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_RDM, &value8) == 2) {
 		if (value8 != 0) {
-			ArtNetParamsEnableRdm = true;
+			m_bEnableRdm = true;
+			m_bSetList |= SET_RDM_MASK;
 		}
 		return;
 	}
 
-	if (sscan_uint8_t(line, PARAMS_RDM_DISCOVERY, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_RDM_DISCOVERY, &value8) == 2) {
 		if (value8 != 0) {
-			ArtNetParamsRdmDiscovery = true;
+			m_bRdmDiscovery = true;
 		}
 		return;
 	}
 
 	len = ARTNET_SHORT_NAME_LENGTH;
-	if (sscan_char_p(line, PARAMS_NODE_SHORT_NAME, value, &len) == 2) {
-		strncpy((char *)ArtNetParamsShortName, value, len);
+	if (Sscan::Char(pLine, PARAMS_NODE_SHORT_NAME, value, &len) == 2) {
+		strncpy((char *)m_aShortName, value, len);
+		m_bSetList |= SET_SHORT_NAME_MASK;
+		return;
 	}
 
 	len = ARTNET_LONG_NAME_LENGTH;
-	if (sscan_char_p(line, PARAMS_NODE_LONG_NAME, value, &len) == 2) {
-		strncpy((char *)ArtNetParamsLongName, value, len);
+	if (Sscan::Char(pLine, PARAMS_NODE_LONG_NAME, value, &len) == 2) {
+		strncpy((char *)m_aLongName, value, len);
+		m_bSetList |= SET_LONG_NAME_MASK;
+		return;
 	}
 
 	len = 3;
-	if (sscan_char_p(line, PARAMS_OUTPUT, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == 2) {
 		if (memcmp(value, "spi", 3) == 0) {
-			ArtNetParamsOutputType = OUTPUT_TYPE_SPI;
+			m_tOutputType = OUTPUT_TYPE_SPI;
+			m_bSetList |= SET_OUTPUT_MASK;
 		} else if (memcmp(value, "mon", 3) == 0) {
-			ArtNetParamsOutputType = OUTPUT_TYPE_MONITOR;
+			m_tOutputType = OUTPUT_TYPE_MONITOR;
+			m_bSetList |= SET_OUTPUT_MASK;
 		}
 		return;
 	}
 
-	if (sscan_uint8_t(line, PARAMS_NET, &value8) == 2) {
-		ArtNetParamsNet = value8;
-	} else if (sscan_uint8_t(line, PARAMS_SUBNET, &value8) == 2) {
-		ArtNetParamsSubnet = value8;
-	} else if (sscan_uint8_t(line, PARAMS_UNIVERSE, &value8) == 2) {
-		ArtNetParamsUniverse = value8;
+	len = 4;
+	if (Sscan::Char(pLine, PARAMS_NODE_MANUFACTURER_ID, value, &len) == 2) {
+		if (len == 4) {
+			const uint16_t v = HexUint16(value);
+			m_aManufacturerId[0] = (uint8_t) (v >> 8);
+			m_aManufacturerId[1] = (uint8_t) (v & 0xFF);
+			m_bSetList |= SET_ID_MASK;
+		}
+		return;
+	}
+
+	len = 4;
+	if (Sscan::Char(pLine, PARAMS_NODE_OEM_VALUE, value, &len) == 2) {
+		if (len == 4) {
+			const uint16_t v = HexUint16(value);
+			m_aOemValue[0] = (uint8_t) (v >> 8);
+			m_aOemValue[1] = (uint8_t) (v & 0xFF);
+			m_bSetList |= SET_OEM_VALUE_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_NET, &value8) == 2) {
+		m_nNet = value8;
+		m_bSetList |= SET_NET_MASK;
+	} else if (Sscan::Uint8(pLine, PARAMS_SUBNET, &value8) == 2) {
+		m_nSubnet = value8;
+		m_bSetList |= SET_SUBNET_MASK;
+	} else if (Sscan::Uint8(pLine, PARAMS_UNIVERSE, &value8) == 2) {
+		m_nUniverse = value8;
+		m_bSetList |= SET_UNIVERSE_MASK;
 	}
 
 }
 
-ArtNetParams::ArtNetParams(void) {
-	ArtNetParamsNet = 0;
-	ArtNetParamsSubnet = 0;
-	ArtNetParamsUniverse = 0;
-	ArtNetParamsOutputType= OUTPUT_TYPE_DMX;
-	ArtNetParamsUseTimeCode = false;
-	ArtNetParamsUseTimeSync = false;
-	ArtNetParamsEnableRdm = false;
-	ArtNetParamsRdmDiscovery = false;
+ArtNetParams::ArtNetParams(void): m_bSetList(0) {
+	m_nNet = 0;
+	m_nSubnet = 0;
+	m_nUniverse = 0;
+	m_tOutputType= OUTPUT_TYPE_DMX;
+	m_bUseTimeCode = false;
+	m_bUseTimeSync = false;
+	m_bEnableRdm = false;
+	m_bRdmDiscovery = false;
 
-	memset(ArtNetParamsShortName, 0, ARTNET_SHORT_NAME_LENGTH);
-	memset(ArtNetParamsLongName, 0, ARTNET_LONG_NAME_LENGTH);
+	memset(m_aShortName, 0, ARTNET_SHORT_NAME_LENGTH);
+	memset(m_aLongName, 0, ARTNET_LONG_NAME_LENGTH);
 }
 
 ArtNetParams::~ArtNetParams(void) {
 }
 
-const _output_type ArtNetParams::GetOutputType(void) {
-	return ArtNetParamsOutputType;
+const tOutputType ArtNetParams::GetOutputType(void) {
+	return m_tOutputType;
 }
 
 const uint8_t ArtNetParams::GetNet(void) {
-	return ArtNetParamsNet;
+	return m_nNet;
 }
 
 const uint8_t ArtNetParams::GetSubnet(void) {
-	return ArtNetParamsSubnet;
+	return m_nSubnet;
 }
 
 const uint8_t ArtNetParams::GetUniverse(void) {
-	return ArtNetParamsUniverse;
+	return m_nUniverse;
 }
 
 const bool ArtNetParams::IsUseTimeCode(void) {
-	return ArtNetParamsUseTimeCode;
+	return m_bUseTimeCode;
 }
 
 const bool ArtNetParams::IsUseTimeSync(void) {
-	return ArtNetParamsUseTimeSync;
+	return m_bUseTimeSync;
 }
 
 const bool ArtNetParams::IsRdm(void) {
-	return ArtNetParamsEnableRdm;
+	return m_bEnableRdm;
 }
 
 const bool ArtNetParams::IsRdmDiscovery(void) {
-	return ArtNetParamsRdmDiscovery;
+	return m_bRdmDiscovery;
 }
 
 
 const uint8_t *ArtNetParams::GetShortName(void) {
-	return ArtNetParamsShortName;
+	return m_aShortName;
 }
 
 const uint8_t *ArtNetParams::GetLongName(void) {
-	return ArtNetParamsLongName;
+	return m_aLongName;
+}
+
+const uint8_t *ArtNetParams::GetManufacturerId(void) {
+	return m_aManufacturerId;
 }
 
 bool ArtNetParams::Load(void) {
-	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+	m_bSetList = 0;
+
+	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
+}
+
+void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
+	if (m_bSetList == 0) {
+		return;
+	}
+
+	if(isMaskSet(SET_SHORT_NAME_MASK)) {
+		pArtNetNode->SetShortName((const char *)m_aShortName);
+	}
+
+	if(isMaskSet(SET_LONG_NAME_MASK)) {
+		pArtNetNode->SetLongName((const char *)m_aLongName);
+	}
+
+	if(isMaskSet(SET_NET_MASK)) {
+		pArtNetNode->SetNetSwitch(m_nNet);
+	}
+
+	if(isMaskSet(SET_SUBNET_MASK)) {
+		pArtNetNode->SetSubnetSwitch(m_nSubnet);
+	}
+
+	if(isMaskSet(SET_ID_MASK)) {
+		pArtNetNode->SetManufacturerId(m_aManufacturerId);
+	}
+
+	if(isMaskSet(SET_OEM_VALUE_MASK)) {
+		pArtNetNode->SetOemValue(m_aOemValue);
+	}
 }
 
 #if defined(__linux__) || defined (__CYGWIN__)
 void ArtNetParams::Dump(void) {
-	printf("Node params (\'%s\'):\n", PARAMS_FILE_NAME);
-	printf(" Short name : [%s]\n", ArtNetParamsShortName);
-	printf(" Long name : [%s]\n", ArtNetParamsLongName);
-	printf(" Net : %d\n", ArtNetParamsNet);
-	printf(" Sub-Net : %d\n", ArtNetParamsSubnet);
-	printf(" Universe : %d\n", ArtNetParamsUniverse);
-	printf(" RDM Enabled : %s\n", BOOL2STRING(ArtNetParamsEnableRdm));
-	if (ArtNetParamsEnableRdm) {
-		printf("    Discovery : %s\n", BOOL2STRING(ArtNetParamsRdmDiscovery));
+	if (m_bSetList == 0) {
+		return;
 	}
-	printf(" TimeCode enabled : %s\n", BOOL2STRING(ArtNetParamsUseTimeCode));
-	printf(" TimeSync enabled : %s\n", BOOL2STRING(ArtNetParamsUseTimeSync));
-	printf(" Output : %d\n", (int) ArtNetParamsOutputType);
+
+	printf("Node params \'%s\':\n", PARAMS_FILE_NAME);
+
+	if(isMaskSet(SET_SHORT_NAME_MASK)) {
+		printf(" Short name : [%s]\n", m_aShortName);
+	}
+
+	if(isMaskSet(SET_LONG_NAME_MASK)) {
+		printf(" Long name : [%s]\n", m_aLongName);
+	}
+
+	if(isMaskSet(SET_NET_MASK)) {
+		printf(" Net : %d\n", m_nNet);
+	}
+
+	if(isMaskSet(SET_SUBNET_MASK)) {
+		printf(" Sub-Net : %d\n", m_nSubnet);
+	}
+
+	if(isMaskSet(SET_UNIVERSE_MASK)) {
+		printf(" Universe : %d\n", m_nUniverse);
+	}
+
+	if (isMaskSet(SET_RDM_MASK)) {
+		printf(" RDM Enabled : %s\n", BOOL2STRING(m_bEnableRdm));
+		if (m_bEnableRdm) {
+			printf("    Discovery : %s\n", BOOL2STRING(m_bRdmDiscovery));
+		}
+	}
+
+	if(isMaskSet(SET_TIMECODE_MASK)) {
+		printf(" TimeCode enabled : %s\n", BOOL2STRING(m_bUseTimeCode));
+	}
+
+	if(isMaskSet(SET_TIMESYNC_MASK)) {
+		printf(" TimeSync enabled : %s\n", BOOL2STRING(m_bUseTimeSync));
+	}
+
+	if(isMaskSet(SET_OUTPUT_MASK)) {
+		printf(" Output : %d\n", (int) m_tOutputType);
+	}
+
+	if(isMaskSet(SET_ID_MASK)) {
+		printf(" Manufacturer ID (ESTA) : 0x%.2X%.2X\n", m_aManufacturerId[0], m_aManufacturerId[1]);
+	}
+
+	if(isMaskSet(SET_OEM_VALUE_MASK)) {
+		printf(" OEM Value : 0x%.2X%.2X\n", m_aOemValue[0], m_aOemValue[1]);
+	}
 }
 #endif
+
+bool ArtNetParams::isMaskSet(uint16_t mask) {
+	return (m_bSetList & mask) == mask;
+}
+
+const uint16_t ArtNetParams::HexUint16(const char *s) {
+	uint16_t ret = 0;
+	uint8_t nibble;
+	uint8_t i = 0;
+
+	while ((*s != '\0') && (i++ < 4)) {
+		char d = *s;
+
+		if (isxdigit((int) d) == 0) {
+			break;
+		}
+
+		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
+		ret = (ret << 4) | nibble;
+		s++;
+	}
+
+	return ret;
+}

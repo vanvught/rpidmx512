@@ -100,15 +100,14 @@ union uip {
 #define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
 
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-
-#define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"			///< The array represents a null terminated short name for the Node.
-#define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node http://www.raspberrypi-dmx.org"	///< The array represents a null terminated long name for the Node.
-#define NODE_DEFAULT_NET_SWITCH		0							///<
-#define NODE_DEFAULT_SUBNET_SWITCH	0							///<
-#define NODE_DEFAULT_UNIVERSE		0							///<
+#define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"
+#define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node http://www.raspberrypi-dmx.org"
+#define NODE_DEFAULT_NET_SWITCH		0
+#define NODE_DEFAULT_SUBNET_SWITCH	0
+#define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x0F };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x10 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -163,6 +162,8 @@ ArtNetNode::ArtNetNode(void) :
 
 	SetShortName((const char *)NODE_DEFAULT_SHORT_NAME);
 	SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
+	SetManufacturerId(DEVICE_MANUFACTURER_ID);
+	SetOemValue(DEVICE_OEM_VALUE);
 }
 
 /**
@@ -439,6 +440,24 @@ void ArtNetNode::SetLongName(const char *pName) {
 	memcpy (m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
 }
 
+void ArtNetNode::SetManufacturerId(const uint8_t *pEsta) {
+	m_Node.Esta[0] = pEsta[1];
+	m_Node.Esta[1] = pEsta[0];
+}
+
+const uint8_t* ArtNetNode::GetManufacturerId(void) {
+	return m_Node.Esta;
+}
+
+void ArtNetNode::SetOemValue(const uint8_t *pOem) {
+	m_Node.Oem[0] = pOem[0];
+	m_Node.Oem[1] = pOem[1];
+}
+
+const uint8_t* ArtNetNode::GetOemValue(void) {
+	return m_Node.Oem;
+}
+
 /**
  *
  * @param nCurrentAddress
@@ -469,11 +488,11 @@ void ArtNetNode::FillPollReply(void) {
 	m_PollReply.VersInfoL = DEVICE_SOFTWARE_VERSION[1];
 	m_PollReply.NetSwitch = m_Node.NetSwitch;
 	m_PollReply.SubSwitch = m_Node.SubSwitch;
-	m_PollReply.OemHi = DEVICE_OEM_VALUE[0];
-	m_PollReply.Oem = DEVICE_OEM_VALUE[1];
+	m_PollReply.OemHi = m_Node.Oem[0];
+	m_PollReply.Oem = m_Node.Oem[1];
 	m_PollReply.Status1 = m_Node.Status1;
-	m_PollReply.EstaMan[0] = DEVICE_MANUFACTURER_ID[1];
-	m_PollReply.EstaMan[1] = DEVICE_MANUFACTURER_ID[0];
+	m_PollReply.EstaMan[0] = m_Node.Esta[0];
+	m_PollReply.EstaMan[1] = m_Node.Esta[1];
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
 	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
 
