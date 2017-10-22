@@ -35,6 +35,7 @@
 #include "artnetparams.h"
 
 #include "dmxmonitor.h"
+
 #if defined (__linux__)
 #include "ipprog.h"
 #endif
@@ -55,7 +56,6 @@ int main(int argc, char **argv) {
 #if defined (__linux__)
 	IpProg ipprog;
 #endif
-	char LongName[ARTNET_LONG_NAME_LENGTH];
 #if defined (__linux__)
 	char version[_UTSNAME_VERSION_LENGTH];
 #else
@@ -76,12 +76,14 @@ int main(int argc, char **argv) {
 	}
 
 	(void) artnetparams.Load();
+	artnetparams.Dump();
+	artnetparams.Set(&node);
 
 	memset(&os_info, 0, sizeof(struct utsname));
 	uname(&os_info);
 
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
-	puts("ArtNet 3 Node");
+	puts("ArtNet 3 Node - Real-time DMX Monitor");
 
 	if (network_init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
@@ -89,8 +91,6 @@ int main(int argc, char **argv) {
 	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
-	node.SetSubnetSwitch(artnetparams.GetSubnet());
-	node.SetNetSwitch(artnetparams.GetNet());
 	node.SetOutput(&monitor);
 
 #if defined (__linux__)
@@ -99,12 +99,17 @@ int main(int argc, char **argv) {
 	}
 #endif
 #if defined (__linux__)
-	strncpy(version, os_info.version, (int)(strchr(os_info.version, ' ') - os_info.version));
+	strncpy(version, os_info.version, (int)((strchr(os_info.version, ' ') - os_info.version)));
 #else
 	strncpy(version, os_info.sysname, 20);
 #endif
-	snprintf(LongName, ARTNET_LONG_NAME_LENGTH, "%s Open Source Art-Net 3 Node", version);
-	node.SetLongName(LongName);
+
+	char *params_long_name = (char *)artnetparams.GetLongName();
+	if (*params_long_name == 0) {
+		char LongName[ARTNET_LONG_NAME_LENGTH];
+		snprintf(LongName, ARTNET_LONG_NAME_LENGTH, "%s Open Source Art-Net 3 Node", version);
+		node.SetLongName(LongName);
+	}
 
 	printf("Running at : " IPSTR "\n", IP2STR(network_get_ip()));
 	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));

@@ -5,6 +5,9 @@
 	<projects>
 		<project>lib-artnet</project>
 		<project>lib-dmxmonitor</project>
+		<project>lib-ledblink</project>
+		<project>lib-lightset</project>
+		<project>linux-template</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
