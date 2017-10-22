@@ -1,0 +1,12 @@
+sparkfun_position=0
+#
+#l6470_min_speed=25
+l6470_max_speed=500
+l6470_micro_steps=1
+#
+motor_step_angel=1.8
+motor_resistance=2.3
+motor_inductance=1.8
+#
+dmx_mode=3
+dmx_start_address=1

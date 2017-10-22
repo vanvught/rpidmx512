@@ -1,0 +1,2 @@
+dmx_start_address_port_a=4
+dmx_start_address_port_b=
