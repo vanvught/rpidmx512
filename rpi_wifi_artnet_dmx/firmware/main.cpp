@@ -62,7 +62,7 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
-	_output_type output_type = OUTPUT_TYPE_DMX;
+	TOutputType output_type = OUTPUT_TYPE_DMX;
 	uint32_t period = (uint32_t) 0;
 	struct ip_info ip_config;
 	ArtNetParams artnetparams;
@@ -127,6 +127,8 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
+
+	artnetparams.Set(&node);
 
 	node.SetLedBlink(&ledblinktask);
 
@@ -205,9 +207,6 @@ void notmain(void) {
 		node.SetOutput(&monitor);
 		console_set_top_row(20);
 	}
-
-	node.SetSubnetSwitch(artnetparams.GetSubnet());
-	node.SetNetSwitch(artnetparams.GetNet());
 
 	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = node.GetSoftwareVersion();
