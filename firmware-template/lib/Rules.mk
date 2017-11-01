@@ -6,14 +6,14 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-INCLUDES := -I./include
+INCLUDES := -I../include -I./include
 INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) -DNDEBUG
 COPS_COMMON += $(INCLUDES)
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1

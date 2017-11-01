@@ -6,12 +6,12 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += hal uuid lcd network esp8266 bob i2c fb properties utils ff11 emmc bcm2835
+LIBS += hal uuid esp8266 display properties bob c++ utils fb ff11 emmc i2c bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
 # The variable for the firmware include directories
-INCDIRS = $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS = ../include $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS := $(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
@@ -38,7 +38,7 @@ LIB7DEP := $(addsuffix .a, $(LIB7DEP))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -115,7 +115,7 @@ $(BUILD)vectors.o : firmware/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) #-lgcc
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 
 $(TARGET) : $(BUILD)main.elf
@@ -127,7 +127,7 @@ $(BUILD7)vectors.o : firmware/vectors.S
 	$(AS) $(COPS7) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD7)vectors.o
 	
 $(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
-	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) #-lgcc
+	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD7)main.elf | $(PREFIX)c++filt > $(LIST7)
 
 $(TARGET7) : $(BUILD7)main.elf
