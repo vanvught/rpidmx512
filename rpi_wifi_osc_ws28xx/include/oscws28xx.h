@@ -34,13 +34,14 @@
 
 class OSCWS28xx  {
 public:
-	OSCWS28xx(const int, const int, const TWS28XXType, const char *);
+	OSCWS28xx(unsigned, unsigned, const TWS28XXType, const char *);
 	~OSCWS28xx(void);
 
 	void Start(void);
 	void Stop(void);
 
 	void Run(void);
+
 private:
 	WS28XXStripe	*m_pLEDStripe;
 	char m_Os[32];

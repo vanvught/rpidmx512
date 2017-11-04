@@ -43,7 +43,7 @@
 
 #include "software_version.h"
 
-OSCWS28xx::OSCWS28xx(const int OutgoingPort, const int nLEDCount, const TWS28XXType nLEDType, const char *sLEDType) : m_pLEDStripe(0), m_Blackout(false)  {
+OSCWS28xx::OSCWS28xx(unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLEDType, const char *sLEDType) : m_pLEDStripe(0), m_Blackout(false)  {
 	m_OutgoingPort = OutgoingPort;
 	m_nLEDCount = nLEDCount;
 	m_nLEDType = nLEDType;

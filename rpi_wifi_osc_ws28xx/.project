@@ -6,6 +6,7 @@
 		<project>lib-bob</project>
 		<project>lib-c++</project>
 		<project>lib-display</project>
+		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-network</project>

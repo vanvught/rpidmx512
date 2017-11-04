@@ -27,10 +27,10 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "led.h"
-
 #include "console.h"
 #include "display.h"
+
+#include "ledblinktask.h"
 
 #include "oscparams.h"
 #include "oscws28xx.h"
@@ -48,24 +48,22 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
 void notmain(void) {
-	struct ip_info ip_config;
 	DeviceParams deviceparms;
 	OSCParams oscparms;
-	uint16_t incoming_port;
-	uint16_t outgoing_port;
-	Display display;
-	bool oled_connected = false;
-
-	oled_connected = display.isDetected();
+	Display display(0,8);
+	LedBlinkTask ledblinktask;
+	struct ip_info ip_config;
 
 	(void) oscparms.Load();
 	(void) deviceparms.Load();
 
-	incoming_port = oscparms.GetIncomingPort();
-	outgoing_port = oscparms.GetOutgoingPort();
+	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
+	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
+
+	const bool IsOledConnected = display.isDetected();
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("WiFi OSC Pixel controller, Incoming port: %d, Outgoing port: %d", incoming_port, outgoing_port);
+	printf("WiFi OSC Pixel controller, Incoming port: %d, Outgoing port: %d", nIncomingPort, nOutgoingPort);
 
 	console_set_top_row(3);
 
@@ -77,19 +75,21 @@ void notmain(void) {
 	network_init();
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting UDP ..."));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting UDP ..."));
 
-	network_begin(incoming_port);
+	network_begin(nIncomingPort);
 
-	network_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, outgoing_port);
+	network_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, nOutgoingPort);
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Setting Node parameters ..."));
 
-	printf(" Type  : %s\n", deviceparms.GetLedTypeString());
-	printf(" Count : %d", (int) deviceparms.GetLedCount());
+	const TWS28XXType tType = deviceparms.GetLedType();
 
-	if (oled_connected) {
+	printf("Type  : %s [%d]\n", DeviceParams::GetLedTypeString(tType), tType);
+	printf("Count : %d", (int) deviceparms.GetLedCount());
+
+	if (IsOledConnected) {
 		display.Write(1, "WiFi OSC Pixel");
 
 		if (wifi_get_opmode() == WIFI_STA) {
@@ -100,8 +100,8 @@ void notmain(void) {
 
 		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
 		(void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
-		(void) display.Printf(5, "I: %4d O: %4d", (int) incoming_port, (int) outgoing_port);
-		(void) display.Printf(6, "Led type: %s", deviceparms.GetLedTypeString());
+		(void) display.Printf(5, "I: %4d O: %4d", (int) nIncomingPort, (int) nOutgoingPort);
+		(void) display.Printf(6, "Led type: %s", DeviceParams::GetLedTypeString(tType));
 		(void) display.Printf(7, "Led count: %d", (int) deviceparms.GetLedCount());
 	}
 
@@ -109,20 +109,22 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
-	OSCWS28xx oscws28xx(outgoing_port, deviceparms.GetLedCount(), deviceparms.GetLedType(), deviceparms.GetLedTypeString());
+	OSCWS28xx oscws28xx(nOutgoingPort, deviceparms.GetLedCount(), deviceparms.GetLedType(), DeviceParams::GetLedTypeString(tType));
 
 	console_status(CONSOLE_GREEN, "Starting ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting ..."));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting ..."));
 
 	oscws28xx.Start();
 
 	console_status(CONSOLE_GREEN, "Controller started");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Controller started"));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Controller started"));
 
 	for (;;) {
 		hardware_watchdog_feed();
+
 		oscws28xx.Run();
-		led_blink();
+
+		ledblinktask.Run();
 	}
 }
 
