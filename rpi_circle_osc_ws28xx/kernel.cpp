@@ -2,11 +2,7 @@
  * @file kernel.cpp
  *
  */
-/*
- * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
- */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,188 +23,173 @@
  * THE SOFTWARE.
  */
 
-#include <circle/net/socket.h>
-#include <circle/net/ipaddress.h>
-#include <circle/net/in.h>
+#include <circle/interrupt.h>
 #include <circle/string.h>
+#include <circle/util.h>
+#include <circle/machineinfo.h>
+#include <circle/net/netsubsystem.h>
+#include <circle/net/ipaddress.h>
 
-#include "Properties/propertiesfile.h"
+#include <fatfs/ff.h>
 
 #include "kernel.h"
-
-
-#include "oscws28xx.h"
 
 extern "C" {
 extern void network_init(CNetSubSystem *);
 }
 #include "network.h"
+#include "networkparams.h"
 
-#define PARTITION			"emmc1-1"
-#define PROPERTIES_FILE		"network.txt"
+#include "oscparams.h"
+#include "oscws28xx.h"
 
-#define OSC_SERVER_PORT		8000
+#include "circle/blinktask.h"
+
+#include "software_version.h"
+
+#define PARTITION	"emmc1-1"
+#define DRIVE		"SD:"
 
 static const char FromKernel[] = "kernel";
 
 CKernel::CKernel(void) :
-		m_Screen(m_Options.GetWidth(), m_Options.GetHeight()), m_Timer(
-				&m_Interrupt), m_Logger(m_Options.GetLogLevel(), &m_Timer), m_DWHCI(
-				&m_Interrupt, &m_Timer), m_EMMC(&m_Interrupt, &m_Timer,
-				&m_ActLED), m_Properties(PROPERTIES_FILE, &m_FileSystem)
-{
-	m_ActLED.Blink(5);	// show we are alive
+		m_Screen(m_Options.GetWidth(),
+		m_Options.GetHeight()),
+		m_Timer(&m_Interrupt),
+		m_Logger(m_Options.GetLogLevel(), &m_Timer),
+		m_DWHCI(&m_Interrupt, &m_Timer),
+		m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
+		m_BlinkTask(&m_ActLED, 0) {
+	m_ActLED.On();
 }
 
-CKernel::~CKernel (void)
-{
+CKernel::~CKernel(void) {
 }
 
-boolean CKernel::Initialize(void)
-{
+boolean CKernel::Initialize(void) {
 	boolean bOK = TRUE;
 
-	if (bOK)
-	{
+	if (bOK) {
 		bOK = m_Screen.Initialize();
 	}
 
-	if (bOK)
-	{
+	if (bOK) {
 		CDevice *pTarget = m_DeviceNameService.GetDevice(m_Options.GetLogDevice(), FALSE);
-		if (pTarget == 0)
-		{
+		if (pTarget == 0) {
 			pTarget = &m_Screen;
 		}
 
 		bOK = m_Logger.Initialize(pTarget);
 	}
 
-	if (bOK)
-	{
+	if (bOK) {
 		bOK = m_Interrupt.Initialize();
 	}
 
-	if (bOK)
-	{
+	if (bOK) {
 		bOK = m_Timer.Initialize();
 	}
 
-	if (bOK)
-	{
+	if (bOK) {
 		bOK = m_DWHCI.Initialize();
 	}
 
-	if (bOK)
-	{
-		bOK = m_EMMC.Initialize();
-	}
-
-	if (bOK)
-	{
+	if (m_EMMC.Initialize()) {
 		CDevice *pPartition = m_DeviceNameService.GetDevice(PARTITION, TRUE);
-		if (pPartition != 0)
-		{
-			if (!m_FileSystem.Mount(pPartition))
-			{
-				m_Logger.Write(FromKernel, LogError, "Cannot mount partition: %s", PARTITION);
-				m_Logger.Write(FromKernel, LogWarning, "Not able to read properties file, using defaults");
+		if (pPartition != 0) {
+			// Mount file system
+			if (f_mount(&m_FileSystem, DRIVE, 1) != FR_OK) {
+				m_Logger.Write(FromKernel, LogPanic, "Cannot mount drive: %s", DRIVE);
+			} else {
+				m_Logger.Write(FromKernel, LogNotice, "Drive mount: %s", DRIVE);
+				bOK = Configure();// At this point we can load the properties file
 			}
-			else
-			{
-				bOK = Configure ();	// At this point we can load the properties file
-				// It is only failing for static ip configuration errors. For all others we use defaults.
-			}
-		}
-		else
-		{
+		} else {
 			m_Logger.Write(FromKernel, LogError, "Partition not found: %s", PARTITION);
-			m_Logger.Write(FromKernel, LogWarning, "Not able to read properties file, using defaults");
+			m_Logger.Write(FromKernel, LogWarning, "Not able to read properties files, using defaults");
 		}
+	} else {
+		m_Logger.Write(FromKernel, LogError, "EMMC initialize failed");
+		m_Logger.Write(FromKernel, LogWarning, "Not able to read properties files, using defaults");
 	}
 
-	if (bOK)
-	{
+	if (bOK) {
 		bOK = m_Net.Initialize();
-	}
-	else
-	{
+	} else {
 		m_Logger.Write(FromKernel, LogError, "Invalid network configuration");
 	}
 
 	return bOK;
 }
 
-TShutdownMode CKernel::Run (void)
-{
-	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
+boolean CKernel::Configure(void) {
+	NetworkParams networkParams;
 
-	network_init(&m_Net);
+	if (networkParams.Load()) {
+		networkParams.Dump();
+		if (!networkParams.isDhcpUsed()) {
+			uint32_t ip;
 
-	CString IPString;
-	m_Net.GetConfig ()->GetIPAddress ()->Format (&IPString);
-	m_Logger.Write (FromKernel, LogNotice, "OSC Server running at %s:%u", (const char *) IPString, OSC_SERVER_PORT);
+			if ((ip = networkParams.GetIpAddress()) != 0) {
+				m_Net.GetConfig()->SetIPAddress(ip);
+			} else {
+				return FALSE;
+			}
 
-	new COSCWS28xx (&m_Interrupt, &m_Screen, &m_FileSystem, OSC_SERVER_PORT);
+			if ((ip = networkParams.GetNetMask()) != 0) {
+				m_Net.GetConfig()->SetNetMask(ip);
+			} else {
+				return FALSE;
+			}
 
-	for (unsigned nCount = 0; 1; nCount++)
-	{
-		m_Scheduler.Yield ();
-		m_Screen.Rotor (0, nCount);
-	}
+			if ((ip = networkParams.GetDefaultGateway()) != 0) {
+				m_Net.GetConfig()->SetDefaultGateway(ip);
+			} else {
+				return FALSE;
+			}
 
-	return ShutdownHalt;
-}
-
-boolean CKernel::Configure (void)
-{
-	if (!m_Properties.Load())
-	{
-		m_Logger.Write(FromKernel, LogWarning, "Error loading properties from %s (line %u)", PROPERTIES_FILE, m_Properties.GetErrorLine());
+			if ((ip = networkParams.GetNameServer()) != 0) {
+				m_Net.GetConfig()->SetDNSServer(ip);
+			} else {
+				return FALSE;
+			}
+		}
+	} else {
 		m_Logger.Write(FromKernel, LogWarning, "Continuing with DHCP configuration");
-	}
-	else if (m_Properties.GetNumber("use_dhcp", 0) == 0)
-	{
-		const u8 *pAddress = m_Properties.GetIPAddress("ip_address");
-		if (pAddress != 0)
-		{
-			m_Net.GetConfig()->SetIPAddress(pAddress);
-		}
-		else
-		{
-			return FALSE;
-		}
-
-		pAddress = m_Properties.GetIPAddress("net_mask");
-		if (pAddress != 0)
-		{
-			m_Net.GetConfig()->SetNetMask(pAddress);
-		}
-		else
-		{
-			return FALSE;
-		}
-
-		pAddress = m_Properties.GetIPAddress("default_gateway");
-		if (pAddress != 0)
-		{
-			m_Net.GetConfig()->SetDefaultGateway(pAddress);
-		}
-		else
-		{
-			return FALSE;
-		}
-
-		pAddress = m_Properties.GetIPAddress("name_server");
-		if (pAddress != 0)
-		{
-			m_Net.GetConfig()->SetDNSServer(pAddress);
-		}
-		else
-		{
-			return FALSE;
-		}
 	}
 
 	return TRUE;
+}
+
+TShutdownMode CKernel::Run(void) {
+	OSCParams oscparms;
+
+	if (oscparms.Load()) {
+		oscparms.Dump();
+	}
+
+	m_Logger.Write (FromKernel, LogNotice, "[V%s] Compiled on %s at %s", SOFTWARE_VERSION, __DATE__,  __TIME__);
+	m_Logger.Write(FromKernel, LogNotice, "%s %dMB (%s)", m_MachineInfo.GetMachineName(), m_MachineInfo.GetRAMSize(),  m_MachineInfo.GetSoCName());
+
+	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
+	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
+
+	network_init(&m_Net);
+	network_begin(nIncomingPort);
+
+	CString IPString;
+	m_Net.GetConfig ()->GetIPAddress ()->Format (&IPString);
+	m_Logger.Write (FromKernel, LogNotice, "OSC Server running at %s:%u, outport:%u", (const char *) IPString, nIncomingPort, nOutgoingPort);
+
+	COSCWS28xx oscws28xx(&m_Interrupt, &m_Screen, nOutgoingPort);
+
+	oscws28xx.Start();
+	m_BlinkTask.SetFrequency(1);
+
+	for (;;) {
+		oscws28xx.Run();
+		m_Scheduler.Yield();
+	}
+
+	return ShutdownHalt;
 }

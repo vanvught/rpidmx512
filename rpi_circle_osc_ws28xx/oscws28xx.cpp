@@ -34,90 +34,70 @@
 #include <circle/logger.h>
 #include <assert.h>
 
-#include "Properties/propertiesfile.h"
-#include "ws28xxstripe.h"
+#include "deviceparams.h"
+
+#include "circle/ws28xxstripe.h"
+
+#include "network.h"
 
 #include "oscws28xx.h"
 #include "osc.h"
 #include "oscsend.h"
 #include "oscmessage.h"
 
-#define PORT_REMOTE	9000
-#define PROPERTIES_FILE		"devices.txt"
-
-static const char FromOscWS28xx[] = "oscws28xx";
-
-static const char sLedTypes[7][8] = { "WS2801", "WS2811", "WS2812", "WS2812B", "WS2813", "SK6812", "SK6812W" };
-
-COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, CFATFileSystem *pFileSystem, unsigned nLocalPort)
-:	OSCServer (nLocalPort),
-	m_pInterrupt (pInterrupt),
+COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, unsigned nRemotePort)
+:	m_pInterrupt (pInterrupt),
 	m_pTarget (pTarget),
+	m_nRemotePort(nRemotePort),
 	m_pLEDStripe (0),
 	m_LEDType (WS2801),
 	m_nLEDCount (170),
-	m_Properties (PROPERTIES_FILE, pFileSystem),
 	m_Blackout (FALSE)
 {
-	m_RGBWColour[0] = 0;
-	m_RGBWColour[1] = 0;
-	m_RGBWColour[2] = 0;
-	m_RGBWColour[3] = 0;
-
-	if (!m_Properties.Load()) {
-		CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "Error loading properties from %s (line %u)", PROPERTIES_FILE, m_Properties.GetErrorLine());
-	} else {
-		const char *pType = m_Properties.GetString("led_type");
-		if (pType == 0) {
-			CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "No led_type configured");
-			CLogger::Get ()->Write(FromOscWS28xx, LogNotice, "Using default type : WS2801");
-		} else {
-			if (strcmp(pType, sLedTypes[WS2801]) == 0) {
-				m_LEDType = WS2801;
-			} else if (strcmp(pType, sLedTypes[WS2811]) == 0) {
-				m_LEDType = WS2811;
-			} else if (strcmp(pType, sLedTypes[WS2812]) == 0) {
-				m_LEDType = WS2812;
-			} else if (strcmp(pType, sLedTypes[WS2812B]) == 0) {
-				m_LEDType = WS2812B;
-			} else if (strcmp(pType, sLedTypes[WS2813]) == 0) {
-				m_LEDType = WS2813;
-			} else if (strcmp(pType, sLedTypes[SK6812]) == 0) {
-				m_LEDType = SK6812;
-			} else if (strcmp(pType, sLedTypes[SK6812W]) == 0) {
-				m_LEDType = SK6812W;
-			} else {
-				CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "Wrong led_type configured (%s)", pType);
-			}
-		}
-
-		unsigned nLEDCount = m_Properties.GetNumber("led_count");
-		if (nLEDCount == 0) {
-			CLogger::Get ()->Write(FromOscWS28xx, LogWarning, "No or wrong led_count configured");
-			CLogger::Get ()->Write(FromOscWS28xx, LogNotice, "Using default led count : 170");
-		} else {
-			m_nLEDCount = nLEDCount;
-		}
+	if(m_DeviceParams.Load()) {
+		m_DeviceParams.Dump();
+		m_LEDType = m_DeviceParams.GetLedType();
+		m_nLEDCount = m_DeviceParams.GetLedCount();
 	}
 
+}
+
+COSCWS28xx::~COSCWS28xx(void) {
+	Stop();
+}
+
+void COSCWS28xx::Start(void) {
 	assert(m_pLEDStripe == 0);
 	m_pLEDStripe = new CWS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Initialize();
+	m_pLEDStripe->Blackout();
 }
 
-COSCWS28xx::~COSCWS28xx(void) {
+void COSCWS28xx::Stop(void) {
+	m_pLEDStripe->Blackout();
+
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
+
+	m_Blackout = true;
 }
 
-void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, u32 ForeignIP) {
+void COSCWS28xx::Run(void) {
+	uint16_t from_port;
+	uint32_t from_ip;
 
-	if (OSC::isMatch((const char*) Buffer, "/ping")) {
-		OSCSend MsgSend(ForeignIP, PORT_REMOTE, "/pong", 0);
-	} else if (OSC::isMatch((const char*) Buffer, "/dmx1/blackout")) {
-		OSCMessage Msg(Buffer, (unsigned) BytesReceived);
+	const int len = network_recvfrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+
+	if (len == 0) {
+		return;
+	}
+
+	if (OSC::isMatch((const char*) m_packet, "/ping")) {
+		OSCSend MsgSend(from_ip, m_nRemotePort, "/pong", 0);
+	} else if (OSC::isMatch((const char*) m_packet, "/dmx1/blackout")) {
+		OSCMessage Msg(m_packet, (unsigned) len);
 		m_Blackout = (unsigned)Msg.GetFloat(0) == 1;
 
 		while (m_pLEDStripe->IsUpdating()) {
@@ -129,10 +109,10 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, u32 ForeignIP) {
 		} else {
 			m_pLEDStripe->Update();
 		}
-	} else if (OSC::isMatch((const char*) Buffer, "/dmx1/*")) {
-		OSCMessage Msg(Buffer, (unsigned) BytesReceived);
+	} else if (OSC::isMatch((const char*) m_packet, "/dmx1/*")) {
+		OSCMessage Msg(m_packet, (unsigned) len);
 
-		const char *p = (const char *) Buffer + 6;
+		const char *p = (const char *) m_packet + 6;
 		const unsigned dmx_channel = (unsigned) (*p - '0');
 		const unsigned dmx_value = (unsigned) Msg.GetFloat(0);
 
@@ -167,11 +147,11 @@ void COSCWS28xx::MessageReceived(u8 *Buffer, int BytesReceived, u32 ForeignIP) {
 		if (!m_Blackout) {
 			m_pLEDStripe->Update();
 		}
-	} else if (OSC::isMatch((const char*) Buffer, "/2")) {
-		OSCSend MsgSendInfo(ForeignIP, PORT_REMOTE, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
-		OSCSend MsgSendModel(ForeignIP, PORT_REMOTE, "/info/model", "s", m_MachineInfo.GetMachineName());
-		OSCSend MsgSendSoc(ForeignIP, PORT_REMOTE, "/info/soc", "s", m_MachineInfo.GetSoCName());
-		OSCSend MsgSendLedType(ForeignIP, PORT_REMOTE, "/info/ledtype", "s", sLedTypes[m_LEDType]);
-		OSCSend MsgSendLedCount(ForeignIP, PORT_REMOTE, "/info/ledcount", "i", m_nLEDCount);
+	} else if (OSC::isMatch((const char*) m_packet, "/2")) {
+		OSCSend MsgSendModel(from_ip, m_nRemotePort, "/info/model", "s", m_MachineInfo.GetMachineName());
+		OSCSend MsgSendSoc(from_ip, m_nRemotePort, "/info/soc", "s", m_MachineInfo.GetSoCName());
+		OSCSend MsgSendInfo(from_ip, m_nRemotePort, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
+		OSCSend MsgSendLedType(from_ip, m_nRemotePort, "/info/ledtype", "s", DeviceParams::GetLedTypeString(m_LEDType));
+		OSCSend MsgSendLedCount(from_ip, m_nRemotePort, "/info/ledcount", "i", m_nLEDCount);
 	}
 }

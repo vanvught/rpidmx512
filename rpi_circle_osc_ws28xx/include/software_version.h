@@ -1,12 +1,8 @@
 /**
- * @file oscws28xx.h
+ * @file software_version.h
  *
  */
-/*
- * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
- */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,43 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef _oscws2801_h
-#define _oscws2801_h
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include <circle/interrupt.h>
-#include <circle/device.h>
-#include <circle/machineinfo.h>
+static const char SOFTWARE_VERSION[] = "1.8";
 
-#include "deviceparams.h"
-#include "circle/ws28xxstripe.h"
-
-#ifndef FRAME_BUFFER_SIZE
-#define FRAME_BUFFER_SIZE	1024
-#endif
-
-class COSCWS28xx
-{
-public:
-	COSCWS28xx(CInterruptSystem*, CDevice *, unsigned);
-	~COSCWS28xx(void);
-
-	void Start(void);
-	void Stop(void);
-
-	void Run(void);
-
-private:
-	CInterruptSystem	*m_pInterrupt;
-	CDevice				*m_pTarget;
-	unsigned			m_nRemotePort;
-	CMachineInfo 		m_MachineInfo;
-	CWS28XXStripe		*m_pLEDStripe;
-	TWS28XXType			m_LEDType;
-	unsigned			m_nLEDCount;
-	boolean 			m_Blackout;
-	u8 					m_RGBWColour[4];
-	DeviceParams		m_DeviceParams;
-	uint8_t 			m_packet[FRAME_BUFFER_SIZE];
-};
-
-#endif
+#endif /* SOFTWARE_VERSION_H_ */

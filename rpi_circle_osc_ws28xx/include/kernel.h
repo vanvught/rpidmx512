@@ -44,8 +44,12 @@
 #include <circle/net/netsubsystem.h>
 #include <circle/sched/scheduler.h>
 #include <circle/usb/dwhcidevice.h>
+#include <circle/machineinfo.h>
+// Addon's
 #include <SDCard/emmc.h>
-#include <Properties/propertiesfile.h>
+#include "fatfs/ff.h"
+
+#include "circle/blinktask.h"
 
 enum TShutdownMode
 {
@@ -80,10 +84,13 @@ private:
 	CLogger				m_Logger;
 	CDWHCIDevice		m_DWHCI;
 	CEMMCDevice			m_EMMC;
-	CFATFileSystem		m_FileSystem;
-	CPropertiesFile		m_Properties;
 	CScheduler			m_Scheduler;
 	CNetSubSystem		m_Net;
+
+	CMachineInfo 		m_MachineInfo;
+	CBlinkTask 			m_BlinkTask;
+
+	FATFS				m_FileSystem;
 };
 
 #endif
