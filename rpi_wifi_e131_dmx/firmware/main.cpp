@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +25,17 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <netinet/in.h>
+#include <uuid/uuid.h>
 
 #include "hardware.h"
-#include "hardware_uuid.h"
-
-#include "led.h"
-
 #include "console.h"
-#include "oled.h"
+#include "display.h"
 
-#include "inet.h"
-#include "uuid.h"
+#include "ledblinktask.h"
 
-#include "e131.h"
 #include "e131bridge.h"
+#include "e131uuid.h"
 #include "e131params.h"
 
 #include "dmxsender.h"
@@ -46,55 +43,52 @@
 #include "dmxmonitor.h"
 
 #include "wifi.h"
-#include "wifi_udp.h"
+#include "network.h"
 
 #include "util.h"
 
 #include "software_version.h"
 
 extern "C" {
-
+extern void network_init(void);
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
-	_output_type output_type = OUTPUT_TYPE_MONITOR;
 	E131Params e131params;
+	E131Uuid e131uuid;
 	DMXParams dmxparams;
 	DMXSender dmx;
 	DMXMonitor monitor;
+	Display display(0,8);
+	LedBlinkTask ledblinktask;
 	uuid_t uuid;
-	char uuid_str[UUID_STRING_LENGTH + 1] ALIGNED;
-	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
-	bool oled_connected = false;
+	char uuid_str[UUID_STRING_LENGTH + 1];
 	struct ip_info ip_config;
-
-	oled_connected = oled_start(&oled_info);
 
 	(void) e131params.Load();
 
-	if (e131params.isHaveCustomCid()) {
-		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
-		uuid_str[UUID_STRING_LENGTH] = '\0';
-		uuid_parse((const char *)uuid_str, uuid);
-	} else {
-		hardware_uuid(uuid);
-		uuid_unparse(uuid, uuid_str);
-	}
+	TOutputType tOutputType = e131params.GetOutputType();
 
-	output_type = e131params.GetOutputType();
-
-	if (output_type == OUTPUT_TYPE_MONITOR) {
+	if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		//
 	} else {
-		output_type = OUTPUT_TYPE_DMX;
+		tOutputType = OUTPUT_TYPE_DMX;
 		(void) dmxparams.Load();
 	}
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
-	printf("WiFi sACN E1.31 DMX Out / Real-time DMX Monitor");
+	const bool IsOledConnected = display.isDetected();
 
-	OLED_CONNECTED(oled_connected, oled_puts(&oled_info, "WiFi sACN E1.31"));
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+
+	console_puts("WiFi sACN E1.31 ");
+	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("DMX Output");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_puts(" / ");
+	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Real-time DMX Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
 
 	console_set_top_row(3);
 
@@ -103,19 +97,33 @@ void notmain(void) {
 			;
 	}
 
-	console_status(CONSOLE_YELLOW, "Starting UDP ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Starting UDP ..."));
+	console_status(CONSOLE_YELLOW, "Network init ...");
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Network init ..."));
 
-	wifi_udp_begin(E131_DEFAULT_PORT);
+	network_init();
+
+	if (e131params.isHaveCustomCid()) {
+		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
+		uuid_str[UUID_STRING_LENGTH] = '\0';
+		uuid_parse((const char *)uuid_str, uuid);
+	} else {
+		e131uuid.GetHardwareUuid(uuid);
+		uuid_unparse(uuid, uuid_str);
+	}
+
+	console_status(CONSOLE_YELLOW, "Starting UDP ...");
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting UDP ..."));
+
+	network_begin(E131_DEFAULT_PORT);
 
 	console_status(CONSOLE_YELLOW, "Join group ...");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Join group ..."));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Join group ..."));
 
-	uint32_t group_ip;
+	struct in_addr group_ip;
 	(void)inet_aton("239.255.0.0", &group_ip);
 	const uint16_t universe = e131params.GetUniverse();
-	group_ip = group_ip | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
-	wifi_udp_joingroup(group_ip);
+	group_ip.s_addr = group_ip.s_addr | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
+	network_joingroup(group_ip.s_addr);
 
 	E131Bridge bridge;
 
@@ -123,22 +131,12 @@ void notmain(void) {
 	bridge.setUniverse(universe);
 	bridge.setMergeMode(e131params.GetMergeMode());
 
-	if (output_type == OUTPUT_TYPE_MONITOR) {
+	if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		bridge.SetOutput(&monitor);
 		console_set_top_row(20);
 	} else {
+		dmxparams.Set(&dmx);
 		bridge.SetOutput(&dmx);
-
-		dmx.SetBreakTime(dmxparams.GetBreakTime());
-		dmx.SetMabTime(dmxparams.GetMabTime());
-
-		const uint8_t refresh_rate = dmxparams.GetRefreshRate();
-		uint32_t period = (uint32_t) 0;
-
-		if (refresh_rate != (uint8_t) 0) {
-			period = (uint32_t) (1E6 / refresh_rate);
-		}
-		dmx.SetPeriodTime(period);
 	}
 
 	printf("\nBridge configuration\n");
@@ -147,58 +145,54 @@ void notmain(void) {
 	printf(" CID          : %s\n", uuid_str);
 	printf(" Universe     : %d\n", bridge.getUniverse());
 	printf(" Merge mode   : %s\n", bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip));
+	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip.s_addr));
 	printf(" Unicast ip   : " IPSTR "\n\n", IP2STR(ip_config.ip.addr));
 
-	if (output_type == OUTPUT_TYPE_DMX) {
+	if (tOutputType == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
 		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
 		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
 		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
 	}
 
-	if (oled_connected) {
-		oled_set_cursor(&oled_info, 0, 0);
-		oled_puts(&oled_info, "WiFi sACN E1.31 ");
+	if (IsOledConnected) {
+		display.Write(1, "WiFi sACN E1.31 ");
 
-		switch (output_type) {
+		switch (tOutputType) {
 		case OUTPUT_TYPE_DMX:
-			oled_puts(&oled_info, "DMX");
+			display.PutString("DMX");
 			break;
 		case OUTPUT_TYPE_MONITOR:
-			oled_puts(&oled_info, "Mon");
+			display.PutString("Mon");
 			break;
 		default:
 			break;
 		}
 
-		oled_set_cursor(&oled_info, 1, 0);
 		if (wifi_get_opmode() == WIFI_STA) {
-			(void) oled_printf(&oled_info, "S: %s", wifi_get_ssid());
+			(void) display.Printf(2, "S: %s", wifi_get_ssid());
 		} else {
-			(void) oled_printf(&oled_info, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
+			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
-		oled_set_cursor(&oled_info, 2, 0);
-		(void) oled_puts(&oled_info, "CID: ");
-		(void) oled_puts(&oled_info, uuid_str);
-		oled_set_cursor(&oled_info, 4, 0);
-		(void) oled_printf(&oled_info, "U: %d M: %s", bridge.getUniverse(), bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-		oled_set_cursor(&oled_info, 5, 0);
-		(void) oled_printf(&oled_info, "M: " IPSTR "", IP2STR(group_ip));
-		oled_set_cursor(&oled_info, 6, 0);
-		(void) oled_printf(&oled_info, "U: " IPSTR "", IP2STR(ip_config.ip.addr));
+		(void) display.Printf(3, "CID: ");
+		(void) display.PutString(uuid_str);
+		(void) display.Printf(5, "U: %d M: %s", bridge.getUniverse(), bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
+		(void) display.Printf(6, "M: " IPSTR "", IP2STR(group_ip.s_addr));
+		(void) display.Printf(7, "U: " IPSTR "", IP2STR(ip_config.ip.addr));
 	}
 
 	console_status(CONSOLE_GREEN, "Bridge is running");
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, "Bridge is running"));
+	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Bridge is running"));
 
 	hardware_watchdog_init();
 
 	for (;;) {
 		hardware_watchdog_feed();
+
 		(void) bridge.Run();
-		led_blink();
+
+		ledblinktask.Run();
 	}
 }
 
