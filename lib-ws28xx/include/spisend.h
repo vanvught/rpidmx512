@@ -40,13 +40,13 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+	void SetData(uint8_t, const uint8_t *, uint16_t);
 
 	void SetLEDType(const TWS28XXType);
-	const TWS28XXType GetLEDType(void);
+	TWS28XXType GetLEDType(void) const;
 
-	void SetLEDCount(const uint16_t);
-	const uint16_t GetLEDCount(void);
+	void SetLEDCount(uint16_t);
+	uint16_t GetLEDCount(void) const;
 
 private:
 	WS28XXStripe	*m_pLEDStripe;

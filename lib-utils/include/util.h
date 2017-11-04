@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )								///<
 
@@ -51,38 +52,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*@unused@*/inline static int isdigit(const int c) {
-	return (c >= (int) '0' && c <= (int) '9') ? 1 : 0;
-}
-
-/*@unused@*/inline static int isxdigit(const int c) {
-	return ((isdigit(c) != 0) || (((unsigned) c | 32) - (int) 'a' < 6)) ? 1 : 0;
-}
-
-/*@unused@*/inline static int isprint(const int c) {
-	return ((c >= (int) ' ' && c <= (int) '~')) ? 1 : 0;
-}
-
-/*@unused@*/inline static int isupper(const int c) {
-	return (c >= (int) 'A' && c <= (int) 'Z') ? 1 : 0;
-}
-
-/*@unused@*/inline static int islower(const int c) {
-	return (c >= (int) 'a' && c <= (int) 'z') ? 1 : 0;
-}
-
-/*@unused@*/inline static int isalpha(const int c) {
-	return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0;
-}
-
-/*@unused@*/inline static int tolower(const int c) {
-	return ((isupper(c) != 0) ? (c + 32) : c);
-}
-
-/*@unused@*/inline static int toupper(const int c) {
-	return ((islower(c) != 0) ? (c - 32) : c);
-}
 
 /*@unused@*/inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;

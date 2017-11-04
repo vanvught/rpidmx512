@@ -189,7 +189,7 @@ void MotorParams::Dump(void) {
 	DEBUG1_EXIT;
 }
 
-float MotorParams::CalcIntersectSpeed(void) {
+float MotorParams::CalcIntersectSpeed(void) const {
 	if (isMaskSet(SET_RESISTANCE_MASK) && isMaskSet(SET_INDUCTANCE_MASK)) {
 		return ((float) 4 * m_fResistance) / (2 * M_PI * m_fInductance * 0.001);
 	} else {
@@ -197,10 +197,10 @@ float MotorParams::CalcIntersectSpeed(void) {
 	}
 }
 
-uint32_t MotorParams::CalcIntersectSpeedReg(float f) {
+uint32_t MotorParams::CalcIntersectSpeedReg(float f) const {
 	return (f * (TICK_S * (1 << 26)));
 }
 
-bool MotorParams::isMaskSet(uint16_t mask) {
+bool MotorParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

@@ -6,7 +6,7 @@ CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ../lib-ledblink/include
 
-OBJS	= src/ledblink.o
+OBJS	= src/circle/blinktask.o src/ledblink.o
 
 EXTRACLEAN = src/*.o
 

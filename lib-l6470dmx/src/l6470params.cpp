@@ -228,6 +228,6 @@ void L6470Params::Dump(void) {
 	DEBUG1_EXIT;
 }
 
-bool L6470Params::isMaskSet(uint16_t mask) {
+bool L6470Params::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

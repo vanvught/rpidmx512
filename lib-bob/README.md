@@ -18,7 +18,7 @@ Supported devices are :
 - BitWizard Dimmer SPI ([http://bitwizard.nl/shop/expansion-boards/Dimmer](http://bitwizard.nl/shop/expansion-boards/Dimmer))
 - BitWizard Relay SPI Relay ([http://bitwizard.nl/shop/expansion-boards/Relay](http://bitwizard.nl/shop/expansion-boards/Relay))
 - HTU21D Temperature & Humidity Sensor I2C ([https://opencircuit.nl/Product/11408/HTU21D-Luchtvochtigheid-en-temperatuur-sensor-GY-21](https://opencircuit.nl/Product/11408/HTU21D-Luchtvochtigheid-en-temperatuur-sensor-GY-21))
-- LCD Module TC1602A ([https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/](https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/))
+- LCD Module TC1602A  / PCF8574T I2C ([https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/](https://www.hobbyelectronica.nl/product/1602-lcd-i2c-blauw-backlight/))
 - MAX7219 8-Digit LED Display Driver SPI ([https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf](https://datasheets.maximintegrated.com/en/ds/MAX7219-MAX7221.pdf))
 - MAX7219 8x 7-Segment module SPI ([https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel](https://opencircuit.nl/Product/10323/8x-7-Segment-module-serieel))
 - MAX7219 Dot matrix module SPI ([https://opencircuit.nl/Product/11511/MAX7219-4x-Dot-matrix-module](https://opencircuit.nl/Product/11511/MAX7219-4x-Dot-matrix-module))

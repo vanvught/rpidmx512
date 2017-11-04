@@ -84,9 +84,10 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 	}
 
 	if (m_LcdDisplay != 0) {
-		m_LcdDisplay->Start();
+		if (!m_LcdDisplay->Start()) {
+			m_LcdDisplay = 0;
+		}
 	}
-
 }
 
 void Display::Detect(uint8_t nCols, uint8_t nRows) {

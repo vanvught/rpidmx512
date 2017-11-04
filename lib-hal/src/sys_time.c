@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <time.h>
 
 #include "bcm2835_st.h"

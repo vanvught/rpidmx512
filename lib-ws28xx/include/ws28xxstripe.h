@@ -28,9 +28,6 @@
 
 #include <stdint.h>
 
-#define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
-#define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
-
 enum TWS28XXType {
 	WS2801 = 0,
 	WS2811,
@@ -39,11 +36,14 @@ enum TWS28XXType {
 	WS2813,
 	SK6812,
 	SK6812W
-} ;
+};
+
+#define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
+#define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 
 class WS28XXStripe {
 public:
-	WS28XXStripe(const uint16_t nLEDCount, const TWS28XXType Type, const uint32_t nClockSpeed);
+	WS28XXStripe(uint16_t nLEDCount, TWS28XXType Type, uint32_t nClockSpeed);
 	~WS28XXStripe(void);
 
 	unsigned GetLEDCount(void) const;
@@ -66,7 +66,5 @@ private:
 	uint8_t		*m_pBlackoutBuffer;
 	uint8_t		m_nHighCode;
 };
-
-
 
 #endif /* WS28XXSTRIPE_H_ */

@@ -2,7 +2,7 @@
  * @file arm.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define ARM_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef enum arm_vector {
 	ARM_VECTOR_RESET = 0x00,			///< Reset

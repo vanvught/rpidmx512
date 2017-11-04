@@ -44,7 +44,7 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+	void SetData(uint8_t, const uint8_t *, uint16_t);
 
 public:
 	void ReadConfigFiles(void);

@@ -29,11 +29,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum {
+#include "e131bridge.h"
+#include "e131.h"
+
+#define UUID_STRING_LENGTH	36
+
+enum TOutputType {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
-} _output_type;
+};
 
 class E131Params {
 public:
@@ -42,11 +47,32 @@ public:
 
 	bool Load(void);
 
-	const _output_type GetOutputType(void);
-	const uint16_t GetUniverse(void);
-	const TMerge GetMergeMode(void);
-	const bool isHaveCustomCid(void);
+	TOutputType GetOutputType(void) const;
+	uint16_t GetUniverse(void) const;
+	TMerge GetMergeMode(void) const;
+	bool isHaveCustomCid(void) const;
 	const char *GetCidString(void);
+
+	void Set(E131Bridge *);
+	void Dump(void);
+
+private:
+	bool isMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+private:
+    uint32_t m_bSetList;
+
+    uint16_t m_nUniverse;
+    TOutputType m_tOutputType;
+    TMerge m_tMergeMode;
+    char m_aCidString[UUID_STRING_LENGTH + 2];
+    bool m_bHaveCustomCid;
 };
 
 #endif /* E131PARAMS_H_ */

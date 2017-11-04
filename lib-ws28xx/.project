@@ -3,6 +3,7 @@
 	<name>lib-ws28xx</name>
 	<comment></comment>
 	<projects>
+		<project>Circle</project>
 		<project>lib-bcm2835</project>
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>

@@ -45,11 +45,11 @@ public:
 	void Dump(void);
 
 private:
-	bool isMaskSet(uint16_t);
+	bool isMaskSet(uint16_t) const;
 
 private:
-	float CalcIntersectSpeed(void);
-	uint32_t CalcIntersectSpeedReg(float);
+	float CalcIntersectSpeed(void) const;
+	uint32_t CalcIntersectSpeedReg(float) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

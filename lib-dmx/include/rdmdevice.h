@@ -27,6 +27,7 @@
 #define RDMDEVICE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 struct _rdm_device_info_data {
 	/*@shared@*//*@null@*/uint8_t *data;
@@ -42,20 +43,48 @@ public:
 	RDMDevice(void);
 	~RDMDevice(void);
 
-	void ReadConfigFile(void);
+	bool Load(void);
 
-	const uint8_t *GetUID(void);
+	const uint8_t *GetUID(void) const;
 
-	const uint8_t GetExtMonLevel(void);
+	uint8_t GetExtMonLevel(void) const;
 
-	void SetLabel(struct _rdm_device_info_data *);
+	void SetLabel(const struct _rdm_device_info_data *);
 	void GetLabel(struct _rdm_device_info_data *);
 
-	void SetManufacturerId(struct _rdm_device_info_data *);
+	void SetManufacturerId(const struct _rdm_device_info_data *);
 	void GetManufacturerId(struct _rdm_device_info_data *);
 
-	void SetManufacturerName(struct _rdm_device_info_data *);
+	void SetManufacturerName(const struct _rdm_device_info_data *);
 	void GetManufacturerName(struct _rdm_device_info_data *);
+
+	void Dump(void);
+
+private:
+	bool isMaskSet(uint16_t);
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+#if defined (__circle__)
+private:
+    void printf (const char *fmt, ...);
+#endif
+
+private:
+    uint32_t m_bSetList;
+	uint8_t m_aDeviceUID[RDM_UID_SIZE];
+	uint8_t m_aDeviceSN[DEVICE_SN_LENGTH];
+	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t m_nDeviceRootLabelLength;
+	char m_aDeviceManufacturerName[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
+	uint8_t m_nDdeviceManufacturerNameLength;
+	uint16_t m_nProductCategory;
+	uint16_t m_nProductDetail;
+	uint8_t m_nExtMonLevel;
 };
 
 #endif /* RDMDEVICE_H_ */

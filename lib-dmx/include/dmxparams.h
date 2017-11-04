@@ -2,7 +2,7 @@
  * @file dmxparams.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,9 @@
 #ifndef DMXPARAMS_H_
 #define DMXPARAMS_H_
 
+#include <dmxsender.h>
 #include <stdint.h>
+
 
 #define DMX_PARAMS_MIN_BREAK_TIME		9	///<
 #define DMX_PARAMS_DEFAULT_BREAK_TIME	9	///<
@@ -45,10 +47,32 @@ public:
 
 	bool Load(void);
 
-	const uint8_t GetBreakTime(void);
-	const uint8_t GetMabTime(void);
-	const uint8_t GetRefreshRate(void);
-};
+	uint8_t GetBreakTime(void) const;
+	uint8_t GetMabTime(void) const;
+	uint8_t GetRefreshRate(void) const;
 
+	void Set(DMXSender *);
+	void Dump(void);
+
+private:
+	bool isMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+#if defined (__circle__)
+private:
+    void printf (const char *fmt, ...);
+#endif
+
+private:
+    uint32_t m_bSetList;
+	uint8_t m_nBreakTime;	///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
+	uint8_t m_nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
+	uint8_t m_nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+};
 
 #endif /* DMXPARAMS_H_ */

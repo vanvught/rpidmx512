@@ -23,16 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-#if defined(__linux__) || defined (__CYGWIN__)
+#include <stddef.h>
 #include <ctype.h>
-#else
-#include "util.h"
-#endif
+#include <assert.h>
 
 #include "sscan.h"
 

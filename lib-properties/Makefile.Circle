@@ -1,0 +1,19 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ../lib-properties/include -I ../include
+INCLUDE	+= -I ../Circle/addon/fatfs
+
+OBJS	= src/readconfigfile.o src/sscan_uint8_t.o src/sscan_uint16_t.o src/sscan_uint32_t.o src/sscan_float.o src/sscan_char_p.o src/sscan_ip_address.o src/file.o
+
+EXTRACLEAN = src/*.o
+
+libproperties.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libproperties.a | $(PREFIX)c++filt > libproperties.lst
+
+include $(CIRCLEHOME)/Rules.mk

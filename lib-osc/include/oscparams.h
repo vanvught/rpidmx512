@@ -35,9 +35,30 @@ public:
 
 	bool Load(void);
 
-	const uint16_t GetIncomingPort(void);
-	const uint16_t GetOutgoingPort(void);
-};
+	uint16_t GetIncomingPort(void) const;
+	uint16_t GetOutgoingPort(void) const;
 
+	void Dump(void);
+
+private:
+	bool isMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+#if defined (__circle__)
+private:
+    void printf (const char *fmt, ...);
+#endif
+
+private:
+    uint32_t m_bSetList;
+
+	uint16_t m_nIncomingPort;
+	uint16_t m_nOutgoingPort;
+};
 
 #endif /* OSCPARAMS_H_ */

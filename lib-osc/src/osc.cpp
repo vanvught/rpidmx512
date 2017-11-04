@@ -2,7 +2,7 @@
  * @file osc.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,9 @@
 
 #ifdef __circle__
 #include <circle/util.h>
-
 #include "oscutil.h"
 #else
 #include <stddef.h>
-#include <string.h>
 #endif
 
 #include "osc.h"

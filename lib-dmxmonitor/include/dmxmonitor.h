@@ -2,7 +2,7 @@
  * @file dmxmonitor.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,10 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+	void SetData(uint8_t, const uint8_t *, uint16_t);
 
 #if defined (__linux__) || defined (__CYGWIN__)
-	void SetMaxDmxChannels(const uint16_t);
+	void SetMaxDmxChannels(uint16_t);
 
 private:
 	void DisplayDateTime(const char *);

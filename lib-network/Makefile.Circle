@@ -4,9 +4,11 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../lib-network/include
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-properties/include
+INCLUDE	+= -I ../include
 
-OBJS	= src/rpi_circle.o
+OBJS	= src/rpi_circle.o src/networkparams.o
 
 EXTRACLEAN = src/*.o
 

@@ -43,8 +43,7 @@ SPISend::SPISend(void) :
 		m_nChannelsPerLed(3) {
 }
 
-SPISend::~SPISend(void)
-{
+SPISend::~SPISend(void) {
 	this->Stop();
 }
 
@@ -56,15 +55,13 @@ void SPISend::Start(void) {
 	m_pLEDStripe->Blackout();
 }
 
-void SPISend::Stop(void)
-{
+void SPISend::Stop(void) {
 	m_pLEDStripe->Blackout();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length)
-{
+void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length) {
 	uint16_t i = 0;
 	uint16_t j = 0;
 
@@ -130,14 +127,14 @@ void SPISend::SetLEDType(TWS28XXType type) {
 	}
 }
 
-const TWS28XXType SPISend::GetLEDType(void) {
+TWS28XXType SPISend::GetLEDType(void) const {
 	return m_LEDType;
 }
 
-void SPISend::SetLEDCount(const uint16_t count) {
-	m_nLEDCount = count;
+void SPISend::SetLEDCount(uint16_t nCount) {
+	m_nLEDCount = nCount;
 }
 
-const uint16_t SPISend::GetLEDCount(void) {
+uint16_t SPISend::GetLEDCount(void) const {
 	return m_nLEDCount;
 }

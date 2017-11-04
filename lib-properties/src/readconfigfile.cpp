@@ -46,6 +46,8 @@ bool ReadConfigFile::Read(const char *pFileName) {
 	char buffer[128];
 	FILE *fp;
 
+	assert(pFileName != 0);
+
 	fp = fopen(pFileName, "r");
 
 	if (fp != NULL) {

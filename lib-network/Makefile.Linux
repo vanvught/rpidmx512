@@ -1,2 +1,4 @@
 #
+EXTRA_INCLUDES = ../lib-properties/include
+#
 include ../linux-template/lib/Rules.mk

@@ -23,62 +23,102 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdint.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined (__circle__)
+#include <circle/logger.h>
+#include <circle/stdarg.h>
+#include <circle/util.h>
 #define ALIGNED
-#include <string.h>
+#elif defined (__linux__) || defined (__CYGWIN__)
+#include <string>
+#define ALIGNED
 #else
 #include "util.h"
 #endif
 
-#include "osc.h"
 #include "oscparams.h"
+#include "osc.h"
 
-#include "read_config_file.h"
+#include "readconfigfile.h"
 #include "sscan.h"
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";
 static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";
 static const char PARAMS_OUTGOING_PORT[] ALIGNED = "outgoing_port";
 
-static uint16_t OSCParamsIncomingPort ALIGNED;
-static uint16_t OSCParamsOutgoingPort ALIGNED;
+void OSCParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
 
-static void process_line_read(const char *line) {
+	((OSCParams *) p)->callbackFunction(s);
+}
+
+void OSCParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
 	uint16_t value16;
 
-	if (sscan_uint16_t(line, PARAMS_INCOMING_PORT, &value16) == 2) {
-		OSCParamsIncomingPort = value16;
-	} else if (sscan_uint16_t(line, PARAMS_OUTGOING_PORT, &value16) == 2) {
-		OSCParamsOutgoingPort = value16;
+	if (Sscan::Uint16(pLine, PARAMS_INCOMING_PORT, &value16) == SSCAN_OK) {
+		m_nIncomingPort = value16;
+	} else if (Sscan::Uint16(pLine, PARAMS_OUTGOING_PORT, &value16) == SSCAN_OK) {
+		m_nOutgoingPort = value16;
 	}
 }
 
-OSCParams::OSCParams(void) {
-	OSCParamsIncomingPort = OSC_DEFAULT_INCOMING_PORT;
-	OSCParamsOutgoingPort = OSC_DEFAULT_OUTGOING_PORT;
+OSCParams::OSCParams(void): m_bSetList(0) {
+	m_nIncomingPort = OSC_DEFAULT_INCOMING_PORT;
+	m_nOutgoingPort = OSC_DEFAULT_OUTGOING_PORT;
 }
 
 OSCParams::~OSCParams(void) {
 }
 
 bool OSCParams::Load(void) {
-	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+	m_bSetList = 0;
+
+	ReadConfigFile configfile(OSCParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
-/**
- *
- * @return
- */
-const uint16_t OSCParams::GetIncomingPort(void) {
-	return OSCParamsIncomingPort;
+void OSCParams::Dump(void) {
+	if(m_bSetList == 0) {
+		return;
+	}
 }
 
-/**
- *
- * @return
- */
-const uint16_t OSCParams::GetOutgoingPort(void) {
-	return OSCParamsOutgoingPort;
+uint16_t OSCParams::GetIncomingPort(void) const {
+	return m_nIncomingPort;
 }
+
+uint16_t OSCParams::GetOutgoingPort(void) const {
+	return m_nOutgoingPort;
+}
+
+bool OSCParams::isMaskSet(uint16_t mask) const {
+	return (m_bSetList & mask) == mask;
+}
+
+#if defined (__circle__)
+void OSCParams::printf(const char *fmt, ...) {
+	assert(fmt != 0);
+
+	size_t fmtlen = strlen(fmt);
+	char fmtbuf[fmtlen + 1];
+
+	strcpy(fmtbuf, fmt);
+
+	if (fmtbuf[fmtlen - 1] == '\n') {
+		fmtbuf[fmtlen - 1] = '\0';
+	}
+
+	va_list var;
+	va_start(var, fmt);
+
+	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+
+	va_end(var);
+}
+#endif

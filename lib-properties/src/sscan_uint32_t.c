@@ -2,7 +2,7 @@
  * @file sscan_uin32_t.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stddef.h>
 #include <stdint.h>
-
-#if defined(__linux__) || defined (__CYGWIN__)
+#include <stddef.h>
 #include <ctype.h>
-#else
-#include "util.h"
-#endif
+#include <assert.h>
 
 #include "sscan.h"
 

@@ -7,7 +7,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ void DMXMonitor::DisplayDateTime(const char *pString) {
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld %s\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, pString);
 }
 
-void DMXMonitor::SetMaxDmxChannels(const uint16_t nMaxChannels) {
+void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
 
@@ -86,7 +86,7 @@ void DMXMonitor::Stop(void) {
 	DisplayDateTime("Stop");
 }
 
-void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16_t nLength) {
+void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	struct timeval tv;
 	uint8_t *p = (uint8_t *)pData;
 	int j;
@@ -140,7 +140,7 @@ void DMXMonitor::Stop(void) {
 	}
 }
 
-void DMXMonitor::SetData(const uint8_t nPort, const uint8_t *pData, const uint16_t nLength) {
+void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	uint8_t row = TOP_ROW;
 	uint8_t *p = (uint8_t *)pData;
 	uint16_t slot = 0;

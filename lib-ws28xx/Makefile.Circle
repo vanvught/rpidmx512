@@ -1,0 +1,20 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-properties/include -I ../lib-lightset/include
+INCLUDE	+= -I ../include
+
+OBJS	= src/deviceparams.o src/circle/ws28xxstripe.o src/circle/spisend.o
+
+EXTRACLEAN = src/deviceparams.o src/circle/*.o
+
+libws28xx.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libws28xx.a | $(PREFIX)c++filt > libws28xx.lst
+
+include $(CIRCLEHOME)/Rules.mk

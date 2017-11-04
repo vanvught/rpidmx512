@@ -2,7 +2,7 @@
  * @file sscan.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,6 +68,13 @@ public:
 		return sscan_char_p(a, b, c, d);
 	}
 
+	inline static int IpAddress(const char *a, const char *b, uint32_t *c) {
+		return sscan_ip_address(a, b, c);
+	}
+
+	inline static int Uuid(const char *a, const char *b, char *c, uint8_t *d) {
+		return sscan_uuid(a, b, c, d);
+	}
 private:
 };
 }

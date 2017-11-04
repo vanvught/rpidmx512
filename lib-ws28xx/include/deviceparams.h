@@ -2,7 +2,7 @@
  * @file devicesparams.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,11 @@
 
 #include <stdint.h>
 
-#include "ws28xxstripe.h"
-
-#include "util.h"
+#if defined (__circle__)
+#include "circle/spisend.h"
+#else
+#include "spisend.h"
+#endif
 
 class DeviceParams {
 public:
@@ -39,10 +41,33 @@ public:
 
 	bool Load(void);
 
-	const TWS28XXType GetLedType(void);
-	const uint16_t GetLedCount(void);
+	TWS28XXType GetLedType(void) const;
+	uint16_t GetLedCount(void) const;
 
-	const char *GetLedTypeString(void) ASSUME_ALIGNED;
+	void Set(SPISend *);
+	void Dump(void);
+
+public:
+	static const char *GetLedTypeString(TWS28XXType);
+
+private:
+	bool isMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+#if defined (__circle__)
+private:
+    void printf (const char *fmt, ...);
+#endif
+
+private:
+    uint32_t m_bSetList;
+	TWS28XXType tLedType;
+	uint16_t nLedCount;
 };
 
 #endif /* DEVICEPARAMS_H_ */

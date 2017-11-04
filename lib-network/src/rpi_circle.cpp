@@ -31,6 +31,7 @@
 #include <circle/usb/macaddress.h>
 #include <circle/logger.h>
 #include <circle/util.h>
+#include <circle/version.h>
 
 #include <stdint.h>
 #include <assert.h>
@@ -51,7 +52,7 @@ static bool _is_dhcp_used;
 static CNetSubSystem *_pNet;
 static CSocket *_pSocket = 0;
 
-static const char FromArtNetNet[] = "artnet_net";
+static const char FromArtNetNet[] = "network";
 
 union uip {
 	uint32_t u32;
@@ -143,8 +144,8 @@ uint16_t network_recvfrom(const uint8_t *packet, const uint16_t size, uint32_t *
 	const int bytes_received = _pSocket->ReceiveFrom((void *) packet, size, MSG_DONTWAIT, &IPAddressFrom, (u16 *) from_port);
 
 	if (bytes_received < 0) 	{
-		CLogger::Get()->Write(FromArtNetNet, LogPanic, "Cannot receive -> %i", bytes_received);
-	} else {
+		CLogger::Get()->Write(FromArtNetNet, LogError, "Cannot receive -> %u", bytes_received);
+	} else if (bytes_received > 0) {
 		ip = IPAddressFrom;
 	}
 
@@ -157,7 +158,7 @@ void network_sendto(const uint8_t *packet, const uint16_t size, const uint32_t t
 	CIPAddress DestinationIP(to_ip);
 
 	if ((_pSocket->SendTo((const void *) packet, (unsigned) size, MSG_DONTWAIT, DestinationIP, (u16) remote_port)) != size)	{
-		CLogger::Get()->Write(FromArtNetNet, LogPanic, "Cannot send");
+		CLogger::Get()->Write(FromArtNetNet, LogError, "Cannot send");
 	}
 }
 

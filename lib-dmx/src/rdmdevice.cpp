@@ -24,214 +24,212 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include "rdmdevice.h"
 
 #include "rdm.h"
 #include "rdm_e120.h"
-#include "rdmdevice.h"
 
-#include "read_config_file.h"
-#include "hardware.h"
-#include "util.h"
+#include "readconfigfile.h"
 #include "sscan.h"
 
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";							///<
+#include "hardware.h"
+#include "util.h"
+
+static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "http://www.raspberrypi-dmx.org";
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };					///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
+static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 
-static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";					///< Parameters file name
-static const char RDM_DEVICE_MANUFACTURER_NAME[] ALIGNED = "manufacturer_name";			///<
-static const char RDM_DEVICE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";				///<
-static const char RDM_DEVICE_LABEL[] ALIGNED = "device_label";							///<
-static const char RDM_DEVICE_EXTERNAL_MONITOR[] ALIGNED = "device_external_monitor";	///<
-static const char RDM_DEVICE_PRODUCT_CATEGORY[] ALIGNED = "product_category";			///<
-static const char RDM_DEVICE_PRODUCT_DETAIL[] ALIGNED = "product_detail";				///<
+static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";
+static const char RDM_DEVICE_MANUFACTURER_NAME[] ALIGNED = "manufacturer_name";
+static const char RDM_DEVICE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
+static const char RDM_DEVICE_LABEL[] ALIGNED = "device_label";
+static const char RDM_DEVICE_EXTERNAL_MONITOR[] ALIGNED = "device_external_monitor";
+static const char RDM_DEVICE_PRODUCT_CATEGORY[] ALIGNED = "product_category";
+static const char RDM_DEVICE_PRODUCT_DETAIL[] ALIGNED = "product_detail";
 
-// 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static uint8_t device_uid[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };		///<
-static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;										///<
-static char device_root_label[RDM_DEVICE_LABEL_MAX_LENGTH] ALIGNED;						///<
-static uint8_t device_root_label_length = (uint8_t) 0;									///<
+void RDMDevice::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
 
-static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH] ALIGNED;		///<
-static uint8_t device_manufacturer_name_length = (uint8_t) 0;							///<
+	((RDMDevice *) p)->callbackFunction(s);
+}
 
-static uint16_t product_category = E120_PRODUCT_CATEGORY_OTHER;
-static uint16_t product_detail = E120_PRODUCT_DETAIL_OTHER;
-
-static uint8_t ext_mon_level = (uint8_t) 0;												///<
-
-/**
- *
- * @param line
- */
-static void process_line_read(const char *line) {
+void RDMDevice::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
 	char value[8];
 	uint8_t len;
 
 	len = 1;
-	if (sscan_char_p(line, RDM_DEVICE_EXTERNAL_MONITOR, value, &len) == 2) {
+	if (Sscan::Char(pLine, RDM_DEVICE_EXTERNAL_MONITOR, value, &len) == SSCAN_OK) {
 		if (len == 1) {
-			if (isdigit((int)value[0])) {
-				ext_mon_level = (uint8_t)(value[0] - (char)'0');
+			if (isdigit((int) value[0])) {
+				m_nExtMonLevel = (uint8_t) (value[0] - (char) '0');
 			}
 		}
 		return;
 	}
 
 	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
-	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &len) == 2) {
-		device_manufacturer_name_length = len;
+	if (Sscan::Char(pLine, RDM_DEVICE_MANUFACTURER_NAME, m_aDeviceManufacturerName, &len) == SSCAN_OK) {
+		m_nDdeviceManufacturerNameLength = len;
 		return;
 	}
 
 	len = RDM_DEVICE_LABEL_MAX_LENGTH;
-	if (sscan_char_p(line, RDM_DEVICE_LABEL, device_root_label, &len) == 2) {
-		device_root_label_length = len;
+	if (Sscan::Char(pLine, RDM_DEVICE_LABEL, m_aDeviceRootLabel, &len) == SSCAN_OK) {
+		m_nDeviceRootLabelLength = len;
 		return;
 	}
 
 	len = 4;
 	memset(value, 0, sizeof(value) / sizeof(char));
-	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
+	if (Sscan::Char(pLine, RDM_DEVICE_MANUFACTURER_ID, value, &len) == SSCAN_OK) {
 		if (len == 4) {
 			const uint16_t v = (uint16_t) hex_uint32(value);
-			device_uid[0] = (uint8_t) (v >> 8);
-			device_uid[1] = (uint8_t) (v & 0xFF);
+			m_aDeviceUID[0] = (uint8_t) (v >> 8);
+			m_aDeviceUID[1] = (uint8_t) (v & 0xFF);
 		}
 		return;
 	}
 
 	len = 4;
 	memset(value, 0, sizeof(value) / sizeof(char));
-	if (sscan_char_p(line, RDM_DEVICE_PRODUCT_CATEGORY, value, &len) == 2) {
+	if (Sscan::Char(pLine, RDM_DEVICE_PRODUCT_CATEGORY, value, &len) == SSCAN_OK) {
 		if (len == 4) {
-			product_category = (uint16_t) hex_uint32(value);
+			m_nProductCategory = (uint16_t) hex_uint32(value);
 		}
 		return;
 	}
 
 	len = 4;
 	memset(value, 0, sizeof(value) / sizeof(char));
-	if (sscan_char_p(line, RDM_DEVICE_PRODUCT_DETAIL, value, &len) == 2) {
+	if (Sscan::Char(pLine, RDM_DEVICE_PRODUCT_DETAIL, value, &len) == SSCAN_OK) {
 		if (len == 4) {
-			product_detail = (uint16_t) hex_uint32(value);
+			m_nProductDetail = (uint16_t) hex_uint32(value);
 		}
 		return;
 	}
 }
 
-/**
- *
- */
-RDMDevice::RDMDevice(void) {
+RDMDevice::RDMDevice(void): m_bSetList(0) {
 	uint8_t mac_address[6];
 
 	if (hardware_get_mac_address(mac_address) == 0) {
-		device_uid[2] = mac_address[2];
-		device_uid[3] = mac_address[3];
-		device_uid[4] = mac_address[4];
-		device_uid[5] = mac_address[5];
+		m_aDeviceUID[2] = mac_address[2];
+		m_aDeviceUID[3] = mac_address[3];
+		m_aDeviceUID[4] = mac_address[4];
+		m_aDeviceUID[5] = mac_address[5];
 	}
 
-	device_uid[0] = DEVICE_MANUFACTURER_ID[0];
-	device_uid[1] = DEVICE_MANUFACTURER_ID[1];
+	m_aDeviceUID[0] = DEVICE_MANUFACTURER_ID[0];
+	m_aDeviceUID[1] = DEVICE_MANUFACTURER_ID[1];
 
-	device_sn[0] = device_uid[5];
-	device_sn[1] = device_uid[4];
-	device_sn[2] = device_uid[3];
-	device_sn[3] = device_uid[2];
+	m_aDeviceSN[0] = m_aDeviceUID[5];
+	m_aDeviceSN[1] = m_aDeviceUID[4];
+	m_aDeviceSN[2] = m_aDeviceUID[3];
+	m_aDeviceSN[3] = m_aDeviceUID[2];
 
 	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, DEVICE_MANUFACTURER_NAME_LENGTH);
-	(void *)memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, length);
-	device_manufacturer_name_length = length;
+	memcpy(m_aDeviceManufacturerName, DEVICE_MANUFACTURER_NAME, length);
+	m_nDdeviceManufacturerNameLength = length;
+
+	memset(m_aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
+	m_nDeviceRootLabelLength = 0;
+
+	m_nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
+	m_nProductDetail = E120_PRODUCT_DETAIL_OTHER;
+
+	m_nExtMonLevel = 0;
 }
 
-/**
- *
- */
 RDMDevice::~RDMDevice(void) {
 }
 
-/**
- *
- * @param info
- */
 void RDMDevice::GetLabel(struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)device_root_label;
-	info->length = device_root_label_length;
+	info->data = (uint8_t *)m_aDeviceRootLabel;
+	info->length = m_nDeviceRootLabelLength;
 }
 
-/**
- *
- * @param info
- */
-void RDMDevice::SetLabel(struct _rdm_device_info_data *info) {
+void RDMDevice::SetLabel(const struct _rdm_device_info_data *info) {
 	const uint8_t length = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
-	(void *)memcpy(device_root_label, info->data, length);
-	device_root_label_length = length;
+	(void *)memcpy(m_aDeviceRootLabel, info->data, length);
+	m_nDeviceRootLabelLength = length;
 }
 
-/**
- *
- * @param info
- */
 void RDMDevice::GetManufacturerId(struct _rdm_device_info_data *info) {
-	info->data[0] = device_uid[1];
-	info->data[1] = device_uid[0];
+	info->data[0] = m_aDeviceUID[1];
+	info->data[1] = m_aDeviceUID[0];
 	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
-/**
- *
- * @param info
- */
-void RDMDevice::SetManufacturerId(struct _rdm_device_info_data *info) {
+void RDMDevice::SetManufacturerId(const struct _rdm_device_info_data *info) {
 	if (info->length != RDM_DEVICE_MANUFACTURER_ID_LENGTH) {
 		return;
 	}
 
-	device_uid[1] = info->data[0];
-	device_uid[0] = info->data[1];
+	m_aDeviceUID[1] = info->data[0];
+	m_aDeviceUID[0] = info->data[1];
 }
 
-/**
- *
- * @return
- */
-const uint8_t* RDMDevice::GetUID(void) {
-	return (const uint8_t *)device_uid;
+const uint8_t* RDMDevice::GetUID(void) const {
+	return (const uint8_t *)m_aDeviceUID;
 }
 
-/**
- *
- * @param info
- */
-void RDMDevice::GetManufacturerName(struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)device_manufacturer_name;
-	info->length = device_manufacturer_name_length;
+void RDMDevice::GetManufacturerName(struct _rdm_device_info_data *info){
+	info->data = (uint8_t *)m_aDeviceManufacturerName;
+	info->length = m_nDdeviceManufacturerNameLength;
 }
 
-/**
- *
- * @param info
- */
-void RDMDevice::SetManufacturerName(struct _rdm_device_info_data *info) {
+void RDMDevice::SetManufacturerName(const struct _rdm_device_info_data *info) {
 	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, info->length);
-	(void *)memcpy(device_manufacturer_name, info->data, length);
-	device_manufacturer_name_length = length;
+	(void *)memcpy(m_aDeviceManufacturerName, info->data, length);
+	m_nDdeviceManufacturerNameLength = length;
 }
 
-/**
- *
- */
-void RDMDevice::ReadConfigFile(void) {
-	(void) read_config_file(RDM_DEVICE_FILE_NAME, &process_line_read);
+bool RDMDevice::Load(void) {
+	m_bSetList = 0;
+
+	ReadConfigFile configfile(RDMDevice::staticCallbackFunction, this);
+	return configfile.Read(RDM_DEVICE_FILE_NAME);
 }
 
-/**
- *
- * @return
- */
-const uint8_t RDMDevice::GetExtMonLevel(void) {
-	return ext_mon_level;
+void RDMDevice::Dump(void) {
+	if (m_bSetList == 0) {
+		return;
+	}
+
+	printf("RDM Device parameters \'%s\':\n", RDM_DEVICE_FILE_NAME);
 }
+
+uint8_t RDMDevice::GetExtMonLevel(void) const {
+	return m_nExtMonLevel;
+}
+
+bool RDMDevice::isMaskSet(uint16_t mask) {
+	return (m_bSetList & mask) == mask;
+}
+
+#if defined (__circle__)
+void RDMDevice::printf(const char *fmt, ...) {
+	assert(fmt != 0);
+
+	size_t fmtlen = strlen(fmt);
+	char fmtbuf[fmtlen + 1];
+
+	strcpy(fmtbuf, fmt);
+
+	if (fmtbuf[fmtlen - 1] == '\n') {
+		fmtbuf[fmtlen - 1] = '\0';
+	}
+
+	va_list var;
+	va_start(var, fmt);
+
+	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+
+	va_end(var);
+}
+#endif

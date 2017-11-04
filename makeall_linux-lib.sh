@@ -1,5 +1,7 @@
 #!/bin/bash
+
 DIR=lib-*
+
 for f in $DIR
 do
 	echo "[$f]"

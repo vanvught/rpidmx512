@@ -2,7 +2,7 @@
  * @file dmxparams.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,88 +23,162 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdint.h>
 
+#if defined (__circle__)
+#include <circle/logger.h>
+#include <circle/stdarg.h>
+#include <circle/util.h>
+#define ALIGNED
+#include "circle/dmxparams.h"
+#else
 #include "dmxparams.h"
-
-#include "read_config_file.h"
-#include "sscan.h"
 #include "util.h"
-#include "dmx.h"
+#endif
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "params.txt";				///< Parameters file name
-static const char PARAMS_BREAK_TIME[] ALIGNED = "dmxsend_break_time";		///<
-static const char PARAMS_MAB_TIME[] ALIGNED = "dmxsend_mab_time";			///<
-static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmxsend_refresh_rate";	///<
+#include "readconfigfile.h"
+#include "sscan.h"
 
-static uint8_t DMXParamsBreakTime ALIGNED = DMX_PARAMS_DEFAULT_BREAK_TIME;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
-static uint8_t DMXParamsMabTime ALIGNED = DMX_PARAMS_DEFAULT_MAB_TIME;			///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
-static uint8_t DMXParamsRefreshRate ALIGNED = DMX_PARAMS_DEFAULT_REFRESH_RATE;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+#include "common.h"
 
-/**
- *
- * @param line
- */
-static void process_line_read(const char *line) {
+#define DMX_PARAMS_MIN_BREAK_TIME		9
+#define DMX_PARAMS_DEFAULT_BREAK_TIME	9
+#define DMX_PARAMS_MAX_BREAK_TIME		127
+
+#define DMX_PARAMS_MIN_MAB_TIME			1
+#define DMX_PARAMS_DEFAULT_MAB_TIME		1
+#define DMX_PARAMS_MAX_MAB_TIME			127
+
+#define DMX_PARAMS_DEFAULT_REFRESH_RATE	40	///<
+
+#define SET_BREAK_TIME_MASK			1<<0
+#define SET_MAB_TIME_MASK			1<<1
+#define SET_REFRESH_RATE_MASK		1<<2
+
+static const char PARAMS_FILE_NAME[] ALIGNED = "params.txt";
+static const char PARAMS_BREAK_TIME[] ALIGNED = "dmxsend_break_time";
+static const char PARAMS_MAB_TIME[] ALIGNED = "dmxsend_mab_time";
+static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmxsend_refresh_rate";
+
+void DMXParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((DMXParams *) p)->callbackFunction(s);
+}
+
+void DMXParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
 	uint8_t value8;
 
-	if (sscan_uint8_t(line, PARAMS_BREAK_TIME, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_BREAK_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_BREAK_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_BREAK_TIME)) {
-			DMXParamsBreakTime = value8;
+			m_nBreakTime = value8;
+			m_bSetList |= SET_BREAK_TIME_MASK;
 		}
-	} else if (sscan_uint8_t(line, PARAMS_MAB_TIME, &value8) == 2) {
+	} else if (Sscan::Uint8(pLine, PARAMS_MAB_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_MAB_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_MAB_TIME)) {
-			DMXParamsMabTime = value8;
+			m_nMabTime = value8;
+			m_bSetList |= SET_MAB_TIME_MASK;
 		}
-	} else if (sscan_uint8_t(line, PARAMS_REFRESH_RATE, &value8) == 2) {
-		DMXParamsRefreshRate = value8;
+	} else if (Sscan::Uint8(pLine, PARAMS_REFRESH_RATE, &value8) == SSCAN_OK) {
+		m_nRefreshRate = value8;
+		m_bSetList |= SET_REFRESH_RATE_MASK;
 	}
 }
 
-/**
- *
- */
-DMXParams::DMXParams(void) {
-	DMXParamsBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
-	DMXParamsMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
-	DMXParamsRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
-
+DMXParams::DMXParams(void): m_bSetList(0) {
+	m_nBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
+	m_nMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
+	m_nRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
 }
 
-/**
- *
- */
 DMXParams::~DMXParams(void) {
 }
 
-/**
- *
- * @return
- */
 bool DMXParams::Load(void) {
-	return read_config_file(PARAMS_FILE_NAME, &process_line_read);
+	m_bSetList = 0;
+
+	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
-/**
- *
- * @return
- */
-const uint8_t DMXParams::GetBreakTime(void) {
-	return DMXParamsBreakTime;
+void DMXParams::Set(DMXSender *pDMXSender) {
+	assert(pDMXSender != 0);
+
+	if (isMaskSet(SET_BREAK_TIME_MASK)) {
+		pDMXSender->SetBreakTime(m_nBreakTime);
+	}
+
+	if (isMaskSet(SET_MAB_TIME_MASK)) {
+		pDMXSender->SetMabTime(m_nMabTime);
+	}
+
+	if (isMaskSet(SET_REFRESH_RATE_MASK)) {
+		uint32_t period = (uint32_t) 0;
+		if (m_nRefreshRate != (uint8_t) 0) {
+			period = (uint32_t) (1000000 / m_nRefreshRate);
+		}
+		pDMXSender->SetPeriodTime(period);
+	}
 }
 
-/**
- *
- * @return
- */
-const uint8_t DMXParams::GetMabTime(void) {
-	return DMXParamsMabTime;
+void DMXParams::Dump(void) {
+	if (m_bSetList == 0) {
+		return;
+	}
+
+	printf("DMX parameters \'%s\':\n", PARAMS_FILE_NAME);
+
+	if (isMaskSet(SET_BREAK_TIME_MASK)) {
+		printf(" Break Time : [%d]\n", (int) m_nBreakTime);
+	}
+
+	if (isMaskSet(SET_MAB_TIME_MASK)) {
+		printf(" MaB Time : [%d]\n", (int) m_nMabTime);
+	}
+
+	if (isMaskSet(SET_REFRESH_RATE_MASK)) {
+		printf(" Refresh Rate : [%d]\n", (int) m_nRefreshRate);
+	}
 }
 
-/**
- *
- * @return
- */
-const uint8_t DMXParams::GetRefreshRate(void) {
-	return DMXParamsRefreshRate;
+uint8_t DMXParams::GetBreakTime(void) const {
+	return m_nBreakTime;
 }
+
+uint8_t DMXParams::GetMabTime(void) const {
+	return m_nMabTime;
+}
+
+uint8_t DMXParams::GetRefreshRate(void) const {
+	return m_nRefreshRate;
+}
+
+bool DMXParams::isMaskSet(uint16_t mask) const {
+	return (m_bSetList & mask) == mask;
+}
+
+#if defined (__circle__)
+void DMXParams::printf(const char *fmt, ...) {
+	assert(fmt != 0);
+
+	size_t fmtlen = strlen(fmt);
+	char fmtbuf[fmtlen + 1];
+
+	strcpy(fmtbuf, fmt);
+
+	if (fmtbuf[fmtlen - 1] == '\n') {
+		fmtbuf[fmtlen - 1] = '\0';
+	}
+
+	va_list var;
+	va_start(var, fmt);
+
+	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+
+	va_end(var);
+}
+#endif
