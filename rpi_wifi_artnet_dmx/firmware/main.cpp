@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #include "monitor.h"
 #include "console.h"
 
+#include "ledblinktask.h"
+
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 #include "artnetparams.h"
@@ -42,8 +44,6 @@
 
 #include "spisend.h"
 #include "deviceparams.h"
-
-#include "ledblinktask.h"
 
 #include "timecode.h"
 #include "timesync.h"
@@ -62,13 +62,11 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
-	TOutputType output_type = OUTPUT_TYPE_DMX;
-	uint32_t period = (uint32_t) 0;
 	struct ip_info ip_config;
 	ArtNetParams artnetparams;
 	DMXParams dmxparams;
 	DeviceParams deviceparms;
-	Display display;
+	Display display(0,8);
 	bool oled_connected = false;
 	LedBlinkTask ledblinktask;
 
@@ -79,19 +77,19 @@ void notmain(void) {
 
 	(void) artnetparams.Load();
 
-	output_type = artnetparams.GetOutputType();
+	TOutputType tOutputType = artnetparams.GetOutputType();
 
-	if (output_type == OUTPUT_TYPE_SPI) {
+	if (tOutputType == OUTPUT_TYPE_SPI) {
 		(void) deviceparms.Load();
-	} else if (output_type != OUTPUT_TYPE_MONITOR){
-		output_type = OUTPUT_TYPE_DMX;
+	} else if (tOutputType != OUTPUT_TYPE_MONITOR){
+		tOutputType = OUTPUT_TYPE_DMX;
 		(void) dmxparams.Load();
 	}
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 
-	console_puts("WiFi ArtNet 3 Node ");
-	console_set_fg_color(output_type == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("WiFi Art-Net 3 Node ");
+	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
@@ -99,14 +97,13 @@ void notmain(void) {
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color(output_type == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color(output_type == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Pixel controller");
+	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
-	console_puts(" {4 Universes}");
 
 	console_set_top_row(3);
 
@@ -132,32 +129,23 @@ void notmain(void) {
 
 	node.SetLedBlink(&ledblinktask);
 
-	if (artnetparams.IsUseTimeCode() || output_type == OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeCode() || tOutputType == OUTPUT_TYPE_MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
 	}
 
-	if (artnetparams.IsUseTimeSync() || output_type == OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeSync() || tOutputType == OUTPUT_TYPE_MONITOR) {
 		timesync.Start();
 		node.SetTimeSyncHandler(&timesync);
 	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
-	if (output_type == OUTPUT_TYPE_DMX) {
+	if (tOutputType == OUTPUT_TYPE_DMX) {
+		dmxparams.Set(&dmx);
+
 		node.SetOutput(&dmx);
 		node.SetDirectUpdate(false);
-
-		dmx.SetBreakTime(dmxparams.GetBreakTime());
-		dmx.SetMabTime(dmxparams.GetMabTime());
-
-		const uint8_t refresh_rate = dmxparams.GetRefreshRate();
-
-		if (refresh_rate != (uint8_t) 0) {
-			period = (uint32_t) (1000000 / refresh_rate);
-		}
-
-		dmx.SetPeriodTime(period);
 
 		if(artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
@@ -166,44 +154,43 @@ void notmain(void) {
 			node.SetRdmHandler(&discovery);
 			node.SetLongName("Raspberry Pi Art-Net 3 Node RDM Controller");
 		}
-	} else if (output_type == OUTPUT_TYPE_SPI) {
-		spi.SetLEDCount(deviceparms.GetLedCount());
-		spi.SetLEDType(deviceparms.GetLedType());
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
+		deviceparms.Set(&spi);
 
 		node.SetOutput(&spi);
 		node.SetDirectUpdate(true);
 
-		const uint16_t led_count = spi.GetLEDCount();
-		const uint8_t universe = artnetparams.GetUniverse();
+		const uint16_t nLedCount = spi.GetLEDCount();
+		const uint8_t nUniverse = artnetparams.GetUniverse();
 
 		if (spi.GetLEDType() == SK6812W) {
-			if (led_count > 128) {
+			if (nLedCount > 128) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
 			}
-			if (led_count > 256) {
+			if (nLedCount > 256) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
 			}
-			if (led_count > 384) {
+			if (nLedCount > 384) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
 			}
 		} else {
-			if (led_count > 170) {
+			if (nLedCount > 170) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
+				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
 			}
-			if (led_count > 340) {
+			if (nLedCount > 340) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
+				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
 			}
-			if (led_count > 510) {
+			if (nLedCount > 510) {
 				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
 			}
 		}
-	} else if (output_type == OUTPUT_TYPE_MONITOR) {
+	} else if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		node.SetOutput(&monitor);
 		console_set_top_row(20);
 	}
@@ -218,30 +205,32 @@ void notmain(void) {
 	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
 	printf(" Active ports : %d", node.GetActiveOutputPorts());
 
-	if (output_type != OUTPUT_TYPE_MONITOR) {
+	if (tOutputType != OUTPUT_TYPE_MONITOR) {
 		console_puts("\n\n");
 	}
 
-	if (output_type == OUTPUT_TYPE_DMX) {
+	if (tOutputType == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
 		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
 		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
-		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
-	} else if (output_type == OUTPUT_TYPE_SPI) {
+		printf(" Refresh rate : %d\n", (int) (1000000 / dmx.GetPeriodTime()));
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
+		TWS28XXType tType = spi.GetLEDType();
+
 		printf("Led stripe parameters\n");
-		printf(" Type         : %s\n", deviceparms.GetLedTypeString());
+		printf(" Type         : %s [%d]\n", DeviceParams::GetLedTypeString(tType), tType);
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
 	if (oled_connected) {
-		display.Write(1, "WiFi ArtNet 3 ");
+		display.Write(1, "WiFi Art-Net 3 ");
 
-		switch (output_type) {
+		switch (tOutputType) {
 		case OUTPUT_TYPE_DMX:
 			if (artnetparams.IsRdm()) {
 				display.PutString("RDM");
 			} else {
-				display.PutString("DMX Out");
+				display.PutString("DMX");
 			}
 			break;
 		case OUTPUT_TYPE_SPI:
@@ -282,7 +271,7 @@ void notmain(void) {
 
 		(void) node.HandlePacket();
 
-		if (output_type == OUTPUT_TYPE_MONITOR) {
+		if (tOutputType == OUTPUT_TYPE_MONITOR) {
 			timesync.ShowSystemTime();
 		}
 
