@@ -5,12 +5,11 @@
 	<projects>
 		<project>Circle</project>
 		<project>lib-artnet</project>
+		<project>lib-dmx</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>
-		<project>rpi_circle_libartnet</project>
-		<project>rpi_circle_libdmx</project>
-		<project>rpi_circle_libws28xx</project>
+		<project>lib-ws28xx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

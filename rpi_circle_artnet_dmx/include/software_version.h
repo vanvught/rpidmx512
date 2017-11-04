@@ -1,8 +1,8 @@
 /**
- * @file spisend.h
+ * @file software_version.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef SPISEND_H_
-#define SPISEND_H_
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include <stdint.h>
-#include <circle/interrupt.h>
+static const char SOFTWARE_VERSION[] = "2.1";
 
-#include "ws28xxstripe.h"
-#include "lightset.h"
-
-class SPISend: public LightSet {
-public:
-	SPISend(CInterruptSystem *);
-	~SPISend(void);
-
-	void Start(void);
-	void Stop(void);
-
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
-
-	void SetLEDType(TWS28XXType);
-	const TWS28XXType GetLEDType(void);
-
-	void SetLEDCount(unsigned);
-	unsigned GetLEDCount(void);
-
-private:
-	CInterruptSystem	*m_pInterrupt;
-	CWS28XXStripe		*m_pLEDStripe;
-	TWS28XXType			m_LEDType;
-	unsigned			m_nLEDCount;
-
-	unsigned			m_nBeginIndexPortId1;
-	unsigned			m_nBeginIndexPortId2;
-	unsigned			m_nBeginIndexPortId3;
-
-	unsigned			m_nChannelsPerLed;
-};
-
-#endif /* SPISEND_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

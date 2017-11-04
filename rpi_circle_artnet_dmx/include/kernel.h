@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,13 +47,11 @@
 #include <circle/machineinfo.h>
 // Addon's
 #include "SDCard/emmc.h"
-#include "Properties/propertiesfile.h"
+#include "fatfs/ff.h"
 
-#include "blinktask.h"
-#include "dmxsend.h"
-#include "spisend.h"
-
-#include "artnetnode.h"
+#include "circle/dmxsender.h"
+#include "circle/spisend.h"
+#include "circle/blinktask.h"
 
 enum TShutdownMode
 {
@@ -88,17 +86,16 @@ private:
 	CLogger				m_Logger;
 	CDWHCIDevice		m_DWHCI;
 	CEMMCDevice			m_EMMC;
-	CFATFileSystem		m_FileSystem;
-	CPropertiesFile		m_Properties;
 	CScheduler			m_Scheduler;
 	CNetSubSystem		m_Net;
-	DMXSend				m_DMX;
+
+	DMXSender			m_DMX;
 	SPISend				m_SPI;
 
 	CMachineInfo 		m_MachineInfo;
-	boolean				m_HaveEMMC;
-	unsigned			m_OutputType;
 	CBlinkTask 			m_BlinkTask;
+
+	FATFS				m_FileSystem;
 };
 
 #endif
