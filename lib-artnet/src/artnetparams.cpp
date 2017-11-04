@@ -2,7 +2,7 @@
  * @file artnetparams.cpp
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,17 @@
 
 #include <stdint.h>
 #include <assert.h>
-
-#if defined(__linux__) || defined (__CYGWIN__)
-#define ALIGNED
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+
+#if defined (__circle__)
+#include <circle/logger.h>
+#include <circle/stdarg.h>
+#include <circle/util.h>
+#define ALIGNED
+#elif defined (__linux__) || defined (__CYGWIN__)
+#define ALIGNED
+#include <string.h>
 #else
 #include "util.h"
 #endif
@@ -191,48 +196,47 @@ ArtNetParams::ArtNetParams(void): m_bSetList(0) {
 ArtNetParams::~ArtNetParams(void) {
 }
 
-const tOutputType ArtNetParams::GetOutputType(void) {
+TOutputType ArtNetParams::GetOutputType(void) const {
 	return m_tOutputType;
 }
 
-const uint8_t ArtNetParams::GetNet(void) {
+uint8_t ArtNetParams::GetNet(void) const {
 	return m_nNet;
 }
 
-const uint8_t ArtNetParams::GetSubnet(void) {
+uint8_t ArtNetParams::GetSubnet(void) const {
 	return m_nSubnet;
 }
 
-const uint8_t ArtNetParams::GetUniverse(void) {
+uint8_t ArtNetParams::GetUniverse(void) const {
 	return m_nUniverse;
 }
 
-const bool ArtNetParams::IsUseTimeCode(void) {
+bool ArtNetParams::IsUseTimeCode(void) const {
 	return m_bUseTimeCode;
 }
 
-const bool ArtNetParams::IsUseTimeSync(void) {
+bool ArtNetParams::IsUseTimeSync(void) const {
 	return m_bUseTimeSync;
 }
 
-const bool ArtNetParams::IsRdm(void) {
+bool ArtNetParams::IsRdm(void) const {
 	return m_bEnableRdm;
 }
 
-const bool ArtNetParams::IsRdmDiscovery(void) {
+bool ArtNetParams::IsRdmDiscovery(void) const {
 	return m_bRdmDiscovery;
 }
 
-
-const uint8_t *ArtNetParams::GetShortName(void) {
+const uint8_t *ArtNetParams::GetShortName(void) const {
 	return m_aShortName;
 }
 
-const uint8_t *ArtNetParams::GetLongName(void) {
+const uint8_t *ArtNetParams::GetLongName(void) const {
 	return m_aLongName;
 }
 
-const uint8_t *ArtNetParams::GetManufacturerId(void) {
+const uint8_t *ArtNetParams::GetManufacturerId(void) const {
 	return m_aManufacturerId;
 }
 
@@ -244,6 +248,8 @@ bool ArtNetParams::Load(void) {
 }
 
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
+	assert(pArtNetNode != 0);
+
 	if (m_bSetList == 0) {
 		return;
 	}
@@ -273,7 +279,6 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 }
 
-#if defined(__linux__) || defined (__CYGWIN__)
 void ArtNetParams::Dump(void) {
 	if (m_bSetList == 0) {
 		return;
@@ -328,13 +333,12 @@ void ArtNetParams::Dump(void) {
 		printf(" OEM Value : 0x%.2X%.2X\n", m_aOemValue[0], m_aOemValue[1]);
 	}
 }
-#endif
 
-bool ArtNetParams::isMaskSet(uint16_t mask) {
+bool ArtNetParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-const uint16_t ArtNetParams::HexUint16(const char *s) {
+uint16_t ArtNetParams::HexUint16(const char *s) const {
 	uint16_t ret = 0;
 	uint8_t nibble;
 	uint8_t i = 0;
@@ -353,3 +357,25 @@ const uint16_t ArtNetParams::HexUint16(const char *s) {
 
 	return ret;
 }
+
+#if defined (__circle__)
+void ArtNetParams::printf(const char *fmt, ...) {
+	assert(fmt != 0);
+
+	size_t fmtlen = strlen(fmt);
+	char fmtbuf[fmtlen + 1];
+
+	strcpy(fmtbuf, fmt);
+
+	if (fmtbuf[fmtlen - 1] == '\n') {
+		fmtbuf[fmtlen - 1] = '\0';
+	}
+
+	va_list var;
+	va_start(var, fmt);
+
+	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+
+	va_end(var);
+}
+#endif

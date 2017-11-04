@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 #include "artnetnode.h"
 #include "common.h"
 
-enum  tOutputType {
+enum  TOutputType {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
@@ -51,27 +51,25 @@ public:
 
 	bool Load(void);
 
-	const uint8_t GetNet(void);
-	const uint8_t GetSubnet(void);
-	const uint8_t GetUniverse(void);
-	const uint8_t *GetShortName(void);
-	const uint8_t *GetLongName(void);
-	const tOutputType GetOutputType(void);
-	const uint8_t *GetManufacturerId(void);
+	uint8_t GetNet(void) const;
+	uint8_t GetSubnet(void) const;
+	uint8_t GetUniverse(void) const;
+	const uint8_t *GetShortName(void) const;
+	const uint8_t *GetLongName(void) const;
+	TOutputType GetOutputType(void) const;
+	const uint8_t *GetManufacturerId(void) const;
 
-	const bool IsUseTimeCode(void);
-	const bool IsUseTimeSync(void);
-	const bool IsRdm(void);
-	const bool IsRdmDiscovery(void);
+	bool IsUseTimeCode(void) const;
+	bool IsUseTimeSync(void) const;
+	bool IsRdm(void) const;
+	bool IsRdmDiscovery(void) const;
 
 	void Set(ArtNetNode *);
-#if defined(__linux__) || defined (__CYGWIN__)
 	void Dump(void);
-#endif
 
 private:
-	bool isMaskSet(uint16_t);
-	const uint16_t HexUint16(const char *);
+	bool isMaskSet(uint16_t) const;
+	uint16_t HexUint16(const char *) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -79,12 +77,17 @@ public:
 private:
     void callbackFunction(const char *s);
 
+#if defined (__circle__)
+private:
+    void printf (const char *fmt, ...);
+#endif
+
 private:
     uint32_t m_bSetList;
     uint8_t m_nNet;
     uint8_t m_nSubnet;
     uint8_t m_nUniverse;
-    tOutputType m_tOutputType;
+    TOutputType m_tOutputType;
     bool m_bUseTimeCode;
     bool m_bUseTimeSync;
     bool m_bEnableRdm;
