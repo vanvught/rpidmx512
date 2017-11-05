@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 	uname(&os_info);
 
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
-	puts("ArtNet 3 Node - Real-time DMX Monitor");
+	puts("Art-Net 3 Node - Real-time DMX Monitor");
 
 	if (network_init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
