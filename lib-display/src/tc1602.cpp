@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "tc1602.h"
 
@@ -38,14 +39,14 @@ extern void udelay(const uint64_t);
 #endif
 }
 
+#define MAX_COLS	20
+#define MAX_ROWS	4
+
 #define TC1602_RS 			(1<<0)	///< 0b00000001 # Register select bit
 #define TC1602_RW 			(1<<1)	///< 0b00000010 # Read/Write bit
 #define TC1602_EN			(1<<2)	///< 0b00000100 # Enable bit
 #define TC1602_BACKLIGHT	(1<<3)	///< 0b00001000 # Backlight bit
 	#define TC1602_NOBACKLIGHT	0x00
-
-#define TC1602_LINE_1		0x80	///< LCD RAM address for the 1st line
-#define TC1602_LINE_2		0xC0	///< LCD RAM address for the 2nd line
 
 #define EXEC_TIME_CMD		37		///< 37us
 #define EXEC_TIME_REG		43		///< 43us
@@ -92,8 +93,8 @@ Tc1602::Tc1602(void): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMo
 }
 
 Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
-	m_nCols = nCols;
-	m_nRows = nRows;
+	m_nCols = (nCols <= MAX_COLS) ? nCols : MAX_COLS;
+	m_nRows = (nRows <= MAX_ROWS) ? nRows : MAX_ROWS;
 }
 
 Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
@@ -101,8 +102,8 @@ Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t n
 		m_nSlaveAddress = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
-	m_nCols = nCols;
-	m_nRows = nRows;
+	m_nCols = (nCols <= MAX_COLS) ? nCols : MAX_COLS;
+	m_nRows = (nRows <= MAX_ROWS) ? nRows : MAX_ROWS;
 }
 
 Tc1602::~Tc1602(void) {
@@ -140,23 +141,20 @@ void Tc1602::PutChar(int c) {
 }
 
 void Tc1602::PutString(const char *pString) {
-	uint8_t i;
 	char *p = (char *)pString;
 
-	for (i = 0; *p != '\0'; i++) {
+	for (uint8_t i = 0; *p != '\0'; i++) {
 		PutChar((int) *p);
 		p++;
 	}
 }
 
 void Tc1602::Text(const char *data, uint8_t nLength) {
-	uint8_t i;
-
 	if (nLength > m_nCols) {
 		nLength = m_nCols;
 	}
 
-	for (i = 0; i < nLength; i++) {
+	for (uint8_t i = 0; i < nLength; i++) {
 		WriteReg((uint8_t) data[i]);
 	}
 }
@@ -177,7 +175,7 @@ void Tc1602::ClearLine(const uint8_t nLine) {
 
 	SetCursorPos(0, nLine - 1);
 
-	for (int i = 0; i < m_nCols; i++) {
+	for (uint8_t i = 0; i < m_nCols; i++) {
 		WriteReg((uint8_t) ' ');
 	}
 
@@ -228,8 +226,9 @@ void Tc1602::WriteReg(const uint8_t reg) {
 }
 
 void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
-	int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+	assert(row <= 3);
 
-	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row]));
+	const uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+
+	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
 }
-

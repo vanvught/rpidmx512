@@ -107,26 +107,29 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 			break;
 		}
-		m_LcdDisplay->Start();
-		m_tType = DISPLAY_SSD1306;
-		Printf(1, "SSD1306");
+		if (m_LcdDisplay->Start()) {
+			m_tType = DISPLAY_SSD1306;
+			Printf(1, "SSD1306");
+		}
 	} else if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
-		m_LcdDisplay->Start();
-		m_tType = DISPLAY_PCF8574T_1602;
-		Printf(1, "TC1602_PCF8574T");
+		if (m_LcdDisplay->Start()) {
+			m_tType = DISPLAY_PCF8574T_1602;
+			Printf(1, "TC1602_PCF8574T");
+		}
 	} else if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
-		m_LcdDisplay->Start();
-		m_tType = DISPLAY_BW_LCD_1602;
-		Printf(1, "BW_LCD");
+		if (m_LcdDisplay->Start()) {
+			m_tType = DISPLAY_BW_LCD_1602;
+			Printf(1, "BW_LCD");
+		}
 	} else if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
-		m_LcdDisplay->Start();
-		m_tType = DISPLAY_BW_UI_1602;
-		Printf(1, "BW_UI");
-	}
-	else {
+		if (m_LcdDisplay->Start()) {
+			m_tType = DISPLAY_BW_UI_1602;
+			Printf(1, "BW_UI");
+		}
+	} else {
 #ifndef BARE_METAL
 		puts("Unknown or no display attached");
 #endif

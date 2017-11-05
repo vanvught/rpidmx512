@@ -75,12 +75,22 @@ public:
 
 	static Display *Get (void);
 
+	uint8_t getNCols() const {
+		return m_nCols;
+	}
+
+	uint8_t getNRows() const {
+		return m_nRows;
+	}
+
+protected:
+	uint8_t m_nCols;
+	uint8_t m_nRows;
+
 private:
 	void Detect(uint8_t, uint8_t);
 
 private:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
 	TDisplayTypes m_tType;
 	DisplaySet *m_LcdDisplay;
 

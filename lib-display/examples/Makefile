@@ -26,7 +26,7 @@ else
 	LDLIBS += -lbcm2835
 endif
 
-all : detect oled128x32 ssd1306
+all : detect oled128x32 ssd1306 lcd2004
 
 clean :
 	rm -f *.o
@@ -48,4 +48,7 @@ oled128x32 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(RO
 	
 ssd1306 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
 	$(CPP) ssd1306.cpp $(INCLUDES) $(COPS) -o ssd1306 $(LIB) $(LDLIBS)
+	
+lcd2004 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
+	$(CPP) lcd2004.cpp $(INCLUDES) $(COPS) -o lcd2004 $(LIB) $(LDLIBS)	
 

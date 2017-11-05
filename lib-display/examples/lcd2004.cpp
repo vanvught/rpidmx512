@@ -1,5 +1,5 @@
 /**
- * @file detect.cpp
+ * @file lcd2004.cpp
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -28,8 +28,7 @@
 #include "display.h"
 
 int main(int argc, char **argv) {
-	// When there is SSD1306 detected, then we go for for the OLED_PANEL_128x64_8ROWS
-	Display display(0, 8);
+	Display display(DISPLAY_PCF8574T_2004);
 
 	bool isDetected = display.isDetected();
 
@@ -37,7 +36,9 @@ int main(int argc, char **argv) {
 
 	if (isDetected) {
 		printf("Display type : %d\n", (int) display.GetDetectedType());
-		display.Printf(2, "Line 2");
+		for (int i = 1; i <= 4; i++) {
+			display.Printf(i, "Line %d", (int) i);
+		}
 	}
 
 	return 0;
