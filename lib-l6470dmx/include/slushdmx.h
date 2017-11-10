@@ -38,13 +38,16 @@
 
 class SlushDmx: public LightSet {
 public:
-	SlushDmx(void);
+	SlushDmx(bool bUseSPI = true);
 	~SlushDmx(void);
 
 	void Start(void);
 	void Stop(void);
 
 	void SetData(uint8_t, const uint8_t *, uint16_t);
+
+	bool GetUseSpiBusy(void) const;
+	void SetUseSpiBusy(bool);
 
 public:
 	void ReadConfigFiles(void);
@@ -61,6 +64,9 @@ private:
 	bool m_bSetPortB;
 	uint8_t m_nDataPortA;
 	uint8_t m_nDataPortB;
+
+private:
+	bool m_bUseSpiBusy;
 
 private:
 	SlushBoard *m_pBoard;

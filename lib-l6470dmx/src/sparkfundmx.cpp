@@ -247,28 +247,34 @@ void SparkFunDmx::ReadConfigFiles(void) {
 					assert(m_pAutoDriver[i] != 0);
 
 					if (m_pAutoDriver[i] != 0) {
-						m_pAutoDriver[i]->setMotorNumber(i);
-						m_pAutoDriver[i]->Dump();
+						if (m_pAutoDriver[i]->IsConnected()) {
+							m_pAutoDriver[i]->setMotorNumber(i);
+							m_pAutoDriver[i]->Dump();
 
-						m_pMotorParams[i] = new MotorParams(fileName);
-						assert(m_pMotorParams[i] != 0);
-						m_pMotorParams[i]->Dump();
-						m_pMotorParams[i]->Set(m_pAutoDriver[i]);
+							m_pMotorParams[i] = new MotorParams(fileName);
+							assert(m_pMotorParams[i] != 0);
+							m_pMotorParams[i]->Dump();
+							m_pMotorParams[i]->Set(m_pAutoDriver[i]);
 
-						L6470Params l6470Params(fileName);
-						l6470Params.Dump();
-						l6470Params.Set(m_pAutoDriver[i]);
+							L6470Params l6470Params(fileName);
+							l6470Params.Dump();
+							l6470Params.Set(m_pAutoDriver[i]);
 
-						m_pAutoDriver[i]->Dump();
+							m_pAutoDriver[i]->Dump();
 
-						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddress, m_pAutoDriver[i], m_pMotorParams[i]);
-						assert(m_pL6470DmxModes[i] != 0);
+							m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddress, m_pAutoDriver[i], m_pMotorParams[i]);
+							assert(m_pL6470DmxModes[i] != 0);
 
-						if (m_pL6470DmxModes[i] != 0) {
-							printf("DMX Mode = %d, DMX Start Address = %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+							if (m_pL6470DmxModes[i] != 0) {
+								printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+							}
+						} else {
+							delete m_pAutoDriver[i];
+							m_pAutoDriver[i] = 0;
+							printf("Communication issues; check SPI configuration and cables\n");
 						}
-
-						printf("Motor %d --------- end ---------\n", i);
+					} else {
+						printf("Internal error!\n");
 					}
 				}
 			} else {
@@ -279,10 +285,13 @@ void SparkFunDmx::ReadConfigFiles(void) {
 					printf("Missing %s=\n", SPARKFUN_PARAMS_SPI_CS);
 				}
 			}
+			printf("Motor %d: --------- end ---------\n", i);
 		} else {
 			printf("Configuration file : %s not found\n", fileName);
 		}
 	}
+
+	printf("Motors connected : %d\n", (int) AutoDriver::getNumBoards());
 
 	DEBUG_EXIT;
 }

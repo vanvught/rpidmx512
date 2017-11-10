@@ -38,7 +38,7 @@
 
 #include "debug.h"
 
-L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams): m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(0), m_DmxFootPrint(0) {
+L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams): m_bIsStarted(false), m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(0), m_DmxFootPrint(0) {
 	DEBUG1_ENTRY;
 
 	assert(nDmxStartAddress <= 512);
@@ -99,6 +99,8 @@ L6470DmxModes::~L6470DmxModes(void) {
 }
 
 uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
+	DEBUG1_ENTRY;
+
 	switch (tMode) {
 		case L6470DMXMODE0:
 			return L6470DmxMode0::GetDmxFootPrint();
@@ -119,12 +121,20 @@ uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
 			return 0;
 			break;
 	}
+
+	DEBUG1_EXIT;
 }
 
 void L6470DmxModes::Start(void) {
 	DEBUG1_ENTRY;
 
+	if (m_bIsStarted) {
+		return;
+	}
+
 	m_pDmxMode->Start();
+
+	m_bIsStarted = true;
 
 	DEBUG1_EXIT;
 }
@@ -132,7 +142,13 @@ void L6470DmxModes::Start(void) {
 void L6470DmxModes::Stop(void) {
 	DEBUG1_ENTRY;
 
+	if (!m_bIsStarted) {
+		return;
+	}
+
 	m_pDmxMode->Stop();
+
+	m_bIsStarted = false;
 
 	DEBUG1_EXIT;
 }
@@ -195,6 +211,8 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 		puts("\t\tNothing to do..");
 #endif
 	}
+
+	m_bIsStarted = true;
 
 	DEBUG1_EXIT;
 }

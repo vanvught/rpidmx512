@@ -64,6 +64,9 @@ private:
 	bool IsDmxDataChanged(const uint8_t *);
 
 private:
+	bool m_bIsStarted;
+
+private:
 	uint8_t m_nMotorNumber;
 	TL6470DmxModes m_nMode;
 	uint16_t m_nDmxStartAddress;

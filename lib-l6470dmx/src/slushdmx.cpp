@@ -74,8 +74,10 @@ void SlushDmx::callbackFunction(const char *pLine) {
 	}
 }
 
-SlushDmx::SlushDmx(void): m_bSetPortA(false), m_bSetPortB(false) {
+SlushDmx::SlushDmx(bool bUseSPI): m_bSetPortA(false), m_bSetPortB(false) {
 	DEBUG_ENTRY;
+
+	m_bUseSpiBusy = bUseSPI;
 
 	m_pBoard = new SlushBoard();
 	assert(m_pBoard != 0);
@@ -146,13 +148,15 @@ void SlushDmx::Stop(void) {
 void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 
+	uint8_t nMotorsConnected = 0;
+
 	ReadConfigFile configfile(SlushDmx::staticCallbackFunction, this);
 
 	m_nDmxStartAddressPortA = 0;
 	m_nDmxStartAddressPortB = 0;
 
 	if (configfile.Read("slush.txt")) {
-		if ((m_nDmxStartAddressPortA >= 1) && (m_nDmxStartAddressPortA <= (DMX_MAX_CHANNELS - IO_PINS_IOPORT))) {
+		if ((m_nDmxStartAddressPortA >= 1) && (m_nDmxStartAddressPortA <= DMX_MAX_CHANNELS)) {
 			for (int pin = 0; pin < IO_PINS_IOPORT; pin++) {
 				m_pBoard->IOFSel(SLUSH_IO_PORTA, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
 			}
@@ -160,7 +164,7 @@ void SlushDmx::ReadConfigFiles(void) {
 			printf("DMX Start Address Output PortA = %d\n", m_nDmxStartAddressPortA);
 
 		}
-		if ((m_nDmxStartAddressPortB >= 1) && (m_nDmxStartAddressPortB <= (DMX_MAX_CHANNELS - IO_PINS_IOPORT))) {
+		if ((m_nDmxStartAddressPortB >= 1) && (m_nDmxStartAddressPortB <= DMX_MAX_CHANNELS)) {
 			for (int pin = 0; pin < IO_PINS_IOPORT; pin++) {
 				m_pBoard->IOFSel(SLUSH_IO_PORTB, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
 			}
@@ -182,37 +186,49 @@ void SlushDmx::ReadConfigFiles(void) {
 			puts("\t=============================");
 
 			if ((m_nDmxStartAddress <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
-				m_pSlushMotor[i] = new SlushMotor(i, false);
+				m_pSlushMotor[i] = new SlushMotor(i, m_bUseSpiBusy);
 				assert(m_pSlushMotor[i] != 0);
 
 				if (m_pSlushMotor[i] != 0) {
-					m_pSlushMotor[i]->Dump();
+					if (m_pSlushMotor[i]->IsConnected()) {
+						nMotorsConnected++;
+						m_pSlushMotor[i]->Dump();
 
-					m_pMotorParams[i] = new MotorParams(fileName);
-					assert(m_pMotorParams[i] != 0);
-					m_pMotorParams[i]->Dump();
-					m_pMotorParams[i]->Set(m_pSlushMotor[i]);
+						m_pMotorParams[i] = new MotorParams(fileName);
+						assert(m_pMotorParams[i] != 0);
+						m_pMotorParams[i]->Dump();
+						m_pMotorParams[i]->Set(m_pSlushMotor[i]);
 
-					L6470Params l6470Params(fileName);
-					l6470Params.Dump();
-					l6470Params.Set(m_pSlushMotor[i]);
+						L6470Params l6470Params(fileName);
+						l6470Params.Dump();
+						l6470Params.Set(m_pSlushMotor[i]);
 
-					m_pSlushMotor[i]->Dump();
+						m_pSlushMotor[i]->Dump();
 
-					m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddress, m_pSlushMotor[i], m_pMotorParams[i]);
-					assert(m_pL6470DmxModes[i] != 0);
+						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddress, m_pSlushMotor[i], m_pMotorParams[i]);
+						assert(m_pL6470DmxModes[i] != 0);
 
-					if (m_pL6470DmxModes[i] != 0) {
-						printf("DMX Mode = %d, DMX Start Address = %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+						if (m_pL6470DmxModes[i] != 0) {
+							printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+						}
+
+						printf("Use SPI Busy: %s\n", m_pSlushMotor[i]->GetUseSpiBusy() ? "Yes" : "No");
+					} else {
+						delete m_pSlushMotor[i];
+						m_pSlushMotor[i] = 0;
+						printf("Communication issues; check SPI configuration and cables\n");
 					}
-
-					printf("Motor %d --------- end ---------\n", i);
+				} else {
+					printf("Internal error!\n");
 				}
 			}
+			printf("Motor %d: --------- end ---------\n", i);
 		} else {
 			printf("Configuration file : %s not found\n", fileName);
 		}
 	}
+
+	printf("Motors connected : %d\n", (int) nMotorsConnected);
 
 	DEBUG_EXIT;
 }
@@ -235,15 +251,22 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, const uint16_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
+	assert(nLength <= DMX_MAX_CHANNELS);
 
 	uint8_t *p;
 	uint8_t nPortData;
+	uint16_t nDmxAddress;
 
-	if (m_bSetPortA && (nLength >= m_nDmxStartAddressPortA + IO_PINS_IOPORT)) {
+	nDmxAddress = m_nDmxStartAddressPortA;
+
+	if (m_bSetPortA && (nLength >= nDmxAddress)) {
 		nPortData = 0;
-		p = (uint8_t *) pData + m_nDmxStartAddressPortA - 1;
+		p = (uint8_t *) pData + nDmxAddress - 1;
 
 		for (uint8_t i = 0; i < IO_PINS_IOPORT; i++) {
+			if (nDmxAddress++ > nLength) {
+				break;
+			}
 			if ((*p & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
 				nPortData = nPortData | (uint8_t) (1 << i);
 			}
@@ -254,20 +277,25 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, const uint16_t nLength) {
 			m_nDataPortA = nPortData;
 			m_pBoard->IOWrite(SLUSH_IO_PORTA, nPortData);
 #ifndef NDEBUG
-			printf("\tDMX data has changed! %.2X\n", nPortData);
+			printf("\tPort A: DMX data has changed! %.2X\n", nPortData);
 #endif
 		} else {
 #ifndef NDEBUG
-			puts("\tNothing to do..");
+			puts("\tPort A: Nothing to do..");
 #endif
 		}
 	}
 
-	if (m_bSetPortB && (nLength >= m_nDmxStartAddressPortB + IO_PINS_IOPORT)) {
+	nDmxAddress = m_nDmxStartAddressPortA;
+
+	if (m_bSetPortB && (nLength >= nDmxAddress)) {
 		nPortData = 0;
-		p = (uint8_t *) pData + m_nDmxStartAddressPortB - 1;
+		p = (uint8_t *) pData + nDmxAddress - 1;
 
 		for (uint8_t i = 0; i < IO_PINS_IOPORT; i++) {
+			if (nDmxAddress++ > nLength) {
+				break;
+			}
 			if ((*p & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
 				nPortData = nPortData | (uint8_t) (1 << i);
 			}
@@ -278,14 +306,22 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, const uint16_t nLength) {
 			m_nDataPortB = nPortData;
 			m_pBoard->IOWrite(SLUSH_IO_PORTB, nPortData);
 #ifndef NDEBUG
-			printf("\tDMX data has changed! %.2X\n", nPortData);
+			printf("\tPort B: DMX data has changed! %.2X\n", nPortData);
 #endif
 		} else {
 #ifndef NDEBUG
-			puts("\tNothing to do..");
+			puts("\tPort B: Nothing to do..");
 #endif
 		}
 	}
 
 	DEBUG_EXIT;
+}
+
+bool SlushDmx::GetUseSpiBusy(void) const {
+	return m_bUseSpiBusy;
+}
+
+void SlushDmx::SetUseSpiBusy(bool bUseSpiBusy) {
+	m_bUseSpiBusy = bUseSpiBusy;
 }
