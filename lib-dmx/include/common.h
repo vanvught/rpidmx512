@@ -1,5 +1,5 @@
 /**
- * @file dmx.h
+ * @file common.h
  *
  */
 /* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_H_
-#define DMX_H_
+#ifndef COMMON_H
+#define COMMON_H
 
 #define DMX_TRANSMIT_BREAK_TIME_MIN				92						///< 92 us
 #define DMX_TRANSMIT_BREAK_TIME_TYPICAL			176						///< 176 us
@@ -42,4 +42,4 @@ enum {
 	DMX_UNIVERSE_SIZE = 512												///< The number of slots in a DMX512 universe.
 };
 
-#endif /* DMX_H_ */
+#endif /* COMMON_H */

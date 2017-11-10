@@ -48,7 +48,8 @@ public:
 	void SetPeriodTime(const uint32_t);
 	const uint32_t GetPeriodTime(void);
 
-	void SetData(const uint8_t, const uint8_t *, const uint16_t);
+	void SetData(uint8_t, const uint8_t *, uint16_t);
+
 private:
 	bool m_bIsStarted;
 };

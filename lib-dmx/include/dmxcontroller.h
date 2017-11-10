@@ -1,5 +1,5 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxcontroller.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,63 +22,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef DMXCONTROLLER_H_
+#define DMXCONTROLLER_H_
 
-#include <stdint.h>
-
+#include "lightset.h"
 #include "dmx.h"
-#include "dmxsender.h"
 
-DMXSender::DMXSender(void) : m_bIsStarted(false) {
-	dmx_init();
-}
+class DMXController {
+public:
+	DMXController(void);
+	~DMXController(void);
 
-DMXSender::~DMXSender(void) {
-}
+	void SetOutput(LightSet *);
+	//void SetLedBlink(LedBlink *);
 
-void DMXSender::Start(void) {
-	if (m_bIsStarted) {
-		return;
-	}
+	void Start(void);
+	void Stop(void);
 
-	m_bIsStarted = true;
+	int Run(void);
 
-	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, true);
-}
+private:
+	bool IsDmxDataChanged(const uint8_t *, uint16_t);
 
-void DMXSender::Stop(void) {
-	if (!m_bIsStarted) {
-		return;
-	}
+private:
+	LightSet *m_pLightSet;
+	bool m_IsActive;
+	uint8_t m_Data[DMX_UNIVERSE_SIZE];
+	uint16_t m_nLength;
+};
 
-	m_bIsStarted = false;
-
-	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
-}
-
-void DMXSender::SetData(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
-	dmx_set_send_data_without_sc(pData, nLength);
-}
-
-void DMXSender::SetBreakTime(const uint32_t nBreakTime) {
-	dmx_set_output_break_time(nBreakTime);
-}
-
-const uint32_t DMXSender::GetBreakTime(void) {
-	return dmx_get_output_break_time();
-}
-
-void DMXSender::SetMabTime(const uint32_t nMabTime) {
-	dmx_set_output_mab_time(nMabTime);
-}
-
-const uint32_t DMXSender::GetMabTime(void) {
-	return dmx_get_output_mab_time();
-}
-
-void DMXSender::SetPeriodTime(const uint32_t nPeriodTime) {
-	dmx_set_output_period(nPeriodTime);
-}
-
-const uint32_t DMXSender::GetPeriodTime(void) {
-	return dmx_get_output_period();
-}
+#endif /* DMXCONTROLLER_H_ */
