@@ -42,12 +42,14 @@
 #define TOP_ROW		3
 #endif
 
-DMXMonitor::DMXMonitor(void) : m_bIsStarted(false)
+DMXMonitor::DMXMonitor(void) : m_bIsStarted(false), m_nSlots(0)
 #if defined (__linux__) || defined (__CYGWIN__)
 	, m_nMaxChannels(32)
 #endif
 {
-
+	for (int i = 0; i < (int) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
+		m_Data[i] = 0;
+	}
 }
 
 DMXMonitor::~DMXMonitor(void) {
@@ -114,17 +116,17 @@ void DMXMonitor::Start(void) {
 
 	m_bIsStarted = true;
 
-	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
-		console_clear_line(i);
-	}
+	uint8_t row = TOP_ROW;
 
-	console_set_cursor(0, TOP_ROW);
-	console_puts("    00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31\n");
+	console_clear_line(TOP_ROW);
+	console_puts("    00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31");
 
 	for (int i = 1; i < (int) (16 * 32); i = i + (int) 32) {
-		printf("%3d ", i);
-		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --\n");
+		console_set_cursor(0, ++row);
+		printf("%3d", i);
 	}
+
+	Update();
 }
 
 void DMXMonitor::Stop(void) {
@@ -140,17 +142,33 @@ void DMXMonitor::Stop(void) {
 	}
 }
 
+void DMXMonitor::Cls(void) {
+	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
+		console_clear_line(i);
+	}
+}
+
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+	m_nSlots = nLength;
+
+	for (uint16_t i = 0 ; i < nLength; i++) {
+		m_Data[i] = pData[i];
+	}
+
+	Update();
+}
+
+void DMXMonitor::Update(void) {
 	uint8_t row = TOP_ROW;
-	uint8_t *p = (uint8_t *)pData;
+	uint8_t *p = (uint8_t *)m_Data;
 	uint16_t slot = 0;
 	uint8_t i, j;
 
-	for (i = 0; (i < 16) && (slot < nLength); i++) {
+	for (i = 0; (i < 16) && (slot < m_nSlots); i++) {
 
 		console_set_cursor(4, ++row);
 
-		for (j = 0; (j < 32) && (slot < nLength); j++) {
+		for (j = 0; (j < 32) && (slot < m_nSlots); j++) {
 			const uint8_t d = *p++;
 			if (d == (uint8_t) 0) {
 				console_puts(" 0");
@@ -162,14 +180,13 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 		}
 
 		for (; j < 32; j++) {
-			console_puts("-- ");
+			console_puts("   ");
 		}
 	}
 
 	for (; i < 16; i++) {
 		console_set_cursor(4, ++row);
-		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+		console_puts("                                                                                               ");
 	}
-
 }
 #endif

@@ -42,6 +42,11 @@ public:
 	void SetData(uint8_t, const uint8_t *, uint16_t);
 
 #if defined (__linux__) || defined (__CYGWIN__)
+#else
+	void Cls(void);
+#endif
+
+#if defined (__linux__) || defined (__CYGWIN__)
 	void SetMaxDmxChannels(uint16_t);
 
 private:
@@ -49,10 +54,15 @@ private:
 #endif
 
 private:
+	void Update(void);
+
+private:
 	bool m_bIsStarted;
+	uint16_t m_nSlots;
 #if defined (__linux__) || defined (__CYGWIN__)
 	uint16_t m_nMaxChannels;
 #endif
+	uint8_t m_Data[512];
 };
 
 #endif /* DMXMONITOR_H_ */
