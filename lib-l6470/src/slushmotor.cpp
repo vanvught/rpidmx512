@@ -44,7 +44,7 @@
 #include "bcm2835_spi.h"
 #endif
 
-SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false) {
+SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nMotor <= 3);
 
 	m_nMotorNumber = nMotor;
@@ -83,6 +83,8 @@ SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false) {
 
 		getStatus();
 		free();
+
+		m_bIsConnected = true;
 	} else {
 #if defined (__linux__)
 		fprintf(stderr, "communication issues; check SPI configuration and cables\n");
@@ -93,6 +95,7 @@ SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false) {
 SlushMotor::~SlushMotor(void) {
 	free();
 	m_bIsBusy = false;
+	m_bIsConnected = false;
 }
 
 int SlushMotor::busyCheck(void) {
@@ -165,4 +168,19 @@ void SlushMotor::softFree(void) {
 
 void SlushMotor::free(void) {
 	hardHiZ();
+}
+
+/*
+ * Additional methods
+ */
+bool SlushMotor::IsConnected(void) const {
+	return m_bIsConnected;
+}
+
+bool SlushMotor::GetUseSpiBusy(void) const {
+	return m_bUseSpiBusy;
+}
+
+void SlushMotor::SetUseSpiBusy(bool bUseSpiBusy) {
+	m_bUseSpiBusy = bUseSpiBusy;
 }

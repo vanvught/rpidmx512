@@ -53,6 +53,13 @@ public:
 	void softFree(void);
 	void free(void);
 
+	/*
+	 * Additional methods
+	 */
+	bool GetUseSpiBusy(void) const;
+	void SetUseSpiBusy(bool);
+	bool IsConnected(void) const;
+
 private:
 	uint8_t SPIXfer(uint8_t);
 
@@ -61,6 +68,7 @@ private:
 	int m_nBusyPin;
 	bool m_bUseSpiBusy;
 	bool m_bIsBusy;
+	bool m_bIsConnected;
 };
 
 #endif /* SLUSHMOTOR_H_ */

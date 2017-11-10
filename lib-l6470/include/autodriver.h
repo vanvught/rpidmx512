@@ -45,7 +45,12 @@ public:
 private:
 	uint8_t SPIXfer(uint8_t);
 
+	/*
+	 * Additional methods
+	 */
 public:
+	bool IsConnected(void) const;
+
 	inline static uint16_t getNumBoards(void) {
 		int n = 0;
 		for (int i = 0; i < (int) (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0])); i++) {
@@ -77,6 +82,7 @@ private:
 	uint8_t m_nPosition;
 	bool m_bIsBusy;
 	static uint8_t m_nNumBoards[2];
+	bool m_bIsConnected;
 };
 
 #endif /* AUTODRIVER_H_ */

@@ -31,15 +31,10 @@ all : SparkFunGetSetParamTest simple_move
 clean :
 	rm -f *.o
 	rm -f SparkFunGetSetParamTest simple_move
-	rm -f $(ROOT)lib_linux/libl6470.a
+	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux clean
 	
-OBJECTS := $(patsubst $(ROOT)/lib-l6470/src/%.cpp,%.o,$(wildcard $(ROOT)/lib-l6470/src/*.cpp))
-
-%.o	: $(ROOT)/lib-l6470/src/%.cpp
-	$(CPP) $(INCLUDES) $(COPS) $< -c -o $@
-	
-$(ROOT)/lib-l6470/lib_linux/libl6470.a : $(OBJECTS)
-	$(AR) -r $(ROOT)/lib-l6470/lib_linux/libl6470.a $(OBJECTS)
+$(ROOT)/lib-l6470/lib_linux/libl6470.a :
+	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux
 	
 SparkFunGetSetParamTest : Makefile SparkFunGetSetParamTest.cpp $(ROOT)/lib-l6470/lib_linux/libl6470.a
 	$(CPP) SparkFunGetSetParamTest.cpp $(INCLUDES) $(COPS) -o SparkFunGetSetParamTest $(LIB) $(LDLIBS)

@@ -45,7 +45,7 @@
 
 uint8_t AutoDriver::m_nNumBoards[2];
 
-AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nResetPin, uint8_t nBusyPin) : m_bIsBusy(false) {
+AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nResetPin, uint8_t nBusyPin) : m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nSpiChipSelect <= BCM2835_SPI_CS1);
 	assert(nResetPin <= 31);
 	assert(nBusyPin <= 31);
@@ -55,9 +55,13 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_nResetPin = nResetPin;
 	m_nBusyPin = nBusyPin;
 	m_nNumBoards[nSpiChipSelect]++;
+
+	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
+		m_bIsConnected = true;
+	}
 }
 
-AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nResetPin) : m_bIsBusy(false) {
+AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nResetPin) : m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nSpiChipSelect <= BCM2835_SPI_CS1);
 	assert(nResetPin <= 31);
 
@@ -66,11 +70,17 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_nResetPin = nResetPin;
 	m_nBusyPin = BUSY_PIN_NOT_USED;
 	m_nNumBoards[nSpiChipSelect]++;
+
+	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
+		m_bIsConnected = true;
+	}
 }
 
 AutoDriver::~AutoDriver(void) {
 	hardHiZ();
 	m_bIsBusy = false;
+	m_bIsConnected = false;
+	m_nNumBoards[m_nSpiChipSelect]--;
 }
 
 int AutoDriver::busyCheck(void) {
@@ -114,4 +124,11 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	bcm2835_spi_transfern((char *) dataPacket, m_nNumBoards[m_nSpiChipSelect]);
 
 	return dataPacket[m_nPosition];
+}
+
+/*
+ * Additional method
+ */
+bool AutoDriver::IsConnected(void) const {
+	return m_bIsConnected;
 }
