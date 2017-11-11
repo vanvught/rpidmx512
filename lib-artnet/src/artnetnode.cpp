@@ -107,17 +107,16 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x11 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x12 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
 #define ARTNET_MERGE_TIMEOUT_SECONDS	10						///<
 
+#define NETWORK_DATA_LOSS_TIMEOUT		10						///< Seconds
+
 #define PORT_IN_STATUS_DISABLED_MASK	0x08
 
-/**
- *
- */
 ArtNetNode::ArtNetNode(void) :
 		m_pLightSet(0),
 		m_pLedBlink(0),
@@ -127,8 +126,12 @@ ArtNetNode::ArtNetNode(void) :
 		m_pArtNetIpProg(0),
 		m_pTodData(0),
 		m_pIpProgReply(0),
-		m_bDirectUpdate(false) {
+		m_bDirectUpdate(false),
+		m_nCurrentPacketTime(0),
+		m_nPreviousPacketTime(0),
+		m_IsLightSetRunning(false)
 
+ {
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -157,6 +160,7 @@ ArtNetNode::ArtNetNode(void) :
 	m_State.reportCode = ARTNET_RCPOWEROK;
 	m_State.nActivePorts = 0;
 	m_State.status = ARTNET_STANDBY;
+	m_State.nNetworkDataLossTimeout = NETWORK_DATA_LOSS_TIMEOUT;
 
 	m_tOpCodePrevious = OP_NOT_DEFINED;
 
@@ -166,13 +170,11 @@ ArtNetNode::ArtNetNode(void) :
 	SetOemValue(DEVICE_OEM_VALUE);
 }
 
-/**
- *
- */
 ArtNetNode::~ArtNetNode(void) {
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop();
 		m_pLightSet = 0;
+		m_IsLightSetRunning = false;
 	}
 
 	if (m_pLedBlink != 0) {
@@ -194,64 +196,6 @@ ArtNetNode::~ArtNetNode(void) {
 	memset(&m_TimeCodeData, 0, sizeof (struct TArtTimeCode));
 }
 
-/**
- *
- * @param pLightSet
- */
-void ArtNetNode::SetOutput(LightSet *pLightSet) {
-	m_pLightSet = pLightSet;
-}
-
-/**
- *
- * @param
- */
-void ArtNetNode::SetLedBlink(LedBlink *pLedBlink) {
-	m_pLedBlink = pLedBlink;
-}
-
-
-/**
- *
- * @return
- */
-const bool ArtNetNode::GetDirectUpdate()  {
-	return m_bDirectUpdate;
-}
-
-/**
- *
- * @param bDirectUpdate
- */
-void ArtNetNode::SetDirectUpdate(bool bDirectUpdate) {
-	m_bDirectUpdate = bDirectUpdate;
-}
-
-/**
- *
- * @return
- */
-const uint8_t *ArtNetNode::GetSoftwareVersion(void) {
-	return DEVICE_SOFTWARE_VERSION;
-}
-
-/**
- *
- */
-const uint8_t ArtNetNode::GetActiveOutputPorts(void) {
-	return m_State.nActivePorts;
-}
-
-/**
- *
- */
-const uint8_t ArtNetNode::GetActiveInputPorts(void) {
-	return 0;
-}
-
-/**
- *
- */
 void ArtNetNode::Start(void) {
 	m_Node.IPAddressLocal = network_get_ip();
 	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~network_get_netmask();
@@ -273,9 +217,9 @@ void ArtNetNode::Start(void) {
 	}
 	m_State.status = ARTNET_ON;
 
-	if (m_pLightSet != 0) {
-		m_pLightSet->Start();
-	}
+	//if (m_pLightSet != 0) {
+	//	m_pLightSet->Start();
+	//}
 
 	if (m_pLedBlink != 0) {
 		m_pLedBlink->SetFrequency(1);
@@ -284,12 +228,10 @@ void ArtNetNode::Start(void) {
 	SendPollRelply(false);	// send a reply on startup
 }
 
-/**
- *
- */
 void ArtNetNode::Stop(void) {
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop();
+		m_IsLightSetRunning = false;
 	}
 
 	if (m_pLedBlink != 0) {
@@ -299,25 +241,41 @@ void ArtNetNode::Stop(void) {
 	m_State.status = ARTNET_OFF;
 }
 
-/**
- *
- * @param nPortId
- * @return
- */
-const uint8_t ArtNetNode::GetUniverseSwitch(const uint8_t nPortId) {
+void ArtNetNode::SetOutput(LightSet *pLightSet) {
+	m_pLightSet = pLightSet;
+}
+
+void ArtNetNode::SetLedBlink(LedBlink *pLedBlink) {
+	m_pLedBlink = pLedBlink;
+}
+
+bool ArtNetNode::GetDirectUpdate() const {
+	return m_bDirectUpdate;
+}
+
+void ArtNetNode::SetDirectUpdate(bool bDirectUpdate) {
+	m_bDirectUpdate = bDirectUpdate;
+}
+
+const uint8_t *ArtNetNode::GetSoftwareVersion(void) {
+	return DEVICE_SOFTWARE_VERSION;
+}
+
+uint8_t ArtNetNode::GetActiveOutputPorts(void) const{
+	return m_State.nActivePorts;
+}
+
+uint8_t ArtNetNode::GetActiveInputPorts(void) const {
+	return 0;
+}
+
+uint8_t ArtNetNode::GetUniverseSwitch(uint8_t nPortId) const {
 	if (nPortId >= ARTNET_MAX_PORTS) {
 		return ARTNET_EARG;
 	}
 	return m_OutputPorts[nPortId].port.nDefaultAddress;
 }
 
-/**
- *
- * @param nPortIndex
- * @param dir
- * @param nAddress
- * @return
- */
 int ArtNetNode::SetUniverseSwitch(const uint8_t nPortIndex, const TArtNetPortDir dir, const uint8_t nAddress) {
 	if (nPortIndex >= ARTNET_MAX_PORTS) {
 		return ARTNET_EARG;
@@ -342,22 +300,10 @@ int ArtNetNode::SetUniverseSwitch(const uint8_t nPortIndex, const TArtNetPortDir
 	return ARTNET_EOK;
 }
 
-/**
- *
- * @return
- */
-const uint8_t ArtNetNode::GetSubnetSwitch(void) {
+uint8_t ArtNetNode::GetSubnetSwitch(void) const {
 	return m_Node.SubSwitch;
 }
 
-/**
- * Sub-Net: A group of 16 consecutive universes is referred to as a sub-net. (Not to be confused with the subnet mask).
- *
- * The Sub-Net address is between 0 and 15. If the supplied address is larger than 15,
- * the lower 4 bits will be used in setting the address.
- *
- * @param nAddress
- */
 void ArtNetNode::SetSubnetSwitch(const uint8_t nAddress) {
 	m_Node.SubSwitch = nAddress;
 
@@ -366,19 +312,11 @@ void ArtNetNode::SetSubnetSwitch(const uint8_t nAddress) {
 	}
 }
 
-/**
- *
- * @return
- */
-const uint8_t ArtNetNode::GetNetSwitch(void) {
+uint8_t ArtNetNode::GetNetSwitch(void) const{
 	return m_Node.NetSwitch;
 }
 
-/**
- *
- * @param nAddress
- */
-void ArtNetNode::SetNetSwitch(const uint8_t nAddress) {
+void ArtNetNode::SetNetSwitch(uint8_t nAddress) {
 	m_Node.NetSwitch = nAddress;
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -386,20 +324,10 @@ void ArtNetNode::SetNetSwitch(const uint8_t nAddress) {
 	}
 }
 
-/**
- *
- * @return
- */
 const char *ArtNetNode::GetShortName(void) {
 	return (const char *)m_Node.ShortName;
 }
 
-/**
- * Sets the short name of the node.
- * The string should be null terminated and a maximum of 18 Characters will be used
- *
- * @param pName the short name of the node.
- */
 void ArtNetNode::SetShortName(const char *pName) {
 	if (pName == 0) {
 		return;
@@ -413,20 +341,10 @@ void ArtNetNode::SetShortName(const char *pName) {
 	memcpy (m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
 }
 
-/**
- *
- * @return
- */
 const char *ArtNetNode::GetLongName(void) {
 	return (const char *)m_Node.LongName;
 }
 
-/**
- * Sets the long name of the node.
- * The string should be null terminated and a maximum of 64 Characters will be used
- *
- * @param pName the long name of the node.
- */
 void ArtNetNode::SetLongName(const char *pName) {
 	if (pName == 0) {
 		return;
@@ -458,11 +376,16 @@ const uint8_t* ArtNetNode::GetOemValue(void) {
 	return m_Node.Oem;
 }
 
-/**
- *
- * @param nCurrentAddress
- * @return
- */
+time_t ArtNetNode::GetNetworkTimeout(void) const {
+	return m_State.nNetworkDataLossTimeout;
+}
+
+void ArtNetNode::SetNetworkTimeout(time_t nNetworkDataLossTimeout) {
+	if (nNetworkDataLossTimeout != 0) {
+		m_State.nNetworkDataLossTimeout = nNetworkDataLossTimeout;
+	}
+}
+
 uint16_t ArtNetNode::MakePortAddress(const uint16_t nCurrentAddress) {
 	// PortAddress Bit 15 = 0
 	uint16_t newAddress = (m_Node.NetSwitch & 0x7F) << 8;	// Net : Bits 14-8
@@ -472,9 +395,6 @@ uint16_t ArtNetNode::MakePortAddress(const uint16_t nCurrentAddress) {
 	return newAddress;
 }
 
-/**
- *
- */
 void ArtNetNode::FillPollReply(void) {
 	memset(&m_PollReply, 0, sizeof (struct TArtPollReply));
 
@@ -506,9 +426,6 @@ void ArtNetNode::FillPollReply(void) {
 	m_PollReply.Status2 = m_Node.Status2;
 }
 
-/**
- *
- */
 void ArtNetNode::FillDiagData(void) {
 	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
 
@@ -518,9 +435,6 @@ void ArtNetNode::FillDiagData(void) {
 	m_DiagData.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
 }
 
-/**
- *
- */
 void ArtNetNode::FillTimeCodeData(void) {
 	memset(&m_TimeCodeData, 0, sizeof (struct TArtTimeCode));
 
@@ -531,9 +445,6 @@ void ArtNetNode::FillTimeCodeData(void) {
 	m_TimeCodeData.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
 }
 
-/**
- *
- */
 void ArtNetNode::GetType(void) {
 	char *data = (char *) &(m_ArtNetPacket.ArtPacket);
 
@@ -555,10 +466,6 @@ void ArtNetNode::GetType(void) {
 }
 
 
-/**
- *
- * @param bResponse
- */
 void ArtNetNode::SendPollRelply(const bool bResponse) {
 
 	if (!bResponse && m_State.status == ARTNET_ON) {
@@ -582,11 +489,6 @@ void ArtNetNode::SendPollRelply(const bool bResponse) {
 	network_sendto((const uint8_t *)&(m_PollReply), (const uint16_t)sizeof (struct TArtPollReply), m_Node.IPAddressBroadcast, (uint16_t)ARTNET_UDP_PORT);
 }
 
-/**
- *
- * @param text
- * @param nPriority
- */
 void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 	if (!m_State.SendArtDiagData) {
 		return;
@@ -607,13 +509,6 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 	network_sendto((const uint8_t *)&(m_DiagData), (const uint16_t)size, m_State.IPAddressDiagSend, (uint16_t)ARTNET_UDP_PORT);
 }
 
-/**
- *
- * @param nPortId
- * @param pData
- * @param nLength
- * @return
- */
 bool ArtNetNode::IsDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
@@ -641,13 +536,6 @@ bool ArtNetNode::IsDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, c
 	return isChanged;
 }
 
-/**
- * merge the data from two sources
- * @param nPortId
- * @param pData
- * @param nLength
- * @return
- */
 bool ArtNetNode::IsMergedDmxDataChanged(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
@@ -684,9 +572,6 @@ bool ArtNetNode::IsMergedDmxDataChanged(const uint8_t nPortId, const uint8_t *pD
 	}
 }
 
-/**
- *
- */
 void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
 	const time_t timeOutA = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeA;
 	const time_t timeOutB = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeB;
@@ -711,9 +596,6 @@ void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
 	}
 }
 
-/**
- *
- */
 void ArtNetNode::HandlePoll(void) {
 	const struct TArtPoll *packet = (struct TArtPoll *)&(m_ArtNetPacket.ArtPacket.ArtPoll);
 
@@ -756,9 +638,6 @@ void ArtNetNode::HandlePoll(void) {
 	SendPollRelply(true);
 }
 
-/**
- *
- */
 void ArtNetNode::HandleDmx(void) {
 	const struct TArtDmx *packet = (struct TArtDmx *)&(m_ArtNetPacket.ArtPacket.ArtDmx);
 
@@ -848,6 +727,11 @@ void ArtNetNode::HandleDmx(void) {
 					SendDiag("Send new data", ARTNET_DP_LOW);
 #endif
 					m_pLightSet->SetData(i, m_OutputPorts[i].data, m_OutputPorts[i].nLength);
+
+					if(!m_IsLightSetRunning) {
+						m_pLightSet->Start();
+						m_IsLightSetRunning = true;
+					}
 				} else {
 #ifdef SENDDIAG
 					SendDiag("DMX data pending", ARTNET_DP_LOW);
@@ -865,15 +749,6 @@ void ArtNetNode::HandleDmx(void) {
 	}
 }
 
-/**
- * Handle ArtSync packet
- *
- * When a node receives an ArtSync packet it should transfer to synchronous operation.
- * This means that received ArtDmx packets will be buffered and output when the next ArtSync is received.
- *
- * In order to allow transition between synchronous and non-synchronous modes,
- * a node shall time out to non-synchronous operation if an ArtSync is not received for 4 seconds or more.
- */
 void ArtNetNode::HandleSync(void) {
 	m_State.IsSynchronousMode = true;
 #if defined (__circle__)
@@ -887,16 +762,18 @@ void ArtNetNode::HandleSync(void) {
 			SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
 			m_pLightSet->SetData(i, m_OutputPorts[i].data, 	m_OutputPorts[i].nLength);
+			if(!m_IsLightSetRunning) {
+				m_pLightSet->Start();
+				m_IsLightSetRunning = true;
+			}
 			m_OutputPorts[i].IsDataPending = false;
 		}
 	}
 }
 
-/**
- * A Controller or monitoring device on the network can reprogram numerous controls of a node remotely.
- */
 void ArtNetNode::HandleAddress(void) {
 	const struct TArtAddress *packet = (struct TArtAddress *) &(m_ArtNetPacket.ArtPacket.ArtAddress);
+	bool bClearCommand = false;
 
 	m_State.reportCode = ARTNET_RCPOWEROK;
 
@@ -1024,52 +901,50 @@ void ArtNetNode::HandleAddress(void) {
 			m_OutputPorts[0].data[i] = 0;
 		}
 		m_pLightSet->SetData (0, m_OutputPorts[0].data, m_OutputPorts[0].nLength);
+		bClearCommand = true;
 		break;
 	case ARTNET_PC_CLR_1:
 		for (unsigned i = 0; i < ARTNET_DMX_LENGTH; i++) {
 			m_OutputPorts[1].data[i] = 0;
 		}
 		m_pLightSet->SetData (1, m_OutputPorts[1].data, m_OutputPorts[1].nLength);
+		bClearCommand = true;
 		break;
 	case ARTNET_PC_CLR_2:
 		for (unsigned i = 0; i < ARTNET_DMX_LENGTH; i++) {
 			m_OutputPorts[2].data[i] = 0;
 		}
 		m_pLightSet->SetData (2, m_OutputPorts[2].data, m_OutputPorts[2].nLength);
+		bClearCommand = true;
 		break;
 	case ARTNET_PC_CLR_3:
 		for (unsigned i = 0; i < ARTNET_DMX_LENGTH; i++) {
 			m_OutputPorts[3].data[i] = 0;
 		}
 		m_pLightSet->SetData (3, m_OutputPorts[3].data, m_OutputPorts[3].nLength);
+		bClearCommand = true;
 		break;
 	default:
 		break;
 	}
 
+	if (bClearCommand && !m_IsLightSetRunning) {
+		m_pLightSet->Start();
+		m_IsLightSetRunning = true;
+	}
+
 	SendPollRelply(true);
 }
 
-/**
- *
- */
 void ArtNetNode::HandleTimeCode(void) {
 	const struct TArtTimeCode *packet = (struct TArtTimeCode *) &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
 	m_pArtNetTimeCode->Handler((struct TArtNetTimeCode *)&packet->Frames);
 }
 
-/**
- *
- * @param pArtNetTimeCode
- */
 void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 	m_pArtNetTimeCode = pArtNetTimeCode;
 }
 
-/**
- *
- * @param pArtNetTimeCode
- */
 void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	if (pArtNetTimeCode == 0) {
 		return;
@@ -1083,9 +958,6 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	network_sendto((const uint8_t *) &(m_TimeCodeData), (const uint16_t) sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
 }
 
-/**
- *
- */
 void ArtNetNode::HandleTimeSync(void) {
 	struct TArtTimeSync *packet = (struct TArtTimeSync *) &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
 
@@ -1096,23 +968,17 @@ void ArtNetNode::HandleTimeSync(void) {
 	network_sendto((const uint8_t *) packet, (const uint16_t) sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
 }
 
-/**
- *
- * @param pArtNetTimeSync
- */
 void ArtNetNode::SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 	m_pArtNetTimeSync = pArtNetTimeSync;
 }
 
-/**
- *
- */
 void ArtNetNode::HandleTodControl(void) {
 	const struct TArtTodControl *packet = (struct TArtTodControl *) &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const uint16_t portAddress = (uint16_t)(packet->Net << 8) | (uint16_t)(packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
 		m_pLightSet->Stop();
+		m_IsLightSetRunning = false;
 
 		if (packet->Command == (uint8_t) 0x01) {	// AtcFlush
 			m_pArtNetRdm->Full();
@@ -1120,12 +986,10 @@ void ArtNetNode::HandleTodControl(void) {
 		SendTod();
 
 		m_pLightSet->Start();
+		m_IsLightSetRunning = true;;
 	}
 }
 
-/**
- *
- */
 void ArtNetNode::HandleTodRequest(void) {
 	const struct TArtTodRequest *packet = (struct TArtTodRequest *) &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const uint16_t portAddress = (uint16_t)(packet->Net << 8) | (uint16_t)(packet->Address[0]);
@@ -1135,9 +999,6 @@ void ArtNetNode::HandleTodRequest(void) {
 	}
 }
 
-/**
- *
- */
 void ArtNetNode::SendTod(void) {
 	m_pTodData->Net = m_Node.NetSwitch;
 	m_pTodData->Address = m_OutputPorts[0].port.nDefaultAddress;
@@ -1156,15 +1017,13 @@ void ArtNetNode::SendTod(void) {
 	network_sendto((const uint8_t *) m_pTodData, (const uint16_t) length, m_Node.IPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
 }
 
-/**
- *
- */
 void ArtNetNode::HandleRdm(void) {
 	struct TArtRdm *packet = (struct TArtRdm *) &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const uint16_t portAddress = (uint16_t) (packet->Net << 8) | (uint16_t) (packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
 		m_pLightSet->Stop();
+		m_IsLightSetRunning = false;
 
 		const uint8_t *response = (uint8_t *) m_pArtNetRdm->Handler(packet->RdmPacket);
 		if (response != 0) {
@@ -1178,14 +1037,12 @@ void ArtNetNode::HandleRdm(void) {
 		} else {
 			//printf("No response\n");
 		}
+
 		m_pLightSet->Start();
+		m_IsLightSetRunning = true;;
 	}
 }
 
-/**
- *
- * @param pArtNetTodData
- */
 void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm) {
 	m_pArtNetRdm = pArtNetTRdm;
 
@@ -1245,13 +1102,20 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 }
 
 
-void ArtNetNode::HandleTrigger(void) {
+void ArtNetNode::SetNetworkDataLossCondition(void) {
+	m_pLightSet->Stop();
+	m_IsLightSetRunning = false;
+
+	m_State.IsSynchronousMode = false;
+
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		m_OutputPorts[i].port.nStatus = m_OutputPorts[i].port.nStatus & (~GO_DATA_IS_BEING_TRANSMITTED);
+		m_OutputPorts[i].nLength = (uint16_t) 0;
+		m_OutputPorts[i].ipA = (uint32_t) 0;
+		m_OutputPorts[i].ipB = (uint32_t) 0;
+	}
 }
 
-/**
- *
- * @return
- */
 int ArtNetNode::HandlePacket(void) {
 	const char *packet = (char *)&(m_ArtNetPacket.ArtPacket);
 	uint16_t nForeignPort;
@@ -1265,10 +1129,14 @@ int ArtNetNode::HandlePacket(void) {
 #endif
 
 	if (nBytesReceived == 0) {
+		if ((m_nCurrentPacketTime - m_nPreviousPacketTime) >= m_State.nNetworkDataLossTimeout) {
+			SetNetworkDataLossCondition();
+		}
 		return 0;
 	}
 
 	m_ArtNetPacket.length = nBytesReceived;
+	m_nPreviousPacketTime = m_nCurrentPacketTime;
 
 	GetType();
 
@@ -1282,9 +1150,6 @@ int ArtNetNode::HandlePacket(void) {
 		} else {
 			if (m_nCurrentPacketTime - m_State.ArtSyncTime >= 4) {
 				m_State.IsSynchronousMode = false;
-#ifdef SENDDIAG
-				SendDiag("Leaving Synchronous Mode", ARTNET_DP_LOW);
-#endif
 			}
 		}
 	}

@@ -32,11 +32,14 @@
 #include <circle/logger.h>
 #include <circle/stdarg.h>
 #include <circle/util.h>
+#include <circle/time.h>
 #define ALIGNED
 #elif defined (__linux__) || defined (__CYGWIN__)
 #define ALIGNED
 #include <string.h>
+#include <time.h>
 #else
+#include <time.h>
 #include "util.h"
 #endif
 
@@ -60,20 +63,22 @@
 #define SET_OUTPUT_MASK		1<<8
 #define SET_ID_MASK			1<<9
 #define SET_OEM_VALUE_MASK	1<<10
+#define SET_NETWORK_TIMEOUT	1<<11
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";					///< Parameters file name
-static const char PARAMS_NET[] ALIGNED = "net";									///<
-static const char PARAMS_SUBNET[] ALIGNED = "subnet";							///<
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";						///<
-static const char PARAMS_OUTPUT[] ALIGNED = "output";							///< dmx {default}, spi, mon
-static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";					///< Use the TimeCode call-back handler, 0 {default}
-static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";					///< Use the TimeSync call-back handler, 0 {default}
-static const char PARAMS_RDM[] ALIGNED = "enable_rdm";							///< Enable RDM, 0 {default}
-static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";	///< 0 {default}
-static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";				///<
-static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";				///<
-static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";	///<
-static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";				///<
+static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
+static const char PARAMS_NET[] ALIGNED = "net";											///< 0 {default}
+static const char PARAMS_SUBNET[] ALIGNED = "subnet";									///< 0 {default}
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";								///< 0 {default}
+static const char PARAMS_OUTPUT[] ALIGNED = "output";									///< dmx {default}, spi, mon
+static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";							///< Use the TimeCode call-back handler, 0 {default}
+static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";							///< Use the TimeSync call-back handler, 0 {default}
+static const char PARAMS_RDM[] ALIGNED = "enable_rdm";									///< Enable RDM, 0 {default}
+static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";			///< 0 {default}
+static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";
+static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";
+static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
+static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";
+static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";///< 10 {default}
 
 void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
@@ -87,7 +92,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	uint8_t len;
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, PARAMS_TIMECODE, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_TIMECODE, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bUseTimeCode = true;
 			m_bSetList |= SET_TIMECODE_MASK;
@@ -95,7 +100,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_TIMESYNC, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_TIMESYNC, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bUseTimeSync = true;
 			m_bSetList |= SET_TIMESYNC_MASK;
@@ -103,7 +108,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_RDM, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_RDM, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bEnableRdm = true;
 			m_bSetList |= SET_RDM_MASK;
@@ -111,7 +116,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_RDM_DISCOVERY, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_RDM_DISCOVERY, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bRdmDiscovery = true;
 		}
@@ -119,21 +124,21 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	len = ARTNET_SHORT_NAME_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_NODE_SHORT_NAME, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_NODE_SHORT_NAME, value, &len) == SSCAN_OK) {
 		strncpy((char *)m_aShortName, value, len);
 		m_bSetList |= SET_SHORT_NAME_MASK;
 		return;
 	}
 
 	len = ARTNET_LONG_NAME_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_NODE_LONG_NAME, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_NODE_LONG_NAME, value, &len) == SSCAN_OK) {
 		strncpy((char *)m_aLongName, value, len);
 		m_bSetList |= SET_LONG_NAME_MASK;
 		return;
 	}
 
 	len = 3;
-	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "spi", 3) == 0) {
 			m_tOutputType = OUTPUT_TYPE_SPI;
 			m_bSetList |= SET_OUTPUT_MASK;
@@ -145,7 +150,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	len = 4;
-	if (Sscan::Char(pLine, PARAMS_NODE_MANUFACTURER_ID, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_NODE_MANUFACTURER_ID, value, &len) == SSCAN_OK) {
 		if (len == 4) {
 			const uint16_t v = HexUint16(value);
 			m_aManufacturerId[0] = (uint8_t) (v >> 8);
@@ -156,7 +161,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	len = 4;
-	if (Sscan::Char(pLine, PARAMS_NODE_OEM_VALUE, value, &len) == 2) {
+	if (Sscan::Char(pLine, PARAMS_NODE_OEM_VALUE, value, &len) == SSCAN_OK) {
 		if (len == 4) {
 			const uint16_t v = HexUint16(value);
 			m_aOemValue[0] = (uint8_t) (v >> 8);
@@ -166,13 +171,21 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_NET, &value8) == 2) {
+	if (Sscan::Uint8(pLine, PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_nNetworkTimeout = (time_t) value8;
+		}
+		m_bSetList |= SET_NETWORK_TIMEOUT;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_NET, &value8) == SSCAN_OK) {
 		m_nNet = value8;
 		m_bSetList |= SET_NET_MASK;
-	} else if (Sscan::Uint8(pLine, PARAMS_SUBNET, &value8) == 2) {
+	} else if (Sscan::Uint8(pLine, PARAMS_SUBNET, &value8) == SSCAN_OK) {
 		m_nSubnet = value8;
 		m_bSetList |= SET_SUBNET_MASK;
-	} else if (Sscan::Uint8(pLine, PARAMS_UNIVERSE, &value8) == 2) {
+	} else if (Sscan::Uint8(pLine, PARAMS_UNIVERSE, &value8) == SSCAN_OK) {
 		m_nUniverse = value8;
 		m_bSetList |= SET_UNIVERSE_MASK;
 	}
@@ -188,6 +201,7 @@ ArtNetParams::ArtNetParams(void): m_bSetList(0) {
 	m_bUseTimeSync = false;
 	m_bEnableRdm = false;
 	m_bRdmDiscovery = false;
+	m_nNetworkTimeout = 10;
 
 	memset(m_aShortName, 0, ARTNET_SHORT_NAME_LENGTH);
 	memset(m_aLongName, 0, ARTNET_LONG_NAME_LENGTH);
@@ -240,6 +254,10 @@ const uint8_t *ArtNetParams::GetManufacturerId(void) const {
 	return m_aManufacturerId;
 }
 
+time_t ArtNetParams::GetNetworkTimeout(void) const {
+	return m_nNetworkTimeout;
+}
+
 bool ArtNetParams::Load(void) {
 	m_bSetList = 0;
 
@@ -276,6 +294,10 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 
 	if(isMaskSet(SET_OEM_VALUE_MASK)) {
 		pArtNetNode->SetOemValue(m_aOemValue);
+	}
+
+	if(isMaskSet(SET_NETWORK_TIMEOUT)) {
+		pArtNetNode->SetNetworkTimeout(m_nNetworkTimeout);
 	}
 }
 
@@ -331,6 +353,10 @@ void ArtNetParams::Dump(void) {
 
 	if(isMaskSet(SET_OEM_VALUE_MASK)) {
 		printf(" OEM Value : 0x%.2X%.2X\n", m_aOemValue[0], m_aOemValue[1]);
+	}
+
+	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
+		printf(" Network data loss timeout : %ds\n", (int) m_nNetworkTimeout);
 	}
 }
 

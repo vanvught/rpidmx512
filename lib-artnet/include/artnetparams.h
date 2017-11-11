@@ -35,6 +35,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if defined (__circle__)
+#include <circle/time.h>
+#else
+#include <time.h>
+#endif
+
 #include "artnetnode.h"
 #include "common.h"
 
@@ -58,6 +64,7 @@ public:
 	const uint8_t *GetLongName(void) const;
 	TOutputType GetOutputType(void) const;
 	const uint8_t *GetManufacturerId(void) const;
+	time_t GetNetworkTimeout(void) const;
 
 	bool IsUseTimeCode(void) const;
 	bool IsUseTimeSync(void) const;
@@ -96,6 +103,7 @@ private:
 	uint8_t m_aLongName[ARTNET_LONG_NAME_LENGTH];
 	uint8_t m_aManufacturerId[2];
 	uint8_t m_aOemValue[2];
+	time_t m_nNetworkTimeout;
 };
 
 #endif /* ARTNETPARAMS_H_ */

@@ -53,9 +53,6 @@
 #include "artnetrdm.h"
 #include "artnetipprog.h"
 
-/**
- *
- */
 struct TArtNetNodeState {
 	bool SendArtPollReplyOnChange;				///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	uint32_t ArtPollReplyCount;					///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
@@ -71,11 +68,9 @@ struct TArtNetNodeState {
 	bool IsMergeMode;							///< Is the Node in merging mode?
 	bool IsChanged;								///< Is the DMX changed? Update output DMX
 	uint8_t nActivePorts;						///< Number of active ports
+	time_t nNetworkDataLossTimeout;				///<
 };
 
-/**
- *
- */
 struct TArtNetNode {
 	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
 	uint32_t IPAddressLocal;						///< Local IP Address
@@ -93,19 +88,12 @@ struct TArtNetNode {
 	uint8_t  Status2;
 };
 
-/**
- *
- */
 struct TGenericPort {
 	uint16_t nPortAddress;		///< One of the 32,768 possible addresses to which a DMX frame can be directed. The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 	uint8_t nDefaultAddress;	///< the address set by the hardware
 	uint8_t nStatus;			///<
 };
 
-/**
- * struct to represent an output port
- *
- */
 struct TOutputPort {
 	uint8_t data[ARTNET_DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
@@ -139,26 +127,35 @@ public:
 	void Start(void);
 	void Stop(void);
 
+	bool GetDirectUpdate(void) const;
 	void SetDirectUpdate(bool);
-	const bool GetDirectUpdate(void);
 
 	const char *GetShortName(void);
 	void SetShortName(const char *);
+
 	const char *GetLongName(void);
 	void SetLongName(const char *);
-	const uint8_t GetUniverseSwitch(uint8_t);
-	int SetUniverseSwitch(const uint8_t, const TArtNetPortDir, const uint8_t);
-	const uint8_t GetSubnetSwitch(void);
-	void SetSubnetSwitch(const uint8_t);
-	const uint8_t GetNetSwitch(void);
-	void SetNetSwitch(const uint8_t);
-	void SetManufacturerId(const uint8_t *);
-	const uint8_t *GetManufacturerId(void);
-	void SetOemValue(const uint8_t *);
-	const uint8_t *GetOemValue(void);
 
-	const uint8_t GetActiveOutputPorts(void);
-	const uint8_t GetActiveInputPorts(void);
+	uint8_t GetUniverseSwitch(uint8_t) const;
+	int SetUniverseSwitch(uint8_t, TArtNetPortDir, uint8_t);
+
+	uint8_t GetNetSwitch(void) const;
+	void SetNetSwitch(uint8_t);
+
+	uint8_t GetSubnetSwitch(void) const;
+	void SetSubnetSwitch(uint8_t);
+
+	const uint8_t *GetManufacturerId(void);
+	void SetManufacturerId(const uint8_t *);
+
+	const uint8_t *GetOemValue(void);
+	void SetOemValue(const uint8_t *);
+
+	time_t GetNetworkTimeout(void) const;
+	void SetNetworkTimeout(time_t);
+
+	uint8_t GetActiveOutputPorts(void) const;
+	uint8_t GetActiveInputPorts(void) const;
 
 	void SendDiag(const char *, TPriorityCodes);
 	void SendTimeCode(const struct TArtNetTimeCode *);
@@ -172,6 +169,8 @@ private:
 	void FillDiagData(void);
 	void FillTimeCodeData(void);
 
+	uint16_t MakePortAddress(uint16_t);
+
 	void HandlePoll(void);
 	void HandleDmx(void);
 	void HandleSync(void);
@@ -182,16 +181,15 @@ private:
 	void HandleTodControl(void);
 	void HandleRdm(void);
 	void HandleIpProg(void);
-	void HandleTrigger(void);
 
-	bool IsMergedDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
-	void CheckMergeTimeouts(const uint8_t);
-	bool IsDmxDataChanged(const uint8_t, const uint8_t *, const uint16_t);
+	bool IsMergedDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
+	void CheckMergeTimeouts(uint8_t);
+	bool IsDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
 
 	void SendPollRelply(bool);
 	void SendTod(void);
 
-	uint16_t MakePortAddress(const uint16_t);
+	void SetNetworkDataLossCondition(void);
 
 private:
 	LightSet    			*m_pLightSet;		///<
@@ -218,7 +216,10 @@ private:
 	bool					m_bDirectUpdate;
 
 	time_t 					m_nCurrentPacketTime;
+	time_t					m_nPreviousPacketTime;
 	TOpCodes				m_tOpCodePrevious;
+
+	bool					m_IsLightSetRunning;
 };
 
 #endif /* ARTNETNODE_H_ */
