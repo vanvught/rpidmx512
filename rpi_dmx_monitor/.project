@@ -6,6 +6,7 @@
 		<project>firmware-template</project>
 		<project>lib-dmx</project>
 		<project>lib-dmxmonitor</project>
+		<project>lib-ledblink</project>
 		<project>lib-monitor</project>
 		<project>lib-utils</project>
 	</projects>

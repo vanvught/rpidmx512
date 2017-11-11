@@ -1,7 +1,7 @@
 #
 DEFINES = MONITOR_DMX ENABLE_MMU NDEBUG
 #
-LIBS = dmx monitor dmxmonitor lightset c++
+LIBS = dmx monitor dmxmonitor lightset ledblink c++
 #
 SRCDIR = firmware
 

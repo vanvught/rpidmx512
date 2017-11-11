@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "dmxmonitor.h"
 #include "hardware.h"
 #include "console.h"
-#include "led.h"
-#include "dmx.h"
+
+#include "ledblinktask.h"
+
+#include "dmxcontroller.h"
+#include "dmxmonitor.h"
 
 #include "software_version.h"
 
@@ -40,31 +42,23 @@ extern "C" {
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
-#if !defined(UINT32_MAX)
-  #define UINT32_MAX  ((uint32_t)-1)
-#endif
-
 void notmain(void) {
-	uint32_t micros_previous = 0;
-
+	LedBlinkTask ledblinktask;
+	uint32_t nMicrosPrevious = (uint32_t) 0;
 	uint32_t updates_per_seconde_min = UINT32_MAX;
-	uint32_t updates_per_seconde_max = (uint32_t)0;
+	uint32_t updates_per_seconde_max = (uint32_t) 0;
 	uint32_t slots_in_packet_min = UINT32_MAX;
-	uint32_t slots_in_packet_max = (uint32_t)0;
+	uint32_t slots_in_packet_max = (uint32_t) 0;
 	uint32_t slot_to_slot_min = UINT32_MAX;
-	uint32_t slot_to_slot_max = (uint32_t)0;
+	uint32_t slot_to_slot_max = (uint32_t) 0;
 	uint32_t break_to_break_min = UINT32_MAX;
-	uint32_t break_to_break_max = (uint32_t)0;
-
-	dmx_init();
-	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+	uint32_t break_to_break_max = (uint32_t) 0;
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("DMX Real-time Monitor");
 
-	DMXMonitor dmx_monitor;
-
-	dmx_monitor.Start();
+	DMXMonitor dmxmonitor;
+	dmxmonitor.Cls();
 
 	console_set_cursor(0, 22);
 	console_puts("DMX updates/sec\n");
@@ -74,23 +68,18 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
+	DMXController dmxcontroller;
+	dmxcontroller.SetOutput(&dmxmonitor);
+	dmxcontroller.Start();
+
 	for(;;) {
 		hardware_watchdog_feed();
 
-		if (dmx_get_updates_per_seconde() == 0) {
-			dmx_monitor.SetData(0, NULL, 0);
-		} else {
-			const uint8_t *p = dmx_get_available();
-			if (p != 0) {
-				const struct _dmx_data *dmx_statistics = (struct _dmx_data *) p;
-				const uint16_t length = (uint16_t) (dmx_statistics->statistics.slots_in_packet);
-				dmx_monitor.SetData(0, ++p, length); // Skip DMX START CODE
-			}
-		}
+		(void) dmxcontroller.Run();
 
 		const uint32_t micros_now = hardware_micros();
 
-		if (micros_now - micros_previous > (uint32_t) (1E6 / 2)) {
+		if (micros_now - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
 			const uint8_t *dmx_data = dmx_get_current_data();
 			const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
 			const uint32_t dmx_updates_per_seconde = dmx_get_updates_per_seconde();
@@ -123,10 +112,10 @@ void notmain(void) {
 				printf("%6d  %6d / %d", (int)dmx_statistics->statistics.break_to_break, (int)break_to_break_min, (int)break_to_break_max);
 			}
 
-			micros_previous = micros_now;
+			nMicrosPrevious = micros_now;
 		}
 
-		led_blink();
+		ledblinktask.Run();
 	}
 }
 
