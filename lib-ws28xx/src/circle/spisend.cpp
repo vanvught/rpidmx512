@@ -41,6 +41,7 @@ static const char FromSPISend[] = "spisend";
 
 SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
 	m_pInterrupt (pInterruptSystem),
+	m_bIsStarted(false),
 	m_pLEDStripe (0),
 	m_LEDType (WS2801),
 	m_nLEDCount (170),
@@ -51,41 +52,53 @@ SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
 {
 }
 
-SPISend::~SPISend(void)
-{
+SPISend::~SPISend(void) {
 	this->Stop();
-}
-
-void SPISend::Start(void)
-{
-	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new CWS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
-	assert(m_pLEDStripe != 0);
-
-	m_pLEDStripe->Initialize();
-	m_pLEDStripe->Blackout();
-}
-
-void SPISend::Stop(void)
-{
-	while (m_pLEDStripe->IsUpdating())
-	{
-		// wait for completion
-	}
-	m_pLEDStripe->Blackout();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length)
-{
+void SPISend::Start(void) {
+	if (m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+
+	if (m_pLEDStripe == 0) {
+		m_pLEDStripe = new CWS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
+		assert(m_pLEDStripe != 0);
+		m_pLEDStripe->Initialize();
+	} else {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
+		m_pLEDStripe->Update();
+	}
+}
+
+void SPISend::Stop(void) {
+	if (!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+
+	if (m_pLEDStripe != 0) {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
+		m_pLEDStripe->Blackout();
+	}
+}
+
+void SPISend::SetData(uint8_t nPortId, const uint8_t *data, uint16_t length) {
 	uint16_t beginIndex = (uint16_t) 0;
 	uint16_t endIndex = (uint16_t) 0;
 
 	boolean bUpdate = false;
 
-	switch (nPortId)
-	{
+	switch (nPortId) {
 	case 0:
 		beginIndex = (uint16_t) 0;
 		endIndex = min(m_nLEDCount, (uint16_t)(length / (uint16_t) m_nChannelsPerLed));
@@ -115,26 +128,24 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 	CLogger::Get ()->Write(FromSPISend, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
 #endif
 
-	while (m_pLEDStripe->IsUpdating ())
-	{
+	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
+		Start();
+	}
+
+	while (m_pLEDStripe->IsUpdating()) {
 		// wait for completion
 	}
 
 	unsigned i = 0;
 
-	if (m_LEDType == SK6812W)
-	{
-		for (unsigned j = beginIndex; j < endIndex; j++)
-		{
+	if (m_LEDType == SK6812W) {
+		for (unsigned j = beginIndex; j < endIndex; j++) {
 			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2], data[i + 3]);
 			i = i + 4;
 		}
 
-	}
-	else
-	{
-		for (unsigned j = beginIndex; j < endIndex; j++)
-		{
+	} else {
+		for (unsigned j = beginIndex; j < endIndex; j++) {
 			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2]);
 			i = i + 3;
 		}
@@ -142,6 +153,7 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 
 	if (bUpdate) {
 		m_pLEDStripe->Update();
+		m_bIsStarted = true;
 	}
 }
 

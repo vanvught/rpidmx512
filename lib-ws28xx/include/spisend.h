@@ -49,6 +49,9 @@ public:
 	uint16_t GetLEDCount(void) const;
 
 private:
+	bool m_bIsStarted;
+
+private:
 	WS28XXStripe	*m_pLEDStripe;
 	TWS28XXType		m_LEDType;
 	uint16_t		m_nLEDCount;

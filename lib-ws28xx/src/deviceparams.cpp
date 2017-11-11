@@ -124,7 +124,7 @@ void DeviceParams::Dump(void) {
 	printf("Device parameters \'%s\':\n", PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_LED_TYPE_MASK)) {
-		printf(" Type : %s [%d]\n", led_types[tLedType], (int) tLedType);
+		printf(" Type : %s [%d]\n", GetLedTypeString(tLedType), (int) tLedType);
 	}
 
 	if (isMaskSet(SET_LED_COUNT_MASK)) {

@@ -53,6 +53,9 @@ private:
 	CInterruptSystem	*m_pInterrupt;
 
 private:
+	bool m_bIsStarted;
+
+private:
 	CWS28XXStripe	*m_pLEDStripe;
 	TWS28XXType		m_LEDType;
 	uint16_t		m_nLEDCount;

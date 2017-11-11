@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "ws28xxstripe.h"
@@ -33,7 +34,7 @@
 #include "spisend.h"
 #include "util.h"
 
-SPISend::SPISend(void) :
+SPISend::SPISend(void) : m_bIsStarted(false),
 		m_pLEDStripe(0),
 		m_LEDType(WS2801),
 		m_nLEDCount(170),
@@ -45,23 +46,38 @@ SPISend::SPISend(void) :
 
 SPISend::~SPISend(void) {
 	this->Stop();
-}
-
-void SPISend::Start(void) {
-	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_LEDType, 0);
-	assert(m_pLEDStripe != 0);
-
-	m_pLEDStripe->Blackout();
-}
-
-void SPISend::Stop(void) {
-	m_pLEDStripe->Blackout();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t length) {
+void SPISend::Start(void) {
+	if (m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+
+	if (m_pLEDStripe == 0) {
+		m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_LEDType, 0);
+		assert(m_pLEDStripe != 0);
+	} else {
+		m_pLEDStripe->Update();
+	}
+}
+
+void SPISend::Stop(void) {
+	if (!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+
+	if (m_pLEDStripe != 0) {
+		m_pLEDStripe->Blackout();
+	}
+}
+
+void SPISend::SetData(uint8_t nPortId, const uint8_t *data, uint16_t length) {
 	uint16_t i = 0;
 	uint16_t j = 0;
 
@@ -95,8 +111,11 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 		break;
 	}
 
-
 	//monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
+
+	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
+		Start();
+	}
 
 	if (m_LEDType == SK6812W) {
 		for (j = beginIndex; j < endIndex; j++) {
@@ -112,6 +131,7 @@ void SPISend::SetData(const uint8_t nPortId, const uint8_t *data, const uint16_t
 
 	if (bUpdate) {
 		m_pLEDStripe->Update();
+		m_bIsStarted = true;
 	}
 }
 
