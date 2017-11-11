@@ -192,6 +192,7 @@ void notmain(void) {
 		}
 	} else if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		node.SetOutput(&monitor);
+		monitor.Cls();
 		console_set_top_row(20);
 	}
 
