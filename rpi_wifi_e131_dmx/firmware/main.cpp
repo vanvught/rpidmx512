@@ -119,13 +119,13 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, "Join group ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Join group ..."));
 
+	E131Bridge bridge;
+
 	struct in_addr group_ip;
 	(void)inet_aton("239.255.0.0", &group_ip);
 	const uint16_t universe = e131params.GetUniverse();
 	group_ip.s_addr = group_ip.s_addr | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
 	network_joingroup(group_ip.s_addr);
-
-	E131Bridge bridge;
 
 	bridge.setCid(uuid);
 	bridge.setUniverse(universe);
@@ -133,6 +133,7 @@ void notmain(void) {
 
 	if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		bridge.SetOutput(&monitor);
+		monitor.Cls();
 		console_set_top_row(20);
 	} else {
 		dmxparams.Set(&dmx);
