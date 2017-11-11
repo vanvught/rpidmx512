@@ -83,8 +83,8 @@ E131Bridge::E131Bridge(void) :
 	(void)inet_aton("239.255.0.0", &addr);
 	m_DiscoveryIpAddress = addr.s_addr | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF00) << 8));
 
-	memset(m_SourceName, 0, sizeof(m_SourceName));
-	strncpy(m_SourceName, DEFAULT_SOURCE_NAME, sizeof(m_SourceName));
+	setSourceName(DEFAULT_SOURCE_NAME);
+	setUniverse(E131_UNIVERSE_DEFAULT);
 
 	FillDiscoveryPacket();
 }
@@ -161,7 +161,7 @@ const uint16_t E131Bridge::getUniverse() {
  * @param nUniverse
  */
 void E131Bridge::setUniverse(const uint16_t nUniverse) {
-	assert((nUniverse > E131_UNIVERSE_DEFAULT) && (nUniverse < E131_UNIVERSE_MAX));
+	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
 
 	m_nUniverse = nUniverse;
 }
@@ -531,8 +531,8 @@ void E131Bridge::HandleDmx(void) {
 
 	if (sendNewData) {
 		if (!m_State.IsSynchronized) {
-			Start();
 			m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+			Start();
 		} else {
 			m_OutputPort.IsDataPending = true;
 		}
@@ -553,8 +553,8 @@ void E131Bridge::HandleSynchronization(void) {
 	m_State.SynchronizationTime = m_nCurrentPacketMillis;
 
 	if (m_OutputPort.IsDataPending) {
-		Start();
 		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
+		Start();
 		m_OutputPort.IsDataPending = false;
 	}
 }
