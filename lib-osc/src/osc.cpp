@@ -23,23 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifdef __circle__
-#include <circle/util.h>
-#include "oscutil.h"
-#else
-#include <stddef.h>
-#endif
-
 #include "osc.h"
 #include "oscstring.h"
 
 extern "C" {
-extern int lo_pattern_match(const char *str, const char *p);
+extern int lo_pattern_match(const char *, const char *);
 }
 
 char *OSC::GetPath(void *p, unsigned size) {
-		unsigned result = OSCString::Validate(p, size);
-		return (result >= 4) ? (char *) p : NULL;
+		return (OSCString::Validate(p, size) >= 4) ? (char *) p : 0;
 }
 
 bool OSC::isMatch(const char *str, const char *p) {

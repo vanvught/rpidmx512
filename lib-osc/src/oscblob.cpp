@@ -2,7 +2,7 @@
  * @file oscblob.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,37 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "oscmessage.h"
 #include "oscblob.h"
 
-OSCBlob::OSCBlob(const char *nData, int nLen) :
-		m_Data(nData), m_Len(nLen) {
+OSCBlob::OSCBlob(const char *nData, int nSize) : m_pData(nData), m_nSize(nSize) {
 
 }
 
 OSCBlob::~OSCBlob(void) {
-	m_Data = 0;
-	m_Len = 0;
+	m_pData = 0;
+	m_nSize = 0;
 }
 
-int OSCBlob::GetSize(void) {
-	return m_Len;
+int OSCBlob::GetDataSize(void) const{
+	return m_nSize;
 }
 
-int OSCBlob::GetByte(int i) {
-	if (i < m_Len) {
-		return m_Data[i];
+const char *OSCBlob::GetDataPtr(void) {
+	return m_pData;
+}
+
+unsigned OSCBlob::GetSize(void) const {
+	const unsigned len = (unsigned) sizeof(uint32_t) + m_nSize;
+
+	return (4 * ((len + 3) / 4));
+}
+
+int OSCBlob::GetByte(unsigned i) const {
+	if (i < m_nSize) {
+		return (unsigned char) m_pData[i];
 	}
 
 	return -1;
@@ -69,9 +79,9 @@ unsigned OSCBlob::Validate(void *data, unsigned size) {
 
 	char *pos = (char *) data;
 
-	if (size < 0) {
-		return -OSC_INVALID_SIZE;
-	}
+//	if (size < 0) {
+//		return -OSC_INVALID_SIZE;
+//	}
 
 	dsize = __builtin_bswap32(*(unsigned *) data);
 

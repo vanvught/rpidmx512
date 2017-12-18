@@ -67,12 +67,10 @@ public:
 	int AddFloat(float);
 	int AddInt32(int32_t);
 	int AddString(const char *);
-	int AddBlob(OSCBlob);
+	int AddBlob(OSCBlob *);
 
-	bool IsMatch(const char *);
-#if ! defined( __circle__)
 	void Dump(void);
-#endif
+
 	void *Serialise(const char *, void *, unsigned *);
 
 private:

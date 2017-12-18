@@ -8,9 +8,9 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-network/include -I ../lib-properties/include
 INCLUDE	+= -I ../include
 
-OBJS = src/osc.o src/oscaddress.o src/oscblob.o src/oscmessage.o src/oscsend.o src/oscstring.o src/oscutil.o src/pattern_match.o src/oscparams.o
+OBJS = src/osc.o src/oscaddress.o src/oscblob.o src/oscmessage.o src/oscsend.o src/oscstring.o src/circle/oscutil.o src/pattern_match.o src/oscparams.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/*.o src/circle/*.o
 
 libosc.a: $(OBJS)
 	rm -f $@

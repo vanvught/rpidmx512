@@ -28,7 +28,7 @@
 
 #ifdef __circle__
 #include <circle/util.h>
-#include "oscutil.h"
+#include "circle/oscutil.h"
 #elif defined(__linux__) || defined (__CYGWIN__)
 #include <stdlib.h>
 #include <stdio.h>
@@ -287,6 +287,28 @@ int OSCMessage::AddString(const char *a) {
 	}
 
 	strncpy(nptr, a, size);
+
+	return 0;
+}
+
+int OSCMessage::AddBlob(OSCBlob *pBlob) {
+	const unsigned size = pBlob->GetSize();
+	const unsigned dsize = pBlob->GetDataSize();
+
+	char *nptr = (char *) AddData(size);
+
+	if (!nptr) {
+		return -1;
+	}
+
+	if (AddTypeChar(OSC_BLOB)) {
+		return -1;
+	}
+
+	memset(nptr + size - 4, 0, 4);
+
+	memcpy(nptr, &dsize, sizeof(dsize));
+	memcpy(nptr + sizeof(uint32_t), pBlob->GetDataPtr(), dsize);
 
 	return 0;
 }

@@ -29,7 +29,7 @@
 #ifdef __circle__
 #include <circle/util.h>
 #include <circle/stdarg.h>
-#include "oscutil.h"
+#include "circle/oscutil.h"
 static const char FromOscSend[] = "oscsend";
 #elif defined (__linux__) || defined (__CYGWIN__)
 #include <stdarg.h>
@@ -97,6 +97,11 @@ void OSCSend::AddVarArgs(va_list ap) {
 		case OSC_STRING: {
 			char *s = va_arg(ap, char *);
 			m_Result = m_Msg->AddString(s);
+			break;
+		}
+		case OSC_BLOB: {
+			OSCBlob *b = va_arg(ap, OSCBlob *);
+			m_Result = m_Msg->AddBlob(b);
 			break;
 		}
 		default:

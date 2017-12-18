@@ -2,7 +2,7 @@
  * @file oscblob.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,16 +37,19 @@ public:
 	OSCBlob(const char *, int);
 	~OSCBlob(void);
 
-	int GetSize(void);
-	int GetByte(int);
+	int GetDataSize(void) const;
+	const char *GetDataPtr(void);
+	int GetByte(unsigned) const;
+
+	unsigned GetSize(void) const;
 
 public:
 	static unsigned Size(const void *);
 	static unsigned Validate(void *, unsigned);
 
 private:
-	const char *m_Data;
-	int m_Len;
+	const char *m_pData;
+	unsigned m_nSize;
 };
 
 #endif /* OSCBLOB_H_ */
