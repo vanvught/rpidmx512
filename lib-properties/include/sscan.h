@@ -44,6 +44,7 @@ extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/ui
 extern int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
 extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
 extern int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
+extern int sscan_i2c_address(const char *, const char *, /*@out@*/uint8_t *);
 
 #ifdef __cplusplus
 class Sscan {
@@ -74,6 +75,10 @@ public:
 
 	inline static int Uuid(const char *a, const char *b, char *c, uint8_t *d) {
 		return sscan_uuid(a, b, c, d);
+	}
+
+	inline static int I2cAddress(const char *a, const char *b, uint8_t *c) {
+		return sscan_i2c_address(a, b, c);
 	}
 private:
 };
