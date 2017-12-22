@@ -29,10 +29,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "autodriver.h"
-
-#include "l6470constants.h"
-
 #include "bcm2835.h"
 
 #if defined(__linux__)
@@ -40,6 +36,10 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_spi.h"
 #endif
+
+#include "autodriver.h"
+
+#include "l6470constants.h"
 
 #define BUSY_PIN_NOT_USED	0xFF
 

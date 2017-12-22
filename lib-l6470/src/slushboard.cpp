@@ -30,8 +30,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "slushboard.h"
-
 #include "bcm2835.h"
 
 #if defined(__linux__)
@@ -40,6 +38,8 @@
  #include "bcm2835_spi.h"
  #include "bcm2835_i2c.h"
 #endif
+
+#include "slushboard.h"
 
 extern "C" {
 #if defined(__linux__)
@@ -71,6 +71,10 @@ SlushBoard::SlushBoard(void) {
 		fprintf(stderr, "Not able to init the bmc2835 library\n");
 	}
 #endif
+
+	initSpi();
+	initI2c();
+
 	bcm2835_gpio_fsel(SLUSH_L6470_RESET, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_set(SLUSH_L6470_RESET);
 
@@ -93,9 +97,6 @@ SlushBoard::SlushBoard(void) {
 	udelay(10000);
 	bcm2835_gpio_set(SLUSH_L6470_RESET);
 	udelay(10000);
-
-	initSpi();
-	initI2c();
 }
 
 SlushBoard::~SlushBoard(void) {
@@ -104,6 +105,11 @@ SlushBoard::~SlushBoard(void) {
 
 void SlushBoard::initSpi(void) {
 	bcm2835_spi_begin();
+
+    //bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0); /* MISO */
+    //bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0); /* MOSI */
+    //bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0); /* CLK */
+
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
 	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE3);

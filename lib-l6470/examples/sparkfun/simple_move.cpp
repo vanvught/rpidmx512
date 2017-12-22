@@ -33,9 +33,6 @@
 #define GPIO_RESET_OUT 	RPI_V2_GPIO_P1_38
 
 int main(int argc, char **argv) {
-	AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT);
-	//AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT, GPIO_BUSY_IN);
-
 	/****************************************************************************************************/
 	/*                                                                                                  */
 	if (bcm2835_init() == 0) {
@@ -56,6 +53,9 @@ int main(int argc, char **argv) {
 	bcm2835_delayMicroseconds(10000);
 	/*                                                                                                  */
 	/****************************************************************************************************/
+
+	AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT);
+	//AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT, GPIO_BUSY_IN);
 
 	const int stepmove = 300000;
 

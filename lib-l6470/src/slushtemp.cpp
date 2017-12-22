@@ -29,14 +29,14 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "slushboard.h"
-
 #include "bcm2835.h"
 
 #if defined(__linux__)
 #else
  #include "bcm2835_i2c.h"
 #endif
+
+#include "slushboard.h"
 
 #define MAX1164_I2C_ADDRESS		0x36
 

@@ -31,11 +31,6 @@
 #include <stdio.h>
 #endif
 
-#include "slushmotor.h"
-#include "slushboard.h"
-
-#include "l6470constants.h"
-
 #include "bcm2835.h"
 
 #if defined(__linux__)
@@ -43,6 +38,11 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_spi.h"
 #endif
+
+#include "slushmotor.h"
+#include "slushboard.h"
+
+#include "l6470constants.h"
 
 SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nMotor <= 3);
