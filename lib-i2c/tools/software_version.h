@@ -1,5 +1,5 @@
 /**
- * @file i2c_set.c
+ * @file software_version.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,18 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include "bcm2835.h"
-#if defined(__linux__)
-#else
-#include "bcm2835_i2c.h"
-#endif
+static const char SOFTWARE_VERSION[] = "1.0";
 
-void i2c_set_address(uint8_t address) {
-	bcm2835_i2c_setSlaveAddress(address);
-}
-
-void i2c_set_clockdivider(uint16_t divider) {
-	bcm2835_i2c_setClockDivider(divider);
-}
+#endif /* SOFTWARE_VERSION_H_ */

@@ -40,24 +40,24 @@ extern "C" {
 #endif
 
 extern void i2c_begin(void);
-extern void i2c_set_address(const uint8_t);
-extern void i2c_set_clockdivider(const uint16_t);
+extern void i2c_set_address(uint8_t);
+extern void i2c_set_clockdivider(uint16_t);
 
 extern const bool i2c_is_connected(const uint8_t);
 
 extern const uint16_t i2c_read_uint8(void);
 extern const uint16_t i2c_read_uint16(void);
-extern const uint16_t i2c_read_reg_uint16(const uint8_t);
-extern const uint16_t i2c_read_reg_uint16_delayus(const uint8_t, const uint32_t);
+extern const uint16_t i2c_read_reg_uint16(uint8_t);
+extern const uint16_t i2c_read_reg_uint16_delayus(uint8_t, uint32_t);
 
-extern void i2c_write(const uint8_t);
-extern void i2c_write_nb(const char *, const uint32_t);
-extern void i2c_write_reg_uint8(const uint8_t, const uint8_t);
-extern void i2c_write_uint16(const uint16_t);
-extern void i2c_write_reg_uint16(const uint8_t, const uint16_t);
-extern void i2c_write_reg_uint16_mask(const uint8_t, const uint16_t, const uint16_t);
+extern void i2c_write(uint8_t);
+extern void i2c_write_nb(const char *, uint32_t);
+extern void i2c_write_reg_uint8(uint8_t, uint8_t);
+extern void i2c_write_uint16(uint16_t);
+extern void i2c_write_reg_uint16(uint8_t, uint16_t);
+extern void i2c_write_reg_uint16_mask(uint8_t, uint16_t, uint16_t);
 
-extern /*@observer@*/const char *i2c_lookup_device(const uint8_t);
+extern /*@observer@*/const char *i2c_lookup_device(uint8_t);
 
 #ifdef __cplusplus
 }

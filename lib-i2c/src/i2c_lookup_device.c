@@ -30,10 +30,11 @@ struct device_details {
 	const char *name;
 } static const devices[] __attribute__((aligned(4))) = {
 		{ 0x18, "MCP9808 {Temperature Sensor}" },
+		{ 0x20, "MCP23017 {16-bit I/O port}"},
 		{ 0x23, "BH1750FVI {Ambient Light Sensor}" },
 		{ 0x27, "PCF8574T {8-bit I/O Expander}" },
 		{ 0x3C, "SSD1306 {128 x 64 Dot Matrix}" },
-		{ 0x40, "HTU21D {Humidity and Temperature Sensor} | INA219 {Current Sensor}" },
+		{ 0x40, "HTU21D {Humidity and Temperature Sensor} | INA219 {Current Sensor} | PCA9685 {16-channel, 12-bit PWM}" },
 		{ 0x41, "BW:LCD" },
 		{ 0x42, "BW:7 digital IO lines (DIO)" },
 		{ 0x43, "BW:Servo" },
@@ -50,10 +51,10 @@ struct device_details {
 		{ 0x52, "BW:Raspberry juice" },
 		{ 0x57, "MCP7941X {EEPROM}" },
 		{ 0x6F, "MCP7941X {SRAM RTCC}" },
-		{ 0x70, "TCA9548A {I2C Multiplexer}"}
+		{ 0x70, "TCA9548A {I2C Multiplexer} | PCA9685 {16-channel, 12-bit PWM}"}
 		};
 
-/*@observer@*/const char *i2c_lookup_device(const uint8_t slave_address) {
+/*@observer@*/const char *i2c_lookup_device(uint8_t slave_address) {
 	int i = 0;
 	int j = (int) (sizeof(devices) / sizeof(struct device_details));
 

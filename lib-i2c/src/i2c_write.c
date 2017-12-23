@@ -26,32 +26,33 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
-#if defined(__linux__) || defined (__CYGWIN__)
+
+#if defined(__linux__)
 #else
 #include "bcm2835_i2c.h"
 #endif
 
 #include "i2c.h"
 
-void i2c_write_nb(const char *data, const uint32_t length) {
+void i2c_write_nb(const char *data, uint32_t length) {
 	(void) bcm2835_i2c_write(data, length);
 }
 
-#if defined(__linux__) || defined (__CYGWIN__)
-void i2c_write(const uint8_t data) {
+#if defined(__linux__)
+void i2c_write(uint8_t data) {
 	char buffer[2];
 	buffer[0] = data;
  	bcm2835_i2c_write(buffer, 1);
 }
 
-void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
+void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
 	char buffer[4];
 	buffer[0] = reg;
 	buffer[1] = data;
 	bcm2835_i2c_write(buffer, 2);
 }
 #else
-void i2c_write(const uint8_t data) {
+void i2c_write(uint8_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
 	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 
@@ -66,7 +67,7 @@ void i2c_write(const uint8_t data) {
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 }
 
-void i2c_write_uint16(const uint16_t data) {
+void i2c_write_uint16(uint16_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
 	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 
@@ -82,7 +83,7 @@ void i2c_write_uint16(const uint16_t data) {
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 }
 
-void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
+void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
 	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 
@@ -98,7 +99,7 @@ void i2c_write_reg_uint8(const uint8_t reg, const uint8_t data) {
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 }
 
-void i2c_write_reg_uint16(const uint8_t reg, const uint16_t data) {
+void i2c_write_reg_uint16(uint8_t reg, uint16_t data) {
 	BCM2835_BSC1->C = BCM2835_BSC_C_CLEAR_1;
 	BCM2835_BSC1->S = (uint32_t) (BCM2835_BSC_S_CLKT | BCM2835_BSC_S_ERR | BCM2835_BSC_S_DONE);
 
@@ -115,7 +116,7 @@ void i2c_write_reg_uint16(const uint8_t reg, const uint16_t data) {
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 }
 
-void i2c_write_reg_uint16_mask(const uint8_t reg, const uint16_t data, const uint16_t mask) {
+void i2c_write_reg_uint16_mask(uint8_t reg, uint16_t data, uint16_t mask) {
 	uint16_t current;
 	uint16_t new;
 

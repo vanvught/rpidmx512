@@ -1,5 +1,5 @@
 /**
- * @file i2c_set.c
+ * @file i2cdetect.c
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,18 +23,57 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdint.h>
 
-#include "bcm2835.h"
-#if defined(__linux__)
-#else
-#include "bcm2835_i2c.h"
-#endif
+#include "i2c.h"
 
-void i2c_set_address(uint8_t address) {
-	bcm2835_i2c_setSlaveAddress(address);
-}
+#include "software_version.h"
 
-void i2c_set_clockdivider(uint16_t divider) {
-	bcm2835_i2c_setClockDivider(divider);
+int main(int argc, char **argv) {
+	uint8_t first = 0x03, last = 0x77;
+	uint8_t i, j;
+	uint8_t address;
+
+	i2c_begin();
+
+	i2c_set_clockdivider(2500); // 100kHz
+
+	printf("[V%s] Compiled on %s at %s\n\n", SOFTWARE_VERSION, __DATE__, __TIME__);
+
+	for (address = 0x00; address <= 0x7F; address++) {
+		/* Skip unwanted addresses */
+		if (address < first || address > last) {
+			continue;
+		}
+
+		if (i2c_is_connected(address)) {
+			printf("0x%.2X : 0x%.2X : %s\n", (unsigned int) address, (unsigned int) (address << 1), i2c_lookup_device(address));
+		}
+	}
+
+
+	puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+
+	for (i = 0; i < 128; i += 16) {
+		printf("%02x: ", (unsigned int) i);
+		for (j = 0; j < 16; j++) {
+			/* Skip unwanted addresses */
+			if (i + j < first || i + j > last) {
+				printf("   ");
+				continue;
+			}
+
+			if (i2c_is_connected((i + j))) {
+				printf("%02x ", (unsigned int) (i + j));
+
+			} else {
+				printf("-- ");
+			}
+		}
+
+		puts("");
+	}
+
+	return 0;
 }

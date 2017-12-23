@@ -23,10 +23,9 @@
  * THE SOFTWARE.
  */
 
-
 #include <stdint.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 #include "bcm2835.h"
 #define udelay bcm2835_delayMicroseconds
 #else
@@ -50,7 +49,7 @@ const uint16_t i2c_read_uint16(void) {
 	return (uint16_t) ((uint16_t) buf[0] << 8 | (uint16_t) buf[1]);
 }
 
-const uint16_t i2c_read_reg_uint16(const uint8_t reg) {
+const uint16_t i2c_read_reg_uint16(uint8_t reg) {
 	uint8_t buf[2] = { 0, 0 };
 
 	buf[0] = reg;
@@ -60,7 +59,7 @@ const uint16_t i2c_read_reg_uint16(const uint8_t reg) {
 	return i2c_read_uint16();
 }
 
-const uint16_t i2c_read_reg_uint16_delayus(const uint8_t reg, const uint32_t delayus) {
+const uint16_t i2c_read_reg_uint16_delayus(uint8_t reg, uint32_t delayus) {
 	uint8_t buf[2] = { 0, 0 };
 
 	buf[0] = reg;

@@ -23,23 +23,16 @@
  * THE SOFTWARE.
  */
 
-
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 #include "bcm2835.h"
-extern void udelay(const int);
 #else
 #include "bcm2835_i2c.h"
 #endif
 
-/**
- *
- * @param address
- * @return
- */
 const bool i2c_is_connected(const uint8_t address) {
 	uint8_t ret;
 	char buf;

@@ -33,7 +33,7 @@
 
 #include "bcm2835.h"
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -43,7 +43,7 @@ static bool _begin = false;
 #endif
 
 void i2c_begin(void) {
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 	if (_begin) {
 		return;
 	}
