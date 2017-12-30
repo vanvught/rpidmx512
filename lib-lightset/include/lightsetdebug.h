@@ -1,8 +1,8 @@
 /**
- * @file lightset.h
+ * @file lightsetdebug.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSET_H_
-#define LIGHTSET_H_
+#ifndef LIGHTSETDEBUG_H_
+#define LIGHTSETDEBUG_H_
 
 #include <stdint.h>
 
-class LightSet {
+#include "lightset.h"
+
+class LightSetDebug: public LightSet {
 public:
-	virtual ~LightSet(void);
+	LightSetDebug(void);
+	~LightSetDebug(void);
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	void Start(void);
+	void Stop(void);
 
-	virtual void SetData(uint8_t, const uint8_t *, uint16_t)= 0;
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+
+private:
+	bool m_bIsStarted;
 };
 
-#endif /* LIGHTSET_H_ */
+#endif /* LIGHTSETDEBUG_H_ */

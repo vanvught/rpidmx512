@@ -1,8 +1,8 @@
 /**
- * @file lightset.h
+ * @file lightsetchain.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,52 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSET_H_
-#define LIGHTSET_H_
+#ifndef LIGHTSETCHAIN_H_
+#define LIGHTSETCHAIN_H_
 
 #include <stdint.h>
 
-class LightSet {
-public:
-	virtual ~LightSet(void);
+#include "lightset.h"
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+#define LIGHTSET_TYPE_UNDEFINED -1
 
-	virtual void SetData(uint8_t, const uint8_t *, uint16_t)= 0;
+struct TLightSetEntry {
+	LightSet *pLightSet;
+	int	nType;
 };
 
-#endif /* LIGHTSET_H_ */
+class LightSetChain: public LightSet {
+public:
+	LightSetChain(void);
+	~LightSetChain(void);
+
+	void Start(void);
+	void Stop(void);
+
+	void SetData(uint8_t, const uint8_t *, uint16_t);
+
+public:
+	bool Add(LightSet *, int nType = LIGHTSET_TYPE_UNDEFINED);
+	void Clear(void);
+	bool IsEmpty(void) const;
+	bool Remove(LightSet *);
+	bool Remove(LightSet *, int, bool DoIgnoreType = false);
+	bool Exist(LightSet *);
+	bool Exist(LightSet *, int, bool DoIgnoreType = false);
+
+	uint8_t GetSize(void) const;
+	int GetType(uint8_t) const;
+	const LightSet *GetLightSet(uint8_t);
+
+#ifndef NDEBUG
+public:
+	void Dump(uint8_t);
+	void Dump(void);
+#endif
+
+private:
+	uint8_t m_nSize;
+	TLightSetEntry *m_pTable;
+};
+
+#endif /* LIGHTSETCHAIN_H_ */

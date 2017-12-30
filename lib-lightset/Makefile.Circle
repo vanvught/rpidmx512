@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../lib-lightset/include
+INCLUDE	+= -I ./include
 
 OBJS	= src/lightset.o
 

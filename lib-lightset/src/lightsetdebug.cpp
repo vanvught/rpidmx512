@@ -1,8 +1,8 @@
 /**
- * @file lightset.h
+ * @file lightsetdebug.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSET_H_
-#define LIGHTSET_H_
-
+#include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
-class LightSet {
-public:
-	virtual ~LightSet(void);
+#include "lightsetdebug.h"
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+LightSetDebug::LightSetDebug(void): m_bIsStarted(false) {
+}
 
-	virtual void SetData(uint8_t, const uint8_t *, uint16_t)= 0;
-};
+LightSetDebug::~LightSetDebug(void) {
+}
 
-#endif /* LIGHTSET_H_ */
+void LightSetDebug::Start(void) {
+	if (m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+
+	printf("LightSetDebug::Start(void)\n");
+}
+
+void LightSetDebug::Stop(void) {
+	if (!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+
+	printf("LightSetDebug::Stop(void)\n");
+}
+
+void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
+	assert(pData != 0);
+	assert(nLength <= 512);
+
+	printf("LightSetDebug::SetData(nPort:%d, *pData:%p, nLength:%d) : ", (int) nPort, (void *) pData, (int) nLength);
+
+	for (unsigned i = 0; (i < nLength) && (i < 16); i++) {
+		printf("%.2x ", pData[i]);
+	}
+
+	printf("\n");
+}

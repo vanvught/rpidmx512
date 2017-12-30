@@ -130,7 +130,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.2037390523" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1055702674" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.97199459" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.57214264" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__linux__"/>
@@ -139,7 +139,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1172997008" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.81120423" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.800977067" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__linux__"/>
@@ -155,7 +155,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.2080805504" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1091550891" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1554128041" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -193,7 +193,13 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127;cdt.managedbuild.toolchain.gnu.cross.base.563973127.2075538086;cdt.managedbuild.tool.gnu.cross.cpp.compiler.327136192;cdt.managedbuild.tool.gnu.cpp.compiler.input.907901067">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.;cdt.managedbuild.tool.gnu.cpp.compiler.base.1055702674;cdt.managedbuild.tool.gnu.cpp.compiler.input.1844416225">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.563973127;cdt.managedbuild.toolchain.gnu.cross.base.563973127.2075538086;cdt.managedbuild.tool.gnu.cross.c.compiler.1241964396;cdt.managedbuild.tool.gnu.c.compiler.input.360499622">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.525923780.;cdt.managedbuild.tool.gnu.c.compiler.base.1172997008;cdt.managedbuild.tool.gnu.c.compiler.input.1018816046">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
