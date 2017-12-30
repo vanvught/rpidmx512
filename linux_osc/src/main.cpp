@@ -50,16 +50,23 @@ int main(int argc, char **argv) {
 	uint32_t remote_ip;
 	uint16_t incoming_port, outgoing_port, remote_port;
 
+	if (argc < 2) {
+		printf("Usage: %s ip_address|interface_name\n", argv[0]);
+		return -1;
+	}
+
 	memset(&os_info, 0, sizeof(struct utsname));
 	uname(&os_info);
 
-	(void) oscparms.Load();
+	if (oscparms.Load()) {
+		oscparms.Dump();
+	}
 
 	incoming_port = oscparms.GetIncomingPort();
 	outgoing_port = oscparms.GetOutgoingPort();
 
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
-	printf("OSC, Incoming port: %d, Outgoing port: %d", incoming_port, outgoing_port);
+	printf("OSC, Incoming port: %d, Outgoing port: %d\n", incoming_port, outgoing_port);
 
 	if (network_init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
@@ -112,7 +119,7 @@ int main(int argc, char **argv) {
 					case OSC_BLOB: {
 						OSCBlob blob = Msg.GetBlob(i);
 
-						int size = (int) blob.GetSize();
+						int size = (int) blob.GetDataSize();
 						printf("blob, size %d, [", (int) size);
 
 						if (size < 12) {
