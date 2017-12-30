@@ -75,9 +75,10 @@ int main(int argc, char **argv) {
 		monitor.SetMaxDmxChannels(max_channels);
 	}
 
-	(void) artnetparams.Load();
-	artnetparams.Dump();
-	artnetparams.Set(&node);
+	if (artnetparams.Load()) {
+		artnetparams.Dump();
+		artnetparams.Set(&node);
+	}
 
 	memset(&os_info, 0, sizeof(struct utsname));
 	uname(&os_info);
