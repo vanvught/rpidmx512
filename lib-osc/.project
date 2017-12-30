@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
-		<project>lib-esp8266</project>
 		<project>lib-network</project>
 		<project>lib-properties</project>
 		<project>lib-utils</project>

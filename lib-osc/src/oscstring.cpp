@@ -28,7 +28,6 @@
 
 #ifdef __circle__
 #include <circle/util.h>
-#include "circle/oscutil.h"
 #elif defined(__linux__) || defined (__CYGWIN__)
 #include <string.h>
 #else

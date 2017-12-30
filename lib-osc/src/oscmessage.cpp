@@ -24,17 +24,15 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #ifdef __circle__
 #include <circle/util.h>
-#include "circle/oscutil.h"
 #elif defined(__linux__) || defined (__CYGWIN__)
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #else
-#include <stdlib.h>
 #include <stdio.h>
 #include "util.h"
 #endif

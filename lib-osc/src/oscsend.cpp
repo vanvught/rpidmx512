@@ -24,22 +24,19 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #ifdef __circle__
-#include <circle/util.h>
 #include <circle/stdarg.h>
-#include "circle/oscutil.h"
 static const char FromOscSend[] = "oscsend";
 #elif defined (__linux__) || defined (__CYGWIN__)
 #include <stdarg.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #else
 #include <stdarg.h>
-#include <stdlib.h>
 #endif
 
 #include "oscsend.h"

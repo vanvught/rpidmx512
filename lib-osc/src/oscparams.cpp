@@ -45,6 +45,9 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#define SET_INCOMING_PORT_MASK	1<<0
+#define SET_OUTGOING_PORT_MASK	1<<1
+
 static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";
 static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";
 static const char PARAMS_OUTGOING_PORT[] ALIGNED = "outgoing_port";
@@ -62,9 +65,15 @@ void OSCParams::callbackFunction(const char *pLine) {
 	uint16_t value16;
 
 	if (Sscan::Uint16(pLine, PARAMS_INCOMING_PORT, &value16) == SSCAN_OK) {
-		m_nIncomingPort = value16;
+		if (value16 > 1023) {
+			m_nIncomingPort = value16;
+			m_bSetList |= SET_INCOMING_PORT_MASK;
+		}
 	} else if (Sscan::Uint16(pLine, PARAMS_OUTGOING_PORT, &value16) == SSCAN_OK) {
-		m_nOutgoingPort = value16;
+		if (value16 > 1023) {
+			m_nOutgoingPort = value16;
+			m_bSetList |= SET_OUTGOING_PORT_MASK;
+		}
 	}
 }
 
@@ -84,8 +93,18 @@ bool OSCParams::Load(void) {
 }
 
 void OSCParams::Dump(void) {
-	if(m_bSetList == 0) {
+	if (m_bSetList == 0) {
 		return;
+	}
+
+	printf("OSC parameters \'%s\':\n", PARAMS_FILE_NAME);
+
+	if (IsMaskSet(SET_INCOMING_PORT_MASK)) {
+		printf(" %s=%d\n", PARAMS_INCOMING_PORT, (int) m_nIncomingPort);
+	}
+
+	if (IsMaskSet(SET_OUTGOING_PORT_MASK)) {
+		printf(" %s=%d\n", PARAMS_OUTGOING_PORT, (int) m_nOutgoingPort);
 	}
 }
 
@@ -97,28 +116,7 @@ uint16_t OSCParams::GetOutgoingPort(void) const {
 	return m_nOutgoingPort;
 }
 
-bool OSCParams::isMaskSet(uint16_t mask) const {
+bool OSCParams::IsMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-#if defined (__circle__)
-void OSCParams::printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, fmt);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	va_list var;
-	va_start(var, fmt);
-
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-	va_end(var);
-}
-#endif
