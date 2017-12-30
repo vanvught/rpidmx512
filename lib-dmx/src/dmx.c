@@ -27,10 +27,10 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -69,6 +69,8 @@ typedef enum {
 	RDMDISCECS,	///<
 	DMXINTER	///<
 } _dmx_state;
+
+static uint8_t dmx_data_direction_gpio_pin = GPIO_DMX_DATA_DIRECTION;			///<
 
 static volatile uint16_t dmx_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t dmx_data_buffer_index_tail = (uint16_t) 0;				///<
@@ -746,23 +748,14 @@ static void dmx_start_data(void) {
 	}
 }
 
-/**
- * @ingroup dmx
- *
- * If \ref dmx_send_always is true, then the IRQ routine is outputting DMX512.
- * We need to wait until all data is sent. When finished the state machine is in state IDLE.
- * At this time we can set the flag \ref dmx_send_always to false.
- *
- * The receiving of DMX data is stopped by disabling the FIQ.
- *
- */
 static void dmx_stop_data(void) {
 	int i;
 
 	do {
 		dmb();
 		if (dmx_send_state == DMXINTER) {
-			while ((BCM2835_PL011->FR & PL011_FR_BUSY) == PL011_FR_BUSY);
+			while ((BCM2835_PL011->FR & PL011_FR_BUSY) == PL011_FR_BUSY)
+				;
 			dmb();
 			BCM2835_ST->C1 = BCM2835_ST->CLO - 1;
 			BCM2835_ST->CS = BCM2835_ST_CS_M1;
@@ -785,27 +778,21 @@ static void dmx_stop_data(void) {
 	}
 }
 
-/**
- * @ingroup dmx
- *
- * @param port_direction \ref _dmx_port_direction
- * @param enable_data
- */
-void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool enable_data) {
+void dmx_set_port_direction(_dmx_port_direction port_direction, bool enable_data) {
 	if (port_direction != dmx_port_direction) {
 		dmx_stop_data();
 
 		switch (port_direction) {
 		case DMX_PORT_DIRECTION_OUTP:
-			bcm2835_gpio_set(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
+			bcm2835_gpio_set(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
 			break;
 		case DMX_PORT_DIRECTION_INP:
-			bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
+			bcm2835_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_INP;
 			break;
 		default:
-			bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
+			bcm2835_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_INP;
 			break;
 		}
@@ -818,12 +805,6 @@ void dmx_set_port_direction(const _dmx_port_direction port_direction, const bool
 	}
 }
 
-/**
- * @ingroup dmx
- *
- * Configure PL011 for DMX512 transmission. Enable the UART.
- *
- */
 static void pl011_init(void) {
 	uint32_t ibrd = 12;													// Default UART CLOCK 48Mhz
 
@@ -863,13 +844,17 @@ static void pl011_init(void) {
 	dmb();
 }
 
-/**
- * @ingroup dmx
- *
- */
+void dmx_init_set_gpiopin(uint8_t gpio_pin) {
+	assert((gpio_pin < 32) && (gpio_pin != RPI_V2_GPIO_P1_08) && (gpio_pin != RPI_V2_GPIO_P1_10));
+
+	if ((gpio_pin != RPI_V2_GPIO_P1_08) && (gpio_pin != RPI_V2_GPIO_P1_10)){
+		dmx_data_direction_gpio_pin = gpio_pin;
+	}
+}
+
 void dmx_init(void) {
-	bcm2835_gpio_fsel(GPIO_DMX_DATA_DIRECTION, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_DMX_DATA_DIRECTION);	// 0 = input, 1 = output
+	bcm2835_gpio_fsel(dmx_data_direction_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(dmx_data_direction_gpio_pin);	// 0 = input, 1 = output
 	dmb();
 
 #ifdef LOGIC_ANALYZER
