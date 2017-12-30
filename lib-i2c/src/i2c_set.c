@@ -25,8 +25,8 @@
 
 #include <stdint.h>
 
-#include "bcm2835.h"
 #if defined(__linux__)
+#include "bcm2835.h"
 #else
 #include "bcm2835_i2c.h"
 #endif
