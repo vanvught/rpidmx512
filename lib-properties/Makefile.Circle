@@ -4,10 +4,10 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../lib-properties/include -I ../include
-INCLUDE	+= -I ../Circle/addon/fatfs
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../include
 
-OBJS	= src/readconfigfile.o src/sscan_uint8_t.o src/sscan_uint16_t.o src/sscan_uint32_t.o src/sscan_float.o src/sscan_char_p.o src/sscan_ip_address.o src/file.o
+OBJS	= src/readconfigfile.o src/sscan_uint8_t.o src/sscan_uint16_t.o src/sscan_uint32_t.o src/sscan_float.o src/sscan_char_p.o src/sscan_ip_address.o
 
 EXTRACLEAN = src/*.o
 
