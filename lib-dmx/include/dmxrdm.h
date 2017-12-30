@@ -1,5 +1,5 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxrdm.cpp
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,62 +23,56 @@
  * THE SOFTWARE.
  */
 
+#ifndef DMXRDM_H_
+#define DMXRDM_H_
+
 #include <stdint.h>
 
 #include "dmx.h"
-#include "dmxsender.h"
+#include "gpio.h"
 
-DMXSender::DMXSender(void) : m_bIsStarted(false) {
-	dmx_init();
-}
+enum TDmxRdmPortDirection {
+	DMXRDM_PORT_DIRECTION_OUTP = 1,
+	DMXRDM_PORT_DIRECTION_INP = 2
+};
 
-DMXSender::~DMXSender(void) {
-}
+struct TDmxStatistics {
+	uint32_t MarkAfterBreak;
+	uint32_t SlotsInPacket;
+	uint32_t BreakToBreak;
+	uint32_t SlotToSlot;
+};
 
-void DMXSender::Start(void) {
-	if (m_bIsStarted) {
-		return;
-	}
+struct TDmxData {
+	uint8_t Data[DMX_DATA_BUFFER_SIZE];
+	struct TDmxStatistics Statistics;
+};
 
-	m_bIsStarted = true;
+class DmxRdm {
+public:
+	DmxRdm(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
+	~DmxRdm(void);
 
-	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, true);
-}
+	void SetPortDirection(TDmxRdmPortDirection, bool bEnableData = false);
 
-void DMXSender::Stop(void) {
-	if (!m_bIsStarted) {
-		return;
-	}
+public: // DMX
+	uint32_t GetUpdatesPerSecond(void) const;
+	const uint8_t *GetDmxCurrentData(void);
+	const uint8_t *GetDmxAvailable(void);
 
-	m_bIsStarted = false;
+	uint32_t GetDmxBreakTime(void) const;
+	void SetDmxBreakTime(uint32_t);
 
-	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
-}
+	uint32_t GetDmxMabTime(void) const;
+	void SetDmxMabTime(uint32_t);
 
-void DMXSender::SetData(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
-	dmx_set_send_data_without_sc(pData, nLength);
-}
+	uint32_t GetDmxPeriodTime(void) const;
+	void SetDmxPeriodTime(uint32_t);
 
-void DMXSender::SetBreakTime(const uint32_t nBreakTime) {
-	dmx_set_output_break_time(nBreakTime);
-}
+public: // RDM
 
-const uint32_t DMXSender::GetBreakTime(void) {
-	return dmx_get_output_break_time();
-}
+private:
+};
 
-void DMXSender::SetMabTime(const uint32_t nMabTime) {
-	dmx_set_output_mab_time(nMabTime);
-}
 
-const uint32_t DMXSender::GetMabTime(void) {
-	return dmx_get_output_mab_time();
-}
-
-void DMXSender::SetPeriodTime(const uint32_t nPeriodTime) {
-	dmx_set_output_period(nPeriodTime);
-}
-
-const uint32_t DMXSender::GetPeriodTime(void) {
-	return dmx_get_output_period();
-}
+#endif /* DMXRDM_H_ */

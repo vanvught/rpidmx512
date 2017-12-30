@@ -41,7 +41,7 @@ RDMTod::RDMTod(void) : m_entries(0) {
 
 RDMTod::~RDMTod(void) {
 	m_entries = 0;
-	delete m_pTable;
+	delete[] m_pTable;
 }
 
 const uint8_t RDMTod::GetUidCount(void) {

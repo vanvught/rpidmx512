@@ -59,6 +59,7 @@ void RDMDevice::staticCallbackFunction(void *p, const char *s) {
 
 void RDMDevice::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
+
 	char value[8];
 	uint8_t len;
 

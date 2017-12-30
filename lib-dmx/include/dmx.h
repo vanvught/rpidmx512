@@ -77,12 +77,13 @@ struct _total_statistics {
 extern "C" {
 #endif
 
+extern void dmx_init_set_gpiopin(uint8_t);
 extern void dmx_init(void);
 
 extern void dmx_set_send_data(const uint8_t *, const uint16_t);
 extern void dmx_set_send_data_without_sc(const uint8_t *, const uint16_t);
 extern void dmx_clear_data(void);
-extern void dmx_set_port_direction(const _dmx_port_direction, const bool);
+extern void dmx_set_port_direction(_dmx_port_direction, bool);
 extern const _dmx_port_direction dmx_get_port_direction(void);
 extern void dmx_data_send(const uint8_t *, const uint16_t);
 extern /*@shared@*/const /*@null@*/uint8_t *dmx_get_available(void) ASSUME_ALIGNED;
