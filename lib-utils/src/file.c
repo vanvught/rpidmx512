@@ -28,8 +28,13 @@
 #include <assert.h>
 
 #include "ff.h"
-#include "util.h"
+
+#if defined (BARE_METAL)
 #include "console.h"
+#include "util.h"
+#elif defined (__circle__)
+#include "circle/util.h"
+#endif
 
 static FIL file_object;
 
@@ -44,8 +49,11 @@ FILE *fopen(const char *path, const char *mode) {
 	} else if (strcmp(mode, "w+") == 0) {
 		fa = (BYTE) (FA_WRITE | FA_CREATE_ALWAYS);
 	} else {
+#if defined (BARE_METAL)
 		(void) console_error("mode is not implemented");
 		(void) console_error(mode);
+#endif
+		return NULL;
 	}
 
 	if (f_open(&file_object, (TCHAR *)path, fa) == FR_OK) {
@@ -55,8 +63,8 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 }
 
-int fclose(FILE *fp) {
-	if (fp == NULL) {
+int fclose(FILE *stream) {
+	if (stream == NULL) {
 		return 0;
 	}
 
@@ -67,6 +75,28 @@ int fclose(FILE *fp) {
 	}
 }
 
+int fgetc(FILE *stream) {
+	char c;
+	UINT bytes_read;
+
+	if (stream == NULL) {
+		return EOF;
+	}
+
+	if (f_read(&file_object, &c, (UINT) 1, &bytes_read) == FR_OK) {
+		if (bytes_read > 0) {
+			return c;
+		}
+
+		if (bytes_read < 1) {
+			return (EOF);
+		}
+	}
+
+	return (EOF);
+}
+
+#if !defined (__circle__)
 char *fgets(char *s, int size, FILE *stream) {
 	if (stream == NULL) {
 		*s = '\0';
@@ -90,3 +120,4 @@ int fputs(const char *s, FILE *stream) {
 
 	return f_puts((const TCHAR *) s, &file_object);
 }
+#endif

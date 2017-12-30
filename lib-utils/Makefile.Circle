@@ -1,0 +1,19 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ../Circle/addon/fatfs
+INCLUDE	+= -I ../include
+
+OBJS	= src/file.o src/log.o src/circle/calloc.o src/circle/fgets.o src/circle/printf.o src/circle/realloc.o
+
+EXTRACLEAN = src/*.o src/circle/*.o
+
+libutils.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libutils.a | $(PREFIX)c++filt > libutils.lst
+
+include $(CIRCLEHOME)/Rules.mk

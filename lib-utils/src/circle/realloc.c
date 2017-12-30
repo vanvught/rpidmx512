@@ -1,8 +1,8 @@
 /**
- * @file hex_uint32.h
+ * @file realloc.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,34 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <circle/types.h>
+#include <circle/alloc.h>
+#include <circle/util.h>
 
-#include "util.h"
+#include <assert.h>
 
-const uint32_t hex_uint32(const char *s) {
-	uint32_t ret = 0;
-	uint8_t nibble;
+void *realloc(void *ptr, size_t size)		// TODO: inefficient
+		{
+	//assert (ptr != 0); //->  If ptr is NULL, then the call is equivalent to malloc(size)
 
-	while (*s != '\0') {
-		char d = *s;
-
-		if (isxdigit((int) d) == 0) {
-			break;
-		}
-
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
-		ret = (ret << 4) | nibble;
-		s++;
+	if (ptr == 0) {
+		void *newblk = malloc(size);
+		assert(newblk != 0);
+		return newblk;
 	}
 
-	return ret;
+	if (size == 0) {
+		free(ptr);
+
+		return 0;
+	}
+
+	void *newblk = malloc(size);
+	assert(newblk != 0);
+
+	memcpy(newblk, ptr, size);
+
+	free(ptr);
+
+	return newblk;
 }

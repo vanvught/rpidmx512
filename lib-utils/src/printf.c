@@ -55,7 +55,7 @@ static volatile int lock = 0;
 
 /*@null@*/static char *outptr = NULL;
 
-inline static void _xputch(/*@out@*/struct context *ctx, const int c) {
+inline static void _xputch(/*@out@*/struct context *ctx, int c) {
 	ctx->total++;
 
 	if (outptr != NULL) {
@@ -79,7 +79,7 @@ static const int _pow10(int n) {
 	return r;
 }
 
-static int _itostr(int x, /*@out@*/char *s, const int d) {
+static int _itostr(int x, /*@out@*/char *s, int d) {
 	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;

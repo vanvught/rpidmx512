@@ -1,8 +1,8 @@
 /**
- * @file hex_uint32.h
+ * @file fgets.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,34 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stdio.h>
+#include <stddef.h>
 
-#include "util.h"
+char *fgets(char *dst, int max, FILE *stream) {
+	int c;
+	char *p;
 
-const uint32_t hex_uint32(const char *s) {
-	uint32_t ret = 0;
-	uint8_t nibble;
-
-	while (*s != '\0') {
-		char d = *s;
-
-		if (isxdigit((int) d) == 0) {
+	for (p = dst, max--; max > 0; max--) {
+		if ((c = fgetc(stream)) == EOF) {
 			break;
 		}
 
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
-		ret = (ret << 4) | nibble;
-		s++;
+		if (c == '\r') {
+			continue;
+		}
+
+		*p++ = c;
+
+		if (c == '\n') {
+			break;
+		}
 	}
 
-	return ret;
+	*p = 0;
+
+	if (p == dst) {
+		return NULL;
+	}
+
+	return dst;
 }

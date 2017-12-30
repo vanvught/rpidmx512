@@ -1,8 +1,8 @@
 /**
- * @file hex_uint32.h
+ * @file calloc.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <circle/types.h>
+#include <circle/alloc.h>
+#include <circle/util.h>
 
-#include "util.h"
+#include <assert.h>
 
-const uint32_t hex_uint32(const char *s) {
-	uint32_t ret = 0;
-	uint8_t nibble;
-
-	while (*s != '\0') {
-		char d = *s;
-
-		if (isxdigit((int) d) == 0) {
-			break;
-		}
-
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
-		ret = (ret << 4) | nibble;
-		s++;
+void *calloc(size_t nmemb, size_t size) {
+	size_t nbytes = nmemb * size;
+	if (nbytes == 0) {
+		return 0;
 	}
 
-	return ret;
+	void *blk = malloc(nbytes);
+	assert(blk != 0);
+
+	memset(blk, 0, nbytes);
+
+	return blk;
 }
+
