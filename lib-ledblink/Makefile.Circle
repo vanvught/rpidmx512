@@ -4,11 +4,11 @@
 
 CIRCLEHOME = ../Circle
 
-INCLUDE	+= -I ../lib-ledblink/include
+INCLUDE	+= -I ./include
 
 OBJS	= src/circle/blinktask.o src/ledblink.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/*.o src/circle/*.o
 
 libledblink.a: $(OBJS)
 	rm -f $@
