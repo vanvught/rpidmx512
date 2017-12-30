@@ -166,25 +166,3 @@ bool NetworkParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-#if defined (__circle__)
-void NetworkParams::printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, fmt);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	va_list var;
-	va_start(var, fmt);
-
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-	va_end(var);
-}
-#endif
-

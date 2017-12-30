@@ -54,11 +54,6 @@ public:
 private:
     void callbackFunction(const char *s);
 
-#if defined (__circle__)
-private:
-    void printf (const char *fmt, ...);
-#endif
-
 private:
     uint32_t m_bSetList;
 
