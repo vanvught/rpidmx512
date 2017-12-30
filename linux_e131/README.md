@@ -10,7 +10,7 @@ Usage :
 Sample output :
 
     ./linux_e131 eno1 16
-	[V1.0] Linux #112-Ubuntu SMP Mon Jul 31 19:38:41 UTC 2017 Compiled on Aug  9 2017 at 20:14:44
+	[V1.2] Linux #127-Ubuntu SMP Mon Dec 11 12:16:42 UTC 2017 Compiled on Dec 30 2017 at 15:50:08
 	sACN E1.31 Real-time DMX Monitor
 	Running at : 192.168.2.120
 	Netmask : 255.255.255.0
@@ -24,6 +24,7 @@ Sample output :
 	 Merge mode   : HTP
 	 Multicast ip : 239.255.0.4
 	 Unicast ip   : 192.168.2.120
+
 	
 	10-08-2017 11:34:48.104150 Start
 	10-08-2017 11:34:48.104184 DMX 512:16  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0

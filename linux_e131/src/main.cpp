@@ -34,7 +34,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
 #include "e131bridge.h"
 #include "e131uuid.h"
 #include "e131params.h"
@@ -70,7 +69,9 @@ int main(int argc, char **argv) {
 		monitor.SetMaxDmxChannels(max_channels);
 	}
 
-	(void) e131params.Load();
+	if (e131params.Load()) {
+		e131params.Dump();
+	}
 
 	memset(&os_info, 0, sizeof(struct utsname));
 	uname(&os_info);
