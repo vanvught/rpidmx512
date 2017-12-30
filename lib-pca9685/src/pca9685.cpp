@@ -27,13 +27,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if defined (__CYGWIN__)
- #error Platform is not supported
-#endif
-
 #include "bcm2835.h"
 
 #if defined(__linux__)
+#elif defined(__circle__)
 #else
 #include "bcm2835_i2c.h"
 #endif
@@ -41,7 +38,7 @@
 #include "pca9685.h"
 
 extern "C" {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__circle__)
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else

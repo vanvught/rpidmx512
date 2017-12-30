@@ -3,6 +3,9 @@
 	<name>lib-pca9685</name>
 	<comment></comment>
 	<projects>
+		<project>lib-bcm2835</project>
+		<project>lib-bcm2835_circle</project>
+		<project>lib-bcm2835_raspbian</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
