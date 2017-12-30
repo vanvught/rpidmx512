@@ -52,19 +52,19 @@ enum TSlushIOFSel {
 	SLUSH_IO_FSEL_INPT = 1
 };
 
-#define SLUSH_L6470_RESET		23 // RPI_V2_GPIO_P1_38 //
+#define SLUSH_L6470_RESET		23 // RPI_V2_GPIO_P1_38
 
 #define SLUSH_MTR0_STEPCLOCK	4
 #define SLUSH_MTR1_STEPCLOCK	5
 #define SLUSH_MTR2_STEPCLOCK	6
 #define SLUSH_MTR3_STEPCLOCK	12
 
-#define SLUSH_MTR0_BUSY			16 // RPI_V2_GPIO_P1_35 //
+#define SLUSH_MTR0_BUSY			16 // RPI_V2_GPIO_P1_35
 #define SLUSH_MTR1_BUSY			17
 #define SLUSH_MTR2_BUSY			18
 #define SLUSH_MTR3_BUSY			19
 
-#define SLUSH_MTR0_CHIPSELECT	24 // RPI_V2_GPIO_P1_36 //
+#define SLUSH_MTR0_CHIPSELECT	24 // RPI_V2_GPIO_P1_24
 #define SLUSH_MTR1_CHIPSELECT	25
 #define SLUSH_MTR2_CHIPSELECT	26
 #define SLUSH_MTR3_CHIPSELECT	27
@@ -98,8 +98,8 @@ public:
 	uint8_t IOLev(TSlushIOPorts, TSlushIOPins);
 
 private:
-	void initSpi(void);
-	void initI2c(void);
+	void InitSpi(void);
+	void InitI2c(void);
 	void I2cSetup(uint8_t);
 	uint8_t Mcp23017ReadReg(uint8_t);
 	void Mcp23017WriteReg(uint8_t, uint8_t);

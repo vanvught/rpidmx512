@@ -37,7 +37,6 @@
 class SlushMotor: public L6470 {
 public:
 	SlushMotor(int, bool bUseSPI = true);
-
 	~SlushMotor(void);
 
 	int busyCheck(void);

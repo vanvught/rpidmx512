@@ -75,7 +75,7 @@ static float KThermCalcValueReg(uint8_t reg) {
 void L6470::Dump(void) {
 	uint8_t reg;
 
-	puts("Registers:");
+	printf("Registers:\n");
 	printf("01:ABS_POS    - Current position: %ld\n", getPos());
 	printf("02:EL_POS     - Electrical position: %ld\n", getParam(L6470_PARAM_EL_POS));
 	printf("03:MARK       - Mark position: %ld\n", getMark());

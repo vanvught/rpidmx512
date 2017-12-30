@@ -1,0 +1,22 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-bcm2835_circle/include
+INCLUDE	+= -I ../include
+
+OBJS  = src/l6470.o src/l6470commands.o src/l6470config.o src/l6470dump.o src/l6470support.o
+OBJS += src/autodriver.o
+OBJS += src/slushboard.o src/slushmotor.o src/slushtemp.o
+
+EXTRACLEAN = src/*.o
+
+libl6470.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libl6470.a | $(PREFIX)c++filt > libl6470.lst
+
+include $(CIRCLEHOME)/Rules.mk

@@ -32,6 +32,7 @@
 #include "bcm2835.h"
 
 #if defined(__linux__)
+#elif defined(__circle__)
 #else
 #include "bcm2835_gpio.h"
 #include "bcm2835_spi.h"
