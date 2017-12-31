@@ -3,12 +3,11 @@
 	<name>rpi_dmx_monitor</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
-		<project>lib-dmx</project>
 		<project>lib-dmxmonitor</project>
+		<project>lib-dmxreceiver</project>
+		<project>lib-fb</project>
+		<project>lib-hal</project>
 		<project>lib-ledblink</project>
-		<project>lib-monitor</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

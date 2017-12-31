@@ -25,17 +25,21 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "hardware.h"
 #include "console.h"
 
 #include "ledblinktask.h"
 
-#include "dmxcontroller.h"
+#include "dmxreceiver.h"
 #include "dmxmonitor.h"
 
 #include "software_version.h"
+
+#ifndef MAX
+#  define MAX(a,b)		(((a) > (b)) ? (a) : (b))
+#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))
+#endif
 
 extern "C" {
 
@@ -45,14 +49,14 @@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 void notmain(void) {
 	LedBlinkTask ledblinktask;
 	uint32_t nMicrosPrevious = (uint32_t) 0;
-	uint32_t updates_per_seconde_min = UINT32_MAX;
-	uint32_t updates_per_seconde_max = (uint32_t) 0;
-	uint32_t slots_in_packet_min = UINT32_MAX;
-	uint32_t slots_in_packet_max = (uint32_t) 0;
-	uint32_t slot_to_slot_min = UINT32_MAX;
-	uint32_t slot_to_slot_max = (uint32_t) 0;
-	uint32_t break_to_break_min = UINT32_MAX;
-	uint32_t break_to_break_max = (uint32_t) 0;
+	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
+	uint32_t nUpdatesPerSecondeMax = (uint32_t) 0;
+	uint32_t nSlotsInPacketMin = UINT32_MAX;
+	uint32_t nSlotsInPacketMax = (uint32_t) 0;
+	uint32_t nSotToSlotMin = UINT32_MAX;
+	uint32_t nSlotToSlotMax = (uint32_t) 0;
+	uint32_t nBreakToBreakMin = UINT32_MAX;
+	uint32_t nBreakToBreakMax = (uint32_t) 0;
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("DMX Real-time Monitor");
@@ -68,21 +72,21 @@ void notmain(void) {
 
 	hardware_watchdog_init();
 
-	DMXController dmxcontroller;
-	dmxcontroller.SetOutput(&dmxmonitor);
-	dmxcontroller.Start();
+	DMXReceiver dmxreceiver;
+	dmxreceiver.SetOutput(&dmxmonitor);
+	dmxreceiver.Start();
 
 	for(;;) {
 		hardware_watchdog_feed();
 
-		(void) dmxcontroller.Run();
+		(void) dmxreceiver.Run();
 
-		const uint32_t micros_now = hardware_micros();
+		const uint32_t nMicrosNow = hardware_micros();
 
-		if (micros_now - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
-			const uint8_t *dmx_data = dmx_get_current_data();
-			const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
-			const uint32_t dmx_updates_per_seconde = dmx_get_updates_per_seconde();
+		if (nMicrosNow - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
+			const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
+			const struct TDmxData *dmx_statistics = (struct TDmxData *)dmx_data;
+			const uint32_t dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond();
 
 			if (dmx_updates_per_seconde == 0) {
 				console_set_cursor(20, 22);
@@ -94,25 +98,25 @@ void notmain(void) {
 				console_set_cursor(17, 25);
 				console_puts("-------");
 			} else {
-				updates_per_seconde_min = MIN(dmx_updates_per_seconde, updates_per_seconde_min);
-				updates_per_seconde_max = MAX(dmx_updates_per_seconde, updates_per_seconde_max);
-				slots_in_packet_min = MIN(dmx_statistics->statistics.slots_in_packet, slots_in_packet_min);
-				slots_in_packet_max = MAX(dmx_statistics->statistics.slots_in_packet, slots_in_packet_max);
-				slot_to_slot_min = MIN(dmx_statistics->statistics.slot_to_slot, slot_to_slot_min);
-				slot_to_slot_max = MAX(dmx_statistics->statistics.slot_to_slot, slot_to_slot_max);
-				break_to_break_min = MIN(dmx_statistics->statistics.break_to_break, break_to_break_min);
-				break_to_break_max = MAX(dmx_statistics->statistics.break_to_break, break_to_break_max);
+				nUpdatesPerSecondeMin = MIN(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
+				nUpdatesPerSecondeMax = MAX(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
+				nSlotsInPacketMin = MIN(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
+				nSlotsInPacketMax = MAX(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMax);
+				nSotToSlotMin = MIN(dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin);
+				nSlotToSlotMax = MAX(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
+				nBreakToBreakMin = MIN(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
+				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
 				console_set_cursor(20, 22);
-				printf("%3d     %3d / %d", (int)dmx_updates_per_seconde, (int)updates_per_seconde_min , (int)updates_per_seconde_max);
+				printf("%3d     %3d / %d", (int) dmx_updates_per_seconde, (int) nUpdatesPerSecondeMin, (int) nUpdatesPerSecondeMax);
 				console_set_cursor(20, 23);
-				printf("%3d     %3d / %d", (int)dmx_statistics->statistics.slots_in_packet, (int)slots_in_packet_min, (int)slots_in_packet_max);
+				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotsInPacket, (int) nSlotsInPacketMin, (int) nSlotsInPacketMax);
 				console_set_cursor(20, 24);
-				printf("%3d     %3d / %d", (int)dmx_statistics->statistics.slot_to_slot, (int)slot_to_slot_min, (int)slot_to_slot_max);
+				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotToSlot, (int) nSotToSlotMin, (int) nSlotToSlotMax);
 				console_set_cursor(17, 25);
-				printf("%6d  %6d / %d", (int)dmx_statistics->statistics.break_to_break, (int)break_to_break_min, (int)break_to_break_max);
+				printf("%6d  %6d / %d", (int) dmx_statistics->Statistics.BreakToBreak, (int) nBreakToBreakMin, (int) nBreakToBreakMax);
 			}
 
-			nMicrosPrevious = micros_now;
+			nMicrosPrevious = nMicrosNow;
 		}
 
 		ledblinktask.Run();
