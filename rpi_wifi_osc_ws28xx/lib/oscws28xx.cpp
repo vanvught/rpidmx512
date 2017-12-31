@@ -43,14 +43,22 @@
 
 #include "software_version.h"
 
-OSCWS28xx::OSCWS28xx(unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLEDType, const char *sLEDType) : m_pLEDStripe(0), m_Blackout(false)  {
+OSCWS28xx::OSCWS28xx(unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLEDType, const char *sLEDType) :
+	m_pLEDStripe(0),
+	m_Blackout(false)
+{
 	m_OutgoingPort = OutgoingPort;
 	m_nLEDCount = nLEDCount;
 	m_nLEDType = nLEDType;
 	m_LEDType = sLEDType;
+
 	snprintf(m_Os, sizeof(m_Os), "[V%s] %s", SOFTWARE_VERSION, __DATE__);
 	m_pModel = hardware_board_get_model();
 	m_pSoC = hardware_board_get_soc();
+
+	for (unsigned i = 0; i < sizeof m_RGBWColour; i++) {
+		m_RGBWColour[i] = 0;
+	}
 }
 
 OSCWS28xx::~OSCWS28xx(void) {
@@ -59,7 +67,7 @@ OSCWS28xx::~OSCWS28xx(void) {
 
 void OSCWS28xx::Start(void) {
 	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_nLEDType, 0);
+	m_pLEDStripe = new WS28XXStripe(m_nLEDType, m_nLEDCount);
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Blackout();

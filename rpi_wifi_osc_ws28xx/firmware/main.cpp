@@ -27,18 +27,18 @@
 #include <stdint.h>
 
 #include "hardware.h"
+
 #include "console.h"
 #include "display.h"
+
+#include "wifi.h"
+#include "network.h"
 
 #include "ledblinktask.h"
 
 #include "oscparams.h"
 #include "oscws28xx.h"
-
 #include "deviceparams.h"
-
-#include "wifi.h"
-#include "network.h"
 
 #include "software_version.h"
 
