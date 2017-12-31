@@ -2,7 +2,7 @@
  * @file spisend.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,21 @@
 
 #include <stdint.h>
 
-#include "ws28xxstripe.h"
+#if defined (__circle__)
+#include "circle/interrupt.h"
+#endif
 
 #include "lightset.h"
 
+#include "ws28xxstripe.h"
+
 class SPISend: public LightSet {
 public:
+#if defined (__circle__)
+	SPISend(CInterruptSystem *);
+#else
 	SPISend(void);
+#endif
 	~SPISend(void);
 
 	void Start(void);
@@ -47,6 +55,11 @@ public:
 
 	void SetLEDCount(uint16_t);
 	uint16_t GetLEDCount(void) const;
+
+#if defined (__circle__)
+private:
+	CInterruptSystem	*m_pInterrupt;
+#endif
 
 private:
 	bool m_bIsStarted;

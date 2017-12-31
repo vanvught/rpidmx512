@@ -2,7 +2,7 @@
  * @file spisend.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,24 +28,38 @@
 #include <stdio.h>
 #include <assert.h>
 
+#if defined (__circle__)
+#include <circle/logger.h>
+#include <circle/interrupt.h>
+#else
+#include "monitor.h"
+#endif
+
+#include "spisend.h"
 #include "ws28xxstripe.h"
 
-//#include "monitor.h"
-#include "spisend.h"
-#include "util.h"
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
-SPISend::SPISend(void) : m_bIsStarted(false),
-		m_pLEDStripe(0),
-		m_LEDType(WS2801),
-		m_nLEDCount(170),
-		m_nBeginIndexPortId1(170),
-		m_nBeginIndexPortId2(340),
-		m_nBeginIndexPortId3(510),
-		m_nChannelsPerLed(3) {
+#if defined (__circle__)
+SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
+	m_pInterrupt (pInterruptSystem),
+#else
+SPISend::SPISend(void) :
+#endif
+	m_bIsStarted(false),
+	m_pLEDStripe(0),
+	m_LEDType(WS2801),
+	m_nLEDCount(170),
+	m_nBeginIndexPortId1(170),
+	m_nBeginIndexPortId2(340),
+	m_nBeginIndexPortId3(510),
+	m_nChannelsPerLed(3) {
 }
 
 SPISend::~SPISend(void) {
-	this->Stop();
+	Stop();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
@@ -58,9 +72,17 @@ void SPISend::Start(void) {
 	m_bIsStarted = true;
 
 	if (m_pLEDStripe == 0) {
-		m_pLEDStripe = new WS28XXStripe(m_nLEDCount, m_LEDType, 0);
+#if defined (__circle__)
+		m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
+#else
+		m_pLEDStripe = new WS28XXStripe(m_LEDType, m_nLEDCount);
+#endif
 		assert(m_pLEDStripe != 0);
+		m_pLEDStripe->Initialize();
 	} else {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
 		m_pLEDStripe->Update();
 	}
 }
@@ -73,6 +95,9 @@ void SPISend::Stop(void) {
 	m_bIsStarted = false;
 
 	if (m_pLEDStripe != 0) {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
 		m_pLEDStripe->Blackout();
 	}
 }
@@ -111,10 +136,18 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *data, uint16_t length) {
 		break;
 	}
 
+#if defined (__circle__)
+	// CLogger::Get ()->Write(__FUNCTION__, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
+#else
 	//monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
+#endif
 
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
+	}
+
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
 	}
 
 	if (m_LEDType == SK6812W) {

@@ -31,11 +31,12 @@
 
 #include "ws28xxstripe.h"
 
-WS28XXStripe::WS28XXStripe(const uint16_t nLEDCount, const TWS28XXType Type, const uint32_t nClockSpeed) {
-	m_nLEDCount = nLEDCount;
-	m_Type = Type;
-	m_nHighCode = Type == WS2812B ? 0xF8 : 0xF0;
-
+WS28XXStripe::WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
+	m_Type(Type),
+	m_nLEDCount(nLEDCount),
+	m_bUpdating(false),
+	m_nHighCode(Type == WS2812B ? 0xF8 : 0xF0)
+{
 	if (Type == SK6812W) {
 		m_nBufSize = nLEDCount * 4;
 	} else {
@@ -80,81 +81,16 @@ WS28XXStripe::~WS28XXStripe(void) {
 	m_pBuffer = 0;
 }
 
-unsigned WS28XXStripe::GetLEDCount(void) const {
-	return m_nLEDCount;
-}
-
-TWS28XXType WS28XXStripe::GetLEDType(void) const {
-	return m_Type;
-}
-
-void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(m_pBuffer != 0);
-	assert(nLEDIndex < m_nLEDCount);
-	unsigned nOffset = nLEDIndex * 3;
-
-	if (m_Type == WS2801) {
-		assert(nOffset + 2 < m_nBufSize);
-		m_pBuffer[nOffset] = nRed;
-		m_pBuffer[nOffset + 1] = nGreen;
-		m_pBuffer[nOffset + 2] = nBlue;
-	} else if (m_Type == WS2811) {
-		nOffset *= 8;
-
-		SetColorWS28xx(nOffset, nRed);
-		SetColorWS28xx(nOffset + 8, nGreen);
-		SetColorWS28xx(nOffset + 16, nBlue);
-	} else {
-		nOffset *= 8;
-
-		SetColorWS28xx(nOffset, nGreen);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nBlue);
-	}
-}
-
-void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(m_pBuffer != 0);
-	assert(nLEDIndex < m_nLEDCount);
-	assert(m_Type == SK6812W);
-
-	unsigned nOffset = nLEDIndex * 4;
-
-	if (m_Type == SK6812W) {
-		nOffset *= 8;
-
-		SetColorWS28xx(nOffset, nGreen);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nBlue);
-		SetColorWS28xx(nOffset + 24, nWhite);
-	}
-}
-
 void WS28XXStripe::Update(void) {
 	assert (m_pBuffer != 0);
+
 	__sync_synchronize();
 	bcm2835_spi_writenb((char *) m_pBuffer, m_nBufSize);
 }
 
 void WS28XXStripe::Blackout(void) {
 	assert (m_pBlackoutBuffer != 0);
+
 	__sync_synchronize();
 	bcm2835_spi_writenb((char *) m_pBlackoutBuffer, m_nBufSize);
-}
-
-void WS28XXStripe::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
-	assert(m_Type != WS2801);
-	uint8_t mask;
-
-	assert(nOffset + 7 < m_nBufSize);
-
-	for (mask = 0x80; mask != 0; mask >>= 1) {
-		if (nValue & mask) {
-			m_pBuffer[nOffset] = m_nHighCode;
-		} else {
-			m_pBuffer[nOffset] = 0xC0;	// Same for all
-		}
-
-		nOffset++;
-	}
 }

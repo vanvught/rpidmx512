@@ -8,9 +8,9 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-properties/include -I ../lib-lightset/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/deviceparams.o src/circle/ws28xxstripe.o src/circle/spisend.o
+OBJS	= src/deviceparams.o src/spisend.o src/ws28xxstripecommon.o src/circle/ws28xxstripe.o
 
-EXTRACLEAN = src/deviceparams.o src/circle/*.o
+EXTRACLEAN = src/*.o src/circle/*.o
 
 libws28xx.a: $(OBJS)
 	rm -f $@

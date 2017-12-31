@@ -28,11 +28,7 @@
 
 #include <stdint.h>
 
-#if defined (__circle__)
-#include "circle/spisend.h"
-#else
 #include "spisend.h"
-#endif
 
 class DeviceParams {
 public:
@@ -51,18 +47,13 @@ public:
 	static const char *GetLedTypeString(TWS28XXType);
 
 private:
-	bool isMaskSet(uint16_t) const;
+	bool IsMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
-
-#if defined (__circle__)
-private:
-    void printf (const char *fmt, ...);
-#endif
 
 private:
     uint32_t m_bSetList;

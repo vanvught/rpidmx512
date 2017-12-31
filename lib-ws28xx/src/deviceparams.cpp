@@ -31,19 +31,18 @@
 #include <circle/logger.h>
 #include <circle/stdarg.h>
 #include <circle/util.h>
-#include "circle/ws28xxstripe.h"
-#include "circle/spisend.h"
 #define ALIGNED
 #else
 #include "util.h"
-#include "ws28xxstripe.h"
-#include "spisend.h"
 #endif
 
 #include "deviceparams.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
+
+#include "ws28xxstripe.h"
+#include "spisend.h"
 
 #define SET_LED_TYPE_MASK	1<<0
 #define SET_LED_COUNT_MASK	1<<1
@@ -65,6 +64,7 @@ void DeviceParams::staticCallbackFunction(void *p, const char *s) {
 
 void DeviceParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
+
 	uint16_t value16;
 	uint8_t len;
 	char buffer[16];
@@ -107,11 +107,11 @@ bool DeviceParams::Load(void) {
 void DeviceParams::Set(SPISend *pSpiSend) {
 	assert(pSpiSend != 0);
 
-	if (isMaskSet(SET_LED_TYPE_MASK)) {
+	if (IsMaskSet(SET_LED_TYPE_MASK)) {
 		pSpiSend->SetLEDType(tLedType);
 	}
 
-	if (isMaskSet(SET_LED_COUNT_MASK)) {
+	if (IsMaskSet(SET_LED_COUNT_MASK)) {
 		pSpiSend->SetLEDCount(nLedCount);
 	}
 }
@@ -123,11 +123,11 @@ void DeviceParams::Dump(void) {
 
 	printf("Device parameters \'%s\':\n", PARAMS_FILE_NAME);
 
-	if (isMaskSet(SET_LED_TYPE_MASK)) {
+	if (IsMaskSet(SET_LED_TYPE_MASK)) {
 		printf(" Type : %s [%d]\n", GetLedTypeString(tLedType), (int) tLedType);
 	}
 
-	if (isMaskSet(SET_LED_COUNT_MASK)) {
+	if (IsMaskSet(SET_LED_COUNT_MASK)) {
 		printf(" Count : %d\n", (int) nLedCount);
 	}
 }
@@ -148,28 +148,7 @@ const char* DeviceParams::GetLedTypeString(TWS28XXType tType) {
 	return led_types[tType];
 }
 
-bool DeviceParams::isMaskSet(uint16_t mask) const {
+bool DeviceParams::IsMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-#if defined (__circle__)
-void DeviceParams::printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, fmt);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	va_list var;
-	va_start(var, fmt);
-
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-	va_end(var);
-}
-#endif

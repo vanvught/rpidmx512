@@ -28,6 +28,11 @@
 
 #include <stdint.h>
 
+#if defined (__circle__)
+#include <circle/interrupt.h>
+#include <circle/spimasterdma.h>
+#endif
+
 enum TWS28XXType {
 	WS2801 = 0,
 	WS2811,
@@ -43,28 +48,61 @@ enum TWS28XXType {
 
 class WS28XXStripe {
 public:
-	WS28XXStripe(uint16_t nLEDCount, TWS28XXType Type, uint32_t nClockSpeed);
+	// nClockSpeed is only variable on WS2801, otherwise ignored
+#if defined (__circle__)
+	WS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+#else
+	WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+#endif
 	~WS28XXStripe(void);
+
+#if defined (__circle__)
+	bool Initialize (void);
+#else
+	inline bool Initialize (void) const {
+		return true;
+	}
+#endif
 
 	unsigned GetLEDCount(void) const;
 	TWS28XXType GetLEDType(void) const;
 
-	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);	// nIndex is 0-based
+	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);					// nIndex is 0-based
 	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);	// nIndex is 0-based
 
 	void Update(void);
 	void Blackout(void);
 
+#if defined (__circle__)
+	// returns TRUE while DMA operation is active
+	bool IsUpdating (void) const;
+#else
+	inline 	bool IsUpdating (void) const {
+		return false;
+	}
+#endif
+
 private:
 	void SetColorWS28xx(unsigned nOffset, uint8_t nValue);
 
+#if defined (__circle__)
 private:
-	TWS28XXType	m_Type;
-	unsigned	m_nLEDCount;
-	unsigned	m_nBufSize;
-	uint8_t		*m_pBuffer;
-	uint8_t		*m_pBlackoutBuffer;
-	uint8_t		m_nHighCode;
+	void SPICompletionRoutine (boolean bStatus);
+	static void SPICompletionStub (boolean bStatus, void *pParam);
+#endif
+
+private:
+	TWS28XXType			m_Type;
+	unsigned			m_nLEDCount;
+	unsigned			m_nBufSize;
+	uint8_t				*m_pBuffer;
+	uint8_t				*m_pBlackoutBuffer;
+	volatile bool	 	m_bUpdating;
+	uint8_t				m_nHighCode;
+#if defined (__circle__)
+	uint8_t				*m_pReadBuffer;
+	CSPIMasterDMA	 	m_SPIMaster;
+#endif
 };
 
 #endif /* WS28XXSTRIPE_H_ */
