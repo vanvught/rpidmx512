@@ -12,7 +12,7 @@ INCLUDE	+= -I ../lib-lightset/include  -I ../lib-ledblink/include
 INCLUDE	+= -I ../lib-network/include
 INCLUDE	+= -I ../include 
 
-LIBS = ../lib-osc/libosc.a ../lib-ws28xx/libws28xx.a ../lib-network/libnetwork.a ../lib-properties/libproperties.a ../lib-lightset/liblightset.a ../lib-ledblink/libledblink.a
+LIBS = ../lib-osc/libosc.a ../lib-ws28xx/libws28xx.a ../lib-network/libnetwork.a ../lib-properties/libproperties.a ../lib-lightset/liblightset.a ../lib-ledblink/libledblink.a  ../lib-utils/libutils.a
 
 LIBS +=	$(CIRCLEHOME)/addon/SDCard/libsdcard.a \
 	$(CIRCLEHOME)/addon/fatfs/libfatfs.a \
