@@ -35,7 +35,7 @@
 #include <circle/machineinfo.h>
 
 #include "deviceparams.h"
-#include "ws28xxstripe.h"
+#include "circle/ws28xxstripe.h"
 
 #ifndef FRAME_BUFFER_SIZE
 #define FRAME_BUFFER_SIZE	1024
@@ -57,7 +57,7 @@ private:
 	CDevice				*m_pTarget;
 	unsigned			m_nRemotePort;
 	CMachineInfo 		m_MachineInfo;
-	WS28XXStripe		*m_pLEDStripe;
+	CWS28XXStripe		*m_pLEDStripe;
 	TWS28XXType			m_LEDType;
 	unsigned			m_nLEDCount;
 	boolean 			m_Blackout;
