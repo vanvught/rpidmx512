@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_MMU NDEBUG
 #
-LIBS = artnet dmx ws28xx dmxmonitor monitor lightset ledblink c++ network
+LIBS = artnet dmxsend dmx ws28xx dmxmonitor monitor lightset ledblink c++ network
 #
 SRCDIR = firmware lib
 

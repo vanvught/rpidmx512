@@ -29,29 +29,30 @@
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
-#include "monitor.h"
-#include "console.h"
 
-#include "ledblinktask.h"
+#include "console.h"
+#include "display.h"
+
+#include "wifi.h"
+#include "network.h"
 
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 #include "artnetparams.h"
 
-#include "dmxparams.h"
-#include "dmxsender.h"
-#include "dmxmonitor.h"
+#include "ledblinktask.h"
 
-#include "spisend.h"
+// DMX output
+#include "dmxparams.h"
+#include "dmxsend.h"
+// Monitor Output
+#include "dmxmonitor.h"
+// SPI WS28xx output
 #include "deviceparams.h"
+#include "spisend.h"
 
 #include "timecode.h"
 #include "timesync.h"
-
-#include "display.h"
-
-#include "wifi.h"
-#include "network.h"
 
 #include "software_version.h"
 
@@ -115,7 +116,7 @@ void notmain(void) {
 	network_init();
 
 	ArtNetNode node;
-	DMXSender dmx;
+	DMXSend dmx;
 	SPISend spi;
 	DMXMonitor monitor;
 	TimeCode timecode;
@@ -212,9 +213,9 @@ void notmain(void) {
 
 	if (tOutputType == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
-		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
-		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
-		printf(" Refresh rate : %d\n", (int) (1000000 / dmx.GetPeriodTime()));
+		printf(" Break time   : %d\n", (int) dmx.GetDmxBreakTime());
+		printf(" MAB time     : %d\n", (int) dmx.GetDmxMabTime());
+		printf(" Refresh rate : %d\n", (int) (1000000 / dmx.GetDmxPeriodTime()));
 	} else if (tOutputType == OUTPUT_TYPE_SPI) {
 		TWS28XXType tType = spi.GetLEDType();
 
@@ -250,11 +251,11 @@ void notmain(void) {
 			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
-		(void) (void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
-		(void) (void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
-		(void) (void) display.Printf(5, "SN: %s", node.GetShortName());
-		(void) (void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), node.GetUniverseSwitch(0));
-		(void) (void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
+		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
+		(void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
+		(void) display.Printf(5, "SN: %s", node.GetShortName());
+		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), node.GetUniverseSwitch(0));
+		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
