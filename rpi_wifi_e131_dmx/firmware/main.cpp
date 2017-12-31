@@ -29,21 +29,24 @@
 #include <uuid/uuid.h>
 
 #include "hardware.h"
+
 #include "console.h"
 #include "display.h"
 
-#include "ledblinktask.h"
+#include "wifi.h"
+#include "network.h"
 
 #include "e131bridge.h"
 #include "e131uuid.h"
 #include "e131params.h"
 
-#include "dmxsender.h"
-#include "dmxparams.h"
-#include "dmxmonitor.h"
+#include "ledblinktask.h"
 
-#include "wifi.h"
-#include "network.h"
+// DMX output
+#include "dmxparams.h"
+#include "dmxsend.h"
+// Monitor output
+#include "dmxmonitor.h"
 
 #include "util.h"
 
@@ -58,7 +61,7 @@ void notmain(void) {
 	E131Params e131params;
 	E131Uuid e131uuid;
 	DMXParams dmxparams;
-	DMXSender dmx;
+	DMXSend dmx;
 	DMXMonitor monitor;
 	Display display(0,8);
 	LedBlinkTask ledblinktask;
@@ -151,9 +154,9 @@ void notmain(void) {
 
 	if (tOutputType == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
-		printf(" Break time   : %d\n", (int) dmx.GetBreakTime());
-		printf(" MAB time     : %d\n", (int) dmx.GetMabTime());
-		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetPeriodTime()));
+		printf(" Break time   : %d\n", (int) dmx.GetDmxBreakTime());
+		printf(" MAB time     : %d\n", (int) dmx.GetDmxMabTime());
+		printf(" Refresh rate : %d\n", (int) (1E6 / dmx.GetDmxPeriodTime()));
 	}
 
 	if (IsOledConnected) {
