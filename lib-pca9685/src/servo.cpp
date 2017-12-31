@@ -41,6 +41,7 @@
 
 Servo::Servo(uint8_t nAddress): PCA9685(nAddress), m_nLeftUs(SERVO_LEFT_DEFAULT_US), m_nRightUs(SERVO_RIGHT_DEFAULT_US) {
 	SetInvert(false);
+	SetOutDriver(true);
 	SetFrequency(50);
 	CalcLeftCount();
 	CalcRightCount();

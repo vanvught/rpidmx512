@@ -184,6 +184,24 @@ bool PCA9685::GetInvert(void) {
 	return (Data == PCA9685_MODE2_INVRT);
 }
 
+void PCA9685::SetOutDriver(bool bOutDriver) {
+	uint8_t Data = I2cReadReg(PCA9685_REG_MODE2);
+
+	Data &= ~PCA9685_MODE2_OUTDRV;
+
+	if (bOutDriver) {
+		Data |= PCA9685_MODE2_OUTDRV;
+	}
+
+	I2cWriteReg(PCA9685_REG_MODE2, Data);
+}
+
+bool PCA9685::GetOutDriver(void) {
+	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OUTDRV;
+
+	return (Data == PCA9685_MODE2_OUTDRV);
+}
+
 void PCA9685::Write(uint8_t nChannel, uint16_t nOn, uint16_t nOff) {
 	uint8_t reg;
 
@@ -318,9 +336,9 @@ void PCA9685::Dump(void) {
 
 	printf("\nMODE2 - Mode register 2 (address 01h) : %02Xh\n", reg);
 	printf("\tbit 7 to 5      : Reserved\n");
-	printf("\tbit 4 - INVRT   : Output logic state %s inverted\n", reg & PCA9685_MODE2_INVRT ? "" : "not");
+	printf("\tbit 4 - INVRT   : Output logic state %sinverted\n", reg & PCA9685_MODE2_INVRT ? "" : "not ");
 	printf("\tbit 3 - OCH     : Outputs change on %s\n", reg & PCA9685_MODE2_OCH ? "ACK" : "STOP command");
-	printf("\tbit 2 - OUTDRV  : The 16 LEDn outputs are configured with %s structure\n", reg & PCA9685_MODE2_OUTDRV ? "totem pole" : "an open-drain");
+	printf("\tbit 2 - OUTDRV  : The 16 LEDn outputs are configured with %s structure\n", reg & PCA9685_MODE2_OUTDRV ? "a totem pole" : "an open-drain");
 	printf("\tbit 10- OUTNE   : %01x\n", reg & 0x3);
 
 	reg = I2cReadReg(PCA9685_REG_PRE_SCALE);
@@ -421,3 +439,4 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data, uint16_t data2) {
 
 	bcm2835_i2c_write((char *) buffer, 5);
 }
+

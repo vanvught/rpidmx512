@@ -68,6 +68,9 @@ public:
 	void SetInvert(bool);
 	bool GetInvert(void);
 
+	void SetOutDriver(bool);
+	bool GetOutDriver(void);
+
 	void Write(uint8_t, uint16_t, uint16_t);
 	void Read(uint8_t, uint16_t *, uint16_t *);
 
