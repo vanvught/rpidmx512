@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <led.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -42,6 +41,8 @@
 
 #include "widget_params.h"
 #include "widget.h"
+
+#include "led.h"
 
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}

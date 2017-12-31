@@ -97,7 +97,7 @@ const uint8_t rdm_device_info_get_ext_mon_level(void) {
  * @param line
  */
 static void process_line_read_string(const char *line) {
-	char value[8] ALIGNED;
+	char value[8];
 	uint8_t len;
 
 	len = 1;
