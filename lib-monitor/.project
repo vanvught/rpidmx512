@@ -3,9 +3,6 @@
 	<name>lib-monitor</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-bob</project>
-		<project>lib-dmx</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-utils</project>
