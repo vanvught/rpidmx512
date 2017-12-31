@@ -40,13 +40,11 @@ extern void network_init(CNetSubSystem *);
 #include "network.h"
 #include "networkparams.h"
 
-// DMX output
 #include "dmxparams.h"
-#include "circle/dmxsend.h"
+#include "circle/dmxsender.h"
 
-// SPI WS28xx output
 #include "deviceparams.h"
-#include "spisend.h"
+#include "circle/spisend.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -272,9 +270,9 @@ TShutdownMode CKernel::Run(void)
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		m_Logger.Write(FromKernel, LogNotice, "DMX Send parameters :");
-		m_Logger.Write(FromKernel, LogNotice, " Break time   : %u", m_DMX.GetDmxBreakTime());
-		m_Logger.Write(FromKernel, LogNotice, " MAB time     : %u", m_DMX.GetDmxMabTime());
-		m_Logger.Write(FromKernel, LogNotice, " Refresh rate : %u", (unsigned) (1000000 / m_DMX.GetDmxPeriodTime()));
+		m_Logger.Write(FromKernel, LogNotice, " Break time   : %u", m_DMX.GetBreakTime());
+		m_Logger.Write(FromKernel, LogNotice, " MAB time     : %u", m_DMX.GetMabTime());
+		m_Logger.Write(FromKernel, LogNotice, " Refresh rate : %u", (unsigned) (1000000 / m_DMX.GetPeriodTime()));
 	} else {
 		const TWS28XXType tType = m_SPI.GetLEDType();
 		m_Logger.Write(FromKernel, LogNotice, "Led stripe parameters :");
