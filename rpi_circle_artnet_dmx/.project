@@ -5,7 +5,7 @@
 	<projects>
 		<project>Circle</project>
 		<project>lib-artnet</project>
-		<project>lib-dmx</project>
+		<project>lib-dmxsend</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>

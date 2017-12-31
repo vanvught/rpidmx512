@@ -49,8 +49,11 @@
 #include "SDCard/emmc.h"
 #include "fatfs/ff.h"
 
-#include "circle/dmxsender.h"
-#include "circle/spisend.h"
+// DMX output
+#include "circle/dmxsend.h"
+// SPI WS28xx output
+#include "spisend.h"
+
 #include "circle/blinktask.h"
 
 enum TShutdownMode
@@ -89,7 +92,7 @@ private:
 	CScheduler			m_Scheduler;
 	CNetSubSystem		m_Net;
 
-	DMXSender			m_DMX;
+	DMXSend				m_DMX;
 	SPISend				m_SPI;
 
 	CMachineInfo 		m_MachineInfo;
