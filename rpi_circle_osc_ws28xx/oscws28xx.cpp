@@ -36,7 +36,7 @@
 
 #include "deviceparams.h"
 
-#include "circle/ws28xxstripe.h"
+#include "ws28xxstripe.h"
 
 #include "network.h"
 
@@ -45,19 +45,23 @@
 #include "oscsend.h"
 #include "oscmessage.h"
 
-COSCWS28xx::COSCWS28xx (CInterruptSystem *pInterrupt, CDevice *pTarget, unsigned nRemotePort)
-:	m_pInterrupt (pInterrupt),
-	m_pTarget (pTarget),
-	m_nRemotePort(nRemotePort),
-	m_pLEDStripe (0),
-	m_LEDType (WS2801),
-	m_nLEDCount (170),
-	m_Blackout (FALSE)
+COSCWS28xx::COSCWS28xx(CInterruptSystem *pInterrupt, CDevice *pTarget, unsigned nRemotePort) :
+		m_pInterrupt(pInterrupt),
+		m_pTarget(pTarget),
+		m_nRemotePort(nRemotePort),
+		m_pLEDStripe(0),
+		m_LEDType(WS2801),
+		m_nLEDCount(170),
+		m_Blackout(FALSE)
 {
-	if(m_DeviceParams.Load()) {
+	if (m_DeviceParams.Load()) {
 		m_DeviceParams.Dump();
 		m_LEDType = m_DeviceParams.GetLedType();
 		m_nLEDCount = m_DeviceParams.GetLedCount();
+	}
+
+	for (unsigned i = 0; i < sizeof m_RGBWColour; i++) {
+		m_RGBWColour[i] = 0;
 	}
 
 }
@@ -68,7 +72,7 @@ COSCWS28xx::~COSCWS28xx(void) {
 
 void COSCWS28xx::Start(void) {
 	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new CWS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
+	m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Initialize();
