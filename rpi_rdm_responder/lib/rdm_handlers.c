@@ -75,6 +75,9 @@ static void rdm_get_real_time_clock(uint16_t);
 static void rdm_set_real_time_clock(bool , uint16_t);
 static void rdm_set_reset_device(bool , uint16_t);
 static void rdm_get_identify_mode(uint16_t);
+static void rdm_set_identify_mode(bool , uint16_t);
+
+static uint8_t identify_mode = 0; // 0 = “Quiet Identify” mode
 
 struct _pid_definition
 {
@@ -109,7 +112,7 @@ static const struct _pid_definition PID_DEFINITIONS[] __attribute__((aligned(4))
 		{E120_REAL_TIME_CLOCK,		       &rdm_get_real_time_clock,            &rdm_set_real_time_clock,    0, true },
 		{E120_IDENTIFY_DEVICE,		       &rdm_get_identify_device,		    &rdm_set_identify_device,    0, false},
 		{E120_RESET_DEVICE,			       NULL,                                &rdm_set_reset_device,       0, true },
-		{E137_1_IDENTIFY_MODE,			   &rdm_get_identify_mode,				NULL,						 0, true }
+		{E137_1_IDENTIFY_MODE,			   &rdm_get_identify_mode,				&rdm_set_identify_mode,		 0, true }
 };
 
 static const struct _pid_definition PID_DEFINITIONS_SUB_DEVICES[]__attribute__((aligned(4))) = {
@@ -767,10 +770,34 @@ static void rdm_get_identify_mode(uint16_t sub_device) {
 
 	rdm_response->param_data_length = 1;
 	rdm_response->message_length = RDM_MESSAGE_MINIMUM_SIZE + 1;
-	rdm_response->param_data[0] = (uint8_t) 0; // “Quiet Identify” mode
+	rdm_response->param_data[0] = identify_mode;
 
 	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
 }
+
+static void rdm_set_identify_mode(bool was_broadcast, uint16_t sub_device) {
+	struct _rdm_command *rdm_command = (struct _rdm_command *)rdm_handlers_rdm_data;
+
+	if (rdm_command->param_data_length != 1) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	if ((rdm_command->param_data[0] != 0) && (rdm_command->param_data[0] != 0xFF)) {
+		rdm_send_respond_message_nack(rdm_handlers_rdm_data, E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	identify_mode = rdm_command->param_data[0]; // TODO
+
+	if(was_broadcast) {
+		return;
+	}
+
+	rdm_command->param_data_length = 0;
+	rdm_send_respond_message_ack(rdm_handlers_rdm_data);
+}
+
 
 /**
  * @ingroup rdm_handlers
