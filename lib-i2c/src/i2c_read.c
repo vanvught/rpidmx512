@@ -33,7 +33,7 @@
 #endif
 
 
-const uint8_t i2c_read_uint8(void) {
+uint8_t i2c_read_uint8(void) {
 	uint8_t buf[1] = { 0 };
 
 	(void) bcm2835_i2c_read((char *) buf, (uint32_t) 1);
@@ -41,7 +41,7 @@ const uint8_t i2c_read_uint8(void) {
 	return buf[0];
 }
 
-const uint16_t i2c_read_uint16(void) {
+uint16_t i2c_read_uint16(void) {
 	uint8_t buf[2] = { 0, 0 };
 
 	(void) bcm2835_i2c_read((char *) buf, (uint32_t) 2);
@@ -49,7 +49,7 @@ const uint16_t i2c_read_uint16(void) {
 	return (uint16_t) ((uint16_t) buf[0] << 8 | (uint16_t) buf[1]);
 }
 
-const uint16_t i2c_read_reg_uint16(uint8_t reg) {
+uint16_t i2c_read_reg_uint16(uint8_t reg) {
 	uint8_t buf[2] = { 0, 0 };
 
 	buf[0] = reg;
@@ -59,7 +59,7 @@ const uint16_t i2c_read_reg_uint16(uint8_t reg) {
 	return i2c_read_uint16();
 }
 
-const uint16_t i2c_read_reg_uint16_delayus(uint8_t reg, uint32_t delayus) {
+uint16_t i2c_read_reg_uint16_delayus(uint8_t reg, uint32_t delayus) {
 	uint8_t buf[2] = { 0, 0 };
 
 	buf[0] = reg;

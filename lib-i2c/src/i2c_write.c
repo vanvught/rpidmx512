@@ -40,16 +40,26 @@ void i2c_write_nb(const char *data, uint32_t length) {
 
 #if defined(__linux__)
 void i2c_write(uint8_t data) {
-	char buffer[2];
-	buffer[0] = data;
- 	bcm2835_i2c_write(buffer, 1);
+	//char buffer[2];
+	//buffer[0] = data;
+ 	//bcm2835_i2c_write(buffer, 1);
+	bcm2835_i2c_write((char *)&data, 1);
 }
 
 void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
-	char buffer[4];
+	char buffer[2];
 	buffer[0] = reg;
 	buffer[1] = data;
 	bcm2835_i2c_write(buffer, 2);
+}
+
+void i2c_write_reg_uint16(uint8_t reg, uint16_t data) {
+	char buffer[3];
+	buffer[0] = reg;
+	buffer[1] = (char) (data >> 8);
+	buffer[2] = (char) (data & 0xFF);
+
+	bcm2835_i2c_write(buffer, 3);
 }
 #else
 void i2c_write(uint8_t data) {
@@ -115,6 +125,7 @@ void i2c_write_reg_uint16(uint8_t reg, uint16_t data) {
 
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 }
+#endif
 
 void i2c_write_reg_uint16_mask(uint8_t reg, uint16_t data, uint16_t mask) {
 	uint16_t current;
@@ -126,4 +137,3 @@ void i2c_write_reg_uint16_mask(uint8_t reg, uint16_t data, uint16_t mask) {
 
 	i2c_write_reg_uint16(reg, new);
 }
-#endif

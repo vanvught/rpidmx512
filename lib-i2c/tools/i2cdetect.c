@@ -2,7 +2,7 @@
  * @file i2cdetect.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,9 @@ int main(int argc, char **argv) {
 	uint8_t i, j;
 	uint8_t address;
 
-	i2c_begin();
+	if(!i2c_begin()) {
+		return -1;
+	}
 
 	i2c_set_clockdivider(2500); // 100kHz
 

@@ -30,7 +30,10 @@ This library provides an abstraction layer for the I2C interface.
 
 	void i2c_write_nb(const char *data, uint32_t length)
 	void i2c_write(uint8_t data)
+	void i2c_write_uint16(uint16_t data);
 	void i2c_write_reg_uint8(uint8_t reg, uint8_t data)
+	void i2c_write_reg_uint16(uint8_t reg, uint16_t data);
+	void i2c_write_reg_uint16_mask(uint8_t reg, uint16_t data, uint16_t mask);
 
 
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)

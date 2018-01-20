@@ -1,13 +1,8 @@
-#if 0
-#if !defined(__linux__)
-#define __linux__
-#endif
-#endif
 /**
  * @file i2c_begin.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,28 +37,30 @@ static bool _begin = false;
 #include "bcm2835_i2c.h"
 #endif
 
-void i2c_begin(void) {
+bool i2c_begin(void) {
 #if defined(__linux__)
 	if (_begin) {
-		return;
+		return true;
 	}
 
 	if (getuid() != 0) {
-		printf("Error: Not started with 'root'\n");
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return false;
 	}
 
 	if (bcm2835_init() != 1) {
-		printf("bcm2835_init() failed\n");
-		exit(EXIT_FAILURE);
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return false;
 	} else {
 		_begin = true;
 	}
 
 	if (bcm2835_i2c_begin() != 1) {
-		printf("bcm2835_i2c_begin() failed\n");
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
 	}
 #else
 	bcm2835_i2c_begin();
 #endif
+
+	return true;
 }

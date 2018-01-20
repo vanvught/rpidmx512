@@ -2,7 +2,7 @@
  * @file i2c.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,16 +39,16 @@ typedef enum {
 extern "C" {
 #endif
 
-extern void i2c_begin(void);
+extern bool i2c_begin(void);
 extern void i2c_set_address(uint8_t);
 extern void i2c_set_clockdivider(uint16_t);
 
-extern const bool i2c_is_connected(const uint8_t);
+extern bool i2c_is_connected(uint8_t);
 
-extern const uint16_t i2c_read_uint8(void);
-extern const uint16_t i2c_read_uint16(void);
-extern const uint16_t i2c_read_reg_uint16(uint8_t);
-extern const uint16_t i2c_read_reg_uint16_delayus(uint8_t, uint32_t);
+extern uint16_t i2c_read_uint8(void);
+extern uint16_t i2c_read_uint16(void);
+extern uint16_t i2c_read_reg_uint16(uint8_t);
+extern uint16_t i2c_read_reg_uint16_delayus(uint8_t, uint32_t);
 
 extern void i2c_write(uint8_t);
 extern void i2c_write_nb(const char *, uint32_t);
