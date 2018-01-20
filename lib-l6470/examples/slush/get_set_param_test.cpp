@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <unistd.h>
 
 #include "slushboard.h"
@@ -60,7 +61,7 @@ void pv(int v) {
 }
 
 void test(float v1, float v2) {
-	if (abs(v1 - v2) > 0.1) {
+	if (fabsf(v1 - v2) > 0.1) {
 		printf("!!! %s failed\n", name);
 		printf("Expected %f Got %f\n", v1, v2);
 		pass = false;

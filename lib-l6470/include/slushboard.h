@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ enum TSlushIOFSel {
 	SLUSH_IO_FSEL_OUTP = 0,
 	SLUSH_IO_FSEL_INPT = 1
 };
+
 
 #define SLUSH_L6470_RESET		23 // RPI_V2_GPIO_P1_38
 

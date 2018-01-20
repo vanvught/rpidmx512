@@ -50,6 +50,10 @@ extern void bcm2835_delayMicroseconds (const uint64_t);
 #endif
 }
 
+#define SLUSH_MCP23017_RESET	20
+#define SLUSH_MCP23017_INTA		21
+#define SLUSH_MCP23017_INTB		22
+
 #define MAX1164_I2C_ADDRESS		0x36
 
 #define MCP23017_I2C_ADDRESS	0x20
@@ -73,9 +77,6 @@ SlushBoard::SlushBoard(void) {
 	}
 #endif
 
-	InitSpi();
-	InitI2c();
-
 	bcm2835_gpio_fsel(SLUSH_L6470_RESET, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_set(SLUSH_L6470_RESET);
 
@@ -98,6 +99,12 @@ SlushBoard::SlushBoard(void) {
 	udelay(10000);
 	bcm2835_gpio_set(SLUSH_L6470_RESET);
 	udelay(10000);
+
+	bcm2835_gpio_fsel(SLUSH_MCP23017_RESET, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set(SLUSH_MCP23017_RESET);
+
+	InitSpi();
+	InitI2c();
 }
 
 SlushBoard::~SlushBoard(void) {

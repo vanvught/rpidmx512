@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
 // move the motor at a new microstepping setting
 	printf("-> moving the motor at 128 Step/Step microstepping\n");
-	//Motor.setMicroSteps(128); //TODO
+	Motor.setMicroSteps(128);
 	Motor.move(-100000);
 	while (Motor.isBusy())
 		;
