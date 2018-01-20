@@ -1,8 +1,8 @@
 /**
- * @file sscan_i2c_address.c
+ * @file sscan_hexuint16.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,20 +35,16 @@
 
 #include "sscan.h"
 
-int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
+int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
 	int k = 0;
 	char *n = (char *)name;
 	const char *b = buf;
-	char tmp[8];
-	uint8_t nibble_high;
-	uint8_t nibble_low;
+	uint8_t nibble;
+	uint16_t tmp;
 
 	assert(buf != NULL);
 	assert(name != NULL);
-	assert(address != NULL);
-
-	tmp[0] = (char) 0;
-	tmp[1] = (char) 0;
+	assert(uint16 != NULL);
 
 	while ((*n != (char) 0) && (*b != (char) 0)) {
 		if (*n++ != *b++) {
@@ -69,13 +65,14 @@ int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
 	}
 
 	k = 0;
+	tmp = 0;
 
-
-	while ((*b != (char) '\n') && (*b != (char) '\0') && (k < 2)) {
+	while ((*b != (char) '\n') && (*b != (char) '\0') && (k < 4)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
-		tmp[k] = *b;
+		nibble = *b > '9' ? ((uint8_t) *b | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (*b - '0');
+		tmp = (tmp << 4) | nibble;
 		k++;
 		b++;
 	}
@@ -84,18 +81,11 @@ int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if (k == 2) {
-		nibble_low = (uint8_t) (tmp[1] > '9' ? (tmp[1] | (char) 0x20) - 'a' + (char) 10 : tmp[1] - '0');
-		nibble_high = (uint8_t) (tmp[0] > '9' ? (tmp[0] | (char) 0x20) - 'a' + (char) 10 : tmp[0] - '0') << 4;
-		*address = nibble_high | nibble_low;
-	} else {
-		nibble_low = (uint8_t) (tmp[0] > '9' ? (tmp[0] | (char) 0x20) - 'a' + (char) 10 : tmp[0] - '0');
-		*address = nibble_low;
-	}
-
-	if (*address >= 0x7f) {
+	if (k != 4) {
 		return SSCAN_VALUE_ERROR;
 	}
+
+	*uint16 = tmp;
 
 	return SSCAN_OK;
 }
