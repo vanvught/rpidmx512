@@ -2,7 +2,7 @@
  * @file ads1115.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,10 @@
 #include <stdbool.h>
 
 #include "bcm2835.h"
-#include "bcm2835_i2c.h"
+#if defined(__linux__) || defined(__circle__)
+#else
+ #include "bcm2835_i2c.h"
+#endif
 
 #include "i2c.h"
 
@@ -50,6 +53,7 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
+#if defined(BARE_METAL)
 #define TIMEOUT_WAIT(stop_if_true, usec) 						\
 do {															\
 	const uint32_t micros_now = BCM2835_ST->CLO;				\
@@ -58,7 +62,9 @@ do {															\
 			break;												\
 	} while( BCM2835_ST->CLO - micros_now < (uint32_t)usec);	\
 } while(0);
-
+#else
+ #define TIMEOUT_WAIT(stop_if_true, usec)
+#endif
 
 static void trigger_conversion(void) {
 	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, ADS1x15_CONFIG_OS_SINGLE, ADS1x15_REG_CONFIG_OS_MASK);

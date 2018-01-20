@@ -2,7 +2,7 @@
  * @file oled.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,14 @@
 #include <stdarg.h>
 
 #include "bcm2835.h"
-#include "bcm2835_gpio.h"
-#include "bcm2835_i2c.h"
-#include "bcm2835_aux_spi.h"
-#include "bcm2835_spi.h"
+#if defined(__linux__) || defined(__circle__)
+ #define udelay bcm2835_delayMicroseconds
+#else
+ #include "bcm2835_gpio.h"
+ #include "bcm2835_i2c.h"
+ #include "bcm2835_aux_spi.h"
+ #include "bcm2835_spi.h"
+#endif
 
 #include "i2c.h"
 #include "oled.h"

@@ -2,7 +2,7 @@
  * @file lcd.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@
 #define ALIGNED	__attribute__((aligned(4)))
 #endif
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else
@@ -87,7 +87,9 @@ const bool lcd_detect(void) {
 	lcd_text_line_1_f = _lcd_text_line_1;
 	lcd_text_line_2_f = _lcd_text_line_2;
 
-	i2c_begin();
+	if (!i2c_begin()) {
+		return false;
+	}
 	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
 
 	if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {

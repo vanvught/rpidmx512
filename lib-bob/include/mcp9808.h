@@ -2,7 +2,7 @@
  * @file mcp9808.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,15 @@
 
 #define MCP9808_I2C_DEFAULT_SLAVE_ADDRESS	0x18	///<
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const bool mcp9808_start(device_info_t *);
 extern const float mcp9808_get_temperature(const device_info_t *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MCP9808_H_ */

@@ -2,7 +2,7 @@
  * @file bw_spi_dimmer.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,12 @@
 
 #include <stdint.h>
 
-#include "bcm2835_spi.h"
-#include "bcm2835_aux_spi.h"
+#if defined(__linux__) || defined(__circle__)
+ #include "bcm2835.h"
+#else
+ #include "bcm2835_spi.h"
+ #include "bcm2835_aux_spi.h"
+#endif
 
 #include "bw.h"
 #include "bw_dimmer.h"

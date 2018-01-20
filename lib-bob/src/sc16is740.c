@@ -6,7 +6,7 @@
  *
  * https://developer.mbed.org/components/SC16IS750-I2C-or-SPI-to-UART-bridge/
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,12 @@
 
 #include "sc16is7x0.h"
 
-#include "bcm2835_spi.h"
+#if defined(__linux__) || defined(__circle__)
+ #include "bcm2835.h"
+#else
+ #include "bcm2835_spi.h"
+#endif
+
 #include "device_info.h"
 
 static char buffer_tx[SC16IS7X0_FIFO_TX + 1] __attribute__((aligned(4)));

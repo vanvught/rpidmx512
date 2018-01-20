@@ -2,7 +2,7 @@
  * @file bh1750.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "bcm2835_i2c.h"
+#if defined(__linux__)
+ #include "bcm2835.h"
+#else
+ #include "bcm2835_i2c.h"
+#endif
+
 #include "i2c.h"
 
 #include "bh1750.h"

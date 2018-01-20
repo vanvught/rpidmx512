@@ -1,4 +1,4 @@
-## Raspberry Pi bare-metal library for break-out-boards ##
+## Open source Raspberry Pi C library for break-out-boards ##
 IO, RTC, Displays {LCD, OLED, 7-segment}, ADC, DAC, Sensors {current, light, temperature, humidity}
 
 Supported devices are :
@@ -31,3 +31,12 @@ Supported devices are :
 - SC16IS740 Single UART I2C ([http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf](http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf))
 - PCF8591 8-bit A/D and D/A converter I2C ([https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module](https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module))
 
+<table>
+<tr>
+<td colspan="2" style="text-align:center;">lib-bob<a href="https://github.com/vanvught/rpidmx512/tree/master/lib-i2c">https://github.com/vanvught/rpidmx512/tree/master/lib-bob</a> (-lbob)</td>
+</tr>
+<tr>
+<td>bare-metal<br><a href="https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835">https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835</a></br></td>
+<td>Raspbian Linux<br><a href="http://www.airspayce.com/mikem/bcm2835/">http://www.airspayce.com/mikem/bcm2835/</a></br></td>
+</tr>
+</table>

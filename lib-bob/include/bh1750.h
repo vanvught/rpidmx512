@@ -2,7 +2,7 @@
  * @file bh1750.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,15 @@
 
 #define BH1750_I2C_DEFAULT_SLAVE_ADDRESS	0x23	///<
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const bool bh1750_start(device_info_t *);
 extern const uint16_t bh1750_get_level(const device_info_t *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BH1750_H_ */

@@ -2,7 +2,7 @@
  * @file ina219.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,10 @@ typedef enum ina219_mode {
 	INA219_MODE_SHUNT_BUS_CONT = 0x0007		///<
 } ina219_mode_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const bool ina219_start(device_info_t *);
 
 extern void ina219_configure(const device_info_t *, ina219_range_t, ina219_gain_t, ina219_bus_res_t, ina219_shunt_res_t, ina219_mode_t);
@@ -104,5 +108,9 @@ extern const float ina219_get_bus_power(const device_info_t *);
 extern const uint16_t ina219_get_calibration(const device_info_t *);
 
 extern void ina219_get_lsb(const device_info_t *, float *, float *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INA219_H_ */

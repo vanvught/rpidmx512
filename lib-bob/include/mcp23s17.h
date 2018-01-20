@@ -2,7 +2,7 @@
  * @file mcp23s17.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,10 @@ typedef enum {
 	MCP23S17_FSEL_INPT = 1,			///< Input
 } mcp23s17FunctionSelect;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void mcp23s17_start(device_info_t *);
 extern uint16_t mcp23s17_reg_read(const device_info_t *, const uint8_t);
 extern void mcp23s17_reg_write(const device_info_t *, const uint8_t, const uint16_t);
@@ -57,5 +61,9 @@ extern void mcp23s17_reg_write_byte(const device_info_t *, const uint8_t, const 
 extern void mcp23s17_gpio_fsel(const device_info_t *, const uint16_t, const uint8_t);
 extern void mcp23s17_gpio_set(const device_info_t *, const uint16_t);
 extern void mcp23s17_gpio_clr(const device_info_t *, const uint16_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MCP23S17_H_ */

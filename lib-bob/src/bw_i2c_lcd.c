@@ -26,7 +26,10 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
-#include "bcm2835_i2c.h"
+#if defined(__linux__) || defined(__circle__)
+#else
+ #include "bcm2835_i2c.h"
+#endif
 
 #include "bw.h"
 #include "bw_lcd.h"
@@ -35,7 +38,9 @@
 
 #define BW_LCD_I2C_BYTE_WAIT_US	37
 
+#if defined (BARE_METAL)
 static uint32_t i2c_write_us = (uint32_t) 0;
+#endif
 
 /**
  *
@@ -43,15 +48,17 @@ static uint32_t i2c_write_us = (uint32_t) 0;
  * @param size
  */
 inline static void i2c_write(const char *buffer, const uint32_t size) {
+#if defined (BARE_METAL)
 	const uint32_t elapsed = BCM2835_ST->CLO - i2c_write_us;
 
 	if (elapsed < BW_LCD_I2C_BYTE_WAIT_US) {
 		udelay(BW_LCD_I2C_BYTE_WAIT_US - elapsed);
 	}
-
+#endif
 	(void) bcm2835_i2c_write(buffer, size);
-
+#if defined (BARE_METAL)
 	i2c_write_us = BCM2835_ST->CLO;
+#endif
 }
 
 /**
@@ -75,8 +82,9 @@ void bw_i2c_lcd_start(device_info_t *device_info) {
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 	}
-
+#if defined (BARE_METAL)
 	i2c_write_us = BCM2835_ST->CLO;
+#endif
 }
 
 /**
@@ -193,7 +201,7 @@ void bw_i2c_lcd_set_backlight(const device_info_t *device_info, const uint8_t va
  * @param text
  * @param length
  */
-void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
+void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
 	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
@@ -211,7 +219,7 @@ void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@
  * @param text
  * @param length
  */
-void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
+void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
 	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE2, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {

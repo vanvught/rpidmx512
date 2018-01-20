@@ -25,7 +25,11 @@
 
 #include <stdint.h>
 
-#include "bcm2835_i2c.h"
+#if defined(__linux__) || defined(__circle__)
+ #include "bcm2835.h"
+#else
+ #include "bcm2835_i2c.h"
+#endif
 
 #include "i2c.h"
 

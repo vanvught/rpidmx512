@@ -2,7 +2,7 @@
  * @file bw_i2c_ui.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,11 @@
 #include <stdbool.h>
 
 #include "bcm2835.h"
-#include "bcm2835_i2c.h"
+#if defined(__linux__) || defined(__circle__)
+ #define udelay bcm2835_delayMicroseconds
+#else
+ #include "bcm2835_i2c.h"
+#endif
 
 #include "i2c.h"
 
@@ -39,7 +43,9 @@
 #define BW_UI_I2C_BYTE_WAIT_US			28
 #define BW_UI_I2C_DELAY_WRITE_READ_US	90
 
+#if defined (BARE_METAL)
 static uint32_t i2c_write_us = (uint32_t) 0;
+#endif
 
 /**
  *
@@ -47,15 +53,17 @@ static uint32_t i2c_write_us = (uint32_t) 0;
  * @param size
  */
 inline static void _i2c_write(const char *buffer, const uint32_t size) {
+#if defined(BARE_METAL)
 	const uint32_t elapsed = BCM2835_ST->CLO - i2c_write_us;
 
 	if (elapsed < BW_UI_I2C_BYTE_WAIT_US) {
 		udelay(BW_UI_I2C_BYTE_WAIT_US - elapsed);
 	}
-
+#endif
 	(void) bcm2835_i2c_write(buffer, size);
-
+#if defined(BARE_METAL)
 	i2c_write_us = BCM2835_ST->CLO;
+#endif
 }
 
 
@@ -99,9 +107,9 @@ const bool bw_i2c_ui_start(device_info_t *device_info) {
 	cmd[1] = (char) 1;
 
 	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
-
+#if defined (BARE_METAL)
 	i2c_write_us = BCM2835_ST->CLO;
-
+#endif
 	return true;
 }
 
@@ -224,7 +232,7 @@ void bw_i2c_ui_set_backlight_temp(const device_info_t *device_info, const uint8_
  * @param text
  * @param length
  */
-void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
+void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
 	char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
@@ -242,7 +250,7 @@ void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@u
  * @param text
  * @param length
  */
-void bw_i2c_ui_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) { //TODO implement
+void bw_i2c_ui_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
 	char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE2, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
