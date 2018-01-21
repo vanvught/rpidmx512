@@ -2,7 +2,7 @@
  * @file lcd.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,9 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 	m_LcdDisplay = 0;
 	m_tType = DISPLAY_TYPE_UNKNOWN;
 
-	i2c_begin();
+	if(!i2c_begin()) {
+		return;
+	}
 
 	if (i2c_is_connected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		switch (nRows) {

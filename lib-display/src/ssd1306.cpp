@@ -26,8 +26,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 #include <string.h>
+#elif defined(__circle__)
+#include "circle/util.h"
 #else
 #include "util.h"
 #endif

@@ -25,19 +25,19 @@
 
 #include <stdint.h>
 
-#include "lcdbw.h"
-
-#include "i2c.h"
-
 extern "C" {
 extern uint32_t micros(void);
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else
 extern void udelay(const uint64_t);
 #endif
 }
+
+#include "lcdbw.h"
+
+#include "i2c.h"
 
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
 #define BW_PORT_WRITE_COMMAND				0x01	///< write data as command

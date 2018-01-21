@@ -26,18 +26,18 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "tc1602.h"
-
-#include "i2c.h"
-
 extern "C" {
-#if defined(__linux__) || defined (__CYGWIN__)
+#if defined(__linux__)
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else
 extern void udelay(const uint64_t);
 #endif
 }
+
+#include "tc1602.h"
+
+#include "i2c.h"
 
 #define MAX_COLS	20
 #define MAX_ROWS	4
