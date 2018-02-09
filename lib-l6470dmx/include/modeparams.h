@@ -1,5 +1,5 @@
 /**
- * @file l6470dmxmode.h
+ * @file modeparams.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
+#ifndef MODEPARAMS_H_
+#define MODEPARAMS_H_
 
 #include <stdint.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED = 255
-};
+#include "l6470.h"
 
-class L6470DmxMode {
+class ModeParams {
 public:
-	virtual ~L6470DmxMode(void);
+	ModeParams(const char *);
+	~ModeParams(void);
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	uint32_t GetMaxSteps(void) const;
+	TL6470Action GetSwitchAction(void) const;
+	TL6470Direction GetSwitchDir(void) const;
+	float GetSwitchStepsPerSec(void) const;
+	bool HasSwitch(void) const;
 
-	virtual void Data(const uint8_t *)= 0;
+	void Dump(void);
+
+private:
+	bool IsMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+private:
+    uint32_t m_bSetList;
+    uint32_t m_nMaxSteps;
+    TL6470Action m_tSwitchAction;
+    TL6470Direction m_tSwitchDir;
+    float m_fSwitchStepsPerSec;
+    bool m_bSwitch;
 };
 
-#endif /* L6470DMXMODE_H_ */
+#endif /* MODEPARAMS_H_ */

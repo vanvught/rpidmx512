@@ -2,7 +2,7 @@
  * @file l6470params.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,18 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
-#define ALIGNED
+#if defined(__linux__)
+ #define ALIGNED
 #include <string.h>
+#elif defined(__circle__)
+ #define ALIGNED
 #else
-#include "util.h"
+ #include "util.h"
 #endif
 
 #include "l6470params.h"
@@ -96,6 +100,8 @@ void L6470Params::staticCallbackFunction(void *p, const char *s) {
 }
 
 void L6470Params::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
 	if (Sscan::Float(pLine, L6470_PARAMS_MIN_SPEED, &m_fMinSpeed) == SSCAN_OK) {
 		m_bSetList |= SET_MIN_SPEED_MASK;
 		return;
@@ -147,39 +153,39 @@ void L6470Params::Set(L6470 *pL6470) {
 
 	assert(pL6470 != 0);
 
-	if(isMaskSet(SET_MIN_SPEED_MASK)) {
+	if(IsMaskSet(SET_MIN_SPEED_MASK)) {
 		pL6470->setMinSpeed(m_fMinSpeed);
 	}
 
-	if(isMaskSet(SET_MAX_SPEED_MASK)) {
+	if(IsMaskSet(SET_MAX_SPEED_MASK)) {
 		pL6470->setMaxSpeed(m_fMaxSpeed);
 	}
 
-	if(isMaskSet(SET_ACC_MASK)) {
+	if(IsMaskSet(SET_ACC_MASK)) {
 		pL6470->setAcc(m_fAcc);
 	}
 
-	if(isMaskSet(SET_DEC_MASK)) {
+	if(IsMaskSet(SET_DEC_MASK)) {
 		pL6470->setDec(m_fDec);
 	}
 
-	if(isMaskSet(SET_KVAL_HOLD_MASK)) {
+	if(IsMaskSet(SET_KVAL_HOLD_MASK)) {
 		pL6470->setHoldKVAL(m_nKvalHold);
 	}
 
-	if(isMaskSet(SET_KVAL_RUN_MASK)) {
+	if(IsMaskSet(SET_KVAL_RUN_MASK)) {
 		pL6470->setRunKVAL(m_nKvalRun);
 	}
 
-	if(isMaskSet(SET_KVAL_ACC_MASK)) {
+	if(IsMaskSet(SET_KVAL_ACC_MASK)) {
 		pL6470->setAccKVAL(m_nKvalAcc);
 	}
 
-	if(isMaskSet(SET_KVAL_DEC_MASK)) {
+	if(IsMaskSet(SET_KVAL_DEC_MASK)) {
 		pL6470->setDecKVAL(m_nKvalDec);
 	}
 
-	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
+	if(IsMaskSet(SET_MICRO_STEPS_MASK)) {
 		pL6470->setMicroSteps(m_nMicroSteps);
 	}
 
@@ -187,47 +193,53 @@ void L6470Params::Set(L6470 *pL6470) {
 }
 
 void L6470Params::Dump(void) {
+#ifndef NDEBUG
 	DEBUG1_ENTRY;
 
-	if(isMaskSet(SET_MIN_SPEED_MASK)) {
+	if (m_bSetList == 0) {
+		return;
+	}
+
+	if(IsMaskSet(SET_MIN_SPEED_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_MIN_SPEED, m_fMinSpeed);
 	}
 
-	if(isMaskSet(SET_MAX_SPEED_MASK)) {
+	if(IsMaskSet(SET_MAX_SPEED_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_MAX_SPEED, m_fMaxSpeed);
 	}
 
-	if(isMaskSet(SET_ACC_MASK)) {
+	if(IsMaskSet(SET_ACC_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_ACC, m_fAcc);
 	}
 
-	if(isMaskSet(SET_DEC_MASK)) {
+	if(IsMaskSet(SET_DEC_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_DEC, m_fDec);
 	}
 
-	if(isMaskSet(SET_KVAL_HOLD_MASK)) {
+	if(IsMaskSet(SET_KVAL_HOLD_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_HOLD, m_nKvalHold);
 	}
 
-	if(isMaskSet(SET_KVAL_RUN_MASK)) {
+	if(IsMaskSet(SET_KVAL_RUN_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_RUN, m_nKvalRun);
 	}
 
-	if(isMaskSet(SET_KVAL_ACC_MASK)) {
+	if(IsMaskSet(SET_KVAL_ACC_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_ACC, m_nKvalAcc);
 	}
 
-	if(isMaskSet(SET_KVAL_DEC_MASK)) {
+	if(IsMaskSet(SET_KVAL_DEC_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_DEC, m_nKvalDec);
 	}
 
-	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
+	if(IsMaskSet(SET_MICRO_STEPS_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_MICRO_STEPS, (int) m_nMicroSteps);
 	}
 
 	DEBUG1_EXIT;
+#endif
 }
 
-bool L6470Params::isMaskSet(uint16_t mask) const {
+bool L6470Params::IsMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

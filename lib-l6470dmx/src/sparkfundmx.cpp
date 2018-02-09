@@ -2,7 +2,7 @@
  * @file sparkfundmx.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
+
+#include "bcm2835.h"
+#if defined(__linux__)
+ #define udelay bcm2835_delayMicroseconds
+#elif defined(__circle__)
+ #define udelay bcm2835_delayMicroseconds
+#else
+ #include "bcm2835_gpio.h"
+ #include "bcm2835_spi.h"
+#endif
 
 #include "sparkfundmx.h"
 
@@ -37,15 +47,13 @@
 #include "l6470dmxmodes.h"
 
 #include "motorparams.h"
+#include "modeparams.h"
 
 #include "debug.h"
 
-#include "bcm2835.h"
-#if defined(__linux__)
-#define udelay bcm2835_delayMicroseconds
-#else
-#include "bcm2835_gpio.h"
-#include "bcm2835_spi.h"
+#ifndef MAX
+ #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
+ #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
 #define GPIO_BUSY_IN		RPI_V2_GPIO_P1_35
@@ -69,29 +77,31 @@ void SparkFunDmx::staticCallbackFunction(void *p, const char *s) {
 }
 
 void SparkFunDmx::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
 	uint8_t value8;
 	uint16_t value16;
 
 	if (Sscan::Uint8(pLine, PARAMS_DMX_MODE, &value8) == SSCAN_OK) {
 		m_nDmxMode = value8;
 	} else if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		m_nDmxStartAddress = value16;
+		m_nDmxStartAddressMode = value16;
 	} else if (sscan_uint8_t(pLine, SPARKFUN_PARAMS_POSITION, &value8) == SSCAN_OK) {
 		m_nPosition = value8;
-		is_position_set = true;
+		m_bIsPositionSet = true;
 	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_SPI_CS, &value8) == SSCAN_OK) {
 		m_nSpiCs = value8;
-		is_spi_cs_set = true;
+		m_bIsSpiCsSet = true;
 	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_RESET_PIN, &value8) == SSCAN_OK) {
 		m_nResetPin = value8;
-		is_reset_set = true;
+		m_bIsResetSet = true;
 	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_BUSY_PIN, &value8) == SSCAN_OK) {
 		m_nBusyPin = value8;
-		is_busy_pin_set = true;
+		m_bIsBusyPinSet = true;
 	}
 }
 
-SparkFunDmx::SparkFunDmx(void) {
+SparkFunDmx::SparkFunDmx(void): m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxFootprint(0) {
 	DEBUG_ENTRY;
 
 	m_nPosition = 0;
@@ -99,21 +109,22 @@ SparkFunDmx::SparkFunDmx(void) {
 	m_nResetPin = 0;
 	m_nBusyPin = 0;
 
-	is_position_set = false;
-	is_spi_cs_set = false;
-	is_reset_set = false;
-	is_busy_pin_set = false;
+	m_bIsPositionSet = false;
+	m_bIsSpiCsSet = false;
+	m_bIsResetSet = false;
+	m_bIsBusyPinSet = false;
 
 	m_nDmxMode = L6470DMXMODE_UNDEFINED;
-	m_nDmxStartAddress = 0;
+	m_nDmxStartAddressMode = 0;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		m_pAutoDriver[i] = 0;
 		m_pMotorParams[i] = 0;
+		m_pModeParams[i] = 0;
 		m_pL6470DmxModes[i] = 0;
 	}
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(RASPPI)
 	if (bcm2835_init() == 0) {
 		fprintf(stderr, "Not able to init the bmc2835 library\n");
 		assert(0);
@@ -131,10 +142,17 @@ SparkFunDmx::~SparkFunDmx(void) {
 			delete m_pAutoDriver[i];
 			m_pAutoDriver[i] = 0;
 		}
+
 		if (m_pMotorParams[i] != 0) {
 			delete m_pMotorParams[i];
 			m_pMotorParams[i] = 0;
 		}
+
+		if (m_pModeParams[i] != 0) {
+			delete m_pModeParams[i];
+			m_pModeParams[i] = 0;
+		}
+
 		if (m_pL6470DmxModes[i] != 0) {
 			delete m_pL6470DmxModes[i];
 			m_pL6470DmxModes[i] = 0;
@@ -171,35 +189,39 @@ void SparkFunDmx::Stop(void) {
 void SparkFunDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 
-	is_spi_cs_set = false;
-	is_reset_set = false;
-	is_busy_pin_set = false;
+	m_bIsSpiCsSet = false;
+	m_bIsResetSet = false;
+	m_bIsBusyPinSet = false;
 
 	ReadConfigFile configfile(SparkFunDmx::staticCallbackFunction, this);
 
 	if (configfile.Read("sparkfun.txt")) {
-		puts("\'sparkfun.txt\' (global settings):");
+#ifndef NDEBUG
+		printf("\'sparkfun.txt\' (global settings):\n");
 
-		if (is_spi_cs_set) {
+		if (m_bIsSpiCsSet) {
 			printf("\tSPI CS : %d\n", m_nSpiCs);
 		}
 
-		if (is_reset_set) {
+		if (m_bIsResetSet) {
 			printf("\tReset pin: %d\n", m_nResetPin);
 		}
 
-		if (is_busy_pin_set) {
+		if (m_bIsBusyPinSet) {
 			printf("\tBusy pin: %d\n", m_nBusyPin);
 		}
+#endif
 	}
 
-	if (!is_reset_set) {
+	if (!m_bIsResetSet) {
 		m_nResetPin = GPIO_RESET_OUT;
-		is_reset_set = true;
+		m_bIsResetSet = true;
+#ifndef NDEBUG
 		printf("\tReset pin: %d\n", m_nResetPin);
+#endif
 	}
 
-	if (is_busy_pin_set) {
+	if (m_bIsBusyPinSet) {
 		bcm2835_gpio_fsel(m_nBusyPin, BCM2835_GPIO_FSEL_INPT);
 	}
 
@@ -219,26 +241,28 @@ void SparkFunDmx::ReadConfigFiles(void) {
 
 		fileName[5] = (char) i + '0';
 
-		is_position_set = false;
+		m_bIsPositionSet = false;
 
 		if (configfile.Read(fileName)) {
+#ifndef NDEBUG
 			printf("Motor %d:\n", i);
-
-			if (is_position_set && is_spi_cs_set) {
+#endif
+			if (m_bIsPositionSet && m_bIsSpiCsSet) {
+#ifndef NDEBUG
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_POSITION, m_nPosition);
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_SPI_CS, m_nSpiCs);
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_RESET_PIN, m_nResetPin);
-				if(is_busy_pin_set) {
+				if(m_bIsBusyPinSet) {
 					printf("\t%s=%d\n", SPARKFUN_PARAMS_BUSY_PIN, m_nBusyPin);
 				}
-				puts("\t-----------------------------");
+				printf("\t-----------------------------\n");
 				printf("\t%s=%d (DMX footprint=%d)\n", PARAMS_DMX_MODE, m_nDmxMode, L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode));
-				printf("\t%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
-				puts("\t=============================");
+				printf("\t%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddressMode);
+				printf("\t=============================\n");
+#endif
+				if ((m_nDmxStartAddressMode <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 
-				if ((m_nDmxStartAddress <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
-
-					if (is_busy_pin_set) {
+					if (m_bIsBusyPinSet) {
 						m_pAutoDriver[i] = new AutoDriver(m_nPosition, m_nSpiCs, m_nResetPin, m_nBusyPin);
 					} else {
 						m_pAutoDriver[i] = new AutoDriver(m_nPosition, m_nSpiCs, m_nResetPin);
@@ -262,11 +286,28 @@ void SparkFunDmx::ReadConfigFiles(void) {
 
 							m_pAutoDriver[i]->Dump();
 
-							m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddress, m_pAutoDriver[i], m_pMotorParams[i]);
+							m_pModeParams[i] = new ModeParams(fileName);
+							assert(m_pModeParams[i] != 0);
+							m_pModeParams[i]->Dump();
+
+							m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
 							assert(m_pL6470DmxModes[i] != 0);
 
 							if (m_pL6470DmxModes[i] != 0) {
+								if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+									m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
+									m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
+								} else {
+									const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
+									m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
+
+									const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
+									m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
+								}
+#ifndef NDEBUG
 								printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+								printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+#endif
 							}
 						} else {
 							delete m_pAutoDriver[i];
@@ -278,26 +319,33 @@ void SparkFunDmx::ReadConfigFiles(void) {
 					}
 				}
 			} else {
-				if(!is_position_set) {
+				if(!m_bIsPositionSet) {
 					printf("Missing %s=\n", SPARKFUN_PARAMS_POSITION);
 				}
-				if(!is_spi_cs_set) {
+				if(!m_bIsSpiCsSet) {
 					printf("Missing %s=\n", SPARKFUN_PARAMS_SPI_CS);
 				}
 			}
+#ifndef NDEBUG
 			printf("Motor %d: --------- end ---------\n", i);
+#endif
 		} else {
+#ifndef NDEBUG
 			printf("Configuration file : %s not found\n", fileName);
+#endif
 		}
 	}
-
+#ifndef NDEBUG
 	printf("Motors connected : %d\n", (int) AutoDriver::getNumBoards());
-
+#endif
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(const uint8_t nPortId, const uint8_t *pData, const uint16_t nLength) {
+void SparkFunDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY;
+
+	assert(pData != 0);
+	assert(nLength <= DMX_MAX_CHANNELS);
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
@@ -306,4 +354,28 @@ void SparkFunDmx::SetData(const uint8_t nPortId, const uint8_t *pData, const uin
 	}
 
 	DEBUG_EXIT;
+}
+
+bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	DEBUG_ENTRY;
+
+	if (nDmxStartAddress == m_nDmxStartAddress) {
+		return true;
+	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (m_pL6470DmxModes[i] != 0) {
+			const uint16_t nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
+			const uint16_t nNewDmxStartAddress =  (nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress;
+#ifndef NDEBUG
+			printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, nCurrentDmxStartAddress, nNewDmxStartAddress);
+#endif
+			m_pL6470DmxModes[i]->SetDmxStartAddress(nNewDmxStartAddress);
+		}
+	}
+
+	m_nDmxStartAddress = nDmxStartAddress;
+
+	DEBUG_EXIT;
+	return true;
 }

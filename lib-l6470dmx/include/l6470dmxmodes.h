@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,12 @@
 #include "l6470dmxmode.h"
 
 #include "motorparams.h"
+#include "modeparams.h"
 
 class L6470DmxModes {
 
 public:
-	L6470DmxModes(TL6470DmxModes, uint16_t, L6470 *, MotorParams *);
+	L6470DmxModes(TL6470DmxModes, uint16_t, L6470 *, MotorParams *, ModeParams *);
 	~L6470DmxModes(void);
 
 	void DmxData(const uint8_t *, uint16_t);
@@ -49,11 +50,16 @@ public:
 		return m_nMode;
 	}
 
-	inline const uint8_t GetDmxStartAddress(void) {
+public: // RDM
+	inline const uint8_t GetDmxStartAddress(void) const {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint8_t GetDmxFootPrint(void) {
+	inline void SetDmxStartAddress(uint16_t nDmxStartAddress) {
+		m_nDmxStartAddress = nDmxStartAddress;
+	}
+
+	inline uint8_t GetDmxFootPrint(void) const {
 		return m_DmxFootPrint;
 	}
 

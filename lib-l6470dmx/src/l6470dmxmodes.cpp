@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,15 @@
 #include "l6470dmxmode2.h"
 #include "l6470dmxmode3.h"
 #include "l6470dmxmode4.h"
+#include "l6470dmxmode5.h"
+#include "l6470dmxmode6.h"
+
+#include "motorparams.h"
+#include "modeparams.h"
 
 #include "debug.h"
 
-L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams): m_bIsStarted(false), m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(0), m_DmxFootPrint(0) {
+L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_bIsStarted(false), m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(0), m_DmxFootPrint(0) {
 	DEBUG1_ENTRY;
 
 	assert(nDmxStartAddress <= 512);
@@ -64,8 +69,16 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 			m_DmxFootPrint = L6470DmxMode3::GetDmxFootPrint();
 			break;
 		case L6470DMXMODE4:
-			m_pDmxMode = new L6470DmxMode4(pL6470, pMotorParams);
+			m_pDmxMode = new L6470DmxMode4(pL6470, pMotorParams, pModeParams);
 			m_DmxFootPrint = L6470DmxMode4::GetDmxFootPrint();
+			break;
+		case L6470DMXMODE5:
+			m_pDmxMode = new L6470DmxMode5(pL6470, pMotorParams, pModeParams);
+			m_DmxFootPrint = L6470DmxMode5::GetDmxFootPrint();
+			break;
+		case L6470DMXMODE6:
+			m_pDmxMode = new L6470DmxMode6(pL6470, pMotorParams, pModeParams);
+			m_DmxFootPrint = L6470DmxMode6::GetDmxFootPrint();
 			break;
 		default:
 			break;
@@ -76,8 +89,10 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 	if (m_pDmxMode != 0) {
 		m_nMotorNumber= pL6470->GetMotorNumber();
 		m_nMode = tMode;
+
 		m_pDmxData = new uint8_t[m_DmxFootPrint];
 		assert(m_pDmxData != 0);
+
 		for (int i = 0; i < m_DmxFootPrint; i++) {
 			m_pDmxData[i] = 0;
 		}
@@ -99,8 +114,6 @@ L6470DmxModes::~L6470DmxModes(void) {
 }
 
 uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
-	DEBUG1_ENTRY;
-
 	switch (tMode) {
 		case L6470DMXMODE0:
 			return L6470DmxMode0::GetDmxFootPrint();
@@ -117,12 +130,16 @@ uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
 		case L6470DMXMODE4:
 			return L6470DmxMode4::GetDmxFootPrint();
 			break;
+		case L6470DMXMODE5:
+			return L6470DmxMode5::GetDmxFootPrint();
+			break;
+		case L6470DMXMODE6:
+			return L6470DmxMode6::GetDmxFootPrint();
+			break;
 		default:
 			return 0;
 			break;
 	}
-
-	DEBUG1_EXIT;
 }
 
 void L6470DmxModes::Start(void) {

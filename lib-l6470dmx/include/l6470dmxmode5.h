@@ -1,5 +1,5 @@
 /**
- * @file l6470dmxmode.h
+ * @file l6470dmxmode5.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
+#ifndef L6470DMXMODE5_H_
+#define L6470DMXMODE5_H_
 
-#include <stdint.h>
+#include "l6470dmxmode.h"
+#include "l6470.h"
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED = 255
-};
+#include "motorparams.h"
+#include "modeparams.h"
 
-class L6470DmxMode {
+class L6470DmxMode5: public L6470DmxMode {
 public:
-	virtual ~L6470DmxMode(void);
+	L6470DmxMode5(L6470 *, MotorParams *, ModeParams *);
+	~L6470DmxMode5(void);
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	void Start(void);
+	void Stop(void);
 
-	virtual void Data(const uint8_t *)= 0;
+	void Data(const uint8_t *);
+
+	inline static TL6470DmxModes GetMode(void) {
+		return L6470DMXMODE5;
+	}
+
+	inline static uint8_t GetDmxFootPrint(void) {
+		return 2;
+	}
+
+private:
+	L6470	*m_pL6470;
+	float m_fSteps;
+	uint16_t m_nPreviousData;
 };
 
-#endif /* L6470DMXMODE_H_ */
+#endif /* L6470DMXMODE5_H_ */

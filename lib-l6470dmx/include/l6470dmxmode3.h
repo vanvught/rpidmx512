@@ -51,7 +51,7 @@ public:
 
 private:
 	L6470	*m_pL6470;
-	uint32_t m_nSteps;
+	float m_fSteps;
 	uint8_t m_nPreviousData;
 };
 

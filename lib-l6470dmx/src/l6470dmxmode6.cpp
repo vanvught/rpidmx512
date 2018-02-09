@@ -1,5 +1,5 @@
 /**
- * @file l6470dmxmode.h
+ * @file l6470dmxmode6.cpp
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,46 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
-
 #include <stdint.h>
+#include <stdio.h>
+#include <assert.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED = 255
-};
+#include "l6470.h"
+#include "l6470dmxmode6.h"
 
-class L6470DmxMode {
-public:
-	virtual ~L6470DmxMode(void);
+#include "motorparams.h"
+#include "modeparams.h"
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+#include "debug.h"
 
-	virtual void Data(const uint8_t *)= 0;
-};
+L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
+	DEBUG2_ENTRY;
 
-#endif /* L6470DMXMODE_H_ */
+	m_pL6470 = pL6470;
+
+	DEBUG2_EXIT;
+}
+
+L6470DmxMode6::~L6470DmxMode6(void) {
+	DEBUG2_ENTRY;
+
+	DEBUG2_EXIT;
+}
+
+void L6470DmxMode6::Start(void) {
+	DEBUG2_ENTRY;
+
+	DEBUG2_EXIT;
+}
+
+void L6470DmxMode6::Stop(void) {
+	DEBUG2_ENTRY;
+
+	DEBUG2_EXIT;
+}
+
+void L6470DmxMode6::Data(const uint8_t *pDmxData) {
+	DEBUG2_ENTRY;
+
+	DEBUG2_EXIT;
+}

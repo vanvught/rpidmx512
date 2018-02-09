@@ -2,7 +2,7 @@
  * @file motorparams.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #if defined(__linux__)
-#define ALIGNED
-#include <string.h>
+ #define ALIGNED
+ #include <string.h>
+#elif defined(__circle__)
+ #define ALIGNED
 #else
-#include "util.h"
+ #include "util.h"
 #endif
 
 #include "motorparams.h"
@@ -82,23 +86,23 @@ MotorParams::~MotorParams(void) {
 	DEBUG1_EXIT;
 }
 
-float MotorParams::getStepAngel(void) {
+float MotorParams::GetStepAngel(void) {
 	return m_fStepAngel;
 }
 
-float MotorParams::getVoltage(void) {
+float MotorParams::GetVoltage(void) {
 	return m_fVoltage;
 }
 
-float MotorParams::getCurrent(void) {
+float MotorParams::GetCurrent(void) {
 	return m_fCurrent;
 }
 
-float MotorParams::getResistance(void) {
+float MotorParams::GetResistance(void) {
 	return m_fResistance;
 }
 
-float MotorParams::getInductance(void) {
+float MotorParams::GetInductance(void) {
 	return m_fInductance;
 }
 
@@ -158,27 +162,32 @@ void MotorParams::Set(L6470 *pL6470) {
 }
 
 void MotorParams::Dump(void) {
+#ifndef NDEBUG
 	DEBUG1_ENTRY;
 
 	float f;
 
-	if(isMaskSet(SET_STEP_ANGEL_MASK)) {
+	if (m_bSetList == 0) {
+		return;
+	}
+
+	if(IsMaskSet(SET_STEP_ANGEL_MASK)) {
 		printf("%s=%.1f degree\n", MOTOR_PARAMS_STEP_ANGEL, m_fStepAngel);
 	}
 
-	if(isMaskSet(SET_VOLTAGE_MASK)) {
+	if(IsMaskSet(SET_VOLTAGE_MASK)) {
 		printf("%s=%.2f V\n", MOTOR_PARAMS_VOLTAGE, m_fVoltage);
 	}
 
-	if(isMaskSet(SET_CURRENT_MASK)) {
+	if(IsMaskSet(SET_CURRENT_MASK)) {
 		printf("%s=%.1f A/phase\n", MOTOR_PARAMS_CURRENT, m_fCurrent);
 	}
 
-	if(isMaskSet(SET_RESISTANCE_MASK)) {
+	if(IsMaskSet(SET_RESISTANCE_MASK)) {
 		printf("%s=%.1f Ohm/phase\n", MOTOR_PARAMS_RESISTANCE, m_fResistance);
 	}
 
-	if(isMaskSet(SET_INDUCTANCE_MASK)) {
+	if(IsMaskSet(SET_INDUCTANCE_MASK)) {
 		printf("%s=%.1f mH/phase\n", MOTOR_PARAMS_INDUCTANCE, m_fInductance);
 	}
 
@@ -187,10 +196,11 @@ void MotorParams::Dump(void) {
 	}
 
 	DEBUG1_EXIT;
+#endif
 }
 
 float MotorParams::CalcIntersectSpeed(void) const {
-	if (isMaskSet(SET_RESISTANCE_MASK) && isMaskSet(SET_INDUCTANCE_MASK)) {
+	if (IsMaskSet(SET_RESISTANCE_MASK) && IsMaskSet(SET_INDUCTANCE_MASK)) {
 		return ((float) 4 * m_fResistance) / (2 * M_PI * m_fInductance * 0.001);
 	} else {
 		return (float) 0;
@@ -201,6 +211,6 @@ uint32_t MotorParams::CalcIntersectSpeedReg(float f) const {
 	return (f * (TICK_S * (1 << 26)));
 }
 
-bool MotorParams::isMaskSet(uint16_t mask) const {
+bool MotorParams::IsMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

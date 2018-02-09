@@ -1,5 +1,5 @@
 /**
- * @file l6470dmxmode4.cpp
+ * @file l6470dmxmode5.cpp
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -27,18 +27,19 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "l6470dmxmode4.h"
+#include "l6470dmxmode5.h"
 #include "l6470.h"
 
 #include "motorparams.h"
+#include "modeparams.h"
 
 #include "debug.h"
 
-L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0) {
+L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0) {
 	DEBUG2_ENTRY;
 
 	m_pL6470 = pL6470;
-	m_fSteps = (float) pModeParams->GetMaxSteps() / 0xFF;
+	m_fSteps = (float) pModeParams->GetMaxSteps() / 0xFFFF ;
 
 	if (pModeParams->HasSwitch()) {
 		const TL6470Action action = pModeParams->GetSwitchAction();
@@ -55,28 +56,29 @@ L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, MotorParams *pMotorParams, ModeParam
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode4::~L6470DmxMode4(void) {
+L6470DmxMode5::~L6470DmxMode5(void) {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::Start(void) {
+void L6470DmxMode5::Start(void) {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::Stop(void) {
+void L6470DmxMode5::Stop(void) {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::Data(const uint8_t *pDmxData) {
+void L6470DmxMode5::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
-
-	const uint32_t steps = pDmxData[0] * m_fSteps;
+	
+	const uint32_t nData = ((uint32_t) pDmxData[1] | (uint32_t) (pDmxData[0] << 8));
+	const uint32_t steps = nData * m_fSteps;
 	bool isRev;
 #ifndef NDEBUG
 	int32_t nDifference;
@@ -97,19 +99,19 @@ void L6470DmxMode4::Data(const uint8_t *pDmxData) {
 		nDifference = (uint64_t) steps - nCurrentPosition;
 #endif
 	} else {
-		isRev = m_nPreviousData > pDmxData[0];
+		isRev = m_nPreviousData > nData;
 #ifndef NDEBUG
-		nDifference = (uint16_t) pDmxData[0] - m_nPreviousData;
+		nDifference = (uint32_t) nData - m_nPreviousData;
 #endif
 	}
 
 #ifndef NDEBUG
-	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, (int) steps, pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD" );
+	printf("\t\t\tm_fSteps=%f, steps=%d, {pDmxData[0](%d):pDmxData[1](%d)} nData=%d, nDifference=%d [%s]\n", m_fSteps, (int) steps, pDmxData[0], pDmxData[1], nData, nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD" );
 #endif
 
 	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);
 
-	m_nPreviousData = pDmxData[0];
+	m_nPreviousData = nData;
 
 	DEBUG2_EXIT;
 }

@@ -30,10 +30,11 @@
 #include "l6470.h"
 
 #include "motorparams.h"
+#include "modeparams.h"
 
 class L6470DmxMode4: public L6470DmxMode {
 public:
-	L6470DmxMode4(L6470 *, MotorParams *);
+	L6470DmxMode4(L6470 *, MotorParams *, ModeParams *);
 	~L6470DmxMode4(void);
 
 	void Start(void);
@@ -46,11 +47,13 @@ public:
 	}
 
 	inline static uint8_t GetDmxFootPrint(void) {
-		return 0;
+		return 1;
 	}
 
 private:
 	L6470	*m_pL6470;
+	float m_fSteps;
+	uint8_t m_nPreviousData;
 };
 
 #endif /* L6470DMXMODE3_H_ */

@@ -30,8 +30,11 @@
 #include <stdbool.h>
 
 #include "lightset.h"
-#include "motorparams.h"
 #include "l6470dmxmodes.h"
+
+#include "motorparams.h"
+#include "modeparams.h"
+
 #include "autodriver.h"
 
 #define SPARKFUN_DMX_MAX_MOTORS	4
@@ -40,6 +43,15 @@ class SparkFunDmx: public LightSet {
 public:
 	SparkFunDmx(void);
 	~SparkFunDmx(void);
+
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	inline uint16_t GetDmxStartAddress(void) {
+		return m_nDmxStartAddress;
+	}
+
+	inline uint16_t GetDmxFootprint(void) {
+		return m_nDmxFootprint;
+	}
 
 	void Start(void);
 	void Stop(void);
@@ -58,6 +70,7 @@ private:
 private:
 	AutoDriver *m_pAutoDriver[SPARKFUN_DMX_MAX_MOTORS];
 	MotorParams *m_pMotorParams[SPARKFUN_DMX_MAX_MOTORS];
+	ModeParams *m_pModeParams[SPARKFUN_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SPARKFUN_DMX_MAX_MOTORS];
 
 	uint8_t m_nPosition;
@@ -66,12 +79,15 @@ private:
 	uint8_t m_nBusyPin;
 
 	uint8_t m_nDmxMode;
-	uint16_t m_nDmxStartAddress;
+	uint16_t m_nDmxStartAddressMode;
 
-	bool is_position_set;
-	bool is_spi_cs_set;
-	bool is_reset_set;
-	bool is_busy_pin_set;
+	bool m_bIsPositionSet;
+	bool m_bIsSpiCsSet;
+	bool m_bIsResetSet;
+	bool m_bIsBusyPinSet;
+
+	uint16_t m_nDmxStartAddress;
+	uint16_t m_nDmxFootprint;
 };
 
 #endif /* SPARKFUNDMX_H_ */

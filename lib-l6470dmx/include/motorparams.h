@@ -35,17 +35,17 @@ public:
 	MotorParams(const char *);
 	~MotorParams(void);
 
-	float getStepAngel(void);
-	float getVoltage(void);
-	float getCurrent(void);
-	float getResistance(void);
-	float getInductance(void);
+	float GetStepAngel(void);
+	float GetVoltage(void);
+	float GetCurrent(void);
+	float GetResistance(void);
+	float GetInductance(void);
 
 	void Set(L6470 *);
 	void Dump(void);
 
 private:
-	bool isMaskSet(uint16_t) const;
+	bool IsMaskSet(uint16_t) const;
 
 private:
 	float CalcIntersectSpeed(void) const;

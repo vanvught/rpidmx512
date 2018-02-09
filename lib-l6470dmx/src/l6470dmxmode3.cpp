@@ -39,9 +39,9 @@ L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPrevi
 
 	m_pL6470 = pL6470;
 
-	m_nSteps = ((float) 360 / pMotorParams->getStepAngel()) * (float)(1 << pL6470->getStepMode());
+	m_pL6470->resetPos();
 
-	//TODO Go to home with limit switch
+	m_fSteps = (float)((uint32_t) 360 * (uint32_t)(1 << pL6470->getStepMode())) / pMotorParams->GetStepAngel() / 0xFF ;
 
 	DEBUG2_EXIT;
 }
@@ -67,22 +67,38 @@ void L6470DmxMode3::Stop(void) {
 void L6470DmxMode3::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 
-	uint32_t steps = ((float) pDmxData[0] / 255) * m_nSteps;
+	const uint32_t steps = pDmxData[0] * m_fSteps;
+	bool isRev;
+#ifndef NDEBUG
+	int32_t nDifference;
+#endif
 
 	if (m_pL6470->busyCheck()) {
+#ifndef NDEBUG
+		printf("\t\t\tBusy!\n");
+#endif
 		m_pL6470->softStop();
 		while(m_pL6470->busyCheck());
+
+		uint32_t nCurrentPosition = m_pL6470->getPos();
+		isRev = nCurrentPosition > steps;
+
+#ifndef NDEBUG
+		printf("\t\t\tCurrent position=%d\n", nCurrentPosition);
+		nDifference = (uint64_t) steps - nCurrentPosition;
+#endif
+	} else {
+		isRev = m_nPreviousData > pDmxData[0];
+#ifndef NDEBUG
+		nDifference = (uint16_t) pDmxData[0] - m_nPreviousData;
+#endif
 	}
 
 #ifndef NDEBUG
-	printf("\tm_nSteps=%d, steps=%d - pDmxData[0](%d) < m_nPreviousData(%d) = %s\n", (int) m_nSteps, (int) steps, pDmxData[0], m_nPreviousData, (pDmxData[0] < m_nPreviousData) ? "Yes" : "No" );
+	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, (int) steps, pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD" );
 #endif
 
-	if (pDmxData[0] < m_nPreviousData) {
-		m_pL6470->goToDir(L6470_DIR_REV, steps);
-	} else {
-		m_pL6470->goToDir(L6470_DIR_FWD, steps);
-	}
+	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);
 
 	m_nPreviousData = pDmxData[0];
 
