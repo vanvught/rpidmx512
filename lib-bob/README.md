@@ -1,4 +1,4 @@
-## Open source Raspberry Pi C library for break-out-boards ##
+## Open Source Raspberry Pi C library for break-out-boards ##
 IO, RTC, Displays {LCD, OLED, 7-segment}, ADC, DAC, Sensors {current, light, temperature, humidity}
 
 Supported devices are :
@@ -29,14 +29,7 @@ Supported devices are :
 - OLED display 128 x 32 SSD1306 I2C ([https://opencircuit.nl/Product/11528/OLED-display-128-x-32-I2C](https://opencircuit.nl/Product/11528/OLED-display-128-x-32-I2C))
 - OLED display 128 x 64 SSD1306 I2C ([https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C](https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C))
 - SC16IS740 Single UART I2C ([http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf](http://www.nxp.com/documents/data_sheet/SC16IS740_750_760.pdf))
+- SI7021 Temperature & Humidity Sensor I2C ([https://opencircuit.nl/Product/12806/Adafruit-Si7021-Temperature-Humidity-Sensor-Breakout-Board](https://opencircuit.nl/Product/12806/Adafruit-Si7021-Temperature-Humidity-Sensor-Breakout-Board))
 - PCF8591 8-bit A/D and D/A converter I2C ([https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module](https://opencircuit.nl/Product/10384/PCF8591-AD-DA-Converter-module))
 
-<table>
-<tr>
-<td colspan="2" style="text-align:center;">lib-bob<a href="https://github.com/vanvught/rpidmx512/tree/master/lib-i2c">https://github.com/vanvught/rpidmx512/tree/master/lib-bob</a> (-lbob)</td>
-</tr>
-<tr>
-<td>bare-metal<br><a href="https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835">https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835</a></br></td>
-<td>Raspbian Linux<br><a href="http://www.airspayce.com/mikem/bcm2835/">http://www.airspayce.com/mikem/bcm2835/</a></br></td>
-</tr>
-</table>
+[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)

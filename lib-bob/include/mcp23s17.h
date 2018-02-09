@@ -27,7 +27,9 @@
 #define MCP23S17_H_
 
 #include <stdint.h>
-#include <device_info.h>
+#include <stdbool.h>
+
+#include "device_info.h"
 
 #define MCP23S17_DEFAULT_SLAVE_ADDRESS	0x00
 
@@ -54,13 +56,13 @@ typedef enum {
 extern "C" {
 #endif
 
-extern void mcp23s17_start(device_info_t *);
-extern uint16_t mcp23s17_reg_read(const device_info_t *, const uint8_t);
-extern void mcp23s17_reg_write(const device_info_t *, const uint8_t, const uint16_t);
-extern void mcp23s17_reg_write_byte(const device_info_t *, const uint8_t, const uint8_t);
-extern void mcp23s17_gpio_fsel(const device_info_t *, const uint16_t, const uint8_t);
-extern void mcp23s17_gpio_set(const device_info_t *, const uint16_t);
-extern void mcp23s17_gpio_clr(const device_info_t *, const uint16_t);
+extern bool mcp23s17_start(device_info_t *);
+extern uint16_t mcp23s17_reg_read(const device_info_t *, uint8_t);
+extern void mcp23s17_reg_write(const device_info_t *, uint8_t, uint16_t);
+extern void mcp23s17_reg_write_byte(const device_info_t *, uint8_t, uint8_t);
+extern void mcp23s17_gpio_fsel(const device_info_t *, uint16_t, uint8_t);
+extern void mcp23s17_gpio_set(const device_info_t *, uint16_t);
+extern void mcp23s17_gpio_clr(const device_info_t *, uint16_t);
 
 #ifdef __cplusplus
 }

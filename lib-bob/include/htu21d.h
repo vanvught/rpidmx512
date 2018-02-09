@@ -30,15 +30,15 @@
 
 #include "device_info.h"
 
-#define HTU21D_I2C_DEFAULT_SLAVE_ADDRESS	0x40	///<
+#define HTU21D_I2C_DEFAULT_SLAVE_ADDRESS	0x40
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool htu21d_start(device_info_t *);
-extern const float htu21d_get_temperature(const device_info_t *);
-extern const float htu21d_get_humidity(const device_info_t *);
+extern bool htu21d_start(device_info_t *);
+extern float htu21d_get_temperature(const device_info_t *);
+extern float htu21d_get_humidity(const device_info_t *);
 
 #ifdef __cplusplus
 }

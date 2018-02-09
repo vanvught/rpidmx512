@@ -2,7 +2,7 @@
  * @file bw_spi_dio.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,23 @@
 #define BW_SPI_DIO_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "device_info.h"
 
 #define BW_DIO_SPI_SPEED_MAX_HZ			90000	///< 90 KHz
 #define BW_DIO_SPI_SPEED_DEFAULT_HZ		90000	///< 90 kHz
 
-extern void bw_spi_dio_start(device_info_t *);
-extern void bw_spi_dio_fsel_mask(const device_info_t *, const uint8_t);
-extern void bw_spi_dio_output(const device_info_t *, const uint8_t);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern bool bw_spi_dio_start(device_info_t *);
+extern void bw_spi_dio_fsel_mask(const device_info_t *, uint8_t);
+extern void bw_spi_dio_output(const device_info_t *, uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BW_SPI_DIO_H_ */

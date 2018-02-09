@@ -33,9 +33,8 @@
 
 #include "lcd.h"
 
-#include "bw_ui.h"
+#include "bw.h"
 #include "bw_i2c_ui.h"
-#include "bw_lcd.h"
 #include "bw_i2c_lcd.h"
 #include "tc1602.h"
 #include "tc1602_i2c.h"

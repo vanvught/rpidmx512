@@ -25,10 +25,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
 #include "bcm2835.h"
 
-#if defined(__linux__)
+#if defined(__linux__) || defined (__circle__)
  #define udelay bcm2835_delayMicroseconds
 #else
  #include "bcm2835_i2c.h"
@@ -40,14 +43,26 @@
 
 #include "device_info.h"
 
-// TODO Add more
 #define HTU21D_TEMP		0xF3
 #define	HTU21D_HUMID	0xF5
 
-/**
- *
- * @param device_info
- */
+/*static uint8_t get_id_2nd(const device_info_t *device_info) {
+	char buffer[6] = { 0xFC, 0xC9 };
+
+	bcm2835_i2c_write(buffer, 2);
+
+	bcm2835_i2c_read(buffer, 6);
+
+	int i = 0;
+	for(i = 0; i < 6; i++) {
+		printf("%.2x:", buffer[i]);
+	}
+	printf("\n");
+
+	return buffer[0];
+
+}*/
+
 static void i2c_setup(const device_info_t *device_info) {
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
 
@@ -58,12 +73,7 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
-/**
- *
- * @param device_info
- * @return
- */
-const bool htu21d_start(device_info_t *device_info) {
+bool htu21d_start(device_info_t *device_info) {
 
 	bcm2835_i2c_begin();
 
@@ -81,15 +91,14 @@ const bool htu21d_start(device_info_t *device_info) {
 		return false;
 	}
 
+/*	if (get_id_2nd(device_info) != 0x32) {
+		return false;
+	}*/
+
 	return true;
 }
 
-/**
- *
- * @param cmd
- * @return
- */
-static const uint16_t get_raw_value(const uint8_t cmd) {
+static const uint16_t get_raw_value(uint8_t cmd) {
 	char buffer[3];
 
 	buffer[0] = (char) cmd;
@@ -102,12 +111,7 @@ static const uint16_t get_raw_value(const uint8_t cmd) {
 	return (((uint16_t) buffer[0] << 8) | ((uint16_t) buffer[1])) & (uint16_t) 0xFFFC;
 }
 
-/**
- *
- * @param device_info
- * @return
- */
-const float htu21d_get_temperature(const device_info_t *device_info) {
+float htu21d_get_temperature(const device_info_t *device_info) {
 	uint16_t value;
 	float temp;
 
@@ -120,12 +124,7 @@ const float htu21d_get_temperature(const device_info_t *device_info) {
 	return -46.85 + (175.72 * temp);
 }
 
-/**
- *
- * @param device_info
- * @return
- */
-const float htu21d_get_humidity(const device_info_t *device_info) {
+float htu21d_get_humidity(const device_info_t *device_info) {
 	uint16_t value;
 	float humid;
 

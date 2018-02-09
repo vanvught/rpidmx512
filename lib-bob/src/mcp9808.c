@@ -45,10 +45,6 @@
 #define MCP9808_REG_MANUF_ID		0x06	///<
 #define MCP9808_REG_DEVICE_ID		0x07	///<
 
-/**
- *
- * @param device_info
- */
 static void i2c_setup(const device_info_t *device_info) {
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
 
@@ -59,11 +55,6 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
-/**
- *
- * @param device_info
- * @return
- */
 const bool mcp9808_start(device_info_t *device_info) {
 
 	bcm2835_i2c_begin();
@@ -93,11 +84,6 @@ const bool mcp9808_start(device_info_t *device_info) {
 	return true;
 }
 
-/**
- *
- * @param device_info
- * @return
- */
 const float mcp9808_get_temperature(const device_info_t *device_info) {
 	uint16_t val;
 	float temp;

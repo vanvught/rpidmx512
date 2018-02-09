@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "bw_ui.h"
+#include "bw.h"
 
 #include "device_info.h"
 
@@ -38,21 +38,21 @@ extern void bw_i2c_ui_reinit(const device_info_t *);
 
 extern void bw_i2c_ui_cls(const device_info_t *);
 
-extern void bw_i2c_ui_set_cursor(const device_info_t *, const uint8_t, const uint8_t);
-extern void bw_i2c_ui_text(const device_info_t *, const char *, const uint8_t);
-extern void bw_i2c_ui_text_line_1(const device_info_t *, const char *, const uint8_t);
-extern void bw_i2c_ui_text_line_2(const device_info_t *, const char *, const uint8_t);
+extern void bw_i2c_ui_set_cursor(const device_info_t *, uint8_t, uint8_t);
+extern void bw_i2c_ui_text(const device_info_t *, const char *, uint8_t);
+extern void bw_i2c_ui_text_line_1(const device_info_t *, const char *, uint8_t);
+extern void bw_i2c_ui_text_line_2(const device_info_t *, const char *, uint8_t);
 
 extern void bw_i2c_ui_set_startup_message_line_1(const device_info_t *, /*@unused@*/const char *, uint8_t);
 extern void bw_i2c_ui_set_startup_message_line_2(const device_info_t *, /*@unused@*/const char *, uint8_t);
 
 extern void bw_i2c_ui_get_contrast(const device_info_t *, uint8_t *);
-extern void bw_i2c_ui_set_contrast(const device_info_t *, const uint8_t);
+extern void bw_i2c_ui_set_contrast(const device_info_t *, uint8_t);
 
 extern void bw_i2c_ui_get_backlight(const device_info_t *, uint8_t *);
-extern void bw_i2c_ui_set_backlight(const device_info_t *, const uint8_t);
+extern void bw_i2c_ui_set_backlight(const device_info_t *, uint8_t);
 
-extern char bw_i2c_ui_read_button(const device_info_t *, const BwUiButtons);
+extern char bw_i2c_ui_read_button(const device_info_t *, BwUiButtons);
 extern char bw_i2c_ui_read_button_last(const device_info_t *);
 
 extern const uint16_t bw_i2c_ui_read_adc(const device_info_t *);

@@ -24,26 +24,21 @@
  */
 
 #include <stddef.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
 #if defined(__linux__) || defined(__circle__)
  #include "bcm2835.h"
+ #define udelay bcm2835_delayMicroseconds
 #else
 #include "bcm2835_spi.h"
 #include "bcm2835_aux_spi.h"
 #endif
 
-#include <device_info.h>
+#include "device_info.h"
+#include "bw.h"
 
-#include <bw.h>
-
-/**
- * @ingroup SPI
- *
- * Gets the identification string.
- *
- * @param device_info
- * @param id
- */
 void bw_spi_read_id(const device_info_t *device_info, char *id) {
 	char buffer[BW_ID_STRING_LENGTH + 2];
 	char *s1, *s2;
@@ -61,7 +56,9 @@ void bw_spi_read_id(const device_info_t *device_info, char *id) {
 		bcm2835_aux_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
 	} else {
 		bcm2835_spi_setClockDivider(5000);
+		bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
 	}
 
@@ -77,4 +74,8 @@ void bw_spi_read_id(const device_info_t *device_info, char *id) {
 		*s1++ = '\0';
 		--n;
 	}
+
+#ifndef NDEBUG
+	printf("%s:%s device_info->chip_select=%d, id=%s\n", __FILE__, __FUNCTION__, (int) device_info->chip_select, id);
+#endif
 }

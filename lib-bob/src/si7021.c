@@ -1,8 +1,8 @@
 /**
- * @file bh1750.c
+ * @file si7021.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,28 +25,36 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
-#if defined(__linux__) || defined (__circle__)
- #include "bcm2835.h"
+#include "bcm2835.h"
+
+#if defined(__linux__) || defined(__circle__)
+ #define udelay bcm2835_delayMicroseconds
 #else
  #include "bcm2835_i2c.h"
 #endif
 
 #include "i2c.h"
 
-#include "bh1750.h"
+#include "si7021.h"
 
 #include "device_info.h"
 
-#define BH1750_POWER_DOWN					0x00	///<
-#define BH1750_POWER_ON						0x01	///<
-#define BH1750_RESET						0x07	///<
-#define BH1750_CONTINUOUS_HIGH_RES_MODE 	0x10	///<
-#define BH1750_CONTINUOUS_HIGH_RES_MODE_2 	0x11	///<
-#define BH1750_CONTINUOUS_LOW_RES_MODE		0x13	///<
-#define BH1750_ONE_TIME_HIGH_RES_MODE		0x20	///<
-#define BH1750_ONE_TIME_HIGH_RES_MODE_2		0x21	///<
-#define BH1750_ONE_TIME_LOW_RES_MODE		0x23	///<
+#define SI7021_TEMP		0xF3
+#define	SI7021_HUMID	0xF5
+
+static uint8_t get_id(const device_info_t *device_info) {
+	/* Page 23 https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf */
+	char buffer[6] = { 0xFC, 0xC9 };
+
+	bcm2835_i2c_write(buffer, 2);
+	bcm2835_i2c_read(buffer, 6);
+
+	return buffer[0];
+}
 
 static void i2c_setup(const device_info_t *device_info) {
 	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
@@ -58,13 +66,12 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
-const bool bh1750_start(device_info_t *device_info) {
-	char buf;
+bool si7021_start(device_info_t *device_info) {
 
 	bcm2835_i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
-		device_info->slave_address = BH1750_I2C_DEFAULT_SLAVE_ADDRESS;
+		device_info->slave_address = SI7021_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
 	if (device_info->speed_hz == (uint32_t) 0) {
@@ -77,18 +84,60 @@ const bool bh1750_start(device_info_t *device_info) {
 		return false;
 	}
 
-	buf = BH1750_CONTINUOUS_HIGH_RES_MODE;
-	(void) bcm2835_i2c_write(&buf, 1);
+#ifndef NDEBUG
+	printf("get_id_2nd(device_info)=%x\n", get_id(device_info));
+#endif
+
+	/* Page 24 https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf
+	 *
+	 * 0x00 or 0xFF engineering samples
+	 * 0x0D=13=Si7013
+	 * 0x14=20=Si7020
+	 * 0x15=21=Si7021
+	 */
+
+	if (get_id(device_info) != 0x15) {
+		return false;
+	}
 
 	return true;
 }
 
-const uint16_t bh1750_get_level(const device_info_t *device_info) {
-	uint16_t level;
+static const uint16_t get_raw_value(uint8_t cmd) {
+	char buffer[3];
+
+	buffer[0] = (char) cmd;
+	bcm2835_i2c_write(buffer, 1);
+
+	udelay(80 * 1000);	// datasheet says 50ms
+
+	bcm2835_i2c_read(buffer, 3);
+
+	return (((uint16_t) buffer[0] << 8) | ((uint16_t) buffer[1])) & (uint16_t) 0xFFFC;
+}
+
+float si7021_get_temperature(const device_info_t *device_info) {
+	uint16_t value;
+	float temp;
 
 	i2c_setup(device_info);
 
-	level = (float) i2c_read_uint16() / (float) 1.2;
+	value = get_raw_value(SI7021_TEMP);
 
-	return level;
+	temp = (float) value / 65536.0;
+
+	return -46.85 + (175.72 * temp);
+}
+
+float si7021_get_humidity(const device_info_t *device_info) {
+	uint16_t value;
+	float humid;
+
+	i2c_setup(device_info);
+
+	value = get_raw_value(SI7021_HUMID);
+
+	humid = (float) value / 65536.0;
+
+	return -6.0 + (125.0 * humid);
 }

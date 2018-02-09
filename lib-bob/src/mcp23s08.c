@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #if defined(__linux__) || defined(__circle__)
  #include "bcm2835.h"
@@ -53,13 +54,7 @@
 
 #define MCP23S08_IOCON_HAEN				(uint8_t)(1 << 3)
 
-/**
- * @ingroup SPI-DIO
- *
- * @param device_info
- * @return
- */
-void mcp23s08_start(device_info_t *device_info) {
+bool mcp23s08_start(device_info_t *device_info) {
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = MCP23S08_DEFAULT_SLAVE_ADDRESS;
@@ -83,16 +78,11 @@ void mcp23s08_start(device_info_t *device_info) {
 	}
 
 	mcp23s08_reg_write(device_info, MCP23S08_IOCON, MCP23S08_IOCON_HAEN);
+
+	return true;
 }
 
-/**
- * @ingroup SPI-DIO
- *
- * @param device_info
- * @param reg
- * @return
- */
-uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
+uint8_t mcp23s08_reg_read(const device_info_t *device_info, uint8_t reg) {
 	char spiData[3];
 
 	spiData[0] = (char) MCP23S08_CMD_READ | (char) ((device_info->slave_address) << 1);
@@ -110,14 +100,7 @@ uint8_t mcp23s08_reg_read(const device_info_t *device_info, const uint8_t reg) {
 	return (uint8_t) spiData[2];
 }
 
-/**
- * @ingroup SPI-DIO
- *
- * @param device_info
- * @param reg
- * @param value
- */
-void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, const uint8_t value) {
+void mcp23s08_reg_write(const device_info_t *device_info, uint8_t reg, uint8_t value) {
 	char spiData[3];
 
 	spiData[0] = (char) MCP23S08_CMD_WRITE	| (char) ((device_info->slave_address) << 1);
@@ -134,15 +117,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, const uint8_t reg, con
 	}
 }
 
-/**
- * @ingroup SPI-DIO
- * Sets the Function Select register for the given pin, which configures
- * the pin as Input, Output
- * @param device_info
- * @param pin GP number, or one of MCP23S08_PIN_* from \ref mcp23s08Pin.
- * @param mode Mode to set the pin to, one of MCP23S08_FSEL_* from \ref mcp23s08FunctionSelect
- */
-void mcp23s08_gpio_fsel(const device_info_t *device_info, const uint8_t pin, const uint8_t mode) {
+void mcp23s08_gpio_fsel(const device_info_t *device_info, uint8_t pin, uint8_t mode) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_IODIR);
 
 	if (mode == MCP23S08_FSEL_OUTP) {
@@ -154,25 +129,13 @@ void mcp23s08_gpio_fsel(const device_info_t *device_info, const uint8_t pin, con
 	mcp23s08_reg_write(device_info, MCP23S08_IODIR, data);
 }
 
-/**
- * @ingroup SPI-DIO
- * Sets the specified pin output to low.
- * @param device_info
- * @param pin GP number, or one of MCP23S08_PIN_* from \ref mcp23s08Pin.
- */
-void mcp23s08_gpio_set(const device_info_t *device_info, const uint8_t pin) {
+void mcp23s08_gpio_set(const device_info_t *device_info, uint8_t pin) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_OLAT);
 	data |= pin;
 	mcp23s08_reg_write(device_info, MCP23S08_GPIO, data);
 }
 
-/**
- * @ingroup SPI-DIO
- * Sets the specified pin output to low.
- * @param device_info
- * @param pin GP number, or one of MCP23S08_PIN_* from \ref mcp23s08Pin.
- */
-void mcp23s08_gpio_clr(const device_info_t *device_info, const uint8_t pin) {
+void mcp23s08_gpio_clr(const device_info_t *device_info, uint8_t pin) {
 	uint8_t data = mcp23s08_reg_read(device_info, MCP23S08_OLAT);
 	data &= (~pin);
 	mcp23s08_reg_write(device_info, MCP23S08_GPIO, data);

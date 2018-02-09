@@ -26,6 +26,36 @@
 #ifndef BW_H_
 #define BW_H_
 
+#define BW_LCD_DEFAULT_SLAVE_ADDRESS		0x82	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
+ 	#define BW_LCD_MAX_CHARACTERS			16
+	#define BW_LCD_MAX_LINES				2
+
+#define BW_RELAY_DEFAULT_SLAVE_ADDRESS		0x8E	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
+	typedef enum { 	 /// http://www.bitwizard.nl/wiki/index.php/Relay
+		BW_RELAY_0 = (1 << 0),	///< 0b00000001, relay 1
+		BW_RELAY_1 = (1 << 1)	///< 0b00000010, relay 2
+	} bw_spi_relay_Pin;
+
+#define BW_UI_DEFAULT_SLAVE_ADDRESS			0x94	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
+	#define BW_UI_MAX_CHARACTERS			16
+	#define BW_UI_MAX_LINES					2
+
+	typedef enum {
+		BW_UI_BUTTON1 = 0,//!< BW_UI_BUTTON1
+		BW_UI_BUTTON2 = 1,//!< BW_UI_BUTTON2
+		BW_UI_BUTTON3 = 2,//!< BW_UI_BUTTON3
+		BW_UI_BUTTON4 = 3,//!< BW_UI_BUTTON4
+		BW_UI_BUTTON5 = 4,//!< BW_UI_BUTTON5
+		BW_UI_BUTTON6 = 5 //!< BW_UI_BUTTON6
+	} BwUiButtons;
+
+	#define BW_BUTTON6_PRESSED(x)		((x) & (1 << 0))	//((x) & 0b000001)
+	#define BW_BUTTON5_PRESSED(x)		((x) & (1 << 1))	//((x) & 0b000010)
+	#define BW_BUTTON4_PRESSED(x)		((x) & (1 << 2))	//((x) & 0b000100)
+	#define BW_BUTTON3_PRESSED(x)		((x) & (1 << 3))	//((x) & 0b001000)
+	#define BW_BUTTON2_PRESSED(x)		((x) & (1 << 4))	//((x) & 0b010000)
+	#define BW_BUTTON1_PRESSED(x)		((x) & (1 << 5))	//((x) & 0b100000)
+
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
 #define BW_PORT_WRITE_COMMAND				0x01	///< write data as command
 #define BW_PORT_WRITE_STARTUPMESSAGE_LINE1	0x08	///< Set startup message line 1

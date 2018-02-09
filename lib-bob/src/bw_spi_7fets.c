@@ -24,6 +24,16 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#if defined (__linux__)
+ #define ALIGNED
+ #include <string.h>
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include "util.h"
+#endif
 
 #if defined(__linux__) || defined(__circle__)
  #include "bcm2835.h"
@@ -34,16 +44,11 @@
 
 #include "bw.h"
 #include "bw_7fets.h"
+#include "bw_spi.h"
 #include "bw_spi_7fets.h"
 
 #include "device_info.h"
 
-/**
- * @ingroup SPI-DO
- *
- * @param device_info
- * @param mask
- */
 inline static void bw_spi_7fets_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[3];
 
@@ -61,13 +66,7 @@ inline static void bw_spi_7fets_fsel_mask(const device_info_t *device_info, cons
 	}
 }
 
-/**
- * @ingroup SPI-DO
- *
- * @param device_info
- * @return
- */
-void bw_spi_7fets_start(device_info_t *device_info) {
+bool bw_spi_7fets_start(device_info_t *device_info) {
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_7FETS_DEFAULT_SLAVE_ADDRESS;
@@ -88,16 +87,18 @@ void bw_spi_7fets_start(device_info_t *device_info) {
 		device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
 
-	bw_spi_7fets_fsel_mask(device_info, 0x7F);
+	char id[BW_ID_STRING_LENGTH+1];
+	bw_spi_read_id(device_info, id);
+
+	if (memcmp(id, "spi_7fets", 9) == 0) {
+		bw_spi_7fets_fsel_mask(device_info, 0x7F);
+		return true;
+	}
+
+	return false;
 }
 
-/**
- * @ingroup SPI-DO
- *
- * @param device_info
- * @param pins
- */
-void bw_spi_7fets_output(const device_info_t *device_info, const uint8_t pins) {
+void bw_spi_7fets_output(const device_info_t *device_info, uint8_t pins) {
 	char cmd[3];
 
 	cmd[0] = (char)device_info->slave_address;

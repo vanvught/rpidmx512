@@ -24,6 +24,16 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#if defined (__linux__)
+ #define ALIGNED
+ #include <string.h>
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include "util.h"
+#endif
 
 #if defined(__linux__) || defined(__circle__)
  #include "bcm2835.h"
@@ -33,18 +43,13 @@
 #endif
 
 #include "bw.h"
+#include "bw_spi.h"
 #include "bw_dimmer.h"
 #include "bw_spi_dimmer.h"
 
 #include "device_info.h"
 
-/**
- * @ingroup SPI-AO
- *
- * @param device_info
- * @return
- */
-void bw_spi_dimmer_start(device_info_t *device_info) {
+bool bw_spi_dimmer_start(device_info_t *device_info) {
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIMMER_DEFAULT_SLAVE_ADDRESS;
@@ -64,15 +69,18 @@ void bw_spi_dimmer_start(device_info_t *device_info) {
 		bcm2835_spi_begin();
 		device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
+
+	char id[BW_ID_STRING_LENGTH+1];
+	bw_spi_read_id(device_info, id);
+
+	if (memcmp(id, "spi_dimmer", 10) == 0) {
+		return true;
+	}
+
+	return false;
 }
 
-/**
- * @ingroup SPI-AO
- *
- * @param device_info
- * @param value The value written can be between 0 and 255, where 0 is the lowest intensity and 255 is the highest intensity.
- */
-void bw_spi_dimmer_output(const device_info_t *device_info, const uint8_t value) {
+void bw_spi_dimmer_output(const device_info_t *device_info, uint8_t value) {
 	char cmd[3];
 
 	cmd[0] = (char) device_info->slave_address;

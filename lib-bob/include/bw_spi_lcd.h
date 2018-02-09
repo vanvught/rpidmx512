@@ -2,7 +2,7 @@
  * @file bw_spi_lcd.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,19 @@
 #define BW_SPI_LCD_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "device_info.h"
 
 #define BW_LCD_SPI_SPEED_MAX_HZ			90000	///< 90 KHz
 #define BW_LCD_SPI_SPEED_DEFAULT_HZ		90000	///< 90 kHz
 
-extern void bw_spi_lcd_start (device_info_t *);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern bool bw_spi_lcd_start (device_info_t *);
+
 extern void bw_spi_lcd_reinit(const device_info_t *);
 
 extern void bw_spi_lcd_cls(const device_info_t *);
@@ -41,13 +47,17 @@ extern void bw_spi_lcd_cls(const device_info_t *);
 extern void bw_spi_lcd_set_cursor(const device_info_t *, uint8_t, uint8_t);
 
 extern void bw_spi_lcd_text(const device_info_t *, const char *, uint8_t);
-extern void bw_spi_lcd_text_line_1(const device_info_t *, const char *, const uint8_t);
-extern void bw_spi_lcd_text_line_2(const device_info_t *, const char *, const uint8_t);
+extern void bw_spi_lcd_text_line_1(const device_info_t *, const char *, uint8_t);
+extern void bw_spi_lcd_text_line_2(const device_info_t *, const char *, uint8_t);
 
 extern void bw_spi_lcd_get_contrast(const device_info_t *, uint8_t *);
-extern void bw_spi_lcd_set_contrast(const device_info_t *, const uint8_t);
+extern void bw_spi_lcd_set_contrast(const device_info_t *, uint8_t);
 
 extern void bw_spi_lcd_get_backlight(const device_info_t *, uint8_t *);
-extern void bw_spi_lcd_set_backlight(const device_info_t *, const uint8_t);
+extern void bw_spi_lcd_set_backlight(const device_info_t *, uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BW_SPI_LCD_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file bw_ui.h
+ * @file si7021.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef BW_UI_H_
-#define BW_UI_H_
+#ifndef HTU21D_H_
+#define HTU21D_H_
 
-#include <stdint.h>
+#include <stdbool.h>
 
-#define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94	///< http://www.bitwizard.nl/wiki/index.php/Default_addresses
+#include "device_info.h"
 
-#define BW_UI_MAX_CHARACTERS			16
-#define BW_UI_MAX_LINES					2
+#define SI7021_I2C_DEFAULT_SLAVE_ADDRESS	0x40
 
-typedef enum {
-	BW_UI_BUTTON1 = 0,	///<
-	BW_UI_BUTTON2 = 1,	///<
-	BW_UI_BUTTON3 = 2,	///<
-	BW_UI_BUTTON4 = 3,	///<
-	BW_UI_BUTTON5 = 4,	///<
-	BW_UI_BUTTON6 = 5	///<
-} BwUiButtons;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define BUTTON6_PRESSED(x)		((x) & (1 << 0))	//((x) & 0b000001)
-#define BUTTON5_PRESSED(x)		((x) & (1 << 1))	//((x) & 0b000010)
-#define BUTTON4_PRESSED(x)		((x) & (1 << 2))	//((x) & 0b000100)
-#define BUTTON3_PRESSED(x)		((x) & (1 << 3))	//((x) & 0b001000)
-#define BUTTON2_PRESSED(x)		((x) & (1 << 4))	//((x) & 0b010000)
-#define BUTTON1_PRESSED(x)		((x) & (1 << 5))	//((x) & 0b100000)
+extern bool si7021_start(device_info_t *);
+extern float si7021_get_temperature(const device_info_t *);
+extern float si7021_get_humidity(const device_info_t *);
 
-#endif /* BW_UI_H_ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* HTU21D_H_ */
