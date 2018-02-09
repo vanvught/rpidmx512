@@ -2,7 +2,7 @@
  * @file pwmledparams.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -109,7 +111,7 @@ void PWMLedParams::callbackFunction(const char *pLine) {
 
 }
 
-void PWMLedParams::Set(PWMLedDMX *pPWMLedDMX) {
+void PWMLedParams::Set(PWMLedDmx *pPWMLedDMX) {
 	assert(pPWMLedDMX != 0);
 
 	bool isSet;
@@ -133,6 +135,17 @@ void PWMLedParams::Set(PWMLedDMX *pPWMLedDMX) {
 		pPWMLedDMX->SetBoardInstances(BoardInstances);
 	}
 
+	const char *p = GetDmxSlotInfoRaw(&isSet);
+	if (isSet) {
+		pPWMLedDMX->SetSlotInfoRaw(p);
+	}
+
+	// Footprint overwrites board instances!
+	const uint16_t DmxFootprint = GetDmxFootprint(&isSet);
+	if (isSet) {
+		pPWMLedDMX->SetDmxFootprint(DmxFootprint);
+	}
+
 	if(IsMaskSet(SET_PWM_FREQUENCY_MASK)) {
 		pPWMLedDMX->SetPwmfrequency(m_nPwmFrequency);
 	}
@@ -147,6 +160,7 @@ void PWMLedParams::Set(PWMLedDMX *pPWMLedDMX) {
 }
 
 void PWMLedParams::Dump(void) {
+#ifndef NDEBUG
 	if ((!GetSetList()) && (m_bSetList == 0)) {
 		return;
 	}
@@ -166,6 +180,7 @@ void PWMLedParams::Dump(void) {
 	}
 
 	Params::Dump();
+#endif
 }
 
 bool PWMLedParams::IsMaskSet(uint16_t mask) const {

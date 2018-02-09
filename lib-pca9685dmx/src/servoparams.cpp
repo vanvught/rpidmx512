@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #if defined(__linux__)
@@ -92,7 +94,7 @@ void ServoParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void ServoParams::Set(ServoDMX *pServoDmx) {
+void ServoParams::Set(ServoDmx *pServoDmx) {
 	assert(pServoDmx != 0);
 
 	bool isSet;
@@ -116,6 +118,12 @@ void ServoParams::Set(ServoDMX *pServoDmx) {
 		pServoDmx->SetBoardInstances(BoardInstances);
 	}
 
+	// Footprint overwrites board instances!
+	const uint16_t DmxFootprint = GetDmxFootprint(&isSet);
+	if (isSet) {
+		pServoDmx->SetDmxFootprint(DmxFootprint);
+	}
+
 	if(IsMaskSet(LEFT_US_MASK)) {
 		pServoDmx->SetLeftUs(m_nLeftUs);
 	}
@@ -126,6 +134,7 @@ void ServoParams::Set(ServoDMX *pServoDmx) {
 }
 
 void ServoParams::Dump(void) {
+#ifndef NDEBUG
 	if ((!GetSetList()) && (m_bSetList == 0)) {
 		return;
 	}
@@ -141,6 +150,7 @@ void ServoParams::Dump(void) {
 	}
 
 	Params::Dump();
+#endif
 }
 
 bool ServoParams::IsMaskSet(uint16_t mask) const {

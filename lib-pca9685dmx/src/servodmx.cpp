@@ -2,7 +2,7 @@
  * @file servodmx.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,9 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #include "servodmx.h"
@@ -33,9 +35,19 @@
 #include "pca9685.h"
 
 #define DMX_MAX_CHANNELS	512
+#define BOARD_INSTANCES_MAX	32
 
-ServoDMX::ServoDMX(void):
+static unsigned long ceil(float f) {
+	int i = (int) f;
+	if (f == (float) i) {
+		return i;
+	}
+	return i + 1;
+}
+
+ServoDmx::ServoDmx(void):
 	m_nDmxStartAddress(1),
+	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
 	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
 	m_nBoardInstances(1),
 	m_nLeftUs(SERVO_LEFT_DEFAULT_US),
@@ -47,12 +59,12 @@ ServoDMX::ServoDMX(void):
 
 }
 
-ServoDMX::~ServoDMX(void) {
+ServoDmx::~ServoDmx(void) {
 	delete m_pServo;
 	m_pServo = 0;
 }
 
-void ServoDMX::Start(void) {
+void ServoDmx::Start(void) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -64,7 +76,7 @@ void ServoDMX::Start(void) {
 	}
 }
 
-void ServoDMX::Stop(void) {
+void ServoDmx::Stop(void) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -72,7 +84,7 @@ void ServoDMX::Stop(void) {
 	m_bIsStarted = false;
 }
 
-void ServoDMX::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
+void ServoDmx::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -87,7 +99,7 @@ void ServoDMX::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength)
 
 	for (unsigned j = 0; j < m_nBoardInstances; j++) {
 		for (unsigned i = 0; i < PCA9685_PWM_CHANNELS; i++) {
-			if (nChannel > nLength) {
+			if ((nChannel >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nChannel > nLength)) {
 				j = m_nBoardInstances;
 				break;
 			}
@@ -106,37 +118,42 @@ void ServoDMX::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength)
 	}
 }
 
-uint16_t ServoDMX::GetDmxStartAddress(void) const {
-	return m_nDmxStartAddress;
-}
+bool ServoDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
 
-void ServoDMX::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= 512));
-
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= 512)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS)) {
 		m_nDmxStartAddress = nDmxStartAddress;
+		return true;
 	}
+
+	return false;
 }
 
-void ServoDMX::SetI2cAddress(uint8_t nI2cAddress) {
+void ServoDmx::SetDmxFootprint(uint16_t nDmxFootprint) {
+	m_nDmxFootprint = nDmxFootprint;
+	m_nBoardInstances = (uint16_t) ceil((float) nDmxFootprint / PCA9685_PWM_CHANNELS);
+}
+
+void ServoDmx::SetI2cAddress(uint8_t nI2cAddress) {
 	m_nI2cAddress = nI2cAddress;
 }
 
-void ServoDMX::SetBoardInstances(uint8_t nBoardInstances) {
-	if ((nBoardInstances != 0) && (nBoardInstances <= 64)) { //TODO #define
+void ServoDmx::SetBoardInstances(uint8_t nBoardInstances) {
+	if ((nBoardInstances != 0) && (nBoardInstances <= BOARD_INSTANCES_MAX)) {
 		m_nBoardInstances = nBoardInstances;
+		m_nDmxFootprint = nBoardInstances * PCA9685_PWM_CHANNELS;
 	}
 }
 
-void ServoDMX::SetLeftUs(uint16_t nLeftUs) {
+void ServoDmx::SetLeftUs(uint16_t nLeftUs) {
 	m_nLeftUs = nLeftUs;
 }
 
-void ServoDMX::SetRightUs(uint16_t nRightUs) {
+void ServoDmx::SetRightUs(uint16_t nRightUs) {
 	m_nRightUs = nRightUs;
 }
 
-void ServoDMX::Initialize(void) {
+void ServoDmx::Initialize(void) {
 	assert(m_pDmxData == 0);
 	m_pDmxData = new uint8_t[m_nBoardInstances * PCA9685_PWM_CHANNELS];
 	assert(m_pDmxData != 0);

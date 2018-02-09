@@ -37,7 +37,7 @@ public:
 	PWMLedParams(void);
 	~PWMLedParams(void);
 
-	void Set(PWMLedDMX *);
+	void Set(PWMLedDmx *);
 	void Dump(void);
 
 protected:

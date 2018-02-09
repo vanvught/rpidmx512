@@ -2,7 +2,7 @@
  * @file params.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #if defined(__linux__)
@@ -43,27 +45,47 @@
 #include "sscan.h"
 
 #define DMX_START_ADDRESS_MASK	1<<0
-#define I2C_SLAVE_ADDRESS_MASK	1<<1
-#define BOARD_INSTANCES_MASK	1<<2
+#define DMX_FOOTPRINT_MASK		1<<1
+#define DMX_SLOT_INFO_MASK		1<<2
+#define I2C_SLAVE_ADDRESS_MASK	1<<3
+#define BOARD_INSTANCES_MASK	1<<4
 
-static const char PARAMS_DMX_START_ADDRESS[]= "dmx_start_address";
-static const char PARAMS_I2C_SLAVE_ADDRESS[]= "i2c_slave_address";
-static const char PARAMS_BOARD_INSTANCES[]= "board_instances";
+static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
+static const char PARAMS_DMX_FOOTPRINT[] ALIGNED = "dmx_footprint";
+static const char PARAMS_DMX_SLOT_INFO[] ALIGNED = "dmx_slot_info";
+static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
+static const char PARAMS_BOARD_INSTANCES[] ALIGNED = "board_instances";
 
-#define PARAMS_BOARD_INSTANCES_MAX	32
+#define PARAMS_DMX_START_ADDRESS_DEFAULT	1
+#define PARAMS_DMX_FOOTPRINT_DEFAULT		PCA9685_PWM_CHANNELS
+#define PARAMS_BOARD_INSTANCES_DEFAULT		1
+#define PARAMS_BOARD_INSTANCES_MAX			32
+
+#define DMX_SLOT_INFO_LENGTH				128
 
 Params::Params(const char *pFileName): m_bSetList(0) {
 	assert(pFileName != 0);
 
 	m_nI2cAddress = PCA9685_I2C_ADDRESS_DEFAULT;
-	m_nDmxStartAddress = 1;
-	m_nBoardInstances = 1;
+
+	m_nDmxStartAddress = PARAMS_DMX_START_ADDRESS_DEFAULT;
+	m_nDmxFootprint = PARAMS_DMX_FOOTPRINT_DEFAULT;
+	m_nBoardInstances = PARAMS_BOARD_INSTANCES_DEFAULT;
+
+	m_pDmxSlotInfoRaw = new char[DMX_SLOT_INFO_LENGTH];
+
+	assert(m_pDmxSlotInfoRaw != 0);
+	for (unsigned i = 0; i < DMX_SLOT_INFO_LENGTH; i++) {
+		m_pDmxSlotInfoRaw[i] = 0;
+	}
 
 	ReadConfigFile configfile(Params::staticCallbackFunction, this);
 	configfile.Read(pFileName);
 }
 
 Params::~Params(void) {
+	delete[] m_pDmxSlotInfoRaw;
+	m_pDmxSlotInfoRaw = 0;
 }
 
 void Params::staticCallbackFunction(void *p, const char *s) {
@@ -78,11 +100,20 @@ void Params::callbackFunction(const char *pLine) {
 
 	uint8_t value8;
 	uint16_t value16;
+	uint8_t len;
 
 	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
 		if ((value16 != 0) && (value16 <= 512)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, PARAMS_DMX_FOOTPRINT, &value16) == SSCAN_OK) {
+		if ((value16 != 0) && (value16 <= (PCA9685_PWM_CHANNELS * PARAMS_BOARD_INSTANCES_MAX))) {
+			m_nDmxFootprint = value16;
+			m_bSetList |= DMX_FOOTPRINT_MASK;
 		}
 		return;
 	}
@@ -103,6 +134,12 @@ void Params::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	len = DMX_SLOT_INFO_LENGTH;
+	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, &len) == SSCAN_OK) {
+		if (len >= 7) { // 00:0000 at least one value set
+			m_bSetList |= DMX_SLOT_INFO_MASK;
+		}
+	}
 }
 
 uint8_t Params::GetI2cAddress(bool *pIsSet) const {
@@ -121,6 +158,14 @@ uint16_t Params::GetDmxStartAddress(bool *pIsSet) const {
 	return m_nDmxStartAddress;
 }
 
+uint16_t Params::GetDmxFootprint(bool *pIsSet) const {
+	if (pIsSet != 0) {
+		*pIsSet = IsMaskSet(DMX_FOOTPRINT_MASK);
+	}
+
+	return m_nDmxFootprint;
+}
+
 uint8_t Params::GetBoardInstances(bool *pIsSet) const {
 	if (pIsSet != 0) {
 		*pIsSet = IsMaskSet(BOARD_INSTANCES_MASK);
@@ -129,13 +174,26 @@ uint8_t Params::GetBoardInstances(bool *pIsSet) const {
 	return m_nBoardInstances;
 }
 
+const char* Params::GetDmxSlotInfoRaw(bool* pIsSet) const {
+	if (pIsSet != 0) {
+		*pIsSet = IsMaskSet(DMX_SLOT_INFO_MASK);
+	}
+
+	return m_pDmxSlotInfoRaw;
+}
+
 void Params::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
 
 	if(IsMaskSet(DMX_START_ADDRESS_MASK)) {
 		printf("%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
+	}
+
+	if(IsMaskSet(DMX_FOOTPRINT_MASK)) {
+		printf("%s=%d\n", PARAMS_DMX_FOOTPRINT, m_nDmxFootprint);
 	}
 
 	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
@@ -146,6 +204,10 @@ void Params::Dump(void) {
 		printf("%s=%d\n", PARAMS_BOARD_INSTANCES, m_nBoardInstances);
 	}
 
+	if(IsMaskSet(DMX_SLOT_INFO_MASK)) {
+		printf("%s=%s\n", PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
+	}
+#endif
 }
 
 bool Params::IsMaskSet(uint16_t mask) const {

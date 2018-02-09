@@ -37,7 +37,7 @@ public:
 	ServoParams(void);
 	~ServoParams(void);
 
-	void Set(ServoDMX *);
+	void Set(ServoDmx *);
 	void Dump(void);
 
 protected:

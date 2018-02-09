@@ -30,10 +30,20 @@
 
 #include "servo.h"
 
-class ServoDMX: public LightSet {
+class ServoDmx: public LightSet {
 public:
-	ServoDMX(void);
-	~ServoDMX(void);
+	ServoDmx(void);
+	~ServoDmx(void);
+
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+
+	inline uint16_t GetDmxStartAddress(void) {
+		return m_nDmxStartAddress;
+	}
+
+	inline uint16_t GetDmxFootprint(void) {
+		return m_nDmxFootprint;
+	}
 
 	void Start(void);
 	void Stop(void);
@@ -41,19 +51,19 @@ public:
 	void SetData(uint8_t, const uint8_t *, uint16_t);
 
 public:
-	uint16_t GetDmxStartAddress(void) const;
-
-	void SetDmxStartAddress(uint16_t);
-	void SetI2cAddress(uint8_t);
-	void SetBoardInstances(uint8_t);
+	void SetI2cAddress(uint8_t nI2cAddress);
+	void SetBoardInstances(uint8_t nBoardInstances);
 	void SetLeftUs(uint16_t);
 	void SetRightUs(uint16_t);
+
+	void SetDmxFootprint(uint16_t nDmxFootprint);
 
 private:
 	void Initialize(void);
 
 private:
 	uint16_t m_nDmxStartAddress;
+	uint16_t m_nDmxFootprint;
 	uint8_t m_nI2cAddress;
 	uint8_t m_nBoardInstances;
 	uint16_t m_nLeftUs;

@@ -2,7 +2,7 @@
  * @file params.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,9 @@ public:
 
 	uint8_t GetI2cAddress(bool *pIsSet = 0) const;
 	uint16_t GetDmxStartAddress(bool *pIsSet = 0) const;
+	uint16_t GetDmxFootprint(bool *pIsSet = 0) const;
 	uint8_t GetBoardInstances(bool *pIsSet = 0) const;
+	const char* GetDmxSlotInfoRaw(bool *pIsSet = 0) const;
 
 	void Dump(void);
 
@@ -54,8 +56,9 @@ private:
     uint32_t m_bSetList;
     uint8_t m_nI2cAddress;
     uint16_t m_nDmxStartAddress;
+    uint16_t m_nDmxFootprint;
     uint8_t m_nBoardInstances;
+    char *m_pDmxSlotInfoRaw;
 };
-
 
 #endif /* PARAMS_H_ */
