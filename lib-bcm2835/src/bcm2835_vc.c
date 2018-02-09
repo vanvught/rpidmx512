@@ -5,7 +5,7 @@
  * ARM to VC
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ struct vc_msg_uint32 {
  * @param dev_id
  * @return
  */
-inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_id) {
+inline static int32_t bcm2835_vc_get(uint32_t tag_id, uint32_t dev_id) {
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
@@ -109,7 +109,7 @@ inline static int32_t bcm2835_vc_get(const uint32_t tag_id, const uint32_t dev_i
  * @param val
  * @return
  */
-inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_id, const uint32_t val) {
+inline static int32_t bcm2835_vc_set(uint32_t tag_id, uint32_t dev_id, uint32_t val) {
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
@@ -160,7 +160,7 @@ inline static int32_t bcm2835_vc_set(const uint32_t tag_id, const uint32_t dev_i
  *
  * @return rate (in Hz)
  */
-int32_t bcm2835_vc_get_clock_rate(const uint32_t clock_id) {
+int32_t bcm2835_vc_get_clock_rate(uint32_t clock_id) {
 	return bcm2835_vc_get(BCM2835_VC_TAG_GET_CLOCK_RATE, clock_id);
 }
 
@@ -190,7 +190,7 @@ struct vc_msg_set_clock_rate {
  *
  * @return rate (in Hz). A rate of 0 is returned if the clock does not exist.
  */
-int32_t bcm2835_vc_set_clock_rate(const uint32_t clock_id, const uint32_t clock_rate) {
+int32_t bcm2835_vc_set_clock_rate(uint32_t clock_id, uint32_t clock_rate) {
 	struct vc_msg_set_clock_rate *vc_msg = (struct vc_msg_set_clock_rate *)MEM_COHERENT_REGION;
 
 	vc_msg->msg_size = sizeof(struct vc_msg_uint32);
@@ -254,7 +254,7 @@ int32_t bcm2835_vc_get_temperature_max(void) {
  *   Bit 1: 0=device exists, 1=device does not exist
  *   Bits 2-31: reserved for future use
  */
-int32_t bcm2835_vc_get_power_state(const uint32_t dev_id) {
+int32_t bcm2835_vc_get_power_state(uint32_t dev_id) {
 	return (bcm2835_vc_get(BCM2835_VC_TAG_GET_POWER_STATE, dev_id) & 0x3);
 }
 
@@ -274,7 +274,7 @@ int32_t bcm2835_vc_get_power_state(const uint32_t dev_id) {
  *  Bits 2-31: reserved for future use
  *
  */
-int32_t bcm2835_vc_set_power_state(const uint32_t dev_id, const uint32_t state) {
+int32_t bcm2835_vc_set_power_state(uint32_t dev_id, uint32_t state) {
 	return bcm2835_vc_set(BCM2835_VC_TAG_SET_POWER_STATE, dev_id, state);
 }
 
@@ -458,7 +458,7 @@ struct vc_msg_board_ram {
  * @param mac_address
  * @return
  */
-int32_t bcm2835_vc_get_memory(const uint32_t tag_id) {
+int32_t bcm2835_vc_get_memory(uint32_t tag_id) {
 	struct vc_msg_board_ram *vc_msg = (struct vc_msg_board_ram *)MEM_COHERENT_REGION;
 
 	if ((tag_id != BCM2835_VC_TAG_GET_ARM_MEMORY) && (tag_id != BCM2835_VC_TAG_GET_VC_MEMORY)) {

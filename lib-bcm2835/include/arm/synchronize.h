@@ -2,7 +2,7 @@
  * @file synchronize.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,20 +30,6 @@
 extern "C" {
 #endif
 
-#if defined( RPI2 ) || defined ( RPI3 )
-	#define isb() asm volatile ("isb" ::: "memory")
-	#define dsb() asm volatile ("dsb" ::: "memory")
-	#define dmb() asm volatile ("dmb" ::: "memory")
-
-	#define invalidate_instruction_cache()	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #0" : : [zero] "r" (0) : "memory")
-	#define flush_prefetch_buffer()			asm volatile ("isb" ::: "memory")
-	#define flush_branch_target_cache() 	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #6" : : [zero] "r" (0) : "memory")
-
-	extern void invalidate_data_cache(void) __attribute__ ((optimize (3)));
-	extern void clean_data_cache(void) __attribute__ ((optimize (3)));
-	extern void invalidate_data_cache_l1_only(void) __attribute__ ((optimize (3)));
-#endif
-
 #if defined( RPI1 )
 	#define isb() asm volatile ("mcr p15, #0, %[zero], c7, c5,  #4" : : [zero] "r" (0) )
 	#define dsb() asm volatile ("mcr p15, #0, %[zero], c7, c10, #4" : : [zero] "r" (0) )
@@ -59,6 +45,18 @@ extern "C" {
 
 	#define clean_data_cache()				asm volatile ("mcr p15, 0, %0, c7, c10, 0\n" \
 														  "mcr p15, 0, %0, c7, c10, 4\n" : : "r" (0) : "memory")
+#else
+	#define isb() asm volatile ("isb" ::: "memory")
+	#define dsb() asm volatile ("dsb" ::: "memory")
+	#define dmb() asm volatile ("dmb" ::: "memory")
+
+	#define invalidate_instruction_cache()	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #0" : : [zero] "r" (0) : "memory")
+	#define flush_prefetch_buffer()			asm volatile ("isb" ::: "memory")
+	#define flush_branch_target_cache() 	asm volatile ("mcr p15, #0, %[zero], c7, c5,  #6" : : [zero] "r" (0) : "memory")
+
+	extern void invalidate_data_cache(void) __attribute__ ((optimize (3)));
+	extern void clean_data_cache(void) __attribute__ ((optimize (3)));
+	extern void invalidate_data_cache_l1_only(void) __attribute__ ((optimize (3)));
 #endif
 
 #ifdef __cplusplus

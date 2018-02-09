@@ -2,7 +2,7 @@
  * @file bcm2835_vc.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014-2018, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,11 +135,11 @@ typedef enum {
 extern "C" {
 #endif
 
-extern int32_t bcm2835_vc_get_clock_rate(const uint32_t);
-extern int32_t bcm2835_vc_set_clock_rate(const uint32_t, const uint32_t);
+extern int32_t bcm2835_vc_get_clock_rate(uint32_t);
+extern int32_t bcm2835_vc_set_clock_rate(uint32_t, uint32_t);
 
-extern int32_t bcm2835_vc_get_power_state(const uint32_t);
-extern int32_t bcm2835_vc_set_power_state(const uint32_t, const uint32_t);
+extern int32_t bcm2835_vc_get_power_state(uint32_t);
+extern int32_t bcm2835_vc_set_power_state(uint32_t, uint32_t);
 
 extern int32_t bcm2835_vc_get_temperature(void);
 extern int32_t bcm2835_vc_get_temperature_max(void);

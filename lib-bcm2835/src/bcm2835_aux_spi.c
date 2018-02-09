@@ -121,7 +121,7 @@ const uint16_t bcm2835_aux_spi_CalcClockDivider(uint32_t speed_hz) {
  *
  * @param divider
  */
-void bcm2835_aux_spi_setClockDivider(const uint16_t divider) {
+void bcm2835_aux_spi_setClockDivider(uint16_t divider) {
 		speed = (uint32_t) divider;
 }
 
@@ -129,7 +129,7 @@ void bcm2835_aux_spi_setClockDivider(const uint16_t divider) {
  *
  * @param data
  */
-void bcm2835_aux_spi_write(const uint16_t data) {
+void bcm2835_aux_spi_write(uint16_t data) {
 	uint32_t cntl0 = (speed << BCM2835_AUX_SPI_CNTL0_SPEED_SHIFT);
 	cntl0 |= BCM2835_AUX_SPI_CNTL0_CS2_N;
 	cntl0 |= BCM2835_AUX_SPI_CNTL0_ENABLE;
@@ -150,7 +150,7 @@ void bcm2835_aux_spi_write(const uint16_t data) {
  * @param tbuf
  * @param len
  */
-void bcm2835_aux_spi_writenb(const char *tbuf, const uint32_t len) {
+void bcm2835_aux_spi_writenb(const char *tbuf, uint32_t len) {
 	char *tx = (char *) tbuf;
 	uint32_t tx_len = len;
 	uint32_t count;
@@ -201,7 +201,7 @@ void bcm2835_aux_spi_writenb(const char *tbuf, const uint32_t len) {
  * @param rbuf
  * @param len
  */
-void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, const uint32_t len) {
+void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, uint32_t len) {
 	char *tx = (char *)tbuf;
 	char *rx = (char *)rbuf;
 	uint32_t tx_len = len;
@@ -293,6 +293,6 @@ void bcm2835_aux_spi_transfernb(const char *tbuf, char *rbuf, const uint32_t len
  * @param buf
  * @param len
  */
-void bcm2835_aux_spi_transfern(char *buf, const uint32_t len) {
+void bcm2835_aux_spi_transfern(char *buf, uint32_t len) {
 	bcm2835_aux_spi_transfernb(buf, buf, len);
 }
