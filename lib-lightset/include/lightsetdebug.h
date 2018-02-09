@@ -2,7 +2,7 @@
  * @file lightsetdebug.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,17 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
 
+public: // RDM
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	uint16_t GetDmxStartAddress(void);
+
+	uint16_t GetDmxFootprint(void);
+
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+
 private:
 	bool m_bIsStarted;
+	uint16_t m_nDmxStartAddress;
 };
 
 #endif /* LIGHTSETDEBUG_H_ */

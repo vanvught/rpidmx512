@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,15 @@
 
 #include <stdint.h>
 
+struct TLightSetSlotInfo {
+	uint8_t nType;
+	uint16_t nCategory;
+};
+
+enum {
+	DMX_ADDRESS_INVALID = 0xFFFF
+};
+
 class LightSet {
 public:
 	virtual ~LightSet(void);
@@ -36,6 +45,14 @@ public:
 	virtual void Stop(void)= 0;
 
 	virtual void SetData(uint8_t, const uint8_t *, uint16_t)= 0;
+
+public: // RDM Optional
+	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	virtual uint16_t GetDmxStartAddress(void);
+
+	virtual uint16_t GetDmxFootprint(void);
+
+	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 };
 
 #endif /* LIGHTSET_H_ */

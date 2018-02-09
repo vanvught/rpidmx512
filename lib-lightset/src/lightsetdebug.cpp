@@ -2,7 +2,7 @@
  * @file lightsetdebug.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,44 @@
 
 #include "lightsetdebug.h"
 
-LightSetDebug::LightSetDebug(void): m_bIsStarted(false) {
+#define DMX_FOOTPRINT	16
+
+LightSetDebug::LightSetDebug(void): m_bIsStarted(false), m_nDmxStartAddress(1) {
 }
 
 LightSetDebug::~LightSetDebug(void) {
+}
+
+uint16_t LightSetDebug::GetDmxFootprint(void) {
+	printf("LightSetDebug::GetDmxFootprint(void)\n");
+	return DMX_FOOTPRINT;
+}
+
+bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	printf("LightSetDebug::SetDmxStartAddress(%d)\n", (int) nDmxStartAddress);
+
+	if (nDmxStartAddress  > (512 - DMX_FOOTPRINT)) {
+		return false;
+	}
+
+	m_nDmxStartAddress = nDmxStartAddress;
+	return true;
+}
+
+uint16_t LightSetDebug::GetDmxStartAddress(void) {
+	printf("LightSetDebug::GetDmxStartAddress(void)\n");
+	return m_nDmxStartAddress;
+}
+
+bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
+	if (nSlotOffset > DMX_FOOTPRINT) {
+		return false;
+	}
+
+	tSlotInfo.nType = 0x00; // ST_PRIMARY
+	tSlotInfo.nCategory = 0x0001; // SD_INTENSITY
+
+	return true;
 }
 
 void LightSetDebug::Start(void) {
@@ -59,11 +93,13 @@ void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLengt
 	assert(pData != 0);
 	assert(nLength <= 512);
 
-	printf("LightSetDebug::SetData(nPort:%d, *pData:%p, nLength:%d) : ", (int) nPort, (void *) pData, (int) nLength);
+	printf("LightSetDebug::SetData(nPort:%d, *pData:%p, nLength:%d)\n", (int) nPort, (void *) pData, (int) nLength);
+	printf("%d:%d:%d: ", (int) nLength, (int) DMX_FOOTPRINT, (int) m_nDmxStartAddress);
 
-	for (unsigned i = 0; (i < nLength) && (i < 16); i++) {
+	for (uint16_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		printf("%.2x ", pData[i]);
 	}
 
 	printf("\n");
 }
+

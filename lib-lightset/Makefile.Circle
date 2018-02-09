@@ -5,8 +5,9 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
+INCLUDE	+= -I ../include
 
-OBJS	= src/lightset.o
+OBJS	= src/lightset.o src/lightsetchain.o src/lightsetdebug.o
 
 EXTRACLEAN = src/*.o
 
