@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x12 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x13 };	///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -129,7 +129,8 @@ ArtNetNode::ArtNetNode(void) :
 		m_bDirectUpdate(false),
 		m_nCurrentPacketTime(0),
 		m_nPreviousPacketTime(0),
-		m_IsLightSetRunning(false)
+		m_IsLightSetRunning(false),
+		m_IsRdmResponder(false)
 
  {
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
@@ -337,8 +338,7 @@ void ArtNetNode::SetShortName(const char *pName) {
 	strncpy((char *) m_Node.ShortName, pName, ARTNET_SHORT_NAME_LENGTH);
 	m_Node.ShortName[ARTNET_SHORT_NAME_LENGTH-1] = '\0';
 
-	memset((void *)m_PollReply.ShortName, 0, ARTNET_SHORT_NAME_LENGTH);
-	memcpy (m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
+	memcpy (m_PollReply.ShortName, m_Node.ShortName, ARTNET_SHORT_NAME_LENGTH);
 }
 
 const char *ArtNetNode::GetLongName(void) {
@@ -354,8 +354,7 @@ void ArtNetNode::SetLongName(const char *pName) {
 	strncpy((char *) m_Node.LongName, pName, ARTNET_LONG_NAME_LENGTH);
 	m_Node.LongName[ARTNET_LONG_NAME_LENGTH-1] = '\0';
 
-	memset((void *)m_PollReply.LongName, 0, ARTNET_LONG_NAME_LENGTH);
-	memcpy (m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
+	memcpy (m_PollReply.LongName, m_Node.LongName, ARTNET_LONG_NAME_LENGTH);
 }
 
 void ArtNetNode::SetManufacturerId(const uint8_t *pEsta) {
@@ -464,7 +463,6 @@ void ArtNetNode::GetType(void) {
 		m_ArtNetPacket.OpCode = OP_NOT_DEFINED;
 	}
 }
-
 
 void ArtNetNode::SendPollRelply(const bool bResponse) {
 
@@ -1022,8 +1020,11 @@ void ArtNetNode::HandleRdm(void) {
 	const uint16_t portAddress = (uint16_t) (packet->Net << 8) | (uint16_t) (packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
-		m_pLightSet->Stop();
-		m_IsLightSetRunning = false;
+
+		if (!m_IsRdmResponder) {
+			m_pLightSet->Stop();
+			m_IsLightSetRunning = false;
+		}
 
 		const uint8_t *response = (uint8_t *) m_pArtNetRdm->Handler(packet->RdmPacket);
 		if (response != 0) {
@@ -1033,18 +1034,22 @@ void ArtNetNode::HandleRdm(void) {
 			memcpy((uint8_t *) packet->RdmPacket, &response[1], nMessageLength);
 
 			const uint16_t nLength = (uint16_t) sizeof(struct TArtRdm) - (uint16_t) sizeof(packet->RdmPacket) + nMessageLength;
+
 			network_sendto((const uint8_t *) packet, (const uint16_t) nLength, m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
 		} else {
-			//printf("No response\n");
+			//printf("\n==> No response <==\n");
 		}
 
-		m_pLightSet->Start();
-		m_IsLightSetRunning = true;;
+		if (!m_IsRdmResponder) {
+			m_pLightSet->Start();
+			m_IsLightSetRunning = true;
+		}
 	}
 }
 
-void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm) {
+void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 	m_pArtNetRdm = pArtNetTRdm;
+	m_IsRdmResponder = IsResponder;
 
 	if (pArtNetTRdm != 0) {
 		m_pTodData = new TArtTodData;
@@ -1103,16 +1108,18 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 
 
 void ArtNetNode::SetNetworkDataLossCondition(void) {
-	m_pLightSet->Stop();
-	m_IsLightSetRunning = false;
+	if(m_IsLightSetRunning) {
+		m_pLightSet->Stop();
+		m_IsLightSetRunning = false;
 
-	m_State.IsSynchronousMode = false;
+		m_State.IsSynchronousMode = false;
 
-	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
-		m_OutputPorts[i].port.nStatus = m_OutputPorts[i].port.nStatus & (~GO_DATA_IS_BEING_TRANSMITTED);
-		m_OutputPorts[i].nLength = (uint16_t) 0;
-		m_OutputPorts[i].ipA = (uint32_t) 0;
-		m_OutputPorts[i].ipB = (uint32_t) 0;
+		for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+			m_OutputPorts[i].port.nStatus = m_OutputPorts[i].port.nStatus & (~GO_DATA_IS_BEING_TRANSMITTED);
+			m_OutputPorts[i].nLength = (uint16_t) 0;
+			m_OutputPorts[i].ipA = (uint32_t) 0;
+			m_OutputPorts[i].ipB = (uint32_t) 0;
+		}
 	}
 }
 

@@ -119,7 +119,7 @@ public:
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
 	void SetTimeSyncHandler(ArtNetTimeSync *);
-	void SetRdmHandler(ArtNetRdm *);
+	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
 
 	const uint8_t *GetSoftwareVersion(void);
@@ -220,6 +220,7 @@ private:
 	TOpCodes				m_tOpCodePrevious;
 
 	bool					m_IsLightSetRunning;
+	bool					m_IsRdmResponder;
 };
 
 #endif /* ARTNETNODE_H_ */

@@ -88,6 +88,8 @@ void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 }
 
 void ArtNetParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
 	char value[128];
 	uint8_t len;
 	uint8_t value8;
@@ -302,6 +304,7 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 }
 
 void ArtNetParams::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
@@ -358,6 +361,7 @@ void ArtNetParams::Dump(void) {
 	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
 		printf(" Network data loss timeout : %ds\n", (int) m_nNetworkTimeout);
 	}
+#endif
 }
 
 bool ArtNetParams::isMaskSet(uint16_t mask) const {

@@ -4,11 +4,12 @@
 
 CIRCLEHOME = ../Circle
 
+INCLUDE	+= -I ./include
 INCLUDE	+= -I ../include
 INCLUDE	+= -I ../lib-properties/include
-INCLUDE	+= -I ../lib-artnet/include -I ../lib-lightset/include -I ../lib-ledblink/include -I ../lib-network/include
+INCLUDE	+= -I ../lib-lightset/include -I ../lib-ledblink/include -I ../lib-network/include
 
-OBJS	= src/artnetnode.o src/artnettimecode.o src/artnettimesync.o src/artnetparams.o
+OBJS	= src/artnetnode.o src/artnetparams.o
 
 EXTRACLEAN = src/*.o
 
