@@ -2,7 +2,7 @@
  * @file pwmled.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
+#include <unistd.h>
 
-#include "pwmled.h"
-
+#include "pca9685pwmled.h"
 
 static void sleep_ms(int milliseconds) {
 	struct timespec ts;
@@ -38,13 +38,18 @@ static void sleep_ms(int milliseconds) {
 }
 
 int main(int argc, char **argv) {
+	if (getuid() != 0) {
+		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+		return -1;
+	}
+
 	int i;
-	PWMLed pwmled;
+	PCA9685PWMLed pwmled;
 
 	pwmled.Dump();
 
 	// direct LED anode to +5V
-	pwmled.SetInvert(true);
+	// pwmled.SetInvert(true);
 
 	for (i = 0; i < 5; i++) {
 		pwmled.SetFullOn(CHANNEL(16), true);
@@ -81,22 +86,38 @@ int main(int argc, char **argv) {
 	pwmled.Set(CHANNEL(16), PCA9685_VALUE_MIN);
 	pwmled.Dump();
 
-	sleep_ms(1000);
+	sleep(1);
+
+	uint32_t j = 0xFF;
 
 	for (;;) {
+		uint8_t c1 = (uint8_t) j;
+		uint8_t c2 = (uint8_t) (j >> 8);
+		uint8_t c3 = (uint8_t) (j >> 16);
 
-		for (i = 0; i <= 100; i++) {
-			pwmled.SetPct(CHANNEL(0), PCT(i));
-			pwmled.SetPct(CHANNEL(1), PCT(100 - i));
-			sleep_ms(10);
+		pwmled.Set(0, c1);
+		pwmled.Set(1, c2);
+		pwmled.Set(2, c3);
+
+		pwmled.Set(3, c3);
+		pwmled.Set(4, c1);
+		pwmled.Set(5, c2);
+
+		pwmled.Set(6, c2);
+		pwmled.Set(7, c3);
+		pwmled.Set(8, c1);
+
+		pwmled.Set(9, (uint8_t) (0xFF - c1));
+		pwmled.Set(10, (uint8_t) (0xFF - c2));
+		pwmled.Set(11, (uint8_t) (0xFF - c3));
+
+		j <<= 8;
+
+		if (j == 0) {
+			j = 0xFF;
 		}
 
-		for (i = 100; i >= 0; i--) {
-			pwmled.SetPct(CHANNEL(0), PCT(i));
-			pwmled.SetPct(CHANNEL(1), PCT(100 - i));
-			sleep_ms(10);
-		}
+		pwmled.Dump();
+		sleep(1);
 	}
-
-	return 0;
 }

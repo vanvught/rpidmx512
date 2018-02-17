@@ -2,7 +2,7 @@
  * @file pca9685.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
+#include <assert.h>
 
 #include "bcm2835.h"
 
@@ -320,6 +322,7 @@ uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
 }
 
 void PCA9685::Dump(void) {
+#ifndef NDEBUG
 	uint8_t reg = I2cReadReg(PCA9685_REG_MODE1);
 
 	printf("MODE1 - Mode register 1 (address 00h) : %02Xh\n", reg);
@@ -361,6 +364,7 @@ void PCA9685::Dump(void) {
 	Read(16, &on, &off);
 	printf("ALL_LED_ON  : %04x\n", on);
 	printf("ALL_LED_OFF : %04x\n", off);
+#endif
 }
 
 void PCA9685::AutoIncrement(bool bMode) {

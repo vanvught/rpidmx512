@@ -2,7 +2,7 @@
  * @file simple.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,16 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "pca9685.h"
 
 int main(int argc, char **argv) {
+	if (getuid() != 0) {
+		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+		return -1;
+	}
+
 	uint16_t OnValue, OffValue;
 	PCA9685 pca9685;
 

@@ -2,7 +2,7 @@
  * @file pwmled.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,21 @@
 
 #include <stdint.h>
 
-#include "pwmled.h"
-
-#ifndef MIN
-#  define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
+#include "pca9685pwmled.h"
 
 #define MAX_12BIT	(0xFFF)
-#define MAX_PCT		(100)
-#define MAX_DMX		(0xFF)
+#define MAX_8BIT	(0xFF)
 
-PWMLed::PWMLed(uint8_t nAddress): PCA9685(nAddress) {
+PCA9685PWMLed::PCA9685PWMLed(uint8_t nAddress): PCA9685(nAddress) {
 	SetFrequency(PWMLED_DEFAULT_FREQUENCY);
 }
 
-PWMLed::~PWMLed(void) {
+PCA9685PWMLed::~PCA9685PWMLed(void) {
 }
 
-void PWMLed::Set(uint8_t nChannel, uint16_t nData) {
-	nData = MIN(nData, MAX_12BIT);
+void PCA9685PWMLed::Set(uint8_t nChannel, uint16_t nData) {
 
-	if (nData == MAX_12BIT) {
+	if (nData >= MAX_12BIT) {
 		SetFullOn(nChannel, true);
 	} else if (nData == 0) {
 		SetFullOff(nChannel, true);
@@ -54,27 +48,14 @@ void PWMLed::Set(uint8_t nChannel, uint16_t nData) {
 	}
 }
 
-void PWMLed::SetPct(uint8_t nChannel, uint8_t nPercentage) {
-	nPercentage = MIN(nPercentage, MAX_PCT);
+void PCA9685PWMLed::Set(uint8_t nChannel, uint8_t nData) {
 
-	if (nPercentage == MAX_PCT) {
+	if (nData == MAX_8BIT) {
 		SetFullOn(nChannel, true);
-	} else if (nPercentage == 0) {
+	} else if (nData == 0) {
 		SetFullOff(nChannel, true);
 	} else {
-		const uint16_t nData = (uint16_t) (.5 + ((float) MAX_12BIT / MAX_PCT) * nPercentage);
-		Write(nChannel, nData);
-	}
-}
-
-void PWMLed::SetDmx(uint8_t nChannel, uint8_t nDmx) {
-
-	if (nDmx == MAX_DMX) {
-		SetFullOn(nChannel, true);
-	} else if (nDmx == 0) {
-		SetFullOff(nChannel, true);
-	} else {
-		const uint16_t nData =  (uint16_t) ((MAX_12BIT / MAX_DMX) * nDmx);
-		Write(nChannel, nData);
+		const uint16_t nValue = (uint16_t) (nData << 4) | (uint16_t) (nData >> 4);
+		Write(nChannel, nValue);
 	}
 }

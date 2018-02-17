@@ -9,7 +9,7 @@ INCLUDE	+= -I ../lib-bcm2835_circle/include
 INCLUDE	+= -I ../include
 
 OBJS  = src/pca9685.o
-OBJS += src/pwmled.o src/servo.o 
+OBJS += src/pca9685pwmled.o src/pca9685servo.o 
 
 EXTRACLEAN = src/*.o
 
