@@ -1,8 +1,8 @@
 /**
- * @file mcp48x2.h
+ * @file mcp4822.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef MCP48X2_H_
-#define MCP48X2_H_
+
+#ifndef MCP4822_H_
+#define MCP4822_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#define MCP48X2_SPI_SPEED_MAX_HZ		20000000	///< 20 MHz
-#define MCP48X2_SPI_SPEED_DEFAULT_HZ	15000000	///< 15 MHz
+#include "device_info.h"
 
-#define MCP4802_DATA(x)			((uint16_t)((uint8_t)(x) << 4))
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define MCP48X2_WRITE_DAC_A		((uint16_t)(0 << 15))
-#define MCP48X2_WRITE_DAC_B		((uint16_t)(1 << 15))
+extern bool mcp4822_start(device_info_t *);
 
-#endif /* MCP48X2_H_ */
+extern void mcp4822_write_a(const device_info_t *, uint16_t);
+extern void mcp4822_write_b(const device_info_t *, uint16_t);
+extern void mcp4822_write_ab(const device_info_t *, uint16_t, uint16_t);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MCP4822_H_ */
