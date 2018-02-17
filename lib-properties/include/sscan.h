@@ -46,6 +46,9 @@ extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint
 extern int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
 extern int sscan_i2c_address(const char *, const char *, /*@out@*/uint8_t *);
 extern int sscan_hexuint16(const char *buf, const char *name, /*@out@*/uint16_t *uint16);
+#ifndef RDM_RESPONDER //Todo remove
+extern int sscan_spi(const char *buf, /*@out@*/char *spi, /*@out@*/char *name, /*@out@*/uint8_t *len, /*@out@*/uint8_t *address, /*@out@*/uint16_t *dmx, /*@out@*/uint32_t *speed);
+#endif
 
 #ifdef __cplusplus
 class Sscan {
@@ -88,6 +91,10 @@ public:
 	
 	inline static int HexUint16(const char *a, const char *b, uint16_t *c) {
 		return sscan_hexuint16(a, b, c);
+	}
+
+	inline static int Spi(const char *a, char *b, char *c, uint8_t *d, uint8_t *e, uint16_t *f, uint32_t *g) {
+		return sscan_spi(a, b, c , d, e, f, g);
 	}
 
 private:
