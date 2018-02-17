@@ -37,7 +37,7 @@ clean :
 OBJECTS := $(patsubst $(ROOT)/lib-i2c/src/%.cpp,%.o,$(wildcard $(ROOT)/lib-i2c/src/*.cpp))
 
 $(ROOT)/lib-i2c/lib_linux/libi2c.a :
-	cd $(ROOT)/lib-i2c && make -f Makefile.Linux
+	cd $(ROOT)/lib-i2c && make -f Makefile.Linux "DEF=-DRASPPI"
 	
 i2cdetect : Makefile i2cdetect.c $(ROOT)/lib-i2c/lib_linux/libi2c.a
 	$(CC) i2cdetect.c $(INCLUDES) $(COPS) -o i2cdetect $(LIB) $(LDLIBS)

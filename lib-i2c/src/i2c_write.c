@@ -40,9 +40,6 @@ void i2c_write_nb(const char *data, uint32_t length) {
 
 #if defined(__linux__)
 void i2c_write(uint8_t data) {
-	//char buffer[2];
-	//buffer[0] = data;
- 	//bcm2835_i2c_write(buffer, 1);
 	bcm2835_i2c_write((char *)&data, 1);
 }
 
