@@ -1,6 +1,6 @@
 #
-DEFINES = RASPPI
+DEFINES = RASPPI NDEBUG
 #
-EXTRA_INCLUDES = ../lib-pca9685/include ../lib-lightset/include ../lib-properties/include ../lib-bcm2835_raspbian/include
+EXTRA_INCLUDES = ../lib-pca9685/include ../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include ../lib-bcm2835_raspbian/include
 #
 include ../linux-template/lib/Rules.mk

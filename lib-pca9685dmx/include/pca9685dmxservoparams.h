@@ -1,8 +1,8 @@
 /**
- * @file pwmledparams.h
+ * @file pwmdmxpca9685servoparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef PWMLEDPARAMS_H_
-#define PWMLEDPARAMS_H_
+#ifndef PCA9685DMXSERVOPARAMS_H_
+#define PCA9685DMXSERVOPARAMS_H_
 
 #include <stdint.h>
 
-#include "params.h"
-#include "pwmled.h"
-#include "pwmleddmx.h"
+#include "pca9685dmxparams.h"
+#include "pca9685dmxservo.h"
 
-class PWMLedParams: public Params {
+class PCA9685DmxServoParams: public PCA9685DmxParams  {
 public:
-	PWMLedParams(void);
-	~PWMLedParams(void);
+	PCA9685DmxServoParams(void);
+	~PCA9685DmxServoParams(void);
 
-	void Set(PWMLedDmx *);
+	void Set(PCA9685DmxServo *);
 	void Dump(void);
 
 protected:
-	bool IsMaskSet(uint16_t) const;
+	bool IsMaskSet(uint16_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *s);
+    void callbackFunction(const char *pLine);
 
 private:
     uint32_t m_bSetList;
-    uint16_t m_nPwmFrequency;
-	bool m_bOutputInvert;
-	bool m_bOutputDriver;
+    uint8_t m_nI2cAddress;
+	uint16_t m_nLeftUs;
+	uint16_t m_nRightUs;
 };
 
-#endif /* PWMLEDPARAMS_H_ */
+#endif /* PCA9685DMXSERVOPARAMS_H_ */

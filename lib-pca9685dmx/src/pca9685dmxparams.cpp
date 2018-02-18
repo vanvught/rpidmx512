@@ -1,5 +1,5 @@
 /**
- * @file params.cpp
+ * @file pca9685dmxparams.cpp
  *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,7 +35,7 @@
  #include "util.h"
 #endif
 
-#include "params.h"
+#include "pca9685dmxparams.h"
 
 #include "pca9685.h"
 
@@ -63,7 +61,7 @@ static const char PARAMS_BOARD_INSTANCES[] ALIGNED = "board_instances";
 
 #define DMX_SLOT_INFO_LENGTH				128
 
-Params::Params(const char *pFileName): m_bSetList(0) {
+PCA9685DmxParams::PCA9685DmxParams(const char *pFileName): m_bSetList(0) {
 	assert(pFileName != 0);
 
 	m_nI2cAddress = PCA9685_I2C_ADDRESS_DEFAULT;
@@ -79,23 +77,23 @@ Params::Params(const char *pFileName): m_bSetList(0) {
 		m_pDmxSlotInfoRaw[i] = 0;
 	}
 
-	ReadConfigFile configfile(Params::staticCallbackFunction, this);
+	ReadConfigFile configfile(PCA9685DmxParams::staticCallbackFunction, this);
 	configfile.Read(pFileName);
 }
 
-Params::~Params(void) {
+PCA9685DmxParams::~PCA9685DmxParams(void) {
 	delete[] m_pDmxSlotInfoRaw;
 	m_pDmxSlotInfoRaw = 0;
 }
 
-void Params::staticCallbackFunction(void *p, const char *s) {
+void PCA9685DmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((Params *) p)->callbackFunction(s);
+	((PCA9685DmxParams *) p)->callbackFunction(s);
 }
 
-void Params::callbackFunction(const char *pLine) {
+void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
 	uint8_t value8;
@@ -142,47 +140,32 @@ void Params::callbackFunction(const char *pLine) {
 	}
 }
 
-uint8_t Params::GetI2cAddress(bool *pIsSet) const {
-	if (pIsSet != 0) {
-		*pIsSet = IsMaskSet(I2C_SLAVE_ADDRESS_MASK);
-	}
-
+uint8_t PCA9685DmxParams::GetI2cAddress(bool &pIsSet) const {
+	pIsSet = IsMaskSet(I2C_SLAVE_ADDRESS_MASK);
 	return m_nI2cAddress;
 }
 
-uint16_t Params::GetDmxStartAddress(bool *pIsSet) const {
-	if (pIsSet != 0) {
-		*pIsSet = IsMaskSet(DMX_START_ADDRESS_MASK);
-	}
-
+uint16_t PCA9685DmxParams::GetDmxStartAddress(bool &pIsSet) const {
+	pIsSet = IsMaskSet(DMX_START_ADDRESS_MASK);
 	return m_nDmxStartAddress;
 }
 
-uint16_t Params::GetDmxFootprint(bool *pIsSet) const {
-	if (pIsSet != 0) {
-		*pIsSet = IsMaskSet(DMX_FOOTPRINT_MASK);
-	}
-
+uint16_t PCA9685DmxParams::GetDmxFootprint(bool &pIsSet) const {
+	pIsSet = IsMaskSet(DMX_FOOTPRINT_MASK);
 	return m_nDmxFootprint;
 }
 
-uint8_t Params::GetBoardInstances(bool *pIsSet) const {
-	if (pIsSet != 0) {
-		*pIsSet = IsMaskSet(BOARD_INSTANCES_MASK);
-	}
-
+uint8_t PCA9685DmxParams::GetBoardInstances(bool &pIsSet) const {
+	pIsSet = IsMaskSet(BOARD_INSTANCES_MASK);
 	return m_nBoardInstances;
 }
 
-const char* Params::GetDmxSlotInfoRaw(bool* pIsSet) const {
-	if (pIsSet != 0) {
-		*pIsSet = IsMaskSet(DMX_SLOT_INFO_MASK);
-	}
-
+const char* PCA9685DmxParams::GetDmxSlotInfoRaw(bool &pIsSet) const {
+	pIsSet = IsMaskSet(DMX_SLOT_INFO_MASK);
 	return m_pDmxSlotInfoRaw;
 }
 
-void Params::Dump(void) {
+void PCA9685DmxParams::Dump(void) {
 #ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
@@ -210,10 +193,10 @@ void Params::Dump(void) {
 #endif
 }
 
-bool Params::IsMaskSet(uint16_t mask) const {
+bool PCA9685DmxParams::IsMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-bool Params::GetSetList(void) const {
+bool PCA9685DmxParams::GetSetList(void) const {
 	return m_bSetList != 0;
 }

@@ -9,11 +9,11 @@ INCLUDE	+= -I ../lib-pca9685/include
 INCLUDE	+= -I ../lib-lightset/include -I ../lib-properties/include
 INCLUDE	+= -I ../include
 
-OBJS  = src/params.o
-OBJS += src/pwmleddmx.o src/pwmledparams.o
-OBJS += src/servodmx.o src/servoparams.o 
+OBJS  = src/pca9685dmxparams.o
+OBJS  += src/pca9685dmxledparams.o src/pca9685dmxled.o
+OBJS  += src/pca9685dmxservoparams.o src/pca9685dmxservo.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/*.o *.lst
 
 libpca9685dmx.a: $(OBJS)
 	rm -f $@

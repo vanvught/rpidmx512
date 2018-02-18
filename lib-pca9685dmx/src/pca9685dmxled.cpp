@@ -1,8 +1,8 @@
 /**
- * @file pwmleddmx.cpp
+ * @file pca9685dmxled.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,7 @@
 #endif
 #include <assert.h>
 
-#include "pwmleddmx.h"
-
-#include "pwmled.h"
-#include "pca9685.h"
+#include "pca9685dmxled.h"
 
 #include "parse.h"
 
@@ -47,7 +44,7 @@ static unsigned long ceil(float f) {
 	return i + 1;
 }
 
-PWMLedDmx::PWMLedDmx(void) :
+PCA9685DmxLed::PCA9685DmxLed(void):
 	m_nDmxStartAddress(1),
 	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
 	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
@@ -61,10 +58,9 @@ PWMLedDmx::PWMLedDmx(void) :
 	m_pSlotInfoRaw(0),
 	m_pSlotInfo(0)
 {
-
 }
 
-PWMLedDmx::~PWMLedDmx(void) {
+PCA9685DmxLed::~PCA9685DmxLed(void) {
 	delete[] m_pDmxData;
 	m_pDmxData = 0;
 
@@ -80,19 +76,19 @@ PWMLedDmx::~PWMLedDmx(void) {
 	m_pSlotInfo = 0;
 }
 
-void PWMLedDmx::Start(void) {
+void PCA9685DmxLed::Start(void) {
 	if (m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = true;
 
-	if (m_pPWMLed == 0) {
+	if (__builtin_expect((m_pPWMLed == 0), 0)) {
 		Initialize();
 	}
 }
 
-void PWMLedDmx::Stop(void) {
+void PCA9685DmxLed::Stop(void) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -100,7 +96,7 @@ void PWMLedDmx::Stop(void) {
 	m_bIsStarted = false;
 }
 
-void PWMLedDmx::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
+void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -124,7 +120,7 @@ void PWMLedDmx::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength
 #ifndef NDEBUG
 				printf("m_pPWMLed[%d]->SetDmx(CHANNEL(%d), %d)\n", (int) j, (int) i, (int) value);
 #endif
-				m_pPWMLed[j]->SetDmx(CHANNEL(i), value);
+				m_pPWMLed[j]->Set(CHANNEL(i), value);
 			}
 			*q = *p;
 			p++;
@@ -134,7 +130,7 @@ void PWMLedDmx::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength
 	}
 }
 
-bool PWMLedDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+bool PCA9685DmxLed::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS)) {
@@ -145,13 +141,11 @@ bool PWMLedDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PWMLedDmx::SetDmxFootprint(uint16_t nDmxFootprint) {
-	m_nDmxFootprint = nDmxFootprint;
-	m_nBoardInstances = (uint16_t) ceil((float) nDmxFootprint / PCA9685_PWM_CHANNELS);
+void PCA9685DmxLed::SetSlotInfoRaw(const char* pSlotInfoRaw) {
+	m_pSlotInfoRaw = (char *)pSlotInfoRaw;
 }
 
-
-bool PWMLedDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
+bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
@@ -162,46 +156,47 @@ bool PWMLedDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlo
 	return true;
 }
 
-void PWMLedDmx::SetSlotInfoRaw(const char* pSlotInfoRaw) {
-	m_pSlotInfoRaw = (char *)pSlotInfoRaw;
-}
-
-uint8_t PWMLedDmx::GetI2cAddress(void) const {
+uint8_t PCA9685DmxLed::GetI2cAddress(void) const {
 	return m_nI2cAddress;
 }
 
-void PWMLedDmx::SetI2cAddress(uint8_t nI2cAddress) {
+void PCA9685DmxLed::SetI2cAddress(uint8_t nI2cAddress) {
 	m_nI2cAddress = nI2cAddress;
 }
 
-void PWMLedDmx::SetBoardInstances(uint8_t nBoardInstances) {
+void PCA9685DmxLed::SetBoardInstances(uint8_t nBoardInstances) {
 	if ((nBoardInstances != 0) && (nBoardInstances <= BOARD_INSTANCES_MAX)) {
 		m_nBoardInstances = nBoardInstances;
 		m_nDmxFootprint = nBoardInstances * PCA9685_PWM_CHANNELS;
 	}
 }
 
-void PWMLedDmx::SetPwmfrequency(uint16_t nPwmfrequency) {
+void PCA9685DmxLed::SetPwmfrequency(uint16_t nPwmfrequency) {
 	m_nPwmFrequency = nPwmfrequency;
 }
 
-bool PWMLedDmx::GetInvert(void) const {
+bool PCA9685DmxLed::GetInvert(void) const {
 	return m_bOutputInvert;
 }
 
-void PWMLedDmx::SetInvert(bool bOutputInvert) {
+void PCA9685DmxLed::SetInvert(bool bOutputInvert) {
 	m_bOutputInvert = bOutputInvert;
 }
 
-bool PWMLedDmx::GetOutDriver(void) const {
+bool PCA9685DmxLed::GetOutDriver(void) const {
 	return m_bOutputDriver;
 }
 
-void PWMLedDmx::SetOutDriver(bool bOutputDriver) {
+void PCA9685DmxLed::SetOutDriver(bool bOutputDriver) {
 	m_bOutputDriver= bOutputDriver;
 }
 
-void PWMLedDmx::Initialize(void) {
+void PCA9685DmxLed::SetDmxFootprint(uint16_t nDmxFootprint) {
+	m_nDmxFootprint = nDmxFootprint;
+	m_nBoardInstances = (uint16_t) ceil((float) nDmxFootprint / PCA9685_PWM_CHANNELS);
+}
+
+void PCA9685DmxLed::Initialize(void) {
 	assert(m_pDmxData == 0);
 	m_pDmxData = new uint8_t[m_nDmxFootprint];
 	assert(m_pDmxData != 0);
@@ -211,7 +206,7 @@ void PWMLedDmx::Initialize(void) {
 	}
 
 	assert(m_pPWMLed == 0);
-	m_pPWMLed = new PWMLed*[m_nBoardInstances];
+	m_pPWMLed = new PCA9685PWMLed*[m_nBoardInstances];
 	assert(m_pPWMLed != 0);
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
@@ -220,7 +215,7 @@ void PWMLedDmx::Initialize(void) {
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
 		assert(m_pPWMLed[i] == 0);
-		m_pPWMLed[i] = new PWMLed(m_nI2cAddress + i);
+		m_pPWMLed[i] = new PCA9685PWMLed(m_nI2cAddress + i);
 		assert(m_pPWMLed[i] != 0);
 
 		m_pPWMLed[i]->SetInvert(m_bOutputInvert);
@@ -252,4 +247,3 @@ void PWMLedDmx::Initialize(void) {
 		}
 	}
 }
-

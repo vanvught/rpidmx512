@@ -1,8 +1,8 @@
 /**
- * @file params.h
+ * @file pca9685leddmxparams.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef PARAMS_H_
-#define PARAMS_H_
+#ifndef PCA9685DMXLEDPARAMS_H_
+#define PCA9685DMXLEDPARAMS_H_
 
 #include <stdint.h>
 
-class Params {
+#include "pca9685dmxparams.h"
+#include "pca9685dmxled.h"
+
+class PCA9685DmxLedParams: public PCA9685DmxParams {
 public:
-	Params(const char *);
-	~Params(void);
+	PCA9685DmxLedParams(void);
+	~PCA9685DmxLedParams(void);
 
-	uint8_t GetI2cAddress(bool *pIsSet = 0) const;
-	uint16_t GetDmxStartAddress(bool *pIsSet = 0) const;
-	uint16_t GetDmxFootprint(bool *pIsSet = 0) const;
-	uint8_t GetBoardInstances(bool *pIsSet = 0) const;
-	const char* GetDmxSlotInfoRaw(bool *pIsSet = 0) const;
-
+	void Set(PCA9685DmxLed *);
 	void Dump(void);
 
-	bool GetSetList(void) const;
-
-protected:
-	bool IsMaskSet(uint16_t) const;
+private:
+	bool IsMaskSet(uint16_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *s);
+    void callbackFunction(const char *pLine);
 
 private:
-    uint32_t m_bSetList;
+    uint16_t m_bSetList;
     uint8_t m_nI2cAddress;
-    uint16_t m_nDmxStartAddress;
-    uint16_t m_nDmxFootprint;
-    uint8_t m_nBoardInstances;
-    char *m_pDmxSlotInfoRaw;
+    uint16_t m_nPwmFrequency;
+	bool m_bOutputInvert;
+	bool m_bOutputDriver;
 };
 
-#endif /* PARAMS_H_ */
+#endif /* PCA9685DMXLEDPARAMS_H_ */
