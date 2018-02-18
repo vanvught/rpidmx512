@@ -1,0 +1,22 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-pca9685/include -I ../lib-pca9685dmx/include
+INCLUDE	+= -I ../lib-tlc59711/include -I ../lib-tlc59711dmx/include
+INCLUDE	+= -I ../lib-lightset/include -I ../lib-properties/include
+INCLUDE	+= -I ../include
+
+OBJS  = src/pwmdmxparams.o src/pwmdmx.o
+
+EXTRACLEAN = src/*.o *.lst
+
+libpwmdmx.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libpwmdmx.a | $(PREFIX)c++filt > libpwmdmx.lst
+
+include $(CIRCLEHOME)/Rules.mk
