@@ -1,0 +1,21 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-tlc59711/include
+INCLUDE	+= -I ../lib-lightset/include -I ../lib-properties/include
+INCLUDE	+= -I ../include
+
+OBJS  = src/tlc59711dmxparams.o src/tlc59711dmx.o
+
+EXTRACLEAN = src/*.o *.lst
+
+libtlc59711dmx.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libtlc59711dmx.a | $(PREFIX)c++filt > libtlc59711dmx.lst
+
+include $(CIRCLEHOME)/Rules.mk
