@@ -113,6 +113,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, uint8_t reg, uint8_t v
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_writenb(spiData, 3);
 	}
 }

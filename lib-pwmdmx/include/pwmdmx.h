@@ -43,8 +43,8 @@ public:
 	PwmDmx(void);
 	~PwmDmx(void);
 
-	TPwmDmxMode GetPwmDmxMode(void) const;
-	TPwmDmxChip GetPwmDmxChip(void) const;
+	TPwmDmxMode GetPwmDmxMode(bool &IsSet) const;
+	TPwmDmxChip GetPwmDmxChip(bool &IsSet) const;
 
 	LightSet *GetLightSet(void) const;
 

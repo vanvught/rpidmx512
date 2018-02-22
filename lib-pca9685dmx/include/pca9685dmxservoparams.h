@@ -36,6 +36,8 @@ public:
 	PCA9685DmxServoParams(void);
 	~PCA9685DmxServoParams(void);
 
+	bool Load(void);
+
 	void Set(PCA9685DmxServo *);
 	void Dump(void);
 

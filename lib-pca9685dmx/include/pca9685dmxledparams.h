@@ -36,6 +36,8 @@ public:
 	PCA9685DmxLedParams(void);
 	~PCA9685DmxLedParams(void);
 
+	bool Load(void);
+
 	void Set(PCA9685DmxLed *);
 	void Dump(void);
 

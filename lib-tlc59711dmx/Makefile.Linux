@@ -1,5 +1,5 @@
 #
-DEFINES = RASPPI NDEBUG
+DEFINES = RASPPI #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-tlc59711/include ../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include ../lib-bcm2835_raspbian/include
 #

@@ -358,6 +358,7 @@ void TLC59711::Update(void) {
 
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
 	bcm2835_spi_setClockDivider(m_nClockDivider);
+	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_writenb((char *) m_pBuffer, m_nBufSize * 2);
 }
 

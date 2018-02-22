@@ -35,6 +35,8 @@ public:
 	TLC59711DmxParams(void);
 	~TLC59711DmxParams(void);
 
+	bool Load(void);
+
 	void Set(TLC59711Dmx *);
 	void Dump(void);
 
@@ -49,9 +51,10 @@ private:
 
 private:
     uint16_t m_bSetList;
-    uint32_t m_nSpiSpeedHz;
 	TTLC59711Type m_LEDType;
 	uint8_t m_nLEDCount;
+	uint16_t m_nDmxStartAddress;
+    uint32_t m_nSpiSpeedHz;
 };
 
 #endif /* PWMDMXTLC59711PARAMS_H_ */

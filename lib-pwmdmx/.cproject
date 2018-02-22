@@ -28,6 +28,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-pca9685/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-tlc59711/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.164743927" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__circle__"/>
@@ -41,6 +42,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-pca9685/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-tlc59711/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1118637279" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__circle__"/>
@@ -62,6 +64,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-pca9685/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-tlc59711/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Circle/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1398939168" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

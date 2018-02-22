@@ -115,6 +115,7 @@ bool NetworkParams::Load(void) {
 }
 
 void NetworkParams::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
@@ -140,6 +141,7 @@ void NetworkParams::Dump(void) {
 	if (isMaskSet(SET_NAME_SERVER_MASK)) {
 		printf(" Name Server : " IPSTR "\n", IP2STR(m_NameServer));
 	}
+#endif
 }
 
 bool NetworkParams::isDhcpUsed(void) const {

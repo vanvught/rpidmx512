@@ -122,6 +122,7 @@ void bw_spi_lcd_set_cursor(const device_info_t *device_info, uint8_t line, uint8
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }
@@ -147,6 +148,7 @@ void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(data, length + 2);
 	}
 }
@@ -198,6 +200,7 @@ void bw_spi_lcd_set_contrast(const device_info_t *device_info, uint8_t value) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }
@@ -214,6 +217,7 @@ void bw_spi_lcd_set_backlight(const device_info_t *device_info,	uint8_t value) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }
@@ -244,6 +248,7 @@ void bw_spi_lcd_get_backlight(const device_info_t *device_info, uint8_t *value) 
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 
@@ -261,6 +266,7 @@ void bw_spi_lcd_get_contrast(const device_info_t *device_info, uint8_t *value) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		spi_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 

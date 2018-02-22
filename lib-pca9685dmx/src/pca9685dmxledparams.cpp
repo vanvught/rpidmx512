@@ -58,11 +58,14 @@ PCA9685DmxLedParams::PCA9685DmxLedParams(void) :
 	m_bOutputInvert(false), // Output logic state not inverted. Value to use when external driver used.
 	m_bOutputDriver(true)	// The 16 LEDn outputs are configured with a totem pole structure.
 {
-	ReadConfigFile configfile(PCA9685DmxLedParams::staticCallbackFunction, this);
-	configfile.Read(PARAMS_FILE_NAME);
 }
 
 PCA9685DmxLedParams::~PCA9685DmxLedParams(void) {
+}
+
+bool PCA9685DmxLedParams::Load(void) {
+	ReadConfigFile configfile(PCA9685DmxLedParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void PCA9685DmxLedParams::Set(PCA9685DmxLed* pDmxLed) {
@@ -118,22 +121,22 @@ void PCA9685DmxLedParams::Dump(void) {
 		return;
 	}
 
-	printf("PWM led params \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
 	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
-		printf("%s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
+		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
 	if(IsMaskSet(SET_PWM_FREQUENCY_MASK)) {
-		printf("%s=%d Hz\n", PARAMS_PWM_FREQUENCY, m_nPwmFrequency);
+		printf(" %s=%d Hz\n", PARAMS_PWM_FREQUENCY, m_nPwmFrequency);
 	}
 
 	if(IsMaskSet(SET_OUTPUT_INVERT_MASK)) {
-		printf("%s=%d [Output logic state %sinverted]\n", PARAMS_OUTPUT_INVERT, (int) m_bOutputInvert, m_bOutputInvert ? "" : "not ");
+		printf(" %s=%d [Output logic state %sinverted]\n", PARAMS_OUTPUT_INVERT, (int) m_bOutputInvert, m_bOutputInvert ? "" : "not ");
 	}
 
 	if(IsMaskSet(SET_OUTPUT_DRIVER_MASK)) {
-		printf("%s=%d [The 16 LEDn outputs are configured with %s structure]\n", PARAMS_OUTPUT_DRIVER, (int) m_bOutputDriver, m_bOutputDriver ? "a totem pole" : "an open-drain");
+		printf(" %s=%d [The 16 LEDn outputs are configured with %s structure]\n", PARAMS_OUTPUT_DRIVER, (int) m_bOutputDriver, m_bOutputDriver ? "a totem pole" : "an open-drain");
 	}
 
 	PCA9685DmxParams::Dump();
@@ -189,3 +192,4 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 		return;
 	}
 }
+

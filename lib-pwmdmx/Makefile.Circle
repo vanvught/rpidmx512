@@ -10,7 +10,7 @@ INCLUDE	+= -I ../lib-tlc59711/include -I ../lib-tlc59711dmx/include
 INCLUDE	+= -I ../lib-lightset/include -I ../lib-properties/include
 INCLUDE	+= -I ../include
 
-OBJS  = src/pwmdmxparams.o src/pwmdmx.o
+OBJS  = src/pwmdmx.o
 
 EXTRACLEAN = src/*.o *.lst
 

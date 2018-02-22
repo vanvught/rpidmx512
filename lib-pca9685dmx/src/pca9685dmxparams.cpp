@@ -172,23 +172,23 @@ void PCA9685DmxParams::Dump(void) {
 	}
 
 	if(IsMaskSet(DMX_START_ADDRESS_MASK)) {
-		printf("%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
+		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
 	}
 
 	if(IsMaskSet(DMX_FOOTPRINT_MASK)) {
-		printf("%s=%d\n", PARAMS_DMX_FOOTPRINT, m_nDmxFootprint);
+		printf(" %s=%d\n", PARAMS_DMX_FOOTPRINT, m_nDmxFootprint);
 	}
 
 	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
-		printf("%s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
+		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
 	if(IsMaskSet(BOARD_INSTANCES_MASK)) {
-		printf("%s=%d\n", PARAMS_BOARD_INSTANCES, m_nBoardInstances);
+		printf(" %s=%d\n", PARAMS_BOARD_INSTANCES, m_nBoardInstances);
 	}
 
 	if(IsMaskSet(DMX_SLOT_INFO_MASK)) {
-		printf("%s=%s\n", PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
+		printf(" %s=%s\n", PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
 	}
 #endif
 }

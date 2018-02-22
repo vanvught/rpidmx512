@@ -33,6 +33,7 @@
  #define ALIGNED
  #include <string.h>
 #elif defined(__circle__)
+ #include "circle/util.h"
  #define ALIGNED
 #else
  #include "util.h"
@@ -69,10 +70,8 @@ PwmDmx::PwmDmx(void):
 	m_pLightSet(0)
 {
 	ReadConfigFile configfile(PwmDmx::staticCallbackFunction, this);
+
 	if (configfile.Read(PARAMS_FILE_NAME)) {
-		if (m_tPwmDmxChip == PWMDMX_CHIP_TLC59711) {
-			m_tPwmDmxMode = PWMDMX_MODE_PWMLED;
-		}
 	}
 #ifndef NDEBUG
 	else {
@@ -81,29 +80,37 @@ PwmDmx::PwmDmx(void):
 #endif
 
 	if (m_tPwmDmxChip == PWMDMX_CHIP_TLC59711) {
+		m_tPwmDmxMode = PWMDMX_MODE_PWMLED;
 		TLC59711Dmx *pwmleddmx = new TLC59711Dmx();
 		TLC59711DmxParams pwmledparms;
-		pwmledparms.Dump();
-		pwmledparms.Set(pwmleddmx);
+		if (pwmledparms.Load()) {
+			pwmledparms.Dump();
+			pwmledparms.Set(pwmleddmx);
+		}
 		pwmleddmx->Start();
 		m_pLightSet = pwmleddmx;
 	} else if (m_tPwmDmxChip == PWMDMX_CHIP_PCA9685) {
 		if (m_tPwmDmxMode == PWMDMX_MODE_SERVO) {
 			PCA9685DmxServo *servodmx = new PCA9685DmxServo();
 			PCA9685DmxServoParams servoparms;
-			servoparms.Dump();
-			servoparms.Set(servodmx);
+			if (servoparms.Load()) {
+				servoparms.Dump();
+				servoparms.Set(servodmx);
+			}
 			servodmx->Start();
 			m_pLightSet = servodmx;
 		} else {
 			PCA9685DmxLed *pwmleddmx = new PCA9685DmxLed();
 			PCA9685DmxLedParams pwmledparms;
-			pwmledparms.Dump();
-			pwmledparms.Set(pwmleddmx);
+			if (pwmledparms.Load()) {
+				pwmledparms.Dump();
+				pwmledparms.Set(pwmleddmx);
+			}
 			pwmleddmx->Start();
 			m_pLightSet = pwmleddmx;
 		}
 	}
+
 }
 
 PwmDmx::~PwmDmx(void) {
@@ -113,11 +120,13 @@ PwmDmx::~PwmDmx(void) {
 	}
 }
 
-TPwmDmxMode PwmDmx::GetPwmDmxMode(void) const {
+TPwmDmxMode PwmDmx::GetPwmDmxMode(bool &IsSet) const {
+	IsSet = IsMaskSet(MODE_MASK);
 	return m_tPwmDmxMode;
 }
 
-TPwmDmxChip PwmDmx::GetPwmDmxChip(void) const {
+TPwmDmxChip PwmDmx::GetPwmDmxChip(bool &IsSet) const {
+	IsSet = IsMaskSet(CHIP_MASK);
 	return m_tPwmDmxChip;
 }
 
@@ -134,14 +143,14 @@ void PwmDmx::Dump(void) {
 		return;
 	}
 
-	printf("PwmDmx params \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
 	if(IsMaskSet(CHIP_MASK)) {
-		printf("%s={%d} [%s]\n", PARAMS_CHIP, (int) m_tPwmDmxChip, aChipName[m_tPwmDmxChip]);
+		printf(" %s={%d} [%s]\n", PARAMS_CHIP, (int) m_tPwmDmxChip, aChipName[m_tPwmDmxChip]);
 	}
 
 	if(IsMaskSet(MODE_MASK)) {
-		printf("%s={%d} [%s]\n", PARAMS_MODE, (int) m_tPwmDmxMode, aModeName[m_tPwmDmxMode]);
+		printf(" %s={%d} [%s]\n", PARAMS_MODE, (int) m_tPwmDmxMode, aModeName[m_tPwmDmxMode]);
 	}
 #endif
 }

@@ -54,13 +54,14 @@ PCA9685DmxServoParams::PCA9685DmxServoParams(void) :
 	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
 	m_nLeftUs(SERVO_LEFT_DEFAULT_US), m_nRightUs(SERVO_RIGHT_DEFAULT_US)
 {
-
-	ReadConfigFile configfile(PCA9685DmxServoParams::staticCallbackFunction,	this);
-	configfile.Read(PARAMS_FILE_NAME);
-
 }
 
 PCA9685DmxServoParams::~PCA9685DmxServoParams(void) {
+}
+
+bool PCA9685DmxServoParams::Load(void) {
+	ReadConfigFile configfile(PCA9685DmxServoParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void PCA9685DmxServoParams::Set(PCA9685DmxServo* pDmxServo) {
@@ -107,18 +108,18 @@ void PCA9685DmxServoParams::Dump(void) {
 		return;
 	}
 
-	printf("Servo params \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
 	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
-		printf("%s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
+		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
 	if(IsMaskSet(LEFT_US_MASK)) {
-		printf("%s=%d\n", PARAMS_LEFT_US, m_nLeftUs);
+		printf(" %s=%d\n", PARAMS_LEFT_US, m_nLeftUs);
 	}
 
 	if(IsMaskSet(RIGHT_US_MASK)) {
-		printf("%s=%d\n", PARAMS_RIGHT_US, m_nRightUs);
+		printf(" %s=%d\n", PARAMS_RIGHT_US, m_nRightUs);
 	}
 
 	PCA9685DmxParams::Dump();
@@ -166,3 +167,4 @@ void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
 		return;
 	}
 }
+

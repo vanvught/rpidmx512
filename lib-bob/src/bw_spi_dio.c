@@ -94,6 +94,7 @@ void bw_spi_dio_fsel_mask(const device_info_t *device_info, uint8_t mask) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }
@@ -111,6 +112,7 @@ void bw_spi_dio_output(const device_info_t *device_info, uint8_t pins) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }

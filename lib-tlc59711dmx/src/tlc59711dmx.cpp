@@ -55,6 +55,7 @@ TLC59711Dmx::TLC59711Dmx(void):
 	m_LEDType(TTLC59711_TYPE_RGB),
 	m_nLEDCount(TLC59711_RGB_CHANNELS)
 {
+	UpdateMembers();
 }
 
 TLC59711Dmx::~TLC59711Dmx(void) {

@@ -93,6 +93,7 @@ void bw_spi_dimmer_output(const device_info_t *device_info, uint8_t value) {
 	} else {
 		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_spi_chipSelect(device_info->chip_select);
+		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_writenb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	}
 }
