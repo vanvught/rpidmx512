@@ -30,11 +30,12 @@ all : SparkFunGetSetParamTest simple_move
 
 clean :
 	rm -f *.o
+	rm -f *.lst
 	rm -f SparkFunGetSetParamTest simple_move
 	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux clean
 	
 $(ROOT)/lib-l6470/lib_linux/libl6470.a :
-	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux
+	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux "DEF=-DRASPPI"
 	
 SparkFunGetSetParamTest : Makefile SparkFunGetSetParamTest.cpp $(ROOT)/lib-l6470/lib_linux/libl6470.a
 	$(CPP) SparkFunGetSetParamTest.cpp $(INCLUDES) $(COPS) -o SparkFunGetSetParamTest $(LIB) $(LDLIBS)

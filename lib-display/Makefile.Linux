@@ -1,5 +1,5 @@
 #
-DEFINES = RASPPI
+DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-i2c/include
 #

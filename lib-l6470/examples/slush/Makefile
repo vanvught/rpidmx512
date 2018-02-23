@@ -30,13 +30,12 @@ all : input_output limit_switch precise_move simple_move get_set_param_test get_
 
 clean :
 	rm -f *.o
+	rm -f *.lst
 	rm -f input_output limit_switch precise_move simple_move get_set_param_test get_temp
 	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux clean
 	
-OBJECTS := $(patsubst $(ROOT)/lib-l6470/src/%.cpp,%.o,$(wildcard $(ROOT)/lib-l6470/src/*.cpp))
-
 $(ROOT)/lib-l6470/lib_linux/libl6470.a :
-	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux
+	cd $(ROOT)/lib-l6470 && make -f Makefile.Linux "DEF=-DRASPPI"
 	
 input_output : Makefile input_output.cpp $(ROOT)/lib-l6470/lib_linux/libl6470.a
 	$(CPP) input_output.cpp $(INCLUDES) $(COPS) -o input_output $(LIB) $(LDLIBS)

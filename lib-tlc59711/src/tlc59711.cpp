@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(__linux__)
  #include <stdio.h>
 #endif
 #include <assert.h>
@@ -34,7 +34,7 @@
 #if defined(__linux__)
 #elif defined(__circle__)
 #else
-#include "bcm2835_spi.h"
+ #include "bcm2835_spi.h"
 #endif
 
 #include "tlc59711.h"
@@ -71,9 +71,9 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_pBuffer(0),
 	m_nBufSize(0)
 {
-#if defined (__linux__)
+#if defined (__linux__)  || defined(__circle__)
 	if (bcm2835_init() == 0) {
-		fprintf(stderr, "Not able to init the bmc2835 library\n");
+		printf("Not able to init the bmc2835 library\n");
 	}
 #endif
 

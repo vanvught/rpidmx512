@@ -124,9 +124,9 @@ SparkFunDmx::SparkFunDmx(void): m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxF
 		m_pL6470DmxModes[i] = 0;
 	}
 
-#if defined(__linux__) && defined(RASPPI)
+#if defined(__linux__) || defined(__circle__)
 	if (bcm2835_init() == 0) {
-		fprintf(stderr, "Not able to init the bmc2835 library\n");
+		printf("Not able to init the bmc2835 library\n");
 		assert(0);
 	}
 #endif

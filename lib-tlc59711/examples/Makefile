@@ -34,10 +34,8 @@ clean :
 	rm -f simple pwmled servo
 	cd $(ROOT)/lib-tlc59711 && make -f Makefile.Linux clean
 	
-OBJECTS := $(patsubst $(ROOT)/lib-tlc59711/src/%.cpp,%.o,$(wildcard $(ROOT)/lib-tlc59711/src/*.cpp))
-
 $(ROOT)/lib-tlc59711/lib_linux/libtlc59711.a :
-	cd $(ROOT)/lib-tlc59711 && make -f Makefile.Linux
+	cd $(ROOT)/lib-tlc59711 && make -f Makefile.Linux "DEF=-DRASPPI"
 	
 pwmled : Makefile pwmled.cpp $(ROOT)/lib-tlc59711/lib_linux/libtlc59711.a
 	$(CPP) pwmled.cpp $(INCLUDES) $(COPS) -o pwmled $(LIB) $(LDLIBS)

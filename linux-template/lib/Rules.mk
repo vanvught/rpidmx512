@@ -1,4 +1,5 @@
 PREFIX ?=
+DEF ?=
 
 CC	= $(PREFIX)gcc
 CPP	= $(PREFIX)g++
@@ -11,7 +12,7 @@ INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
-COPS = $(DEFINES) -DNDEBUG
+COPS = $(DEF) $(DEFINES) #-DNDEBUG
 COPS += $(INCLUDES)
 COPS += -Wall -Werror -O3
 

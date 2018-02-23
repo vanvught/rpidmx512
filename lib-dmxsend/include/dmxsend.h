@@ -29,10 +29,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "dmxrdm.h"
+#include "dmx.h"
 #include "lightset.h"
 
-class DMXSend: public DmxRdm, public LightSet  {
+class DMXSend: public Dmx, public LightSet  {
 public:
 	DMXSend(void);
 	~DMXSend(void);

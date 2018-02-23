@@ -34,10 +34,8 @@ clean :
 	rm -f simple pwmled servo
 	cd $(ROOT)/lib-pca9685 && make -f Makefile.Linux clean
 	
-OBJECTS := $(patsubst $(ROOT)/lib-pca9685/src/%.cpp,%.o,$(wildcard $(ROOT)/lib-pca9685/src/*.cpp))
-
 $(ROOT)/lib-pca9685/lib_linux/libpca9685.a :
-	cd $(ROOT)/lib-pca9685 && make -f Makefile.Linux
+	cd $(ROOT)/lib-pca9685 && make -f Makefile.Linux "DEF=-DRASPPI"
 	
 simple : Makefile simple.cpp $(ROOT)/lib-pca9685/lib_linux/libpca9685.a
 	$(CPP) simple.cpp $(INCLUDES) $(COPS) -o simple $(LIB) $(LDLIBS)

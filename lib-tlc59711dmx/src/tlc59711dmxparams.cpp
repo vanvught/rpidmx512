@@ -65,7 +65,6 @@ TLC59711DmxParams::TLC59711DmxParams(void):
 	m_nDmxStartAddress(1),
 	m_nSpiSpeedHz(0)
 {
-
 }
 
 bool TLC59711DmxParams::Load(void) {
@@ -145,7 +144,6 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	len = 9;
 	buffer[9] = '\0';
 	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
-		printf("len=%d\n", len);
 		// There is no strncasecmp in Circle
 		if ((len == 8) && (strcasecmp(buffer, "tlc59711") == 0)) {
 			m_LEDType = TTLC59711_TYPE_RGB;
