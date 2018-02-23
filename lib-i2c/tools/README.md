@@ -26,6 +26,24 @@ This program can confuse your I2C bus, cause data loss and worse!
     60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 6f
     70: -- -- -- -- -- -- -- --
 
+Compile and build on Linux Raspbian
+	
+	pi@raspberrypi-3:/development/workspace/lib-i2c/tools $ make
+	cd ./../../lib-i2c && make -f Makefile.Linux "DEF=-DRASPPI"
+	make[1]: Entering directory '/development/workspace/lib-i2c'
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_write.c -c -o build_linux/i2c_write.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_is_connected.c -c -o build_linux/i2c_is_connected.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_begin.c -c -o build_linux/i2c_begin.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_lookup_device.c -c -o build_linux/i2c_lookup_device.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_set.c -c -o build_linux/i2c_set.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_read.c -c -o build_linux/i2c_read.o
+	ar -r lib_linux/libi2c.a  build_linux/i2c_write.o build_linux/i2c_is_connected.o build_linux/i2c_begin.o build_linux/i2c_lookup_device.o build_linux/i2c_set.o build_linux/i2c_read.o
+	ar: creating lib_linux/libi2c.a
+	objdump -D lib_linux/libi2c.a  | c++filt > lib_linux.list
+	make[1]: Leaving directory '/development/workspace/lib-i2c'
+	gcc i2cdetect.c -I./../../lib-i2c/include -I./../../lib-bcm2835_raspbian/include -Wall -Werror -O3 -DNDEBUG -o i2cdetect -L./../../lib-i2c/lib_linux -L./../../lib-bcm2835_raspbian/lib_linux -li2c -lbcm2835_raspbian
+	objdump -D i2cdetect | c++filt > i2cdetect.lst
+
 
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 

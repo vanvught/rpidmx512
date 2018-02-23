@@ -35,6 +35,18 @@ This library provides an abstraction layer for the I2C interface.
 	void i2c_write_reg_uint16(uint8_t reg, uint16_t data);
 	void i2c_write_reg_uint16_mask(uint8_t reg, uint16_t data, uint16_t mask);
 
+Compile and build the library on Linux Raspbian
+	
+	pi@raspberrypi-3:/development/workspace/lib-i2c $ make -f Makefile.Linux "DEF=-DRASPPI"
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_write.c -c -o build_linux/i2c_write.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_is_connected.c -c -o build_linux/i2c_is_connected.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_begin.c -c -o build_linux/i2c_begin.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_lookup_device.c -c -o build_linux/i2c_lookup_device.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_set.c -c -o build_linux/i2c_set.o
+	gcc -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 src/i2c_read.c -c -o build_linux/i2c_read.o
+	ar -r lib_linux/libi2c.a  build_linux/i2c_write.o build_linux/i2c_is_connected.o build_linux/i2c_begin.o build_linux/i2c_lookup_device.o build_linux/i2c_set.o build_linux/i2c_read.o
+	ar: creating lib_linux/libi2c.a
+	objdump -D lib_linux/libi2c.a  | c++filt > lib_linux.list
 
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 

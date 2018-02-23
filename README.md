@@ -30,6 +30,9 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3.
 Linux **Open Source** solutions:
 
 - **Art-Net 3** Real-time DMX Monitor
-- **Art-Net 3** L6470 Stepper Motor Controller
 - sACN **E.131** Real-time DMX Monitor
 - **OSC** Real-time Sniffer
+
+Linux **Raspbian Open Source** solutions:
+
+- **Art-Net 3** L6470 Stepper Motor Controller

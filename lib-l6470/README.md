@@ -14,6 +14,22 @@ Supported platforms :
 - Bare-metal
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
 
+Compile and build the library on Linux Raspbian
+
+	pi@raspberrypi-3:/development/workspace/lib-l6470 $ make -f Makefile.Linux "DEF=-DRASPPI"
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/slushboard.cpp -c -o build_linux/slushboard.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/l6470support.cpp -c -o build_linux/l6470support.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/autodriver.cpp -c -o build_linux/autodriver.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/l6470config.cpp -c -o build_linux/l6470config.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/slushtemp.cpp -c -o build_linux/slushtemp.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/l6470dump.cpp -c -o build_linux/l6470dump.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/l6470commands.cpp -c -o build_linux/l6470commands.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/l6470.cpp -c -o build_linux/l6470.o
+	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/slushmotor.cpp -c -o build_linux/slushmotor.o
+	ar -r lib_linux/libl6470.a   build_linux/slushboard.o build_linux/l6470support.o build_linux/autodriver.o build_linux/l6470config.o build_linux/slushtemp.o build_linux/l6470dump.o build_linux/l6470commands.o build_linux/l6470.o build_linux/slushmotor.o
+	ar: creating lib_linux/libl6470.a
+	objdump -D lib_linux/libl6470.a  | c++filt > lib_linux.list
+
 Additional member function for the `L6470` object:
 
     Dump(void)
