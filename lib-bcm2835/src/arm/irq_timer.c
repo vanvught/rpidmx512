@@ -2,7 +2,7 @@
  * @file irq_timer.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,16 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "arm/irq_timer.h"
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
 #include "bcm2835.h"
 #include "bcm2835_st.h"
 
-#include "irq_timer.h"
-
 static /*@null@*/ thunk_irq_timer_t timer1_func = NULL;
 static /*@null@*/ thunk_irq_timer_t timer3_func = NULL;
 
-/**
- *
- */
 static void __attribute__((interrupt("IRQ"))) irq_timer_handler(void) {
 	dmb();
 
@@ -58,11 +54,6 @@ static void __attribute__((interrupt("IRQ"))) irq_timer_handler(void) {
 	dmb();
 }
 
-/**
- *
- * @param timer
- * @param func
- */
 void irq_timer_set(const _irq_timers timer, thunk_irq_timer_t func) {
 	dmb();
 
@@ -87,9 +78,6 @@ void irq_timer_set(const _irq_timers timer, thunk_irq_timer_t func) {
 	dmb();
 }
 
-/**
- *
- */
 void irq_timer_init(void) {
 	arm_install_handler((unsigned)irq_timer_handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 

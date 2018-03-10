@@ -2,7 +2,7 @@
  * @file sys_time.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,12 +35,6 @@
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
 static volatile time_t rtc_startup_seconds = 0;				///<
 
-/**
- * @ingroup time
- *
- * Read time from RTC MCP7941x and set EPOCH time in seconds
- * When the RTC is not available, then the time is set to 2015-01-01 00:00:00
- */
 void sys_time_init(void) {
 	struct rtc_time tm_rtc;
 	struct tm tmbuf;
@@ -53,8 +47,8 @@ void sys_time_init(void) {
 		tmbuf.tm_sec = 0;
 		tmbuf.tm_mday = 1;
 		tmbuf.tm_wday = 1;
-		tmbuf.tm_mon = 1;
-		tmbuf.tm_year = 16;
+		tmbuf.tm_mon = 0;
+		tmbuf.tm_year = 18;
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 		//tmbuf.tm_yday = 0;
 
@@ -69,18 +63,13 @@ void sys_time_init(void) {
 	tmbuf.tm_sec = tm_rtc.tm_sec;
 	tmbuf.tm_mday = tm_rtc.tm_mday;
 	tmbuf.tm_wday = tm_rtc.tm_mday;
-	tmbuf.tm_mon = tm_rtc.tm_mon + 1;	// RTC month starts with 0, mktime month start with 1
+	tmbuf.tm_mon = tm_rtc.tm_mon;
 	tmbuf.tm_year = tm_rtc.tm_year;
 	tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
 	rtc_startup_seconds = mktime(&tmbuf);
 }
 
-/**
- * @ingroup time
- *
- * @param tmbuf
- */
 void sys_time_set(const struct tm *tmbuf) {
 	sys_time_init_startup_micros = bcm2835_st_read();
 	rtc_startup_seconds = mktime((struct tm *) tmbuf);
@@ -109,10 +98,6 @@ time_t time(time_t *__timer) {
 	return elapsed;
 }
 
-/**
- * @ingroup time
- *
- */
 const uint32_t millis(void) {
 	dmb();
 	const uint32_t elapsed = ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000);
