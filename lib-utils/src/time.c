@@ -2,7 +2,7 @@
  * @file time.c
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ struct tm *localtime(const time_t *pTime) {
 		nMonth++;
 	}
 
-	Tm.tm_mon = nMonth + 1; // Bug fix 2016-10-19
+	Tm.tm_mon = nMonth;
 	Tm.tm_mday = Time + 1;
 
 	return &Tm;
@@ -114,15 +114,15 @@ time_t mktime(struct tm *pTm) {
 		result += isleapyear(year) ? 366 : 365;
 	}
 
-	if (pTm->tm_mon < 1 || pTm->tm_mon > 12) {
+	if (pTm->tm_mon < 0 || pTm->tm_mon > 11) {
 		return (time_t) -1;
 	}
 
-	for (month = 1; month < pTm->tm_mon; month++) {
-		result += getdaysofmonth(month - 1, (unsigned) pTm->tm_year);
+	for (month = 0; month < pTm->tm_mon; month++) {
+		result += getdaysofmonth(month, (unsigned) pTm->tm_year);
 	}
 
-	if (pTm->tm_mday < 1 || pTm->tm_mday > getdaysofmonth((unsigned) pTm->tm_mon - 1, (unsigned) pTm->tm_year)) {
+	if (pTm->tm_mday < 1 || pTm->tm_mday > getdaysofmonth((unsigned) pTm->tm_mon, (unsigned) pTm->tm_year)) {
 		return (time_t) -1;
 	}
 

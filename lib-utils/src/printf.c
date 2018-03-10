@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -359,12 +359,6 @@ static void _format_pointer(struct context *ctx, unsigned int arg) {
 	_format_hex(ctx, arg);
 }
 
-/**
- *
- * @param fmt
- * @param va
- * @return
- */
 static int _vprintf(const int size, const char *fmt, va_list va) {
 	struct context ctx;
 	float f;
@@ -406,9 +400,17 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 
 		if (*fmt == '.') {
 			fmt++;
-			while (isdigit((int) *fmt) != 0) {
-				ctx.prec = ctx.prec * 10 + (int) (*fmt - '0');
+			if (*fmt == '*') {
 				fmt++;
+				ctx.prec = (int) va_arg(va, int);
+				if (ctx.prec < 0) {
+					ctx.prec = -ctx.prec;
+				}
+			} else {
+				while (isdigit((int) *fmt) != 0) {
+					ctx.prec = ctx.prec * 10 + (int) (*fmt - '0');
+					fmt++;
+				}
 			}
 			ctx.flag |= FLAG_PRECISION;
 		}
@@ -462,11 +464,6 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 	return ctx.total;
 }
 
-/**
- *
- * @param fmt
- * @return
- */
 int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
@@ -488,12 +485,6 @@ int printf(const char* fmt, ...) {
 	return i;
 }
 
-/**
- *
- * @param format
- * @param ap
- * @return
- */
 int vprintf(const char *fmt, va_list arp) {
 	int i;
 
@@ -502,12 +493,6 @@ int vprintf(const char *fmt, va_list arp) {
 	return i;
 }
 
-/**
- *
- * @param str
- * @param fmt
- * @return
- */
 int sprintf(char *str, const char *fmt, ...) {
 	int i;
 	va_list arp;
@@ -525,13 +510,6 @@ int sprintf(char *str, const char *fmt, ...) {
 	return i;
 }
 
-/**
- *
- * @param str
- * @param fmt
- * @param ap
- * @return
- */
 int vsprintf(char *str, const char *fmt, va_list ap) {
 	int i;
 
@@ -545,13 +523,6 @@ int vsprintf(char *str, const char *fmt, va_list ap) {
 	return i;
 }
 
-/**
- *
- * @param str
- * @param size
- * @param fmt
- * @return
- */
 int snprintf(char *str, size_t size, const char *fmt, ...) {
 	int i;
 	va_list arp;
@@ -570,14 +541,6 @@ int snprintf(char *str, size_t size, const char *fmt, ...) {
 
 }
 
-/**
- *
- * @param str
- * @param size
- * @param fmt
- * @param ap
- * @return
- */
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
 	int i;
 
