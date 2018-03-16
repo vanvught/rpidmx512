@@ -2,7 +2,7 @@
  * @file bcm2835_mailbox.c
  *
  */
-/* Copyright (C) 2016 ,2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
+#include "arm/synchronize.h"
 
 #define BCM2835_MAILBOX_STATUS_WF	0x80000000	///< Write full
 #define	BCM2835_MAILBOX_STATUS_RE	0x40000000	///< Read empty
 
-/**
- * @ingroup Mailbox
- *
- */
 void bcm2835_mailbox_flush(void) {
 	while (!(BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_RE)) {
 		(void) BCM2835_MAILBOX->READ;
@@ -41,13 +38,7 @@ void bcm2835_mailbox_flush(void) {
 	}
 }
 
-/**
- * @ingroup Mailbox
- *
- * @param channel
- * @return
- */
-uint32_t bcm2835_mailbox_read(const uint8_t channel) {
+uint32_t bcm2835_mailbox_read(uint8_t channel) {
 	uint32_t data;
 
 	do {
@@ -61,14 +52,20 @@ uint32_t bcm2835_mailbox_read(const uint8_t channel) {
 	return (data & ~0xf);
 }
 
-/**
- * @ingroup Mailbox
- *
- * @param channel
- * @param data
- */
-void bcm2835_mailbox_write(const uint8_t channel, const uint32_t data) {
+void bcm2835_mailbox_write(uint8_t channel, uint32_t data) {
 	while (BCM2835_MAILBOX->STATUS & BCM2835_MAILBOX_STATUS_WF)
 		; // do nothing
 	BCM2835_MAILBOX->WRITE = (data & ~0xf) | (uint32_t) (channel & 0xf);
+}
+
+uint32_t bcm2835_mailbox_write_read(uint8_t channel, uint32_t data) {
+	bcm2835_mailbox_flush();
+	bcm2835_mailbox_write(channel, data);
+	uint32_t address = bcm2835_mailbox_read(channel);
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
+	invalidate_data_cache();
+#endif
+	dmb();
+	return address;
 }

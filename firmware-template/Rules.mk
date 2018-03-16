@@ -6,7 +6,7 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += hal uuid esp8266 display properties c++ utils fb ff11 emmc bob i2c bcm2835
+LIBS += hal network esp8266 display uuid properties c++ utils fb ff11 emmc bob i2c bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 

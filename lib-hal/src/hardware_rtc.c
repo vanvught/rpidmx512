@@ -43,7 +43,7 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	tm_rtc.tm_min = (int)tm_hw->minute;
 	tm_rtc.tm_sec = (int)tm_hw->second;
 	tm_rtc.tm_mday = (int)tm_hw->day;
-	//tm_rtc.tm_wday = // TODO
+	//tm_rtc.tm_wday = // TODO tm_rtc.tm_wday
 	tm_rtc.tm_mon = (int)tm_hw->month - 1;
 	tm_rtc.tm_year = (int)tm_hw->year - 2000;	// RTC stores 2 digits only
 

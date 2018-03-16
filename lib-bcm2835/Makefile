@@ -1,119 +1,88 @@
-ARMGNU ?= arm-none-eabi
+PREFIX ?= arm-none-eabi-
 
-COPS_COMMON = -DBARE_METAL 
-COPS_COMMON += -I"./include"
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard  
+CC	= $(PREFIX)gcc
+CPP	= $(PREFIX)g++
+AS	= $(CC)
+LD	= $(PREFIX)ld
+AR	= $(PREFIX)ar
+
+SRCDIR = src arm arm/aeabi device
+
+COPS_COMMON = -DBARE_METAL -DNDEBUG
+COPS_COMMON += -I ./include -I ./../include
+COPS_COMMON += -Wall -Werror -O3 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
 COPS += $(COPS_COMMON)
 
-COPS7 = -mfpu=vfpv4 -march=armv7-a -mtune=cortex-a7 # NEON is not enabled in vectors.s
+COPS7 = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
-COPS8 = -mfpu=fp-armv8 -march=armv8-a -mtune=cortex-a53 # NEON is not enabled in vectors.s
-COPS8 += -DRPI3
-COPS8 += $(COPS_COMMON)
-
-SOURCE = ./src
+TARGET = lib/libbcm2835.a 
+TARGET7 = lib7/libbcm2835.a
 
 BUILD = build/
 BUILD7 = build7/
-BUILD8 = build8/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c))  $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
-OBJECTS8 := $(patsubst $(SOURCE)/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/*.S)) $(patsubst $(SOURCE)/arm/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.c)) $(patsubst $(SOURCE)/arm/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/*.S)) $(patsubst $(SOURCE)/arm/aeabi/%.c,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.c)) $(patsubst $(SOURCE)/arm/aeabi/%.S,$(BUILD8)%.o,$(wildcard $(SOURCE)/arm/aeabi/*.S))
+BUILD_DIRS := $(addprefix build/,$(SRCDIR))
+BUILD7_DIRS := $(addprefix build7/,$(SRCDIR))
 
-TARGET = lib/libbcm2835.a 
-TARGET7 = lib7/libbcm2835.a
-TARGET8 = lib8/libbcm2835.a
+C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+ASM_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
+C_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+ASM_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
+
+BUILD_DIRS := $(addprefix build/,$(SRCDIR))
+BUILD7_DIRS := $(addprefix build7/,$(SRCDIR))
+
+OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
+OBJECTS7 := $(ASM_OBJECTS7) $(C_OBJECTS7)
 
 LIST = lib.list
 LIST7 = lib7.list
-LIST8 = lib8.list
 
-all : builddirs $(TARGET) $(TARGET7) # $(TARGET8)
+define compile-objects6
+$(BUILD)$1/%.o: $(SOURCE)$1/%.c
+	$(CC) $(COPS) -c $$< -o $$@
+	
+$(BUILD)$1/%.o: $(SOURCE)$1/%.S
+	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
+endef
+
+define compile-objects7
+$(BUILD7)$1/%.o: $(SOURCE)$1/%.c
+	$(CC) $(COPS7) -c $$< -o $$@
+	
+$(BUILD7)$1/%.o: $(SOURCE)$1/%.S	
+	$(CC) $(COPS7) -D__ASSEMBLY__ -c $$< -o $$@		
+endef
+
+all : builddirs $(TARGET) $(TARGET7)
 
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p build lib build7 lib7 # build8 lib8
+	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS)
 
 clean :
-	rm -rf $(BUILD) $(BUILD7) $(BUILD8)
-	rm -f $(TARGET) $(TARGET7) $(TARGET8)	
-	rm -f $(LIST) $(LIST7) $(LIST8)	
+	rm -rf $(BUILD) $(BUILD7)
+	rm -f $(TARGET) $(TARGET7)	
+	rm -f $(LIST) $(LIST7)	
 
-# ARM v6
-
-$(BUILD)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@		
-
-$(BUILD)%.o: $(SOURCE)/arm/%.S
-	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@
-	
-$(BUILD)%.o: $(SOURCE)/arm/aeabi/%.S
-	$(ARMGNU)-gcc $(COPS) -D__ASSEMBLY__ $< -c -o $@	
-
-$(BUILD)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@
-	
-$(BUILD)%.o: $(SOURCE)/arm/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@			
-
-$(BUILD)%.o: $(SOURCE)/arm/aeabi/%.c
-	$(ARMGNU)-gcc $(COPS) $< -c -o $@		
+# Build lib
 
 $(TARGET): Makefile $(OBJECTS)
-	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
-	$(ARMGNU)-objdump -D $(TARGET) > $(LIST)
-	
-# ARM v7	
-	
-$(BUILD7)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@
-	
-$(BUILD7)%.o: $(SOURCE)/arm/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@
-	
-$(BUILD7)%.o: $(SOURCE)/arm/aeabi/%.S
-	$(ARMGNU)-gcc $(COPS7) -D__ASSEMBLY__ $< -c -o $@					
+	$(AR) -r $(TARGET) $(OBJECTS) 
+	$(PREFIX)objdump -D $(TARGET) > $(LIST)
 
-$(BUILD7)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
-
-$(BUILD7)%.o: $(SOURCE)/arm/%.c
-	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
-
-$(BUILD7)%.o: $(SOURCE)/arm/aeabi/%.c
-	$(ARMGNU)-gcc $(COPS7) $< -c -o $@	
+# Build lib7
 
 $(TARGET7): Makefile $(OBJECTS7)
-	$(ARMGNU)-ar -r $(TARGET7) $(OBJECTS7) 
-	$(ARMGNU)-objdump -D $(TARGET7) > $(LIST7)
+	$(AR) -r $(TARGET7) $(OBJECTS7) 
+	$(PREFIX)objdump -D $(TARGET7) > $(LIST7)
 	
-# ARM v8	
+$(foreach bdir,$(SRCDIR),$(eval $(call compile-objects6,$(bdir))))
 	
-$(BUILD8)%.o: $(SOURCE)/%.S
-	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@
-		
-$(BUILD8)%.o: $(SOURCE)/arm/%.S
-	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@				
-
-$(BUILD8)%.o: $(SOURCE)/arm/aeabi/%.S
-	$(ARMGNU)-gcc $(COPS8) -D__ASSEMBLY__ $< -c -o $@	
-
-$(BUILD8)%.o: $(SOURCE)/%.c
-	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
-
-$(BUILD8)%.o: $(SOURCE)/arm/%.c
-	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
-
-$(BUILD8)%.o: $(SOURCE)/arm/aeabi/%.c
-	$(ARMGNU)-gcc $(COPS8) $< -c -o $@	
-
-$(TARGET8): Makefile $(OBJECTS8)
-	$(ARMGNU)-ar -r $(TARGET8) $(OBJECTS8) 
-	$(ARMGNU)-objdump -D $(TARGET8) > $(LIST8)	
+$(foreach bdir,$(SRCDIR),$(eval $(call compile-objects7,$(bdir))))

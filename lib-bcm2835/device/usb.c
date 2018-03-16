@@ -25,9 +25,9 @@
  * THE SOFTWARE.
  */
 
+#include <ft245rl.h>
 #include <stdint.h>
 
-#include "ft245rl.h"
 
 /**
  * @ingroup usb

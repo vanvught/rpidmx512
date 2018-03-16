@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,57 +61,24 @@ extern /*@shared@*/const char *hardware_board_get_soc(void);
 extern const int32_t hardware_get_core_temperature(void);
 extern void hardware_rtc_set(const struct hardware_time *);
 
-/**
- *
- * @return
- */
 /*@unused@*/inline static uint32_t hardware_micros(void) {
 	return BCM2835_ST->CLO;
 }
 
-/**
- *
- * @param mac_address
- */
 /*@unused@*/inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
-/**
- *
- */
 /*@unused@*/inline static void hardware_watchdog_init(void) {
 	bcm2835_watchdog_init();
 }
 
-/**
- *
- */
 /*@unused@*/inline static void hardware_watchdog_feed(void) {
 	bcm2835_watchdog_feed();
 }
 
-/**
- *
- */
 /*@unused@*/inline static void hardware_watchdog_stop(void) {
 	bcm2835_watchdog_stop();
-}
-
-/**
- *
- * @param usec
- */
-/*@unused@*/inline static void hardware_delay_us(const uint64_t usec) {
-	udelay(usec);
-}
-
-/**
- *
- * @return
- */
-/*@unused@*/inline static uint32_t hardware_random_number(void) {
-	return bcm2835_rng_get_number();
 }
 
 #ifdef __cplusplus

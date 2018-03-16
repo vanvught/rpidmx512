@@ -2,7 +2,7 @@
  * @file bcm2835_mailbox.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,8 @@ typedef enum {
 } bcm2835MailboxChannels;
 
 extern void bcm2835_mailbox_flush(void);
-extern uint32_t bcm2835_mailbox_read(const uint8_t);
-extern void bcm2835_mailbox_write(const uint8_t, const uint32_t);
+extern uint32_t bcm2835_mailbox_read(uint8_t);
+extern void bcm2835_mailbox_write(uint8_t, uint32_t);
+extern uint32_t bcm2835_mailbox_write_read(uint8_t channel, uint32_t data);
 
 #endif /* BCM2835_MAILBOX_H_ */

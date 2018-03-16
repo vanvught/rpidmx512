@@ -1,8 +1,9 @@
+
 /**
- * @file usb.h
+ * @file smp.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +24,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef USB_H_
-#define USB_H_
-
+#include <arm/smp.h>
 #include <stdint.h>
+
+#if defined (ARM_ALLOW_MULTI_CORE)
 #include <stdbool.h>
+#include "arm/synchronize.h"
 
-#include <ft245rl.h>
-
-extern void usb_send_byte(const uint8_t);
+static volatile bool core_is_started;		///<
+static start_fn_t start_fn;					///<
 
 /**
- * @ingroup usb
  *
- * Wait for data is available in the FIFO which can be read by strobing RD# low, then high again.
- *
- * @return
  */
-inline static const uint8_t usb_read_byte(void) {
-	while (!FT245RL_data_available())
+void smp_core_main(void) {
+	start_fn_t temp_fn = start_fn;
+	dmb();
+	core_is_started = true;
+	temp_fn();
+	for (;;)
 		;
-	return FT245RL_read_data();
 }
 
 /**
- * @ingroup usb
+ *
+ * @param core_number
+ * @param start
+ */
+void smp_start_core(uint32_t core_number, start_fn_t start) {
+	if (core_number == 0 || core_number > 3) {
+		return;
+	}
+	start_fn = start;
+	*(uint32_t *) (SMP_CORE_BASE + (core_number * 0x10)) = (uint32_t) _init_core;
+	dmb();
+	core_is_started = false;
+	while (!core_is_started) {
+		dmb();
+	}
+}
+#endif
+
+/**
  *
  * @return
  */
-inline static const bool usb_read_is_byte_available(void) {
-	return FT245RL_data_available();
+uint32_t smp_get_core_number(void) {
+	uint32_t core_number;
+	asm volatile ("mrc p15, 0, %0, c0, c0, 5" : "=r" (core_number));
+	return (core_number & SMP_CORE_MASK);
 }
-
-/**
- * @ingroup usb
- *
- */
-inline static void usb_init(void) {
-	FT245RL_init();
-}
-
-/**
- * @ingroup usb
- *
- * @return
- */
-inline static const bool usb_can_write(void) {
-	return FT245RL_can_write();
-}
-
-#endif /* USB_H_ */

@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <arm/smp.h>
 #include <stdint.h>
 #include <time.h>
 
@@ -37,7 +38,6 @@
 #include "console.h"
 #include "sys_time.h"
 #include "ff.h"
-#include "smp.h"
 
 struct _hardware_led {
 	void (*init)(void);		///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
@@ -76,12 +76,10 @@ void hardware_init(void) {
 	}
 #endif
 #endif
+
 	(void) console_init();
-
 	hardware_init_startup_micros = bcm2835_st_read();
-
 	sys_time_init();
-
 	bcm2835_rng_init();
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
@@ -96,7 +94,7 @@ void hardware_init(void) {
 
 	board_revision = bcm2835_vc_get_get_board_revision();
 
-	if ((board_revision == 0xa02082) || (board_revision == 0xa22082)) {
+	if ((board_revision == 0xa02082) || (board_revision == 0xa22082) || (board_revision == 0xa020d3)) { //FIXME
 		_hardware_led_f.init = bcm2837_gpio_virt_init;
 		_hardware_led_f.set = bcm2837_gpio_virt_led_set;
 	} else if (board_revision > 0x00000f) {

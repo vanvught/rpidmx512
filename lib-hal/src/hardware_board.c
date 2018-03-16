@@ -2,7 +2,7 @@
  * @file hardware_board.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#include <bcm2835_vc.h>
+#include "bcm2835_vc.h"
 
 #define MAX_NAME_LENGTH 24		///< Length for model name
 
@@ -69,25 +69,16 @@ struct _hardware_revision_code {
 		{ 0x900093, "Pi Zero 512MB V1.3" },
 		{ 0x9000c1, "Pi Zero W 512MB" },
 		{ 0xa02082, "Pi 3 Model B 1GB V1.2" },
-		{ 0xa22082, "Pi 3 Model B 1GB V1.2" }
+		{ 0xa22082, "Pi 3 Model B 1GB V1.2" },
+		{ 0xa020d3, "Pi 3 Model B+ 1GB" }
 };
 
 static const char soc_name[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 
-/**
- * @ingroup hal
- *
- * @return
- */
 const int32_t hardware_board_get_model_id(void) {
 	return bcm2835_vc_get_get_board_revision();
 }
 
-/**
- * @ingroup hal
- *
- * @return
- */
 /*@shared@*/const char *hardware_board_get_model(void) {
 	const uint8_t array_length = sizeof(board_version) / sizeof(board_version[0]);
 	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
@@ -107,20 +98,10 @@ const int32_t hardware_board_get_model_id(void) {
 	return board_version[0].name;
 }
 
-/**
- * @ingroup hal
- *
- * @return
- */
 const uint8_t hardware_board_get_model_length(void) {
 	return MAX_NAME_LENGTH;
 }
 
-/**
- * @ingroup hal
- *
- * @return
- */
 /*@shared@*/const char *hardware_board_get_soc(void) {
 	const int32_t revision_code = bcm2835_vc_get_get_board_revision();
 	_soc_type type;
