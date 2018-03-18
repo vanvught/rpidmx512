@@ -7,7 +7,17 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += network properties
+LIBS += hal network properties
+
+ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+	LIBS += bob i2c
+	BCM2835 = ./../lib-bcm2835_raspbian
+	ifneq "$(wildcard $(BCM2835) )" ""
+		LIBS += bcm2835_raspbian
+	else
+		LIBS += bcm2835
+	endif
+endif
 
 DEFINES := $(addprefix -D,$(DEFINES))
 

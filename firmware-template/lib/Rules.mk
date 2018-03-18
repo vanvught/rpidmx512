@@ -31,15 +31,19 @@ LIB_NAME := $(patsubst lib-%,%,$(CURR_DIR))
 BUILD = build/
 BUILD7 = build7/
 
-OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) 
+OBJECTS := $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS += $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) 
 OBJECTS += $(patsubst $(SOURCE)/%.cpp,$(BUILD)%.o,$(wildcard $(SOURCE)/*.cpp)) 
-OBJECTS += $(patsubst $(SOURCE)/%.S,$(BUILD)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS += $(patsubst $(SOURCE)/c/%.c,$(BUILD)c/%.o,$(wildcard $(SOURCE)/c/*.c))
+OBJECTS += $(patsubst $(SOURCE)/rpi/%.S,$(BUILD)rpi%.o,$(wildcard $(SOURCE)/rpi/*.S))
+OBJECTS += $(patsubst $(SOURCE)/rpi/%.c,$(BUILD)rpi/%.o,$(wildcard $(SOURCE)/rpi/*.c))
+OBJECTS += $(patsubst $(SOURCE)/rpi/%.cpp,$(BUILD)rpi/%.o,$(wildcard $(SOURCE)/rpi/*.cpp))
 
-OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) 
+OBJECTS7 := $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
+OBJECTS7 += $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) 
 OBJECTS7 += $(patsubst $(SOURCE)/%.cpp,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.cpp)) 
-OBJECTS7 += $(patsubst $(SOURCE)/%.S,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.S))
-OBJECTS7 += $(patsubst $(SOURCE)/c/%.c,$(BUILD7)c/%.o,$(wildcard $(SOURCE)/c/*.c))
+OBJECTS7 += $(patsubst $(SOURCE)/rpi/%.S,$(BUILD7)rpi/%.o,$(wildcard $(SOURCE)/rpi/*.S))
+OBJECTS7 += $(patsubst $(SOURCE)/rpi/%.c,$(BUILD7)rpi/%.o,$(wildcard $(SOURCE)/rpi/*.c))
+OBJECTS7 += $(patsubst $(SOURCE)/rpi/%.cpp,$(BUILD7)rpi/%.o,$(wildcard $(SOURCE)/rpi/*.cpp))
 
 TARGET = lib/lib$(LIB_NAME).a 
 TARGET7 = lib7/lib$(LIB_NAME).a
@@ -52,24 +56,31 @@ all : builddirs $(TARGET) $(TARGET7)
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p $(BUILD)/c lib $(BUILD7)/c lib7
+	@mkdir -p $(BUILD)rpi lib $(BUILD7)rpi lib7
 
 clean :
 	rm -rf $(BUILD) $(BUILD7)
 	rm -f $(TARGET) $(TARGET7)	
-	rm -f $(LIST) $(LIST7)	
+	rm -f $(LIST) $(LIST7)
+	rm -rf lib lib7
 
 # ARM v6
 $(BUILD)%.o: $(SOURCE)/%.c
 	$(CC) $(COPS) $< -c -o $@
 	
-$(BUILD)c/%.o: $(SOURCE)/c/%.c
+$(BUILD)rpi/%.o: $(SOURCE)/rpi/%.c
 	$(CC) $(COPS) $< -c -o $@	
-	
+
 $(BUILD)%.o: $(SOURCE)/%.cpp
 	$(CPP) $(COPS) -fno-rtti -std=c++11 $< -c -o $@
-	
+
+$(BUILD)rpi/%.o: $(SOURCE)/rpi/%.cpp
+	$(CPP) $(COPS) -fno-rtti -std=c++11 $< -c -o $@
+
 $(BUILD)%.o: $(SOURCE)/%.S
+	$(AS) $(COPS) -D__ASSEMBLY__ $< -c -o $@	
+	
+$(BUILD)rpi/%.o: $(SOURCE)/rpi/%.S
 	$(AS) $(COPS) -D__ASSEMBLY__ $< -c -o $@		
 
 $(TARGET): Makefile $(OBJECTS)
@@ -80,15 +91,21 @@ $(TARGET): Makefile $(OBJECTS)
 $(BUILD7)%.o: $(SOURCE)/%.c
 	$(CC) $(COPS7) $< -c -o $@
 
-$(BUILD7)c/%.o: $(SOURCE)/c/%.c
+$(BUILD7)rpi/%.o: $(SOURCE)/rpi/%.c
 	$(CC) $(COPS7) $< -c -o $@
 	
 $(BUILD7)%.o: $(SOURCE)/%.cpp
 	$(CPP) $(COPS7) -fno-rtti -std=c++11 $< -c -o $@		
-	
+
+$(BUILD7)rpi/%.o: $(SOURCE)/rpi/%.cpp
+	$(CPP) $(COPS7) -fno-rtti -std=c++11 $< -c -o $@	
+
 $(BUILD7)%.o: $(SOURCE)/%.S
 	$(AS) $(COPS7) -D__ASSEMBLY__ $< -c -o $@	
 	
+$(BUILD7)rpi/%.o: $(SOURCE)/rpi/%.S
+	$(AS) $(COPS7) -D__ASSEMBLY__ $< -c -o $@		
+
 $(TARGET7): Makefile $(OBJECTS7)
 	$(AR) -r $(TARGET7) $(OBJECTS7)
 	$(PREFIX)objdump -D $(TARGET7) | $(PREFIX)c++filt > $(LIST7)

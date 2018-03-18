@@ -124,7 +124,6 @@ reset:
 
 	bl vfp_init
 
-@#if defined ( RPI2 ) || defined ( RPI3 ) || defined ( ENABLE_MMU )
 #if defined ( ENABLE_MMU )
 	bl mmu_enable
 #else
