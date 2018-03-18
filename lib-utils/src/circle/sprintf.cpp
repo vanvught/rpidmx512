@@ -1,8 +1,8 @@
 /**
- * @file printf.c
+ * @file sprintf.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <circle/logger.h>
+#include <circle/string.h>
 #include <circle/stdarg.h>
 #include <circle/types.h>
 #include <circle/util.h>
@@ -32,30 +32,21 @@
 
 extern "C" {
 
-void printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	char *p = (char *)fmt;
-
-	if (p[0] == '\n') {
-		p++;
-	}
-
-	size_t fmtlen = strlen(p);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, p);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
+int sprintf(char *str, const char *format, ...) {
+	assert(str != 0);
+	assert(format != 0);
 
 	va_list var;
-	va_start(var, fmt);
+	va_start(var, format);
 
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+	CString SPrintf;
+	SPrintf.FormatV(format, var);
 
 	va_end(var);
+
+	strcpy(str, (const char *) SPrintf);
+
+	return SPrintf.GetLength();
 }
 
 }
