@@ -49,13 +49,6 @@ struct vc_msg_uint32 {
 	uint32_t end_tag;				///< an end identifier, should be set to NULL
 };
 
-/**
- * @ingroup VideoCore
- *
- * @param tag_id
- * @param dev_id
- * @return
- */
 inline static int32_t bcm2835_vc_get(uint32_t tag_id, uint32_t dev_id) {
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
 
@@ -68,26 +61,8 @@ inline static int32_t bcm2835_vc_get(uint32_t tag_id, uint32_t dev_id) {
 	vc_msg->tag.val = 0;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
 
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dmb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -101,14 +76,6 @@ inline static int32_t bcm2835_vc_get(uint32_t tag_id, uint32_t dev_id) {
 
 }
 
-/**
- * @ingroup VideoCore
- *
- * @param tag_id
- * @param dev_id
- * @param val
- * @return
- */
 inline static int32_t bcm2835_vc_set(uint32_t tag_id, uint32_t dev_id, uint32_t val) {
 	struct vc_msg_uint32 *vc_msg = (struct vc_msg_uint32 *)MEM_COHERENT_REGION;
 
@@ -121,26 +88,7 @@ inline static int32_t bcm2835_vc_set(uint32_t tag_id, uint32_t dev_id, uint32_t 
 	vc_msg->tag.val = val;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
-
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dmb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -153,13 +101,6 @@ inline static int32_t bcm2835_vc_set(uint32_t tag_id, uint32_t dev_id, uint32_t 
 	return (int32_t) vc_msg->tag.val;
 }
 
-/**
- * @ingroup VideoCore
- *
- * @param clock_id
- *
- * @return rate (in Hz)
- */
 int32_t bcm2835_vc_get_clock_rate(uint32_t clock_id) {
 	return bcm2835_vc_get(BCM2835_VC_TAG_GET_CLOCK_RATE, clock_id);
 }
@@ -181,15 +122,6 @@ struct vc_msg_set_clock_rate {
 	uint32_t end_tag;				///< an end identifier, should be set to NULL
 };
 
-/**
- * @ingroup VideoCore
- *
- * @param clock_id
- *
- * @param clock_rate rate (in Hz)
- *
- * @return rate (in Hz). A rate of 0 is returned if the clock does not exist.
- */
 int32_t bcm2835_vc_set_clock_rate(uint32_t clock_id, uint32_t clock_rate) {
 	struct vc_msg_set_clock_rate *vc_msg = (struct vc_msg_set_clock_rate *)MEM_COHERENT_REGION;
 
@@ -203,26 +135,7 @@ int32_t bcm2835_vc_set_clock_rate(uint32_t clock_id, uint32_t clock_rate) {
 	vc_msg->tag.skip_turbo = 0;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
-
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dmb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -233,7 +146,6 @@ int32_t bcm2835_vc_set_clock_rate(uint32_t clock_id, uint32_t clock_rate) {
 	}
 
 	return (int32_t) vc_msg->tag.val;
-	//return bcm2835_vc_set(BCM2835_VC_TAG_SET_CLOCK_RATE, clock_id, clock_rate);
 }
 
 int32_t bcm2835_vc_get_temperature(void) {
@@ -245,8 +157,6 @@ int32_t bcm2835_vc_get_temperature_max(void) {
 }
 
 /**
- * @ingroup VideoCore
- *
  * @param dev_id
  *
  * @return
@@ -259,8 +169,6 @@ int32_t bcm2835_vc_get_power_state(uint32_t dev_id) {
 }
 
 /**
- * @ingroup VideoCore
- *
  * @param dev_id
  *
  * @param state
@@ -293,12 +201,6 @@ struct vc_msg_board_mac_address {
 	uint32_t end_tag;							///< an end identifier, should be set to NULL
 };
 
-/**
- * @ingroup VideoCore
- *
- * @param mac_address
- * @return
- */
 int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	struct vc_msg_board_mac_address *vc_msg = (struct vc_msg_board_mac_address *)MEM_COHERENT_REGION;
 
@@ -310,26 +212,7 @@ int32_t bcm2835_vc_get_board_mac_address(uint8_t *mac_address) {
 	vc_msg->tag.mac_address[0] = 0;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
-
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dsb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		mac_address[0] = 0;
@@ -366,12 +249,6 @@ struct vc_msg_uint32_t {
 	uint32_t end_tag;				///< an end identifier, should be set to NULL
 };
 
-/**
- * @ingroup VideoCore
- *
- * @param tag_id
- * @return
- */
 inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	struct vc_msg_uint32_t *vc_msg = (struct vc_msg_uint32_t *)MEM_COHERENT_REGION;
 
@@ -383,26 +260,7 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	vc_msg->tag.value = 0;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
-
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void)bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dmb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
@@ -411,28 +269,14 @@ inline static int32_t bcm2835_vc_get_uint32_t(uint32_t tag_id) {
 	return (int32_t) vc_msg->tag.value;
 }
 
-/**
- * @ingroup VideoCore
- *
- * @return
- */
 int32_t bcm2835_vc_get_get_firmware_revision(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_FIRMWARE_REV);
 }
 
-/**
- * @ingroup VideoCore
- *
- * @return
- */
 int32_t bcm2835_vc_get_get_board_model(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_BOARD_MODEL);
 }
 
-/**
- *
- * @return
- */
 int32_t bcm2835_vc_get_get_board_revision(void) {
 	return bcm2835_vc_get_uint32_t(BCM2835_VC_TAG_GET_BOARD_REV);
 }
@@ -452,12 +296,6 @@ struct vc_msg_board_ram {
 	uint32_t end_tag;			///< an end identifier, should be set to NULL
 };
 
-/**
- * @ingroup VideoCore
- *
- * @param mac_address
- * @return
- */
 int32_t bcm2835_vc_get_memory(uint32_t tag_id) {
 	struct vc_msg_board_ram *vc_msg = (struct vc_msg_board_ram *)MEM_COHERENT_REGION;
 
@@ -473,30 +311,11 @@ int32_t bcm2835_vc_get_memory(uint32_t tag_id) {
 	vc_msg->tag.base_address = 0;
 	vc_msg->end_tag = 0;
 
-#if defined ( RPI2 ) || defined ( RPI3 )
-	clean_data_cache();
-#endif
-
-	dsb();
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-#endif
-
-	bcm2835_mailbox_flush();
-	bcm2835_mailbox_write(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t)vc_msg);
-	(void) bcm2835_mailbox_read(BCM2835_MAILBOX_PROP_CHANNEL);
-
-#if defined ( RPI2 ) || defined ( RPI3 )
-	dmb();
-	invalidate_data_cache();
-#endif
-
-	dmb();
+	(void) bcm2835_mailbox_write_read(BCM2835_MAILBOX_PROP_CHANNEL, GPU_MEM_BASE + (uint32_t) vc_msg);
 
 	if (vc_msg->request_code != BCM2835_MAILBOX_SUCCESS) {
 		return -1;
 	}
 
-	return (int32_t)vc_msg->tag.size;
+	return (int32_t) vc_msg->tag.size;
 }

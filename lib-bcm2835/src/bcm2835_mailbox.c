@@ -59,13 +59,26 @@ void bcm2835_mailbox_write(uint8_t channel, uint32_t data) {
 }
 
 uint32_t bcm2835_mailbox_write_read(uint8_t channel, uint32_t data) {
+#if defined ( RPI2 ) || defined ( RPI3 )
+	clean_data_cache();
+#endif
+
+	dsb();
+
+#if defined ( RPI2 ) || defined ( RPI3 )
+	dmb();
+#endif
+
 	bcm2835_mailbox_flush();
 	bcm2835_mailbox_write(channel, data);
 	uint32_t address = bcm2835_mailbox_read(channel);
+
 #if defined ( RPI2 ) || defined ( RPI3 )
 	dmb();
 	invalidate_data_cache();
 #endif
+
 	dmb();
+
 	return address;
 }
