@@ -2,7 +2,7 @@
  * @file oscws28xx.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,8 @@
 #include <assert.h>
 
 #include "hardware.h"
-#include "util.h"
+#include "networkbaremetal.h"
+
 #include "console.h"
 
 #include "osc.h"
@@ -36,10 +37,11 @@
 #include "oscmessage.h"
 #include "oscws28xx.h"
 
-#include "network.h"
 #include "ip_address.h"
 
 #include "ws28xxstripe.h"
+
+#include "util.h"
 
 #include "software_version.h"
 
@@ -47,14 +49,17 @@ OSCWS28xx::OSCWS28xx(unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLED
 	m_pLEDStripe(0),
 	m_Blackout(false)
 {
+	uint8_t nHwTextLength;
+
 	m_OutgoingPort = OutgoingPort;
 	m_nLEDCount = nLEDCount;
 	m_nLEDType = nLEDType;
 	m_LEDType = sLEDType;
 
 	snprintf(m_Os, sizeof(m_Os), "[V%s] %s", SOFTWARE_VERSION, __DATE__);
-	m_pModel = hardware_board_get_model();
-	m_pSoC = hardware_board_get_soc();
+
+	m_pModel = Hardware::Get()->GetBoardName(nHwTextLength);
+	m_pSoC = Hardware::Get()->GetSocName(nHwTextLength);
 
 	for (unsigned i = 0; i < sizeof m_RGBWColour; i++) {
 		m_RGBWColour[i] = 0;
@@ -97,7 +102,7 @@ void OSCWS28xx::Run(void) {
 	uint16_t from_port;
 	uint32_t from_ip;
 
-	const int len = network_recvfrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+	const int len = Network::Get()->RecvFrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
 
 	if (len == 0) {
 		return;

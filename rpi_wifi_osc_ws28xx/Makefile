@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_MMU NDEBUG
 #
-LIBS = osc ws28xx lightset ledblink c++ network
+LIBS = osc ws28xxdmx ws28xx lightset ledblink
 #
 SRCDIR = firmware lib
 

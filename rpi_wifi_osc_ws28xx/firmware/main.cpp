@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,33 +26,35 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "hardware.h"
+#include "hardwarebaremetal.h"
+#include "networkbaremetal.h"
+#include "ledblinkbaremetal.h"
 
 #include "console.h"
 #include "display.h"
 
 #include "wifi.h"
-#include "network.h"
-
-#include "ledblinktask.h"
 
 #include "oscparams.h"
 #include "oscws28xx.h"
-#include "deviceparams.h"
+
+#include "ws28xxstripeparams.h"
 
 #include "software_version.h"
 
 extern "C" {
-extern void network_init(void);
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
 void notmain(void) {
-	DeviceParams deviceparms;
+	HardwareBaremetal hw;
+	NetworkBaremetal nw;
+	LedBlinkBaremetal lb;
+	WS28XXStripeParams deviceparms;
 	OSCParams oscparms;
 	Display display(0,8);
-	LedBlinkTask ledblinktask;
 	struct ip_info ip_config;
+	uint8_t nHwTextLength;
 
 	(void) oscparms.Load();
 	(void) deviceparms.Load();
@@ -62,8 +64,10 @@ void notmain(void) {
 
 	const bool IsOledConnected = display.isDetected();
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("WiFi OSC Pixel controller, Incoming port: %d, Outgoing port: %d", nIncomingPort, nOutgoingPort);
+
+	hw.SetLed(HARDWARE_LED_ON);
 
 	console_set_top_row(3);
 
@@ -72,21 +76,21 @@ void notmain(void) {
 			;
 	}
 
-	network_init();
+	nw.Init();
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting UDP ..."));
 
-	network_begin(nIncomingPort);
+	nw.Begin(nIncomingPort);
 
-	network_sendto((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, nOutgoingPort);
+	nw.SendTo((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, nOutgoingPort);
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Setting Node parameters ..."));
 
 	const TWS28XXType tType = deviceparms.GetLedType();
 
-	printf("Type  : %s [%d]\n", DeviceParams::GetLedTypeString(tType), tType);
+	printf("Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(tType), tType);
 	printf("Count : %d", (int) deviceparms.GetLedCount());
 
 	if (IsOledConnected) {
@@ -101,15 +105,15 @@ void notmain(void) {
 		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
 		(void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
 		(void) display.Printf(5, "I: %4d O: %4d", (int) nIncomingPort, (int) nOutgoingPort);
-		(void) display.Printf(6, "Led type: %s", DeviceParams::GetLedTypeString(tType));
+		(void) display.Printf(6, "Led type: %s", WS28XXStripeParams::GetLedTypeString(tType));
 		(void) display.Printf(7, "Led count: %d", (int) deviceparms.GetLedCount());
 	}
 
 	console_set_top_row(16);
 
-	hardware_watchdog_init();
+	hw.WatchdogInit();
 
-	OSCWS28xx oscws28xx(nOutgoingPort, deviceparms.GetLedCount(), deviceparms.GetLedType(), DeviceParams::GetLedTypeString(tType));
+	OSCWS28xx oscws28xx(nOutgoingPort, deviceparms.GetLedCount(), deviceparms.GetLedType(), WS28XXStripeParams::GetLedTypeString(tType));
 
 	console_status(CONSOLE_GREEN, "Starting ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting ..."));
@@ -120,11 +124,9 @@ void notmain(void) {
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Controller started"));
 
 	for (;;) {
-		hardware_watchdog_feed();
-
+		hw.WatchdogFeed();
 		oscws28xx.Run();
-
-		ledblinktask.Run();
+		lb.Run();
 	}
 }
 
