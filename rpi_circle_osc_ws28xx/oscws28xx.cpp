@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,19 @@
  * THE SOFTWARE.
  */
 
-#include <circle/version.h>
-#include <circle/machineinfo.h>
-#include <circle/string.h>
-#include <circle/util.h>
-#include <circle/logger.h>
+
 #include <assert.h>
 
-#include "deviceparams.h"
+#include "circle/version.h"
+#include "circle/machineinfo.h"
+#include "circle/string.h"
+#include "circle/util.h"
+#include "circle/logger.h"
 
+#include "networkcircle.h"
+
+#include "ws28xxstripeparams.h"
 #include "ws28xxstripe.h"
-
-#include "network.h"
 
 #include "oscws28xx.h"
 #include "osc.h"
@@ -92,7 +93,7 @@ void COSCWS28xx::Run(void) {
 	uint16_t from_port;
 	uint32_t from_ip;
 
-	const int len = network_recvfrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+	const int len = Network::Get()->RecvFrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
 
 	if (len == 0) {
 		return;
@@ -155,7 +156,7 @@ void COSCWS28xx::Run(void) {
 		OSCSend MsgSendModel(from_ip, m_nRemotePort, "/info/model", "s", m_MachineInfo.GetMachineName());
 		OSCSend MsgSendSoc(from_ip, m_nRemotePort, "/info/soc", "s", m_MachineInfo.GetSoCName());
 		OSCSend MsgSendInfo(from_ip, m_nRemotePort, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
-		OSCSend MsgSendLedType(from_ip, m_nRemotePort, "/info/ledtype", "s", DeviceParams::GetLedTypeString(m_LEDType));
+		OSCSend MsgSendLedType(from_ip, m_nRemotePort, "/info/ledtype", "s", WS28XXStripeParams::GetLedTypeString(m_LEDType));
 		OSCSend MsgSendLedCount(from_ip, m_nRemotePort, "/info/ledcount", "i", m_nLEDCount);
 	}
 }

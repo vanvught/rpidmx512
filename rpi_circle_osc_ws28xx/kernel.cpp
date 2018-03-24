@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include <circle/interrupt.h>
 #include <circle/string.h>
 #include <circle/util.h>
@@ -31,19 +33,17 @@
 #include <circle/net/ipaddress.h>
 
 #include <fatfs/ff.h>
+#include <ledblinkcircle.h>
 
 #include "kernel.h"
 
-extern "C" {
-extern void network_init(CNetSubSystem *);
-}
-#include "network.h"
+#include "hardwarecircle.h"
+
+#include "networkcircle.h"
 #include "networkparams.h"
 
 #include "oscparams.h"
 #include "oscws28xx.h"
-
-#include "circle/blinktask.h"
 
 #include "software_version.h"
 
@@ -59,7 +59,7 @@ CKernel::CKernel(void) :
 		m_Logger(m_Options.GetLogLevel(), &m_Timer),
 		m_DWHCI(&m_Interrupt, &m_Timer),
 		m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
-		m_BlinkTask(&m_ActLED, 0) {
+		m_BlinkTask() {
 	m_ActLED.On();
 }
 
@@ -162,24 +162,26 @@ boolean CKernel::Configure(void) {
 }
 
 TShutdownMode CKernel::Run(void) {
+	HardwareCircle hw;
+	NetworkCircle nw;
 	OSCParams oscparms;
+	uint8_t nHwTextLength;
 
 	if (oscparms.Load()) {
 		oscparms.Dump();
 	}
 
-	m_Logger.Write (FromKernel, LogNotice, "[V%s] Compiled on %s at %s", SOFTWARE_VERSION, __DATE__,  __TIME__);
-	m_Logger.Write(FromKernel, LogNotice, "%s %dMB (%s)", m_MachineInfo.GetMachineName(), m_MachineInfo.GetRAMSize(),  m_MachineInfo.GetSoCName());
-
 	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
 	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
 
-	network_init(&m_Net);
-	network_begin(nIncomingPort);
+	nw.Init(&m_Net);
+	nw.Begin(nIncomingPort);
 
 	CString IPString;
 	m_Net.GetConfig ()->GetIPAddress ()->Format (&IPString);
-	m_Logger.Write (FromKernel, LogNotice, "OSC Server running at %s:%u, outport:%u", (const char *) IPString, nIncomingPort, nOutgoingPort);
+
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	printf("Ethernet OSC Pixel controller, Incoming port: %d, Outgoing port: %d", nIncomingPort, nOutgoingPort);
 
 	COSCWS28xx oscws28xx(&m_Interrupt, &m_Screen, nOutgoingPort);
 

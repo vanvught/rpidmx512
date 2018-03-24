@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include <circle/device.h>
 #include <circle/machineinfo.h>
 
-#include "deviceparams.h"
+#include "ws28xxstripeparams.h"
 #include "ws28xxstripe.h"
 
 #ifndef FRAME_BUFFER_SIZE
@@ -62,7 +62,7 @@ private:
 	unsigned			m_nLEDCount;
 	boolean 			m_Blackout;
 	u8 					m_RGBWColour[4];
-	DeviceParams		m_DeviceParams;
+	WS28XXStripeParams	m_DeviceParams;
 	uint8_t 			m_packet[FRAME_BUFFER_SIZE];
 };
 

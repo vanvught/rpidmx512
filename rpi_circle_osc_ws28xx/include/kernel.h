@@ -45,11 +45,11 @@
 #include <circle/sched/scheduler.h>
 #include <circle/usb/dwhcidevice.h>
 #include <circle/machineinfo.h>
+#include <ledblinkcircle.h>
 // Addon's
 #include <SDCard/emmc.h>
 #include "fatfs/ff.h"
 
-#include "circle/blinktask.h"
 
 enum TShutdownMode
 {
@@ -88,7 +88,7 @@ private:
 	CNetSubSystem		m_Net;
 
 	CMachineInfo 		m_MachineInfo;
-	CBlinkTask 			m_BlinkTask;
+	LedBlinkCircle 		m_BlinkTask;
 
 	FATFS				m_FileSystem;
 };
