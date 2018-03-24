@@ -2,7 +2,7 @@
  * @file artnetdiscovery.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,60 +23,52 @@
  * THE SOFTWARE.
  */
 
-//#define DEBUG
-
 #include <stdint.h>
-
-#include "rdm_e120.h"
+#include <assert.h>
+#include <rdm_e120.h>
 
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 
-#include "rdmmessage.h"
+#include "rdm.h"
+
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
 
 #include "util.h"
 
-ArtNetDiscovery::ArtNetDiscovery(void) : m_pRdmCommand(0){
+ArtNetRdmResponder::ArtNetRdmResponder(void) : m_pRdmCommand(0){
 	m_Controller.Load();
 	m_Discovery.SetUid(m_Controller.GetUID());
 
-	m_pRdmCommand = new struct _rdm_command;
+	m_pRdmCommand = new struct TRdmMessage;
 
 	if (m_pRdmCommand != 0) {
 		m_pRdmCommand->start_code = E120_SC_RDM;
 	}
 }
 
-/**
- *
- */
-ArtNetDiscovery::~ArtNetDiscovery(void) {
+ArtNetRdmResponder::~ArtNetRdmResponder(void) {
 	m_Discovery.Reset();
 }
 
-/**
- *
- */
-void ArtNetDiscovery::Full(void) {
+void ArtNetRdmResponder::Full(void) {
 	m_Discovery.Full();
 }
 
-const uint8_t ArtNetDiscovery::GetUidCount(void) {
+const uint8_t ArtNetRdmResponder::GetUidCount(void) {
 	return m_Discovery.GetUidCount();
 }
 
-void ArtNetDiscovery::Copy(unsigned char *tod) {
+void ArtNetRdmResponder::Copy(unsigned char *tod) {
 	m_Discovery.Copy(tod);
 }
 
-void ArtNetDiscovery::DumpTod(void) {
+void ArtNetRdmResponder::DumpTod(void) {
 	m_Discovery.Dump();
 }
 
-const uint8_t *ArtNetDiscovery::Handler(const uint8_t *rdm_data) {
-
+const uint8_t *ArtNetRdmResponder::Handler(const uint8_t *rdm_data) {
 	if (rdm_data == 0) {
 		return 0;
 	}
@@ -87,11 +79,12 @@ const uint8_t *ArtNetDiscovery::Handler(const uint8_t *rdm_data) {
 			// Discard late responses
 		}
 
-		TRdmMessage *p = (TRdmMessage *) (rdm_data);
+		TRdmMessageNoSc *p = (TRdmMessageNoSc *) (rdm_data);
 		uint8_t *c = (uint8_t *) m_pRdmCommand;
 
 		memcpy(&c[1], rdm_data, p->message_length + 2);
-#ifdef DEBUG
+
+#ifndef NDEBUG
 		RDMMessage::Print((const uint8_t *) c);
 #endif
 		RDMMessage::SendRaw(c, p->message_length + 2);

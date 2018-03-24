@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "hardwarebaremetal.h"
+#include "networkbaremetal.h"
+#include "ledblinkbaremetal.h"
+
 #include "bcm2835_gpio.h"
 
 #include "hardware.h"
@@ -34,42 +38,40 @@
 #include "display.h"
 
 #include "wifi.h"
-#include "network.h"
 
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 #include "artnetparams.h"
 
-#include "ledblinktask.h"
+#include "timecode.h"
+#include "timesync.h"
 
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
 // Monitor Output
 #include "dmxmonitor.h"
-// SPI WS28xx output
-#include "deviceparams.h"
-#include "spisend.h"
-
-#include "timecode.h"
-#include "timesync.h"
+// WS28xx output
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "software_version.h"
 
 extern "C" {
-extern void network_init(void);
-
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
+	HardwareBaremetal hw;
+	NetworkBaremetal nw;
+	LedBlinkBaremetal lb;
+	uint8_t nHwTextLength;
 	struct ip_info ip_config;
 	ArtNetParams artnetparams;
 	DMXParams dmxparams;
-	DeviceParams deviceparms;
+	WS28XXStripeParams deviceparms;
 	Display display(0,8);
 	bool oled_connected = false;
-	LedBlinkTask ledblinktask;
 
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
@@ -87,7 +89,7 @@ void notmain(void) {
 		(void) dmxparams.Load();
 	}
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi Art-Net 3 Node ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
@@ -106,6 +108,8 @@ void notmain(void) {
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 
+	hw.SetLed(HARDWARE_LED_ON);
+
 	console_set_top_row(3);
 
 	if (!wifi(&ip_config)) {
@@ -113,7 +117,7 @@ void notmain(void) {
 			;
 	}
 
-	network_init();
+	nw.Init();
 
 	ArtNetNode node;
 	DMXSend dmx;
@@ -121,14 +125,12 @@ void notmain(void) {
 	DMXMonitor monitor;
 	TimeCode timecode;
 	TimeSync timesync;
-	ArtNetDiscovery discovery;
+	ArtNetRdmResponder discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
 
 	artnetparams.Set(&node);
-
-	node.SetLedBlink(&ledblinktask);
 
 	if (artnetparams.IsUseTimeCode() || tOutputType == OUTPUT_TYPE_MONITOR) {
 		timecode.Start();
@@ -197,15 +199,7 @@ void notmain(void) {
 		console_set_top_row(20);
 	}
 
-	printf("\nNode configuration\n");
-	const uint8_t *firmware_version = node.GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name   : %s\n", node.GetShortName());
-	printf(" Long name    : %s\n", node.GetLongName());
-	printf(" Net          : %d\n", node.GetNetSwitch());
-	printf(" Sub-Net      : %d\n", node.GetSubnetSwitch());
-	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
-	printf(" Active ports : %d", node.GetActiveOutputPorts());
+	node.Print();
 
 	if (tOutputType != OUTPUT_TYPE_MONITOR) {
 		console_puts("\n\n");
@@ -220,7 +214,7 @@ void notmain(void) {
 		TWS28XXType tType = spi.GetLEDType();
 
 		printf("Led stripe parameters\n");
-		printf(" Type         : %s [%d]\n", DeviceParams::GetLedTypeString(tType), tType);
+		printf(" Type         : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(tType), tType);
 		printf(" Count        : %d\n", (int) spi.GetLEDCount());
 	}
 
@@ -266,10 +260,10 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, "Node started");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
 
-	hardware_watchdog_init();
+	hw.WatchdogFeed();
 
 	for (;;) {
-		hardware_watchdog_feed();
+		hw.WatchdogFeed();
 
 		(void) node.HandlePacket();
 
@@ -277,7 +271,7 @@ void notmain(void) {
 			timesync.ShowSystemTime();
 		}
 
-		ledblinktask.Run();
+		lb.Run();
 	}
 }
 
