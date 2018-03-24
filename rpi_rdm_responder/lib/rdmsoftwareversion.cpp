@@ -1,9 +1,8 @@
 /**
- * @file rdm_device_const.h
+ * @file rdmsoftwareversion.cpp
  *
- * @brief These definitions are private for the RDM Responder
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_DEVICE_CONST_H_
-#define RDM_DEVICE_CONST_H_
-
 #include <stdint.h>
 
-#include "util.h"
+#include "rdmsoftwareversion.h"
 
-#include "rdm.h"
+#include "software_version.h"
 #include "sofware_version_id.h"
 
-static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi";				///<
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";			///<
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";			///<
-static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.0";			///<
+const char *RDMSoftwareVersion::GetVersion(void) {
+	return SOFTWARE_VERSION;
+}
 
-#define DEFAULT_DMX_START_ADDRESS		1	///<
-#define DEFAULT_CURRENT_PERSONALITY		1	///<
-#define DMX_FOOTPRINT					32	///<
+const uint8_t RDMSoftwareVersion::GetVersionLength(void) {
+	return (uint8_t) sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-static const struct _rdm_personality rdm_personalities[] ALIGNED = {
-		{ (uint16_t) DMX_FOOTPRINT, "RDM Responder / DMX Controller", (uint8_t) 30 } };
-
-#endif /* RDM_DEVICE_CONST_H_ */
+const uint32_t RDMSoftwareVersion::GetVersionId(void) {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

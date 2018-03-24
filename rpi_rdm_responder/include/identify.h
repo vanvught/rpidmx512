@@ -1,8 +1,8 @@
 /**
- * @file rdm_handle_data.h
+ * @file identify.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_HANDLE_DATA_H_
-#define RDM_HANDLE_DATA_H_
+#ifndef IDENTIFY_H_
+#define IDENTIFY_H_
 
-#include <stdint.h>
+#include "rdmidentify.h"
 
-extern const uint8_t rdm_is_muted(void);
-extern void rdm_handle_data(uint8_t *rdm_data);
+class Identify: public RDMIdentify {
+public:
+	Identify(void);
+	~Identify(void);
 
-#endif /* RDM_HANDLE_DATA_H_ */
+	void SetMode(TRdmIdentifyMode nMode);
+	void Run(void);
+
+private:
+
+};
+
+#endif /* IDENTIFY_H_ */

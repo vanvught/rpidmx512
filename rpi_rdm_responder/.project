@@ -3,11 +3,18 @@
 	<name>rpi_rdm_responder</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
-		<project>lib-dmx</project>
-		<project>lib-hal</project>
-		<project>lib-monitor</project>
-		<project>lib-utils</project>
+		<project>lib-c++</project>
+		<project>lib-dmxreceiver</project>
+		<project>lib-hardware</project>
+		<project>lib-ledblink</project>
+		<project>lib-lightset</project>
+		<project>lib-network</project>
+		<project>lib-rdm</project>
+		<project>lib-rdmresponder</project>
+		<project>lib-rdmsensor</project>
+		<project>lib-rdmsubdevice</project>
+		<project>lib-tlc59711dmx</project>
+		<project>lib-ws28xx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -25,6 +32,7 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>

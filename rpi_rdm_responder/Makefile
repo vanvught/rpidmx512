@@ -1,11 +1,11 @@
 #
-DEFINES = RDM_RESPONDER ENABLE_MMU NDEBUG
+DEFINES = ENABLE_MMU NDEBUG
 #
-LIBS = dmx monitor
+LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 ledblink lightset c++
 #
-SRCDIR = common/lib devices firmware lib sensors
+SRCDIR = firmware lib
 
 include ../firmware-template/Rules.mk
 
 prerequisites:
-	./generate_sofware_version_id.sh	
+	./generate_sofware_version_id.sh

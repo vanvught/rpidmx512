@@ -1,7 +1,8 @@
 /**
- * @file ads1115_params.h
+ * @file software_version.h
+ *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,34 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef ADS1115_PARAMS_H_
-#define ADS1115_PARAMS_H_
 
-#include <stdbool.h>
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include <acs71x.h>
+static const char SOFTWARE_VERSION[] = "2.1";
 
-struct _ads1115_ch_info {
-	bool calibrate;			///<
-	struct _ch0 {
-		bool is_connected;	///<
-		acs71x_type_t type; ///<
-	} ch0;
-	struct _ch1 {
-		bool is_connected;	///<
-		acs71x_type_t type; ///<
-	} ch1;
-	struct _ch2 {
-		bool is_connected;	///<
-		acs71x_type_t type; ///<
-	} ch2;
-	struct _ch3 {
-		bool is_connected;	///<
-		acs71x_type_t type; ///<
-	} ch3;
-};
-
-extern /*@shared@*/const struct _ads1115_ch_info *ads1115_params_get_ch_info(void);
-extern void ads1115_params_init(void);
-
-#endif /* ADS1115_PARAMS_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

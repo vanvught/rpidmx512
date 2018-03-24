@@ -1,8 +1,8 @@
 /**
- * @file rdm_sensors.h
+ * @file identify.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_SENSORS_H_
-#define RDM_SENSORS_H_
+#include <stdint.h>
+#include <assert.h>
 
-#include <stdbool.h>
+#include "identify.h"
 
-#include "rdm_sensor.h"
+#include "rdmidentify.h"
 
-extern const uint8_t rdm_sensors_get_count(void);
-extern const bool rdm_sensors_add(const struct _rdm_sensor_defintion *, const void *);
+Identify::Identify(void) {
 
-#endif /* RDM_SENSORS_H_ */
+}
+
+Identify::~Identify(void) {
+}
+
+void Identify::SetMode(TRdmIdentifyMode nMode) {
+	m_nMode = nMode;
+}
+
+void Identify::Run(void) {
+	if(!m_bIsEnabled) {
+		return;
+	}
+}
