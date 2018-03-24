@@ -1,0 +1,6 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-ledblink/include ../lib-lightset/include
+#
+include ../linux-template/lib/Rules.mk

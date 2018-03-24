@@ -1,0 +1,29 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-rdm/include
+INCLUDE	+= -I ../lib-i2c/include
+INCLUDE	+= -I ../lib-properties/include
+INCLUDE	+= -I ../lib-bob/include
+INCLUDE	+= -I ../lib-hal/include
+INCLUDE	+= -I ../include
+
+OBJS  = src/rdmsensor.o src/rdmsensors.o
+OBJS += src/cputemperature.o
+OBJS += src/sensorbh1750.o
+OBJS += src/sensorhtu21dhumidity.o src/sensorhtu21dtemperature.o
+OBJS += src/sensorina219current.o src/sensorina219power.o src/sensorina219voltage.o
+OBJS += src/sensormcp9808.o
+
+EXTRACLEAN = src/*.o
+
+librdmsensor.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D librdmsensor.a | $(PREFIX)c++filt > librdmsensor.lst
+
+include $(CIRCLEHOME)/Rules.mk

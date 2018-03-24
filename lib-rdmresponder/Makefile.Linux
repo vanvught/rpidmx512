@@ -1,0 +1,6 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-artnet/include ../lib-lightset/include
+#
+include ../linux-template/lib/Rules.mk
