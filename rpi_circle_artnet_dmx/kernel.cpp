@@ -2,7 +2,7 @@
  * @file kernel.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include <circle/interrupt.h>
 #include <circle/string.h>
 #include <circle/util.h>
@@ -34,24 +36,22 @@
 
 #include "kernel.h"
 
-extern "C" {
-extern void network_init(CNetSubSystem *);
-}
-#include "network.h"
+#include "hardwarecircle.h"
+#include "networkcircle.h"
+#include "ledblinkcircle.h"
+
 #include "networkparams.h"
 
 // DMX output
 #include "dmxparams.h"
 #include "circle/dmxsend.h"
 
-// SPI WS28xx output
-#include "deviceparams.h"
-#include "spisend.h"
+// WS28xx output
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
-
-#include "circle/blinktask.h"
 
 #include "software_version.h"
 
@@ -71,7 +71,7 @@ CKernel::CKernel(void) :
 		m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
 		m_DMX (&m_Interrupt),
 		m_SPI (&m_Interrupt),
-		m_BlinkTask(&m_ActLED, 0)
+		m_BlinkTask()
 {
 	m_ActLED.On();
 }
@@ -178,11 +178,14 @@ boolean CKernel::Configure(void) {
 
 TShutdownMode CKernel::Run(void)
 {
+	HardwareCircle hw;
+	NetworkCircle nw;
 	ArtNetParams artnetparams;
 	DMXParams dmxParams;
-	DeviceParams deviceparams;
+	WS28XXStripeParams deviceparams;
+	uint8_t nHwTextLength;
 
-	network_init(&m_Net);
+	nw.Init(&m_Net);
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -207,12 +210,9 @@ TShutdownMode CKernel::Run(void)
 		}
 	}
 
-	m_Logger.Write(FromKernel, LogNotice, "[V%s] Compiled on %s at %s", SOFTWARE_VERSION, __DATE__,  __TIME__);
-	m_Logger.Write(FromKernel, LogNotice, "%s %dMB (%s)", m_MachineInfo.GetMachineName(), m_MachineInfo.GetRAMSize(),  m_MachineInfo.GetSoCName());
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	ArtNetNode node;
-
-	node.SetLedBlink(&m_BlinkTask);
 
 	artnetparams.Set(&node);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
@@ -256,19 +256,8 @@ TShutdownMode CKernel::Run(void)
 		}
 	}
 
-	m_Logger.Write(FromKernel, LogNotice, "Node configuration :");
-	const uint8_t *FirmwareVersion = node.GetSoftwareVersion();
-	m_Logger.Write(FromKernel, LogNotice, " Firmware   : v%u.%u", FirmwareVersion[0], FirmwareVersion[1]);
-	CString IPString;
-	m_Net.GetConfig()->GetIPAddress()->Format(&IPString);
-	m_Logger.Write(FromKernel, LogNotice, " Running at : %s:%u ", (const char *) IPString, ARTNET_NODE_PORT);
-	m_Net.GetConfig()->GetBroadcastAddress()->Format(&IPString);
-	m_Logger.Write(FromKernel, LogNotice, " Broadcast  : %s", (const char *) IPString);
-	m_Logger.Write(FromKernel, LogNotice, " Short name : %s", node.GetShortName());
-	m_Logger.Write(FromKernel, LogNotice, " Long name  : %s", node.GetLongName());
-	m_Logger.Write(FromKernel, LogNotice, " Net        : %u", node.GetNetSwitch());
-	m_Logger.Write(FromKernel, LogNotice, " Sub-Net    : %u", node.GetSubnetSwitch());
-	m_Logger.Write(FromKernel, LogNotice, " Universe   : %u", node.GetUniverseSwitch(0));
+	nw.Print();
+	node.Print();
 
 	if (output_type == OUTPUT_TYPE_DMX) {
 		m_Logger.Write(FromKernel, LogNotice, "DMX Send parameters :");
@@ -278,7 +267,7 @@ TShutdownMode CKernel::Run(void)
 	} else {
 		const TWS28XXType tType = m_SPI.GetLEDType();
 		m_Logger.Write(FromKernel, LogNotice, "Led stripe parameters :");
-		m_Logger.Write(FromKernel, LogNotice, " Type         : %s [%d]", DeviceParams::GetLedTypeString(tType), tType);
+		m_Logger.Write(FromKernel, LogNotice, " Type         : %s [%d]", WS28XXStripeParams::GetLedTypeString(tType), tType);
 		m_Logger.Write(FromKernel, LogNotice, " Count        : %u", m_SPI.GetLEDCount());
 	}
 

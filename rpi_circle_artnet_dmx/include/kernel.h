@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,16 +45,16 @@
 #include <circle/sched/scheduler.h>
 #include <circle/usb/dwhcidevice.h>
 #include <circle/machineinfo.h>
-// Addon's
+#include <ledblinkcircle.h>
+
 #include "SDCard/emmc.h"
 #include "fatfs/ff.h"
 
 // DMX output
 #include "circle/dmxsend.h"
-// SPI WS28xx output
-#include "spisend.h"
+// WS28xx output
+#include "ws28xxstripedmx.h"
 
-#include "circle/blinktask.h"
 
 enum TShutdownMode
 {
@@ -96,7 +96,7 @@ private:
 	SPISend				m_SPI;
 
 	CMachineInfo 		m_MachineInfo;
-	CBlinkTask 			m_BlinkTask;
+	LedBlinkCircle 		m_BlinkTask;
 
 	FATFS				m_FileSystem;
 };
