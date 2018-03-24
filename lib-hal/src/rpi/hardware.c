@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <arm/smp.h>
 #include <stdint.h>
 #include <time.h>
 
+#include "c/sys_time.h"
+
 #include "arm/synchronize.h"
+#include "arm/smp.h"
 
 #include "bcm2835_st.h"
 #include "bcm2835_vc.h"
@@ -36,8 +38,8 @@
 #include "bcm2837_gpio_virt.h"
 
 #include "console.h"
-#include "sys_time.h"
 #include "ff.h"
+
 
 struct _hardware_led {
 	void (*init)(void);		///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)

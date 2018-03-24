@@ -2,7 +2,7 @@
  * @file sys_time.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SYS_TIME_H
-#define SYS_TIME_H
+#ifndef C_SYS_TIME_H
+#define C_SYS_TIME_H
 
 #include <stdint.h>
 #include <time.h>
@@ -39,10 +39,10 @@ extern "C" {
 extern void sys_time_init(void);
 extern void sys_time_set(/*@out@*/const struct tm *);
 
-extern const uint32_t millis();
+extern uint32_t millis();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SYS_TIME_H */
+#endif /* C_SYS_TIME_H */

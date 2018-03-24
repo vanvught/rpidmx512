@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,62 +27,74 @@
 #define HARDWARE_H_
 
 #include <stdint.h>
+#include <time.h>
 
-#include "bcm2835.h"
-#include "bcm2835_vc.h"
-#include "bcm2835_wdog.h"
-#include "bcm2835_rng.h"
+#ifdef __cplusplus
 
-struct hardware_time {
-	uint8_t second;		///< Seconds.		[0-59]
-	uint8_t minute;		///< Minutes.		[0-59]
-	uint8_t hour;		///< Hours.			[0-23]
-	uint8_t day;		///< Day.		 	[1-31]
-	uint8_t month;		///< Month.			[1-12]
-	uint16_t year;		///< Year			[1970-....]
+enum THardwareLedStatus {
+	HARDWARE_LED_OFF = 0,
+	HARDWARE_LED_ON,
+	HARDWARE_LED_HEARTBEAT,
+	HARDWARE_LED_FLASH
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct THardwareTime {
+	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
+	int tm_min;		///< Minutes.		[0-59]
+	int tm_hour;	///< Hours.			[0-23]
+	int tm_mday;	///< Day.		 	[1-31]
+	int tm_mon;		///< Month.			[0-11]
+	int tm_year;	///< Year - 1900
+	int tm_wday;	///< Day of week.	[0-6]
+	int tm_yday;	///< Days in year.	[0-365]
+	int tm_isdst;	///< DST.			[-1/0/1]
+};
 
-extern void hardware_init(void);
-extern void hardware_reboot(void);
-extern void hardware_led_init(void);
-extern void hardware_led_set(const int);
-extern const uint64_t hardware_uptime_seconds(void);
-extern const int32_t hardware_firmware_get_revision(void);
-extern /*@shared@*/const char *hardware_firmware_get_copyright(void);
-extern const uint8_t hardware_firmware_get_copyright_length(void);
-extern const int32_t hardware_board_get_model_id(void);
-extern /*@shared@*/const char *hardware_board_get_model(void);
-extern const uint8_t hardware_board_get_model_length(void);
-extern /*@shared@*/const char *hardware_board_get_soc(void);
-extern const int32_t hardware_get_core_temperature(void);
-extern void hardware_rtc_set(const struct hardware_time *);
+class Hardware {
+public:
+	Hardware(void);
+	virtual ~Hardware(void);
 
-/*@unused@*/inline static uint32_t hardware_micros(void) {
-	return BCM2835_ST->CLO;
-}
+	virtual const char* GetMachine(uint8_t &nLength)=0;
+	virtual const char* GetSysName(uint8_t &nLength)=0;
+	virtual const char* GetVersion(uint8_t &nLength)=0;
 
-/*@unused@*/inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
-	return bcm2835_vc_get_board_mac_address(mac_address);
-}
+	virtual const char* GetRelease(uint8_t &nLength)=0;
+	virtual uint32_t GetReleaseId(void)=0;
 
-/*@unused@*/inline static void hardware_watchdog_init(void) {
-	bcm2835_watchdog_init();
-}
+	virtual const char* GetBoardName(uint8_t &nLength)=0;
+	virtual uint32_t GetBoardId(void)=0;
 
-/*@unused@*/inline static void hardware_watchdog_feed(void) {
-	bcm2835_watchdog_feed();
-}
+	virtual const char* GetCpuName(uint8_t &nLength)=0;
+	virtual const char* GetSocName(uint8_t &nLength)=0;
 
-/*@unused@*/inline static void hardware_watchdog_stop(void) {
-	bcm2835_watchdog_stop();
-}
+	virtual float GetCoreTemperature(void)=0;
 
-#ifdef __cplusplus
-}
+	virtual uint64_t GetUpTime(void)=0;
+
+	virtual void SetLed(THardwareLedStatus tLedStatus)=0;
+
+	virtual bool Reboot(void)=0;
+	virtual bool PowerOff(void)=0;
+
+	virtual time_t GetTime(void)=0;
+
+	virtual bool SetTime(const struct THardwareTime &pTime)=0;
+	virtual void GetTime(struct THardwareTime *pTime)=0;
+
+	virtual uint32_t Millis(void)=0;
+
+public:
+	inline static Hardware* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static Hardware *s_pThis;
+};
+
+#elif defined(BARE_METAL)
+ #include "c/hardware.h"
 #endif
 
 #endif /* HARDWARE_H_ */
