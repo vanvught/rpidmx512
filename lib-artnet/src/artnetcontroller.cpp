@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,10 +73,10 @@ ArtNetController::~ArtNetController(void) {
 }
 
 void ArtNetController::Start(void) {
-	m_IPAddressLocal = network_get_ip();
-	m_IPAddressBroadcast = m_IPAddressLocal | ~network_get_netmask();
+	m_IPAddressLocal = Network::Get()->GetIp();
+	m_IPAddressBroadcast = m_IPAddressLocal | ~(Network::Get()->GetNetmask());
 
-	network_begin(ARTNET_UDP_PORT);
+	Network::Get()->Begin(ARTNET_UDP_PORT);
 }
 
 void ArtNetController::Stop(void) {
@@ -98,7 +98,7 @@ void ArtNetController::SendPoll(void) {
 	const time_t nTime = time(NULL);
 
 	if (nTime - m_nLastPollTime >= 8) {
-		network_sendto((const uint8_t *)&m_ArtNetPoll, sizeof(struct TArtPoll), m_IPAddressBroadcast, ARTNET_UDP_PORT);
+		Network::Get()->SendTo((const uint8_t *)&m_ArtNetPoll, sizeof(struct TArtPoll), m_IPAddressBroadcast, ARTNET_UDP_PORT);
 		m_nLastPollTime= nTime;
 	}
 }
@@ -116,7 +116,7 @@ void ArtNetController::HandlePollReply(void) {
 }
 
 void ArtNetController::SendIpProg(void) {
-	network_sendto((const uint8_t *)&m_ArtIpProg, sizeof(struct TArtIpProg), m_pArtNetPacket->IPAddressFrom, ARTNET_UDP_PORT);
+	Network::Get()->SendTo((const uint8_t *)&m_ArtIpProg, sizeof(struct TArtIpProg), m_pArtNetPacket->IPAddressFrom, ARTNET_UDP_PORT);
 }
 
 void ArtNetController::HandleIpProgReply(void) {
@@ -133,7 +133,7 @@ void ArtNetController::SendIpProg(const uint32_t nRemoteIp, const struct TArtNet
 
 	memcpy(&ArtIpProg.Command, pArtNetIpProg, sizeof (struct TArtNetIpProg));
 
-	network_sendto((const uint8_t *)&ArtIpProg, sizeof(struct TArtIpProg), nRemoteIp, ARTNET_UDP_PORT);
+	Network::Get()->SendTo((const uint8_t *)&ArtIpProg, sizeof(struct TArtIpProg), nRemoteIp, ARTNET_UDP_PORT);
 }
 
 int ArtNetController::Run(void) {
@@ -143,7 +143,7 @@ int ArtNetController::Run(void) {
 
 	SendPoll();
 
-	const int nBytesReceived = network_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom((const uint8_t *)packet, (const uint16_t)sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
 
 	if (nBytesReceived == 0) {
 		return 0;
@@ -173,5 +173,3 @@ int ArtNetController::Run(void) {
 
 	return nBytesReceived;
 }
-
-

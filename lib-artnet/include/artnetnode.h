@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,7 +115,6 @@ public:
 	~ArtNetNode(void);
 
 	void SetOutput(LightSet *);
-	void SetLedBlink(LedBlink *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
 	void SetTimeSyncHandler(ArtNetTimeSync *);
@@ -162,6 +161,8 @@ public:
 
 	int HandlePacket(void);
 
+	void Print(void);
+
 private:
 	void GetType(void);
 
@@ -192,26 +193,25 @@ private:
 	void SetNetworkDataLossCondition(void);
 
 private:
-	LightSet    			*m_pLightSet;		///<
-	LedBlink				*m_pLedBlink;		///<
+	LightSet    			*m_pLightSet;
 
-	ArtNetTimeCode			*m_pArtNetTimeCode;	///<
-	ArtNetTimeSync			*m_pArtNetTimeSync;	///<
-	ArtNetRdm				*m_pArtNetRdm;		///<
-	ArtNetIpProg			*m_pArtNetIpProg;	///<
-	//ArtNetTrigger			*m_pArtNetTrigger;	///<
+	ArtNetTimeCode			*m_pArtNetTimeCode;
+	ArtNetTimeSync			*m_pArtNetTimeSync;
+	ArtNetRdm				*m_pArtNetRdm;
+	ArtNetIpProg			*m_pArtNetIpProg;
+	//ArtNetTrigger			*m_pArtNetTrigger;
 
 	struct TArtNetNode		m_Node;				///< Struct describing the node
 	struct TArtNetNodeState m_State;			///< The current state of the node
 
 	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
-	struct TArtPollReply	m_PollReply;		///<
-	struct TArtDiagData		m_DiagData;			///<
-	struct TArtTimeCode		m_TimeCodeData;		///<
-	struct TArtTodData		*m_pTodData;		///<
-	struct TArtIpProgReply	*m_pIpProgReply;	///<
+	struct TArtPollReply	m_PollReply;
+	struct TArtDiagData		m_DiagData;
+	struct TArtTimeCode		m_TimeCodeData;
+	struct TArtTodData		*m_pTodData;
+	struct TArtIpProgReply	*m_pIpProgReply;
 
-	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];	///<
+	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];
 
 	bool					m_bDirectUpdate;
 
@@ -221,6 +221,8 @@ private:
 
 	bool					m_IsLightSetRunning;
 	bool					m_IsRdmResponder;
+
+	char					m_aSysName[16];
 };
 
 #endif /* ARTNETNODE_H_ */
