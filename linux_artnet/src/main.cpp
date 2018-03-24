@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,38 +28,38 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
+
+#include "hardwarelinux.h"
+#include "networklinux.h"
+#include "ledblinklinux.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
 
 #include "dmxmonitor.h"
 
-#if defined (__linux__)
-#include "ipprog.h"
-#endif
+#include "rdmdeviceresponder.h"
+#include "rdmpersonality.h"
 
-#include "network.h"
+#include "identify.h"
+#include "artnetrdmresponder.h"
+
+#if defined (__linux__)
+ #include "ipprog.h"
+#endif
 
 #include "software_version.h"
 
-extern "C" {
-extern int network_init(const char *);
-}
-
 int main(int argc, char **argv) {
-	struct utsname os_info;
+	HardwareLinux hw;
+	NetworkLinux nw;
+	LedBlinkLinux lbt;
+	uint8_t nTextLength;
 	ArtNetParams artnetparams;
 	ArtNetNode node;
 	DMXMonitor monitor;
 #if defined (__linux__)
 	IpProg ipprog;
-#endif
-#if defined (__linux__)
-	char version[_UTSNAME_VERSION_LENGTH];
-#else
-	char version[20];
 #endif
 
 	if (argc < 2) {
@@ -80,13 +80,10 @@ int main(int argc, char **argv) {
 		artnetparams.Set(&node);
 	}
 
-	memset(&os_info, 0, sizeof(struct utsname));
-	uname(&os_info);
-
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
+	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
 	puts("Art-Net 3 Node - Real-time DMX Monitor");
 
-	if (network_init(argv[1]) < 0) {
+	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
@@ -94,40 +91,32 @@ int main(int argc, char **argv) {
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 	node.SetOutput(&monitor);
 
+	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
+	ArtNetRdmResponder RdmResponder(&personality, &monitor);
+
+	node.SetRdmHandler(&RdmResponder, true);
+
+	Identify identify;
+
 #if defined (__linux__)
 	if (getuid() == 0) {
 		node.SetIpProgHandler(&ipprog);
 	}
 #endif
-#if defined (__linux__)
-	strncpy(version, os_info.version, (int)((strchr(os_info.version, ' ') - os_info.version)));
-#else
-	strncpy(version, os_info.sysname, 20);
-#endif
 
 	char *params_long_name = (char *)artnetparams.GetLongName();
 	if (*params_long_name == 0) {
 		char LongName[ARTNET_LONG_NAME_LENGTH];
-		snprintf(LongName, ARTNET_LONG_NAME_LENGTH, "%s Open Source Art-Net 3 Node", version);
+		snprintf(LongName, ARTNET_LONG_NAME_LENGTH, "%s Open Source Art-Net 3 Node", hw.GetSysName(nTextLength));
 		node.SetLongName(LongName);
 	}
 
-	printf("Running at : " IPSTR "\n", IP2STR(network_get_ip()));
-	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));
-	printf("Hostname : %s\n", network_get_hostname());
-#if defined (__linux__)
-	printf("DHCP : %s\n", network_is_dhcp_used() ? "Yes" : "No");
-#endif
-
-	printf("\nNode configuration\n");
-	const uint8_t *firmware_version = node.GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name   : %s\n", node.GetShortName());
-	printf(" Long name    : %s\n", node.GetLongName());
-	printf(" Net          : %d\n", node.GetNetSwitch());
-	printf(" Sub-Net      : %d\n", node.GetSubnetSwitch());
-	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
-	printf(" Active ports : %d\n\n", node.GetActiveOutputPorts());
+	nw.Print();
+	puts("-------------------------------------------------------------------------------------------");
+	node.Print();
+	puts("-------------------------------------------------------------------------------------------");
+	RdmResponder.GetRDMDeviceResponder()->Print();
+	puts("-------------------------------------------------------------------------------------------");
 
 	node.Start();
 
@@ -138,6 +127,7 @@ int main(int argc, char **argv) {
 			printf("(%d)\n", bytes);
 #endif
 		}
+		identify.Run();
 	}
 
 	return 0;

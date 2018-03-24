@@ -1,10 +1,11 @@
 #
-DEFINES = NDEBUG
+DEFINES= NDEBUG
 #
-LIBS = artnet dmxmonitor lightset ledblink
+LIBS= dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet properties lightset ledblink
 #
-SRCDIR = src lib
+SRCDIR= src lib
 
 include ../linux-template/Rules.mk
 
 prerequisites:
+	./generate_sofware_version_id.sh

@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file identify.cpp
  *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
+#include <assert.h>
 
-static const char SOFTWARE_VERSION[] = "1.5";
+#include "identify.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "hardware.h"
+
+Identify::Identify(void) {
+}
+
+Identify::~Identify(void) {
+}
+
+void Identify::SetMode(TRdmIdentifyMode nMode) {
+	m_nMode = nMode;
+}
+
+void Identify::Run(void) {
+	if(!m_bIsEnabled) {
+		return;
+	}
+}
