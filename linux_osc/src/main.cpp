@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,24 +28,22 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
-#include <sys/utsname.h>
+
+#include "hardwarelinux.h"
+#include "networklinux.h"
 
 #include "osc.h"
 #include "oscsend.h"
 #include "oscmessage.h"
 #include "oscparams.h"
 
-#include "network.h"
-
 #include "software_version.h"
 
-extern "C" {
-extern int network_init(const char *);
-}
-
 int main(int argc, char **argv) {
+	HardwareLinux hw;
+	NetworkLinux nw;
+	uint8_t nTextLength;
 	OSCParams oscparms;
-	struct utsname os_info;
 	uint8_t buffer[1600];
 	uint32_t remote_ip;
 	uint16_t incoming_port, outgoing_port, remote_port;
@@ -55,9 +53,6 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	memset(&os_info, 0, sizeof(struct utsname));
-	uname(&os_info);
-
 	if (oscparms.Load()) {
 		oscparms.Dump();
 	}
@@ -65,23 +60,20 @@ int main(int argc, char **argv) {
 	incoming_port = oscparms.GetIncomingPort();
 	outgoing_port = oscparms.GetOutgoingPort();
 
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
+	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
 	printf("OSC, Incoming port: %d, Outgoing port: %d\n", incoming_port, outgoing_port);
 
-	if (network_init(argv[1]) < 0) {
+	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
 
-	network_begin(incoming_port);
+	nw.Begin(incoming_port);
 
-	printf("Running at : " IPSTR ":%d\n", IP2STR(network_get_ip()), incoming_port);
-	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));
-	printf("Hostname : %s\n", network_get_hostname());
-	printf("DHCP : %s\n", network_is_dhcp_used() ? "Yes" : "No");
+	nw.Print();
 
 	for (;;) {
-		int bytes_received = network_recvfrom(buffer, sizeof buffer, &remote_ip, &remote_port);
+		int bytes_received = nw.RecvFrom(buffer, sizeof buffer, &remote_ip, &remote_port);
 
 		if (bytes_received > 0) {
 			struct timeval tv;
@@ -122,12 +114,10 @@ int main(int argc, char **argv) {
 						int size = (int) blob.GetDataSize();
 						printf("blob, size %d, [", (int) size);
 
-						if (size < 12) {
-							for (int j = 0; j < size; j++) {
-								printf("%02x", blob.GetByte(j));
-								if (j + 1 < size) {
-									printf(" ");
-								}
+						for (int j = 0; j < size && j < 16; j++) {
+							printf("%02x", blob.GetByte(j));
+							if (j + 1 < size) {
+								printf(" ");
 							}
 						}
 
@@ -147,9 +137,10 @@ int main(int argc, char **argv) {
 			}
 
 			if (OSC::isMatch((const char*) buffer, "/2")) {
-				OSCSend MsgSendModel(remote_ip, outgoing_port, "/info/model", "s", os_info.version[0] ==  '\0' ? "Linux" : os_info.version);
-				OSCSend MsgSendInfo(remote_ip, outgoing_port, "/info/os", "s", os_info.sysname);
-				OSCSend MsgSendSoc(remote_ip, outgoing_port, "/info/soc", "s", os_info.machine);
+				unsigned char nLength;
+				OSCSend MsgSendModel(remote_ip, outgoing_port, "/info/model", "s", Hardware::Get()->GetBoardName(nLength));
+				OSCSend MsgSendInfo(remote_ip, outgoing_port, "/info/os", "s", Hardware::Get()->GetSysName(nLength));
+				OSCSend MsgSendSoc(remote_ip, outgoing_port, "/info/soc", "s", Hardware::Get()->GetSocName(nLength));
 			}
 		}
 	}
