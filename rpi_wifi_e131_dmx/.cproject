@@ -33,7 +33,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ledblink/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxsend/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1011515588" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -48,8 +48,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ledblink/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-esp8266/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxsend/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmxsend/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1630715634" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -64,7 +65,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1681356181" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
 								<option id="gnu.both.asm.option.include.paths.1390468678" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/rpi_wifi_e131_dmx/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1184617915" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,18 @@
 #include <netinet/in.h>
 #include <uuid/uuid.h>
 
-#include "hardware.h"
+#include "hardwarebaremetal.h"
+#include "networkbaremetal.h"
+#include "ledblinkbaremetal.h"
 
 #include "console.h"
 #include "display.h"
 
 #include "wifi.h"
-#include "network.h"
 
 #include "e131bridge.h"
 #include "e131uuid.h"
 #include "e131params.h"
-
-#include "ledblinktask.h"
 
 // DMX output
 #include "dmxparams.h"
@@ -53,21 +52,23 @@
 #include "software_version.h"
 
 extern "C" {
-extern void network_init(void);
 void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
+	HardwareBaremetal hw;
+	NetworkBaremetal nw;
+	LedBlinkBaremetal lb;
 	E131Params e131params;
 	E131Uuid e131uuid;
 	DMXParams dmxparams;
 	DMXSend dmx;
 	DMXMonitor monitor;
 	Display display(0,8);
-	LedBlinkTask ledblinktask;
 	uuid_t uuid;
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	struct ip_info ip_config;
+	uint8_t nHwTextLength;
 
 	(void) e131params.Load();
 
@@ -82,7 +83,7 @@ void notmain(void) {
 
 	const bool IsOledConnected = display.isDetected();
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
@@ -92,6 +93,8 @@ void notmain(void) {
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
+
+	hw.SetLed(HARDWARE_LED_ON);
 
 	console_set_top_row(3);
 
@@ -103,7 +106,7 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, "Network init ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Network init ..."));
 
-	network_init();
+	nw.Init();
 
 	if (e131params.isHaveCustomCid()) {
 		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
@@ -117,7 +120,7 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting UDP ..."));
 
-	network_begin(E131_DEFAULT_PORT);
+	nw.Begin(E131_DEFAULT_PORT);
 
 	console_status(CONSOLE_YELLOW, "Join group ...");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Join group ..."));
@@ -128,7 +131,7 @@ void notmain(void) {
 	(void)inet_aton("239.255.0.0", &group_ip);
 	const uint16_t universe = e131params.GetUniverse();
 	group_ip.s_addr = group_ip.s_addr | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
-	network_joingroup(group_ip.s_addr);
+	nw.JoinGroup(group_ip.s_addr);
 
 	bridge.setCid(uuid);
 	bridge.setUniverse(universe);
@@ -143,14 +146,7 @@ void notmain(void) {
 		bridge.SetOutput(&dmx);
 	}
 
-	printf("\nBridge configuration\n");
-	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" CID          : %s\n", uuid_str);
-	printf(" Universe     : %d\n", bridge.getUniverse());
-	printf(" Merge mode   : %s\n", bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip.s_addr));
-	printf(" Unicast ip   : " IPSTR "\n\n", IP2STR(ip_config.ip.addr));
+	bridge.Print(group_ip.s_addr);
 
 	if (tOutputType == OUTPUT_TYPE_DMX) {
 		printf("DMX Send parameters\n");
@@ -189,14 +185,12 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, "Bridge is running");
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Bridge is running"));
 
-	hardware_watchdog_init();
+	hw.WatchdogInit();
 
 	for (;;) {
-		hardware_watchdog_feed();
-
+		hw.WatchdogFeed();
 		(void) bridge.Run();
-
-		ledblinktask.Run();
+		lb.Run();
 	}
 }
 
