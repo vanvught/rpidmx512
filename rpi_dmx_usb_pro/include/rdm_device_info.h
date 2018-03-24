@@ -1,7 +1,8 @@
 /**
- * @file rdm_device_const.h
+ * @file rdm_device_info.h
+ *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDM_DEVICE_CONST_H_
-#define RDM_DEVICE_CONST_H_
+#ifndef RDM_DEVICE_INFO_H_
+#define RDM_DEVICE_INFO_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "util.h"
 
-static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi DMX USB Pro";	///<
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";			///<
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";			///<
-static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.1";			///<
+#define DEVICE_SN_LENGTH						4	///<
 
-#endif /* RDM_DEVICE_CONST_H_ */
+struct _rdm_device_info_data {
+	/*@shared@*//*@null@*/uint8_t *data;
+	uint8_t length;
+};
+
+extern void rdm_device_info_init(void);
+
+extern/*@shared@*/const uint8_t * rdm_device_info_get_uuid(void);
+extern void rdm_device_info_get_label(const uint16_t, /*@out@*/struct _rdm_device_info_data *);
+extern void rdm_device_info_get_manufacturer_name(/*@out@*/struct _rdm_device_info_data *);
+extern void rdm_device_info_get_manufacturer_id(/*@out@*/struct _rdm_device_info_data *);
+extern void rdm_device_info_get_sn(struct _rdm_device_info_data *);
+extern const uint8_t rdm_device_info_get_ext_mon_level(void);
+
+#endif /* RDM_DEVICE_INFO_H_ */

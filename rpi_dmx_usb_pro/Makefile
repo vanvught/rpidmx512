@@ -3,7 +3,7 @@ DEFINES = RDM_CONTROLLER UPDATE_CONFIG_FILE ENABLE_MMU NDEBUG
 #
 LIBS = dmx monitor
 #
-SRCDIR = common/lib firmware lib
+SRCDIR = firmware lib
 #
 EXTRA_INCLUDES = ../lib-ff11/src
 

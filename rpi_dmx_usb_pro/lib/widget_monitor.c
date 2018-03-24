@@ -2,7 +2,7 @@
  * @file widget_monitor.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -13,7 +13,7 @@
 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
+#include "console.h"
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,8 +26,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "util.h"
 #include "console.h"
+
 #include "monitor.h"
 
 #include "sniffer.h"
@@ -36,11 +36,15 @@
 
 #include "dmx.h"
 #include "rdm.h"
-#include "rdm_e120.h"
 
 #include "rdm_device_info.h"
 
-static uint32_t widget_received_dmx_packet_count_previous = 0;	///<
+#include "util.h"
+
+/* RDM START CODE (Slot 0)                                                                                                     */
+#define	E120_SC_RDM		0xCC
+
+static uint32_t widget_received_dmx_packet_count_previous = 0;
 
 static uint32_t updates_per_seconde_min = UINT32_MAX;
 static uint32_t updates_per_seconde_max = (uint32_t)0;
@@ -51,12 +55,6 @@ static uint32_t slot_to_slot_max = (uint32_t)0;
 static uint32_t break_to_break_min = UINT32_MAX;
 static uint32_t break_to_break_max = (uint32_t)0;
 
-/**
- * @ingroup monitor
- *
- * @param line
- * @param data
- */
 static void monitor_dmx_data(const uint8_t * dmx_data, const int line) {
 	uint16_t i;
 	uint16_t slots;
@@ -277,4 +275,5 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 		console_clear_line(line + 4);
 	}
 }
+
 
