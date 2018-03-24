@@ -1,7 +1,8 @@
 #
 DEFINES = RASPPI NDEBUG
 #
-LIBS = input display i2c bcm2835_raspbian artnet lightset ledblink
+LIBS = input display artnet lightset
+LIBS += bob i2c bcm2835_raspbian
 #
 SRCDIR = src lib
 

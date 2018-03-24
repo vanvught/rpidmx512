@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,8 @@
 
 #include "artnetcontroller.h"
 
-#include "network.h"
+#include "hardwarelinux.h"
+#include "networklinux.h"
 
 #include "input.h"
 #include "kb_linux.h"
@@ -42,11 +43,6 @@
 #include "buttonsadafruit.h"
 
 #include "software_version.h"
-
-extern "C" {
-extern int network_init(const char *);
-}
-
 
 static const char input_devices[4][3] = { "af", "kb", "ir", "bw" };
 
@@ -65,6 +61,9 @@ void usage(void){
 }
 
 int main(int argc, char **argv) {
+	HardwareLinux hw;
+	NetworkLinux nw;
+	uint8_t nTextLength;
 	int i;
     int input_device = -1;
     bool ioption = false;
@@ -128,19 +127,19 @@ int main(int argc, char **argv) {
 	memset(&os_info, 0, sizeof(struct utsname));
 	uname(&os_info);
 
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
+	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
 
 	if (if_name == NULL) {
 		// Just give some ifname's a try ...
-		if (network_init("eth0") < 0) {
-			if (network_init("ens32") < 0) {
-				if (network_init("bond0") < 0) {
-					network_init("wlan0");
+		if (nw.Init("eth0") < 0) {
+			if (nw.Init("ens32") < 0) {
+				if (nw.Init("bond0") < 0) {
+					nw.Init("wlan0");
 				}
 			}
 		}
 	} else {
-		network_init(if_name);
+		nw.Init(if_name);
 	}
 	
 	switch (input_device) {
@@ -171,12 +170,7 @@ int main(int argc, char **argv) {
     	return (-1);
 	}
 
-	printf("Running at : " IPSTR "\n", IP2STR(network_get_ip()));
-	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));
-	printf("Hostname : %s\n", network_get_hostname());
-#if defined (__linux__)
-	printf("DHCP : %s\n", network_is_dhcp_used() ? "Yes" : "No");
-#endif
+	nw.Print();
 
 	controller.Start();
 

@@ -67,8 +67,8 @@ Ui::Ui(const char *sVersion, const ArtNetController *pArtNetController, const In
 
 	if (m_pDisplay->isDetected()) {
 		m_pDisplay->Printf(1, "V%s ArtNet 3 IpProg", sVersion);
-		m_pDisplay->Write(2, network_get_hostname());
-		m_pDisplay->Printf(3, IPSTR ,IP2STR(network_get_ip()));
+		m_pDisplay->Write(2, Network::Get()->GetHostName());
+		m_pDisplay->Printf(3, IPSTR ,IP2STR(Network::Get()->GetIp()));
 		m_pDisplay->Write(4, "Press <Enter>");
 	}
 }
