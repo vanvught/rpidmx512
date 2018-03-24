@@ -5,9 +5,14 @@
 	<projects>
 		<project>lib-artnet</project>
 		<project>lib-bcm2835_raspbian</project>
+		<project>lib-hardware</project>
 		<project>lib-l6470dmx</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
+		<project>lib-pwmdmx</project>
+		<project>lib-rdm</project>
+		<project>lib-rdmresponder</project>
+		<project>lib-rdmsensor</project>
 		<project>linux-template</project>
 	</projects>
 	<buildSpec>

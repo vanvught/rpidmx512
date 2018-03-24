@@ -3,7 +3,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,15 +61,15 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	printf("IpProg::Handler, Command = %d\n", pArtNetIpProg->Command);
 #endif
 	if (pArtNetIpProg->Command == 0) {
-		ip_union.u32 = network_get_ip();
+		ip_union.u32 = Network::Get()->GetIp();
 		memcpy((void *)&pArtNetIpProgReply->ProgIpHi, (void *)ip_union.u8, ARTNET_IP_SIZE);
-		ip_union.u32 = network_get_netmask();
+		ip_union.u32 = Network::Get()->GetNetmask();
 		memcpy((void *)&pArtNetIpProgReply->ProgSmHi, (void *)ip_union.u8, ARTNET_IP_SIZE);
 	} else if (m_IsRoot) {
 		if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
 			// Get IPAddress from IpProg
 			memcpy((void *)ip_union.u8, (void *)&pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
-			network_set_ip(ip_union.u32);
+			Network::Get()->SetIp(ip_union.u32);
 #ifndef NDEBUG
 			printf("\tIP : " IPSTR "\n", IP2STR(network_get_ip()));
 			printf("\tNetmask : " IPSTR "\n", IP2STR(network_get_netmask()));

@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file identify.h
  *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef IDENTIFY_H_
+#define IDENTIFY_H_
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include "rdmidentify.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+class Identify: public RDMIdentify {
+public:
+	Identify(void);
+	~Identify(void);
+
+	void SetMode(TRdmIdentifyMode nMode);
+	void Run(void);
+
+private:
+};
+
+#endif /* IDENTIFY_H_ */

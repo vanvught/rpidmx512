@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include "rdmsoftwareversion.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "software_version.h"
+#include "sofware_version_id.h"
+
+const char *RDMSoftwareVersion::GetVersion(void) {
+	return SOFTWARE_VERSION;
+}
+
+const uint8_t RDMSoftwareVersion::GetVersionLength(void) {
+	return (uint8_t) sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
+
+const uint32_t RDMSoftwareVersion::GetVersionId(void) {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

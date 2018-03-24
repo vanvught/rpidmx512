@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
+#include <assert.h>
+
+#include "hardwarelinux.h"
+#include "networklinux.h"
+#include "ledblinklinux.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -37,13 +40,19 @@
 #include "slushdmx.h"
 #include "sparkfundmx.h"
 
-#if defined (__linux__)
 #include "ipprog.h"
-#endif
-
-#include "network.h"
 
 #include "software_version.h"
+
+#include "rdmdeviceresponder.h"
+#include "rdmpersonality.h"
+
+#include "identify.h"
+#include "artnetrdmresponder.h"
+
+#include "pwmdmx.h"
+
+#include "lightsetchain.h"
 
 enum TBoards {
 	BOARD_SLUSH = 0,
@@ -52,49 +61,47 @@ enum TBoards {
 
 static const char sLongName[] = "Raspberry Pi Art-Net 3 L6470 Stepper Motor Controller";
 
-extern "C" {
-extern int network_init(const char *);
-}
-
 int main(int argc, char **argv) {
-	struct utsname os_info;
+	HardwareLinux hw;
+	NetworkLinux nw;
+	LedBlinkLinux lbt;
 	ArtNetParams artnetparams;
 	ArtNetNode node;
 	LightSet *pBoard;
-	TBoards board;
-#if defined (__linux__)
 	IpProg ipprog;
-#endif
+	uint8_t nTextLength;
+	FILE *pFile;
+	TBoards board;
 
-	if (argc < 3) {
-		printf("Usage: %s ip_address|interface_name slush|sparkfun\n", argv[0]);
+	if (argc < 2) {
+		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
 	}
 
-	if (strcmp(argv[2], "slush") == 0) {
+	if ((pFile = fopen("slush.txt", "r")) != NULL) {
+		fclose(pFile);
 		board = BOARD_SLUSH;
-	} else if (strcmp(argv[2], "sparkfun") == 0) {
+	} else if ((pFile = fopen("sparkfun.txt", "r")) != NULL) {
+		fclose(pFile);
 		board = BOARD_SPARKFUN;
 	} else {
-		fprintf(stderr, "Option \'%s\' is not implemented\n", argv[2]);
+		fprintf(stderr, "File \'slush.txt\' or \'sparkfun.txt\' not found\n");
 		return -1;
 	}
 
-	memset(&os_info, 0, sizeof(struct utsname));
-	uname(&os_info);
-
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
-	puts(sLongName);
+	printf("[V%s] %s {%s} Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
 
 	if (getuid() != 0) {
-		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+		fprintf(stderr, "Application is not started as \'root\' (sudo)\n");
 		return -1;
 	}
 
-	if (network_init(argv[1]) < 0) {
+	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
+
+	hw.SetLed(HARDWARE_LED_ON);
 
 	(void) artnetparams.Load();
 	artnetparams.Dump();
@@ -103,56 +110,69 @@ int main(int argc, char **argv) {
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
 	if (board == BOARD_SLUSH) {
-		SlushDmx *pSlushDmx;
-		pSlushDmx = new SlushDmx;
+		SlushDmx *pSlushDmx = new SlushDmx(false);	// Do not use SPI busy check
+		assert(pSlushDmx != 0);
 		pSlushDmx->ReadConfigFiles();
 		pBoard = pSlushDmx;
 	} else {
-		SparkFunDmx *pSparkFunDmx;
-		pSparkFunDmx = new SparkFunDmx;
+		SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
+		assert(pSparkFunDmx != 0);
 		pSparkFunDmx->ReadConfigFiles();
 		pBoard = pSparkFunDmx;
 	}
 
+	PwmDmx pwmdmx;
+	pwmdmx.Dump();
+
+	bool IsChipSet;
+	const bool IsChipTLC59711 = (pwmdmx.GetPwmDmxChip(IsChipSet) == PWMDMX_CHIP_TLC59711);
+	const bool IsPwmLedEnabled = (pwmdmx.GetLightSet() != 0);
+
+	char aDescription[64];
+	snprintf(aDescription, sizeof(aDescription) - 1, "%s %s",
+			board == BOARD_SLUSH ? "Slushengine" : "Sparkfun",
+			IsPwmLedEnabled ? (IsChipTLC59711 ? "with PWM Led TLC59711" : "with PWM Led PCA9685") : "");
+	printf("%s : %s\n", sLongName, aDescription);
+
+	if(IsPwmLedEnabled) {
+		LightSetChain *pChain = new LightSetChain;
+		assert(pChain != 0);
+		pChain->Add(pBoard, 0);
+		pChain->Add(pwmdmx.GetLightSet(), 1);
+		pChain->Dump();
+		pBoard = pChain;
+	}
+
 	node.SetOutput(pBoard);
 
-#if defined (__linux__)
 	if (getuid() == 0) {
 		node.SetIpProgHandler(&ipprog);
 	}
-#endif
 
 	char *params_long_name = (char *)artnetparams.GetLongName();
 	if (*params_long_name == 0) {
 		node.SetLongName(sLongName);
 	}
 
-	printf("Running at : " IPSTR "\n", IP2STR(network_get_ip()));
-	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));
-	printf("Hostname : %s\n", network_get_hostname());
-#if defined (__linux__)
-	printf("DHCP : %s\n", network_is_dhcp_used() ? "Yes" : "No");
-#endif
+	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
+	ArtNetRdmResponder RdmResponder(&personality, pBoard);
 
-	printf("\nNode configuration\n");
-	const uint8_t *firmware_version = node.GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name   : %s\n", node.GetShortName());
-	printf(" Long name    : %s\n", node.GetLongName());
-	printf(" Net          : %d\n", node.GetNetSwitch());
-	printf(" Sub-Net      : %d\n", node.GetSubnetSwitch());
-	printf(" Universe     : %d\n", node.GetUniverseSwitch(0));
-	printf(" Active ports : %d\n\n", node.GetActiveOutputPorts());
+	node.SetRdmHandler(&RdmResponder, true);
+
+	Identify identify;
+
+	nw.Print();
+	puts("-------------------------------------------------------------------------------------------");
+	node.Print();
+	puts("-------------------------------------------------------------------------------------------");
+	RdmResponder.GetRDMDeviceResponder()->Print();
+	puts("-------------------------------------------------------------------------------------------");
 
 	node.Start();
 
 	for (;;) {
-		int bytes = node.HandlePacket();
-		if (bytes > 0) {
-#ifndef NDEBUG
-			printf("(%d)\n", bytes);
-#endif
-		}
+		(void) node.HandlePacket();
+		identify.Run();
 	}
 
 	return 0;
