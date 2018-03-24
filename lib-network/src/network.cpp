@@ -1,8 +1,8 @@
 /**
- * @file networkparams.h
+ * @file network.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +23,46 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 
-#ifndef NETWORKPARAMS_H_
-#define NETWORKPARAMS_H_
+#include "network.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+Network *Network::s_pThis = 0;
 
-class NetworkParams {
-public:
-	NetworkParams(void);
-	~NetworkParams(void);
+Network::Network(void) :
+	m_nLocalIp(0),
+	m_nGatewayIp(0),
+	m_nNetmask(0),
+	m_nBroadcastIp(0),
+	m_IsDhcpUsed(false)
+{
+	s_pThis = this;
 
-	bool Load(void);
+	for (unsigned i = 0; i < sizeof(m_aNetMacaddr); i++) {
+		m_aNetMacaddr[i] = 0;
+	}
+}
 
-	bool isDhcpUsed(void) const;
-	uint32_t GetIpAddress(void) const;
-	uint32_t GetNetMask(void) const;
-	uint32_t GetDefaultGateway(void) const;
-	uint32_t GetNameServer(void) const;
+Network::~Network(void) {
+	m_nLocalIp = 0;
+	m_nGatewayIp = 0;
+	m_nNetmask = 0;
+	m_nBroadcastIp = 0;
+	m_IsDhcpUsed = false;
 
-	void Dump(void);
+	s_pThis = 0;
+}
 
-private:
-	bool isMaskSet(uint16_t) const;
+void Network::Print(void) {
+	uint8_t aMacAddress[NETWORK_MAC_SIZE];
+	MacAddressCopyTo(aMacAddress);
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *s);
-
-private:
-    uint32_t m_bSetList;
-
-    bool		m_bIsDhcpUsed;
-    uint32_t	m_nLocalIp;
-    uint32_t	m_nNetmask;
-    uint32_t	m_nGatewayIp;
-    uint32_t	m_nNameServerIp;
-};
-
-#endif /* NETWORKPARAMS_H_ */
+	printf("\nNetwork configuration\n");
+	printf(" Hostname   : %s\n", GetHostName());
+	printf(" Interface  : " IPSTR "\n", IP2STR(GetIp()));
+	printf(" Netmask    : " IPSTR "\n", IP2STR(GetNetmask()));
+	printf(" MacAddress : " MACSTR "\n", MAC2STR(aMacAddress));
+#if !defined (__CYGWIN__)
+	printf(" DHCP       : %s\n", IsDhcpUsed() ? "Yes" : "No");
+#endif
+}

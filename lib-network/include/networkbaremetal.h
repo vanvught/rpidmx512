@@ -1,8 +1,8 @@
 /**
- * @file networkparams.h
+ * @file networkbaremetal.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +23,36 @@
  * THE SOFTWARE.
  */
 
+#ifndef NETWORKBAREMETAL_H_
+#define NETWORKBAREMETAL_H_
 
-#ifndef NETWORKPARAMS_H_
-#define NETWORKPARAMS_H_
-
-#include <stdbool.h>
 #include <stdint.h>
 
-class NetworkParams {
+#include "network.h"
+
+class NetworkBaremetal: public Network {
 public:
-	NetworkParams(void);
-	~NetworkParams(void);
+	NetworkBaremetal(void);
+	~NetworkBaremetal(void);
 
-	bool Load(void);
+	void Init(void);
 
-	bool isDhcpUsed(void) const;
-	uint32_t GetIpAddress(void) const;
-	uint32_t GetNetMask(void) const;
-	uint32_t GetDefaultGateway(void) const;
-	uint32_t GetNameServer(void) const;
+	void Begin(uint16_t nPort);
+	void End(void);
 
-	void Dump(void);
+	const char* GetHostName(void);
+	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-private:
-	bool isMaskSet(uint16_t) const;
+	void JoinGroup(uint32_t ip);
+	uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
+	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	//void SetIp(uint32_t nIp); // Not supported, yet
 
 private:
-    void callbackFunction(const char *s);
-
-private:
-    uint32_t m_bSetList;
-
-    bool		m_bIsDhcpUsed;
-    uint32_t	m_nLocalIp;
-    uint32_t	m_nNetmask;
-    uint32_t	m_nGatewayIp;
-    uint32_t	m_nNameServerIp;
+	bool m_IsInitDone;
+	char *_hostname;
+	uint8_t _net_macaddr[NETWORK_MAC_SIZE];
 };
 
-#endif /* NETWORKPARAMS_H_ */
+#endif /* NETWORKBAREMETAL_H_ */

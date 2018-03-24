@@ -1,8 +1,8 @@
 /**
- * @file networkparams.h
+ * @file networkcircle.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,46 +22,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef NETWORKCIRCLE_H_
+#define NETWORKCIRCLE_H_
 
-
-#ifndef NETWORKPARAMS_H_
-#define NETWORKPARAMS_H_
-
-#include <stdbool.h>
 #include <stdint.h>
 
-class NetworkParams {
+#include "circle/net/netsubsystem.h"
+#include "circle/net/socket.h"
+
+#include "network.h"
+
+#ifndef HOST_NAME_MAX
+ #define HOST_NAME_MAX	64
+#endif
+
+class NetworkCircle: public Network {
 public:
-	NetworkParams(void);
-	~NetworkParams(void);
+	NetworkCircle(void);
+	~NetworkCircle(void);
 
-	bool Load(void);
+	void Init(CNetSubSystem *pNet);
 
-	bool isDhcpUsed(void) const;
-	uint32_t GetIpAddress(void) const;
-	uint32_t GetNetMask(void) const;
-	uint32_t GetDefaultGateway(void) const;
-	uint32_t GetNameServer(void) const;
+	void Begin(uint16_t nPort);
+	void End(void);
 
-	void Dump(void);
+	void MacAddressCopyTo(uint8_t *pMacAddress);
+	const char* GetHostName(void);
 
-private:
-	bool isMaskSet(uint16_t) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
+	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
 private:
-    void callbackFunction(const char *s);
-
-private:
-    uint32_t m_bSetList;
-
-    bool		m_bIsDhcpUsed;
-    uint32_t	m_nLocalIp;
-    uint32_t	m_nNetmask;
-    uint32_t	m_nGatewayIp;
-    uint32_t	m_nNameServerIp;
+	CNetSubSystem *m_pNet;
+	CSocket *m_pSocket;
+	char m_aHostname[HOST_NAME_MAX + 1];
 };
 
-#endif /* NETWORKPARAMS_H_ */
+#endif /* NETWORKCIRCLE_H_ */

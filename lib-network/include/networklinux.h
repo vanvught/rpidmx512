@@ -1,8 +1,8 @@
 /**
- * @file networkparams.h
+ * @file networklinux.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +23,43 @@
  * THE SOFTWARE.
  */
 
+#ifndef NETWORKLINUX_H_
+#define NETWORKLINUX_H_
 
-#ifndef NETWORKPARAMS_H_
-#define NETWORKPARAMS_H_
-
-#include <stdbool.h>
 #include <stdint.h>
+#include <net/if.h>
+#include <limits.h>
 
-class NetworkParams {
+#include "network.h"
+
+class NetworkLinux: public Network {
 public:
-	NetworkParams(void);
-	~NetworkParams(void);
+	NetworkLinux(void);
+	~NetworkLinux(void);
 
-	bool Load(void);
+	int Init(const char *s);
 
-	bool isDhcpUsed(void) const;
-	uint32_t GetIpAddress(void) const;
-	uint32_t GetNetMask(void) const;
-	uint32_t GetDefaultGateway(void) const;
-	uint32_t GetNameServer(void) const;
+	void Begin(uint16_t nPort);
+	void End(void);
 
-	void Dump(void);
+	void MacAddressCopyTo(uint8_t *pMacAddress);
+	const char* GetHostName(void);
 
-private:
-	bool isMaskSet(uint16_t) const;
+	void SetIp(uint32_t ip);
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	void JoinGroup(uint32_t ip);
+	uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
+	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
 private:
-    void callbackFunction(const char *s);
+	bool is_dhclient(const char *if_name);
+	int if_get_by_address(const char *ip, char *name, size_t len);
+	int if_details(const char *iface);
 
 private:
-    uint32_t m_bSetList;
-
-    bool		m_bIsDhcpUsed;
-    uint32_t	m_nLocalIp;
-    uint32_t	m_nNetmask;
-    uint32_t	m_nGatewayIp;
-    uint32_t	m_nNameServerIp;
+	int _socket;
+	char _if_name[IFNAMSIZ];
+	char _hostname[HOST_NAME_MAX + 1];
 };
 
-#endif /* NETWORKPARAMS_H_ */
+#endif /* NETWORKLINUX_H_ */

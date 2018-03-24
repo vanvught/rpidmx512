@@ -2,13 +2,7 @@
  * @file network.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
- */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +27,7 @@
 #define NETWORK_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define NETWORK_IP_SIZE		4
 #define NETWORK_MAC_SIZE	6
@@ -52,26 +47,60 @@
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+class Network {
+public:
+	Network(void);
+	virtual ~Network(void);
+
+#if defined (BARE_METAL)
+//	virtual void Init(void)=0;
 #endif
 
-extern const bool network_get_macaddr(/*@out@*/const uint8_t *);
-extern const uint32_t network_get_ip(void);
-extern const uint32_t network_get_netmask(void);
-extern const uint32_t network_get_bcast(void);
-extern /*@null@*/const char *network_get_hostname(void);
-extern bool network_is_dhcp_used(void);
+	virtual void Begin(uint16_t nPort)=0;
+	virtual void End(void)=0;
 
-extern void network_begin(const uint16_t);
-extern uint16_t network_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
-extern void network_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
-extern void network_joingroup(const uint32_t);
+	virtual const char* GetHostName(void)=0;
+	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
-extern void network_set_ip(const uint32_t);
+	inline uint32_t GetIp(void) { return m_nLocalIp; }
+	inline uint32_t GetNetmask(void) { return m_nNetmask; }
+	inline uint32_t GetBroadcastIp(void) { return m_nBroadcastIp; }
+	inline bool IsDhcpUsed(void) { return m_IsDhcpUsed; }
 
-#ifdef __cplusplus
-}
+	inline bool IsDhcpKnown(void) {
+#if defined (__CYGWIN__)
+		return false;
+#else
+		return true;
 #endif
+	}
+
+#if defined(__linux__)	||  defined (BARE_METAL)
+	virtual void JoinGroup(uint32_t ip)=0;
+#endif
+
+	virtual uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
+	virtual void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
+
+#if defined(__linux__)	
+	virtual void SetIp(uint32_t nIp)=0;
+#endif
+
+	void Print(void);
+
+public:
+	inline static Network* Get(void) { return s_pThis; }
+
+protected:
+	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
+	uint32_t m_nLocalIp;
+	uint32_t m_nGatewayIp;
+	uint32_t m_nNetmask;
+	uint32_t m_nBroadcastIp;
+	bool m_IsDhcpUsed;
+
+private:
+	static Network *s_pThis;
+};
 
 #endif /* NETWORK_H_ */

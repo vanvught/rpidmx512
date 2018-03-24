@@ -8,9 +8,9 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/rpi_circle.o src/networkparams.o
+OBJS	= src/circle/networkcircle.o src/networkparams.o src/network.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libnetwork.a: $(OBJS)
 	rm -f $@

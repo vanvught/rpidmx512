@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,33 +75,33 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
 		if (value8 == 0) {
-			m_isDhcpUsed = false;
+			m_bIsDhcpUsed = false;
 			m_bSetList |= SET_IS_DHCP_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == 1) {
-		m_IpAddress = value32;
+		m_nLocalIp = value32;
 		m_bSetList |= SET_IP_ADDRESS_MASK;
 	} else if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == 1) {
-		m_NetMask = value32;
+		m_nNetmask = value32;
 		m_bSetList |= SET_NET_MASK_MASK;
 	} else if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == 1) {
-		m_DefaultGateway = value32;
+		m_nGatewayIp = value32;
 		m_bSetList |= SET_DEFAULT_GATEWAY_MASK;
 	} else if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == 1) {
-		m_NameServer = value32;
+		m_nNameServerIp = value32;
 		m_bSetList |= SET_NAME_SERVER_MASK;
 	}
 }
 
 NetworkParams::NetworkParams(void): m_bSetList(0) {
-	m_isDhcpUsed = true;
-	m_IpAddress = 0;
-	m_NetMask = 0;
-	m_DefaultGateway = 0;
-	m_NameServer = 0;
+	m_bIsDhcpUsed = true;
+	m_nLocalIp = 0;
+	m_nNetmask = 0;
+	m_nGatewayIp = 0;
+	m_nNameServerIp = 0;
 }
 
 NetworkParams::~NetworkParams(void) {
@@ -120,48 +120,48 @@ void NetworkParams::Dump(void) {
 		return;
 	}
 
-	printf("Network parameters \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_IS_DHCP_MASK)) {
-		printf(" DHCP : [%s]\n", BOOL2STRING(m_isDhcpUsed));
+		printf(" %s=%d [%s]\n", PARAMS_USE_DHCP, (int) m_bIsDhcpUsed, BOOL2STRING(m_bIsDhcpUsed));
 	}
 
 	if (isMaskSet(SET_IP_ADDRESS_MASK)) {
-		printf(" IP Address : " IPSTR "\n", IP2STR(m_IpAddress));
+		printf(" %s=" IPSTR "\n", PARAMS_IP_ADDRESS, IP2STR(m_nLocalIp));
 	}
 
 	if (isMaskSet(SET_NET_MASK_MASK)) {
-		printf(" Netmask : " IPSTR "\n", IP2STR(m_NetMask));
+		printf(" %s=" IPSTR "\n", PARAMS_NET_MASK, IP2STR(m_nNetmask));
 	}
 
 	if (isMaskSet(SET_DEFAULT_GATEWAY_MASK)) {
-		printf(" Default Gateway : " IPSTR "\n", IP2STR(m_DefaultGateway));
+		printf(" %s=" IPSTR "\n", PARAMS_DEFAULT_GATEWAY, IP2STR(m_nGatewayIp));
 	}
 
 	if (isMaskSet(SET_NAME_SERVER_MASK)) {
-		printf(" Name Server : " IPSTR "\n", IP2STR(m_NameServer));
+		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_nNameServerIp));
 	}
 #endif
 }
 
 bool NetworkParams::isDhcpUsed(void) const {
-	return m_isDhcpUsed;
+	return m_bIsDhcpUsed;
 }
 
 uint32_t NetworkParams::GetIpAddress(void) const {
-	return m_IpAddress;
+	return m_nLocalIp;
 }
 
 uint32_t NetworkParams::GetNetMask(void) const {
-	return m_NetMask;
+	return m_nNetmask;
 }
 
 uint32_t NetworkParams::GetDefaultGateway(void) const {
-	return m_DefaultGateway;
+	return m_nGatewayIp;
 }
 
 uint32_t NetworkParams::GetNameServer(void) const {
-	return m_NameServer;
+	return m_nNameServerIp;
 }
 
 bool NetworkParams::isMaskSet(uint16_t mask) const {
