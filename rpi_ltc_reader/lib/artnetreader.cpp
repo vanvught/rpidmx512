@@ -2,7 +2,7 @@
  * @file artnetreader.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "c/hardware.h"
-
 #include "arm/synchronize.h"
-#include "arm/irq_timer.h"
 #include "bcm2835.h"
+#include "irq_timer.h"
+#include "hardware.h"
 
 #include "ltc_reader.h"
 
@@ -61,6 +60,10 @@ static volatile uint32_t midi_quarter_frame_us = (uint32_t) 0;
 static volatile bool midi_quarter_frame_message = false;
 static volatile uint8_t midi_quarter_frame_piece ALIGNED = 0;
 
+/**
+ *
+ * @param clo
+ */
 static void irq_timer1_update_handler(const uint32_t clo) {
 	BCM2835_ST->C1 = clo + (uint32_t) 1000000;
 
@@ -75,6 +78,10 @@ static void irq_timer1_update_handler(const uint32_t clo) {
 	}
 }
 
+/**
+ *
+ * @param clo
+ */
 static void irq_timer3_midi_handler(const uint32_t clo) {
 	BCM2835_ST->C3 = clo + midi_quarter_frame_us;
 
@@ -82,6 +89,11 @@ static void irq_timer3_midi_handler(const uint32_t clo) {
 	midi_quarter_frame_message = true;
 }
 
+/**
+ *
+ * @param arg
+ * @param buf
+ */
 static void itoa_base10(int arg, char *buf) {
 	char *n = buf;
 
@@ -95,6 +107,9 @@ static void itoa_base10(int arg, char *buf) {
 	*n = (char) '0' + (char) (arg % 10);
 }
 
+/**
+ *
+ */
 ArtNetReader::ArtNetReader(void) : m_pOutput(0) , m_PrevType(TC_TYPE_INVALID) {
 	for (unsigned i = 0; i < sizeof(timecode) / sizeof(timecode[0]) ; i++) {
 		timecode[i] = ' ';
@@ -105,10 +120,17 @@ ArtNetReader::ArtNetReader(void) : m_pOutput(0) , m_PrevType(TC_TYPE_INVALID) {
 	timecode[8] = '.';
 }
 
+/**
+ *
+ */
 ArtNetReader::~ArtNetReader(void) {
 	this->Stop();
 }
 
+/**
+ *
+ * @param output
+ */
 void ArtNetReader::Start(const struct _ltc_reader_output *output) {
 	m_pOutput = (struct _ltc_reader_output *) output;
 
@@ -122,6 +144,9 @@ void ArtNetReader::Start(const struct _ltc_reader_output *output) {
 	Start();
 }
 
+/**
+ *
+ */
 void ArtNetReader::Start(void) {
 	if (m_pOutput == NULL) {
 		return;
@@ -132,6 +157,9 @@ void ArtNetReader::Start(void) {
 	}
 }
 
+/**
+ *
+ */
 void ArtNetReader::Stop(void) {
 	char *p;
 
@@ -155,6 +183,10 @@ void ArtNetReader::Stop(void) {
 	}
 }
 
+/**
+ *
+ * @param ArtNetTimeCode
+ */
 void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	char sLimitWarning[16];
 	uint32_t nLimitUs = 0;
@@ -253,6 +285,9 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	}
 }
 
+/**
+ *
+ */
 void ArtNetReader::Run(void) {
 	if ((m_pOutput->midi_output) && (updates_per_second >= 24) && (updates_per_second <= 30)) {
 		dmb();

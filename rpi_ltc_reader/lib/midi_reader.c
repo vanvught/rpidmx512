@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <arm/irq_timer.h>
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -37,9 +36,10 @@
 
 #include "ltc_reader.h"
 
+#include "irq_timer.h"
+#include "hardware.h"
+#include "led.h"
 #include "console.h"
-
-#include "c/hardware.h"
 
 static const struct _midi_message *midi_message;
 
@@ -65,6 +65,9 @@ static void irq_timer1_update_handler(const uint32_t clo) {
 	}
 }
 
+/**
+ *
+ */
 void midi_reader(void) {
 	uint32_t limit_us = (uint32_t) 0;
 	uint32_t now_us = (uint32_t) 0;
@@ -127,6 +130,10 @@ void midi_reader(void) {
 	}
 }
 
+/**
+ *
+ * @param out
+ */
 void midi_reader_init(const struct _ltc_reader_output *out) {
 	assert(out != NULL);
 

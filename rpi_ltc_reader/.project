@@ -10,6 +10,7 @@
 		<project>lib-esp8266</project>
 		<project>lib-fb</project>
 		<project>lib-hal</project>
+		<project>lib-lcd</project>
 		<project>lib-midi</project>
 		<project>lib-utils</project>
 	</projects>
