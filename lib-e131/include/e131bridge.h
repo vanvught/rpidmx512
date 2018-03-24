@@ -32,6 +32,8 @@
 #include "lightset.h"
 #include "e131packets.h"
 
+#define UUID_STRING_LENGTH	36
+
 /**
  *
  */
@@ -96,6 +98,8 @@ public:
 	void setSourceName(const char[E131_SOURCE_NAME_LENGTH]);
 
 	int Run(void);
+
+	void Print(uint32_t nMulticastIp);
 
 private:
 	void Start(void);

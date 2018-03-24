@@ -40,7 +40,6 @@
 #include "util.h"
 #endif
 
-static const char NO_MAC[] ALIGNED = "nomacadr";
 static const char EXT_UID[] ALIGNED = ".uid";
 static const char DUMMY_UUID[] ALIGNED = "01234567-89ab-cdef-0134-567890abcedf";
 
@@ -57,12 +56,9 @@ const bool E131Uuid::GetHardwareUuid(uuid_t out) {
 	FILE *fp;
 	char buffer[128];
 
-	if (!network_get_macaddr(mac)) {
-		// There is no MAC-address
-		memcpy(file_name, NO_MAC, sizeof(NO_MAC));
-	} else {
-		sprintf(file_name, "%02x%02x%02x%02x", (unsigned int) mac[2], (unsigned int) mac[3], (unsigned int) mac[4], (unsigned int) mac[5]);
-	}
+	Network::Get()->MacAddressCopyTo(mac);
+
+	sprintf(file_name, "%02x%02x%02x%02x", (unsigned int) mac[2], (unsigned int) mac[3], (unsigned int) mac[4], (unsigned int) mac[5]);
 
 	(void) memcpy(&file_name[8], EXT_UID, 4);
 

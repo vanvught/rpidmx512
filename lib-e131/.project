@@ -3,7 +3,7 @@
 	<name>lib-e131</name>
 	<comment></comment>
 	<projects>
-		<project>lib-esp8266</project>
+		<project>lib-hal</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>
 		<project>lib-properties</project>

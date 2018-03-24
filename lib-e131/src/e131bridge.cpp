@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,11 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <assert.h>
 #include <netinet/in.h>
-
-extern "C" {
-extern uint32_t millis(void);
-}
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
+#include <assert.h>
 
 #if defined(__linux__) || defined (__CYGWIN__)
 #include <string.h>
@@ -48,6 +45,7 @@ extern uint32_t millis(void);
 
 #include "lightset.h"
 
+#include "hardware.h"
 #include "network.h"
 
 static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x02 };	///<
@@ -55,9 +53,6 @@ static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x
 
 #define DEFAULT_SOURCE_NAME  "Raspberry Pi Wifi sACN E1.31 http://www.raspberrypi-dmx.org"
 
-/**
- *
- */
 E131Bridge::E131Bridge(void) :
 		m_pLightSet(0),
 		m_nUniverse(E131_UNIVERSE_DEFAULT),
@@ -85,13 +80,8 @@ E131Bridge::E131Bridge(void) :
 
 	setSourceName(DEFAULT_SOURCE_NAME);
 	setUniverse(E131_UNIVERSE_DEFAULT);
-
-	FillDiscoveryPacket();
 }
 
-/**
- *
- */
 E131Bridge::~E131Bridge(void) {
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop();
@@ -99,10 +89,6 @@ E131Bridge::~E131Bridge(void) {
 	}
 }
 
-
-/**
- *
- */
 void E131Bridge::Start(void) {
 	assert(m_pLightSet != 0);
 
@@ -110,13 +96,12 @@ void E131Bridge::Start(void) {
 		return;
 	}
 
+	FillDiscoveryPacket();
+
 	m_pLightSet->Start();
 	m_State.IsTransmitting = true;
 }
 
-/**
- *
- */
 void E131Bridge::Stop(void) {
 	m_pLightSet->Stop();
 	//
@@ -131,53 +116,30 @@ void E131Bridge::Stop(void) {
 	m_OutputPort.IsDataPending = false;
 }
 
-/**
- *
- * @return
- */
 const uint8_t *E131Bridge::GetSoftwareVersion(void) {
 	return DEVICE_SOFTWARE_VERSION;
 }
 
-/**
- *
- */
 void E131Bridge::SetOutput(LightSet *pLightSet) {
 	assert(pLightSet != 0);
 
 	m_pLightSet = pLightSet;
 }
 
-/**
- *
- * @return
- */
 const uint16_t E131Bridge::getUniverse() {
 	return m_nUniverse;
 }
 
-/**
- *
- * @param nUniverse
- */
 void E131Bridge::setUniverse(const uint16_t nUniverse) {
 	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
 
 	m_nUniverse = nUniverse;
 }
 
-/**
- *
- * @return
- */
 const uint8_t* E131Bridge::GetCid(void) {
 	return m_Cid;
 }
 
-/**
- *
- * @param
- */
 void E131Bridge::setCid(const uint8_t aCid[E131_CID_LENGTH]) {
 	assert(aCid != 0);
 
@@ -185,42 +147,23 @@ void E131Bridge::setCid(const uint8_t aCid[E131_CID_LENGTH]) {
 	memcpy(m_E131DiscoveryPacket.RootLayer.Cid, aCid, E131_CID_LENGTH);
 }
 
-/**
- *
- * @return
- */
 const char* E131Bridge::GetSourceName(void) {
 	return m_SourceName;
 }
 
-/**
- *
- * @param
- */
 void E131Bridge::setSourceName(const char aSourceName[E131_SOURCE_NAME_LENGTH]) {
 	memcpy(m_SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
 	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
 }
 
-/**
- *
- * @return
- */
 const TMerge E131Bridge::getMergeMode(void) {
 	return m_OutputPort.mergeMode;
 }
 
-/**
- *
- * @param mergeMode
- */
 void E131Bridge::setMergeMode(TMerge mergeMode) {
 	m_OutputPort.mergeMode = mergeMode;
 }
 
-/**
- *
- */
 void E131Bridge::FillDiscoveryPacket(void) {
 	uint16_t root_layer_length = sizeof(struct TRootLayer);
 	uint16_t framing_layer_size = sizeof(struct TDiscoveryFrameLayer);
@@ -249,12 +192,6 @@ void E131Bridge::FillDiscoveryPacket(void) {
 	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = __builtin_bswap16(m_nUniverse);
 }
 
-/**
- *
- * @param pData
- * @param nLength
- * @return
- */
 const bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
@@ -281,12 +218,6 @@ const bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLe
 	return isChanged;
 }
 
-/**
- *
- * @param pData
- * @param nLength
- * @return
- */
 const bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
@@ -315,9 +246,6 @@ const bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16
 	}
 }
 
-/**
- *
- */
 void E131Bridge::CheckMergeTimeouts(void) {
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort.sourceA.time;
 	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort.sourceB.time;
@@ -333,10 +261,6 @@ void E131Bridge::CheckMergeTimeouts(void) {
 	}
 }
 
-/**
- *
- * @return
- */
 const bool E131Bridge::IsPriorityTimeOut(void) {
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort.sourceA.time;
 	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort.sourceB.time;
@@ -360,12 +284,6 @@ const bool E131Bridge::IsPriorityTimeOut(void) {
 	return false;
 }
 
-/**
- *
- * @param ip
- * @param cid
- * @return
- */
 const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
 	if (source->ip != m_E131.IPAddressFrom) {
 		return false;
@@ -378,9 +296,6 @@ const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
 	return true;
 }
 
-/**
- *
- */
 void E131Bridge::HandleDmx(void) {
 	const uint8_t *p = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
 	const uint16_t slots = __builtin_bswap16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - (uint16_t)1;
@@ -541,9 +456,6 @@ void E131Bridge::HandleDmx(void) {
 	}
 }
 
-/**
- *
- */
 void E131Bridge::HandleSynchronization(void) {
 	if (m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber != __builtin_bswap16(m_nUniverse)) {
 		return;
@@ -559,27 +471,17 @@ void E131Bridge::HandleSynchronization(void) {
 	}
 }
 
-/**
- *
- */
 void E131Bridge::SetNetworkDataLossCondition(void) {
 	Stop();
 	m_OutputPort.sourceA.ip = (uint32_t) 0;
 	m_OutputPort.sourceB.ip = (uint32_t) 0;
 }
 
-/**
- *
- */
 void E131Bridge::SendDiscoveryPacket(void) {
-	network_sendto((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+	Network::Get()->SendTo((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
 	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
-/**
- *
- * @return
- */
 const bool E131Bridge::IsValidRoot(void) {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
@@ -595,10 +497,6 @@ const bool E131Bridge::IsValidRoot(void) {
 	return true;
 }
 
-/**
- *
- * @return
- */
 const bool E131Bridge::IsValidDataPacket(void) {
 	// Frame layer
 
@@ -638,17 +536,14 @@ const bool E131Bridge::IsValidDataPacket(void) {
 	return true;
 }
 
-/**
- *
- */
 int E131Bridge::Run(void) {
 	const char *packet = (char *) &(m_E131.E131Packet);
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = network_recvfrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
-	m_nCurrentPacketMillis = millis();
+	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
 	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
 		SendDiscoveryPacket();

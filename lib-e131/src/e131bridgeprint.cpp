@@ -1,8 +1,8 @@
 /**
- * @file e131params.h
+ * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef E131PARAMS_H_
-#define E131PARAMS_H_
-
+#include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <uuid/uuid.h>
+#include <assert.h>
 
 #include "e131bridge.h"
-#include "e131.h"
 
-enum TOutputType {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
-};
+#include "network.h"
 
-class E131Params {
-public:
-	E131Params(void);
-	~E131Params(void);
+void E131Bridge::Print(uint32_t nMulticastIp) {
+	char uuid_str[UUID_STRING_LENGTH + 1];
 
-	bool Load(void);
+	uuid_str[UUID_STRING_LENGTH] = '\0';
+	uuid_unparse(GetCid(), uuid_str);
 
-	TOutputType GetOutputType(void) const;
-	uint16_t GetUniverse(void) const;
-	TMerge GetMergeMode(void) const;
-	bool isHaveCustomCid(void) const;
-	const char *GetCidString(void);
+	const uint32_t ip = Network::Get()->GetIp();
 
-	void Set(E131Bridge *);
-	void Dump(void);
-
-private:
-	bool isMaskSet(uint16_t) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *s);
-
-private:
-    uint32_t m_bSetList;
-
-    uint16_t m_nUniverse;
-    TOutputType m_tOutputType;
-    TMerge m_tMergeMode;
-    char m_aCidString[UUID_STRING_LENGTH + 2];
-    bool m_bHaveCustomCid;
-};
-
-#endif /* E131PARAMS_H_ */
+	printf("\nBridge configuration\n");
+	const uint8_t *firmware_version = GetSoftwareVersion();
+	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" CID          : %s\n", uuid_str);
+	printf(" Universe     : %d\n", getUniverse());
+	printf(" Merge mode   : %s\n", getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
+	printf(" Multicast ip : " IPSTR "\n", IP2STR(nMulticastIp));
+	printf(" Unicast ip   : " IPSTR "\n", IP2STR(ip));
+}
