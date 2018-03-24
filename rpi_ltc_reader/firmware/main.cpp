@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@
 
 #include <stdio.h>
 
-#include "hardware.h"
+#include "hardwarebaremetal.h"
+#include "networkbaremetal.h"
+
 #include "console.h"
 
 #include "lcd.h"
@@ -64,6 +66,9 @@ static void handle_bool(const bool b) {
 }
 
 void notmain(void) {
+	HardwareBaremetal hw;
+	NetworkBaremetal nw;
+	uint8_t nHwTextLength;
 	struct ip_info ip_config;
 	ltc_reader_source_t source = LTC_READER_SOURCE_LTC;
 	ArtNetNode node;
@@ -81,8 +86,10 @@ void notmain(void) {
 	output.artnet_output = ltc_reader_params_is_artnet_output();
 	output.matrix_output = ltc_reader_params_is_matrix_output();
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("SMPTE TimeCode LTC Reader / Protocol converter");
+
+	hw.SetLed(HARDWARE_LED_ON);
 
 	console_set_top_row(3);
 
