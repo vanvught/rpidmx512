@@ -40,7 +40,7 @@ extern uint32_t micros(void);
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else
-extern void udelay(const uint64_t);
+extern void udelay(uint32_t);
 #endif
 }
 

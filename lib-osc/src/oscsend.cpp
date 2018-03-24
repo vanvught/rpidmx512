@@ -2,7 +2,7 @@
  * @file oscsend.cpp
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,10 +72,6 @@ OSCSend::~OSCSend(void) {
 	}
 }
 
-/**
- *
- * @param ap
- */
 void OSCSend::AddVarArgs(va_list ap) {
 	m_Msg = new OSCMessage();
 
@@ -115,17 +111,14 @@ void OSCSend::AddVarArgs(va_list ap) {
 	va_end(ap);
 }
 
-/**
- *
- */
 void OSCSend::Send(void) {
-	int data_len = OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
-	char *data = (char *)m_Msg->Serialise(m_Path, 0, 0);
+	const uint16_t nDataLength = (uint16_t) OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
+	const uint8_t *pData = (uint8_t *)m_Msg->Serialise(m_Path, 0, 0);
 
-	network_sendto((const uint8_t *)data, (const uint16_t) data_len, m_Address, (uint16_t)m_Port);
+	Network::Get()->SendTo(pData, nDataLength, m_Address, (uint16_t) m_Port);
 
 	// Free the memory allocated by m_Msg->Serialise
-	if(data) {
-		free(data);
+	if(pData) {
+		free((void *)pData);
 	}
 }

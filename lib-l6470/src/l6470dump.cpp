@@ -44,6 +44,8 @@
 #define L6470_K_THERM_MIN		1.0
 #define L6470_K_THERM_MAX		1.46875
 
+#ifndef NDEBUG
+
 static uint16_t OcdThCalcValueReg(uint8_t reg) {
 	if (reg > 0x0F) {
 		reg = 0x0F;
@@ -71,8 +73,10 @@ static float KThermCalcValueReg(uint8_t reg) {
 
 	return ((float) reg * L6470_K_THERM_STEP) + (float) L6470_K_THERM_MIN;
 }
+#endif
 
 void L6470::Dump(void) {
+#ifndef NDEBUG
 	uint8_t reg;
 
 	printf("Registers:\n");
@@ -107,4 +111,6 @@ void L6470::Dump(void) {
 	printf("16:STEP_MODE  - Step mode: %d microsteps\n", 1 << getStepMode());
 	printf("17:ALARM_EN   - Alarm enable: 0x%.2X\n", (unsigned int) getParam(L6470_PARAM_ALARM_EN));
 	printf("18:CONFIG     - IC configuration: 0x%.4X\n", (unsigned int) getParam(L6470_PARAM_CONFIG));
+#endif
 }
+

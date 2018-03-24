@@ -103,7 +103,7 @@ void TLC59711DmxParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if(IsMaskSet(SET_LED_TYPE_MASK)) {
 		printf(" %s=%d {RGB%s}\n", PARAMS_LED_TYPE, m_LEDType, m_LEDType == TTLC59711_TYPE_RGB ? "" : "W");
@@ -142,6 +142,7 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	char buffer[12];
 
 	len = 9;
+	buffer[8] = '\0';
 	buffer[9] = '\0';
 	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
 		// There is no strncasecmp in Circle
@@ -175,4 +176,22 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 		m_nSpiSpeedHz = value32;
 		m_bSetList |= SET_SPI_SPEED_MASK;
 	}
+}
+
+const char* TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTTLC59711Type) {
+	if (tTTLC59711Type == TTLC59711_TYPE_RGB) {
+		return "TLC59711 (RGB)";
+	} else if (tTTLC59711Type == TTLC59711_TYPE_RGBW) {
+		return "TLC59711 (RGBW)";
+	}
+
+	return "TLC59711 (Unknown)";
+}
+
+bool TLC59711DmxParams::IsSetLedType(void) const {
+	return IsMaskSet(SET_LED_TYPE_MASK);
+}
+
+bool TLC59711DmxParams::IsSetLedCount(void) const {
+	return IsMaskSet(SET_LED_COUNT_MASK);
 }

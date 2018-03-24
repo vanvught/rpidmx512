@@ -35,16 +35,20 @@
 #include "dmxmonitor.h"
 
 #if defined (__linux__) || defined (__CYGWIN__)
-#include <time.h>
-#include <sys/time.h>
+ #include <time.h>
+ #include <sys/time.h>
+ #define DMX_DEFAULT_MAX_CHANNELS	32
+ #define DMX_DEFAULT_START_ADDRESS	1
 #else
 #include "console.h"
-#define TOP_ROW		3
+#define TOP_ROW				3
+#define DMX_FOOTPRINT		512
+#define DMX_START_ADDRESS	1
 #endif
 
 DMXMonitor::DMXMonitor(void) : m_bIsStarted(false), m_nSlots(0)
 #if defined (__linux__) || defined (__CYGWIN__)
-	, m_nMaxChannels(32)
+	, m_nDmxStartAddress(DMX_DEFAULT_START_ADDRESS), m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
 #endif
 {
 	for (int i = 0; i < (int) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
@@ -69,6 +73,23 @@ void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
 
+uint16_t DMXMonitor::GetDmxFootprint(void) {
+	return m_nMaxChannels;
+}
+
+bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	if (nDmxStartAddress  > (512 - m_nMaxChannels)) {
+		return false;
+	}
+
+	m_nDmxStartAddress = nDmxStartAddress;
+	return true;
+}
+
+uint16_t DMXMonitor::GetDmxStartAddress(void) {
+	return m_nDmxStartAddress;
+}
+
 void DMXMonitor::Start(void) {
 	if(m_bIsStarted) {
 		return;
@@ -76,7 +97,6 @@ void DMXMonitor::Start(void) {
 
 	m_bIsStarted = true;
 	DisplayDateTime("Start");
-
 }
 
 void DMXMonitor::Stop(void) {
@@ -90,17 +110,16 @@ void DMXMonitor::Stop(void) {
 
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	struct timeval tv;
-	uint8_t *p = (uint8_t *)pData;
-	int j;
+	uint16_t i, j;
 
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld DMX %d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, nLength, m_nMaxChannels);
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld DMX %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
 
-	for (j = 0; (j < m_nMaxChannels) && (j < nLength); j++) {
-		const uint8_t d = *p++;
-		printf("%2x ", d);
+
+	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
+		printf("%.2x ", pData[i]);
 	}
 
 	for (; j < m_nMaxChannels; j++) {
@@ -109,6 +128,23 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 	printf("\n");
 }
 #else
+
+bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	if (nDmxStartAddress != DMX_START_ADDRESS) {
+		return false;
+	}
+
+	return true;
+}
+
+uint16_t DMXMonitor::GetDmxStartAddress(void) {
+	return DMX_START_ADDRESS;
+}
+
+uint16_t DMXMonitor::GetDmxFootprint(void) {
+	return DMX_FOOTPRINT;
+}
+
 void DMXMonitor::Start(void) {
 	if(m_bIsStarted) {
 		return;
@@ -189,4 +225,5 @@ void DMXMonitor::Update(void) {
 		console_puts("                                                                                               ");
 	}
 }
+
 #endif

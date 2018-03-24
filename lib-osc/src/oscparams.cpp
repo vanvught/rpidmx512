@@ -2,7 +2,7 @@
  * @file oscparams.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,11 +93,12 @@ bool OSCParams::Load(void) {
 }
 
 void OSCParams::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
 
-	printf("OSC parameters \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (IsMaskSet(SET_INCOMING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_INCOMING_PORT, (int) m_nIncomingPort);
@@ -106,6 +107,7 @@ void OSCParams::Dump(void) {
 	if (IsMaskSet(SET_OUTGOING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_OUTGOING_PORT, (int) m_nOutgoingPort);
 	}
+#endif
 }
 
 uint16_t OSCParams::GetIncomingPort(void) const {

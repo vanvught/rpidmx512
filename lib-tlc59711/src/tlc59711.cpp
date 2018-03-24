@@ -77,7 +77,10 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	}
 #endif
 
+
 	bcm2835_spi_begin();
+
+	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
 
 	if (m_nSpiSpeedHz != (uint32_t) 0) {
 		if (m_nSpiSpeedHz > TLC59711_SPI_SPEED_MAX) {

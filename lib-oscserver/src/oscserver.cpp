@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ OscServer::~OscServer(void) {
 }
 
 void OscServer::Start(void) {
-	network_begin(m_nPortIncoming);
+	Network::Get()->Begin(m_nPortIncoming);
 }
 
 void OscServer::Stop(void) {
@@ -158,7 +158,7 @@ int OscServer::Run(void) {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 
-	const int nBytesReceived = network_recvfrom(m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
+	const int nBytesReceived = Network::Get()->RecvFrom(m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
 
 	if (nBytesReceived == 0) {
 		return 0;

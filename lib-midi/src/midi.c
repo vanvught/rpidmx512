@@ -34,10 +34,10 @@
 
 #include "midi.h"
 
-#include "irq_timer.h"
 #include "util.h"
 
 #include "arm/arm.h"
+#include "arm/irq_timer.h"
 #include "arm/pl011.h"
 #include "arm/synchronize.h"
 

@@ -1,5 +1,4 @@
-//#define __linux__
-#if defined(__linux__)
+#if !defined(CYGWIN)
 /**
  * @file ir_linux.cpp
  *

@@ -2,7 +2,7 @@
  * @file monitor.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,6 @@
 #define MONITOR_H_
 
 #include <stdarg.h>
-#include <stdint.h>
-#include <stdbool.h>
 
 #define MONITOR_LINE_TIME			3	///<
 #define MONITOR_LINE_WIDGET_PARMS	4	///<
@@ -48,8 +46,6 @@ extern "C" {
 
 extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
 extern void monitor_time_uptime(const int);
-
-extern void monitor_update(void);
 
 #ifdef __cplusplus
 }

@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 	const int stepmove = 300000;// #the number of steps we want to be moving
 
 	axis1.resetDev();
+
 	axis1.setCurrent(50, 50, 50, 50);
 
 	while (axis1.isBusy())

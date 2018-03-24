@@ -2,7 +2,7 @@
  * @file dmxreceiver.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -16,7 +16,7 @@
 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEconst uint8_t*MENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
@@ -27,30 +27,52 @@
 #include <assert.h>
 
 #include "dmxreceiver.h"
+#include "dmx.h"
 
-#include "dmxrdm.h"
+#include "debug.h"
 
-DMXReceiver::DMXReceiver(uint8_t nGpioPin) : m_pLightSet(0), m_IsActive(false), m_nLength(0) {
+DMXReceiver::DMXReceiver(uint8_t nGpioPin) : Dmx(nGpioPin, false), m_pLightSet(0), m_IsActive(false), m_nLength(0) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
 }
 
 DMXReceiver::~DMXReceiver(void) {
+	DEBUG1_ENTRY
+
 	Stop();
+
 	m_pLightSet = 0;
+	m_IsActive = false;
+
+	DEBUG1_EXIT
 }
 
 void DMXReceiver::SetOutput(LightSet *pOutput) {
-	assert(pOutput != 0);
+	DEBUG1_ENTRY
 
+	assert(pOutput != 0);
 	m_pLightSet = pOutput;
+
+	DEBUG1_EXIT
 }
 
 void DMXReceiver::Start(void) {
+	DEBUG1_ENTRY
+
+	Init();
 	SetPortDirection(DMXRDM_PORT_DIRECTION_INP, true);
+
+	DEBUG1_EXIT
 }
 
 void DMXReceiver::Stop(void) {
+	DEBUG1_ENTRY
+
 	SetPortDirection(DMXRDM_PORT_DIRECTION_INP, false);
 	m_pLightSet->Stop();
+
+	DEBUG1_EXIT
 }
 
 bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
@@ -78,25 +100,32 @@ bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	}
 
 	return isChanged;
-
 }
 
-int DMXReceiver::Run(void) {
+const uint8_t* DMXReceiver::Run(int16_t &nLength) {
+	uint8_t* p = 0;
+
 	if (GetUpdatesPerSecond() == 0) {
 		if (m_IsActive) {
 			m_pLightSet->Stop();
 			m_IsActive = false;
 		}
-		return -1;
+
+		nLength = -1;
+		return 0;
 	} else {
-		const uint8_t *p = GetDmxAvailable();
+		const uint8_t *pDmx = GetDmxAvailable();
 
-		if (p != 0) {
-			const struct TDmxData *dmx_statistics = (struct TDmxData *) p;
-			const uint16_t length = (uint16_t) (dmx_statistics->Statistics.SlotsInPacket);
+		if (pDmx != 0) {
+			const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;
+			nLength = (uint16_t) (dmx_statistics->Statistics.SlotsInPacket);
 
-			if (IsDmxDataChanged(++p, length)) {  // Skip DMX START CODE
-				m_pLightSet->SetData(0, p, length);
+			if (IsDmxDataChanged(++pDmx, nLength)) {  // Skip DMX START CODE
+#ifndef NDEBUG
+				printf("\t%s:%s:%d - DMX Data Changed\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+				m_pLightSet->SetData(0, pDmx, nLength);
+				p = (uint8_t*) pDmx;
 			}
 
 			if (!m_IsActive) {
@@ -104,10 +133,11 @@ int DMXReceiver::Run(void) {
 				m_IsActive = true;
 			}
 
-			return (int) length;
+			return p;
 
 		}
 	}
 
+	nLength = 0;
 	return 0;
 }

@@ -2,7 +2,7 @@
  * @file dmxparams.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -125,23 +125,25 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 }
 
 void DMXParams::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
 
-	printf("DMX parameters \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_BREAK_TIME_MASK)) {
-		printf(" Break Time : [%d]\n", (int) m_nBreakTime);
+		printf(" %s=%d\n", PARAMS_BREAK_TIME, (int) m_nBreakTime);
 	}
 
 	if (isMaskSet(SET_MAB_TIME_MASK)) {
-		printf(" MaB Time : [%d]\n", (int) m_nMabTime);
+		printf(" %s=%d\n", PARAMS_MAB_TIME, (int) m_nMabTime);
 	}
 
 	if (isMaskSet(SET_REFRESH_RATE_MASK)) {
-		printf(" Refresh Rate : [%d]\n", (int) m_nRefreshRate);
+		printf(" %s=%d\n", PARAMS_REFRESH_RATE, (int) m_nRefreshRate);
 	}
+#endif
 }
 
 uint8_t DMXParams::GetBreakTime(void) const {

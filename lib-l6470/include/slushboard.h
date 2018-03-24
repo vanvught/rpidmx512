@@ -52,7 +52,6 @@ enum TSlushIOFSel {
 	SLUSH_IO_FSEL_INPT = 1
 };
 
-
 #define SLUSH_L6470_RESET		23 // RPI_V2_GPIO_P1_38
 
 #define SLUSH_MTR0_STEPCLOCK	4

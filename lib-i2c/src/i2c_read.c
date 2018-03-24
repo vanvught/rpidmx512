@@ -66,7 +66,7 @@ uint16_t i2c_read_reg_uint16_delayus(uint8_t reg, uint32_t delayus) {
 
 	(void) bcm2835_i2c_write((char *) &buf[0], (uint32_t) 1);
 
-	udelay((uint64_t) delayus);
+	udelay(delayus);
 
 	return i2c_read_uint16();
 }

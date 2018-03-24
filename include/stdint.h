@@ -1,11 +1,11 @@
-#if defined (__circle__)
-#include "../Circle/include/stdint.h"
-#else
+//#if defined (__circle__)
+//#include "../Circle/include/stdint.h"
+//#else
 /**
  * @file stdint.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,4 +48,4 @@ typedef unsigned int 		uintptr_t;
 
 #endif
 
-#endif
+//#endif

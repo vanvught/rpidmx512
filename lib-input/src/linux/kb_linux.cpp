@@ -1,4 +1,3 @@
-#if defined(__linux__) || defined (__CYGWIN__)
 /**
  * @file kb_linux.cpp
  *
@@ -82,6 +81,3 @@ int KbLinux::GetChar(void) {
 		return 0;
 	}
 }
-
-#endif
-

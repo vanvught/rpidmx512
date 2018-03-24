@@ -2,7 +2,7 @@
  * @file dmxreceiver.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,28 +27,23 @@
 
 #include <stdint.h>
 
-#include "dmxrdm.h"
+#include "dmx.h"
 
 #include "lightset.h"
 
 #include "gpio.h"
 
-#ifndef DMX_UNIVERSE_SIZE
-#define DMX_UNIVERSE_SIZE	512
-#endif
-
-class DMXReceiver: public DmxRdm {
+class DMXReceiver: public Dmx {
 public:
 	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
 	~DMXReceiver(void);
 
 	void SetOutput(LightSet *);
-	//void SetLedBlink(LedBlink *);
 
 	void Start(void);
 	void Stop(void);
 
-	int Run(void);
+	const uint8_t* Run(int16_t &nLength);
 
 private:
 	bool IsDmxDataChanged(const uint8_t *, uint16_t);

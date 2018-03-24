@@ -36,6 +36,11 @@ public:
 	DMXMonitor(void);
 	~DMXMonitor(void);
 
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	uint16_t GetDmxStartAddress(void);
+
+	uint16_t GetDmxFootprint(void);
+
 	void Start(void);
 	void Stop(void);
 
@@ -60,6 +65,7 @@ private:
 	bool m_bIsStarted;
 	uint16_t m_nSlots;
 #if defined (__linux__) || defined (__CYGWIN__)
+	uint16_t m_nDmxStartAddress;
 	uint16_t m_nMaxChannels;
 #endif
 	uint8_t m_Data[512];

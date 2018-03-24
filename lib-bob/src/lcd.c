@@ -49,7 +49,7 @@
 extern void bcm2835_delayMicroseconds (const uint64_t);
 #define udelay bcm2835_delayMicroseconds
 #else
-extern void udelay(const uint64_t);
+extern void udelay(uint32_t);
 #endif
 
 static const char lcd_detect_line1[] ALIGNED = "lcd_detect";

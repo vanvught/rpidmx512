@@ -37,8 +37,14 @@ public:
 
 	bool Load(void);
 
+	bool IsSetLedType(void) const;
+	bool IsSetLedCount(void) const;
+
 	void Set(TLC59711Dmx *);
 	void Dump(void);
+
+public:
+	static const char *GetLedTypeString(TTLC59711Type tTTLC59711Type);
 
 private:
 	bool IsMaskSet(uint16_t nMask) const;
