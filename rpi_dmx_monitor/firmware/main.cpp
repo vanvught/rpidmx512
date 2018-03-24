@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "hardware.h"
-#include "console.h"
+#include "hardwarebaremetal.h"
+#include "ledblinkbaremetal.h"
 
-#include "ledblinktask.h"
+#include "console.h"
 
 #include "dmxreceiver.h"
 #include "dmxmonitor.h"
@@ -37,8 +37,8 @@
 #include "software_version.h"
 
 #ifndef MAX
-#  define MAX(a,b)		(((a) > (b)) ? (a) : (b))
-#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))
+ #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
+ #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
 extern "C" {
@@ -47,7 +47,9 @@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
 
 void notmain(void) {
-	LedBlinkTask ledblinktask;
+	HardwareBaremetal hw;
+	LedBlinkBaremetal lb;
+	uint8_t nHwTextLength;
 	uint32_t nMicrosPrevious = (uint32_t) 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
 	uint32_t nUpdatesPerSecondeMax = (uint32_t) 0;
@@ -57,9 +59,12 @@ void notmain(void) {
 	uint32_t nSlotToSlotMax = (uint32_t) 0;
 	uint32_t nBreakToBreakMin = UINT32_MAX;
 	uint32_t nBreakToBreakMax = (uint32_t) 0;
+	int16_t nLength;
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("DMX Real-time Monitor");
+
+	hw.SetLed(HARDWARE_LED_ON);
 
 	DMXMonitor dmxmonitor;
 	dmxmonitor.Cls();
@@ -70,18 +75,19 @@ void notmain(void) {
 	console_puts("Slot to slot\n");
 	console_puts("Break to break");
 
-	hardware_watchdog_init();
+	hw.WatchdogInit();
 
 	DMXReceiver dmxreceiver;
 	dmxreceiver.SetOutput(&dmxmonitor);
 	dmxreceiver.Start();
 
 	for(;;) {
-		hardware_watchdog_feed();
 
-		(void) dmxreceiver.Run();
+		hw.WatchdogFeed();
 
-		const uint32_t nMicrosNow = hardware_micros();
+		(void) dmxreceiver.Run(nLength);
+
+		const uint32_t nMicrosNow = hw.Micros();
 
 		if (nMicrosNow - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
 			const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
@@ -119,7 +125,7 @@ void notmain(void) {
 			nMicrosPrevious = nMicrosNow;
 		}
 
-		ledblinktask.Run();
+		lb.Run();
 	}
 }
 
