@@ -1,7 +1,7 @@
 #
-DEFINES = ENABLE_MMU
+DEFINES = ENABLE_MMU NDEBUG
 #
-LIBS = utils esp8266
+LIBS =
 #
 SRCDIR = firmware
 

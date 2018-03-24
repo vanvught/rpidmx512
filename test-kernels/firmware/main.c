@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,15 @@
 #include <stdbool.h>
 
 #include "arm/arm.h"
+#include "arm/irq_timer.h"
 #include "bcm2835_vc.h"
+#ifndef NDEBUG
+ #include "bcm2837_gpio_virt.h"
+#endif
 
 #include "hardware.h"
-#include "irq_timer.h"
 #include "console.h"
+
 #include "wifi.h"
 
 #include "lcd.h"
@@ -112,6 +116,11 @@ void notmain(void) {
 
 	handle_rc(bcm2835_vc_get_board_mac_address(mac_address));
 	printf("MAC : %.2x%.2x:%.2x%.2x%.2x%.2x\n\n", (unsigned int) mac_address[0], (unsigned int) mac_address[1], (unsigned int) mac_address[2], (unsigned int) mac_address[3], (unsigned int) mac_address[4], (unsigned int) mac_address[5]);
+
+#ifndef NDEBUG
+	printf("Framebuffer address  : %p\n", console_get_address());
+	printf("Virtual GPIO address : %p\n\n", bcm2837_gpio_virt_get_address());
+#endif
 
 	for (n = 0; n < 6; n++) {							// Loop for GPFSEL0 to GPFSEL5
 		val = *((uint32_t *) BCM2835_GPIO_BASE + n) & (n < 5 ? 0x3fffffff : 0x00000fff);
