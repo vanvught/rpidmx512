@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "hardware.h"
+#include "c/hardware.h"
+#include "c/led.h"
+
 #include "console.h"
-#include "led.h"
+
 #include "midi.h"
 #include "monitor.h"
 
@@ -51,6 +53,8 @@ struct _poll {
 		{ midi_poll },
 		{ sniffer_midi },
 		{ led_blink } };
+
+extern void monitor_update(void);
 
 struct _event {
 	const uint32_t period;
