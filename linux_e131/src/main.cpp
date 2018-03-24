@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include "hardwarelinux.h"
+#include "networklinux.h"
 
 #include "e131bridge.h"
 #include "e131uuid.h"
@@ -40,16 +41,12 @@
 
 #include "dmxmonitor.h"
 
-#include "network.h"
-
 #include "software_version.h"
 
-extern "C" {
-extern int network_init(const char *);
-}
-
 int main(int argc, char **argv) {
-	struct utsname os_info;
+	HardwareLinux hw;
+	NetworkLinux nw;
+	uint8_t nTextLength;
 	E131Params e131params;
 	DMXMonitor monitor;
 	E131Uuid e131uuid;
@@ -73,13 +70,10 @@ int main(int argc, char **argv) {
 		e131params.Dump();
 	}
 
-	memset(&os_info, 0, sizeof(struct utsname));
-	uname(&os_info);
-
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, os_info.sysname, os_info.version[0] ==  '\0' ? "Linux" : os_info.version, __DATE__, __TIME__);
+	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
 	puts("sACN E1.31 Real-time DMX Monitor");
 
-	if (network_init(argv[1]) < 0) {
+	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
@@ -90,16 +84,15 @@ int main(int argc, char **argv) {
 		uuid_parse((const char *)uuid_str, uuid);
 	} else {
 		e131uuid.GetHardwareUuid(uuid);
-		uuid_unparse(uuid, uuid_str);
 	}
 
-	network_begin(E131_DEFAULT_PORT);
+	nw.Begin(E131_DEFAULT_PORT);
 
 	struct in_addr group_ip;
 	(void)inet_aton("239.255.0.0", &group_ip);
 	const uint16_t universe = e131params.GetUniverse();
 	group_ip.s_addr = group_ip.s_addr | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)universe & (uint32_t)0xFF00) << 8));
-	network_joingroup(group_ip.s_addr);
+	nw.JoinGroup(group_ip.s_addr);
 
 	E131Bridge bridge;
 
@@ -108,19 +101,10 @@ int main(int argc, char **argv) {
 	bridge.setMergeMode(e131params.GetMergeMode());
 	bridge.SetOutput(&monitor);
 
-	printf("Running at : " IPSTR "\n", IP2STR(network_get_ip()));
-	printf("Netmask : " IPSTR "\n", IP2STR(network_get_netmask()));
-	printf("Hostname : %s\n", network_get_hostname());
-	printf("DHCP : %s\n", network_is_dhcp_used() ? "Yes" : "No");
-
-	printf("\nBridge configuration\n");
-	const uint8_t *firmware_version = bridge.GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" CID          : %s\n", uuid_str);
-	printf(" Universe     : %d\n", bridge.getUniverse());
-	printf(" Merge mode   : %s\n", bridge.getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-	printf(" Multicast ip : " IPSTR "\n", IP2STR(group_ip.s_addr));
-	printf(" Unicast ip   : " IPSTR "\n\n", IP2STR(network_get_ip()));
+	nw.Print();
+	puts("-------------------------------------------------------------------------------------------");
+	bridge.Print(group_ip.s_addr); //FIXME bridge.Print(group_ip.s_addr)
+	puts("-------------------------------------------------------------------------------------------");
 
 	for (;;) {
 		(void) bridge.Run();
