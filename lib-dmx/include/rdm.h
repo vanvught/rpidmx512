@@ -2,7 +2,7 @@
  * @file rdm.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,9 @@
 ///< 10.5.10 Get Boot Software Version ID (BOOT_SOFTWARE_VERSION_ID)
 #define RDM_BOOT_SOFTWARE_VERSION_ID_LENGTH		4			///< The Boot Software Version ID is a 32-bit value determined by the Manufacturer.
 
+///< 10.5.11 Get Boot Software Version Label (BOOT_SOFTWARE_VERSION_LABEL)
+#define RDM_BOOT_SOFTWARE_VERSION_LABEL_MAX_LENGTH	32
+
 ///< 10.7.1 Get Sensor Definition (SENSOR_DEFINITION)
 #define RDM_SENSORS_ALL							0xFF		///< The sensor number 0xFF is used to address all sensors.
 
@@ -85,6 +88,54 @@
 ///< 10.11.1 Get/Set Identify Device (IDENTIFY_DEVICE)
 #define	RDM_IDENTIFY_STATE_OFF				(uint8_t)0
 #define	RDM_IDENTIFY_STATE_ON				(uint8_t)1
+
+#if  ! defined (PACKED)
+#define PACKED __attribute__((packed))
+#endif
+
+struct TRdmMessage {
+	uint8_t start_code;						///< 1	SC_RDM
+	uint8_t sub_start_code;					///< 2	SC_SUB_MESSAGE
+	uint8_t message_length;					///< 3	Range 24 to 255
+	uint8_t destination_uid[RDM_UID_SIZE];	///< 4,5,6,7,8,9
+	uint8_t source_uid[RDM_UID_SIZE];		///< 10,11,12,13,14,15
+	uint8_t transaction_number;				///< 16
+	union {
+		uint8_t port_id;					///< 17
+		uint8_t response_type;				///< 17
+	} slot16;
+	uint8_t message_count;					///< 18
+	uint8_t sub_device[2];					///< 19, 20
+	uint8_t command_class;					///< 21
+	uint8_t param_id[2];					///< 22, 23
+	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
+	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
+}PACKED;
+
+struct TRdmMessageNoSc {
+	uint8_t sub_start_code;					///< 2	SC_SUB_MESSAGE
+	uint8_t message_length;					///< 3	Range 24 to 255
+	uint8_t destination_uid[RDM_UID_SIZE];	///< 4,5,6,7,8,9
+	uint8_t source_uid[RDM_UID_SIZE];		///< 10,11,12,13,14,15
+	uint8_t transaction_number;				///< 16
+	union {
+		uint8_t port_id;					///< 17
+		uint8_t response_type;				///< 17
+	} slot16;
+	uint8_t message_count;					///< 18
+	uint8_t sub_device[2];					///< 19, 20
+	uint8_t command_class;					///< 21
+	uint8_t param_id[2];					///< 22, 23
+	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
+	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
+}PACKED;
+
+struct TRdmDiscoveryMsg {
+	uint8_t header_FE[7];					///<
+	uint8_t header_AA;						///<
+	uint8_t masked_device_id[12];			///<
+	uint8_t checksum[4];					///<
+}PACKED;
 
 struct _rdm_command {
 	uint8_t start_code;						///< 1	SC_RDM
@@ -105,36 +156,34 @@ struct _rdm_command {
 	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
 };
 
-struct _rdm_discovery_msg {
-	uint8_t header_FE[7];
-	uint8_t header_AA;
-	uint8_t masked_device_id[12];
-	uint8_t checksum[4];
-} ;
-
-///< http://rdm.openlighting.org/pid/display?manufacturer=0&pid=96
-struct _rdm_device_info {
-	uint8_t protocol_major;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
-	uint8_t protocol_minor;			///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
-	uint8_t device_model[2];		///< This field identifies the Device Model ID of the Root Device or the Sub-Device. The Manufacturer shall not use the same ID to represent more than one unique model type.
-	uint8_t product_category[2];	///< Devices shall report a Product Category based on the products primary function.
-	uint8_t software_version[4];	///< This field indicates the Software Version ID for the device. The Software Version ID is a 32-bit value determined by the Manufacturer.
-	uint8_t dmx_footprint[2];		///< If the DEVICE_INFO message is directed to a Sub-Device, then the response for this field contains the DMX512 Footprint for that Sub-Device. If the message is sent to the Root Device, it is the Footprint for the Root Device itself. If the Device or Sub-Device does not utilize Null Start Code packets for any control or functionality then it shall report a Footprint of 0x0000.
-	uint8_t current_personality;	///<
-	uint8_t personality_count;		///<
-	uint8_t dmx_start_address[2];	///< If the Device or Sub-Device that this message is directed to has a DMX512 Footprint of 0, then this field shall be set to 0xFFFF.
-	uint8_t sub_device_count[2];	///< The response for this field shall always be same regardless of whether this message is directed to the Root Device or a Sub-Device.
-	uint8_t sensor_count;			///< This field indicates the number of available sensors in a Root Device or Sub-Device. When this parameter is directed to a Sub-Device, the reply shall be identical for any Sub-Device owned by a specific Root Device.
-};
-
-///< Personalities
-struct _rdm_personality {
-	uint16_t slots;					///< This field cannot be a const as we do not know the WS28xx pixel count at compile time
-	/*@shared@*/const char *description;
-	const uint8_t description_len;
-};
-
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
 static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+/*
+ * C++ only
+ */
+
+#ifdef __cplusplus
+
+class Rdm {
+public:
+	Rdm(void);
+	~Rdm(void);
+
+	static void Send(struct TRdmMessage *);
+	static void SendRaw(const uint8_t *, uint16_t);
+
+	static void SendDiscoveryRespondMessage(const uint8_t *, uint16_t);
+
+	static const uint8_t *Receive(void);
+	static const uint8_t *ReceiveTimeOut(uint32_t);
+
+public:
+	static uint8_t m_TransactionNumber;
+
+private:
+};
+
+#endif
 
 #endif /* RDM_H_ */

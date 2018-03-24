@@ -1,8 +1,8 @@
 /**
- * @file dmxrdm.cpp
+ * @file dmx++.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,56 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXRDM_H_
-#define DMXRDM_H_
-
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
+#include <assert.h>
 
 #include "dmx.h"
-#include "gpio.h"
 
-enum TDmxRdmPortDirection {
-	DMXRDM_PORT_DIRECTION_OUTP = 1,
-	DMXRDM_PORT_DIRECTION_INP = 2
-};
+Dmx::Dmx(uint8_t nGpioPin, bool DoInit): m_IsInitDone(DoInit) {
+#ifndef NDEBUG
+	printf("Dmx::Dmx nGpioPin=%d\n", nGpioPin);
+#endif
+	dmx_init_set_gpiopin(nGpioPin);
 
-struct TDmxStatistics {
-	uint32_t MarkAfterBreak;
-	uint32_t SlotsInPacket;
-	uint32_t BreakToBreak;
-	uint32_t SlotToSlot;
-};
+	if (DoInit) {
+		dmx_init();
+	}
+}
 
-struct TDmxData {
-	uint8_t Data[DMX_DATA_BUFFER_SIZE];
-	struct TDmxStatistics Statistics;
-};
+Dmx::~Dmx(void) {
+}
 
-class DmxRdm {
-public:
-	DmxRdm(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
-	~DmxRdm(void);
+void Dmx::Init(void) {
+	assert(!m_IsInitDone);
 
-	void SetPortDirection(TDmxRdmPortDirection, bool bEnableData = false);
+	if (!m_IsInitDone) {
+		dmx_init();
+		m_IsInitDone = true;
+	}
+}
 
-public: // DMX
-	uint32_t GetUpdatesPerSecond(void) const;
-	const uint8_t *GetDmxCurrentData(void);
-	const uint8_t *GetDmxAvailable(void);
-
-	uint32_t GetDmxBreakTime(void) const;
-	void SetDmxBreakTime(uint32_t);
-
-	uint32_t GetDmxMabTime(void) const;
-	void SetDmxMabTime(uint32_t);
-
-	uint32_t GetDmxPeriodTime(void) const;
-	void SetDmxPeriodTime(uint32_t);
-
-public: // RDM
-
-private:
-};
-
-
-#endif /* DMXRDM_H_ */

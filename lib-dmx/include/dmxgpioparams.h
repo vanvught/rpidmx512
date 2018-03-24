@@ -1,8 +1,8 @@
 /**
- * @file rdmtod.h
+ * @file gpioparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMTOD_H_
-#define RDMTOD_H_
+#ifndef DMXGPIOPARAMS_H_
+#define DMXGPIOPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "rdm.h"
-
-#define TOD_TABLE_SIZE	200
-
-struct TRdmTod {
-	uint8_t uid[RDM_UID_SIZE];
-};
-
-class RDMTod {
+class DmxGpioParams {
 public:
-	 RDMTod(void);
-	 ~RDMTod(void);
+	DmxGpioParams(void);
+	~DmxGpioParams(void);
 
-	 void Reset(void);
-	 bool AddUid(const uint8_t *);
-	 const uint8_t GetUidCount(void);
-	 void Copy(uint8_t *);
+	uint8_t GetDataDirection(bool &isSet) const;
 
-	 bool Delete(const uint8_t *);
-	 bool Exist(const uint8_t *);
+	void Dump(void);
 
-	 void Dump(void);
-	 void Dump(uint8_t);
 private:
-	 uint8_t m_entries;
-	 TRdmTod *m_pTable;
+	bool IsMaskSet(uint16_t mask) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *pLine);
+
+private:
+    uint32_t m_nSetList;
+    uint8_t m_nDmxDataDirection;
 };
 
-
-#endif /* RDMTOD_H_ */
+#endif /* DMXGPIOPARAMS_H_ */

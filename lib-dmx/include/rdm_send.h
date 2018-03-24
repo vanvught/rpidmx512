@@ -2,7 +2,7 @@
  * @file rdm_send.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,8 @@
 extern "C" {
 #endif
 
-extern void rdm_send_data(const uint8_t *, const uint16_t);
-
-extern void rdm_send_discovery_respond_message(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack(uint8_t *);
-extern void rdm_send_respond_message_nack(uint8_t *, const uint16_t);
-extern void rdm_send_respond_message_ack_timer(uint8_t *, const uint16_t);
+extern void rdm_send_data(const uint8_t *, uint16_t);
+extern void rdm_send_discovery_respond_message(const uint8_t *, uint16_t);
 
 #ifdef __cplusplus
 }

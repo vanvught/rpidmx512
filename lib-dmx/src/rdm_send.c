@@ -2,7 +2,7 @@
  * @file rdm_send.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,19 +29,10 @@
 #include "arm/pl011.h"
 #include "bcm2835.h"
 
-#include "hardware.h"
-
 #include "rdm.h"
 #include "dmx.h"
-#include "rdm_e120.h"
 
-/**
- * @ingroup rdm
- *
- * @param data
- * @param data_length
- */
-void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
+void rdm_send_data(const uint8_t *data, uint16_t data_length) {
 	uint16_t i;
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
@@ -61,13 +52,7 @@ void rdm_send_data(const uint8_t *data, const uint16_t data_length) {
 
 }
 
-/**
- * @ingroup rdm
- *
- * @param data
- * @param data_length
- */
-static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
+static void rdm_send_no_break(const uint8_t *data, uint16_t data_length) {
 	uint16_t i;
 
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
@@ -82,14 +67,8 @@ static void rdm_send_no_break(const uint8_t *data, const uint16_t data_length) {
 		;
 }
 
-/**
- * @ingroup rdm
- *
- * @param data
- * @param data_length
- */
-void rdm_send_discovery_respond_message(const uint8_t *data, const uint16_t data_length) {
-	const uint32_t delay = hardware_micros() - rdm_get_data_receive_end();
+void rdm_send_discovery_respond_message(const uint8_t *data, uint16_t data_length) {
+	const uint32_t delay = BCM2835_ST->CLO - rdm_get_data_receive_end();
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);

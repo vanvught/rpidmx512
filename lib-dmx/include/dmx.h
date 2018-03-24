@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,6 +106,85 @@ extern const uint32_t rdm_get_data_receive_end(void);
 
 #ifdef __cplusplus
 }
+#endif
+
+/*
+ * C++ only
+ */
+
+#ifdef __cplusplus
+
+#include "gpio.h"
+
+enum TDmxRdmPortDirection {
+	DMXRDM_PORT_DIRECTION_OUTP = 1,
+	DMXRDM_PORT_DIRECTION_INP = 2
+};
+
+struct TDmxStatistics {
+	uint32_t MarkAfterBreak;
+	uint32_t SlotsInPacket;
+	uint32_t BreakToBreak;
+	uint32_t SlotToSlot;
+};
+
+struct TDmxData {
+	uint8_t Data[DMX_DATA_BUFFER_SIZE];
+	struct TDmxStatistics Statistics;
+};
+
+class Dmx {
+public:
+	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
+	~Dmx(void);
+
+	inline void SetPortDirection(TDmxRdmPortDirection tPortDirection, bool bEnableData = false) {
+		dmx_set_port_direction((_dmx_port_direction)tPortDirection, bEnableData);
+	}
+
+public: // DMX
+	void Init(void);
+
+	inline uint32_t GetUpdatesPerSecond(void) {
+		return dmx_get_updates_per_seconde();
+	}
+
+	inline const uint8_t *GetDmxCurrentData(void) {
+		return dmx_get_current_data();
+	}
+
+	inline const uint8_t *GetDmxAvailable(void) {
+		return dmx_get_available();
+	}
+
+	inline void SetDmxBreakTime(uint32_t nBreakTime) {
+		dmx_set_output_break_time(nBreakTime);
+	}
+
+	inline  uint32_t GetDmxBreakTime(void) {
+		return dmx_get_output_break_time();
+	}
+
+	inline void SetDmxMabTime(uint32_t nMabTime) {
+		dmx_set_output_mab_time(nMabTime);
+	}
+
+	inline uint32_t GetDmxMabTime(void) {
+		return dmx_get_output_mab_time();
+	}
+
+	inline void SetDmxPeriodTime(uint32_t nPeriodTime) {
+		dmx_set_output_period(nPeriodTime);
+	}
+
+	inline uint32_t GetDmxPeriodTime(void) {
+		return dmx_get_output_period();
+	}
+
+private:
+	bool m_IsInitDone;
+};
+
 #endif
 
 #endif /* DMX_H_ */

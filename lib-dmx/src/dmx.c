@@ -34,6 +34,7 @@
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
+#include "arm/irq_timer.h"
 #include "arm/pl011.h"
 
 #include "bcm2835.h"
@@ -41,13 +42,12 @@
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
 
-#include "irq_timer.h"
-
 #include "gpio.h"
 #include "util.h"
 #include "dmx.h"
 #include "rdm.h"
-#include "rdm_e120.h"
+
+#include "../../lib-rdm/include/rdm_e120.h"
 
 #ifdef NDEBUG
 #undef NDEBUG
