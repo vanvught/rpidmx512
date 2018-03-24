@@ -5,10 +5,9 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
-INCLUDE	+= -I ../lib-properties/include -I ../lib-lightset/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/deviceparams.o src/spisend.o src/ws28xxstripecommon.o src/circle/ws28xxstripe.o
+OBJS	= src/ws28xxstripecommon.o src/circle/ws28xxstripe.o
 
 EXTRACLEAN = src/*.o src/circle/*.o
 

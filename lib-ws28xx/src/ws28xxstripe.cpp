@@ -2,7 +2,7 @@
  * @file ws28xxstripe.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,13 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "bcm2835_spi.h"
-#include "util.h"
+#if defined(__linux__)
+ #include <string.h>
+ #include "bcm2835.h"
+#else
+ #include "bcm2835_spi.h"
+ #include "util.h"
+#endif
 
 #include "ws28xxstripe.h"
 
