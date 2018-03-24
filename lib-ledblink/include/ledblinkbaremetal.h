@@ -1,5 +1,5 @@
 /**
- * @file ledblink.h
+ * @file ledblinktask.h
  *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,54 +23,21 @@
  * THE SOFTWARE.
  */
 
+
+#ifndef LEDBLINKBAREMETAL_H_
+#define LEDBLINKBAREMETAL_H_
+
 #include "ledblink.h"
 
-enum tFreqMode {
-	FREQ_MODE_OFF = 0,
-	FREQ_MODE_NORMAL = 1,
-	FREQ_MODE_FAST = 3,
+class LedBlinkBaremetal : public LedBlink
+{
+public:
+	LedBlinkBaremetal (void);
+	~LedBlinkBaremetal (void);
+
+	void SetFrequency (unsigned nFreqHz);
+
+	void Run(void);
 };
 
-LedBlink *LedBlink::s_pThis = 0;
-
-LedBlink::LedBlink(void): m_nFreqHz(0) {
-	s_pThis = this;
-}
-
-LedBlink::~LedBlink(void) {
-
-}
-
-void LedBlink::SetMode(tLedBlinkMode Mode) {
-	switch (Mode) {
-		case LEDBLINK_MODE_OFF:
-			SetFrequency(FREQ_MODE_OFF);
-			break;
-		case LEDBLINK_MODE_NORMAL:
-			SetFrequency(FREQ_MODE_NORMAL);
-			break;
-		case LEDBLINK_MODE_FAST:
-			SetFrequency(FREQ_MODE_FAST);
-			break;
-		default:
-			SetFrequency(FREQ_MODE_OFF);
-			break;
-	}
-}
-
-tLedBlinkMode LedBlink::GetMode(void) const {
-	switch (m_nFreqHz) {
-		case FREQ_MODE_OFF:
-			return LEDBLINK_MODE_OFF;
-			break;
-		case FREQ_MODE_NORMAL:
-			return LEDBLINK_MODE_NORMAL;
-			break;
-		case FREQ_MODE_FAST:
-			return LEDBLINK_MODE_FAST;
-			break;
-		default:
-			return LEDBLINK_MODE_UNKNOWN;
-			break;
-	}
-}
+#endif /* LEDBLINKBAREMETAL_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file ledblinktask.h
+ * @file ledblinklinux.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,18 @@
  */
 
 
-#ifndef LEDBLINKTASK_H_
-#define LEDBLINKTASK_H_
+#ifndef LEDBLINKLINUX_H_
+#define LEDBLINKLINUX_H_
 
 #include "ledblink.h"
 
-class LedBlinkTask : public LedBlink
+class LedBlinkLinux : public LedBlink
 {
 public:
-	LedBlinkTask (void);
-	~LedBlinkTask (void);
+	LedBlinkLinux (void);
+	~LedBlinkLinux (void);
 
 	void SetFrequency (unsigned nFreqHz);
-
-	void Run(void);
 };
 
-#endif /* LEDBLINKTASK_H_ */
+#endif /* LEDBLINKLINUX_H_ */

@@ -1,9 +1,8 @@
-#if defined (BARE_METAL)
 /**
- * @file ledblinktask.cpp
+ * @file blinktask.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include "led.h"
+#include "ledblinkcircle.h"
 
-#include "ledblinktask.h"
+#include "circle/actled.h"
+#include "circle/sched/scheduler.h"
 
-LedBlinkTask::LedBlinkTask(void) {
+LedBlinkCircle::LedBlinkCircle(void) : m_nusPeriod(0),  m_bStop(true) {
+
 }
 
-LedBlinkTask::~LedBlinkTask(void) {
+LedBlinkCircle::~LedBlinkCircle(void) {
 }
 
-void LedBlinkTask::SetFrequency(unsigned nFreqHz) {
+void LedBlinkCircle::SetFrequency(unsigned nFreqHz) {
+	m_nFreqHz = nFreqHz;
+
 	if (nFreqHz == 0) {
-		led_set_ticks_per_second(0);
+		m_bStop = true;
+		CActLED::Get()->Off();
 	} else {
-		led_set_ticks_per_second(1000000 / nFreqHz);
+		m_bStop = false;
+		m_nusPeriod = 1000000 / nFreqHz;
 	}
 }
 
-void LedBlinkTask::Run(void) {
-	led_blink();
-}
+void LedBlinkCircle::Run(void) {
+	while (1) {
+		if (m_bStop) {
+			CScheduler::Get()->Sleep(1);
+		} else {
+			CActLED::Get()->On();
+			CScheduler::Get()->usSleep(m_nusPeriod);
 
-#endif
+			CActLED::Get()->Off();
+			CScheduler::Get()->usSleep(m_nusPeriod);
+		}
+	}
+}

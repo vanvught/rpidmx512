@@ -1,8 +1,8 @@
 /**
- * @file blinktask.cpp
+ * @file ledblinktask.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,29 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <circle/sched/scheduler.h>
+#include "ledblinklinux.h"
 
-#include "circle/blinktask.h"
+#include "hardware.h"
 
-CBlinkTask::CBlinkTask(CActLED *pActLED, unsigned nFreqHz) : m_pActLED(pActLED), m_bStop(false) {
-	SetFrequency(nFreqHz);
+LedBlinkLinux::LedBlinkLinux(void) {
 }
 
-CBlinkTask::~CBlinkTask(void) {
-	m_pActLED = 0;
+LedBlinkLinux::~LedBlinkLinux(void) {
 }
 
-void CBlinkTask::SetFrequency(unsigned nFreqHz) {
+void LedBlinkLinux::SetFrequency(unsigned nFreqHz) {
+	m_nFreqHz = nFreqHz;
+
 	if (nFreqHz == 0) {
-		m_bStop = true;
-		m_pActLED->Off();
+		Hardware::Get()->SetLed(HARDWARE_LED_OFF);
+	} else if (nFreqHz > 20) {
+		Hardware::Get()->SetLed(HARDWARE_LED_ON);
 	} else {
-		m_bStop = false;
-		m_nusPeriod = 1000000 / nFreqHz;
-	}
-}
-
-void CBlinkTask::Run(void) {
-	while (1) {
-		assert(m_pActLED != 0);
-
-		if (m_bStop) {
-			CScheduler::Get()->Sleep(1);
+		if (nFreqHz > 1) {
+			Hardware::Get()->SetLed(HARDWARE_LED_HEARTBEAT);
 		} else {
-			m_pActLED->On();
-			CScheduler::Get()->usSleep(m_nusPeriod);
-
-			m_pActLED->Off();
-			CScheduler::Get()->usSleep(m_nusPeriod);
+			Hardware::Get()->SetLed(HARDWARE_LED_FLASH);
 		}
 	}
 }
+

@@ -1,8 +1,8 @@
 /**
- * @file blinktask.h
+ * @file ledblinktask.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef _blinktask_h
-#define _blinktask_h
+#include <ledblinkbaremetal.h>
+#include "c/led.h"
 
-#include <circle/actled.h>
-#include <circle/sched/task.h>
 
-#include "ledblink.h"
+LedBlinkBaremetal::LedBlinkBaremetal(void) {
+}
 
-class CBlinkTask : public LedBlink, CTask
-{
-public:
-	CBlinkTask (CActLED *pActLED, unsigned nFreqHz);
-	~CBlinkTask (void);
+LedBlinkBaremetal::~LedBlinkBaremetal(void) {
+}
 
-	void SetFrequency (unsigned nFreqHz);
+void LedBlinkBaremetal::SetFrequency(unsigned nFreqHz) {
+	m_nFreqHz = nFreqHz;
 
-	void Run (void);
+	if (nFreqHz == 0) {
+		led_set_ticks_per_second(0);
+	} else {
+		led_set_ticks_per_second(1000000 / nFreqHz);
+	}
+}
 
-private:
-	CActLED *m_pActLED;
-	unsigned m_nusPeriod;
-	bool m_bStop;
-};
-
-#endif /* */
+void LedBlinkBaremetal::Run(void) {
+	led_blink();
+}

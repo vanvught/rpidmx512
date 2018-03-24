@@ -3,6 +3,8 @@
 	<name>lib-ledblink</name>
 	<comment></comment>
 	<projects>
+		<project>Circle</project>
+		<project>lib-hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
