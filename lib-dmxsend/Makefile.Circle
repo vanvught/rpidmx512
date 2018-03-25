@@ -10,7 +10,7 @@ INCLUDE	+= -I ../include
 
 OBJS	= src/dmxparams.o src/circle/dmxsend.o
 
-EXTRACLEAN = src/*.o src/circle/*.o
+EXTRACLEAN = src/circle/*.o src/*.o 
 
 libdmxsend.a: $(OBJS)
 	rm -f $@

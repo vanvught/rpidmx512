@@ -9,7 +9,7 @@ INCLUDE	+= -I ../include
 
 OBJS	= src/file.o src/log.o src/circle/fgets.o src/circle/printf.o src/circle/sprintf.o src/circle/snprintf.o
 
-EXTRACLEAN = src/*.o src/circle/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libutils.a: $(OBJS)
 	rm -f $@

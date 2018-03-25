@@ -16,7 +16,7 @@ OBJS += src/l6470dmxmodes.o
 OBJS += src/l6470params.o src/modeparams.o src/motorparams.o
 OBJS += src/slushdmx.o src/sparkfundmx.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libl6470dmx.a: $(OBJS)
 	rm -f $@

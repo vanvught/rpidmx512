@@ -9,7 +9,7 @@ INCLUDE	+= -I ../include
 
 OBJS	= src/ws28xxstripecommon.o src/circle/ws28xxstripe.o
 
-EXTRACLEAN = src/*.o src/circle/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libws28xx.a: $(OBJS)
 	rm -f $@

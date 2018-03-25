@@ -8,7 +8,7 @@ INCLUDE	+= -I ./include
 
 OBJS	= src/circle/ledblinkcircle.o src/ledblink.o
 
-EXTRACLEAN = src/*.o src/circle/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libledblink.a: $(OBJS)
 	rm -f $@

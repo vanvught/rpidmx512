@@ -11,7 +11,7 @@ INCLUDE	+= -I ../include
 
 OBJS = src/oscserver.o 
 
-EXTRACLEAN = src/*.o 
+EXTRACLEAN = src/circle/*.o src/*.o 
 
 liboscserver.a: $(OBJS)
 	rm -f $@

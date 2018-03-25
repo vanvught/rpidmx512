@@ -10,7 +10,7 @@ INCLUDE	+= -I ../include
 
 OBJS = src/osc.o src/oscaddress.o src/oscblob.o src/oscmessage.o src/oscsend.o src/oscstring.o src/pattern_match.o src/oscparams.o
 
-EXTRACLEAN = src/*.o src/circle/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libosc.a: $(OBJS)
 	rm -f $@

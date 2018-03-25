@@ -7,9 +7,9 @@ CIRCLEHOME = ../Circle
 INCLUDE	+= -I ./include
 INCLUDE	+= -I ../include
 
-OBJS	= src/hardware.o src/circle/hardwarecircle.o
+OBJS	= src/hardware.o src/circle/hardwarecircle.o 
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libhal.a: $(OBJS)
 	rm -f $@

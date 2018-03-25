@@ -9,7 +9,7 @@ INCLUDE	+= -I ../include
 
 OBJS	= src/readconfigfile.o src/sscan_uint8_t.o src/sscan_uint16_t.o src/sscan_uint32_t.o src/sscan_float.o src/sscan_char_p.o src/sscan_ip_address.o src/parse.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libproperties.a: $(OBJS)
 	rm -f $@

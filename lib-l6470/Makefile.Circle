@@ -12,7 +12,7 @@ OBJS  = src/l6470.o src/l6470commands.o src/l6470config.o src/l6470dump.o src/l6
 OBJS += src/autodriver.o
 OBJS += src/slushboard.o src/slushmotor.o src/slushtemp.o
 
-EXTRACLEAN = src/*.o
+EXTRACLEAN = src/circle/*.o src/*.o
 
 libl6470.a: $(OBJS)
 	rm -f $@
