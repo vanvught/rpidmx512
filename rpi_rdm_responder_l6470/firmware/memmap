@@ -1,0 +1,111 @@
+MEMORY
+{
+    ram : ORIGIN = 0x8000, LENGTH = 128M - 0x8000  
+}
+
+__ram_start = ORIGIN(ram);
+__ram_size  = LENGTH(ram);
+__ram_end   = __ram_start + __ram_size;
+
+__und_stack_size = 0x10000;
+__abt_stack_size = 0x10000;
+__fiq_stack_size = 0x10000;
+__irq_stack_size = 0x10000;
+__svc_stack_size = 0x10000;
+__sys_stack_size = 0x10000;
+
+SECTIONS
+{
+    .init : 
+    {
+    . = ALIGN(4);
+    *(.init)
+    } > ram
+    
+    .text : 
+    {
+    . = ALIGN(4);
+     *(.text*)
+    } > ram
+    
+    .rodata : 
+    {
+    . = ALIGN(4);
+	*(.rodata)
+	*(.rodata.*)
+	*(.rodata.str1.4)
+	*(.shstrtab)
+	*(.strtab)
+    } > ram
+
+    .data : 
+    {  
+    . = ALIGN(4);
+__data_start = . ;    
+	*(SORT(.table*));
+	*(.ahb_sram_0)
+    *(.data)
+	. = ALIGN(4);
+__data_end = . ;      
+    } > ram
+ 
+    .bss :
+    {
+    . = ALIGN(4);
+__bss_start = . ;        
+     *(.bss*)
+     *(COMMON)
+    . = ALIGN(4);     
+__bss_end = . ; 
+    } > ram
+	
+	/DISCARD/ :
+	{
+	*(*.ARM.attributes)
+	*(*.comment)
+	*(*.debug*)
+	}	
+}
+
+PROVIDE(end = .);
+_end = .;
+
+. = ALIGN(0x300000);
+. = . + __und_stack_size; 
+__und_stack_top = .;
+
+. = ALIGN(4);
+. = . + __abt_stack_size; 
+__abt_stack_top = .;
+
+. = ALIGN(4);
+. = . + __fiq_stack_size; 
+__fiq_stack_top = .;
+
+. = ALIGN(4);
+. = . + __irq_stack_size; 
+__irq_stack_top = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top = .;
+
+. = ALIGN(4);
+. = . + __sys_stack_size; 
+__sys_stack_top = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core1 = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core2 = .;
+
+. = ALIGN(4);
+. = . + __svc_stack_size; 
+__svc_stack_top_core3 = .;
+
+ . = ALIGN(0x500000);
+ heap_low = .; 					/* for _sbrk */
+ heap_top = __ram_end; 			/* for _sbrk */
