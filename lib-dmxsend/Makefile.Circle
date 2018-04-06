@@ -8,7 +8,7 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-properties/include -I ../lib-lightset/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/dmxparams.o src/circle/dmxsend.o
+OBJS	= src/dmxparams.o src/dmxsendprint.o src/circle/dmxsend.o
 
 EXTRACLEAN = src/circle/*.o src/*.o 
 

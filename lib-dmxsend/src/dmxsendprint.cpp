@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.h
+ * @file dmxprint.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXSENDER_H_
-#define DMXSENDER_H_
+#include <stdio.h>
 
-#include <stdint.h>
-#include <stdbool.h>
+#if defined (__circle__)
+ #include "circle/dmxsend.h"
+#else
+ #include "dmxsend.h"
+#endif
 
-#include "dmx.h"
-#include "lightset.h"
-
-class DMXSend: public Dmx, public LightSet  {
-public:
-	DMXSend(void);
-	~DMXSend(void);
-
-	void Start(void);
-	void Stop(void);
-
-	void SetData(uint8_t, const uint8_t *, uint16_t);
-
-	void Print(void);
-
-private:
-	bool m_bIsStarted;
-};
-
-#endif /* DMXSENDER_H_ */
+void DMXSend::Print(void) {
+	printf("\nDMX Send configuration\n");
+	printf(" Break time   : %d\n", (int) GetDmxBreakTime());
+	printf(" MAB time     : %d\n", (int) GetDmxMabTime());
+	printf(" Refresh rate : %d\n", (int) (1000000 / GetDmxPeriodTime()));
+}

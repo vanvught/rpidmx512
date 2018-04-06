@@ -78,6 +78,8 @@ public:
 	uint32_t GetDmxPeriodTime(void) const;
 	uint32_t GetDmxPeriodTimeRequested(void) const;
 
+	void Print(void);
+
 private:
 	void ClearOutputData(void);
 	boolean SetDataTry(const uint8_t *, const uint16_t);	// returns FALSE if transfer is active
