@@ -6,6 +6,5 @@ Supported platforms:
 - Linux
 - Cygwin
 
-
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 

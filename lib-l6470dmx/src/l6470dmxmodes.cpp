@@ -220,12 +220,12 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 
 	if (IsDmxDataChanged(p)) {
 #ifndef NDEBUG
-		puts("\t\tDMX data has changed!");
+		printf("\t\tDMX data has changed!\n");
 #endif
 		m_pDmxMode->Data(p);
 	} else {
 #ifndef NDEBUG
-		puts("\t\tNothing to do..");
+		printf("\t\tNothing to do..\n");
 #endif
 	}
 

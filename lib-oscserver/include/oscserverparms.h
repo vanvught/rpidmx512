@@ -1,5 +1,5 @@
 /**
- * @file network.c
+ * @file oscserverparams.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,46 +23,50 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef OSCSERVERPARAMS_H_
+#define OSCSERVERPARAMS_H_
 
-#include "network.h"
+#include <stdint.h>
 
-Network *Network::s_pThis = 0;
+#include "oscserver.h"
 
-Network::Network(void) :
-	m_nLocalIp(0),
-	m_nGatewayIp(0),
-	m_nNetmask(0),
-	m_nBroadcastIp(0),
-	m_IsDhcpUsed(false)
-{
-	s_pThis = this;
+enum TOutputType {
+	OUTPUT_TYPE_DMX,
+	OUTPUT_TYPE_MONITOR
+};
 
-	for (unsigned i = 0; i < sizeof(m_aNetMacaddr); i++) {
-		m_aNetMacaddr[i] = 0;
-	}
-}
+class OSCServerParams {
+public:
+	OSCServerParams(void);
+	~OSCServerParams(void);
 
-Network::~Network(void) {
-	m_nLocalIp = 0;
-	m_nGatewayIp = 0;
-	m_nNetmask = 0;
-	m_nBroadcastIp = 0;
-	m_IsDhcpUsed = false;
+	bool Load(void);
 
-	s_pThis = 0;
-}
+	uint16_t GetIncomingPort(void) const;
+	uint16_t GetOutgoingPort(void) const;
+	bool GetPartialTransmission(void) const;
+	TOutputType GetOutputType(void) const;
 
-void Network::Print(void) {
-	uint8_t aMacAddress[NETWORK_MAC_SIZE];
-	MacAddressCopyTo(aMacAddress);
+	void Set(OscServer *pOscServer);
 
-	printf("\nNetwork configuration\n");
-	printf(" Hostname   : %s\n", GetHostName());
-	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
-	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(aMacAddress));
-#if !defined (__CYGWIN__)
-	printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-#endif
-}
+	void Dump(void);
+
+private:
+	bool IsMaskSet(uint16_t) const;
+
+public:
+    static void staticCallbackFunction(void *p, const char *s);
+
+private:
+    void callbackFunction(const char *s);
+
+private:
+    uint32_t m_bSetList;
+	uint16_t m_nIncomingPort;
+	uint16_t m_nOutgoingPort;
+	bool m_bPartialTransmission;
+	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
+	TOutputType m_tOutputType;
+};
+
+#endif /* OSCSERVERPARAMS_H_ */

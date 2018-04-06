@@ -33,6 +33,8 @@
 #define OSCSERVER_DEFAULT_PORT_INCOMING	8000
 #define OSCSERVER_DEFAULT_PORT_OUTGOING	9000
 
+#define OSCSERVER_PATH_LENGTH_MAX	128
+
 class OscServer {
 public:
 	OscServer(void);
@@ -41,10 +43,18 @@ public:
 	void SetOutput(LightSet *);
 
 	uint16_t GetPortIncoming(void) const;
-	void SetPortIncoming(uint16_t nPortIncoming);
+	void SetPortIncoming(uint16_t nPortIncoming = OSCSERVER_DEFAULT_PORT_INCOMING);
 
 	uint16_t GetPortOutgoing(void) const;
-	void SetPortOutgoing(uint16_t nPortOutgoing);
+	void SetPortOutgoing(uint16_t nPortOutgoing = OSCSERVER_DEFAULT_PORT_OUTGOING);
+
+	const char *GetPath(void);
+	void SetPath(const char *pPath);
+
+	bool IsPartialTransmission(void) const;
+	void SetPartialTransmission(bool bPartialTransmission = false);
+
+	void Print(void);
 
 	void Start(void);
 	void Stop(void);
@@ -53,18 +63,19 @@ public:
 
 private:
 	int GetChannel(const char *p);
-	const bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStart, uint16_t nLength);
+	const bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint16_t nLength);
 
 private:
 	uint16_t m_nPortIncoming;
 	uint16_t m_nPortOutgoing;
+	bool m_bPartialTransmission;
+	uint16_t m_nLastChannel;
+	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPathSecond[OSCSERVER_PATH_LENGTH_MAX];
 	LightSet *m_pLightSet;
 	uint8_t *m_pBuffer;
 	uint8_t *m_pData;
 	uint8_t *m_pOsc;
-	bool m_IsBlackout;
 };
-
-
 
 #endif /* OSCSERVER_H_ */

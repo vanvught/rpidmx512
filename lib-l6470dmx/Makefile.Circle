@@ -8,6 +8,7 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-l6470/include
 INCLUDE	+= -I ../lib-lightset/include -I ../lib-properties/include
 INCLUDE	+= -I ../lib-bcm2835_circle/include
+INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
 OBJS  = src/l6470dmxmode.o

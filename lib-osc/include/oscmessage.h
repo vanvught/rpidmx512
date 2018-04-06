@@ -30,7 +30,8 @@
 #include "oscblob.h"
 
 typedef enum osc_message_deserialise {
-	OSC_INVALID__INVALID_SIZE =1,
+	OSC_OK = 0,
+	OSC_INVALID__INVALID_SIZE,
 	OSC_MALLOC_ERROR,
 	OSC_INVALID_PATH,
 	OSC_NO_TYPE_TAG,
@@ -50,8 +51,9 @@ public:
 	OSCMessage(void *, unsigned);
 	~OSCMessage(void);
 
-	int GetResult(void);
-
+	int GetResult(void) const;
+	char *getTypes(void) const;
+	unsigned getDataLength(void) const;
 	int GetArgc(void);
 
 	osc_type GetType(unsigned);
@@ -60,9 +62,6 @@ public:
 	int GetInt(unsigned);
 	char *GetString(unsigned);
 	OSCBlob GetBlob(unsigned);
-
-	char *getTypes(void);
-	unsigned getDataLength(void);
 
 	int AddFloat(float);
 	int AddInt32(int32_t);

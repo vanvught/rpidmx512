@@ -9,6 +9,7 @@ INCLUDE	+= -I ../lib-ledblink/include -I ../lib-lightset/include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../lib-rdmsensor/include -I ../lib-rdmsubdevice/include
 INCLUDE	+= -I ../lib-hal/include -I ../lib-network/include
+INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
 OBJS = src/rdmdevice.o src/rdmdeviceresponder.o

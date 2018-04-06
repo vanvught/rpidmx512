@@ -27,41 +27,70 @@
 #include <stdio.h>
 #include <assert.h>
 
+#if defined (__circle__)
+ #include <circle/util.h>
+#elif defined (__linux__) || defined (__CYGWIN__)
+ #include <string.h>
+#else
+ #include "util.h"
+#endif
+
 #include "oscserver.h"
-
-#include "lightset.h"
-
 #include "oscmessage.h"
 #include "oscsend.h"
 #include "oscblob.h"
 
+#include "lightset.h"
 #include "network.h"
 
-#define OSCSERVER_MAX_BUFFER 1024
+#include "debug.h"
+
+#define OSCSERVER_MAX_BUFFER 				4096
+
+#define OSCSERVER_DEFAULT_PATH_PRIMARY		"/dmx1"
+#define OSCSERVER_DEFAULT_PATH_SECONDARY	OSCSERVER_DEFAULT_PATH_PRIMARY"/*"
+
+enum {
+	DMX_UNIVERSE = 512,
+	DMX_MAX_VALUE = 255
+};
 
 OscServer::OscServer(void):
 	m_nPortIncoming(OSCSERVER_DEFAULT_PORT_INCOMING),
 	m_nPortOutgoing(OSCSERVER_DEFAULT_PORT_OUTGOING),
-	m_pLightSet(0),
-	m_IsBlackout(false)
+	m_bPartialTransmission(false),
+	m_nLastChannel(0),
+	m_pLightSet(0)
 {
+	memset(m_aPath, 0, sizeof(m_aPath));
+	strcpy(m_aPath, OSCSERVER_DEFAULT_PATH_PRIMARY);
+
+	memset(m_aPathSecond, 0, sizeof(m_aPathSecond));
+	strcpy(m_aPathSecond, OSCSERVER_DEFAULT_PATH_SECONDARY);
+
 	m_pBuffer = new uint8_t[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
-	m_pData  = new uint8_t[512];
+	m_pData  = new uint8_t[DMX_UNIVERSE];
 	assert(m_pData != 0);
 
-	for (unsigned i = 0; i < 512; i++) {
+	for (unsigned i = 0; i < DMX_UNIVERSE; i++) {
 		m_pData[i] = 0;
 	}
 
-	m_pOsc  = new uint8_t[512];
+	m_pOsc  = new uint8_t[DMX_UNIVERSE];
 	assert(m_pOsc != 0);
 }
 
 OscServer::~OscServer(void) {
 	delete[] m_pBuffer;
 	m_pBuffer = 0;
+
+	delete[] m_pData;
+	m_pData = 0;
+
+	delete[] m_pOsc;
+	m_pOsc = 0;
 
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop();
@@ -71,6 +100,12 @@ OscServer::~OscServer(void) {
 
 void OscServer::Start(void) {
 	Network::Get()->Begin(m_nPortIncoming);
+
+	OSCSend MsgSend(Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
+
+	if (m_pLightSet != 0) {
+		m_pLightSet->Start();
+	}
 }
 
 void OscServer::Stop(void) {
@@ -85,7 +120,6 @@ uint16_t OscServer::GetPortIncoming(void) const {
 
 void OscServer::SetPortIncoming(uint16_t nPortIncoming) {
 	assert(nPortIncoming > 1023);
-
 	m_nPortIncoming = nPortIncoming;
 }
 
@@ -95,20 +129,51 @@ uint16_t OscServer::GetPortOutgoing(void) const {
 
 void OscServer::SetPortOutgoing(uint16_t nPortOutgoing) {
 	assert(nPortOutgoing > 1023);
-
 	m_nPortOutgoing = nPortOutgoing;
 }
 
 void OscServer::SetOutput(LightSet *pLightSet) {
 	assert(pLightSet != 0);
-
 	m_pLightSet = pLightSet;
+}
+
+void OscServer::SetPath(const char* pPath) {
+	if (*pPath == '/') {
+		unsigned length = sizeof(m_aPath) - 3; // We need space for '\0' and "/*"
+		strncpy(m_aPath, pPath, length);
+		length = strlen(m_aPath);
+
+		if (m_aPath[length-1] == '/') {
+			m_aPath[length-1] = '\0';
+		}
+
+		strcpy(m_aPathSecond, m_aPath);
+		length = strlen(m_aPathSecond);
+		m_aPathSecond[length++] = '/';
+		m_aPathSecond[length++] = '*';
+		m_aPathSecond[length] = '\0';
+	}
+
+	DEBUG_PUTS(m_aPath);
+	DEBUG_PUTS(m_aPathSecond);
+}
+
+const char* OscServer::GetPath(void) {
+	return m_aPath;
+}
+
+bool OscServer::IsPartialTransmission(void) const {
+	return m_bPartialTransmission;
+}
+
+void OscServer::SetPartialTransmission(bool bPartialTransmission) {
+	m_bPartialTransmission = bPartialTransmission;
 }
 
 int OscServer::GetChannel(const char* p) {
 	assert(p != 0);
 
-	char *s = (char *)p + 6;
+	char *s = (char *)p + strlen(m_aPath) + 1;
 	int nChannel = 0;
 	int i;
 
@@ -116,33 +181,33 @@ int OscServer::GetChannel(const char* p) {
 		int c = *s;
 
 		if ((c < (int) '0') || (c > (int) '9')) {
-			return 0;
+			return -1;
 		}
 
 		nChannel = nChannel * 10 + c - (int) '0';
 		s++;
 	}
 
-	if (nChannel > 512) {
-		return 0;
+	if (nChannel > DMX_UNIVERSE) {
+		return -1;
 	}
 
 	return nChannel;
 }
 
-const bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStart, uint16_t nLength) {
-	assert(nLength <= 512);
+const bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
+	assert(nLength <= DMX_UNIVERSE);
 
 	bool isChanged = false;
 
 	uint8_t *src = (uint8_t *)pData;
-	uint8_t *dst = (uint8_t *)&m_pData[--nStart];
+	uint8_t *dst = (uint8_t *)&m_pData[--nStartChannel];
 
-	uint16_t nEnd = nStart + nLength;
+	uint16_t nEnd = nStartChannel + nLength;
 
-	assert(nEnd <= 512);
+	assert(nEnd <= DMX_UNIVERSE);
 
-	for (unsigned i = nStart; i < nEnd; i++) {
+	for (unsigned i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
 			*dst = *src;
 			isChanged = true;
@@ -165,113 +230,105 @@ int OscServer::Run(void) {
 	}
 
 	if (OSC::isMatch((const char*) m_pBuffer, "/ping")) {
+		DEBUG_PUTS("ping received");
 		OSCSend MsgSend(nRemoteIp, m_nPortOutgoing, "/pong", 0);
 	} else {
 		OSCMessage Msg((char *) m_pBuffer, nBytesReceived);
-#ifndef NDEBUG
-		printf("path : %s\n", OSC::GetPath((char*) m_pBuffer, nBytesReceived));
-#endif
-		if (OSC::isMatch((const char*) m_pBuffer, "/dmx1/blackout")) {
-			m_IsBlackout = (unsigned)Msg.GetFloat(0) == 1;
 
-			if (m_IsBlackout) {
-#ifndef NDEBUG
-				puts("Handle blackout");
-#endif
-			} else {
-#ifndef NDEBUG
-				puts("Handle undo-blackout");
-#endif
-				m_pLightSet->SetData(0, m_pData, 512);
-			}
-		} else if (OSC::isMatch((const char*) m_pBuffer, "/dmx1/*")) {
+		DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath((char*) m_pBuffer, nBytesReceived));
+
+		if (OSC::isMatch((const char*) m_pBuffer, m_aPath)) {
 			const int nArgc = Msg.GetArgc();
-			const uint16_t nChannel = GetChannel((const char*) m_pBuffer);
-			uint8_t nData;
-#ifndef NDEBUG
-			printf("(First) Channel:%d ", nChannel);
-#endif
-			if (nChannel != 0) {
-				if (nArgc == 1) { // Backwards compatibility
-					if (Msg.GetType(0) == OSC_FLOAT) {
-						nData = (uint8_t) Msg.GetFloat(0);
-#ifndef NDEBUG
-						printf("%d ", (int) nData);
-						puts("Backwards compatibility");
-#endif
-					} else if (Msg.GetType(0) == OSC_INT32) {
-						nData = (uint8_t) Msg.GetInt(0);
-#ifndef NDEBUG
-						printf("%d\n", (int) nData);
-#endif
-					}
-					if (IsDmxDataChanged(&nData, nChannel, 1)) {
-						m_pLightSet->SetData(0, m_pData, 512);
+
+			if ((nArgc == 1) && (Msg.GetType(0) == OSC_BLOB)) {
+				DEBUG_PUTS("Blob received");
+
+				OSCBlob blob = Msg.GetBlob(0);
+				const int size = (int) blob.GetDataSize();
+
+				if (size <= DMX_UNIVERSE) {
+					const uint8_t *ptr = (const uint8_t *) blob.GetDataPtr();
+					if (IsDmxDataChanged(ptr, 1, size)) {
+						if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE)) {
+							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+						} else {
+							m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
+							m_pLightSet->SetData(0, m_pData, m_nLastChannel);
+						}
 					}
 				} else {
-					if ((nChannel + nArgc) <= 513) {
-						for (int i = 0; i < nArgc; i++) {
-							const uint8_t nData = (uint8_t) Msg.GetInt(i);
-							m_pOsc[i] = nData;
-#ifndef NDEBUG
-							printf("%d ", (int) nData);
-#endif
-						}
-#ifndef NDEBUG
-						puts("");
-#endif
-						if (IsDmxDataChanged(m_pOsc	, nChannel, nArgc)) {
-							m_pLightSet->SetData(0, m_pData, 512);
-						}
-					} else { // Too many channels
-#ifndef NDEBUG
-						printf(" -> Too many data items\n");
-#endif
-						return -1;
+					DEBUG_PUTS("Too many channels");
+					return -1;
+				}
+			} else if ((nArgc == 2) && (Msg.GetType(0) == OSC_INT32)) {
+				uint16_t nChannel = (uint16_t) (1 + Msg.GetInt(0));
+
+				if ((nChannel < 1) || (nChannel > DMX_UNIVERSE)) {
+					DEBUG_PRINTF("Invalid channel [%d]", nChannel);
+					return -1;
+				}
+
+				uint8_t nData;
+
+				if (Msg.GetType(1) == OSC_INT32) {
+					DEBUG_PUTS("ii received");
+					nData = (uint8_t) Msg.GetInt(1);
+				} else if (Msg.GetType(1) == OSC_FLOAT) {
+					DEBUG_PUTS("if received");
+					nData = (uint8_t) (Msg.GetFloat(1) * DMX_MAX_VALUE);
+				} else {
+					return -1;
+				}
+
+				DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
+
+				if (IsDmxDataChanged(&nData, nChannel, 1)) {
+					if (!m_bPartialTransmission) {
+						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+					} else {
+						m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
+						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
 					}
 				}
 			}
-
-		} else if (OSC::isMatch((const char*) m_pBuffer, "/dmx1")) {
+		} else if (OSC::isMatch((const char*) m_pBuffer, m_aPathSecond)) {
 			const int nArgc = Msg.GetArgc();
 
-			if (nArgc == 1) { // It must be a BLOB
-				if (Msg.GetType(0) == OSC_BLOB) {
-#ifndef NDEBUG
-					puts("BLOB received");
-#endif
-					OSCBlob blob = Msg.GetBlob(0);
-					const int size = (int) blob.GetSize();
-					if (size <= 512) {
+			if (nArgc == 1) { // /path/N 'i' or 'f'
+				const uint16_t nChannel = GetChannel((const char*) m_pBuffer);
 
-					} else { // Too many channels
-#ifndef NDEBUG
-						printf(" -> Too many data items\n");
-#endif
+				if (nChannel >= 1 && nChannel <= DMX_UNIVERSE) {
+					uint8_t nData;
+
+					if (Msg.GetType(0) == OSC_INT32) {
+						DEBUG_PUTS("i received");
+						nData = (uint8_t) Msg.GetInt(0);
+					} else if (Msg.GetType(0) == OSC_FLOAT) {
+						DEBUG_PUTS("f received");
+						nData = (uint8_t) (Msg.GetFloat(0) * DMX_MAX_VALUE);
+					} else {
 						return -1;
 					}
+
+					DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
+
+					if (IsDmxDataChanged(&nData, nChannel, 1)) {
+						if (!m_bPartialTransmission) {
+							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+						} else {
+							m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
+							m_pLightSet->SetData(0, m_pData, m_nLastChannel);
+						}
+					}
+				} else {
+					return -1;
 				}
 			} else {
-				const uint16_t nFirstChannel = (uint16_t) Msg.GetInt(0);
-#ifndef NDEBUG
-				printf("First channel:%d, ", (int) nFirstChannel);
-#endif
-				for (int i = 1; i < nArgc; i++) {
-					const uint8_t nData = (uint8_t) Msg.GetInt(i);
-					m_pOsc[i-1] = nData;
-#ifndef NDEBUG
-					printf("%d ", (int) nData);
-#endif
-				}
-#ifndef NDEBUG
-				puts("");
-#endif
-				if (IsDmxDataChanged(m_pOsc	, nFirstChannel, nArgc - 1)) {
-					m_pLightSet->SetData(0, m_pData, 512);
-				}
+				return -1;
 			}
 		}
 	}
 
 	return nBytesReceived;
 }
+

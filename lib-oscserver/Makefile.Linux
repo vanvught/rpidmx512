@@ -1,4 +1,6 @@
 #
+#DEFINES = #NDEBUG
+#
 EXTRA_INCLUDES = ../lib-properties/include ../lib-lightset/include ../lib-network/include ../lib-osc/include
 #
 include ../linux-template/lib/Rules.mk

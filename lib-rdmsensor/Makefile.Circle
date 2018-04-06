@@ -10,6 +10,7 @@ INCLUDE	+= -I ../lib-i2c/include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../lib-bob/include
 INCLUDE	+= -I ../lib-hal/include
+INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
 OBJS  = src/rdmsensor.o src/rdmsensors.o

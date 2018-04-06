@@ -7,9 +7,10 @@ CIRCLEHOME = ../Circle
 INCLUDE	+= -I ./include 
 INCLUDE	+= -I ../lib-osc/include
 INCLUDE	+= -I ../lib-lightset/include -I ../lib-network/include -I ../lib-properties/include
+INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
-OBJS = src/oscserver.o 
+OBJS = src/oscserverparams.o src/oscserver.o src/oscserverprint.o
 
 EXTRACLEAN = src/circle/*.o src/*.o 
 

@@ -5,6 +5,7 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
 OBJS	= src/lightset.o src/lightsetchain.o src/lightsetdebug.o

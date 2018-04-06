@@ -60,8 +60,9 @@ OSCSend::OSCSend(const int address, const int port, const char *path, const char
 	va_list ap;
 	va_start(ap, types);
 	OSCSend::AddVarArgs(ap);
+	va_end(ap);
 
-	if (m_Result == 0) {
+	if ((types == 0) || (m_Result == 0)) {
 		OSCSend::Send();
 	}
 }
@@ -69,6 +70,7 @@ OSCSend::OSCSend(const int address, const int port, const char *path, const char
 OSCSend::~OSCSend(void) {
 	if(m_Msg) {
 		delete m_Msg;
+		m_Msg = 0;
 	}
 }
 
@@ -107,8 +109,6 @@ void OSCSend::AddVarArgs(va_list ap) {
 #endif
 		}
 	}
-
-	va_end(ap);
 }
 
 void OSCSend::Send(void) {
@@ -120,5 +120,6 @@ void OSCSend::Send(void) {
 	// Free the memory allocated by m_Msg->Serialise
 	if(pData) {
 		free((void *)pData);
+		pData = 0;
 	}
 }

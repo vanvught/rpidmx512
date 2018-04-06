@@ -2,7 +2,7 @@
  * @file oscmessage.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,16 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
 #ifdef __circle__
-#include <circle/util.h>
+ #include <circle/util.h>
 #elif defined(__linux__) || defined (__CYGWIN__)
-#include <stdio.h>
-#include <string.h>
+ #include <string.h>
 #else
-#include <stdio.h>
-#include "util.h"
+ #include "util.h"
 #endif
 
 #include "oscmessage.h"
@@ -76,16 +75,30 @@ typedef union pcast64 {
 } osc_pcast64;
 
 OSCMessage::OSCMessage(void) :
-		m_Types(0), m_Typelen(1), m_Typesize(OSC_DEF_TYPE_SIZE), m_Data(0), m_Datalen(0), m_Datasize(0), m_Argv(0), m_Result(0) {
-
+	m_Types(0),
+	m_Typelen(1),
+	m_Typesize(OSC_DEF_TYPE_SIZE),
+	m_Data(0),
+	m_Datalen(0),
+	m_Datasize(0),
+	m_Argv(0),
+	m_Result(OSC_MESSAGE_NULL)
+{
 	m_Types = (char *) calloc(OSC_DEF_TYPE_SIZE, sizeof(char));
 	m_Types[0] = ',';
 	m_Types[1] = '\0';
 }
 
 OSCMessage::OSCMessage(void *nData, unsigned nLen) :
-		m_Types(0), m_Typelen(0), m_Typesize(0), m_Data(0), m_Datalen(0), m_Datasize(0), m_Argv(0), m_Result(0) {
-
+	m_Types(0),
+	m_Typelen(0),
+	m_Typesize(0),
+	m_Data(0),
+	m_Datalen(0),
+	m_Datasize(0),
+	m_Argv(0),
+	m_Result(OSC_INTERNAL_ERROR)
+{
 	char *types = 0, *ptr = 0;
 	int i, argc = 0, remain = nLen, len;
 
@@ -187,37 +200,42 @@ OSCMessage::OSCMessage(void *nData, unsigned nLen) :
 		goto fail;
 	}
 
+	m_Result = OSC_OK;
 	return;
 
 	fail: if (m_Types) {
 		free(m_Types);
+		m_Types = 0;
 	}
 
 	if (m_Data) {
 		free(m_Data);
+		m_Data = 0;
 	}
 
 	if (m_Argv) {
 		free(m_Argv);
+		m_Argv = 0;
 	}
 }
-
 
 OSCMessage::~OSCMessage(void) {
 	if (m_Types) {
 		free(m_Types);
+		m_Types = 0;
 	}
 
 	if (m_Data) {
 		free(m_Data);
+		m_Data = 0;
 	}
 
 	if (m_Argv) {
 		free(m_Argv);
+		m_Argv = 0;
 	}
 }
 
-#if ! defined (__circle__)
 void OSCMessage::Dump(void) {
 	printf("types %s\n", m_Types);
 	printf("typelen %u\n", m_Typelen);
@@ -226,13 +244,16 @@ void OSCMessage::Dump(void) {
 	printf("datasize %u\n", m_Datasize);
 
 	printf("data : ");
-	char *p =  (char *)m_Data;
-	for (int i = 0 ; i < (int)m_Datasize; i ++) {
-		printf("%x ",  (uint8_t)p[i]);
+	if (m_Data != 0) {
+		char *p = (char *) m_Data;
+		for (int i = 0; i < (int) m_Datasize; i++) {
+			printf("%x ", (uint8_t) p[i]);
+		}
+		printf("\n");
+	} else {
+		printf("m_Data = 0\n");
 	}
-	printf("\n");
 }
-#endif
 
 int OSCMessage::AddFloat(float a) {
 	osc_pcast32 b;
@@ -312,7 +333,7 @@ int OSCMessage::AddBlob(OSCBlob *pBlob) {
 }
 
 
-int OSCMessage::GetResult(void) {
+int OSCMessage::GetResult(void) const {
 	return m_Result;
 }
 
@@ -329,11 +350,11 @@ osc_type OSCMessage::GetType(unsigned argc) {
 	return (osc_type) m_Types[argc + 1];
 }
 
-char *OSCMessage::getTypes(void) {
+char *OSCMessage::getTypes(void) const {
 	return m_Types;
 }
 
-unsigned OSCMessage::getDataLength(void) {
+unsigned OSCMessage::getDataLength(void) const {
 	return m_Datalen;
 }
 

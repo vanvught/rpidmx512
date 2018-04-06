@@ -1,5 +1,5 @@
 /**
- * @file network.c
+ * @file oscserverprint.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -25,44 +25,12 @@
 
 #include <stdio.h>
 
-#include "network.h"
+#include "oscserver.h"
 
-Network *Network::s_pThis = 0;
-
-Network::Network(void) :
-	m_nLocalIp(0),
-	m_nGatewayIp(0),
-	m_nNetmask(0),
-	m_nBroadcastIp(0),
-	m_IsDhcpUsed(false)
-{
-	s_pThis = this;
-
-	for (unsigned i = 0; i < sizeof(m_aNetMacaddr); i++) {
-		m_aNetMacaddr[i] = 0;
-	}
-}
-
-Network::~Network(void) {
-	m_nLocalIp = 0;
-	m_nGatewayIp = 0;
-	m_nNetmask = 0;
-	m_nBroadcastIp = 0;
-	m_IsDhcpUsed = false;
-
-	s_pThis = 0;
-}
-
-void Network::Print(void) {
-	uint8_t aMacAddress[NETWORK_MAC_SIZE];
-	MacAddressCopyTo(aMacAddress);
-
-	printf("\nNetwork configuration\n");
-	printf(" Hostname   : %s\n", GetHostName());
-	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
-	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(aMacAddress));
-#if !defined (__CYGWIN__)
-	printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-#endif
+void OscServer::Print(void) {
+	printf("\nOSC Server configuration:\n");
+	printf(" Incoming Port        : %d\n", m_nPortIncoming);
+	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
+	printf(" Path                 : [%s][%s]\n", m_aPath, m_aPathSecond);
+	printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
 }
