@@ -56,6 +56,8 @@ public:
 	void SetLEDCount(uint16_t);
 	uint16_t GetLEDCount(void) const;
 
+	void Print(void);
+
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
