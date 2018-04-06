@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>rpi_wifi_osc_dmx</name>
+	<comment></comment>
+	<projects>
+		<project>lib-c++</project>
+		<project>lib-display</project>
+		<project>lib-dmxmonitor</project>
+		<project>lib-dmxsend</project>
+		<project>lib-esp8266</project>
+		<project>lib-fb</project>
+		<project>lib-hal</project>
+		<project>lib-network</project>
+		<project>lib-osc</project>
+		<project>lib-oscserver</project>
+		<project>lib-utils</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<triggers>clean,full,incremental,</triggers>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
+			<triggers>full,incremental,</triggers>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+	</natures>
+</projectDescription>
