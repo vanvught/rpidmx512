@@ -8,7 +8,7 @@
  * Copyright (C) 2014-2016  R. Stange <rsta2@o2online.de>
  * https://github.com/rsta2/circle/blob/master/lib/alloc.cpp
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,13 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <assert.h>
 
 #include "util.h"
 
 //#define MEM_DEBUG
+
 #ifdef MEM_DEBUG
 #include <stdio.h>
 #endif
@@ -62,12 +64,23 @@ struct block_bucket {
 	struct block_header *free_list;
 };
 
-static struct block_bucket s_block_bucket[] = {{0x40}, {0x400}, {0x1000}, {0x4000}, {0x40000}, {0x80000}, {0}};
+static struct block_bucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40}, {0x400}, {0x1000}, {0x4000}, {0x40000}, {0x80000}, {0}};
 
-/**
- *
- * @param size
- */
+size_t get_allocated(void *p) {
+	if (p == 0) {
+		return 0;
+	}
+
+	struct block_header *pBlockHeader = (struct block_header *) ((void *) p - sizeof(struct block_header));
+
+	assert(pBlockHeader->magic == BLOCK_MAGIC);
+	if (pBlockHeader->magic != BLOCK_MAGIC) {
+		return 0;
+	}
+
+	return pBlockHeader->size;
+}
+
 void *malloc(size_t size) {
 	struct block_bucket *bucket;
 	struct block_header *header;
@@ -79,13 +92,11 @@ void *malloc(size_t size) {
 	for (bucket = s_block_bucket; bucket->size > 0; bucket++) {
 		if (size <= bucket->size) {
 			size = bucket->size;
-
 #ifdef MEM_DEBUG
 			if (++bucket->count > bucket->max_count) {
 				bucket->max_count = bucket->count;
 			}
 #endif
-
 			break;
 		}
 	}
@@ -96,7 +107,13 @@ void *malloc(size_t size) {
 	} else {
 		header = (struct block_header *) next_block;
 
-		unsigned char *next = next_block + sizeof(struct block_header) + size;
+		const size_t t1 = sizeof(struct block_header) + size;
+		const size_t t2 = (t1 + (size_t) 15) & ~(size_t) 15;
+
+		unsigned char *next = next_block + t2;
+
+		assert(((unsigned)header & (unsigned)3) == 0);
+		assert(((unsigned)next & (unsigned)3) == 0);
 
 		if (next > block_limit) {
 			return NULL;
@@ -112,13 +129,11 @@ void *malloc(size_t size) {
 #ifdef MEM_DEBUG
 	printf("malloc: pBlockHeader = %p, size = %d\n", header, (int) size);
 #endif
+
+	assert(((unsigned)header->data & (unsigned)3) == 0);
 	return (void *)header->data;
 }
 
-/**
- *
- * @param p
- */
 void free(void *p) {
 	struct block_bucket *bucket;
 
@@ -132,6 +147,7 @@ void free(void *p) {
 	printf("free: pBlockHeader = %p, pBlock = %p\n", header, p);
 #endif
 
+	assert(header->magic == BLOCK_MAGIC);
 	if (header->magic != BLOCK_MAGIC) {
 		return;
 	}
@@ -141,21 +157,14 @@ void free(void *p) {
 
 			header->next = bucket->free_list;
 			bucket->free_list = header;
-
 #ifdef MEM_DEBUG
 			bucket->count--;
 #endif
-
 			break;
 		}
 	}
 }
 
-/**
- *
- * @param n
- * @param size
- */
 void *calloc(size_t n, size_t size) {
 	size_t total;
 	void *p;
@@ -172,41 +181,26 @@ void *calloc(size_t n, size_t size) {
 		return NULL;
 	}
 
-	return memset(p, 0, total);
+	assert(((unsigned)p & (unsigned)3) == 0);
+
+	uint32_t *dst32 = (uint32_t *) p;
+
+	while (total >= 4) {
+		*dst32++ = (uint32_t) 0;
+		total -= 4;
+	}
+
+	uint8_t *dst8 = (uint8_t *) dst32;
+
+	while (total--) {
+		*dst8++ = (uint8_t) 0;
+	}
+
+	assert(((void *)dst8 - (void *)p) == (n * size));
+
+	return (void *) p;
 }
 
-/**
- *
- * @param p
- * @return
- */
-static size_t get_allocated(void *p) {
-	struct block_bucket *bucket;
-
-	if (p == 0) {
-		return 0;
-	}
-
-	struct block_header *pBlockHeader = (struct block_header *) ((void *) p - sizeof(struct block_header));
-
-	if (pBlockHeader->magic != BLOCK_MAGIC) {
-		return 0;
-	}
-
-	for (bucket = s_block_bucket; bucket->size > 0; bucket++) {
-		if (pBlockHeader->size == bucket->size) {
-			break;
-		}
-	}
-
-	return bucket->size;
-}
-
-/**
- *
- * @param ptr
- * @param size
- */
 void *realloc(void *ptr, size_t size) {
 	size_t current_size;
 
@@ -217,7 +211,7 @@ void *realloc(void *ptr, size_t size) {
 
 	if (size == 0) {
 		free(ptr);
-		return 0;
+		return NULL;
 	}
 
 	current_size = get_allocated(ptr);
@@ -229,16 +223,34 @@ void *realloc(void *ptr, size_t size) {
 	void *newblk = malloc(size);
 
 	if (newblk != NULL) {
-		memcpy(newblk, ptr, size);
+		assert(((unsigned )newblk & (unsigned )3) == 0);
+		assert(((unsigned )ptr & (unsigned )3) == 0);
+
+		const uint32_t *src32 = (const uint32_t *) ptr;
+		uint32_t *dst32 = (uint32_t *) newblk;
+
+		size_t count = size;
+
+		while (count >= 4) {
+			*dst32++ = *src32++;
+			count -= 4;
+		}
+
+		const uint8_t *src8 = (const uint8_t *) src32;
+		uint8_t *dst8 = (uint8_t *) dst32;
+
+		while (count--) {
+			*dst8++ = *src8++;
+		}
+
+		assert(((void *)dst8 - (void *)newblk) == size);
+
 		free(ptr);
 	}
 
 	return newblk;
 }
 
-/**
- *
- */
 void mem_info(void) {
 #ifdef MEM_DEBUG
 	struct block_bucket *pBucket;
@@ -249,13 +261,13 @@ void mem_info(void) {
 		printf("malloc(%d): %d blocks (max %d), FreeList %p\n", (unsigned) pBucket->size, (unsigned) pBucket->count, (unsigned) pBucket->max_count, pBucket->free_list);
 		if ((pBlockHeader = pBucket->free_list) != 0) {
 			while (1==1) {
-				printf("\t %p:%p size %u (%p)\n", pBlockHeader, pBlockHeader->data, pBlockHeader->size, pBlockHeader->next);
-				if (pBlockHeader->next == 0)
+				printf("\t %p:%p size %d (%p)\n", pBlockHeader, pBlockHeader->data, pBlockHeader->size, pBlockHeader->next);
+				if (pBlockHeader->next == 0) {
 					break;
+				}
 				pBlockHeader = pBlockHeader->next;
 			}
 		}
 	}
 #endif
 }
-
