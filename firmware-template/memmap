@@ -7,19 +7,19 @@ __ram_start = ORIGIN(ram);
 __ram_size  = LENGTH(ram);
 __ram_end   = __ram_start + __ram_size;
 
-__und_stack_size = 0x10000;
-__abt_stack_size = 0x10000;
-__fiq_stack_size = 0x10000;
-__irq_stack_size = 0x10000;
-__svc_stack_size = 0x10000;
-__sys_stack_size = 0x10000;
+__und_stack_size = 0x08000;
+__abt_stack_size = 0x08000;
+__fiq_stack_size = 0x08000;
+__irq_stack_size = 0x08000;
+__svc_stack_size = 0x20000;
+__sys_stack_size = 0x08000;
 
 SECTIONS
 {
     .init : 
     {
     . = ALIGN(4);
-    *(.init)
+     *(.init)
     } > ram
     
     .text : 
@@ -31,21 +31,16 @@ SECTIONS
     .rodata : 
     {
     . = ALIGN(4);
-	*(.rodata)
-	*(.rodata.*)
-	*(.rodata.str1.4)
-	*(.shstrtab)
-	*(.strtab)
+     *(.rodata*)
     } > ram
 
     .data : 
     {  
     . = ALIGN(4);
 __data_start = . ;    
-	*(SORT(.table*));
-	*(.ahb_sram_0)
-    *(.data)
-	. = ALIGN(4);
+     *(SORT(.table*));
+     *(.data*)
+    . = ALIGN(4);
 __data_end = . ;      
     } > ram
  
@@ -55,7 +50,7 @@ __data_end = . ;
 __bss_start = . ;        
      *(.bss*)
      *(COMMON)
-    . = ALIGN(4);     
+    . = ALIGN(4);
 __bss_end = . ; 
     } > ram
 	
@@ -106,6 +101,7 @@ __svc_stack_top_core2 = .;
 . = . + __svc_stack_size; 
 __svc_stack_top_core3 = .;
 
- . = ALIGN(0x500000);
- heap_low = .; 					/* for _sbrk */
- heap_top = __ram_end; 			/* for _sbrk */
+. = ALIGN(0x500000);
+ heap_low = .;
+ heap_top = __ram_end;
+

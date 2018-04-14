@@ -6,14 +6,14 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-INCLUDES := -I../include -I./include
+INCLUDES := -I./include -I../include -I../lib-debug/include 
 INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES)
 COPS_COMMON += $(INCLUDES)
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
+COPS_COMMON += -Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -72,10 +72,10 @@ $(BUILD)rpi/%.o: $(SOURCE)/rpi/%.c
 	$(CC) $(COPS) $< -c -o $@	
 
 $(BUILD)%.o: $(SOURCE)/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 $< -c -o $@
+	$(CPP) $(COPS) -fno-rtti -std=c++11 -nostdinc++ $< -c -o $@
 
 $(BUILD)rpi/%.o: $(SOURCE)/rpi/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 $< -c -o $@
+	$(CPP) $(COPS) -fno-rtti -std=c++11 -nostdinc++ $< -c -o $@
 
 $(BUILD)%.o: $(SOURCE)/%.S
 	$(AS) $(COPS) -D__ASSEMBLY__ $< -c -o $@	
@@ -95,10 +95,10 @@ $(BUILD7)rpi/%.o: $(SOURCE)/rpi/%.c
 	$(CC) $(COPS7) $< -c -o $@
 	
 $(BUILD7)%.o: $(SOURCE)/%.cpp
-	$(CPP) $(COPS7) -fno-rtti -std=c++11 $< -c -o $@		
+	$(CPP) $(COPS7) -fno-rtti -std=c++11 -nostdinc++ $< -c -o $@		
 
 $(BUILD7)rpi/%.o: $(SOURCE)/rpi/%.cpp
-	$(CPP) $(COPS7) -fno-rtti -std=c++11 $< -c -o $@	
+	$(CPP) $(COPS7) -fno-rtti -std=c++11 -nostdinc++ $< -c -o $@	
 
 $(BUILD7)%.o: $(SOURCE)/%.S
 	$(AS) $(COPS7) -D__ASSEMBLY__ $< -c -o $@	

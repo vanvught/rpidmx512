@@ -63,10 +63,10 @@ _start:
     ldr pc, fiq_handler
 
 reset_handler:		.word reset
-undefined_handler:	.word hang
+undefined_handler:	.word und_undefined_handler
 swi_handler:		.word hang
-prefetch_handler:	.word hang
-data_handler:		.word hang
+prefetch_handler:	.word abort_prefetch_handler
+data_handler:		.word abort_data_handler
 unused_handler:		.word hang
 irq_handler:		.word irq
 fiq_handler:		.word fiq
@@ -102,6 +102,14 @@ reset:
 	ldmia r1!, {r2-r9}
 	stmia r0!, {r2-r9}
 
+    msr CPSR_c,#MODE_ABT|I_BIT|F_BIT 	@ Abort Mode
+    ldr r0, =__abt_stack_top
+    mov sp, r0
+
+    msr CPSR_c,#MODE_UND|I_BIT|F_BIT 	@ Undefined Mode
+    ldr r0, =__und_stack_top
+    mov sp, r0
+
     msr CPSR_c,#MODE_IRQ|I_BIT|F_BIT 	@ IRQ Mode
     ldr r0, =__irq_stack_top
     mov sp, r0
@@ -127,26 +135,45 @@ reset:
 #if defined ( ENABLE_MMU )
 	bl mmu_enable
 #else
-    @ start L1 chache
-    mrc p15, 0, r0, c1, c0, 0
-    orr r0,r0,#0x0004					@ Data Cache (Bit 2)
-    orr r0,r0,#0x0800					@ Branch Prediction (Bit 11)
-    orr r0,r0,#0x1000					@ Instruction Caches (Bit 12)
-    mcr p15, 0, r0, c1, c0, 0
+	@ start L1 chache
+	mrc p15, 0, r0, c1, c0, 0
+	orr r0,r0,#0x0004			@ Data Cache (Bit 2)
+	orr r0,r0,#0x0800			@ Branch Prediction (Bit 11)
+	orr r0,r0,#0x1000			@ Instruction Caches (Bit 12)
+	mcr p15, 0, r0, c1, c0, 0
 #endif
 
 	bl hardware_init
-
     bl notmain
 halt:
 	wfe
 	b halt
 
+und_undefined_handler:
+@	msr   CPSR_c, #MODE_SVC		@ Switch to SVC mode so we can the retrieve the orignal lr
+	mov   r0, #0				@ Set type parameter
+	sub   r1, lr, #4;			@ Set address parameter
+								@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
+   	b    debug_exception			@ Call the debug_exception function - does not return
+
+abort_prefetch_handler:
+	msr   CPSR_c, #MODE_SVC		@ Switch to SVC mode so we can the retrieve the orignal lr
+	mov   r0, #1				@ Set type parameter
+	sub   r1, lr, #4;			@ Set address parameter
+								@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
+   	b    debug_exception			@ Call the debug_exception function - does not return
+
+abort_data_handler:
+	mov   r0, #2				@ Set type parameter
+	sub   r1, lr, #8;			@ Set address parameter
+								@ Subtracting 8 adjusts for the instruction queue giving the address of the instruction that caused this exception
+	b    debug_exception			@ Call to the debug_exception function  - does not return
+
 irq:
-    b c_irq_handler			@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
+    b c_irq_handler				@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)
 
 fiq:
-    b c_fiq_handler			@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
+    b c_fiq_handler				@ void __attribute__((interrupt("FIQ"))) c_fiq_handler(void)
 
 FUNC hang
     b hang
@@ -183,15 +210,7 @@ FUNC _init_core
     ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
 4:	mov sp, r0
 
-    @ Enable fpu
-    mrc p15, 0, r0, c1, c0, 2			@ Read Coprocessor Access Control Register
-    orr r0,r0,#0x300000 				@ bit 20/21, Full Access, CP10
-    orr r0,r0,#0xC00000 				@ bit 22/23, Full Access, CP11
-    mcr p15, 0, r0, c1, c0, 2			@ Write Coprocessor Access Control Register
-    isb
-    mov r0,#0x40000000
-    vmsr fpexc, r0
-
+	bl vfp_init
 	bl mmu_enable
 
 	ldr r3, =smp_core_main

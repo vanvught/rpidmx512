@@ -3,6 +3,8 @@
 	<name>lib-debug</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
+		<project>lib-fb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
