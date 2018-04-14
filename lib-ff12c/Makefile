@@ -1,6 +1,6 @@
 ARMGNU ?= arm-none-eabi
 
-COPS_COMMON = -std=c99 -pedantic -Wall -O3 -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
+COPS_COMMON = -std=c99 -pedantic -Wall -O2 -nostdlib -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -18,8 +18,8 @@ BUILD7 = build7/
 OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
 OBJECTS7 := $(patsubst $(SOURCE)/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD7)%.o,$(wildcard $(SOURCE)/option/*.c))
 
-TARGET = lib/libff11.a 
-TARGET7 = lib7/libff11.a
+TARGET = lib/libff12c.a 
+TARGET7 = lib7/libff12c.a
 
 LIST = lib.list
 LIST7 = lib7.list

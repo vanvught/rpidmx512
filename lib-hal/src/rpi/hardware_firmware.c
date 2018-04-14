@@ -31,29 +31,15 @@ static const char BROADCOM_COPYRIGHT[] __attribute__((aligned(4))) = "Copyright 
 static const uint8_t BROADCOM_COPYRIGHT_LENGTH = (sizeof(BROADCOM_COPYRIGHT) / sizeof(BROADCOM_COPYRIGHT[0])) - 1;	///< Length of \ref BROADCOM_COPYRIGHT
 
 
-/**
- * @ingroup hal
- *
- * @return
- */
-const int32_t hardware_firmware_get_revision(void) {
+int32_t hardware_firmware_get_revision(void) {
 	return bcm2835_vc_get_get_firmware_revision();
 }
 
-/**
- * @ingroup hal
- *
- * @return
- */
 /*@shared@*/const char *hardware_firmware_get_copyright(void) {
 	return BROADCOM_COPYRIGHT;
 }
 
-/**
- * @ingroup hal
- *
- * @return
- */
-const uint8_t hardware_firmware_get_copyright_length(void) {
+uint8_t hardware_firmware_get_copyright_length(void) {
 	return BROADCOM_COPYRIGHT_LENGTH;
 }
+

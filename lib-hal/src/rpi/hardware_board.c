@@ -75,7 +75,7 @@ struct _hardware_revision_code {
 
 static const char soc_name[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 
-const int32_t hardware_board_get_model_id(void) {
+int32_t hardware_board_get_model_id(void) {
 	return bcm2835_vc_get_get_board_revision();
 }
 
@@ -98,7 +98,7 @@ const int32_t hardware_board_get_model_id(void) {
 	return board_version[0].name;
 }
 
-const uint8_t hardware_board_get_model_length(void) {
+uint8_t hardware_board_get_model_length(void) {
 	return MAX_NAME_LENGTH;
 }
 

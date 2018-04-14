@@ -6,7 +6,7 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += hal network esp8266 display uuid properties c++ utils fb ff11 emmc bob i2c bcm2835
+LIBS += hal network esp8266 display uuid properties c++ utils debug fb ff12c emmc bob i2c bcm2835
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -38,7 +38,7 @@ LIB7DEP := $(addsuffix .a, $(LIB7DEP))
 
 COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -Wall -Werror -O3 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS_COMMON += -Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
 COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS += -DRPI1
@@ -80,7 +80,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS) -c $$< -o $$@	
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS) -c $$< -o $$@	
 endef
 
 define compile-objects7
@@ -88,7 +88,7 @@ $(BUILD7)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS7) -c $$< -o $$@		
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS7) -c $$< -o $$@		
 endef
 
 THISDIR = $(CURDIR)

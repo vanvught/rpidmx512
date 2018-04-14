@@ -36,29 +36,33 @@
 struct hardware_time {
 	uint8_t second;		///< Seconds.		[0-59]
 	uint8_t minute;		///< Minutes.		[0-59]
-	uint8_t hour;		///< Hours.			[0-23]
-	uint8_t day;		///< Day.		 	[1-31]
-	uint8_t month;		///< Month.			[1-12]
-	uint16_t year;		///< Year			[1970-....]
+	uint8_t hour;		///< Hours.		[0-23]
+	uint8_t day;		///< Day.	 	[1-31]
+	uint8_t month;		///< Month.		[1-12]
+	uint16_t year;		///< Year		[1970-....]
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void hardware_init(void);
 extern void hardware_reboot(void);
 extern void hardware_led_init(void);
 extern void hardware_led_set(const int);
-extern const uint64_t hardware_uptime_seconds(void);
-extern const int32_t hardware_firmware_get_revision(void);
+
+extern uint64_t hardware_uptime_seconds(void);
+
+extern int32_t hardware_firmware_get_revision(void);
 extern /*@shared@*/const char *hardware_firmware_get_copyright(void);
-extern const uint8_t hardware_firmware_get_copyright_length(void);
-extern const int32_t hardware_board_get_model_id(void);
+extern uint8_t hardware_firmware_get_copyright_length(void);
+
+extern int32_t hardware_board_get_model_id(void);
 extern /*@shared@*/const char *hardware_board_get_model(void);
-extern const uint8_t hardware_board_get_model_length(void);
+extern uint8_t hardware_board_get_model_length(void);
 extern /*@shared@*/const char *hardware_board_get_soc(void);
-extern const int32_t hardware_get_core_temperature(void);
+
+extern int32_t hardware_get_core_temperature(void);
+
 extern void hardware_rtc_set(const struct hardware_time *);
 
 /*@unused@*/inline static uint32_t hardware_micros(void) {

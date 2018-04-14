@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <time.h>
 
 #include "c/sys_time.h"
@@ -50,7 +51,7 @@ static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 static FATFS fat_fs;		/* File system object */
 
-const uint64_t hardware_uptime_seconds(void) {
+uint64_t hardware_uptime_seconds(void) {
 	return (uint64_t) (bcm2835_st_read() - hardware_init_startup_micros) / (uint64_t) 1000000;
 }
 
@@ -62,7 +63,7 @@ void hardware_led_set(const int state) {
 	_hardware_led_f.set(state);
 }
 
-const int32_t hardware_get_core_temperature(void) {
+int32_t hardware_get_core_temperature(void) {
 	return bcm2835_vc_get_temperature() / 1000;
 }
 
@@ -86,10 +87,13 @@ void hardware_init(void) {
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
 
-#if (_FFCONF == 82786)	/* R0.09b */
-	(void) f_mount((BYTE) 0, &fat_fs);
-#elif (_FFCONF == 32020)/* R0.11 */
-	(void) f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
+#if (_FFCONF == 68300)/*R0.12c *//* 32020 R0.11 */
+	FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
+	if (result != FR_OK) {
+		char buffer[32];
+		snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
+		console_error(buffer);
+	}
 #else
 #error Not a recognized/tested FatFs version
 #endif

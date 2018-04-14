@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-fb/include ../lib-ff11/src
+EXTRA_INCLUDES = ../lib-fb/include ../lib-ff12c/src
 #
 include ../firmware-template/lib/Rules.mk
