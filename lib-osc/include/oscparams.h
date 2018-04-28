@@ -2,7 +2,7 @@
  * @file oscparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,14 +34,18 @@ public:
 	~OSCParams(void);
 
 	bool Load(void);
-
-	uint16_t GetIncomingPort(void) const;
-	uint16_t GetOutgoingPort(void) const;
-
 	void Dump(void);
 
+	inline uint16_t GetIncomingPort(void) {
+		return m_nIncomingPort;
+	}
+
+	inline  uint16_t GetOutgoingPort(void) {
+		return m_nOutgoingPort;
+	}
+
 private:
-	bool IsMaskSet(uint16_t) const;
+	bool isMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -51,7 +55,6 @@ private:
 
 private:
     uint32_t m_bSetList;
-
 	uint16_t m_nIncomingPort;
 	uint16_t m_nOutgoingPort;
 };

@@ -1,0 +1,19 @@
+#
+# Makefile
+#
+
+CIRCLEHOME = ../Circle
+
+INCLUDE	+= -I ./include
+INCLUDE	+= -I ../include
+
+OBJS	= src/debug.o
+
+EXTRACLEAN = src/circle/*.o src/*.o
+
+libdebug.a: $(OBJS)
+	rm -f $@
+	$(AR) cr $@ $(OBJS)
+	$(PREFIX)objdump -D libdebug.a | $(PREFIX)c++filt > libdebug.lst
+
+include $(CIRCLEHOME)/Rules.mk

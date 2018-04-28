@@ -2,7 +2,7 @@
  * @file osc.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,12 +111,23 @@ typedef enum {
 } osc_type;
 
 #ifdef __cplusplus
+
+#include "oscstring.h"
+
+extern "C" {
+extern int lo_pattern_match(const char *, const char *);
+}
+
 class OSC {
 
 public:
-	static char *GetPath(void *, unsigned);
-	static bool isMatch(const char *, const char *);
-	static int StrSize(const char *);
+	inline static char *GetPath(void *p, unsigned size) {
+		return (OSCString::Validate(p, size) >= 4) ? (char *) p : 0;
+	}
+
+	inline static bool isMatch(const char *str, const char *p) {
+		return lo_pattern_match(str, p) == 0 ? false : true;
+	}
 };
 }
 #endif

@@ -34,7 +34,11 @@
 #if !defined (__CYGWIN__)
  #include <sys/reboot.h>
 #endif
-#include <sys/sysinfo.h>
+#if defined (__APPLE__)
+ #include <sys/sysctl.h>
+#else
+ #include <sys/sysinfo.h>
+#endif
 #include <sys/utsname.h>
 
 #include "hardwarelinux.h"
@@ -54,6 +58,8 @@ HardwareLinux::HardwareLinux(void):
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
 	m_tBoardType(BOARD_TYPE_LINUX)
+#elif defined (__APPLE__)
+	m_tBoardType(BOARD_TYPE_OSX)
 #else
 	m_tBoardType(BOARD_TYPE_UNKNOWN)
 #endif
@@ -91,18 +97,26 @@ HardwareLinux::HardwareLinux(void):
 	printf("m_tBoardType=%d\n", (int) m_tBoardType);
 #endif
 
-#if defined (__linux__)
+
 	{ // Board Name
+#if defined (__APPLE__)
+		const char cat[] = "sysctl -n hw.model";
+		ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
+#elif defined (__linux__)
 		const char cat[] = "cat /sys/firmware/devicetree/base/model";
 		if (!ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName))) {
 			const char cat[] = "cat /sys/class/dmi/id/board_name";
 			ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
 		}
-	}
 #endif
+	}
 
 	{ // CPU Name
+#if defined (__APPLE__)
+		const char cmd[] = "sysctl -n machdep.cpu.brand_string";
+#else
 		const char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
+#endif
 		ExecCmd(cmd, m_aCpuName, sizeof(m_aCpuName));
 	}
 
@@ -177,6 +191,20 @@ uint32_t HardwareLinux::GetBoardId(void) {
 }
 
 uint64_t HardwareLinux::GetUpTime(void) {
+#if defined (__APPLE__)
+	struct timeval boottime;
+	size_t len = sizeof(boottime);
+	int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+
+	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0 ) {
+		return 0;
+	}
+
+	time_t bsec = boottime.tv_sec;
+	time_t csec = time(NULL);
+
+	return difftime(csec, bsec);
+#else
 	struct sysinfo s_info;
 	int error = sysinfo(&s_info);
 
@@ -185,6 +213,7 @@ uint64_t HardwareLinux::GetUpTime(void) {
 	}
 
 	return (uint64_t) s_info.uptime;
+#endif
 }
 
 bool HardwareLinux::SetTime(const struct THardwareTime& pTime) {
@@ -208,7 +237,7 @@ void HardwareLinux::GetTime(struct THardwareTime* pTime) {
 }
 
 bool HardwareLinux::Reboot(void) {
-#if defined (__CYGWIN__)
+#if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
 	if(geteuid() == 0) {
@@ -228,7 +257,7 @@ bool HardwareLinux::Reboot(void) {
 }
 
 bool HardwareLinux::PowerOff(void) {
-#if defined (__CYGWIN__)
+#if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
 	if(geteuid() == 0) {
@@ -332,5 +361,9 @@ uint32_t HardwareLinux::Millis(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
+#if defined (__APPLE__)
+	return (tv.tv_sec * (__darwin_time_t) 1000) + (tv.tv_usec / (__darwin_suseconds_t) 1000);
+#else
 	return (tv.tv_sec * (__time_t) 1000) + (tv.tv_usec / (__suseconds_t) 1000);
+#endif
 }

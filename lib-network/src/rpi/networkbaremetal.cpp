@@ -58,11 +58,15 @@ void NetworkBaremetal::End(void) {
 }
 
 void NetworkBaremetal::Init(void) {
-	struct ip_info info;;
+	struct ip_info info;
+
+	if (!wifi(&info)) {
+		for (;;)
+			;
+	}
 
 	_hostname = (char *)wifi_get_hostname();
 	(void) wifi_get_macaddr(_net_macaddr);
-	(void) wifi_get_ip_info(&info);
 
 	m_nLocalIp = info.ip.addr;
 	m_nNetmask = info.netmask.addr;
@@ -97,3 +101,10 @@ uint16_t NetworkBaremetal::RecvFrom(const uint8_t* packet, uint16_t size,	uint32
 void NetworkBaremetal::SendTo(const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
 }
+
+void NetworkBaremetal::SetIp(uint32_t ip) {
+
+    m_IsDhcpUsed = false;
+    m_nLocalIp = ip;
+}
+

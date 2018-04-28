@@ -39,22 +39,12 @@ Display *Display::s_pThis = 0;
 
 Display::Display(void): m_nCols(0), m_nRows(0), m_tType(DISPLAY_TYPE_UNKNOWN), m_LcdDisplay(0) {
 	s_pThis = this;
-#if defined (RASPPI) || defined (BARE_METAL)
 	Detect(16,2);
-#else
-#endif
 }
 
 Display::Display(const uint8_t nCols, const uint8_t nRows) {
 	s_pThis = this;
-#if defined (RASPPI) || defined (BARE_METAL)
 	Detect(nCols, nRows);
-#else
-	m_nCols = nCols;
-	m_nRows = nRows;
-	m_tType = DISPLAY_TYPE_UNKNOWN;
-	m_LcdDisplay = 0;
-#endif
 }
 
 Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDisplay(0) {
@@ -149,7 +139,7 @@ void Display::Cls(void) {
 	m_LcdDisplay->Cls();
 }
 
-void Display::TextLine(const uint8_t nLine, const char *pText, const uint8_t nLength) {
+void Display::TextLine(const uint8_t nLine, const char *pText, uint8_t nLength) {
 	if (m_LcdDisplay == 0) return;
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
@@ -178,15 +168,15 @@ uint8_t Display::Printf(const uint8_t nLine, const char *format, ...) {
 	return i;
 }
 
-const bool Display::isDetected(void) {
+bool Display::isDetected(void) const {
 	return m_LcdDisplay == 0 ? false : true;
 }
 
-const TDisplayTypes Display::GetDetectedType(void) {
+TDisplayTypes Display::GetDetectedType(void) const {
 	return m_tType;
 }
 
-uint8_t Display::Write(const uint8_t nLine, const char *pText) {
+uint8_t Display::Write(uint8_t nLine, const char *pText) {
 	const char *p = pText;
 
 	if (m_LcdDisplay == 0) return 0;
@@ -202,17 +192,17 @@ uint8_t Display::Write(const uint8_t nLine, const char *pText) {
 	return (uint8_t) nLength;
 }
 
-void Display::SetCursor(const TCursorMode constEnumTCursorOnOff) {
+void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
 	if (m_LcdDisplay == 0) return;
 	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
 
-void Display::SetCursorPos(const uint8_t col, const uint8_t row) {
+void Display::SetCursorPos(uint8_t col, uint8_t row) {
 	if (m_LcdDisplay == 0) return;
 	m_LcdDisplay->SetCursorPos(col, row);
 }
 
-void Display::PutChar(const int c) {
+void Display::PutChar(int c) {
 	if (m_LcdDisplay == 0) return;
 	m_LcdDisplay->PutChar(c);
 }
@@ -222,7 +212,7 @@ void Display::PutString(const char *pText) {
 	m_LcdDisplay->PutString(pText);
 }
 
-void Display::ClearLine(const uint8_t nLine) {
+void Display::ClearLine(uint8_t nLine) {
 	if (m_LcdDisplay == 0) return;
 	m_LcdDisplay->ClearLine(nLine);
 }

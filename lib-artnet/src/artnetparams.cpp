@@ -2,7 +2,7 @@
  * @file artnetparams.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,21 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#if defined (__circle__)
-#include <circle/logger.h>
-#include <circle/stdarg.h>
-#include <circle/util.h>
-#include <circle/time.h>
-#define ALIGNED
-#elif defined (__linux__) || defined (__CYGWIN__)
-#define ALIGNED
-#include <string.h>
-#include <time.h>
+#if defined (BARE_METAL)
+ #include <time.h>
+ #include "util.h"
+#elif defined (__circle__)
+ #include <circle/logger.h>
+ #include <circle/stdarg.h>
+ #include <circle/util.h>
+ #include <circle/time.h>
 #else
-#include <time.h>
-#include "util.h"
+ #include <time.h>
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "artnetparams.h"
@@ -310,7 +312,7 @@ void ArtNetParams::Dump(void) {
 		return;
 	}
 
-	printf("Node params \'%s\':\n", PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if(isMaskSet(SET_SHORT_NAME_MASK)) {
 		printf(" Short name : [%s]\n", m_aShortName);
@@ -389,24 +391,3 @@ uint16_t ArtNetParams::HexUint16(const char *s) const {
 	return ret;
 }
 
-#if defined (__circle__)
-void ArtNetParams::printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, fmt);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	va_list var;
-	va_start(var, fmt);
-
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-	va_end(var);
-}
-#endif

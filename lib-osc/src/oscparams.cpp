@@ -27,16 +27,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#if defined (__circle__)
-#include <circle/logger.h>
-#include <circle/stdarg.h>
-#include <circle/util.h>
-#define ALIGNED
-#elif defined (__linux__) || defined (__CYGWIN__)
-#include <string>
-#define ALIGNED
+#if defined (BARE_METAL)
+ #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
 #else
-#include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "oscparams.h"
@@ -100,25 +100,16 @@ void OSCParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
-	if (IsMaskSet(SET_INCOMING_PORT_MASK)) {
+	if (isMaskSet(SET_INCOMING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_INCOMING_PORT, (int) m_nIncomingPort);
 	}
 
-	if (IsMaskSet(SET_OUTGOING_PORT_MASK)) {
+	if (isMaskSet(SET_OUTGOING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_OUTGOING_PORT, (int) m_nOutgoingPort);
 	}
 #endif
 }
 
-uint16_t OSCParams::GetIncomingPort(void) const {
-	return m_nIncomingPort;
-}
-
-uint16_t OSCParams::GetOutgoingPort(void) const {
-	return m_nOutgoingPort;
-}
-
-bool OSCParams::IsMaskSet(uint16_t mask) const {
+bool OSCParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
-

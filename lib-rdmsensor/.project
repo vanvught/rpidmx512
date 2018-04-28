@@ -4,7 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>lib-bob</project>
-		<project>lib-hardware</project>
+		<project>lib-hal</project>
 		<project>lib-i2c</project>
 		<project>lib-properties</project>
 		<project>lib-rdm</project>

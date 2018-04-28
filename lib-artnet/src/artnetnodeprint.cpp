@@ -37,10 +37,10 @@ void ArtNetNode::Print(void) {
 	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = GetSoftwareVersion();
 	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name   : %s\n", GetShortName());
-	printf(" Long name    : %s\n", GetLongName());
-	printf(" Net          : %d\n", GetNetSwitch());
-	printf(" Sub-Net      : %d\n", GetSubnetSwitch());
+	printf(" Short name   : %s\n", m_Node.ShortName);
+	printf(" Long name    : %s\n", m_Node.LongName);
+	printf(" Net          : %d\n", m_Node.NetSwitch);
+	printf(" Sub-Net      : %d\n", m_Node.SubSwitch);
 	printf(" Universe     : %d\n", GetUniverseSwitch(0));
-	printf(" Active ports : %d\n", GetActiveOutputPorts());
+	printf(" Active ports : %d\n", m_State.nActivePorts);
 }

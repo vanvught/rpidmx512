@@ -27,13 +27,16 @@
 #include <stdio.h>
 #include <assert.h>
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
-#elif defined(__circle__)
-#include "circle/util.h"
-#else
+#if defined (BARE_METAL)
  #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #ifndef MAX
@@ -446,7 +449,7 @@ void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 	struct TRDMDeviceInfo *pDeviceInfoOut = (struct TRDMDeviceInfo *)pRdmDataOut->param_data;
 
 	pRdmDataOut->param_data_length = sizeof(struct TRDMDeviceInfo);
-	(void *) memcpy(pDeviceInfoOut, pRdmDeviceInfoRequested, sizeof(struct TRDMDeviceInfo));
+	memcpy(pDeviceInfoOut, pRdmDeviceInfoRequested, sizeof(struct TRDMDeviceInfo));
 
 	RespondMessageAck();
 }

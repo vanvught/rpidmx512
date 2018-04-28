@@ -10,14 +10,16 @@
  #include <stdio.h>
 #endif
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #elif defined(__circle__)
- #define ALIGNED
  #include "circle/util.h"
 #else
- #include "util.h"
+  #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "rdmslotinfo.h"

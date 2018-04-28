@@ -28,12 +28,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#ifdef __circle__
- #include <circle/util.h>
-#elif defined(__linux__) || defined (__CYGWIN__)
- #include <string.h>
-#else
+#if defined (BARE_METAL)
  #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "oscmessage.h"
@@ -464,9 +468,6 @@ void *OSCMessage::Serialise(const char *path, void *to, unsigned * size) {
 }
 
 signed OSCMessage::ArgValidate(osc_type type, void *data, unsigned size) {
-	if (size < 0) {
-		return -1;
-	}
 
 	switch (type) {
 	case OSC_TRUE:

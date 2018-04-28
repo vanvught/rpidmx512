@@ -30,20 +30,25 @@
 #endif
 #include <assert.h>
 
-#if defined(__linux__) || defined (__CYGWIN__)
-#include <string.h>
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#if defined(BARE_METAL)
+ #include "util.h"
 #else
-#include "util.h"
+ #include <string.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
 #endif
 
+#ifndef MAX
+ #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
+ #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
+#endif
 #include "e131.h"
 #include "e131packets.h"
 #include "e131bridge.h"
 
 #include "lightset.h"
+
 
 #include "hardware.h"
 #include "network.h"
@@ -126,7 +131,7 @@ void E131Bridge::SetOutput(LightSet *pLightSet) {
 	m_pLightSet = pLightSet;
 }
 
-const uint16_t E131Bridge::getUniverse() {
+uint16_t E131Bridge::getUniverse() const{
 	return m_nUniverse;
 }
 
@@ -156,7 +161,7 @@ void E131Bridge::setSourceName(const char aSourceName[E131_SOURCE_NAME_LENGTH]) 
 	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
 }
 
-const TMerge E131Bridge::getMergeMode(void) {
+TMerge E131Bridge::getMergeMode(void) const {
 	return m_OutputPort.mergeMode;
 }
 
@@ -192,7 +197,7 @@ void E131Bridge::FillDiscoveryPacket(void) {
 	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = __builtin_bswap16(m_nUniverse);
 }
 
-const bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
+bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
 	uint8_t *src = (uint8_t *)pData;
@@ -218,7 +223,7 @@ const bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLe
 	return isChanged;
 }
 
-const bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
+bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
 	bool isChanged = false;
 
 	if (m_OutputPort.mergeMode == E131_MERGE_HTP) {
@@ -261,7 +266,7 @@ void E131Bridge::CheckMergeTimeouts(void) {
 	}
 }
 
-const bool E131Bridge::IsPriorityTimeOut(void) {
+bool E131Bridge::IsPriorityTimeOut(void) {
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort.sourceA.time;
 	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort.sourceB.time;
 
@@ -284,7 +289,7 @@ const bool E131Bridge::IsPriorityTimeOut(void) {
 	return false;
 }
 
-const bool E131Bridge::isIpCidMatch(const struct TSource *source) {
+bool E131Bridge::isIpCidMatch(const struct TSource *source) {
 	if (source->ip != m_E131.IPAddressFrom) {
 		return false;
 	}
@@ -482,7 +487,7 @@ void E131Bridge::SendDiscoveryPacket(void) {
 	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
-const bool E131Bridge::IsValidRoot(void) {
+bool E131Bridge::IsValidRoot(void) {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
 	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, 12) != 0) {
@@ -497,7 +502,7 @@ const bool E131Bridge::IsValidRoot(void) {
 	return true;
 }
 
-const bool E131Bridge::IsValidDataPacket(void) {
+bool E131Bridge::IsValidDataPacket(void) {
 	// Frame layer
 
 	// 8.2 Association of Multicast Addresses and Universe

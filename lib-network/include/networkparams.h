@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,27 @@ public:
 	~NetworkParams(void);
 
 	bool Load(void);
-
-	bool isDhcpUsed(void) const;
-	uint32_t GetIpAddress(void) const;
-	uint32_t GetNetMask(void) const;
-	uint32_t GetDefaultGateway(void) const;
-	uint32_t GetNameServer(void) const;
-
 	void Dump(void);
+
+	inline bool isDhcpUsed(void) {
+		return m_bIsDhcpUsed;
+	}
+
+	inline uint32_t GetIpAddress(void) {
+		return m_nLocalIp;
+	}
+
+	inline uint32_t GetNetMask(void) {
+		return m_nNetmask;
+	}
+
+	inline uint32_t GetDefaultGateway(void) {
+		return m_nGatewayIp;
+	}
+
+	inline uint32_t GetNameServer(void) {
+		return m_nNameServerIp;
+	}
 
 private:
 	bool isMaskSet(uint16_t) const;

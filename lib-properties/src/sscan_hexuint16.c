@@ -25,13 +25,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <assert.h>
-
-#if defined(__linux__) || defined (__CYGWIN__)
 #include <ctype.h>
-#else
-#include "util.h"
-#endif
+#include <assert.h>
 
 #include "sscan.h"
 

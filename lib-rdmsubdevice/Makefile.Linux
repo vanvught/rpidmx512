@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-bob/include ../lib-i2c/include ../lib-hardware/include
+EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-bob/include ../lib-hardware/include
 #
 include ../linux-template/lib/Rules.mk

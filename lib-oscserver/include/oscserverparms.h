@@ -41,18 +41,27 @@ public:
 	~OSCServerParams(void);
 
 	bool Load(void);
-
-	uint16_t GetIncomingPort(void) const;
-	uint16_t GetOutgoingPort(void) const;
-	bool GetPartialTransmission(void) const;
-	TOutputType GetOutputType(void) const;
-
 	void Set(OscServer *pOscServer);
-
 	void Dump(void);
 
+	inline uint16_t GetIncomingPort(void) {
+		return m_nIncomingPort;
+	}
+
+	inline uint16_t GetOutgoingPort(void) {
+		return m_nOutgoingPort;
+	}
+
+	inline bool GetPartialTransmission(void) {
+		return m_bPartialTransmission;
+	}
+
+	inline TOutputType GetOutputType(void) {
+		return m_tOutputType;
+	}
+
 private:
-	bool IsMaskSet(uint16_t) const;
+	bool isMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

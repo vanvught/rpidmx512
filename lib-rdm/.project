@@ -5,7 +5,6 @@
 	<projects>
 		<project>lib-dmx</project>
 		<project>lib-hal</project>
-		<project>lib-hardware</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>

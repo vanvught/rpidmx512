@@ -2,7 +2,7 @@
  * @file e131uuid.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,15 @@
 
 #include "network.h"
 
-#if defined(__linux__) || defined (__CYGWIN__)
-#include <stddef.h>
-#include <string.h>
-#define ALIGNED
+#if defined(BARE_METAL)
+ #include "util.h"
 #else
-#include "util.h"
+ #include <stddef.h>
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 static const char EXT_UID[] ALIGNED = ".uid";
@@ -50,7 +53,7 @@ E131Uuid::~E131Uuid(void) {
 	m_bHaveUuid = false;
 }
 
-const bool E131Uuid::GetHardwareUuid(uuid_t out) {
+bool E131Uuid::GetHardwareUuid(uuid_t out) {
 	char file_name[16];	///< mac:8, .:1 ,uud:3 ,'\0':1
 	uint8_t mac[8];
 	FILE *fp;

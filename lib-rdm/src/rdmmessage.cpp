@@ -27,13 +27,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #elif defined(__circle__)
  #include "circle/util.h"
 #else
- #include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "rdmmessage.h"

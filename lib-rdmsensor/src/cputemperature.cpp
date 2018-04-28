@@ -47,7 +47,7 @@ CpuTemperature::~CpuTemperature(void) {
 }
 
 bool CpuTemperature::Initialize(void) {
-#if defined (__CYGWIN__)
+#if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
 	return true;

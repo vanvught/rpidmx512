@@ -29,14 +29,16 @@
  #include <stdio.h>
 #endif
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #elif defined(__circle__)
- #define ALIGNED
  #include "circle/util.h"
 #else
- #include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "rdmsensors.h"
@@ -44,7 +46,9 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "cputemperature.h"
+#if !defined (__CYGWIN__) && !defined (__APPLE__)
+ #include "cputemperature.h"
+#endif
 
 #if defined (RASPPI) || defined(BARE_METAL) || defined(__circle__)
 #include "i2c.h"
@@ -63,14 +67,14 @@ static const char SENSORS_PARAMS_FILE_NAME[] ALIGNED = "sensors.txt";
 #endif
 
 RDMSensors::RDMSensors(void): m_pRDMSensor(0), m_nCount(0) {
-	m_pRDMSensor = new RDMSensor*[0xFE];
-	assert(m_pRDMSensor != 0);
 }
 
 RDMSensors::~RDMSensors(void) {
 	for (unsigned i = 0; i < m_nCount; i++) {
-		delete m_pRDMSensor[i];
-		m_pRDMSensor[i] = 0;
+		if (m_pRDMSensor[i] != 0) {
+			delete m_pRDMSensor[i];
+			m_pRDMSensor[i] = 0;
+		}
 	}
 
 	delete [] m_pRDMSensor;
@@ -79,8 +83,12 @@ RDMSensors::~RDMSensors(void) {
 }
 
 void RDMSensors::Init(void) {
-	Add(new CpuTemperature(m_nCount));
+#if !defined (__CYGWIN__) && !defined (__APPLE__)
+	m_pRDMSensor = new RDMSensor*[0xFE];
+	assert(m_pRDMSensor != 0);
 
+	Add(new CpuTemperature(m_nCount));
+#endif
 #if defined (RASPPI) || defined(BARE_METAL) || defined(__circle__)
 	if(i2c_begin()) {	// We have I2C sensors only
 		ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);

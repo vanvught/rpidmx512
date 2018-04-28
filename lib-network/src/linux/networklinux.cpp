@@ -35,7 +35,58 @@
 #include <errno.h>
 #include <assert.h>
 
+#if defined (__APPLE__)
+ #include <sys/sysctl.h>
+ #include <sys/socket.h>
+ #include <net/if.h>
+ #include <net/if_dl.h>
+
+static bool osx_get_macaddress(const char *if_name, uint8_t *mac_address) {
+	int mib[6] = { CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0 };
+	size_t len;
+	char *buf;
+
+	if ((mib[5] = if_nametoindex(if_name)) == 0) {
+		perror("if_nametoindex error");
+		return false;
+	}
+
+	if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0) {
+		perror("sysctl 1 error");
+		return false;
+	}
+
+	if ((buf = (char *)malloc(len)) == NULL) {
+		perror("malloc error");
+		return false;
+	}
+
+	if (sysctl(mib, 6, buf, &len, NULL, 0) < 0) {
+		perror("sysctl 2 error");
+		free(buf);
+		return false;
+	}
+
+	const struct if_msghdr *ifm = (struct if_msghdr *) buf;
+	const struct sockaddr_dl *sdl = (struct sockaddr_dl *) (ifm + 1);
+	const unsigned char *ptr = (unsigned char *) LLADDR(sdl);
+#ifndef NDEBUG 
+	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", *ptr, *(ptr + 1), *(ptr + 2), *(ptr + 3), *(ptr + 4), *(ptr + 5));
+#endif
+
+	for(unsigned i = 0; i < 6;i++) {
+		mac_address[i] = ptr[i];
+	}
+
+	free(buf);
+
+	return true;
+} 
+#endif
+
 #include "networklinux.h"
+
+
 
 NetworkLinux::NetworkLinux(void): _socket(-1) {
 	for (unsigned i = 0; i < sizeof(_if_name); i++) {
@@ -74,7 +125,7 @@ int NetworkLinux::Init(const char *s) {
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
 	}
-#if !defined (__CYGWIN__)
+#if defined (__linux__)
 	else {
 		m_IsDhcpUsed = is_dhclient(_if_name);
 	}
@@ -155,8 +206,9 @@ void NetworkLinux::End(void) {
 	m_IsDhcpUsed = false;
 }
 
-#if defined(__linux__)
+
 void NetworkLinux::SetIp(uint32_t ip) {
+#if defined(__linux__)
     struct ifreq ifr;
     struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -194,8 +246,8 @@ void NetworkLinux::SetIp(uint32_t ip) {
 
     m_IsDhcpUsed = false;
     m_nLocalIp = ip;
-}
 #endif
+}
 
 void NetworkLinux::JoinGroup(uint32_t ip) {
 	struct ip_mreq mreq;
@@ -347,6 +399,11 @@ int NetworkLinux::if_details(const char *iface) {
 
     m_nNetmask =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
+#if defined (__APPLE__)
+	if(!(osx_get_macaddress(iface,m_aNetMacaddr))) {
+		return -5;
+	}
+#else
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) {
     	perror("ioctl(fd, SIOCGIFHWADDR, &ifr)");
     	close(fd);
@@ -355,6 +412,7 @@ int NetworkLinux::if_details(const char *iface) {
 
 	const uint8_t* mac = (uint8_t*) ifr.ifr_ifru.ifru_hwaddr.sa_data;
 	memcpy(m_aNetMacaddr, mac, NETWORK_MAC_SIZE);
+#endif
 
     close(fd);
 

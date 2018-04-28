@@ -30,13 +30,15 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <time.h>
 
-#if defined (__linux__) || defined (__CYGWIN__)
-#include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #else
-#include "util.h"
+ #include <string.h>
 #endif
 
 #include "artnet.h"

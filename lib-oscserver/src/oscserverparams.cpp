@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <assert.h>
 
-#if defined (__circle__)
- #include <circle/util.h>
-#elif defined (__linux__) || defined (__CYGWIN__)
- #include <string.h>
-#else
+#if defined (BARE_METAL)
  #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include <string.h>
 #endif
 
 #ifndef ALIGNED
@@ -136,19 +136,19 @@ bool OSCServerParams::Load(void) {
 void OSCServerParams::Set(OscServer *pOscServer) {
 	assert(pOscServer != 0);
 
-	if (IsMaskSet(SET_INCOMING_PORT_MASK)) {
+	if (isMaskSet(SET_INCOMING_PORT_MASK)) {
 		pOscServer->SetPortIncoming(m_nIncomingPort);
 	}
 
-	if (IsMaskSet(SET_OUTGOING_PORT_MASK)) {
+	if (isMaskSet(SET_OUTGOING_PORT_MASK)) {
 		pOscServer->SetPortOutgoing(m_nOutgoingPort);
 	}
 
-	if (IsMaskSet(SET_PATH_MASK)) {
+	if (isMaskSet(SET_PATH_MASK)) {
 		pOscServer->SetPath(m_aPath);
 	}
 
-	if (IsMaskSet(SET_TRANSMISSION_MASK)) {
+	if (isMaskSet(SET_TRANSMISSION_MASK)) {
 		pOscServer->SetPartialTransmission(m_bPartialTransmission);
 	}
 }
@@ -161,45 +161,29 @@ void OSCServerParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
-	if (IsMaskSet(SET_INCOMING_PORT_MASK)) {
+	if (isMaskSet(SET_INCOMING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_INCOMING_PORT, (int) m_nIncomingPort);
 	}
 
-	if (IsMaskSet(SET_OUTGOING_PORT_MASK)) {
+	if (isMaskSet(SET_OUTGOING_PORT_MASK)) {
 		printf(" %s=%d\n", PARAMS_OUTGOING_PORT, (int) m_nOutgoingPort);
 	}
 
-	if (IsMaskSet(SET_PATH_MASK)) {
+	if (isMaskSet(SET_PATH_MASK)) {
 		printf(" %s=%s\n", PARAMS_PATH, m_aPath);
 	}
 
-	if (IsMaskSet(SET_TRANSMISSION_MASK)) {
+	if (isMaskSet(SET_TRANSMISSION_MASK)) {
 		printf(" %s=%d\n", PARAMS_TRANSMISSION, m_bPartialTransmission);
 	}
 
-	if (IsMaskSet(SET_OUTPUT_MASK)) {
+	if (isMaskSet(SET_OUTPUT_MASK)) {
 		printf(" %s=%s\n", PARAMS_OUTPUT, m_tOutputType == OUTPUT_TYPE_MONITOR ? "mon" : "dmx");
 	}
 #endif
 }
 
-uint16_t OSCServerParams::GetIncomingPort(void) const {
-	return m_nIncomingPort;
-}
-
-uint16_t OSCServerParams::GetOutgoingPort(void) const {
-	return m_nOutgoingPort;
-}
-
-bool OSCServerParams::GetPartialTransmission(void) const {
-	return m_bPartialTransmission;
-}
-
-TOutputType OSCServerParams::GetOutputType(void) const {
-	return m_tOutputType;
-}
-
-bool OSCServerParams::IsMaskSet(uint16_t mask) const {
+bool OSCServerParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 

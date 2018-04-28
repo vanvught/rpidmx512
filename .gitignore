@@ -14,5 +14,16 @@ lib*.a
 *.lst
 *.map
 *.elf
-Splint*.prefs
+*.prefs
 
+*.txt
+*._txt
+*.txt_
+
+.nfs*
+.nfs.*
+
+.DS*
+._.DS*
+
+._*

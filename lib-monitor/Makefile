@@ -1,4 +1,4 @@
 #
-EXTRA_INCLUDES = ../lib-bcm2835/include ../lib-bob/include ../lib-fb/include ../lib-hal/include ../lib-utils/include
+EXTRA_INCLUDES = ../lib-fb/include ../lib-hal/include ../lib-bcm2835/include 
 #
 include ../firmware-template/lib/Rules.mk

@@ -49,7 +49,9 @@ struct _hardware_led {
 
 static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
-static FATFS fat_fs;		/* File system object */
+#if (_FFCONF == 68300)
+ static FATFS fat_fs;		/* File system object */
+#endif
 
 uint64_t hardware_uptime_seconds(void) {
 	return (uint64_t) (bcm2835_st_read() - hardware_init_startup_micros) / (uint64_t) 1000000;

@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
+		<project>include</project>
 		<project>lib-esp8266</project>
 		<project>lib-properties</project>
 		<project>lib-utils</project>

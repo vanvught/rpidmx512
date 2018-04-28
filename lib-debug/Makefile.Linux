@@ -1,0 +1,5 @@
+#
+DEFINES = NDEBUG
+#
+#
+include ../linux-template/lib/Rules.mk

@@ -33,14 +33,14 @@
 #include <stdio.h>
 #include <assert.h>
 
-#if defined (__circle__)
-#include <circle/util.h>
-#elif defined (__linux__) || defined (__CYGWIN__)
-#include <stdbool.h>
-#include <string.h>
+#if defined (BARE_METAL)
+ #include <stdbool.h>
+ #include "util.h"
+#elif defined (__circle__)
+ #include <circle/util.h>
 #else
-#include <stdbool.h>
-#include "util.h"
+ #include <stdbool.h>
+ #include <string.h>
 #endif
 
 #include "artnetnode.h"

@@ -3,6 +3,7 @@
 	<name>lib-properties</name>
 	<comment></comment>
 	<projects>
+		<project>lib-fb</project>
 		<project>lib-utils</project>
 	</projects>
 	<buildSpec>

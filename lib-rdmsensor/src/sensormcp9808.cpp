@@ -30,12 +30,15 @@
 #endif
 
 #if defined (__linux__)
- #define ALIGNED
  #include <string.h>
 #elif defined(__circle__)
  #include "circle/util.h"
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "sensormcp9808.h"

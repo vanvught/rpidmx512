@@ -3,7 +3,9 @@
 	<name>lib-rdmresponder</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-artnet</project>
+		<project>lib-debug</project>
 		<project>lib-dmxreceiver</project>
 		<project>lib-lightset</project>
 		<project>lib-rdm</project>

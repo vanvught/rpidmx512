@@ -28,13 +28,15 @@
 #include <assert.h>
 
 #if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
  #include <string.h>
 #elif defined(__circle__)
- #define ALIGNED
  #include "circle/util.h"
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "readconfigfile.h"

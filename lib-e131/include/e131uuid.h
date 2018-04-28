@@ -2,7 +2,7 @@
  * @file e131uuid.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ public:
 	E131Uuid(void);
 	~E131Uuid(void);
 
-	const bool GetHardwareUuid(uuid_t out);
+	bool GetHardwareUuid(uuid_t out);
 
 private:
 	bool m_bHaveUuid;

@@ -31,13 +31,16 @@
 
 #include "rdmtod.h"
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
-#elif defined(__circle__)
-#include "circle/util.h"
-#else
+#if defined (BARE_METAL)
  #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 RDMTod::RDMTod(void) : m_entries(0) {

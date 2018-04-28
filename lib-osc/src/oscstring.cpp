@@ -2,7 +2,7 @@
  * @file oscstring.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,16 @@
 #include <stdint.h>
 #include <assert.h>
 
-#ifdef __circle__
-#include <circle/util.h>
-#elif defined(__linux__) || defined (__CYGWIN__)
-#include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
 #else
-#include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "oscstring.h"
@@ -40,10 +44,6 @@
 unsigned OSCString::Validate(void *data, unsigned size) {
 	unsigned i = 0, len = 0;
 	char *pos = (char *) data;
-
-	if (size < 0) {
-		return -OSC_STRING_INVALID_SIZE;
-	}
 
 	for (i = 0; i < size; ++i) {
 		if (pos[i] == '\0') {

@@ -38,14 +38,16 @@
 
  #include "network.h"
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #elif defined(__circle__)
-#define ALIGNED
  #include "circle/util.h"
 #else
- #include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #ifndef MAX
@@ -172,7 +174,7 @@ void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
 
 void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
 	const uint8_t length = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
-	(void *)memcpy(m_aDeviceRootLabel, info->data, length);
+	memcpy(m_aDeviceRootLabel, info->data, length);
 	m_nDeviceRootLabelLength = length;
 }
 
@@ -206,7 +208,7 @@ void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info){
 
 void RDMDevice::SetManufacturerName(const struct TRDMDeviceInfoData *info) {
 	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, info->length);
-	(void *)memcpy(m_aDeviceManufacturerName, info->data, length);
+	memcpy(m_aDeviceManufacturerName, info->data, length);
 	m_nDdeviceManufacturerNameLength = length;
 }
 

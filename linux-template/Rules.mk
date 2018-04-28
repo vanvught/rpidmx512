@@ -44,7 +44,7 @@ LIBDEP := $(addsuffix .a, $(LIBDEP))
 
 COPS = $(DEF) $(DEFINES) #-DNDEBUG
 COPS += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS += -Wall -Werror -O3
+COPS += -Wall -Werror -O2
 
 SOURCE = ./
 
@@ -86,7 +86,7 @@ clean:
 	rm -f $(TARGET)
 
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
-	$(CPP) $(OBJECTS) -Wl,-Map=main.map -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
 	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

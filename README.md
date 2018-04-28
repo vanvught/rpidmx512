@@ -24,8 +24,15 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3.
 
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
 
-## Linux ##
-### DMX / Art-Net 3 / sACN E1.31 / OSC / L6470 / Stepper ###
+# Raspberry Pi Raspbian #
+## Art-Net 3 / sACN E1.31 / OSC / L6470 / Stepper ##
+
+Linux Raspbian **Open Source** solutions:
+
+- **Art-Net 3** L6470 Stepper Motor Controller
+
+# Linux / Cygwin / Mac OS X#
+## Art-Net 3 / sACN E1.31 / OSC##
 
 Linux **Open Source** solutions:
 
@@ -33,6 +40,4 @@ Linux **Open Source** solutions:
 - sACN **E.131** Real-time DMX Monitor
 - **OSC** Real-time Sniffer
 
-Linux **Raspbian Open Source** solutions:
 
-- **Art-Net 3** L6470 Stepper Motor Controller

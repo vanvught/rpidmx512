@@ -35,14 +35,16 @@
 
 #include "rdm_e120.h"
 
-#if defined (__linux__) || defined (__CYGWIN__)
- #define ALIGNED
- #include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #elif defined(__circle__)
- #define ALIGNED
  #include "circle/util.h"
 #else
- #include "util.h"
+ #include <string.h>
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #define DMX_UNIVERSE_SIZE 512
@@ -53,6 +55,8 @@
  static const char DEVICE_LABEL[] ALIGNED = "Cygwin RDM Responder";
 #elif defined (__linux__)
  static const char DEVICE_LABEL[] ALIGNED = "Linux RDM Responder";
+#elif defined (__APPLE__)
+ static const char DEVICE_LABEL[] ALIGNED = "MacOS RDM Responder";
 #else
  static const char DEVICE_LABEL[] ALIGNED = "RDM Responder";
 #endif

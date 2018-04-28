@@ -203,7 +203,7 @@ static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 		SSD1306_CMD_DISPLAY_NORMAL,
 		SSD1306_CMD_DISPLAY_ON };
 
-static uint8_t _ClearBuffer[1025];
+static uint8_t _ClearBuffer[1025] __attribute__((aligned(4)));
 
 Ssd1306 *Ssd1306::s_pThis = 0;
 
@@ -214,14 +214,14 @@ Ssd1306::Ssd1306(void): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledP
 }
 
 
-Ssd1306::Ssd1306(const TOledPanel tOledPanel): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT) {
+Ssd1306::Ssd1306(TOledPanel tOledPanel): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT) {
 	s_pThis = this;
 	m_OledPanel = tOledPanel;
 
 	InitMembers();
 }
 
-Ssd1306::Ssd1306(const uint8_t nSlaveAddress, const TOledPanel tOledPanel) {
+Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) {
 	s_pThis = this;
 
 	if (nSlaveAddress == (uint8_t) 0) {
@@ -331,7 +331,7 @@ void Ssd1306::PutString(const char *pString) {
 	}
 }
 
-void Ssd1306::ClearLine(const uint8_t nLine) {
+void Ssd1306::ClearLine(uint8_t nLine) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -345,7 +345,7 @@ void Ssd1306::ClearLine(const uint8_t nLine) {
 	SetCursorPos(0, nLine - 1);
 }
 
-void Ssd1306::TextLine(const uint8_t nLine, const char *pData, const uint8_t nLength) {
+void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -392,7 +392,7 @@ void Ssd1306::SetCursorPos(uint8_t col, uint8_t row) {
 	}
 }
 
-void Ssd1306::SetCursor(const TCursorMode tCursorMode) {
+void Ssd1306::SetCursor(TCursorMode tCursorMode) {
 	if (tCursorMode == m_tCursorMode) {
 		return;
 	}
@@ -507,12 +507,12 @@ void Ssd1306::InitMembers(void) {
 	memset(m_pShadowRam, ' ', OLED_FONT8x6_COLS * m_nRows);
 }
 
-void Ssd1306::SendCommand(const uint8_t cmd) {
+void Ssd1306::SendCommand(uint8_t cmd) {
 	Setup();
 	i2c_write_reg_uint8(SSD1306_COMMAND_MODE, cmd);
 }
 
-void Ssd1306::SendData(const uint8_t *pData, const uint32_t nLength) {
+void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
 	Setup();
 	i2c_write_nb((const char *) pData, nLength);
 }
@@ -528,5 +528,3 @@ void Ssd1306::DumpShadowRam(void) {
 Ssd1306 *Ssd1306::Get (void) {
 	return s_pThis;
 }
-
-

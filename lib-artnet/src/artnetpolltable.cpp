@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#if defined (__linux__) || defined (__CYGWIN__)
-#include <string.h>
+#if defined (BARE_METAL)
+ #include "util.h"
 #else
-#include "util.h"
+ #include <string.h>
 #endif
 
 #include "artnetpolltable.h"

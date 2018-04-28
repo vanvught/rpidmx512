@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,6 @@
 
 #define UUID_STRING_LENGTH	36
 
-/**
- *
- */
 struct TE131BridgeState {
 	uint8_t nPriority;
 	bool IsNetworkDataLoss;			///<
@@ -49,9 +46,6 @@ struct TE131BridgeState {
 	uint16_t DiscoveryPacketLength;	///<
 };
 
-/**
- *
- */
 struct TSource {
 	uint32_t time;					///< The latest time of the data received from source
 	uint32_t ip;					///< The IP address for source
@@ -60,10 +54,6 @@ struct TSource {
 	uint8_t sequenceNumberData;
 };
 
-/**
- * struct to represent an output port
- *
- */
 struct TOutputPort {
 	uint8_t data[E131_DMX_LENGTH];	///< Data sent
 	uint16_t length;				///< Length of sent DMX data
@@ -73,9 +63,6 @@ struct TOutputPort {
 	struct TSource sourceB;			///<
 };
 
-/**
- *
- */
 class E131Bridge {
 public:
 	E131Bridge(void);
@@ -85,10 +72,10 @@ public:
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	const uint16_t getUniverse(void);
+	uint16_t getUniverse(void) const;
 	void setUniverse(const uint16_t);
 
-	const TMerge getMergeMode(void);
+	TMerge getMergeMode(void) const;
 	void setMergeMode(TMerge);
 
 	const uint8_t *GetCid(void);
@@ -107,15 +94,15 @@ private:
 
 	void FillDiscoveryPacket(void);
 
-	const bool IsValidRoot(void);
-	const bool IsValidDataPacket(void);
+	bool IsValidRoot(void);
+	bool IsValidDataPacket(void);
 
 	void SetNetworkDataLossCondition(void);
 	void CheckMergeTimeouts(void);
-	const bool IsPriorityTimeOut(void);
-	const bool isIpCidMatch(const struct TSource *);
-	const bool IsDmxDataChanged(const uint8_t *, const uint16_t);
-	const bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t );
+	bool IsPriorityTimeOut(void);
+	bool isIpCidMatch(const struct TSource *);
+	bool IsDmxDataChanged(const uint8_t *, const uint16_t);
+	bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t );
 
 	void SendDiscoveryPacket(void);
 

@@ -4,9 +4,11 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
+		<project>include</project>
 		<project>lib-bcm2835</project>
+		<project>lib-bob</project>
 		<project>lib-fb</project>
-		<project>lib-ff11</project>
+		<project>lib-ff12c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

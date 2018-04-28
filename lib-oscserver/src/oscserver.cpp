@@ -27,15 +27,16 @@
 #include <stdio.h>
 #include <assert.h>
 
-#if defined (__circle__)
- #include <circle/util.h>
-#elif defined (__linux__) || defined (__CYGWIN__)
- #include <string.h>
-#else
+#if defined (BARE_METAL)
  #include "util.h"
+#elif defined(__circle__)
+ #include "circle/util.h"
+#else
+ #include <string.h>
 #endif
 
 #include "oscserver.h"
+#include "osc.h"
 #include "oscmessage.h"
 #include "oscsend.h"
 #include "oscblob.h"
@@ -195,12 +196,12 @@ int OscServer::GetChannel(const char* p) {
 	return nChannel;
 }
 
-const bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
+bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
 	assert(nLength <= DMX_UNIVERSE);
 
 	bool isChanged = false;
 
-	uint8_t *src = (uint8_t *)pData;
+	const uint8_t *src = pData;
 	uint8_t *dst = (uint8_t *)&m_pData[--nStartChannel];
 
 	uint16_t nEnd = nStartChannel + nLength;

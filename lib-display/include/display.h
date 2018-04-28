@@ -67,19 +67,19 @@ public:
 	uint8_t Write(uint8_t, const char *);
 	uint8_t Printf(uint8_t, const char *, ...);
 
-	const bool isDetected(void);
-	const TDisplayTypes GetDetectedType(void);
+	bool isDetected(void) const;
+	TDisplayTypes GetDetectedType(void) const;
 
 	void SetCursor(TCursorMode);
 	void SetCursorPos(uint8_t, uint8_t);
 
 	static Display *Get (void);
 
-	uint8_t getNCols() const {
+	inline uint8_t getNCols(void)  {
 		return m_nCols;
 	}
 
-	uint8_t getNRows() const {
+	inline uint8_t getNRows(void) {
 		return m_nRows;
 	}
 

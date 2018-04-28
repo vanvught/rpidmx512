@@ -68,7 +68,7 @@ public:
 	inline bool IsDhcpUsed(void) { return m_IsDhcpUsed; }
 
 	inline bool IsDhcpKnown(void) {
-#if defined (__CYGWIN__)
+#if defined (__CYGWIN__) || defined (__APPLE__)
 		return false;
 #else
 		return true;
@@ -82,7 +82,7 @@ public:
 	virtual uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
 	virtual void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
 
-#if defined(__linux__)	
+#if !defined(__circle__)
 	virtual void SetIp(uint32_t nIp)=0;
 #endif
 

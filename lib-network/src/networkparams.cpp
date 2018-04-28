@@ -23,20 +23,22 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
+#include <assert.h>
 
 #if defined (__circle__)
-#include <circle/logger.h>
-#include <circle/stdarg.h>
-#include <circle/util.h>
-#define ALIGNED
+ #include <circle/util.h>
 #elif defined (__linux__) || defined (__CYGWIN__)
-#include <string.h>
-#define ALIGNED
+ #include <string.h>
 #else
-#include "util.h"
+ #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "networkparams.h"
@@ -142,26 +144,6 @@ void NetworkParams::Dump(void) {
 		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_nNameServerIp));
 	}
 #endif
-}
-
-bool NetworkParams::isDhcpUsed(void) const {
-	return m_bIsDhcpUsed;
-}
-
-uint32_t NetworkParams::GetIpAddress(void) const {
-	return m_nLocalIp;
-}
-
-uint32_t NetworkParams::GetNetMask(void) const {
-	return m_nNetmask;
-}
-
-uint32_t NetworkParams::GetDefaultGateway(void) const {
-	return m_nGatewayIp;
-}
-
-uint32_t NetworkParams::GetNameServer(void) const {
-	return m_nNameServerIp;
 }
 
 bool NetworkParams::isMaskSet(uint16_t mask) const {
