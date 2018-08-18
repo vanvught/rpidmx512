@@ -54,6 +54,7 @@
 #define SET_NET_MASK_MASK			1<<2
 #define SET_DEFAULT_GATEWAY_MASK	1<<3
 #define SET_NAME_SERVER_MASK		1<<4
+#define SET_HOSTNAME_MASK			1<<5
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "network.txt";
 static const char PARAMS_USE_DHCP[] ALIGNED = "use_dhcp";
@@ -61,6 +62,7 @@ static const char PARAMS_IP_ADDRESS[] ALIGNED = "ip_address";
 static const char PARAMS_NET_MASK[] ALIGNED = "net_mask";
 static const char PARAMS_DEFAULT_GATEWAY[] ALIGNED = "default_gateway";
 static const char PARAMS_NAME_SERVER[] ALIGNED = "name_server";
+static const char PARAMS_HOSTNAME[] ALIGNED = "hostname";
 
 void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
@@ -74,12 +76,14 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	uint8_t value8;
 	uint32_t value32;
+	char value[NETWORK_HOSTNAME_SIZE];
+	uint8_t len;
 
 	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
 		if (value8 == 0) {
 			m_bIsDhcpUsed = false;
-			m_bSetList |= SET_IS_DHCP_MASK;
 		}
+		m_bSetList |= SET_IS_DHCP_MASK;
 		return;
 	}
 
@@ -96,14 +100,29 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		m_nNameServerIp = value32;
 		m_bSetList |= SET_NAME_SERVER_MASK;
 	}
+
+	len = NETWORK_HOSTNAME_SIZE;
+	if (Sscan::Char(pLine, PARAMS_HOSTNAME, value, &len) == SSCAN_OK) {
+		strncpy((char *) m_aHostName, value, len);
+		m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+		m_bSetList |= SET_HOSTNAME_MASK;
+		return;
+	}
 }
 
-NetworkParams::NetworkParams(void): m_bSetList(0) {
-	m_bIsDhcpUsed = true;
-	m_nLocalIp = 0;
-	m_nNetmask = 0;
-	m_nGatewayIp = 0;
-	m_nNameServerIp = 0;
+NetworkParams::NetworkParams(void):
+	m_bSetList(0),
+	m_bIsDhcpUsed(true),
+	m_nLocalIp(0),
+	m_nNetmask(0),
+	m_nGatewayIp(0),
+	m_nNameServerIp(0)
+{
+	uint8_t i;
+
+	for (i= 0; i < NETWORK_HOSTNAME_SIZE; i++) {
+		m_aHostName[i] = 0;
+	}
 }
 
 NetworkParams::~NetworkParams(void) {
@@ -142,6 +161,10 @@ void NetworkParams::Dump(void) {
 
 	if (isMaskSet(SET_NAME_SERVER_MASK)) {
 		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_nNameServerIp));
+	}
+
+	if (isMaskSet(SET_HOSTNAME_MASK)) {
+		printf(" %s=%s\n", PARAMS_NAME_SERVER, m_aHostName);
 	}
 #endif
 }

@@ -230,6 +230,12 @@ void bcm2835_i2c_setClockDivider(uint16_t divider) {
 	_pI2CMaster->SetClock(BCM2835_CORE_CLK_HZ / divider);
 }
 
+void bcm2835_i2c_set_baudrate(uint32_t baudrate) {
+	assert(_pI2CMaster != 0);
+
+	_pI2CMaster->SetClock(baudrate);
+}
+
 void bcm2835_i2c_setSlaveAddress(uint8_t addr) {
 	_nI2cChipSelect = (uint8_t) addr;
 }
@@ -276,11 +282,12 @@ uint8_t bcm2835_i2c_read(char* buf, uint32_t len) {
 	return BCM2835_I2C_REASON_ERROR_CLKT;
 }
 
+
 /*
  * Timer
  */
 
-void bcm2835_delayMicroseconds (uint64_t micros) {
+void bcm2835_delayMicroseconds(uint32_t micros) {
 	CTimer::Get ()->usDelay (micros);
 }
 

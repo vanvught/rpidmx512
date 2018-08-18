@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <stddef.h>
 #include <assert.h>
 
 #include "hardware.h"

@@ -30,15 +30,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined(__circle__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "mcp4822.h"
-
 #include "mcp48x2.h"
 
 #define MCP4822_DATA(x)	((uint16_t)((uint16_t)(x) & 0x0FFF))

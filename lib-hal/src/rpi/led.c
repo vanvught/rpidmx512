@@ -31,8 +31,9 @@
 #include "hardware.h"
 
 static uint32_t ticks_per_second = (uint32_t) (1000000 / 2);
-static uint32_t micros_previous = 0;
+
 static uint32_t led_counter = 0;
+static uint32_t micros_previous = 0;
 
 void led_set_ticks_per_second(uint32_t ticks) {
 	ticks_per_second = ticks;
@@ -47,8 +48,9 @@ void led_blink(void) {
 		return;
 	}
 
-	dmb();
+	dsb();
 	const uint32_t micros_now = BCM2835_ST->CLO;
+	dmb();
 
 	if (micros_now - micros_previous < ticks_per_second) {
 		return;

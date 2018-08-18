@@ -34,6 +34,7 @@ Network::Network(void) :
 	m_nGatewayIp(0),
 	m_nNetmask(0),
 	m_nBroadcastIp(0),
+	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false)
 {
 	s_pThis = this;
@@ -62,7 +63,7 @@ void Network::Print(void) {
 	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
 	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
 	printf(" MacAddress : " MACSTR "\n", MAC2STR(aMacAddress));
-#if !defined (__CYGWIN__)
-	printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-#endif
+	if (IsDhcpKnown()) {
+		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
+	}
 }

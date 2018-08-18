@@ -69,6 +69,7 @@ public:
 	virtual const char* GetSocName(uint8_t &nLength)=0;
 
 	virtual float GetCoreTemperature(void)=0;
+	virtual float GetCoreTemperatureMax(void)=0;
 
 	virtual uint64_t GetUpTime(void)=0;
 

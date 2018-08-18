@@ -30,6 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "network.h"
+
 class NetworkParams {
 public:
 	NetworkParams(void);
@@ -58,6 +60,10 @@ public:
 		return m_nNameServerIp;
 	}
 
+	inline const uint8_t *GetHostName(void) {
+		return m_aHostName;
+	}
+
 private:
 	bool isMaskSet(uint16_t) const;
 
@@ -68,13 +74,13 @@ private:
     void callbackFunction(const char *s);
 
 private:
-    uint32_t m_bSetList;
-
+    uint32_t 	m_bSetList;
     bool		m_bIsDhcpUsed;
     uint32_t	m_nLocalIp;
     uint32_t	m_nNetmask;
     uint32_t	m_nGatewayIp;
     uint32_t	m_nNameServerIp;
+    uint8_t		m_aHostName[NETWORK_HOSTNAME_SIZE];
 };
 
 #endif /* NETWORKPARAMS_H_ */

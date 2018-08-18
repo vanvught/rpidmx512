@@ -145,6 +145,7 @@ extern int bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
 extern void bcm2835_i2c_setSlaveAddress(uint8_t addr);
 extern void bcm2835_i2c_setClockDivider(uint16_t divider);
+extern void bcm2835_i2c_set_baudrate(uint32_t baudrate);
 extern uint8_t bcm2835_i2c_write(const char * buf, uint32_t len);
 extern uint8_t bcm2835_i2c_read(char* buf, uint32_t len);
 
@@ -156,7 +157,8 @@ extern void bcm2835_spi_chipSelect(uint8_t cs);
 extern void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len);
 extern void bcm2835_spi_transfern(char* buf, uint32_t len);
 
-extern void bcm2835_delayMicroseconds (uint64_t micros);
+extern void bcm2835_delayMicroseconds(uint32_t);
+#define udelay bcm2835_delayMicroseconds
 
 #ifdef __cplusplus
 }

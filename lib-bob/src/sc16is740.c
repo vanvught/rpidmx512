@@ -1,3 +1,4 @@
+#if !defined(H3)
 /**
  * @file sc16is740.c
  *
@@ -314,3 +315,4 @@ void sc16is740_start(device_info_t *device_info) {
 
 	buffer_tx[0] = (char) (SC16IS7X0_THR << 3);
 }
+#endif //FIXME

@@ -26,16 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined(__circle__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "mcp23s08.h"
-
-#include "device_info.h"
 
 #define MCP23S08_IODIR					0x00	///< I/O DIRECTION (IODIR) REGISTER
 #define MCP23S08_IPOL					0x01	///< INPUT POLARITY (IPOL) REGISTER

@@ -2,7 +2,7 @@
  * @file bw_i2c_ui.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 
 #include "device_info.h"
 
-extern const bool bw_i2c_ui_start(device_info_t *);
+extern bool bw_i2c_ui_start(device_info_t *);
 extern void bw_i2c_ui_reinit(const device_info_t *);
 
 extern void bw_i2c_ui_cls(const device_info_t *);
@@ -55,7 +55,7 @@ extern void bw_i2c_ui_set_backlight(const device_info_t *, uint8_t);
 extern char bw_i2c_ui_read_button(const device_info_t *, BwUiButtons);
 extern char bw_i2c_ui_read_button_last(const device_info_t *);
 
-extern const uint16_t bw_i2c_ui_read_adc(const device_info_t *);
-extern const uint16_t bw_i2c_ui_read_adc_avg(const device_info_t *);
+extern uint16_t bw_i2c_ui_read_adc(const device_info_t *);
+extern uint16_t bw_i2c_ui_read_adc_avg(const device_info_t *);
 
 #endif /* BW_I2C_UI_H_ */

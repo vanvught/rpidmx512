@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file bh1750.c
  *
@@ -26,12 +27,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined (__circle__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_i2c.h"
-#endif
-
 #include "i2c.h"
 
 #include "bh1750.h"
@@ -49,19 +44,17 @@
 #define BH1750_ONE_TIME_LOW_RES_MODE		0x23	///<
 
 static void i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
+	i2c_set_address(device_info->slave_address);
 
 	if (device_info->fast_mode) {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+		i2c_set_baudrate(I2C_FULL_SPEED);
 	} else {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+		i2c_set_baudrate(I2C_NORMAL_SPEED);
 	}
 }
 
-const bool bh1750_start(device_info_t *device_info) {
-	char buf;
-
-	bcm2835_i2c_begin();
+bool bh1750_start(device_info_t *device_info) {
+	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BH1750_I2C_DEFAULT_SLAVE_ADDRESS;
@@ -77,8 +70,7 @@ const bool bh1750_start(device_info_t *device_info) {
 		return false;
 	}
 
-	buf = BH1750_CONTINUOUS_HIGH_RES_MODE;
-	(void) bcm2835_i2c_write(&buf, 1);
+	i2c_write(BH1750_CONTINUOUS_HIGH_RES_MODE);
 
 	return true;
 }
@@ -92,3 +84,4 @@ const uint16_t bh1750_get_level(const device_info_t *device_info) {
 
 	return level;
 }
+#endif

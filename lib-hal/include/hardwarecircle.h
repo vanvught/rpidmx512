@@ -52,6 +52,7 @@ public:
 	const char* GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void);
+	float GetCoreTemperatureMax(void);
 
 	void SetLed(THardwareLedStatus tLedStatus);
 

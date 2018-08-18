@@ -28,15 +28,8 @@
  #include <stdio.h>
 #endif
 
-#if defined(__linux__) || defined(__circle__)
- #include "bcm2835.h"
- #define udelay bcm2835_delayMicroseconds
-#else
-#include "bcm2835_spi.h"
-#include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
-#include "device_info.h"
 #include "bw.h"
 
 void bw_spi_read_id(const device_info_t *device_info, char *id) {

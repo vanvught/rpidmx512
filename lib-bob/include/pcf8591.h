@@ -3,7 +3,7 @@
  * @file pcf8591.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@
 
 #include "device_info.h"
 
-extern const bool pcf8591_start(device_info_t *);
-extern void pcf8591_dac_write(const device_info_t *, const uint8_t);
-extern const uint8_t pcf8591_adc_read(const device_info_t *, const uint8_t);
+extern bool pcf8591_start(device_info_t *);
+extern void pcf8591_dac_write(const device_info_t *, uint8_t);
+extern uint8_t pcf8591_adc_read(const device_info_t *, uint8_t);
 
 #endif /* PCF8591_H_ */

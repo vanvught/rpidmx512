@@ -2,7 +2,7 @@
  * @file bcm2835_spi.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,7 @@
  * Default the SPI speed to 100 kHz (\ref BCM2835_SPI_CLOCK_DIVIDER_2500).
  */
 void bcm2835_spi_begin(void) {
-	dmb();
-
+	dsb();
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
@@ -55,15 +54,17 @@ void bcm2835_spi_begin(void) {
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MISO
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_ALT0);	// SPI0_MOSI
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_ALT0);	// SPI0_SCLK
+	dmb();
 
+	dsb();
 	BCM2835_SPI0->CS = 0;
 	BCM2835_SPI0->CS = BCM2835_SPI0_CS_CLEAR;
-
+#if 0
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);	// Chip select 0 active LOW
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS1, LOW);	// Chip select 1 active LOW
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);					// CPOL = 0, CPHA = 0
 	BCM2835_SPI0->CLK = BCM2835_SPI_CLOCK_DIVIDER_2500;			// 100 kHz
-
+#endif
 	dmb();
 }
 
@@ -75,14 +76,12 @@ void bcm2835_spi_begin(void) {
  * are returned to their default INPUT behavior.
  */
 void bcm2835_spi_end(void) {
-	dmb();
-
+	dsb();
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_26, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE1
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_INPT);	// SPI0_CE0
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_21, BCM2835_GPIO_FSEL_INPT);	// SPI0_MISO
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_19, BCM2835_GPIO_FSEL_INPT);	// SPI0_MOSI
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_23, BCM2835_GPIO_FSEL_INPT);	// SPI0_SCLK
-
 	dmb();
 }
 
@@ -110,7 +109,9 @@ void bcm2835_spi_setBitOrder(/*@unused@*/const uint8_t order) {
 void bcm2835_spi_setChipSelectPolarity(const uint8_t cs, const uint8_t active) {
 	uint8_t shift = 21 + cs;
 	// Mask in the appropriate CSPOLn bit
+	dsb();
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, active << shift, 1 << shift);
+	dmb();
 }
 
 /**
@@ -128,6 +129,7 @@ void bcm2835_spi_transfernb(char *tbuf, char *rbuf, const uint32_t len) {
 	uint32_t fifo_writes = 0;
 	uint32_t fifo_reads = 0;
 
+	dsb();
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 	// Set TA = 1
@@ -160,6 +162,8 @@ void bcm2835_spi_transfernb(char *tbuf, char *rbuf, const uint32_t len) {
 
 	// Set TA = 0
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
+
+	dmb();
 }
 
 /**

@@ -55,20 +55,20 @@ enum adc_vref_mv {
 /*
  * Wrapper
  */
-static const uint16_t uint16_bw_i2c_ui_read_adc(const device_info_t *device_info, /*@unused@*/const uint8_t channel) {
+static uint16_t uint16_bw_i2c_ui_read_adc(const device_info_t *device_info, /*@unused@*/uint8_t channel) {
 	return (uint16_t) bw_i2c_ui_read_adc(device_info);
 }
 
 /*
  * Wrapper
  */
-static const uint16_t uint16_pcf8591_adc_read(const device_info_t *device_info, const uint8_t channel) {
+static uint16_t uint16_pcf8591_adc_read(const device_info_t *device_info, uint8_t channel) {
 	return (uint16_t) pcf8591_adc_read(device_info, channel | 0x40);
 }
 
 struct _adc_device {
-	/*@null@*/const bool (*start)(device_info_t *);
-	/*@null@*/const uint16_t (*read)(const device_info_t *, const uint8_t);
+	/*@null@*/bool (*start)(device_info_t *);
+	/*@null@*/uint16_t (*read)(const device_info_t *, uint8_t);
 	const uint16_t scale;
 	const uint16_t vref;
 	const acs71x_adc_ch_t max_ch;
@@ -79,7 +79,7 @@ struct _adc_device {
 		{ ads1115_start, ads1115_read,  ADC_RANGE_15BIT, ADC_VREF_6V1_MV, ACS71X_ADC_CH3, "ADS1115"}					// 16-bit ADC
 };
 
-const bool acs71x_start(acs71x_info_t *acs71x_info) {
+bool acs71x_start(acs71x_info_t *acs71x_info) {
 	if (acs71x_info == NULL) {
 		return false;
 	}
@@ -149,7 +149,7 @@ const char *acs71x_get_adc_name(const acs71x_info_t *acs71x_info) {
  * @param acs71x_info
  * @return
  */
-const uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
+uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
 	if (acs71x_info->type >= (sizeof(acs71x_range) / sizeof(acs71x_range[0]))) {
 		return 0;
 	}
@@ -162,7 +162,7 @@ const uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
  * @param acs712_info
  * @return
  */
-const uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
+uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
 	uint8_t i;
 	uint32_t c = 0;
 
@@ -180,7 +180,7 @@ const uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
  * @param acs712_info
  * @return
  */
-const int16_t acs71x_get_current_dc(const acs71x_info_t *acs71x_info) {
+int16_t acs71x_get_current_dc(const acs71x_info_t *acs71x_info) {
 	uint8_t i;
 	int32_t c = 0;
 	int32_t numerator;

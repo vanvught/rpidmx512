@@ -151,6 +151,7 @@ void bcm2837_gpio_virt_led_set(int val) {
 
 	enables_disables[0] = (enables << 16) | (disables << 0);
 
-	dmb();
+	dsb();
 	*(volatile uint32_t *) gpiovirtbuf = enables_disables[0];
+	dmb();
 }

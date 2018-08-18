@@ -26,21 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined (__linux__)
- #define ALIGNED
- #include <string.h>
-#elif defined(__circle__)
- #include "circle/util.h"
-#else
- #include "util.h"
-#endif
-
-#if defined(__linux__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "bw.h"
 #include "bw_dio.h"

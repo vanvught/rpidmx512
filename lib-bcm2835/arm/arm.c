@@ -27,13 +27,7 @@
 
 #include "arm/synchronize.h"
 
-/**
- *
- * @param routine
- * @param vector
- * @return
- */
-const bool arm_install_handler(unsigned routine, unsigned *vector) {
+bool arm_install_handler(unsigned routine, unsigned *vector) {
 	const unsigned vec = ((routine - (unsigned) vector - 0x8) >> 2);
 
 	if (vec & 0xff000000) {

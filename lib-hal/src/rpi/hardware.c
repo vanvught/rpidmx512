@@ -102,7 +102,7 @@ void hardware_init(void) {
 
 	board_revision = bcm2835_vc_get_get_board_revision();
 
-	if ((board_revision == 0xa02082) || (board_revision == 0xa22082) || (board_revision == 0xa020d3)) { //FIXME
+	if ((board_revision == 0xa02082) || (board_revision == 0xa22082) || (board_revision == 0xa020d3)) { //TODO board_revision check
 		_hardware_led_f.init = bcm2837_gpio_virt_init;
 		_hardware_led_f.set = bcm2837_gpio_virt_led_set;
 	} else if (board_revision > 0x00000f) {

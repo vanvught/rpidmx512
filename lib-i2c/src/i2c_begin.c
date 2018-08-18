@@ -26,15 +26,26 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "bcm2835.h"
+#if defined(H3)
+#else
+ #include "bcm2835.h"
+#endif
 
 #if defined(__linux__)
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-static bool _begin = false;
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <sys/types.h>
+ static bool _begin = false;
+#elif defined(H3)
+ #include "h3_i2c.h"
 #else
-#include "bcm2835_i2c.h"
+ #include "bcm2835_i2c.h"
+#endif
+
+#if defined(H3)
+ #define FUNC_PREFIX(x) h3_##x
+#else
+ #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
 bool i2c_begin(void) {
@@ -59,7 +70,7 @@ bool i2c_begin(void) {
 		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
 	}
 #else
-	bcm2835_i2c_begin();
+	FUNC_PREFIX(i2c_begin());
 #endif
 
 	return true;

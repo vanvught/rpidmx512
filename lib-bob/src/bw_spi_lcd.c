@@ -29,30 +29,11 @@
  #include <stdio.h>
 #endif
 
-#if defined (__linux__)
- #define ALIGNED
- #include <string.h>
-#elif defined(__circle__)
- #define ALIGNED
- #include "circle/util.h"
-#else
- #include "util.h"
-#endif
-
-#include "bcm2835.h"
-
-#if defined(__linux__) || defined(__circle__)
-  #define udelay bcm2835_delayMicroseconds
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "bw.h"
 #include "bw_spi.h"
 #include "bw_spi_lcd.h"
-
-#include "device_info.h"
 
 #define BW_LCD_SPI_BYTE_WAIT_US		12
 
@@ -62,7 +43,11 @@ static uint32_t spi_write_us = (uint32_t) 0;
 
 inline static void spi_write(const char *buffer, uint32_t size) {
 #if defined (BARE_METAL)
+ #if defined (H3)
+	const uint32_t elapsed = h3_hs_timer_lo_us() - spi_write_us;
+ #else
 	const uint32_t elapsed = BCM2835_ST->CLO - spi_write_us;
+ #endif
 
 	if (elapsed < BW_LCD_SPI_BYTE_WAIT_US) {
 		udelay(BW_LCD_SPI_BYTE_WAIT_US - elapsed);
@@ -72,7 +57,11 @@ inline static void spi_write(const char *buffer, uint32_t size) {
 #endif
 	(void) bcm2835_spi_writenb(buffer, size);
 #if defined (BARE_METAL)
+ #if defined (H3)
+	spi_write_us = h3_hs_timer_lo_us();
+ #else
 	spi_write_us = BCM2835_ST->CLO;
+ #endif
 #endif
 }
 
@@ -102,7 +91,11 @@ bool bw_spi_lcd_start(device_info_t *device_info) {
 
 	if (memcmp(id, "spi_lcd", 7) == 0) {
 #if defined (BARE_METAL)
+ #if defined (H3)
+		spi_write_us = h3_hs_timer_lo_us();
+ #else
 		spi_write_us = BCM2835_ST->CLO;
+ #endif
 #endif
 		return true;
 	}

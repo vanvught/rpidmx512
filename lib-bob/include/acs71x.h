@@ -61,12 +61,12 @@ typedef struct _acs71x_info {
 	device_info_t *device_info;
 } acs71x_info_t;
 
-extern const bool acs71x_start(acs71x_info_t *);
-extern const uint16_t acs71x_calibrate(const acs71x_info_t *);
-extern const int16_t acs71x_get_current_dc(const acs71x_info_t *);
+extern bool acs71x_start(acs71x_info_t *);
+extern uint16_t acs71x_calibrate(const acs71x_info_t *);
+extern int16_t acs71x_get_current_dc(const acs71x_info_t *);
 
 extern /*@shared@*//*@null@*/const char *acs71x_get_chip_name(const acs71x_info_t *);
 extern /*@shared@*//*@null@*/const char *acs71x_get_adc_name(const acs71x_info_t *);
-extern const uint8_t acs71x_get_range(const acs71x_info_t *);
+extern uint8_t acs71x_get_range(const acs71x_info_t *);
 
 #endif /* ACS71X_H_ */

@@ -56,7 +56,7 @@
 /// Clock divided is based on nominal base clock rate of 250MHz
 typedef enum {
 	BCM2835_I2C_CLOCK_DIVIDER_2500	= 2500,		///< 2500 = 10us = 100 kHz
-	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,		///< 622 = 2.504us = 399.3610 kHz
+	BCM2835_I2C_CLOCK_DIVIDER_626	= 626,		///< 626 = 2.504us = 399.3610 kHz
 	BCM2835_I2C_CLOCK_DIVIDER_150	= 150,		///< 150 = 60ns = 1.666 MHz (default at reset)
 	BCM2835_I2C_CLOCK_DIVIDER_148	= 148,		///< 148 = 59ns = 1.689 MHz
 } bcm2835I2CClockDivider;
@@ -77,6 +77,7 @@ extern void bcm2835_i2c_begin(void);
 extern void bcm2835_i2c_end(void);
 extern uint8_t bcm2835_i2c_write(/*@null@*/const char *, uint32_t);
 extern uint8_t bcm2835_i2c_read(/*@out@*/char *, uint32_t);
+extern void bcm2835_i2c_set_baudrate(uint32_t);
 
 /**
  * @ingroup I2C

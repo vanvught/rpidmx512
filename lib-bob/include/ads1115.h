@@ -2,7 +2,7 @@
  * @file ads1115.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,10 +58,10 @@ typedef enum ads1115_data_rate {
 
 #include "device_info.h"
 
-extern const bool ads1115_start(device_info_t *);
-extern const uint16_t ads1115_read(const device_info_t *, const uint8_t);
+extern bool ads1115_start(device_info_t *);
+extern uint16_t ads1115_read(const device_info_t *, const uint8_t);
 
-extern const ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *);
+extern ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *);
 extern void ads1115_set_data_rate(const device_info_t *, const ads1115_data_rate_t);
 
 #endif /* ADS1115_H_ */

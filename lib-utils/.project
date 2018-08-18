@@ -4,9 +4,9 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
+		<project>lib-console</project>
 		<project>lib-debug</project>
-		<project>lib-fb</project>
-		<project>lib-ff11</project>
+		<project>lib-ff12c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

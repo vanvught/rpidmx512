@@ -29,8 +29,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define NETWORK_IP_SIZE		4
-#define NETWORK_MAC_SIZE	6
+#define NETWORK_IP_SIZE			4
+#define NETWORK_MAC_SIZE		6
+#define NETWORK_HOSTNAME_SIZE	48
 
 #ifndef IP2STR
 #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
@@ -52,10 +53,6 @@ public:
 	Network(void);
 	virtual ~Network(void);
 
-#if defined (BARE_METAL)
-//	virtual void Init(void)=0;
-#endif
-
 	virtual void Begin(uint16_t nPort)=0;
 	virtual void End(void)=0;
 
@@ -65,8 +62,9 @@ public:
 	inline uint32_t GetIp(void) { return m_nLocalIp; }
 	inline uint32_t GetNetmask(void) { return m_nNetmask; }
 	inline uint32_t GetBroadcastIp(void) { return m_nBroadcastIp; }
-	inline bool IsDhcpUsed(void) { return m_IsDhcpUsed; }
 
+	inline bool IsDhcpCapable(void) { return m_IsDhcpCapable; }
+	inline bool IsDhcpUsed(void) { return m_IsDhcpUsed; }
 	inline bool IsDhcpKnown(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 		return false;
@@ -75,14 +73,14 @@ public:
 #endif
 	}
 
-#if defined(__linux__)	||  defined (BARE_METAL)
+#if !defined(__circle__)
 	virtual void JoinGroup(uint32_t ip)=0;
 #endif
 
-	virtual uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
+	virtual uint16_t RecvFrom(uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
 	virtual void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
 
-#if !defined(__circle__)
+#if defined(__linux__)	||  defined (BARE_METAL)
 	virtual void SetIp(uint32_t nIp)=0;
 #endif
 
@@ -97,6 +95,7 @@ protected:
 	uint32_t m_nGatewayIp;
 	uint32_t m_nNetmask;
 	uint32_t m_nBroadcastIp;
+	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
 
 private:

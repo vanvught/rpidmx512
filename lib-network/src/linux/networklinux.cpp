@@ -262,7 +262,7 @@ void NetworkLinux::JoinGroup(uint32_t ip) {
 	}
 }
 
-uint16_t NetworkLinux::RecvFrom(const uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkLinux::RecvFrom(uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
 	assert(packet != NULL);
 	assert(from_ip != NULL);
 	assert(from_port != NULL);

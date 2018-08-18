@@ -30,12 +30,20 @@
 
 #include "hardware.h"
 
+#ifdef H3
+enum TSocType {
+	SOC_TYPE_H2_PLUS,
+	SOC_TYPE_H3,
+	SOC_TYPE_UNKNOWN
+} ;
+#else
 enum TSocType {
 	SOC_TYPE_BCM2835,
 	SOC_TYPE_BCM2836,
 	SOC_TYPE_BCM2837,
 	SOC_TYPE_UNKNOWN
 } ;
+#endif
 
 class HardwareBaremetal: public Hardware {
 public:
@@ -56,6 +64,7 @@ public:
 	const char* GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void);
+	float GetCoreTemperatureMax(void);
 
 	void SetLed(THardwareLedStatus tLedStatus);
 

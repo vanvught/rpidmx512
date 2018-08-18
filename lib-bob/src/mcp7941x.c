@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file mcp7941x.c
  *
@@ -26,12 +27,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "bcm2835.h"
-#if defined(__linux__) || defined(__circle__)
-#else
- #include "bcm2835_i2c.h"
-#endif
-
+#include "i2c.h"
 #include "mcp7941x.h"
 
 /** Time and Configuration Registers (TCR) **/
@@ -51,23 +47,14 @@ static uint8_t i2c_mcp7941x_slave_address __attribute__((aligned(4))) = (uint8_t
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-/**
- *
- */
 void inline static mcp7941x_setup(void) {
-	bcm2835_i2c_setSlaveAddress(i2c_mcp7941x_slave_address);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+	i2c_set_address(i2c_mcp7941x_slave_address);
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
-/**
- * @ingroup I2C-RTC
- *
- * @param slave_address
- * @return
- */
-uint8_t mcp7941x_start(const uint8_t slave_address) {
+uint8_t mcp7941x_start(uint8_t slave_address) {
 
-	bcm2835_i2c_begin();
+	i2c_begin();
 
 	if (slave_address == (uint8_t) 0) {
 		i2c_mcp7941x_slave_address = (uint8_t)MCP7941X_DEFAULT_SLAVE_ADDRESS;
@@ -77,26 +64,20 @@ uint8_t mcp7941x_start(const uint8_t slave_address) {
 
 	mcp7941x_setup();
 
-	if (bcm2835_i2c_write(NULL, 0) == 0) {
-		return MCP7941X_OK;
+	if (!i2c_is_connected(i2c_mcp7941x_slave_address)) {
+		return MCP7941X_ERROR;
 	}
 
-	return MCP7941X_ERROR;
+	return MCP7941X_OK;
 }
 
-/**
- *  @ingroup I2C-RTC
- *
- * @param t
- */
 void mcp7941x_get_date_time(struct rtc_time *t) {
-	char cmd[] = { (char) MCP7941X_RTCC_TCR_SECONDS };
 	char reg[] = { (char) 0, (char) 0, (char) 0, (char) 0, (char) 0, (char) 0,	(char) 0 };
 
 	mcp7941x_setup();
 
-	(void) bcm2835_i2c_write(cmd, sizeof(cmd)/sizeof(char));
-	(void) bcm2835_i2c_read(reg, sizeof(reg)/sizeof(char));
+	(void) i2c_write(MCP7941X_RTCC_TCR_SECONDS);
+	(void) i2c_read(reg, sizeof(reg)/sizeof(char));
 
 	t->tm_sec = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_SECONDS] & 0x7f);
 	t->tm_min = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_MINUTES] & 0x7f);
@@ -107,11 +88,6 @@ void mcp7941x_get_date_time(struct rtc_time *t) {
 	t->tm_year = BCD2DEC((int)reg[MCP7941X_RTCC_TCR_YEAR]);
 }
 
-/**
- *  @ingroup I2C-RTC
- *
- * @param t
- */
 void mcp7941x_set_date_time(const struct rtc_time *t) {
 	char reg[] = { (char) 0, (char) 0, (char) 0, (char) 0, (char) 0, (char) 0,	(char) 0 };
 	char data[8];
@@ -138,5 +114,6 @@ void mcp7941x_set_date_time(const struct rtc_time *t) {
 
 	mcp7941x_setup();
 
-	(void) bcm2835_i2c_write(data, sizeof(data)/sizeof(data[0]));
+	(void) i2c_write_nb(data, sizeof(data)/sizeof(data[0]));
 }
+#endif

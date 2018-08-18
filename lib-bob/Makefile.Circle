@@ -5,7 +5,6 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
-INCLUDE	+= -I ../lib-bcm2835_circle/include
 INCLUDE	+= -I ../lib-i2c/include
 INCLUDE	+= -I ../include
 

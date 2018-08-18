@@ -26,17 +26,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined(__circle__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "max7219.h"
 #include "max7219_spi.h"
-
-#include "device_info.h"
 
 #include "font_cp437.h"
 

@@ -1,5 +1,7 @@
 #
-EXTRA_INCLUDES = ../lib-i2c/include ../lib-utils/include ../lib-bcm2835/include
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-i2c/include ../lib-utils/include
 #
 include ../firmware-template/lib/Rules.mk
 	

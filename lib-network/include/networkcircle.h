@@ -49,7 +49,7 @@ public:
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 	const char* GetHostName(void);
 
-	uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
+	uint16_t RecvFrom(uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
 	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
 private:

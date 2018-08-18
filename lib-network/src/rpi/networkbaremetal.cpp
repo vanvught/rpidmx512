@@ -66,7 +66,7 @@ void NetworkBaremetal::Init(void) {
 	}
 
 	_hostname = (char *)wifi_get_hostname();
-	(void) wifi_get_macaddr(_net_macaddr);
+	(void) wifi_get_macaddr(m_aNetMacaddr);
 
 	m_nLocalIp = info.ip.addr;
 	m_nNetmask = info.netmask.addr;
@@ -84,17 +84,17 @@ void NetworkBaremetal::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
-		memcpy((void *)pMacAddress, _net_macaddr , NETWORK_MAC_SIZE);
+		memcpy((void *)pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 	} else {
 		bcm2835_vc_get_board_mac_address((uint8_t *) pMacAddress);
 	}
 }
 
-void NetworkBaremetal::JoinGroup(uint32_t ip) {
-	wifi_udp_joingroup(ip);
+void NetworkBaremetal::JoinGroup(uint32_t nIp) {
+	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkBaremetal::RecvFrom(const uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkBaremetal::RecvFrom(uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
 	return wifi_udp_recvfrom(packet, size, from_ip, from_port);
 }
 
@@ -102,9 +102,8 @@ void NetworkBaremetal::SendTo(const uint8_t* packet, uint16_t size, uint32_t to_
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
 }
 
-void NetworkBaremetal::SetIp(uint32_t ip) {
-
+void NetworkBaremetal::SetIp(uint32_t nIp) {
     m_IsDhcpUsed = false;
-    m_nLocalIp = ip;
+    m_nLocalIp = nIp;
 }
 

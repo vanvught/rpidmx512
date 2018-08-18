@@ -8,7 +8,7 @@
  *	defined in arch/arm/include/asm/assembler.h
  *	Copyright (C) 1996-2000 Russell King
  */
- /* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -154,20 +154,20 @@ und_undefined_handler:
 	mov   r0, #0				@ Set type parameter
 	sub   r1, lr, #4;			@ Set address parameter
 								@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
-   	b    debug_exception			@ Call the debug_exception function - does not return
+   	b    debug_exception		@ Call the debug_exception function - does not return
 
 abort_prefetch_handler:
 	msr   CPSR_c, #MODE_SVC		@ Switch to SVC mode so we can the retrieve the orignal lr
 	mov   r0, #1				@ Set type parameter
 	sub   r1, lr, #4;			@ Set address parameter
 								@ Subtracting 4 adjusts for the instruction queue giving the address of the instruction that caused this exception
-   	b    debug_exception			@ Call the debug_exception function - does not return
+   	b    debug_exception		@ Call the debug_exception function - does not return
 
 abort_data_handler:
 	mov   r0, #2				@ Set type parameter
 	sub   r1, lr, #8;			@ Set address parameter
 								@ Subtracting 8 adjusts for the instruction queue giving the address of the instruction that caused this exception
-	b    debug_exception			@ Call to the debug_exception function  - does not return
+	b    debug_exception		@ Call to the debug_exception function  - does not return
 
 irq:
     b c_irq_handler				@ void __attribute__((interrupt("IRQ"))) c_irq_handler(void)

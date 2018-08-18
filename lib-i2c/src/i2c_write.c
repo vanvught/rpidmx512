@@ -2,7 +2,7 @@
  * @file i2c_write.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,38 +25,52 @@
 
 #include <stdint.h>
 
-#include "bcm2835.h"
+#if defined(H3)
+#else
+ #include "bcm2835.h"
+#endif
 
 #if defined(__linux__)
+#elif defined(H3)
+ #include "h3_i2c.h"
 #else
-#include "bcm2835_i2c.h"
+ #include "bcm2835_i2c.h"
 #endif
 
 #include "i2c.h"
 
+#if defined(H3)
+ #define FUNC_PREFIX(x) h3_##x
+#else
+ #define FUNC_PREFIX(x) bcm2835_##x
+#endif
+
 void i2c_write_nb(const char *data, uint32_t length) {
-	(void) bcm2835_i2c_write(data, length);
+	(void) FUNC_PREFIX(i2c_write(data, length));
 }
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(H3)
 void i2c_write(uint8_t data) {
-	bcm2835_i2c_write((char *)&data, 1);
+	(void) FUNC_PREFIX(i2c_write((char *)&data, 1));
 }
 
 void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
 	char buffer[2];
+
 	buffer[0] = reg;
 	buffer[1] = data;
-	bcm2835_i2c_write(buffer, 2);
+
+	FUNC_PREFIX(i2c_write(buffer, 2));
 }
 
 void i2c_write_reg_uint16(uint8_t reg, uint16_t data) {
 	char buffer[3];
+
 	buffer[0] = reg;
 	buffer[1] = (char) (data >> 8);
 	buffer[2] = (char) (data & 0xFF);
 
-	bcm2835_i2c_write(buffer, 3);
+	FUNC_PREFIX(i2c_write(buffer, 3));
 }
 #else
 void i2c_write(uint8_t data) {

@@ -28,11 +28,6 @@
 
 #include <stdint.h>
 
-#include "bcm2835.h"
-#include "bcm2835_vc.h"
-#include "bcm2835_wdog.h"
-#include "bcm2835_rng.h"
-
 struct hardware_time {
 	uint8_t second;		///< Seconds.		[0-59]
 	uint8_t minute;		///< Minutes.		[0-59]
@@ -65,28 +60,14 @@ extern int32_t hardware_get_core_temperature(void);
 
 extern void hardware_rtc_set(const struct hardware_time *);
 
-/*@unused@*/inline static uint32_t hardware_micros(void) {
-	return BCM2835_ST->CLO;
-}
-
-/*@unused@*/inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
-	return bcm2835_vc_get_board_mac_address(mac_address);
-}
-
-/*@unused@*/inline static void hardware_watchdog_init(void) {
-	bcm2835_watchdog_init();
-}
-
-/*@unused@*/inline static void hardware_watchdog_feed(void) {
-	bcm2835_watchdog_feed();
-}
-
-/*@unused@*/inline static void hardware_watchdog_stop(void) {
-	bcm2835_watchdog_stop();
-}
-
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef H3
+ #include "c/h3/hardware.h"
+#else
+ #include "c/rpi/hardware.h"
 #endif
 
 #endif /* C_HARDWARE_H_ */

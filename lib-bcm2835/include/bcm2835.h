@@ -26,6 +26,9 @@
 #ifndef BCM2835_H_
 #define BCM2835_H_
 
+
+#define FUNC_PREFIX(x) 			bcm2835_##x
+
 #if defined ( RPI2 ) || defined (RPI3)
 #define BCM2835_PERI_BASE		0x3F000000	///<
 #else

@@ -309,6 +309,14 @@ float HardwareLinux::GetCoreTemperature(void) {
 	return (float) -1;
 }
 
+float HardwareLinux::GetCoreTemperatureMax(void) {
+#if defined (__linux__)
+	return (float) 85; //TODO GetCoreTemperatureMax
+#else
+	return (float) -1;
+#endif
+}
+
 void HardwareLinux::SetLed(THardwareLedStatus tLedStatus) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {

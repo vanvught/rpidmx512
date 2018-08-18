@@ -31,6 +31,11 @@
 #include <stdbool.h>
 
 typedef enum {
+	I2C_NORMAL_SPEED = 100000,
+	I2C_FULL_SPEED = 400000
+}I2CBaudrate;
+
+typedef enum {
 	I2C_CLOCK_DIVIDER_100kHz	= 2500,		///< 2500 = 10us = 100 kHz
 	I2C_CLOCK_DIVIDER_400kHz	= 626		///< 622 = 2.504us = 399.3610 kHz
 } I2CClockDivider;
@@ -41,10 +46,12 @@ extern "C" {
 
 extern bool i2c_begin(void);
 extern void i2c_set_address(uint8_t);
-extern void i2c_set_clockdivider(uint16_t);
+extern void i2c_set_clockdivider(uint16_t);		// // Obsolete - Backwards compatibility with Raspberry Pi
+extern void i2c_set_baudrate(uint32_t);
 
 extern bool i2c_is_connected(uint8_t);
 
+extern uint8_t i2c_read(char *, uint32_t);
 extern uint8_t i2c_read_uint8(void);
 extern uint16_t i2c_read_uint16(void);
 extern uint16_t i2c_read_reg_uint16(uint8_t);

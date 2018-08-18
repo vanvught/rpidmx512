@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file si7021.c
  *
@@ -29,18 +30,14 @@
  #include <stdio.h>
 #endif
 
-#include "bcm2835.h"
+extern void udelay(uint32_t);
 
-#if defined(__linux__) || defined(__circle__)
+#if defined(__linux__)
  #define udelay bcm2835_delayMicroseconds
-#else
- #include "bcm2835_i2c.h"
 #endif
 
 #include "i2c.h"
-
 #include "si7021.h"
-
 #include "device_info.h"
 
 #define SI7021_TEMP		0xF3
@@ -50,25 +47,24 @@ static uint8_t get_id(const device_info_t *device_info) {
 	/* Page 23 https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf */
 	char buffer[6] = { 0xFC, 0xC9 };
 
-	bcm2835_i2c_write(buffer, 2);
-	bcm2835_i2c_read(buffer, 6);
+	i2c_write_nb(buffer, 2);
+	(void) i2c_read(buffer, 6);
 
 	return buffer[0];
 }
 
 static void i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
+	i2c_set_address(device_info->slave_address);
 
 	if (device_info->fast_mode) {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+		i2c_set_baudrate(I2C_FULL_SPEED);
 	} else {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+		i2c_set_baudrate(I2C_NORMAL_SPEED);
 	}
 }
 
 bool si7021_start(device_info_t *device_info) {
-
-	bcm2835_i2c_begin();
+	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = SI7021_I2C_DEFAULT_SLAVE_ADDRESS;
@@ -106,12 +102,11 @@ bool si7021_start(device_info_t *device_info) {
 static const uint16_t get_raw_value(uint8_t cmd) {
 	char buffer[3];
 
-	buffer[0] = (char) cmd;
-	bcm2835_i2c_write(buffer, 1);
+	i2c_write(cmd);
 
 	udelay(80 * 1000);	// datasheet says 50ms
 
-	bcm2835_i2c_read(buffer, 3);
+	(void) i2c_read(buffer, 3);
 
 	return (((uint16_t) buffer[0] << 8) | ((uint16_t) buffer[1])) & (uint16_t) 0xFFFC;
 }
@@ -141,3 +136,4 @@ float si7021_get_humidity(const device_info_t *device_info) {
 
 	return -6.0 + (125.0 * humid);
 }
+#endif

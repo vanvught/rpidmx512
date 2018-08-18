@@ -56,12 +56,12 @@ const char* HardwareCircle::GetMachine(uint8_t& nLength) {
 }
 
 const char* HardwareCircle::GetRelease(uint8_t& nLength) {
-	nLength = 0;
-	return 0;
+	nLength = sizeof(CIRCLE_VERSION_STRING);
+	return CIRCLE_VERSION_STRING;
 }
 
 const char* HardwareCircle::GetSysName(uint8_t& nLength) {
-	nLength = strlen(CIRCLE_NAME);
+	nLength = sizeof(CIRCLE_NAME);
 	return CIRCLE_NAME;
 }
 
@@ -98,6 +98,10 @@ float HardwareCircle::GetCoreTemperature(void) {
 	}
 
 	return (float) TagTemperature.nValue / 1000;
+}
+
+float HardwareCircle::GetCoreTemperatureMax(void) {
+	return 85; //TODO GetCoreTemperatureMax
 }
 
 uint32_t HardwareCircle::GetReleaseId(void) {

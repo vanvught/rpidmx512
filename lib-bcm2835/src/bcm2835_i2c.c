@@ -2,7 +2,7 @@
  * @file bcm2835_i2c.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -173,4 +173,9 @@ uint8_t bcm2835_i2c_read(char *buf, uint32_t len) {
 	BCM2835_BSC1->S = BCM2835_BSC_S_DONE;
 
     return reason;
+}
+
+void bcm2835_i2c_set_baudrate(uint32_t baudrate) {
+	uint32_t divider = ((uint32_t)BCM2835_CORE_CLK_HZ / baudrate);
+	bcm2835_i2c_setClockDivider((uint16_t) divider);
 }

@@ -7,8 +7,9 @@
 		<project>include</project>
 		<project>lib-bcm2835</project>
 		<project>lib-bob</project>
-		<project>lib-fb</project>
+		<project>lib-console</project>
 		<project>lib-ff12c</project>
+		<project>lib-h3</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

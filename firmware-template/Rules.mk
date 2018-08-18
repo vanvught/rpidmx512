@@ -6,7 +6,31 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += network esp8266 properties c++ hal utils debug fb ff12c emmc bob i2c bcm2835
+ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
+	LIBS += network wiznet
+endif
+
+ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
+	LIBS += network esp8266
+endif
+
+# Output
+TARGET = kernel.img
+LIST = kernel.list
+MAP = kernel.map
+BUILD = build/
+
+TARGET7 = kernel7.img
+LIST7 = kernel7.list
+MAP7 = kernel7.map
+BUILD7 = build7/
+
+# Input
+SOURCE=./
+FIRMWARE_DIR=./../firmware-template/
+LINKER = $(FIRMWARE_DIR)memmap
+
+LIBS += properties hal c++ debug console bob i2c utils ff12c bcm2835 arm
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -36,7 +60,7 @@ LIB7DEP = $(addsuffix /lib7/lib, $(LIBDEP))
 LIB7DEP := $(join $(LIB7DEP), $(LIBS))
 LIB7DEP := $(addsuffix .a, $(LIB7DEP))
 
-COPS_COMMON = -DBARE_METAL $(DEFINES) #-DNDEBUG
+COPS_COMMON = -DBARE_METAL -DHAVE_I2C -DHAVE_SPI $(DEFINES) #-DNDEBUG
 COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS_COMMON += -Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
@@ -48,11 +72,6 @@ COPS7 = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 #-fopt-info-vec-optimiz
 COPS7 += -DRPI2
 COPS7 += $(COPS_COMMON)
 
-SOURCE = ./
-
-BUILD = build/
-BUILD7 = build7/
-
 C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 C_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
@@ -63,17 +82,6 @@ BUILD7_DIRS := $(addprefix build7/,$(SRCDIR))
 
 OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
 OBJECTS7 := $(ASM_OBJECTS7) $(C_OBJECTS7)
-
-TARGET = kernel.img
-TARGET7 = kernel7.img
-
-LIST = kernel.list
-LIST7 = kernel7.list
-
-MAP = kernel.map
-MAP7 = kernel7.map
-
-LINKER = firmware/memmap
 
 define compile-objects6
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
@@ -111,24 +119,26 @@ clean:
 
 # Build kernel.img
 
-$(BUILD)vectors.o : firmware/vectors.S
-	$(AS) $(COPS) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD)vectors.o
+$(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
+	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
+	$(PREFIX)size -A $(BUILD)main.elf
 
 $(TARGET) : $(BUILD)main.elf
 	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)
 
 # Build kernel7.img
 
-$(BUILD7)vectors.o : firmware/vectors.S
-	$(AS) $(COPS7) -D__ASSEMBLY__ -c firmware/vectors.S -o $(BUILD7)vectors.o
+$(BUILD7)vectors.o : $(FIRMWARE_DIR)/vectors.S
+	$(AS) $(COPS7) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD7)vectors.o
 	
 $(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
 	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD7)main.elf | $(PREFIX)c++filt > $(LIST7)
+	$(PREFIX)size -A $(BUILD7)main.elf
 
 $(TARGET7) : $(BUILD7)main.elf
 	$(PREFIX)objcopy $(BUILD7)main.elf -O binary $(TARGET7)

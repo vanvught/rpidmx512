@@ -24,15 +24,17 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
 
-#include "bcm2835.h"
 #if defined(__linux__) || defined(__circle__)
+ #include "bcm2835.h"
  #define udelay bcm2835_delayMicroseconds
+#elif defined(H3)
 #else
+ #include "bcm2835.h"
  #include "bcm2835_gpio.h"
- #include "bcm2835_i2c.h"
  #include "bcm2835_aux_spi.h"
  #include "bcm2835_spi.h"
 #endif
@@ -40,8 +42,11 @@
 #include "i2c.h"
 #include "oled.h"
 
-#define OLED_RST						RPI_V2_GPIO_P1_33	/* P1-33, GPIO13 */
-#define	OLED_DC							RPI_V2_GPIO_P1_37	/* P1-37, GPIO26 */
+#if defined(H3)
+#else
+ #define OLED_RST			RPI_V2_GPIO_P1_33	/* P1-33, GPIO13 */
+ #define OLED_DC			RPI_V2_GPIO_P1_37	/* P1-37, GPIO26 */
+#endif
 
 #define OLED_FONT8x6_CHAR_W				6
 #define OLED_FONT8x6_CHAR_H				8
@@ -210,9 +215,7 @@ static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 
 static uint8_t clear_buffer[1025] __attribute__((aligned(4)));
 
-/**
- *
- */
+#if !defined(H3)
 static void reset(void) {
 	bcm2835_gpio_set(OLED_RST);
 	udelay(1000);
@@ -221,23 +224,18 @@ static void reset(void) {
 	bcm2835_gpio_set(OLED_RST);
 	udelay(10000);
 }
+#endif
 
-/**
- *
- * @param device_info
- */
 static void i2c_setup(const oled_info_t *oled_info) {
-	bcm2835_i2c_setSlaveAddress(oled_info->slave_address);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+	i2c_set_address(oled_info->slave_address);
+	i2c_set_baudrate(I2C_FULL_SPEED);
+	//_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
 }
 
-/**
- *
- * @param device_info
- * @param cmd
- */
 static void _send_command(const oled_info_t *oled_info, uint8_t cmd) {
+#if !defined(H3)
 	char spi_data[0];
+
 
 	if (oled_info->protocol == OLED_PROTOCOL_SPI) {
 		bcm2835_gpio_clr(OLED_DC);
@@ -250,19 +248,16 @@ static void _send_command(const oled_info_t *oled_info, uint8_t cmd) {
 			bcm2835_spi_chipSelect(oled_info->chip_select);
 			bcm2835_spi_transfernb(spi_data, NULL, 1);
 		}
-	} else {
+	} else
+#endif
+	{
 		i2c_setup(oled_info);
 		i2c_write_reg_uint8(SSD1306_COMMAND_MODE, cmd);
 	}
 }
 
-/**
- *
- * @param oled_info
- * @param data
- * @param len
- */
 static void _send_data(const oled_info_t *oled_info, const uint8_t *data, const uint32_t len) {
+#if !defined(H3)
 	uint8_t *p;
 	uint32_t l;
 
@@ -278,16 +273,14 @@ static void _send_data(const oled_info_t *oled_info, const uint8_t *data, const 
 			bcm2835_spi_chipSelect(oled_info->chip_select);
 			bcm2835_spi_transfernb((char *)p, NULL, l);
 		}
-	} else {
+	} else
+#endif
+	{
 		i2c_setup(oled_info);
-		(void) bcm2835_i2c_write((const char *) data, len);
+		(void) i2c_write_nb((const char *) data, len);
 	}
 }
 
-/**
- *
- * @param device_info
- */
 void oled_clear(const oled_info_t *oled_info) {
 	_send_command(oled_info, SSD1306_CMD_SET_COLUMNADDR);
 	_send_command(oled_info, 0);						// Column start address (0 = reset)
@@ -311,13 +304,7 @@ void oled_clear(const oled_info_t *oled_info) {
 	}
 }
 
-/**
- *
- * @param device_info
- * @param row
- * @param col
- */
-void oled_set_cursor(const oled_info_t *oled_info, const uint8_t row, const uint8_t col) {
+void oled_set_cursor(const oled_info_t *oled_info, uint8_t row, uint8_t col) {
 	uint8_t _row;
 	uint8_t _col;
 
@@ -354,13 +341,7 @@ void oled_set_cursor(const oled_info_t *oled_info, const uint8_t row, const uint
 	_send_command(oled_info, (uint8_t) SSD1306_CMD_SET_STARTPAGE | _row);
 }
 
-/**
- *
- * @param device_info
- * @param c
- * @return
- */
-int oled_putc(const oled_info_t *oled_info, const int c) {
+int oled_putc(const oled_info_t *oled_info, int c) {
 	uint8_t i;
 	uint8_t *base;
 
@@ -377,12 +358,6 @@ int oled_putc(const oled_info_t *oled_info, const int c) {
 	return c;
 }
 
-/**
- *
- * @param device_info
- * @param s
- * @return
- */
 int oled_puts(const oled_info_t *oled_info, const char *s) {
 	char c;
 	int i = 0;
@@ -395,12 +370,6 @@ int oled_puts(const oled_info_t *oled_info, const char *s) {
 	return i;
 }
 
-/**
- *
- * @param device_info
- * @param s
- * @param n
- */
 void oled_write(const oled_info_t *oled_info, const char *s, int n) {
 	char c;
 
@@ -409,12 +378,6 @@ void oled_write(const oled_info_t *oled_info, const char *s, int n) {
 	}
 }
 
-/**
- *
- * @param device_info
- * @param format
- * @return
- */
 int oled_printf(const oled_info_t *oled_info, const char *format, ...) {
 	int i;
 	char buffer[(SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W) + 1] __attribute__((aligned(4)));
@@ -432,11 +395,6 @@ int oled_printf(const oled_info_t *oled_info, const char *format, ...) {
 	return i;
 }
 
-/**
- *
- * @param oled_info
- * @param line
- */
 void oled_clear_line(const oled_info_t *oled_info, const int line) {
 	int i;
 
@@ -450,11 +408,6 @@ void oled_clear_line(const oled_info_t *oled_info, const int line) {
 
 }
 
-/**
- *
- * @param oled_info
- * @param s
- */
 void oled_status(const oled_info_t *oled_info, const char *s) {
 
 	switch (oled_info->type) {
@@ -471,16 +424,11 @@ void oled_status(const oled_info_t *oled_info, const char *s) {
 	oled_write(oled_info, s, (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W));
 }
 
-/**
- *
- * @param device_info
- * @return
- */
 const bool oled_start(oled_info_t *oled_info) {
 	int i;
 
 	if (oled_info->protocol == OLED_PROTOCOL_I2C) {
-		bcm2835_i2c_begin();
+		i2c_begin();
 
 		if (oled_info->slave_address == (uint8_t) 0) {
 			oled_info->slave_address = OLED_I2C_SLAVE_ADDRESS_DEFAULT;
@@ -491,7 +439,9 @@ const bool oled_start(oled_info_t *oled_info) {
 		if (!i2c_is_connected(oled_info->slave_address)) {
 			return false;
 		}
-	} else if (oled_info->protocol == OLED_PROTOCOL_SPI) {
+	}
+#if !defined(H3)
+	else if (oled_info->protocol == OLED_PROTOCOL_SPI) {
 		if (oled_info->speed_hz == (uint32_t) 0) {
 			oled_info->speed_hz = (uint32_t) OLED_SPI_SPEED_DEFAULT_HZ;
 		} else if (oled_info->speed_hz > (uint32_t) OLED_SPI_SPEED_MAX_HZ) {
@@ -513,7 +463,9 @@ const bool oled_start(oled_info_t *oled_info) {
 		if (oled_info->reset) {
 			reset();
 		}
-	} else {
+	}
+#endif
+	else {
 		return false;
 	}
 
@@ -542,3 +494,4 @@ const bool oled_start(oled_info_t *oled_info) {
 
 	return true;
 }
+

@@ -2,7 +2,7 @@
  * @file wifi.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include "wifi.h"
 
 #include "console.h"
-#include "oled.h"
 
 #include "ap_params.h"
 #include "network_params.h"
@@ -37,6 +36,10 @@
 #include "fota_params.h"
 
 #include "util.h"
+
+#if defined(HAVE_I2C)
+ #include "oled.h"
+#endif
 
 static const char *WIFI_NOT_CONNECTED ALIGNED = "Wifi not connected";
 static const char *STARTING_WIFI ALIGNED = "Starting Wifi ...";
@@ -47,17 +50,19 @@ static 	_wifi_mode opmode = WIFI_OFF;
 static const char *ssid = NULL;
 
 const bool wifi(const struct ip_info *info) {
-	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
-	bool oled_connected = false;
 	uint8_t mac_address[6] ALIGNED;
 	char *ap_password = NULL;
 	struct ip_info ip_config;
-
-	oled_connected = oled_start(&oled_info);
+#if defined(HAVE_I2C)
+	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
+	const bool oled_connected =  oled_start(&oled_info);
+#endif
 
 	if (!wifi_detect()){
 		(void) console_status(CONSOLE_YELLOW, WIFI_NOT_CONNECTED);
+#if defined(HAVE_I2C)
 		OLED_CONNECTED(oled_connected, oled_puts(&oled_info, WIFI_NOT_CONNECTED));
+#endif
 		return false;
 	}
 
@@ -65,7 +70,9 @@ const bool wifi(const struct ip_info *info) {
 	ap_password = (char *) ap_params_get_password();
 
 	(void) console_status(CONSOLE_YELLOW, STARTING_WIFI);
+#if defined(HAVE_I2C)
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, STARTING_WIFI));
+#endif
 
 	wifi_ap_init(ap_password);
 
@@ -75,7 +82,9 @@ const bool wifi(const struct ip_info *info) {
 
 	if (network_params_init()) {
 		(void) console_status(CONSOLE_YELLOW, CHANGING_TO_STATION_MODE);
+#if defined(HAVE_I2C)
 		OLED_CONNECTED(oled_connected, oled_status(&oled_info, CHANGING_TO_STATION_MODE));
+#endif
 		ssid = network_params_get_ssid();
 		if (network_params_is_use_dhcp()) {
 			wifi_station(ssid, network_params_get_password());
@@ -99,7 +108,9 @@ const bool wifi(const struct ip_info *info) {
 		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
 	} else {
 		(void) console_error("wifi_get_macaddr");
+#if defined(HAVE_I2C)
 		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
+#endif
 	}
 
 	printf(" Hostname    : %s\n", wifi_get_hostname());
@@ -113,6 +124,7 @@ const bool wifi(const struct ip_info *info) {
 			printf("      Status : %s\n", wifi_station_status(status));
 			if (status != WIFI_STATION_GOT_IP) {
 				(void) console_error("Not connected!");
+#if defined(HAVE_I2C)
 				if (oled_connected) {
 					oled_set_cursor(&oled_info, 2, 0);
 					(void) oled_puts(&oled_info, wifi_station_status(status));
@@ -120,17 +132,22 @@ const bool wifi(const struct ip_info *info) {
 					(void) oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
 					oled_status(&oled_info, "E: Not connected!");
 				}
+#endif
 				for (;;)
 					;
 			}
 		}
 	} else {
 		(void) console_error("wifi_get_ip_info");
+#if defined(HAVE_I2C)
 		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
+#endif
 	}
 
 	if (fota_params_init()) {
+#if defined(HAVE_I2C)
 		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
+#endif
 		console_newline();
 		fota(fota_params_get_server());
 		for (;;)
@@ -138,17 +155,15 @@ const bool wifi(const struct ip_info *info) {
 	}
 
 	(void) console_status(CONSOLE_GREEN, WIFI_STARTED);
+#if defined(HAVE_I2C)
 	OLED_CONNECTED(oled_connected, oled_status(&oled_info, WIFI_STARTED));
+#endif
 
 	memcpy((void *)info, (const void *)&ip_config, sizeof(struct ip_info));
 
 	return true;
 }
 
-/**
- *
- * @return
- */
 const char *wifi_get_ssid(void) {
 	if (opmode == WIFI_STA ||opmode == WIFI_STA) {
 		return ssid;

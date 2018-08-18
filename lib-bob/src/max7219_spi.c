@@ -25,24 +25,15 @@
 
 #include <stdint.h>
 
-#if defined(__linux__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
-#endif
+#include "bob.h"
 
 #include "max7219.h"
 #include "max7219_spi.h"
 
-#include "device_info.h"
+#include "debug.h"
 
-/**
- *
- * @param device_info
- * @return
- */
 void max7219_spi_start(device_info_t *device_info) {
+	DEBUG_ENTRY
 
 	if (device_info->speed_hz == (uint32_t) 0) {
 		device_info->speed_hz = (uint32_t) MAX7219_SPI_SPEED_DEFAULT_HZ;
@@ -58,23 +49,19 @@ void max7219_spi_start(device_info_t *device_info) {
 		bcm2835_spi_begin();
 		device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
+
+	DEBUG_EXIT
 }
 
-/**
- *
- * @param device_info
- * @param reg
- * @param data
- */
-void max7219_spi_write_reg(const device_info_t *device_info, const uint8_t reg, const uint8_t data) {
+void max7219_spi_write_reg(const device_info_t *device_info, uint8_t reg, uint8_t data) {
 	const uint16_t spi_data = ((uint16_t) reg << 8) | (uint16_t) data;
 
 	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_write(spi_data);
 	} else {
-		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
-		bcm2835_spi_chipSelect(device_info->chip_select);
+		//bcm2835_spi_setClockDivider(device_info->internal.clk_div);
+		//bcm2835_spi_chipSelect(device_info->chip_select);
 		bcm2835_spi_write(spi_data);
 	}
 }

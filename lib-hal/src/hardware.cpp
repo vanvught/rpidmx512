@@ -32,4 +32,5 @@ Hardware::Hardware(void) {
 }
 
 Hardware::~Hardware(void) {
+
 }

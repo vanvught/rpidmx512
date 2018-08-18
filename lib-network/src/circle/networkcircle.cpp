@@ -127,7 +127,7 @@ const char* NetworkCircle::GetHostName(void) {
 	return m_aHostname;
 }
 
-uint16_t NetworkCircle::RecvFrom(const uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkCircle::RecvFrom(uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
 	assert(packet != 0);
 	assert(from_ip != 0);
 	assert(from_port != 0);

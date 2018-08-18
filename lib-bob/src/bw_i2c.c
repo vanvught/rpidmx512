@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file bw_i2c.c
  *
@@ -23,40 +24,23 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stddef.h>
 
-#include "bcm2835.h"
-#if defined(__linux__)
- #define udelay bcm2835_delayMicroseconds
-#else
- #include "bcm2835_i2c.h"
-#endif
+extern void udelay(uint32_t);
 
-#include "device_info.h"
-
+#include "i2c.h"
 #include "bw.h"
+#include "device_info.h"
 
 #define I2C_DELAY_WRITE_READ_US		100
 
-/**
- * @ingroup I2C
- *
- * Gets the identification string.
- *
- * @param device_info
- * @param id
- */
 void bw_i2c_read_id(const device_info_t *device_info, char *id) {
-	char cmd[] = { (char) BW_PORT_READ_ID_STRING };
+	i2c_set_address(device_info->slave_address >> 1);
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 
-	if (id == NULL) {
-		return;
-	}
-
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
-	bcm2835_i2c_setClockDivider(2500);
-
-	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	i2c_write(BW_PORT_READ_ID_STRING);
 	udelay(I2C_DELAY_WRITE_READ_US);
-	(void) bcm2835_i2c_read(id, BW_ID_STRING_LENGTH);
+	(void) i2c_read(id, BW_ID_STRING_LENGTH);
 }
+#endif

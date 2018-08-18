@@ -35,7 +35,11 @@
 
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
+
 #include "arm/synchronize.h"
+
+const char s_Release[] __attribute__((aligned(4))) = "1.3";
+#define RELEASE_LENGTH (sizeof(s_Release)/sizeof(s_Release[0]) - 1)
 
 static const char s_SocName[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 static const char s_CpuName[4][24] __attribute__((aligned(4))) = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
@@ -74,9 +78,9 @@ const char* HardwareBaremetal::GetMachine(uint8_t& nLength) {
 	return s_Machine;
 }
 
-const char* HardwareBaremetal::GetRelease(uint8_t& nLength) { //TODO GetRelease
-	nLength = 0;
-	return 0;
+const char* HardwareBaremetal::GetRelease(uint8_t& nLength) {
+	nLength = RELEASE_LENGTH;
+	return s_Release;
 }
 
 const char* HardwareBaremetal::GetSysName(uint8_t& nLength) {
@@ -110,6 +114,10 @@ const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
 
 float HardwareBaremetal::GetCoreTemperature(void) {
 	return (float) bcm2835_vc_get_temperature() / 1000;
+}
+
+float HardwareBaremetal::GetCoreTemperatureMax(void) {
+	return 85; //TODO GetCoreTemperatureMax
 }
 
 uint32_t HardwareBaremetal::GetReleaseId(void) {

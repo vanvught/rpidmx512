@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file ads1115.c
  *
@@ -26,12 +27,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "bcm2835.h"
-#if defined(__linux__) || defined(__circle__)
-#else
- #include "bcm2835_i2c.h"
-#endif
-
 #include "i2c.h"
 
 #include "ads1x15.h"
@@ -39,21 +34,18 @@
 
 #include "device_info.h"
 
-/**
- *
- * @param device_info
- */
 static void i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
+	i2c_set_address(device_info->slave_address);
 
 	if (device_info->fast_mode) {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+		i2c_set_baudrate(I2C_FULL_SPEED);
 	} else {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+		i2c_set_baudrate(I2C_NORMAL_SPEED);
 	}
 }
 
-#if defined(BARE_METAL)
+#if defined(BARE_METAL) && !defined(H3)
+#include "bcm2835.h"
 #define TIMEOUT_WAIT(stop_if_true, usec) 						\
 do {															\
 	const uint32_t micros_now = BCM2835_ST->CLO;				\
@@ -107,15 +99,10 @@ static void set_channel(const uint8_t channel) {
 	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, ADS1x15_MODE_CONTINUOUS, ADS1x15_REG_CONFIG_MODE_MASK);
 }
 
-/**
- *
- * @param device_info
- * @return
- */
 const bool ads1115_start(device_info_t *device_info) {
 	uint16_t config;
 
-	bcm2835_i2c_begin();
+	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = ADS1115_DEFAULT_SLAVE_ADDRESS;
@@ -144,12 +131,6 @@ const bool ads1115_start(device_info_t *device_info) {
 	return true;
 }
 
-/**
- *
- * @param device_info
- * @param channel
- * @return
- */
 const uint16_t ads1115_read(const device_info_t *device_info, const uint8_t channel) {
 	device_info_t *d = (device_info_t *) device_info;
 
@@ -167,11 +148,6 @@ const uint16_t ads1115_read(const device_info_t *device_info, const uint8_t chan
 	return i2c_read_reg_uint16(ADS1x15_REG_CONVERSION);
 }
 
-/**
- *
- * @param device_info
- * @return
- */
 const ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *device_info) {
 	uint16_t value;
 
@@ -183,12 +159,8 @@ const ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *device_info
 	return (ads1115_data_rate_t)value;
 }
 
-/**
- *
- * @param device_info
- * @param data_rate
- */
 void ads1115_set_data_rate(const device_info_t *device_info, const ads1115_data_rate_t data_rate) {
 	i2c_setup(device_info);
 	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (const uint16_t) data_rate, ADS1x15_REG_CONFIG_DATA_RATE_MASK);
 }
+#endif

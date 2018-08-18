@@ -129,7 +129,7 @@ extern void bcm2835_spi_setBitOrder(const uint8_t);
  *
  * @param divider The desired SPI clock divider, one of ::bcm2835SPIClockDivider
  */
-/*@unused@*/inline static void bcm2835_spi_setClockDivider(const uint16_t divider) {
+/*@unused@*/inline static void bcm2835_spi_setClockDivider(uint16_t divider) {
 	BCM2835_SPI0->CLK = (uint32_t) divider;
 }
 
@@ -141,7 +141,7 @@ extern void bcm2835_spi_setBitOrder(const uint8_t);
  *
  * @param mode The desired data mode,one of BCM2835_SPI_MODE*, see \ref bcm2835SPIMode
  */
-/*@unused@*/inline static void bcm2835_spi_setDataMode(const uint8_t mode) {
+/*@unused@*/inline static void bcm2835_spi_setDataMode(uint8_t mode) {
 	// Mask in the CPO and CPHA bits of CS
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, mode << 2, BCM2835_SPI0_CS_CPOL | BCM2835_SPI0_CS_CPHA);
 }
@@ -152,15 +152,15 @@ extern void bcm2835_spi_setBitOrder(const uint8_t);
  * @param cs Specifies the CS pins(s) that are used to activate the desired slave.
  *           One of BCM2835_SPI_CS*, see \ref bcm2835SPIChipSelect
  */
-/*@unused@*/inline static void bcm2835_spi_chipSelect(const uint8_t cs) {
+/*@unused@*/inline static void bcm2835_spi_chipSelect(uint8_t cs) {
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, cs, BCM2835_SPI0_CS_CS);
 }
 
-extern void bcm2835_spi_setChipSelectPolarity(const uint8_t, const uint8_t);
-extern void bcm2835_spi_transfernb(char*, /*@null@*/char*, const uint32_t);
-extern void bcm2835_spi_transfern(char*, const uint32_t);
-extern void bcm2835_spi_writenb(const char*, const uint32_t);
-extern void bcm2835_spi_write(const uint16_t data);
+extern void bcm2835_spi_setChipSelectPolarity(uint8_t, uint8_t);
+extern void bcm2835_spi_transfernb(char*, /*@null@*/char*, uint32_t);
+extern void bcm2835_spi_transfern(char*, uint32_t);
+extern void bcm2835_spi_writenb(const char*, uint32_t);
+extern void bcm2835_spi_write(uint16_t data);
 
 #ifdef __cplusplus
 }

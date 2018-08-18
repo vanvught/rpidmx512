@@ -43,16 +43,15 @@ public:
 	const char* GetHostName(void);
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	void JoinGroup(uint32_t ip);
-	uint16_t RecvFrom(const uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
+	void JoinGroup(uint32_t nIp);
+	uint16_t RecvFrom(uint8_t *packet, uint16_t nSize, uint32_t *from_ip, uint16_t *from_port);
+	void SendTo(const uint8_t *packet, uint16_t nSize, uint32_t to_ip, uint16_t remote_port);
 
 	void SetIp(uint32_t nIp); // Not supported, yet
 
 private:
 	bool m_IsInitDone;
 	char *_hostname;
-	uint8_t _net_macaddr[NETWORK_MAC_SIZE];
 };
 
 #endif /* NETWORKBAREMETAL_H_ */

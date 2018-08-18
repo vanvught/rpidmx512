@@ -2,7 +2,7 @@
  * @file d8x7segment.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,11 @@
 
 #include "device_info.h"
 
-/**
- *
- * @param device_info
- */
-void d8x7segment_init(const device_info_t *device_info, const uint8_t intensity) {
+#include "debug.h"
+
+void d8x7segment_init(const device_info_t *device_info, uint8_t intensity) {
+	DEBUG1_ENTRY
+
 	(void) max7219_spi_start((device_info_t *)device_info);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_SHUTDOWN, MAX7219_SHUTDOWN_NORMAL_OP);
@@ -44,12 +44,10 @@ void d8x7segment_init(const device_info_t *device_info, const uint8_t intensity)
 	max7219_spi_write_reg(device_info, MAX7219_REG_SCAN_LIMIT, 7);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_INTENSITY, intensity & 0x0F);
+
+	DEBUG1_EXIT
 }
 
-/**
- *
- * @param device_info
- */
 void d8x7segment_cls(const device_info_t *device_info) {
 	uint8_t i = 8;
 
@@ -58,11 +56,6 @@ void d8x7segment_cls(const device_info_t *device_info) {
 	} while (--i > (uint8_t) 0);
 }
 
-/**
- *
- * @param device_info
- * @param number
- */
 void d8x7segment_int(const device_info_t *device_info, int32_t number) {
 	bool is_negative = false;
 	uint8_t max_digits = 8;

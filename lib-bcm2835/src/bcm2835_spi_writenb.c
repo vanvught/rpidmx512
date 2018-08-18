@@ -2,7 +2,7 @@
  * @file bcm2835_spi_writenb.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,8 @@
 
 #include <stdint.h>
 
-#include <bcm2835_spi.h>
+#include "bcm2835_spi.h"
+#include "arm/synchronize.h"
 
 /**
  * @ingroup SPI
@@ -40,6 +41,7 @@
 void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
 	uint32_t i;
 
+	dsb();
 	// Clear TX and RX fifos
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, BCM2835_SPI0_CS_CLEAR, BCM2835_SPI0_CS_CLEAR);
 	// Set TA = 1
@@ -66,5 +68,7 @@ void bcm2835_spi_writenb(const char* tbuf, const uint32_t len) {
 
 	// Set TA = 0
 	BCM2835_PERI_SET_BITS(BCM2835_SPI0->CS, 0, BCM2835_SPI0_CS_TA);
+
+	dmb();
 }
 

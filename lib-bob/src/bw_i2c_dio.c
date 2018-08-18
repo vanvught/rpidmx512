@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file bw_i2c_dio.c
  *
@@ -25,40 +26,21 @@
 
 #include <stdint.h>
 
-#include "bcm2835.h"
-
-#if defined(__linux__) || defined(__circle__)
-#else
- #include "bcm2835_i2c.h"
-#endif
-
 #include "i2c.h"
-
 #include "bw.h"
 #include "bw_dio.h"
-
 #include "device_info.h"
 
 #define BW_DIO_I2C_BYTE_WAIT_US		0
 
-/**
- * @ingroup I2C-DIO
- *
- * @param device_info
- */
+
 inline static void dio_i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address >> 1);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+	i2c_set_address(device_info->slave_address >> 1);
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
-/**
- * @ingroup I2C-DIO
- *
- * @param device_info
- * @return
- */
-const bool bw_i2c_dio_start(device_info_t *device_info) {
-	bcm2835_i2c_begin();
+bool bw_i2c_dio_start(device_info_t *device_info) {
+	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
@@ -73,12 +55,6 @@ const bool bw_i2c_dio_start(device_info_t *device_info) {
 	return true;
 }
 
-/**
- * @ingroup I2C-DIO
- *
- * @param device_info
- * @param mask
- */
 void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
 	char cmd[2];
 
@@ -86,15 +62,9 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 	cmd[1] = (char) mask;
 
 	dio_i2c_setup(device_info);
-	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	i2c_write_nb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-/**
- * @ingroup I2C-DIO
- *
- * @param device_info
- * @param pins
- */
 void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	char cmd[2];
 
@@ -102,5 +72,6 @@ void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	cmd[1] = (char) pins;
 
 	dio_i2c_setup(device_info);
-	(void) bcm2835_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
+	i2c_write_nb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
+#endif

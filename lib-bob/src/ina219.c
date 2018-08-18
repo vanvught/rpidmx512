@@ -1,3 +1,4 @@
+#if defined(HAVE_I2C)
 /**
  * @file ina219.c
  *
@@ -31,16 +32,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(__linux__) || defined (__circle__)
- #include "bcm2835.h"
-#else
- #include "bcm2835_i2c.h"
-#endif
-
 #include "i2c.h"
-
 #include "ina219.h"
-
 #include "device_info.h"
 
 #define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))
@@ -80,18 +73,17 @@ struct _ina219_info {
 #define INA219_READ_REG_DELAY_US	800		///<
 
 static void i2c_setup(const device_info_t *device_info) {
-	bcm2835_i2c_setSlaveAddress(device_info->slave_address);
+	i2c_set_address(device_info->slave_address);
 
 	if (device_info->fast_mode) {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+		i2c_set_baudrate(I2C_FULL_SPEED);
 	} else {
-		bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500);
+		i2c_set_baudrate(I2C_NORMAL_SPEED);
 	}
 }
 
 const bool ina219_start(device_info_t *device_info) {
-
-	bcm2835_i2c_begin();
+	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
 		device_info->slave_address = INA219_I2C_DEFAULT_SLAVE_ADDRESS;
@@ -325,3 +317,4 @@ void ina219_get_lsb(const device_info_t *device_info, float *current_lsb, float 
 	*current_lsb = ina219_info[i].current_lsb;
 	*power_lsb = ina219_info[i].power_lsb;
 }
+#endif
