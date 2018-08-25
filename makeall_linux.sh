@@ -2,7 +2,7 @@
 DIR=linux_*
 for f in $DIR
 do
-	echo "[$f]"
+	echo -e "\e[32m[$f]\e[0m"
 	if [ -d $f ]; then
 		if [[ $f != *"lib"* ]]; then
 			if [[ $f = *"rpi"* ]]; then
@@ -14,7 +14,7 @@ do
 					fi
 					cd ..
 				else
-					echo 'Skipping..'
+					echo -e "\e[33mSkipping...\e[0m"
 					continue
 				fi
 			fi

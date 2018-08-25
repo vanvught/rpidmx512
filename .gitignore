@@ -19,6 +19,7 @@ lib*.a
 *.txt
 *._txt
 *.txt_
+*.uid
 
 # Linux 
 .nfs*
@@ -35,7 +36,10 @@ lib*.a
 # H2+/H3 binaries 
 *.uImage
 
-# lib-l6470 examples binaries
+# examples binaries
+# lib-i2c
+i2cdetect
+# lib-l6470
 get_set_param_test
 get_temp
 input_output
@@ -43,4 +47,6 @@ limit_switch
 precise_move
 simple_move
 SparkFunGetSetParamTest
+# lib-tlc59711
+pwmled
 
