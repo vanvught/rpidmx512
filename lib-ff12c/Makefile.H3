@@ -1,0 +1,38 @@
+ARMGNU ?= arm-none-eabi
+
+COPS_COMMON = -std=c99 -pedantic -Wall -O2 -nostdlib -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
+
+COPS = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
+COPS += $(COPS_COMMON)
+
+SOURCE = ./src
+
+BUILD = build_h3/
+
+OBJECTS := $(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c)) $(patsubst $(SOURCE)/option/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/option/*.c))
+
+TARGET = lib_h3/libff12c.a 
+
+LIST = lib.list
+
+all : builddirs $(TARGET)
+
+.PHONY: clean builddirs
+
+builddirs: 
+	@mkdir -p $(BUILD) lib_h3
+	
+clean :
+	rm -rf $(BUILD)
+	rm -rf lib_h3
+	
+$(BUILD)%.o: $(SOURCE)/%.c
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@
+	
+$(BUILD)%.o: $(SOURCE)/option/%.c
+	$(ARMGNU)-gcc $(COPS) $< -c -o $@			
+
+$(TARGET): Makefile $(OBJECTS)
+	$(ARMGNU)-ar -r $(TARGET) $(OBJECTS) 
+	$(ARMGNU)-objdump -D $(TARGET) > lib_h3/$(LIST)
+	

@@ -1,0 +1,8 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_SRCDIR = src/aeabi
+#
+EXTRA_INCLUDES = 
+#
+include ../h3-firmware-template/lib/Rules.mk

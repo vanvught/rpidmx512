@@ -1,0 +1,6 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-osc/include ../lib-network/include ../lib-properties/include ../lib-lightset/include ../lib-utils/include ../lib-debug/include
+#
+include ../h3-firmware-template/lib/Rules.mk

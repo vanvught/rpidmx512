@@ -49,13 +49,13 @@
 #include "rdmidentify.h"
 #include "rdmsensor.h"
 #include "rdmslotinfo.h"
+#include "rdmmessage.h"
 
 #include "rdm.h"
 #include "rdm_e120.h"
 
 #include "hardware.h"
 
-#include "rdmmessage.h"
 #include "debug.h"
 
 enum {

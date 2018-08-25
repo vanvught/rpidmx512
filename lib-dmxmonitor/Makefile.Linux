@@ -1,4 +1,6 @@
 #
+DEFINES = NDEBUG
+#
 EXTRA_INCLUDES = ../lib-lightset/include
 #
 include ../linux-template/lib/Rules.mk

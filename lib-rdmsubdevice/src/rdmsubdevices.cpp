@@ -35,6 +35,8 @@
  #include "util.h"
 #endif
 
+#include "debug.h"
+
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
@@ -46,7 +48,7 @@
 #include "rdmsubdevice.h"
 //
 #include "rdmsubdevicedummy.h"
-#if defined(BARE_METAL)
+#if defined(BARE_METAL) && defined(HAVE_SPI)
 #include "rdmsubdevicebw7fets.h"
 #include "rdmsubdevicebwdimmer.h"
 #include "rdmsubdevicebwdio.h"
@@ -82,7 +84,7 @@ void RDMSubDevices::Init(void) {
 #ifndef NDEBUG
 	Add(new RDMSubDeviceDummy);
 #endif
-#if defined(BARE_METAL)
+#if defined(BARE_METAL) && defined(HAVE_SPI)
 	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
 	(void) configfile.Read(SUBDEVICES_PARAMS_FILE_NAME);
 #endif
@@ -189,19 +191,26 @@ RDMPersonality* RDMSubDevices::GetPersonality(uint16_t nSubDevice, uint8_t nPers
 }
 
 void RDMSubDevices::Start(void) {
+	DEBUG_ENTRY
+
 	for (unsigned i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->Start();
 		}
 	}
+	DEBUG_EXIT
 }
 
 void RDMSubDevices::Stop(void) {
+	DEBUG_ENTRY
+
 	for (unsigned i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->Stop();
 		}
 	}
+
+	DEBUG_ENTRY
 }
 
 void RDMSubDevices::SetData(const uint8_t* pData, uint16_t nLength) {
@@ -243,7 +252,7 @@ void RDMSubDevices::staticCallbackFunction(void* p, const char* s) {
 
 void RDMSubDevices::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
-#if defined(BARE_METAL)
+#if defined(BARE_METAL) && defined(HAVE_SPI)
 	int nReturnCode;
 	char aDeviceName[65];
 	uint8_t nLength = sizeof(aDeviceName) - 1;

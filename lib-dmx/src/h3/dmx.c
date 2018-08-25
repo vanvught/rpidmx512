@@ -1,12 +1,8 @@
 /**
  * @file dmx.c
  *
- * @brief This file implements the DMX512/RDM receive state-machine. It
- * uses the Fast Interrupt Request (FIQ) for accurate timing.
- * The Interrupt Request (IRQ) is used for sending DMX data.
- *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,44 +26,42 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
-#include "arm/irq_timer.h"
-#include "arm/pl011.h"
+#include "arm/gic.h"
+#include "uart.h"
 
-#include "bcm2835.h"
-#include "bcm2835_st.h"
-#include "bcm2835_gpio.h"
-#include "bcm2835_vc.h"
+#include "h3_gpio.h"
+#include "h3_timer.h"
+#include "h3_hs_timer.h"
+#include "h3_board.h"
+
+#include "irq_timer.h"
 
 #include "gpio.h"
-#include "util.h"
 #include "dmx.h"
 #include "rdm.h"
+#include "rdm_e120.h"
 
-#include "../../lib-rdm/include/rdm_e120.h"
-
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
-#include <assert.h>
+#include "util.h"
 
 ///< State of receiving DMX/RDM Bytes
 typedef enum {
-	IDLE = 0,	///<
-	BREAK,		///<
-	MAB,		///<
-	DMXDATA,	///<
-	RDMDATA,	///<
-	CHECKSUMH,	///<
-	CHECKSUML,	///<
-	RDMDISCFE,	///<
-	RDMDISCEUID,///<
-	RDMDISCECS,	///<
-	DMXINTER	///<
+	IDLE = 0,	///< 0
+	PRE_BREAK,	///< 1
+	BREAK,		///< 2
+	MAB,		///< 3
+	DMXDATA,	///< 4
+	RDMDATA,	///< 5
+	CHECKSUMH,	///< 6
+	CHECKSUML,	///< 7
+	RDMDISCFE,	///< 8
+	RDMDISCEUID,///< 9
+	RDMDISCECS,	///< 10
+	DMXINTER	///< 11
 } _dmx_state;
 
 static uint8_t dmx_data_direction_gpio_pin = GPIO_DMX_DATA_DIRECTION;			///<
@@ -76,7 +70,7 @@ static volatile uint16_t dmx_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t dmx_data_buffer_index_tail = (uint16_t) 0;				///<
 static struct _dmx_data dmx_data[DMX_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;		///<
 static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
-static uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
+static volatile uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
 static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
 static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
 static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
@@ -92,9 +86,9 @@ static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
 static volatile uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;			///<
 static volatile uint8_t dmx_send_state = IDLE;									///<
 static volatile bool dmx_send_always = false;									///<
-//static volatile uint32_t dmx_irq_micros = 0;									///<
 static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
 static volatile uint16_t dmx_send_current_slot = (uint16_t) 0;					///<
+static bool is_stopped = true;
 
 static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
 static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
@@ -107,21 +101,16 @@ static volatile uint32_t dmx_updates_per_seconde= (uint32_t) 0;					///<
 static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
 static volatile struct _total_statistics total_statistics ALIGNED;				///<
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const volatile uint32_t dmx_get_updates_per_seconde(void) {
+static void dmx_set_send_data_length(uint16_t send_data_length) {
+	dmx_send_data_length = send_data_length;
+	dmx_set_output_period(dmx_output_period_requested);
+}
+
+volatile uint32_t dmx_get_updates_per_seconde(void) {
 	dmb();
 	return dmx_updates_per_seconde;
 }
 
-/**
- * @ingroup dmx
- *
- * @param period
- */
 void dmx_set_output_period(const uint32_t period) {
 	const uint32_t package_length_us = dmx_output_break_time + dmx_output_mab_time + (dmx_send_data_length * 44);
 
@@ -138,50 +127,25 @@ void dmx_set_output_period(const uint32_t period) {
 	}
 }
 
-/**
- * @ingroup dmx
- *
- * @param send_data_length
- */
-static void dmx_set_send_data_length(uint16_t send_data_length) {
-	dmx_send_data_length = send_data_length;
-	dmx_set_output_period(dmx_output_period_requested);
-}
-
-/**
- * @ingroup dmx
- *
- * @param data
- * @param length
- */
-void dmx_set_send_data(const uint8_t *data, const uint16_t length) {
+void dmx_set_send_data(const uint8_t *data, uint16_t length) {
 	do {
 		dmb();
 	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
 
-	(void *)memcpy(dmx_data[0].data, data, (size_t)length);
+	memcpy(dmx_data[0].data, data, (size_t)length);
 	dmx_set_send_data_length(length);
 }
 
-/**
- *
- * @param data
- * @param length
- */
-void dmx_set_send_data_without_sc(const uint8_t *data, const uint16_t length) {
+void dmx_set_send_data_without_sc(const uint8_t *data, uint16_t length) {
 	do {
 		dmb();
 	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
 
 	dmx_data[0].data[0] = DMX512_START_CODE;
-	(void *) memcpy(&dmx_data[0].data[1], data, (size_t) length);
+	memcpy(&dmx_data[0].data[1], data, (size_t) length);
 	dmx_set_send_data_length(length + 1);
 }
 
-/**
- * @ingroup dmx
- *
- */
 void dmx_clear_data(void) {
 	uint32_t i = sizeof(dmx_data) / sizeof(uint32_t);
 	uint32_t *p = (uint32_t *)dmx_data;
@@ -191,30 +155,16 @@ void dmx_clear_data(void) {
 	}
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint32_t dmx_get_output_period(void) {
+uint32_t dmx_get_output_period(void) {
 	return dmx_output_period;
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint16_t dmx_get_send_data_length(void) {
+uint16_t dmx_get_send_data_length(void) {
 	return dmx_send_data_length;
 }
 
-/**
- * @ingroup rdm
- *
- * @return
- */
 const uint8_t *rdm_get_available(void)  {
+	dmb();
 	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail) {
 		return NULL;
 	} else {
@@ -224,20 +174,10 @@ const uint8_t *rdm_get_available(void)  {
 	}
 }
 
-/**
- * @ingroup rdm
- *
- * @return
- */
 const uint8_t *rdm_get_current_data(void) {
 	return &rdm_data_buffer[rdm_data_buffer_index_tail][0];
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
 const uint8_t *dmx_get_available(void)  {
 	dmb();
 	if (dmx_data_buffer_index_head == dmx_data_buffer_index_tail) {
@@ -249,33 +189,15 @@ const uint8_t *dmx_get_available(void)  {
 	}
 }
 
-/**
- * @ingroup rdm
- *
- * @return
- */
 const uint8_t *dmx_get_current_data(void) {
 	return dmx_data[dmx_data_buffer_index_tail].data;
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const volatile uint8_t dmx_get_receive_state(void) {
+volatile uint8_t dmx_get_receive_state(void) {
 	dmb();
 	return dmx_receive_state;
 }
 
-/**
- * @ingroup dmx
- *
- * The DMX data is changed when slots in packets is changed,
- * or when the data itself is changed.
- *
- * @return
- */
 const uint8_t *dmx_is_data_changed(void) {
 	uint16_t i;
 	uint8_t const *p = (uint8_t *)dmx_get_available();
@@ -311,116 +233,76 @@ const uint8_t *dmx_is_data_changed(void) {
 	return (is_changed ? p : NULL);
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const _dmx_port_direction dmx_get_port_direction(void) {
+_dmx_port_direction dmx_get_port_direction(void) {
 	return dmx_port_direction;
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint32_t rdm_get_data_receive_end(void) {
+uint32_t rdm_get_data_receive_end(void) {
 	return rdm_data_receive_end;
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint32_t dmx_get_output_break_time(void) {
+uint32_t dmx_get_output_break_time(void) {
 	return dmx_output_break_time;
 }
 
-/**
- * @ingroup dmx
- *
- * @param break_time
- */
-void dmx_set_output_break_time(const uint32_t break_time) {
+void dmx_set_output_break_time(uint32_t break_time) {
 	dmx_output_break_time = MAX((uint32_t)DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
 
 	dmx_set_output_period(dmx_output_period_requested);
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
-const uint32_t dmx_get_output_mab_time(void) {
+uint32_t dmx_get_output_mab_time(void) {
 	return dmx_output_mab_time;
 }
 
-/**
- * @ingroup dmx
- *
- * @param mab_time
- */
-void dmx_set_output_mab_time(const uint32_t mab_time) {
+void dmx_set_output_mab_time(uint32_t mab_time) {
 	dmx_output_mab_time = MAX((uint32_t)DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 
 	dmx_set_output_period(dmx_output_period_requested);
 }
 
-/**
- * @ingroup dmx
- *
- */
 void dmx_reset_total_statistics(void) {
 	total_statistics.dmx_packets = (uint32_t) 0;
 	total_statistics.rdm_packets = (uint32_t) 0;
 }
 
-/**
- * @ingroup dmx
- *
- * @return
- */
 const volatile struct _total_statistics *dmx_get_total_statistics(void) {
 	return &total_statistics;
 }
 
 /**
- * @ingroup dmx
- *
  * Interrupt handler for continues receiving DMX512 data.
- *
  */
-static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
-	dmb();
+static void fiq_dmx_in_handler(void) {
+	dmx_fiq_micros_current = h3_hs_timer_lo_us();
 
-#ifdef LOGIC_ANALYZER
-	bcm2835_gpio_set(GPIO_ANALYZER_CH1);
+	if (EXT_UART->LSR & UART_LSR_BI) {
+#ifdef LOCIG_ANALYZER
+		h3_gpio_set(11); //BREAK
 #endif
 
-	dmx_fiq_micros_current = BCM2835_ST->CLO;
-
-	const uint32_t dr = BCM2835_PL011->DR;
-
-	if (dr & PL011_DR_BE) {
-		dmx_receive_state = BREAK;
+		dmx_receive_state = PRE_BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
-#ifdef LOGIC_ANALYZER
-		bcm2835_gpio_set(GPIO_ANALYZER_CH2);	// BREAK
-		bcm2835_gpio_clr(GPIO_ANALYZER_CH4);	// IDLE
+	} else if (EXT_UART->O08.IIR & UART_IIR_IID_RD) {
+#ifdef LOCIG_ANALYZER
+		h3_gpio_set(6); //DR
 #endif
-	} else {
-		const uint8_t data = dr & 0xFF;
+
+		const uint8_t data = EXT_UART->O00.RBR;
 
 		switch (dmx_receive_state) {
 		case IDLE:
+#ifdef LOCIG_ANALYZER
+			h3_gpio_clr(16);
+#endif
 			if (data == 0xFE) {
 				dmx_receive_state = RDMDISCFE;
 				rdm_data_buffer[rdm_data_buffer_index_head][0] = 0xFE;
 				dmx_data_index = 1;
 			}
+			break;
+		case PRE_BREAK:
+			dmx_receive_state = BREAK;
 			break;
 		case BREAK:
 			switch (data) {
@@ -437,9 +319,9 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 					dmx_is_previous_break_dmx = true;
 					dmx_break_to_break_previous = dmx_break_to_break_latest;
 				}
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
-			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
+#ifdef LOCIG_ANALYZER
+				h3_gpio_clr(11);
+				h3_gpio_set(14);
 #endif
 				break;
 			case E120_SC_RDM:
@@ -449,44 +331,37 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 				dmx_data_index = 1;
 				total_statistics.rdm_packets = total_statistics.rdm_packets + 1;
 				dmx_is_previous_break_dmx = false;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
-			    bcm2835_gpio_set(GPIO_ANALYZER_CH3);	// DMX DATA
-#endif
 				break;
 			default:
 				dmx_receive_state = IDLE;
 				dmx_is_previous_break_dmx = false;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
-				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
 				break;
 			}
 			break;
 		case DMXDATA:
+#ifdef LOCIG_ANALYZER
+			h3_gpio_clr(14);
+			h3_gpio_set(16);
+#endif
 			dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-			if (dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot < 44) { // Broadcom BUG ? FIQ is late
-				dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot = (uint32_t)44;
-			}
 			dmx_data[dmx_data_buffer_index_head].data[dmx_data_index++] = data;
-		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_data[0].statistics.slot_to_slot + (uint32_t)12;
+
+			H3_TIMER->TMR0_INTV = (dmx_data[0].statistics.slot_to_slot + (uint32_t) 12) * 12;
+			H3_TIMER->TMR0_CTRL |= 0x3;
+
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
+#ifdef LOCIG_ANALYZER
+				h3_gpio_clr(16);
+#endif
 				dmx_receive_state = IDLE;
 				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
 				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
-				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
+				dmb();
 			}
 			break;
 		case RDMDATA:
 			if (dmx_data_index > RDM_DATA_BUFFER_SIZE) {
 				dmx_receive_state = IDLE;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
 			} else {
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 				rdm_checksum += data;
@@ -508,12 +383,10 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 			const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				rdm_data_receive_end = BCM2835_ST->CLO;
+				rdm_data_receive_end = h3_hs_timer_lo_us();;
+				dmb();
 			}
 			dmx_receive_state = IDLE;
-#ifdef LOGIC_ANALYZER
-			bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
 			break;
 		case RDMDISCFE:
 			switch (data) {
@@ -529,6 +402,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 				break;
 			}
+
 			if (dmx_data_index == 9 ) {
 				dmx_receive_state = RDMDISCEUID;
 				rdm_disc_index = 0;
@@ -537,6 +411,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 		case RDMDISCEUID:
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_disc_index++;
+
 			if (rdm_disc_index == 2 * RDM_UID_SIZE) {
 				dmx_receive_state = RDMDISCECS;
 				rdm_disc_index = 0;
@@ -545,34 +420,35 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_in_handler(void) {
 		case RDMDISCECS:
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_disc_index++;
+
+
 			if (rdm_disc_index == 4) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				dmx_receive_state = IDLE;
-				rdm_data_receive_end = BCM2835_ST->CLO;
-#ifdef LOGIC_ANALYZER
-				bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-#endif
+				rdm_data_receive_end = h3_hs_timer_lo_us();;
+				dmb();
 			}
+
 			break;
 		default:
+			dmx_receive_state = IDLE;
+			dmx_is_previous_break_dmx = false;
 			break;
 		}
+#ifdef LOCIG_ANALYZER
+		h3_gpio_clr(6);
+#endif
+	} else {
 	}
 
 	dmx_fiq_micros_previous = dmx_fiq_micros_current;
-
-#ifdef LOGIC_ANALYZER
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);
-#endif
-
-	dmb();
 }
 
 /**
- * Timer 1 interrupt DMX Receiver
+ * Timer 0 interrupt DMX Receiver
  * Slot time-out
  */
-static void irq_timer1_dmx_receive(const uint32_t clo) {
+static void irq_timer0_dmx_receive(uint32_t clo) {
 	dmb();
 	if (dmx_receive_state == DMXDATA) {
 		if (clo - dmx_fiq_micros_current > dmx_data[0].statistics.slot_to_slot) {
@@ -580,61 +456,66 @@ static void irq_timer1_dmx_receive(const uint32_t clo) {
 			dmx_receive_state = IDLE;
 			dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = dmx_data_index - 1;
 			dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
-#ifdef LOGIC_ANALYZER
-			bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
-			bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
+#ifdef LOCIG_ANALYZER
+			h3_gpio_clr(16);
 #endif
 		} else {
-			BCM2835_ST->C1 = clo + dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot;
+			H3_TIMER->TMR0_INTV = dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot * 12;
+			H3_TIMER->TMR0_CTRL |= 0x3;
 		}
 	}
 }
 
 /**
- * Timer 3 interrupt DMX Receiver
+ * Timer 1 interrupt DMX Receiver
  * Statistics
  */
-static void irq_timer3_dmx_receive(const uint32_t clo) {
-	BCM2835_ST->C3 = clo + (uint32_t) 1000000;
+static void irq_timer1_dmx_receive(uint32_t clo) {
 	dmb();
 	dmx_updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
 	dmx_packets_previous = total_statistics.dmx_packets;
 }
 
 /**
- * Timer 1 interrupt DMX Sender
+ * Timer 0 interrupt DMX Sender
  */
-static void irq_timer1_dmx_sender(const uint32_t clo) {
+static void irq_timer0_dmx_sender(uint32_t clo) {
 	switch (dmx_send_state) {
 	case IDLE:
 	case DMXINTER:
-		BCM2835_ST->C1 = clo + dmx_output_break_time;
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN | PL011_LCRH_BRK;
+		H3_TIMER->TMR0_INTV = dmx_output_break_time * 12;
+		H3_TIMER->TMR0_CTRL |= 0x3;
+		EXT_UART->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		dmx_send_break_micros = clo;
 		dmb();
 		dmx_send_state = BREAK;
 		break;
 	case BREAK:
-		BCM2835_ST->C1 = clo + dmx_output_mab_time;
-		BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN;
+		H3_TIMER->TMR0_INTV = dmx_output_mab_time * 12;
+		H3_TIMER->TMR0_CTRL |= 0x3;
+		EXT_UART->LCR = UART_LCR_8_N_2;
 		dmb();
 		dmx_send_state = MAB;
 		break;
 	case MAB:
-		BCM2835_ST->C1 = dmx_send_break_micros + dmx_output_period;
+		H3_TIMER->TMR0_INTV = dmx_output_period * 12;
+		H3_TIMER->TMR0_CTRL |= 0x3;
 
-		for (dmx_send_current_slot = 0; !(BCM2835_PL011->FR & PL011_FR_TXFF); dmx_send_current_slot++) {
+		uint8_t fifo_cnt = 16;
+		bool is_empty = EXT_UART->LSR & UART_LSR_THRE;
+
+		for (dmx_send_current_slot = 0; is_empty && fifo_cnt-- > 0 ; dmx_send_current_slot++) {
 			if (dmx_send_current_slot >= dmx_send_data_length) {
 				break;
 			}
 
-			BCM2835_PL011->DR = dmx_data[0].data[dmx_send_current_slot];
+			EXT_UART->O00.THR = dmx_data[0].data[dmx_send_current_slot];
 		}
 
 		if (dmx_send_current_slot < dmx_send_data_length) {
 			dmb();
 			dmx_send_state = DMXDATA;
-			BCM2835_PL011->IMSC = BCM2835_PL011->IMSC | PL011_IMSC_TXIM;
+			EXT_UART->O04.IER = UART_IER_ETBEI;
 		} else {
 			dmb();
 			dmx_send_state = DMXINTER;
@@ -642,8 +523,8 @@ static void irq_timer1_dmx_sender(const uint32_t clo) {
 
 		break;
 	case DMXDATA:
-		//printf("Output period too short (brk %d, mab %d, period %d, dlen %d, slot %d)\n",
-		//		(int)dmx_output_break_time, (int)dmx_output_mab_time, (int)dmx_output_period, (int)dmx_send_data_length, (int)dmx_send_current_slot);
+		printf("Output period too short (brk %d, mab %d, period %d, dlen %d, slot %d)\n",
+				(int)dmx_output_break_time, (int)dmx_output_mab_time, (int)dmx_output_period, (int)dmx_send_data_length, (int)dmx_send_current_slot);
 		assert(0);
 		break;
 	default:
@@ -653,129 +534,141 @@ static void irq_timer1_dmx_sender(const uint32_t clo) {
 }
 
 /**
- * PL011 TX interrupt
+ * EXT_UART TX interrupt
  */
-void __attribute__((interrupt("FIQ"))) fiq_dmx_out_handler(void) {
-	dmb();
+void fiq_dmx_out_handler(void) {
+	if (EXT_UART->O08.IIR & UART_IIR_IID_THRE) {
 
-	if (BCM2835_PL011->MIS == PL011_MIS_TXMIS) {
+		uint8_t fifo_cnt = 16;
 
-		for (; !(BCM2835_PL011->FR & PL011_FR_TXFF); dmx_send_current_slot++) {
+		for (; fifo_cnt-- > 0; dmx_send_current_slot++) {
 			if (dmx_send_current_slot >= dmx_send_data_length) {
 				break;
 			}
 
-			BCM2835_PL011->DR = dmx_data[0].data[dmx_send_current_slot];
+			EXT_UART->O00.THR = dmx_data[0].data[dmx_send_current_slot];
 		}
 
 		if (dmx_send_current_slot >= dmx_send_data_length) {
-			BCM2835_PL011->IMSC = BCM2835_PL011->IMSC & ~ PL011_IMSC_TXIM;
+			EXT_UART->O04.IER &= ~UART_IER_ETBEI; //UART_IER_PTIME;
 			dmb();
 			dmx_send_state = DMXINTER;
 		}
+	}
+}
 
-		BCM2835_PL011->ICR = PL011_ICR_TXIC;
+static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
+	dmb();
+
+	if (dmx_port_direction == DMX_PORT_DIRECTION_INP) {
+		fiq_dmx_in_handler();
+	} else {
+		fiq_dmx_out_handler();
 	}
 
+#if (EXT_UART_NUMBER == 1)
+	H3_GIC_CPUIF->EOI = H3_UART1_IRQn;
+	gic_unpend(H3_UART1_IRQn);
+#elif (EXT_UART_NUMBER == 3)
+	H3_GIC_CPUIF->EOI = H3_UART3_IRQn;
+	gic_unpend(H3_UART3_IRQn);
+#endif
+
 	dmb();
 }
 
-static void pl011_enable_fifo(void) {
-	dmb();
-	BCM2835_PL011->CR = (uint32_t) 0;
-	BCM2835_PL011->ICR = 0x7FF;
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_FEN;
-	BCM2835_PL011->IFLS = PL011_IFLS_TXIFLSEL_1_4;
-	BCM2835_PL011->CR = PL011_CR_TXE | PL011_CR_RXE | PL011_CR_UARTEN;
-	dmb();
+static void uart_enable_fifo(void) {	// DMX Output
+	EXT_UART->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
+	EXT_UART->O04.IER = 0;
+	isb();
 }
 
-static void pl011_disable_fifo(void) {
-	dmb();
-	BCM2835_PL011->CR = (uint32_t) 0;
-	BCM2835_PL011->ICR = 0x7FF;
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
-	BCM2835_PL011->IMSC = BCM2835_PL011->IMSC | PL011_IMSC_RXIM;
-	BCM2835_PL011->CR = PL011_CR_TXE | PL011_CR_RXE | PL011_CR_UARTEN;
-	dmb();
+static void uart_disable_fifo(void) {	// DMX Input
+	EXT_UART->O08.FCR = 0;
+	EXT_UART->O04.IER = UART_IER_ERBFI; // (1 << 2) | (1 << 0);
+	isb();
 }
 
-/**
- * @ingroup dmx
- *
- */
 static void dmx_start_data(void) {
 	switch (dmx_port_direction) {
 	case DMX_PORT_DIRECTION_OUTP:
 		dmx_send_always = true;
-		dmb();
 		dmx_send_state = IDLE;
 
-		pl011_enable_fifo();
-
-		irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_sender);
-
-		arm_install_handler((unsigned)fiq_dmx_out_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
+		uart_enable_fifo();
 		__enable_fiq();
-		dmb();
 
-		const uint32_t clo = BCM2835_ST->CLO;
+		irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_sender);
 
-		if (clo - dmx_send_break_micros > dmx_output_period)  {
-			BCM2835_ST->C1 = clo + 4;
+		const uint32_t clo = h3_hs_timer_lo_us();
+
+		if (clo - dmx_send_break_micros > dmx_output_period) {
+			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
+			H3_TIMER->TMR0_INTV = 4 * 12;
+			H3_TIMER->TMR0_CTRL |= 0x3;
 		} else {
-			BCM2835_ST->C1 = dmx_output_period + dmx_send_break_micros + 4;
+			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
+			H3_TIMER->TMR0_INTV = (dmx_output_period + 4) * 12;
+			H3_TIMER->TMR0_CTRL |= 0x3;
 		}
 
-		dmb();
+		isb();
 
 		break;
 	case DMX_PORT_DIRECTION_INP:
-		dmb();
 		dmx_receive_state = IDLE;
 
-		pl011_disable_fifo();
+		irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_receive);
 
-		irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
-		dmb();
+		while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY) {
+			(void) EXT_UART->O00.RBR;
+		}
 
-		arm_install_handler((unsigned)fiq_dmx_in_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
+		uart_disable_fifo();
 		__enable_fiq();
-		dmb();
+
 		break;
 	default:
 		break;
 	}
+
+	is_stopped = false;
 }
 
 static void dmx_stop_data(void) {
 	int i;
 
-	do {
-		dmb();
-		if (dmx_send_state == DMXINTER) {
-			while ((BCM2835_PL011->FR & PL011_FR_BUSY) == PL011_FR_BUSY)
-				;
-			dmb();
-			BCM2835_ST->C1 = BCM2835_ST->CLO - 1;
-			BCM2835_ST->CS = BCM2835_ST_CS_M1;
+	if (is_stopped) {
+		return;
+	}
 
+	if (dmx_send_always) {
+		do {
 			dmb();
-			dmx_send_state = IDLE;
-		}
-		dmb();
-	} while (dmx_send_state != IDLE);
+			if (dmx_send_state == DMXINTER) {
+				while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY)
+					;
+				dmb();
+				dmx_send_state = IDLE;
+			}
+			dmb();
+		} while (dmx_send_state != IDLE);
+	}
 
-	irq_timer_set(IRQ_TIMER_1, NULL);
+	dmx_send_always = false;
 
 	__disable_fiq();
+	isb();
 
-	dmb();
+	irq_timer_set(IRQ_TIMER_0, NULL);
+
 	dmx_receive_state = IDLE;
 
 	for (i = 0; i < DMX_DATA_BUFFER_INDEX_ENTRIES; i++) {
 		dmx_data[i].statistics.slots_in_packet = 0;
 	}
+
+	is_stopped = true;
 }
 
 void dmx_set_port_direction(_dmx_port_direction port_direction, bool enable_data) {
@@ -784,15 +677,15 @@ void dmx_set_port_direction(_dmx_port_direction port_direction, bool enable_data
 
 		switch (port_direction) {
 		case DMX_PORT_DIRECTION_OUTP:
-			bcm2835_gpio_set(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
+			h3_gpio_set(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_OUTP;
 			break;
 		case DMX_PORT_DIRECTION_INP:
-			bcm2835_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
+			h3_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_INP;
 			break;
 		default:
-			bcm2835_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
+			h3_gpio_clr(dmx_data_direction_gpio_pin);// 0 = input, 1 = output
 			dmx_port_direction = DMX_PORT_DIRECTION_INP;
 			break;
 		}
@@ -805,70 +698,65 @@ void dmx_set_port_direction(_dmx_port_direction port_direction, bool enable_data
 	}
 }
 
-static void pl011_init(void) {
-	uint32_t ibrd = 12;													// Default UART CLOCK 48Mhz
+#define GATE_UART1		(1 << 17)
+#define RESET4_UART1	(1 << 17)
 
-	// Work around BROADCOM firmware bug
-	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) != 48000000) {
-		(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
-		ibrd = 1;
-	}
+#define GATE_UART3		(1 << 19)
+#define RESET4_UART3	(1 << 19)
 
-	BCM2835_PL011->CR = 0;												// Disable everything
+static void uart_init(void) {
+#if (EXT_UART_NUMBER == 1)
+	uint32_t value = H3_PIO_PORTG->CFG0;
+	// PG6, TX
+	value &= ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
+	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
+	// PG7, RX
+	value &= ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
+	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
+	H3_PIO_PORTG->CFG0 = value;
 
-	dmb();
+	H3_CCU->BUS_CLK_GATING3 |= GATE_UART1;
+	H3_CCU->BUS_SOFT_RESET4 |= RESET4_UART1;
+#elif (EXT_UART_NUMBER == 3)
+	uint32_t value = H3_PIO_PORTA->CFG1;
+	// PA13, TX
+	value &= ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
+	value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
+	// PA14, RX
+	value &= ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
+	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
+	H3_PIO_PORTA->CFG1 = value;
 
-    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
+	H3_CCU->BUS_CLK_GATING3 |= GATE_UART3;
+	H3_CCU->BUS_SOFT_RESET4 |= RESET4_UART3;
+#else
+ #error Unsupported UART device configured
+#endif
 
-    // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+	EXT_UART->O08.FCR = 0;
 
-    dmb();
+	EXT_UART->LCR = UART_LCR_DLAB;
+	EXT_UART->O00.DLL = BAUD_250000_L;
+	EXT_UART->O04.DLH = BAUD_250000_H;
+	EXT_UART->LCR = UART_LCR_8_N_2;
 
-	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
-		;																// Poll the "flags register" to wait for the UART to stop transmitting or receiving
-
-	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;								// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
-	BCM2835_PL011->ICR = 0x7FF;											// Clear all interrupt status
-	BCM2835_PL011->IBRD = ibrd;											//
-	BCM2835_PL011->FBRD = 0;											//
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;			// Set 8, N, 2, FIFO disabled
-	BCM2835_PL011->CR = PL011_CR_TXE | PL011_CR_RXE | PL011_CR_UARTEN;	// Enable UART
-
-	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
-	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
-
-	dmb();
+	isb();
 }
 
 void dmx_init_set_gpiopin(uint8_t gpio_pin) {
-	assert((gpio_pin < 32) && (gpio_pin != RPI_V2_GPIO_P1_08) && (gpio_pin != RPI_V2_GPIO_P1_10));
-
-	if ((gpio_pin != RPI_V2_GPIO_P1_08) && (gpio_pin != RPI_V2_GPIO_P1_10)){
-		dmx_data_direction_gpio_pin = gpio_pin;
-	}
+	dmx_data_direction_gpio_pin = gpio_pin;
 }
 
 void dmx_init(void) {
-	bcm2835_gpio_fsel(dmx_data_direction_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(dmx_data_direction_gpio_pin);	// 0 = input, 1 = output
-	dmb();
+	h3_gpio_fsel(dmx_data_direction_gpio_pin, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(dmx_data_direction_gpio_pin);	// 0 = input, 1 = output
 
-#ifdef LOGIC_ANALYZER
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
-
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);	// FIQ
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH2);	// BREAK
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH3);	// DMX DATA
-	bcm2835_gpio_set(GPIO_ANALYZER_CH4);	// IDLE
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);	// IRQ
+#ifdef LOCIG_ANALYZER
+	h3_gpio_clr(12); // FIQ
+	h3_gpio_clr(11); // BREAK
+	h3_gpio_clr(6);  // DR
+	h3_gpio_clr(14); // SC
+	h3_gpio_clr(16); // DATA
 #endif
 
 	dmx_clear_data();
@@ -886,9 +774,20 @@ void dmx_init(void) {
 
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_3, irq_timer3_dmx_receive);
-	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
-	dmb();
+	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
+	H3_TIMER->TMR1_INTV = 0xB71B00; // 1 second
+	H3_TIMER->TMR1_CTRL |= 0x3; /* set reload bit */
 
-	pl011_init();
+#if (EXT_UART_NUMBER == 1)
+	gic_fiq_config(H3_UART1_IRQn, 1);
+#elif (EXT_UART_NUMBER == 3)
+	gic_fiq_config(H3_UART3_IRQn, 1);
+#else
+ #error Unsupported UART device configured
+#endif
+
+	uart_init();
+
+	__disable_fiq();
+	arm_install_handler((unsigned) fiq_dmx, ARM_VECTOR(ARM_VECTOR_FIQ));
 }

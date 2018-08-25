@@ -35,6 +35,7 @@
 void rdm_send_data(const uint8_t *data, uint16_t data_length) {
 	uint16_t i;
 
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
 	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
 
@@ -52,9 +53,10 @@ void rdm_send_data(const uint8_t *data, uint16_t data_length) {
 
 }
 
-static void rdm_send_no_break(const uint8_t *data, uint16_t data_length) {
+void rdm_send_no_break(const uint8_t *data, uint16_t data_length) {
 	uint16_t i;
 
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 
 	for (i = 0; i < data_length; i++) {
@@ -69,13 +71,16 @@ static void rdm_send_no_break(const uint8_t *data, uint16_t data_length) {
 
 void rdm_send_discovery_respond_message(const uint8_t *data, uint16_t data_length) {
 	const uint32_t delay = BCM2835_ST->CLO - rdm_get_data_receive_end();
+
 	// 3.2.2 Responder Packet spacing
 	if (delay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
 	}
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
+
 	rdm_send_no_break(data, data_length);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }

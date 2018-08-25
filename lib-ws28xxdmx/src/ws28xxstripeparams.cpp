@@ -23,18 +23,22 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
+#include <assert.h>
 
 #if defined (__circle__)
  #include <circle/util.h>
- #define ALIGNED
 #elif (__linux__)
  #include <string.h>
- #define ALIGNED
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "ws28xxstripeparams.h"
@@ -45,12 +49,14 @@
 #include "ws28xxstripe.h"
 #include "ws28xxstripedmx.h"
 
-#define SET_LED_TYPE_MASK	1<<0
-#define SET_LED_COUNT_MASK	1<<1
+#define SET_LED_TYPE_MASK		1<<0
+#define SET_LED_COUNT_MASK		1<<1
+#define SET_DMX_START_ADDRESS	1<<2
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";
 static const char PARAMS_LED_COUNT[] ALIGNED = "led_count";
+static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 
 #define LED_TYPES_COUNT 			7
 #define LED_TYPES_MAX_NAME_LENGTH 	8
@@ -87,12 +93,23 @@ void WS28XXStripeParams::callbackFunction(const char *pLine) {
 			nLedCount = value16;
 			m_bSetList |= SET_LED_COUNT_MASK;
 		}
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if (value16 != 0 && value16 <= 512) {
+			m_nDmxStartAddress = value16;
+			m_bSetList |= SET_DMX_START_ADDRESS;
+		}
 	}
 }
 
-WS28XXStripeParams::WS28XXStripeParams(void): m_bSetList(0) {
-	tLedType = WS2801;
-	nLedCount = 170;
+WS28XXStripeParams::WS28XXStripeParams(void):
+	m_bSetList(0),
+	tLedType(WS2801),
+	nLedCount(170),
+	m_nDmxStartAddress(1)
+{
 }
 
 WS28XXStripeParams::~WS28XXStripeParams(void) {
@@ -108,37 +125,39 @@ bool WS28XXStripeParams::Load(void) {
 void WS28XXStripeParams::Set(SPISend *pSpiSend) {
 	assert(pSpiSend != 0);
 
-	if (IsMaskSet(SET_LED_TYPE_MASK)) {
+	if (isMaskSet(SET_LED_TYPE_MASK)) {
 		pSpiSend->SetLEDType(tLedType);
 	}
 
-	if (IsMaskSet(SET_LED_COUNT_MASK)) {
+	if (isMaskSet(SET_LED_COUNT_MASK)) {
 		pSpiSend->SetLEDCount(nLedCount);
+	}
+
+	if (isMaskSet(SET_DMX_START_ADDRESS)) {
+		pSpiSend->SetDmxStartAddress(m_nDmxStartAddress);
 	}
 }
 
 void WS28XXStripeParams::Dump(void) {
+#ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
-	if (IsMaskSet(SET_LED_TYPE_MASK)) {
-		printf(" Type : %s [%d]\n", GetLedTypeString(tLedType), (int) tLedType);
+	if (isMaskSet(SET_LED_TYPE_MASK)) {
+		printf(" %s=%s [%d]\n", PARAMS_LED_TYPE, GetLedTypeString(tLedType), (int) tLedType);
 	}
 
-	if (IsMaskSet(SET_LED_COUNT_MASK)) {
-		printf(" Count : %d\n", (int) nLedCount);
+	if (isMaskSet(SET_LED_COUNT_MASK)) {
+		printf(" %s=%d\n", PARAMS_LED_COUNT, (int) nLedCount);
 	}
-}
 
-TWS28XXType WS28XXStripeParams::GetLedType(void) const {
-	return tLedType;
-}
-
-uint16_t WS28XXStripeParams::GetLedCount(void) const {
-	return nLedCount;
+	if (isMaskSet(SET_DMX_START_ADDRESS)) {
+		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, (int) m_nDmxStartAddress);
+	}
+#endif
 }
 
 const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
@@ -149,7 +168,7 @@ const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
 	return led_types[tType];
 }
 
-bool WS28XXStripeParams::IsMaskSet(uint16_t nMask) const {
+bool WS28XXStripeParams::isMaskSet(uint16_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 

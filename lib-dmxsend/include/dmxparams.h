@@ -2,7 +2,7 @@
  * @file dmxparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +50,20 @@ public:
 	~DMXParams(void);
 
 	bool Load(void);
-
-	uint8_t GetBreakTime(void) const;
-	uint8_t GetMabTime(void) const;
-	uint8_t GetRefreshRate(void) const;
-
 	void Set(DMXSend *);
 	void Dump(void);
+
+	inline uint8_t GetBreakTime(void) {
+		return m_nBreakTime;
+	}
+
+	inline uint8_t GetMabTime(void) {
+		return m_nMabTime;
+	}
+
+	inline uint8_t GetRefreshRate(void) {
+		return m_nRefreshRate;
+	}
 
 private:
 	bool isMaskSet(uint16_t) const;

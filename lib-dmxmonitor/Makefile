@@ -1,4 +1,6 @@
 #
-EXTRA_INCLUDES = ../lib-fb/include ../lib-lightset/include
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-console/include ../lib-lightset/include
 #
 include ../firmware-template/lib/Rules.mk

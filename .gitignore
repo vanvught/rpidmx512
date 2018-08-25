@@ -20,10 +20,27 @@ lib*.a
 *._txt
 *.txt_
 
+# Linux 
 .nfs*
 .nfs.*
 
+# Apple
 .DS*
 ._.DS*
-
 ._*
+
+# Eclipse
+.tracecompass
+
+# H2+/H3 binaries 
+*.uImage
+
+# lib-l6470 examples binaries
+get_set_param_test
+get_temp
+input_output
+limit_switch
+precise_move
+simple_move
+SparkFunGetSetParamTest
+

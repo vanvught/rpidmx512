@@ -25,15 +25,19 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <assert.h>
 
 #if defined (__circle__)
-#include <circle/logger.h>
-#include <circle/interrupt.h>
+ #include <circle/interrupt.h>
+#endif
+
+#ifndef NDEBUG
+#if defined (__circle__)
+ #include <circle/logger.h>
 #elif (__linux__)
 #else
  #include "monitor.h"
+#endif
 #endif
 
 #include "ws28xxstripedmx.h"
@@ -109,12 +113,12 @@ void SPISend::Stop(void) {
 	}
 }
 
-void SPISend::SetData(uint8_t nPortId, const uint8_t *data, uint16_t length) {
-	uint16_t i = (uint16_t) 0;
-	uint16_t j = (uint16_t) 0;
+void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+	assert(pData != 0);
+	assert(nLength <= DMX_MAX_CHANNELS);
 
-	uint16_t beginIndex = (uint16_t) 0;
-	uint16_t endIndex = (uint16_t) 0;
+	uint16_t i = (uint16_t) 0;
+	uint16_t beginIndex, endIndex;
 
 	bool bUpdate = false;
 
@@ -125,44 +129,58 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *data, uint16_t length) {
 	switch (nPortId) {
 	case 0:
 		beginIndex = (uint16_t) 0;
-		endIndex = MIN(m_nLEDCount, (uint16_t) (length / (uint16_t) m_nChannelsPerLed));
+		endIndex = MIN(m_nLEDCount, (uint16_t) (nLength / (uint16_t) m_nChannelsPerLed));
 		bUpdate = (endIndex == m_nLEDCount);
+		if (m_nLEDCount < m_nBeginIndexPortId1) {
+			i = m_nDmxStartAddress - 1;
+		}
 		break;
 	case 1:
 		beginIndex = (uint16_t) m_nBeginIndexPortId1;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 2:
 		beginIndex = (uint16_t) m_nBeginIndexPortId2;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	case 3:
 		beginIndex = (uint16_t) m_nBeginIndexPortId3;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (length / (uint16_t) m_nChannelsPerLed)));
+		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLEDCount);
 		break;
 	default:
+		beginIndex = 0;
+		endIndex = 0;
+		bUpdate = false;
 		break;
 	}
 
+#ifndef NDEBUG
 #if defined (__circle__)
-	// CLogger::Get ()->Write(__FUNCTION__, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
+	CLogger::Get ()->Write(__FUNCTION__, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
 #else
-	//monitor_line(MONITOR_LINE_STATS, "%d-%x:%x:%x-%d|%s", nPortId, data[0], data[1], data[2], length, bUpdate == false ? "False" : "True");
+	monitor_line(MONITOR_LINE_STATS, "%d-%d:%x %x %x-%d|%s", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength, bUpdate == false ? "False" : "True");
+#endif
 #endif
 
 	while (m_pLEDStripe->IsUpdating()) {
 		// wait for completion
 	}
 
-	for (j = beginIndex; j < endIndex; j++) {
+	for (uint16_t j = beginIndex; j < endIndex; j++) {
 		if (m_LEDType == SK6812W) {
-			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2], data[i + 3]);
+			if (i + 3 > nLength) {
+				break;
+			}
+			m_pLEDStripe->SetLED(j, pData[i], pData[i + 1], pData[i + 2], pData[i + 3]);
 			i = i + 4;
 		} else {
-			m_pLEDStripe->SetLED(j, data[i], data[i + 1], data[i + 2]);
+			if (i + 2 > nLength) {
+				break;
+			}
+			m_pLEDStripe->SetLED(j, pData[i], pData[i + 1], pData[i + 2]);
 			i = i + 3;
 		}
 	}
@@ -203,6 +221,8 @@ uint16_t SPISend::GetLEDCount(void) const {
 
 bool SPISend::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
+
+	//FIXME Footprint
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS)) {
 		m_nDmxStartAddress = nDmxStartAddress;

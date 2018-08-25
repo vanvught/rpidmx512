@@ -1,0 +1,7 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-hal/include
+#
+include ../h3-firmware-template/lib/Rules.mk
+

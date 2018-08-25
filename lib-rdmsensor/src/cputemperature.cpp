@@ -39,7 +39,7 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetRangeMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
 	SetRangeMax(RDM_SENSOR_RANGE_MAX);
 	SetNormalMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
-	SetNormalMax(85); //TODOD This is now a fixed RPi value
+	SetNormalMax((int16_t) Hardware::Get()->GetCoreTemperatureMax());
 	SetDescription("CPU");
 }
 

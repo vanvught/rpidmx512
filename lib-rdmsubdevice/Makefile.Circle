@@ -8,6 +8,7 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-rdm/include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../include
+INCLUDE	+= -I ../lib-debug/include
 
 OBJS  = src/rdmsubdevice.o src/rdmsubdevices.o
 OBJS += src/rdmsubdevicedummy.o

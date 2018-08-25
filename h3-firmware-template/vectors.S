@@ -90,6 +90,9 @@ reset:
     ldr r0, =__svc_stack_top
     mov sp, r0
 
+    cpsid i
+    cpsid f
+
     @ clear bss section
     mov   r0, #0
     ldr   r1, =__bss_start

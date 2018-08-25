@@ -36,18 +36,17 @@ public:
 	~TLC59711DmxParams(void);
 
 	bool Load(void);
+	void Set(TLC59711Dmx *);
+	void Dump(void);
 
 	bool IsSetLedType(void) const;
 	bool IsSetLedCount(void) const;
-
-	void Set(TLC59711Dmx *);
-	void Dump(void);
 
 public:
 	static const char *GetLedTypeString(TTLC59711Type tTTLC59711Type);
 
 private:
-	bool IsMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint16_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

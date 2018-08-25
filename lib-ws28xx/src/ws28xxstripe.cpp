@@ -27,8 +27,11 @@
 #include <assert.h>
 
 #if defined(__linux__)
- #include <string.h>
  #include "bcm2835.h"
+ #include <string.h>
+#elif defined(H3)
+ #include "h3_spi.h"
+ #include "util.h"
 #else
  #include "bcm2835_spi.h"
  #include "util.h"
@@ -60,6 +63,12 @@ WS28XXStripe::WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClock
 	assert(m_pBlackoutBuffer != 0);
 	memset(m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
 
+#ifdef H3
+	if (Type != WS2801) {
+		h3_spi_set_ws28xx_mode(true);
+	}
+#endif
+
 	bcm2835_spi_begin();
 
 	if (Type == WS2801) {
@@ -71,9 +80,6 @@ WS28XXStripe::WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClock
 	} else {
 		bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) 6400000));
 	}
-
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
-	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
 
 	Update();
 }

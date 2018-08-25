@@ -1,4 +1,6 @@
 #
-EXTRA_INCLUDES = ../lib-fb/include ../lib-hal/include ../lib-bcm2835/include 
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-console/include ../lib-hal/include 
 #
 include ../firmware-template/lib/Rules.mk

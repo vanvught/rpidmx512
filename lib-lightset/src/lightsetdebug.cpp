@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "lightsetdebug.h"

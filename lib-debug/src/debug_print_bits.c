@@ -27,13 +27,13 @@
 #include <stdint.h>
 
 void debug_print_bits(uint32_t u) {
-	unsigned i;
+	uint32_t i;
 
 	uint32_t b = 1 << 31;
 
 	for (i = 0; i < 32; i++) {
 		if ((b & u) == b) {
-			unsigned bit_number = 31-i;
+			uint32_t bit_number = 31 - i;
 			printf("%-2d ", bit_number);
 		}
 		b = b >> 1;

@@ -1,3 +1,4 @@
+#if defined (BARE_METAL)
 /**
  * @file rdmresponder.cpp
  *
@@ -24,9 +25,9 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
+//#ifndef NDEBUG
  #include <stdio.h>
-#endif
+//#endif
 #include <assert.h>
 
 #include "rdmresponder.h"
@@ -60,9 +61,6 @@ RDMResponder::~RDMResponder(void) {
 }
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
-#ifndef NDEBUG
-	RDMMessage::Print(pResponse);
-#endif
 	uint16_t nLength = RDM_RESPONDER_INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
@@ -72,29 +70,31 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
 		Rdm::SendDiscoveryRespondMessage(pResponse, nLength);
+	} else {
 	}
+
+#ifndef NDEBUG
+	RDMMessage::Print(pResponse);
+#endif
 
 	return nLength;
 }
 
 int RDMResponder::Run(void) {
 	int16_t nLength;
+
+	DMXReceiver::Run(nLength);
+
 	const uint8_t *pDmxDataIn = DMXReceiver::Run(nLength);
 
 	if (m_IsEnableSubDevices && (nLength == -1)) {
 		if (m_IsSubDeviceActive) {
-#ifndef NDEBUG
-			printf("\t%s:%s:%d - m_Responder.GetRDMSubDevices()->Stop()\n", __FILE__, __FUNCTION__, __LINE__);
-#endif
 			m_Responder.GetRDMSubDevices()->Stop();
 			m_IsSubDeviceActive = false;
 		}
 	} else if (pDmxDataIn != 0) {
 		m_Responder.GetRDMSubDevices()->SetData(pDmxDataIn, (uint16_t) nLength);
 		if (!m_IsSubDeviceActive) {
-#ifndef NDEBUG
-			printf("\t%s:%s:%d - m_Responder.GetRDMSubDevices()->Start()\n", __FILE__, __FUNCTION__, __LINE__);
-#endif
 			m_Responder.GetRDMSubDevices()->Start();
 			m_IsSubDeviceActive = true;
 		}
@@ -104,13 +104,6 @@ int RDMResponder::Run(void) {
 
 	if (pRdmDataIn == NULL) {
 		return RDM_RESPONDER_NO_DATA;
-	}
-
-	if (pRdmDataIn[0] == 0xFE) {
-#ifndef NDEBUG
-			printf("\t%s:%s:%d - RDM_RESPONDER_DISCOVERY_RESPONSE\n", __FILE__, __FUNCTION__, __LINE__);
-#endif
-		return RDM_RESPONDER_DISCOVERY_RESPONSE;
 	}
 
 #ifndef NDEBUG
@@ -128,10 +121,18 @@ int RDMResponder::Run(void) {
 			return HandleResponse((uint8_t *)m_pRdmCommand);
 			break;
 		default:
+#ifndef NDEBUG
+			printf("\t%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+			return RDM_RESPONDER_INVALID_DATA_RECEIVED;
 			break;
 		}
 	}
 
-	return RDM_RESPONDER_INVALID_DATA_RECEIVED;
+#ifndef NDEBUG
+	printf("\t%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+	return RDM_RESPONDER_DISCOVERY_RESPONSE;
 }
+#endif
 

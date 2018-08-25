@@ -40,7 +40,11 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Controller";
+#if defined (ORANGE_PI)
+ static const char DEVICE_LABEL[] ALIGNED = "Orange Pi RDM Controller";
+#else
+ static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Controller";
+#endif
 
 RDMDeviceController::RDMDeviceController(void) {
 	struct TRDMDeviceInfoData info;

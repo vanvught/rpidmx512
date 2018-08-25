@@ -2,7 +2,7 @@
  * @file monitor_line.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 #include "console.h"
 
 void monitor_line(const int line, const char *fmt, ...) {
+	// For H3, only enabled when NDEBUG is not defined
+#if !(defined(NDEBUG) && defined(H3))
 	va_list va;
 
 	console_clear_line(line);
@@ -39,4 +41,5 @@ void monitor_line(const int line, const char *fmt, ...) {
 		(void) vprintf(fmt, va);
 		va_end(va);
 	}
+#endif
 }

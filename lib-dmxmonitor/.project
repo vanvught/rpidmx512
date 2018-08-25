@@ -3,7 +3,7 @@
 	<name>lib-dmxmonitor</name>
 	<comment></comment>
 	<projects>
-		<project>lib-fb</project>
+		<project>lib-console</project>
 		<project>lib-lightset</project>
 	</projects>
 	<buildSpec>

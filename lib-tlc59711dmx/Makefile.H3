@@ -1,0 +1,7 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include ../lib-utils/include
+#
+include ../h3-firmware-template/lib/Rules.mk
+	

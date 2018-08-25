@@ -3,6 +3,7 @@
 	<name>lib-lightset</name>
 	<comment></comment>
 	<projects>
+		<project>lib-debug</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

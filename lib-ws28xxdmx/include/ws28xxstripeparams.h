@@ -36,18 +36,26 @@ public:
 	~WS28XXStripeParams(void);
 
 	bool Load(void);
-
-	TWS28XXType GetLedType(void) const;
-	uint16_t GetLedCount(void) const;
-
 	void Set(SPISend *);
 	void Dump(void);
+
+	inline TWS28XXType GetLedType(void) {
+		return tLedType;
+	}
+
+	inline uint16_t GetLedCount(void) {
+		return nLedCount;
+	}
+
+	inline uint16_t GetDmxStartAddress(void) {
+		return m_nDmxStartAddress;
+	}
 
 public:
 	static const char *GetLedTypeString(TWS28XXType);
 
 private:
-	bool IsMaskSet(uint16_t) const;
+	bool isMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -59,6 +67,7 @@ private:
     uint32_t m_bSetList;
 	TWS28XXType tLedType;
 	uint16_t nLedCount;
+	uint16_t m_nDmxStartAddress;
 };
 
 #endif /* WS28XXSTRIPEPARAMS_H_ */

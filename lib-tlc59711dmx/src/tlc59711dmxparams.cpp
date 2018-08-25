@@ -29,10 +29,10 @@
 #endif
 #include <assert.h>
 
-#if defined (__linux__)
+#if defined (__circle__)
+ #include <circle/util.h>
+#elif defined (__linux__)
  #include <string.h>
-#elif defined (__circle__)
- #include "circle/util.h"
 #else
  #include "util.h"
 #endif
@@ -80,19 +80,19 @@ void TLC59711DmxParams::Set(TLC59711Dmx* pTLC59711Dmx) {
 		return;
 	}
 
-	if(IsMaskSet(SET_LED_TYPE_MASK)) {
+	if(isMaskSet(SET_LED_TYPE_MASK)) {
 		pTLC59711Dmx->SetLEDType(m_LEDType);
 	}
 
-	if(IsMaskSet(SET_LED_COUNT_MASK)) {
+	if(isMaskSet(SET_LED_COUNT_MASK)) {
 		pTLC59711Dmx->SetLEDCount(m_nLEDCount);
 	}
 
-	if(IsMaskSet(SET_DMX_START_ADDRESS_MASK)) {
+	if(isMaskSet(SET_DMX_START_ADDRESS_MASK)) {
 		pTLC59711Dmx->SetDmxStartAddress(m_nDmxStartAddress);
 	}
 
-	if(IsMaskSet(SET_SPI_SPEED_MASK)) {
+	if(isMaskSet(SET_SPI_SPEED_MASK)) {
 		pTLC59711Dmx->SetSpiSpeedHz(m_nSpiSpeedHz);
 	}
 }
@@ -105,25 +105,25 @@ void TLC59711DmxParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
-	if(IsMaskSet(SET_LED_TYPE_MASK)) {
+	if(isMaskSet(SET_LED_TYPE_MASK)) {
 		printf(" %s=%d {RGB%s}\n", PARAMS_LED_TYPE, m_LEDType, m_LEDType == TTLC59711_TYPE_RGB ? "" : "W");
 	}
 
-	if(IsMaskSet(SET_LED_COUNT_MASK)) {
+	if(isMaskSet(SET_LED_COUNT_MASK)) {
 		printf(" %s=%d\n", PARAMS_LED_COUNT, m_nLEDCount);
 	}
 
-	if(IsMaskSet(SET_DMX_START_ADDRESS_MASK)) {
+	if(isMaskSet(SET_DMX_START_ADDRESS_MASK)) {
 		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
 	}
 
-	if(IsMaskSet(SET_SPI_SPEED_MASK)) {
+	if(isMaskSet(SET_SPI_SPEED_MASK)) {
 		printf(" %s=%d Hz\n", PARAMS_SPI_SPEED_HZ, m_nSpiSpeedHz);
 	}
 #endif
 }
 
-bool TLC59711DmxParams::IsMaskSet(uint16_t nMask) const {
+bool TLC59711DmxParams::isMaskSet(uint16_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 
@@ -189,9 +189,9 @@ const char* TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTTLC59711Type) {
 }
 
 bool TLC59711DmxParams::IsSetLedType(void) const {
-	return IsMaskSet(SET_LED_TYPE_MASK);
+	return isMaskSet(SET_LED_TYPE_MASK);
 }
 
 bool TLC59711DmxParams::IsSetLedCount(void) const {
-	return IsMaskSet(SET_LED_COUNT_MASK);
+	return isMaskSet(SET_LED_COUNT_MASK);
 }

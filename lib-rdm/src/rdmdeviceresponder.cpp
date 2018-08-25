@@ -49,7 +49,9 @@
 
 #define DMX_UNIVERSE_SIZE 512
 
-#if defined (RASPPI) || defined(__circle__) || defined (BARE_METAL)
+#if defined (ORANGE_PI)
+ static const char DEVICE_LABEL[] ALIGNED = "Orange Pi RDM Responder";
+#elif defined (RASPPI) || defined(__circle__) || defined (BARE_METAL)
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
  static const char DEVICE_LABEL[] ALIGNED = "Cygwin RDM Responder";
@@ -186,7 +188,8 @@ uint8_t RDMDeviceResponder::GetPersonalityCurrent(uint16_t nSubDevice) {
 
 void RDMDeviceResponder::SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality) {
 	if (nSubDevice != RDM_ROOT_DEVICE) {
-		return m_RDMSubDevices.SetPersonalityCurrent(nSubDevice, nPersonality);
+		m_RDMSubDevices.SetPersonalityCurrent(nSubDevice, nPersonality);
+		return;
 	}
 
 	m_tRDMDeviceInfo.current_personality = nPersonality;

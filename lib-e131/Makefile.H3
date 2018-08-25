@@ -1,0 +1,6 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-properties/include ../lib-lightset/include ../lib-hal/include ../lib-network/include ../lib-uuid/include ../lib-utils/include
+#
+include ../h3-firmware-template/lib/Rules.mk

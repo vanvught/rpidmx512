@@ -44,8 +44,8 @@
 extern "C" {
 #endif
 
-extern void monitor_line(const int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
-extern void monitor_time_uptime(const int);
+extern void monitor_line(int, /*@null@*/ const char *, ...) /*@modifies *stdout, errno@*/;
+extern void monitor_time_uptime(int);
 
 #ifdef __cplusplus
 }

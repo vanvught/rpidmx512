@@ -2,7 +2,7 @@
  * @file util.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +31,13 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )								///<
+#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)	///<
+#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
 
 #ifndef MAX
-#  define MAX(a,b)		(((a) > (b)) ? (a) : (b))											///<
-#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))											///<
-#endif
-
-#if 0
-#ifndef SWAP_UINT16
-#  define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
-#endif
-#ifndef SWAP_UINT32
-#  define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
-#endif
+ #define MAX(a,b)		(((a) > (b)) ? (a) : (b))
+ #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
 
 #ifdef __cplusplus

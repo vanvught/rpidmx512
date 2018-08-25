@@ -80,29 +80,28 @@ extern "C" {
 extern void dmx_init_set_gpiopin(uint8_t);
 extern void dmx_init(void);
 
-extern void dmx_set_send_data(const uint8_t *, const uint16_t);
-extern void dmx_set_send_data_without_sc(const uint8_t *, const uint16_t);
+extern void dmx_set_send_data(const uint8_t *, uint16_t);
+extern void dmx_set_send_data_without_sc(const uint8_t *, uint16_t);
 extern void dmx_clear_data(void);
 extern void dmx_set_port_direction(_dmx_port_direction, bool);
-extern const _dmx_port_direction dmx_get_port_direction(void);
-extern void dmx_data_send(const uint8_t *, const uint16_t);
+extern _dmx_port_direction dmx_get_port_direction(void);
+extern void dmx_data_send(const uint8_t *, uint16_t);
 extern /*@shared@*/const /*@null@*/uint8_t *dmx_get_available(void) ASSUME_ALIGNED;
 extern /*@shared@*/const uint8_t *dmx_get_current_data(void) ASSUME_ALIGNED;
 extern /*@shared@*/const uint8_t *dmx_is_data_changed(void);
-extern const uint32_t dmx_get_output_break_time(void);
-extern void dmx_set_output_break_time(const uint32_t);
-extern const uint32_t dmx_get_output_mab_time(void);
-extern void dmx_set_output_mab_time(const uint32_t);
+extern uint32_t dmx_get_output_break_time(void);
+extern void dmx_set_output_break_time(uint32_t);
+extern uint32_t dmx_get_output_mab_time(void);
+extern void dmx_set_output_mab_time(uint32_t);
 extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) ASSUME_ALIGNED;
 extern const volatile uint32_t dmx_get_updates_per_seconde(void);
-extern const uint16_t dmx_get_send_data_length(void);
-extern const uint32_t dmx_get_output_period(void);
-extern void dmx_set_output_period(const uint32_t);
+extern uint16_t dmx_get_send_data_length(void);
+extern uint32_t dmx_get_output_period(void);
+extern void dmx_set_output_period(uint32_t);
 extern /*@shared@*/const /*@null@*/uint8_t *rdm_get_available(void) ASSUME_ALIGNED;
 extern /*@shared@*/const uint8_t *rdm_get_current_data(void) ASSUME_ALIGNED;
-extern void rdm_available_set(const uint8_t);
-extern const uint32_t rdm_get_data_receive_end(void);
+extern uint32_t rdm_get_data_receive_end(void);
 
 #ifdef __cplusplus
 }
@@ -117,8 +116,8 @@ extern const uint32_t rdm_get_data_receive_end(void);
 #include "gpio.h"
 
 enum TDmxRdmPortDirection {
-	DMXRDM_PORT_DIRECTION_OUTP = 1,
-	DMXRDM_PORT_DIRECTION_INP = 2
+	DMXRDM_PORT_DIRECTION_OUTP = DMX_PORT_DIRECTION_OUTP,
+	DMXRDM_PORT_DIRECTION_INP = DMX_PORT_DIRECTION_INP
 };
 
 struct TDmxStatistics {

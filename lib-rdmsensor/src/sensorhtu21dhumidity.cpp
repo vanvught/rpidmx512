@@ -1,4 +1,4 @@
-#if defined (RASPPI) || defined(BARE_METAL) || defined(__circle__)
+#if defined (HAVE_I2C)
 /**
  * @file sensorhtu21dhumidity.h
  *

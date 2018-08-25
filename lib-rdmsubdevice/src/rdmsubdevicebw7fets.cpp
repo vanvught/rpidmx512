@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (HAVE_SPI)
 /**
  * @file rdmsubdevicebw7fets.cpp
  *

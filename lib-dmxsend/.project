@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>Circle</project>
+		<project>lib-debug</project>
 		<project>lib-dmx</project>
 		<project>lib-lightset</project>
 		<project>lib-properties</project>

@@ -31,5 +31,5 @@
 void SPISend::Print(void) {
 	printf("Led stripe parameters\n");
 	printf(" Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(m_LEDType), m_LEDType);
-	printf(" Count : %d", (int) m_nLEDCount);
+	printf(" Count : %d\n", (int) m_nLEDCount);
 }

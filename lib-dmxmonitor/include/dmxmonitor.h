@@ -46,12 +46,12 @@ public:
 
 	void SetData(uint8_t, const uint8_t *, uint16_t);
 
-#if defined (__linux__) || defined (__CYGWIN__)
+#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 #else
 	void Cls(void);
 #endif
 
-#if defined (__linux__) || defined (__CYGWIN__)
+#if defined (__linux__) || defined (__CYGWIN__)  || defined(__APPLE__)
 	void SetMaxDmxChannels(uint16_t);
 
 private:
@@ -64,7 +64,7 @@ private:
 private:
 	bool m_bIsStarted;
 	uint16_t m_nSlots;
-#if defined (__linux__) || defined (__CYGWIN__)
+#if defined (__linux__) || defined (__CYGWIN__)  || defined(__APPLE__)
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nMaxChannels;
 #endif

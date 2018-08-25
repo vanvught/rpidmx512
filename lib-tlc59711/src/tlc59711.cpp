@@ -29,10 +29,11 @@
 #endif
 #include <assert.h>
 
-#include "bcm2835.h"
-
 #if defined(__linux__)
-#elif defined(__circle__)
+ #include "bcm2835.h"
+ #include <string.h>
+#elif defined(H3)
+ #include "h3_spi.h"
 #else
  #include "bcm2835_spi.h"
 #endif

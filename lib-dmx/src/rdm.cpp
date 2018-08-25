@@ -24,15 +24,21 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <assert.h>
 
-#include "bcm2835.h"
+#ifdef H3
+ #include "h3_hs_timer.h"
+#else
+ #include "bcm2835.h"
+#endif
 
 #include "dmx.h"
 
 #include "rdm.h"
 #include "rdm_send.h"
+
+#include "rdmmessage.h"
 
 uint8_t Rdm::m_TransactionNumber = 0;
 
@@ -51,18 +57,28 @@ const uint8_t *Rdm::Receive(void) {
 
 const uint8_t *Rdm::ReceiveTimeOut(uint32_t nTimeOut) {
 	uint8_t *p = NULL;
+#ifdef H3
+	uint32_t micros_now = h3_hs_timer_lo_us();
+#else
 	uint32_t micros_now = BCM2835_ST->CLO;
+#endif
 
 	do {
 		if ((p = (uint8_t *)rdm_get_available()) != NULL) {
 			return (const uint8_t *) p;
 		}
+#ifdef H3
+	} while ( h3_hs_timer_lo_us() - micros_now < nTimeOut);
+#else
 	} while ( BCM2835_ST->CLO - micros_now < nTimeOut);
+#endif
 
 	return (const uint8_t *) p;
 }
 
 void Rdm::Send(struct TRdmMessage *pRdmCommand) {
+	assert(pRdmCommand != 0);
+
 	uint8_t *rdm_data = (uint8_t *)pRdmCommand;
 	uint8_t i;
 	uint16_t rdm_checksum = 0;
@@ -76,6 +92,10 @@ void Rdm::Send(struct TRdmMessage *pRdmCommand) {
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;
 
+#ifndef NDEBUG
+	RDMMessage::Print((const uint8_t *)pRdmCommand);
+#endif
+
 	SendRaw((const uint8_t *)pRdmCommand, pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 	m_TransactionNumber++;
@@ -86,8 +106,10 @@ void Rdm::SendRaw(const uint8_t *pRdmData, uint16_t nLength) {
 	assert(nLength != 0);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
+
 	rdm_send_data((const uint8_t *) pRdmData, nLength);
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
 }
 

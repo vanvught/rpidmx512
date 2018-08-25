@@ -29,13 +29,11 @@ all : builddirs $(TARGET) $(TARGET7)
 .PHONY: clean builddirs
 
 builddirs: 
-	@mkdir -p build build7 lib lib7 
+	@mkdir -p $(BUILD) $(BUILD7) lib lib7 
 	
 clean :
-	rm -f $(BUILD)*.o
-	rm -f $(BUILD7)*.o
-	rm -f $(TARGET)
-	rm -f $(TARGET7)
+	rm -rf $(BUILD) $(BUILD7)
+	rm -rf lib/ lib7/
 	rm -f $(LIST)
 	rm -f $(LIST7)
 	

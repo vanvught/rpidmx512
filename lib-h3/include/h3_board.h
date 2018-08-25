@@ -32,6 +32,8 @@
 
 #if defined(ORANGE_PI)
  #include "board/h3_opi_zero.h"
+#elif defined(ORANGE_PI_ONE)
+ #include "board/h3_opi_one.h"
 #elif defined(NANO_PI)
  #include "board/h3_nanopi_neo.h"
 #else
