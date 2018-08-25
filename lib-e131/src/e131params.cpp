@@ -44,10 +44,10 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_UNIVERSE_MASK	1<<0
-#define SET_MERGE_MODE_MASK	1<<1
-#define SET_OUTPUT_MASK		1<<2
-#define SET_CID_MASK		1<<3
+#define SET_UNIVERSE_MASK		1<<0
+#define SET_MERGE_MODE_MASK		1<<1
+#define SET_OUTPUT_MASK			1<<2
+#define SET_CID_MASK			1<<3
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
@@ -81,7 +81,10 @@ void E131Params::callbackFunction(const char *pLine) {
 
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
-		if(memcmp(value, "mon", 3) == 0) {
+		if (memcmp(value, "spi", 3) == 0) {
+			m_tOutputType = OUTPUT_TYPE_SPI;
+			m_bSetList |= SET_OUTPUT_MASK;
+		} else if (memcmp(value, "mon", 3) == 0) {
 			m_tOutputType = OUTPUT_TYPE_MONITOR;
 			m_bSetList |= SET_OUTPUT_MASK;
 		}
@@ -103,16 +106,18 @@ void E131Params::callbackFunction(const char *pLine) {
 		m_aCidString[UUID_STRING_LENGTH] = '\0';
 		m_bHaveCustomCid = true;
 		m_bSetList |= SET_CID_MASK;
+		return;
 	}
-
 }
 
-E131Params::E131Params(void): m_bSetList(0) {
-	m_nUniverse = E131_UNIVERSE_DEFAULT;
-	m_tMergeMode = E131_MERGE_HTP;
-	m_tOutputType = OUTPUT_TYPE_DMX;
+E131Params::E131Params(void):
+	m_bSetList(0),
+	m_nUniverse(E131_UNIVERSE_DEFAULT),
+	m_tOutputType(OUTPUT_TYPE_DMX),
+	m_tMergeMode(E131_MERGE_HTP),
+	m_bHaveCustomCid(false)
+{
 	memset(m_aCidString, 0, sizeof(m_aCidString));
-	m_bHaveCustomCid = false;
 }
 
 E131Params::~E131Params(void) {
@@ -134,11 +139,11 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 	}
 
 	if (isMaskSet(SET_UNIVERSE_MASK)) {
-		pE131Bridge->setUniverse(m_nUniverse);
+		pE131Bridge->SetUniverse(m_nUniverse);
 	}
 
 	if (isMaskSet(SET_MERGE_MODE_MASK)) {
-		pE131Bridge->setMergeMode(m_tMergeMode);
+		pE131Bridge->SetMergeMode(m_tMergeMode);
 	}
 
 }
@@ -164,7 +169,7 @@ void E131Params::Dump(void) {
 	}
 
 	if (isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%s\n", PARAMS_OUTPUT, m_tOutputType == OUTPUT_TYPE_MONITOR ? "mon" : "dmx");
+		printf(" %s=%s [%d]\n", PARAMS_OUTPUT, m_tOutputType == OUTPUT_TYPE_MONITOR ? "mon" : (m_tOutputType == OUTPUT_TYPE_SPI ? "spi": "dmx"), (int) m_tOutputType);
 	}
 #endif
 }

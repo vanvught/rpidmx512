@@ -29,8 +29,9 @@
 #include <stdint.h>
 
 #include "e131.h"
-#include "lightset.h"
 #include "e131packets.h"
+
+#include "lightset.h"
 
 #define UUID_STRING_LENGTH	36
 
@@ -72,26 +73,30 @@ public:
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	uint16_t getUniverse(void) const;
-	void setUniverse(const uint16_t);
+	uint16_t GetUniverse(void) const;
+	void SetUniverse(const uint16_t);
 
-	TMerge getMergeMode(void) const;
-	void setMergeMode(TMerge);
+	inline uint32_t GetMulticastIp(void) {
+		return m_nMulticastIp;
+	}
+
+	TMerge GetMergeMode(void) const;
+	void SetMergeMode(TMerge);
 
 	const uint8_t *GetCid(void);
-	void setCid(const uint8_t[E131_CID_LENGTH]);
+	void SetCid(const uint8_t[E131_CID_LENGTH]);
 
 	const char *GetSourceName(void);
-	void setSourceName(const char[E131_SOURCE_NAME_LENGTH]);
+	void SetSourceName(const char *);
 
-	int Run(void);
-
-	void Print(uint32_t nMulticastIp);
-
-private:
 	void Start(void);
 	void Stop(void);
 
+	int Run(void);
+
+	void Print(void);
+
+private:
 	void FillDiscoveryPacket(void);
 
 	bool IsValidRoot(void);
@@ -101,8 +106,8 @@ private:
 	void CheckMergeTimeouts(void);
 	bool IsPriorityTimeOut(void);
 	bool isIpCidMatch(const struct TSource *);
-	bool IsDmxDataChanged(const uint8_t *, const uint16_t);
-	bool IsMergedDmxDataChanged(const uint8_t *, const uint16_t );
+	bool IsDmxDataChanged(const uint8_t *, uint16_t);
+	bool IsMergedDmxDataChanged(const uint8_t *, uint16_t );
 
 	void SendDiscoveryPacket(void);
 
@@ -112,6 +117,7 @@ private:
 private:
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
+	uint32_t m_nMulticastIp;
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
 

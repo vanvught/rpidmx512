@@ -32,20 +32,19 @@
 
 #include "network.h"
 
-void E131Bridge::Print(uint32_t nMulticastIp) {
+void E131Bridge::Print(void) {
 	char uuid_str[UUID_STRING_LENGTH + 1];
 
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(GetCid(), uuid_str);
 
-	const uint32_t ip = Network::Get()->GetIp();
+	const uint8_t *firmware_version = GetSoftwareVersion();
 
 	printf("\nBridge configuration\n");
-	const uint8_t *firmware_version = GetSoftwareVersion();
 	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" CID          : %s\n", uuid_str);
-	printf(" Universe     : %d\n", getUniverse());
-	printf(" Merge mode   : %s\n", getMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-	printf(" Multicast ip : " IPSTR "\n", IP2STR(nMulticastIp));
-	printf(" Unicast ip   : " IPSTR "\n", IP2STR(ip));
+	printf(" Universe     : %d\n", GetUniverse());
+	printf(" Merge mode   : %s\n", GetMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
+	printf(" Multicast ip : " IPSTR "\n", IP2STR(GetMulticastIp()));
+	printf(" Unicast ip   : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
 }

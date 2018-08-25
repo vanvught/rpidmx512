@@ -43,26 +43,30 @@
  #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
+
 #include "e131.h"
 #include "e131packets.h"
 #include "e131bridge.h"
 
 #include "lightset.h"
 
-
 #include "hardware.h"
 #include "network.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x02 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 5 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
-#define DEFAULT_SOURCE_NAME  "Raspberry Pi Wifi sACN E1.31 http://www.raspberrypi-dmx.org"
+#define DEFAULT_SOURCE_NAME_SUFFIX  " sACN E1.31 www.raspberrypi-dmx.org"
 
 E131Bridge::E131Bridge(void) :
-		m_pLightSet(0),
-		m_nUniverse(E131_UNIVERSE_DEFAULT),
-		m_nCurrentPacketMillis(0),
-		m_nPreviousPacketMillis(0) {
+	m_pLightSet(0),
+	m_nUniverse(E131_UNIVERSE_DEFAULT),
+	m_nMulticastIp(0),
+	m_nCurrentPacketMillis(0),
+	m_nPreviousPacketMillis(0)
+{
+	assert(Hardware::Get() != 0);
+	assert(Network::Get() != 0);
 
 	memset(&m_OutputPort, 0, sizeof(struct TOutputPort));
 	m_OutputPort.mergeMode = E131_MERGE_HTP;
@@ -83,39 +87,36 @@ E131Bridge::E131Bridge(void) :
 	(void)inet_aton("239.255.0.0", &addr);
 	m_DiscoveryIpAddress = addr.s_addr | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF) << 24)) | ((uint32_t)(((uint32_t)E131_UNIVERSE_DISCOVERY & (uint32_t)0xFF00) << 8));
 
-	setSourceName(DEFAULT_SOURCE_NAME);
-	setUniverse(E131_UNIVERSE_DEFAULT);
+	char aDefaultSourceName[E131_SOURCE_NAME_LENGTH];
+	uint8_t nBoardNameLength;
+	const char *pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
+	strncpy(aDefaultSourceName, pBoardName, E131_SOURCE_NAME_LENGTH);
+	strncpy(aDefaultSourceName + nBoardNameLength, DEFAULT_SOURCE_NAME_SUFFIX, E131_SOURCE_NAME_LENGTH - nBoardNameLength);
+	SetSourceName(aDefaultSourceName);
+
+	SetUniverse(E131_UNIVERSE_DEFAULT);
 }
 
 E131Bridge::~E131Bridge(void) {
-	if (m_pLightSet != 0) {
-		m_pLightSet->Stop();
-		m_pLightSet = 0;
-	}
+	Stop();
 }
 
 void E131Bridge::Start(void) {
 	assert(m_pLightSet != 0);
 
-	if (m_State.IsTransmitting) {
-		return;
-	}
-
 	FillDiscoveryPacket();
 
-	m_pLightSet->Start();
-	m_State.IsTransmitting = true;
+	Network::Get()->Begin(E131_DEFAULT_PORT);
+	Network::Get()->JoinGroup(m_nMulticastIp);
 }
 
 void E131Bridge::Stop(void) {
-	m_pLightSet->Stop();
+	if (m_pLightSet != 0) {
+		m_pLightSet->Stop();
+	}
 	//
 	m_State.IsNetworkDataLoss = true;
-	m_State.IsMergeMode = false;
 	m_State.IsTransmitting = false;
-	m_State.IsSynchronized = false;
-	m_State.IsForcedSynchronized = false;
-	m_State.nPriority = E131_PRIORITY_LOWEST;
 	//
 	m_OutputPort.length = 0;
 	m_OutputPort.IsDataPending = false;
@@ -131,12 +132,19 @@ void E131Bridge::SetOutput(LightSet *pLightSet) {
 	m_pLightSet = pLightSet;
 }
 
-uint16_t E131Bridge::getUniverse() const{
+uint16_t E131Bridge::GetUniverse() const{
 	return m_nUniverse;
 }
 
-void E131Bridge::setUniverse(const uint16_t nUniverse) {
+void E131Bridge::SetUniverse(const uint16_t nUniverse) {
 	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
+
+	struct in_addr group_ip;
+	(void) inet_aton("239.255.0.0", &group_ip);
+
+	m_nMulticastIp = group_ip.s_addr
+			| ((uint32_t) (((uint32_t) nUniverse & (uint32_t) 0xFF) << 24))
+			| ((uint32_t) (((uint32_t) nUniverse & (uint32_t) 0xFF00) << 8));
 
 	m_nUniverse = nUniverse;
 }
@@ -145,7 +153,7 @@ const uint8_t* E131Bridge::GetCid(void) {
 	return m_Cid;
 }
 
-void E131Bridge::setCid(const uint8_t aCid[E131_CID_LENGTH]) {
+void E131Bridge::SetCid(const uint8_t aCid[E131_CID_LENGTH]) {
 	assert(aCid != 0);
 
 	memcpy(m_Cid, aCid, E131_CID_LENGTH);
@@ -156,16 +164,19 @@ const char* E131Bridge::GetSourceName(void) {
 	return m_SourceName;
 }
 
-void E131Bridge::setSourceName(const char aSourceName[E131_SOURCE_NAME_LENGTH]) {
-	memcpy(m_SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
-	memcpy(m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
+void E131Bridge::SetSourceName(const char *aSourceName) {
+	memset(m_SourceName, 0, E131_SOURCE_NAME_LENGTH);
+	strncpy(m_SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
+
+	memset((char *)m_E131DiscoveryPacket.FrameLayer.SourceName, 0, E131_SOURCE_NAME_LENGTH);
+	strncpy((char *)m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
 }
 
-TMerge E131Bridge::getMergeMode(void) const {
+TMerge E131Bridge::GetMergeMode(void) const {
 	return m_OutputPort.mergeMode;
 }
 
-void E131Bridge::setMergeMode(TMerge mergeMode) {
+void E131Bridge::SetMergeMode(TMerge mergeMode) {
 	m_OutputPort.mergeMode = mergeMode;
 }
 
@@ -197,7 +208,7 @@ void E131Bridge::FillDiscoveryPacket(void) {
 	m_E131DiscoveryPacket.UniverseDiscoveryLayer.ListOfUniverses[0] = __builtin_bswap16(m_nUniverse);
 }
 
-bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
+bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
 	uint8_t *src = (uint8_t *)pData;
@@ -223,7 +234,7 @@ bool E131Bridge::IsDmxDataChanged(const uint8_t *pData, const uint16_t nLength) 
 	return isChanged;
 }
 
-bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, const uint16_t nLength) {
+bool E131Bridge::IsMergedDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
 	if (m_OutputPort.mergeMode == E131_MERGE_HTP) {
@@ -452,7 +463,10 @@ void E131Bridge::HandleDmx(void) {
 	if (sendNewData) {
 		if (!m_State.IsSynchronized) {
 			m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
-			Start();
+			if (!m_State.IsTransmitting) {
+				m_pLightSet->Start();
+				m_State.IsTransmitting = true;
+			}
 		} else {
 			m_OutputPort.IsDataPending = true;
 		}
@@ -471,13 +485,26 @@ void E131Bridge::HandleSynchronization(void) {
 
 	if (m_OutputPort.IsDataPending) {
 		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
-		Start();
+		if (m_State.IsTransmitting) {
+			m_pLightSet->Start();
+			m_State.IsTransmitting = true;
+		}
 		m_OutputPort.IsDataPending = false;
 	}
 }
 
 void E131Bridge::SetNetworkDataLossCondition(void) {
-	Stop();
+	m_pLightSet->Stop();
+	//
+	m_State.IsNetworkDataLoss = true;
+	m_State.IsMergeMode = false;
+	m_State.IsTransmitting = false;
+	m_State.IsSynchronized = false;
+	m_State.IsForcedSynchronized = false;
+	m_State.nPriority = E131_PRIORITY_LOWEST;
+	//
+	m_OutputPort.length = 0;
+	m_OutputPort.IsDataPending = false;
 	m_OutputPort.sourceA.ip = (uint32_t) 0;
 	m_OutputPort.sourceB.ip = (uint32_t) 0;
 }
@@ -546,7 +573,7 @@ int E131Bridge::Run(void) {
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = Network::Get()->RecvFrom((const uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom((uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
