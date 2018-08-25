@@ -54,21 +54,22 @@
 #include "artnetipprog.h"
 
 struct TArtNetNodeState {
-	bool SendArtPollReplyOnChange;				///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
-	uint32_t ArtPollReplyCount;					///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
-	bool SendArtDiagData;						///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
-	uint8_t Priority;							///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
-	uint32_t IPAddressDiagSend;					///< ArtPoll : Destination IPAddress for the ArtDiag
-	uint32_t IPAddressArtPoll;					///< ArtPoll : IPAddress for the ArtPoll package
-	bool IsMultipleControllersReqDiag;			///< ArtPoll : Multiple controllers requesting diagnostics
-	TArtNetNodeReportCode reportCode;			///< See \ref TArtNetNodeReportCode
-	TNodeStatus status;							///< See \ref TNodeStatus
-	bool IsSynchronousMode;						///< ArtSync received
-	time_t ArtSyncTime;							///< Latest ArtSync received time
-	bool IsMergeMode;							///< Is the Node in merging mode?
-	bool IsChanged;								///< Is the DMX changed? Update output DMX
-	uint8_t nActivePorts;						///< Number of active ports
-	time_t nNetworkDataLossTimeout;				///<
+	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
+	uint32_t ArtPollReplyCount;			///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
+	bool SendArtDiagData;				///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
+	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
+	uint32_t IPAddressDiagSend;			///< ArtPoll : Destination IPAddress for the ArtDiag
+	uint32_t IPAddressArtPoll;			///< ArtPoll : IPAddress for the ArtPoll package
+	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
+	TArtNetNodeReportCode reportCode;	///< See \ref TArtNetNodeReportCode
+	TNodeStatus status;					///< See \ref TNodeStatus
+	bool IsSynchronousMode;				///< ArtSync received
+	time_t ArtSyncTime;					///< Latest ArtSync received time
+	bool IsMergeMode;					///< Is the Node in merging mode?
+	bool IsChanged;						///< Is the DMX changed? Update output DMX
+	uint8_t nActivePorts;				///< Number of active ports
+	time_t nNetworkDataLossTimeout;		///<
+	bool bDisableMergeTimeout;			///<
 };
 
 struct TArtNetNode {
@@ -153,6 +154,9 @@ public:
 	time_t GetNetworkTimeout(void) const;
 	void SetNetworkTimeout(time_t);
 
+	bool GetDisableMergeTimeout(void) const;
+	void SetDisableMergeTimeout(bool);
+
 	uint8_t GetActiveOutputPorts(void) const;
 	uint8_t GetActiveInputPorts(void) const;
 
@@ -223,6 +227,7 @@ private:
 	bool					m_IsRdmResponder;
 
 	char					m_aSysName[16];
+	char					m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 };
 
 #endif /* ARTNETNODE_H_ */

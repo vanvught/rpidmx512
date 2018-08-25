@@ -70,9 +70,6 @@ enum TGoodOutput {
 	GO_MERGE_MODE_LTP = (1 << 1)				///< Bit 1 Set – Merge Mode is LTP.
 };
 
-/**
- *
- */
 enum TProgram {
 	PROGRAM_NO_CHANGE = 0x7F,					///<
 	PROGRAM_DEFAULTS = 0x00,					///<
@@ -95,14 +92,16 @@ union uip {
 #define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
 
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-#define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"
-#define NODE_DEFAULT_LONG_NAME		"Raspberry Pi Art-Net 3 Node http://www.raspberrypi-dmx.org"
+
+#define NODE_DEFAULT_SHORT_NAME			"AvV Art-Net Node"
+#define NODE_DEFAULT_LONG_NAME_SUFFIX	" Art-Net 3 Node www.raspberrypi-dmx.org"
+
 #define NODE_DEFAULT_NET_SWITCH		0
 #define NODE_DEFAULT_SUBNET_SWITCH	0
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = {0x01, 0x14 };	///<
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 21 };		///<
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -127,6 +126,9 @@ ArtNetNode::ArtNetNode(void) :
 		m_IsRdmResponder(false)
 
  {
+	assert(Hardware::Get() != 0);
+	assert(Network::Get() != 0);
+
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -142,25 +144,32 @@ ArtNetNode::ArtNetNode(void) :
 	}
 
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	m_Node.Status2 = STATUS2_DHCP_CAPABLE | STATUS2_PORT_ADDRESS_15BIT;
+	m_Node.Status2 = STATUS2_PORT_ADDRESS_15BIT;
 
 	m_State.IsSynchronousMode = false;
 	m_State.SendArtDiagData = false;
 	m_State.IsMergeMode = false;
 	m_State.IsChanged = false;
 	m_State.SendArtPollReplyOnChange = false;
-	m_State.ArtPollReplyCount = (uint32_t)0;
-	m_State.IPAddressArtPoll = (uint32_t)0;
+	m_State.ArtPollReplyCount = (uint32_t) 0;
+	m_State.IPAddressArtPoll = (uint32_t) 0;
 	m_State.IsMultipleControllersReqDiag = false;
 	m_State.reportCode = ARTNET_RCPOWEROK;
 	m_State.nActivePorts = 0;
 	m_State.status = ARTNET_STANDBY;
 	m_State.nNetworkDataLossTimeout = NETWORK_DATA_LOSS_TIMEOUT;
+	m_State.bDisableMergeTimeout = false;
 
 	m_tOpCodePrevious = OP_NOT_DEFINED;
 
 	SetShortName((const char *)NODE_DEFAULT_SHORT_NAME);
-	SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
+
+	uint8_t nBoardNameLength;
+	const char *pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
+	strncpy(m_aDefaultNodeLongName, pBoardName, ARTNET_LONG_NAME_LENGTH);
+	strncpy(m_aDefaultNodeLongName + nBoardNameLength, NODE_DEFAULT_LONG_NAME_SUFFIX, ARTNET_LONG_NAME_LENGTH - nBoardNameLength);
+	SetLongName((const char *)m_aDefaultNodeLongName);
+
 	SetManufacturerId(DEVICE_MANUFACTURER_ID);
 	SetOemValue(DEVICE_OEM_VALUE);
 
@@ -198,10 +207,14 @@ ArtNetNode::~ArtNetNode(void) {
 }
 
 void ArtNetNode::Start(void) {
+	assert(Network::Get() != 0);
+	assert(LedBlink::Get() != 0);
+
 	m_Node.IPAddressLocal = Network::Get()->GetIp();
 	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
 	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
-	m_Node.Status2 = (m_Node.Status2 & ~(1 << 1)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
+	m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
+	m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? STATUS2_DHCP_CAPABLE : 0);
 
 	FillPollReply();
 	FillDiagData();
@@ -338,14 +351,18 @@ void ArtNetNode::SetLongName(const char *pName) {
 		return;
 	}
 
-	memset((void *)m_Node.LongName, 0, ARTNET_LONG_NAME_LENGTH);
+	memset((void *) m_Node.LongName, 0, ARTNET_LONG_NAME_LENGTH);
 	strncpy((char *) m_Node.LongName, pName, ARTNET_LONG_NAME_LENGTH);
-	m_Node.LongName[ARTNET_LONG_NAME_LENGTH-1] = '\0';
+	m_Node.LongName[ARTNET_LONG_NAME_LENGTH - 1] = '\0';
 
-	memcpy (m_PollReply.LongName, m_Node.LongName, ARTNET_LONG_NAME_LENGTH);
+	memcpy(m_PollReply.LongName, m_Node.LongName, ARTNET_LONG_NAME_LENGTH);
 }
 
 void ArtNetNode::SetManufacturerId(const uint8_t *pEsta) {
+	if (pEsta == 0) {
+		return;
+	}
+
 	m_Node.Esta[0] = pEsta[1];
 	m_Node.Esta[1] = pEsta[0];
 }
@@ -355,6 +372,10 @@ const uint8_t* ArtNetNode::GetManufacturerId(void) {
 }
 
 void ArtNetNode::SetOemValue(const uint8_t *pOem) {
+	if (pOem == 0) {
+		return;
+	}
+
 	m_Node.Oem[0] = pOem[0];
 	m_Node.Oem[1] = pOem[1];
 }
@@ -368,12 +389,18 @@ time_t ArtNetNode::GetNetworkTimeout(void) const {
 }
 
 void ArtNetNode::SetNetworkTimeout(time_t nNetworkDataLossTimeout) {
-	if (nNetworkDataLossTimeout != 0) {
-		m_State.nNetworkDataLossTimeout = nNetworkDataLossTimeout;
-	}
+	m_State.nNetworkDataLossTimeout = nNetworkDataLossTimeout;
 }
 
-uint16_t ArtNetNode::MakePortAddress(const uint16_t nCurrentAddress) {
+bool ArtNetNode::GetDisableMergeTimeout(void) const {
+	return m_State.bDisableMergeTimeout;
+}
+
+void ArtNetNode::SetDisableMergeTimeout(bool bDisable) {
+	m_State.bDisableMergeTimeout = bDisable;
+}
+
+uint16_t ArtNetNode::MakePortAddress(uint16_t nCurrentAddress) {
 	// PortAddress Bit 15 = 0
 	uint16_t newAddress = (m_Node.NetSwitch & 0x7F) << 8;	// Net : Bits 14-8
 	newAddress |= (m_Node.SubSwitch & (uint8_t)0x0F) << 4;	// Sub-Net : Bits 7-4
@@ -553,7 +580,7 @@ bool ArtNetNode::IsMergedDmxDataChanged(const uint8_t nPortId, const uint8_t *pD
 	}
 }
 
-void ArtNetNode::CheckMergeTimeouts(const uint8_t nPortId) {
+void ArtNetNode::CheckMergeTimeouts(uint8_t nPortId) {
 	const time_t timeOutA = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeA;
 	const time_t timeOutB = m_nCurrentPacketTime - m_OutputPorts[nPortId].timeB;
 
@@ -636,7 +663,9 @@ void ArtNetNode::HandleDmx(void) {
 			m_OutputPorts[i].port.nStatus = m_OutputPorts[i].port.nStatus |GO_DATA_IS_BEING_TRANSMITTED;
 
 			if (m_State.IsMergeMode) {
-				CheckMergeTimeouts(i);
+				if (__builtin_expect((!m_State.bDisableMergeTimeout), 1)) {
+					CheckMergeTimeouts(i);
+				}
 			}
 
 			if (ipA == 0 && ipB == 0) {
@@ -767,7 +796,7 @@ void ArtNetNode::HandleAddress(void) {
 		SetLongName((const char *)packet->LongName);
 		m_State.reportCode = ARTNET_RCLONAMEOK;
 	} else if (packet->LongName[0] == PROGRAM_DEFAULTS) {
-		SetLongName((const char *)NODE_DEFAULT_LONG_NAME);
+		SetLongName((const char *)m_aDefaultNodeLongName);
 		m_State.reportCode = ARTNET_RCLONAMEOK;
 	}
 
@@ -994,7 +1023,6 @@ void ArtNetNode::HandleRdm(void) {
 	const uint16_t portAddress = (uint16_t) (packet->Net << 8) | (uint16_t) (packet->Address);
 
 	if ((portAddress == m_OutputPorts[0].port.nPortAddress) && m_OutputPorts[0].bIsEnabled) {
-
 		if (!m_IsRdmResponder) {
 			m_pLightSet->Stop();
 			m_IsLightSetRunning = false;
@@ -1053,7 +1081,7 @@ void ArtNetNode::HandleIpProg(void) {
 		// Update Node network details
 		m_Node.IPAddressLocal = Network::Get()->GetIp();
 		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
-		m_Node.Status2 = (m_Node.Status2 & ~(1 << 1)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
+		m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
 
@@ -1101,12 +1129,12 @@ int ArtNetNode::HandlePacket(void) {
 	const char *packet = (char *)&(m_ArtNetPacket.ArtPacket);
 	uint16_t nForeignPort;
 
-	const int nBytesReceived = Network::Get()->RecvFrom((const uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &m_ArtNetPacket.IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom((uint8_t *)packet, (const uint16_t)sizeof(m_ArtNetPacket.ArtPacket), &m_ArtNetPacket.IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketTime = Hardware::Get()->GetTime();
 
 	if (nBytesReceived == 0) {
-		if ((m_nCurrentPacketTime - m_nPreviousPacketTime) >= m_State.nNetworkDataLossTimeout) {
+		if ((m_State.nNetworkDataLossTimeout != 0) && ((m_nCurrentPacketTime - m_nPreviousPacketTime) >= m_State.nNetworkDataLossTimeout)) {
 			SetNetworkDataLossCondition();
 		}
 		return 0;

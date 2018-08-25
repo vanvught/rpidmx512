@@ -54,18 +54,19 @@
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
-#define SET_LONG_NAME_MASK	1<<0
-#define SET_SHORT_NAME_MASK	1<<1
-#define SET_NET_MASK		1<<2
-#define SET_SUBNET_MASK		1<<3
-#define SET_UNIVERSE_MASK	1<<4
-#define SET_RDM_MASK		1<<5
-#define SET_TIMECODE_MASK	1<<6
-#define SET_TIMESYNC_MASK	1<<7
-#define SET_OUTPUT_MASK		1<<8
-#define SET_ID_MASK			1<<9
-#define SET_OEM_VALUE_MASK	1<<10
-#define SET_NETWORK_TIMEOUT	1<<11
+#define SET_LONG_NAME_MASK	(1 << 0)
+#define SET_SHORT_NAME_MASK	(1 << 1)
+#define SET_NET_MASK		(1 << 2)
+#define SET_SUBNET_MASK		(1 << 3)
+#define SET_UNIVERSE_MASK	(1 << 4)
+#define SET_RDM_MASK		(1 << 5)
+#define SET_TIMECODE_MASK	(1 << 6)
+#define SET_TIMESYNC_MASK	(1 << 7)
+#define SET_OUTPUT_MASK		(1 << 8)
+#define SET_ID_MASK			(1 << 9)
+#define SET_OEM_VALUE_MASK	(1 << 10)
+#define SET_NETWORK_TIMEOUT	(1 << 11)
+#define SET_MERGE_TIMEOUT	(1 << 12)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
 static const char PARAMS_NET[] ALIGNED = "net";											///< 0 {default}
@@ -81,6 +82,7 @@ static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";
 static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
 static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";
 static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";///< 10 {default}
+static const char PARAMS_NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";		///< 0 {default}
 
 void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
@@ -176,10 +178,16 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_nNetworkTimeout = (time_t) value8;
-		}
+		m_nNetworkTimeout = (time_t) value8;
 		m_bSetList |= SET_NETWORK_TIMEOUT;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_NODE_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_bDisableMergeTimeout = true;
+			m_bSetList |= SET_MERGE_TIMEOUT;
+		}
 		return;
 	}
 
@@ -206,6 +214,7 @@ ArtNetParams::ArtNetParams(void): m_bSetList(0) {
 	m_bEnableRdm = false;
 	m_bRdmDiscovery = false;
 	m_nNetworkTimeout = 10;
+	m_bDisableMergeTimeout = false;
 
 	memset(m_aShortName, 0, ARTNET_SHORT_NAME_LENGTH);
 	memset(m_aLongName, 0, ARTNET_LONG_NAME_LENGTH);
@@ -303,6 +312,10 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	if(isMaskSet(SET_NETWORK_TIMEOUT)) {
 		pArtNetNode->SetNetworkTimeout(m_nNetworkTimeout);
 	}
+
+	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+		pArtNetNode->SetDisableMergeTimeout(m_bDisableMergeTimeout);
+	}
 }
 
 // FIXME ::Dump(void)
@@ -335,7 +348,7 @@ void ArtNetParams::Dump(void) {
 	}
 
 	if (isMaskSet(SET_RDM_MASK)) {
-		printf(" RDM Enabled : %s\n", BOOL2STRING(m_bEnableRdm));
+		printf(" %s=%d [%s]\n", PARAMS_RDM, (int) m_bEnableRdm, BOOL2STRING(m_bEnableRdm));
 		if (m_bEnableRdm) {
 			printf("    Discovery : %s\n", BOOL2STRING(m_bRdmDiscovery));
 		}
@@ -362,7 +375,11 @@ void ArtNetParams::Dump(void) {
 	}
 
 	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
-		printf(" Network data loss timeout : %ds\n", (int) m_nNetworkTimeout);
+		printf(" Network data loss timeout : %d %s\n", (int) m_nNetworkTimeout, (m_nNetworkTimeout == 0) ? "Disabled" : "");
+	}
+
+	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+		printf(" %s=%d [%s]\n", PARAMS_NODE_DISABLE_MERGE_TIMEOUT, (int) m_bDisableMergeTimeout, BOOL2STRING(m_bDisableMergeTimeout));
 	}
 #endif
 }

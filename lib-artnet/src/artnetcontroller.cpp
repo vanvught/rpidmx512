@@ -112,9 +112,9 @@ void ArtNetController::HandlePollReply(void) {
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
-	if (!Add(&m_pArtNetPacket->ArtPacket.ArtPollReply)) {
+	//if (!Add(&m_pArtNetPacket->ArtPacket.ArtPollReply)) {
 		SendIpProg();
-	}
+	//}
 }
 
 void ArtNetController::SendIpProg(void) {
@@ -145,7 +145,7 @@ int ArtNetController::Run(void) {
 
 	SendPoll();
 
-	const int nBytesReceived = Network::Get()->RecvFrom((const uint8_t *)packet, (const uint16_t)sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom((uint8_t *)packet, (const uint16_t)sizeof(struct TArtNetPacket), &m_pArtNetPacket->IPAddressFrom, &nForeignPort) ;
 
 	if (nBytesReceived == 0) {
 		return 0;

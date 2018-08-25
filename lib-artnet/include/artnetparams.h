@@ -8,7 +8,7 @@
  * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,11 +84,6 @@ public:
 private:
     void callbackFunction(const char *s);
 
-#if defined (__circle__)
-private:
-    void printf (const char *fmt, ...);
-#endif
-
 private:
     uint32_t m_bSetList;
     uint8_t m_nNet;
@@ -104,6 +99,7 @@ private:
 	uint8_t m_aManufacturerId[2];
 	uint8_t m_aOemValue[2];
 	time_t m_nNetworkTimeout;
+	bool m_bDisableMergeTimeout;
 };
 
 #endif /* ARTNETPARAMS_H_ */
