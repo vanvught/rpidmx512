@@ -35,16 +35,16 @@ public:
 	ModeParams(const char *);
 	~ModeParams(void);
 
+	void Dump(void);
+
 	uint32_t GetMaxSteps(void) const;
 	TL6470Action GetSwitchAction(void) const;
 	TL6470Direction GetSwitchDir(void) const;
 	float GetSwitchStepsPerSec(void) const;
 	bool HasSwitch(void) const;
 
-	void Dump(void);
-
 private:
-	bool IsMaskSet(uint16_t) const;
+	bool isMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

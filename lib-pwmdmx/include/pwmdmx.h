@@ -43,15 +43,15 @@ public:
 	PwmDmx(void);
 	~PwmDmx(void);
 
+	void Dump(void);
+
 	TPwmDmxMode GetPwmDmxMode(bool &IsSet) const;
 	TPwmDmxChip GetPwmDmxChip(bool &IsSet) const;
 
 	LightSet *GetLightSet(void) const;
 
-	void Dump(void);
-
 private:
-	bool IsMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint16_t nMask) const;
 
 public:
 	static void staticCallbackFunction(void *p, const char *s);

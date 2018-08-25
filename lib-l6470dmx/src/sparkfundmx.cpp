@@ -32,7 +32,6 @@
 #if defined(__linux__)
  #define udelay bcm2835_delayMicroseconds
 #elif defined(__circle__)
- #define udelay bcm2835_delayMicroseconds
 #else
  #include "bcm2835_gpio.h"
  #include "bcm2835_spi.h"
@@ -56,18 +55,22 @@
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 #define GPIO_BUSY_IN		RPI_V2_GPIO_P1_35
 #define GPIO_RESET_OUT 		RPI_V2_GPIO_P1_38
 
 #define DMX_MAX_CHANNELS	512
 
-static const char SPARKFUN_PARAMS_POSITION[] = "sparkfun_position";
-static const char SPARKFUN_PARAMS_SPI_CS[] = "sparkfun_spi_cs";
-static const char SPARKFUN_PARAMS_RESET_PIN[] = "sparkfun_reset_pin";
-static const char SPARKFUN_PARAMS_BUSY_PIN[] = "sparkfun_busy_pin";
+static const char SPARKFUN_PARAMS_POSITION[] ALIGNED = "sparkfun_position";
+static const char SPARKFUN_PARAMS_SPI_CS[] ALIGNED = "sparkfun_spi_cs";
+static const char SPARKFUN_PARAMS_RESET_PIN[] ALIGNED = "sparkfun_reset_pin";
+static const char SPARKFUN_PARAMS_BUSY_PIN[] ALIGNED = "sparkfun_busy_pin";
 
-static const char PARAMS_DMX_MODE[] = "dmx_mode";
-static const char PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
+static const char PARAMS_DMX_MODE[] ALIGNED = "dmx_mode";
+static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 
 void SparkFunDmx::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);

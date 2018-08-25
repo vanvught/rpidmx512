@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #include "l6470.h"
@@ -48,6 +50,8 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 
 	assert(nDmxStartAddress <= 512);
 	assert(pL6470 != 0);
+	assert(pMotorParams != 0);
+	assert(pModeParams != 0);
 
 	m_nDmxStartAddress = nDmxStartAddress;
 

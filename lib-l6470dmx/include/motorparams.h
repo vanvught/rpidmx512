@@ -2,7 +2,7 @@
  * @file motorparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,19 @@ public:
 	MotorParams(const char *);
 	~MotorParams(void);
 
+	void Set(L6470 *);
+	void Dump(void);
+
 	float GetStepAngel(void);
 	float GetVoltage(void);
 	float GetCurrent(void);
 	float GetResistance(void);
 	float GetInductance(void);
 
-	void Set(L6470 *);
-	void Dump(void);
-
 private:
-	bool IsMaskSet(uint16_t) const;
-
-private:
-	float CalcIntersectSpeed(void) const;
-	uint32_t CalcIntersectSpeedReg(float) const;
+	bool isMaskSet(uint16_t) const;
+	float calcIntersectSpeed(void) const;
+	uint32_t calcIntersectSpeedReg(float) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

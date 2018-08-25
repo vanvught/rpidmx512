@@ -37,13 +37,14 @@
 #include "util.h"
 
 #include "arm/arm.h"
-#include "arm/irq_timer.h"
 #include "arm/pl011.h"
 #include "arm/synchronize.h"
 
 #include "bcm2835.h"
 #include "bcm2835_gpio.h"
 #include "bcm2835_vc.h"
+
+#include "irq_timer.h"
 
 #include "sc16is740.h"
 #include "device_info.h"

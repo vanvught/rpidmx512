@@ -24,7 +24,9 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #include "l6470dmxmode5.h"
@@ -37,6 +39,10 @@
 
 L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0) {
 	DEBUG2_ENTRY;
+
+	assert(pL6470 != 0);
+	assert(pMotorParams != 0);
+	assert(pModeParams != 0);
 
 	m_pL6470 = pL6470;
 	m_fSteps = (float) pModeParams->GetMaxSteps() / 0xFFFF ;

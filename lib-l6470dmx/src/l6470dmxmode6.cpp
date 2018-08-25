@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <assert.h>
 
 #include "l6470.h"
@@ -37,6 +36,10 @@
 
 L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
 	DEBUG2_ENTRY;
+
+	assert(pL6470 != 0);
+	assert(pMotorParams != 0);
+	assert(pModeParams != 0);
 
 	m_pL6470 = pL6470;
 

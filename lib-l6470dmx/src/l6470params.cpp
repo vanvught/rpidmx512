@@ -30,12 +30,14 @@
 #include <assert.h>
 
 #if defined(__linux__)
- #define ALIGNED
-#include <string.h>
+ #include <string.h>
 #elif defined(__circle__)
- #define ALIGNED
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "l6470params.h"
@@ -153,39 +155,39 @@ void L6470Params::Set(L6470 *pL6470) {
 
 	assert(pL6470 != 0);
 
-	if(IsMaskSet(SET_MIN_SPEED_MASK)) {
+	if(isMaskSet(SET_MIN_SPEED_MASK)) {
 		pL6470->setMinSpeed(m_fMinSpeed);
 	}
 
-	if(IsMaskSet(SET_MAX_SPEED_MASK)) {
+	if(isMaskSet(SET_MAX_SPEED_MASK)) {
 		pL6470->setMaxSpeed(m_fMaxSpeed);
 	}
 
-	if(IsMaskSet(SET_ACC_MASK)) {
+	if(isMaskSet(SET_ACC_MASK)) {
 		pL6470->setAcc(m_fAcc);
 	}
 
-	if(IsMaskSet(SET_DEC_MASK)) {
+	if(isMaskSet(SET_DEC_MASK)) {
 		pL6470->setDec(m_fDec);
 	}
 
-	if(IsMaskSet(SET_KVAL_HOLD_MASK)) {
+	if(isMaskSet(SET_KVAL_HOLD_MASK)) {
 		pL6470->setHoldKVAL(m_nKvalHold);
 	}
 
-	if(IsMaskSet(SET_KVAL_RUN_MASK)) {
+	if(isMaskSet(SET_KVAL_RUN_MASK)) {
 		pL6470->setRunKVAL(m_nKvalRun);
 	}
 
-	if(IsMaskSet(SET_KVAL_ACC_MASK)) {
+	if(isMaskSet(SET_KVAL_ACC_MASK)) {
 		pL6470->setAccKVAL(m_nKvalAcc);
 	}
 
-	if(IsMaskSet(SET_KVAL_DEC_MASK)) {
+	if(isMaskSet(SET_KVAL_DEC_MASK)) {
 		pL6470->setDecKVAL(m_nKvalDec);
 	}
 
-	if(IsMaskSet(SET_MICRO_STEPS_MASK)) {
+	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
 		pL6470->setMicroSteps(m_nMicroSteps);
 	}
 
@@ -200,39 +202,39 @@ void L6470Params::Dump(void) {
 		return;
 	}
 
-	if(IsMaskSet(SET_MIN_SPEED_MASK)) {
+	if(isMaskSet(SET_MIN_SPEED_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_MIN_SPEED, m_fMinSpeed);
 	}
 
-	if(IsMaskSet(SET_MAX_SPEED_MASK)) {
+	if(isMaskSet(SET_MAX_SPEED_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_MAX_SPEED, m_fMaxSpeed);
 	}
 
-	if(IsMaskSet(SET_ACC_MASK)) {
+	if(isMaskSet(SET_ACC_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_ACC, m_fAcc);
 	}
 
-	if(IsMaskSet(SET_DEC_MASK)) {
+	if(isMaskSet(SET_DEC_MASK)) {
 		printf("%s=%f\n", L6470_PARAMS_DEC, m_fDec);
 	}
 
-	if(IsMaskSet(SET_KVAL_HOLD_MASK)) {
+	if(isMaskSet(SET_KVAL_HOLD_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_HOLD, m_nKvalHold);
 	}
 
-	if(IsMaskSet(SET_KVAL_RUN_MASK)) {
+	if(isMaskSet(SET_KVAL_RUN_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_RUN, m_nKvalRun);
 	}
 
-	if(IsMaskSet(SET_KVAL_ACC_MASK)) {
+	if(isMaskSet(SET_KVAL_ACC_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_ACC, m_nKvalAcc);
 	}
 
-	if(IsMaskSet(SET_KVAL_DEC_MASK)) {
+	if(isMaskSet(SET_KVAL_DEC_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_KVAL_DEC, m_nKvalDec);
 	}
 
-	if(IsMaskSet(SET_MICRO_STEPS_MASK)) {
+	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_MICRO_STEPS, (int) m_nMicroSteps);
 	}
 
@@ -240,6 +242,6 @@ void L6470Params::Dump(void) {
 #endif
 }
 
-bool L6470Params::IsMaskSet(uint16_t mask) const {
+bool L6470Params::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

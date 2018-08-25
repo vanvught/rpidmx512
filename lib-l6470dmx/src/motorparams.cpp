@@ -30,12 +30,14 @@
 #include <assert.h>
 
 #if defined(__linux__)
- #define ALIGNED
  #include <string.h>
 #elif defined(__circle__)
- #define ALIGNED
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "motorparams.h"
@@ -154,8 +156,8 @@ void MotorParams::Set(L6470 *pL6470) {
 
 	float f;
 
-	if ((f = CalcIntersectSpeed()) != (float) 0) {
-		pL6470->setParam(L6470_PARAM_INT_SPD, CalcIntersectSpeedReg(f));
+	if ((f = calcIntersectSpeed()) != (float) 0) {
+		pL6470->setParam(L6470_PARAM_INT_SPD, calcIntersectSpeedReg(f));
 	}
 
 	DEBUG1_EXIT;
@@ -171,46 +173,46 @@ void MotorParams::Dump(void) {
 		return;
 	}
 
-	if(IsMaskSet(SET_STEP_ANGEL_MASK)) {
+	if(isMaskSet(SET_STEP_ANGEL_MASK)) {
 		printf("%s=%.1f degree\n", MOTOR_PARAMS_STEP_ANGEL, m_fStepAngel);
 	}
 
-	if(IsMaskSet(SET_VOLTAGE_MASK)) {
+	if(isMaskSet(SET_VOLTAGE_MASK)) {
 		printf("%s=%.2f V\n", MOTOR_PARAMS_VOLTAGE, m_fVoltage);
 	}
 
-	if(IsMaskSet(SET_CURRENT_MASK)) {
+	if(isMaskSet(SET_CURRENT_MASK)) {
 		printf("%s=%.1f A/phase\n", MOTOR_PARAMS_CURRENT, m_fCurrent);
 	}
 
-	if(IsMaskSet(SET_RESISTANCE_MASK)) {
+	if(isMaskSet(SET_RESISTANCE_MASK)) {
 		printf("%s=%.1f Ohm/phase\n", MOTOR_PARAMS_RESISTANCE, m_fResistance);
 	}
 
-	if(IsMaskSet(SET_INDUCTANCE_MASK)) {
+	if(isMaskSet(SET_INDUCTANCE_MASK)) {
 		printf("%s=%.1f mH/phase\n", MOTOR_PARAMS_INDUCTANCE, m_fInductance);
 	}
 
-	if ((f = CalcIntersectSpeed()) != (float) 0) {
-		printf("Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, (unsigned int) CalcIntersectSpeedReg(f));
+	if ((f = calcIntersectSpeed()) != (float) 0) {
+		printf("Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, (unsigned int) calcIntersectSpeedReg(f));
 	}
 
 	DEBUG1_EXIT;
 #endif
 }
 
-float MotorParams::CalcIntersectSpeed(void) const {
-	if (IsMaskSet(SET_RESISTANCE_MASK) && IsMaskSet(SET_INDUCTANCE_MASK)) {
+float MotorParams::calcIntersectSpeed(void) const {
+	if (isMaskSet(SET_RESISTANCE_MASK) && isMaskSet(SET_INDUCTANCE_MASK)) {
 		return ((float) 4 * m_fResistance) / (2 * M_PI * m_fInductance * 0.001);
 	} else {
 		return (float) 0;
 	}
 }
 
-uint32_t MotorParams::CalcIntersectSpeedReg(float f) const {
+uint32_t MotorParams::calcIntersectSpeedReg(float f) const {
 	return (f * (TICK_S * (1 << 26)));
 }
 
-bool MotorParams::IsMaskSet(uint16_t mask) const {
+bool MotorParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

@@ -30,13 +30,15 @@
 #include <assert.h>
 
 #if defined(__linux__)
- #define ALIGNED
  #include <string.h>
 #elif defined(__circle__)
- #define ALIGNED
  #include "circle/util.h"
 #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "modeparams.h"
@@ -110,24 +112,24 @@ void ModeParams::Dump(void) {
 		return;
 	}
 
-	if(IsMaskSet(SET_MAX_STEPS_MASK)) {
+	if(isMaskSet(SET_MAX_STEPS_MASK)) {
 		printf("%s=%d steps\n", MODE_PARAMS_MAX_STEPS, m_nMaxSteps);
 	}
 
-	if(IsMaskSet(SET_SWITCH_ACT_MASK)) {
+	if(isMaskSet(SET_SWITCH_ACT_MASK)) {
 		printf("%s=%s\n", MODE_PARAMS_SWITCH_ACT, m_tSwitchAction == L6470_ABSPOS_RESET ? "reset" : "copy");
 
 	}
 
-	if(IsMaskSet(SET_SWITCH_DIR_MASK)) {
+	if(isMaskSet(SET_SWITCH_DIR_MASK)) {
 		printf("%s=%s\n", MODE_PARAMS_SWITCH_DIR, m_tSwitchDir == L6470_DIR_REV ? "reverse" : "forward");
 	}
 
-	if(IsMaskSet(SET_SWITCH_SPS_MASK)) {
+	if(isMaskSet(SET_SWITCH_SPS_MASK)) {
 		printf("%s=%f step/s\n", MODE_PARAMS_SWITCH_SPS, m_fSwitchStepsPerSec);
 	}
 
-	if(IsMaskSet(SET_SWITCH_MASK)) {
+	if(isMaskSet(SET_SWITCH_MASK)) {
 		printf("%s={%s}\n", MODE_PARAMS_SWITCH, m_bSwitch ? "Yes": "No");
 	}
 
@@ -205,6 +207,6 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-bool ModeParams::IsMaskSet(uint16_t mask) const {
+bool ModeParams::isMaskSet(uint16_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

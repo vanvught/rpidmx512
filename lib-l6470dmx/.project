@@ -3,6 +3,7 @@
 	<name>lib-l6470dmx</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-bcm2835</project>
 		<project>lib-bcm2835_raspbian</project>
 		<project>lib-l6470</project>

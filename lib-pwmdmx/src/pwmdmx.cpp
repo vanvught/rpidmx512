@@ -30,13 +30,15 @@
 #include <assert.h>
 
 #if defined(__linux__)
- #define ALIGNED
- #include <string.h>
+  #include <string.h>
 #elif defined(__circle__)
  #include "circle/util.h"
- #define ALIGNED
-#else
+ #else
  #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "pwmdmx.h"
@@ -60,8 +62,8 @@ static const char PARAMS_FILE_NAME[] ALIGNED = "pwmdmx.txt";
 static const char PARAMS_CHIP[] ALIGNED = "chip";
 static const char PARAMS_MODE[] ALIGNED = "mode";
 
-const char aChipName[2][9] = { "TLC59711", "PCA5968\0" };
-const char aModeName[2][7] = { "PWMLED", "SERVO\0" };
+const char aChipName[2][9] ALIGNED = { "TLC59711", "PCA5968\0" };
+const char aModeName[2][7] ALIGNED = { "PWMLED", "SERVO\0" };
 
 PwmDmx::PwmDmx(void):
 	m_bSetList(0),
@@ -121,12 +123,12 @@ PwmDmx::~PwmDmx(void) {
 }
 
 TPwmDmxMode PwmDmx::GetPwmDmxMode(bool &IsSet) const {
-	IsSet = IsMaskSet(MODE_MASK);
+	IsSet = isMaskSet(MODE_MASK);
 	return m_tPwmDmxMode;
 }
 
 TPwmDmxChip PwmDmx::GetPwmDmxChip(bool &IsSet) const {
-	IsSet = IsMaskSet(CHIP_MASK);
+	IsSet = isMaskSet(CHIP_MASK);
 	return m_tPwmDmxChip;
 }
 
@@ -145,17 +147,17 @@ void PwmDmx::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
-	if(IsMaskSet(CHIP_MASK)) {
+	if(isMaskSet(CHIP_MASK)) {
 		printf(" %s={%d} [%s]\n", PARAMS_CHIP, (int) m_tPwmDmxChip, aChipName[m_tPwmDmxChip]);
 	}
 
-	if(IsMaskSet(MODE_MASK)) {
+	if(isMaskSet(MODE_MASK)) {
 		printf(" %s={%d} [%s]\n", PARAMS_MODE, (int) m_tPwmDmxMode, aModeName[m_tPwmDmxMode]);
 	}
 #endif
 }
 
-bool PwmDmx::IsMaskSet(uint16_t nMask) const {
+bool PwmDmx::isMaskSet(uint16_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 
