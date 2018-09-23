@@ -18,15 +18,15 @@ ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 endif
 
 ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
-	LIBS += network wiznet
+	LIBS+=network wiznet
 endif
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
-	LIBS +=network esp8266
+	LIBS+=network esp8266
 endif
 
 ifeq ($(findstring EMAC,$(DEFINES)),EMAC)
-	LIBS +=network
+	LIBS+=network
 endif
 
 # Output 
@@ -40,7 +40,7 @@ SOURCE=./
 FIRMWARE_DIR=./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS +=properties c++ hal bob i2c utils console ff12c h3 debug arm 
+LIBS +=properties c++ hal bob i2c utils debug console ff12c h3 arm 
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -102,7 +102,7 @@ clean:
 	rm -f $(TARGET)
 	rm -f $(MAP)
 	rm -f $(LIST)
-	rm -f uImage.$(SUFFIX)
+	rm -f $(SUFFIX).uImage
 
 # Build uImage
 
