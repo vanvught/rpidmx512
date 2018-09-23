@@ -152,6 +152,7 @@ extern uint8_t bcm2835_i2c_read(char* buf, uint32_t len);
 extern int bcm2835_spi_begin(void);
 extern void bcm2835_spi_end(void);
 extern void bcm2835_spi_setClockDivider(uint16_t divider);
+extern void bcm2835_spi_set_speed_hz(uint32_t speed_hz);
 extern void bcm2835_spi_setDataMode(uint8_t mode);
 extern void bcm2835_spi_chipSelect(uint8_t cs);
 extern void bcm2835_spi_transfernb(char* tbuf, char* rbuf, uint32_t len);

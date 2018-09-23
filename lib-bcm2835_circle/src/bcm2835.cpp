@@ -206,6 +206,12 @@ void bcm2835_spi_setClockDivider(uint16_t divider) {
 	_pSPIMaster->SetClock(BCM2835_CORE_CLK_HZ / divider);
 }
 
+void bcm2835_spi_set_speed_hz(uint32_t speed_hz) {
+	assert(_pSPIMaster != 0);
+
+	_pSPIMaster->SetClock(speed_hz);
+}
+
 /*
  * I2C
  */
