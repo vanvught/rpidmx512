@@ -577,6 +577,35 @@ void h3_spi_write(uint16_t data) {
 	EXT_SPI->IE = 0;
 }
 
+uint8_t h3_spi_transfer(uint8_t data) {
+	uint8_t ret;
+
+	_clear_fifos();
+
+	EXT_SPI->MBC = 1;
+	EXT_SPI->MTC = 1;
+	EXT_SPI->BCC = 1;
+
+	EXT_SPI->TX.byte = data;
+
+	EXT_SPI->TC |= TC_XCH;
+	EXT_SPI->IE = IE_TX_EMP | IE_TC;
+
+	while ((EXT_SPI->IS & IS_TX_EMP) != IS_TX_EMP)
+		;
+
+	while ((EXT_SPI->IS & IS_TC) != IS_TC)
+		;
+
+	ret = EXT_SPI->RX.byte;
+
+	uint32_t value = EXT_SPI->IS;
+	EXT_SPI->IS = value;
+	EXT_SPI->IE = 0;
+
+	return ret;
+}
+
 // Backwards compatibility with Raspberry Pi
 #define BCM2835_CORE_CLK_HZ 250000000
 

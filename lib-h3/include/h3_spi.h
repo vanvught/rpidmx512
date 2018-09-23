@@ -61,10 +61,12 @@ extern void h3_spi_setDataMode(h3_spi_mode_t mode);
 extern void h3_spi_chipSelect(h3_spi_chip_select_t chip_select);
 extern void h3_spi_setChipSelectPolarity(h3_spi_chip_select_t chip_select, uint8_t polarity);
 
+extern uint8_t h3_spi_transfer(uint8_t data);
 extern void h3_spi_transfernb(char *tx_buffer, /*@null@*/char *rx_buffer, uint32_t data_length);
 extern void h3_spi_transfern(char *tx_buffer, uint32_t data_length);
-extern void h3_spi_writenb(const char *tx_buffer, uint32_t data_length);
+
 extern void h3_spi_write(uint16_t data);
+extern void h3_spi_writenb(const char *tx_buffer, uint32_t data_length);
 
 extern void h3_spi_set_ws28xx_mode(bool off_on);
 extern bool h3_spi_get_ws28xx_mode(void);
@@ -89,17 +91,22 @@ static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0
 
 #define bcm2835_spi_begin						h3_spi_begin
 #define bcm2835_spi_setClockDivider				h3_spi_setClockDivider
+#define bcm2835_spi_set_speed_hz				h3_spi_set_speed_hz
 #define bcm2835_spi_setDataMode(__p)			h3_spi_setDataMode((h3_spi_mode_t)__p)
 #define bcm2835_spi_setChipSelectPolarity		h3_spi_setChipSelectPolarity
 #define bcm2835_spi_chipSelect(__p)				h3_spi_chipSelect((h3_spi_chip_select_t)__p)
 #define bcm2835_spi_write						h3_spi_write
 #define bcm2835_spi_writenb						h3_spi_writenb
+#define bcm2835_spi_transfer					h3_spi_transfer
 #define bcm2835_spi_transfern					h3_spi_transfern
 #define bcm2835_spi_transfernb					h3_spi_transfernb
+
+#define BCM2835_SPI_BIT_ORDER_MSBFIRST			H3_SPI_BIT_ORDER_MSBFIRST
 
 #define BCM2835_SPI_MODE0						H3_SPI_MODE0
 #define BCM2835_SPI_MODE3						H3_SPI_MODE3
 
+#define BCM2835_SPI_CS0							H3_SPI_CS0
 #define BCM2835_SPI_CS_NONE						H3_SPI_CS_NONE
 
 /*

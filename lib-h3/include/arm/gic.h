@@ -98,6 +98,8 @@ typedef struct {
 	__O uint32_t AEOI;	///< 0x24 Aliased End of Interrupt Register
 } GIC_CPUIF_TypeDef;
 
+#define H3_GIC_DIST		((GIC_DIST_TypeDef *) H3_GIC_DIST_BASE)
+#define H3_GIC_CPUIF	((GIC_CPUIF_TypeDef *) H3_GIC_CPUIF_BASE)
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,7 +112,13 @@ extern void gic_fiq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu);
 
 extern void gic_init_dump(void);
 extern void gic_int_dump(H3_IRQn_TypeDef n);
-extern void gic_unpend(H3_IRQn_TypeDef irq);
+
+inline static void gic_unpend(H3_IRQn_TypeDef irq) {
+	uint32_t index = irq / 32;
+	uint32_t mask = 1 << (irq % 32);
+
+	H3_GIC_DIST->ICPEND[index] = mask;
+}
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/**
+	/**
  * @file h3_gpio.h
  *
  */
@@ -52,7 +52,9 @@ enum H3_PA_SELECT_SHIFT {
 	PA3_SELECT_CFG0_SHIFT = 12,
 	PA4_SELECT_CFG0_SHIFT = 16,
 	PA5_SELECT_CFG0_SHIFT = 20,
-	PA6_SELECT_CFG0_SHIFT= 24,
+	PA6_SELECT_CFG0_SHIFT = 24,
+	PA8_SELECT_CFG1_SHIFT = 0,
+	PA9_SELECT_CFG1_SHIFT = 4,
 	PA10_SELECT_CFG1_SHIFT = 8,
 	PA11_SELECT_CFG1_SHIFT = 12,
 	PA12_SELECT_CFG1_SHIFT = 16,
@@ -66,6 +68,10 @@ enum H3_PA_SELECT_SHIFT {
 };
 
 enum H3_PL_SELECT_SHIFT {
+	PL0_SELECT_CFG0_SHIFT = 0,
+	PL1_SELECT_CFG0_SHIFT = 4,
+	PL2_SELECT_CFG0_SHIFT = 8,
+	PL3_SELECT_CFG0_SHIFT = 12,
 	PL8_SELECT_CFG1_SHIFT = 0,
 	PL9_SELECT_CFG1_SHIFT = 4,
 	PL10_SELECT_CFG1_SHIFT = 8,
@@ -124,62 +130,66 @@ enum H3_PG_SELECT {
 	H3_PG7_SELECT_UART1_RX = 2
 };
 
-
-#if 0
-inline static void h3_gpio_a_set(_gpio_pin pin_pa) {
-	H3_PIO_PORTA->DAT |= (1 << pin_pa);
-}
-
-inline static void h3_gpio_a_clr(_gpio_pin pin_pa) {
-	H3_PIO_PORTA->DAT &= ~(1 << pin_pa);
-}
-
-extern void h3_gpio_a_fsel(_gpio_pin pin_pa, gpio_fsel_t fsel);
-#endif
-
-inline static void h3_gpio_a_write(_gpio_pin pin_pa, uint8_t on) {
-	if (on == 0) {
-		H3_PIO_PORTA->DAT &= ~(1 << pin_pa);
-	} else {
-		H3_PIO_PORTA->DAT |= 1 << pin_pa;
-	}
-}
-
-inline static uint8_t h3_gpio_a_lev(_gpio_pin pin_pa) {
-	const uint32_t value = H3_PIO_PORTA->DAT;
-	return (value & (1 << pin_pa)) ? (uint8_t) HIGH : (uint8_t) LOW;
-}
-
-extern void h3_gpio_a_set_pud(_gpio_pin pin_pa, gpio_pull_t pud);
-
 extern void h3_gpio_fsel(_gpio_pin pin, gpio_fsel_t fsel);
 
 inline static void h3_gpio_clr(_gpio_pin pin) {
-#if (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTA)
-	H3_PIO_PORTA->DAT &= ~(1 << pin);
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTB)
-	H3_PIO_PORTB->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTC)
-	H3_PIO_PORTC->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTD)
-	H3_PIO_PORTD->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
-#else
- #error Port not implemented
-#endif
+	switch H3_GPIO_TO_PORT(pin) {
+		case H3_GPIO_PORTA:
+			H3_PIO_PORTA->DAT &= ~(1 << pin);
+			break;
+		case H3_GPIO_PORTC:
+			H3_PIO_PORTC->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTD:
+			H3_PIO_PORTD->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTE:
+			H3_PIO_PORTE->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTF:
+			H3_PIO_PORTF->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTG:
+			H3_PIO_PORTG->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		default:
+			break;
+	}
 }
 
 inline static void h3_gpio_set(_gpio_pin pin) {
-#if (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTA)
-	H3_PIO_PORTA->DAT |= (1 << pin);
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTB)
-	H3_PIO_PORTB->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTC)
-	H3_PIO_PORTC->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
-#elif  (H3_GPIO_TO_PORT(pin) == H3_GPIO_PORTD)
-	H3_PIO_PORTD->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
-#else
- #error Port not implemented
-#endif
+	switch H3_GPIO_TO_PORT(pin) {
+		case H3_GPIO_PORTA:
+			H3_PIO_PORTA->DAT |= (1 << pin);
+			break;
+		case H3_GPIO_PORTC:
+			H3_PIO_PORTC->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTD:
+			H3_PIO_PORTD->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTE:
+			H3_PIO_PORTE->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTF:
+			H3_PIO_PORTF->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		case H3_GPIO_PORTG:
+			H3_PIO_PORTG->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			break;
+		default:
+			break;
+	}
 }
+
+//FIXME Remove
+//TODO Backwards compatibility with the Raspberry Pi API's
+#define bcm2835_gpio_clr	h3_gpio_clr
+#define bcm2835_gpio_set	h3_gpio_set
+#define bcm2835_gpio_fsel	h3_gpio_fsel
+//
+#define BCM2835_GPIO_FSEL_OUTP	GPIO_FSEL_OUTPUT
+//
+#define bcm2835_delay(x)		udelay(x * 1000)
 
 #endif /* H3_GPIO_H_ */

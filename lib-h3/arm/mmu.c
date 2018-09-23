@@ -165,7 +165,7 @@ void mmu_enable(void) {
 	asm volatile ("mcr p15, 0, %0, c1, c0,  1" :: "r" (auxctrl));
 
 	// set domain 0 to manager (client does not work)
-	asm volatile ("mcr p15, 0, %0, c3, c0, 0" :: "r" (DOMAIN_MANAGER << 0)); //TODO Why is this blocking?
+	asm volatile ("mcr p15, 0, %0, c3, c0, 0" :: "r" (DOMAIN_MANAGER << 0));
 
 	// always use TTBR0
 	asm volatile ("mcr p15, 0, %0, c2, c0, 2" :: "r" (0));

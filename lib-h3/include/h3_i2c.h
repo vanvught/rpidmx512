@@ -53,8 +53,8 @@ extern void h3_i2c_set_baudrate(uint32_t);
 extern void h3_i2c_set_slave_address(uint8_t);
 
 // Obsolete - Backwards compatibility with Raspberry Pi
-#define h3_i2c_setSlaveAddress	h3_i2c_set_slave_address	//TODO remove
-extern void h3_i2c_setClockDivider(uint16_t);
+#define h3_i2c_setSlaveAddress	h3_i2c_set_slave_address	//TODO remove h3_i2c_setSlaveAddress
+extern void h3_i2c_setClockDivider(uint16_t);				//TODO remove h3_i2c_setClockDivider
 
 #ifdef __cplusplus
 }

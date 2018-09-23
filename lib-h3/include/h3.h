@@ -535,11 +535,6 @@ typedef struct T_H3_PRCM {
 #define H3_CNT64		((H3_CNT64_TypeDef *) H3_CNT64_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
 
-#include "arm/gic.h"
-
-#define H3_GIC_DIST		((GIC_DIST_TypeDef *) H3_GIC_DIST_BASE)
-#define H3_GIC_CPUIF	((GIC_CPUIF_TypeDef *) H3_GIC_CPUIF_BASE)
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -77,7 +77,7 @@ void gic_init(void) {
 	}
 
 	for (i = 0; i < IPRIORITY_N; i++) {
-		H3_GIC_DIST->IPRIORITY[i] = 0x0;		// TODO ?
+		H3_GIC_DIST->IPRIORITY[i] = 0x0;		// TODO What is this?
 	}
 
 	for (i = 0; i < ITARGETS_N; i++) {
@@ -96,11 +96,13 @@ void gic_init(void) {
 	H3_GIC_CPUIF->CTL = GICC_CTL_ENABLE_GRP0 | GICC_CTL_ENABLE_GRP1 | GICC_CTL_ENABLE_FIQ;
 }
 
-
 static void int_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDef group) {
 #ifndef NDEBUG
 	printf("int_config(H3_IRQn_TypeDef %d,cpu %d, GIC_GROUP_TypeDef %d)\n", n, cpu, group);
 #endif
+
+	clean_data_cache();
+	dmb();
 
 	const uint32_t index = n / 32;
 	uint32_t mask = 1 << (n % 32);
@@ -115,6 +117,8 @@ static void int_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDe
 
 	H3_GIC_DIST->IGROUP[index] |= mask;
 
+	isb();
+
 #ifndef NDEBUG
 	printf("H3_GIC_DIST->IGROUP[%d] = %p [%p]\n", index, mask, H3_GIC_DIST->IGROUP[index]);
 #endif
@@ -126,13 +130,6 @@ void gic_irq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu) {
 
 void gic_fiq_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu) {
 	int_config(n, cpu, GIC_GROUP0);
-}
-
-void gic_unpend(H3_IRQn_TypeDef irq) {
-	uint32_t index = irq / 32;
-	uint32_t mask = 1 << (irq % 32);
-
-	H3_GIC_DIST->ICPEND[index] = mask;
 }
 
 void gic_init_dump(void) {
@@ -169,7 +166,7 @@ void gic_init_dump(void) {
 	for (i = 0; i < max_interrupts/16; i++) {
 		printf("\t[%p] ICFG[%d] = %p\n", &H3_GIC_DIST->ICFG[i], i, H3_GIC_DIST->ICFG[i]);
 	}
-#endif
+#endif	
 }
 
 void gic_int_dump(H3_IRQn_TypeDef n) {

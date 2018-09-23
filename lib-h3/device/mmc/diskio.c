@@ -37,7 +37,7 @@
 
 #define SD_WRITE_SUPPORT
 
-#ifdef CACHE_ENABLED		//FIXME
+#ifdef CACHE_ENABLED		// FIXME Cache is not working correctly for write
 #undef CACHE_ENABLED
 #endif
 

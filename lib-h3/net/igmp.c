@@ -46,7 +46,6 @@ typedef enum s_state {
 
 struct t_group_info {
 	uint32_t group_address;
-	//bool flag;
 	uint8_t timer;		// 1/10 seconds
 	_state state;
 };
@@ -183,7 +182,6 @@ void igmp_timer(void) {
 			if (s_groups[i].timer == 0) {
 				_send_report(s_groups[i].group_address);
 				s_groups[i].state = IDLE_MEMBER;
-				//groups[i].flag = true;
 			}
 		}
 	}
@@ -213,7 +211,6 @@ int igmp_join(uint32_t group_address) {
 	s_groups[s_joins_allowed_index].group_address = group_address;
 	s_groups[s_joins_allowed_index].state = DELAYING_MEMBER;
 	s_groups[s_joins_allowed_index].timer = 2; // TODO
-	//groups[joins_allowed_index].flag = true;
 
 	s_joins_allowed_index++;
 
