@@ -405,6 +405,10 @@ extern "C" {
 
 extern void udelay(const uint32_t);
 
+inline static void bcm2835_delay(unsigned int millis) {
+	udelay(millis * 1000);
+}
+
 #ifdef __cplusplus
 }
 #endif
