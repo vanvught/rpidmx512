@@ -1,4 +1,4 @@
-# Baremetal library for the DMX512 / RDM #
+# Baremetal library #
 Supported boards:
 
 * Raspberry Pi 
