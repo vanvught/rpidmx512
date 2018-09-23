@@ -66,7 +66,7 @@ $(BUILD7)$1/%.o: $1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 -nostdinc++ -c $$< -o $$@	
+	$(CPP) $(COPS7) -fno-rtti -std=c++11 -nostdinc++ -c $$< -o $$@	
 	
 $(BUILD7)$1/%.o: $1/%.S	
 	$(CC) $(COPS7) -D__ASSEMBLY__ -c $$< -o $$@		
