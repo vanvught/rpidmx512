@@ -50,8 +50,14 @@
  #define debug_print_bits(x)		((void)0)
 #else
  #include <stdint.h>
+ #ifdef __cplusplus
+  extern "C" {
+ #endif
  extern void debug_dump(void *, uint16_t);
  extern void debug_print_bits(uint32_t);
+ #ifdef __cplusplus
+  }
+ #endif
  #if defined (__linux__) || defined (__CYGWIN__)
   #define DEBUG_PRINTF(FORMAT, ...) \
     fprintf(stderr, "%s() %s, line %i: " FORMAT "\n", __func__, __FILE__, __LINE__, __VA_ARGS__)
