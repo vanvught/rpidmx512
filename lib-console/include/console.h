@@ -28,11 +28,11 @@
 
 #include <stdint.h>
 
-#define RGB(r, g, b) ((((r)>>3)<<11) | (((g)>>2)<<5) | ((b)>>3))
+#define RGB(r, g, b) ((((uint16_t)(r) & 0xF8) << 8) | (((uint16_t)(g) & 0xFC) << 3) | ((uint16_t)(b) >> 3))
 
 #define CONSOLE_OK	0	///< Call console_init() OK
 
-#if defined(H3)
+#if defined(H3) && !defined(CONSOLE_ILI9340)
  #include "h3/console.h"
 #else
  #include "rpi/console.h"
@@ -44,22 +44,41 @@ extern "C" {
 
 extern int console_init(void);
 
+extern void console_clear(void);
+
 extern int console_putc(int);
 extern int console_puts(const char *);
 
-extern void console_set_fg_color(_console_colors);
-extern void console_set_bg_color(_console_colors);
-extern void console_set_fg_bg_color(_console_colors, _console_colors);
+extern void console_set_fg_color(uint16_t);
+extern void console_set_bg_color(uint16_t);
+extern void console_set_fg_bg_color(uint16_t, uint16_t);
 
 extern int console_status(uint16_t, const char *);
 extern int console_error(const char *);
 
 extern void console_puthex(uint8_t);
-extern void console_puthex_fg_bg(const uint8_t, _console_colors, _console_colors);
+extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
 
 extern void console_newline(void);
 
 extern void console_write(const char *, unsigned int);
+
+extern void console_draw_pixel(uint16_t, uint16_t, uint16_t);
+
+extern void console_clear_line(uint16_t);
+
+extern uint16_t console_get_top_row(void);
+extern void console_set_top_row(uint16_t);
+
+extern void console_set_cursor(uint16_t, uint16_t);
+
+extern void console_save_cursor(void);
+extern void console_restore_cursor(void);
+
+extern void console_save_color(void);
+extern void console_restore_color(void);
+
+extern uint16_t console_get_line_width(void);
 
 #ifdef __cplusplus
 }

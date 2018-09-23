@@ -43,12 +43,12 @@ typedef enum {
 extern "C" {
 #endif
 
-// The following functions are not supported
-#define console_clear_line(__p)					(void)0
-#define console_set_cursor(__p1, __p2)			(void)0
-#define console_save_cursor()					(void)0
-#define console_restore_cursor()				(void)0
-#define console_set_top_row(__p)				(void)0
+// The following functions are not supported with debug UART
+inline static void console_set_top_row(uint16_t __d) {}
+inline static void console_clear_line(uint16_t __d) {}
+inline static void console_set_cursor(uint16_t __d, uint16_t __e) {}
+inline static void console_save_cursor(void) {}
+inline static void console_restore_cursor(void) {}
 
 #ifdef __cplusplus
 }

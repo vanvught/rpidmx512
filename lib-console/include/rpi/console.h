@@ -37,27 +37,4 @@ typedef enum {
 	CONSOLE_WHITE = 0xFFFF,		///< 255, 255, 255
 } _console_colors;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void console_clear_line(uint16_t);
-
-extern uint16_t console_get_top_row(void);
-extern void console_set_top_row(uint16_t);
-
-extern void console_set_cursor(uint32_t, uint32_t);
-
-extern void console_save_cursor(void);
-extern void console_restore_cursor(void);
-
-extern void console_save_color(void);
-extern void console_restore_color(void);
-
-extern uint16_t console_get_line_width(void);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* RPI_CONSOLE_H_ */

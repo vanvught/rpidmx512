@@ -1,3 +1,4 @@
+#if !defined(CONSOLE_ILI9340)
 /**
  * @file console.h
  *
@@ -64,7 +65,7 @@ void console_newline(void) {
 	console_putc('\n');
 }
 
-void console_set_fg_color(_console_colors fg) {
+void console_set_fg_color(uint16_t fg) {
 	switch (fg) {
 	case CONSOLE_BLACK:
 		console_puts("\x1b[30m");
@@ -89,7 +90,7 @@ void console_set_fg_color(_console_colors fg) {
 	cur_fore = fg;
 }
 
-void console_set_bg_color(_console_colors bg) {
+void console_set_bg_color(uint16_t bg) {
 	switch (bg) {
 	case CONSOLE_BLACK:
 		console_puts("\x1b[40m");
@@ -152,7 +153,7 @@ void console_puthex(uint8_t data) {
 	(void) console_putc((int) (TO_HEX(data & 0x0F)));
 }
 
-void console_puthex_fg_bg(uint8_t data, _console_colors fg, _console_colors bg) {
+void console_puthex_fg_bg(uint8_t data, uint16_t fg, uint16_t bg) {
 	console_set_fg_color(fg);
 	console_set_bg_color(bg);
 
@@ -162,3 +163,5 @@ void console_puthex_fg_bg(uint8_t data, _console_colors fg, _console_colors bg) 
 	console_set_fg_color(cur_fore);
 	console_set_bg_color(cur_back);
 }
+
+#endif

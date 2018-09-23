@@ -1,3 +1,4 @@
+#if !defined(CONSOLE_ILI9340)
 /**
  * @file console.c
  *
@@ -34,10 +35,10 @@
 
 extern uint32_t fb_addr;	///< Address of buffer allocated by VC
 
-static uint32_t current_x = 0;
-static uint32_t current_y = 0;
-static uint32_t saved_x = 0;
-static uint32_t saved_y = 0;
+static uint16_t current_x = 0;
+static uint16_t current_y = 0;
+static uint16_t saved_x = 0;
+static uint16_t saved_y = 0;
 static uint16_t cur_fore = CONSOLE_WHITE;
 static uint16_t cur_back = CONSOLE_BLACK;
 static uint16_t saved_fore = CONSOLE_WHITE;
@@ -63,13 +64,13 @@ uint16_t console_get_top_row(void) {
 
 void console_set_top_row(uint16_t row) {
 	if (row > FB_HEIGHT / FB_CHAR_H) {
-		top_row = (uint16_t) 0;
+		top_row = 0;
 	} else {
 		top_row = row;
 	}
 
-	current_x = (uint32_t) 0;
-	current_y = (uint32_t) row;
+	current_x = 0;
+	current_y = row;
 }
 
 inline static void clear_row(uint32_t *address) {
@@ -79,10 +80,6 @@ inline static void clear_row(uint32_t *address) {
 	for (i = 0 ; i < (FB_CHAR_H * FB_WIDTH) / 2 ; i++) {
 		*address++ =  value;
 	}
-}
-
-void foo(uint32_t *address) {
-	clear_row(address);
 }
 
 inline static void newline(void) {
@@ -142,7 +139,7 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint1
 	}
 }
 
-int console_draw_char(int ch, uint32_t x, uint32_t y, uint16_t fore, uint16_t back) {
+int console_draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t back) {
 	draw_char(ch, x * FB_CHAR_W, y * FB_CHAR_H, fore, back);
 	return (int)ch;
 }
@@ -225,8 +222,8 @@ int console_status(uint16_t color, const char *s) {
 	const uint16_t fore_current = cur_fore;
 	const uint16_t back_current = cur_back;
 
-	const uint32_t s_y = current_y;
-	const uint32_t s_x = current_x;
+	const uint16_t s_y = current_y;
+	const uint16_t s_x = current_x;
 
 	console_clear_line(29);
 
@@ -284,7 +281,7 @@ void console_clear(void) {
 	current_y = 0;
 }
 
-void console_set_cursor(uint32_t x, uint32_t y) {
+void console_set_cursor(uint16_t x, uint16_t y) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
@@ -355,4 +352,4 @@ void console_clear_line(uint16_t line) {
 	address = (uint32_t *)(fb_addr) + (line * FB_CHAR_H * FB_WIDTH) / 2;
 	clear_row(address);
 }
-
+#endif
