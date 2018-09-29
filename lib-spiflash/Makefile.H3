@@ -1,0 +1,7 @@
+#
+DEFINES = #NDEBUG
+#
+EXTRA_INCLUDES = ../lib-network/include ../lib-h3/include ../lib-h3/src
+#
+include ../h3-firmware-template/lib/Rules.mk
+	
