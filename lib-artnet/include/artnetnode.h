@@ -136,8 +136,8 @@ public:
 	const char *GetLongName(void);
 	void SetLongName(const char *);
 
-	uint8_t GetUniverseSwitch(uint8_t) const;
-	int SetUniverseSwitch(uint8_t, TArtNetPortDir, uint8_t);
+	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress) const;
+	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
 
 	uint8_t GetNetSwitch(void) const;
 	void SetNetSwitch(uint8_t);
@@ -186,13 +186,14 @@ private:
 	void HandleTodControl(void);
 	void HandleRdm(void);
 	void HandleIpProg(void);
+	//void HandleDirectory(void);
 
 	bool IsMergedDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
 	void CheckMergeTimeouts(uint8_t);
 	bool IsDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
 
 	void SendPollRelply(bool);
-	void SendTod(void);
+	void SendTod(uint8_t nPortId = 0);
 
 	void SetNetworkDataLossCondition(void);
 
@@ -223,7 +224,7 @@ private:
 	time_t					m_nPreviousPacketTime;
 	TOpCodes				m_tOpCodePrevious;
 
-	bool					m_IsLightSetRunning;
+	bool					m_IsLightSetRunning[ARTNET_MAX_PORTS];
 	bool					m_IsRdmResponder;
 
 	char					m_aSysName[16];

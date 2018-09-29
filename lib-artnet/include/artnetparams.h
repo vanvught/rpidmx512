@@ -75,7 +75,7 @@ public:
 	void Dump(void);
 
 private:
-	bool isMaskSet(uint16_t) const;
+	bool isMaskSet(uint32_t) const;
 	uint16_t HexUint16(const char *) const;
 
 public:
@@ -85,7 +85,7 @@ private:
     void callbackFunction(const char *s);
 
 private:
-    uint32_t m_bSetList;
+    uint32_t m_nSetList;
     uint8_t m_nNet;
     uint8_t m_nSubnet;
     uint8_t m_nUniverse;
@@ -100,6 +100,7 @@ private:
 	uint8_t m_aOemValue[2];
 	time_t m_nNetworkTimeout;
 	bool m_bDisableMergeTimeout;
+	uint8_t m_nUniversePort[ARTNET_MAX_PORTS];
 };
 
 #endif /* ARTNETPARAMS_H_ */

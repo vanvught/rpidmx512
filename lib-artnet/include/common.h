@@ -35,6 +35,11 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+#define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
+
+#define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
+
+
 /*
  * error codes
  */

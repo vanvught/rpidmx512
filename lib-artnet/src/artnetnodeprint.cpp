@@ -41,6 +41,11 @@ void ArtNetNode::Print(void) {
 	printf(" Long name    : %s\n", m_Node.LongName);
 	printf(" Net          : %d\n", m_Node.NetSwitch);
 	printf(" Sub-Net      : %d\n", m_Node.SubSwitch);
-	printf(" Universe     : %d\n", GetUniverseSwitch(0));
-	printf(" Active ports : %d\n", m_State.nActivePorts);
+	for (uint8_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		uint8_t nAddress;
+		if (GetUniverseSwitch(i, nAddress)) {
+			printf(" Universe[%d]  : %d\n", i, nAddress);
+		}
+	}
+	//printf(" Active ports : %d\n", m_State.nActivePorts);
 }
