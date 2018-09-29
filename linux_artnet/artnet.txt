@@ -1,2 +1,9 @@
-universe=2
-#output=mon
+universe=1
+#net=1
+output=slush
+#short_name=AvV
+#long_name=AvV ArtNet Node
+#manufacturer_id=7fff
+#manufacturer_id=414C
+#oem_value=0000
+#oem_value=280a

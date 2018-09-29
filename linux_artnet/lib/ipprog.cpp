@@ -3,7 +3,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 
 #include "ipprog.h"
 
-#include "network.h"
+#include "networklinux.h"
 
 union uip {
 	uint32_t u32;
@@ -71,8 +71,8 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 			memcpy((void *)ip_union.u8, (void *)&pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
 			Network::Get()->SetIp(ip_union.u32);
 #ifndef NDEBUG
-			printf("\tIP : " IPSTR "\n", IP2STR(network_get_ip()));
-			printf("\tNetmask : " IPSTR "\n", IP2STR(network_get_netmask()));
+			printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
+			printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
 #endif
 			// Set IPAddress in IpProgReply
 			memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);

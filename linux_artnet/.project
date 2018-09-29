@@ -5,7 +5,7 @@
 	<projects>
 		<project>lib-artnet</project>
 		<project>lib-dmxmonitor</project>
-		<project>lib-hardware</project>
+		<project>lib-hal</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-rdm</project>

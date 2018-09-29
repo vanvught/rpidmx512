@@ -89,6 +89,10 @@ int main(int argc, char **argv) {
 	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 1);
+	node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 2);
+	node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 3);
+
 	node.SetOutput(&monitor);
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
@@ -112,21 +116,13 @@ int main(int argc, char **argv) {
 	}
 
 	nw.Print();
-	puts("-------------------------------------------------------------------------------------------");
 	node.Print();
-	puts("-------------------------------------------------------------------------------------------");
 	RdmResponder.GetRDMDeviceResponder()->Print();
-	puts("-------------------------------------------------------------------------------------------");
 
 	node.Start();
 
 	for (;;) {
-		int bytes = node.HandlePacket();
-		if (bytes > 0) {
-#ifndef NDEBUG
-			printf("(%d)\n", bytes);
-#endif
-		}
+		(void) node.HandlePacket();
 		identify.Run();
 	}
 
