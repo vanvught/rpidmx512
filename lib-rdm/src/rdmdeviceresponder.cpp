@@ -49,8 +49,9 @@
 
 #define DMX_UNIVERSE_SIZE 512
 
-#if defined (ORANGE_PI)
- static const char DEVICE_LABEL[] ALIGNED = "Orange Pi RDM Responder";
+#if defined(H3)
+ #include "h3_board.h"
+ static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " RDM Responder";
 #elif defined (RASPPI) || defined(__circle__) || defined (BARE_METAL)
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
