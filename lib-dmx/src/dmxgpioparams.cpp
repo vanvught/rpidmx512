@@ -51,6 +51,8 @@ static const char PARAMS_DATA_DIRECTION_OUT2[] ALIGNED = "data_direction_out2";
 static const char PARAMS_DATA_DIRECTION_OUT3[] ALIGNED = "data_direction_out3";
 static const char PARAMS_DATA_DIRECTION_OUT4[] ALIGNED = "data_direction_out4";
 
+// m_nDmxDataDirectionOut[x] --> UARTx
+
 DmxGpioParams::DmxGpioParams(void):
 		m_nSetList(0),
 		m_nDmxDataDirection(GPIO_DMX_DATA_DIRECTION)
@@ -74,6 +76,13 @@ DmxGpioParams::DmxGpioParams(void):
 }
 
 DmxGpioParams::~DmxGpioParams(void) {
+}
+
+bool DmxGpioParams::Load(void) {
+	m_nSetList = 0;
+
+	ReadConfigFile configfile(DmxGpioParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void DmxGpioParams::callbackFunction(const char* pLine) {
@@ -119,30 +128,30 @@ uint8_t DmxGpioParams::GetDataDirection(bool &isSet) const {
 	return m_nDmxDataDirection;
 }
 
-uint8_t DmxGpioParams::GetDataDirection(bool &isSet, uint8_t out) const {
-	if ((out == 0) || (out > DMX_MAX_OUT)) {
+uint8_t DmxGpioParams::GetDataDirection(bool &isSet, uint8_t uart) const {
+	if (uart >= DMX_MAX_OUT) {
 		isSet = false;
 		return 0;
 	}
 
-	switch (out) {
-	case 1:
+	switch (uart) {
+	case 0:
 		isSet = isMaskSet(DATA_DIRECTION_OUT1_MASK);
 		break;
-	case 2:
+	case 1:
 		isSet = isMaskSet(DATA_DIRECTION_OUT2_MASK);
 		break;
-	case 3:
+	case 2:
 		isSet = isMaskSet(DATA_DIRECTION_OUT3_MASK);
 		break;
-	case 4:
+	case 3:
 		isSet = isMaskSet(DATA_DIRECTION_OUT4_MASK);
 		break;
 	default:
 		break;
 	}
 
-	return m_nDmxDataDirectionOut[out - 1];
+	return m_nDmxDataDirectionOut[uart];
 }
 
 void DmxGpioParams::Dump(void) {
@@ -154,23 +163,23 @@ void DmxGpioParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
 	if(isMaskSet(DATA_DIRECTION_MASK)) {
-		printf("%s=%d\n", PARAMS_DATA_DIRECTION, m_nDmxDataDirection);
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION, m_nDmxDataDirection);
 	}
 
 	if(isMaskSet(DATA_DIRECTION_OUT1_MASK)) {
-		printf("%s=%d\n", PARAMS_DATA_DIRECTION_OUT1, m_nDmxDataDirectionOut[0]);
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT1, m_nDmxDataDirectionOut[0]);
 	}
 
 	if(isMaskSet(DATA_DIRECTION_OUT2_MASK)) {
-		printf("%s=%d\n", PARAMS_DATA_DIRECTION_OUT2, m_nDmxDataDirectionOut[1]);
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT2, m_nDmxDataDirectionOut[1]);
 	}
 
 	if(isMaskSet(DATA_DIRECTION_OUT3_MASK)) {
-		printf("%s=%d\n", PARAMS_DATA_DIRECTION_OUT3, m_nDmxDataDirectionOut[2]);
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT3, m_nDmxDataDirectionOut[2]);
 	}
 
 	if(isMaskSet(DATA_DIRECTION_OUT4_MASK)) {
-		printf("%s=%d\n", PARAMS_DATA_DIRECTION_OUT4, m_nDmxDataDirectionOut[3]);
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT4, m_nDmxDataDirectionOut[3]);
 	}
 #endif
 }
@@ -182,6 +191,6 @@ void DmxGpioParams::staticCallbackFunction(void* p, const char* s) {
 	((DmxGpioParams *) p)->callbackFunction(s);
 }
 
-bool DmxGpioParams::isMaskSet(uint16_t mask) const {
+bool DmxGpioParams::isMaskSet(uint32_t mask) const {
 	return (m_nSetList & mask) == mask;
 }

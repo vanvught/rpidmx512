@@ -59,11 +59,10 @@ public:
 
 	boolean Initialize (void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
 	void SetData(/* unused */uint8_t, const uint8_t *, uint16_t);	// waits if transfer is active
-	void SetData(const uint8_t *, uint16_t);						// waits if transfer is active
 
 	void SetDataLength(uint16_t);
 	uint16_t GetDataLength(void) const;

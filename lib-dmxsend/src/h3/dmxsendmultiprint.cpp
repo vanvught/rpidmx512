@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxsendmultiprint.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stdio.h>
 
-#include "dmxsend.h"
+#include "h3/dmxsendmulti.h"
 
-#include "dmx.h"
-
-#include "debug.h"
-
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
+void DMXSendMulti::Print(void) {
+	printf("\nDMX Send configuration\n");
+	printf(" Break time   : %d\n", (int) GetDmxBreakTime());
+	printf(" MAB time     : %d\n", (int) GetDmxMabTime());
+	printf(" Refresh rate : %d\n", (int) (1000000 / GetDmxPeriodTime()));
 }
-
-DMXSend::~DMXSend(void) {
-}
-
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
-}
-
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = false;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
-}
-
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
-
-	dmx_set_send_data_without_sc(pData, nLength);
-
-	DEBUG_EXIT
-}
-

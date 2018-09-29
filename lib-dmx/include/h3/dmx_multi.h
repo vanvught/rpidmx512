@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmx_multi.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,32 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef DMX_MULTI_H_
+#define DMX_MULTI_H_
 
-#include "dmxsend.h"
+#include <stdint.h>
 
 #include "dmx.h"
 
-#include "debug.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
+extern void dmx_multi_init(void);
+extern void dmx_multi_init_set_gpiopin(uint8_t port, uint8_t gpio_pin);
+extern void dmx_multi_set_port_direction(uint8_t port, _dmx_port_direction port_direction, bool enable_data);
+extern void dmx_multi_set_port_send_data_without_sc(uint8_t uart, const uint8_t *data, uint16_t length);
+
+extern uint32_t dmx_multi_get_output_break_time(void);
+extern void dmx_multi_set_output_break_time(uint32_t);
+extern uint32_t dmx_multi_get_output_mab_time(void);
+extern void dmx_multi_set_output_mab_time(uint32_t);
+extern uint32_t dmx_multi_get_output_period(void);
+
+extern const uint8_t *dmx_multi_rdm_get_available(uint8_t uart);
+
+#ifdef __cplusplus
 }
+#endif
 
-DMXSend::~DMXSend(void) {
-}
-
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
-}
-
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = false;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
-}
-
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
-
-	dmx_set_send_data_without_sc(pData, nLength);
-
-	DEBUG_EXIT
-}
-
+#endif /* DMX_MULTI_H_ */

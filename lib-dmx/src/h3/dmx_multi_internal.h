@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmx_multi_internal.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,53 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef DMX_MULTI_INTERNAL_H_
+#define DMX_MULTI_INTERNAL_H_
 
-#include "dmxsend.h"
+#include <assert.h>
 
 #include "dmx.h"
 
-#include "debug.h"
+/*
+ * PORT
+ * 0	UART1
+ * 1	UART2
+ * 2	UART3
+ * 3	UART0
+ */
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
-}
+inline static uint8_t _port_to_uart(uint8_t port) {
+	assert(port < DMX_MAX_OUT);
 
-DMXSend::~DMXSend(void) {
-}
-
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+	if (port < 3) {
+		return port + 1;
 	}
 
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
+	return 0;
 }
 
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
+#include "h3.h"
 
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
+	switch (uart) {
+	case 0:
+		return (H3_UART_TypeDef *) H3_UART0_BASE;
+		break;
+	case 1:
+		return (H3_UART_TypeDef *) H3_UART1_BASE;
+		break;
+	case 2:
+		return (H3_UART_TypeDef *) H3_UART2_BASE;
+		break;
+	case 3:
+		return (H3_UART_TypeDef *) H3_UART3_BASE;
+		break;
+	default:
+		assert(0);
+		break;
 	}
 
-	m_bIsStarted = false;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
+	return 0;
 }
 
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
-
-	dmx_set_send_data_without_sc(pData, nLength);
-
-	DEBUG_EXIT
-}
-
+#endif /* DMX_MULTI_INTERNAL_H_ */

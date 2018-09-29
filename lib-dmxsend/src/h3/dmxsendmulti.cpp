@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxsendmulti.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,52 +24,77 @@
  */
 
 #include <stdint.h>
+#include <assert.h>
 
-#include "dmxsend.h"
-
-#include "dmx.h"
+#include "h3/dmxsendmulti.h"
+#include "h3/dmx_multi.h"
 
 #include "debug.h"
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
-}
+#define MAX_PORTS (sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]))
 
-DMXSend::~DMXSend(void) {
-}
-
-void DMXSend::Start(uint8_t nPort) {
+DMXSendMulti::DMXSendMulti(void) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+	for (unsigned i = 0; i < MAX_PORTS ; i++) {
+		m_bIsStarted[i] = false;
+	}
+
+	DEBUG_EXIT
+}
+
+DMXSendMulti::~DMXSendMulti(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void DMXSendMulti::Start(uint8_t nPort) {
+	DEBUG_ENTRY
+
+	assert(nPort < MAX_PORTS);
+
+	DEBUG_PRINTF("nPort=%d", nPort);
+
+	if (m_bIsStarted[nPort]) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = true;
+	m_bIsStarted[nPort] = true;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
+	SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, true);
+
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(uint8_t nPort) {
+void DMXSendMulti::Stop(uint8_t nPort) {
 	DEBUG_ENTRY
 
-	if (!m_bIsStarted) {
+	assert(nPort < MAX_PORTS);
+
+	DEBUG_PRINTF("nPort=%d", nPort);
+
+	if (!m_bIsStarted[nPort]) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = false;
+	m_bIsStarted[nPort] = false;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
+	SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
+
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void DMXSendMulti::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY
 
-	dmx_set_send_data_without_sc(pData, nLength);
+	assert(nPort < MAX_PORTS);
+	assert(pData != 0);
+	assert(nLength != 0);
+
+	dmx_multi_set_port_send_data_without_sc(nPort, pData, nLength);
 
 	DEBUG_EXIT
 }
-

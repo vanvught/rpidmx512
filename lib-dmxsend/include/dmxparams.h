@@ -29,9 +29,12 @@
 #include <stdint.h>
 
 #if defined (__circle__)
-#include "circle/dmxsend.h"
+ #include "circle/dmxsend.h"
 #else
-#include "dmxsend.h"
+ #include "dmxsend.h"
+ #if defined (H3)
+  #include "h3/dmxsendmulti.h"
+ #endif
 #endif
 
 #define DMX_PARAMS_MIN_BREAK_TIME		9	///<
@@ -50,7 +53,12 @@ public:
 	~DMXParams(void);
 
 	bool Load(void);
+
 	void Set(DMXSend *);
+#if defined (H3)
+	void Set(DMXSendMulti *);
+#endif
+
 	void Dump(void);
 
 	inline uint8_t GetBreakTime(void) {
@@ -66,18 +74,13 @@ public:
 	}
 
 private:
-	bool isMaskSet(uint16_t) const;
+	bool isMaskSet(uint32_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
-
-#if defined (__circle__)
-private:
-    void printf (const char *fmt, ...);
-#endif
 
 private:
     uint32_t m_bSetList;

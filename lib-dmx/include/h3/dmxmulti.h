@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxmulti.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,54 +22,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef DMXMULTI_H_
+#define DMXMULTI_H_
 
-#include <stdint.h>
-
-#include "dmxsend.h"
+#include "dmx_multi.h"
 
 #include "dmx.h"
 
-#include "debug.h"
+class DmxMulti: public DmxSet {
+public:
+	DmxMulti(void);
+	~DmxMulti(void);
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
-}
+	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false);
 
-DMXSend::~DMXSend(void) {
-}
-
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+	inline void SetDmxBreakTime(uint32_t nBreakTime) {
+		dmx_multi_set_output_break_time(nBreakTime);
 	}
 
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
-}
-
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+	inline  uint32_t GetDmxBreakTime(void) {
+		return dmx_multi_get_output_break_time();
 	}
 
-	m_bIsStarted = false;
+	inline void SetDmxMabTime(uint32_t nMabTime) {
+		dmx_multi_set_output_mab_time(nMabTime);
+	}
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
-}
+	inline uint32_t GetDmxMabTime(void) {
+		return dmx_multi_get_output_mab_time();
+	}
 
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
+	inline uint32_t GetDmxPeriodTime(void) {
+		return dmx_multi_get_output_period();
+	}
 
-	dmx_set_send_data_without_sc(pData, nLength);
+	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength);
 
-	DEBUG_EXIT
-}
+	const uint8_t *RdmReceive(uint8_t nPort);
+	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut);
 
+private:
+	bool m_IsInitDone;
+};
+
+#endif /* DMXMULTI_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmx++.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,52 +24,45 @@
  */
 
 #include <stdint.h>
-
-#include "dmxsend.h"
+#include <assert.h>
 
 #include "dmx.h"
+#include "rdm_send.h"
+
+#include "h3_hs_timer.h"
 
 #include "debug.h"
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
+void Dmx::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
+	assert(nPort == 0);
+
+	dmx_set_port_direction((_dmx_port_direction)tPortDirection, bEnableData);
 }
 
-DMXSend::~DMXSend(void) {
+void Dmx::RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort == 0);
+
+	rdm_send_data((const uint8_t *) pRdmData, nLength);
 }
 
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
+const uint8_t *Dmx::RdmReceive(uint8_t nPort) {
+	assert(nPort == 0);
 
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
+	const uint8_t *p = rdm_get_available();
+	return p;
 }
 
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
+const uint8_t *Dmx::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+	assert(nPort == 0);
 
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
+	uint8_t *p = 0;
+	uint32_t micros_now = h3_hs_timer_lo_us();
 
-	m_bIsStarted = false;
+	do {
+		if ((p = (uint8_t *) rdm_get_available()) != 0) {
+			return (const uint8_t *) p;
+		}
+	} while (h3_hs_timer_lo_us() - micros_now < nTimeOut);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
+	return (const uint8_t *) p;
 }
-
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
-
-	dmx_set_send_data_without_sc(pData, nLength);
-
-	DEBUG_EXIT
-}
-

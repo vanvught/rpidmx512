@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxsendmulti.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,30 @@
  * THE SOFTWARE.
  */
 
+#ifndef DMXSENDMULTI_H_
+#define DMXSENDMULTI_H_
+
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "dmxsend.h"
+#include "h3/dmxmulti.h"
 
-#include "dmx.h"
+#include "lightset.h"
 
-#include "debug.h"
+class DMXSendMulti: public DmxMulti, public LightSet  {
+public:
+	DMXSendMulti(void);
+	~DMXSendMulti(void);
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
-}
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
-DMXSend::~DMXSend(void) {
-}
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
 
-void DMXSend::Start(uint8_t nPort) {
-	DEBUG_ENTRY
+	void Print(void);
 
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
+private:
+	bool m_bIsStarted[4];
+};
 
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
-	DEBUG_EXIT
-}
-
-void DMXSend::Stop(uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
-	}
-
-	m_bIsStarted = false;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
-	DEBUG_EXIT
-}
-
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
-
-	dmx_set_send_data_without_sc(pData, nLength);
-
-	DEBUG_EXIT
-}
-
+#endif /* DMXSENDMULTI_H_ */

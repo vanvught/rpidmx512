@@ -24,16 +24,19 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <stdint.h>
 
 #if defined (__circle__)
-#define ALIGNED
-#include <circle/logger.h>
-#include <circle/stdarg.h>
-#include <circle/util.h>
+ #include <circle/util.h>
 #else
-#include "util.h"
+ #include "util.h"
+#endif
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "dmxparams.h"
@@ -49,22 +52,41 @@
 #define DMX_PARAMS_DEFAULT_MAB_TIME		1
 #define DMX_PARAMS_MAX_MAB_TIME			127
 
-#define DMX_PARAMS_DEFAULT_REFRESH_RATE	40	///<
+#define DMX_PARAMS_DEFAULT_REFRESH_RATE	40
 
-#define SET_BREAK_TIME_MASK			1<<0
-#define SET_MAB_TIME_MASK			1<<1
-#define SET_REFRESH_RATE_MASK		1<<2
+#define SET_BREAK_TIME_MASK				(1 << 0)
+#define SET_MAB_TIME_MASK				(1 << 1)
+#define SET_REFRESH_RATE_MASK			(1 << 2)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "params.txt";
 static const char PARAMS_BREAK_TIME[] ALIGNED = "dmxsend_break_time";
 static const char PARAMS_MAB_TIME[] ALIGNED = "dmxsend_mab_time";
 static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmxsend_refresh_rate";
 
+DMXParams::DMXParams(void) :
+		m_bSetList(0),
+		m_nBreakTime(DMX_PARAMS_DEFAULT_BREAK_TIME),
+		m_nMabTime(DMX_PARAMS_DEFAULT_MAB_TIME),
+		m_nRefreshRate(DMX_PARAMS_DEFAULT_REFRESH_RATE)
+{
+}
+
+DMXParams::~DMXParams(void) {
+	m_bSetList = 0;
+}
+
 void DMXParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
 	((DMXParams *) p)->callbackFunction(s);
+}
+
+bool DMXParams::Load(void) {
+	m_bSetList = 0;
+
+	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
+	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void DMXParams::callbackFunction(const char *pLine) {
@@ -88,22 +110,6 @@ void DMXParams::callbackFunction(const char *pLine) {
 	}
 }
 
-DMXParams::DMXParams(void): m_bSetList(0) {
-	m_nBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
-	m_nMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
-	m_nRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
-}
-
-DMXParams::~DMXParams(void) {
-}
-
-bool DMXParams::Load(void) {
-	m_bSetList = 0;
-
-	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
-}
-
 void DMXParams::Set(DMXSend *pDMXSend) {
 	assert(pDMXSend != 0);
 
@@ -123,6 +129,20 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 		pDMXSend->SetDmxPeriodTime(period);
 	}
 }
+
+#if defined (H3)
+void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
+	assert(pDMXSendMulti != 0);
+
+	if (isMaskSet(SET_BREAK_TIME_MASK)) {
+		pDMXSendMulti->SetDmxBreakTime(m_nBreakTime);
+	}
+
+	if (isMaskSet(SET_MAB_TIME_MASK)) {
+		pDMXSendMulti->SetDmxMabTime(m_nMabTime);
+	}
+}
+#endif
 
 void DMXParams::Dump(void) {
 #ifndef NDEBUG
@@ -146,40 +166,7 @@ void DMXParams::Dump(void) {
 #endif
 }
 
-uint8_t DMXParams::GetBreakTime(void) const {
-	return m_nBreakTime;
-}
-
-uint8_t DMXParams::GetMabTime(void) const {
-	return m_nMabTime;
-}
-
-uint8_t DMXParams::GetRefreshRate(void) const {
-	return m_nRefreshRate;
-}
-
-bool DMXParams::isMaskSet(uint16_t mask) const {
+bool DMXParams::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-#if defined (__circle__)
-void DMXParams::printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, fmt);
-
-	if (fmtbuf[fmtlen - 1] == '\n') {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	va_list var;
-	va_start(var, fmt);
-
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-	va_end(var);
-}
-#endif

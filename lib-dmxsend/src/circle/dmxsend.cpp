@@ -208,7 +208,7 @@ boolean DMXSend::Initialize (void)
 	return TRUE;
 }
 
-void DMXSend::Start(void) {
+void DMXSend::Start(uint8_t nPort) {
 	assert (m_State == DMXSendIdle);
 
 	DataMemBarrier ();
@@ -225,7 +225,7 @@ void DMXSend::Start(void) {
 	DataMemBarrier ();
 }
 
-void DMXSend::Stop(void) {
+void DMXSend::Stop(uint8_t nPort) {
 	while (m_State != DMXSendIdle)
 	{
 		m_SpinLock.Acquire ();
@@ -246,20 +246,13 @@ void DMXSend::Stop(void) {
 	}
 }
 
-
-void DMXSend::SetData(/* unused */const uint8_t nPortId, const uint8_t *data, const uint16_t length) {
+void DMXSend::SetData(/* unused */uint8_t nPortId, const uint8_t *data, uint16_t length) {
 	while (!SetDataTry (data, length)) {
 		// just wait
 	}
 }
 
-void DMXSend::SetData(const uint8_t *data, const uint16_t length) {
-	while (!SetDataTry (data, length)) {
-		// just wait
-	}
-}
-
-boolean DMXSend::SetDataTry(const uint8_t *data, const uint16_t length) {
+boolean DMXSend::SetDataTry(const uint8_t *data, uint16_t length) {
 	assert(length <= DMX_UNIVERSE_SIZE);
 
 	m_SpinLock.Acquire ();
