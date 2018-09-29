@@ -1,2 +1,5 @@
-dmx_start_address_port_a=4
-dmx_start_address_port_b=
+dmx_start_address_port_a=5
+dmx_footprint_port_a=1
+#dmx_start_address_port_b=1
+#dmx_footprint_port_b=3
+#use_spi_busy=1

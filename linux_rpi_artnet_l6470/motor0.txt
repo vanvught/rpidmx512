@@ -1,12 +1,32 @@
 sparkfun_position=0
 #
+l6470_kval_hold=50
+l6470_kval_run=50
+l6470_kval_acc=50
+l6470_kval_dec=50
 #l6470_min_speed=25
-l6470_max_speed=500
+l6470_max_speed=800
 l6470_micro_steps=1
+l6470_micro_steps=4
 #
 motor_step_angel=1.8
 motor_resistance=2.3
 motor_inductance=1.8
 #
-dmx_mode=3
+dmx_mode=4
 dmx_start_address=1
+dmx_slot_info=00:0101
+# mode 4, mode 5 settings
+#
+mode_max_steps=800
+#
+# Use limit switch {default=yes , 0=no}
+mode_switch=0
+# goUntil(act, dir, sps)
+#
+# copy, reset
+#mode_switch_act=
+# reverse, forward
+#mode_switch_dir=
+# Steps per second
+#mode_switch_sps
