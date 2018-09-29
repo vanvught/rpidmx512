@@ -375,3 +375,7 @@ uint32_t HardwareLinux::Millis(void) {
 	return (tv.tv_sec * (__time_t) 1000) + (tv.tv_usec / (__suseconds_t) 1000);
 #endif
 }
+
+bool HardwareLinux::IsButtonPressed(void) {
+	return false;
+}

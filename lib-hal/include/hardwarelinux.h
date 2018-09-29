@@ -69,6 +69,8 @@ public:
 
 	uint32_t Millis(void);
 
+	bool IsButtonPressed(void);
+
 private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 

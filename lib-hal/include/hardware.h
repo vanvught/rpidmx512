@@ -85,6 +85,13 @@ public:
 
 	virtual uint32_t Millis(void)=0;
 
+	virtual bool IsButtonPressed(void);
+
+// Only implemented in BAREMETAL
+	virtual void WatchdogInit(void);
+	virtual void WatchdogFeed(void);
+	virtual void WatchdogStop(void);
+
 public:
 	inline static Hardware* Get(void) {
 		return s_pThis;

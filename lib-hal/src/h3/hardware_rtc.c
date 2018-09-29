@@ -43,11 +43,11 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	//tm_rtc.tm_wday = // TODO tm_rtc.tm_wday
 	tm_rtc.tm_mon = (int) tm_hw->month - 1;
 	tm_rtc.tm_year = (int) tm_hw->year - 2000;	// RTC stores 2 digits only
-#if defined(HAVE_I2C)
+
 	if (mcp7941x_start(0x00) != MCP7941X_ERROR) {
 		mcp7941x_set_date_time(&tm_rtc);
 	}
-#endif
+
 	tmbuf.tm_hour = tm_rtc.tm_hour;
 	tmbuf.tm_min = tm_rtc.tm_min;
 	tmbuf.tm_sec = tm_rtc.tm_sec;

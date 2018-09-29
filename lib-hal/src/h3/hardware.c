@@ -23,11 +23,10 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <assert.h>
 
-#include "console.h"
-#include "ff.h"
-
+#include "h3_board.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 #include "h3_gpio.h"
@@ -35,25 +34,33 @@
 #include "h3_thermal.h"
 #include "h3.h"
 #include "h3_cpu.h"
-#include "device/emac.h"
-
-#include "h3_board.h"
-
-#include "c/sys_time.h"
+#include "h3_watchdog.h"
 
 #include "arm/gic.h"
 
+#include "c/sys_time.h"
+
+#include "device/emac.h"
+
+#include "console.h"
+#include "ff.h"
+
 #define POWER_LED_PIO	10	// PL10
 
-#if (_FFCONF == 68300)/*R0.12c *//* 32020 R0.11 */
-static FATFS fat_fs;		/* File system object */
+#if (_FFCONF == 68300)		// R0.12c
+ static FATFS fat_fs;
 #endif
 
-static volatile uint64_t hardware_init_startup_seconds = 0;
+static bool s_is_pwr_button_pressed = false;
+static volatile uint64_t s_hardware_init_startup_seconds = 0;
+
+bool hardware_is_pwr_button_pressed(void) {
+	return s_is_pwr_button_pressed;
+}
 
 uint64_t hardware_uptime_seconds(void) {
 	const uint64_t now = h3_read_cnt64() / (uint64_t) (24 * 1000000);
-	return (now - hardware_init_startup_seconds);
+	return (now - s_hardware_init_startup_seconds);
 }
 
 int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
@@ -72,8 +79,7 @@ int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	mac_address[5] = (mac_hi >> 8) & 0xff;
 
 #ifndef NDEBUG
-	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", mac_address[0], mac_address[1],
-			mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
+	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", mac_address[0], mac_address[1], mac_address[2], mac_address[3], mac_address[4], mac_address[5]);
 #endif
 
 	return 0;
@@ -92,6 +98,7 @@ void hardware_led_set(int state) {
 }
 
 void hardware_init(void) {
+	h3_watchdog_disable();
 	console_init();
 	sys_time_init();
 	h3_timer_init();
@@ -100,7 +107,7 @@ void hardware_init(void) {
 	h3_thermal_init();
 	emac_init();
 
-	hardware_init_startup_seconds = h3_read_cnt64() / (uint64_t) (24 * 1000000);
+	s_hardware_init_startup_seconds = h3_read_cnt64() / (uint64_t) (24 * 1000000);
 
 #ifndef ARM_ALLOW_MULTI_CORE
 	// put all secondary cores to sleep
@@ -133,6 +140,15 @@ void hardware_init(void) {
 	H3_PIO_PORTL->CFG1 = value;
 	// Set on
 	H3_PIO_PORTL->DAT |= 1 << POWER_LED_PIO;
+
+#if defined (ORANGE_PI_ONE)
+	// PWR-KEY
+	value = H3_PIO_PORTL->CFG0;
+	value &= ~(GPIO_SELECT_MASK << PL3_SELECT_CFG0_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PL3_SELECT_CFG0_SHIFT);
+	H3_PIO_PORTL->CFG0 = value;
+	s_is_pwr_button_pressed = (H3_PIO_PORTL->DAT & (1 << 3)) == 0;
+#endif
 
 	hardware_led_init();
 	hardware_led_set(1);

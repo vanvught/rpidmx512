@@ -34,3 +34,19 @@ Hardware::Hardware(void) {
 Hardware::~Hardware(void) {
 
 }
+
+void Hardware::WatchdogInit(void) {
+
+}
+
+void Hardware::WatchdogFeed(void) {
+
+}
+
+void Hardware::WatchdogStop(void) {
+
+}
+
+bool Hardware::IsButtonPressed(void) {
+	return false;
+}

@@ -142,3 +142,7 @@ void HardwareCircle::GetTime(struct THardwareTime* pTime) {
 uint32_t HardwareCircle::Millis(void) {
 	return 0;
 }
+
+bool HardwareCircle::IsButtonPressed(void) {
+	return false;
+}

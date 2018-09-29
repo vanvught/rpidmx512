@@ -70,6 +70,8 @@ public:
 
 	uint32_t Millis(void);
 
+	bool IsButtonPressed(void);
+
 private:
 };
 

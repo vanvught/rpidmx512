@@ -197,10 +197,18 @@ void HardwareBaremetal::WatchdogFeed(void) {
 	h3_watchdog_restart();
 }
 
+void HardwareBaremetal::WatchdogStop(void) {
+	h3_watchdog_disable();
+}
+
 uint32_t HardwareBaremetal::Micros(void) {
 	return h3_hs_timer_lo_us();
 }
 
 uint32_t HardwareBaremetal::Millis(void) {
 	return millis();
+}
+
+bool HardwareBaremetal::IsButtonPressed(void) {
+	return hardware_is_pwr_button_pressed();
 }

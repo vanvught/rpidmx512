@@ -72,7 +72,7 @@ public:
 	bool PowerOff(void);
 
 	inline time_t GetTime(void) {
-		return time(NULL);
+		return time(0);
 	}
 
 	uint64_t GetUpTime(void);
@@ -85,8 +85,11 @@ public:
 public:	// Only available in BAREMETAL
 	void WatchdogInit(void);
 	void WatchdogFeed(void);
+	void WatchdogStop(void);
 
 	uint32_t Micros(void);
+
+	bool IsButtonPressed(void);
 
 private:
 	int32_t m_nBoardRevision;

@@ -42,7 +42,7 @@ uint32_t led_get_ticks_per_second(void) {
 }
 
 void led_blink(void) {
-	if (ticks_per_second == 0) {
+	if (__builtin_expect (ticks_per_second == 0, 0)) {
 		return;
 	}
 

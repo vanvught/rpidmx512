@@ -27,6 +27,7 @@
 #define H3_HARDWARE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "h3_hs_timer.h"
 #include "h3_watchdog.h"
@@ -37,19 +38,21 @@ extern "C" {
 
 extern int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 
-/*@unused@*/inline static uint32_t hardware_micros(void) {
+inline static uint32_t hardware_micros(void) {
 	return h3_hs_timer_lo_us();
 }
 
-/*@unused@*/inline static void hardware_watchdog_init(void) {
+inline static void hardware_watchdog_init(void) {
 	h3_watchdog_enable();
 }
 
-/*@unused@*/inline static void hardware_watchdog_feed(void) {
+inline static void hardware_watchdog_feed(void) {
 	h3_watchdog_restart();
 }
 
 void hardware_watchdog_stop(void);
+
+bool hardware_is_pwr_button_pressed(void);
 
 #ifdef __cplusplus
 }

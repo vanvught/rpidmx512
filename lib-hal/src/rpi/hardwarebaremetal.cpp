@@ -195,10 +195,18 @@ void HardwareBaremetal::WatchdogFeed(void) {
 	bcm2835_watchdog_feed();
 }
 
+void HardwareBaremetal::WatchdogStop(void) {
+	bcm2835_watchdog_stop();
+}
+
 uint32_t HardwareBaremetal::Micros(void) {
 	return BCM2835_ST->CLO;
 }
 
 uint32_t HardwareBaremetal::Millis(void) {
 	return millis();
+}
+
+bool HardwareBaremetal::IsButtonPressed(void) {
+	return false;
 }
