@@ -45,10 +45,10 @@ public:
 #endif
 	~SPISend(void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort = 0);
+	void Stop(uint8_t nPort = 0);
 
-	void SetData(uint8_t, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
 	void SetLEDType(const TWS28XXType);
 	TWS28XXType GetLEDType(void) const;

@@ -75,7 +75,7 @@ SPISend::~SPISend(void) {
 	m_pLEDStripe = 0;
 }
 
-void SPISend::Start(void) {
+void SPISend::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -98,7 +98,7 @@ void SPISend::Start(void) {
 	}
 }
 
-void SPISend::Stop(void) {
+void SPISend::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}

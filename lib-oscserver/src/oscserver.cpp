@@ -94,7 +94,7 @@ OscServer::~OscServer(void) {
 	m_pOsc = 0;
 
 	if (m_pLightSet != 0) {
-		m_pLightSet->Stop();
+		m_pLightSet->Stop(0);
 		m_pLightSet = 0;
 	}
 }
@@ -105,13 +105,13 @@ void OscServer::Start(void) {
 	OSCSend MsgSend(Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
 
 	if (m_pLightSet != 0) {
-		m_pLightSet->Start();
+		m_pLightSet->Start(0);
 	}
 }
 
 void OscServer::Stop(void) {
 	if (m_pLightSet != 0) {
-		m_pLightSet->Stop();
+		m_pLightSet->Stop(0);
 	}
 }
 

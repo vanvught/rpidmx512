@@ -49,9 +49,9 @@
 #include "ws28xxstripe.h"
 #include "ws28xxstripedmx.h"
 
-#define SET_LED_TYPE_MASK		1<<0
-#define SET_LED_COUNT_MASK		1<<1
-#define SET_DMX_START_ADDRESS	1<<2
+#define SET_LED_TYPE_MASK		(1 << 0)
+#define SET_LED_COUNT_MASK		(1 << 1)
+#define SET_DMX_START_ADDRESS	(1 << 2)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";
@@ -168,7 +168,6 @@ const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
 	return led_types[tType];
 }
 
-bool WS28XXStripeParams::isMaskSet(uint16_t nMask) const {
+bool WS28XXStripeParams::isMaskSet(uint32_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
-
