@@ -35,7 +35,6 @@
 #include "uart.h"
 
 #include "h3_gpio.h"
-#include "h3_ccu.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 #include "h3_board.h"
@@ -49,63 +48,58 @@
 
 #include "util.h"
 
+///< State of receiving DMX/RDM Bytes
 typedef enum {
-	IDLE = 0,
-	PRE_BREAK,
-	BREAK,
-	MAB,
-	DMXDATA,
-	RDMDATA,
-	CHECKSUMH,
-	CHECKSUML,
-	RDMDISCFE,
-	RDMDISCEUID,
-	RDMDISCECS,
-	DMXINTER
+	IDLE = 0,	///< 0
+	PRE_BREAK,	///< 1
+	BREAK,		///< 2
+	MAB,		///< 3
+	DMXDATA,	///< 4
+	RDMDATA,	///< 5
+	CHECKSUMH,	///< 6
+	CHECKSUML,	///< 7
+	RDMDISCFE,	///< 8
+	RDMDISCEUID,///< 9
+	RDMDISCECS,	///< 10
+	DMXINTER	///< 11
 } _dmx_state;
 
-static uint8_t dmx_data_direction_gpio_pin = GPIO_DMX_DATA_DIRECTION;
+static uint8_t dmx_data_direction_gpio_pin = GPIO_DMX_DATA_DIRECTION;			///<
 
-static volatile uint32_t dmx_data_buffer_index_head = 0;
-static volatile uint32_t dmx_data_buffer_index_tail = 0;
-static struct _dmx_data dmx_data[DMX_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;
-static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;
-static volatile _dmx_state dmx_receive_state = IDLE;
-static volatile uint32_t dmx_data_index = 0;
-
-static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;
-static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;
-static uint32_t dmx_output_period = (uint32_t) DMX_TRANSMIT_PERIOD_DEFAULT;
-static uint32_t dmx_output_period_requested = (uint32_t) DMX_TRANSMIT_PERIOD_DEFAULT;
-
-static uint32_t dmx_output_break_time_intv = (uint32_t) (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
-static uint32_t dmx_output_mab_time_intv = (uint32_t) (DMX_TRANSMIT_MAB_TIME_MIN * 12);
-static uint32_t dmx_output_period_intv = (uint32_t) (DMX_TRANSMIT_PERIOD_DEFAULT * 12);
-
-static uint32_t dmx_send_data_length = (uint32_t) (DMX_UNIVERSE_SIZE + 1);		///< SC + UNIVERSE SIZE
-static _dmx_port_direction dmx_port_direction = DMX_PORT_DIRECTION_INP;
-static volatile uint32_t dmx_fiq_micros_current = 0;
-static volatile uint32_t dmx_fiq_micros_previous = 0;
-static volatile bool dmx_is_previous_break_dmx = false;
-static volatile uint32_t dmx_break_to_break_latest = 0;
-static volatile uint32_t dmx_break_to_break_previous = 0;
-static volatile uint32_t dmx_slots_in_packet_previous = 0;
-static volatile _dmx_state dmx_send_state = IDLE;
-static volatile bool dmx_send_always = false;
-static volatile uint32_t dmx_send_break_micros = 0;
-static volatile uint32_t dmx_send_current_slot = 0;
+static volatile uint16_t dmx_data_buffer_index_head = (uint16_t) 0;				///<
+static volatile uint16_t dmx_data_buffer_index_tail = (uint16_t) 0;				///<
+static struct _dmx_data dmx_data[DMX_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;		///<
+static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;					///<
+static volatile uint8_t dmx_receive_state = IDLE;										///< Current state of DMX receive
+static volatile uint16_t dmx_data_index = (uint16_t) 0;							///<
+static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	///<
+static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
+static uint32_t dmx_output_period = DMX_TRANSMIT_PERIOD_DEFAULT;				///<
+static uint32_t dmx_output_period_requested = DMX_TRANSMIT_PERIOD_DEFAULT;		///<
+static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< SC + UNIVERSE SIZE
+static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
+static volatile uint32_t dmx_fiq_micros_current = (uint32_t) 0;					///< Timestamp FIQ
+static volatile uint32_t dmx_fiq_micros_previous = (uint32_t) 0;				///< Timestamp previous FIQ
+static volatile bool dmx_is_previous_break_dmx = false;							///< Is the previous break from a DMX packet?
+static volatile uint32_t dmx_break_to_break_latest = (uint32_t) 0;				///<
+static volatile uint32_t dmx_break_to_break_previous = (uint32_t) 0;			///<
+static volatile uint32_t dmx_slots_in_packet_previous = (uint32_t) 0;			///<
+static volatile uint8_t dmx_send_state = IDLE;									///<
+static volatile bool dmx_send_always = false;									///<
+static volatile uint32_t dmx_send_break_micros = (uint32_t) 0;					///<
+static volatile uint16_t dmx_send_current_slot = (uint16_t) 0;					///<
 static bool is_stopped = true;
 
-static volatile uint32_t rdm_data_buffer_index_head = 0;
-static volatile uint32_t rdm_data_buffer_index_tail = 0;
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
-static volatile uint16_t rdm_checksum = (uint16_t) 0;							///< This must be uint16_t
-static volatile uint32_t rdm_data_receive_end = 0;
-static volatile uint32_t rdm_disc_index = 0;
+static volatile uint16_t rdm_data_buffer_index_head = (uint16_t) 0;				///<
+static volatile uint16_t rdm_data_buffer_index_tail = (uint16_t) 0;				///<
+static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;///<
+static volatile uint16_t rdm_checksum = (uint16_t) 0;							///<
+static volatile uint32_t rdm_data_receive_end = (uint32_t) 0;					///<
+static volatile uint8_t rdm_disc_index = (uint8_t) 0;							///<
 
-static volatile uint32_t dmx_updates_per_seconde = 0;
-static uint32_t dmx_packets_previous = 0;
-static volatile struct _total_statistics total_statistics ALIGNED;
+static volatile uint32_t dmx_updates_per_seconde= (uint32_t) 0;					///<
+static uint32_t dmx_packets_previous = (uint32_t) 0;							///<
+static volatile struct _total_statistics total_statistics ALIGNED;				///<
 
 static void dmx_set_send_data_length(uint16_t send_data_length) {
 	dmx_send_data_length = send_data_length;
@@ -131,8 +125,6 @@ void dmx_set_output_period(const uint32_t period) {
 	} else {
 		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
 	}
-
-	dmx_output_period_intv = dmx_output_period * 12;
 }
 
 void dmx_set_send_data(const uint8_t *data, uint16_t length) {
@@ -207,7 +199,7 @@ volatile uint8_t dmx_get_receive_state(void) {
 }
 
 const uint8_t *dmx_is_data_changed(void) {
-	uint32_t i;
+	uint16_t i;
 	uint8_t const *p = (uint8_t *)dmx_get_available();
 	uint32_t *src = (uint32_t *)p;
 	uint32_t *dst = (uint32_t *)dmx_data_previous;
@@ -255,7 +247,6 @@ uint32_t dmx_get_output_break_time(void) {
 
 void dmx_set_output_break_time(uint32_t break_time) {
 	dmx_output_break_time = MAX((uint32_t)DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
-	dmx_output_break_time_intv = dmx_output_break_time * 12;
 
 	dmx_set_output_period(dmx_output_period_requested);
 }
@@ -266,7 +257,6 @@ uint32_t dmx_get_output_mab_time(void) {
 
 void dmx_set_output_mab_time(uint32_t mab_time) {
 	dmx_output_mab_time = MAX((uint32_t)DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
-	dmx_output_mab_time_intv = dmx_output_mab_time * 12;
 
 	dmx_set_output_period(dmx_output_period_requested);
 }
@@ -321,7 +311,6 @@ static void fiq_dmx_in_handler(void) {
 				dmx_data[dmx_data_buffer_index_head].data[0] = DMX512_START_CODE;
 				dmx_data_index = 1;
 				total_statistics.dmx_packets = total_statistics.dmx_packets + 1;
-
 				if (dmx_is_previous_break_dmx) {
 					dmx_data[dmx_data_buffer_index_head].statistics.break_to_break = dmx_break_to_break_latest - dmx_break_to_break_previous;
 					dmx_break_to_break_previous = dmx_break_to_break_latest;
@@ -392,7 +381,6 @@ static void fiq_dmx_in_handler(void) {
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_checksum -= data;
 			const struct _rdm_command *p = (struct _rdm_command *)(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
-
 			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				rdm_data_receive_end = h3_hs_timer_lo_us();;
@@ -401,9 +389,21 @@ static void fiq_dmx_in_handler(void) {
 			dmx_receive_state = IDLE;
 			break;
 		case RDMDISCFE:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			switch (data) {
+			case 0xFE:
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xFE;
+				break;
+			case 0xAA:
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = 0xAA;
+				dmx_receive_state = RDMDISCEUID;
+				rdm_disc_index = 0;
+				break;
+			default:
+				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+				break;
+			}
 
-			if ((data == 0xAA) || (dmx_data_index == 9 )) {
+			if (dmx_data_index == 9 ) {
 				dmx_receive_state = RDMDISCEUID;
 				rdm_disc_index = 0;
 			}
@@ -420,6 +420,7 @@ static void fiq_dmx_in_handler(void) {
 		case RDMDISCECS:
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_disc_index++;
+
 
 			if (rdm_disc_index == 4) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
@@ -482,29 +483,28 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 	switch (dmx_send_state) {
 	case IDLE:
 	case DMXINTER:
-		H3_TIMER->TMR0_INTV = dmx_output_break_time_intv;
+		H3_TIMER->TMR0_INTV = dmx_output_break_time * 12;
 		H3_TIMER->TMR0_CTRL |= 0x3;
-
 		EXT_UART->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		dmx_send_break_micros = clo;
 		dmb();
 		dmx_send_state = BREAK;
 		break;
 	case BREAK:
-		H3_TIMER->TMR0_INTV = dmx_output_mab_time_intv;
+		H3_TIMER->TMR0_INTV = dmx_output_mab_time * 12;
 		H3_TIMER->TMR0_CTRL |= 0x3;
-
 		EXT_UART->LCR = UART_LCR_8_N_2;
 		dmb();
 		dmx_send_state = MAB;
 		break;
 	case MAB:
-		H3_TIMER->TMR0_INTV = dmx_output_period_intv;
+		H3_TIMER->TMR0_INTV = dmx_output_period * 12;
 		H3_TIMER->TMR0_CTRL |= 0x3;
 
-		uint32_t fifo_cnt = 16;
+		uint8_t fifo_cnt = 16;
+		bool is_empty = EXT_UART->LSR & UART_LSR_THRE;
 
-		for (dmx_send_current_slot = 0; fifo_cnt-- > 0; dmx_send_current_slot++) {
+		for (dmx_send_current_slot = 0; is_empty && fifo_cnt-- > 0 ; dmx_send_current_slot++) {
 			if (dmx_send_current_slot >= dmx_send_data_length) {
 				break;
 			}
@@ -536,10 +536,10 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 /**
  * EXT_UART TX interrupt
  */
-static void fiq_dmx_out_handler(void) {
+void fiq_dmx_out_handler(void) {
 	if (EXT_UART->O08.IIR & UART_IIR_IID_THRE) {
 
-		uint32_t fifo_cnt = 16;
+		uint8_t fifo_cnt = 16;
 
 		for (; fifo_cnt-- > 0; dmx_send_current_slot++) {
 			if (dmx_send_current_slot >= dmx_send_data_length) {
@@ -585,7 +585,7 @@ static void uart_enable_fifo(void) {	// DMX Output
 
 static void uart_disable_fifo(void) {	// DMX Input
 	EXT_UART->O08.FCR = 0;
-	EXT_UART->O04.IER = UART_IER_ERBFI;
+	EXT_UART->O04.IER = UART_IER_ERBFI; // (1 << 2) | (1 << 0);
 	isb();
 }
 
@@ -636,7 +636,7 @@ static void dmx_start_data(void) {
 }
 
 static void dmx_stop_data(void) {
-	uint32_t i;
+	int i;
 
 	if (is_stopped) {
 		return;
@@ -698,6 +698,12 @@ void dmx_set_port_direction(_dmx_port_direction port_direction, bool enable_data
 	}
 }
 
+#define GATE_UART1		(1 << 17)
+#define RESET4_UART1	(1 << 17)
+
+#define GATE_UART3		(1 << 19)
+#define RESET4_UART3	(1 << 19)
+
 static void uart_init(void) {
 #if (EXT_UART_NUMBER == 1)
 	uint32_t value = H3_PIO_PORTG->CFG0;
@@ -709,8 +715,8 @@ static void uart_init(void) {
 	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTG->CFG0 = value;
 
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
+	H3_CCU->BUS_CLK_GATING3 |= GATE_UART1;
+	H3_CCU->BUS_SOFT_RESET4 |= RESET4_UART1;
 #elif (EXT_UART_NUMBER == 3)
 	uint32_t value = H3_PIO_PORTA->CFG1;
 	// PA13, TX
@@ -721,8 +727,8 @@ static void uart_init(void) {
 	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
 	H3_PIO_PORTA->CFG1 = value;
 
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
+	H3_CCU->BUS_CLK_GATING3 |= GATE_UART3;
+	H3_CCU->BUS_SOFT_RESET4 |= RESET4_UART3;
 #else
  #error Unsupported UART device configured
 #endif
@@ -755,11 +761,11 @@ void dmx_init(void) {
 
 	dmx_clear_data();
 
-	dmx_data_buffer_index_head = 0;
-	dmx_data_buffer_index_tail = 0;
+	dmx_data_buffer_index_head = (uint16_t) 0;
+	dmx_data_buffer_index_tail = (uint16_t) 0;
 
-	rdm_data_buffer_index_head = 0;
-	rdm_data_buffer_index_tail = 0;
+	rdm_data_buffer_index_head = (uint16_t) 0;
+	rdm_data_buffer_index_tail = (uint16_t) 0;
 
 	dmx_receive_state = IDLE;
 

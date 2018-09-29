@@ -28,22 +28,28 @@
 
 #include <stdint.h>
 
-#include "dmx.h"
+#if defined(H3)
+ #if defined(ORANGE_PI_ONE)
+  #define DMX_MAX_OUT		4
+ #else
+  #define DMX_MAX_OUT		2
+ #endif
+#else
+ #define DMX_MAX_OUT		1
+#endif
 
 class DmxGpioParams {
 public:
 	DmxGpioParams(void);
 	~DmxGpioParams(void);
 
-	bool Load(void);
-
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
-
 	void Dump(void);
 
+	uint8_t GetDataDirection(bool &isSet) const;
+	uint8_t GetDataDirection(bool &isSet, uint8_t out) const;
+
 private:
-	bool isMaskSet(uint32_t mask) const;
+	bool isMaskSet(uint16_t mask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
