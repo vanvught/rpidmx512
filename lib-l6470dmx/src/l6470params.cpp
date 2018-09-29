@@ -46,17 +46,15 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "debug.h"
-
-#define SET_MIN_SPEED_MASK		1<<0
-#define SET_MAX_SPEED_MASK		1<<1
-#define SET_ACC_MASK			1<<2
-#define SET_DEC_MASK			1<<3
-#define SET_KVAL_HOLD_MASK		1<<4
-#define SET_KVAL_RUN_MASK		1<<5
-#define SET_KVAL_ACC_MASK		1<<6
-#define SET_KVAL_DEC_MASK		1<<7
-#define SET_MICRO_STEPS_MASK	1<<8
+#define SET_MIN_SPEED_MASK		(1 << 0)
+#define SET_MAX_SPEED_MASK		(1 << 1)
+#define SET_ACC_MASK			(1 << 2)
+#define SET_DEC_MASK			(1 << 3)
+#define SET_KVAL_HOLD_MASK		(1 << 4)
+#define SET_KVAL_RUN_MASK		(1 << 5)
+#define SET_KVAL_ACC_MASK		(1 << 6)
+#define SET_KVAL_DEC_MASK		(1 << 7)
+#define SET_MICRO_STEPS_MASK	(1 << 8)
 
 static const char L6470_PARAMS_MIN_SPEED[] ALIGNED = "l6470_min_speed";
 static const char L6470_PARAMS_MAX_SPEED[] ALIGNED = "l6470_max_speed";
@@ -69,7 +67,6 @@ static const char L6470_PARAMS_KVAL_DEC[] ALIGNED = "l6470_kval_dec";
 static const char L6470_PARAMS_MICRO_STEPS[] ALIGNED = "l6470_micro_steps";
 
 L6470Params::L6470Params(const char *pFileName): m_bSetList(0) {
-	DEBUG1_ENTRY;
 	assert(pFileName != 0);
 
     m_fMinSpeed = 0;
@@ -84,14 +81,9 @@ L6470Params::L6470Params(const char *pFileName): m_bSetList(0) {
 
 	ReadConfigFile configfile(L6470Params::staticCallbackFunction, this);
 	configfile.Read(pFileName);
-
-	DEBUG1_EXIT;
 }
 
 L6470Params::~L6470Params(void) {
-	DEBUG1_ENTRY;
-
-	DEBUG1_EXIT;
 }
 
 void L6470Params::staticCallbackFunction(void *p, const char *s) {
@@ -151,8 +143,6 @@ void L6470Params::callbackFunction(const char *pLine) {
 }
 
 void L6470Params::Set(L6470 *pL6470) {
-	DEBUG1_ENTRY;
-
 	assert(pL6470 != 0);
 
 	if(isMaskSet(SET_MIN_SPEED_MASK)) {
@@ -190,14 +180,10 @@ void L6470Params::Set(L6470 *pL6470) {
 	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
 		pL6470->setMicroSteps(m_nMicroSteps);
 	}
-
-	DEBUG1_EXIT;
 }
 
 void L6470Params::Dump(void) {
 #ifndef NDEBUG
-	DEBUG1_ENTRY;
-
 	if (m_bSetList == 0) {
 		return;
 	}
@@ -237,11 +223,9 @@ void L6470Params::Dump(void) {
 	if(isMaskSet(SET_MICRO_STEPS_MASK)) {
 		printf("%s=%d\n", L6470_PARAMS_MICRO_STEPS, (int) m_nMicroSteps);
 	}
-
-	DEBUG1_EXIT;
 #endif
 }
 
-bool L6470Params::isMaskSet(uint16_t mask) const {
+bool L6470Params::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

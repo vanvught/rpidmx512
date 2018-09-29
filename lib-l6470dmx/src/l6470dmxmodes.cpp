@@ -91,7 +91,7 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 	assert(m_pDmxMode != 0);
 
 	if (m_pDmxMode != 0) {
-		m_nMotorNumber= pL6470->GetMotorNumber();
+		m_nMotorNumber = pL6470->GetMotorNumber();
 		m_nMode = tMode;
 
 		m_pDmxData = new uint8_t[m_DmxFootPrint];
@@ -115,6 +115,22 @@ L6470DmxModes::~L6470DmxModes(void) {
 	m_pDmxMode = 0;
 
 	DEBUG1_EXIT;
+}
+
+void L6470DmxModes::InitSwitch(void) {
+	DEBUG1_ENTRY;
+
+	m_pDmxMode->InitSwitch();
+
+	DEBUG1_EXIT
+}
+
+void L6470DmxModes::InitPos(void) {
+	DEBUG1_ENTRY;
+
+	m_pDmxMode->InitPos();
+
+	DEBUG1_EXIT
 }
 
 uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
@@ -174,6 +190,21 @@ void L6470DmxModes::Stop(void) {
 	DEBUG1_EXIT;
 }
 
+void L6470DmxModes::HandleBusy(void) {
+	DEBUG1_ENTRY;
+
+	m_pDmxMode->HandleBusy();
+
+	DEBUG1_EXIT;
+}
+
+bool L6470DmxModes::BusyCheck(void) {
+	DEBUG1_ENTRY;
+
+	DEBUG1_EXIT;
+	return m_pDmxMode->BusyCheck();
+}
+
 bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 	DEBUG1_ENTRY;
 
@@ -198,15 +229,32 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 	return isChanged;
 }
 
-void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
+bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint16_t nLength) {
 	DEBUG1_ENTRY;
 
 	assert(m_pDmxMode != 0);
 	assert(pDmxData != 0);
 
 	if (m_pDmxMode == 0) {
-		return;
+		DEBUG1_EXIT;
+		return false;
 	}
+
+	if (nLength < (m_nDmxStartAddress + m_DmxFootPrint)) {
+		DEBUG1_EXIT;
+		return false;
+	}
+
+	uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+
+	return IsDmxDataChanged(p);
+}
+
+void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
+	DEBUG1_ENTRY;
+
+	assert(m_pDmxMode != 0);
+	assert(pDmxData != 0);
 
 	if (nLength < (m_nDmxStartAddress + m_DmxFootPrint)) {
 		return;
@@ -222,18 +270,11 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 	}
 #endif
 
-	if (IsDmxDataChanged(p)) {
-#ifndef NDEBUG
-		printf("\t\tDMX data has changed!\n");
-#endif
-		m_pDmxMode->Data(p);
-	} else {
-#ifndef NDEBUG
-		printf("\t\tNothing to do..\n");
-#endif
-	}
+
+	m_pDmxMode->Data(p);
 
 	m_bIsStarted = true;
 
 	DEBUG1_EXIT;
 }
+

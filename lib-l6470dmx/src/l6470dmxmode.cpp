@@ -25,5 +25,32 @@
 
 #include "l6470dmxmode.h"
 
+#include "debug.h"
+
 L6470DmxMode::~L6470DmxMode(void) {
+}
+
+void L6470DmxMode::InitSwitch(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
+void L6470DmxMode::InitPos(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
+void L6470DmxMode::HandleBusy(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
+bool L6470DmxMode::BusyCheck(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+	return false;
 }

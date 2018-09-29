@@ -45,8 +45,6 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "debug.h"
-
 #ifndef M_PI
 #define M_PI	3.14159265358979323846
 #endif
@@ -66,8 +64,6 @@ static const char MOTOR_PARAMS_RESISTANCE[] ALIGNED = "motor_resistance";
 static const char MOTOR_PARAMS_INDUCTANCE[] ALIGNED = "motor_inductance";
 
 MotorParams::MotorParams(const char *pFileName): m_bSetList(0) {
-	DEBUG1_ENTRY;
-
 	assert(pFileName != 0);
 
 	m_fStepAngel = 0;
@@ -78,14 +74,9 @@ MotorParams::MotorParams(const char *pFileName): m_bSetList(0) {
 
 	ReadConfigFile configfile(MotorParams::staticCallbackFunction, this);
 	configfile.Read(pFileName);
-
-	DEBUG1_EXIT;
 }
 
 MotorParams::~MotorParams(void) {
-	DEBUG1_ENTRY;
-
-	DEBUG1_EXIT;
 }
 
 float MotorParams::GetStepAngel(void) {
@@ -150,8 +141,6 @@ void MotorParams::callbackFunction(const char *pLine) {
 }
 
 void MotorParams::Set(L6470 *pL6470) {
-	DEBUG1_ENTRY;
-
 	assert(pL6470 != 0);
 
 	float f;
@@ -159,14 +148,10 @@ void MotorParams::Set(L6470 *pL6470) {
 	if ((f = calcIntersectSpeed()) != (float) 0) {
 		pL6470->setParam(L6470_PARAM_INT_SPD, calcIntersectSpeedReg(f));
 	}
-
-	DEBUG1_EXIT;
 }
 
 void MotorParams::Dump(void) {
 #ifndef NDEBUG
-	DEBUG1_ENTRY;
-
 	float f;
 
 	if (m_bSetList == 0) {
@@ -196,8 +181,6 @@ void MotorParams::Dump(void) {
 	if ((f = calcIntersectSpeed()) != (float) 0) {
 		printf("Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, (unsigned int) calcIntersectSpeedReg(f));
 	}
-
-	DEBUG1_EXIT;
 #endif
 }
 
@@ -213,6 +196,6 @@ uint32_t MotorParams::calcIntersectSpeedReg(float f) const {
 	return (f * (TICK_S * (1 << 26)));
 }
 
-bool MotorParams::isMaskSet(uint16_t mask) const {
+bool MotorParams::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

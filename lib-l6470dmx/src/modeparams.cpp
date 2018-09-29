@@ -46,13 +46,11 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "debug.h"
-
-#define SET_MAX_STEPS_MASK	1<<0
-#define SET_SWITCH_ACT_MASK	1<<1
-#define SET_SWITCH_DIR_MASK	1<<2
-#define SET_SWITCH_SPS_MASK	1<<3
-#define SET_SWITCH_MASK		1<<4
+#define SET_MAX_STEPS_MASK		(1 << 0)
+#define SET_SWITCH_ACT_MASK		(1 << 1)
+#define SET_SWITCH_DIR_MASK		(1 << 2)
+#define SET_SWITCH_SPS_MASK		(1 << 3)
+#define SET_SWITCH_MASK			(1 << 4)
 
 static const char MODE_PARAMS_MAX_STEPS[] ALIGNED = "mode_max_steps";
 static const char MODE_PARAMS_SWITCH_ACT[] ALIGNED = "mode_switch_act";
@@ -68,20 +66,13 @@ ModeParams::ModeParams(const char *pFileName):
 		m_fSwitchStepsPerSec(0),
 		m_bSwitch(true)
 {
-	DEBUG1_ENTRY;
-
 	assert(pFileName != 0);
 
 	ReadConfigFile configfile(ModeParams::staticCallbackFunction, this);
 	configfile.Read(pFileName);
-
-	DEBUG1_EXIT;
 }
 
 ModeParams::~ModeParams(void) {
-	DEBUG1_ENTRY;
-
-	DEBUG1_EXIT;
 }
 
 uint32_t ModeParams::GetMaxSteps(void) const {
@@ -106,8 +97,6 @@ bool ModeParams::HasSwitch(void) const {
 
 void ModeParams::Dump(void) {
 #ifndef NDEBUG
-	DEBUG1_ENTRY;
-
 	if (m_bSetList == 0) {
 		return;
 	}
@@ -132,8 +121,6 @@ void ModeParams::Dump(void) {
 	if(isMaskSet(SET_SWITCH_MASK)) {
 		printf("%s={%s}\n", MODE_PARAMS_SWITCH, m_bSwitch ? "Yes": "No");
 	}
-
-	DEBUG1_EXIT;
 #endif
 }
 
@@ -207,6 +194,6 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-bool ModeParams::isMaskSet(uint16_t mask) const {
+bool ModeParams::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
