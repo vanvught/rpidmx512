@@ -28,13 +28,14 @@
 #include "h3_hs_timer.h"
 
 #include "h3.h"
+#include "h3_ccu.h"
 
 #define CTRL_START		(1 << 0)
 #define CTRL_RELOAD		(1 << 1)
 
 void h3_hs_timer_start(void) {
-	H3_CCU->BUS_CLK_GATING0 |= (1 << 19);
-	H3_CCU->BUS_SOFT_RESET0 |= (1 << 19);
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_HSTMR;
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_HSTMR;
 
 	H3_HS_TIMER->IRQ_EN = 0;	// Disable interrupts
 	H3_HS_TIMER->CTRL = 0; 		// Timer Stop/Pause

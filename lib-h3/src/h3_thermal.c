@@ -26,21 +26,9 @@
 #include <stdint.h>
 
 #include "h3.h"
+#include "h3_ccu.h"
 #include "h3_sid.h"
 
-// CCU
-#define THS_CLK_SCLK_GATING		(1 << 31)
-#define THS_CLK_SRC_OSC24M		0
-	#define THS_CLK_SRC_MASK		(0xF << 24)
-#define THS_CLK_DIV_RATIO_1		0b00	///< /1
-#define THS_CLK_DIV_RATIO_2		0b01	///< /2
-#define THS_CLK_DIV_RATIO_4		0b10	///< /4
-#define THS_CLK_DIV_RATIO_6		0b11	///< /6
-	#define THS_CLK_DIV_RATIO_MASK	(0xF << 0)
-
-#define THS_GATING 				(1 << 8)
-
-// THS
 #define CTRL1_ADC_CALI_EN			(1 << 17)
 
 #define CTRL2_SENSOR_EN				(1 << 0)
@@ -119,17 +107,17 @@ void h3_thermal_setalarm(int temp) {
 
 void h3_thermal_init(void) {
 	uint32_t value = H3_CCU->THS_CLK;
-	value &= ~(THS_CLK_SRC_MASK);
-	value |= THS_CLK_SRC_OSC24M;
-	value &= ~(THS_CLK_DIV_RATIO_MASK);
-	value |= THS_CLK_DIV_RATIO_6;	// 24/6 = 4MHz
-	H3_CCU->THS_CLK = value | THS_CLK_SCLK_GATING;
+	value &= ~(CCU_THS_CLK_SRC_MASK);
+	value |= (CCU_THS_CLK_SRC_OSC24M << CCU_THS_CLK_SRC_SHIFT);
+	value &= ~(CCU_THS_CLK_DIV_RATIO_MASK);
+	value |= (CCU_THS_CLK_DIV_RATIO_6 << CCU_THS_CLK_DIV_RATIO_SHIFT);	// 24/6 = 4MHz
+	H3_CCU->THS_CLK = value | CCU_THS_CLK_SCLK_GATING;
 
-	H3_CCU->BUS_SOFT_RESET3 &= ~(THS_GATING);
-	H3_CCU->BUS_CLK_GATING2 &= ~(THS_GATING);
-
-	H3_CCU->BUS_SOFT_RESET3 |= THS_GATING;
-	H3_CCU->BUS_CLK_GATING2 |= THS_GATING;
+	H3_CCU->BUS_SOFT_RESET3 |= CCU_BUS_SOFT_RESET3_THS;
+	udelay(1000); // 1ms
+	H3_CCU->BUS_CLK_GATING2 &= ~(CCU_BUS_CLK_GATING2_THS);
+	udelay(1000); // 1ms
+	H3_CCU->BUS_CLK_GATING2 |= CCU_BUS_CLK_GATING2_THS;
 
 	uint32_t calib;
 

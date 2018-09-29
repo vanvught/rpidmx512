@@ -42,14 +42,20 @@ extern void igmp_init(const uint8_t *, const struct ip_info  *);
 extern void igmp_set_ip(const struct ip_info  *);
 extern void igmp_handle(struct t_igmp *);
 
+extern void icmp_init(const uint8_t *, const struct ip_info  *);
+extern void icmp_set_ip(const struct ip_info  *);
+extern void icmp_handle(struct t_icmp *);
+
 void ip_set_ip(const struct ip_info *p_ip_info) {
 	udp_set_ip(p_ip_info);
 	igmp_set_ip(p_ip_info);
+	icmp_set_ip(p_ip_info);
 }
 
 void ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
 	udp_init(mac_address, p_ip_info);
 	igmp_init(mac_address, p_ip_info);
+	icmp_init(mac_address, p_ip_info);
 }
 
 void ip_handle(struct t_ip4 *p_ip4) {
@@ -79,6 +85,9 @@ void ip_handle(struct t_ip4 *p_ip4) {
 		break;
 	case IPv4_PROTO_IGMP:
 		igmp_handle((struct t_igmp *) p_ip4);
+		break;
+	case IPv4_PROTO_ICMP:
+		icmp_handle((struct t_icmp *) p_ip4);
 		break;
 	default:
 		DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);

@@ -36,8 +36,6 @@
 
 #include "arm/synchronize.h"
 
-#define MEGABYTE		0x100000
-
 static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
 
 // [1:0] 	1 0 section

@@ -23,8 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include "h3_gpio.h"
+#include <stdint.h>
+
 #include "h3.h"
+#include "h3_ccu.h"
+#include "h3_gpio.h"
 
 #include "uart.h"
 
@@ -48,11 +51,11 @@ static void uart_gpio_init(void) {
 }
 
 static void uart_clock_init(void) {
-	H3_CCU->BUS_SOFT_RESET4 |= BUS_SOFT_RESET4_UART0;
+	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART0;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING3 &= ~BUS_CLK_GATING3_UART0;
+	H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_UART0;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING3 |= BUS_CLK_GATING3_UART0;
+	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
 }
 
 void uart0_init(void) {

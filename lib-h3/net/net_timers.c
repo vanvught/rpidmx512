@@ -43,7 +43,7 @@ void net_timers_init(void) {
 void net_timers_run(void) {
 	const uint32_t micros_now = H3_TIMER->AVS_CNT1;
 
-	if (micros_now >= s_ticker) {
+	if (__builtin_expect((micros_now >= s_ticker), 0)) {
 		s_ticker = micros_now + INTERVAL_US;
 		igmp_timer();
 #ifndef NDEBUG

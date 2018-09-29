@@ -28,11 +28,14 @@
 
 #define FUNC_PREFIX(x) 			h3_##x
 
+#define MEGABYTE				0x100000
+
 #define H3_F_24M				24000000
 #define H3_LOSC					32768
 
 #define H3_MEM_DRAM_START		0x40000000
 #define H3_MEM_COHERENT_REGION	(H3_MEM_DRAM_START + 0x400000) // Defined in linker script. 1M region = 1 Page
+#define H3_MEM_COHERENT_SIZE	(1 * MEGABYTE)
 #define H3_MEM_BROM_START		0xFFFF0000
 
 #define H3_SYSTEM_BASE			0x01C00000
@@ -53,6 +56,15 @@
 #define H3_PRCM_BASE			0x01F01400
 #define H3_CPUCFG_BASE			0x01F01C00
 #define H3_PIO_PORTL_BASE		0x01F02C00
+
+#define H3_DMA_CHL0_BASE		(H3_DMA_BASE + 0x100 + (0 * 0x40))
+#define H3_DMA_CHL1_BASE		(H3_DMA_BASE + 0x100 + (1 * 0x40))
+#define H3_DMA_CHL2_BASE		(H3_DMA_BASE + 0x100 + (2 * 0x40))
+#define H3_DMA_CHL3_BASE		(H3_DMA_BASE + 0x100 + (3 * 0x40))
+#define H3_DMA_CHL4_BASE		(H3_DMA_BASE + 0x100 + (4 * 0x40))
+#define H3_DMA_CHL5_BASE		(H3_DMA_BASE + 0x100 + (5 * 0x40))
+#define H3_DMA_CHL6_BASE		(H3_DMA_BASE + 0x100 + (6 * 0x40))
+#define H3_DMA_CHL7_BASE		(H3_DMA_BASE + 0x100 + (7 * 0x40))
 
 #define H3_SD_MMC0_BASE			(H3_SD_MMC_BASE + (0 * 0x1000))
 #define H3_SD_MMC1_BASE			(H3_SD_MMC_BASE + (1 * 0x1000))
@@ -104,7 +116,8 @@ typedef enum T_H3_IRQn {
 	H3_UART2_IRQn = 34,
 	H3_UART3_IRQn = 35,
 	H3_TIMER0_IRQn = 50,
-	H3_TIMER1_IRQn = 51
+	H3_TIMER1_IRQn = 51,
+	H3_DMA_IRQn = 82
 } H3_IRQn_TypeDef;
 
 #ifdef __ASSEMBLY__
@@ -121,10 +134,39 @@ typedef enum T_H3_IRQn {
 
 typedef struct T_H3_SYSTEM {
 	__I uint32_t RES0[9];
-	__I uint32_t VER;			///< 0x24 Version Register
+	__I uint32_t VER;				///< 0x24 Version Register
 	__I uint32_t RES1[2];
-	__IO uint32_t EMAC_CLK;		///< 0x30 EMAC-EPHY Clock register
+	__IO uint32_t EMAC_CLK;			///< 0x30 EMAC-EPHY Clock register
 } H3_SYSTEM_TypeDef;
+
+typedef struct T_H3_DMA {
+	__IO uint32_t IRQ_EN0;			///< 0x00
+	__IO uint32_t IRQ_EN1;			///< 0x04
+	__I  uint32_t RES0[2];     		///< 0x08,0x0C
+	__IO uint32_t IRQ_PEND0;		///< 0x10
+	__IO uint32_t IRQ_PEND1;		///< 0x14
+	__I  uint32_t RES1[2];     		///< 0x18,0x1C
+	__IO uint32_t SEC;				///< 0x20
+	__I  uint32_t RES2; 	   		///< 0x24
+	__IO uint32_t AUTO_GATE;		///< 0x28
+	__I  uint32_t RES3; 	   		///< 0x2C
+	__IO uint32_t STA;				///< 0x30
+} H3_DMA_TypeDef;
+
+typedef struct T_H3_DMA_CHL {
+	__IO uint32_t EN;				///< 0x00
+	__IO uint32_t PAU;				///< 0x04
+	__IO uint32_t DESC_ADDR;		///< 0x08
+	__I  uint32_t CFG;				///< 0x0C
+	__I  uint32_t CUR_SRC;			///< 0x10
+	__I  uint32_t CUR_DST;			///< 0x14
+	__I  uint32_t BCNT_LEFT;		///< 0x18
+	__I  uint32_t PARA;				///< 0x1C
+	__I  uint32_t RES0[3];     		 ///< 0x20,0x24,0x28
+	__I  uint32_t FDESC_ADDR;		///< 0x2C
+	__I  uint32_t PKG_NUM;			///< 0x30
+
+} H3_DMA_CHL_TypeDef;
 
 typedef struct T_H3_SD_MMC {
 	__IO uint32_t GCTL;				///< 0x00
@@ -420,35 +462,35 @@ typedef struct T_H3_SPI {
 }H3_SPI_TypeDef;
 
 typedef struct T_H3_EMAC {
-	__IO uint32_t CTL0;			///< 0x00
-	__IO uint32_t CTL1;			///< 0x04
-	__IO uint32_t INT_STA;		///< 0x08
-	__IO uint32_t INT_EN;		///< 0x0C
-	__IO uint32_t TX_CTL0;		///< 0x10
-	__IO uint32_t TX_CTL1;		///< 0x14
-	__I uint32_t RES1;			///< 0x18
-	__IO uint32_t TX_FLOW_CTL;	///< 0x1C
-	__IO uint32_t TX_DMA_DESC;	///< 0x20
-	__IO uint32_t RX_CTL0;		///< 0x24
-	__IO uint32_t RX_CTL1;		///< 0x28
-	__I uint32_t RES2[2];		///< 0x2C, 0x30
-	__IO uint32_t RX_DMA_DESC;	///< 0x34
-	__IO uint32_t RX_FRM_FLT;	///< 0x38
-	__I uint32_t RES3[3];		///< 0x3C, 0x40, 0x44
-	__IO uint32_t MII_CMD;		///< 0x48
-	__IO uint32_t MII_DATA;		///< 0x4C
+	__IO uint32_t CTL0;				///< 0x00
+	__IO uint32_t CTL1;				///< 0x04
+	__IO uint32_t INT_STA;			///< 0x08
+	__IO uint32_t INT_EN;			///< 0x0C
+	__IO uint32_t TX_CTL0;			///< 0x10
+	__IO uint32_t TX_CTL1;			///< 0x14
+	__I uint32_t RES1;				///< 0x18
+	__IO uint32_t TX_FLOW_CTL;		///< 0x1C
+	__IO uint32_t TX_DMA_DESC;		///< 0x20
+	__IO uint32_t RX_CTL0;			///< 0x24
+	__IO uint32_t RX_CTL1;			///< 0x28
+	__I uint32_t RES2[2];			///< 0x2C, 0x30
+	__IO uint32_t RX_DMA_DESC;		///< 0x34
+	__IO uint32_t RX_FRM_FLT;		///< 0x38
+	__I uint32_t RES3[3];			///< 0x3C, 0x40, 0x44
+	__IO uint32_t MII_CMD;			///< 0x48
+	__IO uint32_t MII_DATA;			///< 0x4C
 	struct {
-		__IO uint32_t HIGH;		///< 0x50 + 8 * x MAC Address High Register
-		__IO uint32_t LOW;		///< 0x54 + 8 * x MAC Address Low Register
+		__IO uint32_t HIGH;			///< 0x50 + 8 * x MAC Address High Register
+		__IO uint32_t LOW;			///< 0x54 + 8 * x MAC Address Low Register
 	} ADDR[8];
 	__I uint32_t RES4[8];
-	__IO uint32_t TX_DMA_STA;	///< 0xB0
-	__IO uint32_t TX_CUR_DESC;	///< 0xB4
-	__IO uint32_t TX_CUR_BUF;	///< 0xB8
-	__I uint32_t RES5;			///< 0xBC
-	__IO uint32_t RX_DMA_STA;	///< 0xC0
-	__IO uint32_t RX_CUR_DESC;	///< 0xC4
-	__IO uint32_t RX_CUR_BUF;	///< 0xC8
+	__IO uint32_t TX_DMA_STA;		///< 0xB0
+	__IO uint32_t TX_CUR_DESC;		///< 0xB4
+	__IO uint32_t TX_CUR_BUF;		///< 0xB8
+	__I uint32_t RES5;				///< 0xBC
+	__IO uint32_t RX_DMA_STA;		///< 0xC0
+	__IO uint32_t RX_CUR_DESC;		///< 0xC4
+	__IO uint32_t RX_CUR_BUF;		///< 0xC8
 } H3_EMAC_TypeDef;
 
 typedef struct T_H3_HS_TIMER {
@@ -507,6 +549,15 @@ typedef struct T_H3_PRCM {
 } H3_PRCM_TypeDef;
 
 #define H3_SYSTEM		((H3_SYSTEM_TypeDef *) H3_SYSTEM_BASE)
+#define H3_DMA			((H3_DMA_TypeDef *) H3_DMA_BASE)
+#define H3_DMA_CHL0		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL0_BASE)
+#define H3_DMA_CHL1		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL1_BASE)
+#define H3_DMA_CHL2		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL2_BASE)
+#define H3_DMA_CHL3		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL3_BASE)
+#define H3_DMA_CHL4		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL4_BASE)
+#define H3_DMA_CHL5		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL5_BASE)
+#define H3_DMA_CHL6		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL6_BASE)
+#define H3_DMA_CHL7		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL7_BASE)
 #define H3_SD_MMC0		((H3_SD_MMC_TypeDef *) H3_SD_MMC0_BASE)
 #define H3_SD_MMC1		((H3_SD_MMC_TypeDef *) H3_SD_MMC1_BASE)
 #define H3_SD_MMC2		((H3_SD_MMC_TypeDef *) H3_SD_MMC2_BASE)

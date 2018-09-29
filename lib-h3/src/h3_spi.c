@@ -37,90 +37,12 @@
 
 #include "h3_board.h"
 
+#include "h3_spi_internal.h"
+
 #define ALT_FUNCTION_CS		(EXT_SPI_NUMBER == 0 ? (H3_PC3_SELECT_SPI0_CS) : (H3_PA13_SELECT_SPI1_CS))
 #define ALT_FUNCTION_CLK	(EXT_SPI_NUMBER == 0 ? (H3_PC2_SELECT_SPI0_CLK) : (H3_PA14_SELECT_SPI1_CLK))
 #define ALT_FUNCTION_MOSI	(EXT_SPI_NUMBER == 0 ? (H3_PC1_SELECT_SPI0_MISO) : (H3_PA15_SELECT_SPI1_MOSI))
 #define ALT_FUNCTION_MISO	(EXT_SPI_NUMBER == 0 ? (H3_PC0_SELECT_SPI0_MOSI) : (H3_PA16_SELECT_SPI1_MISO))
-
-#define BUS_CLK_GATING0_SPI0		(1 << 20)
-#define BUS_CLK_GATING0_SPI1		(1 << 21)
-
-#define BUS_SOFT_RESET0_SPI0		(1 << 20)
-#define BUS_SOFT_RESET0_SPI1		(1 << 21)
-
-#define GC_EN			(1 << 0) 	///< ENable
-#define GC_MODE_MASTER	(1 << 1) 	///< Mode Master,  1 = Master, 0 = Slave
-#define GC_TP_EN		(1 << 7) 	///< 1 = Stop transmit when RXFIFO is full
-#define GC_SRST			(1 << 31) 	///< Soft Reset
-
-#define TC_CPHA			(1 << 0)	///< 1 = Phase 1
-#define TC_CPOL			(1 << 1)	///< 1 = Active Low
-#define TC_SPOL			(1 << 2)  	///< 1 = Active Low
-#define TC_SSCTL		(1 << 3)	///<
-	#define TC_SS_MASK_SHIFT	4	///< Chip select
-	#define TC_SS_MASK			(0x3 << TC_SS_MASK_SHIFT)
-#define TC_SS_OWNER		(1 << 6)	///< 1 = Software Controlled
-#define TC_SS_LEVEL		(1 << 7)	///< 1 = CS High
-#define TC_DHB			(1 << 8)	///<
-#define TC_DDB			(1 << 9)	///< Dummy Burst Type
-#define TC_RPSM			(1 << 10)	///< Rapid Mode Select
-#define TC_SDC			(1 << 11)	///< Master Sample Data Control
-#define TC_FBS			(1 << 12) 	///< First Transmit Bit Select (1 = LSB)
-#define TC_SDM			(1 << 13) 	///< Master Sample Data Mode
-#define TC_XCH			(1 << 31)	///< Initiate transfer
-
-#define IE_RX_RDY		(1 << 0)	///< RX FIFO Ready Request Interrupt Enable
-#define IE_RX_EMP		(1 << 1)	///< RX FIFO Empty Interrupt Enable
-#define IE_RX_FULL		(1 << 2)  	///< RX FIFO Full Interrupt Enable
-#define IE_TX_ERQ		(1 << 4)  	///< TX FIFO Empty Request Interrupt Enable
-#define IE_TX_EMP		(1 << 5)  	///< TX FIFO Empty Interrupt Enable
-#define IE_TX_FULL		(1 << 6)	///< TX FIFO Full Interrupt Enable
-#define IE_RX_OVF		(1 << 8)	///< RX FIFO Overflow Interrupt Enable
-#define IE_RX_UDR   	(1 << 9)	///< RX FIFO Under run Interrupt Enable
-#define IE_TX_OVF		(1 << 10)	///< TX FOFO Overflow Interrupt Enable
-#define IE_TX_UDR		(1 << 11) 	///< TX FIFO Under run Interrupt Enable
-#define IE_TC			(1 << 12) 	///< Transfer Completed Interrupt Enable
-#define IE_SS			(1 << 13) 	///< SSI Interrupt Enable
-
-#define IS_RX_RDY		(1 << 0)	///< RX FIFO Ready
-#define IS_RX_EMP		(1 << 1)	///< RX FIFO Empty
-#define IS_RX_FULL		(1 << 2)	///< RX FIFO Full
-#define IS_TX_RDY		(1 << 4)	///< TX FIFO Ready
-#define IS_TX_EMP		(1 << 5)	///< TX FIFO Empty
-#define IS_TX_FULL		(1 << 6)	///< TX FIFO Full
-#define IS_RX_OVF		(1 << 8)	///< RX FIFO Overflow
-#define IS_RX_UDR		(1 << 9)	///< RX FIFO Under run
-#define IS_TX_OVF		(1 << 10)	///< TX FIFO Overflow
-#define IS_TX_UDR		(1 << 11)	///< TX FIFO Under run
-#define IS_TC			(1 << 12)	///< Transfer completed
-#define IS_SSI			(1 << 13)	///< SS Invalid Interrupt
-
-	#define FC_RX_LEVEL_SHIFT	(0xFF << 0)///< RX FIFO Ready Request Trigger Level
-#define FC_RX_DRQEN		(1 << 8)	///< RX FIFO DMA Request Enable
-#define FC_RX_DMA_MODE	(1 << 9)	///< RX DMA Mode Control
-#define FC_RX_TESTEN	(1 << 14)	///< RX Test Mode Enable
-#define FC_RX_RST		(1 << 15)	///< RX FIFO Reset
-	#define FC_TX_LEVEL_SHIFT	(0xFF << 16)///< TX FIFO Empty Request Trigger Level Shift
-#define FC_TX_DRQEN		(1 << 24)	///< TX FIFO DMA Request Enable
-#define FC_TX_TESTEN	(1 << 30)	///< TX Test Mode Enable
-#define FC_TX_RST		(1 << 31)	///< TX FIFO Reset
-
-#define	CC_DRS			(1 << 12)	///< Clock divider select, 1 = Rate 2
-	#define	CC_CDR1_MASK	0x0F00	///< Clock Divide Rate 1 SPI_CLK = AHB_CLK/2^n
-	#define	CC_CDR1_SHIFT	8
-	#define CC_CDR2_MASK	0x00FF	///< Clock Divide Rate 2 SPI_CLK = AHB_CLK/(2*(n+1))
-	#define CC_CDR2_SHIFT	0
-
-#define FS_RX_CNT		(0xFF << 0)	///< RX FIFO Counter
-#define FS_RB_CNT		(0x7 << 12)	///< RX FIFO Read Buffer Counter
-#define FS_RB_WR		(1 << 15)	///< RX FIFO Read Buffer Write Enable
-#define FS_TX_CNT		(0xFF << 16)///< TX FIFO Counter
-#define FS_TB_CNT		(0x7 << 28)	///< TX FIFO Write Buffer Counter
-#define FS_TB_WR		(1 << 31)	///< TX FIFO Write Buffer Write Enable
-	#define FS_RXCNT_BIT_POS	0
-	#define FS_TXCNT_BIT_POS	16
-
-#define	SPI_FIFO_SIZE	64
 
 static bool s_ws28xx_mode = false;
 static uint64_t s_current_speed_hz = 0; // This forces an update
@@ -264,7 +186,7 @@ static void _read_rxfifo(void)
 		return;
 	}
 
-	uint32_t rx_count = SPI_FIFO_SIZE - _query_rxfifo();
+	uint32_t rx_count = _query_rxfifo();
 
 	while (rx_count-- > 0) {
 		const uint8_t value = EXT_SPI->RX.byte;
@@ -324,18 +246,18 @@ void h3_spi_begin(void) {
 	h3_gpio_fsel(EXT_SPI_MISO, ALT_FUNCTION_MISO);
 
 #if (EXT_SPI_NUMBER == 0)
-	H3_CCU->BUS_SOFT_RESET0 |= BUS_SOFT_RESET0_SPI0;
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_SPI0;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING0 &= ~BUS_CLK_GATING0_SPI0;
+	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI0;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING0 |= BUS_CLK_GATING0_SPI0;
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI0;
 	H3_CCU->SPI0_CLK = (1 << 31) | (0x01 << 24); // Clock is ON, P0
 #elif (EXT_SPI_NUMBER == 1)
-	H3_CCU->BUS_SOFT_RESET0 |= BUS_SOFT_RESET0_SPI1;
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_SPI1;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING0 &= ~BUS_CLK_GATING0_SPI1;
+	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI1;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING0 |= BUS_CLK_GATING0_SPI1;
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI1;
 	H3_CCU->SPI1_CLK = (1 << 31) | (0x01 << 24); // Clock is ON, P0
 #else
  #error Unsupported SPI device configured
@@ -390,12 +312,12 @@ void h3_spi_end(void) {
 	EXT_SPI->GC = value;
 
 #if (EXT_SPI_NUMBER == 0)
-	H3_CCU->BUS_CLK_GATING0 &= ~BUS_CLK_GATING0_SPI0;
-	H3_CCU->BUS_SOFT_RESET0 &= ~BUS_SOFT_RESET0_SPI0;
+	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI0;
+	H3_CCU->BUS_SOFT_RESET0 &= ~CCU_BUS_SOFT_RESET0_SPI0;
 	H3_CCU->SPI0_CLK &= ~(1 << 31); // Clock is OFF
 #elif (EXT_SPI_NUMBER == 1)
-	H3_CCU->BUS_CLK_GATING0 &= ~BUS_CLK_GATING0_SPI1;
-	H3_CCU->BUS_SOFT_RESET0 &= ~BUS_SOFT_RESET0_SPI1;
+	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI1;
+	H3_CCU->BUS_SOFT_RESET0 &= ~CCU_BUS_SOFT_RESET0_SPI1;
 	H3_CCU->SPI1_CLK &= ~(1 << 31); // Clock is OFF
 #endif
 

@@ -90,7 +90,7 @@ void net_handle(void) {
 
 	const int length = emac_eth_recv(&p);
 
-	if (length > 0) {
+	if (__builtin_expect((length > 0), 1)) {
 		const struct ether_packet *eth = (struct ether_packet *) p;
 
 		switch (__builtin_bswap16(eth->type)) {

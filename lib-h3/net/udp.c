@@ -94,8 +94,6 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_send_packet.ip4.ttl = 64;
 	s_send_packet.ip4.proto = IPv4_PROTO_UDP;
 	udp_set_ip(p_ip_info);
-	//src.u32 = p_ip_info->ip.addr;
-	//memcpy(s_send_packet.ip4.src, src.u8, IPv4_ADDR_LEN);
 	// UDP
 	s_send_packet.udp.checksum = 0;
 }

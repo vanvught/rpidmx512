@@ -51,7 +51,7 @@ enum IPv4_ADDR {
 
 enum IPv4_PROTO {
 	IPv4_PROTO_ICMP = 1,	// Not implemented
-	IPv4_PROTO_IGMP = 2,	// Not implemented, yet
+	IPv4_PROTO_IGMP = 2,
 	IPv4_PROTO_TCP = 6,		// Not implemented
 	IPv4_PROTO_UDP = 17
 };
@@ -89,6 +89,15 @@ enum IGMP_TYPE {
 	IGMP_TYPE_QUERY = 0x11,
 	IGMP_TYPE_REPORT = 0x16,
 	IGMP_TYPE_LEAVE = 0x17
+};
+
+enum ICMP_TYPE {
+	ICMP_TYPE_ECHO_REPLY = 0,
+	ICMP_TYPE_ECHO = 8
+};
+
+enum ICMP_CODE {
+	ICMP_CODE_ECHO = 0
 };
 
 struct ether_packet {
@@ -137,6 +146,14 @@ struct t_igmp_packet {
 	uint8_t group_address[IPv4_ADDR_LEN];
 }PACKED;
 
+struct t_icmp_packet {
+	uint8_t type;			///< 1
+	uint8_t code;			///< 1
+	uint16_t checksum;		///< 2
+	uint8_t parameter[4];	///< 4
+	uint8_t payload[1472];	///< + 1472 = 1500 (MTU)
+}PACKED;
+
 struct t_arp {
 	struct ether_packet ether;
 	struct arp_packet arp;
@@ -165,11 +182,19 @@ struct t_igmp {
 	} igmp;
 }PACKED;
 
+struct t_icmp {
+	struct ether_packet ether;
+	struct t_ip4_packet ip4;
+	struct t_icmp_packet icmp;
+}PACKED;
+
 #define UDP_HEADER_SIZE			(sizeof(struct t_udp_packet) - FRAME_BUFFER_SIZE)
 #define IPv4_UDP_HEADERS_SIZE 	(sizeof(struct t_ip4_packet) + UDP_HEADER_SIZE)
 #define UDP_PACKET_HEADERS_SIZE	(sizeof(struct ether_packet) + IPv4_UDP_HEADERS_SIZE)
 
 #define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_packet))
 #define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
+
+#define IPv4_ICMP_HEADERS_SIZE 	(sizeof(struct t_icmp) - sizeof(struct ether_packet))
 
 #endif /* NET_PACKETS_H_ */

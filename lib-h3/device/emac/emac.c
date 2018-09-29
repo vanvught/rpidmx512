@@ -92,7 +92,7 @@ struct coherent_region {
 	uint32_t tx_currdescnum;
 };
 
-struct coherent_region *p_coherent_region = 0;
+static struct coherent_region *p_coherent_region = 0;
 
 #define H3_EPHY_DEFAULT_VALUE	0x00058000
 #define H3_EPHY_DEFAULT_MASK	0xFFFF8000
