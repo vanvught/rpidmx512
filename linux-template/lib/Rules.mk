@@ -11,8 +11,17 @@ INCLUDES :=-I./include -I../lib-debug/include
 INCLUDES +=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifeq ($(findstring lib-bob,$(INCLUDES)),lib-bob)
-	INCLUDES +=-I../lib-i2c/include
+	ifneq ($(findstring lib-i2c,$(INCLUDES)),lib-i2c)
+		INCLUDES +=-I../lib-i2c/include
+	endif
 endif	
+
+ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+	BCM2835 = ./../lib-bcm2835_raspbian
+	ifneq "$(wildcard $(BCM2835) )" ""
+		INCLUDES +=-I../lib-bcm2835_raspbian/include
+	endif
+endif
 
 DEFINES := $(addprefix -D,$(DEFINES))
 
@@ -42,19 +51,19 @@ OBJECTS +=$(patsubst $(SOURCE)/linux/%.cpp,$(BUILD)linux/%.o,$(wildcard $(SOURCE
 
 TARGET = lib_linux/lib$(LIB_NAME).a 
 
-LIST = lib_linux.list
+LIST = lib.list
 
 all : builddirs $(TARGET)
 
 .PHONY: clean builddirs
 
 builddirs:
-	@mkdir -p $(BUILD)linux lib_linux
+	mkdir -p $(BUILD)linux 
+	mkdir -p lib_linux
 
 clean :
 	rm -rf $(BUILD)
-	rm -f $(TARGET)	
-	rm -f $(LIST)	
+	rm -rf lib_linux	
 
 $(BUILD)%.o: $(SOURCE)/%.c
 	$(CC) $(COPS) $< -c -o $@
@@ -70,4 +79,4 @@ $(BUILD)linux/%.o: $(SOURCE)/linux/%.cpp
 	
 $(TARGET): Makefile.Linux $(OBJECTS)
 	$(AR) -r $(TARGET) $(OBJECTS)
-	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > $(LIST)
+	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > lib_linux/$(LIST)

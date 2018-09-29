@@ -7,7 +7,13 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-LIBS += hal network properties
+LIBS += network
+
+ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
+	LIBS += wiznet
+endif
+
+LIBS += hal properties
 
 ifneq (, $(shell which /opt/vc/bin/vcgencmd))
 	LIBS += bob i2c
