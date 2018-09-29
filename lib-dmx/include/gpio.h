@@ -29,7 +29,7 @@
 
 #if defined(H3)
  #include "h3_board.h"
- #define GPIO_DMX_DATA_DIRECTION		GPIO_EXT_12	///< Pin 12
+ #define GPIO_DMX_DATA_DIRECTION		GPIO_EXT_12	///< UART1 or UART2 , single output
  #if defined(ORANGE_PI) || defined(NANO_PI)
   #define GPIO_DMX_DATA_DIRECTION_OUT2	GPIO_EXT_22	///< UART2
   #define GPIO_DMX_DATA_DIRECTION_OUT3	GPIO_EXT_12	///< UART1
@@ -38,6 +38,17 @@
   #define GPIO_DMX_DATA_DIRECTION_OUT2 	GPIO_EXT_22	///< UART2
   #define GPIO_DMX_DATA_DIRECTION_OUT3 	GPIO_EXT_12	///< UART3
   #define GPIO_DMX_DATA_DIRECTION_OUT4 	GPIO_EXT_31	///< UART0
+ #endif
+
+ #ifdef LOGIC_ANALYZER
+  #define GPIO_ANALYZER_CH1
+  #define GPIO_ANALYZER_CH2
+  #define GPIO_ANALYZER_CH3
+  #define GPIO_ANALYZER_CH4
+  #define GPIO_ANALYZER_CH5
+  #define GPIO_ANALYZER_CH6
+  #define GPIO_ANALYZER_CH7
+  #define GPIO_ANALYZER_CH8
  #endif
 #else
  #define GPIO_DMX_DATA_DIRECTION	18	///<  RPI_V2_GPIO_P1_12
@@ -49,6 +60,9 @@
   #define GPIO_ANALYZER_CH3			RPI_V2_GPIO_P1_19	///< MOSI
   #define GPIO_ANALYZER_CH4			RPI_V2_GPIO_P1_24	///< CE0
   #define GPIO_ANALYZER_CH5			RPI_V2_GPIO_P1_26	///< CE1
+  #define GPIO_ANALYZER_CH6
+  #define GPIO_ANALYZER_CH7
+  #define GPIO_ANALYZER_CH8
  #endif
 #endif
 

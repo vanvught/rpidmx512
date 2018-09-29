@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file dmx_multi.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
+#ifndef DMX_MULTI_H_
+#define DMX_MULTI_H_
 
 #include <stdint.h>
 
 #include "dmx.h"
 
-class DmxGpioParams {
-public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	bool Load(void);
+extern void dmx_multi_init(void);
+extern void dmx_multi_init_set_gpiopin(uint8_t port, uint8_t gpio_pin);
+extern void dmx_multi_set_port_direction(uint8_t port, _dmx_port_direction port_direction, bool enable_data);
+extern void dmx_multi_set_port_send_data_without_sc(uint8_t uart, const uint8_t *data, uint16_t length);
 
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
+extern uint32_t dmx_multi_get_output_break_time(void);
+extern void dmx_multi_set_output_break_time(uint32_t);
+extern uint32_t dmx_multi_get_output_mab_time(void);
+extern void dmx_multi_set_output_mab_time(uint32_t);
+extern uint32_t dmx_multi_get_output_period(void);
 
-	void Dump(void);
+extern const uint8_t *dmx_multi_rdm_get_available(uint8_t uart);
 
-private:
-	bool isMaskSet(uint32_t mask) const;
+#ifdef __cplusplus
+}
+#endif
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *pLine);
-
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
-};
-
-#endif /* DMXGPIOPARAMS_H_ */
+#endif /* DMX_MULTI_H_ */

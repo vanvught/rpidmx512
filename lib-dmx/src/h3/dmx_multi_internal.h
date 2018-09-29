@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file dmx_multi_internal.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
+#ifndef DMX_MULTI_INTERNAL_H_
+#define DMX_MULTI_INTERNAL_H_
 
-#include <stdint.h>
+#include <assert.h>
 
 #include "dmx.h"
 
-class DmxGpioParams {
-public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+/*
+ * PORT
+ * 0	UART1
+ * 1	UART2
+ * 2	UART3
+ * 3	UART0
+ */
 
-	bool Load(void);
+inline static uint8_t _port_to_uart(uint8_t port) {
+	assert(port < DMX_MAX_OUT);
 
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
+	if (port < 3) {
+		return port + 1;
+	}
 
-	void Dump(void);
+	return 0;
+}
 
-private:
-	bool isMaskSet(uint32_t mask) const;
+#include "h3.h"
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
+	switch (uart) {
+	case 0:
+		return (H3_UART_TypeDef *) H3_UART0_BASE;
+		break;
+	case 1:
+		return (H3_UART_TypeDef *) H3_UART1_BASE;
+		break;
+	case 2:
+		return (H3_UART_TypeDef *) H3_UART2_BASE;
+		break;
+	case 3:
+		return (H3_UART_TypeDef *) H3_UART3_BASE;
+		break;
+	default:
+		assert(0);
+		break;
+	}
 
-private:
-    void callbackFunction(const char *pLine);
+	return 0;
+}
 
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
-};
-
-#endif /* DMXGPIOPARAMS_H_ */
+#endif /* DMX_MULTI_INTERNAL_H_ */

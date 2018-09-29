@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file dmxmulti.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,39 +22,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef DMXMULTI_H_
+#define DMXMULTI_H_
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
-
-#include <stdint.h>
+#include "dmx_multi.h"
 
 #include "dmx.h"
 
-class DmxGpioParams {
+class DmxMulti: public DmxSet {
 public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+	DmxMulti(void);
+	~DmxMulti(void);
 
-	bool Load(void);
+	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false);
 
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
+	inline void SetDmxBreakTime(uint32_t nBreakTime) {
+		dmx_multi_set_output_break_time(nBreakTime);
+	}
 
-	void Dump(void);
+	inline  uint32_t GetDmxBreakTime(void) {
+		return dmx_multi_get_output_break_time();
+	}
+
+	inline void SetDmxMabTime(uint32_t nMabTime) {
+		dmx_multi_set_output_mab_time(nMabTime);
+	}
+
+	inline uint32_t GetDmxMabTime(void) {
+		return dmx_multi_get_output_mab_time();
+	}
+
+	inline uint32_t GetDmxPeriodTime(void) {
+		return dmx_multi_get_output_period();
+	}
+
+	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength);
+
+	const uint8_t *RdmReceive(uint8_t nPort);
+	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut);
 
 private:
-	bool isMaskSet(uint32_t mask) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *pLine);
-
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
+	bool m_IsInitDone;
 };
 
-#endif /* DMXGPIOPARAMS_H_ */
+#endif /* DMXMULTI_H_ */

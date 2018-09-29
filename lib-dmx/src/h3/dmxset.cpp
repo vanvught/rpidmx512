@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file dmxset.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
-
 #include <stdint.h>
+#include <assert.h>
 
 #include "dmx.h"
 
-class DmxGpioParams {
-public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+DmxSet *DmxSet::s_pThis = 0;
 
-	bool Load(void);
+DmxSet::DmxSet(void) {
+	s_pThis = this;
+}
 
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
-
-	void Dump(void);
-
-private:
-	bool isMaskSet(uint32_t mask) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *pLine);
-
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
-};
-
-#endif /* DMXGPIOPARAMS_H_ */
+DmxSet::~DmxSet(void) {
+}

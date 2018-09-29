@@ -24,21 +24,15 @@
  */
 
 #include <stdint.h>
-//#include <stdio.h>
+#include <stdio.h>
 #include <assert.h>
 
-#ifdef H3
- #include "h3_hs_timer.h"
-#else
- #include "bcm2835.h"
-#endif
-
-#include "dmx.h"
+#include "bcm2835.h"
 
 #include "rdm.h"
-#include "rdm_send.h"
+#include "dmx.h"
 
-#include "rdmmessage.h"
+#include "rdm_send.h"
 
 uint8_t Rdm::m_TransactionNumber = 0;
 
@@ -50,33 +44,25 @@ Rdm::~Rdm(void) {
 
 }
 
-const uint8_t *Rdm::Receive(void) {
+const uint8_t *Rdm::Receive(uint8_t nPort) {
 	const uint8_t *p = rdm_get_available();
 	return p;
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nTimeOut) {
-	uint8_t *p = NULL;
-#ifdef H3
-	uint32_t micros_now = h3_hs_timer_lo_us();
-#else
+const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+	uint8_t *p = 0;
 	uint32_t micros_now = BCM2835_ST->CLO;
-#endif
 
 	do {
-		if ((p = (uint8_t *)rdm_get_available()) != NULL) {
+		if ((p = (uint8_t *)rdm_get_available()) != 0) {
 			return (const uint8_t *) p;
 		}
-#ifdef H3
-	} while ( h3_hs_timer_lo_us() - micros_now < nTimeOut);
-#else
 	} while ( BCM2835_ST->CLO - micros_now < nTimeOut);
-#endif
 
 	return (const uint8_t *) p;
 }
 
-void Rdm::Send(struct TRdmMessage *pRdmCommand) {
+void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	assert(pRdmCommand != 0);
 
 	uint8_t *rdm_data = (uint8_t *)pRdmCommand;
@@ -92,25 +78,36 @@ void Rdm::Send(struct TRdmMessage *pRdmCommand) {
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;
 
-#ifndef NDEBUG
-	RDMMessage::Print((const uint8_t *)pRdmCommand);
-#endif
-
-	SendRaw((const uint8_t *)pRdmCommand, pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	SendRaw(0, (const uint8_t *)pRdmCommand, pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 	m_TransactionNumber++;
 }
 
-void Rdm::SendRaw(const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != 0);
 	assert(nLength != 0);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 
 	rdm_send_data((const uint8_t *) pRdmData, nLength);
+
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+}
+
+void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(pRdmData != 0);
+	assert(nLength != 0);
+
+	const uint32_t delay = BCM2835_ST->CLO - rdm_get_data_receive_end();
+
+	// 3.2.2 Responder Packet spacing
+	if (delay < RDM_RESPONDER_PACKET_SPACING) {
+		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
+	}
+
+	SendRaw(nPort, pRdmData, nLength);
 }
 
 void Rdm::SendDiscoveryRespondMessage(const uint8_t *data, uint16_t data_length) {

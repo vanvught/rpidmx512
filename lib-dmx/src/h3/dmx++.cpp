@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file dmx++.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,46 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
-
 #include <stdint.h>
+#include <assert.h>
 
 #include "dmx.h"
+#include "rdm_send.h"
 
-class DmxGpioParams {
-public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+#include "h3_hs_timer.h"
 
-	bool Load(void);
+#include "debug.h"
 
-	uint8_t GetDataDirection(bool &isSet) const;
-	uint8_t GetDataDirection(bool &isSet, uint8_t uart) const;
+void Dmx::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
+	assert(nPort == 0);
 
-	void Dump(void);
+	dmx_set_port_direction((_dmx_port_direction)tPortDirection, bEnableData);
+}
 
-private:
-	bool isMaskSet(uint32_t mask) const;
+void Dmx::RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort == 0);
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	rdm_send_data((const uint8_t *) pRdmData, nLength);
+}
 
-private:
-    void callbackFunction(const char *pLine);
+const uint8_t *Dmx::RdmReceive(uint8_t nPort) {
+	assert(nPort == 0);
 
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
-};
+	const uint8_t *p = rdm_get_available();
+	return p;
+}
 
-#endif /* DMXGPIOPARAMS_H_ */
+const uint8_t *Dmx::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+	assert(nPort == 0);
+
+	uint8_t *p = 0;
+	uint32_t micros_now = h3_hs_timer_lo_us();
+
+	do {
+		if ((p = (uint8_t *) rdm_get_available()) != 0) {
+			return (const uint8_t *) p;
+		}
+	} while (h3_hs_timer_lo_us() - micros_now < nTimeOut);
+
+	return (const uint8_t *) p;
+}
