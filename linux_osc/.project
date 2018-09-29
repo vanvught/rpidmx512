@@ -3,7 +3,7 @@
 	<name>linux_osc</name>
 	<comment></comment>
 	<projects>
-		<project>lib-hardware</project>
+		<project>lib-hal</project>
 		<project>lib-osc</project>
 	</projects>
 	<buildSpec>

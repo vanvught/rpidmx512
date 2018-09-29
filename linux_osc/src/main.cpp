@@ -44,9 +44,9 @@ int main(int argc, char **argv) {
 	NetworkLinux nw;
 	uint8_t nTextLength;
 	OSCParams oscparms;
-	uint8_t buffer[1600];
-	uint32_t remote_ip;
-	uint16_t incoming_port, outgoing_port, remote_port;
+	uint8_t buffer[4096];
+	uint32_t nRemoteIp;
+	uint16_t nRemotePort;
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
@@ -57,37 +57,36 @@ int main(int argc, char **argv) {
 		oscparms.Dump();
 	}
 
-	incoming_port = oscparms.GetIncomingPort();
-	outgoing_port = oscparms.GetOutgoingPort();
+	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
+	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
 
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
-	printf("OSC, Incoming port: %d, Outgoing port: %d\n", incoming_port, outgoing_port);
+	printf("OSC, Incoming port: %d, Outgoing port: %d\n", nIncomingPort, nOutgoingPort);
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
 
-	nw.Begin(incoming_port);
-
+	nw.Begin(nIncomingPort);
 	nw.Print();
 
 	for (;;) {
-		int bytes_received = nw.RecvFrom(buffer, sizeof buffer, &remote_ip, &remote_port);
+		const int nBytesReceived = nw.RecvFrom(buffer, sizeof buffer, &nRemoteIp, &nRemotePort);
 
-		if (bytes_received > 0) {
+		if (nBytesReceived > 0) {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
 			struct tm ltm = *localtime(&tv.tv_sec);
 
-			printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld ", ltm.tm_mday, ltm.tm_mon + 1, ltm.tm_year + 1900, ltm.tm_hour, ltm.tm_min, ltm.tm_sec, tv.tv_usec);
+			printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.3d [" IPSTR "] ", ltm.tm_mday, ltm.tm_mon + 1, ltm.tm_year + 1900, ltm.tm_hour, ltm.tm_min, ltm.tm_sec, (int)((double)tv.tv_usec / 1000), IP2STR(nRemoteIp));
 
 			if (OSC::isMatch((const char*) buffer, "/ping")) {
-				OSCSend MsgSend(remote_ip, outgoing_port, "/pong", 0);
+				OSCSend MsgSend(nRemoteIp, nOutgoingPort, "/pong", 0);
 				printf("ping->pong\n");
 			} else {
-				OSCMessage Msg((char *) buffer, bytes_received);
-				printf("path : %s\n", OSC::GetPath((char*) buffer, bytes_received));
+				OSCMessage Msg((char *) buffer, nBytesReceived);
+				printf("path : %s\n", OSC::GetPath((char*) buffer, nBytesReceived));
 				int argc = Msg.GetArgc();
 
 				for (int i = 0; i < argc; i++) {
@@ -126,10 +125,10 @@ int main(int argc, char **argv) {
 					}
 					}
 
-					const int result = Msg.GetResult();
+					const int nResult = Msg.GetResult();
 
-					if (result) {
-						printf(", result = %d\n", result);
+					if (nResult != OSC_OK) {
+						printf(", result = %d\n", nResult);
 					} else {
 						puts("");
 					}
@@ -138,9 +137,9 @@ int main(int argc, char **argv) {
 
 			if (OSC::isMatch((const char*) buffer, "/2")) {
 				unsigned char nLength;
-				OSCSend MsgSendModel(remote_ip, outgoing_port, "/info/model", "s", Hardware::Get()->GetBoardName(nLength));
-				OSCSend MsgSendInfo(remote_ip, outgoing_port, "/info/os", "s", Hardware::Get()->GetSysName(nLength));
-				OSCSend MsgSendSoc(remote_ip, outgoing_port, "/info/soc", "s", Hardware::Get()->GetSocName(nLength));
+				OSCSend MsgSendModel(nRemoteIp, nOutgoingPort, "/info/model", "s", Hardware::Get()->GetBoardName(nLength));
+				OSCSend MsgSendInfo(nRemoteIp, nOutgoingPort, "/info/os", "s", Hardware::Get()->GetSysName(nLength));
+				OSCSend MsgSendSoc(nRemoteIp, nOutgoingPort, "/info/soc", "s", Hardware::Get()->GetSocName(nLength));
 			}
 		}
 	}
