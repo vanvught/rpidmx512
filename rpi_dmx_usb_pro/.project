@@ -3,11 +3,12 @@
 	<name>rpi_dmx_usb_pro</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bob</project>
+		<project>include</project>
 		<project>lib-dmx</project>
-		<project>lib-hal</project>
+		<project>lib-ff12c</project>
 		<project>lib-monitor</project>
-		<project>lib-utils</project>
+		<project>lib-rdm</project>
+		<project>lib-usb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

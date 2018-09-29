@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +27,27 @@
 #include <stdint.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkh3emac.h"
 #include "ledblinkbaremetal.h"
 
-#ifndef H3
- #include "bcm2835_gpio.h"
-#endif
-
 #include "console.h"
-#if defined (HAVE_I2C)
- #include "display.h"
-#endif
-
-#include "wifi.h"
+#include "display.h"
 
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 #include "artnetparams.h"
 
+#include "ipprog.h"
+
 #include "timecode.h"
 #include "timesync.h"
 
+// DMX Out, RDM Controller
 #include "dmxparams.h"
 #include "dmxsend.h"
-#ifndef H3
- #include "dmxmonitor.h"
-#endif
-#if defined (HAVE_SPI)
- #include "ws28xxstripeparams.h"
- #include "ws28xxstripedmx.h"
-#endif
+// Pixel Controller
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "software_version.h"
 
@@ -64,15 +55,11 @@ extern "C" {
 
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	uint8_t nHwTextLength;
 	ArtNetParams artnetparams;
-
-#ifndef H3
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
-#endif
+	IpProg ipprog;
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -80,14 +67,12 @@ void notmain(void) {
 
 	const TOutputType tOutputType = artnetparams.GetOutputType();
 
-#if defined (HAVE_I2C)
 	Display display(0,8);
 	const bool oled_connected = display.isDetected();
-#endif
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("WiFi Art-Net 3 Node ");
+	console_puts("Ethernet Art-Net 3 Node ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
@@ -95,92 +80,56 @@ void notmain(void) {
 	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
-#ifndef H3
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-#endif
-#if defined (HAVE_SPI)
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
-#endif
-#ifdef H3
 	console_putc('\n');
-#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_set_top_row(3);
 
 	console_status(CONSOLE_YELLOW, "Network init ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
-#endif
 
 	nw.Init();
+	nw.Print();
 
 	ArtNetNode node;
 	DMXSend dmx;
-#if defined (HAVE_SPI)
 	SPISend spi;
-#endif
-#ifndef H3
-	DMXMonitor monitor;
-#endif
+
 	TimeCode timecode;
 	TimeSync timesync;
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
-#endif
 
 	artnetparams.Set(&node);
 
-	if (artnetparams.IsUseTimeCode() || tOutputType == OUTPUT_TYPE_MONITOR) {
+	node.SetIpProgHandler(&ipprog);
+
+	if (artnetparams.IsUseTimeCode()) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
 	}
 
-	if (artnetparams.IsUseTimeSync() || tOutputType == OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeSync()) {
 		timesync.Start();
 		node.SetTimeSyncHandler(&timesync);
 	}
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
-	if (tOutputType == OUTPUT_TYPE_DMX) {
-		DMXParams dmxparams;
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-		}
-		dmxparams.Set(&dmx);
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		WS28XXStripeParams ws28xxparms;
 
-		node.SetOutput(&dmx);
-		node.SetDirectUpdate(false);
-
-		if(artnetparams.IsRdm()) {
-			if (artnetparams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
-#if defined (HAVE_I2C)
-				DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
-#endif
-				discovery.Full();
-			}
-			node.SetRdmHandler(&discovery);
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Dump();
+			ws28xxparms.Set(&spi);
 		}
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
-		WS28XXStripeParams deviceparms;
-		if (deviceparms.Load()) {
-			deviceparms.Dump();
-		}
-		deviceparms.Set(&spi);
 
 		node.SetOutput(&spi);
 		node.SetDirectUpdate(true);
@@ -215,91 +164,80 @@ void notmain(void) {
 				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
 			}
 		}
+	} else {
+		DMXParams dmxparams;
+
+		if (dmxparams.Load()) {
+			dmxparams.Dump();
+			dmxparams.Set(&dmx);
+		}
+
+		node.SetOutput(&dmx);
+		node.SetDirectUpdate(false);
+
+		if(artnetparams.IsRdm()) {
+			if (artnetparams.IsRdmDiscovery()) {
+				console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
+				DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
+				discovery.Full();
+			}
+			node.SetRdmHandler(&discovery);
+		}
 	}
-#endif
-#ifndef H3
-	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
-		node.SetOutput(&monitor);
-		monitor.Cls();
-		console_set_top_row(20);
-	}
-#endif
 
 	node.Print();
 
-	if (tOutputType != OUTPUT_TYPE_MONITOR) {
-		console_puts("\n");
-	}
-
-	if (tOutputType == OUTPUT_TYPE_DMX) {
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		spi.Print();
+	} else {
 		dmx.Print();
 	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
-		spi.Print();
-	}
-#endif
 
-#if defined (HAVE_I2C)
 	if (oled_connected) {
-		display.Write(1, "WiFi Art-Net 3 ");
+		display.Write(1, "Eth Art-Net 3 ");
 
-		switch (tOutputType) {
-		case OUTPUT_TYPE_DMX:
+		if (tOutputType == OUTPUT_TYPE_SPI) {
+			display.PutString("Pixel");
+		} else {
 			if (artnetparams.IsRdm()) {
 				display.PutString("RDM");
 			} else {
 				display.PutString("DMX");
 			}
-			break;
-		case OUTPUT_TYPE_SPI:
-			display.PutString("Pixel");
-			break;
-		case OUTPUT_TYPE_MONITOR:
-			display.PutString("Monitor");
-			break;
-		default:
-			display.PutString("-E-");
-			break;
-		}
-
-		if (wifi_get_opmode() == WIFI_STA) {
-			(void) display.Printf(2, "S: %s", wifi_get_ssid());
-		} else {
-			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
 		uint8_t nAddress;
 		node.GetUniverseSwitch((uint8_t) 0, nAddress);
 
+		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+		if (nw.IsDhcpKnown()) {
+			if (nw.IsDhcpUsed()) {
+				display.PutString(" D");
+			} else {
+				display.PutString(" S");
+			}
+		}
 		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 		(void) display.Printf(5, "SN: %s", node.GetShortName());
 		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nAddress);
 		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
-#endif
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting the Node ..."));
-#endif
 
 	node.Start();
 
 	console_status(CONSOLE_GREEN, "Node started");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
-#endif
 
-	hw.WatchdogFeed();
+	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
+		nw.Run();
 		(void) node.HandlePacket();
-		if (tOutputType == OUTPUT_TYPE_MONITOR) {
-			timesync.ShowSystemTime();
-		}
 		lb.Run();
 	}
 }

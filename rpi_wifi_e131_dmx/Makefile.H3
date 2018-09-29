@@ -1,0 +1,10 @@
+#
+DEFINES = ESP8266 ENABLE_MMU NO_EMAC NDEBUG
+#
+LIBS = display e131 uuid dmxsend dmx ws28xxdmx ws28xx monitor lightset ledblink
+#
+SRCDIR = firmware
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

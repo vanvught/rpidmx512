@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,13 @@
 #include <uuid/uuid.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkh3emac.h"
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
 #if defined (HAVE_I2C)
  #include "display.h"
 #endif
-
-#include "wifi.h"
 
 #include "e131bridge.h"
 #include "e131uuid.h"
@@ -46,10 +44,6 @@
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
-#ifndef H3
- // Monitor Output
- #include "dmxmonitor.h"
-#endif
 #if defined (HAVE_SPI)
  // WS28xx output
  #include "ws28xxstripeparams.h"
@@ -64,7 +58,7 @@ extern "C" {
 
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	E131Params e131params;
 	E131Uuid e131uuid;
@@ -85,25 +79,15 @@ void notmain(void) {
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("WiFi sACN E1.31 ");
+	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
-#ifndef H3
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-#endif
-#if defined (HAVE_SPI)
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {1 Universe}");
 	console_set_fg_color(CONSOLE_WHITE);
-#endif
-#ifdef H3
 	console_putc('\n');
-#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -130,9 +114,6 @@ void notmain(void) {
 #if defined (HAVE_SPI)
 	SPISend spi;
 #endif
-#ifndef H3
-	DMXMonitor monitor;
-#endif
 
 	bridge.SetCid(uuid);
 	bridge.SetUniverse(e131params.GetUniverse());
@@ -156,13 +137,6 @@ void notmain(void) {
 		bridge.SetOutput(&spi);
 	}
 #endif
-#ifndef H3
-	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
-		bridge.SetOutput(&monitor);
-		monitor.Cls();
-		console_set_top_row(20);
-	}
-#endif
 
 	bridge.Print();
 
@@ -177,14 +151,11 @@ void notmain(void) {
 
 #if defined (HAVE_I2C)
 	if (IsOledConnected) {
-		display.Write(1, "WiFi sACN E1.31 ");
+		display.Write(1, "Eth sACN E1.31 ");
 
 		switch (tOutputType) {
 		case OUTPUT_TYPE_DMX:
 			display.PutString("DMX");
-			break;
-		case OUTPUT_TYPE_MONITOR:
-			display.PutString("Mon");
 			break;
 		case OUTPUT_TYPE_SPI:
 			display.PutString("Pixel");
@@ -194,12 +165,7 @@ void notmain(void) {
 			break;
 		}
 
-		if (wifi_get_opmode() == WIFI_STA) {
-			(void) display.Printf(2, "S: %s", wifi_get_ssid());
-		} else {
-			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
-		}
-
+		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 		(void) display.Printf(3, "CID: ");
 		(void) display.PutString(uuid_str);
 		(void) display.Printf(5, "U: %d M: %s", bridge.GetUniverse(), bridge.GetMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
@@ -224,6 +190,7 @@ void notmain(void) {
 
 	for (;;) {
 		hw.WatchdogFeed();
+		nw.Run();
 		(void) bridge.Run();
 		lb.Run();
 	}

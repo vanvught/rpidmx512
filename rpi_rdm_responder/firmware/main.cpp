@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkbaremetalmacaddress.h"
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
@@ -50,12 +50,9 @@
 
 extern "C" {
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkBaremetalMacAddress nw;
 	LedBlinkBaremetal lb;
 	Identify identify;
 	LightSet *pLightSet;
@@ -81,7 +78,6 @@ void notmain(void) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
-			pTLC59711Dmx->Start();
 			snprintf(aDescription, sizeof(aDescription) -1, "%s", TLC59711DmxParams::GetLedTypeString(pTLC59711Dmx->GetLEDType()));
 			pLightSet = pTLC59711Dmx;
 		}
@@ -93,7 +89,6 @@ void notmain(void) {
 		SPISend *pSPISend = new SPISend;
 		deviceparams.Dump();
 		deviceparams.Set(pSPISend);
-		pSPISend->Start();
 		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28XXStripeParams::GetLedTypeString(pSPISend->GetLEDType()));
 		pLightSet = pSPISend;
 	}

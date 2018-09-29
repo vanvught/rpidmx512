@@ -23,11 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <rdm_device_info.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "util.h"
+#include "rdm_device_info.h"
 
 #include "read_config_file.h"
 #include "sscan.h"
@@ -37,7 +36,9 @@
 #include "rdm.h"
 #include "rdm_device_const.h"
 
-#include "hardware.h"
+#include "c/hardware.h"
+
+#include "util.h"
 
 static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
@@ -62,8 +63,27 @@ static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;									///<
 
 static uint8_t ext_mon_level = (uint8_t) 0;											///<
 
-const uint8_t rdm_device_info_get_ext_mon_level(void) {
+uint8_t rdm_device_info_get_ext_mon_level(void) {
 	return ext_mon_level;
+}
+
+static uint16_t hex_uint16(const char *s) {
+	uint16_t ret = 0;
+	uint8_t nibble;
+
+	while (*s != '\0') {
+		char d = *s;
+
+		if (isxdigit((int) d) == 0) {
+			break;
+		}
+
+		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
+		ret = (ret << 4) | nibble;
+		s++;
+	}
+
+	return ret;
 }
 
 static void process_line_read_string(const char *line) {
@@ -96,7 +116,7 @@ static void process_line_read_string(const char *line) {
 	memset(value, 0, sizeof(value) / sizeof(char));
 	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
 		if (len == 4) {
-			const uint16_t v = (uint16_t) hex_uint32(value);
+			const uint16_t v = hex_uint16(value);
 			uid_device[0] = (uint8_t) (v >> 8);
 			uid_device[1] = (uint8_t) (v & 0xFF);
 		}
@@ -132,7 +152,7 @@ const uint8_t * rdm_device_info_get_uuid(void) {
 }
 
 void rdm_device_info_init(void) {
-	uint8_t mac_address[6] ALIGNED;
+	uint8_t mac_address[6];
 
 	if (hardware_get_mac_address(mac_address) == 0) {
 		uid_device[2] = mac_address[2];
@@ -149,8 +169,8 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-		(void *)memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
-		root_device_label_length = DEVICE_LABEL_LENGTH;
+	(void *)memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	root_device_label_length = DEVICE_LABEL_LENGTH;
 
 	(void *)memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
 	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;

@@ -1,0 +1,13 @@
+#
+DEFINES = ENABLE_MMU NO_EMAC RDM_CONTROLLER UPDATE_CONFIG_FILE NDEBUG
+#
+LIBS = dmx rdm monitor usb
+#
+SRCDIR = firmware lib
+#
+EXTRA_INCLUDES = ../lib-ff12c/src 
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
+	./generate_sofware_version_id.sh	

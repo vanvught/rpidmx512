@@ -1,2 +1,2 @@
-// Generated za 24 mrt 2018 15:17:34 CET
-static const uint32_t DEVICE_SOFTWARE_VERSION_ID=1521901054;
+// Generated za 29 sep 2018 11:04:40 CEST
+static const uint32_t DEVICE_SOFTWARE_VERSION_ID=1538211880;

@@ -2,7 +2,7 @@
  * @file widget_usb.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,51 +25,28 @@
 
 #include <stdint.h>
 
-#include "usb.h"
 #include "widget.h"
+#include "usb.h"
 
-/**
- * @ingroup usb
- *
- * @param label
- * @param length
- */
-void widget_usb_send_header(const uint8_t label, const uint16_t length) {
+void widget_usb_send_header(uint8_t label, uint16_t length) {
 	usb_send_byte(AMF_START_CODE);
 	usb_send_byte(label);
 	usb_send_byte((uint8_t) (length & 0x00FF));
 	usb_send_byte((uint8_t) (length >> 8));
 }
 
-/**
- * @ingroup usb
- *
- * @param data
- * @param length
- */
-void widget_usb_send_data(const uint8_t *data, const uint16_t length) {
-	uint16_t i;
+void widget_usb_send_data(const uint8_t *data, uint16_t length) {
+	uint32_t i;
 	for (i = 0; i < length; i++) {
 		usb_send_byte(data[i]);
 	}
 }
 
-/**
- * @ingroup usb
- *
- */
 void widget_usb_send_footer(void) {
 	usb_send_byte(AMF_END_CODE);
 }
 
-/**
- * @ingroup usb
- *
- * @param label
- * @param data
- * @param length
- */
-void widget_usb_send_message(const uint8_t label, const uint8_t *data, const uint16_t length) {
+void widget_usb_send_message(uint8_t label, const uint8_t *data, uint16_t length) {
 	widget_usb_send_header(label, length);
 	widget_usb_send_data(data, length);
 	widget_usb_send_footer();

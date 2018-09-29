@@ -1,0 +1,11 @@
+#
+DEFINES = ENABLE_MMU NDEBUG
+#
+LIBS = dmxreceiver rdmresponder dmx rdm rdmsensor rdmsubdevice ws28xxdmx ws28xx tlc59711dmx tlc59711 monitor ledblink lightset network
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
+	./generate_sofware_version_id.sh

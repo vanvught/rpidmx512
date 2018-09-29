@@ -26,12 +26,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "hardware.h"
-#include "usb.h"
-#include "util.h"
+#include "c/hardware.h"
+#include "c/led.h"
 
 #include "monitor.h"
-#include "oled.h"
 
 #include "dmx.h"
 #include "rdm.h"
@@ -43,10 +41,12 @@
 #include "widget.h"
 #include "widget_monitor.h"
 
-#include "c/led.h"
+#include "usb.h"
+#include "util.h"
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
+#if defined (HAVE_I2C)
+ #include "oled.h"
+#endif
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 
@@ -70,7 +70,7 @@ struct _event {
 
 static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
-static void events_init() {
+static void events_init(void) {
 	size_t i;
 	const uint32_t mircos_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
@@ -78,7 +78,7 @@ static void events_init() {
 	}
 }
 
-inline static void events_check() {
+inline static void events_check(void) {
 	size_t i;
 	const uint32_t micros_now = hardware_micros();
 	for (i = 0; i < (sizeof(events) / sizeof(events[0])); i++) {
@@ -91,15 +91,14 @@ inline static void events_check() {
 }
 
 int notmain(void) {
-	oled_info_t oled_info  = { OLED_128x64_SPI_CS2_DEFAULT };
-	bool oled_connected = false;
-	int i = 0;
+	int i;
 	_widget_mode widget_mode;
 	const uint8_t *uid_device;
 	struct _rdm_device_info_data rdm_device_info_label;
-
-	oled_connected = oled_start(&oled_info);
-
+#if defined (HAVE_I2C)
+	oled_info_t oled_info  = { OLED_128x64_SPI_CS2_DEFAULT };
+	bool oled_connected = oled_start(&oled_info);
+#endif
 	usb_init();
 
 	dmx_init();
@@ -116,8 +115,9 @@ int notmain(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", DEVICE_SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", widget_mode, widget_mode_names[widget_mode]);
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
-	printf("Label : %.*s", (int) rdm_device_info_label.length, (const char *)rdm_device_info_label.data);
+	printf("Label : %.*s\n", (int) rdm_device_info_label.length, (const char *)rdm_device_info_label.data);
 
+#if defined (HAVE_I2C)
 	if (oled_connected) {
 		oled_set_cursor(&oled_info,0,0);
 		(void) oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
@@ -128,6 +128,7 @@ int notmain(void) {
 		oled_set_cursor(&oled_info,5,0);
 		(void) oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
 	}
+#endif
 
 	hardware_watchdog_init();
 

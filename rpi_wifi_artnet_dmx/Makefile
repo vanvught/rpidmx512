@@ -1,7 +1,7 @@
 #
-DEFINES = ENABLE_MMU NDEBUG
+DEFINES = ESP8266 ENABLE_MMU NDEBUG
 #
-LIBS = artnet dmxsend ws28xxdmx ws28xx dmxmonitor monitor rdm dmx lightset ledblink
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx dmxmonitor monitor dmx rdmdiscovery rdm lightset ledblink 
 #
 SRCDIR = firmware lib
 

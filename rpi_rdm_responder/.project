@@ -3,8 +3,10 @@
 	<name>rpi_rdm_responder</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-c++</project>
 		<project>lib-dmxreceiver</project>
+		<project>lib-hal</project>
 		<project>lib-hardware</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
@@ -14,7 +16,7 @@
 		<project>lib-rdmsensor</project>
 		<project>lib-rdmsubdevice</project>
 		<project>lib-tlc59711dmx</project>
-		<project>lib-ws28xx</project>
+		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

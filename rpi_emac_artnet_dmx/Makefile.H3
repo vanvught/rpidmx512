@@ -1,0 +1,10 @@
+#
+DEFINES = ENABLE_MMU EMAC NDEBUG
+#
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file timesync.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef TIMESYNC_H_
+#define TIMESYNC_H_
 
-#if defined(H3)
- static const char SOFTWARE_VERSION[] = "1.0";
-#else
- static const char SOFTWARE_VERSION[] = "2.1";
-#endif
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnettimesync.h"
+
+class TimeSync: public ArtNetTimeSync {
+public:
+	TimeSync(void);
+	~TimeSync(void);
+
+	void Start(void);
+
+	void Handler(const struct TArtNetTimeSync *);
+
+	void ShowSystemTime(void);
+
+private:
+	void Show(void);
+
+private:
+	uint8_t m_nSecondsPrevious;
+};
+
+#endif /* TIMESYNC_H_ */

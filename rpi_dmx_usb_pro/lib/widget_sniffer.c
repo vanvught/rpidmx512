@@ -25,8 +25,8 @@
 
 #include <stdint.h>
 
-#include "hardware.h"
-#include "usb.h"
+#include "c/hardware.h"
+
 #include "monitor.h"
 
 #include "widget.h"
@@ -37,6 +37,8 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#include "usb.h"
+
 #define	SNIFFER_PACKET			0x81	///< Label
 #define	SNIFFER_PACKET_SIZE  	200		///< Packet size
 #define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
@@ -44,22 +46,10 @@
 
 static struct _rdm_statistics rdm_statistics ALIGNED;	///<
 
-/**
- * @ingroup widget
- *
- * @return
- */
 const struct _rdm_statistics *rdm_statistics_get(void) {
 	return &rdm_statistics;
 }
 
-/**
- * @ingroup widget
- *
- * @param data
- * @param start
- * @param data_length
- */
 static void usb_send_package(const uint8_t *data, const uint16_t start, const uint16_t data_length) {
 	uint16_t i;
 
@@ -106,9 +96,7 @@ static bool can_send(void) {
 }
 
 /**
- * @ingroup widget
- *
- * This function is called from the poll table in \ref main.c
+ * This function is called from the poll table in main.c
  */
 void widget_sniffer_dmx(void) {
 	if ((widget_get_mode() != MODE_RDM_SNIFFER) || !can_send()) {
@@ -133,9 +121,7 @@ void widget_sniffer_dmx(void) {
 }
 
 /**
- * @ingroup widget
- *
- * This function is called from the poll table in \ref main.c
+ * This function is called from the poll table in main.c
  */
 void widget_sniffer_rdm(void) {
 	if ((widget_get_mode() != MODE_RDM_SNIFFER) || !can_send()) {

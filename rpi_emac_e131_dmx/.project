@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpi_wifi_e131_dmx</name>
+	<name>rpi_emac_e131_dmx</name>
 	<comment></comment>
 	<projects>
 		<project>firmware-template</project>

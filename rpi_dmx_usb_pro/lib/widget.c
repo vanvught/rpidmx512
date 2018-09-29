@@ -30,8 +30,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "hardware.h"
-#include "usb.h"
+#include "c/hardware.h"
 #include "util.h"
 #include "monitor.h"
 
@@ -45,6 +44,8 @@
 #include "rdm_device_info.h"
 #include "rdm_send.h"
 #include "rdm_e120.h"
+
+#include "usb.h"
 
 #define WIDGET_DATA_BUFFER_SIZE		600							///<
 

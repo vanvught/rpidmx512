@@ -27,8 +27,10 @@
 #include "ff.h"
 #include "util.h"
 #include "sscan.h"
+
 #include "widget.h"
 #include "widget_params.h"
+
 #include "dmx.h"
 
 ///<
@@ -43,8 +45,10 @@ static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 static uint8_t dmx_send_to_host_throttle = 0;										///<
 
 static const TCHAR FILE_NAME_PARAMS[] = "params.txt";								///< Parameters file name
+#ifdef UPDATE_CONFIG_FILE
 static const TCHAR FILE_NAME_PARAMS_BAK[] = "params.bak";							///<
 static const TCHAR FILE_NAME_UPDATES[] = "updates.txt";								///<
+#endif
 
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";			///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";				///<
@@ -189,11 +193,6 @@ static void update_config_file(void) {
 inline static void update_config_file(void) { }
 #endif
 
-/**
- * @ingroup widget
- *
- * @param line
- */
 static void process_line_read_uint8_t(const char *line) {
 	uint8_t value;
 
@@ -216,10 +215,6 @@ static void process_line_read_uint8_t(const char *line) {
 	}
 }
 
-/**
- * @ingroup widget
- *
- */
 static void read_config_file(void) {
 	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
@@ -239,11 +234,6 @@ static void read_config_file(void) {
 	}
 }
 
-/**
- * @ingroup widget
- *
- * @param widget_params
- */
 void widget_params_get(struct _widget_params *widget_params) {
 	widget_params->break_time = dmx_usb_pro_params.break_time;
 	widget_params->firmware_lsb = dmx_usb_pro_params.firmware_lsb;
@@ -252,11 +242,6 @@ void widget_params_get(struct _widget_params *widget_params) {
 	widget_params->refresh_rate = dmx_usb_pro_params.refresh_rate;
 }
 
-/**
- * @ingroup widget
- *
- * @param widget_params
- */
 void widget_params_set(const struct _widget_params *widget_params) {
 	bool call_update_config_file = false;
 
@@ -286,48 +271,19 @@ void widget_params_set(const struct _widget_params *widget_params) {
 	}
 }
 
-/**
- * @ingroup widget
- *
- * @param info
- */
 void widget_params_get_type_id(struct _widget_params_data *info) {
 	info->data = (uint8_t *) DEVICE_TYPE_ID;
 	info->length = (uint8_t) DEVICE_TYPE_ID_LENGTH;
 }
 
-/**
- * @ingroup widget
- *
- * @return
- */
-//const uint8_t widget_params_get_type_id_length(void) {
-//	return (uint8_t) DEVICE_TYPE_ID_LENGTH;
-//}
-
-/**
- * @ingroup widget
- *
- * @return
- */
 const uint8_t widget_params_get_throttle(void) {
 	return dmx_send_to_host_throttle;
 }
 
-/**
- *  @ingroup widget
- *
- * @param throttle
- */
 void widget_params_set_throttle(const uint8_t throttle) {
 	dmx_send_to_host_throttle = throttle;
 }
 
-/**
- * @ingroup widget
- *
- * Update the Widget with the settings from params.txt
- */
 void widget_params_init(void) {
 	uint32_t period;
 	uint8_t mode;

@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file ipprog.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,13 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef IPPROG_H_
+#define IPPROG_H_
 
-#if defined(H3)
- static const char SOFTWARE_VERSION[] = "1.0";
-#else
- static const char SOFTWARE_VERSION[] = "2.1";
-#endif
+#include <stdbool.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnetipprog.h"
+
+class IpProg: public ArtNetIpProg {
+public:
+	IpProg(void);
+	~IpProg(void);
+
+	void Handler(const struct TArtNetIpProg *, struct TArtNetIpProgReply *);
+
+private:
+};
+
+#endif /* IPPROG_H_ */
