@@ -41,6 +41,13 @@ public:
 	L6470DmxModes(TL6470DmxModes, uint16_t, L6470 *, MotorParams *, ModeParams *);
 	~L6470DmxModes(void);
 
+	void InitSwitch(void);
+	void InitPos(void);
+
+	void HandleBusy(void);
+	bool BusyCheck(void);
+
+	bool IsDmxDataChanged(const uint8_t *, uint16_t);
 	void DmxData(const uint8_t *, uint16_t);
 
 	void Start(void);

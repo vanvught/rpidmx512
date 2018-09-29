@@ -76,7 +76,6 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 
 		const uint16_t sub_device = (uint16_t) (p->sub_device[0] << 8) + (uint16_t) p->sub_device[1];
 
-		//printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d (%d)\n", sub_device, p->transaction_number, p->param_id[0], p->param_id[1], p->param_data_length, p->message_length);
 		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", sub_device, p->transaction_number, p->param_id[0], p->param_id[1], p->param_data_length);
 
 	} else if (pRdmData[0] == 0xFE) {
@@ -85,6 +84,6 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 		}
 		printf("\n");
 	} else {
-		printf("Corrupted RDM data [0-3]: %.2x:%.2x:%.2x:%.2x\n", pRdmData[0], pRdmData[1], pRdmData[2], pRdmData[3]);
+		printf("Corrupted? RDM data [0-3]: %.2x:%.2x:%.2x:%.2x\n", pRdmData[0], pRdmData[1], pRdmData[2], pRdmData[3]);
 	}
 }

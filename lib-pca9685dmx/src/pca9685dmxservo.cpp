@@ -71,7 +71,7 @@ bool PCA9685DmxServo::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PCA9685DmxServo::Start(void) {
+void PCA9685DmxServo::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -83,7 +83,7 @@ void PCA9685DmxServo::Start(void) {
 	}
 }
 
-void PCA9685DmxServo::Stop(void) {
+void PCA9685DmxServo::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}

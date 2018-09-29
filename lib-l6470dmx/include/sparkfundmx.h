@@ -53,10 +53,10 @@ public:
 		return m_nDmxFootprint;
 	}
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
-	void SetData(uint8_t, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
 public:
 	void ReadConfigFiles(void);

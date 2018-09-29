@@ -41,10 +41,10 @@ public:
 
 	uint16_t GetDmxFootprint(void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort = 0);
+	void Stop(uint8_t nPort = 0);
 
-	void SetData(uint8_t, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 #else
@@ -55,7 +55,7 @@ public:
 	void SetMaxDmxChannels(uint16_t);
 
 private:
-	void DisplayDateTime(const char *);
+	void DisplayDateTime(uint8_t nPort, const char *);
 #endif
 
 private:

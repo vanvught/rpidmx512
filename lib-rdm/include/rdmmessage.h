@@ -43,7 +43,7 @@ public:
 
 	void SetPd(const uint8_t *, const uint8_t);
 
-	void Send(void);
+	void Send(uint8_t nPort = 0);
 
 public:
 	static void Print(const uint8_t *);

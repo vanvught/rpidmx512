@@ -2,7 +2,7 @@
  * @file l6470dmxmode3.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,9 @@ public:
 	void Start(void);
 	void Stop(void);
 
+	void HandleBusy(void);
+	bool BusyCheck(void);
+
 	void Data(const uint8_t *);
 
 	inline static TL6470DmxModes GetMode(void) {
@@ -53,6 +56,7 @@ private:
 	L6470	*m_pL6470;
 	float m_fSteps;
 	uint8_t m_nPreviousData;
+	bool m_bWasBusy;
 };
 
 #endif /* L6470DMXMODE3_H_ */

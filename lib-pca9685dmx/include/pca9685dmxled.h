@@ -37,8 +37,8 @@ public:
 	PCA9685DmxLed(void);
 	~PCA9685DmxLed(void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort = 0);
+	void Stop(uint8_t nPort = 0);
 
 	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength);
 

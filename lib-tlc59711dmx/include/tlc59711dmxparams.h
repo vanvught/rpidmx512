@@ -46,7 +46,7 @@ public:
 	static const char *GetLedTypeString(TTLC59711Type tTTLC59711Type);
 
 private:
-	bool isMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -55,7 +55,7 @@ private:
     void callbackFunction(const char *pLine);
 
 private:
-    uint16_t m_bSetList;
+    uint32_t m_bSetList;
 	TTLC59711Type m_LEDType;
 	uint8_t m_nLEDCount;
 	uint16_t m_nDmxStartAddress;

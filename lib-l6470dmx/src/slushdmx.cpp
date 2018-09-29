@@ -254,7 +254,7 @@ SlushDmx::~SlushDmx(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Start(void) {
+void SlushDmx::Start(uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -266,7 +266,7 @@ void SlushDmx::Start(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Stop(void) {
+void SlushDmx::Stop(uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -462,6 +462,26 @@ void SlushDmx::ReadConfigFiles(void) {
 #endif
 		}
 	}
+
+	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+		if (m_pL6470DmxModes[i] != 0) {
+			m_pL6470DmxModes[i]->InitSwitch();
+		}
+	}
+
+	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+		if (m_pSlushMotor[i] != 0) {
+			while (m_pL6470DmxModes[i]->BusyCheck())
+				;
+		}
+	}
+
+	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+		if (m_pL6470DmxModes[i] != 0) {
+			m_pL6470DmxModes[i]->InitPos();
+		}
+	}
+
 #ifndef NDEBUG
 	printf("Motors connected : %d\n", (int) nMotorsConnected);
 #endif
@@ -474,8 +494,32 @@ void SlushDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) 
 	assert(pData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
+	bool bIsDmxDataChanged[SLUSH_DMX_MAX_MOTORS];
+
 	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
+			bIsDmxDataChanged[i] = m_pL6470DmxModes[i]->IsDmxDataChanged(pData, nLength);
+
+			if(bIsDmxDataChanged[i]) {
+				m_pL6470DmxModes[i]->HandleBusy();
+			}
+		} else {
+			bIsDmxDataChanged[i] = false;
+		}
+#ifndef NDEBUG
+		printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
+#endif
+	}
+
+	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+		if (bIsDmxDataChanged[i]) {
+			while (m_pL6470DmxModes[i]->BusyCheck())
+				;
+		}
+	}
+
+	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+		if (bIsDmxDataChanged[i]) {
 			m_pL6470DmxModes[i]->DmxData(pData, nLength);
 		}
 	}

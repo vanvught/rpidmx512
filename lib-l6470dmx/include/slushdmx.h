@@ -43,10 +43,10 @@ public:
 	SlushDmx(bool bUseSPI = false);
 	~SlushDmx(void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
-	void SetData(uint8_t, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);

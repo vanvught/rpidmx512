@@ -67,3 +67,4 @@ float SlushBoard::calcTemp(uint16_t tempraw) {
 
 	return temp - 273.15;
 }
+

@@ -40,9 +40,9 @@
 #include "pca9685.h"
 
 extern "C" {
-#if defined(__linux__) || defined(__circle__)
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
+#if defined(__linux__)
+ extern void bcm2835_delayMicroseconds (uint64_t);
+ #define udelay bcm2835_delayMicroseconds
 #else
 #endif
 }

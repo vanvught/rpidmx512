@@ -41,10 +41,10 @@ class LightSet {
 public:
 	virtual ~LightSet(void);
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	virtual void Start(uint8_t nPort)= 0;
+	virtual void Stop(uint8_t nPort)= 0;
 
-	virtual void SetData(uint8_t, const uint8_t *, uint16_t)= 0;
+	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t)= 0;
 
 public: // RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);

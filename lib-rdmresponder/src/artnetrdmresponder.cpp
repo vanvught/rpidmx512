@@ -42,10 +42,10 @@ ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet
 	m_RDMHandler(0)
 {
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand !=0);
+	assert(m_pRdmCommand != 0);
 
 	m_RDMHandler = new RDMHandler(&m_Responder);
-	assert(m_RDMHandler !=0);
+	assert(m_RDMHandler != 0);
 }
 
 ArtNetRdmResponder::~ArtNetRdmResponder(void) {
@@ -56,15 +56,15 @@ ArtNetRdmResponder::~ArtNetRdmResponder(void) {
 	m_pRdmCommand = 0;
 }
 
-void ArtNetRdmResponder::Full(void) {
+void ArtNetRdmResponder::Full(uint8_t nPort) {
 	// We are a Responder - no code needed
 }
 
-const uint8_t ArtNetRdmResponder::GetUidCount(void) {
+const uint8_t ArtNetRdmResponder::GetUidCount(uint8_t nPort) {
 	return 1; // We are a Responder
 }
 
-void ArtNetRdmResponder::Copy(unsigned char *tod) {
+void ArtNetRdmResponder::Copy(uint8_t nPort, unsigned char *tod) {
 	unsigned char *src = (unsigned char *) m_Responder.GetUID();
 	unsigned char *dst = tod;
 
@@ -75,7 +75,7 @@ void ArtNetRdmResponder::Copy(unsigned char *tod) {
 	}
 }
 
-const uint8_t *ArtNetRdmResponder::Handler(const uint8_t *pRdmDataNoSC) {
+const uint8_t *ArtNetRdmResponder::Handler(uint8_t nPort, const uint8_t *pRdmDataNoSC) {
 	DEBUG_ENTRY
 
 	if (pRdmDataNoSC == 0) {
@@ -89,9 +89,9 @@ const uint8_t *ArtNetRdmResponder::Handler(const uint8_t *pRdmDataNoSC) {
 		DEBUG_EXIT
 		return 0;
 	}
-
+#ifndef NDEBUG
 	RDMMessage::Print((uint8_t *)m_pRdmCommand);
-
+#endif
 	DEBUG_EXIT
 	return (const uint8_t *)m_pRdmCommand;
 }

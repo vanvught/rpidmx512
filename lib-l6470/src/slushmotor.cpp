@@ -28,7 +28,7 @@
 
 #include <assert.h>
 #if defined (__linux__)
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #include "bcm2835.h"
@@ -36,8 +36,8 @@
 #if defined(__linux__)
 #elif defined(__circle__)
 #else
-#include "bcm2835_gpio.h"
-#include "bcm2835_spi.h"
+ #include "bcm2835_gpio.h"
+ #include "bcm2835_spi.h"
 #endif
 
 #include "slushmotor.h"

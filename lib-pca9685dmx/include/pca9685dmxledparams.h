@@ -37,12 +37,11 @@ public:
 	~PCA9685DmxLedParams(void);
 
 	bool Load(void);
-
 	void Set(PCA9685DmxLed *);
 	void Dump(void);
 
 private:
-	bool IsMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -51,7 +50,7 @@ private:
     void callbackFunction(const char *pLine);
 
 private:
-    uint16_t m_bSetList;
+    uint32_t m_bSetList;
     uint8_t m_nI2cAddress;
     uint16_t m_nPwmFrequency;
 	bool m_bOutputInvert;

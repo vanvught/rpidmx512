@@ -31,18 +31,18 @@ public:
 	PCA9685DmxParams(const char *);
 	~PCA9685DmxParams(void);
 
+	void Dump(void);
+
+	bool GetSetList(void) const;
+
 	uint8_t GetI2cAddress(bool &pIsSet) const;
 	uint16_t GetDmxStartAddress(bool &pIsSet) const;
 	uint16_t GetDmxFootprint(bool &pIsSet) const;
 	uint8_t GetBoardInstances(bool &pIsSet) const;
 	const char* GetDmxSlotInfoRaw(bool &pIsSet) const;
 
-	void Dump(void);
-
-	bool GetSetList(void) const;
-
 protected:
-	bool IsMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

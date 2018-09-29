@@ -51,7 +51,9 @@
 #include "debug.h"
 
 #ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
+ #define MAX(a,b)       (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
@@ -165,7 +167,7 @@ SparkFunDmx::~SparkFunDmx(void) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Start(void) {
+void SparkFunDmx::Start(uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -177,7 +179,7 @@ void SparkFunDmx::Start(void) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Stop(void) {
+void SparkFunDmx::Stop(uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -338,6 +340,26 @@ void SparkFunDmx::ReadConfigFiles(void) {
 #endif
 		}
 	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (m_pL6470DmxModes[i] != 0) {
+			m_pL6470DmxModes[i]->InitSwitch();
+		}
+	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (m_pAutoDriver[i] != 0) {
+			while (m_pAutoDriver[i]->busyCheck())
+				;
+		}
+	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (m_pL6470DmxModes[i] != 0) {
+			m_pL6470DmxModes[i]->InitPos();
+		}
+	}
+
 #ifndef NDEBUG
 	printf("Motors connected : %d\n", (int) AutoDriver::getNumBoards());
 #endif
@@ -350,8 +372,32 @@ void SparkFunDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLengt
 	assert(pData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
+	bool bIsDmxDataChanged[SPARKFUN_DMX_MAX_MOTORS];
+
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
+			bIsDmxDataChanged[i] = m_pL6470DmxModes[i]->IsDmxDataChanged(pData, nLength);
+
+			if(bIsDmxDataChanged[i]) {
+				m_pL6470DmxModes[i]->HandleBusy();
+			}
+		} else {
+			bIsDmxDataChanged[i] = false;
+		}
+#ifndef NDEBUG
+		printf("bIsDmxDataChanged[%d]=%d\n", i, bIsDmxDataChanged[i]);
+#endif
+	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (bIsDmxDataChanged[i]) {
+			while (m_pL6470DmxModes[i]->BusyCheck())
+				;
+		}
+	}
+
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (bIsDmxDataChanged[i]) {
 			m_pL6470DmxModes[i]->DmxData(pData, nLength);
 		}
 	}

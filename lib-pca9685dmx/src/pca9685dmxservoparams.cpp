@@ -39,9 +39,9 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define LEFT_US_MASK			1<<0
-#define RIGHT_US_MASK			1<<1
-#define I2C_SLAVE_ADDRESS_MASK	1<<2
+#define LEFT_US_MASK			(1 << 0)
+#define RIGHT_US_MASK			(1 << 1)
+#define I2C_SLAVE_ADDRESS_MASK	(1 << 2)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "servo.txt";
 static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
@@ -73,15 +73,15 @@ void PCA9685DmxServoParams::Set(PCA9685DmxServo* pDmxServo) {
 		return;
 	}
 
-	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
+	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
 		pDmxServo->SetI2cAddress(m_nI2cAddress);
 	}
 
-	if(IsMaskSet(LEFT_US_MASK)) {
+	if(isMaskSet(LEFT_US_MASK)) {
 		pDmxServo->SetLeftUs(m_nLeftUs);
 	}
 
-	if(IsMaskSet(RIGHT_US_MASK)) {
+	if(isMaskSet(RIGHT_US_MASK)) {
 		pDmxServo->SetRightUs(m_nRightUs);
 	}
 
@@ -110,15 +110,15 @@ void PCA9685DmxServoParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
-	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
+	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
 		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
-	if(IsMaskSet(LEFT_US_MASK)) {
+	if(isMaskSet(LEFT_US_MASK)) {
 		printf(" %s=%d\n", PARAMS_LEFT_US, m_nLeftUs);
 	}
 
-	if(IsMaskSet(RIGHT_US_MASK)) {
+	if(isMaskSet(RIGHT_US_MASK)) {
 		printf(" %s=%d\n", PARAMS_RIGHT_US, m_nRightUs);
 	}
 
@@ -126,7 +126,7 @@ void PCA9685DmxServoParams::Dump(void) {
 #endif
 }
 
-bool PCA9685DmxServoParams::IsMaskSet(uint16_t nMask) const {
+bool PCA9685DmxServoParams::isMaskSet(uint32_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 
@@ -167,4 +167,3 @@ void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
 		return;
 	}
 }
-

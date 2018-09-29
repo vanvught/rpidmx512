@@ -90,7 +90,7 @@
 #define	RDM_IDENTIFY_STATE_ON				(uint8_t)1
 
 #if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
+ #define PACKED __attribute__((packed))
 #endif
 
 struct TRdmMessage {
@@ -170,16 +170,21 @@ public:
 	Rdm(void);
 	~Rdm(void);
 
-	static void Send(struct TRdmMessage *);
-	static void SendRaw(const uint8_t *, uint16_t);
+	static void Send(uint8_t nPort, struct TRdmMessage *);
+	static void SendRaw(uint8_t nPort, const uint8_t *, uint16_t);
 
+	static void SendRawRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
 	static void SendDiscoveryRespondMessage(const uint8_t *, uint16_t);
 
-	static const uint8_t *Receive(void);
-	static const uint8_t *ReceiveTimeOut(uint32_t);
+	static const uint8_t *Receive(uint8_t nPort);
+	static const uint8_t *ReceiveTimeOut(uint8_t nPort, uint32_t);
 
 public:
+#if defined(H3)
+	static uint8_t m_TransactionNumber[4];
+#else
 	static uint8_t m_TransactionNumber;
+#endif
 
 private:
 };

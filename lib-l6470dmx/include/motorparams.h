@@ -45,7 +45,7 @@ public:
 	float GetInductance(void);
 
 private:
-	bool isMaskSet(uint16_t) const;
+	bool isMaskSet(uint32_t) const;
 	float calcIntersectSpeed(void) const;
 	uint32_t calcIntersectSpeedReg(float) const;
 

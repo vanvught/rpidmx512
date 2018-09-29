@@ -47,10 +47,10 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_LED_TYPE_MASK			1<<0
-#define SET_LED_COUNT_MASK			1<<1
-#define SET_DMX_START_ADDRESS_MASK	1<<2
-#define SET_SPI_SPEED_MASK			1<<3
+#define SET_LED_TYPE_MASK			(1 << 0)
+#define SET_LED_COUNT_MASK			(1 << 1)
+#define SET_DMX_START_ADDRESS_MASK	(1 << 2)
+#define SET_SPI_SPEED_MASK			(1 << 3)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";
@@ -123,7 +123,7 @@ void TLC59711DmxParams::Dump(void) {
 #endif
 }
 
-bool TLC59711DmxParams::isMaskSet(uint16_t nMask) const {
+bool TLC59711DmxParams::isMaskSet(uint32_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 

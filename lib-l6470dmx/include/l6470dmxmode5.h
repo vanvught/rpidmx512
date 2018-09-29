@@ -2,7 +2,7 @@
  * @file l6470dmxmode5.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,14 @@ public:
 	L6470DmxMode5(L6470 *, MotorParams *, ModeParams *);
 	~L6470DmxMode5(void);
 
+	void InitSwitch(void);
+	void InitPos(void);
+
 	void Start(void);
 	void Stop(void);
+
+	void HandleBusy(void);
+	bool BusyCheck(void);
 
 	void Data(const uint8_t *);
 
@@ -51,9 +57,11 @@ public:
 	}
 
 private:
+	ModeParams *m_pModeParams;
 	L6470	*m_pL6470;
 	float m_fSteps;
 	uint16_t m_nPreviousData;
+	bool m_bWasBusy;
 };
 
 #endif /* L6470DMXMODE5_H_ */

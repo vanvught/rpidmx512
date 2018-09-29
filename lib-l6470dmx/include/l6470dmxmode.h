@@ -2,7 +2,7 @@
  * @file l6470dmxmode.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,14 @@ class L6470DmxMode {
 public:
 	virtual ~L6470DmxMode(void);
 
+	virtual void InitSwitch(void);
+	virtual void InitPos(void);
+
 	virtual void Start(void)= 0;
 	virtual void Stop(void)= 0;
+
+	virtual void HandleBusy(void);
+	virtual bool BusyCheck(void);
 
 	virtual void Data(const uint8_t *)= 0;
 };

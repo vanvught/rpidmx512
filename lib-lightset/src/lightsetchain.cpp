@@ -54,15 +54,15 @@ LightSetChain::~LightSetChain(void) {
 	m_nSize = 0;
 }
 
-void LightSetChain::Start(void) {
+void LightSetChain::Start(uint8_t nPort) {
 	for (unsigned i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->Start();
+		m_pTable[i].pLightSet->Start(nPort);
 	}
 }
 
-void LightSetChain::Stop(void) {
+void LightSetChain::Stop(uint8_t nPort) {
 	for (unsigned i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->Stop();
+		m_pTable[i].pLightSet->Stop(nPort);
 	}
 }
 

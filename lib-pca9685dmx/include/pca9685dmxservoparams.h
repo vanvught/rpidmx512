@@ -37,12 +37,11 @@ public:
 	~PCA9685DmxServoParams(void);
 
 	bool Load(void);
-
 	void Set(PCA9685DmxServo *);
 	void Dump(void);
 
 protected:
-	bool IsMaskSet(uint16_t nMask) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

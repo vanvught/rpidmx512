@@ -66,7 +66,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	if (pResponse[0] == E120_SC_RDM) {
 		const struct TRdmMessage *p = (struct TRdmMessage *) pResponse;
 		nLength = p->message_length + RDM_MESSAGE_CHECKSUM_SIZE;
-		Rdm::SendRaw(pResponse, nLength);
+		Rdm::SendRawRespondMessage(0, pResponse, nLength);
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
 		Rdm::SendDiscoveryRespondMessage(pResponse, nLength);
@@ -83,7 +83,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 int RDMResponder::Run(void) {
 	int16_t nLength;
 
-	DMXReceiver::Run(nLength);
+	//DMXReceiver::Run(nLength); //TODO Test!
 
 	const uint8_t *pDmxDataIn = DMXReceiver::Run(nLength);
 
@@ -100,7 +100,7 @@ int RDMResponder::Run(void) {
 		}
 	}
 
-	const uint8_t *pRdmDataIn = (uint8_t *) Rdm::Receive();
+	const uint8_t *pRdmDataIn = (uint8_t *) Rdm::Receive(0);
 
 	if (pRdmDataIn == NULL) {
 		return RDM_RESPONDER_NO_DATA;

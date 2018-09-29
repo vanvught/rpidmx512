@@ -69,7 +69,7 @@ bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &
 	return true;
 }
 
-void LightSetDebug::Start(void) {
+void LightSetDebug::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -79,7 +79,7 @@ void LightSetDebug::Start(void) {
 	printf("LightSetDebug::Start(void)\n");
 }
 
-void LightSetDebug::Stop(void) {
+void LightSetDebug::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}

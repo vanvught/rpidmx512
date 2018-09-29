@@ -34,8 +34,8 @@
 #if defined(__linux__)
 #elif defined(__circle__)
 #else
-#include "bcm2835_gpio.h"
-#include "bcm2835_spi.h"
+ #include "bcm2835_gpio.h"
+ #include "bcm2835_spi.h"
 #endif
 
 #include "autodriver.h"

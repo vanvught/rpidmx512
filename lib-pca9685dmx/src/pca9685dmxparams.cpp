@@ -27,12 +27,8 @@
 #endif
 #include <assert.h>
 
-#if defined(__linux__)
- #define ALIGNED
-#elif defined(__circle__)
- #define ALIGNED
-#else
- #include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__((aligned(4)))
 #endif
 
 #include "pca9685dmxparams.h"
@@ -42,11 +38,11 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define DMX_START_ADDRESS_MASK	1<<0
-#define DMX_FOOTPRINT_MASK		1<<1
-#define DMX_SLOT_INFO_MASK		1<<2
-#define I2C_SLAVE_ADDRESS_MASK	1<<3
-#define BOARD_INSTANCES_MASK	1<<4
+#define DMX_START_ADDRESS_MASK	(1 << 0)
+#define DMX_FOOTPRINT_MASK		(1 << 1)
+#define DMX_SLOT_INFO_MASK		(1 << 2)
+#define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
+#define BOARD_INSTANCES_MASK	(1 << 4)
 
 static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 static const char PARAMS_DMX_FOOTPRINT[] ALIGNED = "dmx_footprint";
@@ -141,27 +137,27 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 }
 
 uint8_t PCA9685DmxParams::GetI2cAddress(bool &pIsSet) const {
-	pIsSet = IsMaskSet(I2C_SLAVE_ADDRESS_MASK);
+	pIsSet = isMaskSet(I2C_SLAVE_ADDRESS_MASK);
 	return m_nI2cAddress;
 }
 
 uint16_t PCA9685DmxParams::GetDmxStartAddress(bool &pIsSet) const {
-	pIsSet = IsMaskSet(DMX_START_ADDRESS_MASK);
+	pIsSet = isMaskSet(DMX_START_ADDRESS_MASK);
 	return m_nDmxStartAddress;
 }
 
 uint16_t PCA9685DmxParams::GetDmxFootprint(bool &pIsSet) const {
-	pIsSet = IsMaskSet(DMX_FOOTPRINT_MASK);
+	pIsSet = isMaskSet(DMX_FOOTPRINT_MASK);
 	return m_nDmxFootprint;
 }
 
 uint8_t PCA9685DmxParams::GetBoardInstances(bool &pIsSet) const {
-	pIsSet = IsMaskSet(BOARD_INSTANCES_MASK);
+	pIsSet = isMaskSet(BOARD_INSTANCES_MASK);
 	return m_nBoardInstances;
 }
 
 const char* PCA9685DmxParams::GetDmxSlotInfoRaw(bool &pIsSet) const {
-	pIsSet = IsMaskSet(DMX_SLOT_INFO_MASK);
+	pIsSet = isMaskSet(DMX_SLOT_INFO_MASK);
 	return m_pDmxSlotInfoRaw;
 }
 
@@ -171,29 +167,29 @@ void PCA9685DmxParams::Dump(void) {
 		return;
 	}
 
-	if(IsMaskSet(DMX_START_ADDRESS_MASK)) {
+	if(isMaskSet(DMX_START_ADDRESS_MASK)) {
 		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
 	}
 
-	if(IsMaskSet(DMX_FOOTPRINT_MASK)) {
+	if(isMaskSet(DMX_FOOTPRINT_MASK)) {
 		printf(" %s=%d\n", PARAMS_DMX_FOOTPRINT, m_nDmxFootprint);
 	}
 
-	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
+	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
 		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
-	if(IsMaskSet(BOARD_INSTANCES_MASK)) {
+	if(isMaskSet(BOARD_INSTANCES_MASK)) {
 		printf(" %s=%d\n", PARAMS_BOARD_INSTANCES, m_nBoardInstances);
 	}
 
-	if(IsMaskSet(DMX_SLOT_INFO_MASK)) {
+	if(isMaskSet(DMX_SLOT_INFO_MASK)) {
 		printf(" %s=%s\n", PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
 	}
 #endif
 }
 
-bool PCA9685DmxParams::IsMaskSet(uint16_t mask) const {
+bool PCA9685DmxParams::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 

@@ -51,7 +51,7 @@ private:
 private:
 	LightSet *m_pLightSet;
 	bool m_IsActive;
-	uint8_t m_Data[DMX_UNIVERSE_SIZE];
+	alignas(uint32_t) uint8_t m_Data[DMX_DATA_BUFFER_SIZE]; // With DMX Start Code
 	uint16_t m_nLength;
 };
 

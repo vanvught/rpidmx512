@@ -35,8 +35,8 @@ public:
 	LightSetDebug(void);
 	~LightSetDebug(void);
 
-	void Start(void);
-	void Stop(void);
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
 

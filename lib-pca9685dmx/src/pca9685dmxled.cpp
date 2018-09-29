@@ -76,7 +76,7 @@ PCA9685DmxLed::~PCA9685DmxLed(void) {
 	m_pSlotInfo = 0;
 }
 
-void PCA9685DmxLed::Start(void) {
+void PCA9685DmxLed::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -88,7 +88,7 @@ void PCA9685DmxLed::Start(void) {
 	}
 }
 
-void PCA9685DmxLed::Stop(void) {
+void PCA9685DmxLed::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}

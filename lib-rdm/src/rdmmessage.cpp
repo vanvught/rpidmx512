@@ -52,7 +52,7 @@ RDMMessage::RDMMessage(void)  {
 	m_pRdmCommand->message_length = RDM_MESSAGE_MINIMUM_SIZE;
 	memcpy(m_pRdmCommand->source_uid, UID_ALL, RDM_UID_SIZE);
 	memcpy(m_pRdmCommand->destination_uid, UID_ALL, RDM_UID_SIZE);
-	m_pRdmCommand->transaction_number = m_TransactionNumber;
+	//m_pRdmCommand->transaction_number = m_TransactionNumber;
 	m_pRdmCommand->slot16.port_id = 1;
 	m_pRdmCommand->message_count = 0;
 	m_pRdmCommand->sub_device[0] = 0;
@@ -94,7 +94,6 @@ void RDMMessage::SetPd(const uint8_t *pd, const uint8_t length) {
 
 }
 
-void RDMMessage::Send(void) {
-	Rdm::Send(m_pRdmCommand);
+void RDMMessage::Send(uint8_t nPort) {
+	Rdm::Send(nPort, m_pRdmCommand);
 }
-

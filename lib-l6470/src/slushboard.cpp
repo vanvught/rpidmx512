@@ -43,9 +43,10 @@
 #include "slushboard.h"
 
 extern "C" {
-#if defined(__linux__) || defined(__circle__)
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
+#if defined(__linux__)
+ extern void bcm2835_delayMicroseconds (uint64_t);
+ #define udelay bcm2835_delayMicroseconds
+#elif defined(__circle__)
 #else
 #endif
 }
@@ -272,3 +273,4 @@ void SlushBoard::IOWrite(TSlushIOPorts nPort, uint8_t data) {
 
 	Mcp23017WriteReg(MCP23017_OLATA + nPort, data);
 }
+

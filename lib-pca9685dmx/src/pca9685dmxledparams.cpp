@@ -39,10 +39,10 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_PWM_FREQUENCY_MASK	1<<0
-#define SET_OUTPUT_INVERT_MASK	1<<1
-#define SET_OUTPUT_DRIVER_MASK	1<<2
-#define I2C_SLAVE_ADDRESS_MASK	1<<3
+#define SET_PWM_FREQUENCY_MASK	(1 << 0)
+#define SET_OUTPUT_INVERT_MASK	(1 << 1)
+#define SET_OUTPUT_DRIVER_MASK	(1 << 2)
+#define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "pwmled.txt";
 static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
@@ -77,19 +77,19 @@ void PCA9685DmxLedParams::Set(PCA9685DmxLed* pDmxLed) {
 		return;
 	}
 
-	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
+	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
 		pDmxLed->SetI2cAddress(m_nI2cAddress);
 	}
 
-	if(IsMaskSet(SET_PWM_FREQUENCY_MASK)) {
+	if(isMaskSet(SET_PWM_FREQUENCY_MASK)) {
 		pDmxLed->SetPwmfrequency(m_nPwmFrequency);
 	}
 
-	if(IsMaskSet(SET_OUTPUT_INVERT_MASK)) {
+	if(isMaskSet(SET_OUTPUT_INVERT_MASK)) {
 		pDmxLed->SetInvert(m_bOutputInvert);
 	}
 
-	if(IsMaskSet(SET_OUTPUT_DRIVER_MASK)) {
+	if(isMaskSet(SET_OUTPUT_DRIVER_MASK)) {
 		pDmxLed->SetOutDriver(m_bOutputDriver);
 	}
 
@@ -123,19 +123,19 @@ void PCA9685DmxLedParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
-	if(IsMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
+	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
 		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
 	}
 
-	if(IsMaskSet(SET_PWM_FREQUENCY_MASK)) {
+	if(isMaskSet(SET_PWM_FREQUENCY_MASK)) {
 		printf(" %s=%d Hz\n", PARAMS_PWM_FREQUENCY, m_nPwmFrequency);
 	}
 
-	if(IsMaskSet(SET_OUTPUT_INVERT_MASK)) {
+	if(isMaskSet(SET_OUTPUT_INVERT_MASK)) {
 		printf(" %s=%d [Output logic state %sinverted]\n", PARAMS_OUTPUT_INVERT, (int) m_bOutputInvert, m_bOutputInvert ? "" : "not ");
 	}
 
-	if(IsMaskSet(SET_OUTPUT_DRIVER_MASK)) {
+	if(isMaskSet(SET_OUTPUT_DRIVER_MASK)) {
 		printf(" %s=%d [The 16 LEDn outputs are configured with %s structure]\n", PARAMS_OUTPUT_DRIVER, (int) m_bOutputDriver, m_bOutputDriver ? "a totem pole" : "an open-drain");
 	}
 
@@ -143,7 +143,7 @@ void PCA9685DmxLedParams::Dump(void) {
 #endif
 }
 
-bool PCA9685DmxLedParams::IsMaskSet(uint16_t nMask) const {
+bool PCA9685DmxLedParams::isMaskSet(uint32_t nMask) const {
 	return (m_bSetList & nMask) == nMask;
 }
 

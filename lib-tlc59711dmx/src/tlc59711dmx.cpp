@@ -63,7 +63,7 @@ TLC59711Dmx::~TLC59711Dmx(void) {
 	m_pTLC59711 = 0;
 }
 
-void TLC59711Dmx::Start(void) {
+void TLC59711Dmx::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -75,7 +75,7 @@ void TLC59711Dmx::Start(void) {
 	}
 }
 
-void TLC59711Dmx::Stop(void) {
+void TLC59711Dmx::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
