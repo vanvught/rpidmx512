@@ -34,6 +34,8 @@
 
 #include "./../lib-h3/include/net/net.h"
 
+#include "hardwarebaremetal.h"
+
 #include "util.h"
 
 #define HOST_NAME_PREFIX	"allwinner_"
@@ -48,8 +50,6 @@ int emac_start(void);
 NetworkH3emac::NetworkH3emac(void) : m_nIdx(-1) {
 	uint8_t i;
 
-	m_IsDhcpCapable = false;
-
 	for (i = 0; i < NETWORK_HOSTNAME_SIZE; i++) {
 		m_aHostname[i] = 0;
 	}
@@ -61,21 +61,20 @@ NetworkH3emac::~NetworkH3emac(void) {
 	End();
 }
 
-int NetworkH3emac::Init(void) {
+int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_ENTRY
 
-	NetworkParams params;
+	struct ip_info tIpInfo;
 
-	if (!params.Load()) {
-		DEBUG_EXIT
-		return -1;
+	NetworkParams params(pNetworkParamsStore);
+
+	if (!Hardware::Get()->IsButtonPressed()) {
+		if (params.Load()) {
+			params.Dump();
+		}
 	}
 
-	params.Dump();
-
 	hardware_get_mac_address((uint8_t *) m_aNetMacaddr);
-
-	struct ip_info tIpInfo;
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
@@ -147,9 +146,7 @@ void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {
 void NetworkH3emac::JoinGroup(uint32_t nIp) {
 	DEBUG_ENTRY
 
-	m_nIdx = igmp_join(nIp);
-
-	assert(m_nIdx != -1);
+	igmp_join(nIp);
 
 	DEBUG_EXIT
 }

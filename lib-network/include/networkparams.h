@@ -32,40 +32,64 @@
 
 #include "network.h"
 
+struct TNetworkParams {
+    uint32_t 	bSetList;
+    uint32_t	nLocalIp;
+    uint32_t	nNetmask;
+    uint32_t	nGatewayIp;
+    uint32_t	nNameServerIp;
+    bool		bIsDhcpUsed;
+    uint8_t		aHostName[NETWORK_HOSTNAME_SIZE];
+};
+
+class NetworkParamsStore {
+public:
+	virtual ~NetworkParamsStore(void);
+
+	virtual void Update(struct TNetworkParams *networkParams)=0;
+	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
+
+private:
+};
+
 class NetworkParams {
 public:
-	NetworkParams(void);
+	NetworkParams(NetworkParamsStore *pNetworkParamsStore = 0);
 	~NetworkParams(void);
 
 	bool Load(void);
 	void Dump(void);
 
 	inline bool isDhcpUsed(void) {
-		return m_bIsDhcpUsed;
+		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
 	inline uint32_t GetIpAddress(void) {
-		return m_nLocalIp;
+		return m_tNetworkParams.nLocalIp;
 	}
 
 	inline uint32_t GetNetMask(void) {
-		return m_nNetmask;
+		return m_tNetworkParams.nNetmask;
 	}
 
 	inline uint32_t GetDefaultGateway(void) {
-		return m_nGatewayIp;
+		return m_tNetworkParams.nGatewayIp;
 	}
 
 	inline uint32_t GetNameServer(void) {
-		return m_nNameServerIp;
+		return m_tNetworkParams.nNameServerIp;
 	}
 
 	inline const uint8_t *GetHostName(void) {
-		return m_aHostName;
+		return m_tNetworkParams.aHostName;
 	}
 
+	static uint32_t GetMaskDhcpUsed(void);
+	static uint32_t GetMaskIpAddress(void);
+	static uint32_t GetMaskNetMask(void);
+
 private:
-	bool isMaskSet(uint16_t) const;
+	bool isMaskSet(uint32_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -74,13 +98,8 @@ private:
     void callbackFunction(const char *s);
 
 private:
-    uint32_t 	m_bSetList;
-    bool		m_bIsDhcpUsed;
-    uint32_t	m_nLocalIp;
-    uint32_t	m_nNetmask;
-    uint32_t	m_nGatewayIp;
-    uint32_t	m_nNameServerIp;
-    uint8_t		m_aHostName[NETWORK_HOSTNAME_SIZE];
+    NetworkParamsStore 		*m_pNetworkParamsStore;
+    struct TNetworkParams	m_tNetworkParams;
 };
 
 #endif /* NETWORKPARAMS_H_ */

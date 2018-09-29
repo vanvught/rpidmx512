@@ -1,5 +1,5 @@
 /**
- * networkh3emac.h
+ * @file networkparamsstore.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,39 +23,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKH3EMAC_H_
-#define NETWORKH3EMAC_H_
-
-#include <stdint.h>
-
-#include "network.h"
-
 #include "networkparams.h"
 
-class NetworkH3emac: public Network {
-public:
-	NetworkH3emac(void);
-	~NetworkH3emac(void);
-
-	int Init(NetworkParamsStore *pNetworkParamsStore = 0);
-
-	void Begin(uint16_t nPort);
-	void End(void);
-
-	const char* GetHostName(void);
-	void MacAddressCopyTo(uint8_t *pMacAddress);
-
-	void JoinGroup(uint32_t ip);
-	uint16_t RecvFrom(uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
-
-	void SetIp(uint32_t nIp);
-
-	void Run(void);
-
-private:
-	char m_aHostname[NETWORK_HOSTNAME_SIZE];
-	int	m_nIdx;
-};
-
-#endif /* NETWORKH3EMAC_H_ */
+NetworkParamsStore::~NetworkParamsStore(void) {
+}
