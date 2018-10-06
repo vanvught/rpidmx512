@@ -6,36 +6,41 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-PLATFORM ?= ORANGE_PI
+PLATFORM?=ORANGE_PI
+CONSOLE?=
 
-SRCDIR = src src/h3 $(EXTRA_SRCDIR)
+SRCDIR=src src/h3 $(EXTRA_SRCDIR)
 
-INCLUDES := -I./include -I../include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
-INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
+INCLUDES:= -I./include -I../include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
-DEFINES := $(addprefix -D,$(DEFINES))
+DEFINES:=$(addprefix -D,$(DEFINES)) -D$(PLATFORM)
 
-COPS = -DBARE_METAL -DH3 -DHAVE_SPI -DHAVE_I2C -D$(PLATFORM) $(DEFINES) $(INCLUDES)
-COPS+= -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 -mhard-float -mfloat-abi=hard
-COPS+= -Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables #-fstack-usage
+ifneq ($(CONSOLE),)
+	DEFINES+=-D$(CONSOLE)
+endif
 
-CURR_DIR := $(notdir $(patsubst %/,%,$(CURDIR)))
-LIB_NAME := $(patsubst lib-%,%,$(CURR_DIR))
+COPS=-DBARE_METAL -DH3 -DHAVE_SPI -DHAVE_I2C $(DEFINES) $(INCLUDES)
+COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 -mhard-float -mfloat-abi=hard
+COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables #-fstack-usage
 
-BUILD = build_h3/
-BUILD_DIRS := $(addprefix build_h3/,$(SRCDIR))
+CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
+LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
 
-C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-CPP_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
-ASM_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
+BUILD=build_h3/
+BUILD_DIRS:=$(addprefix build_h3/,$(SRCDIR))
 
-BUILD_DIRS := $(addprefix build_h3/,$(SRCDIR))
+C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+CPP_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
 
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
+BUILD_DIRS:= $(addprefix build_h3/,$(SRCDIR))
 
-TARGET = lib_h3/lib$(LIB_NAME).a 
+OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
 
-LIST = lib.list
+TARGET=lib_h3/lib$(LIB_NAME).a 
+
+LIST=lib.list
 
 define compile-objects
 $(BUILD)$1/%.o: $1/%.c

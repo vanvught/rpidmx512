@@ -99,10 +99,10 @@ void hardware_led_set(int state) {
 
 void hardware_init(void) {
 	h3_watchdog_disable();
-	console_init();
 	sys_time_init();
 	h3_timer_init();
 	h3_hs_timer_start();
+	console_init();
 	gic_init();
 	h3_thermal_init();
 	emac_init();

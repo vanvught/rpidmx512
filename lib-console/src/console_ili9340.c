@@ -45,8 +45,8 @@
  #define D_C  	RPI_V2_GPIO_P1_16
  #define RES  	RPI_V2_GPIO_P1_18
 #else
- #define D_C	GPIO_EXT_16
- #define RES	GPIO_EXT_18
+ #define D_C	GPIO_EXT_33
+ #define RES	GPIO_EXT_35
 #endif
 
 #include "./../../lib-bob/src/font_cp437.h" //FIXME font_cp437
@@ -90,7 +90,7 @@ inline static void write_data_word(uint16_t w) {
 	bcm2835_spi_write(w);
 }
 
-static void reset(void) {
+void _reset(void) {
 	bcm2835_gpio_fsel(D_C, BCM2835_GPIO_FSEL_OUTP); // D/C
 	bcm2835_gpio_fsel(RES, BCM2835_GPIO_FSEL_OUTP); // Reset
 	bcm2835_gpio_set(D_C);
@@ -101,7 +101,7 @@ static void reset(void) {
 	bcm2835_delay(100);
 }
 
-static void setup(void) {
+static void _setup(void) {
 	write_command(0xC0);    //Power control
 	write_data_byte(0x23);   //VRH[5:0]
 
@@ -172,9 +172,7 @@ static void setup(void) {
 	write_data_byte(0x0F);
 
 	write_command(0x11);    //Exit Sleep
-
 	bcm2835_delay(120);
-
 	write_command(0x29);
 }
 
@@ -192,8 +190,8 @@ int console_init(void) {
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
 
-	reset();
-	setup();
+	_reset();
+	_setup();
 
 	uint32_t *p = (uint32_t *)buffer;
 

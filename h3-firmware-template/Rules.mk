@@ -7,6 +7,8 @@ LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
 PLATFORM ?= ORANGE_PI
+CONSOLE?=
+
 SUFFIX=orangepi_zero
 
 ifeq ($(findstring NANO_PI,$(PLATFORM)),NANO_PI)
@@ -38,44 +40,48 @@ BUILD=build_h3/
 # Input
 SOURCE=./
 FIRMWARE_DIR=./../h3-firmware-template/
-LINKER = $(FIRMWARE_DIR)memmap
+LINKER=$(FIRMWARE_DIR)memmap
 
-LIBS +=properties c++ hal bob i2c utils debug console ff12c h3 arm 
+LIBS+=properties c++ hal bob i2c utils console ff12c h3 debug arm
 
-DEFINES := $(addprefix -D,$(DEFINES))
+DEFINES:=$(addprefix -D,$(DEFINES))
+
+ifneq ($(CONSOLE),)
+	DEFINES+=-D$(CONSOLE)
+endif
 
 # The variable for the firmware include directories
-INCDIRS = ../include $(wildcard ./include) $(wildcard ./*/include)
-INCDIRS := $(addprefix -I,$(INCDIRS))
+INCDIRS=../include $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
-LIBINCDIRS = $(addprefix -I../lib-,$(LIBS))
-LIBINCDIRS := $(addsuffix /include, $(LIBINCDIRS))
+LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
+LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
 
 # The variables for the ld -L flag
-LIB6  = $(addprefix -L../lib-,$(LIBS))
-LIB6 := $(addsuffix /lib_h3, $(LIB6))
+LIBH3=$(addprefix -L../lib-,$(LIBS))
+LIBH3:=$(addsuffix /lib_h3, $(LIBH3))
 
 # The variable for the ld -l flag 
-LDLIBS := $(addprefix -l,$(LIBS))
+LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
-LIBDEP = $(addprefix ../lib-,$(LIBS))
-LIBSDEP = $(addsuffix /lib_h3/lib, $(LIBDEP))
-LIBSDEP := $(join $(LIBSDEP), $(LIBS))
-LIBSDEP := $(addsuffix .a, $(LIBSDEP))
+LIBDEP=$(addprefix ../lib-,$(LIBS))
+LIBSDEP=$(addsuffix /lib_h3/lib, $(LIBDEP))
+LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
+LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
-COPS = -DBARE_METAL -DH3 -DHAVE_I2C -DHAVE_SPI -D$(PLATFORM) $(DEFINES)
-COPS+= $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+= -Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
-COPS+= -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
+COPS=-DBARE_METAL -DH3 -DHAVE_I2C -DHAVE_SPI -D$(PLATFORM) $(DEFINES)
+COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
+COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 
-BUILD_DIRS := $(addprefix $(BUILD),$(SRCDIR))
+BUILD_DIRS:=$(addprefix $(BUILD),$(SRCDIR))
 
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
+OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
 
 define compile-objects
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
@@ -95,7 +101,7 @@ buildlibs:
 	cd .. && ./makeall-lib.sh && cd $(THISDIR)
 
 builddirs:
-	@mkdir -p $(BUILD_DIRS)
+	mkdir -p $(BUILD_DIRS)
 
 clean:
 	rm -rf $(BUILD)
@@ -110,7 +116,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS)
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 

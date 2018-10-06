@@ -89,25 +89,23 @@ void DMXReceiver::Stop(void) {
 bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
-	const uint32_t *src = (uint32_t *) pData;
-	uint32_t *dst = (uint32_t *) m_Data;
+	const uint8_t *src = (uint8_t *) pData;
+	uint8_t *dst = (uint8_t *) m_Data;
 
 	if (nLength != m_nLength) {
 		m_nLength = nLength;
 
-		for (unsigned i = 0 ; i < DMX_DATA_BUFFER_SIZE / 4; i++) {
+		for (unsigned i = 0; i < DMX_DATA_BUFFER_SIZE; i++) {
 			*dst++ = *src++;
 		}
 		return true;
 	}
 
-	for (unsigned i = 0; i < DMX_DATA_BUFFER_SIZE / 4; i++) {
+	for (unsigned i = 0; i < nLength; i++) {
 		if (*dst != *src) {
-			*dst = *src;
 			isChanged = true;
 		}
-		dst++;
-		src++;
+		*dst++ = *src++;
 	}
 
 	return isChanged;
