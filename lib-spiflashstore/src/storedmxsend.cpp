@@ -1,5 +1,5 @@
 /**
- * @file spiflashstore.h
+ * @file storedmxsend.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,61 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIB_SPIFLASHSTORE_H_
-#define LIB_SPIFLASHSTORE_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-#define SPI_FLASH_STORE_DATA	4096
+#include "storedmxsend.h"
+#include "spiflashstore.h"
 
-enum TStore {
-	STORE_NETWORK,
-	STORE_DMXSEND,
-	STORE_SPI,
-	STORE_ARTNET,
-	STORE_LAST
-};
+#include "dmxparams.h"
 
-enum TState {
-	STATE_IDLE,
-	STATE_CHANGED,
-	STATE_ERASED
-};
+#include "debug.h"
 
-class SpiFlashStore {
-public:
-	SpiFlashStore(void);
-	~SpiFlashStore(void);
+StoreDmxSend::StoreDmxSend(void) {
+	DEBUG_ENTRY
 
-	bool HaveFlashChip(void) const;
+	assert(SpiFlashStore::Get() != 0);
 
-	void Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t bSetList = 0);
+	DEBUG_EXIT
+}
 
-	void Update(enum TStore tStore, void *pData, uint32_t nDataLength) {
-		Update(tStore, 0, pData, nDataLength);
-	}
-	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength);
+StoreDmxSend::~StoreDmxSend(void) {
+	DEBUG_ENTRY
 
-	bool Flash(void);
+	DEBUG_EXIT
+}
 
-	void Dump(void);
+void StoreDmxSend::Update(const struct TDMXParams *DmxParams) {
+	DEBUG_ENTRY
 
-private:
-	bool Init(void);
-	uint32_t GetStoreOffset(enum TStore tStore);
+	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)DmxParams, sizeof(struct TDMXParams));
 
-public:
-	inline static SpiFlashStore* Get(void) { return s_pThis; }
+	DEBUG_EXIT
+}
 
-private:
-	static SpiFlashStore *s_pThis;
+void StoreDmxSend::Copy(struct TDMXParams *DmxParams) {
+	DEBUG_ENTRY
 
-private:
-	bool m_bHaveFlashChip;
-	uint32_t m_nStartAddress;
-	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_DATA];
-	TState m_tState;
-};
+	SpiFlashStore::Get()->Copy(STORE_NETWORK, (void *)DmxParams, sizeof(struct TDMXParams));
 
-
-#endif /* LIB_SPIFLASHSTORE_H_ */
+	DEBUG_EXIT
+}

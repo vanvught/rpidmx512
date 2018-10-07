@@ -1,5 +1,5 @@
 /**
- * @file storenetwork.h
+ * @file storews28xxdmx.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,23 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIB_STORENETWORK_H_
-#define LIB_STORENETWORK_H_
+#ifndef STOREWS28XXDMX_H_
+#define STOREWS28XXDMX_H_
 
-#include "networkparams.h"
+#include "ws28xxstripeparams.h"
 
-class StoreNetwork: public NetworkParamsStore {
+class StoreWS28xxDmx: public WS28XXStripeParamsStore {
 public:
-	StoreNetwork(void);
-	~StoreNetwork(void);
+	StoreWS28xxDmx(void);
+	~StoreWS28xxDmx(void);
 
-	void Update(struct TNetworkParams *networkParams);
-	void Copy(struct TNetworkParams *pNetworkParams);
-
-	void UpdateIp(uint32_t nIp);
-	void UpdateNetMask(uint32_t nNetMask);
+	void Update(const struct TWS28XXStripeParams *pWS28XXStripeParams);
+	void Copy(struct TWS28XXStripeParams *pWS28XXStripeParams);
 
 private:
+
 };
 
-#endif /* LIB_STORENETWORK_H_ */
+#endif /* STOREWS28XXDMX_H_ */

@@ -1,5 +1,5 @@
 /**
- * @file spi_flash.c
+ * @file storeartnet.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,29 +22,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SPI_FLASH_H_
-#define SPI_FLASH_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#ifndef STOREARTNET_H_
+#define STOREARTNET_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "artnetparams.h"
 
-extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
+class StoreArtNet: public ArtNetParamsStore {
+	StoreArtNet(void);
+	~StoreArtNet(void);
 
-extern const char *spi_flash_get_name(void);
-extern uint32_t spi_flash_get_size(void);
-extern uint32_t spi_flash_get_sector_size(void);
+	void Update(const struct TArtNetParams *pArtNetParams);
+	void Copy(struct TArtNetParams *pArtNetParams);
 
-extern int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data);
-extern int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf);
-extern int spi_flash_cmd_erase(uint32_t offset, size_t len);
-extern int spi_flash_cmd_write_status(uint8_t sr);
+private:
+};
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* SPI_FLASH_H_ */
+#endif /* STOREARTNET_H_ */

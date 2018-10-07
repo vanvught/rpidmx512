@@ -1,5 +1,5 @@
 /**
- * @file spi_flash.c
+ * @file storeartnet.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,29 +22,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SPI_FLASH_H_
-#define SPI_FLASH_H_
 
 #include <stdint.h>
-#include <stddef.h>
+#include <assert.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "storeartnet.h"
+#include "spiflashstore.h"
 
-extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
+#include "artnetparams.h"
 
-extern const char *spi_flash_get_name(void);
-extern uint32_t spi_flash_get_size(void);
-extern uint32_t spi_flash_get_sector_size(void);
+#include "debug.h"
 
-extern int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data);
-extern int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf);
-extern int spi_flash_cmd_erase(uint32_t offset, size_t len);
-extern int spi_flash_cmd_write_status(uint8_t sr);
+StoreArtNet::StoreArtNet(void) {
+	DEBUG_ENTRY
 
-#ifdef __cplusplus
+	assert(SpiFlashStore::Get() != 0);
+
+	DEBUG_EXIT
 }
-#endif
 
-#endif /* SPI_FLASH_H_ */
+StoreArtNet::~StoreArtNet(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::Update(const struct TArtNetParams* pArtNetParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, (void *)pArtNetParams, sizeof(struct TArtNetParams));
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::Copy(struct TArtNetParams* pArtNetParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_ARTNET, (void *)pArtNetParams, sizeof(struct TArtNetParams));
+
+	DEBUG_EXIT
+}

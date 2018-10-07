@@ -1,5 +1,5 @@
 /**
- * @file spi_flash.c
+ * @file storenetwork.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,29 +22,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SPI_FLASH_H_
-#define SPI_FLASH_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#ifndef STORENETWORK_H_
+#define STORENETWORK_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "networkparams.h"
 
-extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
+class StoreNetwork: public NetworkParamsStore {
+public:
+	StoreNetwork(void);
+	~StoreNetwork(void);
 
-extern const char *spi_flash_get_name(void);
-extern uint32_t spi_flash_get_size(void);
-extern uint32_t spi_flash_get_sector_size(void);
+	void Update(const struct TNetworkParams *pNetworkParams);
+	void Copy(struct TNetworkParams *pNetworkParams);
 
-extern int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data);
-extern int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf);
-extern int spi_flash_cmd_erase(uint32_t offset, size_t len);
-extern int spi_flash_cmd_write_status(uint8_t sr);
+	void UpdateIp(uint32_t nIp);
+	void UpdateNetMask(uint32_t nNetMask);
 
-#ifdef __cplusplus
-}
-#endif
+private:
 
-#endif /* SPI_FLASH_H_ */
+};
+
+#endif /* STORENETWORK_H_ */

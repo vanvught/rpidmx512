@@ -1,5 +1,5 @@
 /**
- * @file storenetwork.cpp
+ * @file storews28xxdmx.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -26,12 +26,14 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "storenetwork.h"
+#include "storews28xxdmx.h"
 #include "spiflashstore.h"
+
+#include "ws28xxstripeparams.h"
 
 #include "debug.h"
 
-StoreNetwork::StoreNetwork(void) {
+StoreWS28xxDmx::StoreWS28xxDmx(void) {
 	DEBUG_ENTRY
 
 	assert(SpiFlashStore::Get() != 0);
@@ -39,52 +41,24 @@ StoreNetwork::StoreNetwork(void) {
 	DEBUG_EXIT
 }
 
-StoreNetwork::~StoreNetwork(void) {
+StoreWS28xxDmx::~StoreWS28xxDmx(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void StoreNetwork::Update(struct TNetworkParams *pNetworkParams) {
+void StoreWS28xxDmx::Update(const struct TWS28XXStripeParams *pWS28XXStripeParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, (void *)pNetworkParams, sizeof(struct TNetworkParams));
+	SpiFlashStore::Get()->Update(STORE_SPI, (void *)pWS28XXStripeParams, sizeof(struct TWS28XXStripeParams));
 
 	DEBUG_EXIT
 }
 
-void StoreNetwork::Copy(struct TNetworkParams* pNetworkParams) {
+void StoreWS28xxDmx::Copy(struct TWS28XXStripeParams *pWS28XXStripeParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_NETWORK, (void *)pNetworkParams, sizeof(struct TNetworkParams));
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::UpdateIp(uint32_t nIp) {
-	DEBUG_ENTRY
-
-	struct TNetworkParams p;
-
-	const uint32_t nOffset = (uint8_t *)&p.nLocalIp - (uint8_t *)&p;
-
-	DEBUG_PRINTF("nOffset=%d", nOffset);
-
-	SpiFlashStore::Get()->Update(STORE_NETWORK, nOffset, (void *)&nIp, sizeof(uint32_t), NetworkParams::GetMaskIpAddress());
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::UpdateNetMask(uint32_t nNetMask) {
-	DEBUG_ENTRY
-
-	struct TNetworkParams p;
-
-	const uint32_t nOffset = (uint8_t *)&p.nNetmask - (uint8_t *)&p;
-
-	DEBUG_PRINTF("nOffset=%d", nOffset);
-
-	SpiFlashStore::Get()->Update(STORE_NETWORK, nOffset, (void *)&nNetMask, sizeof(uint32_t), NetworkParams::GetMaskNetMask());
+	SpiFlashStore::Get()->Copy(STORE_SPI, (void *)pWS28XXStripeParams, sizeof(struct TWS28XXStripeParams));
 
 	DEBUG_EXIT
 }

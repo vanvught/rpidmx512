@@ -35,10 +35,8 @@
 
 #include "debug.h"
 
-//#define SPI_FLASH_STORE_PAGE_SIZE	128
-
 static uint8_t s_aSignature[] = {'A', 'v', 'V', 0x11};
-static uint32_t s_aStorSize[STORE_LAST] = {96, 96, 48, 128};
+static uint32_t s_aStorSize[STORE_LAST] = {96, 96, 32, 128};
 static uint32_t s_aStorUsedSize[STORE_LAST] = {0, };
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -68,9 +66,9 @@ SpiFlashStore::~SpiFlashStore(void) {
 
 bool SpiFlashStore::Init(void) {
 	const uint32_t nEraseSize = spi_flash_get_sector_size();
-	assert(SPI_FLASH_STORE_DATA == nEraseSize);
+	assert(SPI_FLASH_STORE_SIZE == nEraseSize);
 
-	if (SPI_FLASH_STORE_DATA != nEraseSize) {
+	if (SPI_FLASH_STORE_SIZE != nEraseSize) {
 		return false;
 	}
 
@@ -81,16 +79,16 @@ bool SpiFlashStore::Init(void) {
 		return false;
 	}
 
-	spi_flash_cmd_read_fast(m_nStartAddress, (size_t) SPI_FLASH_STORE_DATA, (void *) &m_aSpiFlashData);
+	spi_flash_cmd_read_fast(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE, (void *) &m_aSpiFlashData);
 
 	uint32_t i = sizeof(s_aSignature);
 	bool bSignatureOK = true;
 
 	while (i > 0) {
-		if (s_aSignature[sizeof(s_aSignature) - i] != m_aSpiFlashData[SPI_FLASH_STORE_DATA - i]) {
+		if (s_aSignature[sizeof(s_aSignature) - i] != m_aSpiFlashData[SPI_FLASH_STORE_SIZE - i]) {
 			bSignatureOK = false;
 		}
-		m_aSpiFlashData[SPI_FLASH_STORE_DATA - i] = s_aSignature[sizeof(s_aSignature) - i];
+		m_aSpiFlashData[SPI_FLASH_STORE_SIZE - i] = s_aSignature[sizeof(s_aSignature) - i];
 		i--;
 	}
 
@@ -211,6 +209,10 @@ void SpiFlashStore::Copy(enum TStore tStore, void* pData, uint32_t nDataLength) 
 
 void SpiFlashStore::Dump(void) {
 #ifndef NDEBUG
+	if (__builtin_expect((!m_bHaveFlashChip),0)) {
+		return;
+	}
+
 	for (uint32_t j = 0; j < STORE_LAST; j++) {
 		printf("Store %d:%d\n", j, s_aStorUsedSize[j]);
 
@@ -225,22 +227,22 @@ void SpiFlashStore::Dump(void) {
 }
 
 bool SpiFlashStore::Flash(void) {
-	assert(m_nStartAddress != 0);
-
 	if (__builtin_expect((m_tState == STATE_IDLE),1)) {
 		return false;
 	}
 
 	DEBUG_PRINTF("m_tState=%d", m_tState);
 
+	assert(m_nStartAddress != 0);
+
 	switch (m_tState) {
 		case STATE_CHANGED:
-			spi_flash_cmd_erase(m_nStartAddress, (size_t) SPI_FLASH_STORE_DATA);
+			spi_flash_cmd_erase(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE);
 			m_tState = STATE_ERASED;
 			return true;
 			break;
 		case STATE_ERASED:
-			spi_flash_cmd_write_multi(m_nStartAddress, (size_t) SPI_FLASH_STORE_DATA, (const void *)&m_aSpiFlashData);
+			spi_flash_cmd_write_multi(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE, (const void *)&m_aSpiFlashData);
 			m_tState = STATE_IDLE;
 			break;
 		default:

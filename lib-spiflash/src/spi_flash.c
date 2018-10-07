@@ -94,6 +94,10 @@ uint32_t spi_flash_get_sector_size(void) {
 	return s_flash.sector_size;
 }
 
+const char *spi_flash_get_name(void) {
+	return s_flash.name;
+}
+
 static void spi_flash_addr(uint32_t addr, uint8_t *cmd) {
 	/* cmd[0] is actual command */
 	cmd[1] = addr >> 16;
@@ -371,7 +375,7 @@ int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode)
 	}
 
 	if (i == ARRAY_SIZE(flashes)) {
-		DEBUG_PRINTF("Unsupported manufacturer %02x\n", *idp);
+		DEBUG_PRINTF("Unsupported manufacturer %02x", *idp);
 		return -1;
 	}
 

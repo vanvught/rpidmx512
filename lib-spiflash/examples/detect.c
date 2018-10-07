@@ -1,5 +1,5 @@
 /**
- * @file spi_flash.c
+ * @file detect.c
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,29 +22,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef SPI_FLASH_H_
-#define SPI_FLASH_H_
 
+#include <stdio.h>
 #include <stdint.h>
-#include <stddef.h>
+#include <ctype.h>
 
-#ifdef __cplusplus
-extern "C" {
+#include "spi_flash.h"
+
+int main(int argc, char **argv) {
+	int ret;
+	unsigned int cs = 0, max_hz = 0, spi_mode = 0; /* Dummy for now */
+
+	ret = spi_flash_probe(cs, max_hz, spi_mode);
+
+	printf("spi_flash_probe=%d\n", ret);
+#if 0
+	int i;
+	uint8_t buffer[16];
+
+	ret = spi_flash_cmd_erase(0, 4096);
+
+	printf("spi_flash_cmd_erase=%d\n", ret);
+
+	ret = spi_flash_cmd_read_fast(0, sizeof(buffer), buffer);
+
+	printf("spi_flash_cmd_read_fast=%d\n", ret);
+
+	for (i = 0; i < sizeof(buffer); i++) {
+		printf("%.2x[%c]", buffer[i], isprint(buffer[i]) ? buffer[i] : '.');
+	}
+
+	printf("\n");
+
+	ret = spi_flash_cmd_write_multi(0, 6, (const void *)"Arjan");
+
+	printf("spi_flash_cmd_write_multi=%d\n", ret);
+
+	ret = spi_flash_cmd_read_fast(0, sizeof(buffer), buffer);
+
+	printf("spi_flash_cmd_read_fast=%d\n", ret);
+
+	for (i = 0; i < sizeof(buffer); i++) {
+		printf("%.2x[%c]", buffer[i], isprint(buffer[i]) ? buffer[i] : '.');
+	}
 #endif
+	printf("\n\nDone!\n");
 
-extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
-
-extern const char *spi_flash_get_name(void);
-extern uint32_t spi_flash_get_size(void);
-extern uint32_t spi_flash_get_sector_size(void);
-
-extern int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data);
-extern int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf);
-extern int spi_flash_cmd_erase(uint32_t offset, size_t len);
-extern int spi_flash_cmd_write_status(uint8_t sr);
-
-#ifdef __cplusplus
+	return 0;
 }
-#endif
-
-#endif /* SPI_FLASH_H_ */
