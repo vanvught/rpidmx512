@@ -34,7 +34,10 @@ lib*.a
 .tracecompass
 
 # H2+/H3 binaries 
+uImage
 *.uImage
+orangepi*.*
+nanopi_neo.*
 
 # examples binaries
 # lib-i2c
