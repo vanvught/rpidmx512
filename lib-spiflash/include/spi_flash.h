@@ -34,6 +34,7 @@ extern "C" {
 
 extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
 
+extern const char *spi_flash_get_name(void);
 extern uint32_t spi_flash_get_size(void);
 extern uint32_t spi_flash_get_sector_size(void);
 

@@ -1,5 +1,5 @@
 /**
- * @file storenetwork.h
+ * @file detect.c
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,23 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIB_STORENETWORK_H_
-#define LIB_STORENETWORK_H_
+#include <stdio.h>
+#include <stdint.h>
+#include <ctype.h>
 
-#include "networkparams.h"
+#include "spi_flash.h"
 
-class StoreNetwork: public NetworkParamsStore {
-public:
-	StoreNetwork(void);
-	~StoreNetwork(void);
+int main(int argc, char **argv) {
+	int ret;
+	unsigned int cs = 0, max_hz = 0, spi_mode = 0; /* Dummy for now */
 
-	void Update(struct TNetworkParams *networkParams);
-	void Copy(struct TNetworkParams *pNetworkParams);
+	ret = spi_flash_probe(cs, max_hz, spi_mode);
 
-	void UpdateIp(uint32_t nIp);
-	void UpdateNetMask(uint32_t nNetMask);
+	printf("spi_flash_probe=%d\n", ret);
+#if 0
+	int i;
+	uint8_t buffer[16];
 
-private:
-};
+	ret = spi_flash_cmd_erase(0, 4096);
 
-#endif /* LIB_STORENETWORK_H_ */
+	printf("spi_flash_cmd_erase=%d\n", ret);
+
+	ret = spi_flash_cmd_read_fast(0, sizeof(buffer), buffer);
+
+	printf("spi_flash_cmd_read_fast=%d\n", ret);
+
+	for (i = 0; i < sizeof(buffer); i++) {
+		printf("%.2x[%c]", buffer[i], isprint(buffer[i]) ? buffer[i] : '.');
+	}
+
+	printf("\n");
+
+	ret = spi_flash_cmd_write_multi(0, 6, (const void *)"Arjan");
+
+	printf("spi_flash_cmd_write_multi=%d\n", ret);
+
+	ret = spi_flash_cmd_read_fast(0, sizeof(buffer), buffer);
+
+	printf("spi_flash_cmd_read_fast=%d\n", ret);
+
+	for (i = 0; i < sizeof(buffer); i++) {
+		printf("%.2x[%c]", buffer[i], isprint(buffer[i]) ? buffer[i] : '.');
+	}
+#endif
+	printf("\n\nDone!\n");
+
+	return 0;
+}
