@@ -42,6 +42,10 @@
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
 
+#if !defined(NANO_PI)
+ #include "spiflashstore.h"
+#endif
+
 #include "software_version.h"
 
 extern "C" {
@@ -52,7 +56,12 @@ void notmain(void) {
 	LedBlinkBaremetal lb;
 	uint8_t nHwTextLength;
 
+#if !defined (NANO_PI)
+	SpiFlashStore spiFlashStore;
+	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+#else
 	ArtNetParams artnetparams;
+#endif
 
 	if (!hw.IsButtonPressed()) {
 		if (artnetparams.Load()) {
@@ -90,14 +99,48 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetparams.GetUniverse());
-	node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetparams.GetUniverse());
+	artnetparams.Set(&node);
+
+	uint8_t nAddress;
+	bool bIsSetIndividual = false;
+	bool bIsSet;
+
+	nAddress = artnetparams.GetUniverse(0, bIsSet);
+	if (bIsSet) {
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nAddress);
+		bIsSetIndividual = true;
+	}
+
+	nAddress = artnetparams.GetUniverse(1, bIsSet);
+	if (bIsSet) {
+		node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nAddress);
+		bIsSetIndividual = true;
+	}
 #if defined (ORANGE_PI_ONE)
-	node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetparams.GetUniverse());
- #ifndef DO_NOT_USE_UART0
-	node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetparams.GetUniverse());
- #endif
+	nAddress = artnetparams.GetUniverse(2, bIsSet);
+	if (bIsSet) {
+		node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nAddress);
+		bIsSetIndividual = true;
+	}
+#ifndef DO_NOT_USE_UART0
+	nAddress = artnetparams.GetUniverse(3, bIsSet);
+	if (bIsSet) {
+		node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nAddress);
+		bIsSetIndividual = true;
+	}
 #endif
+#endif
+
+	if (!bIsSetIndividual) { // Backwards compatibility
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetparams.GetUniverse());
+#if defined (ORANGE_PI_ONE)
+		node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetparams.GetUniverse());
+#ifndef DO_NOT_USE_UART0
+		node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetparams.GetUniverse());
+#endif
+#endif
+	}
 
 	DMXSendMulti dmx;
 	DMXParams dmxparams;
@@ -109,21 +152,25 @@ void notmain(void) {
 		}
 	}
 
-	dmx.Print();
-
-	IpProg ipprog;
-	ArtNetRdmController discovery;
-
-	artnetparams.Set(&node);
-
-	node.SetIpProgHandler(&ipprog);
 	node.SetOutput(&dmx);
 	node.SetDirectUpdate(false);
+
+	IpProg ipprog;
+
+	node.SetIpProgHandler(&ipprog);
+
+#if !defined (NANO_PI)
+	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+
+	spiFlashStore.Dump();
+#endif
+
 	node.Print();
+	dmx.Print();
 
 	if (oled_connected) {
 		uint8_t nAddress;
-		node.GetUniverseSwitch((uint8_t) 0, nAddress);
+		node.GetUniverseSwitch(0, nAddress);
 
 		(void) display.Printf(1, "Eth Art-Net 3 %s", artnetparams.IsRdm() ? "RDM" : "DMX");
 		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
@@ -133,6 +180,8 @@ void notmain(void) {
 		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch() ,node.GetSubnetSwitch(), nAddress);
 		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
+
+	ArtNetRdmController discovery;
 
 	if(artnetparams.IsRdm()) {
 		if (artnetparams.IsRdmDiscovery()) {
@@ -163,6 +212,9 @@ void notmain(void) {
 		nw.Run();
 		(void) node.HandlePacket();
 		lb.Run();
+#if !defined (NANO_PI)
+		spiFlashStore.Flash();
+#endif
 	}
 }
 

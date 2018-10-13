@@ -67,8 +67,8 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
 		Network::Get()->SetIp(ip_union.u32);
 #ifndef NDEBUG
-			printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
-			printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
+		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
+		printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
 #endif
 		// Set IPAddress in IpProgReply
 		memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
