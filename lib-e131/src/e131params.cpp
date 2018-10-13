@@ -194,6 +194,6 @@ const char* E131Params::GetCidString(void) {
 	return m_aCidString;
 }
 
-bool E131Params::isMaskSet(uint16_t mask) const {
+bool E131Params::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }

@@ -1,9 +1,9 @@
 /**
- * @file hardwarelinux.h
+ * @file hardwarelinux.c
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
- *90
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -40,8 +40,13 @@
  #include <sys/sysinfo.h>
 #endif
 #include <sys/utsname.h>
+#include <assert.h>
 
 #include "hardwarelinux.h"
+
+extern "C" {
+ char *str_find_replace(char *str, const char *find, const char *replace);
+}
 
 #if defined (__linux__)
  static const char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
@@ -109,6 +114,7 @@ HardwareLinux::HardwareLinux(void):
 			ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
 		}
 #endif
+		str_find_replace(m_aBoardName, "Rev ", "V");
 	}
 
 	{ // CPU Name

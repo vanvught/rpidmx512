@@ -1,5 +1,5 @@
 /**
- * @file gpioparams.h
+ * @file str_find_replace.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
+#include <string.h>
+#include <assert.h>
 
-#include <stdint.h>
+char *str_find_replace(char *str, const char *find, const char *replace) {
+	assert(strlen(replace) <= strlen(find));
 
-#include "dmx.h"
+	unsigned i, j, k, n, m;
 
-class DmxGpioParams {
-public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+	 i = j = m = n = 0;
 
-	bool Load(void);
+	while (str[i] != '\0') {
+		if (str[m] == find[n]) {
+			m++;
+			n++;
+			if (find[n] == '\0') {
+				for (k = 0; replace[k] != '\0'; k++, j++) {
+					str[j] = replace[k];
+				}
+				n = 0;
+				i = m;
+			}
+		} else {
+			str[j] = str[i];
+			j++;
+			i++;
+			m = i;
+			n = 0;
+		}
+	}
 
-	uint8_t GetDataDirection(bool &bIsSet) const;
-	uint8_t GetDataDirection(bool &bIsSet, uint8_t nUart) const;
+	for (; j < i; j++) {
+		str[j] = '\0';
+	}
 
-	void Dump(void);
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *pLine);
-
-private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
-};
-
-#endif /* DMXGPIOPARAMS_H_ */
+	return str;
+}

@@ -41,6 +41,10 @@
 
 DmxMulti::DmxMulti(void): m_IsInitDone(false) {
 	DEBUG_ENTRY
+
+	dmx_multi_init();
+
+#if 0 //TODO
 	bool is_set;
 	uint8_t gpio;
 
@@ -57,9 +61,7 @@ DmxMulti::DmxMulti(void): m_IsInitDone(false) {
 			}
 		}
 	}
-
-	dmx_multi_init();
-
+#endif
 	DEBUG_EXIT
 }
 

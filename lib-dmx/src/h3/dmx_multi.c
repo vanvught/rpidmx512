@@ -781,14 +781,15 @@ void dmx_multi_init(void) {
 	 * -		UART0	4	3
 	 */
 
+	//FIXME move to top
 #if defined(ORANGE_PI) || defined(NANO_PI)
-	dmx_data_direction_gpio_pin[2] = GPIO_DMX_DATA_DIRECTION_OUT2;
-	dmx_data_direction_gpio_pin[1] = GPIO_DMX_DATA_DIRECTION_OUT3;
+	dmx_data_direction_gpio_pin[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
+	dmx_data_direction_gpio_pin[1] = GPIO_DMX_DATA_DIRECTION_OUT_C;
 #elif defined (ORANGE_PI_ONE)
-	dmx_data_direction_gpio_pin[0] = GPIO_DMX_DATA_DIRECTION_OUT4;
-	dmx_data_direction_gpio_pin[1] = GPIO_DMX_DATA_DIRECTION_OUT1;
-	dmx_data_direction_gpio_pin[2] = GPIO_DMX_DATA_DIRECTION_OUT2;
-	dmx_data_direction_gpio_pin[3] = GPIO_DMX_DATA_DIRECTION_OUT3;
+	dmx_data_direction_gpio_pin[0] = GPIO_DMX_DATA_DIRECTION_OUT_D;
+	dmx_data_direction_gpio_pin[1] = GPIO_DMX_DATA_DIRECTION_OUT_A;
+	dmx_data_direction_gpio_pin[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
+	dmx_data_direction_gpio_pin[3] = GPIO_DMX_DATA_DIRECTION_OUT_C;
 #endif
 
 	h3_gpio_fsel(dmx_data_direction_gpio_pin[1], GPIO_FSEL_OUTPUT);
