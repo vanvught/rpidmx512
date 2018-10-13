@@ -52,6 +52,7 @@
 #include "artnettimesync.h"
 #include "artnetrdm.h"
 #include "artnetipprog.h"
+#include "artnetstore.h"
 
 struct TArtNetNodeState {
 	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
@@ -121,6 +122,7 @@ public:
 	void SetTimeSyncHandler(ArtNetTimeSync *);
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
+	void SetArtNetStore(ArtNetStore *pArtNetStore);
 
 	const uint8_t *GetSoftwareVersion(void);
 
@@ -140,10 +142,10 @@ public:
 	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
 
 	uint8_t GetNetSwitch(void) const;
-	void SetNetSwitch(uint8_t);
+	void SetNetSwitch(uint8_t nAddress);
 
 	uint8_t GetSubnetSwitch(void) const;
-	void SetSubnetSwitch(uint8_t);
+	void SetSubnetSwitch(uint8_t nAddress);
 
 	const uint8_t *GetManufacturerId(void);
 	void SetManufacturerId(const uint8_t *);
@@ -204,7 +206,7 @@ private:
 	ArtNetTimeSync			*m_pArtNetTimeSync;
 	ArtNetRdm				*m_pArtNetRdm;
 	ArtNetIpProg			*m_pArtNetIpProg;
-	//ArtNetTrigger			*m_pArtNetTrigger;
+	ArtNetStore				*m_pArtNetStore;
 
 	struct TArtNetNode		m_Node;				///< Struct describing the node
 	struct TArtNetNodeState m_State;			///< The current state of the node

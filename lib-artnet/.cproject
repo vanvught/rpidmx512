@@ -264,8 +264,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1217840962" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="BARE_METAL"/>
-									<listOptionValue builtIn="false" value="H3"/>
+									<listOptionValue builtIn="false" value="BARE_METAL=1"/>
+									<listOptionValue builtIn="false" value="H3=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1117533543" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

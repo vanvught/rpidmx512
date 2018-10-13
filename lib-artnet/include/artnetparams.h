@@ -50,29 +50,102 @@ enum  TOutputType {
 	OUTPUT_TYPE_MONITOR
 };
 
+struct TArtNetParams {
+    uint32_t nSetList;
+    uint8_t nNet;
+    uint8_t nSubnet;
+    uint8_t nUniverse;
+    TOutputType tOutputType;
+    bool bUseTimeCode;
+    bool bUseTimeSync;
+    bool bEnableRdm;
+    bool bRdmDiscovery;
+    uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];
+	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];
+	uint8_t aManufacturerId[2];
+	uint8_t aOemValue[2];
+	time_t nNetworkTimeout;
+	bool bDisableMergeTimeout;
+	uint8_t nUniversePort[ARTNET_MAX_PORTS];
+};
+
+class ArtNetParamsStore {
+public:
+	virtual ~ArtNetParamsStore(void);
+
+	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
+	virtual void Copy(struct TArtNetParams *pArtNetParams)=0;
+
+private:
+};
+
 class ArtNetParams {
 public:
-	ArtNetParams(void);
+	ArtNetParams(ArtNetParamsStore *pArtNetParamsStore = 0);
 	~ArtNetParams(void);
 
 	bool Load(void);
 
-	uint8_t GetNet(void) const;
-	uint8_t GetSubnet(void) const;
-	uint8_t GetUniverse(void) const;
-	const uint8_t *GetShortName(void) const;
-	const uint8_t *GetLongName(void) const;
-	TOutputType GetOutputType(void) const;
-	const uint8_t *GetManufacturerId(void) const;
-	time_t GetNetworkTimeout(void) const;
+	inline uint8_t GetNet(void) {
+		return m_tArtNetParams.nNet;
+	}
 
-	bool IsUseTimeCode(void) const;
-	bool IsUseTimeSync(void) const;
-	bool IsRdm(void) const;
-	bool IsRdmDiscovery(void) const;
+	inline uint8_t GetSubnet(void) {
+		return m_tArtNetParams.nSubnet;
+	}
+
+	inline uint8_t GetUniverse(void) {
+		return m_tArtNetParams.nUniverse;
+	}
+
+	inline const uint8_t *GetShortName(void) {
+		return m_tArtNetParams.aShortName;
+	}
+
+	inline const uint8_t *GetLongName(void) {
+		return m_tArtNetParams.aLongName;
+	}
+
+	inline TOutputType GetOutputType(void) {
+		return m_tArtNetParams.tOutputType;
+	}
+
+	inline const uint8_t *GetManufacturerId(void) {
+		return m_tArtNetParams.aManufacturerId;
+	}
+
+	inline time_t GetNetworkTimeout(void) {
+		return m_tArtNetParams.nNetworkTimeout;
+	}
+
+	inline bool IsUseTimeCode(void) {
+		return m_tArtNetParams.bUseTimeCode;
+	}
+
+	inline bool IsUseTimeSync(void) {
+		return m_tArtNetParams.bUseTimeSync;
+
+	}
+
+	inline bool IsRdm(void) {
+		return m_tArtNetParams.bEnableRdm;
+	}
+
+	inline bool IsRdmDiscovery(void) {
+		return m_tArtNetParams.bRdmDiscovery;
+	}
+
+	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
 
 	void Set(ArtNetNode *);
 	void Dump(void);
+
+public:
+	static uint32_t GetMaskShortName(void);
+	static uint32_t GetMaskLongName(void);
+	static uint32_t GetMaskNet(void);
+	static uint32_t GetMaskSubnet(void);
+	static uint32_t GetMaskUniverse(uint8_t nPort);
 
 private:
 	bool isMaskSet(uint32_t) const;
@@ -85,22 +158,8 @@ private:
     void callbackFunction(const char *s);
 
 private:
-    uint32_t m_nSetList;
-    uint8_t m_nNet;
-    uint8_t m_nSubnet;
-    uint8_t m_nUniverse;
-    TOutputType m_tOutputType;
-    bool m_bUseTimeCode;
-    bool m_bUseTimeSync;
-    bool m_bEnableRdm;
-    bool m_bRdmDiscovery;
-    uint8_t m_aShortName[ARTNET_SHORT_NAME_LENGTH];
-	uint8_t m_aLongName[ARTNET_LONG_NAME_LENGTH];
-	uint8_t m_aManufacturerId[2];
-	uint8_t m_aOemValue[2];
-	time_t m_nNetworkTimeout;
-	bool m_bDisableMergeTimeout;
-	uint8_t m_nUniversePort[ARTNET_MAX_PORTS];
+    ArtNetParamsStore *m_pArtNetParamsStore;
+    struct TArtNetParams m_tArtNetParams;
 };
 
 #endif /* ARTNETPARAMS_H_ */

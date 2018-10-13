@@ -99,7 +99,7 @@ const uint8_t ArtNetController::GetPollInterval(void) {
 void ArtNetController::SendPoll(void) {
 	const time_t nTime = time(NULL);
 
-	if (nTime - m_nLastPollTime >= 8) {
+	if (nTime - m_nLastPollTime >= m_nPollInterVal) {
 		Network::Get()->SendTo((const uint8_t *)&m_ArtNetPoll, sizeof(struct TArtPoll), m_IPAddressBroadcast, ARTNET_UDP_PORT);
 		m_nLastPollTime= nTime;
 	}
@@ -112,9 +112,8 @@ void ArtNetController::HandlePollReply(void) {
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
-	//if (!Add(&m_pArtNetPacket->ArtPacket.ArtPollReply)) {
-		SendIpProg();
-	//}
+
+	SendIpProg();
 }
 
 void ArtNetController::SendIpProg(void) {

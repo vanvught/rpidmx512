@@ -32,8 +32,6 @@
  #include <time.h>
  #include "util.h"
 #elif defined (__circle__)
- #include <circle/logger.h>
- #include <circle/stdarg.h>
  #include <circle/util.h>
  #include <circle/time.h>
 #else
@@ -54,23 +52,23 @@
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
-#define SET_LONG_NAME_MASK	(1 << 0)
-#define SET_SHORT_NAME_MASK	(1 << 1)
-#define SET_NET_MASK		(1 << 2)
-#define SET_SUBNET_MASK		(1 << 3)
-#define SET_UNIVERSE_MASK	(1 << 4)
-#define SET_RDM_MASK		(1 << 5)
-#define SET_TIMECODE_MASK	(1 << 6)
-#define SET_TIMESYNC_MASK	(1 << 7)
-#define SET_OUTPUT_MASK		(1 << 8)
-#define SET_ID_MASK			(1 << 9)
-#define SET_OEM_VALUE_MASK	(1 << 10)
-#define SET_NETWORK_TIMEOUT	(1 << 11)
-#define SET_MERGE_TIMEOUT	(1 << 12)
-#define SET_UNIVERSE_A_MASK	(1 << 13)
-#define SET_UNIVERSE_B_MASK	(1 << 14)
-#define SET_UNIVERSE_C_MASK	(1 << 15)
-#define SET_UNIVERSE_D_MASK	(1 << 16)
+#define SET_LONG_NAME_MASK		(1 << 0)
+#define SET_SHORT_NAME_MASK		(1 << 1)
+#define SET_NET_MASK			(1 << 2)
+#define SET_SUBNET_MASK			(1 << 3)
+#define SET_UNIVERSE_MASK		(1 << 4)
+#define SET_RDM_MASK			(1 << 5)
+#define SET_TIMECODE_MASK		(1 << 6)
+#define SET_TIMESYNC_MASK		(1 << 7)
+#define SET_OUTPUT_MASK			(1 << 8)
+#define SET_ID_MASK				(1 << 9)
+#define SET_OEM_VALUE_MASK		(1 << 10)
+#define SET_NETWORK_TIMEOUT		(1 << 11)
+#define SET_MERGE_TIMEOUT		(1 << 12)
+#define SET_UNIVERSE_A_MASK		(1 << 13)
+#define SET_UNIVERSE_B_MASK		(1 << 14)
+#define SET_UNIVERSE_C_MASK		(1 << 15)
+#define SET_UNIVERSE_D_MASK		(1 << 16)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
 static const char PARAMS_NET[] ALIGNED = "net";											///< 0 {default}
@@ -108,57 +106,57 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, PARAMS_TIMECODE, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_bUseTimeCode = true;
-			m_nSetList |= SET_TIMECODE_MASK;
+			m_tArtNetParams.bUseTimeCode = true;
+			m_tArtNetParams.nSetList |= SET_TIMECODE_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_TIMESYNC, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_bUseTimeSync = true;
-			m_nSetList |= SET_TIMESYNC_MASK;
+			m_tArtNetParams.bUseTimeSync = true;
+			m_tArtNetParams.nSetList |= SET_TIMESYNC_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_RDM, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_bEnableRdm = true;
-			m_nSetList |= SET_RDM_MASK;
+			m_tArtNetParams.bEnableRdm = true;
+			m_tArtNetParams.nSetList |= SET_RDM_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_RDM_DISCOVERY, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_bRdmDiscovery = true;
+			m_tArtNetParams.bRdmDiscovery = true;
 		}
 		return;
 	}
 
 	len = ARTNET_SHORT_NAME_LENGTH;
 	if (Sscan::Char(pLine, PARAMS_NODE_SHORT_NAME, value, &len) == SSCAN_OK) {
-		strncpy((char *)m_aShortName, value, len);
-		m_nSetList |= SET_SHORT_NAME_MASK;
+		strncpy((char *)m_tArtNetParams.aShortName, value, len);
+		m_tArtNetParams.nSetList |= SET_SHORT_NAME_MASK;
 		return;
 	}
 
 	len = ARTNET_LONG_NAME_LENGTH;
 	if (Sscan::Char(pLine, PARAMS_NODE_LONG_NAME, value, &len) == SSCAN_OK) {
-		strncpy((char *)m_aLongName, value, len);
-		m_nSetList |= SET_LONG_NAME_MASK;
+		strncpy((char *)m_tArtNetParams.aLongName, value, len);
+		m_tArtNetParams.nSetList |= SET_LONG_NAME_MASK;
 		return;
 	}
 
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "spi", 3) == 0) {
-			m_tOutputType = OUTPUT_TYPE_SPI;
-			m_nSetList |= SET_OUTPUT_MASK;
+			m_tArtNetParams.tOutputType = OUTPUT_TYPE_SPI;
+			m_tArtNetParams.nSetList |= SET_OUTPUT_MASK;
 		} else if (memcmp(value, "mon", 3) == 0) {
-			m_tOutputType = OUTPUT_TYPE_MONITOR;
-			m_nSetList |= SET_OUTPUT_MASK;
+			m_tArtNetParams.tOutputType = OUTPUT_TYPE_MONITOR;
+			m_tArtNetParams.nSetList |= SET_OUTPUT_MASK;
 		}
 		return;
 	}
@@ -167,9 +165,9 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, PARAMS_NODE_MANUFACTURER_ID, value, &len) == SSCAN_OK) {
 		if (len == 4) {
 			const uint16_t v = HexUint16(value);
-			m_aManufacturerId[0] = (uint8_t) (v >> 8);
-			m_aManufacturerId[1] = (uint8_t) (v & 0xFF);
-			m_nSetList |= SET_ID_MASK;
+			m_tArtNetParams.aManufacturerId[0] = (uint8_t) (v >> 8);
+			m_tArtNetParams.aManufacturerId[1] = (uint8_t) (v & 0xFF);
+			m_tArtNetParams.nSetList |= SET_ID_MASK;
 		}
 		return;
 	}
@@ -178,271 +176,291 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, PARAMS_NODE_OEM_VALUE, value, &len) == SSCAN_OK) {
 		if (len == 4) {
 			const uint16_t v = HexUint16(value);
-			m_aOemValue[0] = (uint8_t) (v >> 8);
-			m_aOemValue[1] = (uint8_t) (v & 0xFF);
-			m_nSetList |= SET_OEM_VALUE_MASK;
+			m_tArtNetParams.aOemValue[0] = (uint8_t) (v >> 8);
+			m_tArtNetParams.aOemValue[1] = (uint8_t) (v & 0xFF);
+			m_tArtNetParams.nSetList |= SET_OEM_VALUE_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT, &value8) == SSCAN_OK) {
-		m_nNetworkTimeout = (time_t) value8;
-		m_nSetList |= SET_NETWORK_TIMEOUT;
+		m_tArtNetParams.nNetworkTimeout = (time_t) value8;
+		m_tArtNetParams.nSetList |= SET_NETWORK_TIMEOUT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_NODE_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_bDisableMergeTimeout = true;
-			m_nSetList |= SET_MERGE_TIMEOUT;
+			m_tArtNetParams.bDisableMergeTimeout = true;
+			m_tArtNetParams.nSetList |= SET_MERGE_TIMEOUT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_NET, &value8) == SSCAN_OK) {
-		m_nNet = value8;
-		m_nSetList |= SET_NET_MASK;
+		m_tArtNetParams.nNet = value8;
+		m_tArtNetParams.nSetList |= SET_NET_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_SUBNET, &value8) == SSCAN_OK) {
-		m_nSubnet = value8;
-		m_nSetList |= SET_SUBNET_MASK;
+		m_tArtNetParams.nSubnet = value8;
+		m_tArtNetParams.nSetList |= SET_SUBNET_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE, &value8) == SSCAN_OK) {
-		m_nUniverse = value8;
-		m_nSetList |= SET_UNIVERSE_MASK;
+		m_tArtNetParams.nUniverse = value8;
+		m_tArtNetParams.nSetList |= SET_UNIVERSE_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_A, &value8) == SSCAN_OK) {
-		m_nUniversePort[0] = value8;
-		m_nSetList |= SET_UNIVERSE_A_MASK;
+		m_tArtNetParams.nUniversePort[0] = value8;
+		m_tArtNetParams.nSetList |= SET_UNIVERSE_A_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_B, &value8) == SSCAN_OK) {
-		m_nUniversePort[1] = value8;
-		m_nSetList |= SET_UNIVERSE_B_MASK;
+		m_tArtNetParams.nUniversePort[1] = value8;
+		m_tArtNetParams.nSetList |= SET_UNIVERSE_B_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_C, &value8) == SSCAN_OK) {
-		m_nUniversePort[2] = value8;
-		m_nSetList |= SET_UNIVERSE_C_MASK;
+		m_tArtNetParams.nUniversePort[2] = value8;
+		m_tArtNetParams.nSetList |= SET_UNIVERSE_C_MASK;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_D, &value8) == SSCAN_OK) {
-		m_nUniversePort[3] = value8;
-		m_nSetList |= SET_UNIVERSE_D_MASK;
+		m_tArtNetParams.nUniversePort[3] = value8;
+		m_tArtNetParams.nSetList |= SET_UNIVERSE_D_MASK;
 		return;
 	}
 }
 
-ArtNetParams::ArtNetParams(void): m_nSetList(0) {
-	m_nNet = 0;
-	m_nSubnet = 0;
-	m_nUniverse = 0;
-	m_tOutputType= OUTPUT_TYPE_DMX;
-	m_bUseTimeCode = false;
-	m_bUseTimeSync = false;
-	m_bEnableRdm = false;
-	m_bRdmDiscovery = false;
-	m_nNetworkTimeout = 10;
-	m_bDisableMergeTimeout = false;
+ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
+	uint8_t *p = (uint8_t *) &m_tArtNetParams;
 
-	memset(m_aShortName, 0, ARTNET_SHORT_NAME_LENGTH);
-	memset(m_aLongName, 0, ARTNET_LONG_NAME_LENGTH);
+	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
+		p[i] = 0;
+	}
+
+	m_tArtNetParams.tOutputType = OUTPUT_TYPE_DMX;
 
 	for (int i = 0; i < ARTNET_MAX_PORTS; i++) {
-		m_nUniversePort[i] = i;
+		m_tArtNetParams.nUniversePort[i] = i;
 	}
 }
 
 ArtNetParams::~ArtNetParams(void) {
 }
 
-TOutputType ArtNetParams::GetOutputType(void) const {
-	return m_tOutputType;
-}
-
-uint8_t ArtNetParams::GetNet(void) const {
-	return m_nNet;
-}
-
-uint8_t ArtNetParams::GetSubnet(void) const {
-	return m_nSubnet;
-}
-
-uint8_t ArtNetParams::GetUniverse(void) const {
-	return m_nUniverse;
-}
-
-bool ArtNetParams::IsUseTimeCode(void) const {
-	return m_bUseTimeCode;
-}
-
-bool ArtNetParams::IsUseTimeSync(void) const {
-	return m_bUseTimeSync;
-}
-
-bool ArtNetParams::IsRdm(void) const {
-	return m_bEnableRdm;
-}
-
-bool ArtNetParams::IsRdmDiscovery(void) const {
-	return m_bRdmDiscovery;
-}
-
-const uint8_t *ArtNetParams::GetShortName(void) const {
-	return m_aShortName;
-}
-
-const uint8_t *ArtNetParams::GetLongName(void) const {
-	return m_aLongName;
-}
-
-const uint8_t *ArtNetParams::GetManufacturerId(void) const {
-	return m_aManufacturerId;
-}
-
-time_t ArtNetParams::GetNetworkTimeout(void) const {
-	return m_nNetworkTimeout;
-}
-
 bool ArtNetParams::Load(void) {
-	m_nSetList = 0;
+	m_tArtNetParams.nSetList = 0;
 
 	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
+
+	if (configfile.Read(PARAMS_FILE_NAME)) {
+		// There is a configuration file
+		if (m_pArtNetParamsStore != 0) {
+			m_pArtNetParamsStore->Update(&m_tArtNetParams);
+		}
+	} else if (m_pArtNetParamsStore != 0) {
+		m_pArtNetParamsStore->Copy(&m_tArtNetParams);
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) const {
+	assert(nPort < ARTNET_MAX_PORTS);
+
+	switch (nPort) {
+		case 0:
+			IsSet = isMaskSet(SET_UNIVERSE_A_MASK);
+			break;
+		case 1:
+			IsSet = isMaskSet(SET_UNIVERSE_B_MASK);
+			break;
+		case 2:
+			IsSet = isMaskSet(SET_UNIVERSE_C_MASK);
+			break;
+		case 3:
+			IsSet = isMaskSet(SET_UNIVERSE_D_MASK);
+			break;
+		default:
+			break;
+	}
+
+	return m_tArtNetParams.nUniversePort[nPort];
 }
 
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	assert(pArtNetNode != 0);
 
-	if (m_nSetList == 0) {
+	if (m_tArtNetParams.nSetList == 0) {
 		return;
 	}
 
 	if(isMaskSet(SET_SHORT_NAME_MASK)) {
-		pArtNetNode->SetShortName((const char *)m_aShortName);
+		pArtNetNode->SetShortName((const char *)m_tArtNetParams.aShortName);
 	}
 
 	if(isMaskSet(SET_LONG_NAME_MASK)) {
-		pArtNetNode->SetLongName((const char *)m_aLongName);
+		pArtNetNode->SetLongName((const char *)m_tArtNetParams.aLongName);
 	}
 
 	if(isMaskSet(SET_NET_MASK)) {
-		pArtNetNode->SetNetSwitch(m_nNet);
+		pArtNetNode->SetNetSwitch(m_tArtNetParams.nNet);
 	}
 
 	if(isMaskSet(SET_SUBNET_MASK)) {
-		pArtNetNode->SetSubnetSwitch(m_nSubnet);
+		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet);
 	}
 
 	if(isMaskSet(SET_ID_MASK)) {
-		pArtNetNode->SetManufacturerId(m_aManufacturerId);
+		pArtNetNode->SetManufacturerId(m_tArtNetParams.aManufacturerId);
 	}
 
 	if(isMaskSet(SET_OEM_VALUE_MASK)) {
-		pArtNetNode->SetOemValue(m_aOemValue);
+		pArtNetNode->SetOemValue(m_tArtNetParams.aOemValue);
 	}
 
 	if(isMaskSet(SET_NETWORK_TIMEOUT)) {
-		pArtNetNode->SetNetworkTimeout(m_nNetworkTimeout);
+		pArtNetNode->SetNetworkTimeout(m_tArtNetParams.nNetworkTimeout);
 	}
 
 	if(isMaskSet(SET_MERGE_TIMEOUT)) {
-		pArtNetNode->SetDisableMergeTimeout(m_bDisableMergeTimeout);
+		pArtNetNode->SetDisableMergeTimeout(m_tArtNetParams.bDisableMergeTimeout);
 	}
 }
 
 void ArtNetParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_nSetList == 0) {
+	if (m_tArtNetParams.nSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if(isMaskSet(SET_SHORT_NAME_MASK)) {
-		printf(" %s=%s\n", PARAMS_NODE_SHORT_NAME, m_aShortName);
+		printf(" %s=%s\n", PARAMS_NODE_SHORT_NAME, m_tArtNetParams.aShortName);
 	}
 
 	if(isMaskSet(SET_LONG_NAME_MASK)) {
-		printf(" %s=%s\n", PARAMS_NODE_LONG_NAME, m_aLongName);
+		printf(" %s=%s\n", PARAMS_NODE_LONG_NAME, m_tArtNetParams.aLongName);
 	}
 
 	if(isMaskSet(SET_NET_MASK)) {
-		printf(" %s=%d\n", PARAMS_NET, m_nNet);
+		printf(" %s=%d\n", PARAMS_NET, m_tArtNetParams.nNet);
 	}
 
 	if(isMaskSet(SET_SUBNET_MASK)) {
-		printf(" %s=%d\n", PARAMS_SUBNET, m_nSubnet);
+		printf(" %s=%d\n", PARAMS_SUBNET, m_tArtNetParams.nSubnet);
 	}
 
 	if(isMaskSet(SET_UNIVERSE_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE, m_nUniverse);
+		printf(" %s=%d\n", PARAMS_UNIVERSE, m_tArtNetParams.nUniverse);
 	}
 
 	if (isMaskSet(SET_RDM_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_RDM, (int) m_bEnableRdm, BOOL2STRING(m_bEnableRdm));
-		if (m_bEnableRdm) {
-			printf("  %s=%d [%s]\n", PARAMS_RDM_DISCOVERY, (int) m_bRdmDiscovery, BOOL2STRING(m_bRdmDiscovery));
+		printf(" %s=%d [%s]\n", PARAMS_RDM, (int) m_tArtNetParams.bEnableRdm, BOOL2STRING(m_tArtNetParams.bEnableRdm));
+		if (m_tArtNetParams.bEnableRdm) {
+			printf("  %s=%d [%s]\n", PARAMS_RDM_DISCOVERY, (int) m_tArtNetParams.bRdmDiscovery, BOOL2STRING(m_tArtNetParams.bRdmDiscovery));
 		}
 	}
 
 	if(isMaskSet(SET_TIMECODE_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_TIMECODE, (int) m_bUseTimeCode, BOOL2STRING(m_bUseTimeCode));
+		printf(" %s=%d [%s]\n", PARAMS_TIMECODE, (int) m_tArtNetParams.bUseTimeCode, BOOL2STRING(m_tArtNetParams.bUseTimeCode));
 	}
 
 	if(isMaskSet(SET_TIMESYNC_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_TIMESYNC, (int) m_bUseTimeCode, BOOL2STRING(m_bUseTimeSync));
+		printf(" %s=%d [%s]\n", PARAMS_TIMESYNC, (int) m_tArtNetParams.bUseTimeCode, BOOL2STRING(m_tArtNetParams.bUseTimeSync));
 	}
 
 	if(isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%d\n", PARAMS_OUTPUT, (int) m_tOutputType);
+		printf(" %s=%d\n", PARAMS_OUTPUT, (int) m_tArtNetParams.tOutputType);
 	}
 
 	if(isMaskSet(SET_ID_MASK)) {
-		printf(" %s=0x%.2X%.2X\n", PARAMS_NODE_MANUFACTURER_ID, m_aManufacturerId[0], m_aManufacturerId[1]);
+		printf(" %s=0x%.2X%.2X\n", PARAMS_NODE_MANUFACTURER_ID, m_tArtNetParams.aManufacturerId[0], m_tArtNetParams.aManufacturerId[1]);
 	}
 
 	if(isMaskSet(SET_OEM_VALUE_MASK)) {
-		printf(" %s=0x%.2X%.2X\n", PARAMS_NODE_OEM_VALUE, m_aOemValue[0], m_aOemValue[1]);
+		printf(" %s=0x%.2X%.2X\n", PARAMS_NODE_OEM_VALUE, m_tArtNetParams.aOemValue[0], m_tArtNetParams.aOemValue[1]);
 	}
 
 	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT, (int) m_nNetworkTimeout, (m_nNetworkTimeout == 0) ? "Disabled" : "");
+		printf(" %s=%d [%s]\n", PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT, (int) m_tArtNetParams.nNetworkTimeout, (m_tArtNetParams.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
 	if(isMaskSet(SET_MERGE_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", PARAMS_NODE_DISABLE_MERGE_TIMEOUT, (int) m_bDisableMergeTimeout, BOOL2STRING(m_bDisableMergeTimeout));
+		printf(" %s=%d [%s]\n", PARAMS_NODE_DISABLE_MERGE_TIMEOUT, (int) m_tArtNetParams.bDisableMergeTimeout, BOOL2STRING(m_tArtNetParams.bDisableMergeTimeout));
 	}
 
 	if(isMaskSet(SET_UNIVERSE_A_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_A, m_nUniversePort[0]);
+		printf(" %s=%d\n", PARAMS_UNIVERSE_A, m_tArtNetParams.nUniversePort[0]);
 	}
 
 	if(isMaskSet(SET_UNIVERSE_B_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_B, m_nUniversePort[1]);
+		printf(" %s=%d\n", PARAMS_UNIVERSE_B, m_tArtNetParams.nUniversePort[1]);
 	}
 
 	if(isMaskSet(SET_UNIVERSE_C_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_C, m_nUniversePort[2]);
+		printf(" %s=%d\n", PARAMS_UNIVERSE_C, m_tArtNetParams.nUniversePort[2]);
 	}
 
 	if(isMaskSet(SET_UNIVERSE_D_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_D, m_nUniversePort[3]);
+		printf(" %s=%d\n", PARAMS_UNIVERSE_D, m_tArtNetParams.nUniversePort[3]);
 	}
 #endif
 }
 
-bool ArtNetParams::isMaskSet(uint32_t mask) const {
-	return (m_nSetList & mask) == mask;
+bool ArtNetParams::isMaskSet(uint32_t nMask) const {
+	return (m_tArtNetParams.nSetList & nMask) == nMask;
+}
+
+uint32_t ArtNetParams::GetMaskShortName(void) {
+	return SET_SHORT_NAME_MASK;
+}
+
+uint32_t ArtNetParams::GetMaskLongName(void) {
+	return SET_LONG_NAME_MASK;
+}
+
+uint32_t ArtNetParams::GetMaskNet(void) {
+	return SET_NET_MASK;
+}
+
+uint32_t ArtNetParams::GetMaskSubnet(void) {
+	return SET_SUBNET_MASK;
+}
+
+uint32_t ArtNetParams::GetMaskUniverse(uint8_t nPort) {
+	assert(nPort < ARTNET_MAX_PORTS);
+
+	switch (nPort) {
+		case 0:
+			return SET_UNIVERSE_A_MASK;
+			break;
+		case 1:
+			return SET_UNIVERSE_B_MASK;
+			break;
+		case 2:
+			return SET_UNIVERSE_C_MASK;
+			break;
+		case 3:
+			return SET_UNIVERSE_D_MASK;
+			break;
+		default:
+			break;
+	}
+
+	return 0;
 }
 
 uint16_t ArtNetParams::HexUint16(const char *s) const {

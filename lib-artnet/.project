@@ -3,7 +3,6 @@
 	<name>lib-artnet</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
 		<project>include</project>
 		<project>lib-debug</project>
 		<project>lib-ledblink</project>
@@ -21,7 +20,7 @@
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
-			<triggers>full,incremental,</triggers>
+			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>
