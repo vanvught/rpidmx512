@@ -112,7 +112,7 @@ void E131Bridge::Start(void) {
 
 void E131Bridge::Stop(void) {
 	if (m_pLightSet != 0) {
-		m_pLightSet->Stop();
+		m_pLightSet->Stop(0);
 	}
 	//
 	m_State.IsNetworkDataLoss = true;
@@ -464,7 +464,7 @@ void E131Bridge::HandleDmx(void) {
 		if (!m_State.IsSynchronized) {
 			m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
 			if (!m_State.IsTransmitting) {
-				m_pLightSet->Start();
+				m_pLightSet->Start(0);
 				m_State.IsTransmitting = true;
 			}
 		} else {
@@ -486,7 +486,7 @@ void E131Bridge::HandleSynchronization(void) {
 	if (m_OutputPort.IsDataPending) {
 		m_pLightSet->SetData(0, m_OutputPort.data, m_OutputPort.length);
 		if (m_State.IsTransmitting) {
-			m_pLightSet->Start();
+			m_pLightSet->Start(0);
 			m_State.IsTransmitting = true;
 		}
 		m_OutputPort.IsDataPending = false;
@@ -494,7 +494,7 @@ void E131Bridge::HandleSynchronization(void) {
 }
 
 void E131Bridge::SetNetworkDataLossCondition(void) {
-	m_pLightSet->Stop();
+	m_pLightSet->Stop(0);
 	//
 	m_State.IsNetworkDataLoss = true;
 	m_State.IsMergeMode = false;

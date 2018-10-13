@@ -39,19 +39,17 @@
 #include "gpio.h"
 
 #define DATA_DIRECTION_MASK			(1 << 0)
-#define DATA_DIRECTION_OUT1_MASK	(1 << 1)
-#define DATA_DIRECTION_OUT2_MASK	(1 << 2)
-#define DATA_DIRECTION_OUT3_MASK	(1 << 3)
-#define DATA_DIRECTION_OUT4_MASK	(1 << 4)
+#define DATA_DIRECTION_OUT_A_MASK	(1 << 1)
+#define DATA_DIRECTION_OUT_B_MASK	(1 << 2)
+#define DATA_DIRECTION_OUT_C_MASK	(1 << 3)
+#define DATA_DIRECTION_OUT_D_MASK	(1 << 4)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "gpio.txt";
 static const char PARAMS_DATA_DIRECTION[] ALIGNED = "data_direction";
-static const char PARAMS_DATA_DIRECTION_OUT1[] ALIGNED = "data_direction_out1";
-static const char PARAMS_DATA_DIRECTION_OUT2[] ALIGNED = "data_direction_out2";
-static const char PARAMS_DATA_DIRECTION_OUT3[] ALIGNED = "data_direction_out3";
-static const char PARAMS_DATA_DIRECTION_OUT4[] ALIGNED = "data_direction_out4";
-
-// m_nDmxDataDirectionOut[x] --> UARTx
+static const char PARAMS_DATA_DIRECTION_OUT_A[] ALIGNED = "data_direction_out_a";
+static const char PARAMS_DATA_DIRECTION_OUT_B[] ALIGNED = "data_direction_out_b";
+static const char PARAMS_DATA_DIRECTION_OUT_C[] ALIGNED = "data_direction_out_c";
+static const char PARAMS_DATA_DIRECTION_OUT_D[] ALIGNED = "data_direction_out_d";
 
 DmxGpioParams::DmxGpioParams(void):
 		m_nSetList(0),
@@ -59,13 +57,13 @@ DmxGpioParams::DmxGpioParams(void):
 {
 #if defined(H3)
  #if defined(ORANGE_PI_ONE)
-	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION_OUT4;
-	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT1;
-	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT2;
-	m_nDmxDataDirectionOut[3] = GPIO_DMX_DATA_DIRECTION_OUT3;
+	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION_OUT_D;
+	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT_A;
+	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
+	m_nDmxDataDirectionOut[3] = GPIO_DMX_DATA_DIRECTION_OUT_C;
  #else
-	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT3;
-	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT2;
+	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT_C;
+	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
  #endif
 #else
 	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION;
@@ -98,60 +96,57 @@ void DmxGpioParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT1, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_A, &value8) == SSCAN_OK) {
 		m_nDmxDataDirectionOut[0] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT1_MASK;
+		m_nSetList |= DATA_DIRECTION_OUT_A_MASK;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT2, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_B, &value8) == SSCAN_OK) {
 		m_nDmxDataDirectionOut[1] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT2_MASK;
+		m_nSetList |= DATA_DIRECTION_OUT_B_MASK;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT3, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_C, &value8) == SSCAN_OK) {
 		m_nDmxDataDirectionOut[2] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT3_MASK;
+		m_nSetList |= DATA_DIRECTION_OUT_C_MASK;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT4, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_D, &value8) == SSCAN_OK) {
 		m_nDmxDataDirectionOut[3] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT4_MASK;
+		m_nSetList |= DATA_DIRECTION_OUT_D_MASK;
 		return;
 	}
 }
 
-uint8_t DmxGpioParams::GetDataDirection(bool &isSet) const {
-	isSet = isMaskSet(DATA_DIRECTION_MASK);
+uint8_t DmxGpioParams::GetDataDirection(bool &bIsSet) const {
+	bIsSet = isMaskSet(DATA_DIRECTION_MASK);
 	return m_nDmxDataDirection;
 }
 
-uint8_t DmxGpioParams::GetDataDirection(bool &isSet, uint8_t uart) const {
-	if (uart >= DMX_MAX_OUT) {
-		isSet = false;
-		return 0;
-	}
+uint8_t DmxGpioParams::GetDataDirection(bool &bIsSet, uint8_t nUart) const {
+	assert(nUart < DMX_MAX_OUT);
 
-	switch (uart) {
+	switch (nUart) {
 	case 0:
-		isSet = isMaskSet(DATA_DIRECTION_OUT1_MASK);
+		bIsSet = isMaskSet(DATA_DIRECTION_OUT_A_MASK);
 		break;
 	case 1:
-		isSet = isMaskSet(DATA_DIRECTION_OUT2_MASK);
+		bIsSet = isMaskSet(DATA_DIRECTION_OUT_B_MASK);
 		break;
 	case 2:
-		isSet = isMaskSet(DATA_DIRECTION_OUT3_MASK);
+		bIsSet = isMaskSet(DATA_DIRECTION_OUT_C_MASK);
 		break;
 	case 3:
-		isSet = isMaskSet(DATA_DIRECTION_OUT4_MASK);
+		bIsSet = isMaskSet(DATA_DIRECTION_OUT_D_MASK);
 		break;
 	default:
 		break;
 	}
 
-	return m_nDmxDataDirectionOut[uart];
+	return m_nDmxDataDirectionOut[nUart];
 }
 
 void DmxGpioParams::Dump(void) {
@@ -166,20 +161,20 @@ void DmxGpioParams::Dump(void) {
 		printf(" %s=%d\n", PARAMS_DATA_DIRECTION, m_nDmxDataDirection);
 	}
 
-	if(isMaskSet(DATA_DIRECTION_OUT1_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT1, m_nDmxDataDirectionOut[0]);
+	if(isMaskSet(DATA_DIRECTION_OUT_A_MASK)) {
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_A, m_nDmxDataDirectionOut[0]);
 	}
 
-	if(isMaskSet(DATA_DIRECTION_OUT2_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT2, m_nDmxDataDirectionOut[1]);
+	if(isMaskSet(DATA_DIRECTION_OUT_B_MASK)) {
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_B, m_nDmxDataDirectionOut[1]);
 	}
 
-	if(isMaskSet(DATA_DIRECTION_OUT3_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT3, m_nDmxDataDirectionOut[2]);
+	if(isMaskSet(DATA_DIRECTION_OUT_C_MASK)) {
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_C, m_nDmxDataDirectionOut[2]);
 	}
 
-	if(isMaskSet(DATA_DIRECTION_OUT4_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT4, m_nDmxDataDirectionOut[3]);
+	if(isMaskSet(DATA_DIRECTION_OUT_D_MASK)) {
+		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_D, m_nDmxDataDirectionOut[3]);
 	}
 #endif
 }
@@ -191,6 +186,6 @@ void DmxGpioParams::staticCallbackFunction(void* p, const char* s) {
 	((DmxGpioParams *) p)->callbackFunction(s);
 }
 
-bool DmxGpioParams::isMaskSet(uint32_t mask) const {
-	return (m_nSetList & mask) == mask;
+bool DmxGpioParams::isMaskSet(uint32_t nMask) const {
+	return (m_nSetList & nMask) == nMask;
 }

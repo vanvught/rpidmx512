@@ -267,7 +267,7 @@ uint8_t RDMDevice::GetExtMonLevel(void) const {
 	return m_nExtMonLevel;
 }
 
-bool RDMDevice::isMaskSet(uint16_t mask) {
-	return (m_bSetList & mask) == mask;
+bool RDMDevice::isMaskSet(uint32_t nMask) {
+	return (m_bSetList & nMask) == nMask;
 }
 
