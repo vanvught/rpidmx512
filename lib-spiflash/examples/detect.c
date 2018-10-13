@@ -36,6 +36,11 @@ int main(int argc, char **argv) {
 	ret = spi_flash_probe(cs, max_hz, spi_mode);
 
 	printf("spi_flash_probe=%d\n", ret);
+
+	if (ret == 0) {
+		printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), spi_flash_get_size());
+	}
+
 #if 0
 	int i;
 	uint8_t buffer[16];
@@ -66,7 +71,8 @@ int main(int argc, char **argv) {
 		printf("%.2x[%c]", buffer[i], isprint(buffer[i]) ? buffer[i] : '.');
 	}
 #endif
-	printf("\n\nDone!\n");
+
+	printf("\nDone!\n");
 
 	return 0;
 }
