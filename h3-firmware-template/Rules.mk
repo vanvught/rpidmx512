@@ -6,7 +6,7 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-PLATFORM ?= ORANGE_PI
+PLATFORM?=ORANGE_PI
 CONSOLE?=
 
 SUFFIX=orangepi_zero
@@ -17,6 +17,19 @@ endif
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	SUFFIX=orangepi_one
+endif
+
+COND=
+ifeq ($(findstring ORANGE_PI,$(PLATFORM)),ORANGE_PI)
+	COND=1
+endif
+
+ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
+	COND=1
+endif
+
+ifdef COND
+	LIBS:=spiflashstore spiflash $(LIBS)
 endif
 
 ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)

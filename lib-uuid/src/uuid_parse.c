@@ -59,6 +59,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "uuid_internal.h"

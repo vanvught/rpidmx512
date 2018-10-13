@@ -62,7 +62,7 @@ builddirs:
 	mkdir -p lib_h3
 
 clean :
-	rm -rf $(BUILD_DIRS)
+	rm -rf build_h3
 	rm -rf lib_h3
 	
 # Build lib
