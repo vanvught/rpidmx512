@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
+#include <assert.h>
 
 #include "dmxmonitor.h"
 
@@ -37,30 +38,28 @@ enum {
 };
 
 DMXMonitor::DMXMonitor(void) :
-	m_bIsStarted(false),
-	m_nSlots(0),
-	m_nDmxStartAddress(DMX_DEFAULT_START_ADDRESS),
-	m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
+		m_nSlots(0),
+		m_nDmxStartAddress(DMX_DEFAULT_START_ADDRESS),
+		m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
 
 {
-	for (int i = 0; i < (int) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
-		m_Data[i] = 0;
+	for (unsigned i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
+		m_bIsStarted[i] = false;
 	}
 }
 
 DMXMonitor::~DMXMonitor(void) {
-	this->Stop();
+	Stop();
 }
 
 void DMXMonitor::DisplayDateTime(uint8_t nPort, const char *pString) {
+	assert(nPort < DMXMONITOR_MAX_PORTS);
+
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
-#if defined (__APPLE__)
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, pString, nPort);
-#else
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld %s:%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, pString, nPort);
-#endif
+
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, pString, nPort);
 }
 
 void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
@@ -85,35 +84,37 @@ uint16_t DMXMonitor::GetDmxStartAddress(void) {
 }
 
 void DMXMonitor::Start(uint8_t nPort) {
-	if(m_bIsStarted) {
+	assert(nPort < DMXMONITOR_MAX_PORTS);
+
+	if(m_bIsStarted[nPort]) {
 		return;
 	}
 
-	m_bIsStarted = true;
+	m_bIsStarted[nPort] = true;
 	DisplayDateTime(nPort, "Start");
 }
 
 void DMXMonitor::Stop(uint8_t nPort) {
-	if(!m_bIsStarted) {
+	assert(nPort < DMXMONITOR_MAX_PORTS);
+
+	if(!m_bIsStarted[nPort]) {
 		return;
 	}
 
-	m_bIsStarted = false;
+	m_bIsStarted[nPort] = false;
 	DisplayDateTime(nPort, "Stop");
 }
 
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+	assert(nPort < DMXMONITOR_MAX_PORTS);
+
 	struct timeval tv;
-	uint16_t i, j;
+	unsigned i, j;
 
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-#if defined (__APPLE__)
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%d %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, (int) nPort, (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
-#else
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6ld DMX:%d %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, tv.tv_usec, (int) nPort, (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
-#endif
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%d %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, (int) nPort, (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
 
 	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		printf("%.2x ", pData[i]);

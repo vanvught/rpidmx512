@@ -31,14 +31,18 @@
 
 #include "lightset.h"
 
+#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
+ #define DMXMONITOR_MAX_PORTS	4
+#endif
+
 class DMXMonitor: public LightSet {
 public:
 	DMXMonitor(void);
 	~DMXMonitor(void);
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	uint16_t GetDmxStartAddress(void);
 
+	uint16_t GetDmxStartAddress(void);
 	uint16_t GetDmxFootprint(void);
 
 	void Start(uint8_t nPort = 0);
@@ -62,13 +66,15 @@ private:
 	void Update(void);
 
 private:
-	bool m_bIsStarted;
 	uint16_t m_nSlots;
 #if defined (__linux__) || defined (__CYGWIN__)  || defined(__APPLE__)
+	bool m_bIsStarted[DMXMONITOR_MAX_PORTS];
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nMaxChannels;
-#endif
+#else
+	bool m_bIsStarted;
 	uint8_t m_Data[512];
+#endif
 };
 
 #endif /* DMXMONITOR_H_ */

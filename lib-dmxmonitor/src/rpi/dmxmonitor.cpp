@@ -37,10 +37,7 @@ enum {
 	DMX_START_ADDRESS = 1
 };
 
-DMXMonitor::DMXMonitor(void) :
-	m_bIsStarted(false),
-	m_nSlots(0)
-{
+DMXMonitor::DMXMonitor(void) : m_nSlots(0), m_bIsStarted(false) {
 	for (int i = 0; i < (int) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
 		m_Data[i] = 0;
 	}
@@ -93,7 +90,7 @@ void DMXMonitor::Stop(uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	for (int i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
+	for (unsigned i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
 		console_set_cursor(4, i);
 		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
 	}
@@ -108,7 +105,7 @@ void DMXMonitor::Cls(void) {
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	m_nSlots = nLength;
 
-	for (uint16_t i = 0 ; i < nLength; i++) {
+	for (unsigned i = 0 ; i < nLength; i++) {
 		m_Data[i] = pData[i];
 	}
 
@@ -116,10 +113,10 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 }
 
 void DMXMonitor::Update(void) {
-	uint8_t row = TOP_ROW;
+	unsigned row = TOP_ROW;
+	unsigned i, j;
 	uint8_t *p = (uint8_t *)m_Data;
 	uint16_t slot = 0;
-	uint8_t i, j;
 
 	for (i = 0; (i < 16) && (slot < m_nSlots); i++) {
 
