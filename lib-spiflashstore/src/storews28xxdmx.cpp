@@ -36,8 +36,6 @@
 StoreWS28xxDmx::StoreWS28xxDmx(void) {
 	DEBUG_ENTRY
 
-	assert(SpiFlashStore::Get() != 0);
-
 	DEBUG_EXIT
 }
 

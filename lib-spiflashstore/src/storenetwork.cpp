@@ -36,8 +36,6 @@
 StoreNetwork::StoreNetwork(void) {
 	DEBUG_ENTRY
 
-	assert(SpiFlashStore::Get() != 0);
-
 	DEBUG_EXIT
 }
 
@@ -66,13 +64,9 @@ void StoreNetwork::Copy(struct TNetworkParams* pNetworkParams) {
 void StoreNetwork::UpdateIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
-	struct TNetworkParams p;
+	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, nLocalIp));
 
-	const uint32_t nOffset = (uint8_t *)&p.nLocalIp - (uint8_t *)&p;
-
-	DEBUG_PRINTF("nOffset=%d", nOffset);
-
-	SpiFlashStore::Get()->Update(STORE_NETWORK, nOffset, (void *)&nIp, sizeof(uint32_t), NetworkParams::GetMaskIpAddress());
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), (void *)&nIp, sizeof(uint32_t), NetworkParams::GetMaskIpAddress());
 
 	DEBUG_EXIT
 }
@@ -80,13 +74,9 @@ void StoreNetwork::UpdateIp(uint32_t nIp) {
 void StoreNetwork::UpdateNetMask(uint32_t nNetMask) {
 	DEBUG_ENTRY
 
-	struct TNetworkParams p;
+	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, nNetmask));
 
-	const uint32_t nOffset = (uint8_t *)&p.nNetmask - (uint8_t *)&p;
-
-	DEBUG_PRINTF("nOffset=%d", nOffset);
-
-	SpiFlashStore::Get()->Update(STORE_NETWORK, nOffset, (void *)&nNetMask, sizeof(uint32_t), NetworkParams::GetMaskNetMask());
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), (void *)&nNetMask, sizeof(uint32_t), NetworkParams::GetMaskNetMask());
 
 	DEBUG_EXIT
 }

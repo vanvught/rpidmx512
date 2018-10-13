@@ -1,5 +1,5 @@
 /**
- * @file storeartnet.h
+ * @file ws28xxstripeparamsstore.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef STOREARTNET_H_
-#define STOREARTNET_H_
+#include "ws28xxstripeparams.h"
 
-#include "artnetparams.h"
-#include "artnetstore.h"
+WS28XXStripeParamsStore::~WS28XXStripeParamsStore(void) {
 
-class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
-public:
-	StoreArtNet(void);
-	~StoreArtNet(void);
-
-	void Update(const struct TArtNetParams *pArtNetParams);
-	void Copy(struct TArtNetParams *pArtNetParams);
-
-	void SaveShortName(const char *pShortName);
-	void SaveLongName(const char *pLongName);
-
-	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
-	void SaveNetSwitch(uint8_t nAddress);
-	void SaveSubnetSwitch(uint8_t nAddress);
-
-private:
-};
-
-#endif /* STOREARTNET_H_ */
+}

@@ -29,18 +29,19 @@
 #include <stdint.h>
 
 #include "storenetwork.h"
+#include "storeartnet.h"
 #if defined(BARE_METAL)
  #include "storedmxsend.h"
+ #include "storews28xxdmx.h"
 #endif
-#include "storews28xxdmx.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
 
 enum TStore {
 	STORE_NETWORK,
+	STORE_ARTNET,
 	STORE_DMXSEND,
 	STORE_SPI,
-	STORE_ARTNET,
 	STORE_LAST
 };
 
@@ -55,7 +56,7 @@ public:
 	SpiFlashStore(void);
 	~SpiFlashStore(void);
 
-	bool HaveFlashChip(void) const;
+	inline bool HaveFlashChip(void) { return m_bHaveFlashChip; }
 
 	void Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t bSetList = 0);
 
@@ -69,10 +70,11 @@ public:
 	void Dump(void);
 
 	inline StoreNetwork *GetStoreNetwork(void) { return &m_StoreNetwork; }
+	inline StoreArtNet *GetStoreArtNet(void) { return &m_StoreArtNet; }
 #if defined(BARE_METAL)
 	inline StoreDmxSend *GetStoreDmxSend(void) { return &m_StoreDmxSend; }
-#endif
 	inline StoreWS28xxDmx *GetStoreWS28xxDmx(void) { return &m_StoreWS28xxDmx; }
+#endif
 
 private:
 	bool Init(void);
@@ -86,15 +88,18 @@ private:
 
 private:
 	bool m_bHaveFlashChip;
+	bool m_bIsNew;
 	uint32_t m_nStartAddress;
 	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
+	uint32_t m_nSpiFlashStoreSize;
 	TState m_tState;
 
 	StoreNetwork m_StoreNetwork;
+	StoreArtNet m_StoreArtNet;
 #if defined(BARE_METAL)
 	StoreDmxSend m_StoreDmxSend;
-#endif
 	StoreWS28xxDmx m_StoreWS28xxDmx;
+#endif
 };
 
 

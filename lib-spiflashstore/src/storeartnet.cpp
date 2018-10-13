@@ -36,8 +36,6 @@
 StoreArtNet::StoreArtNet(void) {
 	DEBUG_ENTRY
 
-	assert(SpiFlashStore::Get() != 0);
-
 	DEBUG_EXIT
 }
 
@@ -59,6 +57,47 @@ void StoreArtNet::Copy(struct TArtNetParams* pArtNetParams) {
 	DEBUG_ENTRY
 
 	SpiFlashStore::Get()->Copy(STORE_ARTNET, (void *)pArtNetParams, sizeof(struct TArtNetParams));
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::SaveShortName(const char* pShortName) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aShortName), (void *)pShortName, ARTNET_SHORT_NAME_LENGTH, ArtNetParams::GetMaskShortName());
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::SaveLongName(const char* pLongName) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aLongName), (void *)pLongName, ARTNET_LONG_NAME_LENGTH, ArtNetParams::GetMaskLongName());
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
+	DEBUG_ENTRY
+	assert(nPortIndex < ARTNET_MAX_PORTS);
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nUniversePort), (void *)&nAddress, sizeof(uint8_t), ArtNetParams::GetMaskUniverse(nPortIndex));
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::SaveNetSwitch(uint8_t nAddress) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nNet), (void *)&nAddress, sizeof(uint8_t), ArtNetParams::GetMaskNet());
+
+	DEBUG_EXIT
+}
+
+void StoreArtNet::SaveSubnetSwitch(uint8_t nAddress) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nSubnet), (void *)&nAddress, sizeof(uint8_t), ArtNetParams::GetMaskSubnet());
 
 	DEBUG_EXIT
 }

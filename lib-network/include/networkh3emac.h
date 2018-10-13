@@ -42,7 +42,10 @@ public:
 	void Begin(uint16_t nPort);
 	void End(void);
 
-	const char* GetHostName(void);
+	inline const char* GetHostName(void) {
+		return (const char *) m_aHostname;
+	}
+
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
 	void JoinGroup(uint32_t ip);

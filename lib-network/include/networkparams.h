@@ -33,23 +33,24 @@
 #include "network.h"
 
 struct TNetworkParams {
-    uint32_t 	bSetList;
-    uint32_t	nLocalIp;
-    uint32_t	nNetmask;
-    uint32_t	nGatewayIp;
-    uint32_t	nNameServerIp;
-    bool		bIsDhcpUsed;
-    uint8_t		aHostName[NETWORK_HOSTNAME_SIZE];
+	uint32_t bSetList;
+	uint32_t nLocalIp;
+	uint32_t nNetmask;
+	uint32_t nGatewayIp;
+	uint32_t nNameServerIp;
+	bool bIsDhcpUsed;
+	uint8_t aHostName[NETWORK_HOSTNAME_SIZE];
 };
 
 class NetworkParamsStore {
 public:
 	virtual ~NetworkParamsStore(void);
 
-	virtual void Update(struct TNetworkParams *networkParams)=0;
+	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
 	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
 
 private:
+
 };
 
 class NetworkParams {
@@ -84,12 +85,13 @@ public:
 		return m_tNetworkParams.aHostName;
 	}
 
+public:
 	static uint32_t GetMaskDhcpUsed(void);
 	static uint32_t GetMaskIpAddress(void);
 	static uint32_t GetMaskNetMask(void);
 
 private:
-	bool isMaskSet(uint32_t) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

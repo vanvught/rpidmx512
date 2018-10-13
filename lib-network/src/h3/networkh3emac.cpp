@@ -125,14 +125,6 @@ void NetworkH3emac::Begin(uint16_t nPort) {
 void NetworkH3emac::End(void) {
 }
 
-const char* NetworkH3emac::GetHostName(void) {
-	DEBUG_ENTRY
-
-	return (const char *)m_aHostname;
-
-	DEBUG_EXIT
-}
-
 void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {
 	DEBUG_ENTRY
 

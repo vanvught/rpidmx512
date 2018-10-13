@@ -18,3 +18,4 @@ libdmxsend.a: $(OBJS)
 	$(PREFIX)objdump -D libdmxsend.a | $(PREFIX)c++filt > libdmxsend.lst
 
 include $(CIRCLEHOME)/Rules.mk
+

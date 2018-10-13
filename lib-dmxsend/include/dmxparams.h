@@ -47,9 +47,26 @@
 
 #define DMX_PARAMS_DEFAULT_REFRESH_RATE	40	///<
 
+struct TDMXParams {
+    uint32_t bSetList;
+	uint8_t nBreakTime;	///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
+	uint8_t nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
+	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+};
+
+class DMXParamsStore {
+public:
+	virtual ~DMXParamsStore(void);
+
+	virtual void Update(const struct TDMXParams *pDmxParams)=0;
+	virtual void Copy(struct TDMXParams *pDmxParams)=0;
+
+private:
+};
+
 class DMXParams {
 public:
-	DMXParams(void);
+	DMXParams(DMXParamsStore *pDMXParamsStore = 0);
 	~DMXParams(void);
 
 	bool Load(void);
@@ -62,19 +79,19 @@ public:
 	void Dump(void);
 
 	inline uint8_t GetBreakTime(void) {
-		return m_nBreakTime;
+		return m_tDMXParams.nBreakTime;
 	}
 
 	inline uint8_t GetMabTime(void) {
-		return m_nMabTime;
+		return m_tDMXParams.nMabTime;
 	}
 
 	inline uint8_t GetRefreshRate(void) {
-		return m_nRefreshRate;
+		return m_tDMXParams.nRefreshRate;
 	}
 
 private:
-	bool isMaskSet(uint32_t) const;
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -83,10 +100,8 @@ private:
     void callbackFunction(const char *s);
 
 private:
-    uint32_t m_bSetList;
-	uint8_t m_nBreakTime;	///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
-	uint8_t m_nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
-	uint8_t m_nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+    DMXParamsStore *m_pDMXParamsStore;
+    struct TDMXParams m_tDMXParams;
 };
 
 #endif /* DMXPARAMS_H_ */

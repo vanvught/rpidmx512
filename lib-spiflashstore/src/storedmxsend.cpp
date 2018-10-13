@@ -1,3 +1,4 @@
+#if !(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__))
 /**
  * @file storedmxsend.cpp
  *
@@ -36,8 +37,6 @@
 StoreDmxSend::StoreDmxSend(void) {
 	DEBUG_ENTRY
 
-	assert(SpiFlashStore::Get() != 0);
-
 	DEBUG_EXIT
 }
 
@@ -62,3 +61,4 @@ void StoreDmxSend::Copy(struct TDMXParams *DmxParams) {
 
 	DEBUG_EXIT
 }
+#endif

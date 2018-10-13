@@ -122,7 +122,7 @@ NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetwor
 }
 
 NetworkParams::~NetworkParams(void) {
-
+	m_tNetworkParams.bSetList = 0;
 }
 
 bool NetworkParams::Load(void) {
@@ -178,8 +178,8 @@ void NetworkParams::Dump(void) {
 #endif
 }
 
-bool NetworkParams::isMaskSet(uint32_t mask) const {
-	return (m_tNetworkParams.bSetList & mask) == mask;
+bool NetworkParams::isMaskSet(uint32_t nMask) const {
+	return (m_tNetworkParams.bSetList & nMask) == nMask;
 }
 
 uint32_t NetworkParams::GetMaskIpAddress(void) {

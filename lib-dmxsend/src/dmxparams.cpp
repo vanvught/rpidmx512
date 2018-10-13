@@ -63,16 +63,15 @@ static const char PARAMS_BREAK_TIME[] ALIGNED = "dmxsend_break_time";
 static const char PARAMS_MAB_TIME[] ALIGNED = "dmxsend_mab_time";
 static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmxsend_refresh_rate";
 
-DMXParams::DMXParams(void) :
-		m_bSetList(0),
-		m_nBreakTime(DMX_PARAMS_DEFAULT_BREAK_TIME),
-		m_nMabTime(DMX_PARAMS_DEFAULT_MAB_TIME),
-		m_nRefreshRate(DMX_PARAMS_DEFAULT_REFRESH_RATE)
-{
+DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXParamsStore) {
+	m_tDMXParams.bSetList = 0;
+	m_tDMXParams.nBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
+	m_tDMXParams.nMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
+	m_tDMXParams.nRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
 }
 
 DMXParams::~DMXParams(void) {
-	m_bSetList = 0;
+	m_tDMXParams.bSetList = 0;
 }
 
 void DMXParams::staticCallbackFunction(void *p, const char *s) {
@@ -83,10 +82,22 @@ void DMXParams::staticCallbackFunction(void *p, const char *s) {
 }
 
 bool DMXParams::Load(void) {
-	m_bSetList = 0;
+	m_tDMXParams.bSetList = 0;
 
 	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
+
+	if (configfile.Read(PARAMS_FILE_NAME)) {
+		// There is a configuration file
+		if (m_pDMXParamsStore != 0) {
+			m_pDMXParamsStore->Update(&m_tDMXParams);
+		}
+	} else if (m_pDMXParamsStore != 0) {
+		m_pDMXParamsStore->Copy(&m_tDMXParams);
+	} else {
+		return false;
+	}
+
+	return true;
 }
 
 void DMXParams::callbackFunction(const char *pLine) {
@@ -96,17 +107,17 @@ void DMXParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, PARAMS_BREAK_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_BREAK_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_BREAK_TIME)) {
-			m_nBreakTime = value8;
-			m_bSetList |= SET_BREAK_TIME_MASK;
+			m_tDMXParams.nBreakTime = value8;
+			m_tDMXParams.bSetList |= SET_BREAK_TIME_MASK;
 		}
 	} else if (Sscan::Uint8(pLine, PARAMS_MAB_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_MAB_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_MAB_TIME)) {
-			m_nMabTime = value8;
-			m_bSetList |= SET_MAB_TIME_MASK;
+			m_tDMXParams.nMabTime = value8;
+			m_tDMXParams.bSetList |= SET_MAB_TIME_MASK;
 		}
 	} else if (Sscan::Uint8(pLine, PARAMS_REFRESH_RATE, &value8) == SSCAN_OK) {
-		m_nRefreshRate = value8;
-		m_bSetList |= SET_REFRESH_RATE_MASK;
+		m_tDMXParams.nRefreshRate = value8;
+		m_tDMXParams.bSetList |= SET_REFRESH_RATE_MASK;
 	}
 }
 
@@ -114,17 +125,17 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 	assert(pDMXSend != 0);
 
 	if (isMaskSet(SET_BREAK_TIME_MASK)) {
-		pDMXSend->SetDmxBreakTime(m_nBreakTime);
+		pDMXSend->SetDmxBreakTime(m_tDMXParams.nBreakTime);
 	}
 
 	if (isMaskSet(SET_MAB_TIME_MASK)) {
-		pDMXSend->SetDmxMabTime(m_nMabTime);
+		pDMXSend->SetDmxMabTime(m_tDMXParams.nMabTime);
 	}
 
 	if (isMaskSet(SET_REFRESH_RATE_MASK)) {
 		uint32_t period = (uint32_t) 0;
-		if (m_nRefreshRate != (uint8_t) 0) {
-			period = (uint32_t) (1000000 / m_nRefreshRate);
+		if (m_tDMXParams.nRefreshRate != (uint8_t) 0) {
+			period = (uint32_t) (1000000 / m_tDMXParams.nRefreshRate);
 		}
 		pDMXSend->SetDmxPeriodTime(period);
 	}
@@ -135,38 +146,38 @@ void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
 	assert(pDMXSendMulti != 0);
 
 	if (isMaskSet(SET_BREAK_TIME_MASK)) {
-		pDMXSendMulti->SetDmxBreakTime(m_nBreakTime);
+		pDMXSendMulti->SetDmxBreakTime(m_tDMXParams.nBreakTime);
 	}
 
 	if (isMaskSet(SET_MAB_TIME_MASK)) {
-		pDMXSendMulti->SetDmxMabTime(m_nMabTime);
+		pDMXSendMulti->SetDmxMabTime(m_tDMXParams.nMabTime);
 	}
 }
 #endif
 
 void DMXParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_bSetList == 0) {
+	if (m_tDMXParams.bSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_BREAK_TIME_MASK)) {
-		printf(" %s=%d\n", PARAMS_BREAK_TIME, (int) m_nBreakTime);
+		printf(" %s=%d\n", PARAMS_BREAK_TIME, (int) m_tDMXParams.nBreakTime);
 	}
 
 	if (isMaskSet(SET_MAB_TIME_MASK)) {
-		printf(" %s=%d\n", PARAMS_MAB_TIME, (int) m_nMabTime);
+		printf(" %s=%d\n", PARAMS_MAB_TIME, (int) m_tDMXParams.nMabTime);
 	}
 
 	if (isMaskSet(SET_REFRESH_RATE_MASK)) {
-		printf(" %s=%d\n", PARAMS_REFRESH_RATE, (int) m_nRefreshRate);
+		printf(" %s=%d\n", PARAMS_REFRESH_RATE, (int) m_tDMXParams.nRefreshRate);
 	}
 #endif
 }
 
-bool DMXParams::isMaskSet(uint32_t mask) const {
-	return (m_bSetList & mask) == mask;
+bool DMXParams::isMaskSet(uint32_t nMask) const {
+	return (m_tDMXParams.bSetList & nMask) == nMask;
 }
 

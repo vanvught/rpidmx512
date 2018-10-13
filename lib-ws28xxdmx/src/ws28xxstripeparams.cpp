@@ -1,5 +1,5 @@
 /**
- * @file devicesparams.cpp
+ * @file ws28xxstripeparams.cpp
  *
  */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -80,8 +80,8 @@ void WS28XXStripeParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
 		for (uint8_t i = 0; i < LED_TYPES_COUNT; i++) {
 			if (strcasecmp(buffer, led_types[i]) == 0) {
-				tLedType = (TWS28XXType) i;
-				m_bSetList |= SET_LED_TYPE_MASK;
+				m_tWS28XXStripeParams.tLedType = (TWS28XXType) i;
+				m_tWS28XXStripeParams.bSetList |= SET_LED_TYPE_MASK;
 				return;
 			}
 		}
@@ -90,72 +90,84 @@ void WS28XXStripeParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint16(pLine, PARAMS_LED_COUNT, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= (4 * 170)) {
-			nLedCount = value16;
-			m_bSetList |= SET_LED_COUNT_MASK;
+			m_tWS28XXStripeParams.nLedCount = value16;
+			m_tWS28XXStripeParams.bSetList |= SET_LED_COUNT_MASK;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
-			m_nDmxStartAddress = value16;
-			m_bSetList |= SET_DMX_START_ADDRESS;
+			m_tWS28XXStripeParams.nDmxStartAddress = value16;
+			m_tWS28XXStripeParams.bSetList |= SET_DMX_START_ADDRESS;
 		}
 	}
 }
+WS28XXStripeParams::WS28XXStripeParams(WS28XXStripeParamsStore *pWS28XXStripeParamsStore): m_pWS28XXStripeParamsStore(pWS28XXStripeParamsStore) {
+	m_tWS28XXStripeParams.bSetList = 0;
+	m_tWS28XXStripeParams.tLedType = WS2801;
+	m_tWS28XXStripeParams.nLedCount = 170;
+	m_tWS28XXStripeParams.nDmxStartAddress = 1;
 
-WS28XXStripeParams::WS28XXStripeParams(void):
-	m_bSetList(0),
-	tLedType(WS2801),
-	nLedCount(170),
-	m_nDmxStartAddress(1)
-{
 }
 
 WS28XXStripeParams::~WS28XXStripeParams(void) {
+	m_tWS28XXStripeParams.bSetList = 0;
 }
 
 bool WS28XXStripeParams::Load(void) {
-	m_bSetList = 0;
+	m_tWS28XXStripeParams.bSetList = 0;
 
 	ReadConfigFile configfile(WS28XXStripeParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
+
+	if (configfile.Read(PARAMS_FILE_NAME)) {
+		// There is a configuration file
+		if (m_pWS28XXStripeParamsStore != 0) {
+			m_pWS28XXStripeParamsStore->Update(&m_tWS28XXStripeParams);
+		}
+	} else if (m_pWS28XXStripeParamsStore != 0) {
+		m_pWS28XXStripeParamsStore->Copy(&m_tWS28XXStripeParams);
+	} else {
+		return false;
+	}
+
+	return true;
 }
 
 void WS28XXStripeParams::Set(SPISend *pSpiSend) {
 	assert(pSpiSend != 0);
 
 	if (isMaskSet(SET_LED_TYPE_MASK)) {
-		pSpiSend->SetLEDType(tLedType);
+		pSpiSend->SetLEDType(m_tWS28XXStripeParams.tLedType);
 	}
 
 	if (isMaskSet(SET_LED_COUNT_MASK)) {
-		pSpiSend->SetLEDCount(nLedCount);
+		pSpiSend->SetLEDCount(m_tWS28XXStripeParams.nLedCount);
 	}
 
 	if (isMaskSet(SET_DMX_START_ADDRESS)) {
-		pSpiSend->SetDmxStartAddress(m_nDmxStartAddress);
+		pSpiSend->SetDmxStartAddress(m_tWS28XXStripeParams.nDmxStartAddress);
 	}
 }
 
 void WS28XXStripeParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_bSetList == 0) {
+	if (m_tWS28XXStripeParams.bSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_LED_TYPE_MASK)) {
-		printf(" %s=%s [%d]\n", PARAMS_LED_TYPE, GetLedTypeString(tLedType), (int) tLedType);
+		printf(" %s=%s [%d]\n", PARAMS_LED_TYPE, GetLedTypeString(m_tWS28XXStripeParams.tLedType), (int) m_tWS28XXStripeParams.tLedType);
 	}
 
 	if (isMaskSet(SET_LED_COUNT_MASK)) {
-		printf(" %s=%d\n", PARAMS_LED_COUNT, (int) nLedCount);
+		printf(" %s=%d\n", PARAMS_LED_COUNT, (int) m_tWS28XXStripeParams.nLedCount);
 	}
 
 	if (isMaskSet(SET_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, (int) m_nDmxStartAddress);
+		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, (int) m_tWS28XXStripeParams.nDmxStartAddress);
 	}
 #endif
 }
@@ -169,5 +181,5 @@ const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
 }
 
 bool WS28XXStripeParams::isMaskSet(uint32_t nMask) const {
-	return (m_bSetList & nMask) == nMask;
+	return (m_tWS28XXStripeParams.bSetList & nMask) == nMask;
 }

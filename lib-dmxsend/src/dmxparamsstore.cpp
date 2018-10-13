@@ -1,5 +1,5 @@
 /**
- * @file detect.c
+ * @file dmxparamsstore.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,26 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include "dmxparams.h"
 
-#include "spi_flash.h"
+DMXParamsStore::~DMXParamsStore(void) {
 
-int main(int argc, char **argv) {
-	int ret;
-	unsigned int cs = 0, max_hz = 0, spi_mode = 0; /* Dummy for now */
-
-	ret = spi_flash_probe(cs, max_hz, spi_mode);
-
-	if (ret > 0) {
-		printf("name=%s\n", spi_flash_get_name());
-		printf("sector size=%d bytes\n", (int) spi_flash_get_sector_size());
-		printf("size=%d bytes\n", (int) spi_flash_get_size());
-	} else {
-		printf("spi_flash_probe=%d\n", ret);
-	}
-
-	printf("\nDone!\n");
-
-	return 0;
 }
