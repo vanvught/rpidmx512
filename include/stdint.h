@@ -1,3 +1,6 @@
+//#if defined (__circle__)
+//#include "../Circle/include/stdint.h"
+//#else
 /**
  * @file stdint.h
  *
@@ -45,3 +48,4 @@ typedef unsigned int 		uintptr_t;
 
 #endif
 
+//#endif

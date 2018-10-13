@@ -1,4 +1,5 @@
 PREFIX ?=
+DEF ?=
 
 CC	=$(PREFIX)gcc
 CPP	=$(PREFIX)g++
@@ -6,10 +7,8 @@ AS	=$(CC)
 LD	=$(PREFIX)ld
 AR	=$(PREFIX)ar
 
-INCLUDES:=-I./include -I../lib-debug/include
-INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
-
-DEFINES:=$(addprefix -D,$(DEFINES))
+INCLUDES :=-I./include -I../lib-debug/include
+INCLUDES +=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifeq ($(findstring lib-bob,$(INCLUDES)),lib-bob)
 	ifneq ($(findstring lib-i2c,$(INCLUDES)),lib-i2c)
@@ -22,18 +21,20 @@ ifneq (, $(shell which /opt/vc/bin/vcgencmd))
 	ifneq "$(wildcard $(BCM2835) )" ""
 		INCLUDES +=-I../lib-bcm2835_raspbian/include
 	endif
-	DEFINES+=-DRASPPI
 endif
- 
-COPS=$(DEFINES) $(INCLUDES)
-COPS+=-Wall -Werror -O2
 
-CCPOPS=-fno-rtti
+DEFINES := $(addprefix -D,$(DEFINES))
+
+COPS  =$(DEF) $(DEFINES)
+COPS +=$(INCLUDES)
+COPS +=-Wall -Werror -O2
+
+CCPOPS =-fno-rtti
 
 ifeq ($(shell uname -o),Cygwin)
-	CCPOPS+=-std=gnu++11
+	CCPOPS +=-std=gnu++11
 else
-	CCPOPS+=-std=c++11
+	CCPOPS +=-std=c++11
 endif	
 
 SOURCE = ./src
@@ -43,10 +44,10 @@ LIB_NAME :=$(patsubst lib-%,%,$(CURR_DIR))
 
 BUILD = build_linux/
 
-OBJECTS:=$(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c))
-OBJECTS+=$(patsubst $(SOURCE)/%.cpp,$(BUILD)%.o,$(wildcard $(SOURCE)/*.cpp))
-OBJECTS+=$(patsubst $(SOURCE)/linux/%.c,$(BUILD)linux/%.o,$(wildcard $(SOURCE)/linux/*.c))
-OBJECTS+=$(patsubst $(SOURCE)/linux/%.cpp,$(BUILD)linux/%.o,$(wildcard $(SOURCE)/linux/*.cpp))
+OBJECTS :=$(patsubst $(SOURCE)/%.c,$(BUILD)%.o,$(wildcard $(SOURCE)/*.c))
+OBJECTS +=$(patsubst $(SOURCE)/%.cpp,$(BUILD)%.o,$(wildcard $(SOURCE)/*.cpp))
+OBJECTS +=$(patsubst $(SOURCE)/linux/%.c,$(BUILD)linux/%.o,$(wildcard $(SOURCE)/linux/*.c))
+OBJECTS +=$(patsubst $(SOURCE)/linux/%.cpp,$(BUILD)linux/%.o,$(wildcard $(SOURCE)/linux/*.cpp))
 
 TARGET = lib_linux/lib$(LIB_NAME).a 
 

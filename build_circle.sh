@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ./makeall_circle-lib.sh RASPPI=1 clean 
 ./makeall_circle-lib.sh RASPPI=1 
 
