@@ -39,15 +39,16 @@
 
 #include "ipprog.h"
 
-#include "timecode.h"
-#include "timesync.h"
-
 // DMX Out, RDM Controller
 #include "dmxparams.h"
 #include "dmxsend.h"
 // Pixel Controller
 #include "ws28xxstripeparams.h"
 #include "ws28xxstripedmx.h"
+
+#if defined(ORANGE_PI)
+ #include "spiflashstore.h"
+#endif
 
 #include "software_version.h"
 
@@ -58,8 +59,13 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	uint8_t nHwTextLength;
+
+#if defined (ORANGE_PI)
+	SpiFlashStore spiFlashStore;
+	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+#else
 	ArtNetParams artnetparams;
-	IpProg ipprog;
+#endif
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -88,8 +94,6 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_set_top_row(3);
-
 	console_status(CONSOLE_YELLOW, "Network init ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
 
@@ -97,11 +101,6 @@ void notmain(void) {
 	nw.Print();
 
 	ArtNetNode node;
-	DMXSend dmx;
-	SPISend spi;
-
-	TimeCode timecode;
-	TimeSync timesync;
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
@@ -109,19 +108,22 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
+	IpProg ipprog;
+
 	node.SetIpProgHandler(&ipprog);
 
-	if (artnetparams.IsUseTimeCode()) {
-		timecode.Start();
-		node.SetTimeCodeHandler(&timecode);
-	}
+#if defined (ORANGE_PI)
+	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
-	if (artnetparams.IsUseTimeSync()) {
-		timesync.Start();
-		node.SetTimeSyncHandler(&timesync);
-	}
+	spiFlashStore.Dump();
+#endif
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	const uint8_t nUniverse = artnetparams.GetUniverse();
+
+	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
+
+	DMXSend dmx;
+	SPISend spi;
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
 		WS28XXStripeParams ws28xxparms;
@@ -135,7 +137,6 @@ void notmain(void) {
 		node.SetDirectUpdate(true);
 
 		const uint16_t nLedCount = spi.GetLEDCount();
-		const uint8_t nUniverse = artnetparams.GetUniverse();
 
 		if (spi.GetLEDType() == SK6812W) {
 			if (nLedCount > 128) {
@@ -143,11 +144,9 @@ void notmain(void) {
 				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
 			}
 			if (nLedCount > 256) {
-				node.SetDirectUpdate(true);
 				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
 			}
 			if (nLedCount > 384) {
-				node.SetDirectUpdate(true);
 				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
 			}
 		} else {
@@ -156,11 +155,9 @@ void notmain(void) {
 				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
 			}
 			if (nLedCount > 340) {
-				node.SetDirectUpdate(true);
 				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
 			}
 			if (nLedCount > 510) {
-				node.SetDirectUpdate(true);
 				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
 			}
 		}
@@ -207,7 +204,7 @@ void notmain(void) {
 		}
 
 		uint8_t nAddress;
-		node.GetUniverseSwitch((uint8_t) 0, nAddress);
+		node.GetUniverseSwitch(0, nAddress);
 
 		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
@@ -239,6 +236,9 @@ void notmain(void) {
 		nw.Run();
 		(void) node.HandlePacket();
 		lb.Run();
+#if defined (ORANGE_PI)
+		spiFlashStore.Flash();
+#endif
 	}
 }
 
