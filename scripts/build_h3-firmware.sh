@@ -1,6 +1,6 @@
 #!/bin/bash
 
-array=( 'PLATFORM=ORANGE_PI' 'PLATFORM=NANO_PI' 'PLATFORM=ORANGE_PI_ONE CONSOLE=CONSOLE_ILI9340')
+array=( 'PLATFORM=ORANGE_PI' 'PLATFORM=ORANGE_PI_ONE CONSOLE=CONSOLE_ILI9340')
 
 do_build() 
 {
@@ -17,4 +17,8 @@ do
 	do_build $i
 done
 
+cd ..
+
 find . -name "*.uImage" | xargs ls -al
+
+cd -

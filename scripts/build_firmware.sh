@@ -6,6 +6,9 @@
 ./makeall_firmware.sh clean 
 ./makeall_firmware.sh 
 
+cd ..
+
 find . -name "kernel*.img" | xargs ls -al | grep rpi
 
-./create_sdcard_zip_file.sh
+cd -
+
