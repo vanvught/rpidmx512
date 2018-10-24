@@ -44,11 +44,12 @@ Linux **Open Source** solutions:
 
 
 # Allwinner H2+/H3 SoC #
-## Orange Pi Zero / NanoPi NEO
+## Orange Pi Zero / Orange Pi One 
 **Open Source** solutions:
 
 - RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_dmx_usb_pro.zip?raw=true)}  {*Orange Pi Zero only*}
 - **Art-Net 3 Ethernet** DMX Node / **RDM** Controller / **Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_emac_artnet_dmx.zip?raw=true)}
+- **Art-Net 3 Ethernet** DMX Node / RDM Controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_emac_artnet_dmx_multi.zip?raw=true)}
 - **Art-Net 3 Wifi** DMX Node / RDM Controller / Pixel (WS28xx/SK6812) controller {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_wifi_artnet_dmx.zip?raw=true)}
 - sACN **E1.31 Ethernet** DMX Node / Pixel (WS28xx/SK6812) controller {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_emac_e131_dmx.zip?raw=true)}
 - sACN **E1.31 Wifi** DMX Bridge  / Pixel (WS28xx / SK6812) controller {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_wifi_e131_dmx.zip?raw=true)}
@@ -58,6 +59,6 @@ Image's download [https://github.com/vanvught/h3dmx512-zip](https://github.com/v
 
 U-Boot Orange Pi Zero: [uboot-orangpi_zero.img.zip](https://github.com/vanvught/h3dmx512-zip/blob/master/uboot-orangpi_zero.img.zip?raw=true)
 
-U-Boot NanoPi NEO: [uboot-nanopi_neo.img.zip](https://github.com/vanvught/h3dmx512-zip/blob/master/uboot-nanopi_neo.img.zip?raw=true) 
+U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3dmx512-zip/blob/master/uboot-orangpi_one.img.zip?raw=true)
 
 > Special thanks to [@trebisky](https://github.com/trebisky/orangepi) (Thomas J. Trebisky), who helped me in understanding the H3 SoC. 

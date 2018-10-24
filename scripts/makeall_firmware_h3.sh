@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=rpi_*
+DIR=../rpi_*
 
 for f in $DIR
 do
@@ -8,6 +8,7 @@ do
 	if [ -d $f ]; then
 		if [[ $f != *"circle"* ]]; then
 			cd "$f"
+			
 			if [ -f Makefile.H3 ]; then
 				if [ $(grep -c NO_EMAC Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
 					echo -e "\e[33mSkipping...\e[0m"
@@ -15,7 +16,14 @@ do
 					make -f Makefile.H3 $1 $2 || exit
 				fi
 			fi
-			cd ..
+			
+			cd -
+		
 		fi
 	fi
 done
+
+#cd ../spiflash-write-opi
+#echo -e "\e[32m[../spiflash-write-opi]\e[0m"
+#make -f Makefile.H3 $1 $2 || exit
+#cd -
