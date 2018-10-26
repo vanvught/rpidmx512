@@ -64,7 +64,7 @@ SpiFlashStore::SpiFlashStore(void): m_bHaveFlashChip(false), m_bIsNew(false), m_
 			m_nSpiFlashStoreSize += s_aStorSize[j];
 		}
 
-		DEBUG_PRINTF("OFFSET_STORES=%d", OFFSET_STORES);
+		DEBUG_PRINTF("OFFSET_STORES=%d", (int) OFFSET_STORES);
 		DEBUG_PRINTF("m_nSpiFlashStoreSize=%d", m_nSpiFlashStoreSize);
 	}
 

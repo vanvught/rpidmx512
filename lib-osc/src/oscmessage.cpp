@@ -54,7 +54,7 @@ int lo_pattern_match(const char *, const char *);
 
 static unsigned next_pow2(unsigned x)
 {
-	//x -= 1; // ???
+	x -= 1;
 	x |= (x >> 1);
 	x |= (x >> 2);
 	x |= (x >> 4);

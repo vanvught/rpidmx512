@@ -1,5 +1,5 @@
 #
-DEFINES = #NDEBUG
+DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-h3/include ../lib-h3/src 
  

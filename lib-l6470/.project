@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-bcm2825_circle</project>
 		<project>lib-bcm2835</project>
 		<project>lib-bcm2835_raspbian</project>
 		<project>lib-utils</project>
