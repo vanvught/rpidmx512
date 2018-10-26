@@ -62,6 +62,27 @@ uint32_t h3_get_dram_size(void) {
 	return (1 << dram_size);
 }
 
+//https://github.com/linux-sunxi/sunxi-tools/blob/master/uart0-helloworld-sdboot.c#L458
+h3_boot_device_t h3_get_boot_device(void) {
+	uint32_t *spl_signature = (void *) 0x4;
+
+	/* Check the eGON.BT0 magic in the SPL header */
+	if (spl_signature[0] != 0x4E4F4765 || spl_signature[1] != 0x3054422E)
+		return H3_BOOT_DEVICE_FEL;
+
+	const uint32_t boot_dev = spl_signature[9] & 0xFF; /* offset into SPL = 0x28 */
+
+	if (boot_dev == 0) {
+		return H3_BOOT_DEVICE_MMC0;
+	}
+
+	if (boot_dev == 3) {
+		return H3_BOOT_DEVICE_SPI;
+	}
+
+	return H3_BOOT_DEVICE_UNK;
+}
+
 extern uint32_t __ram_start; /* Defined by the linker */
 extern uint32_t __ram_end; /* Defined by the linker */
 extern uint32_t __data_start; /* Defined by the linker */

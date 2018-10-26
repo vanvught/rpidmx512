@@ -32,18 +32,20 @@
 
 #ifdef H3
 enum TSocType {
-	SOC_TYPE_H2_PLUS,
-	SOC_TYPE_H3,
-	SOC_TYPE_UNKNOWN
-} ;
+	SOC_TYPE_H2_PLUS, SOC_TYPE_H3, SOC_TYPE_UNKNOWN
+};
 #else
 enum TSocType {
-	SOC_TYPE_BCM2835,
-	SOC_TYPE_BCM2836,
-	SOC_TYPE_BCM2837,
-	SOC_TYPE_UNKNOWN
-} ;
+	SOC_TYPE_BCM2835, SOC_TYPE_BCM2836, SOC_TYPE_BCM2837, SOC_TYPE_UNKNOWN
+};
 #endif
+
+enum TBootDevice {
+	BOOT_DEVICE_UNK,
+	BOOT_DEVICE_FEL,	// H3 Only
+	BOOT_DEVICE_MMC0,
+	BOOT_DEVICE_SPI		// H3 Only
+};
 
 class HardwareBaremetal: public Hardware {
 public:
@@ -90,6 +92,12 @@ public:	// Only available in BAREMETAL
 	uint32_t Micros(void);
 
 	bool IsButtonPressed(void);
+
+#ifdef H3
+	TBootDevice GetBootDevice(void);
+#else
+	TBootDevice GetBootDevice(void) { return BOOT_DEVICE_MMC0; }
+#endif
 
 private:
 	int32_t m_nBoardRevision;
