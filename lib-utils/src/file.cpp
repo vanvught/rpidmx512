@@ -37,7 +37,9 @@
 #include "ff.h"
 
 static FIL file_object;
+static int s_ferror = 0;
 
+// http://elm-chan.org/fsw/ff/doc/open.html
 FILE *fopen(const char *path, const char *mode) {
 	BYTE fa = (BYTE) FA_READ;
 
@@ -47,7 +49,7 @@ FILE *fopen(const char *path, const char *mode) {
 	if (strcmp(mode, "r") == 0) {
 		fa = (BYTE) FA_READ;
 	} else if (strcmp(mode, "w+") == 0) {
-		fa = (BYTE) (FA_WRITE | FA_CREATE_ALWAYS);
+		fa = (BYTE) (FA_CREATE_ALWAYS | FA_WRITE | FA_READ);
 	} else {
 #if defined (BARE_METAL)
 		(void) console_error("mode is not implemented");
@@ -94,6 +96,38 @@ int fgetc(FILE *stream) {
 	}
 
 	return (EOF);
+}
+
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	UINT bytes_read;
+
+	const FRESULT fresult = f_read(&file_object, ptr, (UINT) (size * nmemb), &bytes_read);
+
+	if (fresult == FR_OK) {
+		s_ferror = 0;
+		return (size_t) bytes_read;
+	}
+
+	s_ferror = -(int) fresult;
+
+	return 0;
+}
+
+int fseek(FILE *stream, long offset, int whence) {
+	if (whence == SEEK_SET) {
+		const FRESULT fresult = f_lseek(&file_object, (FSIZE_t) offset);
+		return -(int) fresult;
+	}
+
+	return -1;
+}
+
+void clearerr(FILE *stream) {
+	s_ferror = 0;
+}
+
+int ferror(FILE *stream) {
+	return s_ferror;
 }
 
 #if !defined (__circle__)
