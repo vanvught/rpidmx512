@@ -33,9 +33,7 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#if defined (HAVE_I2C)
- #include "display.h"
-#endif
+#include "display.h"
 
 #include "e131bridge.h"
 #include "e131uuid.h"
@@ -44,11 +42,9 @@
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
-#if defined (HAVE_SPI)
- // WS28xx output
- #include "ws28xxstripeparams.h"
- #include "ws28xxstripedmx.h"
-#endif
+// WS28xx output
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "util.h"
 
@@ -72,10 +68,8 @@ void notmain(void) {
 
 	const TOutputType tOutputType = e131params.GetOutputType();
 
-#if defined (HAVE_I2C)
 	Display display(0,8);
 	const bool IsOledConnected = display.isDetected();
-#endif
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
@@ -94,9 +88,7 @@ void notmain(void) {
 	console_set_top_row(3);
 
 	console_status(CONSOLE_YELLOW, "Network init ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Network init ..."));
-#endif
 
 	nw.Init();
 
@@ -111,9 +103,7 @@ void notmain(void) {
 
 	E131Bridge bridge;
 	DMXSend dmx;
-#if defined (HAVE_SPI)
 	SPISend spi;
-#endif
 
 	bridge.SetCid(uuid);
 	bridge.SetUniverse(e131params.GetUniverse());
@@ -126,9 +116,7 @@ void notmain(void) {
 		}
 		dmxparams.Set(&dmx);
 		bridge.SetOutput(&dmx);
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
 		WS28XXStripeParams deviceparms;
 		if (deviceparms.Load()) {
 			deviceparms.Dump();
@@ -136,20 +124,15 @@ void notmain(void) {
 		deviceparms.Set(&spi);
 		bridge.SetOutput(&spi);
 	}
-#endif
 
 	bridge.Print();
 
 	if (tOutputType == OUTPUT_TYPE_DMX) {
 		dmx.Print();
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
 		spi.Print();
 	}
-#endif
 
-#if defined (HAVE_I2C)
 	if (IsOledConnected) {
 		display.Write(1, "Eth sACN E1.31 ");
 
@@ -172,19 +155,14 @@ void notmain(void) {
 		(void) display.Printf(6, "M: " IPSTR "", IP2STR(bridge.GetMulticastIp()));
 		(void) display.Printf(7, "U: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	}
-#endif
 
 	console_status(CONSOLE_YELLOW, "Starting the Bridge ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting the Bridge ..."));
-#endif
 
 	bridge.Start();
 
 	console_status(CONSOLE_GREEN, "Bridge is running");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Bridge is running"));
-#endif
 
 	hw.WatchdogInit();
 
