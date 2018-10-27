@@ -42,9 +42,8 @@
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
 
-#if !defined(NANO_PI)
- #include "spiflashstore.h"
-#endif
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
 
 #include "software_version.h"
 
@@ -54,14 +53,14 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	uint8_t nHwTextLength;
 
-#if !defined (NANO_PI)
+	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
+		SpiFlashInstall spiFlashInstall;
+	}
+
 	SpiFlashStore spiFlashStore;
+
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
-#else
-	ArtNetParams artnetparams;
-#endif
 
 	if (!hw.IsButtonPressed()) {
 		if (artnetparams.Load()) {
@@ -72,6 +71,7 @@ void notmain(void) {
 	Display display(0,8);
 	const bool oled_connected = display.isDetected();
 
+	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("Ethernet Art-Net 3 Node ");
@@ -86,12 +86,10 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_set_top_row(3);
-
 	console_status(CONSOLE_YELLOW, "Network init ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
 
-	nw.Init();
+	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	ArtNetNode node;
@@ -143,7 +141,7 @@ void notmain(void) {
 	}
 
 	DMXSendMulti dmx;
-	DMXParams dmxparams;
+	DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
 
 	if (!hw.IsButtonPressed()) {
 		if (dmxparams.Load()) {
@@ -159,11 +157,9 @@ void notmain(void) {
 
 	node.SetIpProgHandler(&ipprog);
 
-#if !defined (NANO_PI)
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	spiFlashStore.Dump();
-#endif
 
 	node.Print();
 	dmx.Print();
@@ -175,6 +171,13 @@ void notmain(void) {
 		(void) display.Printf(1, "Eth Art-Net 3 %s", artnetparams.IsRdm() ? "RDM" : "DMX");
 		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+		if (nw.IsDhcpKnown()) {
+			if (nw.IsDhcpUsed()) {
+				display.PutString(" D");
+			} else {
+				display.PutString(" S");
+			}
+		}
 		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 		(void) display.Printf(5, "SN: %s", node.GetShortName());
 		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch() ,node.GetSubnetSwitch(), nAddress);
@@ -187,6 +190,7 @@ void notmain(void) {
 		if (artnetparams.IsRdmDiscovery()) {
 			console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
 			DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
+
 			for (uint8_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 				uint8_t nAddress;
 				if (node.GetUniverseSwitch(i, nAddress)) {
@@ -212,9 +216,7 @@ void notmain(void) {
 		nw.Run();
 		(void) node.HandlePacket();
 		lb.Run();
-#if !defined (NANO_PI)
-		spiFlashStore.Flash();
-#endif
+		(void) spiFlashStore.Flash();
 	}
 }
 

@@ -47,6 +47,7 @@
 #include "ws28xxstripedmx.h"
 
 #if defined(ORANGE_PI)
+ #include "spiflashinstall.h"
  #include "spiflashstore.h"
 #endif
 
@@ -58,9 +59,12 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	uint8_t nHwTextLength;
 
 #if defined (ORANGE_PI)
+	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
+		SpiFlashInstall spiFlashInstall;
+	}
+
 	SpiFlashStore spiFlashStore;
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
 #else
@@ -76,6 +80,7 @@ void notmain(void) {
 	Display display(0,8);
 	const bool oled_connected = display.isDetected();
 
+	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("Ethernet Art-Net 3 Node ");
@@ -97,7 +102,11 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, "Network init ...");
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
 
+#if defined (ORANGE_PI)
+	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+#else
 	nw.Init();
+#endif
 	nw.Print();
 
 	ArtNetNode node;
@@ -126,8 +135,11 @@ void notmain(void) {
 	SPISend spi;
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
+#if defined (ORANGE_PI)
+		WS28XXStripeParams ws28xxparms((WS28XXStripeParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+#else
 		WS28XXStripeParams ws28xxparms;
-
+#endif
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
 			ws28xxparms.Set(&spi);
@@ -162,8 +174,11 @@ void notmain(void) {
 			}
 		}
 	} else {
+#if defined (ORANGE_PI)
+		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+#else
 		DMXParams dmxparams;
-
+#endif
 		if (dmxparams.Load()) {
 			dmxparams.Dump();
 			dmxparams.Set(&dmx);

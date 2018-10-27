@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpi_emac_artnet_dmx</name>
+	<name>opi_emac_artnet_dmx</name>
 	<comment></comment>
 	<projects>
 		<project>firmware-template</project>
@@ -20,6 +20,7 @@
 		<project>lib-network</project>
 		<project>lib-rdm</project>
 		<project>lib-rdmdiscovery</project>
+		<project>lib-spiflashinstall</project>
 		<project>lib-spiflashstore</project>
 		<project>lib-utils</project>
 		<project>lib-ws28xxdmx</project>

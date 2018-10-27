@@ -25,6 +25,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "artnetipprog.h"
 #include "common.h"
@@ -32,6 +33,8 @@
 #include "ipprog.h"
 
 #include "network.h"
+
+#include "spiflashstore.h"
 
 #include "util.h"
 
@@ -41,6 +44,7 @@ union uip {
 } static ip_union;
 
 IpProg::IpProg(void) {
+	assert(SpiFlashStore::Get() != 0);
 }
 
 IpProg::~IpProg(void) {
@@ -66,6 +70,7 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 		// Get IPAddress from IpProg
 		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
 		Network::Get()->SetIp(ip_union.u32);
+		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
 #ifndef NDEBUG
 		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
 		printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));

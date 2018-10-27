@@ -29,7 +29,7 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 endif
 
 ifdef COND
-	LIBS:=spiflashstore spiflash $(LIBS)
+	LIBS:=spiflashinstall spiflashstore spiflash $(LIBS)
 endif
 
 ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
@@ -51,9 +51,9 @@ MAP = $(SUFFIX).map
 BUILD=build_h3/
 
 # Input
-SOURCE=./
-FIRMWARE_DIR=./../h3-firmware-template/
-LINKER=$(FIRMWARE_DIR)memmap
+SOURCE = ./
+FIRMWARE_DIR = ./../h3-firmware-template/
+LINKER = $(FIRMWARE_DIR)memmap
 
 LIBS+=properties c++ hal bob i2c utils console ff12c h3 debug arm
 
@@ -84,7 +84,7 @@ LIBSDEP=$(addsuffix /lib_h3/lib, $(LIBDEP))
 LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
 LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
-COPS=-DBARE_METAL -DH3 -DHAVE_I2C -DHAVE_SPI -D$(PLATFORM) $(DEFINES)
+COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
@@ -135,6 +135,6 @@ $(BUILD)main.elf : Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
 
 $(TARGET) : $(BUILD)main.elf
 	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)
-	mkimage -n 'http://www.raspberrypi-dmx.org' -A arm -O u-boot -T standalone -C none -a 0x40000000 -d $(TARGET) $(SUFFIX).uImage
+	mkimage -n 'http://www.orangepi-dmx.org' -A arm -O u-boot -T standalone -C none -a 0x40000000 -d $(TARGET) $(SUFFIX).uImage
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
