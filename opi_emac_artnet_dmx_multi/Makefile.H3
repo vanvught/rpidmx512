@@ -1,0 +1,10 @@
+#
+DEFINES = ENABLE_MMU EMAC ENABLE_SPIFLASH DEBUG #DO_NOT_USE_UART0
+#
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

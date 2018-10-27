@@ -36,11 +36,7 @@
 #include "mmc_internal.h"
 
 #define SD_WRITE_SUPPORT
-
-#ifdef CACHE_ENABLED		// FIXME Cache is not working correctly for write
-#undef CACHE_ENABLED
-#endif
-
+#define CACHE_ENABLED
 
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
 #error Wrong sector size configuration
@@ -79,15 +75,17 @@ static inline int sdcard_init(void){
 	return RES_ERROR;
 }
 
-static inline int sdcard_read(uint8_t * buf, int sector, int count) {
+static inline int sdcard_read(uint8_t* buf, int sector, int count) {
+	struct mmc *mmc = find_mmc_device(0);
+
 #ifdef CACHE_ENABLED
 	if (count == 1) {
-		int index = sector & CACHE_MASK;
-		void *cache_p = (void *)(cache_buffer + SECTOR_SIZE * index);
+		const int index = sector & CACHE_MASK;
+		const void *cache_p = (void *)(cache_buffer + SECTOR_SIZE * index);
 
 		if (cached_blocks[index] != sector) {
 			// Store sector in cache
-			if (sd_read(cache_p, buf_size, (uint32_t) sector) < (int) buf_size) {
+			if (mmc_read_blocks(mmc, (void *)cache_p, sector, count) != count) {
 				return RES_ERROR;
 			}
 
@@ -98,8 +96,6 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 
 	} else {
 #endif
-		struct mmc *mmc = find_mmc_device(0);
-
 		if (mmc_read_blocks(mmc, (void *)buf, sector, count) != count) {
 			return RES_ERROR;
 		}
@@ -110,16 +106,18 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 }
 
 #ifdef SD_WRITE_SUPPORT
-static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
+static inline int sdcard_write(const uint8_t* buf, int sector, int count) {
     struct mmc *mmc = find_mmc_device(0);
 
     if (mmc_write_blocks(mmc, (unsigned long) sector, count, (const void *)buf) != count) {
 		return RES_ERROR;
 	}
+
 #ifdef CACHE_ENABLED
     int i;
     for (i = 0; i < count; i++) {
-    	int index = (sector + i) & CACHE_MASK;
+    	const int index = (sector + i) & CACHE_MASK;
+    	cached_blocks[index] = sector + i;
     	memcpy_blk((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
     }
 #endif
@@ -127,10 +125,6 @@ static inline int sdcard_write(const uint8_t * buf, int sector, int count) {
 }
 #endif
 
-/* disk_initialize
- *
- * Set up the disk.
- */
 DSTATUS disk_initialize(BYTE drv) {
 	if (drv == (BYTE) 0 && sdcard_init() == 0) {
 		diskio_status &= ~STA_NOINIT;

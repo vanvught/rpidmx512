@@ -1,0 +1,7 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-spiflash/include ../lib-properties/include
+#
+include ../h3-firmware-template/lib/Rules.mk
+	

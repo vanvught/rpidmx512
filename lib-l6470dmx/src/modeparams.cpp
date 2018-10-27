@@ -31,8 +31,6 @@
 
 #if defined(__linux__)
  #include <string.h>
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include "util.h"
 #endif

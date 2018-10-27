@@ -33,6 +33,16 @@
 
 typedef void* FILE;
 
+#ifndef SEEK_SET
+#define	SEEK_SET	0	/* set file offset to offset */
+#endif
+#ifndef SEEK_CUR
+#define	SEEK_CUR	1	/* set file offset to current plus offset */
+#endif
+#ifndef SEEK_END
+#define	SEEK_END	2	/* set file offset to EOF plus offset */
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,6 +56,12 @@ extern int fgetc(FILE *stream);
 
 extern char *fgets(char *s, int size, FILE *stream);
 extern int fputs(const char *s, FILE *stream);
+
+extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+extern int fseek(FILE *stream, long offset, int whence);
+
+extern void clearerr(FILE *stream);
+extern int ferror(FILE *stream);
 
 extern int printf(const char *format, ...);
 

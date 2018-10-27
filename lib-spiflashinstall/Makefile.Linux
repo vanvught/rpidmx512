@@ -1,0 +1,6 @@
+#
+DEFINES = #NDEBUG
+#
+EXTRA_INCLUDES = ../lib-spiflash/include ../lib-properties/include
+#
+include ../linux-template/lib/Rules.mk

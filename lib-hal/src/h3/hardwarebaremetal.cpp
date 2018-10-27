@@ -33,6 +33,8 @@
 #include "c/hardware.h"
 #include "c/sys_time.h"
 
+#include "h3.h"
+#include "h3_hs_timer.h"
 #include "h3_thermal.h"
 #include "h3_watchdog.h"
 
@@ -211,4 +213,8 @@ uint32_t HardwareBaremetal::Millis(void) {
 
 bool HardwareBaremetal::IsButtonPressed(void) {
 	return hardware_is_pwr_button_pressed();
+}
+
+TBootDevice HardwareBaremetal::GetBootDevice(void) {
+	return (TBootDevice) h3_get_boot_device();
 }

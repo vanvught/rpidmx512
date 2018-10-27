@@ -600,6 +600,15 @@ inline static uint64_t h3_read_cnt64(void) {
 
 extern uint32_t h3_get_dram_size(void);
 
+typedef enum H3_BOOT_DEVICE {
+	H3_BOOT_DEVICE_UNK,
+	H3_BOOT_DEVICE_FEL,
+	H3_BOOT_DEVICE_MMC0,
+	H3_BOOT_DEVICE_SPI
+} h3_boot_device_t;
+
+extern h3_boot_device_t h3_get_boot_device(void);
+
 // NDEBUG
 extern void h3_memory_map_dump(void);
 

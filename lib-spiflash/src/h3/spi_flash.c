@@ -305,7 +305,7 @@ int spi_init(void) {
 }
 
 int spi_xfer(unsigned bitlen, const void *dout, void *din, unsigned long flags) {
-	uint32_t len = bitlen / 8;
+	const uint32_t len = bitlen / 8;
 
 	if (bitlen % 8) {
 		DEBUG_PUTS("non byte-aligned SPI transfer");

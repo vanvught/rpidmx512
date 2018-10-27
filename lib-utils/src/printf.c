@@ -49,10 +49,6 @@ enum {
 	FLAG_LEFT_JUSTIFIED =	(1 << 6 )
 };
 
-#if defined (ARM_ALLOW_MULTI_CORE)
-static volatile int lock = 0;
-#endif
-
 /*@null@*/static char *outptr = NULL;
 
 inline static void _xputch(/*@out@*/struct context *ctx, int c) {
@@ -228,7 +224,7 @@ static void _format_hex(struct context *ctx, unsigned int arg) {
 }
 
 static void _format_int(struct context *ctx, long int arg) {
-	char buffer[64] __attribute__((aligned(4)));
+	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
 	int i;
@@ -368,7 +364,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 	ctx.total = 0;
 	ctx.capacity = size;
 
-	while (*fmt != (char)0) {
+	while (*fmt != (char) 0) {
 
 		if (*fmt != '%') {
 			_xputch(&ctx, (int )*fmt++);
@@ -468,19 +464,11 @@ int printf(const char* fmt, ...) {
 	int i;
 	va_list arp;
 
-#if defined (ARM_ALLOW_MULTI_CORE)
-	while (__sync_lock_test_and_set(&lock, 1) == 1);
-#endif
-
 	va_start(arp, fmt);
 
 	i = _vprintf(INT_MAX, fmt, arp);
 
 	va_end(arp);
-
-#if defined (ARM_ALLOW_MULTI_CORE)
-	__sync_lock_release(&lock);
-#endif
 
 	return i;
 }
