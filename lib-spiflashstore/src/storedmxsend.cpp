@@ -57,7 +57,7 @@ void StoreDmxSend::Update(const struct TDMXParams *DmxParams) {
 void StoreDmxSend::Copy(struct TDMXParams *DmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_NETWORK, (void *)DmxParams, sizeof(struct TDMXParams));
+	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)DmxParams, sizeof(struct TDMXParams));
 
 	DEBUG_EXIT
 }
