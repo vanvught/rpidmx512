@@ -103,20 +103,20 @@ typedef enum ads1x15_comp_queue {
 
 #include "device_info.h"
 
-extern const uint16_t ads1x15_get_op_status(const device_info_t *);
+extern uint16_t ads1x15_get_op_status(const device_info_t *);
 
-extern const ads1x15_mux_t ads1x15_get_mux(const device_info_t *);
+extern ads1x15_mux_t ads1x15_get_mux(const device_info_t *);
 extern void ads1x15_set_mux(const device_info_t *, const ads1x15_mux_t);
 
-extern const ads1x15_pga_t ads1x15_get_pga(const device_info_t *);
+extern ads1x15_pga_t ads1x15_get_pga(const device_info_t *);
 extern void ads1x15_set_pga(const device_info_t *, const ads1x15_pga_t);
 
-extern const ads1x15_mode_t ads1x15_get_mode(const device_info_t *);
+extern ads1x15_mode_t ads1x15_get_mode(const device_info_t *);
 extern void ads1x15_set_mode(const device_info_t *, const ads1x15_mode_t);
 
-extern const ads1x15_comp_mode_t ads1x15_get_comp_mode(const device_info_t *);
-extern const ads1x15_comp_polarity_t ads1x15_get_comp_polarity(const device_info_t *);
-extern const ads1x15_comp_latching_t ads1x15_get_comp_latching(const device_info_t *);
-extern const ads1x15_comp_queue_t ads1x15_get_comp_queue(const device_info_t *);
+extern ads1x15_comp_mode_t ads1x15_get_comp_mode(const device_info_t *);
+extern ads1x15_comp_polarity_t ads1x15_get_comp_polarity(const device_info_t *);
+extern ads1x15_comp_latching_t ads1x15_get_comp_latching(const device_info_t *);
+extern ads1x15_comp_queue_t ads1x15_get_comp_queue(const device_info_t *);
 
 #endif /* ADS1X15_H_ */

@@ -36,8 +36,8 @@
 extern "C" {
 #endif
 
-extern const bool bh1750_start(device_info_t *);
-extern const uint16_t bh1750_get_level(const device_info_t *);
+extern bool bh1750_start(device_info_t *);
+extern uint16_t bh1750_get_level(const device_info_t *);
 
 #ifdef __cplusplus
 }

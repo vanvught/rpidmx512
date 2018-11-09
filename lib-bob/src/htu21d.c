@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file htu21d.c
  *
@@ -30,11 +29,10 @@
  #include <stdio.h>
 #endif
 
-extern void udelay(uint32_t);
+#include "bob.h"
 
 #include "i2c.h"
 #include "htu21d.h"
-#include "device_info.h"
 
 #define HTU21D_TEMP		0xF3
 #define	HTU21D_HUMID	0xF5
@@ -127,4 +125,4 @@ float htu21d_get_humidity(const device_info_t *device_info) {
 
 	return -6.0 + (125.0 * humid);
 }
-#endif
+

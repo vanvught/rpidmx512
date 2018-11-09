@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file si7021.c
  *
@@ -30,15 +29,9 @@
  #include <stdio.h>
 #endif
 
-extern void udelay(uint32_t);
+#include "bob.h"
 
-#if defined(__linux__)
- #define udelay bcm2835_delayMicroseconds
-#endif
-
-#include "i2c.h"
 #include "si7021.h"
-#include "device_info.h"
 
 #define SI7021_TEMP		0xF3
 #define	SI7021_HUMID	0xF5
@@ -136,4 +129,3 @@ float si7021_get_humidity(const device_info_t *device_info) {
 
 	return -6.0 + (125.0 * humid);
 }
-#endif

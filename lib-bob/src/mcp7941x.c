@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file mcp7941x.c
  *
@@ -27,7 +26,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "mcp7941x.h"
 
 /** Time and Configuration Registers (TCR) **/
@@ -116,4 +116,3 @@ void mcp7941x_set_date_time(const struct rtc_time *t) {
 
 	(void) i2c_write_nb(data, sizeof(data)/sizeof(data[0]));
 }
-#endif

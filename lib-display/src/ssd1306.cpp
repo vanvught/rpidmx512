@@ -2,7 +2,7 @@
  * @file ssd1306.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,9 @@
 #include <stdio.h>
 
 #if defined(__linux__)
-#include <string.h>
-#elif defined(__circle__)
-#include "circle/util.h"
+ #include <string.h>
 #else
-#include "util.h"
+ #include "util.h"
 #endif
 
 #include "ssd1306.h"
@@ -352,10 +350,6 @@ void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 
 	SetCursorPos(0, nLine - 1);
 	Text(pData, nLength);
-
-#ifndef NDEBUG
-	//DumpShadowRam();
-#endif
 }
 
 void Ssd1306::Text(const char *data, uint8_t nLength) {

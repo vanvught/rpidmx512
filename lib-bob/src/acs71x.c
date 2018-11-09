@@ -27,10 +27,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "bob.h"
+
 #include "acs71x.h"
-
-#include "device_info.h"
-
 #include "pcf8591.h"		///< 8-bit
 #include "bw_i2c_ui.h"		///< 10-bit
 #include "ads1115.h"		///< 16-bit
@@ -118,11 +117,6 @@ bool acs71x_start(acs71x_info_t *acs71x_info) {
 	return true;
 }
 
-/**
- *
- * @param acs712_info
- * @return
- */
 const char *acs71x_get_chip_name(const acs71x_info_t *acs71x_info) {
 	if (acs71x_info->type >= (sizeof(acs71x_name) / sizeof(acs71x_name[0]))) {
 		return NULL;
@@ -131,11 +125,6 @@ const char *acs71x_get_chip_name(const acs71x_info_t *acs71x_info) {
 	return acs71x_name[acs71x_info->type];
 }
 
-/**
- *
- * @param acs712_info
- * @return
- */
 const char *acs71x_get_adc_name(const acs71x_info_t *acs71x_info) {
 	if (acs71x_info->adc >= (sizeof(_adc_device_f) / sizeof(_adc_device_f[0]))) {
 		return NULL;
@@ -144,11 +133,6 @@ const char *acs71x_get_adc_name(const acs71x_info_t *acs71x_info) {
 	return _adc_device_f[acs71x_info->adc].name;
 }
 
-/**
- *
- * @param acs71x_info
- * @return
- */
 uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
 	if (acs71x_info->type >= (sizeof(acs71x_range) / sizeof(acs71x_range[0]))) {
 		return 0;
@@ -157,11 +141,6 @@ uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
 	return acs71x_range[acs71x_info->type];
 }
 
-/**
- *
- * @param acs712_info
- * @return
- */
 uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
 	uint8_t i;
 	uint32_t c = 0;
@@ -175,11 +154,6 @@ uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
 	return (uint16_t) c;
 }
 
-/**
- *
- * @param acs712_info
- * @return
- */
 int16_t acs71x_get_current_dc(const acs71x_info_t *acs71x_info) {
 	uint8_t i;
 	int32_t c = 0;

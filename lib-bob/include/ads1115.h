@@ -59,7 +59,7 @@ typedef enum ads1115_data_rate {
 #include "device_info.h"
 
 extern bool ads1115_start(device_info_t *);
-extern uint16_t ads1115_read(const device_info_t *, const uint8_t);
+extern uint16_t ads1115_read(const device_info_t *, uint8_t);
 
 extern ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *);
 extern void ads1115_set_data_rate(const device_info_t *, const ads1115_data_rate_t);

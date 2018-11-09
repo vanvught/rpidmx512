@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file bh1750.c
  *
@@ -27,11 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "i2c.h"
+#include "bob.h"
 
 #include "bh1750.h"
-
-#include "device_info.h"
 
 #define BH1750_POWER_DOWN					0x00	///<
 #define BH1750_POWER_ON						0x01	///<
@@ -56,11 +53,11 @@ static void i2c_setup(const device_info_t *device_info) {
 bool bh1750_start(device_info_t *device_info) {
 	i2c_begin();
 
-	if (device_info->slave_address == (uint8_t) 0) {
+	if (device_info->slave_address == 0) {
 		device_info->slave_address = BH1750_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
-	if (device_info->speed_hz == (uint32_t) 0) {
+	if (device_info->speed_hz == 0) {
 		device_info->fast_mode = true;
 	}
 
@@ -75,7 +72,7 @@ bool bh1750_start(device_info_t *device_info) {
 	return true;
 }
 
-const uint16_t bh1750_get_level(const device_info_t *device_info) {
+uint16_t bh1750_get_level(const device_info_t *device_info) {
 	uint16_t level;
 
 	i2c_setup(device_info);
@@ -84,4 +81,3 @@ const uint16_t bh1750_get_level(const device_info_t *device_info) {
 
 	return level;
 }
-#endif
