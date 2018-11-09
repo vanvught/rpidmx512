@@ -218,3 +218,7 @@ bool HardwareBaremetal::IsButtonPressed(void) {
 TBootDevice HardwareBaremetal::GetBootDevice(void) {
 	return (TBootDevice) h3_get_boot_device();
 }
+
+const char* HardwareBaremetal::GetWebsiteUrl(void) {
+	return "www.orangepi-dmx.org";
+}

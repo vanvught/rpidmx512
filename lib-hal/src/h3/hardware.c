@@ -110,7 +110,6 @@ void hardware_init(void) {
 	s_hardware_init_startup_seconds = h3_read_cnt64() / (uint64_t) (24 * 1000000);
 
 #ifndef ARM_ALLOW_MULTI_CORE
-	// put all secondary cores to sleep
 	uint8_t cpu_number = 1;
 	for (cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
 		h3_cpu_off(cpu_number);
