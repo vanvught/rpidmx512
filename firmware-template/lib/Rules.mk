@@ -8,41 +8,41 @@ AR	= $(PREFIX)ar
 
 SRCDIR = src src/rpi $(EXTRA_SRCDIR)
 
-INCLUDES := -I./include -I../include -I../lib-bcm2835/include -I../lib-arm/include -I../lib-debug/include 
-INCLUDES += $(addprefix -I,$(EXTRA_INCLUDES))
+INCLUDES:=-I./include -I../include -I../lib-bcm2835/include -I../lib-arm/include -I../lib-debug/include 
+INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
-DEFINES := $(addprefix -D,$(DEFINES))
+DEFINES:=$(addprefix -D,$(DEFINES))
 
-COPS_COMMON = -DBARE_METAL -DHAVE_I2C -DHAVE_SPI $(DEFINES) $(INCLUDES)
-COPS_COMMON += -Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
+COPS_COMMON=-DBARE_METAL $(DEFINES) $(INCLUDES)
+COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables #-fstack-usage
 
-COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
-COPS += -DRPI1
-COPS += $(COPS_COMMON)
+COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
+COPS+=-DRPI1
+COPS+=$(COPS_COMMON)
 
-COPS7 = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
-COPS7 += -DRPI2
-COPS7 += $(COPS_COMMON)
+COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
+COPS7+=-DRPI2
+COPS7+=$(COPS_COMMON)
 
-CURR_DIR := $(notdir $(patsubst %/,%,$(CURDIR)))
-LIB_NAME := $(patsubst lib-%,%,$(CURR_DIR))
+CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
+LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
 
 BUILD = build/
 BUILD7 = build7/
 
-BUILD_DIRS := $(addprefix build/,$(SRCDIR))
-BUILD7_DIRS := $(addprefix build7/,$(SRCDIR))
+BUILD_DIRS:=$(addprefix build/,$(SRCDIR))
+BUILD7_DIRS:=$(addprefix build7/,$(SRCDIR))
 
-C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-CPP_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
-ASM_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
+C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+CPP_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
 
-C_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-CPP_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
-ASM_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
+C_OBJECTS7=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+CPP_OBJECTS7=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+ASM_OBJECTS7=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
 
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
-OBJECTS7 := $(ASM_OBJECTS7) $(C_OBJECTS7) $(CPP_OBJECTS7)
+OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
+OBJECTS7:=$(ASM_OBJECTS7) $(C_OBJECTS7) $(CPP_OBJECTS7)
 
 TARGET = lib/lib$(LIB_NAME).a 
 TARGET7 = lib7/lib$(LIB_NAME).a

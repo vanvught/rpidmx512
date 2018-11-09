@@ -15,7 +15,7 @@ ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 endif
 
 # Output
-TARGET = kernel.img
+TARGET= kernel.img
 LIST = kernel.list
 MAP = kernel.map
 BUILD = build/
@@ -26,62 +26,62 @@ MAP7 = kernel7.map
 BUILD7 = build7/
 
 # Input
-SOURCE=./
-FIRMWARE_DIR=./../firmware-template/
+SOURCE = ./
+FIRMWARE_DIR = ./../firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
 LIBS += properties hal c++ debug console bob i2c utils ff12c bcm2835 arm
 
-DEFINES := $(addprefix -D,$(DEFINES))
+DEFINES:=$(addprefix -D,$(DEFINES))
 
 # The variable for the firmware include directories
-INCDIRS = ../include $(wildcard ./include) $(wildcard ./*/include)
-INCDIRS := $(addprefix -I,$(INCDIRS))
+INCDIRS=../include $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
-LIBINCDIRS = $(addprefix -I../lib-,$(LIBS))
-LIBINCDIRS := $(addsuffix /include, $(LIBINCDIRS))
+LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
+LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
 
 # The variables for the ld -L flag
-LIB6  = $(addprefix -L../lib-,$(LIBS))
-LIB6 := $(addsuffix /lib, $(LIB6))
-LIB7  = $(addprefix -L../lib-,$(LIBS))
-LIB7 := $(addsuffix /lib7, $(LIB7))
+LIB6=$(addprefix -L../lib-,$(LIBS))
+LIB6:=$(addsuffix /lib, $(LIB6))
+LIB7=$(addprefix -L../lib-,$(LIBS))
+LIB7:=$(addsuffix /lib7, $(LIB7))
 
 # The variable for the ld -l flag 
-LDLIBS := $(addprefix -l,$(LIBS))
+LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
-LIBDEP = $(addprefix ../lib-,$(LIBS))
-LIB6DEP = $(addsuffix /lib/lib, $(LIBDEP))
-LIB6DEP := $(join $(LIB6DEP), $(LIBS))
-LIB6DEP := $(addsuffix .a, $(LIB6DEP))
-LIB7DEP = $(addsuffix /lib7/lib, $(LIBDEP))
-LIB7DEP := $(join $(LIB7DEP), $(LIBS))
-LIB7DEP := $(addsuffix .a, $(LIB7DEP))
+LIBDEP=$(addprefix ../lib-,$(LIBS))
+LIB6DEP=$(addsuffix /lib/lib, $(LIBDEP))
+LIB6DEP:=$(join $(LIB6DEP), $(LIBS))
+LIB6DEP:=$(addsuffix .a, $(LIB6DEP))
+LIB7DEP=$(addsuffix /lib7/lib, $(LIBDEP))
+LIB7DEP:=$(join $(LIB7DEP), $(LIBS))
+LIB7DEP:=$(addsuffix .a, $(LIB7DEP))
 
-COPS_COMMON = -DBARE_METAL -DHAVE_I2C -DHAVE_SPI $(DEFINES) #-DNDEBUG
-COPS_COMMON += $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON += -Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS_COMMON=-DBARE_METAL $(DEFINES)
+COPS_COMMON+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
+COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
-COPS = -mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
-COPS += -DRPI1
-COPS += $(COPS_COMMON)
+COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
+COPS+=-DRPI1
+COPS+=$(COPS_COMMON)
 
-COPS7 = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 #-fopt-info-vec-optimized
-COPS7 += -DRPI2
-COPS7 += $(COPS_COMMON)
+COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 #-fopt-info-vec-optimized
+COPS7+=-DRPI2
+COPS7+=$(COPS_COMMON)
 
-C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-C_OBJECTS += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
-C_OBJECTS7 = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-C_OBJECTS7 += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+C_OBJECTS7=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+C_OBJECTS7+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 
-BUILD_DIRS := $(addprefix build/,$(SRCDIR))
-BUILD7_DIRS := $(addprefix build7/,$(SRCDIR))
+BUILD_DIRS:=$(addprefix build/,$(SRCDIR))
+BUILD7_DIRS:=$(addprefix build7/,$(SRCDIR))
 
-OBJECTS := $(ASM_OBJECTS) $(C_OBJECTS)
-OBJECTS7 := $(ASM_OBJECTS7) $(C_OBJECTS7)
+OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
+OBJECTS7:=$(ASM_OBJECTS7) $(C_OBJECTS7)
 
 define compile-objects6
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
@@ -99,7 +99,7 @@ $(BUILD7)$1/%.o: $(SOURCE)$1/%.cpp
 	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS7) -c $$< -o $$@		
 endef
 
-THISDIR = $(CURDIR)
+THISDIR=$(CURDIR)
 
 all : builddirs prerequisites $(TARGET) $(TARGET7)
 	
