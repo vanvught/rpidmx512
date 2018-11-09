@@ -39,6 +39,9 @@
 #define DIV_N_CNT1	0xC		// 24MHz / 2 / 12 = 1MHz, period 1us
 
 void h3_timer_init(void) {
+	H3_TIMER->TMR0_CTRL = (1 << 2);
+	H3_TIMER->TMR1_CTRL = (1 << 2);
+
 	H3_CCU->AVS_CLK_CFG |= SCLK_GATING;
 
 	H3_TIMER->AVS_CTRL = AVS_CNT1_EN |AVS_CNT0_EN;

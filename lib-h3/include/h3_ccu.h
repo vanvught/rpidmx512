@@ -38,6 +38,7 @@ typedef enum H3_CCU_PLL {
 	CCU_PLL_DE
 } ccu_pll_t;
 
+#define CCU_BUS_CLK_GATING0_DMA		(1 << 6)
 #define CCU_BUS_CLK_GATING0_HSTMR	(1 << 19)
 #define CCU_BUS_CLK_GATING0_SPI0	(1 << 20)
 #define CCU_BUS_CLK_GATING0_SPI1	(1 << 21)
@@ -51,6 +52,7 @@ typedef enum H3_CCU_PLL {
 #define CCU_BUS_CLK_GATING3_UART2	(1 << 18)
 #define CCU_BUS_CLK_GATING3_UART3	(1 << 19)
 
+#define CCU_BUS_SOFT_RESET0_DMA		(1 << 6)
 #define CCU_BUS_SOFT_RESET0_HSTMR	(1 << 19)
 #define CCU_BUS_SOFT_RESET0_SPI0	(1 << 20)
 #define CCU_BUS_SOFT_RESET0_SPI1	(1 << 21)
