@@ -82,7 +82,11 @@ void notmain(void) {
 	console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
+#if defined(ORANGE_PI)
+	console_puts(" {2 Universes}\n");
+#else
 	console_puts(" {4 Universes}\n");
+#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
