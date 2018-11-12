@@ -44,6 +44,10 @@ public:
 	void SaveNetSwitch(uint8_t nAddress);
 	void SaveSubnetSwitch(uint8_t nAddress);
 
+	void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
+
+	void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+
 private:
 };
 

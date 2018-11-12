@@ -24,9 +24,7 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
+#include <stdio.h>
 #include <assert.h>
 
 #include "spiflashstore.h"
@@ -54,6 +52,7 @@ SpiFlashStore::SpiFlashStore(void): m_bHaveFlashChip(false), m_bIsNew(false), m_
 	if (spi_flash_probe(0, 0, 0) < 0) {
 		DEBUG_PUTS("No SPI flash chip");
 	} else {
+		printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), spi_flash_get_size());
 		m_bHaveFlashChip = Init();
 	}
 
