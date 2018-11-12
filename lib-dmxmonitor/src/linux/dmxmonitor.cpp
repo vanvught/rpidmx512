@@ -66,7 +66,7 @@ void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
 
-uint16_t DMXMonitor::GetDmxFootprint(void) {
+uint16_t DMXMonitor::GetDmxFootprint(void) const {
 	return m_nMaxChannels;
 }
 
@@ -79,7 +79,7 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t DMXMonitor::GetDmxStartAddress(void) {
+uint16_t DMXMonitor::GetDmxStartAddress(void) const {
 	return m_nDmxStartAddress;
 }
 
@@ -123,6 +123,7 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 	for (; j < m_nMaxChannels; j++) {
 		printf("-- ");
 	}
+
 	printf("\n");
 }
 
