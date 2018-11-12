@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "artnetipprog.h"
-#include "common.h"
+#include "artnet.h"
 
 #include "ipprog.h"
 
