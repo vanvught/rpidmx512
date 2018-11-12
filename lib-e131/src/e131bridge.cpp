@@ -59,6 +59,7 @@ static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x
 #define DEFAULT_SOURCE_NAME_SUFFIX  " sACN E1.31 www.raspberrypi-dmx.org"
 
 E131Bridge::E131Bridge(void) :
+	m_nHandle(0),
 	m_pLightSet(0),
 	m_nUniverse(E131_UNIVERSE_DEFAULT),
 	m_nMulticastIp(0),
@@ -107,7 +108,7 @@ void E131Bridge::Start(void) {
 	FillDiscoveryPacket();
 
 	Network::Get()->Begin(E131_DEFAULT_PORT);
-	Network::Get()->JoinGroup(m_nMulticastIp);
+	Network::Get()->JoinGroup(m_nHandle, m_nMulticastIp);
 }
 
 void E131Bridge::Stop(void) {
@@ -510,7 +511,7 @@ void E131Bridge::SetNetworkDataLossCondition(void) {
 }
 
 void E131Bridge::SendDiscoveryPacket(void) {
-	Network::Get()->SendTo((const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+	Network::Get()->SendTo(m_nHandle, (const uint8_t *)&(m_E131DiscoveryPacket), m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
 	m_State.DiscoveryTime = m_nCurrentPacketMillis;
 }
 
@@ -573,7 +574,7 @@ int E131Bridge::Run(void) {
 	uint16_t nForeignPort;
 	uint32_t IPAddressFrom;
 
-	const int nBytesReceived = Network::Get()->RecvFrom((uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
+	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *)packet, (const uint16_t)sizeof(m_E131.E131Packet), &IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 

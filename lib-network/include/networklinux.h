@@ -51,9 +51,9 @@ public:
 
 	void SetIp(uint32_t ip);
 
-	void JoinGroup(uint32_t ip);
-	uint16_t RecvFrom(uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
+	void JoinGroup(uint32_t nHandle, uint32_t ip);
+	uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
+	void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
 private:
 	bool is_dhclient(const char *if_name);

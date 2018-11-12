@@ -135,7 +135,7 @@ void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::JoinGroup(uint32_t nIp) {
+void NetworkH3emac::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_join(nIp);
@@ -143,11 +143,11 @@ void NetworkH3emac::JoinGroup(uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-uint16_t NetworkH3emac::RecvFrom(uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
 	return udp_recv(m_nIdx, packet, size, from_ip, from_port);
 }
 
-void NetworkH3emac::SendTo(const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(m_nIdx, packet, size, to_ip, remote_port);
 }
 

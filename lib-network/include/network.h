@@ -74,11 +74,11 @@ public:
 	}
 
 #if !defined(__circle__)
-	virtual void JoinGroup(uint32_t ip)=0;
+	virtual void JoinGroup(uint32_t nHandle, uint32_t ip)=0;
 #endif
 
-	virtual uint16_t RecvFrom(uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
-	virtual void SendTo(const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
+	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
+	virtual void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
 
 #if defined(__linux__)	||  defined (BARE_METAL)
 	virtual void SetIp(uint32_t nIp)=0;
