@@ -1,12 +1,12 @@
-# Baremetal library for the DMX512 / RDM #
+# Library DMX512 Receiver
+## Open Source Baremetal C++
+
 Supported boards:
 
 * Raspberry Pi 
 * Orange Pi Zero
 * Orange Pi One
-* NanaPi NEO
-
-
 
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

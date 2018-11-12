@@ -1,4 +1,4 @@
-## Raspberry Pi bare-metal library for the BROADCOM SoC's ##
+# Raspberry Pi bare-metal library for the BROADCOM SoC's
 Memory layout
 
 <table cellspacing="0" border="0">
