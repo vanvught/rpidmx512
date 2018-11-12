@@ -4,11 +4,8 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +31,7 @@
 
 #include <stdint.h>
 
-#include "common.h"
+#include "artnet.h"
 
 #if  !defined (PACKED)
 #define PACKED __attribute__((packed))
@@ -45,21 +42,21 @@
  * The supported legal OpCode values used in Art-Net packets
  */
 enum TOpCodes {
-	OP_POLL = 0x2000,			///< This is an ArtPoll packet, no other data is contained in this UDP packet.
+	OP_POLL = 0x2000,		///< This is an ArtPoll packet, no other data is contained in this UDP packet.
 	OP_POLLREPLY = 0x2100,		///< This is an ArtPollReply Packet. It contains device status information.
 	OP_DIAGDATA = 0x2300,		///< Diagnostics and data logging packet.
-	OP_DMX = 0x5000,			///< This is an ArtDmx data packet. It contains zero start code DMX512 information for a single Universe.
-	OP_SYNC = 0x5200,			///< This is an ArtSync data packet. It is used to force synchronous transfer of ArtDmx packets to a node’s output.
+	OP_DMX = 0x5000,		///< This is an ArtDmx data packet. It contains zero start code DMX512 information for a single Universe.
+	OP_SYNC = 0x5200,		///< This is an ArtSync data packet. It is used to force synchronous transfer of ArtDmx packets to a node’s output.
 	OP_ADDRESS = 0x6000,		///< This is an ArtAddress packet. It contains remote programming information for a Node.
 	OP_TODREQUEST = 0x8000,		///< This is an ArtTodRequest packet. It is used to request a Table of Devices (ToD) for RDM discovery.
 	OP_TODDATA = 0x8100, 		///< This is an ArtTodData packet. It is used to send a Table of Devices (ToD) for RDM discovery.
-	OP_TODCONTROL =	0x8200,		 ///< This is an ArtTodControl packet. It is used to send RDM discovery control messages
-	OP_RDM = 0x8300, 			///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
+	OP_TODCONTROL =	0x8200,		///< This is an ArtTodControl packet. It is used to send RDM discovery control messages
+	OP_RDM = 0x8300, 		///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
 	OP_TIMECODE = 0x9700,		///< This is an ArtTimeCode packet. It is used to transport time code over the network.
 	OP_TIMESYNC = 0x9800,		///< Used to synchronize real time date and clock
 	OP_DIRECTORY = 0x9A00,		///< Requests a node's file list
 	OP_DIRECTORYREPLY = 0x9B00,	///< Replies to OpDirectory with file list
-	OP_IPPROG = 0xF800,			///< This is an ArtIpProg packet. It is used to re-programm the IP, Mask and Port address of the Node.
+	OP_IPPROG = 0xF800,		///< This is an ArtIpProg packet. It is used to re-programm the IP, Mask and Port address of the Node.
 	OP_IPPROGREPLY = 0xF900,	///< This is an ArtIpProgReply packet. It is returned by the node to acknowledge receipt of an ArtIpProg packet.
 	OP_NOT_DEFINED = 0x0000		///< OP_NOT_DEFINED
 };
@@ -82,7 +79,7 @@ struct TArtPoll {
 struct TArtPollReply {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpPollReply \ref TOpCodes
-	uint8_t IPAddress[4];	///< Array containing the Node’s IP address. First array entry is most significant byte of address.
+	uint8_t IPAddress[4];		///< Array containing the Node’s IP address. First array entry is most significant byte of address.
 	uint16_t Port;			///< The Port is always 0x1936
 	uint8_t VersInfoH;		///< High byte of Node’s firmware revision number.
 	uint8_t VersInfoL;		///< Low byte of Node’s firmware revision number.
@@ -173,11 +170,11 @@ struct TArtAddress {
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
 	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
 	uint8_t NetSwitch;		///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
-	uint8_t Filler2;		///< Pad length to match ArtPoll.
+	uint8_t BindIndex;		///< The BindIndex defines the bound node which originated this packet and is used to uniquely identify the bound node when identical IP addresses are in use.
 	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];///< The Node will ignore this value if the string is null.
 	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];	///< The Node will ignore this value if the string is null.
-	uint8_t SwIn[ARTNET_MAX_PORTS];		///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
-	uint8_t SwOut[ARTNET_MAX_PORTS];	///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
+	uint8_t SwIn[ARTNET_MAX_PORTS];	///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
+	uint8_t SwOut[ARTNET_MAX_PORTS];///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
 	uint8_t SubSwitch;		///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
 	uint8_t SwVideo;		///< Reserved
 	uint8_t Command;		///< Node configuration commands \ref TArtnetPortCommand
@@ -296,7 +293,7 @@ struct TArtTodData {
 	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
 	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
 	uint8_t Spare6;			///< Transmit as zero, receivers don’t test.
-	uint8_t Spare7;			///< Transmit as zero, receivers don’t test.
+	uint8_t BindIndex;		///< The BindIndex defines the bound node which originated this packet. In combination with Port and Source IP address, it uniquely identifies the sender.
 	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
 	uint8_t CommandResponse;///< 0x00 TodFull The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
 	uint8_t Address;		///< The low 8 bits of the Port-Address of the Output Gateway DMX Port that generated this packet. The high nibble is the Sub-Net switch. The low nibble corresponds to the Universe.
@@ -432,30 +429,28 @@ struct TArtDirectoryReply {
 	uint8_t Data[64];		///< Application specific data
 }PACKED;
 
-
 /**
  * union of supported Art-Net packets
  */
 union UArtPacket {
-	struct TArtPoll ArtPoll;						///< ArtPoll packet
-	struct TArtPollReply ArtPollReply;				///< ArtPollReply packet
-	struct TArtDmx ArtDmx;							///< ArtDmx packet
-	struct TArtDiagData ArtDiagData;				///< ArtDiagData packet
-	struct TArtSync ArtSync;						///< ArtSync packet
-	struct TArtAddress ArtAddress;					///< ArtAddress packet
-	struct TArtTimeCode ArtTimeCode;				///< ArtTimeCode packet
-	struct TArtTimeSync ArtTimeSync;				///< ArtTimeSync packet
-	struct TArtTodRequest ArtTodRequest;			///< ArtTodRequest packet
-	struct TArtTodControl ArtTodControl;			///< ArtTodControl packet
-	struct TArtTodData ArtTodData;					///< ArtTodData packet
-	struct TArtRdm ArtRdm;							///< ArtRdm packet
-	struct TArtIpProg ArtIpProg;					///< ArtIpProg packet
-	struct TArtIpProgReply ArtIpProgReply;			///< ArtIpProgReply packet
-	struct TArtTrigger ArtTrigger;					///< ArtTrigger packet
-	struct TArtDirectory ArtDirectory;				///< ArtDirectory packet
+	struct TArtPoll ArtPoll;			///< ArtPoll packet
+	struct TArtPollReply ArtPollReply;		///< ArtPollReply packet
+	struct TArtDmx ArtDmx;				///< ArtDmx packet
+	struct TArtDiagData ArtDiagData;		///< ArtDiagData packet
+	struct TArtSync ArtSync;			///< ArtSync packet
+	struct TArtAddress ArtAddress;			///< ArtAddress packet
+	struct TArtTimeCode ArtTimeCode;		///< ArtTimeCode packet
+	struct TArtTimeSync ArtTimeSync;		///< ArtTimeSync packet
+	struct TArtTodRequest ArtTodRequest;		///< ArtTodRequest packet
+	struct TArtTodControl ArtTodControl;		///< ArtTodControl packet
+	struct TArtTodData ArtTodData;			///< ArtTodData packet
+	struct TArtRdm ArtRdm;				///< ArtRdm packet
+	struct TArtIpProg ArtIpProg;			///< ArtIpProg packet
+	struct TArtIpProgReply ArtIpProgReply;		///< ArtIpProgReply packet
+	struct TArtTrigger ArtTrigger;			///< ArtTrigger packet
+	struct TArtDirectory ArtDirectory;		///< ArtDirectory packet
 	struct TArtDirectoryReply ArtDirectoryReply;	///< ArtDirectoryReply packet
 };
-
 
 /**
  * a packet, containing data, length, type and a src/dst address

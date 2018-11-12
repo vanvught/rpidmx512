@@ -36,7 +36,6 @@
 #include <stdbool.h>
 #include <time.h>
 
-#include "common.h"
 #include "packets.h"
 
 struct TIpProg {

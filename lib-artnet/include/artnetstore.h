@@ -4,9 +4,6 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -34,6 +31,8 @@
 
 #include <stdint.h>
 
+#include "artnet.h"
+
 class ArtNetStore {
 public:
 	virtual ~ArtNetStore(void);
@@ -44,6 +43,8 @@ public:
 	virtual void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
 	virtual void SaveNetSwitch(uint8_t nAddress)=0;
 	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
+
+	virtual void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge)=0;
 
 private:
 };
