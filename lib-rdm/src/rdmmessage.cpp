@@ -1,7 +1,6 @@
 /**
  * @file rdmmessage.cpp
  *
- *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -29,8 +28,6 @@
 
 #if defined (BARE_METAL)
  #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include <string.h>
 #endif
