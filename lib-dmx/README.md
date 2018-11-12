@@ -1,4 +1,6 @@
-# Baremetal library for the DMX512 / RDM #
+# Library DMX512 / RDM
+## Open Source Baremetal C 
+
 Supported boards:
 
 * Raspberry Pi 

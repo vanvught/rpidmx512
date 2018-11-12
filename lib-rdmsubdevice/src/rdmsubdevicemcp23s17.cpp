@@ -1,4 +1,4 @@
-#if defined (HAVE_SPI)
+#if defined (BARE_METAL)
 /**
  * @file rdmsubdevicemcp23s17.cpp
  *

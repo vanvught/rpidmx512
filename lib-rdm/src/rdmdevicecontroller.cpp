@@ -24,14 +24,11 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
 
 #include  "rdmdevicecontroller.h"
 
 #if defined (BARE_METAL)
  #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include <string.h>
 #endif
@@ -40,7 +37,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-#if defined (ORANGE_PI)
+#if defined (H3)
  static const char DEVICE_LABEL[] ALIGNED = "Orange Pi RDM Controller";
 #else
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Controller";
@@ -49,8 +46,8 @@
 RDMDeviceController::RDMDeviceController(void) {
 	struct TRDMDeviceInfoData info;
 
-	info.data = (uint8_t *)DEVICE_LABEL;
-	info.length = sizeof(DEVICE_LABEL) -1;
+	info.data = (uint8_t *) DEVICE_LABEL;
+	info.length = sizeof(DEVICE_LABEL) - 1;
 
 	SetLabel(&info);
 }

@@ -127,7 +127,7 @@ const char* NetworkCircle::GetHostName(void) {
 	return m_aHostname;
 }
 
-uint16_t NetworkCircle::RecvFrom(uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkCircle::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
 	assert(packet != 0);
 	assert(from_ip != 0);
 	assert(from_port != 0);
@@ -148,7 +148,7 @@ uint16_t NetworkCircle::RecvFrom(uint8_t* packet, uint16_t size, uint32_t* from_
 	return nBytesReceived;
 }
 
-void NetworkCircle::SendTo(const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkCircle::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	assert(packet != 0);
 
 	CIPAddress DestinationIP(to_ip);

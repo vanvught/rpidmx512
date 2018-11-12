@@ -85,7 +85,7 @@ public:
 	void Dump(void);
 
 private:
-	bool isMaskSet(uint16_t);
+	bool isMaskSet(uint32_t nMask);
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

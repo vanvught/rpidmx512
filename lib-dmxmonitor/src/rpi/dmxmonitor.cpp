@@ -55,11 +55,11 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t DMXMonitor::GetDmxStartAddress(void) {
+uint16_t DMXMonitor::GetDmxStartAddress(void) const {
 	return DMX_START_ADDRESS;
 }
 
-uint16_t DMXMonitor::GetDmxFootprint(void) {
+uint16_t DMXMonitor::GetDmxFootprint(void) const {
 	return DMX_FOOTPRINT;
 }
 
@@ -124,11 +124,13 @@ void DMXMonitor::Update(void) {
 
 		for (j = 0; (j < 32) && (slot < m_nSlots); j++) {
 			const uint8_t d = *p++;
-			if (d == (uint8_t) 0) {
+
+			if (d == 0) {
 				console_puts(" 0");
 			} else {
 				console_puthex_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
 			}
+
 			console_putc((int) ' ');
 			slot++;
 		}
@@ -143,4 +145,3 @@ void DMXMonitor::Update(void) {
 		console_puts("                                                                                               ");
 	}
 }
-

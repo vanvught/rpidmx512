@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file pcf8591.c
  *
@@ -27,9 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "pcf8591.h"
-#include "device_info.h"
 
 #define PCF8591_DAC_ENABLE			0x40
 #define PCF8591_ADC_AUTO_INC_MASK	0x44
@@ -65,7 +64,7 @@ void pcf8591_dac_write(const device_info_t *device_info, uint8_t data) {
 
 }
 
-const uint8_t pcf8591_adc_read(const device_info_t *device_info, uint8_t channel) {
+uint8_t pcf8591_adc_read(const device_info_t *device_info, uint8_t channel) {
 	uint8_t data = channel;
 
 	i2c_setup(device_info);
@@ -76,4 +75,3 @@ const uint8_t pcf8591_adc_read(const device_info_t *device_info, uint8_t channel
 
 	return data;
 }
-#endif

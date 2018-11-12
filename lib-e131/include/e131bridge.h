@@ -115,6 +115,7 @@ private:
 	void HandleSynchronization(void);
 
 private:
+	uint32_t m_nHandle;
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
 	uint32_t m_nMulticastIp;

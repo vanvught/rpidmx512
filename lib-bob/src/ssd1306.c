@@ -28,18 +28,8 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-#if defined(__linux__) || defined(__circle__)
- #include "bcm2835.h"
- #define udelay bcm2835_delayMicroseconds
-#elif defined(H3)
-#else
- #include "bcm2835.h"
- #include "bcm2835_gpio.h"
- #include "bcm2835_aux_spi.h"
- #include "bcm2835_spi.h"
-#endif
+#include "bob.h"
 
-#include "i2c.h"
 #include "oled.h"
 
 #if defined(H3)
@@ -229,7 +219,6 @@ static void reset(void) {
 static void i2c_setup(const oled_info_t *oled_info) {
 	i2c_set_address(oled_info->slave_address);
 	i2c_set_baudrate(I2C_FULL_SPEED);
-	//_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
 }
 
 static void _send_command(const oled_info_t *oled_info, uint8_t cmd) {

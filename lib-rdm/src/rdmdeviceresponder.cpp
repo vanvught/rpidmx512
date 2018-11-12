@@ -37,8 +37,6 @@
 
 #if defined (BARE_METAL)
  #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include <string.h>
 #endif
@@ -52,7 +50,7 @@
 #if defined(H3)
  #include "h3_board.h"
  static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " RDM Responder";
-#elif defined (RASPPI) || defined(__circle__) || defined (BARE_METAL)
+#elif defined (RASPPI) || defined (BARE_METAL)
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
  static const char DEVICE_LABEL[] ALIGNED = "Cygwin RDM Responder";

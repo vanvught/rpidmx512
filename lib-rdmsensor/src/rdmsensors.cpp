@@ -31,8 +31,6 @@
 
 #if defined (BARE_METAL)
  #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include <string.h>
 #endif
@@ -50,7 +48,7 @@
  #include "cputemperature.h"
 #endif
 
-#if defined (HAVE_I2C)
+#if defined (RASPPI) || defined(BARE_METAL)
 #include "i2c.h"
 
 #include "sensorbh1750.h"
@@ -89,7 +87,7 @@ void RDMSensors::Init(void) {
 
 	Add(new CpuTemperature(m_nCount));
 #endif
-#if defined (HAVE_I2C)
+#if defined (RASPPI) || defined(BARE_METAL)
 	if(i2c_begin()) {	// We have I2C sensors only
 		ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);
 		(void) configfile.Read(SENSORS_PARAMS_FILE_NAME);
@@ -165,7 +163,7 @@ void RDMSensors::staticCallbackFunction(void *p, const char *s) {
 
 void RDMSensors::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
-#if defined (HAVE_I2C)
+#if defined (RASPPI) || defined(BARE_METAL)
 	int nReturnCode;
 	char aSensorName[32];
 	uint8_t nLength = sizeof(aSensorName) - 1;

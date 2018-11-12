@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,6 @@
 
 #include <stdio.h>
 
-#include "bcm2835_i2c.h"
-
 #include "i2c.h"
 
 #include "hardware.h"
@@ -34,16 +32,13 @@
 
 #include "software_version.h"
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-
 void notmain(void) {
 	uint8_t first = 0x03, last = 0x77;
 	uint8_t i, j;
 	uint8_t address;
 
-	bcm2835_i2c_begin();
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_2500); // 100kHz
+	i2c_begin();
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hardware_board_get_model(), __DATE__, __TIME__);
 
@@ -83,8 +78,6 @@ void notmain(void) {
 		(void) console_puts("\n");
 	}
 
-	for (;;) {
-
-	}
-
+	for (;;)
+		;
 }

@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file bw_i2c_lcd.c
  *
@@ -26,15 +25,15 @@
 
 #include <stdint.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "bw.h"
-#include "device_info.h"
 
 #define BW_LCD_I2C_BYTE_WAIT_US	37
 
 #if defined (BARE_METAL) && !defined(H3)
  #include "bcm2835.h"
- static uint32_t i2c_write_us = (uint32_t) 0;
+ static uint32_t i2c_write_us = 0;
 #endif
 
 inline static void _i2c_write(const char *buffer, const uint32_t size) {
@@ -59,7 +58,7 @@ inline static void lcd_i2c_setup(const device_info_t *device_info) {
 void bw_i2c_lcd_start(device_info_t *device_info) {
 	i2c_begin();
 
-	if (device_info->slave_address == (uint8_t) 0) {
+	if (device_info->slave_address == 0) {
 		device_info->slave_address = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 	}
 #if defined (BARE_METAL) && !defined(H3)
@@ -184,4 +183,3 @@ void bw_i2c_lcd_reinit(const device_info_t *device_info) {
 	lcd_i2c_setup(device_info);
 	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
-#endif

@@ -42,20 +42,20 @@ public:
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
-	uint16_t GetDmxStartAddress(void);
-	uint16_t GetDmxFootprint(void);
+	uint16_t GetDmxStartAddress(void) const;
+	uint16_t GetDmxFootprint(void) const;
 
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
 
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 #else
 	void Cls(void);
 #endif
 
-#if defined (__linux__) || defined (__CYGWIN__)  || defined(__APPLE__)
+#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	void SetMaxDmxChannels(uint16_t);
 
 private:
@@ -67,7 +67,7 @@ private:
 
 private:
 	uint16_t m_nSlots;
-#if defined (__linux__) || defined (__CYGWIN__)  || defined(__APPLE__)
+#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	bool m_bIsStarted[DMXMONITOR_MAX_PORTS];
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nMaxChannels;

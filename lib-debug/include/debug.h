@@ -35,12 +35,12 @@
  #define DEBUG2_ENTRY	printf("\t\t--> %s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
  #define DEBUG2_EXIT	printf("\t\t<-- %s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
 #else
- #define DEBUG_ENTRY
- #define DEBUG_EXIT
- #define DEBUG1_ENTRY
- #define DEBUG1_EXIT
- #define DEBUG2_ENTRY
- #define DEBUG2_EXIT
+ #define DEBUG_ENTRY	((void)0);
+ #define DEBUG_EXIT		((void)0);
+ #define DEBUG1_ENTRY	((void)0);
+ #define DEBUG1_EXIT	((void)0);
+ #define DEBUG2_ENTRY	((void)0);
+ #define DEBUG2_EXIT	((void)0);
 #endif
 
 #ifdef NDEBUG

@@ -34,7 +34,7 @@
 #include "font_cp437.h"
 
 #ifndef MIN
-#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))
+ #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));

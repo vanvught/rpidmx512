@@ -26,16 +26,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "bob.h"
+
 #include "max7219.h"
 #include "max7219_spi.h"
 
-#include "device_info.h"
-
-#include "debug.h"
 
 void d8x7segment_init(const device_info_t *device_info, uint8_t intensity) {
-	DEBUG1_ENTRY
-
 	(void) max7219_spi_start((device_info_t *)device_info);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_SHUTDOWN, MAX7219_SHUTDOWN_NORMAL_OP);
@@ -44,8 +41,6 @@ void d8x7segment_init(const device_info_t *device_info, uint8_t intensity) {
 	max7219_spi_write_reg(device_info, MAX7219_REG_SCAN_LIMIT, 7);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_INTENSITY, intensity & 0x0F);
-
-	DEBUG1_EXIT
 }
 
 void d8x7segment_cls(const device_info_t *device_info) {

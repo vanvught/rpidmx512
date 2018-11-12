@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file bw_i2c.c
  *
@@ -27,11 +26,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-extern void udelay(uint32_t);
+#include "bob.h"
 
-#include "i2c.h"
 #include "bw.h"
-#include "device_info.h"
 
 #define I2C_DELAY_WRITE_READ_US		100
 
@@ -43,4 +40,3 @@ void bw_i2c_read_id(const device_info_t *device_info, char *id) {
 	udelay(I2C_DELAY_WRITE_READ_US);
 	(void) i2c_read(id, BW_ID_STRING_LENGTH);
 }
-#endif

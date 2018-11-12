@@ -40,8 +40,6 @@
 
 #if defined (BARE_METAL)
  #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include <string.h>
 #endif
@@ -62,7 +60,11 @@
 #define PRODUCT_CATEGORY_MASK	1<<4
 #define PRODUCT_DETAIL_MASK		1<<5
 
+#if defined (H3)
+static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "http://www.orangepi-dmx.org";
+#else
 static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "http://www.raspberrypi-dmx.org";
+#endif
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 

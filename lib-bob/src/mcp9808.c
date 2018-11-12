@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file mcp9808.c
  *
@@ -27,9 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "mcp9808.h"
-#include "device_info.h"
 
 #define MCP9808_REG_UPPER_TEMP		0x02	///<
 #define MCP9808_REG_LOWER_TEMP		0x03	///<
@@ -76,7 +75,7 @@ bool mcp9808_start(device_info_t *device_info) {
 	return true;
 }
 
-const float mcp9808_get_temperature(const device_info_t *device_info) {
+float mcp9808_get_temperature(const device_info_t *device_info) {
 	uint16_t val;
 	float temp;
 
@@ -94,4 +93,3 @@ const float mcp9808_get_temperature(const device_info_t *device_info) {
 
 	return temp;
 }
-#endif

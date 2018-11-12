@@ -4,9 +4,6 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -43,7 +40,6 @@
 
 #include "artnet.h"
 #include "packets.h"
-#include "common.h"
 
 #include "lightset.h"
 #include "ledblink.h"
@@ -53,6 +49,36 @@
 #include "artnetrdm.h"
 #include "artnetipprog.h"
 #include "artnetstore.h"
+
+/**
+ * Table 3 – NodeReport Codes
+ * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
+ * The NodeReport is returned in ArtPollReply.
+ */
+enum TArtNetNodeReportCode {
+	ARTNET_RCDEBUG,			///<
+	ARTNET_RCPOWEROK,		///<
+	ARTNET_RCPOWERFAIL,		///<
+	ARTNET_RCSOCKETWR1,		///<
+	ARTNET_RCPARSEFAIL,		///<
+	ARTNET_RCUDPFAIL,		///<
+	ARTNET_RCSHNAMEOK,		///<
+	ARTNET_RCLONAMEOK,		///<
+	ARTNET_RCDMXERROR,		///<
+	ARTNET_RCDMXUDPFULL,	///<
+	ARTNET_RCDMXRXFULL,		///<
+	ARTNET_RCSWITCHERR,		///<
+	ARTNET_RCCONFIGERR,		///<
+	ARTNET_RCDMXSHORT,		///<
+	ARTNET_RCFIRMWAREFAIL,	///<
+	ARTNET_RCUSERFAIL     	///<
+};
+
+enum TNodeStatus {
+	ARTNET_OFF,		///<
+	ARTNET_STANDBY,	///<
+	ARTNET_ON		///<
+};
 
 struct TArtNetNodeState {
 	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
@@ -96,6 +122,11 @@ struct TGenericPort {
 	uint8_t nStatus;			///<
 };
 
+enum TPortProtocol {
+	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
+	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
+};
+
 struct TOutputPort {
 	uint8_t data[ARTNET_DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
@@ -109,63 +140,77 @@ struct TOutputPort {
 	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
 	bool bIsEnabled;					///< Is the port enabled ?
 	TGenericPort port;					///< \ref TGenericPort
+	TPortProtocol tPortProtocol;		///< Art-Net 4
 };
 
 class ArtNetNode {
 public:
-	ArtNetNode(void);
+	ArtNetNode(uint8_t nVersion = 3);
 	~ArtNetNode(void);
 
+	void Start(void);
+	void Stop(void);
+
+	int HandlePacket(void);
+
+	inline uint8_t GetVersion(void) {
+		return m_nVersion;
+	}
+
 	void SetOutput(LightSet *);
+	const LightSet* GetOutput(void);
+
+	const uint8_t *GetSoftwareVersion(void);
+
+	void SetDirectUpdate(bool);
+	bool GetDirectUpdate(void) const;
+
+	void SetShortName(const char *);
+	const char *GetShortName(void);
+
+	void SetLongName(const char *);
+	const char *GetLongName(void);
+
+	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
+	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress) const;
+
+	void SetNetSwitch(uint8_t nAddress);
+	uint8_t GetNetSwitch(void) const;
+
+	void SetSubnetSwitch(uint8_t nAddress);
+	uint8_t GetSubnetSwitch(void) const;
+
+	uint16_t GetPortAddress(uint8_t nPortIndex) const;
+
+	void SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode);
+	TMerge GetMergeMode(uint8_t nPortIndex = 0) const;
+
+	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+	TPortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+
+	void SetManufacturerId(const uint8_t *);
+	const uint8_t *GetManufacturerId(void);
+
+	void SetOemValue(const uint8_t *);
+	const uint8_t *GetOemValue(void);
+
+	void SetNetworkTimeout(time_t);
+	time_t GetNetworkTimeout(void) const;
+
+	void SetDisableMergeTimeout(bool);
+	bool GetDisableMergeTimeout(void) const;
+
+	uint8_t GetActiveOutputPorts(void) const;
+	uint8_t GetActiveInputPorts(void) { return 0; }
+
+	void SendDiag(const char *, TPriorityCodes);
+	void SendTimeCode(const struct TArtNetTimeCode *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
 	void SetTimeSyncHandler(ArtNetTimeSync *);
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
 	void SetArtNetStore(ArtNetStore *pArtNetStore);
-
-	const uint8_t *GetSoftwareVersion(void);
-
-	void Start(void);
-	void Stop(void);
-
-	bool GetDirectUpdate(void) const;
-	void SetDirectUpdate(bool);
-
-	const char *GetShortName(void);
-	void SetShortName(const char *);
-
-	const char *GetLongName(void);
-	void SetLongName(const char *);
-
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress) const;
-	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
-
-	uint8_t GetNetSwitch(void) const;
-	void SetNetSwitch(uint8_t nAddress);
-
-	uint8_t GetSubnetSwitch(void) const;
-	void SetSubnetSwitch(uint8_t nAddress);
-
-	const uint8_t *GetManufacturerId(void);
-	void SetManufacturerId(const uint8_t *);
-
-	const uint8_t *GetOemValue(void);
-	void SetOemValue(const uint8_t *);
-
-	time_t GetNetworkTimeout(void) const;
-	void SetNetworkTimeout(time_t);
-
-	bool GetDisableMergeTimeout(void) const;
-	void SetDisableMergeTimeout(bool);
-
-	uint8_t GetActiveOutputPorts(void) const;
-	uint8_t GetActiveInputPorts(void) const;
-
-	void SendDiag(const char *, TPriorityCodes);
-	void SendTimeCode(const struct TArtNetTimeCode *);
-
-	int HandlePacket(void);
 
 	void Print(void);
 
@@ -174,7 +219,6 @@ private:
 
 	void FillPollReply(void);
 	void FillDiagData(void);
-	void FillTimeCodeData(void);
 
 	uint16_t MakePortAddress(uint16_t);
 
@@ -200,6 +244,8 @@ private:
 	void SetNetworkDataLossCondition(void);
 
 private:
+	uint8_t					m_nVersion;
+	uint32_t				m_nHandle;
 	LightSet    			*m_pLightSet;
 
 	ArtNetTimeCode			*m_pArtNetTimeCode;
@@ -214,7 +260,7 @@ private:
 	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
 	struct TArtPollReply	m_PollReply;
 	struct TArtDiagData		m_DiagData;
-	struct TArtTimeCode		m_TimeCodeData;
+	struct TArtTimeCode		*m_pTimeCodeData;
 	struct TArtTodData		*m_pTodData;
 	struct TArtIpProgReply	*m_pIpProgReply;
 

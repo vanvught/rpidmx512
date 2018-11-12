@@ -30,11 +30,7 @@
 #include "max7219.h"
 #include "max7219_spi.h"
 
-#include "debug.h"
-
 void max7219_spi_start(device_info_t *device_info) {
-	DEBUG_ENTRY
-
 	if (device_info->speed_hz == (uint32_t) 0) {
 		device_info->speed_hz = (uint32_t) MAX7219_SPI_SPEED_DEFAULT_HZ;
 	} else if (device_info->speed_hz > (uint32_t) MAX7219_SPI_SPEED_MAX_HZ) {
@@ -50,7 +46,6 @@ void max7219_spi_start(device_info_t *device_info) {
 		device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
 
-	DEBUG_EXIT
 }
 
 void max7219_spi_write_reg(const device_info_t *device_info, uint8_t reg, uint8_t data) {

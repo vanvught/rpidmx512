@@ -28,14 +28,8 @@
 
 #if defined (__linux__)
  #include <string.h>
-#elif defined(__circle__)
- #include "circle/util.h"
 #else
  #include "util.h"
-#endif
-
-#if defined(__linux__) || defined(__circle__)
-  #define udelay bcm2835_delayMicroseconds
 #endif
 
 #if defined(__linux__)
@@ -45,8 +39,15 @@
  #include "h3_hs_timer.h"
  #include "h3_spi.h"
 #else
+ #include "bcm2835.h"
  #include "bcm2835_spi.h"
  #include "bcm2835_aux_spi.h"
+#endif
+
+#include "i2c.h"
+
+#if defined(__linux__) || defined(__circle__)
+  #define udelay bcm2835_delayMicroseconds
 #endif
 
 #include "device_info.h"

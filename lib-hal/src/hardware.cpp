@@ -35,6 +35,10 @@ Hardware::~Hardware(void) {
 
 }
 
+const char* Hardware::GetWebsiteUrl(void) {
+	return "www.raspberrypi-dmx.org";
+}
+
 void Hardware::WatchdogInit(void) {
 
 }

@@ -90,15 +90,15 @@ void NetworkBaremetal::MacAddressCopyTo(uint8_t* pMacAddress) {
 	}
 }
 
-void NetworkBaremetal::JoinGroup(uint32_t nIp) {
+void NetworkBaremetal::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkBaremetal::RecvFrom(uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkBaremetal::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
 	return wifi_udp_recvfrom(packet, size, from_ip, from_port);
 }
 
-void NetworkBaremetal::SendTo(const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkBaremetal::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
 }
 

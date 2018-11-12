@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
 #include "bcm2835.h"
 
 #if defined(__linux__)
-#elif defined(__circle__)
 #else
  #include "bcm2835_gpio.h"
  #include "bcm2835_spi.h"
@@ -46,7 +45,6 @@ extern "C" {
 #if defined(__linux__)
  extern void bcm2835_delayMicroseconds (uint64_t);
  #define udelay bcm2835_delayMicroseconds
-#elif defined(__circle__)
 #else
 #endif
 }
@@ -72,7 +70,7 @@ extern "C" {
 
 
 SlushBoard::SlushBoard(void) {
-#if defined (__linux__)  || defined(__circle__)
+#if defined (__linux__)
 	if (bcm2835_init() == 0) {
 		printf("Not able to init the bmc2835 library\n");
 	}

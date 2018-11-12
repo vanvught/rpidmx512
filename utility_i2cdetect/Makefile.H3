@@ -5,6 +5,6 @@ LIBS =
 #
 SRCDIR = firmware
 
-include ../firmware-template/Rules.mk
+include ../h3-firmware-template/Rules.mk
 
 prerequisites:

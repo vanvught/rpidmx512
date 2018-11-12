@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file lcd.c
  *
@@ -30,7 +29,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "i2c.h"
+#include "bob.h"
 
 #include "lcd.h"
 
@@ -39,19 +38,6 @@
 #include "bw_i2c_lcd.h"
 #include "tc1602.h"
 #include "tc1602_i2c.h"
-
-#include "device_info.h"
-
-#if defined(__linux__)
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
-#else
-extern void udelay(uint32_t);
-#endif
-
-#ifndef ALIGNED
- #define ALIGNED	__attribute__((aligned(4)))
-#endif
 
 static const char lcd_detect_line1[] ALIGNED = "lcd_detect";
 #define LCD_DETECT_LINE1_LENGTH			(sizeof (lcd_detect_line1) / sizeof(char)) - 1
@@ -187,4 +173,3 @@ int lcd_printf_line_2(const char *format, ...) {
 
 	return i;
 }
-#endif

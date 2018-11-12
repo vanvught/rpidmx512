@@ -2,6 +2,9 @@
  * @file artnetparams.cpp
  *
  */
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,16 +27,16 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <assert.h>
 
 #if defined (BARE_METAL)
  #include <time.h>
  #include "util.h"
 #elif defined (__circle__)
- #include <circle/util.h>
  #include <circle/time.h>
+ #include <circle/util.h>
 #else
  #include <time.h>
  #include <string.h>
@@ -45,12 +48,12 @@
 
 #include "artnetparams.h"
 #include "artnetnode.h"
-#include "common.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define BOOL2STRING(b)	(b) ? "Yes" : "No"
+#define BOOL2STRING(b)			(b) ? "Yes" : "No"
+#define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
 
 #define SET_LONG_NAME_MASK		(1 << 0)
 #define SET_SHORT_NAME_MASK		(1 << 1)
@@ -69,14 +72,24 @@
 #define SET_UNIVERSE_B_MASK		(1 << 14)
 #define SET_UNIVERSE_C_MASK		(1 << 15)
 #define SET_UNIVERSE_D_MASK		(1 << 16)
+#define SET_MERGE_MODE_MASK		(1 << 17)
+#define SET_MERGE_MODE_A_MASK	(1 << 18)
+#define SET_MERGE_MODE_B_MASK	(1 << 19)
+#define SET_MERGE_MODE_C_MASK	(1 << 20)
+#define SET_MERGE_MODE_D_MASK	(1 << 21)
+#define SET_PROTOCOL_MASK		(1 << 22)
+#define SET_PROTOCOL_A_MASK		(1 << 23)
+#define SET_PROTOCOL_B_MASK		(1 << 24)
+#define SET_PROTOCOL_C_MASK		(1 << 25)
+#define SET_PROTOCOL_D_MASK		(1 << 26)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
 static const char PARAMS_NET[] ALIGNED = "net";											///< 0 {default}
 static const char PARAMS_SUBNET[] ALIGNED = "subnet";									///< 0 {default}
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";								///< 0 {default}
 static const char PARAMS_OUTPUT[] ALIGNED = "output";									///< dmx {default}, spi, mon
-static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";							///< Use the TimeCode call-back handler, 0 {default}
-static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";							///< Use the TimeSync call-back handler, 0 {default}
+static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";
+static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";
 static const char PARAMS_RDM[] ALIGNED = "enable_rdm";									///< Enable RDM, 0 {default}
 static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";			///< 0 {default}
 static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";
@@ -85,10 +98,11 @@ static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
 static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";
 static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";///< 10 {default}
 static const char PARAMS_NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";		///< 0 {default}
-static const char PARAMS_UNIVERSE_A[] ALIGNED = "universe_port_a";
-static const char PARAMS_UNIVERSE_B[] ALIGNED = "universe_port_b";
-static const char PARAMS_UNIVERSE_C[] ALIGNED = "universe_port_c";
-static const char PARAMS_UNIVERSE_D[] ALIGNED = "universe_port_d";
+static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
+static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+static const char PARAMS_PROTOCOL[] ALIGNED = "protocol";
+static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a", "protocol_port_b", "protocol_port_a", "protocol_port_d"};
 
 void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
@@ -210,33 +224,61 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE, &value8) == SSCAN_OK) {
-		m_tArtNetParams.nUniverse = value8;
-		m_tArtNetParams.nSetList |= SET_UNIVERSE_MASK;
+		if (value8 <= 0xF) {
+			m_tArtNetParams.nUniverse = value8;
+			m_tArtNetParams.nSetList |= SET_UNIVERSE_MASK;
+		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_A, &value8) == SSCAN_OK) {
-		m_tArtNetParams.nUniversePort[0] = value8;
-		m_tArtNetParams.nSetList |= SET_UNIVERSE_A_MASK;
+	len = 3;
+	if (Sscan::Char(pLine, PARAMS_MERGE_MODE, value, &len) == SSCAN_OK) {
+		if (memcmp(value, "ltp", 3) == 0) {
+			m_tArtNetParams.nMergeMode = ARTNET_MERGE_LTP;
+			m_tArtNetParams.nSetList |= SET_MERGE_MODE_MASK;
+		} else if (memcmp(value, "htp", 3) == 0) {
+			m_tArtNetParams.nMergeMode = ARTNET_MERGE_HTP;
+			m_tArtNetParams.nSetList |= SET_MERGE_MODE_MASK;
+		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_B, &value8) == SSCAN_OK) {
-		m_tArtNetParams.nUniversePort[1] = value8;
-		m_tArtNetParams.nSetList |= SET_UNIVERSE_B_MASK;
+	len = 4;
+	if (Sscan::Char(pLine, PARAMS_PROTOCOL, value, &len) == SSCAN_OK) {
+		if(memcmp(value, "sacn", 4) == 0) {
+			m_tArtNetParams.nProtocol = PORT_ARTNET_SACN;
+			m_tArtNetParams.nSetList |= SET_PROTOCOL_MASK;
+		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_C, &value8) == SSCAN_OK) {
-		m_tArtNetParams.nUniversePort[2] = value8;
-		m_tArtNetParams.nSetList |= SET_UNIVERSE_C_MASK;
-		return;
-	}
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_PORT[i], &value8) == SSCAN_OK) {
+			m_tArtNetParams.nUniversePort[i] = value8;
+			m_tArtNetParams.nSetList |= (SET_UNIVERSE_A_MASK << i);
+			return;
+		}
 
-	if (Sscan::Uint8(pLine, PARAMS_UNIVERSE_D, &value8) == SSCAN_OK) {
-		m_tArtNetParams.nUniversePort[3] = value8;
-		m_tArtNetParams.nSetList |= SET_UNIVERSE_D_MASK;
-		return;
+		len = 3;
+		if (Sscan::Char(pLine, PARAMS_MERGE_MODE_PORT[i], value, &len) == SSCAN_OK) {
+			if (memcmp(value, "ltp", 3) == 0) {
+				m_tArtNetParams.nMergeModePort[i] = ARTNET_MERGE_LTP;
+				m_tArtNetParams.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+			} else if (memcmp(value, "htp", 3) == 0) {
+				m_tArtNetParams.nMergeModePort[i] = ARTNET_MERGE_HTP;
+				m_tArtNetParams.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+			}
+			return;
+		}
+
+		len = 4;
+		if (Sscan::Char(pLine, PARAMS_PROTOCOL_PORT[i], value, &len) == SSCAN_OK) {
+			if (memcmp(value, "sacn", 4) == 0) {
+				m_tArtNetParams.nProtocolPort[i] = PORT_ARTNET_SACN;
+				m_tArtNetParams.nSetList |= (SET_PROTOCOL_A_MASK << i);
+			}
+			return;
+		}
 	}
 }
 
@@ -244,10 +286,8 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 	uint8_t *p = (uint8_t *) &m_tArtNetParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
-		p[i] = 0;
+		*p++ = 0;
 	}
-
-	m_tArtNetParams.tOutputType = OUTPUT_TYPE_DMX;
 
 	for (int i = 0; i < ARTNET_MAX_PORTS; i++) {
 		m_tArtNetParams.nUniversePort[i] = i;
@@ -337,6 +377,20 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	if(isMaskSet(SET_MERGE_TIMEOUT)) {
 		pArtNetNode->SetDisableMergeTimeout(m_tArtNetParams.bDisableMergeTimeout);
 	}
+
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+			pArtNetNode->SetMergeMode(i, (TMerge) m_tArtNetParams.nMergeModePort[i]);
+		} else {
+			pArtNetNode->SetMergeMode(i, (TMerge) m_tArtNetParams.nMergeMode);
+		}
+
+		if (isMaskSet(SET_PROTOCOL_A_MASK << i)) {
+			pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocolPort[i]);
+		} else {
+			pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocol);
+		}
+	}
 }
 
 void ArtNetParams::Dump(void) {
@@ -402,20 +456,20 @@ void ArtNetParams::Dump(void) {
 		printf(" %s=%d [%s]\n", PARAMS_NODE_DISABLE_MERGE_TIMEOUT, (int) m_tArtNetParams.bDisableMergeTimeout, BOOL2STRING(m_tArtNetParams.bDisableMergeTimeout));
 	}
 
-	if(isMaskSet(SET_UNIVERSE_A_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_A, m_tArtNetParams.nUniversePort[0]);
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (isMaskSet(SET_UNIVERSE_A_MASK << i)) {
+			printf(" %s=%d\n", PARAMS_UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i]);
+		}
 	}
 
-	if(isMaskSet(SET_UNIVERSE_B_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_B, m_tArtNetParams.nUniversePort[1]);
+	if (isMaskSet(SET_MERGE_MODE_MASK)) {
+		printf(" %s=%s\n", PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tArtNetParams.nMergeMode));
 	}
 
-	if(isMaskSet(SET_UNIVERSE_C_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_C, m_tArtNetParams.nUniversePort[2]);
-	}
-
-	if(isMaskSet(SET_UNIVERSE_D_MASK)) {
-		printf(" %s=%d\n", PARAMS_UNIVERSE_D, m_tArtNetParams.nUniversePort[3]);
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+			printf(" %s=%s\n", PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]));
+		}
 	}
 #endif
 }
@@ -443,33 +497,28 @@ uint32_t ArtNetParams::GetMaskSubnet(void) {
 uint32_t ArtNetParams::GetMaskUniverse(uint8_t nPort) {
 	assert(nPort < ARTNET_MAX_PORTS);
 
-	switch (nPort) {
-		case 0:
-			return SET_UNIVERSE_A_MASK;
-			break;
-		case 1:
-			return SET_UNIVERSE_B_MASK;
-			break;
-		case 2:
-			return SET_UNIVERSE_C_MASK;
-			break;
-		case 3:
-			return SET_UNIVERSE_D_MASK;
-			break;
-		default:
-			break;
-	}
+	return SET_UNIVERSE_A_MASK << nPort;
+}
 
-	return 0;
+uint32_t ArtNetParams::GetMaskMergeMode(uint8_t nPort) {
+	assert(nPort < ARTNET_MAX_PORTS);
+
+	return SET_MERGE_MODE_A_MASK << nPort;
+}
+
+uint32_t ArtNetParams::GetMaskPortProtocol(uint8_t nPort) {
+	assert(nPort < ARTNET_MAX_PORTS);
+
+	return SET_PROTOCOL_A_MASK << nPort;
 }
 
 uint16_t ArtNetParams::HexUint16(const char *s) const {
 	uint16_t ret = 0;
 	uint8_t nibble;
-	uint8_t i = 0;
+	unsigned i = 0;
 
 	while ((*s != '\0') && (i++ < 4)) {
-		char d = *s;
+		const char d = *s;
 
 		if (isxdigit((int) d) == 0) {
 			break;

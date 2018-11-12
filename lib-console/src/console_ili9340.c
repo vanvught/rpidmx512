@@ -127,7 +127,6 @@ static void _setup(void) {
 
 	write_command(0xB6);    // Display Function Control
 	write_data_byte(0x08);
-//  lcdWriteDataByte(0x82);
 	write_data_byte(0xA2);
 	write_data_byte(0x27);
 
@@ -178,6 +177,7 @@ static void _setup(void) {
 
 int console_init(void) {
 	int i;
+
 #if defined (__linux__)
 	if (bcm2835_init() == -1) {
 		printf("bmc2835_init Error\n");

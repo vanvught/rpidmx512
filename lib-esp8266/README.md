@@ -1,4 +1,11 @@
-## Interface : Raspberry PI <-> ESP8266 ##
+# Interface : Pi <-> ESP8266
+
+Supported boards:
+
+* Raspberry Pi (all models)
+* Orange Pi Zero
+* Nano Pi NEO
+
 
 **Wifi** functions :
 

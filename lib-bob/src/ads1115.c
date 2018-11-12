@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file ads1115.c
  *
@@ -27,12 +26,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "i2c.h"
+#include "bob.h"
 
 #include "ads1x15.h"
 #include "ads1115.h"
-
-#include "device_info.h"
 
 static void i2c_setup(const device_info_t *device_info) {
 	i2c_set_address(device_info->slave_address);
@@ -66,7 +63,7 @@ static void poll_conversion(void) {
 	TIMEOUT_WAIT((i2c_read_reg_uint16(ADS1x15_REG_CONFIG) == ADS1x15_CONFIG_OS_IDLE), 10000);
 }
 
-static void set_channel(const uint8_t channel) {
+static void set_channel(uint8_t channel) {
 	uint16_t mux;
 
 	switch (channel) {
@@ -99,7 +96,7 @@ static void set_channel(const uint8_t channel) {
 	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, ADS1x15_MODE_CONTINUOUS, ADS1x15_REG_CONFIG_MODE_MASK);
 }
 
-const bool ads1115_start(device_info_t *device_info) {
+bool ads1115_start(device_info_t *device_info) {
 	uint16_t config;
 
 	i2c_begin();
@@ -131,7 +128,7 @@ const bool ads1115_start(device_info_t *device_info) {
 	return true;
 }
 
-const uint16_t ads1115_read(const device_info_t *device_info, const uint8_t channel) {
+uint16_t ads1115_read(const device_info_t *device_info,uint8_t channel) {
 	device_info_t *d = (device_info_t *) device_info;
 
 	if (channel > ADS1115_CH3) {
@@ -148,7 +145,7 @@ const uint16_t ads1115_read(const device_info_t *device_info, const uint8_t chan
 	return i2c_read_reg_uint16(ADS1x15_REG_CONVERSION);
 }
 
-const ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *device_info) {
+ads1115_data_rate_t ads1115_get_data_rate(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -163,4 +160,3 @@ void ads1115_set_data_rate(const device_info_t *device_info, const ads1115_data_
 	i2c_setup(device_info);
 	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (const uint16_t) data_rate, ADS1x15_REG_CONFIG_DATA_RATE_MASK);
 }
-#endif

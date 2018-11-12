@@ -4,9 +4,6 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -33,19 +30,28 @@
 
 #include "artnetnode.h"
 
+#define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
+#define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
+
 void ArtNetNode::Print(void) {
-	printf("\nNode configuration\n");
 	const uint8_t *firmware_version = GetSoftwareVersion();
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" Short name   : %s\n", m_Node.ShortName);
-	printf(" Long name    : %s\n", m_Node.LongName);
-	printf(" Net          : %d\n", m_Node.NetSwitch);
-	printf(" Sub-Net      : %d\n", m_Node.SubSwitch);
+
+	printf("\nNode %d configuration\n", m_nVersion);
+	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" Short name : %s\n", m_Node.ShortName);
+	printf(" Long name  : %s\n", m_Node.LongName);
+	printf(" Net        : %d\n", m_Node.NetSwitch);
+	printf(" Sub-Net    : %d\n", m_Node.SubSwitch);
+
 	for (uint8_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 		uint8_t nAddress;
 		if (GetUniverseSwitch(i, nAddress)) {
-			printf(" Universe[%d]  : %d\n", i, nAddress);
+			printf("  Port %c Universe %d [%s]", (char) ('A' + i), nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+			if (m_nVersion == 4) {
+				printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
+			} else {
+				printf("\n");
+			}
 		}
 	}
-	//printf(" Active ports : %d\n", m_State.nActivePorts);
 }

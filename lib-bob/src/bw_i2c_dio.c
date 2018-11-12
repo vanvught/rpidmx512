@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file bw_i2c_dio.c
  *
@@ -26,13 +25,12 @@
 
 #include <stdint.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "bw.h"
 #include "bw_dio.h"
-#include "device_info.h"
 
 #define BW_DIO_I2C_BYTE_WAIT_US		0
-
 
 inline static void dio_i2c_setup(const device_info_t *device_info) {
 	i2c_set_address(device_info->slave_address >> 1);
@@ -42,7 +40,7 @@ inline static void dio_i2c_setup(const device_info_t *device_info) {
 bool bw_i2c_dio_start(device_info_t *device_info) {
 	i2c_begin();
 
-	if (device_info->slave_address == (uint8_t) 0) {
+	if (device_info->slave_address == 0) {
 		device_info->slave_address = BW_DIO_DEFAULT_SLAVE_ADDRESS;
 	}
 
@@ -55,7 +53,7 @@ bool bw_i2c_dio_start(device_info_t *device_info) {
 	return true;
 }
 
-void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) {
+void bw_i2c_dio_fsel_mask(const device_info_t *device_info, uint8_t mask) {
 	char cmd[2];
 
 	cmd[0] = (char) BW_PORT_WRITE_IO_DIRECTION;
@@ -65,7 +63,7 @@ void bw_i2c_dio_fsel_mask(const device_info_t *device_info, const uint8_t mask) 
 	i2c_write_nb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
+void bw_i2c_dio_output(const device_info_t *device_info, uint8_t pins) {
 	char cmd[2];
 
 	cmd[0] = (char) BW_PORT_WRITE_SET_ALL_OUTPUTS;
@@ -74,4 +72,3 @@ void bw_i2c_dio_output(const device_info_t *device_info, const uint8_t pins) {
 	dio_i2c_setup(device_info);
 	i2c_write_nb(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
-#endif

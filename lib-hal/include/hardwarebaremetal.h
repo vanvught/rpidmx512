@@ -95,6 +95,7 @@ public:	// Only available in BAREMETAL
 
 #ifdef H3
 	TBootDevice GetBootDevice(void);
+	const char* GetWebsiteUrl(void);
 #else
 	TBootDevice GetBootDevice(void) { return BOOT_DEVICE_MMC0; }
 #endif

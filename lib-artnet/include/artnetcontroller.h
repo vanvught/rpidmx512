@@ -4,9 +4,6 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -61,6 +58,7 @@ private:
 	void HandleIpProgReply(void);
 
 private:
+	uint32_t				m_nHandle;
 	struct TArtNetPacket	*m_pArtNetPacket;
 	struct TArtPoll			m_ArtNetPoll;
 	struct TArtIpProg 		m_ArtIpProg;

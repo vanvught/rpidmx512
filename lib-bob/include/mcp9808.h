@@ -36,8 +36,8 @@
 extern "C" {
 #endif
 
-extern const bool mcp9808_start(device_info_t *);
-extern const float mcp9808_get_temperature(const device_info_t *);
+extern bool mcp9808_start(device_info_t *);
+extern float mcp9808_get_temperature(const device_info_t *);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file tc1602_i2c.c
  *
@@ -26,16 +25,11 @@
 
 #include <stdint.h>
 
-extern void udelay(uint32_t);
-
-#if defined(__linux__) || defined(__circle__)
- #define udelay bcm2835_delayMicroseconds
-#endif
+#include "bob.h"
 
 #include "i2c.h"
 #include "tc1602.h"
 #include "tc1602_i2c.h"
-#include "device_info.h"
 
 static void i2c_setup(const device_info_t *device_info) {
 	i2c_set_address(device_info->slave_address);
@@ -47,19 +41,19 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
-static void lcd_toggle_enable(const uint8_t data) {
+static void lcd_toggle_enable(uint8_t data) {
 	i2c_write(data | TC1602_EN | TC1602_BACKLIGHT);
 	i2c_write((data & ~TC1602_EN) | TC1602_BACKLIGHT);
 }
 
-static void write_4bits(const device_info_t *device_info, const uint8_t data) {
+static void write_4bits(const device_info_t *device_info, uint8_t data) {
 	i2c_setup(device_info);
 
 	i2c_write(data);
 	lcd_toggle_enable(data);
 }
 
-static void write_cmd(const device_info_t *device_info, const uint8_t cmd) {
+static void write_cmd(const device_info_t *device_info, uint8_t cmd) {
 	write_4bits(device_info, cmd & (uint8_t) 0xF0);
 	write_4bits(device_info, (cmd << 4) & (uint8_t) 0xF0);
 	udelay(EXEC_TIME_CMD);
@@ -114,12 +108,12 @@ void tc1602_i2c_text(const device_info_t *device_info, const char *data, uint8_t
 
 }
 
-void tc1602_i2c_text_line_1(const device_info_t *device_info, const char *data, const uint8_t length) {
+void tc1602_i2c_text_line_1(const device_info_t *device_info, const char *data, uint8_t length) {
 	write_cmd(device_info, TC1602_LINE_1);
 	tc1602_i2c_text(device_info, data, length);
 }
 
-void tc1602_i2c_text_line_2(const device_info_t *device_info, const char *data, const uint8_t length) {
+void tc1602_i2c_text_line_2(const device_info_t *device_info, const char *data, uint8_t length) {
 	write_cmd(device_info, TC1602_LINE_2);
 	tc1602_i2c_text(device_info, data, length);
 }
@@ -128,4 +122,3 @@ void tc1602_i2c_cls(const device_info_t *device_info) {
 	write_cmd(device_info, (uint8_t) TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 }
-#endif

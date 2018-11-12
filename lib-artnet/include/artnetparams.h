@@ -4,9 +4,6 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -42,7 +39,6 @@
 #endif
 
 #include "artnetnode.h"
-#include "common.h"
 
 enum  TOutputType {
 	OUTPUT_TYPE_DMX,
@@ -51,22 +47,26 @@ enum  TOutputType {
 };
 
 struct TArtNetParams {
-    uint32_t nSetList;
-    uint8_t nNet;
-    uint8_t nSubnet;
-    uint8_t nUniverse;
-    TOutputType tOutputType;
-    bool bUseTimeCode;
-    bool bUseTimeSync;
-    bool bEnableRdm;
-    bool bRdmDiscovery;
-    uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];
+	uint32_t nSetList;
+	uint8_t nNet;
+	uint8_t nSubnet;
+	uint8_t nUniverse;
+	TOutputType tOutputType;
+	bool bUseTimeCode;
+	bool bUseTimeSync;
+	bool bEnableRdm;
+	bool bRdmDiscovery;
+	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];
 	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];
 	uint8_t aManufacturerId[2];
 	uint8_t aOemValue[2];
 	time_t nNetworkTimeout;
 	bool bDisableMergeTimeout;
 	uint8_t nUniversePort[ARTNET_MAX_PORTS];
+	uint8_t nMergeMode;
+	uint8_t nMergeModePort[ARTNET_MAX_PORTS];
+	uint8_t nProtocol;
+	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
 };
 
 class ArtNetParamsStore {
@@ -146,20 +146,22 @@ public:
 	static uint32_t GetMaskNet(void);
 	static uint32_t GetMaskSubnet(void);
 	static uint32_t GetMaskUniverse(uint8_t nPort);
+	static uint32_t GetMaskMergeMode(uint8_t nPort);
+	static uint32_t GetMaskPortProtocol(uint8_t nPort);
 
 private:
 	bool isMaskSet(uint32_t) const;
 	uint16_t HexUint16(const char *) const;
 
 public:
-    static void staticCallbackFunction(void *p, const char *s);
+	static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *s);
+	void callbackFunction(const char *s);
 
 private:
-    ArtNetParamsStore *m_pArtNetParamsStore;
-    struct TArtNetParams m_tArtNetParams;
+	ArtNetParamsStore *m_pArtNetParamsStore;
+	struct TArtNetParams m_tArtNetParams;
 };
 
 #endif /* ARTNETPARAMS_H_ */

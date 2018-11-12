@@ -87,6 +87,8 @@ public:
 
 	virtual bool IsButtonPressed(void);
 
+	virtual const char* GetWebsiteUrl(void);
+
 // Only implemented in BAREMETAL
 	virtual void WatchdogInit(void);
 	virtual void WatchdogFeed(void);

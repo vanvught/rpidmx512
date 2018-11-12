@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#if !defined(NDEBUG) || defined(__linux__) || defined(__circle__)
+#if !defined(NDEBUG) || defined(__linux__)
  #include <stdio.h>
 #endif
 #include <assert.h>
@@ -32,7 +32,6 @@
 #include "bcm2835.h"
 
 #if defined(__linux__)
-#elif defined(__circle__)
 #else
  #include "bcm2835_i2c.h"
 #endif
@@ -93,7 +92,7 @@ enum TPCA9685Mode2 {
 };
 
 PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
-#if defined (__linux__) || defined(__circle__)
+#if defined (__linux__)
 	if (bcm2835_init() == 0) {
 		printf("Not able to init the bmc2835 library\n");
 	}

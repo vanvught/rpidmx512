@@ -32,7 +32,6 @@
 #include "bcm2835.h"
 
 #if defined(__linux__)
-#elif defined(__circle__)
 #else
  #include "bcm2835_i2c.h"
 #endif

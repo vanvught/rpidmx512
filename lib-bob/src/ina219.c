@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file ina219.c
  *
@@ -32,9 +31,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "i2c.h"
+#include "bob.h"
+
 #include "ina219.h"
-#include "device_info.h"
 
 #define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))
 
@@ -82,7 +81,7 @@ static void i2c_setup(const device_info_t *device_info) {
 	}
 }
 
-const bool ina219_start(device_info_t *device_info) {
+bool ina219_start(device_info_t *device_info) {
 	i2c_begin();
 
 	if (device_info->slave_address == (uint8_t) 0) {
@@ -159,7 +158,7 @@ void ina219_calibrate(const device_info_t *device_info, float r_shunt_value, flo
 	i2c_write_reg_uint16(INA219_REG_CALIBRATION, calibration_value);
 }
 
-const int16_t ina219_get_shunt_voltage_raw(const device_info_t *device_info) {
+int16_t ina219_get_shunt_voltage_raw(const device_info_t *device_info) {
 	int16_t voltage;
 
 	i2c_setup(device_info);
@@ -169,13 +168,13 @@ const int16_t ina219_get_shunt_voltage_raw(const device_info_t *device_info) {
 	return voltage;
 }
 
-const float ina219_get_shunt_voltage(const device_info_t *device_info) {
+float ina219_get_shunt_voltage(const device_info_t *device_info) {
 	const int16_t value = ina219_get_shunt_voltage_raw(device_info);
 
 	return ((float) value / (float) 100000);
 }
 
-const int16_t ina219_get_bus_voltage_raw(const device_info_t *device_info) {
+int16_t ina219_get_bus_voltage_raw(const device_info_t *device_info) {
 	uint16_t voltage;
 
 	i2c_setup(device_info);
@@ -186,7 +185,7 @@ const int16_t ina219_get_bus_voltage_raw(const device_info_t *device_info) {
 	return ((int16_t) voltage * (int16_t) 4);
 }
 
-const float ina219_get_bus_voltage(const device_info_t *device_info) {
+float ina219_get_bus_voltage(const device_info_t *device_info) {
 	int16_t value;
 
 	i2c_setup(device_info);
@@ -196,7 +195,7 @@ const float ina219_get_bus_voltage(const device_info_t *device_info) {
 	return ((float) value * (float) 0.001);
 }
 
-const ina219_range_t ina219_get_range(const device_info_t *device_info) {
+ina219_range_t ina219_get_range(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -207,7 +206,7 @@ const ina219_range_t ina219_get_range(const device_info_t *device_info) {
 	return (ina219_range_t) value;
 }
 
-const ina219_gain_t ina219_get_gain(const device_info_t *device_info) {
+ina219_gain_t ina219_get_gain(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -218,7 +217,7 @@ const ina219_gain_t ina219_get_gain(const device_info_t *device_info) {
 	return (ina219_gain_t) value;
 }
 
-const ina219_bus_res_t ina219_get_bus_res(const device_info_t *device_info) {
+ina219_bus_res_t ina219_get_bus_res(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -229,7 +228,7 @@ const ina219_bus_res_t ina219_get_bus_res(const device_info_t *device_info) {
 	return (ina219_bus_res_t) value;
 }
 
-const ina219_shunt_res_t ina219_get_shunt_res(const device_info_t *device_info) {
+ina219_shunt_res_t ina219_get_shunt_res(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -240,7 +239,7 @@ const ina219_shunt_res_t ina219_get_shunt_res(const device_info_t *device_info) 
 	return (ina219_shunt_res_t) value;
 }
 
-const ina219_mode_t ina219_get_mode(const device_info_t *device_info) {
+ina219_mode_t ina219_get_mode(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -251,13 +250,13 @@ const ina219_mode_t ina219_get_mode(const device_info_t *device_info) {
 	return (ina219_mode_t) value;
 }
 
-const float ina219_get_max_possible_current(const device_info_t *device_info) {
+float ina219_get_max_possible_current(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	return (ina219_info[i].v_shunt_max / ina219_info[i].r_shunt);
 }
 
-const float ina219_get_max_current(const device_info_t *device_info) {
+float ina219_get_max_current(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	const float max_current = ina219_info[i].current_lsb * 32767;
@@ -270,7 +269,7 @@ const float ina219_get_max_current(const device_info_t *device_info) {
 	}
 }
 
-const float ina219_get_max_shunt_voltage(const device_info_t *device_info) {
+float ina219_get_max_shunt_voltage(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	const float max_voltage = ina219_get_max_current(device_info) * ina219_info[i].r_shunt;
@@ -283,13 +282,13 @@ const float ina219_get_max_shunt_voltage(const device_info_t *device_info) {
 
 }
 
-const float ina219_get_max_power(const device_info_t *device_info) {
+float ina219_get_max_power(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	return (ina219_get_max_current(device_info) * ina219_info[i].v_bus_max);
 }
 
-const float ina219_get_shunt_current(const device_info_t *device_info) {
+float ina219_get_shunt_current(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	i2c_setup(device_info);
@@ -297,7 +296,7 @@ const float ina219_get_shunt_current(const device_info_t *device_info) {
 	return ((float)((int16_t)i2c_read_reg_uint16_delayus(INA219_REG_CURRENT, (uint32_t) INA219_READ_REG_DELAY_US)) * ina219_info[i].current_lsb);
 }
 
-const float ina219_get_bus_power(const device_info_t *device_info) {
+float ina219_get_bus_power(const device_info_t *device_info) {
 	const uint8_t i = device_info->slave_address & 0x0F;
 
 	i2c_setup(device_info);
@@ -305,7 +304,7 @@ const float ina219_get_bus_power(const device_info_t *device_info) {
 	return ((float)((int16_t)i2c_read_reg_uint16_delayus(INA219_REG_POWER, (uint32_t) INA219_READ_REG_DELAY_US)) * ina219_info[i].power_lsb);
 }
 
-const uint16_t ina219_get_calibration(const device_info_t *device_info) {
+uint16_t ina219_get_calibration(const device_info_t *device_info) {
 	i2c_setup(device_info);
 
 	return i2c_read_reg_uint16(INA219_REG_CALIBRATION);
@@ -317,4 +316,3 @@ void ina219_get_lsb(const device_info_t *device_info, float *current_lsb, float 
 	*current_lsb = ina219_info[i].current_lsb;
 	*power_lsb = ina219_info[i].power_lsb;
 }
-#endif

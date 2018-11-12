@@ -1,4 +1,3 @@
-#if defined(HAVE_I2C)
 /**
  * @file ads1115.c
  *
@@ -27,9 +26,7 @@
 #include <stdint.h>
 
 #include "i2c.h"
-
 #include "ads1x15.h"
-
 #include "device_info.h"
 
 static void i2c_setup(const device_info_t *device_info) {
@@ -64,9 +61,9 @@ ads1x15_mux_t ads1x15_get_mux(const device_info_t *device_info) {
 	return (ads1x15_mux_t)value;
 }
 
-void ads1x15_set_mux(const device_info_t *device_info, const ads1x15_mux_t mux) {
+void ads1x15_set_mux(const device_info_t *device_info, ads1x15_mux_t mux) {
 	i2c_setup(device_info);
-	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (const uint16_t) mux, ADS1x15_REG_CONFIG_MUX_MASK);
+	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (uint16_t) mux, ADS1x15_REG_CONFIG_MUX_MASK);
 }
 
 ads1x15_pga_t ads1x15_get_pga(const device_info_t *device_info) {
@@ -80,9 +77,9 @@ ads1x15_pga_t ads1x15_get_pga(const device_info_t *device_info) {
 	return (ads1x15_pga_t)value;
 }
 
-void ads1x15_set_pga(const device_info_t *device_info, const ads1x15_pga_t pga) {
+void ads1x15_set_pga(const device_info_t *device_info, ads1x15_pga_t pga) {
 	i2c_setup(device_info);
-	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (const uint16_t) pga, ADS1x15_REG_CONFIG_PGA_MASK);
+	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (uint16_t) pga, ADS1x15_REG_CONFIG_PGA_MASK);
 }
 
 ads1x15_mode_t ads1x15_get_mode(const device_info_t *device_info) {
@@ -93,12 +90,12 @@ ads1x15_mode_t ads1x15_get_mode(const device_info_t *device_info) {
 	value = i2c_read_reg_uint16(ADS1x15_REG_CONFIG);
 	value &= ADS1x15_REG_CONFIG_MODE_MASK;
 
-	return (ads1x15_mode_t)value;
+	return (ads1x15_mode_t) value;
 }
 
-void ads1x15_set_mode(const device_info_t *device_info, const ads1x15_mode_t mode) {
+void ads1x15_set_mode(const device_info_t *device_info, ads1x15_mode_t mode) {
 	i2c_setup(device_info);
-	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (const uint16_t) mode, ADS1x15_REG_CONFIG_MODE_MASK);
+	i2c_write_reg_uint16_mask(ADS1x15_REG_CONFIG, (uint16_t) mode, ADS1x15_REG_CONFIG_MODE_MASK);
 }
 
 ads1x15_comp_mode_t ads1x15_get_comp_mode(const device_info_t *device_info) {
@@ -109,10 +106,10 @@ ads1x15_comp_mode_t ads1x15_get_comp_mode(const device_info_t *device_info) {
 	value = i2c_read_reg_uint16(ADS1x15_REG_CONFIG);
 	value &= ADS1x15_REG_CONFIG_COMP_MODE_MASK;
 
-	return (ads1x15_comp_mode_t)value;
+	return (ads1x15_comp_mode_t) value;
 }
 
-const ads1x15_comp_polarity_t ads1x15_get_comp_polarity(const device_info_t *device_info) {
+ads1x15_comp_polarity_t ads1x15_get_comp_polarity(const device_info_t *device_info) {
 	uint16_t value;
 
 	i2c_setup(device_info);
@@ -120,7 +117,7 @@ const ads1x15_comp_polarity_t ads1x15_get_comp_polarity(const device_info_t *dev
 	value = i2c_read_reg_uint16(ADS1x15_REG_CONFIG);
 	value &= ADS1x15_REG_CONFIG_COMP_POLARITY_MASK;
 
-	return (ads1x15_comp_polarity_t)value;
+	return (ads1x15_comp_polarity_t) value;
 }
 
 ads1x15_comp_latching_t ads1x15_get_comp_latching(const device_info_t *device_info) {
@@ -131,7 +128,7 @@ ads1x15_comp_latching_t ads1x15_get_comp_latching(const device_info_t *device_in
 	value = i2c_read_reg_uint16(ADS1x15_REG_CONFIG);
 	value &= ADS1x15_REG_CONFIG_COMP_LATCHING_MASK;
 
-	return (ads1x15_comp_latching_t)value;
+	return (ads1x15_comp_latching_t) value;
 }
 
 ads1x15_comp_queue_t ads1x15_get_comp_queue(const device_info_t *device_info) {
@@ -142,6 +139,5 @@ ads1x15_comp_queue_t ads1x15_get_comp_queue(const device_info_t *device_info) {
 	value = i2c_read_reg_uint16(ADS1x15_REG_CONFIG);
 	value &= ADS1x15_REG_CONFIG_COMP_QUEUE_MASK;
 
-	return (ads1x15_comp_queue_t)value;
+	return (ads1x15_comp_queue_t) value;
 }
-#endif

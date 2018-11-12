@@ -31,7 +31,6 @@
 #include "bcm2835.h"
 #if defined(__linux__)
  #define udelay bcm2835_delayMicroseconds
-#elif defined(__circle__)
 #else
  #include "bcm2835_gpio.h"
  #include "bcm2835_spi.h"
@@ -129,7 +128,7 @@ SparkFunDmx::SparkFunDmx(void): m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxF
 		m_pL6470DmxModes[i] = 0;
 	}
 
-#if defined(__linux__) || defined(__circle__)
+#if defined(__linux__)
 	if (bcm2835_init() == 0) {
 		printf("Not able to init the bmc2835 library\n");
 		assert(0);

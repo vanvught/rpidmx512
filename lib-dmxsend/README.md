@@ -1,4 +1,6 @@
-# Baremetal library for the DMX512 #
+# Library DMX512 Sender
+## Open Source Baremetal C++
+
 Supported boards:
 
 * Raspberry Pi 
@@ -6,7 +8,6 @@ Supported boards:
 * Orange Pi One
 * NanaPi NEO
 
-
-
 [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

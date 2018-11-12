@@ -44,10 +44,10 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_UNIVERSE_MASK		1<<0
-#define SET_MERGE_MODE_MASK		1<<1
-#define SET_OUTPUT_MASK			1<<2
-#define SET_CID_MASK			1<<3
+#define SET_UNIVERSE_MASK		(1 << 0)
+#define SET_MERGE_MODE_MASK		(1 << 1)
+#define SET_OUTPUT_MASK			(1 << 2)
+#define SET_CID_MASK			(1 << 3)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
