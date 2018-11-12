@@ -1,6 +1,6 @@
 #
-DEFINES = #NDEBUG
+DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-bcm2835_raspbian/include 
+EXTRA_INCLUDES =
 #
 include ../linux-template/lib/Rules.mk

@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "spi_flash.h"
 
@@ -219,7 +220,7 @@ int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf) {
 
 	cmd[0] = CMD_PAGE_PROGRAM;
 
-	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
+	spi_flash_cmd_wait_ready(SPI_FLASH_SECTOR_ERASE_TIMEOUT);
 
 	for (actual = 0; actual < len; actual += chunk_len) {
 		byte_addr = offset % page_size;
@@ -253,6 +254,8 @@ int spi_flash_read_common(const uint8_t *cmd, size_t cmd_len, void *data, size_t
 }
 
 int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
+	DEBUG_ENTRY
+
 	uint8_t cmd[5], bank_sel = 0;
 	uint32_t remain_len, read_len;
 	int ret = -1;
@@ -278,6 +281,7 @@ int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
 
 		if (ret < 0) {
 			DEBUG_PUTS("Read failed");
+			DEBUG_EXIT
 			break;
 		}
 
@@ -286,6 +290,7 @@ int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
 		data += read_len;
 	}
 
+	DEBUG_EXIT
 	return ret;
 }
 
@@ -309,6 +314,8 @@ int spi_flash_cmd_erase(uint32_t offset, size_t len) {
 	} else {
 		cmd[0] = CMD_ERASE_64K;
 	}
+
+	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
 
 	while (len) {
 		spi_flash_addr(offset, cmd);

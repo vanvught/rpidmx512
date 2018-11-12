@@ -40,6 +40,7 @@
 
 #define OFFSET_UBOOT_SPI	0x000000
 #define OFFSET_UIMAGE		0x180000
+#define MAX_UIMAGE_SIZE		0x20000
 
 #define COMPARE_BYTES		1024
 
@@ -68,6 +69,8 @@ SpiFlashInstall::SpiFlashInstall(void):
 		} else {
 			m_nFlashSize = spi_flash_get_size();
 
+			printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), m_nFlashSize);
+
 			if (m_nFlashSize >= FLASH_SIZE_MINIMUM) {
 
 				m_bHaveFlashChip = true;
@@ -80,21 +83,11 @@ SpiFlashInstall::SpiFlashInstall(void):
 				assert(m_pFlashBuffer != 0);
 
 				if (params.GetInstalluboot()) {
-					if (Open(sFileUbootSpi)) {
-						if (Diff(OFFSET_UBOOT_SPI)) {
-							Write(OFFSET_UBOOT_SPI);
-						}
-						Close();
-					}
+					Process(sFileUbootSpi, OFFSET_UBOOT_SPI);
 				}
 
 				if (params.GetInstalluImage()) {
-					if (Open(sFileuImage)) {
-						if (Diff(OFFSET_UIMAGE)) {
-							Write(OFFSET_UIMAGE);
-						}
-						Close();
-					}
+					Process(sFileuImage, OFFSET_UIMAGE);
 				}
 			}
 		}
@@ -117,6 +110,19 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 	DEBUG_EXIT
 }
 
+void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
+	if (Open(pFileName)) {
+		printf("Check difference\n");
+		if (Diff(nOffset)) {
+			printf("Writing\n");
+			Write(nOffset);
+		} else {
+			printf("No difference\n");
+		}
+		Close();
+	}
+}
+
 bool SpiFlashInstall::Open(const char* pFileName) {
 	DEBUG_ENTRY
 
@@ -126,10 +132,12 @@ bool SpiFlashInstall::Open(const char* pFileName) {
 	m_pFile = fopen(pFileName, "r");
 
 	if (m_pFile == NULL) {
-		DEBUG_PRINTF("Could not open file: %s", pFileName);
+		printf("Could not open file: %s\n", pFileName);
 		DEBUG_EXIT
 		return false;
 	}
+
+	printf("Processing file: %s\n", pFileName);
 
 	DEBUG_EXIT
 	return true;
@@ -141,7 +149,42 @@ void SpiFlashInstall::Close(void) {
 	(void) fclose(m_pFile);
 	m_pFile = 0;
 
+	printf("Done\n");
+
 	DEBUG_EXIT
+}
+
+bool SpiFlashInstall::BuffesCompare(uint32_t nSize) {
+	DEBUG1_ENTRY
+
+	assert(nSize <= m_nEraseSize);
+
+	const uint32_t *src32 = (uint32_t *) m_pFileBuffer;
+	assert(((uint32_t )src32 & 0x3) == 0);
+
+	const uint32_t *dst32 = (uint32_t *) m_pFlashBuffer;
+	assert(((uint32_t )dst32 & 0x3) == 0);
+
+	while (nSize >= 4) {
+		if (*src32++ != *dst32++) {
+			DEBUG1_EXIT
+			return false;
+		}
+		nSize -= 4;
+	}
+
+	const uint8_t *src = (uint8_t *) src32;
+	const uint8_t *dst = (uint8_t *) dst32;
+
+	while (nSize--) {
+		if (*src++ != *dst++) {
+			DEBUG1_EXIT
+			return false;
+		}
+	}
+
+	DEBUG1_EXIT
+	return true;
 }
 
 bool SpiFlashInstall::Diff(uint32_t nOffset) {
@@ -152,9 +195,12 @@ bool SpiFlashInstall::Diff(uint32_t nOffset) {
 	assert(m_pFileBuffer != 0);
 	assert(m_pFlashBuffer != 0);
 
-	(void) fseek(m_pFile, 0L, SEEK_SET);
+	if (fseek(m_pFile, 0L, SEEK_SET) != 0) {
+		DEBUG_EXIT
+		return false;
+	}
 
-	if (fread(m_pFileBuffer, (size_t) COMPARE_BYTES, sizeof(uint8_t), m_pFile) != (size_t) COMPARE_BYTES) {
+	if (fread(m_pFileBuffer, sizeof(uint8_t), (size_t) COMPARE_BYTES,  m_pFile) != (size_t) COMPARE_BYTES) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -164,19 +210,9 @@ bool SpiFlashInstall::Diff(uint32_t nOffset) {
 		return false;
 	}
 
-	const uint32_t *src = (uint32_t *) m_pFileBuffer;
-	assert(((uint32_t)src & 0x3) == 0);
-
-	const uint32_t *dst = (uint32_t *) m_pFlashBuffer;
-	assert(((uint32_t)dst & 0x3) == 0);
-
-	for (uint32_t i = 0; i < COMPARE_BYTES / 4; i++) {
-		if (*src != *dst) {
-			DEBUG_EXIT
-			return true;
-		}
-		src++;
-		dst++;
+	if (!BuffesCompare(COMPARE_BYTES)) {
+		DEBUG_EXIT
+		return true;
 	}
 
 	DEBUG_EXIT
@@ -193,19 +229,37 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	bool bSuccess __attribute__((unused)) = false;
 
 	uint32_t n_Address = nOffset;
+	size_t nTotalBytes = 0;
 
 	(void) fseek(m_pFile, 0L, SEEK_SET);
 
 	while (n_Address < m_nFlashSize) {
-		const size_t nBytes = fread(m_pFileBuffer, (size_t) m_nEraseSize, sizeof(uint8_t), m_pFile);
+		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), (size_t) m_nEraseSize, m_pFile);
+		nTotalBytes += nBytes;
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {
-			DEBUG_PUTS("error: flash erase");
+			printf("error: flash erase\n");
 			break; // Error
 		}
 
+		if (nBytes < m_nEraseSize) {
+			for (uint32_t i = nBytes; i < m_nEraseSize; i++) {
+				m_pFileBuffer[i] = 0xFF;
+			}
+		}
+
 		if (spi_flash_cmd_write_multi(n_Address, m_nEraseSize, m_pFileBuffer) < 0) {
-			DEBUG_PUTS("error: flash write");
+			printf("error: flash write\n");
+			break; // Error
+		}
+
+		if (spi_flash_cmd_read_fast(n_Address, nBytes, m_pFlashBuffer) < 0) {
+			printf("error: flash read\n");
+			break; // Error
+		}
+
+		if (!BuffesCompare(nBytes)) {
+			printf("error: flash verify\n");
 			break; // Error
 		}
 
@@ -220,7 +274,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	}
 
 	if (bSuccess) {
-		DEBUG_PRINTF("%d bytes written", (int) (n_Address - nOffset));
+		printf("%d bytes written\n", (int) nTotalBytes);
 	}
 
 	DEBUG_EXIT
