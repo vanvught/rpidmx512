@@ -1,0 +1,63 @@
+PREFIX ?=
+
+CC	= $(PREFIX)gcc
+CPP	= $(PREFIX)g++
+AS	= $(CC)
+LD	= $(PREFIX)ld
+AR	= $(PREFIX)ar
+
+COPS =-I./include -I./ioLibrary_Driver/Ethernet -I./../lib-bcm2835_raspbian/include -I./../lib-debug/include
+#COPS +=-Wall -Werror 
+COPS +=-O2 #-DNDEBUG
+
+SRCDIR = ioLibrary_Driver/Ethernet ioLibrary_Driver/Internet/DHCP src
+
+SRCDIR5100 = $(SRCDIR) ioLibrary_Driver/Ethernet/W5100 src/W5100
+SRCDIR5500 = $(SRCDIR) ioLibrary_Driver/Ethernet/W5500 src/W5500
+
+TARGET5100 = lib_linux/libwiznet5100.a 
+TARGET5500 = lib_linux/libwiznet5500.a
+
+BUILD5100 = build_linux/W5100/
+BUILD5500 = build_linux/W5500/
+
+BUILD_DIRS := $(addprefix $(BUILD5100),$(SRCDIR5100)) $(addprefix $(BUILD5500),$(SRCDIR5500))
+
+OBJECTS5100 = $(foreach sdir,$(SRCDIR5100),$(patsubst $(sdir)/%.c,$(BUILD5100)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+OBJECTS5500 = $(foreach sdir,$(SRCDIR5500),$(patsubst $(sdir)/%.c,$(BUILD5500)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+
+LIST5100 = libwiznet5100.list
+LIST5500 = libwiznet5500.list
+
+define compile-objects-W5100
+$(BUILD5100)$1/%.o: $(SOURCE)$1/%.c
+	$(CC) $(COPS) -D_WIZCHIP_=5100 -c $$< -o $$@
+endef
+
+define compile-objects-W5500
+$(BUILD5500)$1/%.o: $(SOURCE)$1/%.c
+	$(CC) $(COPS) -D_WIZCHIP_=5500 -c $$< -o $$@
+endef
+	
+all : builddirs $(TARGET5100) $(TARGET5500)
+
+.PHONY: clean builddirs
+
+builddirs:
+	mkdir -p $(BUILD_DIRS)
+	mkdir -p lib_linux
+
+clean :
+	rm -rf build_linux/
+	rm -rf lib_linux/ 
+
+$(TARGET5100): Makefile.Linux $(OBJECTS5100)
+	$(AR) -r $(TARGET5100) $(OBJECTS5100) 
+	$(PREFIX)objdump -D $(TARGET5100) > lib_linux/$(LIST5100)
+
+$(TARGET5500): Makefile.Linux $(OBJECTS5500)
+	$(AR) -r $(TARGET5500) $(OBJECTS5500) 
+	$(PREFIX)objdump -D $(TARGET5500) > lib_linux/$(LIST5500)
+	
+$(foreach bdir,$(SRCDIR5100),$(eval $(call compile-objects-W5100,$(bdir))))
+$(foreach bdir,$(SRCDIR5500),$(eval $(call compile-objects-W5500,$(bdir))))
