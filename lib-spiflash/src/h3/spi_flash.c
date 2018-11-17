@@ -304,13 +304,7 @@ int spi_init(void) {
 	return 0;
 }
 
-int spi_xfer(unsigned bitlen, const void *dout, void *din, unsigned long flags) {
-	const uint32_t len = bitlen / 8;
-
-	if (bitlen % 8) {
-		DEBUG_PUTS("non byte-aligned SPI transfer");
-		return -3;
-	}
+int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 
 	if (flags & SPI_XFER_BEGIN) {
 		h3_gpio_clr(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3));

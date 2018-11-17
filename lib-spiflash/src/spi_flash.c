@@ -114,10 +114,10 @@ static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_
 		flags |= SPI_XFER_END;
 	}
 
-	ret = spi_xfer(cmd_len * 8, cmd, NULL, flags);
+	ret = spi_xfer(cmd_len, cmd, NULL, flags);
 
 	if (data_len != 0) {
-		ret = spi_xfer(data_len * 8, data_out, data_in, SPI_XFER_END);
+		ret = spi_xfer(data_len, data_out, data_in, SPI_XFER_END);
 	}
 
 	return ret;
@@ -151,12 +151,12 @@ static int spi_flash_cmd_wait_ready(unsigned long timeout) {
 		check_status = poll_bit;
 	}
 
-	spi_xfer(8, &cmd, NULL, SPI_XFER_BEGIN);
+	spi_xfer(1, &cmd, NULL, SPI_XFER_BEGIN);
 
 	timebase = get_timer(0);
 
 	do {
-		spi_xfer(8, NULL, &status, 0);
+		spi_xfer(1, NULL, &status, 0);
 
 		if ((status & poll_bit) == check_status) {
 			break;

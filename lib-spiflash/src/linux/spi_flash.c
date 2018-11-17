@@ -31,7 +31,6 @@
 #include "bcm2835.h"
 
 #include "../spi_flash_internal.h"
-#include "debug.h"
 
 int spi_init(void) {
 
@@ -55,13 +54,7 @@ int spi_init(void) {
 	return 0;
 }
 
-int spi_xfer(unsigned bitlen, const void *dout, void *din, unsigned long flags) {
-	uint32_t len = bitlen / 8;
-
-	if (bitlen % 8) {
-		DEBUG_PUTS("non byte-aligned SPI transfer");
-		return -3;
-	}
+int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 
 	if (flags & SPI_XFER_BEGIN) {
 		bcm2835_gpio_clr(RPI_V2_GPIO_P1_24);
