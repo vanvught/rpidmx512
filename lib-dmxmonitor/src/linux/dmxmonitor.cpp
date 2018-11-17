@@ -66,7 +66,7 @@ void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
 
-uint16_t DMXMonitor::GetDmxFootprint(void) const {
+uint16_t DMXMonitor::GetDmxFootprint(void) {
 	return m_nMaxChannels;
 }
 
@@ -79,7 +79,7 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t DMXMonitor::GetDmxStartAddress(void) const {
+uint16_t DMXMonitor::GetDmxStartAddress(void) {
 	return m_nDmxStartAddress;
 }
 

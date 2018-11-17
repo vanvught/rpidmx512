@@ -42,8 +42,8 @@ public:
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
-	uint16_t GetDmxStartAddress(void) const;
-	uint16_t GetDmxFootprint(void) const;
+	uint16_t GetDmxStartAddress(void);
+	uint16_t GetDmxFootprint(void);
 
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);

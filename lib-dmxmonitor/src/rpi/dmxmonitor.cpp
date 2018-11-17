@@ -55,11 +55,11 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t DMXMonitor::GetDmxStartAddress(void) const {
+uint16_t DMXMonitor::GetDmxStartAddress(void) {
 	return DMX_START_ADDRESS;
 }
 
-uint16_t DMXMonitor::GetDmxFootprint(void) const {
+uint16_t DMXMonitor::GetDmxFootprint(void) {
 	return DMX_FOOTPRINT;
 }
 
