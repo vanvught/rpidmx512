@@ -88,21 +88,17 @@ static bool osx_get_macaddress(const char *if_name, uint8_t *mac_address) {
 
 
 
-NetworkLinux::NetworkLinux(void): _socket(-1) {
-	for (unsigned i = 0; i < sizeof(_if_name); i++) {
-		_if_name[i] = '\0';
+NetworkLinux::NetworkLinux(void) {
+	for (unsigned i = 0; i < sizeof(m_aIfName); i++) {
+		m_aIfName[i] = '\0';
 	}
 
-	for (unsigned i = 0; i < sizeof(_hostname); i++) {
-		_hostname[i] = '\0';
+	for (unsigned i = 0; i < sizeof(m_aHostname); i++) {
+		m_aHostname[i] = '\0';
 	}
 }
 
 NetworkLinux::~NetworkLinux(void) {
-#ifndef NDEBUG
-	printf("NetworkLinux::~NetworkLinux, _socket = %d\n", _socket);
-#endif
-
 	End();
 }
 
@@ -111,49 +107,47 @@ int NetworkLinux::Init(const char *s) {
 
 	assert(s != NULL);
 
-	if (if_get_by_address(s, _if_name, sizeof(_if_name)) == 0) {
+	if (if_get_by_address(s, m_aIfName, sizeof(m_aIfName)) == 0) {
 	} else {
-		strncpy(_if_name, s, IFNAMSIZ);
+		strncpy(m_aIfName, s, IFNAMSIZ);
 	}
 
 #ifndef NDEBUG
-	printf("NetworkLinux::Init, _if_name = %s\n", _if_name);
+	printf("NetworkLinux::Init, _if_name = %s\n", m_aIfName);
 #endif
 
-	result = if_details(_if_name);
+	result = if_details(m_aIfName);
 
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
 	}
 #if defined (__linux__)
 	else {
-		m_IsDhcpUsed = is_dhclient(_if_name);
+		m_IsDhcpUsed = is_dhclient(m_aIfName);
 	}
 #endif
 
-	gethostname(_hostname, HOST_NAME_MAX);
+	gethostname(m_aHostname, HOST_NAME_MAX);
 
 	return result;
 }
 
-void NetworkLinux::Begin(uint16_t nPort) {
+int32_t NetworkLinux::Begin(uint16_t nPort) {
+	int nSocket;
 	struct sockaddr_in si_me;
 	int true_flag = true;
 
 #ifndef NDEBUG
-	printf("NetworkLinux::Begin, _socket = %d, port = %d\n", _socket, nPort);
+	printf("NetworkLinux::Begin, port = %d\n", nPort);
 #endif
 
-	if (_socket > 0) {
-		close(_socket);
-	}
 
-	if ((_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+	if ((nSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
 
-	if (setsockopt(_socket, SOL_SOCKET, SO_BROADCAST, (char*) &true_flag, sizeof(int)) == -1) {
+	if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, (char*) &true_flag, sizeof(int)) == -1) {
 		perror("setsockopt(SO_BROADCAST)");
 		exit(EXIT_FAILURE);
 	}
@@ -162,7 +156,7 @@ void NetworkLinux::Begin(uint16_t nPort) {
 	recv_timeout.tv_sec = 0;
 	recv_timeout.tv_usec = 10;
 
-	if (setsockopt(_socket,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout))== -1) {
+	if (setsockopt(nSocket,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout))== -1) {
 		perror("setsockopt(SO_RCVTIMEO)");
 		exit(EXIT_FAILURE);
 	}
@@ -173,15 +167,17 @@ void NetworkLinux::Begin(uint16_t nPort) {
     si_me.sin_port = htons(nPort);
     si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(_socket, (struct sockaddr*) &si_me, sizeof(si_me)) == -1) {
+	if (bind(nSocket, (struct sockaddr*) &si_me, sizeof(si_me)) == -1) {
 		perror("bind");
 		exit(EXIT_FAILURE);
 	}
+
+	return nSocket;
 }
 
 
 const char* NetworkLinux::GetHostName(void) {
-	return _hostname;
+	return m_aHostname;
 }
 void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
 	for (unsigned i =  0; i < NETWORK_MAC_SIZE; i++) {
@@ -190,15 +186,6 @@ void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
 }
 
 void NetworkLinux::End(void) {
-#ifndef NDEBUG
-	printf("NetworkLinux::End, _socket = %d\n", _socket);
-#endif
-
-	if (_socket > 0) {
-		close(_socket);
-	}
-	_socket = -1;
-
 	m_nLocalIp = 0;
 	m_nGatewayIp = 0;
 	m_nNetmask = 0;
@@ -218,7 +205,7 @@ void NetworkLinux::SetIp(uint32_t ip) {
     	return;
     }
 
-    strncpy(ifr.ifr_name, _if_name, IFNAMSIZ);
+    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
 
     ifr.ifr_addr.sa_family = AF_INET;
 
@@ -234,7 +221,7 @@ void NetworkLinux::SetIp(uint32_t ip) {
     	return;
     }
 
-    strncpy(ifr.ifr_name, _if_name, IFNAMSIZ);
+    strncpy(ifr.ifr_name, m_aIfName, IFNAMSIZ);
     ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 
     if (ioctl(fd, SIOCSIFFLAGS, &ifr) == -1) {
@@ -252,17 +239,27 @@ void NetworkLinux::SetIp(uint32_t ip) {
 void NetworkLinux::JoinGroup(uint32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
-	assert(_socket != -1);
-
 	mreq.imr_multiaddr.s_addr = ip;
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-	if (setsockopt(_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+	if (setsockopt(nHandle, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
 		perror("setsockopt(IP_ADD_MEMBERSHIP)");
 	}
 }
 
+void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
+	struct ip_mreq mreq;
+
+	mreq.imr_multiaddr.s_addr = ip;
+	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
+	if (setsockopt(nHandle, IPPROTO_IP, IP_DROP_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+		perror("setsockopt(IP_DROP_MEMBERSHIP)");
+	}
+}
+
 uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+	assert(nHandle != -1);
 	assert(packet != NULL);
 	assert(from_ip != NULL);
 	assert(from_port != NULL);
@@ -272,7 +269,7 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size
 	socklen_t slen = sizeof(si_other);
 
 
-	if ((recv_len = recvfrom(_socket, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+	if ((recv_len = recvfrom(nHandle, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
 			//exit(EXIT_FAILURE);
@@ -287,10 +284,10 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size
 }
 
 void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+	assert(nHandle != -1);
+
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
-
-	assert(_socket != -1);
 
 #ifndef NDEBUG
 	struct in_addr in;
@@ -302,7 +299,7 @@ void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size
 	si_other.sin_addr.s_addr = to_ip;
 	si_other.sin_port = htons(remote_port);
 
-	if (sendto(_socket, packet, size, 0, (struct sockaddr*) &si_other, slen) == -1) {
+	if (sendto(nHandle, packet, size, 0, (struct sockaddr*) &si_other, slen) == -1) {
 		perror("sendto");
 	}
 }

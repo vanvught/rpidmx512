@@ -53,7 +53,7 @@ public:
 	Network(void);
 	virtual ~Network(void);
 
-	virtual void Begin(uint16_t nPort)=0;
+	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual void End(void)=0;
 
 	virtual const char* GetHostName(void)=0;
@@ -75,6 +75,7 @@ public:
 
 #if !defined(__circle__)
 	virtual void JoinGroup(uint32_t nHandle, uint32_t ip)=0;
+	virtual void LeaveGroup(uint32_t nHandle, uint32_t ip)=0;
 #endif
 
 	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;

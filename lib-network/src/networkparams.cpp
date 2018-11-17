@@ -55,6 +55,7 @@
 #define SET_DEFAULT_GATEWAY_MASK	(1 << 3)
 #define SET_NAME_SERVER_MASK		(1 << 4)
 #define SET_HOSTNAME_MASK			(1 << 5)
+#define SET_RESET_EMAC_MASK			(1 << 6)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "network.txt";
 static const char PARAMS_USE_DHCP[] ALIGNED = "use_dhcp";
@@ -63,59 +64,13 @@ static const char PARAMS_NET_MASK[] ALIGNED = "net_mask";
 static const char PARAMS_DEFAULT_GATEWAY[] ALIGNED = "default_gateway";
 static const char PARAMS_NAME_SERVER[] ALIGNED = "name_server";
 static const char PARAMS_HOSTNAME[] ALIGNED = "hostname";
-
-void NetworkParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((NetworkParams *) p)->callbackFunction(s);
-}
-
-void NetworkParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
-
-	uint8_t value8;
-	uint32_t value32;
-	char value[NETWORK_HOSTNAME_SIZE];
-	uint8_t len;
-
-	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
-		if (value8 == 0) {
-			m_tNetworkParams.bIsDhcpUsed = false;
-		}
-		m_tNetworkParams.bSetList |= SET_IS_DHCP_MASK;
-		return;
-	}
-
-	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == 1) {
-		m_tNetworkParams.nLocalIp = value32;
-		m_tNetworkParams.bSetList |= SET_IP_ADDRESS_MASK;
-	} else if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == 1) {
-		m_tNetworkParams.nNetmask = value32;
-		m_tNetworkParams.bSetList |= SET_NET_MASK_MASK;
-	} else if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == 1) {
-		m_tNetworkParams.nGatewayIp = value32;
-		m_tNetworkParams.bSetList |= SET_DEFAULT_GATEWAY_MASK;
-	} else if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == 1) {
-		m_tNetworkParams.nNameServerIp = value32;
-		m_tNetworkParams.bSetList |= SET_NAME_SERVER_MASK;
-	}
-
-	len = NETWORK_HOSTNAME_SIZE;
-
-	if (Sscan::Char(pLine, PARAMS_HOSTNAME, value, &len) == SSCAN_OK) {
-		strncpy((char *) m_tNetworkParams.aHostName, value, len);
-		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-		m_tNetworkParams.bSetList |= SET_HOSTNAME_MASK;
-		return;
-	}
-}
+static const char PARAMS_RESET_EMAC[] ALIGNED = "reset_emac";
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tNetworkParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TNetworkParams); i++) {
-		p[i] = 0;
+		*p++ = 0;
 	}
 
 	m_tNetworkParams.bIsDhcpUsed = true;
@@ -142,6 +97,59 @@ bool NetworkParams::Load(void) {
 	}
 
 	return true;
+}
+
+void NetworkParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
+	uint8_t value8;
+	uint32_t value32;
+	char value[NETWORK_HOSTNAME_SIZE];
+	uint8_t len;
+
+	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
+		m_tNetworkParams.bIsDhcpUsed = !(value8 == 0);
+		m_tNetworkParams.bSetList |= SET_IS_DHCP_MASK;
+		return;
+	}
+
+	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == 1) {
+		m_tNetworkParams.nLocalIp = value32;
+		m_tNetworkParams.bSetList |= SET_IP_ADDRESS_MASK;
+		return;
+	}
+
+	if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == 1) {
+		m_tNetworkParams.nNetmask = value32;
+		m_tNetworkParams.bSetList |= SET_NET_MASK_MASK;
+		return;
+	}
+
+	if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == 1) {
+		m_tNetworkParams.nGatewayIp = value32;
+		m_tNetworkParams.bSetList |= SET_DEFAULT_GATEWAY_MASK;
+		return;
+	}
+
+	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == 1) {
+		m_tNetworkParams.nNameServerIp = value32;
+		m_tNetworkParams.bSetList |= SET_NAME_SERVER_MASK;
+		return;
+	}
+
+	len = NETWORK_HOSTNAME_SIZE;
+	if (Sscan::Char(pLine, PARAMS_HOSTNAME, value, &len) == SSCAN_OK) {
+		strncpy((char *) m_tNetworkParams.aHostName, value, len);
+		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+		m_tNetworkParams.bSetList |= SET_HOSTNAME_MASK;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
+		m_tNetworkParams.bResetEmac = (value8 != 0);
+		m_tNetworkParams.bSetList |= SET_RESET_EMAC_MASK;
+		return;
+	}
 }
 
 void NetworkParams::Dump(void) {
@@ -175,11 +183,11 @@ void NetworkParams::Dump(void) {
 	if (isMaskSet(SET_HOSTNAME_MASK)) {
 		printf(" %s=%s\n", PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
 	}
-#endif
-}
 
-bool NetworkParams::isMaskSet(uint32_t nMask) const {
-	return (m_tNetworkParams.bSetList & nMask) == nMask;
+	if (isMaskSet(SET_RESET_EMAC_MASK)) {
+		printf(" %s=%d [%s]\n", PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
+	}
+#endif
 }
 
 uint32_t NetworkParams::GetMaskIpAddress(void) {
@@ -192,4 +200,15 @@ uint32_t NetworkParams::GetMaskNetMask(void) {
 
 uint32_t NetworkParams::GetMaskDhcpUsed(void) {
 	return SET_IS_DHCP_MASK;
+}
+
+void NetworkParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((NetworkParams *) p)->callbackFunction(s);
+}
+
+bool NetworkParams::isMaskSet(uint32_t nMask) const {
+	return (m_tNetworkParams.bSetList & nMask) == nMask;
 }

@@ -43,7 +43,7 @@ public:
 
 	void Init(CNetSubSystem *pNet);
 
-	void Begin(uint16_t nPort);
+	int32_t Begin(uint16_t nPort);
 	void End(void);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);

@@ -40,6 +40,7 @@ struct TNetworkParams {
 	uint32_t nNameServerIp;
 	bool bIsDhcpUsed;
 	uint8_t aHostName[NETWORK_HOSTNAME_SIZE];
+	bool bResetEmac;
 };
 
 class NetworkParamsStore {
@@ -83,6 +84,11 @@ public:
 
 	inline const uint8_t *GetHostName(void) {
 		return m_tNetworkParams.aHostName;
+	}
+
+	// H2+/H3 Only
+	inline bool GetResetEmac(void) {
+		return m_tNetworkParams.bResetEmac;
 	}
 
 public:

@@ -44,8 +44,9 @@ NetworkBaremetal::~NetworkBaremetal(void) {
 	End();
 }
 
-void NetworkBaremetal::Begin(uint16_t nPort) {
+int32_t NetworkBaremetal::Begin(uint16_t nPort) {
 	wifi_udp_begin(nPort);
+	return 0;
 }
 
 void NetworkBaremetal::End(void) {

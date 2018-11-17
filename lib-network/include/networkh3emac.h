@@ -39,7 +39,7 @@ public:
 
 	int Init(NetworkParamsStore *pNetworkParamsStore = 0);
 
-	void Begin(uint16_t nPort);
+	int32_t Begin(uint16_t nPort);
 	void End(void);
 
 	inline const char* GetHostName(void) {
@@ -49,6 +49,8 @@ public:
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
 	void JoinGroup(uint32_t nHandle, uint32_t ip);
+	void LeaveGroup(uint32_t nHandle, uint32_t ip);
+
 	uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
 	void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
 
@@ -58,7 +60,6 @@ public:
 
 private:
 	char m_aHostname[NETWORK_HOSTNAME_SIZE];
-	int	m_nIdx;
 };
 
 #endif /* NETWORKH3EMAC_H_ */

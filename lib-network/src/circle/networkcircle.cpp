@@ -84,7 +84,7 @@ void NetworkCircle::Init(CNetSubSystem *pNet) {
 	memcpy(m_aHostname, (const char *)Hostname, Hostname.GetLength());
 }
 
-void NetworkCircle::Begin(uint16_t nPort) {
+int32_t NetworkCircle::Begin(uint16_t nPort) {
 	assert(m_pSocket == 0);
 
 	if (m_pNet == 0) {
@@ -106,6 +106,8 @@ void NetworkCircle::Begin(uint16_t nPort) {
 #if CIRCLE_MAJOR_VERSION >= 27
 	m_pSocket->SetOptionBroadcast(TRUE);
 #endif
+
+	return 0;
 }
 
 void NetworkCircle::End(void) {

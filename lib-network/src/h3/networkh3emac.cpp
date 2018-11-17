@@ -43,18 +43,16 @@
 extern "C" {
 int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 // MAC-PHY
-int emac_start(void);
+int emac_start(bool reset_emac);
 // Net
 }
 
-NetworkH3emac::NetworkH3emac(void) : m_nIdx(-1) {
+NetworkH3emac::NetworkH3emac(void) {
 	uint8_t i;
 
 	for (i = 0; i < NETWORK_HOSTNAME_SIZE; i++) {
 		m_aHostname[i] = 0;
 	}
-
-	emac_start();
 }
 
 NetworkH3emac::~NetworkH3emac(void) {
@@ -73,6 +71,8 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 			params.Dump();
 		}
 	}
+
+	emac_start(params.GetResetEmac());
 
 	hardware_get_mac_address((uint8_t *) m_aNetMacaddr);
 
@@ -112,12 +112,14 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	return 0;
 }
 
-void NetworkH3emac::Begin(uint16_t nPort) {
+int32_t NetworkH3emac::Begin(uint16_t nPort) {
 	DEBUG_ENTRY
 
-	m_nIdx = udp_bind(nPort);
+	const int32_t nIdx = udp_bind(nPort);
 
-	assert(m_nIdx != -1);
+	assert(nIdx != -1);
+
+	return nIdx;
 
 	DEBUG_EXIT
 }
@@ -143,12 +145,20 @@ void NetworkH3emac::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_EXIT
 }
 
+void NetworkH3emac::LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+	DEBUG_ENTRY
+
+	igmp_leave(nIp);
+
+	DEBUG_EXIT
+}
+
 uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
-	return udp_recv(m_nIdx, packet, size, from_ip, from_port);
+	return udp_recv(nHandle, packet, size, from_ip, from_port);
 }
 
 void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
-	udp_send(m_nIdx, packet, size, to_ip, remote_port);
+	udp_send(nHandle, packet, size, to_ip, remote_port);
 }
 
 void NetworkH3emac::SetIp(uint32_t nIp) {
