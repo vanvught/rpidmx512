@@ -54,8 +54,14 @@ static const char FromOscSend[] = "oscsend";
  * @param types The types of the data items in the message, types are defined in \ref osc_type
  * @param ... The data values to be transmitted. The types of the arguments passed here must agree with the types specified in the type parameter.
  */
-OSCSend::OSCSend(const int address, const int port, const char *path, const char *types, ...) :
-		m_Address(address), m_Port(port), m_Path(path), m_Types(types), m_Msg(0), m_Result(-1) {
+OSCSend::OSCSend(unsigned nHandle, int address, int port, const char *path, const char *types, ...) :
+		m_nHandle(nHandle),
+		m_Address(address),
+		m_Port(port),
+		m_Path(path),
+		m_Types(types),
+		m_Msg(0),
+		m_Result(-1) {
 
 	va_list ap;
 	va_start(ap, types);
@@ -115,7 +121,7 @@ void OSCSend::Send(void) {
 	const uint16_t nDataLength = (uint16_t) OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
 	const uint8_t *pData = (uint8_t *)m_Msg->Serialise(m_Path, 0, 0);
 
-	Network::Get()->SendTo(pData, nDataLength, m_Address, (uint16_t) m_Port);
+	Network::Get()->SendTo(m_nHandle, pData, nDataLength, m_Address, (uint16_t) m_Port);
 
 	// Free the memory allocated by m_Msg->Serialise
 	if(pData) {

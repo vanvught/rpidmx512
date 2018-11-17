@@ -59,6 +59,7 @@ enum {
 OscServer::OscServer(void):
 	m_nPortIncoming(OSCSERVER_DEFAULT_PORT_INCOMING),
 	m_nPortOutgoing(OSCSERVER_DEFAULT_PORT_OUTGOING),
+	m_nHandle(-1),
 	m_bPartialTransmission(false),
 	m_nLastChannel(0),
 	m_pLightSet(0)
@@ -100,9 +101,10 @@ OscServer::~OscServer(void) {
 }
 
 void OscServer::Start(void) {
-	Network::Get()->Begin(m_nPortIncoming);
+	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
+	assert(m_nHandle != -1);
 
-	OSCSend MsgSend(Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
+	OSCSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
 
 	if (m_pLightSet != 0) {
 		m_pLightSet->Start(0);
@@ -224,7 +226,7 @@ int OscServer::Run(void) {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 
-	const int nBytesReceived = Network::Get()->RecvFrom(m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
+	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
 
 	if (nBytesReceived == 0) {
 		return 0;
@@ -232,7 +234,7 @@ int OscServer::Run(void) {
 
 	if (OSC::isMatch((const char*) m_pBuffer, "/ping")) {
 		DEBUG_PUTS("ping received");
-		OSCSend MsgSend(nRemoteIp, m_nPortOutgoing, "/pong", 0);
+		OSCSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", 0);
 	} else {
 		OSCMessage Msg((char *) m_pBuffer, nBytesReceived);
 

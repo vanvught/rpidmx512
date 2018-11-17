@@ -38,7 +38,7 @@
 
 class OSCSend {
 public:
-	OSCSend(const int, const int, const char *, const char *, ...);
+	OSCSend(unsigned nHandle, int, int, const char *, const char *, ...);
 	~OSCSend(void);
 
 private:
@@ -46,8 +46,9 @@ private:
 	void Send(void);
 
 private:
-	const int m_Address;
-	const int m_Port;
+	unsigned m_nHandle;
+	int m_Address;
+	int m_Port;
 	const char *m_Path;
 	const char *m_Types;
 	OSCMessage *m_Msg;

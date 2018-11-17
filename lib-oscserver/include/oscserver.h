@@ -68,6 +68,7 @@ private:
 private:
 	uint16_t m_nPortIncoming;
 	uint16_t m_nPortOutgoing;
+	int32_t m_nHandle;
 	bool m_bPartialTransmission;
 	uint16_t m_nLastChannel;
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
