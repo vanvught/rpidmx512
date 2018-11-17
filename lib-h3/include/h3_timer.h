@@ -22,24 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #ifndef H3_TIMER_H_
 #define H3_TIMER_H_
 
-#define TIMER_CTRL_SINGLE_MODE	(1<<7)	///< When interval reached , the timer will disable automatically
-
 // Timer IRQ Enable Register
-#define TIMER_IRQ_EN_TMR0	(1 << 0)
-#define TIMER_IRQ_EN_TMR1	(1 << 1)
+#define TIMER_IRQ_EN_TMR0			(1 << 0)
+#define TIMER_IRQ_EN_TMR1			(1 << 1)
 
 // Timer IRQ Status Register
-#define TIMER_IRQ_PEND_TMR0	(1 << 0)	///< Set will clear
-#define TIMER_IRQ_PEND_TMR1	(1 << 1)	///< Set will clear
+#define TIMER_IRQ_PEND_TMR0			(1 << 0)	///< Set will clear
+#define TIMER_IRQ_PEND_TMR1			(1 << 1)	///< Set will clear
+
+// Timer Control Register
+#define TIMER_CTRL_EN_START			(1 << 0)	///< 0:Stop/Pause 1:Start
+#define TIMER_CTRL_RELOAD			(1 << 1)
+#define TIMER_CTRL_CLK_SRC_OSC24M	(1 << 2)	///< Bit 3:2
+#define TIMER_CTRL_CLK_PRES_1		(0 << 4)	///< Bit 6:4
+#define TIMER_CTRL_CLK_PRES_2		(1 << 4)
+#define TIMER_CTRL_CLK_PRES_4		(2 << 4)
+#define TIMER_CTRL_CLK_PRES_8		(3 << 4)
+#define TIMER_CTRL_CLK_PRES_16		(4 << 4)
+#define TIMER_CTRL_CLK_PRES_32		(5 << 4)
+#define TIMER_CTRL_CLK_PRES_64		(6 << 4)
+#define TIMER_CTRL_CLK_PRES_128		(7 << 4)
+#define TIMER_CTRL_SINGLE_MODE		(1 << 7)	///< When interval reached , the timer will disable automatically
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern void h3_timer_init(void);
 
 extern void __msdelay(uint32_t);
 extern void __usdelay(uint32_t);

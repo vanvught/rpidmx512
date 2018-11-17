@@ -57,6 +57,7 @@ extern uint16_t udp_recv(uint8_t, uint8_t *, uint16_t, uint32_t *, uint16_t *);
 extern int udp_send(uint8_t, const uint8_t *, uint16_t, uint32_t, uint16_t);
 //
 extern int igmp_join(uint32_t);
+extern int igmp_leave(uint32_t);
 
 #ifdef __cplusplus
 }

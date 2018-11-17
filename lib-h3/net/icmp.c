@@ -96,4 +96,3 @@ void icmp_handle(struct t_icmp *p_icmp) {
 
 	DEBUG2_EXIT
 }
-

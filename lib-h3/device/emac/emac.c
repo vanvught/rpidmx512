@@ -353,7 +353,7 @@ void _autonegotiation(void) {
 
 }
 
-void emac_start(void) {
+void emac_start(bool reset_emac) {
 	uint32_t value;
 #ifndef NDEBUG
 	uint8_t *p = (uint8_t *)H3_EMAC;
@@ -372,9 +372,11 @@ void emac_start(void) {
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 #endif
 
-	_set_syscon_ephy();
+	if (reset_emac) {
+		_set_syscon_ephy();
 
-	_autonegotiation();
+		_autonegotiation();
+	}
 
 	_adjust_link(false, 100);
 

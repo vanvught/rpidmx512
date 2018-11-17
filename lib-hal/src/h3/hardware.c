@@ -27,8 +27,6 @@
 #include <assert.h>
 
 #include "h3_board.h"
-#include "h3_timer.h"
-#include "h3_hs_timer.h"
 #include "h3_gpio.h"
 #include "h3_sid.h"
 #include "h3_thermal.h"
@@ -53,6 +51,9 @@
 
 static bool s_is_pwr_button_pressed = false;
 static volatile uint64_t s_hardware_init_startup_seconds = 0;
+
+extern void h3_timer_init(void);
+extern void h3_hs_timer_init(void);
 
 bool hardware_is_pwr_button_pressed(void) {
 	return s_is_pwr_button_pressed;
@@ -101,7 +102,7 @@ void hardware_init(void) {
 	h3_watchdog_disable();
 	sys_time_init();
 	h3_timer_init();
-	h3_hs_timer_start();
+	h3_hs_timer_init();
 	console_init();
 	gic_init();
 	h3_thermal_init();
@@ -116,6 +117,7 @@ void hardware_init(void) {
 	}
 #endif
 
+	if (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) {
 #if (_FFCONF == 68300)/*R0.12c */
 	FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
 	if (result != FR_OK) {
@@ -127,6 +129,7 @@ void hardware_init(void) {
 #else
 #error Not a recognized/tested FatFs version
 #endif
+	}
 
 	// Power led
 	#define PRCM_APB0_GATE_PIO (0x1 << 0)

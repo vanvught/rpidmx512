@@ -27,13 +27,14 @@
 #define EMAC_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern void emac_init(void);
-extern void emac_start(void);
+extern void emac_start(bool reset_emac);
 extern void emac_shutdown(void);
 
 #ifdef __cplusplus

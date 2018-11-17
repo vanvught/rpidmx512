@@ -210,7 +210,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	assert(idx < MAX_PORTS_ALLOWED);
 
 	_pcast32 dst;
-	uint16_t i;
+	uint32_t i;
 
 	if (s_ports_allowed[idx] == 0) {
 		DEBUG_PUTS("ports_allowed[idx] == 0");
