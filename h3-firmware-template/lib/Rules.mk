@@ -22,7 +22,7 @@ endif
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 -mhard-float -mfloat-abi=hard
-COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables #-fstack-usage
+COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
