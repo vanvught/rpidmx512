@@ -38,6 +38,7 @@
 #ifndef MAX
  #define MAX(a,b)		(((a) > (b)) ? (a) : (b))
 #endif
+
 #ifndef MIN
  #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
 #endif
@@ -50,10 +51,10 @@ extern "C" {
 	unsigned char u1, u2;
 	unsigned char *t1, *t2;
 
-	t1 = (unsigned char *)s1;
-	t2 = (unsigned char *)s2;
+	t1 = (unsigned char *) s1;
+	t2 = (unsigned char *) s2;
 
-	for (; n-- != (size_t)0; t1++, t2++) {
+	for (; n-- != (size_t) 0; t1++, t2++) {
 		u1 = *t1;
 		u2 = *t2;
 		if (u1 != u2) {
@@ -65,8 +66,8 @@ extern "C" {
 }
 
 /*@unused@*/inline static void *memcpy(/*@only@*/void *dest, const void *src, size_t n) {
-	char *dp = (char *)dest;
-	const char *sp = (const char *)src;
+	char *dp = (char *) dest;
+	const char *sp = (const char *) src;
 
 	while (n-- != (size_t) 0) {
 		*dp++ = *sp++;
@@ -95,7 +96,7 @@ extern "C" {
 }
 
 /*@unused@*/inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
-	char *dp = (char *)dest;
+	char *dp = (char *) dest;
 
 	while (n-- != (size_t) 0) {
 		*dp++ = (char) c;
@@ -107,7 +108,7 @@ extern "C" {
 /*@unused@*/inline static size_t strlen(const char *s) {
 	const char *p = s;
 
-	while (*s != (char)0) {
+	while (*s != (char) 0) {
 		++s;
 	}
 
@@ -198,17 +199,7 @@ extern "C" {
 }
 #endif
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-                   + __GNUC_MINOR__ * 100 \
-                   + __GNUC_PATCHLEVEL__)
-
-#if GCC_VERSION > 40899
-// 4.9 supports assume_aligned, 4.8 does not.
 #define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
-#else
-#define ASSUME_ALIGNED
-#endif
-
 #define ALIGNED  		__attribute__((aligned(4)))
 
 #endif /* UTIL_H_ */

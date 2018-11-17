@@ -68,7 +68,7 @@ float log2f(float x) {
 	register float log2 = ((m.bits >> 23) & 0x00FF) - 128;
 
 	m.bits &= ~(255 << 23);
-	m.bits += 127 << 23;
+	m.bits += (127 << 23);
 
 	log2 += ((-0.34484843f) * m.number + 2.02466578f) * m.number - 0.67487759f;
 
