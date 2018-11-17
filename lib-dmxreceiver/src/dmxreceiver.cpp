@@ -89,15 +89,16 @@ void DMXReceiver::Stop(void) {
 bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
-	const uint8_t *src = (uint8_t *) pData;
+	const uint8_t *src = pData;
 	uint8_t *dst = (uint8_t *) m_Data;
 
 	if (nLength != m_nLength) {
 		m_nLength = nLength;
 
-		for (unsigned i = 0; i < DMX_DATA_BUFFER_SIZE; i++) {
+		for (unsigned i = 0; i < nLength; i++) {
 			*dst++ = *src++;
 		}
+
 		return true;
 	}
 
@@ -123,17 +124,17 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		nLength = -1;
 		return 0;
 	} else {
-		const uint8_t *pDmx = (const uint8_t *)__builtin_assume_aligned(GetDmxAvailable(), 4);
+		const uint8_t *pDmx = GetDmxAvailable();
 
 		if (pDmx != 0) {
 			const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;
 			nLength = (uint16_t) (dmx_statistics->Statistics.SlotsInPacket);
 
-			if (IsDmxDataChanged(pDmx, nLength)) {  // Skip DMX START CODE
+			if (IsDmxDataChanged(++pDmx, nLength)) {  // Skip DMX START CODE
 
 				DEBUG_PRINTF("\tDMX Data Changed", __FILE__, __FUNCTION__, __LINE__);
 
-				m_pLightSet->SetData(0, ++pDmx, nLength);
+				m_pLightSet->SetData(0, pDmx, nLength);
 				p = (uint8_t*) pDmx;
 			}
 
@@ -146,6 +147,6 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		}
 	}
 
-	nLength = (uint16_t) 0;
+	nLength = 0;
 	return 0;
 }
