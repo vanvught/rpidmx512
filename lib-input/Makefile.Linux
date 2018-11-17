@@ -1,4 +1,6 @@
 #
-EXTRA_INCLUDES = ../lib-i2c/include ../lib-bcm2835_raspbian/include
+DEFINES = RASPPI NDEBUG
+#
+EXTRA_INCLUDES = ../lib-i2c/include
 #
 include ../linux-template/lib/Rules.mk

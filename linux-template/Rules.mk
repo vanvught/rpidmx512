@@ -18,12 +18,12 @@ endif
 LIBS += hal properties
 
 ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-	LIBS += bob i2c
+	LIBS+= bob i2c
 	BCM2835 = ./../lib-bcm2835_raspbian
 	ifneq "$(wildcard $(BCM2835) )" ""
-		LIBS += bcm2835_raspbian
+		LIBS+= bcm2835_raspbian
 	else
-		LIBS += bcm2835
+		LIBS+= bcm2835
 	endif
 	DEFINES+=-DRASPPI
 	ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)

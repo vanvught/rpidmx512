@@ -6,23 +6,29 @@ AS	=$(CC)
 LD	=$(PREFIX)ld
 AR	=$(PREFIX)ar
 
+DEFINES:=$(addprefix -D,$(DEFINES))
+
 INCLUDES:=-I./include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
-DEFINES:=$(addprefix -D,$(DEFINES))
-
-ifeq ($(findstring lib-bob,$(INCLUDES)),lib-bob)
-	ifneq ($(findstring lib-i2c,$(INCLUDES)),lib-i2c)
-		INCLUDES +=-I../lib-i2c/include
-	endif
-endif	
-
 ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-	BCM2835 = ./../lib-bcm2835_raspbian
-	ifneq "$(wildcard $(BCM2835) )" ""
-		INCLUDES +=-I../lib-bcm2835_raspbian/include
+	ifeq ($(findstring lib-bob,$(INCLUDES)),lib-bob)
+		ifneq ($(findstring lib-i2c,$(INCLUDES)),lib-i2c)
+			INCLUDES +=-I../lib-i2c/include
+		endif
 	endif
-	DEFINES+=-DRASPPI
+
+	BCM2835 = ./../lib-bcm2835_raspbian
+
+	ifneq "$(wildcard $(BCM2835) )" ""
+		ifeq ($(findstring RASPPI,$(DEFINES)),RASPPI)
+			INCLUDES+=-I../lib-bcm2835_raspbian/include
+		endif
+	endif
+
+	ifneq ($(findstring RASPPI,$(DEFINES)),RASPPI)
+		DEFINES+=-DRASPPI
+	endif
 endif
  
 COPS=$(DEFINES) $(INCLUDES)

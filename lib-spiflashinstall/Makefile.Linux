@@ -1,5 +1,5 @@
 #
-DEFINES = NDEBUG
+DEFINES = RASPPI NDEBUG
 #
 EXTRA_INCLUDES = ../lib-spiflash/include ../lib-properties/include
 #
