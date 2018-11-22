@@ -320,7 +320,7 @@ void Ssd1306::PutChar(int c) {
 }
 
 void Ssd1306::PutString(const char *pString) {
-	uint8_t i;
+	uint32_t i;
 	char *p = (char *)pString;
 
 	for (i = 0; *p != '\0'; i++) {

@@ -25,8 +25,7 @@
 
 #include "stdint.h"
 
-#if defined(__linux__) || defined (__CYGWIN__)
-#include <stddef.h>
+#if defined(__linux__)
 #include <time.h>
 #include <sys/time.h>
 uint32_t micros(void) {

@@ -135,12 +135,16 @@ Display::~Display(void) {
 }
 
 void Display::Cls(void) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->Cls();
 }
 
 void Display::TextLine(const uint8_t nLine, const char *pText, uint8_t nLength) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
@@ -153,7 +157,9 @@ uint8_t Display::Printf(const uint8_t nLine, const char *format, ...) {
 	int i;
 	char buffer[32];
 
-	if (m_LcdDisplay == 0) return 0;
+	if (m_LcdDisplay == 0) {
+		return 0;
+	}
 
 	va_list arp;
 
@@ -179,7 +185,9 @@ TDisplayTypes Display::GetDetectedType(void) const {
 uint8_t Display::Write(uint8_t nLine, const char *pText) {
 	const char *p = pText;
 
-	if (m_LcdDisplay == 0) return 0;
+	if (m_LcdDisplay == 0) {
+		return 0;
+	}
 
 	while (*p != (char)0) {
 		++p;
@@ -193,27 +201,37 @@ uint8_t Display::Write(uint8_t nLine, const char *pText) {
 }
 
 void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
 
 void Display::SetCursorPos(uint8_t col, uint8_t row) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->SetCursorPos(col, row);
 }
 
 void Display::PutChar(int c) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->PutChar(c);
 }
 
 void Display::PutString(const char *pText) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->PutString(pText);
 }
 
 void Display::ClearLine(uint8_t nLine) {
-	if (m_LcdDisplay == 0) return;
+	if (m_LcdDisplay == 0) {
+		return;
+	}
 	m_LcdDisplay->ClearLine(nLine);
 }
 

@@ -143,7 +143,7 @@ void Tc1602::PutChar(int c) {
 void Tc1602::PutString(const char *pString) {
 	char *p = (char *)pString;
 
-	for (uint8_t i = 0; *p != '\0'; i++) {
+	for (uint32_t i = 0; *p != '\0'; i++) {
 		PutChar((int) *p);
 		p++;
 	}
@@ -154,7 +154,7 @@ void Tc1602::Text(const char *data, uint8_t nLength) {
 		nLength = m_nCols;
 	}
 
-	for (uint8_t i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		WriteReg((uint8_t) data[i]);
 	}
 }
@@ -175,7 +175,7 @@ void Tc1602::ClearLine(const uint8_t nLine) {
 
 	SetCursorPos(0, nLine - 1);
 
-	for (uint8_t i = 0; i < m_nCols; i++) {
+	for (uint32_t i = 0; i < m_nCols; i++) {
 		WriteReg((uint8_t) ' ');
 	}
 
