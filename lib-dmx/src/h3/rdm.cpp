@@ -60,7 +60,7 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	assert(pRdmCommand != 0);
 
 	uint8_t *rdm_data = (uint8_t *)pRdmCommand;
-	uint8_t i;
+	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
 	pRdmCommand->transaction_number = m_TransactionNumber[nPort];

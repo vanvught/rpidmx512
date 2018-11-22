@@ -25,9 +25,10 @@
 
 #include <assert.h>
 
+#include "h3.h"
+#include "h3_hs_timer.h"
 #include "h3/dmxmulti.h"
 #include "h3/dmx_multi.h"
-#include "h3_hs_timer.h"
 
 #include "dmxgpioparams.h"
 
@@ -39,29 +40,11 @@
 
 #include "debug.h"
 
-DmxMulti::DmxMulti(void): m_IsInitDone(false) {
+DmxMulti::DmxMulti(void) {
 	DEBUG_ENTRY
 
 	dmx_multi_init();
 
-#if 0 //TODO
-	bool is_set;
-	uint8_t gpio;
-
-	DmxGpioParams params;
-
-	if (params.Load()) {
-		params.Dump();
-
-		for (unsigned i = 0; i < DMX_MAX_OUT; i++) {
-			gpio = params.GetDataDirection(is_set, i);
-
-			if (is_set) {
-				dmx_multi_init_set_gpiopin(i, gpio);
-			}
-		}
-	}
-#endif
 	DEBUG_EXIT
 }
 
@@ -114,13 +97,13 @@ const uint8_t* DmxMulti::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	assert(nPort < DMX_MAX_OUT);
 
 	uint8_t *p = 0;
-	uint32_t micros_now = h3_hs_timer_lo_us();
+	const uint32_t nMicros = h3_hs_timer_lo_us() + nTimeOut;
 
 	do {
 		if ((p = (uint8_t *) dmx_multi_rdm_get_available(_port_to_uart(nPort))) != 0) {
 			return (const uint8_t *) p;
 		}
-	} while (h3_hs_timer_lo_us() - micros_now < nTimeOut);
+	} while (h3_hs_timer_lo_us() < nMicros);
 
 	return (const uint8_t *) p;
 }

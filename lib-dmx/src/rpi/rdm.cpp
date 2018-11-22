@@ -51,13 +51,13 @@ const uint8_t *Rdm::Receive(uint8_t nPort) {
 
 const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	uint8_t *p = 0;
-	uint32_t micros_now = BCM2835_ST->CLO;
+	const uint32_t nMicros = BCM2835_ST->CLO + nTimeOut;
 
 	do {
 		if ((p = (uint8_t *)rdm_get_available()) != 0) {
 			return (const uint8_t *) p;
 		}
-	} while ( BCM2835_ST->CLO - micros_now < nTimeOut);
+	} while ( BCM2835_ST->CLO < nMicros);
 
 	return (const uint8_t *) p;
 }
@@ -66,7 +66,7 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	assert(pRdmCommand != 0);
 
 	uint8_t *rdm_data = (uint8_t *)pRdmCommand;
-	uint8_t i;
+	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
 	pRdmCommand->transaction_number = m_TransactionNumber;

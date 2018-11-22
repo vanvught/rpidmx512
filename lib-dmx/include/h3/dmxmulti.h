@@ -62,7 +62,6 @@ public:
 	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut);
 
 private:
-	bool m_IsInitDone;
 };
 
 #endif /* DMXMULTI_H_ */

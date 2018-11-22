@@ -23,11 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-//#undef NDEBUG
-#endif
-//#define LOGIC_ANALYZER
-
 #include <stdint.h>
 #include <assert.h>
 
@@ -107,7 +102,7 @@ static uint32_t dmx_output_period = DMX_TRANSMIT_PERIOD_DEFAULT;
 
 static uint32_t dmx_output_break_time_intv = DMX_TRANSMIT_BREAK_TIME_MIN * 12;
 static uint32_t dmx_output_mab_time_intv = DMX_TRANSMIT_MAB_TIME_MIN * 12;
-static uint32_t dmx_output_period_intv = DMX_TRANSMIT_PERIOD_DEFAULT * 12;
+static uint32_t dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - (DMX_TRANSMIT_MAB_TIME_MIN * 12) - (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
 
 static volatile _tx_rx_state dmx_send_state = IDLE;
 
@@ -132,8 +127,10 @@ static void dmx_multi_clear_data(uint8_t uart) {
 	for (j = 0; j < DMX_DATA_OUT_INDEX; j++) {
 		struct _dmx_multi_data *p = (struct _dmx_multi_data *) &p_coherent_region->dmx_data[uart][j];
 
+		uint32_t *p32 = (uint32_t *)p->data;
+
 		for (i = 0; i < DMX_DATA_BUFFER_SIZE / 4; i++) {
-			p->data[i] = 0;
+			*p32++ = 0;
 		}
 
 		p->length = 513; // Including START Code
@@ -145,16 +142,12 @@ static void irq_timer0_dmx_multi_sender(uint32_t clo) {
 	h3_gpio_set(6);
 #endif
 
-	dmb();
 	switch (dmx_send_state) {
 	case IDLE:
 	case DMXINTER:
-		dmb();
 		H3_TIMER->TMR0_INTV = dmx_output_break_time_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
-		isb();
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		dmb();
 		if (uart_state[1] == UART_STATE_TX) {
 			H3_UART1->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
@@ -172,7 +165,6 @@ static void irq_timer0_dmx_multi_sender(uint32_t clo) {
 		}
  #endif
 #endif
-		isb();
 
 		if (dmx_data_write_index[1] != dmx_data_read_index[1]) {
 			dmx_data_read_index[1] = (dmx_data_read_index[1] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -208,12 +200,9 @@ static void irq_timer0_dmx_multi_sender(uint32_t clo) {
 		dmx_send_state = BREAK;
 		break;
 	case BREAK:
-		dmb();
 		H3_TIMER->TMR0_INTV = dmx_output_mab_time_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
-		isb();
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		dmb();
 		if (uart_state[1] == UART_STATE_TX) {
 			H3_UART1->LCR = UART_LCR_8_N_2;
 		}
@@ -231,18 +220,14 @@ static void irq_timer0_dmx_multi_sender(uint32_t clo) {
 		}
  #endif
 #endif
-		isb();
 
 		dmb();
 		dmx_send_state = MAB;
 		break;
 	case MAB:
-		dmb();
 		H3_TIMER->TMR0_INTV = dmx_output_period_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
-		isb();
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		dmb();
 		if (uart_state[1] == UART_STATE_TX) {
 			H3_DMA_CHL1->DESC_ADDR = (uint32_t) &p_coherent_region->lli[1];
 			H3_DMA_CHL1->EN = DMA_CHAN_ENABLE_START;
@@ -292,10 +277,9 @@ static void irq_timer0_dmx_multi_sender(uint32_t clo) {
 		uarts_sending = 0;
 		dmb();
 		dmx_send_state = DMXINTER;
-		isb();
+
 		H3_TIMER->TMR0_INTV = 12;
-		H3_TIMER->TMR0_CTRL |= 0x3;
-		dmb();
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		break;
 	default:
 		assert(0);
@@ -665,6 +649,7 @@ void dmx_multi_set_port_send_data_without_sc(uint8_t port, const uint8_t *data, 
 	uint8_t *dst = p->data;
 	p->length = length + 1;
 
+	__builtin_prefetch(data);
 	memcpy(&dst[1], data, (size_t) length);
 
 	dmx_data_write_index[uart] = next;
@@ -716,6 +701,7 @@ uint32_t dmx_multi_get_output_break_time(void) {
 void dmx_multi_set_output_break_time(uint32_t break_time) {
 	dmx_output_break_time = MAX((uint32_t)DMX_TRANSMIT_BREAK_TIME_MIN, break_time);
 	dmx_output_break_time_intv = dmx_output_break_time * 12;
+	dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - dmx_output_break_time_intv - dmx_output_mab_time_intv;
 }
 
 uint32_t dmx_multi_get_output_mab_time(void) {
@@ -725,6 +711,7 @@ uint32_t dmx_multi_get_output_mab_time(void) {
 void dmx_multi_set_output_mab_time(uint32_t mab_time) {
 	dmx_output_mab_time = MAX((uint32_t)DMX_TRANSMIT_MAB_TIME_MIN, mab_time);
 	dmx_output_mab_time_intv = dmx_output_mab_time * 12;
+	dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - dmx_output_break_time_intv - dmx_output_mab_time_intv;
 }
 
 uint32_t dmx_multi_get_output_period(void) {
@@ -781,7 +768,6 @@ void dmx_multi_init(void) {
 	 * -		UART0	4	3
 	 */
 
-	//FIXME move to top
 #if defined(ORANGE_PI) || defined(NANO_PI)
 	dmx_data_direction_gpio_pin[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
 	dmx_data_direction_gpio_pin[1] = GPIO_DMX_DATA_DIRECTION_OUT_C;
@@ -844,8 +830,8 @@ void dmx_multi_init(void) {
 	irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_multi_sender);
 
 	H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
-	H3_TIMER->TMR0_INTV = (dmx_output_period + 4) * 12;
-	H3_TIMER->TMR0_CTRL |= 0x3;
+	H3_TIMER->TMR0_INTV = 12000; // Wait 1ms
+	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;

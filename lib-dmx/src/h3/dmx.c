@@ -80,7 +80,7 @@ static uint32_t dmx_output_period_requested = (uint32_t) DMX_TRANSMIT_PERIOD_DEF
 
 static uint32_t dmx_output_break_time_intv = (uint32_t) (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
 static uint32_t dmx_output_mab_time_intv = (uint32_t) (DMX_TRANSMIT_MAB_TIME_MIN * 12);
-static uint32_t dmx_output_period_intv = (uint32_t) (DMX_TRANSMIT_PERIOD_DEFAULT * 12);
+static uint32_t dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - (DMX_TRANSMIT_MAB_TIME_MIN * 12) - (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
 
 static uint32_t dmx_send_data_length = (uint32_t) (DMX_UNIVERSE_SIZE + 1);		///< SC + UNIVERSE SIZE
 static _dmx_port_direction dmx_port_direction = DMX_PORT_DIRECTION_INP;
@@ -132,7 +132,7 @@ void dmx_set_output_period(const uint32_t period) {
 		dmx_output_period = (uint32_t) MAX(DMX_TRANSMIT_BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
 	}
 
-	dmx_output_period_intv = dmx_output_period * 12;
+	dmx_output_period_intv = (dmx_output_period * 12) - dmx_output_break_time_intv - dmx_output_mab_time_intv;
 }
 
 void dmx_set_send_data(const uint8_t *data, uint16_t length) {
@@ -140,7 +140,9 @@ void dmx_set_send_data(const uint8_t *data, uint16_t length) {
 		dmb();
 	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
 
+	__builtin_prefetch(data);
 	memcpy(dmx_data[0].data, data, (size_t)length);
+
 	dmx_set_send_data_length(length);
 }
 
@@ -150,7 +152,10 @@ void dmx_set_send_data_without_sc(const uint8_t *data, uint16_t length) {
 	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
 
 	dmx_data[0].data[0] = DMX512_START_CODE;
+
+	__builtin_prefetch(data);
 	memcpy(&dmx_data[0].data[1], data, (size_t) length);
+
 	dmx_set_send_data_length(length + 1);
 }
 
@@ -358,7 +363,7 @@ static void fiq_dmx_in_handler(void) {
 			dmx_data[dmx_data_buffer_index_head].data[dmx_data_index++] = data;
 
 			H3_TIMER->TMR0_INTV = (dmx_data[0].statistics.slot_to_slot + (uint32_t) 12) * 12;
-			H3_TIMER->TMR0_CTRL |= 0x3;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
 #ifdef LOCIG_ANALYZER
@@ -460,7 +465,7 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
 #endif
 		} else {
 			H3_TIMER->TMR0_INTV = dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot * 12;
-			H3_TIMER->TMR0_CTRL |= 0x3;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		}
 	}
 }
@@ -483,7 +488,7 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 	case IDLE:
 	case DMXINTER:
 		H3_TIMER->TMR0_INTV = dmx_output_break_time_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		EXT_UART->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		dmx_send_break_micros = clo;
@@ -492,7 +497,7 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 		break;
 	case BREAK:
 		H3_TIMER->TMR0_INTV = dmx_output_mab_time_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		EXT_UART->LCR = UART_LCR_8_N_2;
 		dmb();
@@ -500,7 +505,7 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 		break;
 	case MAB:
 		H3_TIMER->TMR0_INTV = dmx_output_period_intv;
-		H3_TIMER->TMR0_CTRL |= 0x3;
+		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		uint32_t fifo_cnt = 16;
 
@@ -605,11 +610,11 @@ static void dmx_start_data(void) {
 		if (clo - dmx_send_break_micros > dmx_output_period) {
 			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
 			H3_TIMER->TMR0_INTV = 4 * 12;
-			H3_TIMER->TMR0_CTRL |= 0x3;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		} else {
 			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
 			H3_TIMER->TMR0_INTV = (dmx_output_period + 4) * 12;
-			H3_TIMER->TMR0_CTRL |= 0x3;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		}
 
 		isb();
@@ -770,7 +775,8 @@ void dmx_init(void) {
 
 	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
 	H3_TIMER->TMR1_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR1_CTRL |= 0x3; /* set reload bit */
+	H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 #if (EXT_UART_NUMBER == 1)
 	gic_fiq_config(H3_UART1_IRQn, 1);

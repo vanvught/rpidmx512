@@ -46,10 +46,8 @@
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "gpio.txt";
 static const char PARAMS_DATA_DIRECTION[] ALIGNED = "data_direction";
-static const char PARAMS_DATA_DIRECTION_OUT_A[] ALIGNED = "data_direction_out_a";
-static const char PARAMS_DATA_DIRECTION_OUT_B[] ALIGNED = "data_direction_out_b";
-static const char PARAMS_DATA_DIRECTION_OUT_C[] ALIGNED = "data_direction_out_c";
-static const char PARAMS_DATA_DIRECTION_OUT_D[] ALIGNED = "data_direction_out_d";
+static const char PARAMS_DATA_DIRECTION_OUT[4][21] ALIGNED = {
+		"data_direction_out_a", "data_direction_out_b", "data_direction_out_c", "data_direction_out_d" };
 
 DmxGpioParams::DmxGpioParams(void):
 		m_nSetList(0),
@@ -68,9 +66,6 @@ DmxGpioParams::DmxGpioParams(void):
 #else
 	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION;
 #endif
-
-	ReadConfigFile configfile(DmxGpioParams::staticCallbackFunction, this);
-	configfile.Read(PARAMS_FILE_NAME);
 }
 
 DmxGpioParams::~DmxGpioParams(void) {
@@ -96,28 +91,12 @@ void DmxGpioParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_A, &value8) == SSCAN_OK) {
-		m_nDmxDataDirectionOut[0] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT_A_MASK;
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_B, &value8) == SSCAN_OK) {
-		m_nDmxDataDirectionOut[1] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT_B_MASK;
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_C, &value8) == SSCAN_OK) {
-		m_nDmxDataDirectionOut[2] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT_C_MASK;
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT_D, &value8) == SSCAN_OK) {
-		m_nDmxDataDirectionOut[3] = value8;
-		m_nSetList |= DATA_DIRECTION_OUT_D_MASK;
-		return;
+	for (unsigned i = 0; i < 4; i++) {
+		if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT[i], &value8) == SSCAN_OK) {
+			m_nDmxDataDirectionOut[i] = value8;
+			m_nSetList |= (DATA_DIRECTION_OUT_A_MASK << i);
+			return;
+		}
 	}
 }
 
@@ -155,26 +134,16 @@ void DmxGpioParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
-	if(isMaskSet(DATA_DIRECTION_MASK)) {
+	if (isMaskSet(DATA_DIRECTION_MASK)) {
 		printf(" %s=%d\n", PARAMS_DATA_DIRECTION, m_nDmxDataDirection);
 	}
 
-	if(isMaskSet(DATA_DIRECTION_OUT_A_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_A, m_nDmxDataDirectionOut[0]);
-	}
-
-	if(isMaskSet(DATA_DIRECTION_OUT_B_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_B, m_nDmxDataDirectionOut[1]);
-	}
-
-	if(isMaskSet(DATA_DIRECTION_OUT_C_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_C, m_nDmxDataDirectionOut[2]);
-	}
-
-	if(isMaskSet(DATA_DIRECTION_OUT_D_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT_D, m_nDmxDataDirectionOut[3]);
+	for (unsigned i = 0; i < 4; i++) {
+		if (isMaskSet(DATA_DIRECTION_OUT_A_MASK << i)) {
+			printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT[i], m_nDmxDataDirectionOut[i]);
+		}
 	}
 #endif
 }

@@ -36,20 +36,17 @@ public:
 	~DmxGpioParams(void);
 
 	bool Load(void);
+	void Dump(void);
 
 	uint8_t GetDataDirection(bool &bIsSet) const;
 	uint8_t GetDataDirection(bool &bIsSet, uint8_t nUart) const;
-
-	void Dump(void);
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+    bool isMaskSet(uint32_t nMask) const;
 
 private:
     uint32_t m_nSetList;

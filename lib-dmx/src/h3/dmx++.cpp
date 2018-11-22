@@ -56,13 +56,13 @@ const uint8_t *Dmx::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = 0;
-	uint32_t micros_now = h3_hs_timer_lo_us();
+	const uint32_t nMicros = h3_hs_timer_lo_us() + nTimeOut;
 
 	do {
 		if ((p = (uint8_t *) rdm_get_available()) != 0) {
 			return (const uint8_t *) p;
 		}
-	} while (h3_hs_timer_lo_us() - micros_now < nTimeOut);
+	} while (h3_hs_timer_lo_us() < nMicros);
 
 	return (const uint8_t *) p;
 }
