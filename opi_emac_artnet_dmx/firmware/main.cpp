@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "hardwarebaremetal.h"
 #include "networkh3emac.h"
@@ -43,8 +44,10 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 // Pixel Controller
+#include "lightset.h"
 #include "ws28xxstripeparams.h"
 #include "ws28xxstripedmx.h"
+#include "ws28xxstripedmxgrouping.h"
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -52,6 +55,12 @@
 #endif
 
 #include "software_version.h"
+
+static const char NETWORK_INIT[] = "Network init ...";
+static const char NODE_PARMAS[] = "Setting Node parameters ...";
+static const char RUN_RDM[] = "Running RDM Discovery ...";
+static const char START_NODE[] = "Starting the Node ...";
+static const char NODE_STARTED[] = "Node started";
 
 extern "C" {
 
@@ -78,7 +87,6 @@ void notmain(void) {
 	const TOutputType tOutputType = artnetparams.GetOutputType();
 
 	Display display(0,8);
-	const bool oled_connected = display.isDetected();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -99,8 +107,8 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, "Network init ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
+	console_status(CONSOLE_YELLOW, NETWORK_INIT);
+	display.TextStatus(NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -112,8 +120,8 @@ void notmain(void) {
 	ArtNetNode node;
 	ArtNetRdmController discovery;
 
-	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
+	console_status(CONSOLE_YELLOW, NODE_PARMAS);
+	display.TextStatus(NODE_PARMAS);
 
 	artnetparams.Set(&node);
 
@@ -130,9 +138,10 @@ void notmain(void) {
 	const uint8_t nUniverse = artnetparams.GetUniverse();
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
+	node.SetDirectUpdate(false);
 
 	DMXSend dmx;
-	SPISend spi;
+	LightSet *pSpi;
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
 #if defined (ORANGE_PI)
@@ -142,37 +151,47 @@ void notmain(void) {
 #endif
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
-			ws28xxparms.Set(&spi);
 		}
 
-		node.SetOutput(&spi);
-		node.SetDirectUpdate(true);
+		if (ws28xxparms.IsLedGrouping()) {
+			WS28xxStripeDmxGrouping *pWS28xxStripeDmxGrouping = new WS28xxStripeDmxGrouping;
+			assert(pWS28xxStripeDmxGrouping != 0);
+			ws28xxparms.Set(pWS28xxStripeDmxGrouping);
+			pSpi = pWS28xxStripeDmxGrouping;
+		} else  {
+			SPISend *pSPISend = new SPISend;
+			assert(pSPISend != 0);
+			ws28xxparms.Set(pSPISend);
+			pSpi = pSPISend;
 
-		const uint16_t nLedCount = spi.GetLEDCount();
+			const uint16_t nLedCount = pSPISend->GetLEDCount();
 
-		if (spi.GetLEDType() == SK6812W) {
-			if (nLedCount > 128) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-			}
-			if (nLedCount > 256) {
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-			}
-			if (nLedCount > 384) {
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-			}
-		} else {
-			if (nLedCount > 170) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-			}
-			if (nLedCount > 340) {
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-			}
-			if (nLedCount > 510) {
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+			if (pSPISend->GetLEDType() == SK6812W) {
+				if (nLedCount > 128) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 256) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 384) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
+			} else {
+				if (nLedCount > 170) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 340) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 510) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
 			}
 		}
+
+		node.SetOutput(pSpi);
 	} else {
 #if defined (ORANGE_PI)
 		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
@@ -185,12 +204,11 @@ void notmain(void) {
 		}
 
 		node.SetOutput(&dmx);
-		node.SetDirectUpdate(false);
 
 		if(artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
-				DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
+				console_status(CONSOLE_YELLOW, RUN_RDM);
+				display.TextStatus(RUN_RDM);
 				discovery.Full();
 			}
 			node.SetRdmHandler(&discovery);
@@ -200,12 +218,13 @@ void notmain(void) {
 	node.Print();
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
-		spi.Print();
+		assert(pSpi != 0);
+		pSpi->Print();
 	} else {
 		dmx.Print();
 	}
 
-	if (oled_connected) {
+	if (display.isDetected()) {
 		display.Write(1, "Eth Art-Net 3 ");
 
 		if (tOutputType == OUTPUT_TYPE_SPI) {
@@ -236,13 +255,13 @@ void notmain(void) {
 		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
-	console_status(CONSOLE_YELLOW, "Starting the Node ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting the Node ..."));
+	console_status(CONSOLE_YELLOW, START_NODE);
+	display.TextStatus(START_NODE);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, "Node started");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
+	console_status(CONSOLE_GREEN, NODE_STARTED);
+	display.TextStatus(NODE_STARTED);
 
 	hw.WatchdogInit();
 

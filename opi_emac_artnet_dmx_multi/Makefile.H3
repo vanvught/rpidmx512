@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_MMU EMAC ENABLE_SPIFLASH NDEBUG #DO_NOT_USE_UART0
 #
-LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink e131
 #
 SRCDIR = firmware lib
 

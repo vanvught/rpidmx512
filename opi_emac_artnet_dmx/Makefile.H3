@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_MMU EMAC NDEBUG
 #
-LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink e131
 #
 SRCDIR = firmware lib
 

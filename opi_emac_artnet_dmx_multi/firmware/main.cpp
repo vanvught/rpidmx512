@@ -47,6 +47,12 @@
 
 #include "software_version.h"
 
+static const char NETWORK_INIT[] = "Network init ...";
+static const char NODE_PARMAS[] = "Setting Node parameters ...";
+static const char RUN_RDM[] = "Running RDM Discovery ...";
+static const char START_NODE[] = "Starting the Node ...";
+static const char NODE_STARTED[] = "Node started";
+
 extern "C" {
 
 void notmain(void) {
@@ -69,7 +75,6 @@ void notmain(void) {
 	}
 
 	Display display(0,8);
-	const bool oled_connected = display.isDetected();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -90,16 +95,16 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, "Network init ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
+	console_status(CONSOLE_YELLOW, NETWORK_INIT);
+	display.TextStatus(NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	ArtNetNode node;
 
-	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
+	console_status(CONSOLE_YELLOW, NODE_PARMAS);
+	display.TextStatus(NODE_PARMAS);
 
 	artnetparams.Set(&node);
 
@@ -168,7 +173,7 @@ void notmain(void) {
 	node.Print();
 	dmx.Print();
 
-	if (oled_connected) {
+	if (display.isDetected()) {
 		uint8_t nAddress;
 		node.GetUniverseSwitch(0, nAddress);
 
@@ -192,10 +197,10 @@ void notmain(void) {
 
 	if(artnetparams.IsRdm()) {
 		if (artnetparams.IsRdmDiscovery()) {
-			console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
-			DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
+			console_status(CONSOLE_YELLOW, RUN_RDM);
+			display.TextStatus(RUN_RDM);
 
-			for (uint8_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+			for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 				uint8_t nAddress;
 				if (node.GetUniverseSwitch(i, nAddress)) {
 					discovery.Full(i);
@@ -205,13 +210,13 @@ void notmain(void) {
 		node.SetRdmHandler(&discovery);
 	}
 
-	console_status(CONSOLE_YELLOW, "Starting the Node ...");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting the Node ..."));
+	console_status(CONSOLE_YELLOW, START_NODE);
+	display.TextStatus(START_NODE);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, "Node started");
-	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
+	console_status(CONSOLE_GREEN, NODE_STARTED);
+	display.TextStatus(NODE_STARTED);
 
 	hw.WatchdogInit();
 
