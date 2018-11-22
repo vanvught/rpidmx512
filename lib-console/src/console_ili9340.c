@@ -1,4 +1,4 @@
-#if defined(CONSOLE_ILI9340)
+#if defined(CONSOLE_ILI9340) && (defined(RASPPI) || defined(H3) || defined(BARE_METAL))
 /**
  * @file console_ili9340.c
  *
