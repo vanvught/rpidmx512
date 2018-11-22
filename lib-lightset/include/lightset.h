@@ -34,7 +34,9 @@ struct TLightSetSlotInfo {
 };
 
 enum {
-	DMX_ADDRESS_INVALID = 0xFFFF
+	DMX_ADDRESS_INVALID = 0xFFFF,
+	DMX_START_ADDRESS_DEFAULT = 1,
+	DMX_MAX_CHANNELS = 512
 };
 
 class LightSet {
@@ -45,6 +47,8 @@ public:
 	virtual void Stop(uint8_t nPort)= 0;
 
 	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t)= 0;
+
+	virtual void Print(void);
 
 public: // RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);

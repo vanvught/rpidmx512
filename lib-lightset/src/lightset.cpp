@@ -32,11 +32,11 @@ LightSet::~LightSet(void) {
 }
 
 uint16_t LightSet::GetDmxStartAddress(void) {
-	return 1;
+	return DMX_START_ADDRESS_DEFAULT;
 }
 
 uint16_t LightSet::GetDmxFootprint(void) {
-	return 512;
+	return DMX_MAX_CHANNELS;
 }
 
 bool LightSet::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -46,6 +46,9 @@ bool LightSet::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 bool LightSet::GetSlotInfo(uint16_t nSlot, struct TLightSetSlotInfo &tSlotInfo) {
 	tSlotInfo.nType = 0x00; // ST_PRIMARY
 	tSlotInfo.nCategory = 0x0001; // SD_INTENSITY
-
 	return true;
+}
+
+void LightSet::Print(void) {
+
 }
