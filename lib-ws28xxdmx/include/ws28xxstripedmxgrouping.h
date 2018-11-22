@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripedmxprint.h
+ * @file ws28xxstripedmxgrouping.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,13 +23,34 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef WS28XXSTRIPEDMXGROUPING_H_
+#define WS28XXSTRIPEDMXGROUPING_H_
 
-#include "ws28xxstripeparams.h"
+#include <stdint.h>
+
 #include "ws28xxstripedmx.h"
+#include "ws28xxstripe.h"
 
-void SPISend::Print(void) {
-	printf("Led stripe parameters\n");
-	printf(" Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-}
+class WS28xxStripeDmxGrouping: public SPISend {
+public:
+	WS28xxStripeDmxGrouping(void);
+	~WS28xxStripeDmxGrouping(void);
+
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght);
+
+	void SetLEDType(TWS28XXType tLedType);
+
+	void SetLEDCount(uint16_t nLedCount);
+
+	void Print(void);
+
+public: // RDM
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+
+private:
+	uint8_t m_aDmxData[4];
+};
+
+#endif /* WS28XXSTRIPEDMXGROUPING_H_ */

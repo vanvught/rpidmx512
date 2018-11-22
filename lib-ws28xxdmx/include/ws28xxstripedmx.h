@@ -48,18 +48,22 @@ public:
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
-	void SetLEDType(const TWS28XXType);
-	TWS28XXType GetLEDType(void) const;
+	virtual void SetLEDType(TWS28XXType);
+	inline TWS28XXType GetLEDType(void) {
+		return m_tLedType;
+	}
 
-	void SetLEDCount(uint16_t);
-	uint16_t GetLEDCount(void) const;
+	virtual void SetLEDCount(uint16_t);
+	inline uint16_t GetLEDCount(void) {
+		return m_nLedCount;
+	}
 
-	void Print(void);
+	virtual void Print(void);
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
 	inline uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
@@ -69,7 +73,7 @@ public: // RDM
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 #if defined (__circle__)
 private:
@@ -79,21 +83,21 @@ private:
 private:
 	void UpdateMembers(void);
 
-private:
+protected:
+	TWS28XXType m_tLedType;
+	uint16_t m_nLedCount;
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nDmxFootprint;
 
+	WS28XXStripe* m_pLEDStripe;
 	bool m_bIsStarted;
 
-	WS28XXStripe	*m_pLEDStripe;
-	TWS28XXType		m_LEDType;
-	uint16_t		m_nLEDCount;
+private:
+	uint16_t m_nBeginIndexPortId1;
+	uint16_t m_nBeginIndexPortId2;
+	uint16_t m_nBeginIndexPortId3;
 
-	uint16_t		m_nBeginIndexPortId1;
-	uint16_t		m_nBeginIndexPortId2;
-	uint16_t		m_nBeginIndexPortId3;
-
-	uint16_t		m_nChannelsPerLed;
+	uint16_t m_nChannelsPerLed;
 };
 
 #endif /* SPISEND_H_ */

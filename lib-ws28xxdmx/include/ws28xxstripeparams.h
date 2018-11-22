@@ -27,14 +27,17 @@
 #define WS28XXSTRIPEPARAMS_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "ws28xxstripedmx.h"
+#include "ws28xxstripedmxgrouping.h"
 
 struct TWS28XXStripeParams {
-    uint32_t bSetList;
+    uint32_t nSetList;
 	TWS28XXType tLedType;
 	uint16_t nLedCount;
 	uint16_t nDmxStartAddress;
+	bool bLedGrouping;
 };
 
 class WS28XXStripeParamsStore {
@@ -54,7 +57,6 @@ public:
 
 	bool Load(void);
 	void Set(SPISend *);
-
 	void Dump(void);
 
 	inline TWS28XXType GetLedType(void) {
@@ -69,17 +71,17 @@ public:
 		return m_tWS28XXStripeParams.nDmxStartAddress;
 	}
 
+	inline bool IsLedGrouping(void) {
+		return m_tWS28XXStripeParams.bLedGrouping;
+	}
+
 public:
 	static const char *GetLedTypeString(TWS28XXType);
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+    bool isMaskSet(uint32_t nMask) const;
 
 private:
     WS28XXStripeParamsStore *m_pWS28XXStripeParamsStore;

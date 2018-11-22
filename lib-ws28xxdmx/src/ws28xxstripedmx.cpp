@@ -43,8 +43,6 @@
 #include "ws28xxstripedmx.h"
 #include "ws28xxstripe.h"
 
-#define DMX_MAX_CHANNELS	512
-
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
@@ -57,12 +55,12 @@ SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
 #else
 SPISend::SPISend(void) :
 #endif
+	m_tLedType(WS2801),
+	m_nLedCount(170),
 	m_nDmxStartAddress(1),
 	m_nDmxFootprint(170 * 3),
-	m_bIsStarted(false),
 	m_pLEDStripe(0),
-	m_LEDType(WS2801),
-	m_nLEDCount(170),
+	m_bIsStarted(false),
 	m_nBeginIndexPortId1(170),
 	m_nBeginIndexPortId2(340),
 	m_nBeginIndexPortId3(510),
@@ -84,9 +82,9 @@ void SPISend::Start(uint8_t nPort) {
 
 	if (m_pLEDStripe == 0) {
 #if defined (__circle__)
-		m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
+		m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_tLedType, m_nLedCount);
 #else
-		m_pLEDStripe = new WS28XXStripe(m_LEDType, m_nLEDCount);
+		m_pLEDStripe = new WS28XXStripe(m_tLedType, m_nLedCount);
 #endif
 		assert(m_pLEDStripe != 0);
 		m_pLEDStripe->Initialize();
@@ -129,26 +127,26 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	switch (nPortId) {
 	case 0:
 		beginIndex = (uint16_t) 0;
-		endIndex = MIN(m_nLEDCount, (uint16_t) (nLength / (uint16_t) m_nChannelsPerLed));
-		bUpdate = (endIndex == m_nLEDCount);
-		if (m_nLEDCount < m_nBeginIndexPortId1) {
+		endIndex = MIN(m_nLedCount, (uint16_t) (nLength / (uint16_t) m_nChannelsPerLed));
+		bUpdate = (endIndex == m_nLedCount);
+		if (m_nLedCount < m_nBeginIndexPortId1) {
 			i = m_nDmxStartAddress - 1;
 		}
 		break;
 	case 1:
 		beginIndex = (uint16_t) m_nBeginIndexPortId1;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLEDCount);
+		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 2:
 		beginIndex = (uint16_t) m_nBeginIndexPortId2;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLEDCount);
+		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 3:
 		beginIndex = (uint16_t) m_nBeginIndexPortId3;
-		endIndex = MIN(m_nLEDCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLEDCount);
+		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		bUpdate = (endIndex == m_nLedCount);
 		break;
 	default:
 		beginIndex = 0;
@@ -170,7 +168,8 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	}
 
 	for (uint16_t j = beginIndex; j < endIndex; j++) {
-		if (m_LEDType == SK6812W) {
+		__builtin_prefetch(&pData[i]);
+		if (m_tLedType == SK6812W) {
 			if (i + 3 > nLength) {
 				break;
 			}
@@ -192,7 +191,7 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 }
 
 void SPISend::SetLEDType(TWS28XXType type) {
-	m_LEDType = type;
+	m_tLedType = type;
 
 	if (type == SK6812W) {
 		m_nBeginIndexPortId1 = 128;
@@ -205,18 +204,10 @@ void SPISend::SetLEDType(TWS28XXType type) {
 	UpdateMembers();
 }
 
-TWS28XXType SPISend::GetLEDType(void) const {
-	return m_LEDType;
-}
-
 void SPISend::SetLEDCount(uint16_t nCount) {
-	m_nLEDCount = nCount;
+	m_nLedCount = nCount;
 
 	UpdateMembers();
-}
-
-uint16_t SPISend::GetLEDCount(void) const {
-	return m_nLEDCount;
 }
 
 bool SPISend::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -239,7 +230,7 @@ bool SPISend::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotI
 		return false;
 	}
 
-	if (m_LEDType == SK6812W) {
+	if (m_tLedType == SK6812W) {
 		nIndex = MOD(nSlotOffset, 4);
 	} else {
 		nIndex = MOD(nSlotOffset, 3);
@@ -268,7 +259,7 @@ bool SPISend::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotI
 }
 
 void SPISend::UpdateMembers(void) {
-	m_nDmxFootprint = m_nLEDCount * m_nChannelsPerLed;
+	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
 
 	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {
 		m_nDmxFootprint = DMX_MAX_CHANNELS;

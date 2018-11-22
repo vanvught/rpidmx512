@@ -41,6 +41,8 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
+#define BOOL2STRING(b)			(b) ? "Yes" : "No"
+
 #include "ws28xxstripeparams.h"
 
 #include "readconfigfile.h"
@@ -49,74 +51,36 @@
 #include "ws28xxstripe.h"
 #include "ws28xxstripedmx.h"
 
-#define SET_LED_TYPE_MASK		(1 << 0)
-#define SET_LED_COUNT_MASK		(1 << 1)
-#define SET_DMX_START_ADDRESS	(1 << 2)
+#define SET_LED_TYPE_MASK			(1 << 0)
+#define SET_LED_COUNT_MASK			(1 << 1)
+#define SET_DMX_START_ADDRESS		(1 << 2)
+#define SET_LED_GROUPING_MASK		(1 << 3)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
 static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";
 static const char PARAMS_LED_COUNT[] ALIGNED = "led_count";
+static const char PARAMS_LED_GROUPING[] ALIGNED = "led_grouping";
 static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 
 #define LED_TYPES_COUNT 			7
 #define LED_TYPES_MAX_NAME_LENGTH 	8
 static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "SK6812\0", "SK6812W" };
 
-void WS28XXStripeParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((WS28XXStripeParams *) p)->callbackFunction(s);
-}
-
-void WS28XXStripeParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
-
-	uint16_t value16;
-	uint8_t len;
-	char buffer[16];
-
-	len = 7;
-	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
-		for (uint8_t i = 0; i < LED_TYPES_COUNT; i++) {
-			if (strcasecmp(buffer, led_types[i]) == 0) {
-				m_tWS28XXStripeParams.tLedType = (TWS28XXType) i;
-				m_tWS28XXStripeParams.bSetList |= SET_LED_TYPE_MASK;
-				return;
-			}
-		}
-		return;
-	}
-
-	if (Sscan::Uint16(pLine, PARAMS_LED_COUNT, &value16) == SSCAN_OK) {
-		if (value16 != 0 && value16 <= (4 * 170)) {
-			m_tWS28XXStripeParams.nLedCount = value16;
-			m_tWS28XXStripeParams.bSetList |= SET_LED_COUNT_MASK;
-		}
-		return;
-	}
-
-	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if (value16 != 0 && value16 <= 512) {
-			m_tWS28XXStripeParams.nDmxStartAddress = value16;
-			m_tWS28XXStripeParams.bSetList |= SET_DMX_START_ADDRESS;
-		}
-	}
-}
 WS28XXStripeParams::WS28XXStripeParams(WS28XXStripeParamsStore *pWS28XXStripeParamsStore): m_pWS28XXStripeParamsStore(pWS28XXStripeParamsStore) {
-	m_tWS28XXStripeParams.bSetList = 0;
+	m_tWS28XXStripeParams.nSetList = 0;
 	m_tWS28XXStripeParams.tLedType = WS2801;
 	m_tWS28XXStripeParams.nLedCount = 170;
 	m_tWS28XXStripeParams.nDmxStartAddress = 1;
+	m_tWS28XXStripeParams.bLedGrouping = 0;
 
 }
 
 WS28XXStripeParams::~WS28XXStripeParams(void) {
-	m_tWS28XXStripeParams.bSetList = 0;
+	m_tWS28XXStripeParams.nSetList = 0;
 }
 
 bool WS28XXStripeParams::Load(void) {
-	m_tWS28XXStripeParams.bSetList = 0;
+	m_tWS28XXStripeParams.nSetList = 0;
 
 	ReadConfigFile configfile(WS28XXStripeParams::staticCallbackFunction, this);
 
@@ -132,6 +96,48 @@ bool WS28XXStripeParams::Load(void) {
 	}
 
 	return true;
+}
+
+void WS28XXStripeParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
+	uint8_t value8;
+	uint16_t value16;
+	uint8_t len;
+	char buffer[16];
+
+	len = 7;
+	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
+		for (uint32_t i = 0; i < LED_TYPES_COUNT; i++) {
+			if (strcasecmp(buffer, led_types[i]) == 0) {
+				m_tWS28XXStripeParams.tLedType = (TWS28XXType) i;
+				m_tWS28XXStripeParams.nSetList |= SET_LED_TYPE_MASK;
+				return;
+			}
+		}
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, PARAMS_LED_COUNT, &value16) == SSCAN_OK) {
+		if (value16 != 0 && value16 <= (4 * 170)) {
+			m_tWS28XXStripeParams.nLedCount = value16;
+			m_tWS28XXStripeParams.nSetList |= SET_LED_COUNT_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_LED_GROUPING, &value8) == SSCAN_OK) {
+		m_tWS28XXStripeParams.bLedGrouping = (value8 != 0);
+		m_tWS28XXStripeParams.nSetList |= SET_LED_GROUPING_MASK;
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if (value16 != 0 && value16 <= 512) {
+			m_tWS28XXStripeParams.nDmxStartAddress = value16;
+			m_tWS28XXStripeParams.nSetList |= SET_DMX_START_ADDRESS;
+		}
+	}
 }
 
 void WS28XXStripeParams::Set(SPISend *pSpiSend) {
@@ -152,7 +158,7 @@ void WS28XXStripeParams::Set(SPISend *pSpiSend) {
 
 void WS28XXStripeParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tWS28XXStripeParams.bSetList == 0) {
+	if (m_tWS28XXStripeParams.nSetList == 0) {
 		return;
 	}
 
@@ -166,6 +172,10 @@ void WS28XXStripeParams::Dump(void) {
 		printf(" %s=%d\n", PARAMS_LED_COUNT, (int) m_tWS28XXStripeParams.nLedCount);
 	}
 
+	if(isMaskSet(SET_LED_GROUPING_MASK)) {
+		printf(" %s=%d [%s]\n", PARAMS_LED_GROUPING, (int) m_tWS28XXStripeParams.bLedGrouping, BOOL2STRING(m_tWS28XXStripeParams.bLedGrouping));
+	}
+
 	if (isMaskSet(SET_DMX_START_ADDRESS)) {
 		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, (int) m_tWS28XXStripeParams.nDmxStartAddress);
 	}
@@ -173,13 +183,20 @@ void WS28XXStripeParams::Dump(void) {
 }
 
 const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
-	if (tType > SK6812W) {
-		return "Unknown";
+	if (tType < LED_TYPES_COUNT) {
+		return led_types[tType];
 	}
 
-	return led_types[tType];
+	return "Unknown";
+}
+
+void WS28XXStripeParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((WS28XXStripeParams *) p)->callbackFunction(s);
 }
 
 bool WS28XXStripeParams::isMaskSet(uint32_t nMask) const {
-	return (m_tWS28XXStripeParams.bSetList & nMask) == nMask;
+	return (m_tWS28XXStripeParams.nSetList & nMask) == nMask;
 }
