@@ -30,47 +30,73 @@
 #include <stdbool.h>
 
 #include "e131bridge.h"
-#include "e131.h"
 
-enum TOutputType {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
+enum TE131OutputType {
+	E131_OUTPUT_TYPE_DMX,
+	E131_OUTPUT_TYPE_SPI,
+	E131_OUTPUT_TYPE_MONITOR
+};
+
+struct TE131Params {
+    uint32_t nSetList;
+    TE131OutputType tOutputType;
+    char aCidString[UUID_STRING_LENGTH + 2];
+    bool bHaveCustomCid;
+    uint16_t nUniverse;
+    uint16_t nUniversePort[E131_MAX_PORTS];
+	uint8_t nMergeMode;
+	uint8_t nMergeModePort[E131_MAX_PORTS];
+};
+
+class E131ParamsStore {
+public:
+	virtual ~E131ParamsStore(void);
+
+	virtual void Update(const struct TE131Params *pE131Params)=0;
+	virtual void Copy(struct TE131Params *pE131Params)=0;
+
+private:
 };
 
 class E131Params {
 public:
-	E131Params(void);
+	E131Params(E131ParamsStore *pE131ParamsStore = 0);
 	~E131Params(void);
 
 	bool Load(void);
-
-	TOutputType GetOutputType(void) const;
-	uint16_t GetUniverse(void) const;
-	TMerge GetMergeMode(void) const;
-	bool isHaveCustomCid(void) const;
-	const char *GetCidString(void);
-
 	void Set(E131Bridge *);
 	void Dump(void);
 
-private:
-	bool isMaskSet(uint32_t) const;
+	inline TE131OutputType GetOutputType(void) {
+		return m_tE131Params.tOutputType;
+	}
+
+	inline uint16_t GetUniverse(void) {
+		return m_tE131Params.nUniverse;
+	}
+
+	inline TE131Merge GetMergeMode(void) {
+		return (TE131Merge) m_tE131Params.nMergeMode;
+	}
+
+	inline bool isHaveCustomCid(void) {
+		return m_tE131Params.bHaveCustomCid;
+	}
+
+	inline const char* GetCidString(void) {
+		return (const char*) m_tE131Params.aCidString;
+	}
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+    bool isMaskSet(uint32_t) const;
 
 private:
-    uint32_t m_bSetList;
-
-    uint16_t m_nUniverse;
-    TOutputType m_tOutputType;
-    TMerge m_tMergeMode;
-    char m_aCidString[UUID_STRING_LENGTH + 2];
-    bool m_bHaveCustomCid;
+    E131ParamsStore *m_pE131ParamsStore;
+    struct TE131Params m_tE131Params;
 };
 
 #endif /* E131PARAMS_H_ */

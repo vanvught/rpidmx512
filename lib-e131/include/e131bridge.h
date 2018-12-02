@@ -55,10 +55,10 @@ struct TSource {
 	uint8_t sequenceNumberData;
 };
 
-struct TOutputPort {
+struct TE131OutputPort {
 	uint8_t data[E131_DMX_LENGTH];	///< Data sent
 	uint16_t length;				///< Length of sent DMX data
-	TMerge mergeMode;				///< \ref TMerge
+	TE131Merge mergeMode;			///<
 	bool IsDataPending;				///<
 	struct TSource sourceA;			///<
 	struct TSource sourceB;			///<
@@ -80,8 +80,8 @@ public:
 		return m_nMulticastIp;
 	}
 
-	TMerge GetMergeMode(void) const;
-	void SetMergeMode(TMerge);
+	TE131Merge GetMergeMode(void) const;
+	void SetMergeMode(TE131Merge);
 
 	const uint8_t *GetCid(void);
 	void SetCid(const uint8_t[E131_CID_LENGTH]);
@@ -115,7 +115,7 @@ private:
 	void HandleSynchronization(void);
 
 private:
-	uint32_t m_nHandle;
+	int32_t m_nHandle;
 	LightSet *m_pLightSet;
 	uint16_t m_nUniverse;
 	uint32_t m_nMulticastIp;
@@ -128,7 +128,7 @@ private:
 	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
-	struct TOutputPort m_OutputPort;
+	struct TE131OutputPort m_OutputPort;
 
 	struct TE131 m_E131;
 	struct TE131DiscoveryPacket m_E131DiscoveryPacket;

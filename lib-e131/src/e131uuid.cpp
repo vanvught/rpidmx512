@@ -26,18 +26,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <uuid/uuid.h>
 
 #include "e131uuid.h"
 
 #include "network.h"
-
-#if defined(BARE_METAL)
- #include "util.h"
-#else
- #include <stddef.h>
- #include <string.h>
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

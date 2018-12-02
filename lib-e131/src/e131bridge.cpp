@@ -24,28 +24,23 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <netinet/in.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
-#if defined(BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
+#if !defined(BARE_METAL)
  #include <arpa/inet.h>
 #endif
 
-#ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#include "e131.h"
-#include "e131packets.h"
+#ifndef MAX
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 #include "e131bridge.h"
 
 #include "lightset.h"
@@ -53,13 +48,13 @@
 #include "hardware.h"
 #include "network.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 5 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 6 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
-#define DEFAULT_SOURCE_NAME_SUFFIX  " sACN E1.31 www.raspberrypi-dmx.org"
+#define DEFAULT_SOURCE_NAME_SUFFIX  "sACN E1.31"
 
 E131Bridge::E131Bridge(void) :
-	m_nHandle(0),
+	m_nHandle(-1),
 	m_pLightSet(0),
 	m_nUniverse(E131_UNIVERSE_DEFAULT),
 	m_nMulticastIp(0),
@@ -69,7 +64,7 @@ E131Bridge::E131Bridge(void) :
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
 
-	memset(&m_OutputPort, 0, sizeof(struct TOutputPort));
+	memset(&m_OutputPort, 0, sizeof(struct TE131OutputPort));
 	m_OutputPort.mergeMode = E131_MERGE_HTP;
 	m_OutputPort.IsDataPending = false;
 
@@ -91,8 +86,8 @@ E131Bridge::E131Bridge(void) :
 	char aDefaultSourceName[E131_SOURCE_NAME_LENGTH];
 	uint8_t nBoardNameLength;
 	const char *pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
-	strncpy(aDefaultSourceName, pBoardName, E131_SOURCE_NAME_LENGTH);
-	strncpy(aDefaultSourceName + nBoardNameLength, DEFAULT_SOURCE_NAME_SUFFIX, E131_SOURCE_NAME_LENGTH - nBoardNameLength);
+	const char *pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
+	snprintf((char *)aDefaultSourceName, E131_SOURCE_NAME_LENGTH, "%s %s %s", pBoardName, DEFAULT_SOURCE_NAME_SUFFIX, pWebsiteUrl);
 	SetSourceName(aDefaultSourceName);
 
 	SetUniverse(E131_UNIVERSE_DEFAULT);
@@ -107,7 +102,9 @@ void E131Bridge::Start(void) {
 
 	FillDiscoveryPacket();
 
-	Network::Get()->Begin(E131_DEFAULT_PORT);
+	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT);
+	assert(m_nHandle != -1);
+
 	Network::Get()->JoinGroup(m_nHandle, m_nMulticastIp);
 }
 
@@ -173,11 +170,11 @@ void E131Bridge::SetSourceName(const char *aSourceName) {
 	strncpy((char *)m_E131DiscoveryPacket.FrameLayer.SourceName, aSourceName, E131_SOURCE_NAME_LENGTH);
 }
 
-TMerge E131Bridge::GetMergeMode(void) const {
+TE131Merge E131Bridge::GetMergeMode(void) const {
 	return m_OutputPort.mergeMode;
 }
 
-void E131Bridge::SetMergeMode(TMerge mergeMode) {
+void E131Bridge::SetMergeMode(TE131Merge mergeMode) {
 	m_OutputPort.mergeMode = mergeMode;
 }
 

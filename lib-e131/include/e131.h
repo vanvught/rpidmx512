@@ -29,6 +29,10 @@
 
 #include <stdint.h>
 
+enum {
+	E131_MAX_PORTS = 4
+};
+
 ///< ANSI E1.31 — 2016 Entertainment Technology
 ///< Lightweight streaming protocol for transport of DMX512 using ACN
 
@@ -85,7 +89,7 @@ enum TVectorDMP {
 /**
  * Merge is implemented in either LTP or HTP mode
  */
-enum TMerge {
+enum TE131Merge {
 	E131_MERGE_HTP,		///< Highest Takes Precedence (HTP)
 	E131_MERGE_LTP		///< Latest Takes Precedence (LTP)
 };

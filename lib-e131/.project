@@ -3,6 +3,7 @@
 	<name>lib-e131</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-hal</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>

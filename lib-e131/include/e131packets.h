@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef PACKETS_H_
-#define PACKETS_H_
+#ifndef E131PACKETS_H_
+#define E131PACKETS_H_
 
 #include <stdint.h>
 
@@ -164,4 +164,4 @@ struct TE131 {
 	union UE131Packet E131Packet;	///<
 };
 
-#endif /* PACKETS_H_ */
+#endif /* E131PACKETS_H_ */
