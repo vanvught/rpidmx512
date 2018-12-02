@@ -27,16 +27,11 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
 #include <time.h>
-
-#if defined (BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
-#endif
 
 #include "artnet.h"
 

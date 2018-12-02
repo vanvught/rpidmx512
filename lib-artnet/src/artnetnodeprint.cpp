@@ -36,14 +36,14 @@
 void ArtNetNode::Print(void) {
 	const uint8_t *firmware_version = GetSoftwareVersion();
 
-	printf("\nNode %d configuration\n", m_nVersion);
+	printf("Node %d configuration\n", m_nVersion);
 	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
 	printf(" Net        : %d\n", m_Node.NetSwitch);
 	printf(" Sub-Net    : %d\n", m_Node.SubSwitch);
 
-	for (uint8_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 		uint8_t nAddress;
 		if (GetUniverseSwitch(i, nAddress)) {
 			printf("  Port %c Universe %d [%s]", (char) ('A' + i), nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));

@@ -40,7 +40,7 @@
 
 #include "artnetnode.h"
 
-enum  TOutputType {
+enum TOutputType {
 	OUTPUT_TYPE_DMX,
 	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
@@ -85,6 +85,8 @@ public:
 	~ArtNetParams(void);
 
 	bool Load(void);
+	void Set(ArtNetNode *);
+	void Dump(void);
 
 	inline uint8_t GetNet(void) {
 		return m_tArtNetParams.nNet;
@@ -137,9 +139,6 @@ public:
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
 
-	void Set(ArtNetNode *);
-	void Dump(void);
-
 public:
 	static uint32_t GetMaskShortName(void);
 	static uint32_t GetMaskLongName(void);
@@ -148,16 +147,12 @@ public:
 	static uint32_t GetMaskUniverse(uint8_t nPort);
 	static uint32_t GetMaskMergeMode(uint8_t nPort);
 	static uint32_t GetMaskPortProtocol(uint8_t nPort);
-
-private:
-	bool isMaskSet(uint32_t) const;
-	uint16_t HexUint16(const char *) const;
-
-public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
 	void callbackFunction(const char *s);
+	bool isMaskSet(uint32_t) const;
+	uint16_t HexUint16(const char *) const;
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;

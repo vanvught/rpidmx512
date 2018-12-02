@@ -29,18 +29,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+#include <time.h>
 #include <assert.h>
-
-#if defined (BARE_METAL)
- #include <time.h>
- #include "util.h"
-#elif defined (__circle__)
- #include <circle/time.h>
- #include <circle/util.h>
-#else
- #include <time.h>
- #include <string.h>
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -84,31 +75,61 @@
 #define SET_PROTOCOL_D_MASK		(1 << 26)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
-static const char PARAMS_NET[] ALIGNED = "net";											///< 0 {default}
-static const char PARAMS_SUBNET[] ALIGNED = "subnet";									///< 0 {default}
-static const char PARAMS_UNIVERSE[] ALIGNED = "universe";								///< 0 {default}
-static const char PARAMS_OUTPUT[] ALIGNED = "output";									///< dmx {default}, spi, mon
+static const char PARAMS_NET[] ALIGNED = "net";												///< 0 {default}
+static const char PARAMS_SUBNET[] ALIGNED = "subnet";										///< 0 {default}
+static const char PARAMS_UNIVERSE[] ALIGNED = "universe";									///< 0 {default}
+static const char PARAMS_OUTPUT[] ALIGNED = "output";										///< dmx {default}, spi, mon
 static const char PARAMS_TIMECODE[] ALIGNED = "use_timecode";
 static const char PARAMS_TIMESYNC[] ALIGNED = "use_timesync";
-static const char PARAMS_RDM[] ALIGNED = "enable_rdm";									///< Enable RDM, 0 {default}
-static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";			///< 0 {default}
+static const char PARAMS_RDM[] ALIGNED = "enable_rdm";										///< Enable RDM, 0 {default}
+static const char PARAMS_RDM_DISCOVERY[] ALIGNED = "rdm_discovery_at_startup";				///< 0 {default}
 static const char PARAMS_NODE_SHORT_NAME[] ALIGNED = "short_name";
 static const char PARAMS_NODE_LONG_NAME[] ALIGNED = "long_name";
 static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
 static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";
-static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";///< 10 {default}
-static const char PARAMS_NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";		///< 0 {default}
-static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";	///< 10 {default}
+static const char PARAMS_NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";			///< 0 {default}
+static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a",
+		"universe_port_b", "universe_port_c", "universe_port_d" };
 static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
-static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a",
+		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 static const char PARAMS_PROTOCOL[] ALIGNED = "protocol";
-static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a", "protocol_port_b", "protocol_port_a", "protocol_port_d"};
+static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a",
+		"protocol_port_b", "protocol_port_a", "protocol_port_d" };
 
-void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
+	uint8_t *p = (uint8_t *) &m_tArtNetParams;
 
-	((ArtNetParams *) p)->callbackFunction(s);
+	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
+		*p++ = 0;
+	}
+
+	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		m_tArtNetParams.nUniversePort[i] = i;
+	}
+}
+
+ArtNetParams::~ArtNetParams(void) {
+}
+
+bool ArtNetParams::Load(void) {
+	m_tArtNetParams.nSetList = 0;
+
+	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
+
+	if (configfile.Read(PARAMS_FILE_NAME)) {
+		// There is a configuration file
+		if (m_pArtNetParamsStore != 0) {
+			m_pArtNetParamsStore->Update(&m_tArtNetParams);
+		}
+	} else if (m_pArtNetParamsStore != 0) {
+		m_pArtNetParamsStore->Copy(&m_tArtNetParams);
+	} else {
+		return false;
+	}
+
+	return true;
 }
 
 void ArtNetParams::callbackFunction(const char *pLine) {
@@ -167,11 +188,12 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "spi", 3) == 0) {
 			m_tArtNetParams.tOutputType = OUTPUT_TYPE_SPI;
-			m_tArtNetParams.nSetList |= SET_OUTPUT_MASK;
 		} else if (memcmp(value, "mon", 3) == 0) {
 			m_tArtNetParams.tOutputType = OUTPUT_TYPE_MONITOR;
-			m_tArtNetParams.nSetList |= SET_OUTPUT_MASK;
+		} else {
+			m_tArtNetParams.tOutputType = OUTPUT_TYPE_DMX;
 		}
+		m_tArtNetParams.nSetList |= SET_OUTPUT_MASK;
 		return;
 	}
 
@@ -280,40 +302,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			return;
 		}
 	}
-}
-
-ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tArtNetParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
-		*p++ = 0;
-	}
-
-	for (int i = 0; i < ARTNET_MAX_PORTS; i++) {
-		m_tArtNetParams.nUniversePort[i] = i;
-	}
-}
-
-ArtNetParams::~ArtNetParams(void) {
-}
-
-bool ArtNetParams::Load(void) {
-	m_tArtNetParams.nSetList = 0;
-
-	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
-
-	if (configfile.Read(PARAMS_FILE_NAME)) {
-		// There is a configuration file
-		if (m_pArtNetParamsStore != 0) {
-			m_pArtNetParamsStore->Update(&m_tArtNetParams);
-		}
-	} else if (m_pArtNetParamsStore != 0) {
-		m_pArtNetParamsStore->Copy(&m_tArtNetParams);
-	} else {
-		return false;
-	}
-
-	return true;
 }
 
 uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) const {
@@ -474,10 +462,6 @@ void ArtNetParams::Dump(void) {
 #endif
 }
 
-bool ArtNetParams::isMaskSet(uint32_t nMask) const {
-	return (m_tArtNetParams.nSetList & nMask) == nMask;
-}
-
 uint32_t ArtNetParams::GetMaskShortName(void) {
 	return SET_SHORT_NAME_MASK;
 }
@@ -532,3 +516,13 @@ uint16_t ArtNetParams::HexUint16(const char *s) const {
 	return ret;
 }
 
+void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((ArtNetParams *) p)->callbackFunction(s);
+}
+
+bool ArtNetParams::isMaskSet(uint32_t nMask) const {
+	return (m_tArtNetParams.nSetList & nMask) == nMask;
+}

@@ -244,39 +244,39 @@ private:
 	void SetNetworkDataLossCondition(void);
 
 private:
-	uint8_t					m_nVersion;
-	uint32_t				m_nHandle;
-	LightSet    			*m_pLightSet;
+	uint8_t m_nVersion;
+	int32_t m_nHandle;
+	LightSet *m_pLightSet;
 
-	ArtNetTimeCode			*m_pArtNetTimeCode;
-	ArtNetTimeSync			*m_pArtNetTimeSync;
-	ArtNetRdm				*m_pArtNetRdm;
-	ArtNetIpProg			*m_pArtNetIpProg;
-	ArtNetStore				*m_pArtNetStore;
+	ArtNetTimeCode *m_pArtNetTimeCode;
+	ArtNetTimeSync *m_pArtNetTimeSync;
+	ArtNetRdm *m_pArtNetRdm;
+	ArtNetIpProg *m_pArtNetIpProg;
+	ArtNetStore *m_pArtNetStore;
 
-	struct TArtNetNode		m_Node;				///< Struct describing the node
-	struct TArtNetNodeState m_State;			///< The current state of the node
+	struct TArtNetNode m_Node;				///< Struct describing the node
+	struct TArtNetNodeState m_State;		///< The current state of the node
 
-	struct TArtNetPacket 	m_ArtNetPacket;		///< The received Art-Net package
-	struct TArtPollReply	m_PollReply;
-	struct TArtDiagData		m_DiagData;
-	struct TArtTimeCode		*m_pTimeCodeData;
-	struct TArtTodData		*m_pTodData;
-	struct TArtIpProgReply	*m_pIpProgReply;
+	struct TArtNetPacket m_ArtNetPacket;	///< The received Art-Net package
+	struct TArtPollReply m_PollReply;
+	struct TArtDiagData m_DiagData;
+	struct TArtTimeCode *m_pTimeCodeData;
+	struct TArtTodData *m_pTodData;
+	struct TArtIpProgReply *m_pIpProgReply;
 
-	struct TOutputPort		m_OutputPorts[ARTNET_MAX_PORTS];
+	struct TOutputPort m_OutputPorts[ARTNET_MAX_PORTS];
 
-	bool					m_bDirectUpdate;
+	bool m_bDirectUpdate;
 
-	time_t 					m_nCurrentPacketTime;
-	time_t					m_nPreviousPacketTime;
-	TOpCodes				m_tOpCodePrevious;
+	time_t m_nCurrentPacketTime;
+	time_t m_nPreviousPacketTime;
+	TOpCodes m_tOpCodePrevious;
 
-	bool					m_IsLightSetRunning[ARTNET_MAX_PORTS];
-	bool					m_IsRdmResponder;
+	bool m_IsLightSetRunning[ARTNET_MAX_PORTS];
+	bool m_IsRdmResponder;
 
-	char					m_aSysName[16];
-	char					m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
+	char m_aSysName[16];
+	char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 };
 
 #endif /* ARTNETNODE_H_ */

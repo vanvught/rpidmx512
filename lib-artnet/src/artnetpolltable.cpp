@@ -28,12 +28,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-
-#if defined (BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
-#endif
+#include <string.h>
 
 #include "artnetpolltable.h"
 

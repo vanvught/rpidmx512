@@ -28,17 +28,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include <assert.h>
-
-#if defined (BARE_METAL)
- #include <stdbool.h>
- #include "util.h"
-#elif defined (__circle__)
- #include <circle/util.h>
-#else
- #include <stdbool.h>
- #include <string.h>
-#endif
 
 #include "artnetnode.h"
 #include "packets.h"
@@ -77,7 +69,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 24 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 25 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
 #define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
@@ -88,23 +80,22 @@ static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x
 #define PORT_IN_STATUS_DISABLED_MASK	0x08
 
 ArtNetNode::ArtNetNode(uint8_t nVersion) :
-		m_nVersion(nVersion),
-		m_nHandle(0),
-		m_pLightSet(0),
-		m_pArtNetTimeCode(0),
-		m_pArtNetTimeSync(0),
-		m_pArtNetRdm(0),
-		m_pArtNetIpProg(0),
-		m_pArtNetStore(0),
-		m_pTimeCodeData(0),
-		m_pTodData(0),
-		m_pIpProgReply(0),
-		m_bDirectUpdate(false),
-		m_nCurrentPacketTime(0),
-		m_nPreviousPacketTime(0),
-		m_IsRdmResponder(false)
-
- {
+	m_nVersion(nVersion),
+	m_nHandle(-1),
+	m_pLightSet(0),
+	m_pArtNetTimeCode(0),
+	m_pArtNetTimeSync(0),
+	m_pArtNetRdm(0),
+	m_pArtNetIpProg(0),
+	m_pArtNetStore(0),
+	m_pTimeCodeData(0),
+	m_pTodData(0),
+	m_pIpProgReply(0),
+	m_bDirectUpdate(false),
+	m_nCurrentPacketTime(0),
+	m_nPreviousPacketTime(0),
+	m_IsRdmResponder(false)
+{
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
 
@@ -112,20 +103,11 @@ ArtNetNode::ArtNetNode(uint8_t nVersion) :
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
 		m_IsLightSetRunning[i] = false;
-		m_OutputPorts[i].port.nStatus = 0;
-		m_OutputPorts[i].port.nPortAddress = 0;
-		m_OutputPorts[i].port.nDefaultAddress = 0;
-		m_OutputPorts[i].mergeMode = ARTNET_MERGE_HTP;
-		m_OutputPorts[i].IsDataPending = false;
-		m_OutputPorts[i].bIsEnabled = false;
-		m_OutputPorts[i].nLength = 0;
-		m_OutputPorts[i].ipA = 0;
-		m_OutputPorts[i].ipB = 0;
-		m_OutputPorts[i].tPortProtocol = PORT_ARTNET_ARTNET;
+		memset(&m_OutputPorts[i], 0 , sizeof(struct TOutputPort));
 	}
 
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	m_Node.Status2 = STATUS2_PORT_ADDRESS_15BIT;
+	m_Node.Status2 = STATUS2_PORT_ADDRESS_15BIT | (m_nVersion > 3 ? STATUS2_SACN_ABLE_TO_SWITCH : STATUS2_SACN_NO_SWITCH);
 
 	m_State.IsSynchronousMode = false;
 	m_State.SendArtDiagData = false;
@@ -209,7 +191,8 @@ void ArtNetNode::Start(void) {
 	FillPollReply();
 	FillDiagData();
 
-	Network::Get()->Begin(ARTNET_UDP_PORT);
+	m_nHandle = Network::Get()->Begin(ARTNET_UDP_PORT);
+	assert(m_nHandle != -1);
 
 	m_PollReply.NumPortsLo = m_State.nActivePorts;
 
@@ -456,18 +439,25 @@ void ArtNetNode::FillPollReply(void) {
 	memset(&m_PollReply, 0, sizeof(struct TArtPollReply));
 
 	memcpy(m_PollReply.Id, (const char *) NODE_ID, sizeof m_PollReply.Id);
+
 	m_PollReply.OpCode = OP_POLLREPLY;
 
 	ip.u32 = m_Node.IPAddressLocal;
 	memcpy(m_PollReply.IPAddress, ip.u8, sizeof m_PollReply.IPAddress);
-	m_PollReply.Port = (uint16_t) ARTNET_UDP_PORT;
+
+	m_PollReply.Port = ARTNET_UDP_PORT;
+
 	m_PollReply.VersInfoH = DEVICE_SOFTWARE_VERSION[0];
 	m_PollReply.VersInfoL = DEVICE_SOFTWARE_VERSION[1];
+
 	m_PollReply.NetSwitch = m_Node.NetSwitch;
 	m_PollReply.SubSwitch = m_Node.SubSwitch;
+
 	m_PollReply.OemHi = m_Node.Oem[0];
 	m_PollReply.Oem = m_Node.Oem[1];
+
 	m_PollReply.Status1 = m_Node.Status1;
+
 	m_PollReply.EstaMan[0] = m_Node.Esta[0];
 	m_PollReply.EstaMan[1] = m_Node.Esta[1];
 
@@ -480,7 +470,12 @@ void ArtNetNode::FillPollReply(void) {
 	}
 
 	m_PollReply.Style = ARTNET_ST_NODE;
+
 	memcpy(m_PollReply.MAC, m_Node.MACAddressLocal, sizeof m_PollReply.MAC);
+
+	if (m_nVersion > 3) {
+		memcpy(m_PollReply.BindIp, ip.u8, sizeof m_PollReply.BindIp);
+	}
 
 	m_PollReply.Status2 = m_Node.Status2;
 }
@@ -490,8 +485,8 @@ void ArtNetNode::FillDiagData(void) {
 
 	strncpy((char *)m_DiagData.Id, (const char *)NODE_ID, sizeof m_DiagData.Id);
 	m_DiagData.OpCode = OP_DIAGDATA;
-	m_DiagData.ProtVerHi = (uint8_t) 0;							// high byte of the Art-Net protocol revision number.
-	m_DiagData.ProtVerLo = (uint8_t) ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
+	m_DiagData.ProtVerHi = 0;							// high byte of the Art-Net protocol revision number.
+	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;	// low byte of the Art-Net protocol revision number.
 }
 
 void ArtNetNode::GetType(void) {
@@ -1120,6 +1115,9 @@ void ArtNetNode::HandleIpProg(void) {
 		m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
+		if (m_nVersion > 3) {
+			memcpy(m_PollReply.BindIp, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
+		}
 
 		if (m_State.SendArtPollReplyOnChange) {
 			SendPollRelply(true);

@@ -1,5 +1,5 @@
 /**
- * @file artnetparamsstore.h
+ * @file artnetparamsstore.cpp
  *
  */
 /**
