@@ -1,8 +1,8 @@
 /**
- * @file util.h
+ * @file string.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef STRING_H_
+#define STRING_H_
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <ctype.h>
-
-#define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
-
-#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
-
-#ifndef MAX
- #define MAX(a,b)		(((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef MIN
- #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
-#endif
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*@unused@*/inline static int memcmp(const void *s1, const void *s2, size_t n) {
+inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
 	unsigned char *t1, *t2;
 
@@ -65,7 +51,7 @@ extern "C" {
 	return 0;
 }
 
-/*@unused@*/inline static void *memcpy(/*@only@*/void *dest, const void *src, size_t n) {
+inline static void *memcpy(/*@only@*/void *dest, const void *src, size_t n) {
 	char *dp = (char *) dest;
 	const char *sp = (const char *) src;
 
@@ -76,7 +62,7 @@ extern "C" {
 	return dest;
 }
 
-/*@unused@*/inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
+inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
 	char *dp = (char *) dst;
 	const char *sp = (const char *) src;
 
@@ -95,7 +81,7 @@ extern "C" {
 	return dst;
 }
 
-/*@unused@*/inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
+inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
 	char *dp = (char *) dest;
 
 	while (n-- != (size_t) 0) {
@@ -105,7 +91,7 @@ extern "C" {
 	return dest;
 }
 
-/*@unused@*/inline static size_t strlen(const char *s) {
+inline static size_t strlen(const char *s) {
 	const char *p = s;
 
 	while (*s != (char) 0) {
@@ -115,7 +101,7 @@ extern "C" {
 	return (size_t) (s - p);
 }
 
-/*@unused@*/inline static char *strcpy(/*@only@*/char *s1, const char *s2) {
+inline static char *strcpy(/*@only@*/char *s1, const char *s2) {
 	char *s = s1;
 
 	while ((*s++ = *s2++) != '\0')
@@ -123,7 +109,7 @@ extern "C" {
 	return s1;
 }
 
-/*@unused@*/inline static char *strncpy(/*@only@*/char *s1, const char *s2, size_t n) {
+inline static char *strncpy(/*@only@*/char *s1, const char *s2, size_t n) {
 	char *s = s1;
 
 	while (n > 0 && *s2 != '\0') {
@@ -139,7 +125,7 @@ extern "C" {
 	return s1;
 }
 
-/*@unused@*/inline static int strcmp(const char *s1, const char *s2) {
+inline static int strcmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -152,7 +138,7 @@ extern "C" {
 	return (int) (*p1 - *p2);
 }
 
-/*@unused@*/inline static int strncmp(const char *s1, const char *s2, size_t n) {
+inline static int strncmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -167,7 +153,7 @@ extern "C" {
 	return 0;
 }
 
-/*@unused@*/inline static int strcasecmp(const char *s1, const char *s2) {
+inline static int strcasecmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -180,7 +166,7 @@ extern "C" {
 	return (int) (tolower((int) *p1) - tolower((int) *p2));
 }
 
-/*@unused@*/inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
+inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -199,7 +185,4 @@ extern "C" {
 }
 #endif
 
-#define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
-#define ALIGNED  		__attribute__((aligned(4)))
-
-#endif /* UTIL_H_ */
+#endif /* STRING_H_ */

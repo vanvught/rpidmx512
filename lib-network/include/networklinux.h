@@ -32,10 +32,6 @@
 
 #include "network.h"
 
-#ifndef HOST_NAME_MAX
- #define HOST_NAME_MAX 255
-#endif
-
 class NetworkLinux: public Network {
 public:
 	NetworkLinux(void);
@@ -47,24 +43,25 @@ public:
 	void End(void);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
-	const char* GetHostName(void);
 
-	void SetIp(uint32_t ip);
+	void SetIp(uint32_t nIp);
 
-	void JoinGroup(uint32_t nHandle, uint32_t ip);
-	void LeaveGroup(uint32_t nHandle, uint32_t ip);
+	void JoinGroup(uint32_t nHandle, uint32_t nIp);
+	void LeaveGroup(uint32_t nHandle, uint32_t nIp);
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
+	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
 
 private:
-	bool is_dhclient(const char *if_name);
-	int if_get_by_address(const char *ip, char *name, size_t len);
-	int if_details(const char *iface);
+	bool IsDhclient(const char *pIfName);
+	int IfGetByAddress(const char *pIp, char *pName, size_t nLength);
+	int IfDetails(const char *pIfInterface);
+#if defined(__APPLE__)
+	bool OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress);
+#endif
 
 private:
 	char m_aIfName[IFNAMSIZ];
-	char m_aHostname[HOST_NAME_MAX + 1];
 };
 
 #endif /* NETWORKLINUX_H_ */

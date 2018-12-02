@@ -40,7 +40,7 @@ int spi_init(void) {
 	}
 
 	if (bcm2835_init() == 0) {
-		fprintf(stderr, "Error: Not able to init the bmc2835 library\n");
+		fprintf(stderr, "Error: bcm2835_init()\n");
 		return -1;
 	}
 
@@ -61,15 +61,11 @@ int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 	}
 
 	if (din == 0) {
-		//DEBUG_PRINTF("Write only:%d", len);
-		bcm2835_spi_writenb((char *)dout, len);
+		bcm2835_spi_writenb((char *) dout, len);
 	} else if (dout == 0) {
-		//DEBUG_PRINTF("Read only:%d", len);
 		bcm2835_spi_transfern(din, len);
-	}
-	else {
-		//DEBUG_PUTS("Transfer");
-		bcm2835_spi_transfernb((char *)dout, (char *)din, len);
+	} else {
+		bcm2835_spi_transfernb((char *) dout, (char *) din, len);
 	}
 
 	if (flags & SPI_XFER_END) {

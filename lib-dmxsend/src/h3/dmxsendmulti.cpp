@@ -36,7 +36,7 @@
 DMXSendMulti::DMXSendMulti(void) {
 	DEBUG_ENTRY
 
-	for (unsigned i = 0; i < MAX_PORTS ; i++) {
+	for (uint32_t i = 0; i < MAX_PORTS ; i++) {
 		m_bIsStarted[i] = false;
 	}
 

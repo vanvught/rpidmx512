@@ -34,18 +34,18 @@
 #define NETWORK_HOSTNAME_SIZE	48
 
 #ifndef IP2STR
-#define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
+ #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
+ #define IPSTR "%d.%d.%d.%d"
 #endif
 
 #ifndef IP2STR3
-#define IP2STR3(addr) (uint8_t)(addr[0]), (uint8_t)(addr[1]), (uint8_t)(addr[2]), (uint8_t)(addr[3])
-#define IPSTR3 "%.3d.%.3d.%.3d.%.3d"
+ #define IP2STR3(addr) (uint8_t)(addr[0]), (uint8_t)(addr[1]), (uint8_t)(addr[2]), (uint8_t)(addr[3])
+ #define IPSTR3 "%.3d.%.3d.%.3d.%.3d"
 #endif
 
 #ifndef MAC2STR
-#define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
-#define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+ #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
+ #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 #endif
 
 class Network {
@@ -56,15 +56,29 @@ public:
 	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual void End(void)=0;
 
-	virtual const char* GetHostName(void)=0;
 	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
-	inline uint32_t GetIp(void) { return m_nLocalIp; }
-	inline uint32_t GetNetmask(void) { return m_nNetmask; }
-	inline uint32_t GetBroadcastIp(void) { return m_nBroadcastIp; }
+	inline uint32_t GetIp(void) {
+		return m_nLocalIp;
+	}
 
-	inline bool IsDhcpCapable(void) { return m_IsDhcpCapable; }
-	inline bool IsDhcpUsed(void) { return m_IsDhcpUsed; }
+	inline uint32_t GetNetmask(void) {
+		return m_nNetmask;
+	}
+
+	inline uint32_t GetBroadcastIp(void) {
+		return m_nBroadcastIp;
+	}
+
+	inline bool IsDhcpCapable(void) {
+		return m_IsDhcpCapable;
+
+	}
+
+	inline bool IsDhcpUsed(void) {
+		return m_IsDhcpUsed;
+	}
+
 	inline bool IsDhcpKnown(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 		return false;
@@ -73,22 +87,24 @@ public:
 #endif
 	}
 
-#if !defined(__circle__)
-	virtual void JoinGroup(uint32_t nHandle, uint32_t ip)=0;
-	virtual void LeaveGroup(uint32_t nHandle, uint32_t ip)=0;
-#endif
+	inline const char* GetHostName(void) {
+		return m_aHostName;
+	}
 
-	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port)=0;
-	virtual void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port)=0;
+	virtual void JoinGroup(uint32_t nHandle, uint32_t nIp)=0;
+	virtual void LeaveGroup(uint32_t nHandle, uint32_t nIp)=0;
 
-#if defined(__linux__)	||  defined (BARE_METAL)
+	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort)=0;
+	virtual void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort)=0;
+
 	virtual void SetIp(uint32_t nIp)=0;
-#endif
 
 	void Print(void);
 
 public:
-	inline static Network* Get(void) { return s_pThis; }
+	inline static Network* Get(void) {
+		return s_pThis;
+	}
 
 protected:
 	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
@@ -98,6 +114,7 @@ protected:
 	uint32_t m_nBroadcastIp;
 	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
+	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 
 private:
 	static Network *s_pThis;

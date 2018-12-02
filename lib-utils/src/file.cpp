@@ -25,13 +25,11 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <string.h>
 #include <assert.h>
 
-#if defined (__circle__)
- #include "circle/util.h"
-#else
+#if defined (BARE_METAL)
  #include "console.h"
- #include "util.h"
 #endif
 
 #include "ff.h"

@@ -73,7 +73,7 @@ private:
 	uint16_t m_nMaxChannels;
 #else
 	bool m_bIsStarted;
-	uint8_t m_Data[512];
+	alignas(uint32_t) uint8_t m_Data[512];
 #endif
 };
 

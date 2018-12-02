@@ -50,13 +50,12 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "mmc_internal.h"
 
 #include "h3.h"
 #include "h3_timer.h"
-
-#include "util.h"
 
 #include "debug.h"
 

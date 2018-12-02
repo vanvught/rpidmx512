@@ -38,14 +38,14 @@ LightSetDebug::~LightSetDebug(void) {
 }
 
 uint16_t LightSetDebug::GetDmxFootprint(void) {
-	printf("LightSetDebug::GetDmxFootprint(void)\n");
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 	return DMX_FOOTPRINT;
 }
 
 bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	printf("LightSetDebug::SetDmxStartAddress(%d)\n", (int) nDmxStartAddress);
+	printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, (int) nDmxStartAddress);
 
-	if (nDmxStartAddress  > (512 - DMX_FOOTPRINT)) {
+	if (nDmxStartAddress > (512 - DMX_FOOTPRINT)) {
 		return false;
 	}
 
@@ -54,11 +54,13 @@ bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 }
 
 uint16_t LightSetDebug::GetDmxStartAddress(void) {
-	printf("LightSetDebug::GetDmxStartAddress(void)\n");
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
 	return m_nDmxStartAddress;
 }
 
 bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
+
 	if (nSlotOffset > DMX_FOOTPRINT) {
 		return false;
 	}
@@ -70,33 +72,33 @@ bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &
 }
 
 void LightSetDebug::Start(uint8_t nPort) {
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
+
 	if (m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = true;
-
-	printf("LightSetDebug::Start(void)\n");
 }
 
 void LightSetDebug::Stop(uint8_t nPort) {
+	printf("%s:%s\n", __FILE__, __FUNCTION__);
+
 	if (!m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = false;
-
-	printf("LightSetDebug::Stop(void)\n");
 }
 
 void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
 	assert(pData != 0);
 	assert(nLength <= 512);
 
-	printf("LightSetDebug::SetData(nPort:%d, *pData:%p, nLength:%d)\n", (int) nPort, (void *) pData, (int) nLength);
+	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__,(int) nPort, (void *) pData, (int) nLength);
 	printf("%d:%d:%d: ", (int) nLength, (int) DMX_FOOTPRINT, (int) m_nDmxStartAddress);
 
-	for (uint16_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		printf("%.2x ", pData[i]);
 	}
 

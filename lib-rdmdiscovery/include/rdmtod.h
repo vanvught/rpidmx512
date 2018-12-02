@@ -43,19 +43,18 @@ public:
 	 ~RDMTod(void);
 
 	 void Reset(void);
-	 bool AddUid(const uint8_t *);
-	 const uint8_t GetUidCount(void);
-	 void Copy(uint8_t *);
+	 bool AddUid(const uint8_t *pUid);
+	 uint8_t GetUidCount(void) const;
+	 void Copy(uint8_t *pTable);
 
-	 bool Delete(const uint8_t *);
-	 bool Exist(const uint8_t *);
+	 bool Delete(const uint8_t *pUid);
+	 bool Exist(const uint8_t *pUid);
 
 	 void Dump(void);
-	 void Dump(uint8_t);
+	 void Dump(uint8_t nCount);
 private:
-	 uint8_t m_entries;
+	 uint8_t m_nEntries;
 	 TRdmTod *m_pTable;
 };
-
 
 #endif /* RDMTOD_H_ */

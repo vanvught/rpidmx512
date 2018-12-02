@@ -1,5 +1,5 @@
 /**
- * @file get_timer.h
+ * @file get_timer.c
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl

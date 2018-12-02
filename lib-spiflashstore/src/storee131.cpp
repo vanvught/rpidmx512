@@ -1,8 +1,8 @@
 /**
- * @file uuid.c
+ * @file storee131.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,41 @@
  */
 
 #include <stdint.h>
-#include <string.h>
-#include <uuid/uuid.h>
+#include <assert.h>
 
-extern uint32_t bcm2835_rng_get_number(void);
+#include "storee131.h"
 
-typedef union pcast32 {
-	uuid_t uuid;
-	uint32_t u32[4];
-} _pcast32;
+#include "storedmxsend.h"
+#include "spiflashstore.h"
 
-void uuid_generate_random(uuid_t out) {
-	_pcast32 cast;
+#include "e131params.h"
 
-	cast.u32[0] = bcm2835_rng_get_number();
-	cast.u32[1] = bcm2835_rng_get_number();
-	cast.u32[2] = bcm2835_rng_get_number();
-	cast.u32[3] = bcm2835_rng_get_number();
+#include "debug.h"
 
-	cast.uuid[6] = 0x40 | (cast.uuid[6] & 0xf);
-	cast.uuid[8] = 0x80 | (cast.uuid[8] & 0x3f);
+StoreE131::StoreE131(void) {
+	DEBUG_ENTRY
 
-	memcpy(out, cast.uuid, sizeof(uuid_t));
+	DEBUG_EXIT
+}
+
+StoreE131::~StoreE131(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreE131::Update(const struct TE131Params* pE131Params) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_E131, (void *)pE131Params, sizeof(struct TE131Params));
+
+	DEBUG_EXIT
+}
+
+void StoreE131::Copy(struct TE131Params* pE131Params) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_E131, (void *)pE131Params, sizeof(struct TE131Params));
+
+	DEBUG_EXIT
 }

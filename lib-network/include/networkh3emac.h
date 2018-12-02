@@ -42,24 +42,19 @@ public:
 	int32_t Begin(uint16_t nPort);
 	void End(void);
 
-	inline const char* GetHostName(void) {
-		return (const char *) m_aHostname;
-	}
-
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	void JoinGroup(uint32_t nHandle, uint32_t ip);
-	void LeaveGroup(uint32_t nHandle, uint32_t ip);
+	void JoinGroup(uint32_t nHandle, uint32_t nIp);
+	void LeaveGroup(uint32_t nHandle, uint32_t nIp);
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
+	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
 
 	void SetIp(uint32_t nIp);
 
 	void Run(void);
 
 private:
-	char m_aHostname[NETWORK_HOSTNAME_SIZE];
 };
 
 #endif /* NETWORKH3EMAC_H_ */

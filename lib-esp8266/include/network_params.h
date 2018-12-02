@@ -2,7 +2,7 @@
  * @file network_params.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,20 +29,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "util.h"
+#define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool network_params_init(void);
+extern bool network_params_init(void);
 
-extern const bool network_params_is_use_dhcp(void);
+extern bool network_params_is_use_dhcp(void);
 
-extern const uint32_t network_params_get_ip_address(void);
-extern const uint32_t network_params_get_net_mask(void);
-extern const uint32_t network_params_get_default_gateway(void);
-extern const uint32_t network_params_get_name_server(void);
+extern uint32_t network_params_get_ip_address(void);
+extern uint32_t network_params_get_net_mask(void);
+extern uint32_t network_params_get_default_gateway(void);
+extern uint32_t network_params_get_name_server(void);
 
 extern /*@shared@*/const char *network_params_get_ssid(void) ASSUME_ALIGNED;
 extern /*@shared@*/const char *network_params_get_password(void) ASSUME_ALIGNED;

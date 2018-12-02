@@ -7,6 +7,7 @@
 		<project>lib-artnet</project>
 		<project>lib-debug</project>
 		<project>lib-dmxsend</project>
+		<project>lib-e131</project>
 		<project>lib-h3</project>
 		<project>lib-network</project>
 		<project>lib-spiflash</project>

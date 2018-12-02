@@ -64,36 +64,6 @@ bool SpiFlashInstallParams::Load(void) {
 	return configfile.Read(PARAMS_FILE_NAME);
 }
 
-void SpiFlashInstallParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_nSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
-
-	if(isMaskSet(INSTALL_UBOOT_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UBOOT, (int) m_bInstalluboot, BOOL2STRING(m_bInstalluboot));
-	}
-
-	if(isMaskSet(INSTALL_UIMAGE_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UIMAGE, (int) m_bInstalluImage, BOOL2STRING(m_bInstalluImage));
-	}
-
-#endif
-}
-
-bool SpiFlashInstallParams::isMaskSet(uint32_t nMask) const {
-	return (m_nSetList & nMask) == nMask;
-}
-
-void SpiFlashInstallParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((SpiFlashInstallParams *) p)->callbackFunction(s);
-}
-
 void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
 
@@ -116,3 +86,32 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 	}
 }
 
+void SpiFlashInstallParams::Dump(void) {
+#ifndef NDEBUG
+	if (m_nSetList == 0) {
+		return;
+	}
+
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+
+	if(isMaskSet(INSTALL_UBOOT_MASK)) {
+		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UBOOT, (int) m_bInstalluboot, BOOL2STRING(m_bInstalluboot));
+	}
+
+	if(isMaskSet(INSTALL_UIMAGE_MASK)) {
+		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UIMAGE, (int) m_bInstalluImage, BOOL2STRING(m_bInstalluImage));
+	}
+
+#endif
+}
+
+void SpiFlashInstallParams::staticCallbackFunction(void* p, const char* s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((SpiFlashInstallParams *) p)->callbackFunction(s);
+}
+
+bool SpiFlashInstallParams::isMaskSet(uint32_t nMask) const {
+	return (m_nSetList & nMask) == nMask;
+}

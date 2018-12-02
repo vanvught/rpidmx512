@@ -71,28 +71,26 @@ public:
 	virtual float GetCoreTemperature(void)=0;
 	virtual float GetCoreTemperatureMax(void)=0;
 
-	virtual uint64_t GetUpTime(void)=0;
-
 	virtual void SetLed(THardwareLedStatus tLedStatus)=0;
 
 	virtual bool Reboot(void)=0;
 	virtual bool PowerOff(void)=0;
 
-	virtual time_t GetTime(void)=0;
-
 	virtual bool SetTime(const struct THardwareTime &pTime)=0;
 	virtual void GetTime(struct THardwareTime *pTime)=0;
+	virtual time_t GetTime(void)=0;
+
+	virtual uint64_t GetUpTime(void)=0;
 
 	virtual uint32_t Millis(void)=0;
+
+	virtual void WatchdogInit(void);
+	virtual void WatchdogFeed(void);
+	virtual void WatchdogStop(void);
 
 	virtual bool IsButtonPressed(void);
 
 	virtual const char* GetWebsiteUrl(void);
-
-// Only implemented in BAREMETAL
-	virtual void WatchdogInit(void);
-	virtual void WatchdogFeed(void);
-	virtual void WatchdogStop(void);
 
 public:
 	inline static Hardware* Get(void) {

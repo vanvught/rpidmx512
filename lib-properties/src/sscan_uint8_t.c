@@ -54,7 +54,7 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\r') || (*b == '\n')) {
 		return SSCAN_VALUE_ERROR;
 	}
 
@@ -62,14 +62,14 @@ int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 
 	do {
 		if (isdigit((int) *b) == 0) {
-			return 1;
+			return SSCAN_VALUE_ERROR;
 		}
 		k = k * 10 + (int16_t) *b - (int16_t) '0';
 		b++;
-	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\n'));
+	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\r') && (*b != '\n'));
 
 	if (k > (int16_t) ((uint8_t) ~0)) {
-		return 1;
+		return SSCAN_VALUE_ERROR;
 	}
 
 	*value = (uint8_t) k;

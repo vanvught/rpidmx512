@@ -24,12 +24,10 @@
  */
 
 #include <stdint.h>
-
-#include "uuid/uuid.h"
+#include <string.h>
+#include <uuid/uuid.h>
 
 extern int h3_sid_get_rootkey(uint8_t *out);
-
-#include "util.h"
 
 typedef union pcast32 {
 	uuid_t uuid;

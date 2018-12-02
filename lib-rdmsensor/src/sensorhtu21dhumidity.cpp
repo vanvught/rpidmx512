@@ -25,14 +25,9 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
-#endif
-
-#if defined (__linux__)
- #include <string.h>
-#else
- #include "util.h"
 #endif
 
 #ifndef ALIGNED

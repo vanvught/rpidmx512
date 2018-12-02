@@ -3,8 +3,6 @@
 	<name>lib-uuid</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

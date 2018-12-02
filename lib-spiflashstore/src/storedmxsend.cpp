@@ -46,18 +46,18 @@ StoreDmxSend::~StoreDmxSend(void) {
 	DEBUG_EXIT
 }
 
-void StoreDmxSend::Update(const struct TDMXParams *DmxParams) {
+void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)DmxParams, sizeof(struct TDMXParams));
+	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
 
 	DEBUG_EXIT
 }
 
-void StoreDmxSend::Copy(struct TDMXParams *DmxParams) {
+void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)DmxParams, sizeof(struct TDMXParams));
+	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
 
 	DEBUG_EXIT
 }

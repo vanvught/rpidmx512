@@ -23,17 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <stdio.h>
 #include <stdint.h>
-
-#if defined (BARE_METAL)
- #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
-#else
- #include <string.h>
-#endif
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

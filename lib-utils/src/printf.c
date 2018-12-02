@@ -26,10 +26,11 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
 #include <limits.h>
 
 #include "console.h"
-#include "util.h"
 
 struct context {
 	int flag;
@@ -154,7 +155,7 @@ static void _round_float(/*@out@*/char *dest, int *size) {
 			} else {
 				w++;
 				q++;
-				(void *) memmove(w + 1, w, (size_t) (q - w));
+				memmove(w + 1, w, (size_t) (q - w));
 				*w = '1';
 				i++;
 			}

@@ -2,7 +2,7 @@
  * @file sd.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  * Based on
  * https://github.com/jncronin/rpi-boot/blob/master/emmc.c
  *
@@ -26,6 +26,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
@@ -33,8 +34,6 @@
 
 #include "device/sd.h"
 #include "device/sdhci.h"
-
-#include "util.h"
 
 #define TIMEOUT_WAIT(stop_if_true, usec) 						\
 do {															\

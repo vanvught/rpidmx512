@@ -385,3 +385,12 @@ uint32_t HardwareLinux::Millis(void) {
 bool HardwareLinux::IsButtonPressed(void) {
 	return false;
 }
+
+void HardwareLinux::WatchdogInit(void) {
+}
+
+void HardwareLinux::WatchdogFeed(void) {
+}
+
+void HardwareLinux::WatchdogStop(void) {
+}

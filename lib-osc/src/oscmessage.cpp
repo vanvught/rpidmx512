@@ -26,15 +26,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
-
-#if defined (BARE_METAL)
- #include "util.h"
-#elif defined(__circle__)
- #include "circle/util.h"
-#else
- #include <string.h>
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

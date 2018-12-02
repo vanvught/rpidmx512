@@ -57,13 +57,13 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
+	while ((*b != (char) 0) && (*b != (char) '\r') && (*b != (char) '\n') && (k < (int) *len)) {
 		*v++ = *b++;
 		k++;
 	}
 
-	if ((*b != (char) 0) && (*b != (char) '\n')) {
-		return 1;
+	if ((*b != (char) 0) && (*b != (char) '\r') && (*b != (char) '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	*len = (uint8_t) k;

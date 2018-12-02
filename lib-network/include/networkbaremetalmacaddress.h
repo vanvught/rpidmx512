@@ -45,21 +45,17 @@ public:
 	inline void End(void) {
 	}
 
-	inline const char* GetHostName(void) {
-		return "";
-	}
-
 	inline void JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
 	inline void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	inline uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t nSize, uint32_t *from_ip, uint16_t *from_port) {
+	inline uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 		return 0;
 	}
 
-	inline void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t nSize, uint32_t to_ip, uint16_t remote_port) {
+	inline void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	}
 
 	inline void SetIp(uint32_t nIp) {

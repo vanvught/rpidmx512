@@ -60,15 +60,18 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
+#include <uuid/uuid.h>
 #include <assert.h>
 
 #include "uuid_internal.h"
-#include "uuid/uuid.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-static const char *fmt_lower = "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
-static const char *fmt_upper = "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+static const char *fmt_lower ALIGNED = "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x";
+static const char *fmt_upper ALIGNED = "%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
 
 #ifdef UUID_UNPARSE_DEFAULT_UPPER
 #define FMT_DEFAULT fmt_upper

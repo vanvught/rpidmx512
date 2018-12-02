@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "net/net.h"
@@ -31,7 +32,9 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 extern void arp_cache_init(void);
 extern void arp_cache_update(uint8_t *, uint32_t);

@@ -24,17 +24,15 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #if defined(__linux__)
  #include "bcm2835.h"
- #include <string.h>
 #elif defined(H3)
  #include "h3_spi.h"
- #include "util.h"
 #else
  #include "bcm2835_spi.h"
- #include "util.h"
 #endif
 
 #include "ws28xxstripe.h"

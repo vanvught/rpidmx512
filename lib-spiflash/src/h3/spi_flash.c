@@ -312,12 +312,11 @@ int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 
 	if (len != 0) {
 		if (din == 0) {
-			spi0_writenb((char *)dout, len);
+			spi0_writenb((char *) dout, len);
 		} else if (dout == 0) {
 			spi0_transfern(din, len);
-		}
-		else {
-			spi0_transfernb((char *)dout, (char *)din, len);
+		} else {
+			spi0_transfernb((char *) dout, (char *) din, len);
 		}
 	}
 

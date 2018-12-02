@@ -35,7 +35,11 @@
 
 #define DMX_FOOTPRINT_DEFAULT		3
 
+#if defined (__circle__)
+WS28xxStripeDmxGrouping::WS28xxStripeDmxGrouping(CInterruptSystem *pInterruptSystem) : SPISend(pInterruptSystem) {
+#else
 WS28xxStripeDmxGrouping::WS28xxStripeDmxGrouping(void) {
+#endif
 	for (uint32_t i = 0; i < sizeof(m_aDmxData); i++) {
 		m_aDmxData[i] = 0;
 	}
@@ -47,6 +51,10 @@ WS28xxStripeDmxGrouping::~WS28xxStripeDmxGrouping(void) {
 void WS28xxStripeDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLenght) {
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
+	}
+
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
 	}
 
 	const uint8_t *p = pData + m_nDmxStartAddress - 1;

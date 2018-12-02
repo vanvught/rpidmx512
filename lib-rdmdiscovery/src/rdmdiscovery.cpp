@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -38,8 +39,6 @@
 extern "C" {
  void udelay(uint32_t us);
 }
-
-#include "util.h"
 
 static uint8_t pdl[2][RDM_UID_SIZE];
 

@@ -24,12 +24,15 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 extern void arp_send_request(uint32_t ip);
 extern void net_handle(void);

@@ -8,7 +8,7 @@
  *  Project     Arduino MIDI Library
  *  https://github.com/FortySevenEffects/arduino_midi_library/blob/master/src/MIDI.cpp
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,6 @@
 
 #include "midi.h"
 
-#include "util.h"
-
 #include "arm/arm.h"
 #include "arm/pl011.h"
 #include "arm/synchronize.h"
@@ -53,6 +51,10 @@ struct _midi_receive {
 	uint32_t timestamp;
 	uint8_t data;
 };
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static struct _midi_message midi_message ALIGNED;											///<
 

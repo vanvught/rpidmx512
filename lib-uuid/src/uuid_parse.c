@@ -60,12 +60,11 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <ctype.h>
+#include <string.h>
+#include <uuid/uuid.h>
 #include <assert.h>
 
 #include "uuid_internal.h"
-#include "uuid/uuid.h"
-
-#include "util.h"
 
 static uint32_t hex_uint32(const char *s) {
 	uint32_t ret = 0;

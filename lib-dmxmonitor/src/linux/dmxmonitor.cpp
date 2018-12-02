@@ -43,7 +43,7 @@ DMXMonitor::DMXMonitor(void) :
 		m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
 
 {
-	for (unsigned i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
 		m_bIsStarted[i] = false;
 	}
 }
@@ -109,7 +109,7 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 	assert(nPort < DMXMONITOR_MAX_PORTS);
 
 	struct timeval tv;
-	unsigned i, j;
+	uint32_t i, j;
 
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);

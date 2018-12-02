@@ -35,7 +35,7 @@
 #include "debug.h"
 
 #ifndef ALIGNED
-#define ALIGNED 	__attribute__((aligned(4)))
+ #define ALIGNED 	__attribute__((aligned(4)))
 #endif
 
 #define OFFSET_UBOOT_SPI	0x000000
@@ -239,7 +239,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {
 			printf("error: flash erase\n");
-			break; // Error
+			break;
 		}
 
 		if (nBytes < m_nEraseSize) {
@@ -250,17 +250,17 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 
 		if (spi_flash_cmd_write_multi(n_Address, m_nEraseSize, m_pFileBuffer) < 0) {
 			printf("error: flash write\n");
-			break; // Error
+			break;
 		}
 
 		if (spi_flash_cmd_read_fast(n_Address, nBytes, m_pFlashBuffer) < 0) {
 			printf("error: flash read\n");
-			break; // Error
+			break;
 		}
 
 		if (!BuffesCompare(nBytes)) {
 			printf("error: flash verify\n");
-			break; // Error
+			break;
 		}
 
 		if (nBytes != m_nEraseSize) {

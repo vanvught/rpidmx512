@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "dmx_multi_internal.h"
@@ -33,8 +34,6 @@
 #include "rdm_e120.h"
 
 #include "gpio.h"
-
-#include "util.h"
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -49,6 +48,14 @@
 #include "irq_timer.h"
 
 #include "uart.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
+#ifndef MAX
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 extern int console_error(const char *);
 

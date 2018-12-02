@@ -24,18 +24,11 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
 #include <assert.h>
-
-#if defined (__circle__)
- #include <circle/util.h>
-#elif defined (__linux__)
- #include <string.h>
-#else
- #include "util.h"
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__((aligned(4)))
@@ -145,7 +138,6 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	buffer[8] = '\0';
 	buffer[9] = '\0';
 	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
-		// There is no strncasecmp in Circle
 		if ((len == 8) && (strcasecmp(buffer, "tlc59711") == 0)) {
 			m_LEDType = TTLC59711_TYPE_RGB;
 			m_bSetList |= SET_LED_TYPE_MASK;

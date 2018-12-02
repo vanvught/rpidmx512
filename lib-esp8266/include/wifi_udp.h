@@ -32,10 +32,10 @@
 extern "C" {
 #endif
 
-extern void wifi_udp_begin(const uint16_t);
-extern void wifi_udp_joingroup(const uint32_t);
-extern uint16_t wifi_udp_recvfrom(const uint8_t *, const uint16_t, uint32_t *, uint16_t *);
-extern void wifi_udp_sendto(const uint8_t *, const uint16_t, const uint32_t, const uint16_t);
+extern void wifi_udp_begin(uint16_t);
+extern void wifi_udp_joingroup(uint32_t);
+extern uint16_t wifi_udp_recvfrom(const uint8_t *, uint16_t, uint32_t *, uint16_t *);
+extern void wifi_udp_sendto(const uint8_t *, uint16_t, uint32_t, uint16_t);
 
 #ifdef __cplusplus
 }

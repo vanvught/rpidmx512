@@ -24,13 +24,8 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
-
-#if defined(__linux__)
- #include <string.h>
-#else
- #include "util.h"
-#endif
 
 #include "ssd1306.h"
 

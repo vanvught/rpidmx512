@@ -3,12 +3,10 @@
 	<name>lib-pwmdmx</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
 		<project>lib-lightset</project>
 		<project>lib-pca9685dmx</project>
 		<project>lib-properties</project>
 		<project>lib-tlc59711dmx</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

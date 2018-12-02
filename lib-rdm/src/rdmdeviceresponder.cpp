@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "rdmdeviceresponder.h"
@@ -34,12 +35,6 @@
 #include "hardware.h"
 
 #include "rdm_e120.h"
-
-#if defined (BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

@@ -25,10 +25,10 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include "util.h"
 
 #include "rdmsubdevicebw7fets.h"
 
@@ -79,7 +79,7 @@ void RDMSubDeviceBw7fets::Data(const uint8_t* pData, uint16_t nLength) {
 	uint8_t nData = 0;
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint16_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (uint8_t) (1 << j);
 		}

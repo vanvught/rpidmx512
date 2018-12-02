@@ -24,15 +24,10 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 #ifndef NDEBUG
  #include <stdio.h>
-#endif
-
-#if defined (BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
 #endif
 
 #ifndef ALIGNED

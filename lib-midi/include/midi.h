@@ -31,8 +31,6 @@
 
 #include "midi_interface.h"
 
-#include "util.h"
-
 #define MIDI_RX_BUFFER_INDEX_ENTRIES			(1 << 6)							///<
 #define MIDI_RX_BUFFER_INDEX_MASK 				(MIDI_RX_BUFFER_INDEX_ENTRIES - 1)	///<
 
@@ -166,7 +164,7 @@ extern const uint32_t midi_get_baudrate(void);
 extern /*@shared@*/const char *midi_get_interface_description(void);
 extern void midi_set_interface(const _midi_interfaces);
 
-extern /*@shared@*/struct _midi_message *midi_message_get(void) ASSUME_ALIGNED;
+extern /*@shared@*/struct _midi_message *midi_message_get(void) __attribute__((assume_aligned(4)));
 extern bool midi_read(void);
 extern bool midi_read_channel(uint8_t);
 extern uint8_t midi_get_input_channel(void);

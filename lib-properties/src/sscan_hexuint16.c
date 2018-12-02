@@ -55,14 +55,14 @@ int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\r') || (*b == '\n')) {
 		return SSCAN_VALUE_ERROR;
 	}
 
 	k = 0;
 	tmp = 0;
 
-	while ((*b != (char) '\n') && (*b != (char) '\0') && (k < 4)) {
+	while ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (k < 4)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -72,7 +72,7 @@ int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
 		b++;
 	}
 
-	if ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 

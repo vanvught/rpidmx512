@@ -28,12 +28,20 @@
 
 #include <stdint.h>
 
+#if defined (__circle__)
+ #include "circle/interrupt.h"
+#endif
+
 #include "ws28xxstripedmx.h"
 #include "ws28xxstripe.h"
 
 class WS28xxStripeDmxGrouping: public SPISend {
 public:
+#if defined (__circle__)
+	WS28xxStripeDmxGrouping(CInterruptSystem *);
+#else
 	WS28xxStripeDmxGrouping(void);
+#endif
 	~WS28xxStripeDmxGrouping(void);
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght);
@@ -50,7 +58,7 @@ public: // RDM
 	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 private:
-	uint8_t m_aDmxData[4];
+	alignas(uint32_t) uint8_t m_aDmxData[4];
 };
 
 #endif /* WS28XXSTRIPEDMXGROUPING_H_ */

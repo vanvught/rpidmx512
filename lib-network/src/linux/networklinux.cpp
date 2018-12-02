@@ -35,66 +35,11 @@
 #include <errno.h>
 #include <assert.h>
 
-#if defined (__APPLE__)
- #include <sys/sysctl.h>
- #include <sys/socket.h>
- #include <net/if.h>
- #include <net/if_dl.h>
-
-static bool osx_get_macaddress(const char *if_name, uint8_t *mac_address) {
-	int mib[6] = { CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0 };
-	size_t len;
-	char *buf;
-
-	if ((mib[5] = if_nametoindex(if_name)) == 0) {
-		perror("if_nametoindex error");
-		return false;
-	}
-
-	if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0) {
-		perror("sysctl 1 error");
-		return false;
-	}
-
-	if ((buf = (char *)malloc(len)) == NULL) {
-		perror("malloc error");
-		return false;
-	}
-
-	if (sysctl(mib, 6, buf, &len, NULL, 0) < 0) {
-		perror("sysctl 2 error");
-		free(buf);
-		return false;
-	}
-
-	const struct if_msghdr *ifm = (struct if_msghdr *) buf;
-	const struct sockaddr_dl *sdl = (struct sockaddr_dl *) (ifm + 1);
-	const unsigned char *ptr = (unsigned char *) LLADDR(sdl);
-#ifndef NDEBUG 
-	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", *ptr, *(ptr + 1), *(ptr + 2), *(ptr + 3), *(ptr + 4), *(ptr + 5));
-#endif
-
-	for(unsigned i = 0; i < 6;i++) {
-		mac_address[i] = ptr[i];
-	}
-
-	free(buf);
-
-	return true;
-} 
-#endif
-
 #include "networklinux.h"
-
-
 
 NetworkLinux::NetworkLinux(void) {
 	for (unsigned i = 0; i < sizeof(m_aIfName); i++) {
 		m_aIfName[i] = '\0';
-	}
-
-	for (unsigned i = 0; i < sizeof(m_aHostname); i++) {
-		m_aHostname[i] = '\0';
 	}
 }
 
@@ -107,7 +52,7 @@ int NetworkLinux::Init(const char *s) {
 
 	assert(s != NULL);
 
-	if (if_get_by_address(s, m_aIfName, sizeof(m_aIfName)) == 0) {
+	if (IfGetByAddress(s, m_aIfName, sizeof(m_aIfName)) == 0) {
 	} else {
 		strncpy(m_aIfName, s, IFNAMSIZ);
 	}
@@ -116,18 +61,18 @@ int NetworkLinux::Init(const char *s) {
 	printf("NetworkLinux::Init, _if_name = %s\n", m_aIfName);
 #endif
 
-	result = if_details(m_aIfName);
+	result = IfDetails(m_aIfName);
 
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
 	}
 #if defined (__linux__)
 	else {
-		m_IsDhcpUsed = is_dhclient(m_aIfName);
+		m_IsDhcpUsed = IsDhclient(m_aIfName);
 	}
 #endif
 
-	gethostname(m_aHostname, HOST_NAME_MAX);
+	gethostname(m_aHostName, sizeof(m_aHostName));
 
 	return result;
 }
@@ -175,10 +120,6 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	return nSocket;
 }
 
-
-const char* NetworkLinux::GetHostName(void) {
-	return m_aHostname;
-}
 void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
 	for (unsigned i =  0; i < NETWORK_MAC_SIZE; i++) {
 		pMacAddress[i] = m_aNetMacaddr[i];
@@ -193,8 +134,7 @@ void NetworkLinux::End(void) {
 	m_IsDhcpUsed = false;
 }
 
-
-void NetworkLinux::SetIp(uint32_t ip) {
+void NetworkLinux::SetIp(uint32_t nIp) {
 #if defined(__linux__)
     struct ifreq ifr;
     struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
@@ -210,7 +150,7 @@ void NetworkLinux::SetIp(uint32_t ip) {
     ifr.ifr_addr.sa_family = AF_INET;
 
 
-    addr->sin_addr.s_addr = ip;
+    addr->sin_addr.s_addr = nIp;
     if (ioctl(fd, SIOCSIFADDR, &ifr) == -1) {
     	perror("ioctl-SIOCSIFADDR");
     	return;
@@ -232,7 +172,7 @@ void NetworkLinux::SetIp(uint32_t ip) {
     close(fd);
 
     m_IsDhcpUsed = false;
-    m_nLocalIp = ip;
+    m_nLocalIp = nIp;
 #endif
 }
 
@@ -258,18 +198,18 @@ void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
 	}
 }
 
-uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSize, uint32_t* pFromIp, uint16_t* pFromPort) {
 	assert(nHandle != -1);
-	assert(packet != NULL);
-	assert(from_ip != NULL);
-	assert(from_port != NULL);
+	assert(pPacket != NULL);
+	assert(pFromIp != NULL);
+	assert(pFromPort != NULL);
 
 	int recv_len;
 	struct sockaddr_in si_other;
 	socklen_t slen = sizeof(si_other);
 
 
-	if ((recv_len = recvfrom(nHandle, (void *)packet, size, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+	if ((recv_len = recvfrom(nHandle, (void *)pPacket, nSize, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
 			//exit(EXIT_FAILURE);
@@ -277,13 +217,13 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size
 		return 0;
 	}
 
-	*from_ip = si_other.sin_addr.s_addr;
-	*from_port = ntohs(si_other.sin_port);
+	*pFromIp = si_other.sin_addr.s_addr;
+	*pFromPort = ntohs(si_other.sin_port);
 
 	return recv_len;
 }
 
-void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	assert(nHandle != -1);
 
 	struct sockaddr_in si_other;
@@ -291,21 +231,21 @@ void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size
 
 #ifndef NDEBUG
 	struct in_addr in;
-	in.s_addr = to_ip;
-	printf("network_sendto(%p, %d, %s, %d)\n", packet, size, inet_ntoa(in), remote_port);
+	in.s_addr = nToIp;
+	printf("network_sendto(%p, %d, %s, %d)\n", pPacket, nSize, inet_ntoa(in), nRemotePort);
 #endif
 
     si_other.sin_family = AF_INET;
-	si_other.sin_addr.s_addr = to_ip;
-	si_other.sin_port = htons(remote_port);
+	si_other.sin_addr.s_addr = nToIp;
+	si_other.sin_port = htons(nRemotePort);
 
-	if (sendto(nHandle, packet, size, 0, (struct sockaddr*) &si_other, slen) == -1) {
+	if (sendto(nHandle, pPacket, nSize, 0, (struct sockaddr*) &si_other, slen) == -1) {
 		perror("sendto");
 	}
 }
 
 #if defined(__linux__)
-bool NetworkLinux::is_dhclient(const char* if_name) {
+bool NetworkLinux::IsDhclient(const char* if_name) {
 	char cmd[255];
 	char buf[1024];
 	FILE *fp;
@@ -332,7 +272,7 @@ bool NetworkLinux::is_dhclient(const char* if_name) {
 }
 #endif
 
-int NetworkLinux::if_get_by_address(const char* ip, char* name, size_t len) {
+int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 	struct ifaddrs *addrs, *iap;
 	struct sockaddr_in *sa;
 	char buf[32];
@@ -343,8 +283,8 @@ int NetworkLinux::if_get_by_address(const char* ip, char* name, size_t len) {
 		if (iap->ifa_addr->sa_family == AF_INET) {
 			sa = (struct sockaddr_in *) (iap->ifa_addr);
 			inet_ntop(iap->ifa_addr->sa_family, (void *) &(sa->sin_addr), buf, sizeof(buf));
-			if (!strcmp(ip, buf)) {
-				strncpy(name,iap->ifa_name, len);
+			if (!strcmp(pIp, buf)) {
+				strncpy(pName,iap->ifa_name, nLength);
 				freeifaddrs(addrs);
 				return 0;
 			}
@@ -355,11 +295,11 @@ int NetworkLinux::if_get_by_address(const char* ip, char* name, size_t len) {
 	return -1;
 }
 
-int NetworkLinux::if_details(const char *iface) {
+int NetworkLinux::IfDetails(const char *pIfInterface) {
     int fd;
     struct ifreq ifr;
 
-    assert(iface != NULL);
+    assert(pIfInterface != NULL);
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -370,7 +310,7 @@ int NetworkLinux::if_details(const char *iface) {
 
     ifr.ifr_addr.sa_family = AF_INET;
 
-    strncpy(ifr.ifr_name , iface , IFNAMSIZ-1);
+    strncpy(ifr.ifr_name , pIfInterface , IFNAMSIZ-1);
 
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
     	perror("ioctl(fd, SIOCGIFADDR, &ifr)");
@@ -397,7 +337,7 @@ int NetworkLinux::if_details(const char *iface) {
     m_nNetmask =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
 #if defined (__APPLE__)
-	if(!(osx_get_macaddress(iface,m_aNetMacaddr))) {
+	if(!(OSxGetMacaddress(pIfInterface,m_aNetMacaddr))) {
 		return -5;
 	}
 #else

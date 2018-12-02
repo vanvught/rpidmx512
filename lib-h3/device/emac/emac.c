@@ -25,10 +25,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <assert.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
+#include <assert.h>
 
 #include "device/emac.h"
 
@@ -37,8 +38,6 @@
 
 #include "phy.h"
 #include "mii.h"
-
-#include "util.h"
 
 #include "debug.h"
 

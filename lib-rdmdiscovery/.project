@@ -6,7 +6,6 @@
 		<project>lib-artnet</project>
 		<project>lib-hal</project>
 		<project>lib-rdm</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

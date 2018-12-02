@@ -41,7 +41,7 @@ DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
 
 	uint32_t *p = (uint32_t *)m_Data;
 
-	for (unsigned i = 0; i < (sizeof m_Data) / 4; i ++) {
+	for (uint32_t i = 0; i < (sizeof m_Data) / 4; i ++) {
 		*p++ = 0;
 	}
 
@@ -59,11 +59,11 @@ DMXReceiver::~DMXReceiver(void) {
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::SetOutput(LightSet *pOutput) {
+void DMXReceiver::SetOutput(LightSet *pLightSet) {
 	DEBUG1_ENTRY
 
-	assert(pOutput != 0);
-	m_pLightSet = pOutput;
+	assert(pLightSet != 0);
+	m_pLightSet = pLightSet;
 
 	DEBUG1_EXIT
 }
@@ -95,14 +95,14 @@ bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	if (nLength != m_nLength) {
 		m_nLength = nLength;
 
-		for (unsigned i = 0; i < nLength; i++) {
+		for (uint32_t i = 0; i < nLength; i++) {
 			*dst++ = *src++;
 		}
 
 		return true;
 	}
 
-	for (unsigned i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		if (*dst != *src) {
 			isChanged = true;
 		}

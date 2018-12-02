@@ -30,11 +30,8 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <assert.h>
-
-#include "util.h"
-
-//#define MEM_DEBUG
 
 #ifdef MEM_DEBUG
 #include <stdio.h>

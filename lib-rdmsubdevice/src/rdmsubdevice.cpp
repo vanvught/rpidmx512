@@ -35,7 +35,7 @@ RDMSubDevice::RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress, uint8_
 	m_nDmxStartAddressFactoryDefault(nDmxStartAddress),
 	m_nCurrentPersonalityFactoryDefault(nPersonalityCurrent)
 {
-	for (uint8_t i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && pLabel[i] != 0; i++) {
+	for (uint32_t i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && pLabel[i] != 0; i++) {
 		m_aLabelFactoryDefault[i] = pLabel[i];
 	}
 
@@ -84,7 +84,7 @@ void RDMSubDevice::GetLabel(struct TRDMDeviceInfoData* pInfoData) {
 
 void RDMSubDevice::SetLabel(const char* pLabel) {
 	assert(pLabel != 0);
-	uint8_t i;
+	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (pLabel[i] != 0); i++) {
 		m_tSubDevicesInfo.device_label[i] = pLabel[i];
@@ -95,7 +95,7 @@ void RDMSubDevice::SetLabel(const char* pLabel) {
 
 void RDMSubDevice::SetLabel(const char* pLabel, uint8_t nLabelLength) {
 	assert(pLabel != 0);
-	uint8_t i;
+	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < nLabelLength); i++) {
 		m_tSubDevicesInfo.device_label[i] = pLabel[i];
@@ -135,7 +135,7 @@ uint16_t RDMSubDevice::CalculateChecksum(void) {
 	uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
 	nChecksum += m_tSubDevicesInfo.current_personality;
 
-	for (uint8_t i = 0; i < m_tSubDevicesInfo.device_label_length; i++) {
+	for (uint32_t i = 0; i < m_tSubDevicesInfo.device_label_length; i++) {
 		nChecksum += (uint16_t) m_tSubDevicesInfo.device_label[i];
 	}
 

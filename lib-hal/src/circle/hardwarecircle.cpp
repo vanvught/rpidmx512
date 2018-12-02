@@ -146,3 +146,12 @@ uint32_t HardwareCircle::Millis(void) {
 bool HardwareCircle::IsButtonPressed(void) {
 	return false;
 }
+
+void HardwareCircle::WatchdogInit(void) {
+}
+
+void HardwareCircle::WatchdogFeed(void) {
+}
+
+void HardwareCircle::WatchdogStop(void) {
+}

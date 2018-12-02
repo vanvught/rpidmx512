@@ -24,25 +24,28 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "net/net.h"
 
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-static struct t_icmp s_reply;
+static struct t_icmp s_reply ALIGNED;
 
 extern uint16_t net_chksum(void *, uint32_t);
 extern void emac_eth_send(void *, int);
 
 typedef union pcast32 {
-		uint32_t u32;
-		uint8_t u8[4];
+	uint32_t u32;
+	uint8_t u8[4];
 } _pcast32;
 
-void icmp_set_ip(const struct ip_info  *p_ip_info) {
+void icmp_set_ip(const struct ip_info *p_ip_info) {
 	_pcast32 src;
 
 	src.u32 = p_ip_info->ip.addr;

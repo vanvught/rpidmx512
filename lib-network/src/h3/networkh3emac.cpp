@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 #include "debug.h"
@@ -36,7 +37,7 @@
 
 #include "hardwarebaremetal.h"
 
-#include "util.h"
+#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
 
 #define HOST_NAME_PREFIX	"allwinner_"
 
@@ -48,11 +49,6 @@ int emac_start(bool reset_emac);
 }
 
 NetworkH3emac::NetworkH3emac(void) {
-	uint8_t i;
-
-	for (i = 0; i < NETWORK_HOSTNAME_SIZE; i++) {
-		m_aHostname[i] = 0;
-	}
 }
 
 NetworkH3emac::~NetworkH3emac(void) {
@@ -88,20 +84,20 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		uint8_t i;
 		uint8_t k = 0;
 		for (i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < NETWORK_HOSTNAME_SIZE - 7); i++) {
-			m_aHostname[k++] = HOST_NAME_PREFIX[i];
+			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[3] >> 4);
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[3] & 0x0F);
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[4] >> 4);
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[4] & 0x0F);
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[5] >> 4);
-		m_aHostname[k++] = TO_HEX(m_aNetMacaddr[5] & 0x0F);
-		m_aHostname[k] = '\0';
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[3] >> 4);
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[3] & 0x0F);
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[4] >> 4);
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[4] & 0x0F);
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[5] >> 4);
+		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[5] & 0x0F);
+		m_aHostName[k] = '\0';
 	} else {
-		strncpy(m_aHostname, (const char *) p, NETWORK_HOSTNAME_SIZE);
+		strncpy(m_aHostName, (const char *) p, sizeof(m_aHostName) - 1);
 	}
 
-	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostname, m_IsDhcpUsed);
+	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;

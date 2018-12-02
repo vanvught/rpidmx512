@@ -23,30 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include <ap_params.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "read_config_file.h"
 #include "sscan.h"
 
+#include "ap_params.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 static const char PARAMS_FILE_NAME[] ALIGNED = "ap.txt";	///< Parameters file name
 static const char PARAMS_PASSWORD[] ALIGNED = "password";	///<
 
 static char ap_params_password[34] ALIGNED;					///<
 
-/**
- *
- * @return
- */
 const char *ap_params_get_password(void) {
 	return ap_params_password;
 }
 
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	uint8_t len = 32;
 
@@ -57,10 +54,7 @@ static void process_line_read(const char *line) {
 
 }
 
-/**
- *
- */
-const bool ap_params_init(void) {
+bool ap_params_init(void) {
 	uint32_t i;
 
 	for (i = 0; i < sizeof(ap_params_password) / sizeof(char); i++) {

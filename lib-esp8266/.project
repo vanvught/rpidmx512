@@ -7,7 +7,6 @@
 		<project>lib-console</project>
 		<project>lib-hal</project>
 		<project>lib-properties</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -25,13 +25,16 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "net/net.h"
 
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 extern uint16_t net_chksum(void *, uint32_t);
 extern void emac_eth_send(void *, int);
@@ -39,9 +42,7 @@ extern void emac_eth_send(void *, int);
 #define MAX_JOINS_ALLOWED	4
 
 typedef enum s_state {
-	NON_MEMBER = 0,
-	DELAYING_MEMBER,
-	IDLE_MEMBER
+	NON_MEMBER = 0, DELAYING_MEMBER, IDLE_MEMBER
 } _state;
 
 struct t_group_info {
@@ -51,29 +52,37 @@ struct t_group_info {
 };
 
 typedef union pcast32 {
-		uint32_t u32;
-		uint8_t u8[4];
+	uint32_t u32;
+	uint8_t u8[4];
 } _pcast32;
 
-static struct t_igmp s_report;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN];
+static struct t_igmp s_report ALIGNED;
+static struct t_igmp s_leave ALIGNED;
+static uint8_t s_multicast_mac[ETH_ADDR_LEN] ALIGNED;
 static struct t_group_info s_groups[MAX_JOINS_ALLOWED] ALIGNED;
-static uint8_t s_joins_allowed_index = 0;
-static uint16_t s_id = 0;
+static uint8_t s_joins_allowed_index ALIGNED;
+static uint16_t s_id ALIGNED;
 
 void igmp_set_ip(const struct ip_info  *p_ip_info) {
 	_pcast32 src;
 
 	src.u32 = p_ip_info->ip.addr;
+
 	memcpy(s_report.ip4.src, src.u8, IPv4_ADDR_LEN);
+	memcpy(s_leave.ip4.src, src.u8, IPv4_ADDR_LEN);
 }
 
 void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
-	uint16_t i;
+	uint32_t i;
 
 	for (i = 0; i < MAX_JOINS_ALLOWED ; i++) {
 		memset(&s_groups[i], 0, sizeof(struct t_group_info));
 	}
+
+	s_joins_allowed_index = 0;
+	s_id = 0;
+
+	igmp_set_ip(p_ip_info);
 
 	s_multicast_mac[0] = 0x01;
 	s_multicast_mac[1] = 0x00;
@@ -89,12 +98,37 @@ void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_report.ip4.ttl = 1;
 	s_report.ip4.proto = IPv4_PROTO_IGMP;
 	s_report.ip4.len = __builtin_bswap16(IPv4_IGMP_REPORT_HEADERS_SIZE);
-	igmp_set_ip(p_ip_info);
 	// IPv4 options
 	s_report.igmp.report.ip4_options = 0x00000494; // TODO
 	// IGMP
 	s_report.igmp.report.igmp.type = IGMP_TYPE_REPORT;
 	s_report.igmp.report.igmp.max_resp_time = 0;
+
+	// Ethernet
+	s_leave.ether.dst[0] = 0x01;
+	s_leave.ether.dst[1] = 0x00;
+	s_leave.ether.dst[2] = 0x5E;
+	s_leave.ether.dst[3] = 0x00;
+	s_leave.ether.dst[4] = 0x00;
+	s_leave.ether.dst[5] = 0x02;
+	memcpy(s_leave.ether.src, mac_address, ETH_ADDR_LEN);
+	s_leave.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
+	// IPv4
+	s_leave.ip4.ver_ihl = 0x46; // TODO
+	s_leave.ip4.tos = 0;
+	s_leave.ip4.flags_froff = __builtin_bswap16(IPv4_FLAG_DF);
+	s_leave.ip4.ttl = 1;
+	s_leave.ip4.proto = IPv4_PROTO_IGMP;
+	s_leave.ip4.len = __builtin_bswap16(IPv4_IGMP_REPORT_HEADERS_SIZE);
+	s_leave.ip4.dst[0] = 0x02; // 2
+	s_leave.ip4.dst[1] = 0x00; // 0
+	s_leave.ip4.dst[2] = 0x00; // 0
+	s_leave.ip4.dst[3] = 0xE0; // 224
+	// IPv4 options
+	s_leave.igmp.report.ip4_options = 0x00000494; // TODO
+	// IGMP
+	s_leave.igmp.report.igmp.type = IGMP_TYPE_LEAVE;
+	s_leave.igmp.report.igmp.max_resp_time = 0;
 }
 
 static void _send_report(uint32_t group_address) {
@@ -131,14 +165,36 @@ static void _send_report(uint32_t group_address) {
 }
 
 static void _send_leave(uint32_t group_address) {
-	//TODO static void _send_leave(uint32_t group_address)
+	DEBUG2_ENTRY
+	_pcast32 multicast_ip;
+
+	multicast_ip.u32 = group_address;
+
+	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(group_address), MAC2STR(s_multicast_mac));
+
+	// IPv4
+	s_leave.ip4.id = s_id;
+	s_leave.ip4.chksum = 0;
+	s_leave.ip4.chksum = net_chksum((void *) &s_report.ip4, 24); //TODO
+	// IGMP
+	memcpy(s_leave.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
+	s_leave.igmp.report.igmp.checksum = 0;
+	s_leave.igmp.report.igmp.checksum = net_chksum((void *) &s_leave.ip4, (uint32_t) IPv4_IGMP_REPORT_HEADERS_SIZE);
+
+	debug_dump((void *) &s_leave, IGMP_REPORT_PACKET_SIZE);
+
+	emac_eth_send((void *) &s_leave, IGMP_REPORT_PACKET_SIZE);
+
+	s_id++;
+
+	DEBUG2_EXIT
 }
 
 
 void igmp_handle(struct t_igmp *p_igmp) {
 	DEBUG2_ENTRY
 
-	uint16_t i;
+	uint32_t i;
 	_pcast32 igmp_generic_address;
 	_pcast32 group_address;
 
@@ -172,7 +228,7 @@ void igmp_handle(struct t_igmp *p_igmp) {
 }
 
 void igmp_timer(void) {
-	uint16_t i;
+	uint32_t i;
 	// TODO optimize ?
 	for (i = 0; i < MAX_JOINS_ALLOWED ; i++) {
 
@@ -190,7 +246,7 @@ void igmp_timer(void) {
 // --> Public
 
 int igmp_join(uint32_t group_address) {
-	uint16_t i;
+	uint32_t i;
 
 	if ((group_address& 0xE0) != 0xE0) {
 		return -1;
@@ -220,7 +276,7 @@ int igmp_join(uint32_t group_address) {
 }
 
 int igmp_leave(uint32_t group_address) {
-	uint16_t i;
+	uint32_t i;
 
 	for (i = 0; i < MAX_JOINS_ALLOWED; i++) {
 		if (s_groups[i].group_address == group_address) {
@@ -229,7 +285,6 @@ int igmp_leave(uint32_t group_address) {
 	}
 
 	if (i == MAX_JOINS_ALLOWED) {
-		DEBUG2_EXIT
 		return -1;
 	}
 

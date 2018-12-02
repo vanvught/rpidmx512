@@ -42,6 +42,10 @@ Network::Network(void) :
 	for (unsigned i = 0; i < sizeof(m_aNetMacaddr); i++) {
 		m_aNetMacaddr[i] = 0;
 	}
+
+	for (unsigned i = 0; i < sizeof(m_aHostName); i++) {
+		m_aHostName[i] = 0;
+	}
 }
 
 Network::~Network(void) {
@@ -50,19 +54,17 @@ Network::~Network(void) {
 	m_nNetmask = 0;
 	m_nBroadcastIp = 0;
 	m_IsDhcpUsed = false;
+	m_aHostName[0] = '\0';
 
 	s_pThis = 0;
 }
 
 void Network::Print(void) {
-	uint8_t aMacAddress[NETWORK_MAC_SIZE];
-	MacAddressCopyTo(aMacAddress);
-
 	printf("\nNetwork configuration\n");
-	printf(" Hostname   : %s\n", GetHostName());
+	printf(" Hostname   : %s\n", m_aHostName);
 	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
 	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(aMacAddress));
+	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	if (IsDhcpKnown()) {
 		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
 	}

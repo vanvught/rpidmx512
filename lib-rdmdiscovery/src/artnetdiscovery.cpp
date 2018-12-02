@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "artnetnode.h"
@@ -34,8 +35,6 @@
 #include "rdmdevicecontroller.h"
 
 #include "rdmdiscovery.h"
-
-#include "util.h"
 
 #include "debug.h"
 
@@ -80,12 +79,12 @@ const uint8_t ArtNetRdmController::GetUidCount(uint8_t nPort) {
 	return m_Discovery[nPort]->GetUidCount();
 }
 
-void ArtNetRdmController::Copy(uint8_t nPort, unsigned char *tod) {
+void ArtNetRdmController::Copy(uint8_t nPort, uint8_t *pTod) {
 	assert(nPort < DMX_MAX_UARTS);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
 
-	m_Discovery[nPort]->Copy(tod);
+	m_Discovery[nPort]->Copy(pTod);
 }
 
 void ArtNetRdmController::DumpTod(uint8_t nPort) {
@@ -96,10 +95,10 @@ void ArtNetRdmController::DumpTod(uint8_t nPort) {
 	m_Discovery[nPort]->Dump();
 }
 
-const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *rdm_data) {
+const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmData) {
 	assert(nPort < DMX_MAX_UARTS);
 
-	if (rdm_data == 0) {
+	if (pRdmData == 0) {
 		return 0;
 	}
 
@@ -107,10 +106,10 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *rdm_da
 		// Discard late responses
 	}
 
-	TRdmMessageNoSc *p = (TRdmMessageNoSc *) (rdm_data);
+	TRdmMessageNoSc *p = (TRdmMessageNoSc *) (pRdmData);
 	uint8_t *c = (uint8_t *) m_pRdmCommand;
 
-	memcpy(&c[1], rdm_data, p->message_length + 2);
+	memcpy(&c[1], pRdmData, p->message_length + 2);
 
 #ifndef NDEBUG
 	RDMMessage::Print((const uint8_t *) c);

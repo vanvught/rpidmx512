@@ -42,13 +42,8 @@ union uip {
 
 static const char FromNetwork[] = "network";
 
-NetworkCircle::NetworkCircle(void):
-		m_pNet(0),
-		m_pSocket(0)
-{
-	for (unsigned i = 0; i < sizeof(m_aHostname); i++) {
-		m_aHostname[i] = '\0';
-	}
+NetworkCircle::NetworkCircle(void) : m_pNet(0), m_pSocket(0) {
+
 }
 
 NetworkCircle::~NetworkCircle(void) {
@@ -81,7 +76,8 @@ void NetworkCircle::Init(CNetSubSystem *pNet) {
 	CString Hostname;
 
 	m_pNet->GetConfig ()->GetIPAddress ()->Format (&Hostname);
-	memcpy(m_aHostname, (const char *)Hostname, Hostname.GetLength());
+
+	strncpy(m_aHostName, (const char *)Hostname, sizeof(m_aHostName) - 1);
 }
 
 int32_t NetworkCircle::Begin(uint16_t nPort) {
@@ -125,19 +121,15 @@ void NetworkCircle::MacAddressCopyTo(uint8_t* pMacAddress) {
 	memcpy((void *)pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 }
 
-const char* NetworkCircle::GetHostName(void) {
-	return m_aHostname;
-}
-
-uint16_t NetworkCircle::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
-	assert(packet != 0);
-	assert(from_ip != 0);
-	assert(from_port != 0);
+uint16_t NetworkCircle::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSize, uint32_t* pFromIp, uint16_t* pFromPort) {
+	assert(pPacket != 0);
+	assert(pFromIp != 0);
+	assert(pFromPort != 0);
 
 	CIPAddress IPAddressFrom;
 	uint32_t nIpAddressFrom = 0;
 
-	const int nBytesReceived = m_pSocket->ReceiveFrom((void *) packet, size, MSG_DONTWAIT, &IPAddressFrom, (u16 *) from_port);
+	const int nBytesReceived = m_pSocket->ReceiveFrom((void *) pPacket, nSize, MSG_DONTWAIT, &IPAddressFrom, (u16 *) pFromPort);
 
 	if (nBytesReceived < 0) 	{
 		CLogger::Get()->Write(FromNetwork, LogError, "Cannot receive -> %u", nBytesReceived);
@@ -145,17 +137,17 @@ uint16_t NetworkCircle::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t siz
 		nIpAddressFrom = IPAddressFrom;
 	}
 
-	*from_ip = nIpAddressFrom;
+	*pFromIp = nIpAddressFrom;
 
 	return nBytesReceived;
 }
 
-void NetworkCircle::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
-	assert(packet != 0);
+void NetworkCircle::SendTo(uint32_t nHandle, const uint8_t* pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+	assert(pPacket != 0);
 
-	CIPAddress DestinationIP(to_ip);
+	CIPAddress DestinationIP(nToIp);
 
-	if ((m_pSocket->SendTo((const void *) packet, (unsigned) size, MSG_DONTWAIT, DestinationIP, (u16) remote_port)) != size)	{
+	if ((m_pSocket->SendTo((const void *) pPacket, (unsigned) nSize, MSG_DONTWAIT, DestinationIP, (u16) nRemotePort)) != nSize)	{
 		CLogger::Get()->Write(FromNetwork, LogError, "Cannot send");
 	}
 }

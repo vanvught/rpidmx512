@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 #if defined (__circle__)
-#include "circle/interrupt.h"
+ #include "circle/interrupt.h"
 #endif
 
 #include "lightset.h"

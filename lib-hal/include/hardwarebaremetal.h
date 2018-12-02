@@ -27,6 +27,7 @@
 #define HARDWAREBAREMETAL_H_
 
 #include <stdint.h>
+#include <time.h>
 
 #include "hardware.h"
 
@@ -73,23 +74,20 @@ public:
 	bool Reboot(void);
 	bool PowerOff(void);
 
+	bool SetTime(const struct THardwareTime &pTime);
+	void GetTime(struct THardwareTime *pTime);
 	inline time_t GetTime(void) {
 		return time(0);
 	}
 
 	uint64_t GetUpTime(void);
 
-	bool SetTime(const struct THardwareTime &pTime);
-	void GetTime(struct THardwareTime *pTime);
-
 	uint32_t Millis(void);
+	uint32_t Micros(void);
 
-public:	// Only available in BAREMETAL
 	void WatchdogInit(void);
 	void WatchdogFeed(void);
 	void WatchdogStop(void);
-
-	uint32_t Micros(void);
 
 	bool IsButtonPressed(void);
 

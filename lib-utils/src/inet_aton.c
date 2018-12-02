@@ -25,20 +25,13 @@
  */
 
 #include <stdint.h>
-
-#include "util.h"
+#include <ctype.h>
 
 typedef union pcast32 {
 	uint32_t u32;
 	uint8_t u8[4];
 } _pcast32;
 
-/**
- *
- * @param cp
- * @param ip_address
- * @return returns nonzero if the address is valid, zero if not.
- */
 int inet_aton(const char *cp, uint32_t *ip_address) {
 	const char *b = cp;
 	int i, j, k;

@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "arm/arm.h"
@@ -47,7 +48,13 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
+#ifndef MAX
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 typedef enum {
 	IDLE = 0,

@@ -72,16 +72,13 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_pBuffer(0),
 	m_nBufSize(0)
 {
-#if defined (__linux__)  || defined(__circle__)
+#if defined (__linux__)
 	if (bcm2835_init() == 0) {
 		printf("Not able to init the bmc2835 library\n");
 	}
 #endif
 
-
 	bcm2835_spi_begin();
-
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
 
 	if (m_nSpiSpeedHz != (uint32_t) 0) {
 		if (m_nSpiSpeedHz > TLC59711_SPI_SPEED_MAX) {
@@ -104,6 +101,7 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	}
 
 	m_nFirst32 |= (uint32_t) TLC59711_COMMAND << TLC59711_COMMAND_SHIFT ;
+
 	SetOnOffTiming(TLC59711_OUTTMG_DEFAULT);
 	SetExternalClock(TLC59711_EXTGCK_DEFAULT);
 	SetDisplayTimingReset(TLC59711_TMGRST_DEFAULT);

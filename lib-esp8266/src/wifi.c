@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "wifi.h"
 
@@ -35,9 +36,11 @@
 #include "fota.h"
 #include "fota_params.h"
 
-#include "util.h"
-
 #include "oled.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static const char *WIFI_NOT_CONNECTED ALIGNED = "Wifi not connected";
 static const char *STARTING_WIFI ALIGNED = "Starting Wifi ...";

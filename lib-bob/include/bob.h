@@ -26,11 +26,7 @@
 #ifndef BOB_H_
 #define BOB_H_
 
-#if defined (__linux__)
- #include <string.h>
-#else
- #include "util.h"
-#endif
+#include <string.h>
 
 #if defined(__linux__)
  #include "bcm2835.h"

@@ -38,7 +38,7 @@ public:
 	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
 	~DMXReceiver(void);
 
-	void SetOutput(LightSet *);
+	void SetOutput(LightSet *pLightSet);
 
 	void Start(void);
 	void Stop(void);
@@ -46,7 +46,7 @@ public:
 	const uint8_t* Run(int16_t &nLength);
 
 private:
-	bool IsDmxDataChanged(const uint8_t *, uint16_t);
+	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nLength);
 
 private:
 	LightSet *m_pLightSet;

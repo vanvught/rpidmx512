@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 #include "dhcp_internal.h"
@@ -34,7 +35,9 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 extern void emac_eth_send(void *, int);
 extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
@@ -49,26 +52,26 @@ struct queue_entry {
 	uint32_t from_ip;
 	uint16_t size;
 	uint16_t from_port;
-} ALIGNED;
+}ALIGNED;
 
 struct queue {
 	uint8_t queue_head;
 	uint8_t queue_tail;
 	struct queue_entry entries[MAX_ENTRIES] ALIGNED;
-} ALIGNED;
+}ALIGNED;
 
 typedef union pcast32 {
-		uint32_t u32;
-		uint8_t u8[4];
+	uint32_t u32;
+	uint8_t u8[4];
 } _pcast32;
 
 static uint16_t s_ports_allowed[MAX_PORTS_ALLOWED] ALIGNED;
-static uint8_t s_ports_used_index = 0;
+static uint8_t s_ports_used_index ALIGNED;
 static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
-static uint16_t s_id = 0;
+static uint16_t s_id ALIGNED;
 
-void udp_set_ip(const struct ip_info  *p_ip_info) {
+void udp_set_ip(const struct ip_info *p_ip_info) {
 	_pcast32 src;
 
 	src.u32 = p_ip_info->ip.addr;
@@ -76,13 +79,16 @@ void udp_set_ip(const struct ip_info  *p_ip_info) {
 }
 
 void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
-	uint8_t i;
+	uint32_t i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		s_ports_allowed[i] = 0;
 		s_recv_queue[i].queue_head = 0;
 		s_recv_queue[i].queue_tail = 0;
 	}
+
+	s_ports_used_index = 0;
+	s_id = 0;
 
 	// Ethernet
 	memcpy(s_send_packet.ether.src, mac_address, ETH_ADDR_LEN);
@@ -99,9 +105,9 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 }
 
 void udp_handle(struct t_udp *p_udp) {
-	uint8_t port_index;
+	uint32_t port_index;
 	_pcast32 src;
-	uint16_t i;
+	uint32_t i;
 
 	const uint16_t dest_port = __builtin_bswap16(p_udp->udp.destination_port);
 
@@ -141,7 +147,7 @@ void udp_handle(struct t_udp *p_udp) {
 // -->
 
 int udp_bind(uint16_t local_port) {
-	uint16_t i;
+	uint32_t i;
 
 	if (s_ports_used_index == MAX_PORTS_ALLOWED) {
 		return -1;
@@ -190,7 +196,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 	const uint8_t entry = s_recv_queue[idx].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[idx].entries[entry];
 
-	uint16_t i;
+	uint32_t i;
 
 	for (i = 0; (i < size) && (i < p_queue_entry->size); i ++) {
 		packet[i] = p_queue_entry->data[i];

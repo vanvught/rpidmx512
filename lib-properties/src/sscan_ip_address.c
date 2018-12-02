@@ -62,7 +62,7 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 		j = 0;
 		k = 0;
 
-		while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
+		while ((*b != '.') && (*b != (char) 0) && (*b != '\r') && (*b != '\n')) {
 			if (j == 3) {
 				return 0;
 			}
@@ -84,7 +84,7 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 	j= 0;
 	k= 0;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0)  && (*b != '\r') && (*b != '\n')) {
 		if (j == 3) {
 			return 0;
 		}

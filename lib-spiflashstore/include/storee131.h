@@ -1,8 +1,8 @@
 /**
- * @file uuid.c
+ * @file storee131.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <uuid/uuid.h>
+#ifndef STOREE131_H_
+#define STOREE131_H_
 
-extern uint32_t bcm2835_rng_get_number(void);
+#include "e131params.h"
 
-typedef union pcast32 {
-	uuid_t uuid;
-	uint32_t u32[4];
-} _pcast32;
+class StoreE131: public E131ParamsStore {
+public:
+	StoreE131(void);
+	~StoreE131(void);
 
-void uuid_generate_random(uuid_t out) {
-	_pcast32 cast;
+	void Update(const struct TE131Params *pE131Params);
+	void Copy(struct TE131Params *pE131Params);
 
-	cast.u32[0] = bcm2835_rng_get_number();
-	cast.u32[1] = bcm2835_rng_get_number();
-	cast.u32[2] = bcm2835_rng_get_number();
-	cast.u32[3] = bcm2835_rng_get_number();
+private:
 
-	cast.uuid[6] = 0x40 | (cast.uuid[6] & 0xf);
-	cast.uuid[8] = 0x80 | (cast.uuid[8] & 0x3f);
+};
 
-	memcpy(out, cast.uuid, sizeof(uuid_t));
-}
+#endif /* STOREE131_H_ */

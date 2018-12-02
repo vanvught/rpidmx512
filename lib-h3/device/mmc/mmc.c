@@ -49,11 +49,12 @@
  * MA 02111-1307 USA
  */
 
+#include <stddef.h>
+#include <string.h>
+
 #include "mmc_internal.h"
 
 #include "h3_timer.h"
-
-#include "util.h"
 
 #include "debug.h"
 

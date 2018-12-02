@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
@@ -34,9 +35,11 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "util.h"
-
 #include "gpio.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #define DATA_DIRECTION_MASK			(1 << 0)
 #define DATA_DIRECTION_OUT_A_MASK	(1 << 1)

@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -43,13 +45,13 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
-#include "util.h"
-
-#ifdef NDEBUG
-#undef NDEBUG
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-#include <assert.h>
+#ifndef MAX
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 ///< State of receiving DMX/RDM Bytes
 typedef enum {

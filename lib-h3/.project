@@ -6,7 +6,6 @@
 		<project>include</project>
 		<project>lib-arm</project>
 		<project>lib-debug</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

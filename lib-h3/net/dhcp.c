@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 #include "dhcp_internal.h"
@@ -34,34 +35,36 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "util.h"
-
 #include "h3.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 typedef union pcast32 {
-		uint32_t u32;
-		uint8_t u8[4];
+	uint32_t u32;
+	uint8_t u8[4];
 } _pcast32;
 
 // https://tools.ietf.org/html/rfc1541
 
 struct t_dhcp_message {
-	uint8_t  op;
-	uint8_t  htype;
-	uint8_t  hlen;
-	uint8_t  hops;
+	uint8_t op;
+	uint8_t htype;
+	uint8_t hlen;
+	uint8_t hops;
 	uint32_t xid;
 	uint16_t secs;
 	uint16_t flags;
-	uint8_t  ciaddr[IPv4_ADDR_LEN];
-	uint8_t  yiaddr[IPv4_ADDR_LEN];
-	uint8_t  siaddr[IPv4_ADDR_LEN];
-	uint8_t  giaddr[IPv4_ADDR_LEN];
-	uint8_t  chaddr[16];
-	uint8_t  sname[64];
-	uint8_t  file[128];
-	uint8_t  options[DHCP_OPT_SIZE];
-} PACKED;
+	uint8_t ciaddr[IPv4_ADDR_LEN];
+	uint8_t yiaddr[IPv4_ADDR_LEN];
+	uint8_t siaddr[IPv4_ADDR_LEN];
+	uint8_t giaddr[IPv4_ADDR_LEN];
+	uint8_t chaddr[16];
+	uint8_t sname[64];
+	uint8_t file[128];
+	uint8_t options[DHCP_OPT_SIZE];
+}PACKED;
 
 enum OPTIONS {
 	OPTIONS_PAD_OPTION = 0,
@@ -88,7 +91,7 @@ static uint8_t s_dhcp_allocated_gw[IPv4_ADDR_LEN] ALIGNED = { 0, };
 static uint8_t s_dhcp_allocated_netmask[IPv4_ADDR_LEN] ALIGNED = { 0, };
 
 static void _message_init(const uint8_t *mac_address) {
-	uint16_t i;
+	uint32_t i;
 
 	uint8_t *p = (uint8_t *) &s_dhcp_message;
 
@@ -114,7 +117,7 @@ static void _message_init(const uint8_t *mac_address) {
 static void _send_discover(int idx, const uint8_t *mac_address) {
 	DEBUG_ENTRY
 
-	uint16_t k = 6;
+	uint32_t k = 6;
 
 	s_dhcp_message.options[k++] = DCHP_TYPE_DISCOVER;
 
@@ -146,8 +149,8 @@ static void _send_discover(int idx, const uint8_t *mac_address) {
 static void _send_request(int idx, const uint8_t *mac_address, const uint8_t *hostname) {
 	DEBUG_ENTRY
 
-	uint16_t i;
-	uint16_t k = 6;
+	uint32_t i;
+	uint32_t k = 6;
 
 	s_dhcp_message.options[k++] = DCHP_TYPE_REQUEST;
 

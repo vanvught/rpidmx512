@@ -5,7 +5,6 @@
 	<projects>
 		<project>lib-lightset</project>
 		<project>lib-tlc59711</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

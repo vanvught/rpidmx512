@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include <assert.h>
 
 #include "rdmdevice.h"
@@ -36,13 +37,7 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
- #include "network.h"
-
-#if defined (BARE_METAL)
- #include "util.h"
-#else
- #include <string.h>
-#endif
+#include "network.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

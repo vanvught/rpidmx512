@@ -49,7 +49,7 @@
 
 struct TDMXParams {
     uint32_t bSetList;
-	uint8_t nBreakTime;	///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
+	uint8_t nBreakTime;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
 	uint8_t nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
 	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
 };
@@ -90,14 +90,12 @@ public:
 		return m_tDMXParams.nRefreshRate;
 	}
 
-private:
-	bool isMaskSet(uint32_t nMask) const;
-
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+    bool isMaskSet(uint32_t nMask) const;
 
 private:
     DMXParamsStore *m_pDMXParamsStore;

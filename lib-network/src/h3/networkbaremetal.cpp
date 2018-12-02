@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "networkbaremetal.h"
@@ -31,13 +32,11 @@
 #include "wifi.h"
 #include "wifi_udp.h"
 
-#include "util.h"
-
 extern "C" {
 	int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 }
 
-NetworkBaremetal::NetworkBaremetal(void): m_IsInitDone(false), _hostname(0) {
+NetworkBaremetal::NetworkBaremetal(void): m_IsInitDone(false) {
 }
 
 NetworkBaremetal::~NetworkBaremetal(void) {
@@ -50,12 +49,6 @@ int32_t NetworkBaremetal::Begin(uint16_t nPort) {
 }
 
 void NetworkBaremetal::End(void) {
-	m_IsInitDone = false;
-
-	_hostname[0] = '\0';
-	m_nLocalIp = 0;
-	m_nNetmask = 0;
-	m_nBroadcastIp = 0;
 }
 
 void NetworkBaremetal::Init(void) {
@@ -66,7 +59,9 @@ void NetworkBaremetal::Init(void) {
 			;
 	}
 
-	_hostname = (char *)wifi_get_hostname();
+	const char *pHostName = (char *)wifi_get_hostname();
+	strncpy(m_aHostName, pHostName, sizeof(m_aHostName) - 1);
+
 	(void) wifi_get_macaddr(m_aNetMacaddr);
 
 	m_nLocalIp = info.ip.addr;
@@ -75,10 +70,6 @@ void NetworkBaremetal::Init(void) {
 	m_IsDhcpUsed = wifi_station_is_dhcp_used();
 
 	m_IsInitDone = true;
-}
-
-const char* NetworkBaremetal::GetHostName(void) {
-	return _hostname;
 }
 
 void NetworkBaremetal::MacAddressCopyTo(uint8_t* pMacAddress) {
@@ -101,9 +92,4 @@ uint16_t NetworkBaremetal::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t 
 
 void NetworkBaremetal::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
-}
-
-void NetworkBaremetal::SetIp(uint32_t nIp) {
-    m_IsDhcpUsed = false;
-    m_nLocalIp = nIp;
 }

@@ -24,16 +24,11 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
 #include <assert.h>
-
-#if defined(__linux__)
-  #include <string.h>
-#else
- #include "util.h"
-#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

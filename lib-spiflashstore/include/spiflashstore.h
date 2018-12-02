@@ -27,6 +27,7 @@
 #define LIB_SPIFLASHSTORE_H_
 
 #include <stdint.h>
+#include <uuid/uuid.h>
 
 #include "storenetwork.h"
 #include "storeartnet.h"
@@ -34,6 +35,7 @@
  #include "storedmxsend.h"
  #include "storews28xxdmx.h"
 #endif
+#include "storee131.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
 
@@ -42,13 +44,14 @@ enum TStore {
 	STORE_ARTNET,
 	STORE_DMXSEND,
 	STORE_SPI,
+	STORE_E131,
 	STORE_LAST
 };
 
-enum TState {
-	STATE_IDLE,
-	STATE_CHANGED,
-	STATE_ERASED
+enum TStoreState {
+	STORE_STATE_IDLE,
+	STORE_STATE_CHANGED,
+	STORE_STATE_ERASED
 };
 
 class SpiFlashStore {
@@ -56,25 +59,40 @@ public:
 	SpiFlashStore(void);
 	~SpiFlashStore(void);
 
-	inline bool HaveFlashChip(void) { return m_bHaveFlashChip; }
+	inline bool HaveFlashChip(void) {
+		return m_bHaveFlashChip;
+	}
 
 	void Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t bSetList = 0);
-
 	void Update(enum TStore tStore, void *pData, uint32_t nDataLength) {
 		Update(tStore, 0, pData, nDataLength);
 	}
 	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength);
 
+	void UuidUpdate(const uuid_t uuid);
+	void UuidCopyTo(uuid_t uuid);
+
 	bool Flash(void);
 
 	void Dump(void);
 
-	inline StoreNetwork *GetStoreNetwork(void) { return &m_StoreNetwork; }
-	inline StoreArtNet *GetStoreArtNet(void) { return &m_StoreArtNet; }
+	inline StoreNetwork *GetStoreNetwork(void) {
+		return &m_StoreNetwork;
+	}
+	inline StoreArtNet *GetStoreArtNet(void) {
+		return &m_StoreArtNet;
+	}
 #if defined(BARE_METAL)
-	inline StoreDmxSend *GetStoreDmxSend(void) { return &m_StoreDmxSend; }
-	inline StoreWS28xxDmx *GetStoreWS28xxDmx(void) { return &m_StoreWS28xxDmx; }
+	inline StoreDmxSend *GetStoreDmxSend(void) {
+		return &m_StoreDmxSend;
+	}
+	inline StoreWS28xxDmx *GetStoreWS28xxDmx(void) {
+		return &m_StoreWS28xxDmx;
+	}
 #endif
+	inline StoreE131 *GetStoreE131(void) {
+		return &m_StoreE131;
+	}
 
 private:
 	bool Init(void);
@@ -92,7 +110,7 @@ private:
 	uint32_t m_nStartAddress;
 	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
 	uint32_t m_nSpiFlashStoreSize;
-	TState m_tState;
+	TStoreState m_tState;
 
 	StoreNetwork m_StoreNetwork;
 	StoreArtNet m_StoreArtNet;
@@ -100,7 +118,7 @@ private:
 	StoreDmxSend m_StoreDmxSend;
 	StoreWS28xxDmx m_StoreWS28xxDmx;
 #endif
+	StoreE131 m_StoreE131;
 };
-
 
 #endif /* LIB_SPIFLASHSTORE_H_ */

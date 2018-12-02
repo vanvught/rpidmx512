@@ -2,7 +2,7 @@
  * @file wifi_network_params.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "read_config_file.h"
 #include "sscan.h"
-#include "util.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "network.txt";			///< Parameters file name
 static const char PARAMS_USE_DHCP[] ALIGNED = "use_dhcp";				///<
@@ -47,67 +51,34 @@ static uint32_t network_params_name_server = (uint32_t) 0;				///<
 static char network_params_ssid[34] ALIGNED;							///<
 static char network_params_password[34] ALIGNED;						///<
 
-/**
- *
- * @return
- */
-const bool network_params_is_use_dhcp(void) {
+bool network_params_is_use_dhcp(void) {
 	return network_params_use_dhcp;
 }
 
-/**
- *
- * @return
- */
-const uint32_t network_params_get_ip_address(void) {
+uint32_t network_params_get_ip_address(void) {
 	return network_params_ip_address;
 }
 
-/**
- *
- * @return
- */
-const uint32_t network_params_get_net_mask(void) {
+uint32_t network_params_get_net_mask(void) {
 	return network_params_net_mask;
 }
 
-/**
- *
- * @return
- */
-const uint32_t network_params_get_default_gateway(void) {
+uint32_t network_params_get_default_gateway(void) {
 	return network_params_default_gateway;
 }
 
-/**
- *
- * @return
- */
-const uint32_t network_params_get_name_server(void) {
+uint32_t network_params_get_name_server(void) {
 	return network_params_name_server;
 }
 
-/**
- *
- * @return
- */
 const char *network_params_get_ssid(void) {
 	return network_params_ssid;
 }
 
-/**
- *
- * @return
- */
 const char *network_params_get_password(void) {
 	return network_params_password;
 }
 
-
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	uint8_t len = 32;
 	uint8_t value8;
@@ -140,10 +111,7 @@ static void process_line_read(const char *line) {
 	}
 }
 
-/**
- *
- */
-const bool network_params_init(void) {
+bool network_params_init(void) {
 	uint32_t i;
 
 	for (i = 0; i < sizeof(network_params_ssid) / sizeof(char); i++) {

@@ -1,3 +1,6 @@
+#if defined (__circle__)
+ #include "../Circle/include/circle/time.h"
+#else
 /**
  * @file time.h
  *
@@ -53,3 +56,5 @@ extern time_t mktime(struct tm *tm);
 #endif
 
 #endif /* TIME_H_ */
+
+#endif

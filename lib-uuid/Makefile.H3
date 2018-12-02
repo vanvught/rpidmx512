@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-utils/include
+EXTRA_INCLUDES =
 #
 include ../h3-firmware-template/lib/Rules.mk

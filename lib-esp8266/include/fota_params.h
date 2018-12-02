@@ -2,7 +2,7 @@
  * @file fota_params.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,14 @@
 #define FOTA_PARAMS_H_
 
 #include <stdbool.h>
-
-#include "util.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool fota_params_init(void);
-extern const uint32_t fota_params_get_server(void);
+extern bool fota_params_init(void);
+extern uint32_t fota_params_get_server(void);
 
 #ifdef __cplusplus
 }

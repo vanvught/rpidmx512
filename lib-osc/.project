@@ -3,11 +3,9 @@
 	<name>lib-osc</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
 		<project>lib-debug</project>
 		<project>lib-network</project>
 		<project>lib-properties</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

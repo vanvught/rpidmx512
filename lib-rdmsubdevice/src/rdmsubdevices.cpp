@@ -25,13 +25,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
-
-#if defined (__linux__) || defined (__CYGWIN__)
- #include <string.h>
-#else
- #include "util.h"
-#endif
 
 #include "debug.h"
 

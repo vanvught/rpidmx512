@@ -28,13 +28,13 @@
 
 #include <stdbool.h>
 
-#include "util.h"
+#define ASSUME_ALIGNED  __attribute__((assume_aligned(4)))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const bool ap_params_init(void);
+extern bool ap_params_init(void);
 extern /*@shared@*/const char *ap_params_get_password(void) ASSUME_ALIGNED;
 
 #ifdef __cplusplus

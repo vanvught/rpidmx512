@@ -38,8 +38,10 @@ enum {
 };
 
 DMXMonitor::DMXMonitor(void) : m_nSlots(0), m_bIsStarted(false) {
-	for (int i = 0; i < (int) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
-		m_Data[i] = 0;
+	uint8_t *p = (uint8_t *) m_Data;
+
+	for (uint32_t i = 0; i < (uint32_t) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
+		*p++ = 0;
 	}
 }
 
@@ -75,7 +77,7 @@ void DMXMonitor::Start(uint8_t nPort) {
 	console_clear_line(TOP_ROW);
 	console_puts("    01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32");
 
-	for (int i = 1; i < (int) (16 * 32); i = i + (int) 32) {
+	for (uint32_t i = 1; i < (16 * 32); i = i + 32) {
 		console_set_cursor(0, ++row);
 		printf("%3d", i);
 	}
@@ -90,14 +92,14 @@ void DMXMonitor::Stop(uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	for (unsigned i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
+	for (uint32_t i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
 		console_set_cursor(4, i);
 		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
 	}
 }
 
 void DMXMonitor::Cls(void) {
-	for (int i = TOP_ROW; i < (TOP_ROW + 17); i++) {
+	for (uint32_t i = TOP_ROW; i < (TOP_ROW + 17); i++) {
 		console_clear_line(i);
 	}
 }
@@ -105,17 +107,20 @@ void DMXMonitor::Cls(void) {
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	m_nSlots = nLength;
 
-	for (unsigned i = 0 ; i < nLength; i++) {
-		m_Data[i] = pData[i];
+	const uint8_t *src = (const uint8_t *) pData;
+	uint8_t *dst = (uint8_t *) m_Data;
+
+	for (uint32_t i = 0; i < nLength; i++) {
+		*dst++ = *src++;
 	}
 
 	Update();
 }
 
 void DMXMonitor::Update(void) {
-	unsigned row = TOP_ROW;
-	unsigned i, j;
-	uint8_t *p = (uint8_t *)m_Data;
+	uint32_t row = TOP_ROW;
+	uint32_t i, j;
+	uint8_t *p = (uint8_t *) m_Data;
 	uint16_t slot = 0;
 
 	for (i = 0; (i < 16) && (slot < m_nSlots); i++) {
@@ -142,6 +147,7 @@ void DMXMonitor::Update(void) {
 
 	for (; i < 16; i++) {
 		console_set_cursor(4, ++row);
-		console_puts("                                                                                               ");
+		console_puts(
+				"                                                                                               ");
 	}
 }

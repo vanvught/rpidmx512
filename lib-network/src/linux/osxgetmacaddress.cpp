@@ -1,6 +1,6 @@
-#if defined (RASPPI) || defined(BARE_METAL)
+#if defined(__APPLE__)
 /**
- * @file sensormcp9808.cpp
+ * @file osxgetmacaddress.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,55 +24,57 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
-#include <string.h>
+#include <stdbool.h>
+#include <sys/sysctl.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <net/if_dl.h>
+
+#include "networklinux.h"
+
+bool NetworkLinux::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
+	int mib[6] = { CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0 };
+	size_t len;
+	char *buf;
+
+	if ((mib[5] = if_nametoindex(pIfName)) == 0) {
+		perror("if_nametoindex error");
+		return false;
+	}
+
+	if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0) {
+		perror("sysctl 1 error");
+		return false;
+	}
+
+	if ((buf = (char *)malloc(len)) == NULL) {
+		perror("malloc error");
+		return false;
+	}
+
+	if (sysctl(mib, 6, buf, &len, NULL, 0) < 0) {
+		perror("sysctl 2 error");
+		free(buf);
+		return false;
+	}
+
+	const struct if_msghdr *ifm = (struct if_msghdr *) buf;
+	const struct sockaddr_dl *sdl = (struct sockaddr_dl *) (ifm + 1);
+	const unsigned char *ptr = (unsigned char *) LLADDR(sdl);
 #ifndef NDEBUG
- #include <stdio.h>
+	printf("%02x:%02x:%02x:%02x:%02x:%02x\n", *ptr, *(ptr + 1), *(ptr + 2), *(ptr + 3), *(ptr + 4), *(ptr + 5));
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+	for(unsigned i = 0; i < 6;i++) {
+		pMacAddress[i] = ptr[i];
+	}
 
-#include "sensormcp9808.h"
-#include "rdm_e120.h"
+	free(buf);
 
-#include "mcp9808.h"
-
-static struct _device_info sDeviceInfo;
-
-SensorMCP9808::SensorMCP9808(uint8_t nSensor, uint8_t nAddress) : RDMSensor(nSensor) {
-	SetType(E120_SENS_TEMPERATURE);
-	SetUnit(E120_UNITS_CENTIGRADE);
-	SetPrefix(E120_PREFIX_NONE);
-	SetRangeMin(-40);
-	SetRangeMax(125);
-	SetNormalMin(18);
-	SetNormalMax(40);
-	SetDescription("Ambient Temperature");
-
-	memset(&sDeviceInfo, 0, sizeof(struct _device_info));
-	sDeviceInfo.slave_address = nAddress;
-}
-
-SensorMCP9808::~SensorMCP9808(void) {
-}
-
-bool SensorMCP9808::Initialize(void) {
-	const bool IsConnected = mcp9808_start(&sDeviceInfo);
-
-#ifndef NDEBUG
-	printf("%s\tIsConnected=%d\n", __FUNCTION__, (int) IsConnected);
-#endif
-	return IsConnected;
-}
-
-int16_t SensorMCP9808::GetValue(void) {
-	const uint16_t nValue = (uint16_t) mcp9808_get_temperature(&sDeviceInfo);
-
-#ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
-#endif
-	return nValue;
+	return true;
 }
 #endif
+

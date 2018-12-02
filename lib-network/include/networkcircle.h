@@ -47,15 +47,25 @@ public:
 	void End(void);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
-	const char* GetHostName(void);
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port);
-	void SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port);
+	inline void JoinGroup(uint32_t nHandle, uint32_t nIp) {
+		// Not supported
+	}
+
+	inline void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+		// Not supported
+	}
+
+	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
+
+	inline void SetIp(uint32_t nIp) {
+		// Not supported
+	}
 
 private:
 	CNetSubSystem *m_pNet;
 	CSocket *m_pSocket;
-	char m_aHostname[HOST_NAME_MAX + 1];
 };
 
 #endif /* NETWORKCIRCLE_H_ */

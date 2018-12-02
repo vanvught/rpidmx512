@@ -56,13 +56,11 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 	}
 
 	*len = (uint8_t) k;
-	*n = (char) SSCAN_NAME_ERROR;
-
 
 	b++;
 	k = 0;
 
-	while ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
+	while ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -71,7 +69,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 		b++;
 	}
 
-	if ((*b != (char) ':') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) ':') && (*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 
@@ -87,24 +85,24 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 	*channel = (uint8_t) 0;
 
 	if (*b++ != (char) ':') {
-		return 1;
+		return SSCAN_VALUE_ERROR;
 	}
 
-	if ((*b == (char) '\n') || (*b == (char) '\0') || (*b == (char) ' ')) {
-		return 1;
+	if ((*b == (char) '\r') || (*b == (char) '\n') || (*b == (char) '\0') || (*b == (char) ' ')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	if (isdigit((int) *b) == 0) {
-		return 0;
+		return SSCAN_VALUE_ERROR;
 	}
 
 	uint8 = (uint8_t) *b - (uint8_t) '0';
 
 	if (uint8 > (uint8_t) 7) {
-		return 0;
+		return SSCAN_VALUE_ERROR;
 	}
 
 	*channel = uint8;
 
-	return 2;
+	return SSCAN_OK;
 }

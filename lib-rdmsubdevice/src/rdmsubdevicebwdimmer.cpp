@@ -25,10 +25,10 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include "util.h"
 
 #include "rdmsubdevicebwdimmer.h"
 

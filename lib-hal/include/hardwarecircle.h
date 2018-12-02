@@ -70,6 +70,10 @@ public:
 
 	uint32_t Millis(void);
 
+	void WatchdogInit(void);
+	void WatchdogFeed(void);
+	void WatchdogStop(void);
+
 	bool IsButtonPressed(void);
 
 private:

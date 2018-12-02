@@ -6,7 +6,6 @@
 		<project>include</project>
 		<project>lib-properties</project>
 		<project>lib-spiflash</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

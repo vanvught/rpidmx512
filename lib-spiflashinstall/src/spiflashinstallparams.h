@@ -37,23 +37,25 @@ public:
 	bool Load(void);
 	void Dump(void);
 
-	inline bool GetInstalluboot(void) { return m_bInstalluboot; }
-	inline bool GetInstalluImage(void) { return m_bInstalluImage; }
+	inline bool GetInstalluboot(void) {
+		return m_bInstalluboot;
+	}
 
-private:
-	bool isMaskSet(uint32_t nMask) const;
+	inline bool GetInstalluImage(void) {
+		return m_bInstalluImage;
+	}
 
 public:
-    static void staticCallbackFunction(void *p, const char *s);
+	static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *pLine);
+	void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const;
 
 private:
-    uint32_t m_nSetList;
-    bool m_bInstalluboot;
-    bool m_bInstalluImage;
+	uint32_t m_nSetList;
+	bool m_bInstalluboot;
+	bool m_bInstalluImage;
 };
-
 
 #endif /* SPIFLASHINSTALLPARAMS_H_ */

@@ -6,7 +6,6 @@
 		<project>Circle</project>
 		<project>lib-bcm2835</project>
 		<project>lib-bcm2835_raspbian</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
