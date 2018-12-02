@@ -3,7 +3,6 @@
 	<name>rpi_midi_sniffer</name>
 	<comment></comment>
 	<projects>
-		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-midi</project>
 		<project>lib-monitor</project>

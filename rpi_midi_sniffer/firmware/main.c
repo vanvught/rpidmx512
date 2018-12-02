@@ -41,8 +41,9 @@
 
 #include "software_version.h"
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 // Poll table
 extern void midi_poll(void);
@@ -64,10 +65,6 @@ struct _event {
 
 static uint32_t events_elapsed_time[sizeof(events) / sizeof(events[0])];
 
-/**
- * @ingroup main
- *
- */
 static void events_init() {
 	size_t i;
 	const uint32_t mircos_now = hardware_micros();
@@ -76,10 +73,6 @@ static void events_init() {
 	}
 }
 
-/**
- * @ingroup main
- *
- */
 inline static void events_check() {
 	size_t i;
 	const uint32_t micros_now = hardware_micros();

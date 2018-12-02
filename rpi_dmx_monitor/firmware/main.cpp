@@ -43,9 +43,6 @@
 
 extern "C" {
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-
 void notmain(void) {
 	HardwareBaremetal hw;
 	LedBlinkBaremetal lb;
@@ -69,7 +66,7 @@ void notmain(void) {
 	DMXMonitor dmxmonitor;
 	dmxmonitor.Cls();
 
-	console_set_cursor(0, 22);
+	console_set_cursor(0, 21);
 	console_puts("DMX updates/sec\n");
 	console_puts("Slots in packet\n");
 	console_puts("Slot to slot\n");
@@ -90,20 +87,23 @@ void notmain(void) {
 		const uint32_t nMicrosNow = hw.Micros();
 
 		if (nMicrosNow - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
-			const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
-			const struct TDmxData *dmx_statistics = (struct TDmxData *)dmx_data;
 			const uint32_t dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond();
 
+			console_save_cursor();
+
 			if (dmx_updates_per_seconde == 0) {
+				console_set_cursor(20, 21);
+				console_puts("---");
 				console_set_cursor(20, 22);
 				console_puts("---");
 				console_set_cursor(20, 23);
 				console_puts("---");
-				console_set_cursor(20, 24);
-				console_puts("---");
-				console_set_cursor(17, 25);
+				console_set_cursor(17, 24);
 				console_puts("-------");
 			} else {
+				const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
+				const struct TDmxData *dmx_statistics = (struct TDmxData *)dmx_data;
+
 				nUpdatesPerSecondeMin = MIN(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
 				nUpdatesPerSecondeMax = MAX(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
 				nSlotsInPacketMin = MIN(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
@@ -112,15 +112,18 @@ void notmain(void) {
 				nSlotToSlotMax = MAX(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
 				nBreakToBreakMin = MIN(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
 				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
-				console_set_cursor(20, 22);
+
+				console_set_cursor(20, 21);
 				printf("%3d     %3d / %d", (int) dmx_updates_per_seconde, (int) nUpdatesPerSecondeMin, (int) nUpdatesPerSecondeMax);
-				console_set_cursor(20, 23);
+				console_set_cursor(20, 22);
 				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotsInPacket, (int) nSlotsInPacketMin, (int) nSlotsInPacketMax);
-				console_set_cursor(20, 24);
+				console_set_cursor(20, 23);
 				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotToSlot, (int) nSotToSlotMin, (int) nSlotToSlotMax);
-				console_set_cursor(17, 25);
+				console_set_cursor(17, 24);
 				printf("%6d  %6d / %d", (int) dmx_statistics->Statistics.BreakToBreak, (int) nBreakToBreakMin, (int) nBreakToBreakMax);
 			}
+
+			console_restore_cursor();
 
 			nMicrosPrevious = nMicrosNow;
 		}

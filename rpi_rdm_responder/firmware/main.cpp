@@ -64,7 +64,10 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	DmxGpioParams dmxgpioparams;
-	dmxgpioparams.Dump();
+
+	if (dmxgpioparams.Load()) {
+		dmxgpioparams.Dump();
+	}
 
 	bool isSet;
 	uint8_t nGpioDataDirection = dmxgpioparams.GetDataDirection(isSet); // Returning default GPIO18

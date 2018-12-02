@@ -24,12 +24,14 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "c/hardware.h"
 
 #include "arm/synchronize.h"
-#include "arm/irq_timer.h"
+
+#include "irq_timer.h"
 #include "bcm2835.h"
 
 #include "ltc_reader.h"
@@ -45,7 +47,9 @@
 
 #include "midi.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static volatile char timecode[TC_CODE_MAX_LENGTH] ALIGNED;
 

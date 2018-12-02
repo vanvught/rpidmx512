@@ -34,6 +34,10 @@
 
 #include "sniffer_mtc.h"
 
+#ifndef MIN
+ #define MIN(a,b)               (((a) < (b)) ? (a) : (b))
+#endif
+
 static const struct _midi_message *midi_message;
 static uint32_t init_timestamp;
 

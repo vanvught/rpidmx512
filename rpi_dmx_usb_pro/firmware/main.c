@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "c/hardware.h"
 #include "c/led.h"
@@ -42,7 +43,10 @@
 #include "widget_monitor.h"
 
 #include "usb.h"
-#include "util.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #if defined (HAVE_I2C)
  #include "oled.h"

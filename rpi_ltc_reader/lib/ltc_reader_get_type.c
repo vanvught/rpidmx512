@@ -25,17 +25,14 @@
 
 #include "ltc_reader.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static const char types[5][TC_TYPE_MAX_LENGTH + 1] ALIGNED =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
-/**
- *
- * @param type
- * @return
- */
-const char *ltc_reader_get_type(const timecode_types type) {
+const char *ltc_reader_get_type(timecode_types type) {
 	if (type > TC_TYPE_UNKNOWN) {
 		return types[TC_TYPE_UNKNOWN];
 	}

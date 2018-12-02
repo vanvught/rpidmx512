@@ -24,6 +24,8 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 
 #include "c/hardware.h"
 
@@ -39,6 +41,10 @@
 
 #include "usb.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 #define	SNIFFER_PACKET			0x81	///< Label
 #define	SNIFFER_PACKET_SIZE  	200		///< Packet size
 #define CONTROL_MASK			0x00	///< If the high bit is set, this is a data byte, otherwise it's a control byte
@@ -50,8 +56,8 @@ const struct _rdm_statistics *rdm_statistics_get(void) {
 	return &rdm_statistics;
 }
 
-static void usb_send_package(const uint8_t *data, const uint16_t start, const uint16_t data_length) {
-	uint16_t i;
+static void usb_send_package(const uint8_t *data, uint16_t start, uint16_t data_length) {
+	uint32_t i;
 
 	if (data_length < (uint16_t) (SNIFFER_PACKET_SIZE / 2)) {
 		widget_usb_send_header((uint8_t) SNIFFER_PACKET, (uint16_t) SNIFFER_PACKET_SIZE);

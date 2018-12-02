@@ -2,7 +2,7 @@
  * @file ltc_reader_params.c
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,17 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "ltc_reader_params.h"
 
 #include "read_config_file.h"
 #include "sscan.h"
-#include "util.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "ltc.txt";
 static const char PARAMS_CONSOLE_OUTPUT[] ALIGNED = "console_output";

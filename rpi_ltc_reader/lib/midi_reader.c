@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <arm/irq_timer.h>
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 
 #include "bcm2835.h"
+#include "irq_timer.h"
+
 #include "arm/synchronize.h"
 
 #include "midi.h"

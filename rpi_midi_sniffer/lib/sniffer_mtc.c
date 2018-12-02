@@ -1,7 +1,7 @@
 /**
  * @file sniffer_mtc.c
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,15 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "midi.h"
 
 #include "console.h"
-#include "util.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #define ROW		1		///<
 #define COLUMN	80		///<
@@ -55,9 +59,6 @@ static void itoa_base10(int arg, char *buf) {
 	*n = (char) '0' + (char) (arg % 10);
 }
 
-/**
- *
- */
 static void update(const uint8_t type) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
@@ -71,10 +72,6 @@ static void update(const uint8_t type) {
 	}
 }
 
-/**
- *
- * @param midi_message
- */
 void sniffer_mtc(const struct _midi_message *midi_message) {
 	const uint8_t type = midi_message->system_exclusive[5] >> 5;
 
@@ -86,10 +83,6 @@ void sniffer_mtc(const struct _midi_message *midi_message) {
 	update(type);
 }
 
-/**
- *
- * @param midi_message
- */
 void sniffer_mtc_qf(const struct _midi_message *midi_message) {
 	const uint8_t part = (midi_message->data1 & 0x70) >> 4;
 	const uint8_t value = midi_message->data1 & 0x0F;

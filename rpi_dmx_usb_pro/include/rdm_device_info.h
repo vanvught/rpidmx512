@@ -29,8 +29,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "util.h"
-
 #define DEVICE_SN_LENGTH						4	///<
 
 struct _rdm_device_info_data {
@@ -45,6 +43,6 @@ extern void rdm_device_info_get_label(const uint16_t, /*@out@*/struct _rdm_devic
 extern void rdm_device_info_get_manufacturer_name(/*@out@*/struct _rdm_device_info_data *);
 extern void rdm_device_info_get_manufacturer_id(/*@out@*/struct _rdm_device_info_data *);
 extern void rdm_device_info_get_sn(struct _rdm_device_info_data *);
-extern const uint8_t rdm_device_info_get_ext_mon_level(void);
+extern uint8_t rdm_device_info_get_ext_mon_level(void);
 
 #endif /* RDM_DEVICE_INFO_H_ */

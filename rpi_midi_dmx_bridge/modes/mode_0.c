@@ -33,6 +33,10 @@
 #include "dmx.h"
 #include "monitor.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 static const struct _midi_message *midi_message;			///<
 static uint8_t midi_channel = (uint8_t) MIDI_CHANNEL_OMNI;	///<
 static uint16_t dmx_start_address = (uint16_t) 1;			///<

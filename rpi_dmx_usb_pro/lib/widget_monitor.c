@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <ctype.h>
 #include <stdio.h>
 
 #include "console.h"
@@ -39,7 +40,13 @@
 
 #include "rdm_device_info.h"
 
-#include "util.h"
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
 
 /* RDM START CODE (Slot 0)                                                                                                     */
 #define	E120_SC_RDM		0xCC
@@ -99,10 +106,6 @@ static void monitor_dmx_data(const uint8_t * dmx_data, const int line) {
 	}
 }
 
-/**
- * @ingroup monitor
- *
- */
 static void monitor_sniffer(void) {
 	const volatile struct _total_statistics *total_statistics = dmx_get_total_statistics();
 	const uint32_t total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
@@ -146,9 +149,6 @@ static void monitor_sniffer(void) {
 	}
 }
 
-/**
- * @ingroup monitor
- */
 void monitor_update(void) {
 	const uint8_t widget_mode = widget_get_mode();
 	struct _widget_params widget_params;
@@ -208,15 +208,7 @@ void monitor_update(void) {
 	}
 }
 
-/**
- * @ingroup monitor
- *
- * @param line
- * @param data_length
- * @param data
- * @param is_sent
- */
-void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t *data, bool is_sent) {
+void monitor_rdm_data(int line, uint16_t data_length, const uint8_t *data, bool is_sent) {
 	uint16_t l;
 	uint8_t *p = (uint8_t *) data;
 	bool is_rdm_command = (*p == E120_SC_RDM);
@@ -275,5 +267,3 @@ void monitor_rdm_data(const int line, const uint16_t data_length, const uint8_t 
 		console_clear_line(line + 4);
 	}
 }
-
-

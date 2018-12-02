@@ -3,11 +3,11 @@
 	<name>rpi_midi_dmx_bridge</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-dmx</project>
 		<project>lib-hal</project>
 		<project>lib-midi</project>
 		<project>lib-monitor</project>
-		<project>lib-utils</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

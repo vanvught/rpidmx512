@@ -2,7 +2,7 @@
  * @file display_matrix.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 #include "d8x8matrix.h"
 #include "device_info.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #define SEGMENTS	8
 
@@ -36,10 +38,7 @@ static device_info_t device_info;
 
 static uint8_t buffer[SEGMENTS] ALIGNED;
 
-/**
- *
- */
-void display_matrix_init(const uint8_t intensity) {
+void display_matrix_init(uint8_t intensity) {
 	device_info.chip_select = 2;
 	device_info.speed_hz = 0;
 
@@ -47,10 +46,6 @@ void display_matrix_init(const uint8_t intensity) {
 	d8x8matrix_cls(&device_info);
 }
 
-/**
- *
- * @param timecode
- */
 void display_matrix(const char *timecode) {
 	buffer[0] = (uint8_t) (timecode[0]);
 	buffer[1] = (uint8_t) (timecode[1]);

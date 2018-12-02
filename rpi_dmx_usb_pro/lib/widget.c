@@ -29,9 +29,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "c/hardware.h"
-#include "util.h"
 #include "monitor.h"
 
 #include "widget.h"
@@ -47,6 +47,10 @@
 
 #include "usb.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 #define WIDGET_DATA_BUFFER_SIZE		600							///<
 
 static uint8_t widget_data[WIDGET_DATA_BUFFER_SIZE] ALIGNED;	///< Message between widget and the USB host
@@ -60,63 +64,27 @@ static uint32_t widget_received_dmx_packet_count = 0; 			///<
 
 inline static void rdm_time_out_message(void);
 
-/*
- * GETTERS / SETTERS
- */
-
-/**
- * @ingroup widget
- *
- * @return \ref _widget_send_state
- */
-const _widget_send_state widget_get_receive_dmx_on_change() {
+_widget_send_state widget_get_receive_dmx_on_change() {
 	return receive_dmx_on_change;
 }
 
-/**
- * @ingroup widget
- *
- * Returns the firmware varieties
- *
- * @return \ref _widget_mode
- */
-const _widget_mode widget_get_mode() {
+_widget_mode widget_get_mode() {
 	return widget_mode;
 }
 
-/**
- * @ingroup widget
- *
- * @param mode
- */
 void widget_set_mode(const _widget_mode mode) {
 	widget_mode = mode;
 }
 
-/**
- * @ingroup widget
- *
- * @return
- */
-const uint32_t widget_get_received_dmx_packet_period(void) {
+uint32_t widget_get_received_dmx_packet_period(void) {
 	return widget_received_dmx_packet_period;
 }
 
-/**
- * @ingroup widget
- *
- * @param period
- */
 void widget_set_received_dmx_packet_period(uint32_t period) {
 	widget_received_dmx_packet_period = period;
 }
 
-/**
- * @ingroup widget
- *
- * @return
- */
-const uint32_t widget_get_received_dmx_packet_count(void) {
+uint32_t widget_get_received_dmx_packet_count(void) {
 	return widget_received_dmx_packet_count;
 }
 
@@ -125,7 +93,6 @@ const uint32_t widget_get_received_dmx_packet_count(void) {
  */
 
 /**
- * @ingroup widget
  *
  * Get Widget Parameters Reply (Label=3 \ref GET_WIDGET_PARAMS_REPLY)
  * The Widget sends this message to the PC in response to the Get Widget Parameters request.
@@ -141,7 +108,6 @@ static void widget_get_params_reply(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Set Widget Parameters Request (Label=4 \ref SET_WIDGET_PARAMS)
  * This message sets the Widget configuration. The Widget configuration is preserved when the Widget loses power.
@@ -166,7 +132,6 @@ static void widget_set_params() {
 }
 
 /**
- * @ingroup widget
  *
  * This function is called from the poll table in \ref main.c
  *
@@ -216,7 +181,6 @@ void widget_received_dmx_packet(void) {
 }
 
 /**
- * @ingroup widget
  *
  * This function is called from the poll table in \ref main.c
  *
@@ -277,7 +241,6 @@ void widget_received_rdm_packet(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Output Only Send DMX Packet Request (label = 6 \ref OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST)
  *
@@ -304,7 +267,6 @@ void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
 }
 
 /**
- * @ingroup widget
  *
  * Send RDM Packet Request (label = 7 \ref SEND_RDM_PACKET_REQUEST)
  *
@@ -334,7 +296,6 @@ static void widget_send_rdm_packet_request(const uint16_t data_length) {
 }
 
 /**
- * @ingroup widget
  *
  * This function is called from the poll table in \ref main.c
  *
@@ -356,7 +317,6 @@ void widget_rdm_timeout(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Receive DMX on Change (label = 8 \ref RECEIVE_DMX_ON_CHANGE)
  *
@@ -386,7 +346,6 @@ static void widget_receive_dmx_on_change(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Received DMX Change Of State Packet (Label = 9 \ref RECEIVED_DMX_COS_TYPE)
  *
@@ -414,7 +373,6 @@ void widget_received_dmx_change_of_state_packet(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Get Widget Serial Number Reply (Label = 10 \ref GET_WIDGET_PARAMS_REPLY)
  *
@@ -437,7 +395,6 @@ static void widget_get_sn_reply(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Send RDM Discovery Request (Label=11 \ref SEND_RDM_DISCOVERY_REQUEST)
  *
@@ -462,7 +419,6 @@ static void widget_send_rdm_discovery_request(uint16_t data_length) {
 }
 
 /**
- * @ingroup widget
  *
  * See https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
  *
@@ -483,7 +439,6 @@ inline static void rdm_time_out_message(void) {
 }
 
 /**
- * @ingroup widget
  *
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Manufacturer.2C_Label_.3D_77.2C_no_data
  *
@@ -512,7 +467,6 @@ static void widget_get_manufacturer_reply(void) {
 }
 
 /**
- * @ingroup widget
  *
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions#Device_Name.2C_Label_.3D_78.2C_no_data
  *
@@ -541,7 +495,6 @@ static void widget_get_name_reply(void) {
 }
 
 /**
- * @ingroup widget
  *
  * Read bytes from host
  *

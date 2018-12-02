@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern void monitor_rdm_data(const int, const uint16_t, const uint8_t *, bool);
+extern void monitor_rdm_data(int, uint16_t, const uint8_t *, bool);
 extern void monitor_update(void);
 
 #endif /* WIDGET_MONITOR_H_ */

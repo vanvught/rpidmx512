@@ -1,7 +1,7 @@
 /**
  * @file bridge_params.c
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,23 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "read_config_file.h"
 #include "sscan.h"
-#include "util.h"
+
 #include "midi.h"
 #include "dmx.h"
 #include "bridge.h"
 #include "bridge_params.h"
 #include "bridge_monitor.h"
+
 #include "tables.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 TABLE(initializer_t, modes)
 TABLE(initializer_t, modes_monitor)
@@ -55,10 +61,6 @@ static uint8_t bridge_params_midi_channel = MIDI_CHANNEL_OMNI;					///<
 static uint8_t bridge_params_bridge_mode = 0;									///<
 static uint8_t bridge_params_table_index = 0;									///<
 
-/**
- *
- * @param line
- */
 static void process_line_read(const char *line) {
 	uint8_t value8;
 	uint32_t value32;
@@ -92,59 +94,31 @@ static void process_line_read(const char *line) {
 	}
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_break_time(void) {
+uint8_t bridge_params_get_break_time(void) {
 	return bridge_params_break_time;
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_mab_time(void) {
+uint8_t bridge_params_get_mab_time(void) {
 	return bridge_params_mab_time;
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_refresh_rate(void) {
+uint8_t bridge_params_get_refresh_rate(void) {
 	return bridge_params_refresh_rate;
 }
 
-/**
- *
- * @return
- */
-const uint16_t bridge_params_get_dmx_start_address(void) {
+uint16_t bridge_params_get_dmx_start_address(void) {
 	return bridge_params_dmx_start_address;
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_midi_channel(void) {
+uint8_t bridge_params_get_midi_channel(void) {
 	return bridge_params_midi_channel;
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_bridge_mode(void) {
+uint8_t bridge_params_get_bridge_mode(void) {
 	return bridge_params_bridge_mode;
 }
 
-/**
- *
- * @return
- */
-const uint8_t bridge_params_get_table_index(void) {
+uint8_t bridge_params_get_table_index(void) {
 	return bridge_params_table_index;
 }
 

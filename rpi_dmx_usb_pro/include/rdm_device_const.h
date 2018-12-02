@@ -27,7 +27,9 @@
 
 #include <stdint.h>
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "AvV";
 static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY

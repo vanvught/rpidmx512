@@ -37,6 +37,10 @@
 #include "display_7segment.h"
 #include "display_matrix.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 extern void artnet_output(const struct _midi_send_tc *);
 
 static const struct _ltc_reader_output *output;

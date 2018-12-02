@@ -3,8 +3,9 @@
 	<name>rpi_rdm_responder_l6470</name>
 	<comment></comment>
 	<projects>
-		<project>lib-fb</project>
-		<project>lib-hardware</project>
+		<project>include</project>
+		<project>lib-hal</project>
+		<project>lib-l6470dmx</project>
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>

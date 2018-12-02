@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkbaremetalmacaddress.h"
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
@@ -56,12 +56,9 @@ enum TBoards {
 
 extern "C" {
 
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkBaremetalMacAddress nw;
 	LedBlinkBaremetal lb;
 	Identify identify;
 	uint8_t nHwTextLength;
@@ -118,7 +115,10 @@ void notmain(void) {
 	}
 
 	DmxGpioParams dmxgpioparams;
-	dmxgpioparams.Dump();
+
+	if (dmxgpioparams.Load()) {
+		dmxgpioparams.Dump();
+	}
 
 	bool isSet;
 	uint8_t nGpioDataDirection = dmxgpioparams.GetDataDirection(isSet); // Returning default GPIO18

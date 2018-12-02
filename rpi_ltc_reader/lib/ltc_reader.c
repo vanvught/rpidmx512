@@ -10,7 +10,7 @@
  * https://en.wikipedia.org/wiki/Linear_timecode
  * http://www.philrees.co.uk/articles/timecode.htm
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,9 @@
 #include "display_7segment.h"
 #include "display_matrix.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #define ONE_TIME_MIN        150	///< 417us/2 = 208us
 #define ONE_TIME_MAX       	300	///< 521us/2 = 260us

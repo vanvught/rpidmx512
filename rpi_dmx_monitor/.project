@@ -3,9 +3,10 @@
 	<name>rpi_dmx_monitor</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
+		<project>lib-c++</project>
 		<project>lib-dmxmonitor</project>
 		<project>lib-dmxreceiver</project>
-		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-ledblink</project>
 	</projects>
