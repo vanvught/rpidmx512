@@ -24,13 +24,12 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 
 #include <circle/interrupt.h>
-#include <circle/string.h>
 #include <circle/util.h>
 #include <circle/machineinfo.h>
 #include <circle/net/netsubsystem.h>
-#include <circle/net/ipaddress.h>
 
 #include <fatfs/ff.h>
 
@@ -49,6 +48,7 @@
 // WS28xx output
 #include "ws28xxstripeparams.h"
 #include "ws28xxstripedmx.h"
+#include "ws28xxstripedmxgrouping.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -57,8 +57,6 @@
 
 #define PARTITION	"emmc1-1"
 #define DRIVE		"SD:"
-
-#define ARTNET_NODE_PORT		0x1936			///< The Port is always 0x1936
 
 static const char FromKernel[] = "kernel";
 
@@ -70,7 +68,6 @@ CKernel::CKernel(void) :
 		m_DWHCI(&m_Interrupt, &m_Timer),
 		m_EMMC(&m_Interrupt, &m_Timer, &m_ActLED),
 		m_DMX (&m_Interrupt),
-		m_SPI (&m_Interrupt),
 		m_BlinkTask()
 {
 	m_ActLED.On();
@@ -180,95 +177,96 @@ TShutdownMode CKernel::Run(void)
 {
 	HardwareCircle hw;
 	NetworkCircle nw;
-	ArtNetParams artnetparams;
-	DMXParams dmxParams;
-	WS28XXStripeParams deviceparams;
-	uint8_t nHwTextLength;
 
 	nw.Init(&m_Net);
+
+	ArtNetParams artnetparams;
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
 	}
 
-	TOutputType output_type = artnetparams.GetOutputType();
+	const TOutputType tOutputType = artnetparams.GetOutputType();
 
-	if (output_type == OUTPUT_TYPE_SPI) {
-		if (deviceparams.Load()) {
-			deviceparams.Dump();
-			deviceparams.Set(&m_SPI);
-		} else {
-			m_Logger.Write(FromKernel, LogWarning, "Continuing with default LED configuration");
-		}
-	} else {
-		output_type = OUTPUT_TYPE_DMX;
-		if (dmxParams.Load()) {
-			dmxParams.Dump();
-			dmxParams.Set(&m_DMX);
-		} else {
-			m_Logger.Write(FromKernel, LogWarning, "Continuing with default DMX configuration");
-		}
-	}
-
+	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	ArtNetNode node;
 
 	artnetparams.Set(&node);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	node.SetDirectUpdate(false);
 
-	if (output_type == OUTPUT_TYPE_DMX) {
-		node.SetOutput(&m_DMX);
-		node.SetDirectUpdate(false);
-	} else {
-		node.SetOutput(&m_SPI);
-		node.SetDirectUpdate(true);
+	LightSet *pSpi;
 
-		const uint16_t led_count = m_SPI.GetLEDCount();
-		const uint8_t universe = artnetparams.GetUniverse();
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		WS28XXStripeParams ws28xxparms;
 
-		if (m_SPI.GetLEDType() == SK6812W) {
-			if (led_count > 128) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
-			}
-			if (led_count > 256) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
-			}
-			if (led_count > 384) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
-			}
-		} else {
-			if (led_count > 170) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, universe + 1);
-			}
-			if (led_count > 340) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, universe + 2);
-			}
-			if (led_count > 510) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, universe + 3);
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Dump();
+		}  else {
+			m_Logger.Write(FromKernel, LogWarning, "Continuing with default LED configuration");
+		}
+
+		if (ws28xxparms.IsLedGrouping()) {
+			WS28xxStripeDmxGrouping *pWS28xxStripeDmxGrouping = new WS28xxStripeDmxGrouping(&m_Interrupt);
+			assert(pWS28xxStripeDmxGrouping != 0);
+			ws28xxparms.Set(pWS28xxStripeDmxGrouping);
+			pSpi = pWS28xxStripeDmxGrouping;
+		} else  {
+			SPISend *pSPISend = new SPISend(&m_Interrupt);
+			assert(pSPISend != 0);
+			ws28xxparms.Set(pSPISend);
+			pSpi = pSPISend;
+
+			const uint16_t nLedCount = pSPISend->GetLEDCount();
+			const uint8_t nUniverse = artnetparams.GetUniverse();
+
+			if (pSPISend->GetLEDType() == SK6812W) {
+				if (nLedCount > 128) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 256) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 384) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
+			} else {
+				if (nLedCount > 170) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 340) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 510) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
 			}
 		}
+
+		node.SetOutput(pSpi);
+	} else {
+		DMXParams dmxParams;
+		if (dmxParams.Load()) {
+			dmxParams.Dump();
+			dmxParams.Set(&m_DMX);
+		} else {
+			m_Logger.Write(FromKernel, LogWarning, "Continuing with default DMX configuration");
+		}
+		node.SetOutput(&m_DMX);
 	}
 
 	nw.Print();
 	node.Print();
 
-	if (output_type == OUTPUT_TYPE_DMX) {
-		m_Logger.Write(FromKernel, LogNotice, "DMX Send parameters :");
-		m_Logger.Write(FromKernel, LogNotice, " Break time   : %u", m_DMX.GetDmxBreakTime());
-		m_Logger.Write(FromKernel, LogNotice, " MAB time     : %u", m_DMX.GetDmxMabTime());
-		m_Logger.Write(FromKernel, LogNotice, " Refresh rate : %u", (unsigned) (1000000 / m_DMX.GetDmxPeriodTime()));
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		assert(pSpi != 0);
+		pSpi->Print();
 	} else {
-		const TWS28XXType tType = m_SPI.GetLEDType();
-		m_Logger.Write(FromKernel, LogNotice, "Led stripe parameters :");
-		m_Logger.Write(FromKernel, LogNotice, " Type         : %s [%d]", WS28XXStripeParams::GetLedTypeString(tType), tType);
-		m_Logger.Write(FromKernel, LogNotice, " Count        : %u", m_SPI.GetLEDCount());
+		m_DMX.Print();
 	}
 
 	node.Start();

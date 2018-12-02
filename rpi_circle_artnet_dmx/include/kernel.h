@@ -93,7 +93,6 @@ private:
 	CNetSubSystem		m_Net;
 
 	DMXSend				m_DMX;
-	SPISend				m_SPI;
 
 	CMachineInfo 		m_MachineInfo;
 	LedBlinkCircle 		m_BlinkTask;
