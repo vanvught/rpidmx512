@@ -34,7 +34,7 @@
 
 class OSCWS28xx  {
 public:
-	OSCWS28xx(unsigned, unsigned, const TWS28XXType, const char *);
+	OSCWS28xx(unsigned nHandle, unsigned, unsigned, const TWS28XXType, const char *);
 	~OSCWS28xx(void);
 
 	void Start(void);
@@ -43,6 +43,7 @@ public:
 	void Run(void);
 
 private:
+	uint32_t m_nHandle;
 	WS28XXStripe	*m_pLEDStripe;
 	char m_Os[32];
 	const char *m_pModel;

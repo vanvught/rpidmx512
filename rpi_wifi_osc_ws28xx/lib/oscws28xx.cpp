@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "hardware.h"
@@ -41,11 +42,14 @@
 
 #include "ws28xxstripe.h"
 
-#include "util.h"
-
 #include "software_version.h"
 
-OSCWS28xx::OSCWS28xx(unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLEDType, const char *sLEDType) :
+#ifndef MIN
+ #define MIN(a,b)               (((a) < (b)) ? (a) : (b))
+#endif
+
+OSCWS28xx::OSCWS28xx(unsigned nHandle, unsigned OutgoingPort, unsigned nLEDCount, TWS28XXType nLEDType, const char *sLEDType) :
+	m_nHandle(nHandle),
 	m_pLEDStripe(0),
 	m_Blackout(false)
 {
@@ -102,14 +106,14 @@ void OSCWS28xx::Run(void) {
 	uint16_t from_port;
 	uint32_t from_ip;
 
-	const int len = Network::Get()->RecvFrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+	const int len = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
 
 	if (len == 0) {
 		return;
 	}
 
 	if (OSC::isMatch((const char*) m_packet, "/ping")) {
-		OSCSend MsgSend(from_ip, m_OutgoingPort, "/pong", 0);
+		OSCSend MsgSend(m_nHandle, from_ip, m_OutgoingPort, "/pong", 0);
 	} else if (OSC::isMatch((const char*) m_packet, "/dmx1/blackout")) {
 		OSCMessage Msg(m_packet, (unsigned) len);
 		m_Blackout = (unsigned) Msg.GetFloat(0) == 1;
@@ -163,11 +167,11 @@ void OSCWS28xx::Run(void) {
 		}
 		console_restore_cursor();
 	} else if (OSC::isMatch((const char*) m_packet, "/2")) {
-		OSCSend MsgSendInfo(from_ip, m_OutgoingPort, "/info/os", "s", m_Os);
-		OSCSend MsgSendModel(from_ip, m_OutgoingPort, "/info/model", "s", m_pModel);
-		OSCSend MsgSendSoc(from_ip, m_OutgoingPort, "/info/soc", "s", m_pSoC);
-		OSCSend MsgSendLedType(from_ip, m_OutgoingPort, "/info/ledtype", "s", m_LEDType);
-		OSCSend MsgSendLedCount(from_ip, m_OutgoingPort, "/info/ledcount", "i", m_nLEDCount);
+		OSCSend MsgSendInfo(m_nHandle, from_ip, m_OutgoingPort, "/info/os", "s", m_Os);
+		OSCSend MsgSendModel(m_nHandle, from_ip, m_OutgoingPort, "/info/model", "s", m_pModel);
+		OSCSend MsgSendSoc(m_nHandle, from_ip, m_OutgoingPort, "/info/soc", "s", m_pSoC);
+		OSCSend MsgSendLedType(m_nHandle, from_ip, m_OutgoingPort, "/info/ledtype", "s", m_LEDType);
+		OSCSend MsgSendLedCount(m_nHandle, from_ip, m_OutgoingPort, "/info/ledcount", "i", m_nLEDCount);
 	}
 
 	printf("\n%d: " IPSTR ":%d ", (int)len, IP2STR(from_ip), (int) from_port);

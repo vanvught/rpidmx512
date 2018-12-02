@@ -24,16 +24,19 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "timecode.h"
 #include "artnettimecode.h"
 
 #include "console.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-#define ROW		1		///<
-#define COLUMN	80		///<
+#define ROW		1
+#define COLUMN	80
 
 static char timecode[] ALIGNED =  "--:--:--;-- -----";
 #define TIMECODE_LENGTH	((sizeof(timecode) / sizeof(char)) - 1)

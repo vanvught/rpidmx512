@@ -1,7 +1,7 @@
 #
-DEFINES = ENABLE_MMU NDEBUG
+DEFINES = ESP8266 ENABLE_MMU NDEBUG
 #
-LIBS = osc ws28xxdmx ws28xx lightset ledblink
+LIBS = osc ws28xxdmx ws28xx monitor lightset ledblink display
 #
 SRCDIR = firmware lib
 

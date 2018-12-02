@@ -20,7 +20,6 @@
 		<project>lib-network</project>
 		<project>lib-rdm</project>
 		<project>lib-rdmdiscovery</project>
-		<project>lib-utils</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

@@ -1,0 +1,10 @@
+#
+DEFINES = ESP8266 ENABLE_MMU NO_EMAC NDEBUG
+#
+LIBS = oscserver osc dmxsend dmx monitor lightset ledblink
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

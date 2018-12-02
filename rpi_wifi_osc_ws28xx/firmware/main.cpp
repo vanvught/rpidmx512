@@ -31,11 +31,14 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+#if defined (HAVE_I2C)
+ #include "display.h"
+#endif
 
 #include "wifi.h"
 
 #include "oscparams.h"
+#include "oscsend.h"
 #include "oscws28xx.h"
 
 #include "ws28xxstripeparams.h"
@@ -43,8 +46,6 @@
 #include "software_version.h"
 
 extern "C" {
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
 void notmain(void) {
 	HardwareBaremetal hw;
@@ -52,8 +53,6 @@ void notmain(void) {
 	LedBlinkBaremetal lb;
 	WS28XXStripeParams deviceparms;
 	OSCParams oscparms;
-	Display display(0,8);
-	struct ip_info ip_config;
 	uint8_t nHwTextLength;
 
 	(void) oscparms.Load();
@@ -62,7 +61,10 @@ void notmain(void) {
 	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
 	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
 
+#if defined (HAVE_I2C)
+	Display display(0,8);
 	const bool IsOledConnected = display.isDetected();
+#endif
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("WiFi OSC Pixel controller, Incoming port: %d, Outgoing port: %d", nIncomingPort, nOutgoingPort);
@@ -71,28 +73,28 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
-	if (!wifi(&ip_config)) {
-		for (;;)
-			;
-	}
-
 	nw.Init();
 
 	console_status(CONSOLE_YELLOW, "Starting UDP ...");
+#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting UDP ..."));
+#endif
 
-	nw.Begin(nIncomingPort);
+	const int32_t nHandle = nw.Begin(nIncomingPort);
 
-	nw.SendTo((const uint8_t *)"osc", (const uint16_t) 3, ip_config.ip.addr | ~ip_config.netmask.addr, nOutgoingPort);
+	OSCSend MsgSend(nHandle, nw.GetIp() | ~(nw.GetNetmask()), nIncomingPort, "/ping", 0);
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
+#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Setting Node parameters ..."));
+#endif
 
 	const TWS28XXType tType = deviceparms.GetLedType();
 
-	printf("Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(tType), tType);
+	printf("\nType  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(tType), tType);
 	printf("Count : %d", (int) deviceparms.GetLedCount());
 
+#if defined (HAVE_I2C)
 	if (IsOledConnected) {
 		display.Write(1, "WiFi OSC Pixel");
 
@@ -102,26 +104,31 @@ void notmain(void) {
 			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
-		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(ip_config.ip.addr));
-		(void) display.Printf(4, "N: " IPSTR "", IP2STR(ip_config.netmask.addr));
+		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 		(void) display.Printf(5, "I: %4d O: %4d", (int) nIncomingPort, (int) nOutgoingPort);
 		(void) display.Printf(6, "Led type: %s", WS28XXStripeParams::GetLedTypeString(tType));
 		(void) display.Printf(7, "Led count: %d", (int) deviceparms.GetLedCount());
 	}
+#endif
 
-	console_set_top_row(16);
+	console_set_top_row(18);
 
 	hw.WatchdogInit();
 
-	OSCWS28xx oscws28xx(nOutgoingPort, deviceparms.GetLedCount(), deviceparms.GetLedType(), WS28XXStripeParams::GetLedTypeString(tType));
+	OSCWS28xx oscws28xx(nHandle, nOutgoingPort, deviceparms.GetLedCount(), deviceparms.GetLedType(), WS28XXStripeParams::GetLedTypeString(tType));
 
 	console_status(CONSOLE_GREEN, "Starting ...");
+#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting ..."));
+#endif
 
 	oscws28xx.Start();
 
 	console_status(CONSOLE_GREEN, "Controller started");
+#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Controller started"));
+#endif
 
 	for (;;) {
 		hw.WatchdogFeed();

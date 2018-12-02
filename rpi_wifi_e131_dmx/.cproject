@@ -38,8 +38,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xxdmx/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1000760606" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="HAVE_SPI"/>
-									<listOptionValue builtIn="false" value="HAVE_I2C"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1011515588" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -60,8 +58,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xxdmx/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.992793903" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="HAVE_SPI"/>
-									<listOptionValue builtIn="false" value="HAVE_I2C"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1630715634" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -132,8 +128,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xxdmx/include}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.955922082" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="HAVE_SPI"/>
-									<listOptionValue builtIn="false" value="HAVE_I2C"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1467622751" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -154,8 +148,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xxdmx/include}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.988360178" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="HAVE_SPI"/>
-									<listOptionValue builtIn="false" value="HAVE_I2C"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.66790533" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <time.h>
 
 #include "timesync.h"
@@ -32,11 +33,12 @@
 #include "c/hardware.h"
 #include "console.h"
 
-#include "util.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-
-#define ROW		2		///<
-#define COLUMN	80		///<
+#define ROW		2
+#define COLUMN	80
 
 static char timesync[] ALIGNED =  "--:--:-- --/--/--";
 static char systime[] ALIGNED =  "--:--:--";

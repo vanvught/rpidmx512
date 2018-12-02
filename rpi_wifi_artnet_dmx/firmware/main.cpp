@@ -30,14 +30,8 @@
 #include "networkbaremetal.h"
 #include "ledblinkbaremetal.h"
 
-#ifndef H3
- #include "bcm2835_gpio.h"
-#endif
-
 #include "console.h"
-#if defined (HAVE_I2C)
- #include "display.h"
-#endif
+#include "display.h"
 
 #include "wifi.h"
 
@@ -53,10 +47,8 @@
 #ifndef H3
  #include "dmxmonitor.h"
 #endif
-#if defined (HAVE_SPI)
- #include "ws28xxstripeparams.h"
- #include "ws28xxstripedmx.h"
-#endif
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "software_version.h"
 
@@ -69,21 +61,14 @@ void notmain(void) {
 	uint8_t nHwTextLength;
 	ArtNetParams artnetparams;
 
-#ifndef H3
-	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_22, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(RPI_V2_GPIO_P1_22);
-#endif
-
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
 	}
 
 	const TOutputType tOutputType = artnetparams.GetOutputType();
 
-#if defined (HAVE_I2C)
 	Display display(0,8);
 	const bool oled_connected = display.isDetected();
-#endif
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
@@ -116,17 +101,13 @@ void notmain(void) {
 	console_set_top_row(3);
 
 	console_status(CONSOLE_YELLOW, "Network init ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Network init ..."));
-#endif
 
 	nw.Init();
 
 	ArtNetNode node;
 	DMXSend dmx;
-#if defined (HAVE_SPI)
 	SPISend spi;
-#endif
 #ifndef H3
 	DMXMonitor monitor;
 #endif
@@ -135,9 +116,7 @@ void notmain(void) {
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, "Setting Node parameters ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Setting Node parameters ..."));
-#endif
 
 	artnetparams.Set(&node);
 
@@ -166,16 +145,12 @@ void notmain(void) {
 		if(artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
 				console_status(CONSOLE_YELLOW, "Running RDM Discovery ...");
-#if defined (HAVE_I2C)
 				DISPLAY_CONNECTED(oled_connected, display.TextStatus("Running RDM Discovery ..."));
-#endif
 				discovery.Full();
 			}
 			node.SetRdmHandler(&discovery);
 		}
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
 		WS28XXStripeParams deviceparms;
 		if (deviceparms.Load()) {
 			deviceparms.Dump();
@@ -216,7 +191,6 @@ void notmain(void) {
 			}
 		}
 	}
-#endif
 #ifndef H3
 	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		node.SetOutput(&monitor);
@@ -233,14 +207,10 @@ void notmain(void) {
 
 	if (tOutputType == OUTPUT_TYPE_DMX) {
 		dmx.Print();
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == OUTPUT_TYPE_SPI) {
 		spi.Print();
 	}
-#endif
 
-#if defined (HAVE_I2C)
 	if (oled_connected) {
 		display.Write(1, "WiFi Art-Net 3 ");
 
@@ -278,19 +248,14 @@ void notmain(void) {
 		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nAddress);
 		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
-#endif
 
 	console_status(CONSOLE_YELLOW, "Starting the Node ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Starting the Node ..."));
-#endif
 
 	node.Start();
 
 	console_status(CONSOLE_GREEN, "Node started");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(oled_connected, display.TextStatus("Node started"));
-#endif
 
 	hw.WatchdogFeed();
 

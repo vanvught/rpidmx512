@@ -40,25 +40,26 @@
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
+#ifndef H3
 // DMX real-time monitor
-#include "dmxmonitor.h"
+ #include "dmxmonitor.h"
+#endif
 
 #include "software_version.h"
 
 extern "C" {
-void __attribute__((interrupt("IRQ"))) c_irq_handler(void) {}
-void __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {}
 
 void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkBaremetal nw;
 	LedBlinkBaremetal lb;
-	struct ip_info ip_config;
 	OSCServerParams oscparms;
 	OscServer server;
 	DMXParams dmxparams;
 	DMXSend dmx;
+#ifndef H3
 	DMXMonitor monitor;
+#endif
 	uint8_t nHwTextLength;
 
 	if (oscparms.Load()) {
@@ -81,27 +82,29 @@ void notmain(void) {
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
+#ifndef H3
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
+#else
+	console_putc('\n');
+#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_set_top_row(3);
 
-	if (!wifi(&ip_config)) {
-		for (;;)
-			;
-	}
-
 	nw.Init();
 
+#ifndef H3
 	if (tOutputType == OUTPUT_TYPE_MONITOR) {
 		server.SetOutput(&monitor);
 		monitor.Cls();
 		console_set_top_row(20);
-	} else {
+	} else
+#endif
+	{
 		server.SetOutput(&dmx);
 	}
 

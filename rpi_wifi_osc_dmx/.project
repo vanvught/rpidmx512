@@ -3,17 +3,17 @@
 	<name>rpi_wifi_osc_dmx</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 		<project>lib-c++</project>
 		<project>lib-display</project>
 		<project>lib-dmxmonitor</project>
 		<project>lib-dmxsend</project>
 		<project>lib-esp8266</project>
-		<project>lib-fb</project>
 		<project>lib-hal</project>
 		<project>lib-network</project>
 		<project>lib-osc</project>
 		<project>lib-oscserver</project>
-		<project>lib-utils</project>
+		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

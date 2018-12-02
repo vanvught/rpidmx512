@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <uuid/uuid.h>
 
@@ -33,9 +34,7 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#if defined (HAVE_I2C)
- #include "display.h"
-#endif
+#include "display.h"
 
 #include "wifi.h"
 
@@ -50,13 +49,9 @@
  // Monitor Output
  #include "dmxmonitor.h"
 #endif
-#if defined (HAVE_SPI)
- // WS28xx output
- #include "ws28xxstripeparams.h"
- #include "ws28xxstripedmx.h"
-#endif
-
-#include "util.h"
+// WS28xx output
+#include "ws28xxstripeparams.h"
+#include "ws28xxstripedmx.h"
 
 #include "software_version.h"
 
@@ -76,22 +71,20 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const TOutputType tOutputType = e131params.GetOutputType();
+	const TE131OutputType tOutputType = e131params.GetOutputType();
 
-#if defined (HAVE_I2C)
 	Display display(0,8);
 	const bool IsOledConnected = display.isDetected();
-#endif
 
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
@@ -110,9 +103,7 @@ void notmain(void) {
 	console_set_top_row(3);
 
 	console_status(CONSOLE_YELLOW, "Network init ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Network init ..."));
-#endif
 
 	nw.Init();
 
@@ -127,9 +118,7 @@ void notmain(void) {
 
 	E131Bridge bridge;
 	DMXSend dmx;
-#if defined (HAVE_SPI)
 	SPISend spi;
-#endif
 #ifndef H3
 	DMXMonitor monitor;
 #endif
@@ -138,16 +127,14 @@ void notmain(void) {
 	bridge.SetUniverse(e131params.GetUniverse());
 	bridge.SetMergeMode(e131params.GetMergeMode());
 
-	if (tOutputType == OUTPUT_TYPE_DMX) {
+	if (tOutputType == E131_OUTPUT_TYPE_DMX) {
 		DMXParams dmxparams;
 		if (dmxparams.Load()) {
 			dmxparams.Dump();
 		}
 		dmxparams.Set(&dmx);
 		bridge.SetOutput(&dmx);
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == E131_OUTPUT_TYPE_SPI) {
 		WS28XXStripeParams deviceparms;
 		if (deviceparms.Load()) {
 			deviceparms.Dump();
@@ -155,9 +142,8 @@ void notmain(void) {
 		deviceparms.Set(&spi);
 		bridge.SetOutput(&spi);
 	}
-#endif
 #ifndef H3
-	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == E131_OUTPUT_TYPE_MONITOR) {
 		bridge.SetOutput(&monitor);
 		monitor.Cls();
 		console_set_top_row(20);
@@ -166,27 +152,23 @@ void notmain(void) {
 
 	bridge.Print();
 
-	if (tOutputType == OUTPUT_TYPE_DMX) {
+	if (tOutputType == E131_OUTPUT_TYPE_DMX) {
 		dmx.Print();
-	}
-#if defined (HAVE_SPI)
-	else if (tOutputType == OUTPUT_TYPE_SPI) {
+	} else if (tOutputType == E131_OUTPUT_TYPE_SPI) {
 		spi.Print();
 	}
-#endif
 
-#if defined (HAVE_I2C)
 	if (IsOledConnected) {
 		display.Write(1, "WiFi sACN E1.31 ");
 
 		switch (tOutputType) {
-		case OUTPUT_TYPE_DMX:
+		case E131_OUTPUT_TYPE_DMX:
 			display.PutString("DMX");
 			break;
-		case OUTPUT_TYPE_MONITOR:
+		case E131_OUTPUT_TYPE_MONITOR:
 			display.PutString("Mon");
 			break;
-		case OUTPUT_TYPE_SPI:
+		case E131_OUTPUT_TYPE_SPI:
 			display.PutString("Pixel");
 			break;
 		default:
@@ -206,19 +188,14 @@ void notmain(void) {
 		(void) display.Printf(6, "M: " IPSTR "", IP2STR(bridge.GetMulticastIp()));
 		(void) display.Printf(7, "U: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	}
-#endif
 
 	console_status(CONSOLE_YELLOW, "Starting the Bridge ...");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting the Bridge ..."));
-#endif
 
 	bridge.Start();
 
 	console_status(CONSOLE_GREEN, "Bridge is running");
-#if defined (HAVE_I2C)
 	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Bridge is running"));
-#endif
 
 	hw.WatchdogInit();
 

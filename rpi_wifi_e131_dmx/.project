@@ -15,7 +15,6 @@
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>
 		<project>lib-network</project>
-		<project>lib-utils</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
