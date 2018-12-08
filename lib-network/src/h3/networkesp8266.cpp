@@ -1,5 +1,5 @@
 /**
- * @file networkbaremetal.cpp
+ * @file networkesp8266.cpp
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -27,31 +27,31 @@
 #include <string.h>
 #include <assert.h>
 
-#include "networkbaremetal.h"
+#include "networkesp8266.h"
 
 #include "wifi.h"
 #include "wifi_udp.h"
 
 extern "C" {
-	int32_t bcm2835_vc_get_board_mac_address(/*@out@*/uint8_t *);
+	int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 }
 
-NetworkBaremetal::NetworkBaremetal(void): m_IsInitDone(false) {
+NetworkESP8266::NetworkESP8266(void): m_IsInitDone(false) {
 }
 
-NetworkBaremetal::~NetworkBaremetal(void) {
+NetworkESP8266::~NetworkESP8266(void) {
 	End();
 }
 
-int32_t NetworkBaremetal::Begin(uint16_t nPort) {
+int32_t NetworkESP8266::Begin(uint16_t nPort) {
 	wifi_udp_begin(nPort);
 	return 0;
 }
 
-void NetworkBaremetal::End(void) {
+void NetworkESP8266::End(void) {
 }
 
-void NetworkBaremetal::Init(void) {
+void NetworkESP8266::Init(void) {
 	struct ip_info info;
 
 	if (!wifi(&info)) {
@@ -72,26 +72,24 @@ void NetworkBaremetal::Init(void) {
 	m_IsInitDone = true;
 }
 
-void NetworkBaremetal::MacAddressCopyTo(uint8_t* pMacAddress) {
+void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
 		memcpy((void *)pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 	} else {
-		bcm2835_vc_get_board_mac_address((uint8_t *) pMacAddress);
+		hardware_get_mac_address((uint8_t *) pMacAddress);
 	}
 }
 
-void NetworkBaremetal::JoinGroup(uint32_t nHandle, uint32_t nIp) {
+void NetworkESP8266::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkBaremetal::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkESP8266::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
 	return wifi_udp_recvfrom(packet, size, from_ip, from_port);
 }
 
-void NetworkBaremetal::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkESP8266::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(packet, size, to_ip, remote_port);
 }
-
-

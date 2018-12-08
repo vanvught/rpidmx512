@@ -1,5 +1,5 @@
 /**
- * @file networkbaremetal.h
+ * @file networkesp8266.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKBAREMETAL_H_
-#define NETWORKBAREMETAL_H_
+#ifndef NETWORKESP8266_H_
+#define NETWORKESP8266_H_
 
 #include <stdint.h>
 
 #include "network.h"
 
-class NetworkBaremetal: public Network {
+class NetworkESP8266: public Network {
 public:
-	NetworkBaremetal(void);
-	~NetworkBaremetal(void);
+	NetworkESP8266(void);
+	~NetworkESP8266(void);
 
 	void Init(void);
 
@@ -59,4 +59,4 @@ private:
 	bool m_IsInitDone;
 };
 
-#endif /* NETWORKBAREMETAL_H_ */
+#endif /* NETWORKESP8266_H_ */

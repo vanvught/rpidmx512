@@ -60,7 +60,7 @@ Network::~Network(void) {
 }
 
 void Network::Print(void) {
-	printf("\nNetwork configuration\n");
+	printf("Network configuration\n");
 	printf(" Hostname   : %s\n", m_aHostName);
 	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
 	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
