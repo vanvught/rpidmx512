@@ -55,6 +55,7 @@ RDMSubDevice::~RDMSubDevice(void) {
 
 void RDMSubDevice::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	m_tSubDevicesInfo.dmx_start_address = nDmxStartAddress;
+	UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS);
 }
 
 void RDMSubDevice::SetDmxFootprint(uint16_t nDmxFootprint) {
@@ -66,6 +67,8 @@ void RDMSubDevice::SetPersonalities(RDMPersonality **pRDMPersonalities, uint8_t 
 
 	m_tSubDevicesInfo.personality_count = nPersonalityCount;
 	m_pRDMPersonalities = pRDMPersonalities;
+
+	UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY);
 }
 
 RDMPersonality* RDMSubDevice::GetPersonality(uint8_t nPersonality) {
@@ -140,4 +143,8 @@ uint16_t RDMSubDevice::CalculateChecksum(void) {
 	}
 
 	return nChecksum;
+}
+
+void RDMSubDevice::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+	//printf("override\n");
 }

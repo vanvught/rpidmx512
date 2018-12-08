@@ -144,7 +144,6 @@ void RDMSubDevices::SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAd
 
 	assert(m_pRDMSubDevice[nSubDevice - 1] != 0);
 	m_pRDMSubDevice[nSubDevice - 1]->SetDmxStartAddress(nDmxStartAddress);
-	m_pRDMSubDevice[nSubDevice - 1]->UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS);
 }
 
 uint16_t RDMSubDevices::GetDmxFootPrint(uint16_t nSubDevice) {
@@ -166,7 +165,6 @@ void RDMSubDevices::SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonal
 
 	assert(m_pRDMSubDevice[nSubDevice - 1] != 0);
 	m_pRDMSubDevice[nSubDevice - 1]->SetPersonalityCurrent(nPersonality);
-	m_pRDMSubDevice[nSubDevice - 1]->UpdateEvent(RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY);
 }
 
 uint8_t RDMSubDevices::GetPersonalityCount(uint16_t nSubDevice) {

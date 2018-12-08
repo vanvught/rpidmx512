@@ -26,6 +26,8 @@
 #ifndef RDMSUBDEVICEDUMMY_H_
 #define RDMSUBDEVICEDUMMY_H_
 
+#include <stdint.h>
+
 #include "rdmsubdevice.h"
 
 class RDMSubDeviceDummy: public RDMSubDevice {
@@ -33,13 +35,14 @@ public:
 	RDMSubDeviceDummy(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
 	~RDMSubDeviceDummy(void);
 
-	bool Initialize(void);
+	bool Initialize(void) override;
 
-	void Start(void);
-	void Stop(void);
-	void Data(const uint8_t *pDdata, uint16_t nLength);
+	void Start(void) override;
+	void Stop(void) override;
+	void Data(const uint8_t *pDdata, uint16_t nLength) override;
 
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent);
+private:
+	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
 private:
 };

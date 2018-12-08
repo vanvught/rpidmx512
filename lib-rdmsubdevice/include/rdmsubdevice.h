@@ -76,13 +76,12 @@ public:
 	virtual void Stop(void)= 0;
 	virtual void Data(const uint8_t *pDdata, uint16_t nLength)=0;
 
-	virtual void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent)=0;
-
 protected:
 	void SetDmxFootprint(uint16_t nDmxFootprint);
 	void SetPersonalities(RDMPersonality **pRDMPersonalities, uint8_t nPersonalityCount);
 
 private:
+	virtual void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent);
 	uint16_t CalculateChecksum(void);
 
 private:

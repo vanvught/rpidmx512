@@ -26,6 +26,8 @@
 #ifndef RDMSUBDEVICEMCP23S17_H_
 #define RDMSUBDEVICEMCP23S17_H_
 
+#include <stdint.h>
+
 #include "rdmsubdevice.h"
 
 #include "mcp23s17.h"
@@ -41,7 +43,8 @@ public:
 	void Stop(void);
 	void Data(const uint8_t *pData, uint16_t nLength);
 
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent);
+private:
+	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
 private:
 	struct _device_info m_tDeviceInfo;

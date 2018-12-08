@@ -87,10 +87,10 @@ void RDMSubDeviceDummy::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 
 	switch (tUpdateEvent) {
 		case RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS:
-			printf("\tRDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS");
+			printf("\tRDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS\n");
 			break;
 		case RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY:
-			printf("\tRDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY");
+			printf("\tRDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY\n");
 			break;
 		default:
 			break;
