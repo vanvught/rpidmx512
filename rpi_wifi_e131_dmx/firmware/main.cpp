@@ -30,7 +30,7 @@
 #include <uuid/uuid.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkesp8266.h"
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
@@ -50,22 +50,38 @@
  #include "dmxmonitor.h"
 #endif
 // WS28xx output
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripedmx.h"
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
+
+#if defined(ORANGE_PI)
+ #include "spiflashinstall.h"
+ #include "spiflashstore.h"
+#endif
 
 #include "software_version.h"
+
+static const char NETWORK_INIT[] = "Network init ...";
+static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+static const char START_BRIDGE[] = "Starting the Bridge ...";
+static const char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkESP8266 nw;
 	LedBlinkBaremetal lb;
+
+#if defined (ORANGE_PI)
+	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
+		SpiFlashInstall spiFlashInstall;
+	}
+
+	SpiFlashStore spiFlashStore;
+	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
+#else
 	E131Params e131params;
-	E131Uuid e131uuid;
-	uuid_t uuid;
-	char uuid_str[UUID_STRING_LENGTH + 1];
-	uint8_t nHwTextLength;
+#endif
 
 	if (e131params.Load()) {
 		e131params.Dump();
@@ -74,8 +90,8 @@ void notmain(void) {
 	const TE131OutputType tOutputType = e131params.GetOutputType();
 
 	Display display(0,8);
-	const bool IsOledConnected = display.isDetected();
 
+	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
@@ -88,24 +104,26 @@ void notmain(void) {
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
-#if defined (HAVE_SPI)
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {1 Universe}");
 	console_set_fg_color(CONSOLE_WHITE);
-#endif
 #ifdef H3
 	console_putc('\n');
 #endif
 
-	hw.SetLed(HARDWARE_LED_ON);
-
 	console_set_top_row(3);
 
-	console_status(CONSOLE_YELLOW, "Network init ...");
-	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Network init ..."));
+	hw.SetLed(HARDWARE_LED_ON);
+
+	console_status(CONSOLE_YELLOW, NETWORK_INIT);
+	display.TextStatus(NETWORK_INIT);
 
 	nw.Init();
+
+	E131Uuid e131uuid;
+	uuid_t uuid;
+	char uuid_str[UUID_STRING_LENGTH + 1];
 
 	if (e131params.isHaveCustomCid()) {
 		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
@@ -116,9 +134,12 @@ void notmain(void) {
 		uuid_unparse(uuid, uuid_str);
 	}
 
+	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
+	display.TextStatus(BRIDGE_PARMAS);
+
 	E131Bridge bridge;
 	DMXSend dmx;
-	SPISend spi;
+	WS28xxDmx spi;
 #ifndef H3
 	DMXMonitor monitor;
 #endif
@@ -135,7 +156,7 @@ void notmain(void) {
 		dmxparams.Set(&dmx);
 		bridge.SetOutput(&dmx);
 	} else if (tOutputType == E131_OUTPUT_TYPE_SPI) {
-		WS28XXStripeParams deviceparms;
+		WS28xxDmxParams deviceparms;
 		if (deviceparms.Load()) {
 			deviceparms.Dump();
 		}
@@ -152,29 +173,14 @@ void notmain(void) {
 
 	bridge.Print();
 
-	if (tOutputType == E131_OUTPUT_TYPE_DMX) {
-		dmx.Print();
-	} else if (tOutputType == E131_OUTPUT_TYPE_SPI) {
+	if (tOutputType == E131_OUTPUT_TYPE_SPI) {
 		spi.Print();
+	} else {
+		dmx.Print();
 	}
 
-	if (IsOledConnected) {
-		display.Write(1, "WiFi sACN E1.31 ");
-
-		switch (tOutputType) {
-		case E131_OUTPUT_TYPE_DMX:
-			display.PutString("DMX");
-			break;
-		case E131_OUTPUT_TYPE_MONITOR:
-			display.PutString("Mon");
-			break;
-		case E131_OUTPUT_TYPE_SPI:
-			display.PutString("Pixel");
-			break;
-		default:
-			display.PutString("-E-");
-			break;
-		}
+	if (display.isDetected()) {
+		(void) display.Printf(1, "WiFi sACN E1.31 %s", tOutputType == E131_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 
 		if (wifi_get_opmode() == WIFI_STA) {
 			(void) display.Printf(2, "S: %s", wifi_get_ssid());
@@ -189,13 +195,13 @@ void notmain(void) {
 		(void) display.Printf(7, "U: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	}
 
-	console_status(CONSOLE_YELLOW, "Starting the Bridge ...");
-	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Starting the Bridge ..."));
+	console_status(CONSOLE_YELLOW, START_BRIDGE);
+	display.TextStatus(START_BRIDGE);
 
 	bridge.Start();
 
-	console_status(CONSOLE_GREEN, "Bridge is running");
-	DISPLAY_CONNECTED(IsOledConnected, display.TextStatus("Bridge is running"));
+	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
+	display.TextStatus(BRIDGE_STARTED);
 
 	hw.WatchdogInit();
 
