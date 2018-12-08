@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkesp8266.h"
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
@@ -51,7 +51,7 @@ extern "C" {
 
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkESP8266 nw;
 	LedBlinkBaremetal lb;
 	OSCServerParams oscparms;
 	OscServer server;
