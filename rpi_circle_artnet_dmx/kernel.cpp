@@ -46,9 +46,9 @@
 #include "circle/dmxsend.h"
 
 // WS28xx output
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripedmx.h"
-#include "ws28xxstripedmxgrouping.h"
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
+#include "ws28xxdmxgrouping.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -129,8 +129,6 @@ boolean CKernel::Initialize(void) {
 		m_Logger.Write(FromKernel, LogError, "Invalid network configuration");
 	}
 
-	bOK = m_DMX.Initialize();
-
 	return bOK;
 }
 
@@ -200,7 +198,7 @@ TShutdownMode CKernel::Run(void)
 	LightSet *pSpi;
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
-		WS28XXStripeParams ws28xxparms;
+		WS28xxDmxParams ws28xxparms;
 
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
@@ -209,20 +207,20 @@ TShutdownMode CKernel::Run(void)
 		}
 
 		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxStripeDmxGrouping *pWS28xxStripeDmxGrouping = new WS28xxStripeDmxGrouping(&m_Interrupt);
-			assert(pWS28xxStripeDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxStripeDmxGrouping);
-			pSpi = pWS28xxStripeDmxGrouping;
+			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping(&m_Interrupt);
+			assert(pWS28xxDmxGrouping != 0);
+			ws28xxparms.Set(pWS28xxDmxGrouping);
+			pSpi = pWS28xxDmxGrouping;
 		} else  {
-			SPISend *pSPISend = new SPISend(&m_Interrupt);
-			assert(pSPISend != 0);
-			ws28xxparms.Set(pSPISend);
-			pSpi = pSPISend;
+			WS28xxDmx *pWS28xxDmx = new WS28xxDmx(&m_Interrupt);
+			assert(pWS28xxDmx != 0);
+			ws28xxparms.Set(pWS28xxDmx);
+			pSpi = pWS28xxDmx;
 
-			const uint16_t nLedCount = pSPISend->GetLEDCount();
+			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 			const uint8_t nUniverse = artnetparams.GetUniverse();
 
-			if (pSPISend->GetLEDType() == SK6812W) {
+			if (pWS28xxDmx->GetLEDType() == SK6812W) {
 				if (nLedCount > 128) {
 					node.SetDirectUpdate(true);
 					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
@@ -249,6 +247,8 @@ TShutdownMode CKernel::Run(void)
 
 		node.SetOutput(pSpi);
 	} else {
+		m_DMX.Initialize();
+
 		DMXParams dmxParams;
 		if (dmxParams.Load()) {
 			dmxParams.Dump();

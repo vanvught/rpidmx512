@@ -53,7 +53,7 @@
 // DMX output
 #include "circle/dmxsend.h"
 // WS28xx output
-#include "ws28xxstripedmx.h"
+#include "ws28xxdmx.h"
 
 
 enum TShutdownMode
