@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripeparams.cpp
+ * @file ws28xxparams.cpp
  *
  */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -36,13 +36,13 @@
 
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 
-#include "ws28xxstripeparams.h"
+#include <ws28xxdmxparams.h>
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "ws28xxstripe.h"
-#include "ws28xxstripedmx.h"
+#include "ws28xx.h"
+#include "ws28xxdmx.h"
 
 #define SET_LED_TYPE_MASK			(1 << 0)
 #define SET_LED_COUNT_MASK			(1 << 1)
@@ -59,7 +59,7 @@ static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 #define LED_TYPES_MAX_NAME_LENGTH 	8
 static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "SK6812\0", "SK6812W" };
 
-WS28XXStripeParams::WS28XXStripeParams(WS28XXStripeParamsStore *pWS28XXStripeParamsStore): m_pWS28XXStripeParamsStore(pWS28XXStripeParamsStore) {
+WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28XXStripeParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28XXStripeParams.nSetList = 0;
 	m_tWS28XXStripeParams.tLedType = WS2801;
 	m_tWS28XXStripeParams.nLedCount = 170;
@@ -68,14 +68,14 @@ WS28XXStripeParams::WS28XXStripeParams(WS28XXStripeParamsStore *pWS28XXStripePar
 
 }
 
-WS28XXStripeParams::~WS28XXStripeParams(void) {
+WS28xxDmxParams::~WS28xxDmxParams(void) {
 	m_tWS28XXStripeParams.nSetList = 0;
 }
 
-bool WS28XXStripeParams::Load(void) {
+bool WS28xxDmxParams::Load(void) {
 	m_tWS28XXStripeParams.nSetList = 0;
 
-	ReadConfigFile configfile(WS28XXStripeParams::staticCallbackFunction, this);
+	ReadConfigFile configfile(WS28xxDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(PARAMS_FILE_NAME)) {
 		// There is a configuration file
@@ -91,7 +91,7 @@ bool WS28XXStripeParams::Load(void) {
 	return true;
 }
 
-void WS28XXStripeParams::callbackFunction(const char *pLine) {
+void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
 	uint8_t value8;
@@ -133,7 +133,7 @@ void WS28XXStripeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void WS28XXStripeParams::Set(SPISend *pSpiSend) {
+void WS28xxDmxParams::Set(WS28xxDmx *pSpiSend) {
 	assert(pSpiSend != 0);
 
 	if (isMaskSet(SET_LED_TYPE_MASK)) {
@@ -149,7 +149,7 @@ void WS28XXStripeParams::Set(SPISend *pSpiSend) {
 	}
 }
 
-void WS28XXStripeParams::Dump(void) {
+void WS28xxDmxParams::Dump(void) {
 #ifndef NDEBUG
 	if (m_tWS28XXStripeParams.nSetList == 0) {
 		return;
@@ -175,7 +175,7 @@ void WS28XXStripeParams::Dump(void) {
 #endif
 }
 
-const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
+const char* WS28xxDmxParams::GetLedTypeString(TWS28XXType tType) {
 	if (tType < LED_TYPES_COUNT) {
 		return led_types[tType];
 	}
@@ -183,13 +183,13 @@ const char* WS28XXStripeParams::GetLedTypeString(TWS28XXType tType) {
 	return "Unknown";
 }
 
-void WS28XXStripeParams::staticCallbackFunction(void *p, const char *s) {
+void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((WS28XXStripeParams *) p)->callbackFunction(s);
+	((WS28xxDmxParams *) p)->callbackFunction(s);
 }
 
-bool WS28XXStripeParams::isMaskSet(uint32_t nMask) const {
+bool WS28xxDmxParams::isMaskSet(uint32_t nMask) const {
 	return (m_tWS28XXStripeParams.nSetList & nMask) == nMask;
 }

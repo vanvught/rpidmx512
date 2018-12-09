@@ -1,5 +1,5 @@
 /**
- * @file spisend.h
+ * @file ws28xxdmx.h
  *
  */
 /* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SPISEND_H_
-#define SPISEND_H_
+#ifndef WS28XXDMX_H_
+#define WS28XXDMX_H_
 
 #include <stdint.h>
 
@@ -34,16 +34,16 @@
 
 #include "lightset.h"
 
-#include "ws28xxstripe.h"
+#include "ws28xx.h"
 
-class SPISend: public LightSet {
+class WS28xxDmx: public LightSet {
 public:
 #if defined (__circle__)
-	SPISend(CInterruptSystem *);
+	WS28xxDmx(CInterruptSystem *);
 #else
-	SPISend(void);
+	WS28xxDmx(void);
 #endif
-	~SPISend(void);
+	~WS28xxDmx(void);
 
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);
@@ -89,7 +89,7 @@ protected:
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nDmxFootprint;
 
-	WS28XXStripe* m_pLEDStripe;
+	WS28xx* m_pLEDStripe;
 	bool m_bIsStarted;
 
 private:
@@ -100,4 +100,4 @@ private:
 	uint16_t m_nChannelsPerLed;
 };
 
-#endif /* SPISEND_H_ */
+#endif /* WS28XXDMX_H_ */

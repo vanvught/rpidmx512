@@ -40,7 +40,7 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 static const uint32_t s_aStorSize[STORE_LAST] = {96, 144, 32, 32, 96};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net", "DMX Send", "SPI", "E1.31"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net", "DMX Send", "WS28xx DMX", "E1.31"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;

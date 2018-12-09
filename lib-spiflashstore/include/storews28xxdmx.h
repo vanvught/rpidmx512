@@ -26,15 +26,15 @@
 #ifndef STOREWS28XXDMX_H_
 #define STOREWS28XXDMX_H_
 
-#include "ws28xxstripeparams.h"
+#include <ws28xxdmxparams.h>
 
-class StoreWS28xxDmx: public WS28XXStripeParamsStore {
+class StoreWS28xxDmx: public WS28xxDmxParamsStore {
 public:
 	StoreWS28xxDmx(void);
 	~StoreWS28xxDmx(void);
 
-	void Update(const struct TWS28XXStripeParams *pWS28XXStripeParams);
-	void Copy(struct TWS28XXStripeParams *pWS28XXStripeParams);
+	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
+	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
 
 private:
 

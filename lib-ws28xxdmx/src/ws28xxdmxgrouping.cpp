@@ -27,28 +27,26 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
-
-#include "ws28xxstripedmxgrouping.h"
-#include "ws28xxstripeparams.h"
-
+#include <ws28xxdmxgrouping.h>
+#include <ws28xxdmxparams.h>
 #include "lightset.h"
 
 #define DMX_FOOTPRINT_DEFAULT		3
 
 #if defined (__circle__)
-WS28xxStripeDmxGrouping::WS28xxStripeDmxGrouping(CInterruptSystem *pInterruptSystem) : SPISend(pInterruptSystem) {
+WS28xxDmxGrouping::WS28xxDmxGrouping(CInterruptSystem *pInterruptSystem) : WS28xxDmx(pInterruptSystem) {
 #else
-WS28xxStripeDmxGrouping::WS28xxStripeDmxGrouping(void) {
+WS28xxDmxGrouping::WS28xxDmxGrouping(void) {
 #endif
 	for (uint32_t i = 0; i < sizeof(m_aDmxData); i++) {
 		m_aDmxData[i] = 0;
 	}
 }
 
-WS28xxStripeDmxGrouping::~WS28xxStripeDmxGrouping(void) {
+WS28xxDmxGrouping::~WS28xxDmxGrouping(void) {
 }
 
-void WS28xxStripeDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLenght) {
+void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLenght) {
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
@@ -89,7 +87,7 @@ void WS28xxStripeDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint1
 	m_pLEDStripe->Update();
 }
 
-void WS28xxStripeDmxGrouping::SetLEDType(TWS28XXType tLedType) {
+void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {
 	m_tLedType = tLedType;
 
 	if (tLedType == SK6812W) {
@@ -97,17 +95,11 @@ void WS28xxStripeDmxGrouping::SetLEDType(TWS28XXType tLedType) {
 	}
 }
 
-void WS28xxStripeDmxGrouping::SetLEDCount(uint16_t nLedCount) {
+void WS28xxDmxGrouping::SetLEDCount(uint16_t nLedCount) {
 	m_nLedCount = nLedCount;
 }
 
-void WS28xxStripeDmxGrouping::Print(void) {
-	printf("Led stripe (grouping) parameters\n");
-	printf(" Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-}
-
-bool WS28xxStripeDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint)));
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint))) {
@@ -118,7 +110,7 @@ bool WS28xxStripeDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-bool WS28xxStripeDmxGrouping::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool WS28xxDmxGrouping::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
@@ -143,4 +135,10 @@ bool WS28xxStripeDmxGrouping::GetSlotInfo(uint16_t nSlotOffset, struct TLightSet
 	}
 
 	return true;
+}
+
+void WS28xxDmxGrouping::Print(void) {
+	printf("Led (grouping) parameters\n");
+	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
+	printf(" Count : %d\n", (int) m_nLedCount);
 }

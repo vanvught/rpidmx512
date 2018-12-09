@@ -40,8 +40,8 @@
 #endif
 #endif
 
-#include "ws28xxstripedmx.h"
-#include "ws28xxstripe.h"
+#include <ws28xxdmx.h>
+#include <ws28xx.h>
 
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -50,10 +50,10 @@
 #define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
 
 #if defined (__circle__)
-SPISend::SPISend(CInterruptSystem *pInterruptSystem) :
+WS28xxDmx::WS28xxDmx(CInterruptSystem *pInterruptSystem) :
 	m_pInterrupt (pInterruptSystem),
 #else
-SPISend::SPISend(void) :
+WS28xxDmx::WS28xxDmx(void) :
 #endif
 	m_tLedType(WS2801),
 	m_nLedCount(170),
@@ -67,13 +67,13 @@ SPISend::SPISend(void) :
 	m_nChannelsPerLed(3) {
 }
 
-SPISend::~SPISend(void) {
+WS28xxDmx::~WS28xxDmx(void) {
 	Stop();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void SPISend::Start(uint8_t nPort) {
+void WS28xxDmx::Start(uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -82,9 +82,9 @@ void SPISend::Start(uint8_t nPort) {
 
 	if (m_pLEDStripe == 0) {
 #if defined (__circle__)
-		m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_tLedType, m_nLedCount);
+		m_pLEDStripe = new WS28xx(m_pInterrupt, m_tLedType, m_nLedCount);
 #else
-		m_pLEDStripe = new WS28XXStripe(m_tLedType, m_nLedCount);
+		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount);
 #endif
 		assert(m_pLEDStripe != 0);
 		m_pLEDStripe->Initialize();
@@ -96,7 +96,7 @@ void SPISend::Start(uint8_t nPort) {
 	}
 }
 
-void SPISend::Stop(uint8_t nPort) {
+void WS28xxDmx::Stop(uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -111,7 +111,7 @@ void SPISend::Stop(uint8_t nPort) {
 	}
 }
 
-void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	assert(pData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -190,7 +190,7 @@ void SPISend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	}
 }
 
-void SPISend::SetLEDType(TWS28XXType type) {
+void WS28xxDmx::SetLEDType(TWS28XXType type) {
 	m_tLedType = type;
 
 	if (type == SK6812W) {
@@ -204,13 +204,13 @@ void SPISend::SetLEDType(TWS28XXType type) {
 	UpdateMembers();
 }
 
-void SPISend::SetLEDCount(uint16_t nCount) {
+void WS28xxDmx::SetLEDCount(uint16_t nCount) {
 	m_nLedCount = nCount;
 
 	UpdateMembers();
 }
 
-bool SPISend::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
 
 	//FIXME Footprint
@@ -223,7 +223,7 @@ bool SPISend::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-bool SPISend::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	unsigned nIndex;
 
 	if (nSlotOffset >  m_nDmxFootprint) {
@@ -258,7 +258,7 @@ bool SPISend::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotI
 	return true;
 }
 
-void SPISend::UpdateMembers(void) {
+void WS28xxDmx::UpdateMembers(void) {
 	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
 
 	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {

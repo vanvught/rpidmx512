@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXSTRIPEPARAMS_H_
-#define WS28XXSTRIPEPARAMS_H_
+#ifndef WS28XXDMXPARAMS_H_
+#define WS28XXDMXPARAMS_H_
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "ws28xxstripedmx.h"
-#include "ws28xxstripedmxgrouping.h"
+#include "ws28xxdmx.h"
+#include "ws28xxdmxgrouping.h"
 
-struct TWS28XXStripeParams {
+struct TWS28xxDmxParams {
     uint32_t nSetList;
 	TWS28XXType tLedType;
 	uint16_t nLedCount;
@@ -40,23 +40,23 @@ struct TWS28XXStripeParams {
 	bool bLedGrouping;
 };
 
-class WS28XXStripeParamsStore {
+class WS28xxDmxParamsStore {
 public:
-	virtual ~WS28XXStripeParamsStore(void);
+	virtual ~WS28xxDmxParamsStore(void);
 
-	virtual void Update(const struct TWS28XXStripeParams *pWS28XXStripeParams)=0;
-	virtual void Copy(struct TWS28XXStripeParams *pWS28XXStripeParams)=0;
+	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
+	virtual void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
 
 private:
 };
 
-class WS28XXStripeParams {
+class WS28xxDmxParams {
 public:
-	WS28XXStripeParams(WS28XXStripeParamsStore *pWS28XXStripeParamsStore = 0);
-	~WS28XXStripeParams(void);
+	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore = 0);
+	~WS28xxDmxParams(void);
 
 	bool Load(void);
-	void Set(SPISend *);
+	void Set(WS28xxDmx *);
 	void Dump(void);
 
 	inline TWS28XXType GetLedType(void) {
@@ -84,8 +84,8 @@ private:
     bool isMaskSet(uint32_t nMask) const;
 
 private:
-    WS28XXStripeParamsStore *m_pWS28XXStripeParamsStore;
-    struct TWS28XXStripeParams m_tWS28XXStripeParams;
+    WS28xxDmxParamsStore *m_pWS28XXStripeParamsStore;
+    struct TWS28xxDmxParams m_tWS28XXStripeParams;
 };
 
-#endif /* WS28XXSTRIPEPARAMS_H_ */
+#endif /* WS28XXDMXPARAMS_H_ */

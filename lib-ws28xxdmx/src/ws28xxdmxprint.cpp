@@ -25,11 +25,11 @@
 
 #include <stdio.h>
 
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripedmx.h"
+#include "ws28xxdmx.h"
+#include "ws28xxdmxparams.h"
 
-void SPISend::Print(void) {
-	printf("Led stripe parameters\n");
-	printf(" Type  : %s [%d]\n", WS28XXStripeParams::GetLedTypeString(m_tLedType), m_tLedType);
+void WS28xxDmx::Print(void) {
+	printf("Led parameters\n");
+	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", (int) m_nLedCount);
 }

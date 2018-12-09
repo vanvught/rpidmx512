@@ -25,11 +25,10 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <ws28xxdmxparams.h>
 
 #include "storews28xxdmx.h"
 #include "spiflashstore.h"
-
-#include "ws28xxstripeparams.h"
 
 #include "debug.h"
 
@@ -45,18 +44,18 @@ StoreWS28xxDmx::~StoreWS28xxDmx(void) {
 	DEBUG_EXIT
 }
 
-void StoreWS28xxDmx::Update(const struct TWS28XXStripeParams *pWS28XXStripeParams) {
+void StoreWS28xxDmx::Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_SPI, (void *)pWS28XXStripeParams, sizeof(struct TWS28XXStripeParams));
+	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, (void *)pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 
 	DEBUG_EXIT
 }
 
-void StoreWS28xxDmx::Copy(struct TWS28XXStripeParams *pWS28XXStripeParams) {
+void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_SPI, (void *)pWS28XXStripeParams, sizeof(struct TWS28XXStripeParams));
+	SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, (void *)pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 
 	DEBUG_EXIT
 }

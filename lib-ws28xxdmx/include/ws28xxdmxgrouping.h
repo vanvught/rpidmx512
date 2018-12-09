@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripeparamsstore.cpp
+ * @file ws28xxdmxgrouping.h
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,8 +23,42 @@
  * THE SOFTWARE.
  */
 
-#include "ws28xxstripeparams.h"
+#ifndef WS28XXDMXGROUPING_H_
+#define WS28XXDMXGROUPING_H_
 
-WS28XXStripeParamsStore::~WS28XXStripeParamsStore(void) {
+#include <stdint.h>
 
-}
+#if defined (__circle__)
+ #include "circle/interrupt.h"
+#endif
+
+#include "ws28xxdmx.h"
+#include "ws28xx.h"
+
+class WS28xxDmxGrouping: public WS28xxDmx {
+public:
+#if defined (__circle__)
+	WS28xxDmxGrouping(CInterruptSystem *);
+#else
+	WS28xxDmxGrouping(void);
+#endif
+	~WS28xxDmxGrouping(void);
+
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght);
+
+	void SetLEDType(TWS28XXType tLedType);
+
+	void SetLEDCount(uint16_t nLedCount);
+
+	void Print(void);
+
+public: // RDM
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+
+private:
+	alignas(uint32_t) uint8_t m_aDmxData[4];
+};
+
+#endif /* WS28XXDMXGROUPING_H_ */
