@@ -166,6 +166,7 @@ TShutdownMode CKernel::Run(void) {
 	NetworkCircle nw;
 	OSCParams oscparms;
 	uint8_t nHwTextLength;
+	uint32_t nHandle = 0;
 
 	if (oscparms.Load()) {
 		oscparms.Dump();
@@ -183,7 +184,7 @@ TShutdownMode CKernel::Run(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("Ethernet OSC Pixel controller, Incoming port: %d, Outgoing port: %d", nIncomingPort, nOutgoingPort);
 
-	COSCWS28xx oscws28xx(&m_Interrupt, &m_Screen, nOutgoingPort);
+	COSCWS28xx oscws28xx(nHandle, &m_Interrupt, &m_Screen, nOutgoingPort);
 
 	oscws28xx.Start();
 	m_BlinkTask.SetFrequency(1);

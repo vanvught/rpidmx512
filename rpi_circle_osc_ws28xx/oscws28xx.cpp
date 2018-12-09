@@ -38,15 +38,16 @@
 
 #include "networkcircle.h"
 
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripe.h"
+#include "ws28xx.h"
 
 #include "oscws28xx.h"
 #include "osc.h"
 #include "oscsend.h"
 #include "oscmessage.h"
+#include "../lib-ws28xxdmx/include/ws28xxdmxparams.h"
 
-COSCWS28xx::COSCWS28xx(CInterruptSystem *pInterrupt, CDevice *pTarget, unsigned nRemotePort) :
+COSCWS28xx::COSCWS28xx(unsigned nHandle, CInterruptSystem *pInterrupt, CDevice *pTarget, unsigned nRemotePort) :
+		m_nHandle(nHandle),
 		m_pInterrupt(pInterrupt),
 		m_pTarget(pTarget),
 		m_nRemotePort(nRemotePort),
@@ -73,7 +74,7 @@ COSCWS28xx::~COSCWS28xx(void) {
 
 void COSCWS28xx::Start(void) {
 	assert(m_pLEDStripe == 0);
-	m_pLEDStripe = new WS28XXStripe(m_pInterrupt, m_LEDType, m_nLEDCount);
+	m_pLEDStripe = new WS28xx(m_pInterrupt, m_LEDType, m_nLEDCount);
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Initialize();
@@ -93,14 +94,14 @@ void COSCWS28xx::Run(void) {
 	uint16_t from_port;
 	uint32_t from_ip;
 
-	const int len = Network::Get()->RecvFrom((const uint8_t *) m_packet, (const uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
+	const int len = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) m_packet, (uint16_t) FRAME_BUFFER_SIZE, &from_ip, &from_port);
 
 	if (len == 0) {
 		return;
 	}
 
 	if (OSC::isMatch((const char*) m_packet, "/ping")) {
-		OSCSend MsgSend(from_ip, m_nRemotePort, "/pong", 0);
+		OSCSend MsgSend(m_nHandle, from_ip, m_nRemotePort, "/pong", 0);
 	} else if (OSC::isMatch((const char*) m_packet, "/dmx1/blackout")) {
 		OSCMessage Msg(m_packet, (unsigned) len);
 		m_Blackout = (unsigned)Msg.GetFloat(0) == 1;
@@ -153,10 +154,10 @@ void COSCWS28xx::Run(void) {
 			m_pLEDStripe->Update();
 		}
 	} else if (OSC::isMatch((const char*) m_packet, "/2")) {
-		OSCSend MsgSendModel(from_ip, m_nRemotePort, "/info/model", "s", m_MachineInfo.GetMachineName());
-		OSCSend MsgSendSoc(from_ip, m_nRemotePort, "/info/soc", "s", m_MachineInfo.GetSoCName());
-		OSCSend MsgSendInfo(from_ip, m_nRemotePort, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
-		OSCSend MsgSendLedType(from_ip, m_nRemotePort, "/info/ledtype", "s", WS28XXStripeParams::GetLedTypeString(m_LEDType));
-		OSCSend MsgSendLedCount(from_ip, m_nRemotePort, "/info/ledcount", "i", m_nLEDCount);
+		OSCSend MsgSendModel(m_nHandle, from_ip, m_nRemotePort, "/info/model", "s", m_MachineInfo.GetMachineName());
+		OSCSend MsgSendSoc(m_nHandle, from_ip, m_nRemotePort, "/info/soc", "s", m_MachineInfo.GetSoCName());
+		OSCSend MsgSendInfo(m_nHandle, from_ip, m_nRemotePort, "/info/os", "s", CIRCLE_NAME " " CIRCLE_VERSION_STRING);
+		OSCSend MsgSendLedType(m_nHandle, from_ip, m_nRemotePort, "/info/ledtype", "s", WS28xxDmxParams::GetLedTypeString(m_LEDType));
+		OSCSend MsgSendLedCount(m_nHandle, from_ip, m_nRemotePort, "/info/ledcount", "i", m_nLEDCount);
 	}
 }

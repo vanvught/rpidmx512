@@ -34,8 +34,8 @@
 #include <circle/device.h>
 #include <circle/machineinfo.h>
 
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripe.h"
+#include "ws28xx.h"
+#include "../../lib-ws28xxdmx/include/ws28xxdmxparams.h"
 
 #ifndef FRAME_BUFFER_SIZE
 #define FRAME_BUFFER_SIZE	1024
@@ -44,7 +44,7 @@
 class COSCWS28xx
 {
 public:
-	COSCWS28xx(CInterruptSystem*, CDevice *, unsigned);
+	COSCWS28xx(unsigned nHandle, CInterruptSystem*, CDevice *, unsigned);
 	~COSCWS28xx(void);
 
 	void Start(void);
@@ -53,16 +53,17 @@ public:
 	void Run(void);
 
 private:
+	uint32_t			m_nHandle;
 	CInterruptSystem	*m_pInterrupt;
 	CDevice				*m_pTarget;
 	unsigned			m_nRemotePort;
 	CMachineInfo 		m_MachineInfo;
-	WS28XXStripe		*m_pLEDStripe;
+	WS28xx				*m_pLEDStripe;
 	TWS28XXType			m_LEDType;
 	unsigned			m_nLEDCount;
 	boolean 			m_Blackout;
 	u8 					m_RGBWColour[4];
-	WS28XXStripeParams	m_DeviceParams;
+	WS28xxDmxParams		m_DeviceParams;
 	uint8_t 			m_packet[FRAME_BUFFER_SIZE];
 };
 
