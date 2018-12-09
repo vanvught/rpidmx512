@@ -48,24 +48,51 @@
  #include "ipprog.h"
 #endif
 
+#if defined (RASPPI)
+ #include "spiflashstore.h"
+#endif
+
 #include "software_version.h"
 
 int main(int argc, char **argv) {
 	HardwareLinux hw;
 	NetworkLinux nw;
-	LedBlinkLinux lbt;
-	uint8_t nTextLength;
-	ArtNetParams artnetparams;
-	ArtNetNode node;
-	DMXMonitor monitor;
-#if defined (__linux__)
-	IpProg ipprog;
-#endif
+	LedBlinkLinux lb;
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name [max_dmx_channels]\n", argv[0]);
 		return -1;
 	}
+
+	uint8_t nTextLength;
+	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
+
+	if (nw.Init(argv[1]) < 0) {
+		fprintf(stderr, "Not able to start the network\n");
+		return -1;
+	}
+
+#if defined (RASPPI)
+	SpiFlashStore spiFlashStore;
+	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+#else
+	ArtNetParams artnetparams;
+#endif
+
+	ArtNetNode node;
+
+	if (artnetparams.Load()) {
+		artnetparams.Dump();
+		artnetparams.Set(&node);
+	}
+
+	if(artnetparams.IsRdm()) {
+		puts("Art-Net 3 Node - Real-time DMX Monitor / RDM Responder {1 Universe}");
+	} else {
+		puts("Art-Net 3 Node - Real-time DMX Monitor {4 Universes}");
+	}
+
+	DMXMonitor monitor;
 
 	if (argc == 3) {
 		uint16_t max_channels = atoi(argv[2]);
@@ -75,55 +102,72 @@ int main(int argc, char **argv) {
 		monitor.SetMaxDmxChannels(max_channels);
 	}
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-		artnetparams.Set(&node);
-	}
-
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
-	puts("Art-Net 3 Node - Real-time DMX Monitor");
-
-	if (nw.Init(argv[1]) < 0) {
-		fprintf(stderr, "Not able to start the network\n");
-		return -1;
-	}
-
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
-	node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 1);
-	node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 2);
-	node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse() + 3);
-
 	node.SetOutput(&monitor);
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
-	node.SetRdmHandler(&RdmResponder, true);
+	if(artnetparams.IsRdm()) {
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+
+		if (artnetparams.IsRdmDiscovery()) {
+			RdmResponder.Full(0);
+		}
+
+		node.SetRdmHandler(&RdmResponder, true);
+	} else {
+		uint8_t nAddress;
+		bool bIsSetIndividual = false;
+		bool bIsSet;
+
+		for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+			nAddress = artnetparams.GetUniverse(i, bIsSet);
+
+			if (bIsSet) {
+				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, nAddress);
+				bIsSetIndividual = true;
+			}
+		}
+
+		if (!bIsSetIndividual) {
+			node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetparams.GetUniverse());
+			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetparams.GetUniverse());
+			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetparams.GetUniverse());
+			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetparams.GetUniverse());
+		}
+	}
 
 	Identify identify;
 
 #if defined (__linux__)
+	IpProg ipprog;
+
 	if (getuid() == 0) {
 		node.SetIpProgHandler(&ipprog);
 	}
 #endif
 
-	char *params_long_name = (char *)artnetparams.GetLongName();
-	if (*params_long_name == 0) {
-		char LongName[ARTNET_LONG_NAME_LENGTH];
-		snprintf(LongName, ARTNET_LONG_NAME_LENGTH, "%s Open Source Art-Net 3 Node", hw.GetSysName(nTextLength));
-		node.SetLongName(LongName);
-	}
+#if defined (RASPPI)
+	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+
+	spiFlashStore.Dump();
+#endif
 
 	nw.Print();
 	node.Print();
-	RdmResponder.GetRDMDeviceResponder()->Print();
+
+	if(artnetparams.IsRdm()) {
+		RdmResponder.GetRDMDeviceResponder()->Print();
+	}
 
 	node.Start();
 
 	for (;;) {
 		(void) node.HandlePacket();
 		identify.Run();
+#if defined (RASPPI)
+		spiFlashStore.Flash();
+#endif
 	}
 
 	return 0;

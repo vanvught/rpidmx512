@@ -1,7 +1,7 @@
 #
-DEFINES= NDEBUG
+DEFINES= ENABLE_SPIFLASH NDEBUG
 #
-LIBS= dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet properties lightset ledblink
+LIBS= dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet properties lightset ledblink debug e131
 #
 SRCDIR= src lib
 

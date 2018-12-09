@@ -9,6 +9,7 @@
 		<project>lib-ledblink</project>
 		<project>lib-lightset</project>
 		<project>lib-rdm</project>
+		<project>lib-spiflashstore</project>
 		<project>linux-template</project>
 	</projects>
 	<buildSpec>
