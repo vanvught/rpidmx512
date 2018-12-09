@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <uuid/uuid.h>
 
@@ -43,10 +44,8 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 // WS28xx output
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripedmx.h"
-
-#include "util.h"
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -138,14 +137,14 @@ void notmain(void) {
 
 	E131Bridge bridge;
 	DMXSend dmx;
-	SPISend spi;
+	WS28xxDmx spi;
 
 	bridge.SetCid(uuid);
 	bridge.SetUniverse(e131params.GetUniverse());
 	bridge.SetMergeMode(e131params.GetMergeMode());
 
 	if (tOutputType == E131_OUTPUT_TYPE_SPI) {
-		WS28XXStripeParams deviceparms;
+		WS28xxDmxParams deviceparms;
 		if (deviceparms.Load()) {
 			deviceparms.Dump();
 		}
