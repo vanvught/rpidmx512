@@ -25,6 +25,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "artnetipprog.h"
@@ -35,8 +36,6 @@
 #include "network.h"
 
 #include "spiflashstore.h"
-
-#include "util.h"
 
 union uip {
 	uint32_t u32;
