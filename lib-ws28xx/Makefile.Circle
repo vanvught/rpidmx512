@@ -7,7 +7,7 @@ CIRCLEHOME = ../Circle
 INCLUDE	+= -I ./include
 INCLUDE	+= -I ../include
 
-OBJS	= src/ws28xxstripecommon.o src/circle/ws28xxstripe.o
+OBJS	= src/ws28xxcommon.o src/circle/ws28xx.o
 
 EXTRACLEAN = src/circle/*.o src/*.o
 

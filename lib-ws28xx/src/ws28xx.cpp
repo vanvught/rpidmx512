@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripe.cpp
+ * @file ws28xx.cpp
  *
  */
 /* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -35,9 +35,9 @@
  #include "bcm2835_spi.h"
 #endif
 
-#include "ws28xxstripe.h"
+#include "ws28xx.h"
 
-WS28XXStripe::WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
+WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	m_Type(Type),
 	m_nLEDCount(nLEDCount),
 	m_bUpdating(false),
@@ -82,7 +82,7 @@ WS28XXStripe::WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClock
 	Update();
 }
 
-WS28XXStripe::~WS28XXStripe(void) {
+WS28xx::~WS28xx(void) {
 	delete [] m_pBlackoutBuffer;
 	m_pBlackoutBuffer = 0;
 
@@ -90,14 +90,14 @@ WS28XXStripe::~WS28XXStripe(void) {
 	m_pBuffer = 0;
 }
 
-void WS28XXStripe::Update(void) {
+void WS28xx::Update(void) {
 	assert (m_pBuffer != 0);
 
 	__sync_synchronize();
 	bcm2835_spi_writenb((char *) m_pBuffer, m_nBufSize);
 }
 
-void WS28XXStripe::Blackout(void) {
+void WS28xx::Blackout(void) {
 	assert (m_pBlackoutBuffer != 0);
 
 	__sync_synchronize();

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXSTRIPE_H_
-#define WS28XXSTRIPE_H_
+#ifndef WS28XX_H_
+#define WS28XX_H_
 
 #include <stdint.h>
 
@@ -46,15 +46,15 @@ enum TWS28XXType {
 #define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
 #define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 
-class WS28XXStripe {
+class WS28xx {
 public:
 	// nClockSpeed is only variable on WS2801, otherwise ignored
 #if defined (__circle__)
-	WS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+	WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
 #else
-	WS28XXStripe(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+	WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
 #endif
-	~WS28XXStripe(void);
+	~WS28xx(void);
 
 #if defined (__circle__)
 	bool Initialize (void);
@@ -105,4 +105,4 @@ private:
 #endif
 };
 
-#endif /* WS28XXSTRIPE_H_ */
+#endif /* WS28XX_H_ */

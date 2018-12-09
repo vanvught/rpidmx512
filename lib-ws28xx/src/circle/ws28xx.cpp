@@ -32,9 +32,9 @@
 #include <circle/logger.h>
 #include <circle/util.h>
 
-#include "ws28xxstripe.h"
+#include <ws28xx.h>
 
-WS28XXStripe::WS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed)
+WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed)
 :	m_Type (Type),
 	m_nLEDCount (nLEDCount),
 	m_bUpdating (FALSE),
@@ -69,7 +69,7 @@ WS28XXStripe::WS28XXStripe (CInterruptSystem *pInterruptSystem, TWS28XXType Type
 	memset(m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
 }
 
-WS28XXStripe::~WS28XXStripe(void) {
+WS28xx::~WS28xx(void) {
 	while (m_bUpdating) {
 		// just wait
 	}
@@ -84,11 +84,11 @@ WS28XXStripe::~WS28XXStripe(void) {
 	m_pBuffer = 0;
 }
 
-bool WS28XXStripe::Initialize(void) {
+bool WS28xx::Initialize(void) {
 	return m_SPIMaster.Initialize();
 }
 
-void WS28XXStripe::Update(void) {
+void WS28xx::Update(void) {
 	assert(!m_bUpdating);
 	m_bUpdating = TRUE;
 
@@ -99,7 +99,7 @@ void WS28XXStripe::Update(void) {
 	m_SPIMaster.StartWriteRead(0, m_pBuffer, m_pReadBuffer, m_nBufSize);
 }
 
-void WS28XXStripe::Blackout(void) {
+void WS28xx::Blackout(void) {
 	assert(!m_bUpdating);
 	m_bUpdating = TRUE;
 
@@ -110,11 +110,11 @@ void WS28XXStripe::Blackout(void) {
 	m_SPIMaster.StartWriteRead(0, m_pBlackoutBuffer, m_pReadBuffer, m_nBufSize);
 }
 
-bool WS28XXStripe::IsUpdating(void) const {
+bool WS28xx::IsUpdating(void) const {
 	return m_bUpdating;
 }
 
-void WS28XXStripe::SPICompletionRoutine(boolean bStatus) {
+void WS28xx::SPICompletionRoutine(boolean bStatus) {
 	if (!bStatus) {
 		CLogger::Get()->Write(__FUNCTION__, LogError, "SPI DMA operation failed");
 	}
@@ -123,8 +123,8 @@ void WS28XXStripe::SPICompletionRoutine(boolean bStatus) {
 	m_bUpdating = FALSE;
 }
 
-void WS28XXStripe::SPICompletionStub(boolean bStatus, void *pParam) {
-	WS28XXStripe *pThis = (WS28XXStripe *) pParam;
+void WS28xx::SPICompletionStub(boolean bStatus, void *pParam) {
+	WS28xx *pThis = (WS28xx *) pParam;
 	assert(pThis != 0);
 
 	pThis->SPICompletionRoutine(bStatus);

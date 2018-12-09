@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripecommon.cpp
+ * @file ws28xxcommon.cpp
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -25,9 +25,9 @@
 
 #include <assert.h>
 
-#include "ws28xxstripe.h"
+#include <ws28xx.h>
 
-void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
@@ -54,7 +54,7 @@ void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint
 	}
 }
 
-void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
@@ -73,7 +73,7 @@ void WS28XXStripe::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint
 	}
 }
 
-void WS28XXStripe::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
+void WS28xx::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
 	assert(m_Type != WS2801);
 	uint8_t mask;
 
@@ -90,10 +90,10 @@ void WS28XXStripe::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
 	}
 }
 
-unsigned WS28XXStripe::GetLEDCount(void) const {
+unsigned WS28xx::GetLEDCount(void) const {
 	return m_nLEDCount;
 }
 
-TWS28XXType WS28XXStripe::GetLEDType(void) const {
+TWS28XXType WS28xx::GetLEDType(void) const {
 	return m_Type;
 }
