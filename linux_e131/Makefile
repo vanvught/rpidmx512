@@ -1,7 +1,7 @@
 #
-DEFINES = NDEBUG
+DEFINES = ENABLE_SPIFLASH NDEBUG
 #
-LIBS = e131 dmxmonitor lightset
+LIBS = e131 dmxmonitor lightset ledblink debug artnet
 #
 SRCDIR = src
 

@@ -5,7 +5,7 @@
 	<projects>
 		<project>lib-dmxmonitor</project>
 		<project>lib-e131</project>
-		<project>lib-hardware</project>
+		<project>lib-hal</project>
 		<project>lib-network</project>
 		<project>linux-template</project>
 	</projects>
