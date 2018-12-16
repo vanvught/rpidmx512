@@ -61,6 +61,7 @@ WS28xxDmx::WS28xxDmx(void) :
 	m_nDmxFootprint(170 * 3),
 	m_pLEDStripe(0),
 	m_bIsStarted(false),
+	m_nClockSpeedHz(0),
 	m_nBeginIndexPortId1(170),
 	m_nBeginIndexPortId2(340),
 	m_nBeginIndexPortId3(510),
@@ -256,6 +257,9 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 	}
 
 	return true;
+}
+
+void WS28xxDmx::SetGlobalBrightness(uint8_t nGlobalBrightness) {
 }
 
 void WS28xxDmx::UpdateMembers(void) {

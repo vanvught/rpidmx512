@@ -60,6 +60,19 @@ public:
 		return m_nLedCount;
 	}
 
+	inline void SetClockSpeedHz(uint32_t nClockSpeedHz) {
+		m_nClockSpeedHz = nClockSpeedHz;
+	}
+
+	inline uint32_t GetClockSpeedHz(void) const {
+		return m_nClockSpeedHz;
+	}
+
+	void SetGlobalBrightness(uint8_t nGlobalBrightness);
+	uint8_t GetGlobalBrightness(void) const {
+		return m_nGlobalBrightness;
+	}
+
 	virtual void Print(void);
 
 public: // RDM
@@ -93,6 +106,8 @@ protected:
 	bool m_bIsStarted;
 
 private:
+	uint32_t m_nClockSpeedHz;
+	uint8_t m_nGlobalBrightness;
 	uint16_t m_nBeginIndexPortId1;
 	uint16_t m_nBeginIndexPortId2;
 	uint16_t m_nBeginIndexPortId3;

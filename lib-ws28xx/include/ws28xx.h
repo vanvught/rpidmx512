@@ -2,7 +2,7 @@
  * @file ws28xxstripe.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,10 @@ enum TWS28XXType {
 	WS2812,
 	WS2812B,
 	WS2813,
+	WS2815,
 	SK6812,
-	SK6812W
+	SK6812W,
+	APA102
 };
 
 #define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
@@ -48,9 +50,8 @@ enum TWS28XXType {
 
 class WS28xx {
 public:
-	// nClockSpeed is only variable on WS2801, otherwise ignored
 #if defined (__circle__)
-	WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+	WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
 #else
 	WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
 #endif
@@ -59,23 +60,37 @@ public:
 #if defined (__circle__)
 	bool Initialize (void);
 #else
-	inline bool Initialize (void) const {
+	inline bool Initialize (void) {
 		return true;
 	}
 #endif
 
-	unsigned GetLEDCount(void) const;
-	TWS28XXType GetLEDType(void) const;
+	inline uint16_t GetLEDCount(void) {
+		return m_nLEDCount;
+	}
 
-	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);					// nIndex is 0-based
-	void SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);	// nIndex is 0-based
+	inline TWS28XXType GetLEDType(void) {
+		return m_tLEDType;
+	}
+
+	inline uint32_t GetClockSpeedHz(void) {
+		return m_nClockSpeedHz;
+	}
+
+	void SetGlobalBrightness(uint8_t nGlobalBrightness);
+
+	inline uint8_t GetGlobalBrightness(void) {
+		return m_nGlobalBrightness;
+	}
+
+	void SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 	void Update(void);
 	void Blackout(void);
 
 #if defined (__circle__)
-	// returns TRUE while DMA operation is active
-	bool IsUpdating (void) const;
+	bool IsUpdating (void) const; // returns TRUE while DMA operation is active
 #else
 	inline 	bool IsUpdating (void) const {
 		return false;
@@ -83,7 +98,7 @@ public:
 #endif
 
 private:
-	void SetColorWS28xx(unsigned nOffset, uint8_t nValue);
+	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
 #if defined (__circle__)
 private:
@@ -92,9 +107,11 @@ private:
 #endif
 
 private:
-	TWS28XXType			m_Type;
-	unsigned			m_nLEDCount;
-	unsigned			m_nBufSize;
+	TWS28XXType			m_tLEDType;
+	uint16_t			m_nLEDCount;
+	uint32_t			m_nClockSpeedHz;
+	uint8_t				m_nGlobalBrightness;
+	uint32_t			m_nBufSize;
 	uint8_t				*m_pBuffer;
 	uint8_t				*m_pBlackoutBuffer;
 	volatile bool	 	m_bUpdating;

@@ -38,6 +38,8 @@ struct TWS28xxDmxParams {
 	uint16_t nLedCount;
 	uint16_t nDmxStartAddress;
 	bool bLedGrouping;
+	uint32_t nClockSpeedHz;
+	uint8_t nGlobalBrightness;
 };
 
 class WS28xxDmxParamsStore {
@@ -52,7 +54,7 @@ private:
 
 class WS28xxDmxParams {
 public:
-	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore = 0);
+	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28xxParamsStore = 0);
 	~WS28xxDmxParams(void);
 
 	bool Load(void);
@@ -60,19 +62,27 @@ public:
 	void Dump(void);
 
 	inline TWS28XXType GetLedType(void) {
-		return m_tWS28XXStripeParams.tLedType;
+		return m_tWS28xxParams.tLedType;
 	}
 
 	inline uint16_t GetLedCount(void) {
-		return m_tWS28XXStripeParams.nLedCount;
+		return m_tWS28xxParams.nLedCount;
+	}
+
+	inline uint32_t GetClockSpeedHz(void) {
+		return m_tWS28xxParams.nClockSpeedHz;
+	}
+
+	inline uint8_t GetGlobalBrightness(void) {
+		return m_tWS28xxParams.nGlobalBrightness;
 	}
 
 	inline uint16_t GetDmxStartAddress(void) {
-		return m_tWS28XXStripeParams.nDmxStartAddress;
+		return m_tWS28xxParams.nDmxStartAddress;
 	}
 
 	inline bool IsLedGrouping(void) {
-		return m_tWS28XXStripeParams.bLedGrouping;
+		return m_tWS28xxParams.bLedGrouping;
 	}
 
 public:
@@ -84,8 +94,8 @@ private:
     bool isMaskSet(uint32_t nMask) const;
 
 private:
-    WS28xxDmxParamsStore *m_pWS28XXStripeParamsStore;
-    struct TWS28xxDmxParams m_tWS28XXStripeParams;
+    WS28xxDmxParamsStore *m_pWS28xxParamsStore;
+    struct TWS28xxDmxParams m_tWS28xxParams;
 };
 
 #endif /* WS28XXDMXPARAMS_H_ */

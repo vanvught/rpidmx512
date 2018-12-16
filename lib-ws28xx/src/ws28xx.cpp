@@ -38,42 +38,63 @@
 #include "ws28xx.h"
 
 WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
-	m_Type(Type),
+	m_tLEDType(Type),
 	m_nLEDCount(nLEDCount),
+	m_nClockSpeedHz(nClockSpeed),
+	m_nGlobalBrightness(0xFF),
 	m_bUpdating(false),
 	m_nHighCode(Type == WS2812B ? 0xF8 : 0xF0)
 {
-	if (Type == SK6812W) {
+	assert(m_tLEDType <= APA102);
+	assert(m_nLEDCount > 0);
+
+	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
 		m_nBufSize = nLEDCount * 4;
 	} else {
 		m_nBufSize = nLEDCount * 3;
 	}
 
-	if (Type == WS2811 || Type == WS2812 || Type == WS2812B || Type == WS2813 || Type == SK6812 || Type == SK6812W) {
+	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W) {
 		m_nBufSize *= 8;
+	}
+
+	if (m_tLEDType == APA102) {
+		m_nBufSize += 8;
 	}
 
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != 0);
-	memset(m_pBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
+	if (m_tLEDType == APA102) {
+		memset(m_pBuffer, 0, 4);
+		for (uint32_t i = 0; i < m_nLEDCount; i++) {
+			SetLED(i, 0, 0, 0);
+		}
+		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+	} else {
+		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : 0xC0, m_nBufSize);
+	}
 
 	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBlackoutBuffer != 0);
-	memset(m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
+	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 
 #ifdef H3
-	if (Type != WS2801) {
+	if (!((m_tLEDType == WS2801) || (m_tLEDType == APA102))) {
 		h3_spi_set_ws28xx_mode(true);
 	}
 #endif
 
 	bcm2835_spi_begin();
 
-	if (Type == WS2801) {
-		if (nClockSpeed == (uint32_t) 0) {
+	if ((Type == WS2801) || (Type == APA102)){
+		if (nClockSpeed == 0) {
+			m_nClockSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
 			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) WS2801_SPI_SPEED_DEFAULT_HZ));
-		} else {
+		} else if (nClockSpeed < WS2801_SPI_SPEED_MAX_HZ) {
 			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / nClockSpeed));
+		} else {
+			m_nClockSpeedHz = WS2801_SPI_SPEED_MAX_HZ;
+			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) WS2801_SPI_SPEED_MAX_HZ));
 		}
 	} else {
 		bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) 6400000));

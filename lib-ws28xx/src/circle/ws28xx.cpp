@@ -6,7 +6,7 @@
  * Circle - A C++ bare metal environment for Raspberry Pi
  * Based on https://github.com/rsta2/circle/tree/master/addon/WS28XX
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,31 +34,42 @@
 
 #include <ws28xx.h>
 
-WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned nLEDCount, unsigned nClockSpeed)
-:	m_Type (Type),
+WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed)
+:	m_tLEDType (Type),
 	m_nLEDCount (nLEDCount),
+	m_nClockSpeedHz(nClockSpeed),
+	m_nGlobalBrightness(0xFF),
 	m_bUpdating (FALSE),
 	m_nHighCode(Type == WS2812B ? 0xF8 : 0xF0),
-	m_SPIMaster (pInterruptSystem, m_Type == WS2801 ? nClockSpeed : 6400000, 0, 0)
+	m_SPIMaster (pInterruptSystem, ((m_tLEDType == WS2801) || (m_tLEDType == APA102)) ? nClockSpeed : 6400000, 0, 0)
 {
-	assert(m_Type <= SK6812W);
+	assert(m_tLEDType <= APA102);
 	assert(m_nLEDCount > 0);
 
-	if (m_Type == SK6812W) {
+	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
 		m_nBufSize = m_nLEDCount * 4;
 	} else {
 		m_nBufSize = m_nLEDCount * 3;
 	}
 
-	if (m_Type == WS2811 || m_Type == WS2812 || m_Type == WS2812B || m_Type == WS2813 || m_Type == SK6812 || m_Type == SK6812W) {
+	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W) {
 		m_nBufSize *= 8;
+	}
+
+	if (m_tLEDType == APA102) {
+		m_nBufSize += 8;
 	}
 
 	m_pBuffer = new u8[m_nBufSize];
 	assert(m_pBuffer != 0);
-
-	for (unsigned nLEDIndex = 0; nLEDIndex < m_nLEDCount; nLEDIndex++) {
-		SetLED(nLEDIndex, 0, 0, 0);
+	if (m_tLEDType == APA102) {
+		memset(m_pBuffer, 0, 4);
+		for (uint32_t i = 0; i < m_nLEDCount; i++) {
+			SetLED(i, 0, 0, 0);
+		}
+		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+	} else {
+		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : 0xC0, m_nBufSize);
 	}
 
 	m_pReadBuffer = new u8[m_nBufSize];
@@ -66,7 +77,7 @@ WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, unsigned n
 
 	m_pBlackoutBuffer = new u8[m_nBufSize];
 	assert(m_pBlackoutBuffer != 0);
-	memset(m_pBlackoutBuffer, m_Type == WS2801 ? 0 : 0xC0, m_nBufSize);
+	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 }
 
 WS28xx::~WS28xx(void) {

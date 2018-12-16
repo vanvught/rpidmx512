@@ -2,7 +2,7 @@
  * @file ws28xxcommon.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,39 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <assert.h>
 
-#include <ws28xx.h>
+#include "ws28xx.h"
 
-void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
 	assert(nLEDIndex < m_nLEDCount);
-	unsigned nOffset = nLEDIndex * 3;
 
-	if (m_Type == WS2801) {
+	if (m_tLEDType == APA102) {
+		uint32_t nOffset = 4 + (nLEDIndex * 4);
+		assert(nOffset + 3 < m_nBufSize);
+		m_pBuffer[nOffset] = m_nGlobalBrightness;
+		m_pBuffer[nOffset + 1] = nRed;
+		m_pBuffer[nOffset + 2] = nGreen;
+		m_pBuffer[nOffset + 3] = nBlue;
+	} else if (m_tLEDType == WS2801) {
+		uint32_t nOffset = nLEDIndex * 3;
 		assert(nOffset + 2 < m_nBufSize);
 		m_pBuffer[nOffset] = nRed;
 		m_pBuffer[nOffset + 1] = nGreen;
 		m_pBuffer[nOffset + 2] = nBlue;
-	} else if (m_Type == WS2811) {
+	} else if (m_tLEDType == WS2811) {
+		uint32_t nOffset = nLEDIndex * 3;
 		nOffset *= 8;
 
 		SetColorWS28xx(nOffset, nRed);
 		SetColorWS28xx(nOffset + 8, nGreen);
 		SetColorWS28xx(nOffset + 16, nBlue);
 	} else {
+		uint32_t nOffset = nLEDIndex * 3;
 		nOffset *= 8;
 
 		SetColorWS28xx(nOffset, nGreen);
@@ -54,16 +64,16 @@ void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 	}
 }
 
-void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
 	assert(nLEDIndex < m_nLEDCount);
-	assert(m_Type == SK6812W);
+	assert(m_tLEDType == SK6812W);
 
-	unsigned nOffset = nLEDIndex * 4;
+	uint32_t nOffset = nLEDIndex * 4;
 
-	if (m_Type == SK6812W) {
+	if (m_tLEDType == SK6812W) {
 		nOffset *= 8;
 
 		SetColorWS28xx(nOffset, nGreen);
@@ -73,8 +83,8 @@ void WS28xx::SetLED(unsigned nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 	}
 }
 
-void WS28xx::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
-	assert(m_Type != WS2801);
+void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
+	assert(m_tLEDType != WS2801);
 	uint8_t mask;
 
 	assert(nOffset + 7 < m_nBufSize);
@@ -90,10 +100,8 @@ void WS28xx::SetColorWS28xx(unsigned nOffset, uint8_t nValue) {
 	}
 }
 
-unsigned WS28xx::GetLEDCount(void) const {
-	return m_nLEDCount;
-}
-
-TWS28XXType WS28xx::GetLEDType(void) const {
-	return m_Type;
+void WS28xx::SetGlobalBrightness(uint8_t nGlobalBrightness) {
+	if (m_tLEDType == APA102) {
+		m_nGlobalBrightness = 0xE0 | (nGlobalBrightness & 0x1F);
+	}
 }
