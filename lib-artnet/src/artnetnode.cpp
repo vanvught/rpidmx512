@@ -69,11 +69,11 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 25 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 26 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };		///< OemArtRelay , 0x00FF = developer code
 
-#define ARTNET_MIN_HEADER_SIZE			12						///< \ref TArtPoll \ref TArtSync
-#define ARTNET_MERGE_TIMEOUT_SECONDS	10						///<
+#define ARTNET_MIN_HEADER_SIZE			12
+#define ARTNET_MERGE_TIMEOUT_SECONDS	10
 
 #define NETWORK_DATA_LOSS_TIMEOUT		10						///< Seconds
 
@@ -792,7 +792,7 @@ void ArtNetNode::HandleSync(void) {
 	m_State.ArtSyncTime = Hardware::Get()->GetTime();
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
-		if (m_OutputPorts[i].IsDataPending) {
+		if ((m_OutputPorts[i].IsDataPending) || (m_OutputPorts[i].bIsEnabled && m_bDirectUpdate) ) {
 #ifdef SENDDIAG
 			SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
@@ -1162,16 +1162,8 @@ int ArtNetNode::HandlePacket(void) {
 	GetType();
 
 	if (m_State.IsSynchronousMode) {
-		if ((m_ArtNetPacket.OpCode == OP_DMX) && (m_tOpCodePrevious == OP_DMX)) {
-			// WiFi UDP : We have missed the OP_SYNC
+		if (m_nCurrentPacketTime - m_State.ArtSyncTime >= 4) {
 			m_State.IsSynchronousMode = false;
-			for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
-				m_OutputPorts[i].IsDataPending = false;
-			}
-		} else {
-			if (m_nCurrentPacketTime - m_State.ArtSyncTime >= 4) {
-				m_State.IsSynchronousMode = false;
-			}
 		}
 	}
 
