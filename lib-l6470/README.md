@@ -11,8 +11,9 @@ Supported platforms :
 
 - Linux Raspbian
     -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
-- Bare-metal
+- Raspberry Pi baords bare-metal
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
+- *Orange Pi Zero (replacing Raspberry Pi boards) Work In Progress*
 
 Compile and build the library on Linux Raspbian
 
