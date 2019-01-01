@@ -1,0 +1,10 @@
+#
+DEFINES = LTC_READER ENABLE_MMU EMAC #NDEBUG
+#
+LIBS = ltc display artnet midi ledblink lightset
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
