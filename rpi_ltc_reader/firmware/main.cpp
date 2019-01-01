@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 #include "hardwarebaremetal.h"
-#include "networkbaremetal.h"
+#include "networkesp8266.h"
 
 #include "console.h"
 
@@ -67,7 +67,7 @@ static void handle_bool(const bool b) {
 
 void notmain(void) {
 	HardwareBaremetal hw;
-	NetworkBaremetal nw;
+	NetworkESP8266 nw;
 	uint8_t nHwTextLength;
 	struct ip_info ip_config;
 	ltc_reader_source_t source = LTC_READER_SOURCE_LTC;
