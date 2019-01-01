@@ -8,7 +8,7 @@
  *  Project     Arduino MIDI Library
  *  https://github.com/FortySevenEffects/arduino_midi_library/blob/master/src/MIDI.cpp
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,37 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
 #include "midi.h"
 
 #include "arm/arm.h"
-#include "arm/pl011.h"
 #include "arm/synchronize.h"
-
-#include "bcm2835.h"
-#include "bcm2835_gpio.h"
-#include "bcm2835_vc.h"
 
 #include "irq_timer.h"
 
-#include "sc16is740.h"
-#include "device_info.h"
+#if defined (H3)
+ #include "arm/gic.h"
+
+ #include "h3.h"
+ #include "h3_ccu.h"
+ #include "h3_gpio.h"
+ #include "h3_timer.h"
+ #include "h3_hs_timer.h"
+
+ #include "uart.h"
+#else
+ #include "arm/pl011.h"
+
+ #include "bcm2835.h"
+ #include "bcm2835_gpio.h"
+ #include "bcm2835_vc.h"
+
+ #include "device_info.h"
+ #include "sc16is740.h"
+#endif
 
 struct _midi_receive {
 	uint32_t timestamp;
@@ -76,6 +92,13 @@ static _midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_
 static bool midi_active_sense = false;
 static _midi_direction midi_direction = MIDI_DIRECTION_INPUT;
 
+#if defined (H3)
+static void uart_init(void);
+static void uart_set(const uint32_t);
+static void uart_poll(void);
+static const char *uart_get(void);
+static void uart_send(const uint8_t *, uint16_t);
+#else
 static void pl011_init(void);
 static void pl011_set(const uint32_t);
 static void pl011_poll(void);
@@ -89,112 +112,79 @@ static const char *spi_get(void);
 static void spi_send(const uint8_t *, uint16_t);
 
 static device_info_t spi_device_info;
+#endif
 
 struct _midi_interface {
-	void (*init)(void);							///< Pointer to function for
-	void (*set)(const uint32_t);				///< Pointer to function for
-	void (*poll)();								///< Pointer to function for
-	const char * (*get)();						///< Pointer to function for
-	void (*send)(const uint8_t *, uint16_t);	///< Pointer to function for
+	void (*init)(void);
+	void (*set)(uint32_t);
+	void (*poll)();
+	const char * (*get)();
+	void (*send)(const uint8_t *, uint16_t);
 };
 
-static struct _midi_interface midi_interface_f;
+#if defined (H3)
+static struct _midi_interface midi_interfaces_f[] = {
+		{ uart_init, uart_set, uart_poll, uart_get, uart_send }
+};
+
+static struct _midi_interface midi_interface_f = { uart_init, uart_set, uart_poll, uart_get, uart_send };
+#else
 static struct _midi_interface midi_interfaces_f[] = {
 		{ pl011_init, pl011_set, pl011_poll, pl011_get, pl011_send },
 		{ spi_init, spi_set, spi_poll, spi_get, spi_send  }
 };
 
-/**
- *
- * @return
- */
-const bool midi_active_get_sense(void) {
+static struct _midi_interface midi_interface_f = { pl011_init, pl011_set, pl011_poll, pl011_get, pl011_send };
+#endif
+
+_midi_direction midi_get_direction(void) {
+	return midi_direction;
+}
+
+bool midi_active_get_sense(void) {
 	return midi_active_sense;
 }
 
-/**
- *
- * @param sense
- */
-void midi_active_set_sense(const bool sense) {
+void midi_active_set_sense(bool sense) {
 	midi_active_sense = sense;
 }
 
-/**
- * @ingroup midi
- *
- * @param interface
- */
-void midi_set_interface(const uint8_t interface) {
-
+void midi_set_interface(uint8_t interface) {
 	if (interface < sizeof(midi_interfaces_f) / sizeof(midi_interfaces_f[0])) {
 		midi_interface_f.init = midi_interfaces_f[interface].init;
 		midi_interface_f.set = midi_interfaces_f[interface].set;
 		midi_interface_f.poll = midi_interfaces_f[interface].poll;
 		midi_interface_f.get = midi_interfaces_f[interface].get;
 		midi_interface_f.send = midi_interfaces_f[interface].send;
-		return;
 	}
 }
 
-/**
- * @ingroup midi_in
- *
- */
 static void reset_input(void) {
 	pending_message_index = 0;
 	pending_message_expected_lenght = 0;
 	running_status_rx = MIDI_TYPES_INVALIDE_TYPE;
 }
 
-/**
- * @ingroup midi
- *
- */
-void midi_set_baudrate(const uint32_t baudrate) {
+void midi_set_baudrate(uint32_t baudrate) {
 	midi_interface_f.set(baudrate);
 }
 
-/**
- * @ingroup midi
- *
- */
-const uint32_t midi_get_baudrate(void) {
+uint32_t midi_get_baudrate(void) {
 	return midi_baudrate;
 }
 
-/**
- * @ingroup midi_in
- *
- */
 void midi_poll(void) {
 	midi_interface_f.poll();
 }
 
-/**
- * * @ingroup midi
- *
- * @return
- */
 const char *midi_get_interface_description(void) {
 	return midi_interface_f.get();
 }
 
-/**
- * @ingroup midi
- *
- * @return
- */
 struct _midi_message *midi_message_get(void) {
 	return &midi_message;
 }
 
-/**
- * @ingroup midi_in
- *
- * @param byte
- * @return
- */
 static bool raw_read(uint8_t *byte, uint32_t *timestamp) {
 	dmb();
 	if (midi_rx_buffer_index_head != midi_rx_buffer_index_tail) {
@@ -207,40 +197,19 @@ static bool raw_read(uint8_t *byte, uint32_t *timestamp) {
 	}
 }
 
-/**
- * @ingroup midi_in
- *
- * @return
- */
 uint8_t midi_get_input_channel(void) {
 	return input_channel;
 }
 
-/**
- * @ingroup midi_in
- *
- * @param channel
- */
 void midi_set_input_channel(uint8_t channel) {
 	input_channel = channel;
 }
 
-/**
- * * @ingroup midi_in
- *
- * @return
- */
 _midi_active_sense_state midi_active_get_sense_state(void) {
 	dmb();
 	return midi_active_sense_state;
 }
 
-/**
- * @ingroup midi_in
- *
- * @param status_byte
- * @return
- */
 static uint8_t get_type_from_status_byte(uint8_t status_byte) {
 	if ((status_byte < 0x80) || (status_byte == 0xf4) || (status_byte == 0xf5) || (status_byte == 0xf9) || (status_byte == 0xfD)) {
 		// Data bytes and undefined.
@@ -255,22 +224,10 @@ static uint8_t get_type_from_status_byte(uint8_t status_byte) {
 	return status_byte;
 }
 
-/**
- * @ingroup midi_in
- *
- * @param status_byte
- * @return
- */
 static uint8_t get_channel_from_status_byte(uint8_t status_byte) {
 	return (status_byte & 0x0F) + 1;
 }
 
-/**
- * @ingroup midi
- *
- * @param type
- * @return
- */
 static bool is_channel_message(uint8_t type) {
 	return (type == MIDI_TYPES_NOTE_OFF
 			|| type == MIDI_TYPES_NOTE_ON
@@ -281,12 +238,6 @@ static bool is_channel_message(uint8_t type) {
 			|| type == MIDI_TYPES_PROGRAM_CHANGE);
 }
 
-/**
- * @ingroup midi_in
- *
- * @param inChannel
- * @return
- */
 static bool input_filter(uint8_t channel) {
 	if (midi_message.type == MIDI_TYPES_INVALIDE_TYPE)
 		return false;
@@ -306,10 +257,6 @@ static bool input_filter(uint8_t channel) {
 	}
 }
 
-/**
- * @ingroup midi
- *
- */
 static void handle_null_velocity_note_on_as_note_off(void) {
 	if (HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF
 			&& (midi_message.type == MIDI_TYPES_NOTE_ON)
@@ -318,10 +265,6 @@ static void handle_null_velocity_note_on_as_note_off(void) {
 	}
 }
 
-/**
- * @ingroup midi_in
- *
- */
 static bool parse(void) {
 	uint8_t serial_data;
 	uint32_t timestamp;
@@ -581,22 +524,10 @@ static bool parse(void) {
 	}
 }
 
-
-/**
- * @ingroup midi
- *
- * @return
- */
 bool midi_read(void) {
 	return midi_read_channel(input_channel);
 }
 
-/**
- * @ingroup midi
- *
- * @param inChannel
- * @return
- */
 bool midi_read_channel(uint8_t channel) {
 	if (channel >= (uint8_t) MIDI_CHANNEL_OFF)
 		return false; // MIDI Input disabled.
@@ -610,11 +541,6 @@ bool midi_read_channel(uint8_t channel) {
 	return channel_match;
 }
 
-/**
- * @ingroup midi
- *
- * @param tc
- */
 void midi_send_tc(const struct _midi_send_tc *tc) {
 	uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
@@ -626,20 +552,134 @@ void midi_send_tc(const struct _midi_send_tc *tc) {
 	midi_interface_f.send(data, (uint16_t) 10);
 }
 
-/**
- * @ingroup midi
- *
- * @param data
- * @param length
- */
 void midi_send_raw(const uint8_t *data, const uint16_t length) {
 	midi_interface_f.send(data, length);
 }
 
-/**
- *
- * @param clo
- */
+#if defined (H3)
+void __attribute__((interrupt("FIQ"))) fiq_midi_in_handler(void) {
+	dmb();
+
+	const uint32_t timestamp = h3_hs_timer_lo_us();
+	const uint32_t data = H3_UART2->O00.RBR;
+
+	midi_rx_buffer[midi_rx_buffer_index_head].data = (uint8_t) (data & 0xFF);
+	midi_rx_buffer[midi_rx_buffer_index_head].timestamp = timestamp;
+	midi_rx_buffer_index_head = (midi_rx_buffer_index_head + 1) & MIDI_RX_BUFFER_INDEX_MASK;
+
+	H3_GIC_CPUIF->EOI = H3_UART2_IRQn;
+	gic_unpend(H3_UART2_IRQn);
+
+	dmb();
+}
+
+static void irq_timer1_sense_handler(uint32_t clo) {
+	dmb();
+	if (midi_active_sense_state == MIDI_ACTIVE_SENSE_ENABLED) {
+		midi_active_sense_timeout++;
+		if (midi_active_sense_timeout > 300) { // > 300 ms
+			// Turn All Notes Off
+			dmb();
+			midi_active_sense_state = MIDI_ACTIVE_SENSE_FAILED;
+		}
+	}
+}
+
+void uart_set(uint32_t baudrate) {
+	midi_baudrate = baudrate;
+}
+
+void uart_poll(void) {
+	// Nothing to do here
+}
+
+const char *uart_get(void) {
+	return "UART2";
+}
+
+void uart_send(const uint8_t *data, uint16_t length) {
+	const uint8_t *p = data;
+
+	while (length > 0) {
+		while (!(H3_UART2->LSR & UART_LSR_THRE))
+				;
+		H3_UART2->O00.THR = (uint32_t) *p;
+		p++;
+		length--;
+	}
+}
+
+void uart_init(void) {
+	uint32_t value = H3_PIO_PORTA->CFG0;
+	// PA0, TX
+	value &= ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
+	value |= H3_PA0_SELECT_UART2_TX << PA0_SELECT_CFG0_SHIFT;
+	// PA1, RX
+	value &= ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
+	value |= H3_PA1_SELECT_UART2_RX << PA1_SELECT_CFG0_SHIFT;
+	H3_PIO_PORTA->CFG0 = value;
+
+	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART2;
+	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART2;
+
+	H3_UART2->O08.FCR = 0;
+	H3_UART2->LCR = UART_LCR_DLAB;
+	if (midi_baudrate == 0) {
+		H3_UART2->O00.DLL = BAUD_31250_L;
+	} else {
+		H3_UART2->O00.DLL = (24000000 / 16) / midi_baudrate;
+	}
+	H3_UART2->O04.DLH = 0;
+	H3_UART2->O04.IER = 0;
+	H3_UART2->LCR = UART_LCR_8_N_1;
+
+	if ((midi_direction & MIDI_DIRECTION_INPUT) == MIDI_DIRECTION_INPUT) {
+		H3_UART2->O08.FCR = 0;
+		H3_UART2->O04.IER = UART_IER_ERBFI;
+
+		gic_fiq_config(H3_UART2_IRQn, GIC_CORE0);
+		arm_install_handler((unsigned) fiq_midi_in_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
+		__enable_fiq();
+	}
+
+	if ((midi_direction & MIDI_DIRECTION_OUTPUT) == MIDI_DIRECTION_OUTPUT) {
+		H3_UART2->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
+		H3_UART2->O04.IER = 0;
+	}
+}
+
+void midi_init(_midi_direction dir) {
+	uint32_t i;
+
+	midi_direction = dir;
+
+	if ((dir & MIDI_DIRECTION_INPUT) == MIDI_DIRECTION_INPUT) {
+		for (i = 0; i < (uint32_t) MIDI_RX_BUFFER_INDEX_ENTRIES; i++) {
+			midi_rx_buffer[i].data = 0;
+			midi_rx_buffer[i].timestamp = 0;
+		}
+
+		midi_rx_buffer_index_head = 0;
+		midi_rx_buffer_index_tail = 0;
+
+		if (midi_active_sense) {
+			irq_timer_init();
+			irq_timer_set(IRQ_TIMER_1, irq_timer1_sense_handler);
+			H3_TIMER->TMR1_INTV = 12000; // 1 ms
+			H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+		}
+
+		reset_input();
+	}
+
+	if ((dir & MIDI_DIRECTION_OUTPUT) == MIDI_DIRECTION_OUTPUT) {
+		midi_active_sense = false;	//TODO Implement output active sense
+	}
+
+	midi_interface_f.init();
+}
+#else
 static void irq_timer3_sense_handler(const uint32_t clo) {
 	BCM2835_ST->C3 = clo + (uint32_t) 1000;
 	dmb();
@@ -657,10 +697,6 @@ static void irq_timer3_sense_handler(const uint32_t clo) {
  *
  */
 
-/**
- * @ingroup midi_in
- *
- */
 void __attribute__((interrupt("FIQ"))) fiq_midi_in_handler(void) {
 	dmb();
 
@@ -674,16 +710,11 @@ void __attribute__((interrupt("FIQ"))) fiq_midi_in_handler(void) {
 	dmb();
 }
 
-/**
- *
- * @return
- */
 static const char *pl011_get(void) {
 	return "UART";
 }
 
 /**
- * @ingroup midi
  *
  * Configure PL011 for MIDI transmission. Enable the UART.
  *
@@ -744,26 +775,14 @@ static void pl011_init(void) {
 	dmb();
 }
 
-/**
- *
- */
 static void pl011_poll(void) {
 	// Nothing to do here. We have the FIQ routine.
 }
 
-/**
- *
- * @param baudrate
- */
-static void pl011_set(const uint32_t baudrate) {
+static void pl011_set(uint32_t baudrate) {
 	midi_baudrate = baudrate;
 }
 
-/**
- *
- * @param data
- * @param length
- */
 static void pl011_send(const uint8_t *data, uint16_t length) {
 	const uint8_t *p = data;
 
@@ -784,9 +803,6 @@ static const char *spi_get(void) {
 	return "SPI";
 }
 
-/**
- *
- */
 static void spi_init(void) {
 	spi_device_info.chip_select = 0;
 	spi_device_info.speed_hz = SC16IS7X0_SPI_SPEED_DEFAULT_HZ;
@@ -795,9 +811,6 @@ static void spi_init(void) {
 	sc16is740_set_baud(&spi_device_info, midi_baudrate);
 }
 
-/**
- *
- */
 static void spi_poll(void) {
 	int c;
 	if ( (c = sc16is740_getc(&spi_device_info)) != -1) {
@@ -807,29 +820,16 @@ static void spi_poll(void) {
 	}
 }
 
-/**
- *
- * @param baudrate
- */
 static void spi_set(const uint32_t baudrate) {
 	sc16is740_set_baud(&spi_device_info, baudrate);
 	midi_baudrate = baudrate;
 }
 
-/**
- *
- * @param data
- * @param length
- */
 static void spi_send(const uint8_t *data, uint16_t length) {
 	sc16is740_write(&spi_device_info, data, (unsigned) length);
 }
 
-/**
- * * @ingroup midi
- *
- */
-void midi_init(const _midi_direction dir) {
+void midi_init(_midi_direction dir) {
 	uint32_t i = 0;
 
 	midi_direction = dir;
@@ -852,9 +852,10 @@ void midi_init(const _midi_direction dir) {
 		reset_input();
 	}
 
-	if ((dir == MIDI_DIRECTION_OUTPUT) & MIDI_DIRECTION_OUTPUT) {
+	if ((dir & MIDI_DIRECTION_OUTPUT) == MIDI_DIRECTION_OUTPUT) {
 
 	}
 
 	midi_interface_f.init();
 }
+#endif

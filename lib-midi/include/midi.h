@@ -2,7 +2,7 @@
  * @file midi.h
  *
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,11 +158,12 @@ struct _midi_send_tc {
 extern "C" {
 #endif
 
-extern void midi_init(const _midi_direction);
-extern void midi_set_baudrate(const uint32_t);
-extern const uint32_t midi_get_baudrate(void);
+extern void midi_init(_midi_direction);
+extern _midi_direction midi_get_direction(void);
+extern void midi_set_baudrate(uint32_t);
+extern uint32_t midi_get_baudrate(void);
 extern /*@shared@*/const char *midi_get_interface_description(void);
-extern void midi_set_interface(const _midi_interfaces);
+extern void midi_set_interface(_midi_interfaces);
 
 extern /*@shared@*/struct _midi_message *midi_message_get(void) __attribute__((assume_aligned(4)));
 extern bool midi_read(void);
@@ -171,14 +172,106 @@ extern uint8_t midi_get_input_channel(void);
 extern void midi_set_input_channel(uint8_t);
 
 extern _midi_active_sense_state midi_active_get_sense_state(void);
-extern const bool midi_active_get_sense(void);
-extern void midi_active_set_sense(const bool);
+extern bool midi_active_get_sense(void);
+extern void midi_active_set_sense(bool);
 
 extern void midi_send_tc(const struct _midi_send_tc *);
-extern void midi_send_raw(const uint8_t *, const uint16_t);
+extern void midi_send_raw(const uint8_t *, uint16_t);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+class Midi {
+public:
+	Midi(void);
+	~Midi(void);
+
+	inline void Init(_midi_direction tMidiDirection) {
+		midi_init(tMidiDirection);
+	}
+
+	inline _midi_direction GetDirection(void) {
+		return midi_get_direction();
+	}
+
+	inline void SetBaudrate(uint32_t nBaudrate) {
+		midi_set_baudrate(nBaudrate);
+	}
+
+	inline uint32_t GetBaudrate(void) {
+		return midi_get_baudrate();
+	}
+
+	inline void SetActiveSense(bool bActiveSense = true) {
+		midi_active_set_sense(bActiveSense);
+	}
+
+	inline bool GetActiveSense(void) {
+		return midi_active_get_sense();
+	}
+
+	inline void SetChannel(uint8_t nChannel) {
+		midi_set_input_channel(nChannel);
+	}
+
+	inline uint8_t GetChannel(void) {
+		return midi_get_input_channel();
+	}
+
+	inline _midi_active_sense_state GetActiveSenseState(void) {
+		return midi_active_get_sense_state();
+	}
+
+	inline const char* GetInterfaceDescription(void) {
+		return midi_get_interface_description();
+	}
+
+	inline void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
+		midi_send_tc(tTimeCode);
+	}
+
+	inline void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
+		midi_send_raw(pBuffer, nLength);
+	}
+
+	inline bool Read(void) {
+		return midi_read();
+	}
+
+	inline bool Read(uint8_t nChannel) {
+		return midi_read_channel(nChannel);
+	}
+
+	inline uint32_t GetMessageTimeStamp(void) {
+		return m_pMessage->timestamp;
+	}
+
+	inline uint8_t GetMessageType(void) {
+		return m_pMessage->type;
+	}
+
+	inline void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
+		nData1 = m_pMessage->data1;
+		nData2 = m_pMessage->data2;
+	}
+
+	inline uint8_t* GetSystemExclusive(uint8_t &nLength) {
+		nLength = m_pMessage->bytes_count;
+		return m_pMessage->system_exclusive;
+	}
+
+	inline static Midi* Get(void) {
+		return s_pThis;
+	}
+
+	void Print(void);
+
+private:
+	static Midi *s_pThis;
+	struct _midi_message *m_pMessage;
+};
 #endif
 
 #endif /* MIDI_H_ */
