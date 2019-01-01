@@ -79,6 +79,8 @@
 #define H3_PIO_PORTE_BASE		(H3_PIO_BASE + (4 * 0x24))
 #define H3_PIO_PORTF_BASE		(H3_PIO_BASE + (5 * 0x24))
 #define H3_PIO_PORTG_BASE		(H3_PIO_BASE + (6 * 0x24))
+#define H3_PIO_PA_INT_BASE		(H3_PIO_BASE + 0x200 + (0 * 0x20))
+#define H3_PIO_PG_INT_BASE		(H3_PIO_BASE + 0x200 + (1 * 0x20))
 
 #define H3_UART0_BASE			(H3_UART_BASE + (0 * 0x400))
 #define H3_UART1_BASE			(H3_UART_BASE + (1 * 0x400))
@@ -92,10 +94,10 @@
 #define H3_SPI0_BASE			(H3_SPI_BASE + (0 * 0x1000))
 #define H3_SPI1_BASE			(H3_SPI_BASE + (1 * 0x1000))
 
-#define H3_GIC_DIST_BASE		(H3_GIC_BASE + 0x1000)			///< GIC Distributor Base Address
-#define H3_GIC_CPUIF_BASE		(H3_GIC_BASE + 0x2000)			///< CPU Interface Base Address
+#define H3_GIC_DIST_BASE		(H3_GIC_BASE + 0x1000)
+#define H3_GIC_CPUIF_BASE		(H3_GIC_BASE + 0x2000)
 
-#define H3_CNT64_BASE			(H3_CPUCFG_BASE + 0x0280) //TODO Create struct for CPUCFG
+#define H3_CNT64_BASE			(H3_CPUCFG_BASE + 0x0280)	//TODO Create struct for CPUCFG
 
 typedef enum T_H3_Pn {
 	H3_GPIO_PORTA = 0,
@@ -115,6 +117,7 @@ typedef enum T_H3_IRQn {
 	H3_UART1_IRQn = 33,
 	H3_UART2_IRQn = 34,
 	H3_UART3_IRQn = 35,
+	H3_PA_EINT_IRQn = 43,
 	H3_TIMER0_IRQn = 50,
 	H3_TIMER1_IRQn = 51,
 	H3_DMA_IRQn = 82
@@ -162,7 +165,7 @@ typedef struct T_H3_DMA_CHL {
 	__I  uint32_t CUR_DST;			///< 0x14
 	__I  uint32_t BCNT_LEFT;		///< 0x18
 	__I  uint32_t PARA;				///< 0x1C
-	__I  uint32_t RES0[3];     		 ///< 0x20,0x24,0x28
+	__I  uint32_t RES0[3];     		///< 0x20,0x24,0x28
 	__I  uint32_t FDESC_ADDR;		///< 0x2C
 	__I  uint32_t PKG_NUM;			///< 0x30
 
@@ -347,6 +350,16 @@ typedef struct T_H3_PIO {
 	__IO uint32_t PUL0;				///< Pull Register 0
 	__IO uint32_t PUL1;				///< Pull Register 1
 } H3_PIO_TypeDef;
+
+typedef struct T_H3_PIO_INT {
+	__IO uint32_t CFG0;				///< 0x00 Interrupt Configure Register 0
+	__IO uint32_t CFG1; 			///< 0x04 Interrupt Configure Register 1
+	__IO uint32_t CFG2; 			///< 0x08 Interrupt Configure Register 2
+	__IO uint32_t CFG3; 			///< 0x0C Interrupt Configure Register 3
+	__IO uint32_t CTL;				///< 0x10 Interrupt Control Register
+	__IO uint32_t STA; 				///< 0x14 Interrupt Status Register
+	__IO uint32_t DEB; 				///< 0x18 Interrupt Debounce Register
+} H3_PIO_INT_TypeDef;
 
 typedef struct T_H3_TIMER {
 	__IO uint32_t IRQ_EN;			///< 0x00 IRQ Enable Register
@@ -570,6 +583,8 @@ typedef struct T_H3_PRCM {
 #define H3_PIO_PORTF	((H3_PIO_TypeDef *) H3_PIO_PORTF_BASE)
 #define H3_PIO_PORTG	((H3_PIO_TypeDef *) H3_PIO_PORTG_BASE)
 #define H3_PIO_PORTL	((H3_PIO_TypeDef *) H3_PIO_PORTL_BASE)
+#define H3_PIO_PA_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PA_INT_BASE)
+#define H3_PIO_PG_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PG_INT_BASE)
 #define H3_EMAC			((H3_EMAC_TypeDef *) H3_EMAC_BASE)
 #define H3_TIMER		((H3_TIMER_TypeDef *) H3_TIMER_BASE)
 #define H3_HS_TIMER		((H3_HS_TIMER_TypeDef *) H3_HS_TIMER_BASE)

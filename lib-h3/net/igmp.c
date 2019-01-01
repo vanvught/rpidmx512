@@ -120,10 +120,10 @@ void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_leave.ip4.ttl = 1;
 	s_leave.ip4.proto = IPv4_PROTO_IGMP;
 	s_leave.ip4.len = __builtin_bswap16(IPv4_IGMP_REPORT_HEADERS_SIZE);
-	s_leave.ip4.dst[0] = 0x02; // 2
+	s_leave.ip4.dst[0] = 0xE0; // 224
 	s_leave.ip4.dst[1] = 0x00; // 0
 	s_leave.ip4.dst[2] = 0x00; // 0
-	s_leave.ip4.dst[3] = 0xE0; // 224
+	s_leave.ip4.dst[3] = 0x02; // 2
 	// IPv4 options
 	s_leave.igmp.report.ip4_options = 0x00000494; // TODO
 	// IGMP

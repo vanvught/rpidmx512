@@ -67,6 +67,9 @@
 
 #define UART_USR_BUSY	(1 << 0)
 
+#define BAUD_31250_L	 (48)		///< 24000000 / 16 / 31250 = 48
+#define BAUD_31250_H     (0)		///<
+
 #define BAUD_115200_L    (13)		///< 24000000 / 16 / 115200 = 13
 #define BAUD_115200_H    (0)		///<
 

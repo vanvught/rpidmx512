@@ -42,6 +42,7 @@ enum H3_GPIO_MASK {
 typedef enum H3_GPIO_FSEL {
 	GPIO_FSEL_INPUT = 0,
 	GPIO_FSEL_OUTPUT = 1,
+	GPIO_FSEL_EINT = 6,		///< PA and PG only
 	GPIO_FSEL_DISABLE = 7
 } gpio_fsel_t;
 
@@ -130,6 +131,10 @@ enum H3_PG_SELECT {
 	H3_PG7_SELECT_UART1_RX = 2
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void h3_gpio_fsel(_gpio_pin pin, gpio_fsel_t fsel);
 
 inline static void h3_gpio_clr(_gpio_pin pin) {
@@ -181,6 +186,10 @@ inline static void h3_gpio_set(_gpio_pin pin) {
 			break;
 	}
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 //FIXME Remove
 //TODO Backwards compatibility with the Raspberry Pi API's
