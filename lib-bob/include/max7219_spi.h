@@ -2,7 +2,7 @@
  * @file max7219_spi.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,15 @@
 #define MAX7219_SPI_SPEED_MAX_HZ			10000000	///< 10 MHz
 #define MAX7219_SPI_SPEED_DEFAULT_HZ	 	2000000		///< 2 MHz
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void max7219_spi_start(device_info_t *);
-extern void max7219_spi_write_reg(const device_info_t *, const uint8_t, const uint8_t);
+extern void max7219_spi_write_reg(const device_info_t *, uint8_t, uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MAX7219_SPI_H_ */
