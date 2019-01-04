@@ -216,6 +216,7 @@ void DMXSend::Start(uint8_t nPort) {
 	write32 (ARM_SYSTIMER_CS, 1 << 1);
 
 	const uint32_t clo = read32 (ARM_SYSTIMER_CLO);
+
 	if (clo - m_SendBreakMicros > m_OutputPeriod) {
 		write32 (ARM_SYSTIMER_C1, clo + 4);
 	} else {
@@ -226,23 +227,21 @@ void DMXSend::Start(uint8_t nPort) {
 }
 
 void DMXSend::Stop(uint8_t nPort) {
-	while (m_State != DMXSendIdle)
-	{
-		m_SpinLock.Acquire ();
+	while (m_State != DMXSendIdle) {
+		m_SpinLock.Acquire();
 
-		if (m_State == DMXSendInterPacket)
-		{
-			DataMemBarrier ();
+		if (m_State == DMXSendInterPacket) {
+			DataMemBarrier();
 
-			write32 (ARM_SYSTIMER_C1, read32 (ARM_SYSTIMER_CLO)-1);
-			write32 (ARM_SYSTIMER_CS, 1 << 1);
+			write32(ARM_SYSTIMER_C1, read32(ARM_SYSTIMER_CLO) - 1);
+			write32(ARM_SYSTIMER_CS, 1 << 1);
 
-			DataMemBarrier ();
+			DataMemBarrier();
 
 			m_State = DMXSendIdle;
 		}
 
-		m_SpinLock.Release ();
+		m_SpinLock.Release();
 	}
 }
 
@@ -430,10 +429,15 @@ void DMXSend::TimerIRQHandler(void) {
 		}
 		break;
 	case DMXSendData:
-		CLogger::Get ()->Write (FromDMXSend, LogPanic,
-								"Output period too short (brk %u, mab %u, period %u, dlen %u, slot %u)",
+#if RASPPI == 1
+		CLogger::Get ()->Write (FromDMXSend, LogWarning,"Output period too short - recovery");
+		m_State = DMXSendIdle;
+		write32 (ARM_SYSTIMER_C1, read32(ARM_SYSTIMER_CLO) + 4);
+#else
+		CLogger::Get ()->Write (FromDMXSend, LogPanic, "Output period too short (brk %u, mab %u, period %u, dlen %u, slot %u)",
 								m_OutputBreakTime, m_OutputMabTime, m_OutputPeriod,
 								(unsigned) m_OutputDataLength, m_CurrentSlot);
+#endif
 		break;
 	default:
 		assert (0);
