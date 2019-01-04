@@ -30,39 +30,30 @@
 
 #include "sscan.h"
 
-int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
-	int k = 0;
-	char *n = (char *)name;
-	const char *b = buf;
-	uint8_t nibble;
-	uint16_t tmp;
+extern char *get_name(const char *buf, const char *name);
 
+int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
 	assert(buf != NULL);
 	assert(name != NULL);
 	assert(uint16 != NULL);
 
-	while ((*n != (char) 0) && (*b != (char) 0)) {
-		if (*n++ != *b++) {
-			return SSCAN_NAME_ERROR;
-		}
-	}
+	char *b;
+	int k = 0;
+	uint8_t nibble;
+	uint16_t tmp;
 
-	if (*n != (char) 0) {
+	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if (*b++ != (char) '=') {
-		return SSCAN_NAME_ERROR;
-	}
-
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\r') || (*b == '\n')) {
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
 		return SSCAN_VALUE_ERROR;
 	}
 
 	k = 0;
 	tmp = 0;
 
-	while ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (k < 4)) {
+	while ((*b != (char) '\n') && (*b != (char) '\0') && (k < 4)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -72,7 +63,7 @@ int sscan_hexuint16(const char *buf, const char *name, uint16_t *uint16) {
 		b++;
 	}
 
-	if ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 

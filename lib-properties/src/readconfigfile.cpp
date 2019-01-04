@@ -55,7 +55,20 @@ bool ReadConfigFile::Read(const char *pFileName) {
 			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
 				break; // Error or end of file
 			}
-			(void) m_cb(m_p, (const char *) buffer);
+
+			if (buffer[0] != '#') {
+				char *q = (char *)buffer;
+
+				for (unsigned i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
+					if (*q == '\r') {
+						*q = '\0';
+						break;
+					}
+					q++;
+				}
+
+				(void) m_cb(m_p, (const char *) buffer);
+			}
 		}
 		(void) fclose(fp);
 	} else {

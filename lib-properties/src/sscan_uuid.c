@@ -30,34 +30,28 @@
 
 #include "sscan.h"
 
+extern char *get_name(const char *buf, const char *name);
+
 int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
-	int k;
-
-	const char *n = name;
-	const char *b = buf;
-	char *v = value;
-
 	assert(buf != NULL);
 	assert(name != NULL);
 	assert(value != NULL);
 	assert(len != NULL);
 
+	int k;
+	const char *b;
+	char *v = value;
+
 	if (*len != 36) {
 		return 0;
 	}
 
-	while ((*n != (char) 0) && (*b != (char) 0)) {
-		if (*n++ != *b++) {
-			return SSCAN_NAME_ERROR;
-		}
-	}
-
-	if (*n != (char) 0) {
+	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if (*b++ != (char) '=') {
-		return SSCAN_NAME_ERROR;
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	k = 0;

@@ -2,7 +2,7 @@
  * @file sscan_ip_address.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,47 +28,43 @@
 #include <ctype.h>
 #include <assert.h>
 
+#include "sscan.h"
+
 typedef union pcast32 {
 	uint32_t u32;
 	uint8_t u8[4];
 } _pcast32;
 
+extern char *get_name(const char *buf, const char *name);
+
 int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
-
-	const char *n = name;
-	const char *b = buf;
-	int i, j, k;
-	_pcast32 cast32;
-
 	assert(buf != NULL);
 	assert(name != NULL);
 	assert(ip_address != NULL);
 
-	while ((*n != (char) 0) && (*b != (char) 0)) {
-		if (*n++ != *b++) {
-			return 0;
-		}
+	char *b;
+	int i, j, k;
+	_pcast32 cast32;
+
+	if ((b = get_name(buf, name)) == NULL) {
+		return SSCAN_NAME_ERROR;
 	}
 
-	if (*n != (char) 0) {
-		return 0;
-	}
-
-	if (*b++ != (char) '=') {
-		return 0;
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	for (i = 0 ; i < 3 ; i++) {
 		j = 0;
 		k = 0;
 
-		while ((*b != '.') && (*b != (char) 0) && (*b != '\r') && (*b != '\n')) {
+		while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
 			if (j == 3) {
-				return 0;
+				return SSCAN_VALUE_ERROR;
 			}
 
 			if (isdigit((int) *b) == 0) {
-				return 0;
+				return SSCAN_VALUE_ERROR;
 			}
 
 			j++;
@@ -84,13 +80,13 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 	j= 0;
 	k= 0;
 
-	while ((*b != ' ') && (*b != (char) 0)  && (*b != '\r') && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
 		if (j == 3) {
-			return 0;
+			return SSCAN_VALUE_ERROR;
 		}
 
 		if (isdigit((int) *b) == 0) {
-			return 0;
+			return SSCAN_VALUE_ERROR;
 		}
 
 		j++;
@@ -102,5 +98,5 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 
 	*ip_address = cast32.u32;
 
-	return 1;
+	return SSCAN_OK;
 }

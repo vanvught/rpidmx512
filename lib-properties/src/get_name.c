@@ -1,5 +1,5 @@
 /**
- * @file networkparamsstore.cpp
+ * @file get_name.c
  *
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,7 +23,25 @@
  * THE SOFTWARE.
  */
 
-#include "networkparams.h"
+#include <stddef.h>
 
-NetworkParamsStore::~NetworkParamsStore(void) {
+char *get_name(const char *buf, const char *name) {
+	const char *n = name;
+	char *b = (char *) buf;
+
+	while ((*n != (char) 0) && (*b != (char) 0)) {
+		if (*n++ != *b++) {
+			return NULL;
+		}
+	}
+
+	if (*n != (char) 0) {
+		return NULL;
+	}
+
+	if (*b++ != (char) '=') {
+		return NULL;
+	}
+
+	return b;
 }

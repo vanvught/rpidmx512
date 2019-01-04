@@ -106,25 +106,25 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == 1) {
+	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nLocalIp = value32;
 		m_tNetworkParams.bSetList |= SET_IP_ADDRESS_MASK;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == 1) {
+	if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNetmask = value32;
 		m_tNetworkParams.bSetList |= SET_NET_MASK_MASK;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == 1) {
+	if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nGatewayIp = value32;
 		m_tNetworkParams.bSetList |= SET_DEFAULT_GATEWAY_MASK;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == 1) {
+	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNameServerIp = value32;
 		m_tNetworkParams.bSetList |= SET_NAME_SERVER_MASK;
 		return;

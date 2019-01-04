@@ -45,7 +45,7 @@ uint32_t fota_params_get_server(void) {
 static void process_line_read(const char *line) {
 	uint32_t value32;
 
-	if (sscan_ip_address(line, PARAMS_SERVER, &value32) == 1) {
+	if (sscan_ip_address(line, PARAMS_SERVER, &value32) == SSCAN_OK) {
 		fota_params_server = value32;
 	}
 }

@@ -31,6 +31,12 @@
 #include "sscan.h"
 
 int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8_t *channel) {
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(len != NULL);
+	assert(address != NULL);
+	assert(channel != NULL);
+
 	int k = 0;
 	char *n = name;
 	const char *b = buf;
@@ -38,12 +44,6 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 	uint8_t nibble_high;
 	uint8_t nibble_low;
 	uint8_t uint8;
-
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(len != NULL);
-	assert(address != NULL);
-	assert(channel != NULL);
 
 	tmp[0] = (char) 0;
 	tmp[1] = (char) 0;
@@ -60,7 +60,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 	b++;
 	k = 0;
 
-	while ((*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
+	while ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -69,7 +69,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 		b++;
 	}
 
-	if ((*b != (char) ':') && (*b != (char) '\r') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) ':') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 
@@ -88,7 +88,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 		return SSCAN_VALUE_ERROR;
 	}
 
-	if ((*b == (char) '\r') || (*b == (char) '\n') || (*b == (char) '\0') || (*b == (char) ' ')) {
+	if ((*b == (char) '\n') || (*b == (char) '\0') || (*b == (char) ' ')) {
 		return SSCAN_VALUE_ERROR;
 	}
 

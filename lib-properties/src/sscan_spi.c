@@ -26,11 +26,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stddef.h>
 #include <assert.h>
 
 #include "sscan.h"
 
 int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *address, uint16_t *dmx, uint32_t *speed) {
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(len != NULL);
+	assert(address != NULL);
+	assert(dmx != NULL);
+	assert(speed != NULL);
+
 	int i = 0;
 	int k = 0;
 	char c;

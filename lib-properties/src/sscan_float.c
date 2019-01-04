@@ -2,7 +2,7 @@
  * @file sscan_float.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,30 +31,24 @@
 
 #include "sscan.h"
 
+extern char *get_name(const char *buf, const char *name);
+
 int sscan_float(const char *buf, const char *name, float *value) {
-	float k, f;
-	uint32_t div;
-	bool is_negative = false;
-
-	const char *n = name;
-	const char *b = buf;
-
 	assert(buf != NULL);
 	assert(name != NULL);
 	assert(value != NULL);
 
-	while ((*n != (char) 0) && (*b != (char) 0)) {
-		if (*n++ != *b++) {
-			return SSCAN_NAME_ERROR;
-		}
-	}
+	float k, f;
+	uint32_t div;
+	bool is_negative = false;
+	char *b;
 
-	if (*n != (char) 0) {
+	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if (*b++ != (char) '=') {
-		return SSCAN_NAME_ERROR;
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+		return SSCAN_VALUE_ERROR;
 	}
 
 	if (*b == (char) '-') {
@@ -62,7 +56,7 @@ int sscan_float(const char *buf, const char *name, float *value) {
 		is_negative = true;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\r') || (*b == '\n')) {
+	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
 		return SSCAN_VALUE_ERROR;
 	}
 
@@ -74,7 +68,7 @@ int sscan_float(const char *buf, const char *name, float *value) {
 		}
 		k = k * 10 + (float) *b - (float) '0';
 		b++;
-	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0) && (*b != '\r') && (*b != '\n'));
+	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0) && (*b != '\n'));
 
 	if (*b != '.') {
 		if (is_negative) {
@@ -91,7 +85,7 @@ int sscan_float(const char *buf, const char *name, float *value) {
 	div = 1;
 	b++;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\r') && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
 		if (isdigit((int) *b) == 0) {
 			return SSCAN_VALUE_ERROR;
 		}
