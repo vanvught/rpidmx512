@@ -2,7 +2,7 @@
  * @file ws28xxcommon.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,6 +102,10 @@ void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
 
 void WS28xx::SetGlobalBrightness(uint8_t nGlobalBrightness) {
 	if (m_tLEDType == APA102) {
-		m_nGlobalBrightness = 0xE0 | (nGlobalBrightness & 0x1F);
+		if (nGlobalBrightness > 0x1F) {
+			m_nGlobalBrightness = 0xFF;
+		} else {
+			m_nGlobalBrightness = 0xE0 | (nGlobalBrightness & 0x1F);
+		}
 	}
 }

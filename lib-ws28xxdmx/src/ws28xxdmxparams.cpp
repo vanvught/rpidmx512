@@ -2,7 +2,7 @@
  * @file ws28xxparams.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +36,13 @@
 
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 
-#include <ws28xxdmxparams.h>
-
-#include "readconfigfile.h"
-#include "sscan.h"
+#include "ws28xxdmxparams.h"
 
 #include "ws28xx.h"
 #include "ws28xxdmx.h"
+
+#include "readconfigfile.h"
+#include "sscan.h"
 
 #define SET_LED_TYPE_MASK			(1 << 0)
 #define SET_LED_COUNT_MASK			(1 << 1)
@@ -151,23 +151,27 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void WS28xxDmxParams::Set(WS28xxDmx *pSpiSend) {
-	assert(pSpiSend != 0);
+void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
+	assert(pWS28xxDmx != 0);
 
 	if (isMaskSet(SET_LED_TYPE_MASK)) {
-		pSpiSend->SetLEDType(m_tWS28xxParams.tLedType);
+		pWS28xxDmx->SetLEDType(m_tWS28xxParams.tLedType);
 	}
 
 	if (isMaskSet(SET_LED_COUNT_MASK)) {
-		pSpiSend->SetLEDCount(m_tWS28xxParams.nLedCount);
+		pWS28xxDmx->SetLEDCount(m_tWS28xxParams.nLedCount);
 	}
 
 	if (isMaskSet(SET_DMX_START_ADDRESS)) {
-		pSpiSend->SetDmxStartAddress(m_tWS28xxParams.nDmxStartAddress);
+		pWS28xxDmx->SetDmxStartAddress(m_tWS28xxParams.nDmxStartAddress);
 	}
 
 	if (isMaskSet(SET_CLOCK_SPEED_MASK)) {
-		pSpiSend->SetClockSpeedHz(m_tWS28xxParams.nClockSpeedHz);
+		pWS28xxDmx->SetClockSpeedHz(m_tWS28xxParams.nClockSpeedHz);
+	}
+
+	if (isMaskSet(SET_GLOBAL_BRIGHTNESS)) {
+		pWS28xxDmx->SetGlobalBrightness(m_tWS28xxParams.nGlobalBrightness);
 	}
 }
 

@@ -40,8 +40,8 @@
 #endif
 #endif
 
-#include <ws28xxdmx.h>
-#include <ws28xx.h>
+#include "ws28xxdmx.h"
+#include "ws28xx.h"
 
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -57,11 +57,12 @@ WS28xxDmx::WS28xxDmx(void) :
 #endif
 	m_tLedType(WS2801),
 	m_nLedCount(170),
-	m_nDmxStartAddress(1),
+	m_nDmxStartAddress(DMX_START_ADDRESS_DEFAULT),
 	m_nDmxFootprint(170 * 3),
 	m_pLEDStripe(0),
 	m_bIsStarted(false),
 	m_nClockSpeedHz(0),
+	m_nGlobalBrightness(0xFF),
 	m_nBeginIndexPortId1(170),
 	m_nBeginIndexPortId2(340),
 	m_nBeginIndexPortId3(510),
@@ -83,11 +84,12 @@ void WS28xxDmx::Start(uint8_t nPort) {
 
 	if (m_pLEDStripe == 0) {
 #if defined (__circle__)
-		m_pLEDStripe = new WS28xx(m_pInterrupt, m_tLedType, m_nLedCount);
+		m_pLEDStripe = new WS28xx(m_pInterrupt, m_tLedType, m_nLedCount, m_nClockSpeedHz);
 #else
-		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount);
+		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_nClockSpeedHz);
 #endif
 		assert(m_pLEDStripe != 0);
+		m_pLEDStripe->SetGlobalBrightness(m_nGlobalBrightness);
 		m_pLEDStripe->Initialize();
 	} else {
 		while (m_pLEDStripe->IsUpdating()) {
@@ -257,9 +259,6 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 	}
 
 	return true;
-}
-
-void WS28xxDmx::SetGlobalBrightness(uint8_t nGlobalBrightness) {
 }
 
 void WS28xxDmx::UpdateMembers(void) {

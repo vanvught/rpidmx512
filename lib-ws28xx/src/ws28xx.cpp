@@ -64,6 +64,7 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != 0);
+
 	if (m_tLEDType == APA102) {
 		memset(m_pBuffer, 0, 4);
 		for (uint32_t i = 0; i < m_nLEDCount; i++) {

@@ -27,12 +27,12 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include <assert.h>
 
 #include <circle/logger.h>
-#include <circle/util.h>
 
-#include <ws28xx.h>
+#include "ws28xx.h"
 
 WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed)
 :	m_tLEDType (Type),
@@ -41,7 +41,7 @@ WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t n
 	m_nGlobalBrightness(0xFF),
 	m_bUpdating (FALSE),
 	m_nHighCode(Type == WS2812B ? 0xF8 : 0xF0),
-	m_SPIMaster (pInterruptSystem, ((m_tLEDType == WS2801) || (m_tLEDType == APA102)) ? nClockSpeed : 6400000, 0, 0)
+	m_SPIMaster (pInterruptSystem, ((m_tLEDType == WS2801) || (m_tLEDType == APA102)) ? (nClockSpeed == 0 ? WS2801_SPI_SPEED_DEFAULT_HZ : nClockSpeed) : 6400000, 0, 0)
 {
 	assert(m_tLEDType <= APA102);
 	assert(m_nLEDCount > 0);
@@ -62,6 +62,7 @@ WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t n
 
 	m_pBuffer = new u8[m_nBufSize];
 	assert(m_pBuffer != 0);
+
 	if (m_tLEDType == APA102) {
 		memset(m_pBuffer, 0, 4);
 		for (uint32_t i = 0; i < m_nLEDCount; i++) {

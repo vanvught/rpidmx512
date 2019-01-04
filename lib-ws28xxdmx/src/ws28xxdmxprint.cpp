@@ -32,9 +32,9 @@ void WS28xxDmx::Print(void) {
 	printf("Led parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", (int) m_nLedCount);
-//	if ((m_tLedType == WS2801) || (m_tLedType == APA102)) {
-//		printf(" Clock : %d Hz\n", (int) m_nClockSpeedHz);
-//	}
+	if ((m_tLedType == WS2801) || (m_tLedType == APA102)) {
+		printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
+	}
 	if (m_tLedType == APA102) {
 		printf(" GlbBr : %d\n", (int) m_nGlobalBrightness);
 	}

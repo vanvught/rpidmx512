@@ -43,7 +43,7 @@ public:
 #else
 	WS28xxDmx(void);
 #endif
-	~WS28xxDmx(void);
+	virtual ~WS28xxDmx(void);
 
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);
@@ -68,7 +68,10 @@ public:
 		return m_nClockSpeedHz;
 	}
 
-	void SetGlobalBrightness(uint8_t nGlobalBrightness);
+	void SetGlobalBrightness(uint8_t nGlobalBrightness) {
+		m_nGlobalBrightness = nGlobalBrightness;
+	}
+
 	uint8_t GetGlobalBrightness(void) const {
 		return m_nGlobalBrightness;
 	}
