@@ -119,13 +119,13 @@ void hardware_init(void) {
 
 	if (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) {
 #if (_FFCONF == 68300)/*R0.12c */
-	FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
-	if (result != FR_OK) {
-		char buffer[32];
-		snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
-		console_error(buffer);
-		assert(0);
-	}
+		FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
+		if (result != FR_OK) {
+			char buffer[32];
+			snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
+			console_error(buffer);
+			assert(0);
+		}
 #else
 #error Not a recognized/tested FatFs version
 #endif

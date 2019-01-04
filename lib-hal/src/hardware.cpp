@@ -36,7 +36,7 @@ Hardware::~Hardware(void) {
 }
 
 const char* Hardware::GetWebsiteUrl(void) {
-	return "www.raspberrypi-dmx.org";
+	return "www.orangepi-dmx.org";
 }
 
 void Hardware::WatchdogInit(void) {
