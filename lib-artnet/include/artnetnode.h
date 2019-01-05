@@ -50,6 +50,8 @@
 #include "artnetipprog.h"
 #include "artnetstore.h"
 
+#include "artnet4handler.h"
+
 /**
  * Table 3 – NodeReport Codes
  * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
@@ -157,13 +159,23 @@ public:
 		return m_nVersion;
 	}
 
-	void SetOutput(LightSet *);
-	const LightSet* GetOutput(void);
+	void SetOutput(LightSet *pLightSet);
+	inline LightSet* GetOutput(void) {
+		return m_pLightSet;
+	}
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	void SetDirectUpdate(bool);
-	bool GetDirectUpdate(void) const;
+	inline uint8_t GetActiveOutputPorts(void) {
+		return m_State.nActivePorts;
+	}
+
+	inline void SetDirectUpdate(bool bDirectUpdate) {
+		m_bDirectUpdate = bDirectUpdate;
+	}
+	inline bool GetDirectUpdate(void) {
+		return m_bDirectUpdate;
+	}
 
 	void SetShortName(const char *);
 	const char *GetShortName(void);
@@ -180,7 +192,7 @@ public:
 	void SetSubnetSwitch(uint8_t nAddress);
 	uint8_t GetSubnetSwitch(void) const;
 
-	uint16_t GetPortAddress(uint8_t nPortIndex) const;
+	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress) const;
 
 	void SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode);
 	TMerge GetMergeMode(uint8_t nPortIndex = 0) const;
@@ -211,6 +223,8 @@ public:
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
 	void SetArtNetStore(ArtNetStore *pArtNetStore);
+
+	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
 	void Print(void);
 
@@ -253,6 +267,8 @@ private:
 	ArtNetRdm *m_pArtNetRdm;
 	ArtNetIpProg *m_pArtNetIpProg;
 	ArtNetStore *m_pArtNetStore;
+
+	ArtNet4Handler *m_pArtNet4Handler;
 
 	struct TArtNetNode m_Node;				///< Struct describing the node
 	struct TArtNetNodeState m_State;		///< The current state of the node

@@ -1,11 +1,11 @@
 /**
- * @file artnetparamsstore.cpp
+ * @file artnet4handler.h
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,21 @@
  * THE SOFTWARE.
  */
 
-#include "artnetparams.h"
+#ifndef ARTNET4HANDLER_H_
+#define ARTNET4HANDLER_H_
 
-ArtNetParamsStore::~ArtNetParamsStore(void) {
+#include <stdint.h>
 
-}
+class ArtNet4Handler {
+public:
+	virtual ~ArtNet4Handler(void);
+
+	virtual void HandleAddress(uint8_t nCommand)=0;
+	virtual uint8_t GetStatus(uint8_t nPortId)=0;
+
+private:
+};
+
+
+
+#endif /* ARTNET4HANDLER_H_ */
