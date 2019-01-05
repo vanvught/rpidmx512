@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 #include "display.h"
 
 #include "artnetnode.h"
-#include "artnetdiscovery.h"
 #include "artnetparams.h"
 
 #include "ipprog.h"
@@ -43,6 +42,7 @@
 // DMX Out, RDM Controller
 #include "dmxparams.h"
 #include "dmxsend.h"
+#include "artnetdiscovery.h"
 // Pixel Controller
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
@@ -153,6 +153,8 @@ void notmain(void) {
 			ws28xxparms.Dump();
 		}
 
+		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+
 		if (ws28xxparms.IsLedGrouping()) {
 			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
 			assert(pWS28xxDmxGrouping != 0);
@@ -237,11 +239,8 @@ void notmain(void) {
 			}
 		}
 
-		uint8_t nAddress;
-		node.GetUniverseSwitch(0, nAddress);
-
-		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
-		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+		display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 		if (nw.IsDhcpKnown()) {
 			if (nw.IsDhcpUsed()) {
 				display.PutString(" D");
@@ -249,10 +248,9 @@ void notmain(void) {
 				display.PutString(" S");
 			}
 		}
-		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		(void) display.Printf(5, "SN: %s", node.GetShortName());
-		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nAddress);
-		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
+		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+		display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nUniverse);
+		display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
 	console_status(CONSOLE_YELLOW, START_NODE);
@@ -268,7 +266,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		(void) node.HandlePacket();
+		node.HandlePacket();
 		lb.Run();
 #if defined (ORANGE_PI)
 		spiFlashStore.Flash();
