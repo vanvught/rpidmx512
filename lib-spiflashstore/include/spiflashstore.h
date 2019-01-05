@@ -2,7 +2,7 @@
  * @file spiflashstore.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,167 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIB_SPIFLASHSTORE_H_
-#define LIB_SPIFLASHSTORE_H_
+#ifndef SPIFLASHSTORE_H_
+#define SPIFLASHSTORE_H_
 
 #include <stdint.h>
 #include <uuid/uuid.h>
 
-#include "storenetwork.h"
-#include "storeartnet.h"
-#if defined(BARE_METAL)
- #include "storedmxsend.h"
- #include "storews28xxdmx.h"
+#include "networkparams.h"
+
+class StoreNetwork: public NetworkParamsStore {
+public:
+	StoreNetwork(void);
+	~StoreNetwork(void);
+
+	void Update(const struct TNetworkParams *pNetworkParams);
+	void Copy(struct TNetworkParams *pNetworkParams);
+
+	void UpdateIp(uint32_t nIp);
+	void UpdateNetMask(uint32_t nNetMask);
+
+private:
+
+};
+
+#if defined (LIB_SPIFLASHSTORE) || defined (ARTNET_NODE) || defined (LTC_READER)
+	#include "artnetparams.h"
+	#include "artnetstore.h"
+
+	class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
+	public:
+		StoreArtNet(void);
+		~StoreArtNet(void);
+
+		void Update(const struct TArtNetParams *pArtNetParams);
+		void Copy(struct TArtNetParams *pArtNetParams);
+
+		void SaveShortName(const char *pShortName);
+		void SaveLongName(const char *pLongName);
+
+		void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
+		void SaveNetSwitch(uint8_t nAddress);
+		void SaveSubnetSwitch(uint8_t nAddress);
+
+		void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
+
+		void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+
+	private:
+	};
+#else
+	class StoreArtNet {
+	public:
+		StoreArtNet(void);
+		~StoreArtNet(void);
+	};
 #endif
-#include "storee131.h"
+
+#if defined (LIB_SPIFLASHSTORE) || defined (ARTNET_NODE) || defined (E131_BRIDGE)
+	#include "dmxparams.h"
+
+	class StoreDmxSend: public DMXParamsStore {
+	public:
+		StoreDmxSend(void);
+		~StoreDmxSend(void);
+
+		void Update(const struct TDMXParams *pDMXParams);
+		void Copy(struct TDMXParams *pDMXParams);
+
+	private:
+
+	};
+#else
+	class StoreDmxSend {
+	public:
+		StoreDmxSend(void);
+		~StoreDmxSend(void);
+	};
+#endif
+
+#if defined (LIB_SPIFLASHSTORE) || (defined (ARTNET_NODE) && !defined(LTC_READER))
+	#include "ws28xxdmxparams.h"
+
+	class StoreWS28xxDmx: public WS28xxDmxParamsStore {
+	public:
+		StoreWS28xxDmx(void);
+		~StoreWS28xxDmx(void);
+
+		void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
+		void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+
+	private:
+
+	};
+#else
+	class StoreWS28xxDmx {
+	public:
+		StoreWS28xxDmx(void);
+		~StoreWS28xxDmx(void);
+	};
+#endif
+
+#if defined (LIB_SPIFLASHSTORE) || defined (E131_BRIDGE)
+	#include "e131params.h"
+
+	class StoreE131: public E131ParamsStore {
+	public:
+		StoreE131(void);
+		~StoreE131(void);
+
+		void Update(const struct TE131Params *pE131Params);
+		void Copy(struct TE131Params *pE131Params);
+
+	private:
+
+	};
+#else
+	class StoreE131{
+	public:
+		StoreE131(void);
+		~StoreE131(void);
+	};
+#endif
+
+#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
+	#include "ltcparams.h"
+
+	class StoreLtc: public LtcParamsStore {
+	public:
+		StoreLtc(void);
+		~StoreLtc(void);
+
+		void Update(const struct TLtcParams *pLtcParams);
+		void Copy(struct TLtcParams *pLtcParams);
+	private:
+	};
+#else
+	class StoreLtc {
+	public:
+		StoreLtc(void);
+		~StoreLtc(void);
+	};
+#endif
+
+#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
+	#include "midiparams.h"
+
+	class StoreMidi: public MidiParamsStore {
+	public:
+		StoreMidi(void);
+		~StoreMidi(void);
+
+		void Update(const struct TMidiParams *pMidiParams);
+		void Copy(struct TMidiParams *pMidiParams);
+	private:
+	};
+#else
+	class StoreMidi {
+	public:
+		StoreMidi(void);
+		~StoreMidi(void);
+	};
+#endif
 
 #define SPI_FLASH_STORE_SIZE	4096
 
@@ -45,6 +193,8 @@ enum TStore {
 	STORE_DMXSEND,
 	STORE_WS28XXDMX,
 	STORE_E131,
+	STORE_LTC,
+	STORE_MIDI,
 	STORE_LAST
 };
 
@@ -76,23 +226,13 @@ public:
 
 	void Dump(void);
 
-	inline StoreNetwork *GetStoreNetwork(void) {
-		return &m_StoreNetwork;
-	}
-	inline StoreArtNet *GetStoreArtNet(void) {
-		return &m_StoreArtNet;
-	}
-#if defined(BARE_METAL)
-	inline StoreDmxSend *GetStoreDmxSend(void) {
-		return &m_StoreDmxSend;
-	}
-	inline StoreWS28xxDmx *GetStoreWS28xxDmx(void) {
-		return &m_StoreWS28xxDmx;
-	}
-#endif
-	inline StoreE131 *GetStoreE131(void) {
-		return &m_StoreE131;
-	}
+	StoreNetwork *GetStoreNetwork(void);
+	StoreArtNet *GetStoreArtNet(void);
+	StoreDmxSend *GetStoreDmxSend(void);
+	StoreWS28xxDmx *GetStoreWS28xxDmx(void);
+	StoreE131 *GetStoreE131(void);
+	StoreLtc *GetStoreLtc(void);
+	StoreMidi *GetStoreMidi(void);
 
 private:
 	bool Init(void);
@@ -114,11 +254,11 @@ private:
 
 	StoreNetwork m_StoreNetwork;
 	StoreArtNet m_StoreArtNet;
-#if defined(BARE_METAL)
 	StoreDmxSend m_StoreDmxSend;
 	StoreWS28xxDmx m_StoreWS28xxDmx;
-#endif
 	StoreE131 m_StoreE131;
+	StoreLtc m_StoreLtc;
+	StoreMidi m_StoreMidi;
 };
 
-#endif /* LIB_SPIFLASHSTORE_H_ */
+#endif /* SPIFLASHSTORE_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file storee131.h
+ * @file storeltc.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef STOREE131_H_
-#define STOREE131_H_
+#include <stdint.h>
+#include <assert.h>
 
-#include "e131params.h"
+#include "spiflashstore.h"
 
-class StoreE131: public E131ParamsStore {
-public:
-	StoreE131(void);
-	~StoreE131(void);
+#include "ltcparams.h"
 
-	void Update(const struct TE131Params *pE131Params);
-	void Copy(struct TE131Params *pE131Params);
+#include "debug.h"
 
-private:
+LtcParamsStore::~LtcParamsStore(void) {
+	DEBUG_ENTRY
 
-};
+	DEBUG_EXIT
+}
 
-#endif /* STOREE131_H_ */
+StoreLtc::StoreLtc(void) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
+
+	DEBUG_EXIT
+}
+
+StoreLtc::~StoreLtc(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreLtc::Update(const struct TLtcParams* pLtcParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_LTC, (void *)pLtcParams, sizeof(struct TLtcParams));
+
+	DEBUG_EXIT
+}
+
+void StoreLtc::Copy(struct TLtcParams* pLtcParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_LTC, (void *)pLtcParams, sizeof(struct TLtcParams));
+
+	DEBUG_EXIT
+}
+
+

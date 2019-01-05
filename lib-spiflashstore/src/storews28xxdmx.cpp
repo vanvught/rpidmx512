@@ -2,7 +2,7 @@
  * @file storews28xxdmx.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,23 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include <ws28xxdmxparams.h>
 
-#include "storews28xxdmx.h"
 #include "spiflashstore.h"
+
+#include "ws28xxdmxparams.h"
 
 #include "debug.h"
 
+WS28xxDmxParamsStore::~WS28xxDmxParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 StoreWS28xxDmx::StoreWS28xxDmx(void) {
 	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
 
 	DEBUG_EXIT
 }

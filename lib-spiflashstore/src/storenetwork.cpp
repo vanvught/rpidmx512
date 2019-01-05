@@ -26,15 +26,22 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "storenetwork.h"
 #include "spiflashstore.h"
 
 #include "networkparams.h"
 
 #include "debug.h"
 
+NetworkParamsStore::~NetworkParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 StoreNetwork::StoreNetwork(void) {
 	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
 
 	DEBUG_EXIT
 }

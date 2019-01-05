@@ -1,8 +1,8 @@
 /**
- * @file storews28xxdmx.h
+ * @file storemidi.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef STOREWS28XXDMX_H_
-#define STOREWS28XXDMX_H_
+#include <stdint.h>
+#include <assert.h>
 
-#include <ws28xxdmxparams.h>
+#include "spiflashstore.h"
 
-class StoreWS28xxDmx: public WS28xxDmxParamsStore {
-public:
-	StoreWS28xxDmx(void);
-	~StoreWS28xxDmx(void);
+#include "midiparams.h"
 
-	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
-	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+#include "debug.h"
 
-private:
+MidiParamsStore::~MidiParamsStore(void) {
+	DEBUG_ENTRY
 
-};
+	DEBUG_EXIT
+}
 
-#endif /* STOREWS28XXDMX_H_ */
+StoreMidi::StoreMidi(void) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
+
+	DEBUG_EXIT
+}
+
+StoreMidi::~StoreMidi(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreMidi::Update(const struct TMidiParams* pMidiParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_MIDI, (void *)pMidiParams, sizeof(struct TMidiParams));
+
+	DEBUG_EXIT
+}
+
+void StoreMidi::Copy(struct TMidiParams* pMidiParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_MIDI, (void *)pMidiParams, sizeof(struct TMidiParams));
+
+	DEBUG_EXIT
+}

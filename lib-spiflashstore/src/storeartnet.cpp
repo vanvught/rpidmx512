@@ -26,15 +26,22 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "storeartnet.h"
 #include "spiflashstore.h"
 
 #include "artnetparams.h"
 
 #include "debug.h"
 
+ArtNetParamsStore::~ArtNetParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 StoreArtNet::StoreArtNet(void) {
 	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
 
 	DEBUG_EXIT
 }
