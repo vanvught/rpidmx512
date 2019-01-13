@@ -39,7 +39,7 @@
 extern uint16_t net_chksum(void *, uint32_t);
 extern void emac_eth_send(void *, int);
 
-#define MAX_JOINS_ALLOWED	4
+#define MAX_JOINS_ALLOWED	8
 
 typedef enum s_state {
 	NON_MEMBER = 0, DELAYING_MEMBER, IDLE_MEMBER

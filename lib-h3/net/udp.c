@@ -2,7 +2,7 @@
  * @file udp.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 extern void emac_eth_send(void *, int);
@@ -107,7 +111,7 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 void udp_handle(struct t_udp *p_udp) {
 	uint32_t port_index;
 	_pcast32 src;
-	uint32_t i;
+	uint16_t i;
 
 	const uint16_t dest_port = __builtin_bswap16(p_udp->udp.destination_port);
 
@@ -132,9 +136,13 @@ void udp_handle(struct t_udp *p_udp) {
 	const uint8_t entry = s_recv_queue[port_index].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[port_index].entries[entry];
 
-	for (i = 0; (i < 2048) && (i < __builtin_bswap16(p_udp->udp.len)); i++) {
-		p_queue_entry->data[i] = p_udp->udp.data[i];
-	}
+	const uint16_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;
+
+	debug_dump(p_udp->udp.data, data_length);
+
+	i = MIN(FRAME_BUFFER_SIZE, data_length);
+
+	memcpy(p_queue_entry->data, p_udp->udp.data, i);
 
 	memcpy(src.u8, p_udp->ip4.src, IPv4_ADDR_LEN);
 	p_queue_entry->from_ip = src.u32;
@@ -183,7 +191,7 @@ int udp_unbind(uint16_t local_port) {
 		return 0;
 	}
 
-	return -2; // TODO implement udp_unbind
+	return -2;
 }
 
 uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port) {
@@ -196,11 +204,9 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 	const uint8_t entry = s_recv_queue[idx].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[idx].entries[entry];
 
-	uint32_t i;
+	const uint16_t i = MIN(size, p_queue_entry->size);
 
-	for (i = 0; (i < size) && (i < p_queue_entry->size); i ++) {
-		packet[i] = p_queue_entry->data[i];
- 	}
+	memcpy(packet, p_queue_entry->data, i);
 
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
@@ -216,7 +222,6 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	assert(idx < MAX_PORTS_ALLOWED);
 
 	_pcast32 dst;
-	uint32_t i;
 
 	if (s_ports_allowed[idx] == 0) {
 		DEBUG_PUTS("ports_allowed[idx] == 0");
@@ -246,20 +251,18 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.ip4.id = s_id;
 	s_send_packet.ip4.len = __builtin_bswap16(size + IPv4_UDP_HEADERS_SIZE);
 	s_send_packet.ip4.chksum = 0;
-	s_send_packet.ip4.chksum = net_chksum((void *)&s_send_packet.ip4, (uint32_t)sizeof(s_send_packet.ip4));
+	s_send_packet.ip4.chksum = net_chksum((void *) &s_send_packet.ip4, (uint32_t) sizeof(s_send_packet.ip4));
 
 	//UDP
 	s_send_packet.udp.source_port = __builtin_bswap16(s_ports_allowed[idx]);
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16(size + UDP_HEADER_SIZE);
 
-	for (i = 0; i < size; i++) {
-		s_send_packet.udp.data[i] = packet[i];
-	}
+	memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 
-	debug_dump((void *)&s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	debug_dump((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
-	emac_eth_send((void *)&s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	emac_eth_send((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
 	s_id++;
 
