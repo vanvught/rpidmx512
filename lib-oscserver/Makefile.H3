@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-osc/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES = ../lib-osc/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 #
 include ../h3-firmware-template/lib/Rules.mk

@@ -1,8 +1,8 @@
 /**
- * @file oscserverprint.cpp
+ * @file oscserverhandler.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include "oscserverhandler.h"
 
-#include "oscserver.h"
-
-void OscServer::Print(void) {
-	printf("OSC Server configuration:\n");
-	printf(" Incoming Port        : %d\n", m_nPortIncoming);
-	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
-	printf(" Path                 : [%s][%s]\n", m_aPath, m_aPathSecond);
-	printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
+OscServerHandler::~OscServerHandler(void) {
 }

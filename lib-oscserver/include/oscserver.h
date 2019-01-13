@@ -2,7 +2,7 @@
  * @file oscserver.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+#include "oscserverhandler.h"
 #include "lightset.h"
 
 #define OSCSERVER_DEFAULT_PORT_INCOMING	8000
@@ -40,19 +41,26 @@ public:
 	OscServer(void);
 	~OscServer(void);
 
-	void SetOutput(LightSet *);
+	void SetOscServerHandler(OscServerHandler *pOscServerHandler);
+	void SetOutput(LightSet *pLightSet);
 
-	uint16_t GetPortIncoming(void) const;
 	void SetPortIncoming(uint16_t nPortIncoming = OSCSERVER_DEFAULT_PORT_INCOMING);
+	uint16_t GetPortIncoming(void) const;
 
-	uint16_t GetPortOutgoing(void) const;
 	void SetPortOutgoing(uint16_t nPortOutgoing = OSCSERVER_DEFAULT_PORT_OUTGOING);
+	uint16_t GetPortOutgoing(void) const;
 
-	const char *GetPath(void);
 	void SetPath(const char *pPath);
+	const char *GetPath(void);
 
-	bool IsPartialTransmission(void) const;
+	void SetPathInfo(const char *pPathInfo);
+	const char *GetPathInfo(void);
+
+	void SetPathBlackOut(const char *pPathBlackOut);
+	const char *GetPathBlackOut(void);
+
 	void SetPartialTransmission(bool bPartialTransmission = false);
+	bool IsPartialTransmission(void) const;
 
 	void Print(void);
 
@@ -73,10 +81,16 @@ private:
 	uint16_t m_nLastChannel;
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
 	char m_aPathSecond[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
+	OscServerHandler *m_pOscServerHandler;
 	LightSet *m_pLightSet;
 	uint8_t *m_pBuffer;
 	uint8_t *m_pData;
 	uint8_t *m_pOsc;
+	char m_Os[32];
+	const char *m_pModel;
+	const char *m_pSoC;
 };
 
 #endif /* OSCSERVER_H_ */

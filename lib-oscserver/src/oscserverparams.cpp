@@ -2,7 +2,7 @@
  * @file oscserverparams.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,13 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_INCOMING_PORT_MASK	1<<0
-#define SET_OUTGOING_PORT_MASK	1<<1
-#define SET_PATH_MASK			1<<2
-#define SET_TRANSMISSION_MASK	1<<3
-#define SET_OUTPUT_MASK			1<<4
+#define SET_INCOMING_PORT_MASK	(1 << 0)
+#define SET_OUTGOING_PORT_MASK	(1 << 1)
+#define SET_PATH_MASK			(1 << 2)
+#define SET_TRANSMISSION_MASK	(1 << 3)
+#define SET_OUTPUT_MASK			(1 << 4)
+#define SET_PATH_INFO_MASK		(1 << 5)
+#define SET_PATH_BLACKOUT_MASK	(1 << 6)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "osc.txt";
 static const char PARAMS_INCOMING_PORT[] ALIGNED = "incoming_port";
@@ -50,6 +52,8 @@ static const char PARAMS_OUTGOING_PORT[] ALIGNED = "outgoing_port";
 static const char PARAMS_PATH[] ALIGNED = "path";
 static const char PARAMS_TRANSMISSION[] ALIGNED = "partial_transmission";
 static const char PARAMS_OUTPUT[] ALIGNED = "output";
+static const char PARAMS_PATH_INFO[] ALIGNED = "path_info";
+static const char PARAMS_PATH_BLACKOUT[] ALIGNED = "path_blackout";
 
 void OSCServerParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
@@ -83,10 +87,8 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_TRANSMISSION, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_bPartialTransmission = true;
-			m_bSetList |= SET_TRANSMISSION_MASK;
-		}
+		m_bPartialTransmission = (value8 != 0);
+		m_bSetList |= SET_TRANSMISSION_MASK;
 		return;
 	}
 
@@ -96,12 +98,28 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	len = sizeof(m_aPathInfo) - 1;
+	if (Sscan::Char(pLine, PARAMS_PATH_INFO, m_aPathInfo, &len) == SSCAN_OK) {
+		m_bSetList |= SET_PATH_INFO_MASK;
+		return;
+	}
+
+	len = sizeof(m_aPathBlackOut) - 1;
+	if (Sscan::Char(pLine, PARAMS_PATH_INFO, m_aPathBlackOut, &len) == SSCAN_OK) {
+		m_bSetList |= SET_PATH_BLACKOUT_MASK;
+		return;
+	}
+
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
-		if(memcmp(value, "mon", 3) == 0) {
+		if (memcmp(value, "mon", 3) == 0) {
 			m_tOutputType = OUTPUT_TYPE_MONITOR;
-			m_bSetList |= SET_OUTPUT_MASK;
+		} else if (memcmp(value, "spi", 3) == 0) {
+			m_tOutputType = OUTPUT_TYPE_SPI;
+		} else {
+			m_tOutputType = OUTPUT_TYPE_DMX;
 		}
+		m_bSetList |= SET_OUTPUT_MASK;
 		return;
 	}
 }
@@ -114,6 +132,8 @@ OSCServerParams::OSCServerParams(void):
 	m_tOutputType(OUTPUT_TYPE_DMX)
 {
 	memset(m_aPath, 0, sizeof(m_aPath));
+	memset(m_aPathInfo, 0, sizeof(m_aPathInfo));
+	memset(m_aPathBlackOut, 0, sizeof(m_aPathBlackOut));
 }
 
 OSCServerParams::~OSCServerParams(void) {
@@ -141,6 +161,14 @@ void OSCServerParams::Set(OscServer *pOscServer) {
 		pOscServer->SetPath(m_aPath);
 	}
 
+	if (isMaskSet(SET_PATH_INFO_MASK)) {
+		pOscServer->SetPathInfo(m_aPathInfo);
+	}
+
+	if (isMaskSet(SET_PATH_BLACKOUT_MASK)) {
+		pOscServer->SetPathBlackOut(m_aPathBlackOut);
+	}
+
 	if (isMaskSet(SET_TRANSMISSION_MASK)) {
 		pOscServer->SetPartialTransmission(m_bPartialTransmission);
 	}
@@ -166,12 +194,20 @@ void OSCServerParams::Dump(void) {
 		printf(" %s=%s\n", PARAMS_PATH, m_aPath);
 	}
 
+	if (isMaskSet(SET_PATH_INFO_MASK)) {
+		printf(" %s=%s\n", PARAMS_PATH_INFO, m_aPathInfo);
+	}
+
+	if (isMaskSet(SET_PATH_BLACKOUT_MASK)) {
+		printf(" %s=%s\n", PARAMS_PATH_BLACKOUT, m_aPathBlackOut);
+	}
+
 	if (isMaskSet(SET_TRANSMISSION_MASK)) {
 		printf(" %s=%d\n", PARAMS_TRANSMISSION, m_bPartialTransmission);
 	}
 
 	if (isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%s\n", PARAMS_OUTPUT, m_tOutputType == OUTPUT_TYPE_MONITOR ? "mon" : "dmx");
+		printf(" %s=%d [%s]\n", PARAMS_OUTPUT, (int) m_tOutputType, m_tOutputType == OUTPUT_TYPE_MONITOR ? "mon" : (m_tOutputType == OUTPUT_TYPE_SPI ? "spi" : "dmx"));
 	}
 #endif
 }

@@ -2,7 +2,7 @@
  * @file oscserverparams.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 enum TOutputType {
 	OUTPUT_TYPE_DMX,
+	OUTPUT_TYPE_SPI,
 	OUTPUT_TYPE_MONITOR
 };
 
@@ -44,19 +45,19 @@ public:
 	void Set(OscServer *pOscServer);
 	void Dump(void);
 
-	inline uint16_t GetIncomingPort(void) {
+	 uint16_t GetIncomingPort(void) {
 		return m_nIncomingPort;
 	}
 
-	inline uint16_t GetOutgoingPort(void) {
+	 uint16_t GetOutgoingPort(void) {
 		return m_nOutgoingPort;
 	}
 
-	inline bool GetPartialTransmission(void) {
+	 bool GetPartialTransmission(void) {
 		return m_bPartialTransmission;
 	}
 
-	inline TOutputType GetOutputType(void) {
+	 TOutputType GetOutputType(void) {
 		return m_tOutputType;
 	}
 
@@ -75,6 +76,9 @@ private:
 	uint16_t m_nOutgoingPort;
 	bool m_bPartialTransmission;
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
+
 	TOutputType m_tOutputType;
 };
 
