@@ -2,7 +2,7 @@
  * @file h3_i2c.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,6 @@ extern uint8_t h3_i2c_write(/*@null@*/const char *, uint32_t);
 extern uint8_t h3_i2c_read(/*@out@*/char *, uint32_t);
 extern void h3_i2c_set_baudrate(uint32_t);
 extern void h3_i2c_set_slave_address(uint8_t);
-
-// Obsolete - Backwards compatibility with Raspberry Pi
-#define h3_i2c_setSlaveAddress	h3_i2c_set_slave_address	//TODO remove h3_i2c_setSlaveAddress
-extern void h3_i2c_setClockDivider(uint16_t);				//TODO remove h3_i2c_setClockDivider
 
 #ifdef __cplusplus
 }

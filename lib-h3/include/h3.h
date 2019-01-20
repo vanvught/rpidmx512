@@ -70,8 +70,6 @@
 #define H3_SD_MMC1_BASE			(H3_SD_MMC_BASE + (1 * 0x1000))
 #define H3_SD_MMC2_BASE			(H3_SD_MMC_BASE + (2 * 0x1000))
 
-#define H3_SID_EFUSE_BASE		(H3_SID_BASE + 0x200) //FIXME check
-
 #define H3_PIO_PORTA_BASE		(H3_PIO_BASE + (0 * 0x24))
 #define H3_PIO_PORTB_BASE		(H3_PIO_BASE + (1 * 0x24))
 #define H3_PIO_PORTC_BASE		(H3_PIO_BASE + (2 * 0x24))
@@ -96,8 +94,6 @@
 
 #define H3_GIC_DIST_BASE		(H3_GIC_BASE + 0x1000)
 #define H3_GIC_CPUIF_BASE		(H3_GIC_BASE + 0x2000)
-
-#define H3_CNT64_BASE			(H3_CPUCFG_BASE + 0x0280)	//TODO Create struct for CPUCFG
 
 typedef enum T_H3_Pn {
 	H3_GPIO_PORTA = 0,
@@ -598,7 +594,6 @@ typedef struct T_H3_PRCM {
 #define H3_TWI2			((H3_TWI_TypeDef *) H3_TWI2_BASE)
 #define H3_SPI0			((H3_SPI_TypeDef *) H3_SPI0_BASE)
 #define H3_SPI1			((H3_SPI_TypeDef *) H3_SPI1_BASE)
-#define H3_CNT64		((H3_CNT64_TypeDef *) H3_CNT64_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
 
 #ifdef __cplusplus
@@ -623,8 +618,6 @@ typedef enum H3_BOOT_DEVICE {
 } h3_boot_device_t;
 
 extern h3_boot_device_t h3_get_boot_device(void);
-
-// NDEBUG
 extern void h3_memory_map_dump(void);
 
 #ifdef __cplusplus

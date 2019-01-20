@@ -74,12 +74,14 @@ static uint8_t s_ports_used_index ALIGNED;
 static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
 static uint16_t s_id ALIGNED;
+static uint32_t broadcast_mask;
 
 void udp_set_ip(const struct ip_info *p_ip_info) {
 	_pcast32 src;
 
 	src.u32 = p_ip_info->ip.addr;
 	memcpy(s_send_packet.ip4.src, src.u8, IPv4_ADDR_LEN);
+	broadcast_mask = ~(p_ip_info->netmask.addr);
 }
 
 void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
@@ -233,7 +235,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	if (to_ip == IPv4_BROADCAST) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
 		memset(s_send_packet.ip4.dst, 0xFF, IPv4_ADDR_LEN);
-	} else if ((to_ip & 0xff000000) == 0xff000000) {
+	} else if ((to_ip & broadcast_mask) == broadcast_mask) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
 		dst.u32 = to_ip;
 		memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);

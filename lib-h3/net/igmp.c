@@ -229,7 +229,7 @@ void igmp_handle(struct t_igmp *p_igmp) {
 
 void igmp_timer(void) {
 	uint32_t i;
-	// TODO optimize ?
+
 	for (i = 0; i < MAX_JOINS_ALLOWED ; i++) {
 
 		if ((s_groups[i].state == DELAYING_MEMBER) && (s_groups[i].timer > 0)) {

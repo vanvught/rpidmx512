@@ -270,7 +270,7 @@ int emac_eth_recv(uint8_t **packetp) {
 			}
 			*packetp = (uint8_t *) (uint32_t) desc_p->buf_addr;
 #ifndef NDEBUG
-			//debug_dump((void *) *packetp, (uint16_t) length);
+			debug_dump((void *) *packetp, (uint16_t) length);
 #endif
 			return length;
 		}

@@ -81,14 +81,6 @@ extern void h3_spi_setClockDivider(uint16_t divider);	// Backwards compatibility
 //TODO Backwards compatibility with the Raspberry Pi API's
 #define BCM2835_CORE_CLK_HZ 					250000000
 
-#define bcm2835_aux_spi_begin()						(void)0
-#define bcm2835_aux_spi_setClockDivider(__p)		(void)0
-#define bcm2835_aux_spi_write(__p)					(void)0
-#define bcm2835_aux_spi_writenb(__p1,__p2)			(void)0
-#define bcm2835_aux_spi_transfern(__p1,__p2)		(void)0
-#define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
-static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
-
 #define bcm2835_spi_begin						h3_spi_begin
 #define bcm2835_spi_setClockDivider				h3_spi_setClockDivider
 #define bcm2835_spi_set_speed_hz				h3_spi_set_speed_hz

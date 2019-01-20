@@ -2,7 +2,7 @@
  * @file h3_watchdog.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,9 @@
 #define CTRL_RELOAD			((1 << 0) | (0x0a57 << 1))
 
 #if 0
+
+/* Watchdog clock source is OSC24M/750 = 32000 */
+
 static const uint8_t interval_value_map[] = {
 	[1] = 0x1,  /* 1s  */
 	[2] = 0x2,  /* 2s  */
@@ -58,7 +61,7 @@ static const uint8_t interval_value_map[] = {
 
 void h3_watchdog_enable(void) {
 	H3_TIMER->WDOG0_CFG = CFG_WHOLE_SYSTEM;
-	H3_TIMER->WDOG0_MODE = 0x10;		// TODO 1s What did we get from U-Boot?
+	H3_TIMER->WDOG0_MODE = 0x10;
 	H3_TIMER->WDOG0_MODE |= MODE_ENABLE;
 }
 
