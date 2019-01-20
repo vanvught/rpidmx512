@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <uuid/uuid.h>
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -38,6 +37,9 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
+
+#define BOOL2STRING(b)			(b) ? "Yes" : "No"
+#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
 
 #define SET_UNIVERSE_MASK		(1 << 0)
 #define SET_MERGE_MODE_MASK		(1 << 1)
@@ -51,12 +53,20 @@
 #define SET_MERGE_MODE_B_MASK	(1 << 9)
 #define SET_MERGE_MODE_C_MASK	(1 << 10)
 #define SET_MERGE_MODE_D_MASK	(1 << 11)
+#define SET_NETWORK_TIMEOUT		(1 << 12)
+#define SET_MERGE_TIMEOUT		(1 << 13)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
-static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
 static const char PARAMS_OUTPUT[] ALIGNED = "output";
-static const char PARAMS_CID[] ALIGNED = "cid";
+//static const char PARAMS_CID[] ALIGNED = "cid";
+static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a",
+		"universe_port_b", "universe_port_c", "universe_port_d" };
+static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
+static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a",
+		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+static const char PARAMS_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+static const char PARAMS_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
 
 E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE131ParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tE131Params;
@@ -66,6 +76,7 @@ E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE1
 	}
 
 	m_tE131Params.nUniverse = E131_UNIVERSE_DEFAULT;
+	m_tE131Params.nNetworkTimeout = E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS;
 }
 
 E131Params::~E131Params(void) {
@@ -93,9 +104,11 @@ bool E131Params::Load(void) {
 void E131Params::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	char value[UUID_STRING_LENGTH + 2];
+	char value[16];
 	uint8_t len;
+	uint8_t value8;
 	uint16_t value16;
+	float fValue;
 
 	if (Sscan::Uint16(pLine, PARAMS_UNIVERSE, &value16) == SSCAN_OK) {
 		if ((value16 == 0) || (value16 > E131_UNIVERSE_MAX)) {
@@ -134,17 +147,62 @@ void E131Params::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	len = UUID_STRING_LENGTH;
-	if (Sscan::Uuid(pLine, PARAMS_CID, value, &len) == SSCAN_OK) {
-		memcpy(m_tE131Params.aCidString, value, UUID_STRING_LENGTH);
-		m_tE131Params.aCidString[UUID_STRING_LENGTH] = '\0';
-		m_tE131Params.bHaveCustomCid = true;
-		m_tE131Params.nSetList |= SET_CID_MASK;
+	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		if (Sscan::Uint16(pLine, PARAMS_UNIVERSE_PORT[i], &value16) == SSCAN_OK) {
+			m_tE131Params.nUniversePort[i] = value16;
+			m_tE131Params.nSetList |= (SET_UNIVERSE_A_MASK << i);
+			return;
+		}
+
+		len = 3;
+		if (Sscan::Char(pLine, PARAMS_MERGE_MODE_PORT[i], value, &len) == SSCAN_OK) {
+			if (memcmp(value, "ltp", 3) == 0) {
+				m_tE131Params.nMergeModePort[i] = E131_MERGE_LTP;
+				m_tE131Params.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+			} else if (memcmp(value, "htp", 3) == 0) {
+				m_tE131Params.nMergeModePort[i] = E131_MERGE_HTP;
+				m_tE131Params.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+			}
+			return;
+		}
+	}
+
+	if (Sscan::Float(pLine, PARAMS_NETWORK_DATA_LOSS_TIMEOUT, &fValue) == SSCAN_OK) {
+		m_tE131Params.nNetworkTimeout = fValue;
+		m_tE131Params.nSetList |= SET_NETWORK_TIMEOUT;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
+		m_tE131Params.bDisableMergeTimeout = (value8 != 0);
+		m_tE131Params.nSetList |= SET_MERGE_TIMEOUT;
 		return;
 	}
 }
 
-// FIXME E131Params::Set(E131Bridge *pE131Bridge)
+uint8_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
+	assert(nPort < E131_MAX_PORTS);
+
+	switch (nPort) {
+		case 0:
+			IsSet = isMaskSet(SET_UNIVERSE_A_MASK);
+			break;
+		case 1:
+			IsSet = isMaskSet(SET_UNIVERSE_B_MASK);
+			break;
+		case 2:
+			IsSet = isMaskSet(SET_UNIVERSE_C_MASK);
+			break;
+		case 3:
+			IsSet = isMaskSet(SET_UNIVERSE_D_MASK);
+			break;
+		default:
+			break;
+	}
+
+	return m_tE131Params.nUniversePort[nPort];
+}
+
 void E131Params::Set(E131Bridge *pE131Bridge) {
 	assert(pE131Bridge != 0);
 
@@ -152,10 +210,21 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 		return;
 	}
 
-	if (isMaskSet(SET_MERGE_MODE_MASK)) {
-		pE131Bridge->SetMergeMode((TE131Merge) m_tE131Params.nMergeMode);
+	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+			pE131Bridge->SetMergeMode(i, (TE131Merge) m_tE131Params.nMergeModePort[i]);
+		} else {
+			pE131Bridge->SetMergeMode(i, (TE131Merge) m_tE131Params.nMergeMode);
+		}
 	}
 
+	if(isMaskSet(SET_NETWORK_TIMEOUT)) {
+		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
+	}
+
+	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+		pE131Bridge->SetDisableMergeTimeout(m_tE131Params.bDisableMergeTimeout);
+	}
 }
 
 void E131Params::Dump(void) {
@@ -170,16 +239,32 @@ void E131Params::Dump(void) {
 		printf(" %s=%d\n", PARAMS_UNIVERSE, (int) m_tE131Params.nUniverse);
 	}
 
-	if (isMaskSet(SET_CID_MASK)) {
-		printf(" %s=%s\n", PARAMS_CID, m_tE131Params.aCidString);
+	if (isMaskSet(SET_OUTPUT_MASK)) {
+		printf(" %s=%s [%d]\n", PARAMS_OUTPUT, m_tE131Params.tOutputType == E131_OUTPUT_TYPE_MONITOR ? "mon" : (m_tE131Params.tOutputType == E131_OUTPUT_TYPE_SPI ? "spi": "dmx"), (int) m_tE131Params.tOutputType);
+	}
+
+	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {
+		if (isMaskSet(SET_UNIVERSE_A_MASK << i)) {
+			printf(" %s=%d\n", PARAMS_UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
+		}
 	}
 
 	if (isMaskSet(SET_MERGE_MODE_MASK)) {
-		printf(" %s=%s\n", PARAMS_MERGE_MODE, (TE131Merge)m_tE131Params.nMergeMode == E131_MERGE_HTP ? "HTP" : "LTP");
+		printf(" %s=%s\n", PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode));
 	}
 
-	if (isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%s [%d]\n", PARAMS_OUTPUT, m_tE131Params.tOutputType == E131_OUTPUT_TYPE_MONITOR ? "mon" : (m_tE131Params.tOutputType == E131_OUTPUT_TYPE_SPI ? "spi": "dmx"), (int) m_tE131Params.tOutputType);
+	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {
+		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+			printf(" %s=%s\n", PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]));
+		}
+	}
+
+	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
+		printf(" %s=%.1f [%s]\n", PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout == 0) ? "Disabled" : "");
+	}
+
+	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+		printf(" %s=%d [%s]\n", PARAMS_DISABLE_MERGE_TIMEOUT, (int) m_tE131Params.bDisableMergeTimeout, BOOL2STRING(m_tE131Params.bDisableMergeTimeout));
 	}
 #endif
 }
@@ -193,4 +278,16 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 
 bool E131Params::isMaskSet(uint32_t nMask) const {
 	return (m_tE131Params.nSetList & nMask) == nMask;
+}
+
+uint32_t E131Params::GetMaskUniverse(uint8_t nPort) {
+	assert(nPort < E131_MAX_PORTS);
+
+	return SET_UNIVERSE_A_MASK << nPort;
+}
+
+uint32_t E131Params::GetMaskMergeMode(uint8_t nPort) {
+	assert(nPort < E131_MAX_PORTS);
+
+	return SET_MERGE_MODE_A_MASK << nPort;
 }

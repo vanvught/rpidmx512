@@ -2,7 +2,7 @@
  * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +25,23 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <uuid/uuid.h>
 #include <assert.h>
 
 #include "e131bridge.h"
 
 #include "network.h"
 
+#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
+
 void E131Bridge::Print(void) {
-	char uuid_str[UUID_STRING_LENGTH + 1];
-
-	uuid_str[UUID_STRING_LENGTH] = '\0';
-	uuid_unparse(GetCid(), uuid_str);
-
 	const uint8_t *firmware_version = GetSoftwareVersion();
 
-	printf("\nBridge configuration\n");
-	printf(" Firmware     : %d.%d\n", firmware_version[0], firmware_version[1]);
-	printf(" CID          : %s\n", uuid_str);
-	printf(" Universe     : %d\n", GetUniverse());
-	printf(" Merge mode   : %s\n", GetMergeMode() == E131_MERGE_HTP ? "HTP" : "LTP");
-	printf(" Multicast ip : " IPSTR "\n", IP2STR(GetMulticastIp()));
-	printf(" Unicast ip   : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
+	printf("Bridge configuration\n");
+	printf(" Firmware : %d.%d\n", firmware_version[0], firmware_version[1]);
+	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		uint16_t nUniverse;
+		if (GetUniverse(i, nUniverse)) {
+			printf("  Port %c Universe %d [%s]\n", (char) ('A' + i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
+		}
+	}
 }

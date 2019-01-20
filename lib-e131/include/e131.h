@@ -3,7 +3,7 @@
  *
  */
 
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,16 @@ enum {
 	E131_MAX_PORTS = 4
 };
 
+enum TE131PortDir {
+	E131_INPUT_PORT,
+	E131_OUTPUT_PORT,
+	E131_DISABLE_PORT
+};
+
 ///< ANSI E1.31 — 2016 Entertainment Technology
 ///< Lightweight streaming protocol for transport of DMX512 using ACN
 
-
-// TODO Update section references to 2016
+// TODO Update section references to 2018
 
 /**
  * 3.2 Universe: A set of up to 512 data slots identified by universe number. 

@@ -2,7 +2,7 @@
  * @file packets.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ struct TDataFrameLayer {
 	uint32_t Vector;							///< Identifies 1.31 data as DMP Protocol PDU. Fixed 0x00000002
 	uint8_t SourceName[E131_SOURCE_NAME_LENGTH];///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
 	uint8_t Priority;							///< Data priority if multiple sources. 0-200, default of 100
-	uint16_t Reserved;							///< Reserved. Transmitter Shall Send 0. Receivers Shall Ignore
+	uint16_t SynchronizationAddress;			///< Universe on which synchronization packets are transmitted
 	uint8_t SequenceNumber;						///< Sequence Number. To detect duplicate or out of order packets
 	uint8_t Options;							///< Options Flags Bit. 7 = Preview_Data Bit 6 = Stream_Terminated
 	uint16_t Universe;							///< Universe Number. Identifier for a distinct stream of DMX Data

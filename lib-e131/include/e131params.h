@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,8 @@ struct TE131Params {
     uint16_t nUniversePort[E131_MAX_PORTS];
 	uint8_t nMergeMode;
 	uint8_t nMergeModePort[E131_MAX_PORTS];
+	float nNetworkTimeout;
+	bool bDisableMergeTimeout;
 };
 
 class E131ParamsStore {
@@ -67,27 +69,31 @@ public:
 	void Set(E131Bridge *);
 	void Dump(void);
 
-	inline TE131OutputType GetOutputType(void) {
+	 TE131OutputType GetOutputType(void) {
 		return m_tE131Params.tOutputType;
 	}
 
-	inline uint16_t GetUniverse(void) {
+	 uint16_t GetUniverse(void) {
 		return m_tE131Params.nUniverse;
 	}
 
-	inline TE131Merge GetMergeMode(void) {
+	 TE131Merge GetMergeMode(void) {
 		return (TE131Merge) m_tE131Params.nMergeMode;
 	}
 
-	inline bool isHaveCustomCid(void) {
+	 bool isHaveCustomCid(void) {
 		return m_tE131Params.bHaveCustomCid;
 	}
 
-	inline const char* GetCidString(void) {
+	 const char* GetCidString(void) {
 		return (const char*) m_tE131Params.aCidString;
 	}
 
+	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+
 public:
+	static uint32_t GetMaskUniverse(uint8_t nPort);
+	static uint32_t GetMaskMergeMode(uint8_t nPort);
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

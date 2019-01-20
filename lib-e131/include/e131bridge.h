@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,32 +36,41 @@
 #define UUID_STRING_LENGTH	36
 
 struct TE131BridgeState {
+	uint8_t nActivePorts;
 	uint8_t nPriority;
-	bool IsNetworkDataLoss;			///<
+	bool IsNetworkDataLoss;
 	bool IsMergeMode;				///< Is the Bridge in merging mode?
-	bool IsTransmitting;			///<
 	bool IsSynchronized;			///< “Synchronized” or an “Unsynchronized” state.
-	bool IsForcedSynchronized;		///<
-	uint32_t SynchronizationTime;	///<
-	uint32_t DiscoveryTime;			///<
-	uint16_t DiscoveryPacketLength;	///<
+	bool IsForcedSynchronized;
+	bool IsChanged;
+	bool bDisableNetworkDataLossTimeout;
+	bool bDisableMergeTimeout;
+	uint32_t SynchronizationTime;
+	uint32_t DiscoveryTime;
+	uint16_t DiscoveryPacketLength;
+	uint16_t nSynchronizationAddressSourceA;
+	uint16_t nSynchronizationAddressSourceB;
 };
 
 struct TSource {
-	uint32_t time;					///< The latest time of the data received from source
-	uint32_t ip;					///< The IP address for source
-	uint8_t data[E131_DMX_LENGTH];	///< The data received from source
-	uint8_t cid[E131_CID_LENGTH];	///< Sender's CID. Sender's unique ID
+	uint32_t time;
+	uint32_t ip;
+	uint8_t data[E131_DMX_LENGTH];
+	uint8_t cid[E131_CID_LENGTH];
 	uint8_t sequenceNumberData;
 };
 
 struct TE131OutputPort {
-	uint8_t data[E131_DMX_LENGTH];	///< Data sent
-	uint16_t length;				///< Length of sent DMX data
-	TE131Merge mergeMode;			///<
-	bool IsDataPending;				///<
-	struct TSource sourceA;			///<
-	struct TSource sourceB;			///<
+	uint8_t data[E131_DMX_LENGTH];
+	uint16_t length;
+	uint16_t nUniverse;
+	TE131Merge mergeMode;
+	bool IsDataPending;
+	bool bIsEnabled;
+	bool IsTransmitting;
+	bool IsMerging;
+	struct TSource sourceA;
+	struct TSource sourceB;
 };
 
 class E131Bridge {
@@ -69,25 +78,46 @@ public:
 	E131Bridge(void);
 	~E131Bridge(void);
 
-	void SetOutput(LightSet *);
+	void SetOutput(LightSet *pLightSet);
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	uint16_t GetUniverse(void) const;
-	void SetUniverse(const uint16_t);
+	void SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse);
+	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse) const;
 
-	inline uint32_t GetMulticastIp(void) {
-		return m_nMulticastIp;
+	void SetMergeMode(uint8_t nPortIndex, TE131Merge tE131Merge);
+	TE131Merge GetMergeMode(uint8_t nPortIndex) const;
+
+	 uint8_t GetActiveOutputPorts(void) {
+		return m_State.nActivePorts;
 	}
 
-	TE131Merge GetMergeMode(void) const;
-	void SetMergeMode(TE131Merge);
+	 void SetDirectUpdate(bool bDirectUpdate) {
+		m_bDirectUpdate = bDirectUpdate;
+	}
+	 bool GetDirectUpdate(void) {
+		return m_bDirectUpdate;
+	}
 
-	const uint8_t *GetCid(void);
-	void SetCid(const uint8_t[E131_CID_LENGTH]);
+	bool IsTransmitting(uint8_t nPortIndex) const;
+	bool IsMerging(uint8_t nPortIndex) const;
+	bool IsStatusChanged(void);
+	
+	 void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
+		m_State.bDisableNetworkDataLossTimeout = bDisable;
+	}
+	 bool GetDisableNetworkDataLossTimeout(void) {
+		return m_State.bDisableNetworkDataLossTimeout;
+	}
 
-	const char *GetSourceName(void);
-	void SetSourceName(const char *);
+	 void SetDisableMergeTimeout(bool bDisable = true) {
+		m_State.bDisableMergeTimeout = bDisable;
+	}
+	 bool GetDisableMergeTimeout(void) {
+		return m_State.bDisableMergeTimeout;
+	}
+
+	void Clear(uint8_t nPortIndex);
 
 	void Start(void);
 	void Stop(void);
@@ -97,41 +127,37 @@ public:
 	void Print(void);
 
 private:
-	void FillDiscoveryPacket(void);
-
 	bool IsValidRoot(void);
 	bool IsValidDataPacket(void);
 
-	void SetNetworkDataLossCondition(void);
-	void CheckMergeTimeouts(void);
-	bool IsPriorityTimeOut(void);
-	bool isIpCidMatch(const struct TSource *);
-	bool IsDmxDataChanged(const uint8_t *, uint16_t);
-	bool IsMergedDmxDataChanged(const uint8_t *, uint16_t );
+	void SetNetworkDataLossCondition(bool bSourceA = true, bool bSourceB = true);
 
-	void SendDiscoveryPacket(void);
+	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
+
+	void CheckMergeTimeouts(uint8_t nPortIndex);
+	bool IsPriorityTimeOut(uint8_t nPortIndex);
+	bool isIpCidMatch(const struct TSource *);
+	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
+	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
 
 	void HandleDmx(void);
 	void HandleSynchronization(void);
 
+	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
+	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
+
 private:
 	int32_t m_nHandle;
 	LightSet *m_pLightSet;
-	uint16_t m_nUniverse;
-	uint32_t m_nMulticastIp;
-	uint8_t m_Cid[E131_CID_LENGTH];
-	char m_SourceName[E131_SOURCE_NAME_LENGTH];
-
-	uint32_t m_DiscoveryIpAddress;
+	bool m_bDirectUpdate;
 
 	uint32_t m_nCurrentPacketMillis;
 	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
-	struct TE131OutputPort m_OutputPort;
+	struct TE131OutputPort m_OutputPort[E131_MAX_PORTS];
 
 	struct TE131 m_E131;
-	struct TE131DiscoveryPacket m_E131DiscoveryPacket;
 };
 
 #endif /* E131BRIDGE_H_ */
