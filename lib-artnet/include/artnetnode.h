@@ -94,9 +94,9 @@ struct TArtNetNodeState {
 	TNodeStatus status;					///< See \ref TNodeStatus
 	bool IsSynchronousMode;				///< ArtSync received
 	time_t ArtSyncTime;					///< Latest ArtSync received time
-	bool IsMergeMode;					///< Is the Node in merging mode?
-	bool IsChanged;						///< Is the DMX changed? Update output DMX
-	uint8_t nActivePorts;				///< Number of active ports
+	bool IsMergeMode;					///<
+	bool IsChanged;						///<
+	uint8_t nActivePorts;				///<
 	time_t nNetworkDataLossTimeout;		///<
 	bool bDisableMergeTimeout;			///<
 };
@@ -122,11 +122,6 @@ struct TGenericPort {
 	uint16_t nPortAddress;		///< One of the 32,768 possible addresses to which a DMX frame can be directed. The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 	uint8_t nDefaultAddress;	///< the address set by the hardware
 	uint8_t nStatus;			///<
-};
-
-enum TPortProtocol {
-	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
-	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
 };
 
 struct TOutputPort {
@@ -155,25 +150,25 @@ public:
 
 	int HandlePacket(void);
 
-	inline uint8_t GetVersion(void) {
+	 uint8_t GetVersion(void) {
 		return m_nVersion;
 	}
 
 	void SetOutput(LightSet *pLightSet);
-	inline LightSet* GetOutput(void) {
+	 LightSet* GetOutput(void) {
 		return m_pLightSet;
 	}
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	inline uint8_t GetActiveOutputPorts(void) {
+	 uint8_t GetActiveOutputPorts(void) {
 		return m_State.nActivePorts;
 	}
 
-	inline void SetDirectUpdate(bool bDirectUpdate) {
+	 void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	inline bool GetDirectUpdate(void) {
+	 bool GetDirectUpdate(void) {
 		return m_bDirectUpdate;
 	}
 

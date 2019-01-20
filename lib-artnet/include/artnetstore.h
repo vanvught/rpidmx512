@@ -39,12 +39,11 @@ public:
 
 	virtual void SaveShortName(const char *pShortName)=0;
 	virtual void SaveLongName(const char *pLongName)=0;
-
 	virtual void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
 	virtual void SaveNetSwitch(uint8_t nAddress)=0;
 	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-
 	virtual void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge)=0;
+	virtual void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol)=0;
 
 private:
 };

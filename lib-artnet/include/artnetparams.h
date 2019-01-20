@@ -88,52 +88,52 @@ public:
 	void Set(ArtNetNode *);
 	void Dump(void);
 
-	inline uint8_t GetNet(void) {
+	 uint8_t GetNet(void) {
 		return m_tArtNetParams.nNet;
 	}
 
-	inline uint8_t GetSubnet(void) {
+	 uint8_t GetSubnet(void) {
 		return m_tArtNetParams.nSubnet;
 	}
 
-	inline uint8_t GetUniverse(void) {
+	 uint8_t GetUniverse(void) {
 		return m_tArtNetParams.nUniverse;
 	}
 
-	inline const uint8_t *GetShortName(void) {
+	 const uint8_t *GetShortName(void) {
 		return m_tArtNetParams.aShortName;
 	}
 
-	inline const uint8_t *GetLongName(void) {
+	 const uint8_t *GetLongName(void) {
 		return m_tArtNetParams.aLongName;
 	}
 
-	inline TOutputType GetOutputType(void) {
+	 TOutputType GetOutputType(void) {
 		return m_tArtNetParams.tOutputType;
 	}
 
-	inline const uint8_t *GetManufacturerId(void) {
+	 const uint8_t *GetManufacturerId(void) {
 		return m_tArtNetParams.aManufacturerId;
 	}
 
-	inline time_t GetNetworkTimeout(void) {
+	 time_t GetNetworkTimeout(void) {
 		return m_tArtNetParams.nNetworkTimeout;
 	}
 
-	inline bool IsUseTimeCode(void) {
+	 bool IsUseTimeCode(void) {
 		return m_tArtNetParams.bUseTimeCode;
 	}
 
-	inline bool IsUseTimeSync(void) {
+	 bool IsUseTimeSync(void) {
 		return m_tArtNetParams.bUseTimeSync;
 
 	}
 
-	inline bool IsRdm(void) {
+	 bool IsRdm(void) {
 		return m_tArtNetParams.bEnableRdm;
 	}
 
-	inline bool IsRdmDiscovery(void) {
+	 bool IsRdmDiscovery(void) {
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
@@ -144,9 +144,13 @@ public:
 	static uint32_t GetMaskLongName(void);
 	static uint32_t GetMaskNet(void);
 	static uint32_t GetMaskSubnet(void);
+	static uint32_t GetMaskUniverse(void);
 	static uint32_t GetMaskUniverse(uint8_t nPort);
+	static uint32_t GetMaskMergeMode(void);
 	static uint32_t GetMaskMergeMode(uint8_t nPort);
+	static uint32_t GetMaskProtocol(void);
 	static uint32_t GetMaskPortProtocol(uint8_t nPort);
+
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

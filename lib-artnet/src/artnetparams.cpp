@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@
 
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
+#define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
 #define SET_LONG_NAME_MASK		(1 << 0)
 #define SET_SHORT_NAME_MASK		(1 << 1)
@@ -409,6 +410,10 @@ void ArtNetParams::Dump(void) {
 		printf(" %s=%d\n", PARAMS_UNIVERSE, m_tArtNetParams.nUniverse);
 	}
 
+	if(isMaskSet(SET_PROTOCOL_MASK)) {
+		printf(" %s=%d [%s]\n", PARAMS_PROTOCOL, m_tArtNetParams.nProtocol, PROTOCOL2STRING(m_tArtNetParams.nProtocol));
+	}
+
 	if (isMaskSet(SET_RDM_MASK)) {
 		printf(" %s=%d [%s]\n", PARAMS_RDM, (int) m_tArtNetParams.bEnableRdm, BOOL2STRING(m_tArtNetParams.bEnableRdm));
 		if (m_tArtNetParams.bEnableRdm) {
@@ -459,6 +464,12 @@ void ArtNetParams::Dump(void) {
 			printf(" %s=%s\n", PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]));
 		}
 	}
+
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (isMaskSet(SET_PROTOCOL_A_MASK << i)) {
+			printf(" %s=%s\n", PARAMS_PROTOCOL_PORT[i], PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]));
+		}
+	}
 #endif
 }
 
@@ -478,16 +489,28 @@ uint32_t ArtNetParams::GetMaskSubnet(void) {
 	return SET_SUBNET_MASK;
 }
 
+uint32_t ArtNetParams::GetMaskUniverse(void) {
+	return SET_UNIVERSE_MASK;
+}
+
 uint32_t ArtNetParams::GetMaskUniverse(uint8_t nPort) {
 	assert(nPort < ARTNET_MAX_PORTS);
 
 	return SET_UNIVERSE_A_MASK << nPort;
 }
 
+uint32_t ArtNetParams::GetMaskMergeMode(void) {
+	return SET_MERGE_MODE_MASK;
+}
+
 uint32_t ArtNetParams::GetMaskMergeMode(uint8_t nPort) {
 	assert(nPort < ARTNET_MAX_PORTS);
 
 	return SET_MERGE_MODE_A_MASK << nPort;
+}
+
+uint32_t ArtNetParams::GetMaskProtocol(void) {
+	return SET_PROTOCOL_MASK;
 }
 
 uint32_t ArtNetParams::GetMaskPortProtocol(uint8_t nPort) {

@@ -138,16 +138,17 @@ enum TPriorityCodes {
  * output (ArtNet -> DMX) data.
  */
 enum TArtNetPortSettings {
-	ARTNET_ENABLE_INPUT = 0x40, ///< Enables the input for this port
-	ARTNET_ENABLE_OUTPUT = 0x80 ///< Enables the output for this port
+	ARTNET_ENABLE_INPUT = 0x40,
+	ARTNET_ENABLE_OUTPUT = 0x80
 };
 
 /**
  * An enum for referring to a particular input or output port.
  */
 enum TArtNetPortDir{
-	ARTNET_INPUT_PORT = 1, 	///< The input port
-	ARTNET_OUTPUT_PORT		///< The output port
+	ARTNET_INPUT_PORT,
+	ARTNET_OUTPUT_PORT,
+	ARTNET_DISABLE_PORT
 };
 
 /**
@@ -156,6 +157,11 @@ enum TArtNetPortDir{
 enum TMerge {
 	ARTNET_MERGE_HTP,	///< Highest Takes Precedence (HTP)
 	ARTNET_MERGE_LTP	///< Latest Takes Precedence (LTP)
+};
+
+enum TPortProtocol {
+	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
+	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
 };
 
 /**
