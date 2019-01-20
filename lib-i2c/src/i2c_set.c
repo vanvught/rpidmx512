@@ -34,18 +34,19 @@
 #endif
 
 #if defined(H3)
- #define FUNC_PREFIX(x) h3_##x
+ 	#define FUNC_PREFIX(x) h3_##x
+
+	void i2c_set_address(uint8_t address) {
+		h3_i2c_set_slave_address(address);
+	}
 #else
- #define FUNC_PREFIX(x) bcm2835_##x
+ 	#define FUNC_PREFIX(x) bcm2835_##x
+
+	void i2c_set_address(uint8_t address) {
+		bcm2835_i2c_setSlaveAddress(address);
+	}
 #endif
 
-void i2c_set_address(uint8_t address) {
-	FUNC_PREFIX(i2c_setSlaveAddress(address));
-}
-
-void i2c_set_clockdivider(uint16_t divider) {
-	FUNC_PREFIX(i2c_setClockDivider(divider));
-}
 void i2c_set_baudrate(uint32_t baudrate) {
 	FUNC_PREFIX(i2c_set_baudrate(baudrate));
 }

@@ -173,6 +173,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.463317099" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
+									<listOptionValue builtIn="false" value="H3"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.893047522" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

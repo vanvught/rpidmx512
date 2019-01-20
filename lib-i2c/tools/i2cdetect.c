@@ -2,7 +2,7 @@
  * @file i2cdetect.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,11 @@ int main(int argc, char **argv) {
 	uint8_t i, j;
 	uint8_t address;
 
-	if(!i2c_begin()) {
+	if (!i2c_begin()) {
 		return -1;
 	}
 
-	i2c_set_clockdivider(2500); // 100kHz
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 
 	printf("[V%s] Compiled on %s at %s\n\n", SOFTWARE_VERSION, __DATE__, __TIME__);
 
@@ -54,7 +54,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-
 	puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
 
 	for (i = 0; i < 128; i += 16) {
@@ -68,7 +67,6 @@ int main(int argc, char **argv) {
 
 			if (i2c_is_connected((i + j))) {
 				printf("%02x ", (unsigned int) (i + j));
-
 			} else {
 				printf("-- ");
 			}
