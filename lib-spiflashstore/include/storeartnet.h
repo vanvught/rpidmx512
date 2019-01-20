@@ -1,9 +1,8 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
- * @file storedmxsend.cpp
+ * @file storeartnet.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,48 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STOREARTNET_H_
+#define STOREARTNET_H_
 
-#include "spiflashstore.h"
+#if defined (LIB_SPIFLASHSTORE) || defined (ARTNET_NODE) || defined (LTC_READER)
+	#include "artnetparams.h"
+	#include "artnetstore.h"
 
-#include "dmxparams.h"
+	class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
+	public:
+		StoreArtNet(void);
+		~StoreArtNet(void);
 
-#include "debug.h"
+		void Update(const struct TArtNetParams *pArtNetParams);
+		void Copy(struct TArtNetParams *pArtNetParams);
 
-DMXParamsStore::~DMXParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_PRINTF("%p", this);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::~StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
+		void SaveShortName(const char *pShortName);
+		void SaveLongName(const char *pLongName);
+		void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
+		void SaveNetSwitch(uint8_t nAddress);
+		void SaveSubnetSwitch(uint8_t nAddress);
+		void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
+		void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+	};
+#else
+	class StoreArtNet {
+	public:
+		StoreArtNet(void);
+		~StoreArtNet(void);
+	};
 #endif
+
+#endif /* STOREARTNET_H_ */

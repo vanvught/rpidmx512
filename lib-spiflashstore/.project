@@ -5,6 +5,7 @@
 	<projects>
 		<project>include</project>
 		<project>lib-artnet</project>
+		<project>lib-artnet4</project>
 		<project>lib-debug</project>
 		<project>lib-dmxsend</project>
 		<project>lib-e131</project>

@@ -1,9 +1,8 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
- * @file storedmxsend.cpp
+ * @file storeartnet4.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +28,17 @@
 
 #include "spiflashstore.h"
 
-#include "dmxparams.h"
+#include "artnet4params.h"
 
 #include "debug.h"
 
-DMXParamsStore::~DMXParamsStore(void) {
+ArtNet4ParamsStore::~ArtNet4ParamsStore(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-StoreDmxSend::StoreDmxSend(void) {
+StoreArtNet4::StoreArtNet4(void) {
 	DEBUG_ENTRY
 
 	DEBUG_PRINTF("%p", this);
@@ -47,25 +46,24 @@ StoreDmxSend::StoreDmxSend(void) {
 	DEBUG_EXIT
 }
 
-StoreDmxSend::~StoreDmxSend(void) {
+StoreArtNet4::~StoreArtNet4(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
+void StoreArtNet4::Update(const struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
+	SpiFlashStore::Get()->Update(STORE_ARTNET4, (void *)pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }
 
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
+void StoreArtNet4::Copy(struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
+	SpiFlashStore::Get()->Copy(STORE_ARTNET4, (void *)pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }
-#endif

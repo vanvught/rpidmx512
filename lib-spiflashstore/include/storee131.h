@@ -1,6 +1,5 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
- * @file storedmxsend.cpp
+ * @file storee131.h
  *
  */
 /* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,48 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STOREE131_H_
+#define STOREE131_H_
 
-#include "spiflashstore.h"
+#if defined (LIB_SPIFLASHSTORE) || defined (E131_BRIDGE)
+	#include "e131params.h"
 
-#include "dmxparams.h"
+	class StoreE131: public E131ParamsStore {
+	public:
+		StoreE131(void);
+		~StoreE131(void);
 
-#include "debug.h"
-
-DMXParamsStore::~DMXParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_PRINTF("%p", this);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::~StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
+		void Update(const struct TE131Params *pE131Params);
+		void Copy(struct TE131Params *pE131Params);
+	};
+#else
+	class StoreE131{
+	public:
+		StoreE131(void);
+		~StoreE131(void);
+	};
 #endif
+
+#endif /* STOREE131_H_ */

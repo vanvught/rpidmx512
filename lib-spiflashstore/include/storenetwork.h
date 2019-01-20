@@ -1,9 +1,8 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
- * @file storedmxsend.cpp
+ * @file storenetwork.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,48 +23,24 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STORENETWORK_H_
+#define STORENETWORK_H_
 
-#include "spiflashstore.h"
+#include "networkparams.h"
 
-#include "dmxparams.h"
+class StoreNetwork: public NetworkParamsStore {
+public:
+	StoreNetwork(void);
+	~StoreNetwork(void);
 
-#include "debug.h"
+	void Update(const struct TNetworkParams *pNetworkParams);
+	void Copy(struct TNetworkParams *pNetworkParams);
 
-DMXParamsStore::~DMXParamsStore(void) {
-	DEBUG_ENTRY
+	void UpdateIp(uint32_t nIp);
+	void UpdateNetMask(uint32_t nNetMask);
 
-	DEBUG_EXIT
-}
+private:
 
-StoreDmxSend::StoreDmxSend(void) {
-	DEBUG_ENTRY
+};
 
-	DEBUG_PRINTF("%p", this);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::~StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-#endif
+#endif /* STORENETWORK_H_ */

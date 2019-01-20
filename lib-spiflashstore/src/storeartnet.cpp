@@ -88,6 +88,10 @@ void StoreArtNet::SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ARTNET_MAX_PORTS);
 
+	if (nPortIndex == 0) {
+		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nUniverse), (void *)&nAddress, sizeof(uint8_t), ArtNetParams::GetMaskUniverse());
+	}
+
 	SpiFlashStore::Get()->Update(STORE_ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nUniversePort), (void *)&nAddress, sizeof(uint8_t), ArtNetParams::GetMaskUniverse(nPortIndex));
 
 	DEBUG_EXIT
@@ -113,6 +117,10 @@ void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, TMerge tMerge) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ARTNET_MAX_PORTS);
 
+	if (nPortIndex == 0) {
+		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nMergeMode), (void *)&tMerge, sizeof(TMerge), ArtNetParams::GetMaskMergeMode());
+	}
+
 	SpiFlashStore::Get()->Update(STORE_ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nMergeModePort), (void *)&tMerge, sizeof(TMerge), ArtNetParams::GetMaskMergeMode(nPortIndex));
 
 	DEBUG_EXIT
@@ -121,6 +129,10 @@ void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, TMerge tMerge) {
 void StoreArtNet::SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ARTNET_MAX_PORTS);
+
+	if (nPortIndex == 0) {
+		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nProtocol), (void *)&tPortProtocol, sizeof(TPortProtocol), ArtNetParams::GetMaskProtocol());
+	}
 
 	SpiFlashStore::Get()->Update(STORE_ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nProtocolPort), (void *)&tPortProtocol, sizeof(TPortProtocol), ArtNetParams::GetMaskPortProtocol(nPortIndex));
 

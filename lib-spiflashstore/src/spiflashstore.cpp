@@ -2,7 +2,7 @@
  * @file spiflashstore.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net", "DMX", "WS28xx", "E1.31", "LTC", "MIDI"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -342,4 +342,8 @@ StoreLtc *SpiFlashStore::GetStoreLtc(void) {
 
 StoreMidi *SpiFlashStore::GetStoreMidi(void) {
 	return &m_StoreMidi;
+}
+
+StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
+	return &m_StoreArtNet4;
 }

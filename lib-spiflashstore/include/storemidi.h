@@ -1,9 +1,8 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
- * @file storedmxsend.cpp
+ * @file storemidi.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,48 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STOREMIDI_H_
+#define STOREMIDI_H_
 
-#include "spiflashstore.h"
+#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
+	#include "midiparams.h"
 
-#include "dmxparams.h"
+	class StoreMidi: public MidiParamsStore {
+	public:
+		StoreMidi(void);
+		~StoreMidi(void);
 
-#include "debug.h"
-
-DMXParamsStore::~DMXParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_PRINTF("%p", this);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::~StoreDmxSend(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, (void *)pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
+		void Update(const struct TMidiParams *pMidiParams);
+		void Copy(struct TMidiParams *pMidiParams);
+	};
+#else
+	class StoreMidi {
+	public:
+		StoreMidi(void);
+		~StoreMidi(void);
+	};
 #endif
+
+#endif /* STOREMIDI_H_ */
