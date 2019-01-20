@@ -1,4 +1,3 @@
-#if !defined(H3)
 /**
  * @file sc16is740.c
  *
@@ -7,7 +6,7 @@
  *
  * https://developer.mbed.org/components/SC16IS750-I2C-or-SPI-to-UART-bridge/
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -241,4 +240,3 @@ void sc16is740_start(device_info_t *device_info) {
 
 	buffer_tx[0] = (char) (SC16IS7X0_THR << 3);
 }
-#endif //FIXME

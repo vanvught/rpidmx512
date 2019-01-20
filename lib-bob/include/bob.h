@@ -2,7 +2,7 @@
  * @file bob.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,14 @@
  #include "h3_gpio.h"
  #include "h3_hs_timer.h"
  #include "h3_spi.h"
+
+ #define bcm2835_aux_spi_begin()					(void)0
+ #define bcm2835_aux_spi_setClockDivider(__p)		(void)0
+ #define bcm2835_aux_spi_write(__p)					(void)0
+ #define bcm2835_aux_spi_writenb(__p1,__p2)			(void)0
+ #define bcm2835_aux_spi_transfern(__p1,__p2)		(void)0
+ #define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
+ static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
 #else
  #include "bcm2835.h"
  #include "bcm2835_spi.h"

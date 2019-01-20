@@ -2,7 +2,7 @@
  * @file lcd.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,8 @@ const bool lcd_detect(void) {
 	if (!i2c_begin()) {
 		return false;
 	}
-	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
+
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 
 	if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		device_info.slave_address = BW_UI_DEFAULT_SLAVE_ADDRESS;
