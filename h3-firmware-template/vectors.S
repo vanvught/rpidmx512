@@ -108,15 +108,15 @@ reset:
 	bic r0,r0, #0x0002 			@ Allow misalignment (Bit 2)
     mcr p15, 0, r0, c1, c0, 0
 
-#if defined ( ENABLE_MMU )
-	bl mmu_enable
-#else
+#if defined ( NO_MMU )
 	@ start L1 chache
 	mrc p15, 0, r0, c1, c0, 0
 	orr r0,r0, #0x0004			@ Data Cache (Bit 3)
 	orr r0,r0, #0x0800			@ Branch Prediction (Bit 11)
 	orr r0,r0, #0x1000			@ Instruction Caches (Bit 12)
 	mcr p15, 0, r0, c1, c0, 0
+#else
+	bl mmu_enable
 #endif
 
     bl hardware_init
