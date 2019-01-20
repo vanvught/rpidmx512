@@ -468,7 +468,7 @@ void Ssd1306::SetCursorOff(void) {
 
 void Ssd1306::Setup(void) {
 	i2c_set_address(m_nSlaveAddress);
-	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_400kHz);
+	i2c_set_baudrate(I2C_FULL_SPEED);
 }
 
 void Ssd1306::InitMembers(void) {

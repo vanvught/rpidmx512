@@ -159,7 +159,7 @@ void Tc1602::Text(const char *data, uint8_t nLength) {
 	}
 }
 
-void Tc1602::TextLine(const uint8_t nLine, const char *data, const uint8_t nLength) {
+void Tc1602::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -168,7 +168,7 @@ void Tc1602::TextLine(const uint8_t nLine, const char *data, const uint8_t nLeng
 	Text(data, nLength);
 }
 
-void Tc1602::ClearLine(const uint8_t nLine) {
+void Tc1602::ClearLine(uint8_t nLine) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -187,9 +187,9 @@ void Tc1602::Setup(void) {
 	i2c_set_address(m_nSlaveAddress);
 
 	if (bFastMode) {
-		i2c_set_clockdivider(I2C_CLOCK_DIVIDER_400kHz);
+		i2c_set_baudrate(I2C_FULL_SPEED);
 	} else {
-		i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
+		i2c_set_baudrate(I2C_NORMAL_SPEED);
 	}
 }
 

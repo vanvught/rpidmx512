@@ -183,7 +183,7 @@ void LcdBw::ClearLine(const uint8_t nLine) {
 
 void LcdBw::Setup(void) {
 	i2c_set_address(m_nSlaveAddress >> 1);
-	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
 void LcdBw::SetCursor(const TCursorMode constEnumTCursorOnOff) {

@@ -39,11 +39,11 @@ class DisplaySet {
 public:
 	virtual ~DisplaySet(void);
 
-	inline const uint8_t GetColumns(void) {
+	 const uint8_t GetColumns(void) {
 		return m_nCols;
 	}
 
-	inline const uint8_t GetRows(void) {
+	 const uint8_t GetRows(void) {
 		return m_nRows;
 	}
 

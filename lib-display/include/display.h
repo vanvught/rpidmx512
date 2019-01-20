@@ -73,14 +73,16 @@ public:
 	void SetCursor(TCursorMode);
 	void SetCursorPos(uint8_t, uint8_t);
 
-	static Display *Get (void);
-
-	inline uint8_t getNCols(void)  {
+	 uint8_t getNCols(void)  {
 		return m_nCols;
 	}
 
-	inline uint8_t getNRows(void) {
+	 uint8_t getNRows(void) {
 		return m_nRows;
+	}
+
+	static Display* Get(void) {
+		return s_pThis;
 	}
 
 protected:

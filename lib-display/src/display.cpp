@@ -141,7 +141,7 @@ void Display::Cls(void) {
 	m_LcdDisplay->Cls();
 }
 
-void Display::TextLine(const uint8_t nLine, const char *pText, uint8_t nLength) {
+void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 	if (m_LcdDisplay == 0) {
 		return;
 	}
@@ -153,7 +153,7 @@ void Display::TextStatus(const char *pText) {
 	Write(m_nRows, pText);
 }
 
-uint8_t Display::Printf(const uint8_t nLine, const char *format, ...) {
+uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
 	int i;
 	char buffer[32];
 
@@ -233,8 +233,4 @@ void Display::ClearLine(uint8_t nLine) {
 		return;
 	}
 	m_LcdDisplay->ClearLine(nLine);
-}
-
-Display* Display::Get(void) {
-	return s_pThis;
 }
