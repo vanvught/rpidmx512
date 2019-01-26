@@ -35,6 +35,8 @@
 
 #include "network.h"
 
+#include "display.h"
+
 #include "spiflashstore.h"
 
 union uip {
@@ -68,8 +70,11 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	} else if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
 		// Get IPAddress from IpProg
 		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+
 		Network::Get()->SetIp(ip_union.u32);
 		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
+		Display::Get()->Printf(3, "IP: " IPSTR " S", IP2STR(ip_union.u32));
+
 #ifndef NDEBUG
 		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
 		printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));

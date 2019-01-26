@@ -86,7 +86,7 @@ void notmain(void) {
 
 	const TOutputType tOutputType = artnetparams.GetOutputType();
 
-	Display display(0,8);
+	Display display(DISPLAY_SSD1306);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
