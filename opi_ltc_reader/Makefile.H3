@@ -1,5 +1,5 @@
 #
-DEFINES = LTC_READER ENABLE_MMU EMAC #NDEBUG
+DEFINES = LTC_READER EMAC #NDEBUG
 #
 LIBS = ltc display artnet midi ledblink lightset
 #

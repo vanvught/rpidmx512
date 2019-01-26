@@ -42,6 +42,8 @@
 #include "display.h"
 #include "displaymax7219.h"
 
+#include "ltcleds.h"
+
 #include "artnetreader.h"
 #include "ltcreader.h"
 #include "midireader.h"
@@ -76,6 +78,7 @@ void notmain(void) {
 #endif
 
 	Display display(0,4);
+	LtcLeds leds;
 
 	LtcParams ltcParams;
 
