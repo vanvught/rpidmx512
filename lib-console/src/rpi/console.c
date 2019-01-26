@@ -1,9 +1,9 @@
-#if !defined(CONSOLE_ILI9340)
+#if !(defined(CONSOLE_ILI9340) || defined(CONSOLE_NONE))
 /**
  * @file console.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

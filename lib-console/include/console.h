@@ -32,7 +32,7 @@
 
 #define CONSOLE_OK	0	///< Call console_init() OK
 
-#if defined(H3) && !defined(CONSOLE_ILI9340)
+#if defined(H3) && !(defined(CONSOLE_ILI9340) || defined(CONSOLE_NONE))
  #include "h3/console.h"
 #else
  #include "rpi/console.h"

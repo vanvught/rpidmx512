@@ -3,7 +3,7 @@
  * @file console_ili9340.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,21 +102,21 @@ void _reset(void) {
 }
 
 static void _setup(void) {
-	write_command(0xC0);    //Power control
-	write_data_byte(0x23);   //VRH[5:0]
+	write_command(0xC0);	//Power control
+	write_data_byte(0x23);	//VRH[5:0]
 
-	write_command(0xC1);    //Power control
-	write_data_byte(0x10);   //SAP[2:0];BT[3:0]
+	write_command(0xC1);	//Power control
+	write_data_byte(0x10);	//SAP[2:0];BT[3:0]
 
-	write_command(0xC5);    //VCM control
-	write_data_byte(0x3e); //
+	write_command(0xC5);	//VCM control
+	write_data_byte(0x3e);
 	write_data_byte(0x28);
 
-	write_command(0xC7);    //VCM control2
-	write_data_byte(0x86);  //--
+	write_command(0xC7);	//VCM control2
+	write_data_byte(0x86);
 
-	write_command(0x36);    // Memory Access Control
-	write_data_byte(0x48); //
+	write_command(0x36);	// Memory Access Control
+	write_data_byte(0x48);
 
 	write_command(0x3A);
 	write_data_byte(0x55);
@@ -125,15 +125,15 @@ static void _setup(void) {
 	write_data_byte(0x00);
 	write_data_byte(0x18);
 
-	write_command(0xB6);    // Display Function Control
+	write_command(0xB6);	// Display Function Control
 	write_data_byte(0x08);
 	write_data_byte(0xA2);
 	write_data_byte(0x27);
 
-	write_command(0xF2);    // 3Gamma Function Disable
+	write_command(0xF2);	// 3Gamma Function Disable
 	write_data_byte(0x00);
 
-	write_command(0x26);    //Gamma curve selected
+	write_command(0x26);	//Gamma curve selected
 	write_data_byte(0x01);
 
 	write_command(0xE0);    //Set Gamma
