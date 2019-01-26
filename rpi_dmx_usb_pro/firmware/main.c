@@ -144,6 +144,7 @@ int notmain(void) {
 
 	for (;;) {
 		hardware_watchdog_feed();
+
 		for (i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
 			poll_table[i].f();
 		}

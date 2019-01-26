@@ -255,7 +255,11 @@ void widget_received_rdm_packet(void) {
  *
  * @param data_length DMX data to send, beginning with the start code.
  */
-void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
+void widget_send_dmx_packet_request_output_only(uint16_t data_length) {
+	if (widget_send_rdm_packet_start != 0) {
+		return;
+	}
+
 	monitor_line(MONITOR_LINE_INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 
@@ -275,7 +279,7 @@ void widget_send_dmx_packet_request_output_only(const uint16_t data_length) {
  *
  * @param data_length RDM data to send, beginning with the start code.
  */
-static void widget_send_rdm_packet_request(const uint16_t data_length) {
+static void widget_send_rdm_packet_request(uint16_t data_length) {
 	monitor_line(MONITOR_LINE_INFO, "SEND_RDM_PACKET_REQUEST");
 	monitor_line(MONITOR_LINE_STATUS, NULL);
 

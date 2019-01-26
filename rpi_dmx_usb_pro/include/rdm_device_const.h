@@ -1,7 +1,7 @@
 /**
  * @file rdm_device_const.h
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";
 #if defined(H3)
  #include "h3_board.h"
  static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " DMX USB Pro";
- static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.0";
+ static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.1";
 #else
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi DMX USB Pro";
- static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.1";
+ static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.2";
 #endif
 
 #endif /* RDM_DEVICE_CONST_H_ */
