@@ -2,7 +2,7 @@
  * @file h3_gpio.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "h3_gpio.h"
 #include "h3.h"
 
-void h3_gpio_fsel(uint8_t gpio, gpio_fsel_t fsel) {
+void h3_gpio_fsel(uint32_t gpio, gpio_fsel_t fsel) {
 	const uint32_t number = H3_GPIO_TO_NUMBER(gpio);
 	const uint32_t reg = number / 8;
 	const uint32_t shift = (number & 0x7) * 4;

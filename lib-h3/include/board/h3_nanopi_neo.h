@@ -2,7 +2,7 @@
  * @file h3_nanopi_neo.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
  #error This file should not be included
 #endif
 
-#include "h3.h"
+#include "h3_gpio.h"
 
 #define H3_BOARD_NAME		"NanoPi NEO"
 #define H3_BOARD_STATUS_LED	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 10)

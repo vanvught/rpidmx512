@@ -2,7 +2,7 @@
  * @file h3_board.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,7 @@
 #ifndef H3_BOARD_H_
 #define H3_BOARD_H_
 
-#define H3_PORT_TO_GPIO(p,n)	((p * 32) + n)
-#define H3_GPIO_TO_PORT(g)		(g / 32)
-#define H3_GPIO_TO_NUMBER(g)	(g - (32 * H3_GPIO_TO_PORT(g)))
+#include "h3.h"
 
 #if defined(ORANGE_PI)
  #include "board/h3_opi_zero.h"
@@ -59,8 +57,6 @@
 #if !defined(EXT_SPI_BASE)
  #error EXT_SPI_BASE not defined
 #endif
-
-#include "h3.h"
 
 #define EXT_UART_NUMBER		((EXT_UART_BASE - H3_UART_BASE) / 0x400)
 #define EXT_UART			((H3_UART_TypeDef *) EXT_UART_BASE)

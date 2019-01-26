@@ -1,8 +1,8 @@
-	/**
+/**
  * @file h3_gpio.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,10 @@
 #define H3_GPIO_H_
 
 #include "h3.h"
-#include "h3_board.h"
+
+#define H3_PORT_TO_GPIO(p,n)	((p * 32) + n)
+#define H3_GPIO_TO_PORT(g)		(g / 32)
+#define H3_GPIO_TO_NUMBER(g)	(g - (32 * H3_GPIO_TO_PORT(g)))
 
 enum H3_GPIO_LEVEL {
 	LOW = 0,
@@ -135,9 +138,9 @@ enum H3_PG_SELECT {
 extern "C" {
 #endif
 
-extern void h3_gpio_fsel(_gpio_pin pin, gpio_fsel_t fsel);
+extern void h3_gpio_fsel(uint32_t pin, gpio_fsel_t fsel);
 
-inline static void h3_gpio_clr(_gpio_pin pin) {
+inline static void h3_gpio_clr(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT &= ~(1 << pin);
@@ -162,7 +165,7 @@ inline static void h3_gpio_clr(_gpio_pin pin) {
 	}
 }
 
-inline static void h3_gpio_set(_gpio_pin pin) {
+inline static void h3_gpio_set(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT |= (1 << pin);
