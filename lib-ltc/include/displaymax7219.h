@@ -41,7 +41,7 @@ public:
 	void Init(uint8_t nIntensity);
 	void Show(const char *pTimecode);
 
-	inline static DisplayMax7219* Get(void) {
+	 static DisplayMax7219* Get(void) {
 		return s_pThis;
 	}
 

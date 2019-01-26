@@ -60,15 +60,15 @@ public:
 
 	bool Load(void);
 
-	inline TLtcReaderSource GetSource(void) {
+	 TLtcReaderSource GetSource(void) {
 		return (TLtcReaderSource) m_tLtcParams.tSource;
 	}
 
-	inline uint8_t GetMax7219Intensity(void) {
+	 uint8_t GetMax7219Intensity(void) {
 		return m_tLtcParams.nMax7219Intensity;
 	}
 
-	inline tMax7219Types GetMax7219Type(void) {
+	 tMax7219Types GetMax7219Type(void) {
 		return (tMax7219Types) m_tLtcParams.tMax7219Type;
 	}
 

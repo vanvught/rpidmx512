@@ -50,6 +50,7 @@
 #endif
 
 // Output
+#include "ltcleds.h"
 #include "artnetnode.h"
 #include "display.h"
 #include "displaymax7219.h"
@@ -315,6 +316,7 @@ void LtcReader::Run(void) {
 
 			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
 
+			LtcLeds::Get()->Show((TTimecodeTypes) TimeCodeType);
 		}
 
 #ifndef NDEBUG

@@ -43,7 +43,7 @@ public:
 
 	void Show(const char *pTimecode);
 
-	inline static Max7219Matrix* Get(void) {
+	static Max7219Matrix* Get(void) {
 		return s_pThis;
 	}
 

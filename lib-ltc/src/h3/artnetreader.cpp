@@ -45,6 +45,7 @@
 #include "artnettimecode.h"
 
 // Output
+#include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
 #include "midi.h"
@@ -187,6 +188,8 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 		Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+
+		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
 	}
 
 #ifndef NDEBUG

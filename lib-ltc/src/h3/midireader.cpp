@@ -47,6 +47,7 @@
 #include "midi.h"
 
 // Output
+#include "ltcleds.h"
 #include "artnetnode.h"
 #include "display.h"
 #include "displaymax7219.h"
@@ -243,6 +244,9 @@ void MidiReader::Update(void) {
 
 	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {
 		m_tTimeCodeTypePrevious = m_tTimeCodeType;
+
 		Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
+
+		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
 	}
 }

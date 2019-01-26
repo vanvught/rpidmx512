@@ -1,5 +1,5 @@
 /**
- * @file display7segment.h
+ * @file ltcleds.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAY7SEGMENT_H_
-#define DISPLAY7SEGMENT_H_
+#include <stdint.h>
 
-#include "max7219set.h"
+#include "ltcleds.h"
 
-#include "device_info.h"
+#include "ltc.h"
 
-class Max72197Segment: public Max7219Set {
-public:
-	Max72197Segment(void);
-	~Max72197Segment(void);
+#include "h3_gpio.h"
 
-	void Init(uint8_t nIntensity);
+#define ENABLE		2  // GPIO_EXT_22
+#define SELECT_A	18 // GPIO_EXT_18
+#define SELECT_B	19 // GPIO_EXT_16
 
-	void Show(const char *pTimecode);
+LtcLeds *LtcLeds::s_pThis = 0;
 
-	 static Max72197Segment* Get(void) {
-		return s_pThis;
+LtcLeds::LtcLeds(void) {
+	s_pThis = this;
+
+	h3_gpio_fsel(ENABLE, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(SELECT_A, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(SELECT_B, GPIO_FSEL_OUTPUT);
+
+	h3_gpio_set(ENABLE);
+}
+
+LtcLeds::~LtcLeds(void) {
+	h3_gpio_set(ENABLE);
+}
+
+void LtcLeds::Show(TTimecodeTypes tTimecodeType) {
+	uint32_t gpioa = H3_PIO_PORTA->DAT;
+	gpioa &= ~((1 << ENABLE) | (1 << SELECT_B) | (1 << SELECT_A));
+
+	switch (tTimecodeType) {
+	case TC_TYPE_FILM:
+		/* Nothing to here */
+		break;
+	case TC_TYPE_EBU:
+		gpioa |= (1 << SELECT_A);
+		break;
+	case TC_TYPE_DF:
+		gpioa |= (1 << SELECT_B);
+		break;
+	case TC_TYPE_SMPTE:
+		gpioa |= ((1 << SELECT_B) | (1 << SELECT_A));
+		break;
+	default:
+		gpioa |= (1 << ENABLE);
+		break;
 	}
 
-private:
-	device_info_t m_DeviceInfo;
-
-	static Max72197Segment *s_pThis;
-};
-
-#endif /* DISPLAY7SEGMENT_H_ */
+	H3_PIO_PORTA->DAT = gpioa;
+}

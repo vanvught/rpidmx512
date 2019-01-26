@@ -1,5 +1,5 @@
 /**
- * @file display7segment.h
+ * @file ltcleds.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAY7SEGMENT_H_
-#define DISPLAY7SEGMENT_H_
+#ifndef LTCLEDS_H_
+#define LTCLEDS_H_
 
-#include "max7219set.h"
+#include "ltc.h"
 
-#include "device_info.h"
-
-class Max72197Segment: public Max7219Set {
+class LtcLeds {
 public:
-	Max72197Segment(void);
-	~Max72197Segment(void);
+	LtcLeds(void);
+	~LtcLeds(void);
 
-	void Init(uint8_t nIntensity);
+	void Show(TTimecodeTypes tTimecodeType);
 
-	void Show(const char *pTimecode);
-
-	 static Max72197Segment* Get(void) {
+	static LtcLeds* Get(void) {
 		return s_pThis;
 	}
 
 private:
-	device_info_t m_DeviceInfo;
-
-	static Max72197Segment *s_pThis;
+	static LtcLeds *s_pThis;
 };
 
-#endif /* DISPLAY7SEGMENT_H_ */
+#endif /* LTCLEDS_H_ */
