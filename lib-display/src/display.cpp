@@ -1,8 +1,8 @@
 /**
- * @file lcd.cpp
+ * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,11 +39,13 @@ Display *Display::s_pThis = 0;
 
 Display::Display(void): m_nCols(0), m_nRows(0), m_tType(DISPLAY_TYPE_UNKNOWN), m_LcdDisplay(0) {
 	s_pThis = this;
+
 	Detect(16,2);
 }
 
-Display::Display(const uint8_t nCols, const uint8_t nRows) {
+Display::Display(const uint8_t nCols, const uint8_t nRows): m_tType(DISPLAY_TYPE_UNKNOWN), m_LcdDisplay(0) {
 	s_pThis = this;
+
 	Detect(nCols, nRows);
 }
 
@@ -68,6 +70,7 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 			break;
 		case DISPLAY_TYPE_UNKNOWN:
+			m_tType = DISPLAY_TYPE_UNKNOWN;
 			/* no break */
 		default:
 			break;
@@ -76,6 +79,10 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 	if (m_LcdDisplay != 0) {
 		if (!m_LcdDisplay->Start()) {
 			m_LcdDisplay = 0;
+			m_tType = DISPLAY_TYPE_UNKNOWN;
+		} else {
+			m_nCols = m_LcdDisplay->GetColumns();
+			m_nRows = m_LcdDisplay->GetRows();
 		}
 	}
 }

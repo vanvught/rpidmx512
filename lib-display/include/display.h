@@ -1,8 +1,8 @@
 /**
- * @file lcd.h
+ * @file display.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef LCD_H_
-#define LCD_H_
+#ifndef DISPLAY_H_
+#define DISPLAY_H_
 
 #include <stdbool.h>
 #include <stdarg.h>
@@ -73,11 +73,11 @@ public:
 	void SetCursor(TCursorMode);
 	void SetCursorPos(uint8_t, uint8_t);
 
-	 uint8_t getNCols(void)  {
+	uint8_t getNCols(void) {
 		return m_nCols;
 	}
 
-	 uint8_t getNRows(void) {
+	uint8_t getNRows(void) {
 		return m_nRows;
 	}
 
@@ -85,18 +85,16 @@ public:
 		return s_pThis;
 	}
 
-protected:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
-
 private:
 	void Detect(uint8_t, uint8_t);
 
 private:
+	uint8_t m_nCols;
+	uint8_t m_nRows;
 	TDisplayTypes m_tType;
 	DisplaySet *m_LcdDisplay;
 
 	static Display *s_pThis;
 };
 
-#endif /* LCD_H_ */
+#endif /* DISPLAY_H_ */
