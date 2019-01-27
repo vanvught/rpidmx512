@@ -26,7 +26,7 @@ else
 	LDLIBS += -lbcm2835
 endif
 
-all : mcp23017
+all : mcp23017 si5351a
 
 clean :
 	rm -f *.o
@@ -43,3 +43,6 @@ $(ROOT)/lib-i2c/lib_linux/libi2c.a :
 	
 mcp23017 : Makefile mcp23017.c $(LIBDEP)
 	$(CC) mcp23017.c $(INCLUDES) $(COPS) -o mcp23017 $(LIB) $(LDLIBS)
+	
+si5351a : Makefile si5351a.c $(LIBDEP)
+	$(CC) si5351a.c $(INCLUDES) $(COPS) -o si5351a $(LIB) $(LDLIBS)	
