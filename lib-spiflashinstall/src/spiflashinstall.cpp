@@ -2,7 +2,7 @@
  * @file spiflashinstall.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 #include "spiflashinstall.h"
 #include "spiflashinstallparams.h"
 
+#include "display.h"
+
 #include "spi_flash.h"
 
 #include "debug.h"
@@ -49,6 +51,11 @@
 static const char sFileUbootSpi[] ALIGNED = "uboot.spi";
 static const char sFileuImage[] ALIGNED = "uImage";
 
+static const char sWriting[] ALIGNED = "Writing";
+static const char sCheckDifference[] ALIGNED = "Check difference";
+static const char sNoDifference[] ALIGNED = "No difference";
+static const char sDone[] ALIGNED = "Done";
+
 SpiFlashInstall::SpiFlashInstall(void):
 	m_bHaveFlashChip(false),
 	m_nEraseSize(0),
@@ -61,15 +68,19 @@ SpiFlashInstall::SpiFlashInstall(void):
 
 	SpiFlashInstallParams params;
 
+	Display::Get()->Cls();
+
 	if (params.Load()) {
 		params.Dump();
 
 		if (spi_flash_probe(0, 0, 0) < 0) {
+			Display::Get()->TextStatus("No SPI flash");
 			DEBUG_PUTS("No SPI flash chip");
 		} else {
 			m_nFlashSize = spi_flash_get_size();
 
-			printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), m_nFlashSize);
+			printf("%s, sector size %d, %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), m_nFlashSize);
+			Display::Get()->Write(1, spi_flash_get_name());
 
 			if (m_nFlashSize >= FLASH_SIZE_MINIMUM) {
 
@@ -112,12 +123,16 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 
 void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
 	if (Open(pFileName)) {
-		printf("Check difference\n");
+		Display::Get()->TextStatus(sCheckDifference);
+		puts(sCheckDifference);
+
 		if (Diff(nOffset)) {
-			printf("Writing\n");
+			Display::Get()->TextStatus(sWriting);
+			puts(sWriting);
 			Write(nOffset);
 		} else {
-			printf("No difference\n");
+			Display::Get()->TextStatus(sNoDifference);
+			puts(sNoDifference);
 		}
 		Close();
 	}
@@ -137,7 +152,8 @@ bool SpiFlashInstall::Open(const char* pFileName) {
 		return false;
 	}
 
-	printf("Processing file: %s\n", pFileName);
+	Display::Get()->Write(2, pFileName);
+	puts(pFileName);
 
 	DEBUG_EXIT
 	return true;
@@ -149,7 +165,8 @@ void SpiFlashInstall::Close(void) {
 	(void) fclose(m_pFile);
 	m_pFile = 0;
 
-	printf("Done\n");
+	Display::Get()->TextStatus(sDone);
+	puts(sDone);
 
 	DEBUG_EXIT
 }
@@ -274,6 +291,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	}
 
 	if (bSuccess) {
+		Display::Get()->Printf(3, "%d", (int) nTotalBytes);
 		printf("%d bytes written\n", (int) nTotalBytes);
 	}
 

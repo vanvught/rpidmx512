@@ -4,6 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
+		<project>lib-debug</project>
+		<project>lib-display</project>
 		<project>lib-properties</project>
 		<project>lib-spiflash</project>
 	</projects>

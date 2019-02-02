@@ -37,11 +37,11 @@ public:
 	bool Load(void);
 	void Dump(void);
 
-	inline bool GetInstalluboot(void) {
+	 bool GetInstalluboot(void) {
 		return m_bInstalluboot;
 	}
 
-	inline bool GetInstalluImage(void) {
+	 bool GetInstalluImage(void) {
 		return m_bInstalluImage;
 	}
 
