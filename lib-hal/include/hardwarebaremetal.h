@@ -76,7 +76,7 @@ public:
 
 	bool SetTime(const struct THardwareTime &pTime);
 	void GetTime(struct THardwareTime *pTime);
-	inline time_t GetTime(void) {
+	 time_t GetTime(void) {
 		return time(0);
 	}
 

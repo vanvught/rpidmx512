@@ -2,7 +2,7 @@
  * @file dmxmonitor.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,10 +45,10 @@ public:
 	uint16_t GetDmxStartAddress(void);
 	uint16_t GetDmxFootprint(void);
 
-	void Start(uint8_t nPort = 0);
-	void Stop(uint8_t nPort = 0);
+	void Start(uint8_t nPortId);
+	void Stop(uint8_t nPortId);
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength);
 
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 #else
@@ -56,10 +56,10 @@ public:
 #endif
 
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
-	void SetMaxDmxChannels(uint16_t);
+	void SetMaxDmxChannels(uint16_t nMaxChannels);
 
 private:
-	void DisplayDateTime(uint8_t nPort, const char *);
+	void DisplayDateTime(uint8_t nPortId, const char *pString);
 #endif
 
 private:

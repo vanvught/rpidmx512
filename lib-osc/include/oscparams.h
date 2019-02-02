@@ -36,11 +36,11 @@ public:
 	bool Load(void);
 	void Dump(void);
 
-	inline uint16_t GetIncomingPort(void) {
+	 uint16_t GetIncomingPort(void) {
 		return m_nIncomingPort;
 	}
 
-	inline  uint16_t GetOutgoingPort(void) {
+	  uint16_t GetOutgoingPort(void) {
 		return m_nOutgoingPort;
 	}
 

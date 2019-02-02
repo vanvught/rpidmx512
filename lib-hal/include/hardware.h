@@ -93,7 +93,7 @@ public:
 	virtual const char* GetWebsiteUrl(void);
 
 public:
-	inline static Hardware* Get(void) {
+	 static Hardware* Get(void) {
 		return s_pThis;
 	}
 

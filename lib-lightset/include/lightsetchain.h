@@ -49,11 +49,11 @@ public:
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	inline uint16_t GetDmxStartAddress(void) {
+	 uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void)  {
+	 uint16_t GetDmxFootprint(void)  {
 		return m_nDmxFootprint;
 	}
 

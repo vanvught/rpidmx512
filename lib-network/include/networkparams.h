@@ -62,32 +62,32 @@ public:
 	bool Load(void);
 	void Dump(void);
 
-	inline bool isDhcpUsed(void) {
+	 bool isDhcpUsed(void) {
 		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
-	inline uint32_t GetIpAddress(void) {
+	 uint32_t GetIpAddress(void) {
 		return m_tNetworkParams.nLocalIp;
 	}
 
-	inline uint32_t GetNetMask(void) {
+	 uint32_t GetNetMask(void) {
 		return m_tNetworkParams.nNetmask;
 	}
 
-	inline uint32_t GetDefaultGateway(void) {
+	 uint32_t GetDefaultGateway(void) {
 		return m_tNetworkParams.nGatewayIp;
 	}
 
-	inline uint32_t GetNameServer(void) {
+	 uint32_t GetNameServer(void) {
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	inline const uint8_t *GetHostName(void) {
+	 const uint8_t *GetHostName(void) {
 		return m_tNetworkParams.aHostName;
 	}
 
 	// H2+/H3 Only
-	inline bool GetResetEmac(void) {
+	 bool GetResetEmac(void) {
 		return m_tNetworkParams.bResetEmac;
 	}
 

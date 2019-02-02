@@ -48,18 +48,18 @@ public:
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	inline void JoinGroup(uint32_t nHandle, uint32_t nIp) {
+	 void JoinGroup(uint32_t nHandle, uint32_t nIp) {
 		// Not supported
 	}
 
-	inline void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+	 void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 		// Not supported
 	}
 
 	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
 
-	inline void SetIp(uint32_t nIp) {
+	 void SetIp(uint32_t nIp) {
 		// Not supported
 	}
 

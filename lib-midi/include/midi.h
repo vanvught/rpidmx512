@@ -188,81 +188,81 @@ public:
 	Midi(void);
 	~Midi(void);
 
-	inline void Init(_midi_direction tMidiDirection) {
+	 void Init(_midi_direction tMidiDirection) {
 		midi_init(tMidiDirection);
 	}
 
-	inline _midi_direction GetDirection(void) {
+	 _midi_direction GetDirection(void) {
 		return midi_get_direction();
 	}
 
-	inline void SetBaudrate(uint32_t nBaudrate) {
+	 void SetBaudrate(uint32_t nBaudrate) {
 		midi_set_baudrate(nBaudrate);
 	}
 
-	inline uint32_t GetBaudrate(void) {
+	 uint32_t GetBaudrate(void) {
 		return midi_get_baudrate();
 	}
 
-	inline void SetActiveSense(bool bActiveSense = true) {
+	 void SetActiveSense(bool bActiveSense = true) {
 		midi_active_set_sense(bActiveSense);
 	}
 
-	inline bool GetActiveSense(void) {
+	 bool GetActiveSense(void) {
 		return midi_active_get_sense();
 	}
 
-	inline void SetChannel(uint8_t nChannel) {
+	 void SetChannel(uint8_t nChannel) {
 		midi_set_input_channel(nChannel);
 	}
 
-	inline uint8_t GetChannel(void) {
+	 uint8_t GetChannel(void) {
 		return midi_get_input_channel();
 	}
 
-	inline _midi_active_sense_state GetActiveSenseState(void) {
+	 _midi_active_sense_state GetActiveSenseState(void) {
 		return midi_active_get_sense_state();
 	}
 
-	inline const char* GetInterfaceDescription(void) {
+	 const char* GetInterfaceDescription(void) {
 		return midi_get_interface_description();
 	}
 
-	inline void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
+	 void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
 		midi_send_tc(tTimeCode);
 	}
 
-	inline void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
+	 void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
 		midi_send_raw(pBuffer, nLength);
 	}
 
-	inline bool Read(void) {
+	 bool Read(void) {
 		return midi_read();
 	}
 
-	inline bool Read(uint8_t nChannel) {
+	 bool Read(uint8_t nChannel) {
 		return midi_read_channel(nChannel);
 	}
 
-	inline uint32_t GetMessageTimeStamp(void) {
+	 uint32_t GetMessageTimeStamp(void) {
 		return m_pMessage->timestamp;
 	}
 
-	inline uint8_t GetMessageType(void) {
+	 uint8_t GetMessageType(void) {
 		return m_pMessage->type;
 	}
 
-	inline void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
+	 void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
 		nData1 = m_pMessage->data1;
 		nData2 = m_pMessage->data2;
 	}
 
-	inline uint8_t* GetSystemExclusive(uint8_t &nLength) {
+	 uint8_t* GetSystemExclusive(uint8_t &nLength) {
 		nLength = m_pMessage->bytes_count;
 		return m_pMessage->system_exclusive;
 	}
 
-	inline static Midi* Get(void) {
+	 static Midi* Get(void) {
 		return s_pThis;
 	}
 

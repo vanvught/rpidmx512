@@ -38,27 +38,27 @@ public:
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
 	// Dummy
-	inline int32_t Begin(uint16_t nPort) {
+	 int32_t Begin(uint16_t nPort) {
 		return 0;
 	}
 
-	inline void End(void) {
+	 void End(void) {
 	}
 
-	inline void JoinGroup(uint32_t nHandle, uint32_t nIp) {
+	 void JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	inline void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+	 void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	inline uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
+	 uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 		return 0;
 	}
 
-	inline void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+	 void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	}
 
-	inline void SetIp(uint32_t nIp) {
+	 void SetIp(uint32_t nIp) {
 	}
 };
 

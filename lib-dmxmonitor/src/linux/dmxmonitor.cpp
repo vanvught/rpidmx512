@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,17 +49,22 @@ DMXMonitor::DMXMonitor(void) :
 }
 
 DMXMonitor::~DMXMonitor(void) {
-	Stop();
+	for (uint32_t i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
+		if (m_bIsStarted[i]) {
+			Stop(i);
+			m_bIsStarted[i] = false;
+		}
+	}
 }
 
-void DMXMonitor::DisplayDateTime(uint8_t nPort, const char *pString) {
-	assert(nPort < DMXMONITOR_MAX_PORTS);
+void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
+	assert(nPortId < DMXMONITOR_MAX_PORTS);
 
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, pString, nPort);
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%c\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, pString, (char) nPortId + 'A');
 }
 
 void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
@@ -105,8 +110,8 @@ void DMXMonitor::Stop(uint8_t nPort) {
 	DisplayDateTime(nPort, "Stop");
 }
 
-void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
-	assert(nPort < DMXMONITOR_MAX_PORTS);
+void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+	assert(nPortId < DMXMONITOR_MAX_PORTS);
 
 	struct timeval tv;
 	uint32_t i, j;
@@ -114,7 +119,7 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%d %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, (int) nPort, (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, (char) nPortId + 'A', (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
 
 	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		printf("%.2x ", pData[i]);

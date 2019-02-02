@@ -37,23 +37,23 @@
 extern "C" {
 #endif
 
-/*@unused@*/inline static uint32_t hardware_micros(void) {
+inline static uint32_t hardware_micros(void) {
 	return BCM2835_ST->CLO;
 }
 
-/*@unused@*/inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
+inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
-/*@unused@*/inline static void hardware_watchdog_init(void) {
+inline static void hardware_watchdog_init(void) {
 	bcm2835_watchdog_init();
 }
 
-/*@unused@*/inline static void hardware_watchdog_feed(void) {
+inline static void hardware_watchdog_feed(void) {
 	bcm2835_watchdog_feed();
 }
 
-/*@unused@*/inline static void hardware_watchdog_stop(void) {
+inline static void hardware_watchdog_stop(void) {
 	bcm2835_watchdog_stop();
 }
 

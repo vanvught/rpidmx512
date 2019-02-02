@@ -58,28 +58,28 @@ public:
 
 	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
-	inline uint32_t GetIp(void) {
+	 uint32_t GetIp(void) {
 		return m_nLocalIp;
 	}
 
-	inline uint32_t GetNetmask(void) {
+	 uint32_t GetNetmask(void) {
 		return m_nNetmask;
 	}
 
-	inline uint32_t GetBroadcastIp(void) {
+	 uint32_t GetBroadcastIp(void) {
 		return m_nBroadcastIp;
 	}
 
-	inline bool IsDhcpCapable(void) {
+	 bool IsDhcpCapable(void) {
 		return m_IsDhcpCapable;
 
 	}
 
-	inline bool IsDhcpUsed(void) {
+	 bool IsDhcpUsed(void) {
 		return m_IsDhcpUsed;
 	}
 
-	inline bool IsDhcpKnown(void) {
+	 bool IsDhcpKnown(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 		return false;
 #else
@@ -87,7 +87,7 @@ public:
 #endif
 	}
 
-	inline const char* GetHostName(void) {
+	 const char* GetHostName(void) {
 		return m_aHostName;
 	}
 
@@ -102,7 +102,7 @@ public:
 	void Print(void);
 
 public:
-	inline static Network* Get(void) {
+	 static Network* Get(void) {
 		return s_pThis;
 	}
 

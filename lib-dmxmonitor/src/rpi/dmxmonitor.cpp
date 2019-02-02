@@ -46,7 +46,7 @@ DMXMonitor::DMXMonitor(void) : m_nSlots(0), m_bIsStarted(false) {
 }
 
 DMXMonitor::~DMXMonitor(void) {
-	this->Stop();
+	Stop(0);
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {

@@ -51,47 +51,47 @@ extern int sscan_spi(const char *buf, /*@out@*/char *spi, /*@out@*/char *name, /
 #ifdef __cplusplus
 class Sscan {
 public:
-	inline static int Uint8(const char *a, const char *b, uint8_t *c) {
+	 static int Uint8(const char *a, const char *b, uint8_t *c) {
 		return sscan_uint8_t(a, b, c);
 	}
 
-	inline static int Uint16(const char *a, const char *b, uint16_t *c) {
+	 static int Uint16(const char *a, const char *b, uint16_t *c) {
 		return sscan_uint16_t(a, b, c);
 	}
 
-	inline static int Uint32(const char *a, const char *b, uint32_t *c) {
+	 static int Uint32(const char *a, const char *b, uint32_t *c) {
 		return sscan_uint32_t(a, b, c);
 	}
 
-	inline static int Float(const char *a, const char *b, float *c) {
+	 static int Float(const char *a, const char *b, float *c) {
 		return sscan_float(a, b, c);
 	}
 
-	inline static int Char(const char *a, const char *b, char *c, uint8_t *d) {
+	 static int Char(const char *a, const char *b, char *c, uint8_t *d) {
 		return sscan_char_p(a, b, c, d);
 	}
 
-	inline static int IpAddress(const char *a, const char *b, uint32_t *c) {
+	 static int IpAddress(const char *a, const char *b, uint32_t *c) {
 		return sscan_ip_address(a, b, c);
 	}
 
-	inline static int Uuid(const char *a, const char *b, char *c, uint8_t *d) {
+	 static int Uuid(const char *a, const char *b, char *c, uint8_t *d) {
 		return sscan_uuid(a, b, c, d);
 	}
 
-	inline static int I2c(const char *a, char *b, uint8_t *c, uint8_t *d, uint8_t *e) {
+	 static int I2c(const char *a, char *b, uint8_t *c, uint8_t *d, uint8_t *e) {
 	 	 return sscan_i2c(a, b, c, d, e);
 	}
 
-	inline static int I2cAddress(const char *a, const char *b, uint8_t *c) {
+	 static int I2cAddress(const char *a, const char *b, uint8_t *c) {
 		return sscan_i2c_address(a, b, c);
 	}
 	
-	inline static int HexUint16(const char *a, const char *b, uint16_t *c) {
+	 static int HexUint16(const char *a, const char *b, uint16_t *c) {
 		return sscan_hexuint16(a, b, c);
 	}
 
-	inline static int Spi(const char *a, char *b, char *c, uint8_t *d, uint8_t *e, uint16_t *f, uint32_t *g) {
+	 static int Spi(const char *a, char *b, char *c, uint8_t *d, uint8_t *e, uint16_t *f, uint32_t *g) {
 		return sscan_spi(a, b, c , d, e, f, g);
 	}
 

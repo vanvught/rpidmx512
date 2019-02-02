@@ -121,11 +121,11 @@ extern int lo_pattern_match(const char *, const char *);
 class OSC {
 
 public:
-	inline static char *GetPath(void *p, unsigned size) {
+	 static char *GetPath(void *p, unsigned size) {
 		return (OSCString::Validate(p, size) >= 4) ? (char *) p : 0;
 	}
 
-	inline static bool isMatch(const char *str, const char *p) {
+	 static bool isMatch(const char *str, const char *p) {
 		return lo_pattern_match(str, p) == 0 ? false : true;
 	}
 };

@@ -60,7 +60,7 @@ public:
 
 	uint64_t GetUpTime(void);
 
-	inline time_t GetTime(void) {
+	 time_t GetTime(void) {
 		return time(NULL);
 	}
 

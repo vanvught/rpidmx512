@@ -54,11 +54,11 @@ public:
 
 	void Set(void);
 
-	inline uint32_t GetBaudrate(void) {
+	 uint32_t GetBaudrate(void) {
 		return m_tMidiParams.nBaudrate;
 	}
 
-	inline bool GetActiveSense(void) {
+	 bool GetActiveSense(void) {
 		return (m_tMidiParams.nActiveSense != 0);
 	}
 

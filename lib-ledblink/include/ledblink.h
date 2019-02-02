@@ -41,13 +41,13 @@ public:
 	virtual ~LedBlink(void);
 
 	virtual void SetFrequency (unsigned )= 0;
-	inline unsigned GetFrequency(void) { return m_nFreqHz; }
+	 unsigned GetFrequency(void) { return m_nFreqHz; }
 
 	void SetMode(tLedBlinkMode Mode);
 	tLedBlinkMode GetMode(void) const;
 
 public:
-	inline static LedBlink* Get(void) { return s_pThis; }
+	 static LedBlink* Get(void) { return s_pThis; }
 
 protected:
 	unsigned m_nFreqHz;
