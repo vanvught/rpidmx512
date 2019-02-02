@@ -32,10 +32,6 @@ ifdef COND
 	LIBS:=spiflashinstall spiflashstore spiflash $(LIBS)
 endif
 
-ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
-	LIBS+=network wiznet
-endif
-
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 	LIBS+=network esp8266
 endif
@@ -55,7 +51,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=properties c++ hal bob i2c utils console ff12c h3 debug arm
+LIBS+=properties display c++ hal bob i2c utils console ff12c h3 debug arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
