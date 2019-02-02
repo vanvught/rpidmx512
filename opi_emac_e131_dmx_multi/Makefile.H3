@@ -1,0 +1,10 @@
+#
+DEFINES = E131_BRIDGE EMAC NDEBUG
+#
+LIBS = e131 dmxsend dmx lightset ledblink artnet
+#
+SRCDIR = firmware
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
