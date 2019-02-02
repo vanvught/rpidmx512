@@ -18,7 +18,6 @@
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>
 		<project>lib-network</project>
-		<project>lib-rdm</project>
 		<project>lib-rdmdiscovery</project>
 		<project>lib-spiflashinstall</project>
 		<project>lib-spiflashstore</project>

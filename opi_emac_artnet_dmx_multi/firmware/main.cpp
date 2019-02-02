@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,8 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
+	Display display(DISPLAY_SSD1306);
+
 
 	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
 		SpiFlashInstall spiFlashInstall;
@@ -73,8 +75,6 @@ void notmain(void) {
 			artnetparams.Dump();
 		}
 	}
-
-	Display display(0,8);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -177,9 +177,10 @@ void notmain(void) {
 		uint8_t nAddress;
 		node.GetUniverseSwitch(0, nAddress);
 
-		(void) display.Printf(1, "Eth Art-Net 3 %s", artnetparams.IsRdm() ? "RDM" : "DMX");
-		(void) display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
-		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+		display.Cls();
+		display.Printf(1, "Eth Art-Net 3 %s", artnetparams.IsRdm() ? "RDM" : "DMX");
+		display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 		if (nw.IsDhcpKnown()) {
 			if (nw.IsDhcpUsed()) {
 				display.PutString(" D");
@@ -187,10 +188,10 @@ void notmain(void) {
 				display.PutString(" S");
 			}
 		}
-		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		(void) display.Printf(5, "SN: %s", node.GetShortName());
-		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch() ,node.GetSubnetSwitch(), nAddress);
-		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
+		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+		display.Printf(5, "SN: %s", node.GetShortName());
+		display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch() ,node.GetSubnetSwitch(), nAddress);
+		display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
 	ArtNetRdmController discovery;
