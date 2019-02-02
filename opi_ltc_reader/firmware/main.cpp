@@ -68,23 +68,25 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
+	Display display(0,4);
 
 #if defined (ORANGE_PI)
 	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
 		SpiFlashInstall spiFlashInstall;
 	}
 
-	//SpiFlashStore spiFlashStore;
-#endif
+	SpiFlashStore spiFlashStore;
 
-	Display display(0,4);
-	LtcLeds leds;
-
+	LtcParams ltcParams((LtcParamsStore *)spiFlashStore.GetStoreLtc());
+#else
 	LtcParams ltcParams;
+#endif
 
 	if (ltcParams.Load()) {
 		ltcParams.Dump();
 	}
+
+	LtcLeds leds;
 
 	Midi midi;
 	ArtNetNode node;
@@ -101,7 +103,11 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
 
+#if defined (ORANGE_PI)
+	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+#else
 	nw.Init();
+#endif
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
@@ -109,11 +115,15 @@ void notmain(void) {
 
 	node.SetShortName("LTC Node");
 
-	ArtNetParams artnetParams;
+#if defined (ORANGE_PI)
+	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+#else
+	ArtNetParams artnetparams;
+#endif
 
-	if (artnetParams.Load()) {
-		artnetParams.Set(&node);
-		artnetParams.Dump();
+	if (artnetparams.Load()) {
+		artnetparams.Set(&node);
+		artnetparams.Dump();
 	}
 
 	IpProg ipprog;
@@ -192,6 +202,10 @@ void notmain(void) {
 		default:
 			break;
 		}
+
+#if defined (ORANGE_PI)
+		spiFlashStore.Flash();
+#endif
 	}
 }
 

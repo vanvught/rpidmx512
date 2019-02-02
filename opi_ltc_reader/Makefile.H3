@@ -1,7 +1,7 @@
 #
 DEFINES = LTC_READER EMAC #NDEBUG
 #
-LIBS = ltc display artnet midi ledblink lightset
+LIBS = ltc artnet midi ledblink lightset
 #
 SRCDIR = firmware lib
 
