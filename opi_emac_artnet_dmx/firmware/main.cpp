@@ -68,6 +68,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
+	Display display(DISPLAY_SSD1306);
 
 #if defined (ORANGE_PI)
 	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
@@ -85,8 +86,6 @@ void notmain(void) {
 	}
 
 	const TOutputType tOutputType = artnetparams.GetOutputType();
-
-	Display display(DISPLAY_SSD1306);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -227,6 +226,7 @@ void notmain(void) {
 	}
 
 	if (display.isDetected()) {
+		display.Cls();
 		display.Write(1, "Eth Art-Net 3 ");
 
 		if (tOutputType == OUTPUT_TYPE_SPI) {

@@ -1,7 +1,7 @@
 #
 DEFINES = ARTNET_NODE EMAC NDEBUG
 #
-LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+LIBS = rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
 #
 SRCDIR = firmware lib
 
