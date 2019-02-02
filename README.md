@@ -37,7 +37,6 @@ Raspberry Pi **Open Source** solutions:
 - RDM Responder / **DMX Pixel (WS28xx/SK6812) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_rdm_responder.zip?raw=true)}
 - MIDI Sniffer {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_midi_sniffer.zip?raw=true)}
 - MIDI-DMX Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_midi_dmx_bridge.zip?raw=true)}
-- **SMPTE** Timecode LTC Reader {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_ltc_reader.zip?raw=true)} |Archived - no new updates|
 - **OSC DMX** Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_osc_dmx.zip?raw=true)}
 - OSC Wifi DMX Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_osc_dmx.zip?raw=true)}
 - OSC Pixel (WS28xx/SK6812) Conroller {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_osc_ws28xx.zip?raw=true)}
