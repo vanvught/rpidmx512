@@ -64,6 +64,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
+	Display display(DISPLAY_SSD1306);
 
 #if defined (ORANGE_PI)
 	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
@@ -81,8 +82,6 @@ void notmain(void) {
 	}
 
 	const TE131OutputType tOutputType = e131params.GetOutputType();
-
-	Display display(DISPLAY_SSD1306);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -197,6 +196,7 @@ void notmain(void) {
 		dmx.Print();
 	}
 
+	display.Cls();
 	display.Printf(1, "Eth sACN E1.31 %s", tOutputType == E131_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
