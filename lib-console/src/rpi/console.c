@@ -265,6 +265,44 @@ void console_puthex_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 	cur_back = back_current;
 }
 
+void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+	uint16_t fore_current = cur_fore;
+	uint16_t back_current = cur_back;
+
+	cur_fore = fore;
+	cur_back = back;
+
+	if (data < 100) {
+		(void) console_putc((int) ((char) '0' + (char) (data / 10)));
+		(void) console_putc((int) ((char) '0' + (char) (data % 10)));
+	} else {
+		(void) console_puts("%%");
+	}
+
+	cur_fore = fore_current;
+	cur_back = back_current;
+}
+
+void console_put3dec_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+	uint16_t fore_current = cur_fore;
+	uint16_t back_current = cur_back;
+
+	cur_fore = fore;
+	cur_back = back;
+
+	const uint8_t i = data / 100;
+
+	(void) console_putc((int) ((char) '0' + (char) i));
+
+	data -= (i * 100);
+
+	(void) console_putc((int) ((char) '0' + (char) (data / 10)));
+	(void) console_putc((int) ((char) '0' + (char) (data % 10)));
+
+	cur_fore = fore_current;
+	cur_back = back_current;
+}
+
 void console_newline(void){
 	newline();
 }

@@ -59,6 +59,9 @@ extern int console_error(const char *);
 extern void console_puthex(uint8_t);
 extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
 
+extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
+extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
+
 extern void console_newline(void);
 
 extern void console_write(const char *, unsigned int);
