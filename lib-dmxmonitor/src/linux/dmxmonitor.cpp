@@ -38,6 +38,7 @@ enum {
 };
 
 DMXMonitor::DMXMonitor(void) :
+		m_tFormat(DMX_MONITOR_FORMAT_HEX),
 		m_nSlots(0),
 		m_nDmxStartAddress(DMX_DEFAULT_START_ADDRESS),
 		m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
@@ -122,7 +123,17 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, (char) nPortId + 'A', (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
 
 	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
-		printf("%.2x ", pData[i]);
+		switch (m_tFormat) {
+			case DMX_MONITOR_FORMAT_PCT:
+				printf("%3d ", (int) (pData[i] * 100) / 255);
+				break;
+			case DMX_MONITOR_FORMAT_DEC:
+				printf("%3d ", pData[i]);
+				break;
+			default:
+				printf("%.2x ", pData[i]);
+				break;
+		}
 	}
 
 	for (; j < m_nMaxChannels; j++) {

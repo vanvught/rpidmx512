@@ -35,14 +35,25 @@
  #define DMXMONITOR_MAX_PORTS	4
 #endif
 
+enum TDMXMonitorFormat {
+	DMX_MONITOR_FORMAT_HEX,
+	DMX_MONITOR_FORMAT_PCT,
+	DMX_MONITOR_FORMAT_DEC,
+};
+
 class DMXMonitor: public LightSet {
 public:
 	DMXMonitor(void);
 	~DMXMonitor(void);
 
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	void SetFormat(TDMXMonitorFormat tFormat = DMX_MONITOR_FORMAT_HEX);
+	TDMXMonitorFormat GetFormat(void) {
+		return m_tFormat;
+	}
 
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 	uint16_t GetDmxStartAddress(void);
+
 	uint16_t GetDmxFootprint(void);
 
 	void Start(uint8_t nPortId);
@@ -66,6 +77,7 @@ private:
 	void Update(void);
 
 private:
+	TDMXMonitorFormat m_tFormat;
 	uint16_t m_nSlots;
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	bool m_bIsStarted[DMXMONITOR_MAX_PORTS];

@@ -5,6 +5,7 @@
 	<projects>
 		<project>lib-console</project>
 		<project>lib-lightset</project>
+		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

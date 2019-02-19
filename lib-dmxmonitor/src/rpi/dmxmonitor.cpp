@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,24 @@
 #include "dmxmonitor.h"
 #include "console.h"
 
-#define TOP_ROW			3
+#define TOP_ROW			2
+
+#define HEX_COLUMNS		32
+#define HEX_ROWS		16
+
+#define DEC_COLUMNS		24
+#define DEC_ROWS		22
 
 enum {
 	DMX_FOOTPRINT = 512,
 	DMX_START_ADDRESS = 1
 };
 
-DMXMonitor::DMXMonitor(void) : m_nSlots(0), m_bIsStarted(false) {
+DMXMonitor::DMXMonitor(void) :
+	m_tFormat(DMX_MONITOR_FORMAT_HEX),
+	m_nSlots(0),
+	m_bIsStarted(false)
+{
 	uint8_t *p = (uint8_t *) m_Data;
 
 	for (uint32_t i = 0; i < (uint32_t) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
@@ -75,11 +85,33 @@ void DMXMonitor::Start(uint8_t nPort) {
 	uint8_t row = TOP_ROW;
 
 	console_clear_line(TOP_ROW);
-	console_puts("    01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32");
 
-	for (uint32_t i = 1; i < (16 * 32); i = i + 32) {
-		console_set_cursor(0, ++row);
-		printf("%3d", i);
+	switch (m_tFormat) {
+		case DMX_MONITOR_FORMAT_PCT:
+			console_putc('%');
+			break;
+		case DMX_MONITOR_FORMAT_DEC:
+			console_putc('D');
+			break;
+		default:
+			console_putc('H');
+			break;
+	}
+
+	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+		console_puts("   01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32");
+
+		for (uint32_t i = 1; i < (HEX_ROWS * HEX_COLUMNS); i = i + HEX_COLUMNS) {
+			console_set_cursor(0, ++row);
+			printf("%3d", i);
+		}
+	} else {
+		console_puts("     1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24");
+
+		for (uint32_t i = 1; i < (DEC_ROWS * DEC_COLUMNS); i = i + DEC_COLUMNS) {
+			console_set_cursor(0, ++row);
+			printf("%3d", i);
+		}
 	}
 
 	Update();
@@ -92,15 +124,33 @@ void DMXMonitor::Stop(uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	for (uint32_t i = (TOP_ROW + 1); i < (TOP_ROW + 17); i++) {
+	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+		for (uint32_t i = (TOP_ROW + 1); i < (TOP_ROW + HEX_ROWS + 1); i++) {
+			console_set_cursor(4, i);
+			console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+		}
+	} else {
+		uint32_t i;
+		for (i = (TOP_ROW + 1); i < (TOP_ROW + DEC_ROWS); i++) {
+			console_set_cursor(4, i);
+			console_puts("--- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---");
+		}
 		console_set_cursor(4, i);
-		console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
+		console_puts("--- --- --- --- --- --- --- ---");
 	}
 }
 
 void DMXMonitor::Cls(void) {
-	for (uint32_t i = TOP_ROW; i < (TOP_ROW + 17); i++) {
+	uint32_t i;
+
+	for (i = TOP_ROW; i < (TOP_ROW + HEX_ROWS + 1); i++) {
 		console_clear_line(i);
+	}
+
+	if (m_tFormat == DMX_MONITOR_FORMAT_DEC) {
+		for (; i < (TOP_ROW + DEC_ROWS + 1); i++) {
+			console_clear_line(i);
+		}
 	}
 }
 
@@ -123,31 +173,61 @@ void DMXMonitor::Update(void) {
 	uint8_t *p = (uint8_t *) m_Data;
 	uint16_t slot = 0;
 
-	for (i = 0; (i < 16) && (slot < m_nSlots); i++) {
+	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+		for (i = 0; (i < HEX_ROWS) && (slot < m_nSlots); i++) {
 
-		console_set_cursor(4, ++row);
+			console_set_cursor(4, ++row);
 
-		for (j = 0; (j < 32) && (slot < m_nSlots); j++) {
-			const uint8_t d = *p++;
+			for (j = 0; (j < HEX_COLUMNS) && (slot < m_nSlots); j++) {
+				const uint8_t d = *p++;
 
-			if (d == 0) {
-				console_puts(" 0");
-			} else {
-				console_puthex_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+				if (d == 0) {
+					console_puts(" 0");
+				} else {
+					if (m_tFormat == DMX_MONITOR_FORMAT_HEX) {
+						console_puthex_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+					} else {
+						console_putpct_fg_bg(((uint32_t) d * 100) / 255, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+					}
+				}
+				console_putc((int) ' ');
+				slot++;
 			}
 
-			console_putc((int) ' ');
-			slot++;
+			for (; j < HEX_COLUMNS; j++) {
+				console_puts("   ");
+			}
 		}
 
-		for (; j < 32; j++) {
-			console_puts("   ");
+		for (; i < HEX_ROWS; i++) {
+			console_set_cursor(4, ++row);
+			console_puts("                                                                                               ");
 		}
-	}
+	} else {
+		for (i = 0; (i < DEC_ROWS) && (slot < m_nSlots); i++) {
 
-	for (; i < 16; i++) {
-		console_set_cursor(4, ++row);
-		console_puts(
-				"                                                                                               ");
+			console_set_cursor(4, ++row);
+
+			for (j = 0; (j < DEC_COLUMNS) && (slot < m_nSlots); j++) {
+				const uint8_t d = *p++;
+
+				if (d == 0) {
+					console_puts("  0");
+				} else {
+					console_put3dec_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+				}
+				console_putc((int) ' ');
+				slot++;
+			}
+
+			for (; j < DEC_COLUMNS; j++) {
+				console_puts("    ");
+			}
+		}
+
+		for (; i < DEC_ROWS; i++) {
+			console_set_cursor(4, ++row);
+			console_puts("                                                                                               ");
+		}
 	}
 }
