@@ -1,0 +1,10 @@
+#
+DEFINES = OSC_SERVER EMAC NDEBUG
+#
+LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx ledblink lightset artnet
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpi_circle_osc_ws28xx</name>
+	<name>opi_emac_osc_dmx</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
-		<project>lib-lightset</project>
-		<project>lib-network</project>
-		<project>lib-osc</project>
+		<project>include</project>
+		<project>lib-console</project>
+		<project>lib-debug</project>
+		<project>lib-display</project>
+		<project>lib-oscserver</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

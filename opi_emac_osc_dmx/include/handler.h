@@ -1,12 +1,8 @@
 /**
- * @file oscws28xx.h
+ * @file handler.h
  *
  */
-/*
- * Circle - A C++ bare metal environment for Raspberry Pi
- * Copyright (C) 2014-2015  R. Stange <rsta2@o2online.de>
- */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,44 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef _oscws2801_h
-#define _oscws2801_h
+#ifndef HANDLER_H_
+#define HANDLER_H_
 
-#include <circle/interrupt.h>
-#include <circle/device.h>
-#include <circle/machineinfo.h>
+#include <stdint.h>
 
-#include "ws28xx.h"
-#include "../../lib-ws28xxdmx/include/ws28xxdmxparams.h"
+#include "oscserverhandler.h"
 
-#ifndef FRAME_BUFFER_SIZE
-#define FRAME_BUFFER_SIZE	1024
-#endif
+#include "ws28xxdmx.h"
 
-class COSCWS28xx
-{
+class Handler: public OscServerHandler  {
 public:
-	COSCWS28xx(unsigned nHandle, CInterruptSystem*, CDevice *, unsigned);
-	~COSCWS28xx(void);
+	Handler(WS28xxDmx *pWS28xxDmx);
+	~Handler(void);
 
-	void Start(void);
-	void Stop(void);
+	void Blackout(void);
+	void Update(void);
 
-	void Run(void);
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
 
 private:
-	uint32_t			m_nHandle;
-	CInterruptSystem	*m_pInterrupt;
-	CDevice				*m_pTarget;
-	unsigned			m_nRemotePort;
-	CMachineInfo 		m_MachineInfo;
-	WS28xx				*m_pLEDStripe;
-	TWS28XXType			m_LEDType;
-	unsigned			m_nLEDCount;
-	boolean 			m_Blackout;
-	u8 					m_RGBWColour[4];
-	WS28xxDmxParams		m_DeviceParams;
-	uint8_t 			m_packet[FRAME_BUFFER_SIZE];
+	WS28xxDmx *m_pWS28xxDmx;
+	uint16_t m_nLedCount;
+	char *m_pLedTypeString;
 };
 
-#endif
+#endif /* HANDLER_H_ */

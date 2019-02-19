@@ -1,0 +1,225 @@
+/**
+ * @file main.cpp
+ *
+ */
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+
+#include "hardwarebaremetal.h"
+#include "networkh3emac.h"
+#include "ledblinkbaremetal.h"
+
+#include "console.h"
+#include "display.h"
+
+#include "oscserver.h"
+#include "oscserverparms.h"
+
+// DMX Out
+#include "dmxparams.h"
+#include "dmxsend.h"
+// Pixel controller
+#include "lightset.h"
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
+#include "ws28xxdmxgrouping.h"
+
+#include "handler.h"
+
+#if defined(ORANGE_PI)
+ #include "spiflashinstall.h"
+ #include "spiflashstore.h"
+#endif
+
+#include "software_version.h"
+
+static const char NETWORK_INIT[] = "Network init ...";
+static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+static const char START_BRIDGE[] = "Starting the Bridge ...";
+static const char BRIDGE_STARTED[] = "Bridge started";
+
+extern "C" {
+
+void notmain(void) {
+	HardwareBaremetal hw;
+	NetworkH3emac nw;
+	LedBlinkBaremetal lb;
+	Display display(DISPLAY_SSD1306);
+
+#if defined (ORANGE_PI)
+	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
+		SpiFlashInstall spiFlashInstall;
+	}
+
+	SpiFlashStore spiFlashStore;
+#endif
+
+	OscServer server;
+
+#if defined (ORANGE_PI)
+	OSCServerParams params((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
+#else
+	OSCServerParams params;
+#endif
+
+	if (params.Load()) {
+		params.Dump();
+		params.Set(&server);
+	}
+
+	const TOscOutputType tOutputType = params.GetOutputType();
+
+	uint8_t nHwTextLength;
+	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+
+	hw.SetLed(HARDWARE_LED_ON);
+
+	console_status(CONSOLE_YELLOW, NETWORK_INIT);
+	display.TextStatus(NETWORK_INIT);
+
+#if defined (ORANGE_PI)
+	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+#else
+	nw.Init();
+#endif
+	nw.Print();
+
+	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
+	display.TextStatus(BRIDGE_PARMAS);
+
+	DMXSend dmx;
+	LightSet *pSpi;
+	Handler *pHandler;
+
+	if (tOutputType == OSC_OUTPUT_TYPE_SPI) {
+#if defined (ORANGE_PI)
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+#else
+		WS28xxDmxParams ws28xxparms;
+#endif
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Dump();
+		}
+
+		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+
+		if (ws28xxparms.IsLedGrouping()) {
+			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+			assert(pWS28xxDmxGrouping != 0);
+			ws28xxparms.Set(pWS28xxDmxGrouping);
+			pSpi = pWS28xxDmxGrouping;
+			display.Printf(7, "%s:%d G", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+			pHandler = new Handler(pWS28xxDmxGrouping);
+			assert(pHandler != 0);
+		} else  {
+			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
+			assert(pWS28xxDmx != 0);
+			ws28xxparms.Set(pWS28xxDmx);
+			pSpi = pWS28xxDmx;
+
+			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+
+			// For the time being, just 1 Universe
+			if (pWS28xxDmx->GetLEDType() == SK6812W) {
+				if (nLedCount > 128) {
+					pWS28xxDmx->SetLEDCount(128);
+				}
+			} else {
+				if (nLedCount > 170) {
+					pWS28xxDmx->SetLEDCount(170);
+				}
+			}
+			display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
+			pHandler = new Handler(pWS28xxDmx);
+			assert(pHandler != 0);
+		}
+
+		server.SetOutput(pSpi);
+		server.SetOscServerHandler(pHandler);
+	} else {
+#if defined (ORANGE_PI)
+		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+#else
+		DMXParams dmxparams;
+#endif
+		if (dmxparams.Load()) {
+			dmxparams.Dump();
+			dmxparams.Set(&dmx);
+		}
+
+		server.SetOutput(&dmx);
+	}
+
+	server.Print();
+
+	if (tOutputType == OSC_OUTPUT_TYPE_SPI) {
+		assert(pSpi != 0);
+		pSpi->Print();
+	} else {
+		dmx.Print();
+	}
+
+	for (unsigned i = 0; i < 7 ; i++) {
+		display.ClearLine(i);
+	}
+	display.Printf(1, "Eth OSC %s", tOutputType == OSC_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+	if (nw.IsDhcpKnown()) {
+		if (nw.IsDhcpUsed()) {
+			display.PutString(" D");
+		} else {
+			display.PutString(" S");
+		}
+	}
+	display.Printf(4, "In: %d", server.GetPortIncoming());
+	display.Printf(5, "Out: %d", server.GetPortOutgoing());
+
+	console_status(CONSOLE_YELLOW, START_BRIDGE);
+	display.TextStatus(START_BRIDGE);
+
+	server.Start();
+
+	hw.SetLed(HARDWARE_LED_FLASH);
+
+	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
+	display.TextStatus(BRIDGE_STARTED);
+
+#if defined (ORANGE_PI)
+	while (spiFlashStore.Flash())
+		;
+#endif
+
+	hw.WatchdogInit();
+
+	for (;;) {
+		hw.WatchdogFeed();
+		nw.Run();
+		server.Run();
+		lb.Run();
+	}
+}
+
+}
