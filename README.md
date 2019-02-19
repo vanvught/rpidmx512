@@ -1,5 +1,5 @@
 # Orange Pi baremetal
-## DMX512 / RDM / Art-Net 3 / sACN E1.31 / Pixel controller
+## DMX512 / RDM / Art-Net 3 / sACN E1.31 / OSC / SMPTE / Pixel controller
 
 **Open Source** solutions:
 
@@ -10,9 +10,14 @@
 -  **sACN E1.31 Ethernet** DMX Bridge **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx_multi.zip?raw=true)}
 
 - RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_dmx_usb_pro.zip?raw=true)}  {*Orange Pi Zero only*}
+
 - **SMPTE** Timecode LTC Reader {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_ltc_reader.zip?raw=true)}   {*Orange Pi Zero only*}
 
+
+-  **OSC Ethernet** DMX Bridge / **Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_dmx.zip?raw=true)}
+
 - RDM Responder / **DMX Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_rdm_responder.zip?raw=true)}
+
 - **Art-Net 3 Wifi** DMX Node / RDM Controller / Pixel (WS28xx/SK6812) controller {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_wifi_artnet_dmx.zip?raw=true)}
 - sACN **E1.31 Wifi** DMX Bridge  / Pixel (WS28xx / SK6812) controller {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_wifi_e131_dmx.zip?raw=true)}
 
@@ -25,21 +30,19 @@ U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3
 > Special thanks to [@trebisky](https://github.com/trebisky/orangepi) (Thomas J. Trebisky), who helped me in understanding the H3 SoC.
 
 # Raspberry Pi Baremetal #
-## DMX512 / RDM / Art-Net 3 / sACN E1.31 / Pixel controller / MIDI / SMPTE / OSC
+## DMX512 / RDM / Art-Net 3 / sACN E1.31 / Pixel controller / MIDI
 
 Raspberry Pi **Open Source** solutions:
 
 - RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_usb_pro.zip?raw=true)}
+- DMX Real-time Monitor {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_monitor.zip?raw=true)}
 - Art-Net 3 DMX Node / **Pixel (WS28xx/SK6812) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_artnet_dmx.zip?raw=true)}
 - **Art-Net 3 Wifi** DMX Node / RDM Controller / Monitor / Pixel (WS28xx / SK6812) controller {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_artnet_dmx.zip?raw=true)}
 - sACN **E1.31 Wifi** DMX Bridge / DMX Real-time monitor {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_e131_dmx.zip?raw=true)}
-- DMX Real-time Monitor {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_monitor.zip?raw=true)}
 - RDM Responder / **DMX Pixel (WS28xx/SK6812) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_rdm_responder.zip?raw=true)}
 - MIDI Sniffer {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_midi_sniffer.zip?raw=true)}
 - MIDI-DMX Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_midi_dmx_bridge.zip?raw=true)}
-- **OSC DMX** Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_osc_dmx.zip?raw=true)}
 - OSC Wifi DMX Bridge {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_osc_dmx.zip?raw=true)}
-- OSC Pixel (WS28xx/SK6812) Conroller {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_osc_ws28xx.zip?raw=true)}
 - **OSC Wifi Pixel** (WS28xx/SK6812) Controller {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_osc_ws28xx.zip?raw=true)}
 
 

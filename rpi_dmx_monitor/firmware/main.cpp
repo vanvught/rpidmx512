@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,9 @@
 #include "console.h"
 
 #include "dmxreceiver.h"
+
 #include "dmxmonitor.h"
+#include "dmxmonitorparams.h"
 
 #include "software_version.h"
 
@@ -41,12 +43,14 @@
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
+#define TOP_ROW_STATS	26
+
 extern "C" {
 
 void notmain(void) {
 	HardwareBaremetal hw;
 	LedBlinkBaremetal lb;
-	uint8_t nHwTextLength;
+
 	uint32_t nMicrosPrevious = (uint32_t) 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
 	uint32_t nUpdatesPerSecondeMax = (uint32_t) 0;
@@ -58,15 +62,23 @@ void notmain(void) {
 	uint32_t nBreakToBreakMax = (uint32_t) 0;
 	int16_t nLength;
 
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
-	printf("DMX Real-time Monitor");
+	uint8_t nHwTextLength;
+	printf("DMX Real-time Monitor [V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	hw.SetLed(HARDWARE_LED_ON);
 
 	DMXMonitor dmxmonitor;
+
+	DMXMonitorParams monitorparams;
+
+	if (monitorparams.Load()) {
+		monitorparams.Dump();
+		monitorparams.Set(&dmxmonitor);
+	}
+
 	dmxmonitor.Cls();
 
-	console_set_cursor(0, 21);
+	console_set_cursor(0, TOP_ROW_STATS);
 	console_puts("DMX updates/sec\n");
 	console_puts("Slots in packet\n");
 	console_puts("Slot to slot\n");
@@ -92,13 +104,13 @@ void notmain(void) {
 			console_save_cursor();
 
 			if (dmx_updates_per_seconde == 0) {
-				console_set_cursor(20, 21);
+				console_set_cursor(20, TOP_ROW_STATS);
 				console_puts("---");
-				console_set_cursor(20, 22);
+				console_set_cursor(20, TOP_ROW_STATS + 1);
 				console_puts("---");
-				console_set_cursor(20, 23);
+				console_set_cursor(20, TOP_ROW_STATS + 2);
 				console_puts("---");
-				console_set_cursor(17, 24);
+				console_set_cursor(17, TOP_ROW_STATS + 3);
 				console_puts("-------");
 			} else {
 				const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
@@ -113,13 +125,13 @@ void notmain(void) {
 				nBreakToBreakMin = MIN(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
 				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
 
-				console_set_cursor(20, 21);
+				console_set_cursor(20, TOP_ROW_STATS);
 				printf("%3d     %3d / %d", (int) dmx_updates_per_seconde, (int) nUpdatesPerSecondeMin, (int) nUpdatesPerSecondeMax);
-				console_set_cursor(20, 22);
+				console_set_cursor(20, TOP_ROW_STATS + 1);
 				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotsInPacket, (int) nSlotsInPacketMin, (int) nSlotsInPacketMax);
-				console_set_cursor(20, 23);
+				console_set_cursor(20, TOP_ROW_STATS + 2);
 				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotToSlot, (int) nSotToSlotMin, (int) nSlotToSlotMax);
-				console_set_cursor(17, 24);
+				console_set_cursor(17, TOP_ROW_STATS + 3);
 				printf("%6d  %6d / %d", (int) dmx_statistics->Statistics.BreakToBreak, (int) nBreakToBreakMin, (int) nBreakToBreakMax);
 			}
 
