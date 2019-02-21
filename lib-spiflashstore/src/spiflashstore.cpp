@@ -38,9 +38,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -346,4 +346,8 @@ StoreMidi *SpiFlashStore::GetStoreMidi(void) {
 
 StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
 	return &m_StoreArtNet4;
+}
+
+StoreOscServer *SpiFlashStore::GetStoreOscServer(void) {
+	return &m_StoreOscServer;
 }

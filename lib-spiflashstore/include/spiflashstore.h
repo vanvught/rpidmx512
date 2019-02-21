@@ -37,6 +37,7 @@
 #include "storeltc.h"
 #include "storemidi.h"
 #include "storeartnet4.h"
+#include "storeoscserver.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
 
@@ -49,6 +50,7 @@ enum TStore {
 	STORE_LTC,
 	STORE_MIDI,
 	STORE_ARTNET4,
+	STORE_OSC,
 	STORE_LAST
 };
 
@@ -88,6 +90,7 @@ public:
 	StoreLtc *GetStoreLtc(void);
 	StoreMidi *GetStoreMidi(void);
 	StoreArtNet4 *GetStoreArtNet4(void);
+	StoreOscServer *GetStoreOscServer(void);
 
 private:
 	bool Init(void);
@@ -117,6 +120,7 @@ private:
 	StoreLtc m_StoreLtc;
 	StoreMidi m_StoreMidi;
 	StoreArtNet4 m_StoreArtNet4;
+	StoreOscServer m_StoreOscServer;
 };
 
 #endif /* SPIFLASHSTORE_H_ */

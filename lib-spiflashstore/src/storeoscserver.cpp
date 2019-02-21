@@ -1,5 +1,5 @@
 /**
- * @file storeltc.h
+ * @file storeoscserver.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,26 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORELTC_H_
-#define STORELTC_H_
+#include <stdint.h>
+#include <assert.h>
 
-#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
-	#include "ltcparams.h"
+#include "spiflashstore.h"
 
-	class StoreLtc: public LtcParamsStore {
-	public:
-		StoreLtc(void);
-		~StoreLtc(void);
+#include "oscserverparms.h"
 
-		void Update(const struct TLtcParams *pLtcParams);
-		void Copy(struct TLtcParams *pLtcParams);
-	};
-#else
-	class StoreLtc {
-	public:
-		StoreLtc(void);
-		~StoreLtc(void);
-	};
-#endif
+#include "debug.h"
 
-#endif /* STORELTC_H_ */
+OSCServerParamsStore::~OSCServerParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+StoreOscServer::StoreOscServer(void) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%p", this);
+
+	DEBUG_EXIT
+}
+
+StoreOscServer::~StoreOscServer(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreOscServer::Update(const struct TOSCServerParams* pOSCServerParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
+
+	DEBUG_EXIT
+}
+
+void StoreOscServer::Copy(struct TOSCServerParams* pOSCServerParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
+
+	DEBUG_EXIT
+}

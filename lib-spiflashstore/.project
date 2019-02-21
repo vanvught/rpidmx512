@@ -13,6 +13,7 @@
 		<project>lib-ltc</project>
 		<project>lib-midi</project>
 		<project>lib-network</project>
+		<project>lib-oscserver</project>
 		<project>lib-spiflash</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>

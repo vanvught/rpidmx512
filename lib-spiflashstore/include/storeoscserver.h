@@ -1,5 +1,5 @@
 /**
- * @file storeltc.h
+ * @file storeoscserver.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,26 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORELTC_H_
-#define STORELTC_H_
+#ifndef STOREOSCSERVER_H_
+#define STOREOSCSERVER_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
-	#include "ltcparams.h"
+#if defined (LIB_SPIFLASHSTORE) || defined (OSC_SERVER)
+	#include "oscserverparms.h"
 
-	class StoreLtc: public LtcParamsStore {
+	class StoreOscServer: public OSCServerParamsStore {
 	public:
-		StoreLtc(void);
-		~StoreLtc(void);
+		StoreOscServer(void);
+		~StoreOscServer(void);
 
-		void Update(const struct TLtcParams *pLtcParams);
-		void Copy(struct TLtcParams *pLtcParams);
+		void Update(const struct TOSCServerParams *pOSCServerParams);
+		void Copy(struct TOSCServerParams *pOSCServerParams);
 	};
 #else
-	class StoreLtc {
+	class StoreOscServer {
 	public:
-		StoreLtc(void);
-		~StoreLtc(void);
+		StoreOscServer(void);
+		~StoreOscServer(void);
 	};
 #endif
 
-#endif /* STORELTC_H_ */
+
+
+#endif /* STOREOSCSERVER_H_ */
