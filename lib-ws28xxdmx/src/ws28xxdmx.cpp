@@ -2,7 +2,7 @@
  * @file spisend.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ WS28xxDmx::WS28xxDmx(void) :
 	m_nDmxFootprint(170 * 3),
 	m_pLEDStripe(0),
 	m_bIsStarted(false),
+	m_bBlackout(false),
 	m_nClockSpeedHz(0),
 	m_nGlobalBrightness(0xFF),
 	m_nBeginIndexPortId1(170),
@@ -266,5 +267,19 @@ void WS28xxDmx::UpdateMembers(void) {
 
 	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {
 		m_nDmxFootprint = DMX_MAX_CHANNELS;
+	}
+}
+
+void WS28xxDmx::Blackout(bool bBlackout) {
+	m_bBlackout = bBlackout;
+
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
+	}
+
+	if (bBlackout) {
+		m_pLEDStripe->Blackout();
+	} else {
+		m_pLEDStripe->Update();
 	}
 }

@@ -180,25 +180,10 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 }
 
-uint8_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
+uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
 	assert(nPort < E131_MAX_PORTS);
 
-	switch (nPort) {
-		case 0:
-			IsSet = isMaskSet(SET_UNIVERSE_A_MASK);
-			break;
-		case 1:
-			IsSet = isMaskSet(SET_UNIVERSE_B_MASK);
-			break;
-		case 2:
-			IsSet = isMaskSet(SET_UNIVERSE_C_MASK);
-			break;
-		case 3:
-			IsSet = isMaskSet(SET_UNIVERSE_D_MASK);
-			break;
-		default:
-			break;
-	}
+	IsSet = isMaskSet(SET_UNIVERSE_A_MASK << nPort);
 
 	return m_tE131Params.nUniversePort[nPort];
 }

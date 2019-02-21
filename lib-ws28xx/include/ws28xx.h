@@ -60,26 +60,26 @@ public:
 #if defined (__circle__)
 	bool Initialize (void);
 #else
-	inline bool Initialize (void) {
+	 bool Initialize (void) {
 		return true;
 	}
 #endif
 
-	inline uint16_t GetLEDCount(void) {
+	 uint16_t GetLEDCount(void) {
 		return m_nLEDCount;
 	}
 
-	inline TWS28XXType GetLEDType(void) {
+	 TWS28XXType GetLEDType(void) {
 		return m_tLEDType;
 	}
 
-	inline uint32_t GetClockSpeedHz(void) {
+	 uint32_t GetClockSpeedHz(void) {
 		return m_nClockSpeedHz;
 	}
 
 	void SetGlobalBrightness(uint8_t nGlobalBrightness);
 
-	inline uint8_t GetGlobalBrightness(void) {
+	 uint8_t GetGlobalBrightness(void) {
 		return m_nGlobalBrightness;
 	}
 
@@ -92,7 +92,7 @@ public:
 #if defined (__circle__)
 	bool IsUpdating (void) const; // returns TRUE while DMA operation is active
 #else
-	inline 	bool IsUpdating (void) const {
+	 	bool IsUpdating (void) const {
 		return false;
 	}
 #endif

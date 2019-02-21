@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,27 +35,25 @@ extern "C" {
 void printf(const char *fmt, ...) {
 	assert(fmt != 0);
 
-	char *p = (char *)fmt;
+	char *p = (char *) fmt;
 
-	if (p[0] == '\n') {
-		p++;
-	}
-
-	size_t fmtlen = strlen(p);
+	const size_t fmtlen = strlen(fmt);
 	char fmtbuf[fmtlen + 1];
 
 	strcpy(fmtbuf, p);
 
-	if (fmtbuf[fmtlen - 1] == '\n') {
+	if ((fmtlen > 0) && (fmtbuf[fmtlen - 1] == '\n')) {
 		fmtbuf[fmtlen - 1] = '\0';
 	}
 
-	va_list var;
-	va_start(var, fmt);
+	if (fmtbuf[0] != '\0') {
+		va_list var;
+		va_start(var, fmt);
 
-	CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
+		CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
 
-	va_end(var);
+		va_end(var);
+	}
 }
 
 }

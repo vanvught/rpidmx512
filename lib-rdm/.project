@@ -3,6 +3,7 @@
 	<name>lib-rdm</name>
 	<comment></comment>
 	<projects>
+		<project>lib-debug</project>
 		<project>lib-dmx</project>
 		<project>lib-h3</project>
 		<project>lib-hal</project>

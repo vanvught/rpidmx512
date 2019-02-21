@@ -81,7 +81,7 @@ public:
 		return (TE131Merge) m_tE131Params.nMergeMode;
 	}
 
-	 bool isHaveCustomCid(void) {
+	 bool HaveCustomCid(void) {
 		return m_tE131Params.bHaveCustomCid;
 	}
 
@@ -89,7 +89,7 @@ public:
 		return (const char*) m_tE131Params.aCidString;
 	}
 
-	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+	uint16_t GetUniverse(uint8_t nPort, bool &IsSet) const;
 
 public:
 	static uint32_t GetMaskUniverse(uint8_t nPort);

@@ -30,15 +30,34 @@
 
 #include "oscserver.h"
 
-enum TOutputType {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
+enum TOscOutputType {
+	OSC_OUTPUT_TYPE_DMX,
+	OSC_OUTPUT_TYPE_SPI,
+	OSC_OUTPUT_TYPE_MONITOR
+};
+
+struct TOSCServerParams {
+    uint32_t nSetList;
+	uint16_t nIncomingPort;
+	uint16_t nOutgoingPort;
+	TOscOutputType tOutputType;
+	bool bPartialTransmission;
+	char aPath[OSCSERVER_PATH_LENGTH_MAX];
+	char aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
+	char aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
+};
+
+class OSCServerParamsStore {
+public:
+	virtual ~OSCServerParamsStore(void);
+
+	virtual void Update(const struct TOSCServerParams *pOSCServerParams)=0;
+	virtual void Copy(struct TOSCServerParams *pOSCServerParams)=0;
 };
 
 class OSCServerParams {
 public:
-	OSCServerParams(void);
+	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore=0);
 	~OSCServerParams(void);
 
 	bool Load(void);
@@ -46,40 +65,31 @@ public:
 	void Dump(void);
 
 	 uint16_t GetIncomingPort(void) {
-		return m_nIncomingPort;
+		return m_tOSCServerParams.nIncomingPort;
 	}
 
 	 uint16_t GetOutgoingPort(void) {
-		return m_nOutgoingPort;
+		return m_tOSCServerParams.nOutgoingPort;
 	}
 
 	 bool GetPartialTransmission(void) {
-		return m_bPartialTransmission;
+		return m_tOSCServerParams.bPartialTransmission;
 	}
 
-	 TOutputType GetOutputType(void) {
-		return m_tOutputType;
+	 TOscOutputType GetOutputType(void) {
+		return m_tOSCServerParams.tOutputType;
 	}
-
-private:
-	bool isMaskSet(uint16_t) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+	bool isMaskSet(uint16_t) const;
 
 private:
-    uint32_t m_bSetList;
-	uint16_t m_nIncomingPort;
-	uint16_t m_nOutgoingPort;
-	bool m_bPartialTransmission;
-	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
-	char m_aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
-	char m_aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
-
-	TOutputType m_tOutputType;
+	OSCServerParamsStore *m_pOSCServerParamsStore;
+    struct TOSCServerParams m_tOSCServerParams;
 };
 
 #endif /* OSCSERVERPARAMS_H_ */

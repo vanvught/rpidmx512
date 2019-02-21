@@ -2,7 +2,7 @@
  * @file ws28xxstripedmxgrouping.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
-#include <ws28xxdmxgrouping.h>
-#include <ws28xxdmxparams.h>
+
+#include "ws28xxdmxgrouping.h"
+#include "ws28xxdmxparams.h"
+
 #include "lightset.h"
 
 #define DMX_FOOTPRINT_DEFAULT		3
@@ -84,7 +86,9 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 		}
 	}
 
-	m_pLEDStripe->Update();
+	if (!m_bBlackout) {
+		m_pLEDStripe->Update();
+	}
 }
 
 void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {

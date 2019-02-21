@@ -78,15 +78,15 @@ public:
 
 	void Dump(void);
 
-	inline uint8_t GetBreakTime(void) {
+	 uint8_t GetBreakTime(void) {
 		return m_tDMXParams.nBreakTime;
 	}
 
-	inline uint8_t GetMabTime(void) {
+	 uint8_t GetMabTime(void) {
 		return m_tDMXParams.nMabTime;
 	}
 
-	inline uint8_t GetRefreshRate(void) {
+	 uint8_t GetRefreshRate(void) {
 		return m_tDMXParams.nRefreshRate;
 	}
 

@@ -29,6 +29,13 @@
 
 #include "ft245rl.h"
 
+uint8_t usb_read_byte(void) {
+	while (!FT245RL_data_available())
+		;
+
+	return FT245RL_read_data();
+}
+
 void usb_send_byte(uint8_t byte) {
 	while (!FT245RL_can_write())
 		;

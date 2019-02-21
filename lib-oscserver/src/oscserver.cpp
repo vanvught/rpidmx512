@@ -100,6 +100,11 @@ OscServer::OscServer(void):
 }
 
 OscServer::~OscServer(void) {
+	if (m_pLightSet != 0) {
+		m_pLightSet->Stop(0);
+		m_pLightSet = 0;
+	}
+
 	delete[] m_pBuffer;
 	m_pBuffer = 0;
 
@@ -108,11 +113,6 @@ OscServer::~OscServer(void) {
 
 	delete[] m_pOsc;
 	m_pOsc = 0;
-
-	if (m_pLightSet != 0) {
-		m_pLightSet->Stop(0);
-		m_pLightSet = 0;
-	}
 }
 
 void OscServer::Start(void) {

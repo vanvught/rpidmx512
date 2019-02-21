@@ -110,12 +110,6 @@ struct TTableC2 {
 		// Undefined
 		{ SD_UNDEFINED, "No definition" } };
 
-RDMSlotInfo::RDMSlotInfo(void) {
-}
-
-RDMSlotInfo::~RDMSlotInfo(void) {
-}
-
 const char* RDMSlotInfo::GetTypeText(uint8_t nId, uint8_t& nLength) {
 
 	for (uint8_t i = 0; i < TABLE_C1_SIZE; i++) {

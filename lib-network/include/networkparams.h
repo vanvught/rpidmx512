@@ -43,6 +43,16 @@ struct TNetworkParams {
 	bool bResetEmac;
 };
 
+enum NETWORK_PARAMS_MASK {
+	NETWORK_PARAMS_MASK_DHCP = (1 << 0),
+	NETWORK_PARAMS_MASK_IP_ADDRESS = (1 << 1),
+	NETWORK_PARAMS_MASK_NET_MASK = (1 << 2),
+	NETWORK_PARAMS_MASK_DEFAULT_GATEWAY = (1 << 3),
+	NETWORK_PARAMS_MASK_NAME_SERVER = (1 << 4),
+	NETWORK_PARAMS_MASK_HOSTNAME = (1 << 5),
+	NETWORK_PARAMS_MASK_EMAC = (1 << 6)
+};
+
 class NetworkParamsStore {
 public:
 	virtual ~NetworkParamsStore(void);

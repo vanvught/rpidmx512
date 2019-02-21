@@ -48,8 +48,6 @@ public:
 
 	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
 	virtual void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
-
-private:
 };
 
 class WS28xxDmxParams {
@@ -61,27 +59,27 @@ public:
 	void Set(WS28xxDmx *);
 	void Dump(void);
 
-	inline TWS28XXType GetLedType(void) {
+	 TWS28XXType GetLedType(void) {
 		return m_tWS28xxParams.tLedType;
 	}
 
-	inline uint16_t GetLedCount(void) {
+	 uint16_t GetLedCount(void) {
 		return m_tWS28xxParams.nLedCount;
 	}
 
-	inline uint32_t GetClockSpeedHz(void) {
+	 uint32_t GetClockSpeedHz(void) {
 		return m_tWS28xxParams.nClockSpeedHz;
 	}
 
-	inline uint8_t GetGlobalBrightness(void) {
+	 uint8_t GetGlobalBrightness(void) {
 		return m_tWS28xxParams.nGlobalBrightness;
 	}
 
-	inline uint16_t GetDmxStartAddress(void) {
+	 uint16_t GetDmxStartAddress(void) {
 		return m_tWS28xxParams.nDmxStartAddress;
 	}
 
-	inline bool IsLedGrouping(void) {
+	 bool IsLedGrouping(void) {
 		return m_tWS28xxParams.bLedGrouping;
 	}
 

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,36 @@ struct TArtNetParams {
 	uint8_t nMergeModePort[ARTNET_MAX_PORTS];
 	uint8_t nProtocol;
 	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
+};
+
+enum ARTNET_PARAMS_MASK {
+	ARTNET_PARAMS_MASK_LONG_NAME = (1 << 0),
+	ARTNET_PARAMS_MASK_SHORT_NAME = (1 << 1),
+	ARTNET_PARAMS_MASK_NET = (1 << 2),
+	ARTNET_PARAMS_MASK_SUBNET = (1 << 3),
+	ARTNET_PARAMS_MASK_UNIVERSE = (1 << 4),
+	ARTNET_PARAMS_MASK_RDM = (1 << 5),
+	ARTNET_PARAMS_MASK_TIMECODE = (1 << 6),
+	ARTNET_PARAMS_MASK_TIMESYNC = (1 << 7),
+	ARTNET_PARAMS_MASK_OUTPUT = (1 << 8),
+	ARTNET_PARAMS_MASK_ID = (1 << 9),
+	ARTNET_PARAMS_MASK_OEM_VALUE = (1 << 10),
+	ARTNET_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 11),
+	ARTNET_PARAMS_MASK_MERGE_TIMEOUT = (1 << 12),
+	ARTNET_PARAMS_MASK_UNIVERSE_A = (1 << 13),
+	ARTNET_PARAMS_MASK_UNIVERSE_B = (1 << 14),
+	ARTNET_PARAMS_MASK_UNIVERSE_C = (1 << 15),
+	ARTNET_PARAMS_MASK_UNIVERSE_D = (1 << 16),
+	ARTNET_PARAMS_MASK_MERGE_MODE = (1 << 17),
+	ARTNET_PARAMS_MASK_MERGE_MODE_A = (1 << 18),
+	ARTNET_PARAMS_MASK_MERGE_MODE_B = (1 << 19),
+	ARTNET_PARAMS_MASK_MERGE_MODE_C = (1 << 20),
+	ARTNET_PARAMS_MASK_MERGE_MODE_D = (1 << 21),
+	ARTNET_PARAMS_MASK_PROTOCOL = (1 << 22),
+	ARTNET_PARAMS_MASK_PROTOCOL_A = (1 << 23),
+	ARTNET_PARAMS_MASK_PROTOCOL_B = (1 << 24),
+	ARTNET_PARAMS_MASK_PROTOCOL_C = (1 << 25),
+	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26)
 };
 
 class ArtNetParamsStore {
@@ -140,17 +170,6 @@ public:
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
 
 public:
-	static uint32_t GetMaskShortName(void);
-	static uint32_t GetMaskLongName(void);
-	static uint32_t GetMaskNet(void);
-	static uint32_t GetMaskSubnet(void);
-	static uint32_t GetMaskUniverse(void);
-	static uint32_t GetMaskUniverse(uint8_t nPort);
-	static uint32_t GetMaskMergeMode(void);
-	static uint32_t GetMaskMergeMode(uint8_t nPort);
-	static uint32_t GetMaskProtocol(void);
-	static uint32_t GetMaskPortProtocol(uint8_t nPort);
-
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

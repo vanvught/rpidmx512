@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,21 +50,23 @@ public:
 
 	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
+	void Blackout(bool bBlackout);
+
 	virtual void SetLEDType(TWS28XXType);
-	inline TWS28XXType GetLEDType(void) {
+	 TWS28XXType GetLEDType(void) {
 		return m_tLedType;
 	}
 
 	virtual void SetLEDCount(uint16_t);
-	inline uint16_t GetLEDCount(void) {
+	 uint16_t GetLEDCount(void) {
 		return m_nLedCount;
 	}
 
-	inline void SetClockSpeedHz(uint32_t nClockSpeedHz) {
+	 void SetClockSpeedHz(uint32_t nClockSpeedHz) {
 		m_nClockSpeedHz = nClockSpeedHz;
 	}
 
-	inline uint32_t GetClockSpeedHz(void) const {
+	 uint32_t GetClockSpeedHz(void) const {
 		return m_nClockSpeedHz;
 	}
 
@@ -81,11 +83,11 @@ public:
 public: // RDM
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
-	inline uint16_t GetDmxStartAddress(void) {
+	 uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void) {
+	 uint16_t GetDmxFootprint(void) {
 		return m_nDmxFootprint;
 	}
 
@@ -107,6 +109,7 @@ protected:
 
 	WS28xx* m_pLEDStripe;
 	bool m_bIsStarted;
+	bool m_bBlackout;
 
 private:
 	uint32_t m_nClockSpeedHz;
@@ -114,7 +117,6 @@ private:
 	uint16_t m_nBeginIndexPortId1;
 	uint16_t m_nBeginIndexPortId2;
 	uint16_t m_nBeginIndexPortId3;
-
 	uint16_t m_nChannelsPerLed;
 };
 

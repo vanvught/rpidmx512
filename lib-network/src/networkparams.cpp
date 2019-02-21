@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,14 +41,6 @@
 #include "sscan.h"
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
-
-#define SET_IS_DHCP_MASK			(1 << 0)
-#define SET_IP_ADDRESS_MASK			(1 << 1)
-#define SET_NET_MASK_MASK			(1 << 2)
-#define SET_DEFAULT_GATEWAY_MASK	(1 << 3)
-#define SET_NAME_SERVER_MASK		(1 << 4)
-#define SET_HOSTNAME_MASK			(1 << 5)
-#define SET_RESET_EMAC_MASK			(1 << 6)
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "network.txt";
 static const char PARAMS_USE_DHCP[] ALIGNED = "use_dhcp";
@@ -102,31 +94,31 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
 		m_tNetworkParams.bIsDhcpUsed = !(value8 == 0);
-		m_tNetworkParams.bSetList |= SET_IS_DHCP_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_DHCP;
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nLocalIp = value32;
-		m_tNetworkParams.bSetList |= SET_IP_ADDRESS_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_IP_ADDRESS;
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNetmask = value32;
-		m_tNetworkParams.bSetList |= SET_NET_MASK_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_NET_MASK;
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nGatewayIp = value32;
-		m_tNetworkParams.bSetList |= SET_DEFAULT_GATEWAY_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_DEFAULT_GATEWAY;
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNameServerIp = value32;
-		m_tNetworkParams.bSetList |= SET_NAME_SERVER_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_NAME_SERVER;
 		return;
 	}
 
@@ -134,13 +126,13 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, PARAMS_HOSTNAME, value, &len) == SSCAN_OK) {
 		strncpy((char *) m_tNetworkParams.aHostName, value, len);
 		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-		m_tNetworkParams.bSetList |= SET_HOSTNAME_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_HOSTNAME;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
 		m_tNetworkParams.bResetEmac = (value8 != 0);
-		m_tNetworkParams.bSetList |= SET_RESET_EMAC_MASK;
+		m_tNetworkParams.bSetList |= NETWORK_PARAMS_MASK_EMAC;
 		return;
 	}
 }
@@ -153,46 +145,46 @@ void NetworkParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
-	if (isMaskSet(SET_IS_DHCP_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_DHCP)) {
 		printf(" %s=%d [%s]\n", PARAMS_USE_DHCP, (int) m_tNetworkParams.bIsDhcpUsed, BOOL2STRING(m_tNetworkParams.bIsDhcpUsed));
 	}
 
-	if (isMaskSet(SET_IP_ADDRESS_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS)) {
 		printf(" %s=" IPSTR "\n", PARAMS_IP_ADDRESS, IP2STR(m_tNetworkParams.nLocalIp));
 	}
 
-	if (isMaskSet(SET_NET_MASK_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_NET_MASK)) {
 		printf(" %s=" IPSTR "\n", PARAMS_NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
 	}
 
-	if (isMaskSet(SET_DEFAULT_GATEWAY_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY)) {
 		printf(" %s=" IPSTR "\n", PARAMS_DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
 	}
 
-	if (isMaskSet(SET_NAME_SERVER_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_NAME_SERVER)) {
 		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
 	}
 
-	if (isMaskSet(SET_HOSTNAME_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
 		printf(" %s=%s\n", PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
 	}
 
-	if (isMaskSet(SET_RESET_EMAC_MASK)) {
+	if (isMaskSet(NETWORK_PARAMS_MASK_EMAC)) {
 		printf(" %s=%d [%s]\n", PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
 	}
 #endif
 }
 
 uint32_t NetworkParams::GetMaskIpAddress(void) {
-	return SET_IP_ADDRESS_MASK;
+	return NETWORK_PARAMS_MASK_IP_ADDRESS;
 }
 
 uint32_t NetworkParams::GetMaskNetMask(void) {
-	return SET_NET_MASK_MASK;
+	return NETWORK_PARAMS_MASK_NET_MASK;
 }
 
 uint32_t NetworkParams::GetMaskDhcpUsed(void) {
-	return SET_IS_DHCP_MASK;
+	return NETWORK_PARAMS_MASK_DHCP;
 }
 
 void NetworkParams::staticCallbackFunction(void *p, const char *s) {

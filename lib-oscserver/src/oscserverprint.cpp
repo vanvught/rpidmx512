@@ -31,6 +31,7 @@ void OscServer::Print(void) {
 	printf("OSC Server configuration:\n");
 	printf(" Incoming Port        : %d\n", m_nPortIncoming);
 	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
-	printf(" Path                 : [%s][%s]\n", m_aPath, m_aPathSecond);
+	printf(" DMX Path             : [%s][%s]\n", m_aPath, m_aPathSecond);
+	printf("  Blackout Path       : [%s]\n", m_aPathBlackOut);
 	printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
 }
