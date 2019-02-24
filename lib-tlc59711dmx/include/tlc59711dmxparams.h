@@ -2,7 +2,7 @@
  * @file tlc59711dmxparams.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef PWMDMXTLC59711PARAMS_H_
-#define PWMDMXTLC59711PARAMS_H_
+#ifndef TLC59711DMXPARAMS_H_
+#define TLC59711DMXPARAMS_H_
 
 #include <stdint.h>
 
 #include "tlc59711dmx.h"
 
+struct TTLC59711DmxParams {
+    uint32_t nSetList;
+	TTLC59711Type LedType;
+	uint8_t nLedCount;
+	uint16_t nDmxStartAddress;
+    uint32_t nSpiSpeedHz;
+};
+
+class TLC59711DmxParamsStore {
+public:
+	virtual ~TLC59711DmxParamsStore(void);
+
+	virtual void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
+	virtual void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
+
+private:
+};
+
 class TLC59711DmxParams {
 public:
-	TLC59711DmxParams(void);
+	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore = 0);
 	~TLC59711DmxParams(void);
 
 	bool Load(void);
@@ -44,22 +62,15 @@ public:
 
 public:
 	static const char *GetLedTypeString(TTLC59711Type tTTLC59711Type);
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const;
 
 private:
-    uint32_t m_bSetList;
-	TTLC59711Type m_LEDType;
-	uint8_t m_nLEDCount;
-	uint16_t m_nDmxStartAddress;
-    uint32_t m_nSpiSpeedHz;
+	TLC59711DmxParamsStore *m_pLC59711ParamsStore;
+    struct TTLC59711DmxParams m_tLC59711Params;
 };
 
-#endif /* PWMDMXTLC59711PARAMS_H_ */
+#endif /* TLC59711DMXPARAMS_H_ */

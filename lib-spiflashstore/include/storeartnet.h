@@ -26,32 +26,24 @@
 #ifndef STOREARTNET_H_
 #define STOREARTNET_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (ARTNET_NODE) || defined (LTC_READER)
-	#include "artnetparams.h"
-	#include "artnetstore.h"
+#include "artnetparams.h"
+#include "artnetstore.h"
 
-	class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
-	public:
-		StoreArtNet(void);
-		~StoreArtNet(void);
+class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
+public:
+	StoreArtNet(void);
+	~StoreArtNet(void);
 
-		void Update(const struct TArtNetParams *pArtNetParams);
-		void Copy(struct TArtNetParams *pArtNetParams);
+	void Update(const struct TArtNetParams *pArtNetParams);
+	void Copy(struct TArtNetParams *pArtNetParams);
 
-		void SaveShortName(const char *pShortName);
-		void SaveLongName(const char *pLongName);
-		void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
-		void SaveNetSwitch(uint8_t nAddress);
-		void SaveSubnetSwitch(uint8_t nAddress);
-		void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
-		void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
-	};
-#else
-	class StoreArtNet {
-	public:
-		StoreArtNet(void);
-		~StoreArtNet(void);
-	};
-#endif
+	void SaveShortName(const char *pShortName);
+	void SaveLongName(const char *pLongName);
+	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
+	void SaveNetSwitch(uint8_t nAddress);
+	void SaveSubnetSwitch(uint8_t nAddress);
+	void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
+	void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+};
 
 #endif /* STOREARTNET_H_ */

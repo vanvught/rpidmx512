@@ -26,23 +26,15 @@
 #ifndef STOREMIDI_H_
 #define STOREMIDI_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
-	#include "midiparams.h"
+#include "midiparams.h"
 
-	class StoreMidi: public MidiParamsStore {
-	public:
-		StoreMidi(void);
-		~StoreMidi(void);
+class StoreMidi: public MidiParamsStore {
+public:
+	StoreMidi(void);
+	~StoreMidi(void);
 
-		void Update(const struct TMidiParams *pMidiParams);
-		void Copy(struct TMidiParams *pMidiParams);
-	};
-#else
-	class StoreMidi {
-	public:
-		StoreMidi(void);
-		~StoreMidi(void);
-	};
-#endif
+	void Update(const struct TMidiParams *pMidiParams);
+	void Copy(struct TMidiParams *pMidiParams);
+};
 
 #endif /* STOREMIDI_H_ */

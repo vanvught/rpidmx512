@@ -26,25 +26,15 @@
 #ifndef STOREOSCSERVER_H_
 #define STOREOSCSERVER_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (OSC_SERVER)
-	#include "oscserverparms.h"
+#include "oscserverparms.h"
 
-	class StoreOscServer: public OSCServerParamsStore {
-	public:
-		StoreOscServer(void);
-		~StoreOscServer(void);
+class StoreOscServer: public OSCServerParamsStore {
+public:
+	StoreOscServer(void);
+	~StoreOscServer(void);
 
-		void Update(const struct TOSCServerParams *pOSCServerParams);
-		void Copy(struct TOSCServerParams *pOSCServerParams);
-	};
-#else
-	class StoreOscServer {
-	public:
-		StoreOscServer(void);
-		~StoreOscServer(void);
-	};
-#endif
-
-
+	void Update(const struct TOSCServerParams *pOSCServerParams);
+	void Copy(struct TOSCServerParams *pOSCServerParams);
+};
 
 #endif /* STOREOSCSERVER_H_ */

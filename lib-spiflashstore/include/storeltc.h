@@ -26,23 +26,15 @@
 #ifndef STORELTC_H_
 #define STORELTC_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (LTC_READER)
-	#include "ltcparams.h"
+#include "ltcparams.h"
 
-	class StoreLtc: public LtcParamsStore {
-	public:
-		StoreLtc(void);
-		~StoreLtc(void);
+class StoreLtc: public LtcParamsStore {
+public:
+	StoreLtc(void);
+	~StoreLtc(void);
 
-		void Update(const struct TLtcParams *pLtcParams);
-		void Copy(struct TLtcParams *pLtcParams);
-	};
-#else
-	class StoreLtc {
-	public:
-		StoreLtc(void);
-		~StoreLtc(void);
-	};
-#endif
+	void Update(const struct TLtcParams *pLtcParams);
+	void Copy(struct TLtcParams *pLtcParams);
+};
 
 #endif /* STORELTC_H_ */

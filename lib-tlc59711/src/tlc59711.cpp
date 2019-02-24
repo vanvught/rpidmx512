@@ -2,7 +2,7 @@
  * @file tlc59711.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #if !defined(NDEBUG) || defined(__linux__)
  #include <stdio.h>
 #endif
+#include <string.h>
 #include <assert.h>
 
 #if defined(__linux__)
@@ -36,6 +37,12 @@
  #include "h3_spi.h"
 #else
  #include "bcm2835_spi.h"
+#endif
+
+#if defined(H3)
+ 	#define FUNC_PREFIX(x) h3_##x
+#else
+ 	#define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
 #include "tlc59711.h"
@@ -66,25 +73,16 @@
 
 TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_nBoards(nBoards),
-	m_nSpiSpeedHz(nSpiSpeedHz),
-	m_nClockDivider((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) TLC59711_SPI_SPEED_DEFAULT),
+	m_nSpiSpeedHz(nSpiSpeedHz == 0 ? TLC59711_SPI_SPEED_DEFAULT : nSpiSpeedHz),
 	m_nFirst32(0),
 	m_pBuffer(0),
+	m_pBufferBlackout(0),
 	m_nBufSize(0)
 {
-#if defined (__linux__)
-	if (bcm2835_init() == 0) {
-		printf("Not able to init the bmc2835 library\n");
-	}
-#endif
+	FUNC_PREFIX(spi_begin());
 
-	bcm2835_spi_begin();
-
-	if (m_nSpiSpeedHz != (uint32_t) 0) {
-		if (m_nSpiSpeedHz > TLC59711_SPI_SPEED_MAX) {
-			m_nSpiSpeedHz = TLC59711_SPI_SPEED_MAX;
-		}
-		m_nClockDivider = (uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / m_nSpiSpeedHz);
+	if (m_nSpiSpeedHz > TLC59711_SPI_SPEED_MAX) {
+		m_nSpiSpeedHz = TLC59711_SPI_SPEED_MAX;
 	}
 
 	if (nBoards == 0) {
@@ -92,11 +90,14 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	}
 
 	m_nBufSize = nBoards * TLC59711_16BIT_CHANNELS;
-	m_pBuffer = new uint16_t[m_nBufSize];
 
+	m_pBuffer = new uint16_t[m_nBufSize];
 	assert(m_pBuffer != 0);
 
-	for (unsigned i = 0; i < m_nBufSize; i++) {
+	m_pBufferBlackout = new uint16_t[m_nBufSize];
+	assert(m_pBufferBlackout != 0);
+
+	for (uint32_t i = 0; i < m_nBufSize; i++) {
 		m_pBuffer[i] = (uint16_t) 0;
 	}
 
@@ -110,6 +111,8 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	SetGbcRed(TLC59711_GS_DEFAULT);
 	SetGbcGreen(TLC59711_GS_DEFAULT);
 	SetGbcBlue(TLC59711_GS_DEFAULT);
+
+	memcpy(m_pBufferBlackout, m_pBuffer, m_nBufSize * 2);
 }
 
 TLC59711::~TLC59711(void) {
@@ -307,8 +310,8 @@ void TLC59711::SetGbcBlue(uint8_t nValue) {
 }
 
 void TLC59711::UpdateFirst32(void) {
-	for (unsigned i = 0; i < m_nBoards; i++) {
-		const unsigned nIndex = TLC59711_16BIT_CHANNELS * i;
+	for (uint32_t i = 0; i < m_nBoards; i++) {
+		const uint32_t nIndex = TLC59711_16BIT_CHANNELS * i;
 		m_pBuffer[nIndex] = __builtin_bswap16((uint16_t) (m_nFirst32 >> 16));
 		m_pBuffer[nIndex + 1] = __builtin_bswap16((uint16_t) m_nFirst32);
 	}
@@ -330,8 +333,8 @@ void TLC59711::Dump(void) {
 
 	uint8_t nOut = 0;
 
-	for (unsigned i = 0; i < m_nBoards; i++) {
-		for (unsigned j = 0; j < TLC59711_RGB_CHANNELS; j ++) {
+	for (uint32_t i = 0; i < m_nBoards; i++) {
+		for (uint32_t j = 0; j < TLC59711_RGB_CHANNELS; j ++) {
 			uint16_t nRed = 0, nGreen = 0, nBlue = 0;
 			if (GetRgb(nOut, nRed, nGreen, nBlue)) {
 				printf("\tOut:%-2d, Red=0x%.4X, Green=0x%.4X, Blue=0x%.4X\n", nOut, nRed, nGreen, nBlue);
@@ -342,7 +345,7 @@ void TLC59711::Dump(void) {
 
 	printf("\n");
 
-	for (unsigned i = 0; i < m_nBoards * TLC59711_OUT_CHANNELS; i++) {
+	for (uint32_t i = 0; i < m_nBoards * TLC59711_OUT_CHANNELS; i++) {
 		uint16_t nValue = 0;
 		if (Get((uint8_t) i, nValue)) {
 			printf("\tChannel:%-3d, Value=0x%.4X\n", (int) i, nValue);
@@ -356,11 +359,17 @@ void TLC59711::Dump(void) {
 void TLC59711::Update(void) {
 	assert(m_pBuffer != 0);
 
-	__sync_synchronize();
-
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
-	bcm2835_spi_setClockDivider(m_nClockDivider);
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
-	bcm2835_spi_writenb((char *) m_pBuffer, m_nBufSize * 2);
+	FUNC_PREFIX(spi_chipSelect(BCM2835_SPI_CS_NONE));
+	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
+	FUNC_PREFIX(spi_setDataMode(BCM2835_SPI_MODE0));
+	FUNC_PREFIX(spi_writenb((char *) m_pBuffer, m_nBufSize * 2));
 }
 
+void TLC59711::Blackout(void) {
+	assert(m_pBufferBlackout != 0);
+
+	FUNC_PREFIX(spi_chipSelect(BCM2835_SPI_CS_NONE));
+	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
+	FUNC_PREFIX(spi_setDataMode(BCM2835_SPI_MODE0));
+	FUNC_PREFIX(spi_writenb((char *) m_pBufferBlackout, m_nBufSize * 2));
+}

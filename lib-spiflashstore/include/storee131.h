@@ -26,23 +26,15 @@
 #ifndef STOREE131_H_
 #define STOREE131_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (E131_BRIDGE)
-	#include "e131params.h"
+#include "e131params.h"
 
-	class StoreE131: public E131ParamsStore {
-	public:
-		StoreE131(void);
-		~StoreE131(void);
+class StoreE131: public E131ParamsStore {
+public:
+	StoreE131(void);
+	~StoreE131(void);
 
-		void Update(const struct TE131Params *pE131Params);
-		void Copy(struct TE131Params *pE131Params);
-	};
-#else
-	class StoreE131{
-	public:
-		StoreE131(void);
-		~StoreE131(void);
-	};
-#endif
+	void Update(const struct TE131Params *pE131Params);
+	void Copy(struct TE131Params *pE131Params);
+};
 
 #endif /* STOREE131_H_ */

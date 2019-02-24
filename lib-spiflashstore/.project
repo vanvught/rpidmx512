@@ -15,6 +15,7 @@
 		<project>lib-network</project>
 		<project>lib-oscserver</project>
 		<project>lib-spiflash</project>
+		<project>lib-tlc59711dmx</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

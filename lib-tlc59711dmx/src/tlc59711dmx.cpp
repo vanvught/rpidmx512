@@ -2,7 +2,7 @@
  * @file tlc59711dmx.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ TLC59711Dmx::TLC59711Dmx(void):
 	m_nDmxFootprint(TLC59711_OUT_CHANNELS),
 	m_nBoardInstances(1),
 	m_bIsStarted(false),
+	m_bBlackout(false),
 	m_pTLC59711(0),
 	m_nSpiSpeedHz(0),
 	m_LEDType(TTLC59711_TYPE_RGB),
@@ -112,14 +113,9 @@ void TLC59711Dmx::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLeng
 		return;
 	}
 
-	while (m_pTLC59711->IsUpdating()) {
-		// wait for completion
+	if (!m_bBlackout) {
+		m_pTLC59711->Update();
 	}
-
-	//m_pTLC59711->Dump();
-
-	m_pTLC59711->Update();
-
 }
 
 bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -211,3 +207,12 @@ void TLC59711Dmx::UpdateMembers(void) {
 	m_nBoardInstances = (uint8_t) ceil((float) m_nDmxFootprint / TLC59711_OUT_CHANNELS);
 }
 
+void TLC59711Dmx::Blackout(bool bBlackout) {
+	m_bBlackout = bBlackout;
+
+	if (bBlackout) {
+		m_pTLC59711->Blackout();
+	} else {
+		m_pTLC59711->Update();
+	}
+}

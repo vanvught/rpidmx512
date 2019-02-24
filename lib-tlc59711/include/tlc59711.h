@@ -2,7 +2,7 @@
  * @file tlc59711.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include <stdint.h>
 
 #ifndef TLC59711_H_
 #define TLC59711_H_
@@ -78,15 +80,7 @@ public:
 	void SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 	void Update(void);
-
-#if defined (__circle__)
-	// returns TRUE while DMA operation is active
-	bool IsUpdating (void) const;
-#else
-	inline 	bool IsUpdating (void) const {
-		return false;
-	}
-#endif
+	void Blackout(void);
 
 	void Dump(void);
 
@@ -96,9 +90,9 @@ private:
 private:
 	uint8_t m_nBoards;
 	uint32_t m_nSpiSpeedHz;
-	uint16_t m_nClockDivider;
 	uint32_t m_nFirst32;
 	uint16_t *m_pBuffer;
+	uint16_t *m_pBufferBlackout;
 	uint32_t m_nBufSize;
 };
 

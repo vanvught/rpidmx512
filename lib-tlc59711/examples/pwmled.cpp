@@ -2,7 +2,7 @@
  * @file pwmled.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include "bcm2835.h"
+
 #include "tlc59711.h"
 
 #define MAKE16BITS(x)	((uint16_t) ((uint16_t)(x) & 0xFF) << 8 | ((x) & 0xFF))
@@ -36,6 +38,11 @@ int main(int argc, char **argv) {
 	if (getuid() != 0) {
 		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
 		return -1;
+	}
+
+	if (bcm2835_init() == 0) {
+		fprintf(stderr, "Function bcm2835_init() failed\n");
+		return -2;
 	}
 
 	TLC59711 pwmled;

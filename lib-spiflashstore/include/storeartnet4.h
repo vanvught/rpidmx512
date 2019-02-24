@@ -26,23 +26,15 @@
 #ifndef STOREARTNET4_H_
 #define STOREARTNET4_H_
 
-#if defined (LIB_SPIFLASHSTORE) || defined (ARTNET4_NODE)
-	#include "artnet4params.h"
+#include "artnet4params.h"
 
-	class StoreArtNet4: public ArtNet4ParamsStore {
-	public:
-		StoreArtNet4(void);
-		~StoreArtNet4(void);
+class StoreArtNet4: public ArtNet4ParamsStore {
+public:
+	StoreArtNet4(void);
+	~StoreArtNet4(void);
 
-		void Update(const struct TArtNet4Params *pArtNet4Params);
-		void Copy(struct TArtNet4Params *pArtNet4Params);
-	};
-#else
-	class StoreArtNet4 {
-	public:
-		StoreArtNet4(void);
-		~StoreArtNet4(void);
-	};
-#endif
+	void Update(const struct TArtNet4Params *pArtNet4Params);
+	void Copy(struct TArtNet4Params *pArtNet4Params);
+};
 
 #endif /* STOREARTNET4_H_ */

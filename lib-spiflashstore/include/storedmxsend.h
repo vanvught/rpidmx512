@@ -26,23 +26,15 @@
 #ifndef STOREDMXSEND_H_
 #define STOREDMXSEND_H_
 
-#if defined (LIB_SPIFLASHSTORE) || ((defined (ARTNET_NODE) || defined (E131_BRIDGE)) && !defined(RASPPI))
-	#include "dmxparams.h"
+#include "dmxparams.h"
 
-	class StoreDmxSend: public DMXParamsStore {
-	public:
-		StoreDmxSend(void);
-		~StoreDmxSend(void);
+class StoreDmxSend: public DMXParamsStore {
+public:
+	StoreDmxSend(void);
+	~StoreDmxSend(void);
 
-		void Update(const struct TDMXParams *pDMXParams);
-		void Copy(struct TDMXParams *pDMXParams);
-	};
-#else
-	class StoreDmxSend {
-	public:
-		StoreDmxSend(void);
-		~StoreDmxSend(void);
-	};
-#endif
+	void Update(const struct TDMXParams *pDMXParams);
+	void Copy(struct TDMXParams *pDMXParams);
+};
 
 #endif /* STOREDMXSEND_H_ */

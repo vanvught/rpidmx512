@@ -27,6 +27,7 @@
 #define TLC59711DMX_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "lightset.h"
 
@@ -47,6 +48,8 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength);
 
+	void Blackout(bool bBlackout);
+
 	void SetLEDType(TTLC59711Type tTLC59711Type);
 	TTLC59711Type GetLEDType(void) const;
 
@@ -56,6 +59,7 @@ public:
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
 	uint32_t GetSpiSpeedHz(void) const;
 
+	void Print(void);
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
@@ -84,6 +88,7 @@ private:
 	uint16_t m_nDmxFootprint;
 	uint8_t m_nBoardInstances;
 	bool m_bIsStarted;
+	bool m_bBlackout;
 	TLC59711 *m_pTLC59711;
 	uint32_t m_nSpiSpeedHz;
 	TTLC59711Type m_LEDType;

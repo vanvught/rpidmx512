@@ -26,23 +26,15 @@
 #ifndef STOREWS28XXDMX_H_
 #define STOREWS28XXDMX_H_
 
-#if defined (LIB_SPIFLASHSTORE) || (defined (ARTNET_NODE) && !defined(LTC_READER) && !defined(RASPPI))
-	#include "ws28xxdmxparams.h"
+#include "ws28xxdmxparams.h"
 
-	class StoreWS28xxDmx: public WS28xxDmxParamsStore {
-	public:
-		StoreWS28xxDmx(void);
-		~StoreWS28xxDmx(void);
+class StoreWS28xxDmx: public WS28xxDmxParamsStore {
+public:
+	StoreWS28xxDmx(void);
+	~StoreWS28xxDmx(void);
 
-		void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
-		void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
-	};
-#else
-	class StoreWS28xxDmx {
-	public:
-		StoreWS28xxDmx(void);
-		~StoreWS28xxDmx(void);
-	};
-#endif
+	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
+	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+};
 
 #endif /* STOREWS28XXDMX_H_ */

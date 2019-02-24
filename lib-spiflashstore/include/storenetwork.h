@@ -38,9 +38,6 @@ public:
 
 	void UpdateIp(uint32_t nIp);
 	void UpdateNetMask(uint32_t nNetMask);
-
-private:
-
 };
 
 #endif /* STORENETWORK_H_ */
