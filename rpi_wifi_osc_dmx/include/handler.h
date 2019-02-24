@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file handler.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef HANDLER_H_
+#define HANDLER_H_
 
-#if defined(H3)
- static const char SOFTWARE_VERSION[] = "0.9";
-#else
- static const char SOFTWARE_VERSION[] = "1.9";
-#endif
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "oscserverhandler.h"
+
+#include "ws28xxdmx.h"
+
+class Handler: public OscServerHandler  {
+public:
+	Handler(WS28xxDmx *pWS28xxDmx);
+	~Handler(void);
+
+	void Blackout(void);
+	void Update(void);
+
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
+
+private:
+	WS28xxDmx *m_pWS28xxDmx;
+	uint16_t m_nLedCount;
+	char *m_pLedTypeString;
+};
+
+#endif /* HANDLER_H_ */

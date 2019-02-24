@@ -1,8 +1,8 @@
 /**
- * @file oscws28xx.h
+ * @file handler.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCWS28XX_H_
-#define OSCWS28XX_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-#include "ws28xxstripe.h"
+#include "handler.h"
 
-#define FRAME_BUFFER_SIZE	1024
+#include "ws28xxdmx.h"
+#include "ws28xxdmxparams.h"
 
-class OSCWS28xx  {
-public:
-	OSCWS28xx(unsigned nHandle, unsigned, unsigned, const TWS28XXType, const char *);
-	~OSCWS28xx(void);
+#include "oscsend.h"
 
-	void Start(void);
-	void Stop(void);
+#include "debug.h"
 
-	void Run(void);
+Handler::Handler(WS28xxDmx *pWS28xxDmx):
+	m_pWS28xxDmx(pWS28xxDmx),
+	m_nLedCount(pWS28xxDmx->GetLEDCount()),
+	m_pLedTypeString((char *)WS28xxDmxParams::GetLedTypeString(pWS28xxDmx->GetLEDType()))
+{
+	DEBUG_ENTRY
 
-private:
-	uint32_t m_nHandle;
-	WS28XXStripe	*m_pLEDStripe;
-	char m_Os[32];
-	const char *m_pModel;
-	const char *m_pSoC;
-	int m_OutgoingPort;
-	unsigned int m_nLEDCount;
-	TWS28XXType m_nLEDType;
-	const char *m_LEDType;
-	uint8_t m_packet[FRAME_BUFFER_SIZE];
-	bool m_Blackout;
+	DEBUG_EXIT
+}
 
-	uint8_t	m_RGBWColour[4];
-};
+Handler::~Handler(void) {
+	DEBUG_ENTRY
 
-#endif /* OSCWS28XX_H_ */
+	DEBUG_EXIT
+}
+
+void Handler::Blackout(void) {
+	DEBUG_ENTRY
+
+	m_pWS28xxDmx->Blackout(true);
+
+	DEBUG_EXIT
+}
+
+void Handler::Update(void) {
+	DEBUG_ENTRY
+
+	m_pWS28xxDmx->Blackout(false);
+
+	DEBUG_EXIT
+}
+
+void Handler::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
+	DEBUG_ENTRY
+
+	OSCSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
+	OSCSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
+
+	DEBUG_EXIT
+}

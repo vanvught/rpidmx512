@@ -13,6 +13,8 @@
 		<project>lib-network</project>
 		<project>lib-osc</project>
 		<project>lib-oscserver</project>
+		<project>lib-spiflashinstall</project>
+		<project>lib-spiflashstore</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
