@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>firmware-template</project>
+		<project>h3-firmware-template</project>
 		<project>include</project>
 		<project>lib-artnet</project>
 		<project>lib-bob</project>
@@ -20,6 +21,8 @@
 		<project>lib-network</project>
 		<project>lib-rdm</project>
 		<project>lib-rdmdiscovery</project>
+		<project>lib-spiflashinstall</project>
+		<project>lib-spiflashstore</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

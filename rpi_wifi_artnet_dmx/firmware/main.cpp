@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "hardwarebaremetal.h"
 #include "networkesp8266.h"
@@ -36,19 +37,29 @@
 #include "wifi.h"
 
 #include "artnetnode.h"
-#include "artnetdiscovery.h"
 #include "artnetparams.h"
 
 #include "timecode.h"
 #include "timesync.h"
 
+// DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
+#include "artnetdiscovery.h"
 #ifndef H3
+ // Monitor Output
  #include "dmxmonitor.h"
 #endif
+// Pixel Controller
+#include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
+#include "ws28xxdmxgrouping.h"
+
+#if defined(ORANGE_PI)
+ #include "spiflashinstall.h"
+ #include "spiflashstore.h"
+#endif
 
 #include "software_version.h"
 
@@ -64,16 +75,24 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkESP8266 nw;
 	LedBlinkBaremetal lb;
+	Display display(DISPLAY_SSD1306);
 
+#if defined (ORANGE_PI)
+	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
+		SpiFlashInstall spiFlashInstall;
+	}
+
+	SpiFlashStore spiFlashStore;
+	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+#else
 	ArtNetParams artnetparams;
+#endif
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
 	}
 
 	const TOutputType tOutputType = artnetparams.GetOutputType();
-
-	Display display(0,8);
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -92,12 +111,10 @@ void notmain(void) {
 	console_puts("Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
-#if defined (HAVE_SPI)
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
-#endif
 #ifdef H3
 	console_putc('\n');
 #endif
@@ -109,11 +126,15 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
 
+#if defined (ORANGE_PI)
 	nw.Init();
+	//nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+#else
+	nw.Init();
+#endif
 
 	ArtNetNode node;
-	DMXSend dmx;
-	WS28xxDmx spi;
+
 #ifndef H3
 	DMXMonitor monitor;
 #endif
@@ -136,19 +157,87 @@ void notmain(void) {
 		node.SetTimeSyncHandler(&timesync);
 	}
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	const uint8_t nUniverse = artnetparams.GetUniverse();
 
-	if (tOutputType == OUTPUT_TYPE_DMX) {
+	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
+	node.SetDirectUpdate(false);
+
+	DMXSend dmx;
+	LightSet *pSpi;
+
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+#if defined (ORANGE_PI)
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+#else
+		WS28xxDmxParams ws28xxparms;
+#endif
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Dump();
+		}
+
+		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+
+		if (ws28xxparms.IsLedGrouping()) {
+			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+			assert(pWS28xxDmxGrouping != 0);
+			ws28xxparms.Set(pWS28xxDmxGrouping);
+			pSpi = pWS28xxDmxGrouping;
+		} else  {
+			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
+			assert(pWS28xxDmx != 0);
+			ws28xxparms.Set(pWS28xxDmx);
+			pSpi = pWS28xxDmx;
+
+			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+
+			if (pWS28xxDmx->GetLEDType() == SK6812W) {
+				if (nLedCount > 128) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 256) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 384) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
+			} else {
+				if (nLedCount > 170) {
+					node.SetDirectUpdate(true);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+				}
+				if (nLedCount > 340) {
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+				}
+				if (nLedCount > 510) {
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				}
+			}
+		}
+		node.SetOutput(pSpi);
+	}
+#ifndef H3
+	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
+		// There is support for HEX output only
+		node.SetOutput(&monitor);
+		monitor.Cls();
+		console_set_top_row(20);
+	}
+#endif
+	else {
+#if defined (ORANGE_PI)
+		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+#else
 		DMXParams dmxparams;
+#endif
 		if (dmxparams.Load()) {
 			dmxparams.Dump();
+			dmxparams.Set(&dmx);
 		}
-		dmxparams.Set(&dmx);
 
 		node.SetOutput(&dmx);
-		node.SetDirectUpdate(false);
 
-		if(artnetparams.IsRdm()) {
+		if (artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
 				console_status(CONSOLE_YELLOW, RUN_RDM);
 				display.TextStatus(RUN_RDM);
@@ -156,65 +245,21 @@ void notmain(void) {
 			}
 			node.SetRdmHandler(&discovery);
 		}
-	} else if (tOutputType == OUTPUT_TYPE_SPI) {
-		WS28xxDmxParams deviceparms;
-		if (deviceparms.Load()) {
-			deviceparms.Dump();
-		}
-		deviceparms.Set(&spi);
-
-		node.SetOutput(&spi);
-		node.SetDirectUpdate(true);
-
-		const uint16_t nLedCount = spi.GetLEDCount();
-		const uint8_t nUniverse = artnetparams.GetUniverse();
-
-		if (spi.GetLEDType() == SK6812W) {
-			if (nLedCount > 128) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-			}
-			if (nLedCount > 256) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-			}
-			if (nLedCount > 384) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-			}
-		} else {
-			if (nLedCount > 170) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-			}
-			if (nLedCount > 340) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-			}
-			if (nLedCount > 510) {
-				node.SetDirectUpdate(true);
-				node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-			}
-		}
 	}
-#ifndef H3
-	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
-		node.SetOutput(&monitor);
-		monitor.Cls();
-		console_set_top_row(20);
-	}
-#endif
 
 	node.Print();
 
-	if (tOutputType != OUTPUT_TYPE_MONITOR) {
-		console_puts("\n");
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		assert(pSpi != 0);
+		pSpi->Print();
+	} else if (tOutputType == OUTPUT_TYPE_MONITOR) {
+		// Nothing
+	} else {
+		dmx.Print();
 	}
 
-	if (tOutputType == OUTPUT_TYPE_DMX) {
-		dmx.Print();
-	} else if (tOutputType == OUTPUT_TYPE_SPI) {
-		spi.Print();
+	for (unsigned i = 0; i < 7; i++) {
+		display.ClearLine(i);
 	}
 
 	if (display.isDetected()) {
@@ -237,19 +282,24 @@ void notmain(void) {
 		}
 
 		if (wifi_get_opmode() == WIFI_STA) {
-			(void) display.Printf(2, "S: %s", wifi_get_ssid());
+			display.Printf(2, "S: %s", wifi_get_ssid());
 		} else {
-			(void) display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
+			display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 		}
 
-		uint8_t nAddress;
-		node.GetUniverseSwitch((uint8_t) 0, nAddress);
+		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 
-		(void) display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-		(void) display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		(void) display.Printf(5, "SN: %s", node.GetShortName());
-		(void) display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nAddress);
-		(void) display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
+		if (nw.IsDhcpKnown()) {
+			if (nw.IsDhcpUsed()) {
+				display.PutString(" D");
+			} else {
+				display.PutString(" S");
+			}
+		}
+
+		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+		display.Printf(5, "U: %d", nUniverse);
+		display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 	}
 
 	console_status(CONSOLE_YELLOW, START_NODE);
@@ -264,11 +314,14 @@ void notmain(void) {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		(void) node.HandlePacket();
+		node.HandlePacket();
 		if (tOutputType == OUTPUT_TYPE_MONITOR) {
 			timesync.ShowSystemTime();
 		}
 		lb.Run();
+#if defined (ORANGE_PI)
+		spiFlashStore.Flash();
+#endif
 	}
 }
 
