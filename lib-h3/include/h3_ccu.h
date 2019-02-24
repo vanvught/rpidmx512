@@ -90,7 +90,7 @@ typedef enum H3_CCU_PLL {
 extern "C" {
 #endif
 
-extern uint64_t h3_ccu_get_pll_rate(ccu_pll_t);
+extern uint32_t h3_ccu_get_pll_rate(ccu_pll_t);
 
 // NDEBUG
 extern void h3_ccu_pll_dump(void);

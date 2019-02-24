@@ -1,8 +1,8 @@
 /**
- * @file i2c_set.c
+ * @file i2c_begin.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,36 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-#if defined(__linux__)
- #include "bcm2835.h"
-#elif defined(H3)
- #include "h3_i2c.h"
-#else
- #include "bcm2835_i2c.h"
-#endif
+#include "bcm2835.h"
 
-#if defined(H3)
- 	#define FUNC_PREFIX(x) h3_##x
+static bool _begin = false;
 
-	void i2c_set_address(uint8_t address) {
-		h3_i2c_set_slave_address(address);
+bool i2c_begin(void) {
+	if (_begin) {
+		return true;
 	}
-#else
- 	#define FUNC_PREFIX(x) bcm2835_##x
 
-	void i2c_set_address(uint8_t address) {
-		bcm2835_i2c_setSlaveAddress(address);
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return false;
 	}
-#endif
 
-void i2c_set_baudrate(uint32_t baudrate) {
-	FUNC_PREFIX(i2c_set_baudrate(baudrate));
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return false;
+	} else {
+		_begin = true;
+	}
+
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+	}
+
+	return true;
 }

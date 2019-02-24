@@ -2,7 +2,7 @@
  * @file i2c.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,79 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef I2C_H_
 #define I2C_H_
 
 #include <stdint.h>
 #include <stdbool.h>
 
+#if defined(__linux__)
+ #include "bcm2835.h"
+#elif defined(H3)
+ #include "h3_i2c.h"
+#else
+ #include "bcm2835_i2c.h"
+#endif
+
 typedef enum {
 	I2C_NORMAL_SPEED = 100000,
 	I2C_FULL_SPEED = 400000
-}I2CBaudrate;
-
-typedef enum {
-	I2C_CLOCK_DIVIDER_100kHz	= 2500,		///< 2500 = 10us = 100 kHz
-	I2C_CLOCK_DIVIDER_400kHz	= 626		///< 622 = 2.504us = 399.3610 kHz
-} I2CClockDivider;
+} I2CBaudrate;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern bool i2c_begin(void);
-extern void i2c_set_address(uint8_t);
-extern void i2c_set_clockdivider(uint16_t);		// // Obsolete - Backwards compatibility with Raspberry Pi
-extern void i2c_set_baudrate(uint32_t);
+#if defined(H3)
+ 	#define FUNC_PREFIX(x) h3_##x
 
-extern bool i2c_is_connected(uint8_t);
+	inline static void i2c_set_address(uint8_t address) {
+		h3_i2c_set_slave_address(address);
+	}
+#else
+ 	#define FUNC_PREFIX(x) bcm2835_##x
 
-extern uint8_t i2c_read(char *, uint32_t);
+	inline static void i2c_set_address(uint8_t address) {
+		bcm2835_i2c_setSlaveAddress(address);
+	}
+#endif
+
+inline static bool i2c_begin(void) {
+	FUNC_PREFIX(i2c_begin());
+	return true;
+}
+
+inline static void i2c_set_baudrate(uint32_t baudrate) {
+	FUNC_PREFIX(i2c_set_baudrate(baudrate));
+}
+
+inline static uint8_t i2c_read(char *buf, uint32_t len) {
+	return FUNC_PREFIX(i2c_read((char *) buf, len));
+}
+
 extern uint8_t i2c_read_uint8(void);
 extern uint16_t i2c_read_uint16(void);
 extern uint16_t i2c_read_reg_uint16(uint8_t);
 extern uint16_t i2c_read_reg_uint16_delayus(uint8_t, uint32_t);
 
-extern void i2c_write(uint8_t);
-extern void i2c_write_nb(const char *, uint32_t);
+#if defined(__linux__) || defined(H3)
+	inline static void i2c_write(uint8_t data) {
+		(void) FUNC_PREFIX(i2c_write((char *)&data, 1));
+	}
+#else
+	extern void i2c_write(uint8_t);
+#endif
+
+inline static void i2c_write_nb(const char *data, uint32_t length) {
+	(void) FUNC_PREFIX(i2c_write(data, length));
+}
+
 extern void i2c_write_reg_uint8(uint8_t, uint8_t);
 extern void i2c_write_uint16(uint16_t);
 extern void i2c_write_reg_uint16(uint8_t, uint16_t);
 extern void i2c_write_reg_uint16_mask(uint8_t, uint16_t, uint16_t);
+
+extern bool i2c_is_connected(uint8_t);
 
 extern /*@observer@*/const char *i2c_lookup_device(uint8_t);
 

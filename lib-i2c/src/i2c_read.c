@@ -41,10 +41,6 @@
  #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
-uint8_t i2c_read(char *buf, uint32_t len) {
-	return FUNC_PREFIX(i2c_read((char *) buf, len));
-}
-
 uint8_t i2c_read_uint8(void) {
 	uint8_t buf[1] = { 0 };
 

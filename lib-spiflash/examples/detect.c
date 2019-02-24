@@ -2,7 +2,7 @@
  * @file detect.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,27 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#include "bcm2835.h"
 
 #include "spi_flash.h"
 
 int main(int argc, char **argv) {
 	int ret;
 	unsigned int cs = 0, max_hz = 0, spi_mode = 0; /* Dummy for now */
+
+
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
+	}
 
 	ret = spi_flash_probe(cs, max_hz, spi_mode);
 

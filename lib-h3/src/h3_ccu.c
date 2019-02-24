@@ -2,7 +2,7 @@
  * @file h3_ccu.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@
 #define PLL_FACTOR_M_SHIFT	0
 #define PLL_FACTOR_M_MASK 	(0x03 << PLL_FACTOR_M_SHIFT)
 
-uint64_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
+uint32_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
 	uint32_t source;
 	uint32_t value;
 
@@ -100,7 +100,7 @@ uint64_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
 	const uint32_t k = (value & PLL_FACTOR_K_MASK) >> PLL_FACTOR_K_SHIFT;
 	const uint32_t m = (value & PLL_FACTOR_M_MASK) >> PLL_FACTOR_M_SHIFT;
 
-	uint64_t freq = H3_F_24M;
+	uint32_t freq = H3_F_24M;
 	freq *= n + 1;
 	freq *= k + 1;
 	freq /= m + 1;

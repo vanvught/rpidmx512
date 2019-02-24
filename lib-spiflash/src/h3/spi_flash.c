@@ -2,7 +2,7 @@
  * @file spi_flash.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ static void spi0_begin(void) {
 	H3_SPI0->IE = 0; // Disable interrupts
 
 #ifndef NDEBUG
-	const uint64_t pll_frequency = h3_ccu_get_pll_rate(CCU_PLL_PERIPH0);
+	const uint32_t pll_frequency = h3_ccu_get_pll_rate(CCU_PLL_PERIPH0);
 	printf("pll_frequency=%ld\n", (long int) pll_frequency);
 	assert(CCU_PERIPH0_CLOCK_HZ == pll_frequency);
 #endif
@@ -272,7 +272,7 @@ static void spi0_transfern(char *buffer, uint32_t data_length) {
 	spi0_transfernb(buffer, buffer, data_length);
 }
 
-static void spi0_setup_clock(uint64_t pll_clock, uint64_t spi_clock) {
+static void spi0_setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
 // We can use CDR2, which is calculated with the formula: SPI_CLK = CCU_PERIPH0_CLOCK_HZ / (2 * (cdr + 1))
 	uint32_t cdr = pll_clock / ( 2 * spi_clock);
 	assert(cdr <= (0xFF + 1));

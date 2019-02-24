@@ -2,7 +2,7 @@
  * @file spi_flash.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,25 +25,12 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 #include "bcm2835.h"
 
 #include "../spi_flash_internal.h"
 
 int spi_init(void) {
-
-	if (getuid() != 0) {
-		fprintf(stderr, "Error: Not started with 'root'\n");
-		return -2;
-	}
-
-	if (bcm2835_init() == 0) {
-		fprintf(stderr, "Error: bcm2835_init()\n");
-		return -1;
-	}
-
 	bcm2835_spi_begin();
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
 	bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) SPI_XFER_SPEED_HZ));

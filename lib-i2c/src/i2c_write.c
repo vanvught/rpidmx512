@@ -2,7 +2,7 @@
  * @file i2c_write.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,14 +45,7 @@
  #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
-void i2c_write_nb(const char *data, uint32_t length) {
-	(void) FUNC_PREFIX(i2c_write(data, length));
-}
-
 #if defined(__linux__) || defined(H3)
-void i2c_write(uint8_t data) {
-	(void) FUNC_PREFIX(i2c_write((char *)&data, 1));
-}
 
 void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
 	char buffer[2];

@@ -45,7 +45,7 @@
 #define ALT_FUNCTION_MISO	(EXT_SPI_NUMBER == 0 ? (H3_PC0_SELECT_SPI0_MOSI) : (H3_PA16_SELECT_SPI1_MISO))
 
 static bool s_ws28xx_mode = false;
-static uint64_t s_current_speed_hz = 0; // This forces an update
+static uint32_t s_current_speed_hz = 0; // This forces an update
 static uint16_t s_current_divider = 0;	// This forces an update
 
 struct spi_status {
@@ -66,8 +66,8 @@ bool h3_spi_get_ws28xx_mode(void) {
 	return s_ws28xx_mode;
 }
 
-static uint64_t _clock_test_cdr1(uint64_t pll_clock, uint64_t spi_clock, uint32_t *ccr) {
-	uint64_t cur, best = 0;
+static uint32_t _clock_test_cdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_t *ccr) {
+	uint32_t cur, best = 0;
 	int i, best_div = 0;
 
 	const uint32_t max = CC_CDR1_MASK >> CC_CDR1_SHIFT;
@@ -75,8 +75,8 @@ static uint64_t _clock_test_cdr1(uint64_t pll_clock, uint64_t spi_clock, uint32_
 	for (i = 0; i < max; i++) {
 		cur = pll_clock / (1 << i);
 
-		const uint64_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
-		const uint64_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
+		const uint32_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
+		const uint32_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
 
 		if (d1 < d2) {
 			best = cur;
@@ -89,8 +89,8 @@ static uint64_t _clock_test_cdr1(uint64_t pll_clock, uint64_t spi_clock, uint32_
 	return best;
 }
 
-static uint64_t _clock_test_cdr2(uint64_t pll_clock, uint64_t spi_clock, uint32_t *ccr) {
-	uint64_t cur, best = 0;
+static uint32_t _clock_test_cdr2(uint32_t pll_clock, uint32_t spi_clock, uint32_t *ccr) {
+	uint32_t cur, best = 0;
 	int i, best_div = 0;
 
 	const uint32_t max = ((CC_CDR2_MASK) >> CC_CDR2_SHIFT);
@@ -98,8 +98,8 @@ static uint64_t _clock_test_cdr2(uint64_t pll_clock, uint64_t spi_clock, uint32_
 	for (i = 0; i < max; i++) {
 		cur = pll_clock / (2 * i + 1);
 
-		const uint64_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
-		const uint64_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
+		const uint32_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
+		const uint32_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
 
 		if (d1 < d2) {
 			best = cur;
@@ -117,8 +117,8 @@ static uint64_t _clock_test_cdr2(uint64_t pll_clock, uint64_t spi_clock, uint32_
 	return best;
 }
 
-void _setup_clock(uint64_t pll_clock, uint64_t spi_clock) {
-	uint64_t best_ccr1, best_ccr2;
+void _setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
+	uint32_t best_ccr1, best_ccr2;
 	uint32_t ccr, ccr1, ccr2;
 
 #ifndef NDEBUG
@@ -136,8 +136,8 @@ void _setup_clock(uint64_t pll_clock, uint64_t spi_clock) {
 	} else if (best_ccr2 == spi_clock) {
 		ccr = ccr2;
 	} else {
-		const uint64_t d1 = (spi_clock > best_ccr1) ? (spi_clock - best_ccr1) : (best_ccr1 - spi_clock);
-		const uint64_t d2 = (spi_clock > best_ccr2) ? (spi_clock - best_ccr2) : (best_ccr2 - spi_clock);
+		const uint32_t d1 = (spi_clock > best_ccr1) ? (spi_clock - best_ccr1) : (best_ccr1 - spi_clock);
+		const uint32_t d2 = (spi_clock > best_ccr2) ? (spi_clock - best_ccr2) : (best_ccr2 - spi_clock);
 #ifndef NDEBUG
 		printf("d1=%ld, d2=%ld\n", (long int)d1, (long int) d2);
 #endif
@@ -327,7 +327,7 @@ void h3_spi_end(void) {
 	h3_gpio_fsel(EXT_SPI_MISO, GPIO_FSEL_DISABLE);
 }
 
-void h3_spi_set_speed_hz(uint64_t speed_hz) {
+void h3_spi_set_speed_hz(uint32_t speed_hz) {
 	assert(speed_hz != 0);
 
 	if (__builtin_expect((s_current_speed_hz != speed_hz), 0)) {
@@ -535,11 +535,11 @@ void h3_spi_setClockDivider(uint16_t divider) {
 	assert(divider != 0);
 
 	if (__builtin_expect((s_current_divider != divider), 0)) {
-		const uint64_t freq = (uint64_t) BCM2835_CORE_CLK_HZ / divider;
+		const uint32_t freq = (uint32_t) BCM2835_CORE_CLK_HZ / divider;
 #ifndef NDEBUG
 		printf("divider=%d, freq=%ld\n", divider, (long int) freq);
 #endif
 		s_current_divider = divider; // It is expected that the function h3_spi_set_speed_hz is not used in RPi code
-		_setup_clock((uint64_t) CCU_PERIPH0_CLOCK_HZ, freq);
+		_setup_clock((uint32_t) CCU_PERIPH0_CLOCK_HZ, freq);
 	}
 }
