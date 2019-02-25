@@ -1,9 +1,6 @@
-universe=1
-#net=1
-output=slush
-#short_name=AvV
-#long_name=AvV ArtNet Node
-#manufacturer_id=7fff
-#manufacturer_id=414C
-#oem_value=0000
-#oem_value=280a
+universe_port_a=1
+universe_port_b=2
+universe_port_c=3
+protocol_port_c=sacn
+universe_port_d=4
+protocol_port_d=sacn

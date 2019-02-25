@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>lib-artnet</project>
+		<project>lib-artnet4</project>
 		<project>lib-dmxmonitor</project>
 		<project>lib-hal</project>
 		<project>lib-ledblink</project>

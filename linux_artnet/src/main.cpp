@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,12 @@
 #include "networklinux.h"
 #include "ledblinklinux.h"
 
-#include "artnetnode.h"
+#include "artnet4node.h"
 #include "artnetparams.h"
+#include "artnet4params.h"
 
 #include "dmxmonitor.h"
+#include "dmxmonitorparams.h"
 
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
@@ -60,7 +62,7 @@ int main(int argc, char **argv) {
 	LedBlinkLinux lb;
 
 	if (argc < 2) {
-		printf("Usage: %s ip_address|interface_name [max_dmx_channels]\n", argv[0]);
+		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
 	}
 
@@ -74,12 +76,18 @@ int main(int argc, char **argv) {
 
 #if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
+	ArtNet4Params artnet4params((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
 #else
+	ArtNet4Params artnet4params;
 	ArtNetParams artnetparams;
 #endif
 
-	ArtNetNode node;
+	if (artnet4params.Load()) {
+		artnet4params.Dump();
+	}
+
+	ArtNet4Node node(artnet4params.IsMapUniverse0());
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -87,19 +95,21 @@ int main(int argc, char **argv) {
 	}
 
 	if(artnetparams.IsRdm()) {
-		puts("Art-Net 3 Node - Real-time DMX Monitor / RDM Responder {1 Universe}");
+		printf("Art-Net %d Node - Real-time DMX Monitor / RDM Responder {1 Universe}\n", node.GetVersion());
 	} else {
-		puts("Art-Net 3 Node - Real-time DMX Monitor {4 Universes}");
+		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	DMXMonitor monitor;
+	if (fopen("direct.update", "r") != NULL) {
+		node.SetDirectUpdate(true);
+	} // No worries about closing this file pointer
 
-	if (argc == 3) {
-		uint16_t max_channels = atoi(argv[2]);
-		if (max_channels > 512) {
-			max_channels = 512;
-		}
-		monitor.SetMaxDmxChannels(max_channels);
+	DMXMonitor monitor;
+	DMXMonitorParams params;
+
+	if (params.Load()) {
+		params.Dump();
+		params.Set(&monitor);
 	}
 
 	node.SetOutput(&monitor);
@@ -120,7 +130,7 @@ int main(int argc, char **argv) {
 		bool bIsSetIndividual = false;
 		bool bIsSet;
 
-		for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 			nAddress = artnetparams.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
@@ -163,7 +173,7 @@ int main(int argc, char **argv) {
 	node.Start();
 
 	for (;;) {
-		(void) node.HandlePacket();
+		node.HandlePacket();
 		identify.Run();
 #if defined (RASPPI)
 		spiFlashStore.Flash();
