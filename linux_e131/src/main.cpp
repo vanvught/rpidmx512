@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,10 @@
 #include "ledblinklinux.h"
 
 #include "e131bridge.h"
-#include "e131uuid.h"
 #include "e131params.h"
 
 #include "dmxmonitor.h"
+#include "dmxmonitorparams.h"
 
 #if defined (RASPPI)
  #include "spiflashstore.h"
@@ -50,27 +50,17 @@ int main(int argc, char **argv) {
 	LedBlinkLinux lb;
 
 	if (argc < 2) {
-		printf("Usage: %s ip_address|interface_name [max_dmx_channels]\n", argv[0]);
+		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
 	}
 
 	uint8_t nTextLength;
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
-	puts("sACN E1.31 Real-time DMX Monitor");
+	puts("sACN E1.31 Real-time DMX Monitor {4 Universes}");
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
-	}
-
-	DMXMonitor monitor;
-
-	if (argc == 3) {
-		uint16_t max_channels = atoi(argv[2]);
-		if (max_channels > 512) {
-			max_channels = 512;
-		}
-		monitor.SetMaxDmxChannels(max_channels);
 	}
 
 #if defined (RASPPI)
@@ -81,40 +71,63 @@ int main(int argc, char **argv) {
 	E131Params e131params;
 #endif
 
-	if (e131params.Load()) {
-		e131params.Dump();
-	}
-
-	uuid_t uuid;
-
-	if (e131params.isHaveCustomCid()) {
-		char uuid_str[UUID_STRING_LENGTH + 1];
-		memcpy(uuid_str, e131params.GetCidString(), UUID_STRING_LENGTH);
-		uuid_str[UUID_STRING_LENGTH] = '\0';
-		uuid_parse((const char *)uuid_str, uuid);
-	} else {
-		E131Uuid e131uuid;
-		e131uuid.GetHardwareUuid(uuid);
-	}
-
 	E131Bridge bridge;
 
-	bridge.SetCid(uuid);
-	bridge.SetUniverse(e131params.GetUniverse());
-	bridge.SetMergeMode(e131params.GetMergeMode());
+	if (e131params.Load()) {
+		e131params.Dump();
+		e131params.Set(&bridge);
+	}
+
+	if (fopen("direct.update", "r") != NULL) {
+		bridge.SetDirectUpdate(true);
+	}
+
+	DMXMonitor monitor;
+	DMXMonitorParams params;
+
+	if (params.Load()) {
+		params.Dump();
+		params.Set(&monitor);
+	}
+
 	bridge.SetOutput(&monitor);
+
+	uint16_t nUniverse;
+	bool bIsSetIndividual = false;
+	bool bIsSet;
+
+	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		nUniverse = e131params.GetUniverse(i, bIsSet);
+
+		if (bIsSet) {
+			bridge.SetUniverse(i, E131_OUTPUT_PORT, nUniverse);
+			bIsSetIndividual = true;
+		}
+	}
+
+	if (!bIsSetIndividual) {
+		bridge.SetUniverse(0, E131_OUTPUT_PORT, 0 + e131params.GetUniverse());
+		bridge.SetUniverse(1, E131_OUTPUT_PORT, 1 + e131params.GetUniverse());
+		bridge.SetUniverse(2, E131_OUTPUT_PORT, 2 + e131params.GetUniverse());
+		bridge.SetUniverse(3, E131_OUTPUT_PORT, 3 + e131params.GetUniverse());
+	}
 
 	nw.Print();
 	bridge.Print();
 
 	bridge.Start();
+
 	lb.SetMode(LEDBLINK_MODE_NORMAL);
 
-	for (;;) {
-		(void) bridge.Run();
 #if defined (RASPPI)
-		spiFlashStore.Flash();
+	while (spiFlashStore.Flash())
+		;
+
+	spiFlashStore.Dump();
 #endif
+
+	for (;;) {
+		bridge.Run();
 	}
 
 	return 0;
