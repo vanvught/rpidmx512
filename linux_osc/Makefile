@@ -1,9 +1,9 @@
 #
-DEFINES = NDEBUG
+DEFINES = ENABLE_SPIFLASH #NDEBUG
 #
-LIBS = osc
+LIBS = oscserver osc dmxmonitor lightset debug artnet ledblink
 #
-SRCDIR = src
+SRCDIR = src lib
 
 include ../linux-template/Rules.mk
 

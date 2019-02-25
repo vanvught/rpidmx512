@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file handler.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef HANDLER_H_
+#define HANDLER_H_
 
-static const char SOFTWARE_VERSION[] = "1.6";
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "oscserverhandler.h"
+
+class Handler: public OscServerHandler  {
+public:
+	Handler(void);
+	~Handler(void);
+
+	void Blackout(void);
+	void Update(void);
+
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
+};
+
+#endif /* HANDLER_H_ */

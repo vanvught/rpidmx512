@@ -3,8 +3,10 @@
 	<name>linux_osc</name>
 	<comment></comment>
 	<projects>
+		<project>lib-dmxmonitor</project>
 		<project>lib-hal</project>
-		<project>lib-osc</project>
+		<project>lib-oscserver</project>
+		<project>lib-spiflashstore</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

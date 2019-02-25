@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,122 +26,85 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <time.h>
-#include <sys/time.h>
+#include <stdlib.h>
 
 #include "hardwarelinux.h"
 #include "networklinux.h"
 
-#include "osc.h"
-#include "oscsend.h"
-#include "oscmessage.h"
-#include "oscparams.h"
+#include "handler.h"
+
+#include "oscserver.h"
+#include "oscserverparms.h"
+
+#include "dmxmonitor.h"
+#include "dmxmonitorparams.h"
+
+#if defined (RASPPI)
+ #include "spiflashstore.h"
+#endif
 
 #include "software_version.h"
 
 int main(int argc, char **argv) {
 	HardwareLinux hw;
 	NetworkLinux nw;
-	uint8_t nTextLength;
-	OSCParams oscparms;
-	uint8_t buffer[4096];
-	uint32_t nRemoteIp;
-	uint16_t nRemotePort;
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
 	}
 
+#if defined (RASPPI)
+	SpiFlashStore spiFlashStore;
+	OSCServerParams oscparms((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
+	spiFlashStore.Dump();
+#else
+	OSCServerParams oscparms;
+#endif
+
+	OscServer server;
+
 	if (oscparms.Load()) {
 		oscparms.Dump();
+		oscparms.Set(&server);
 	}
 
-	const uint16_t nIncomingPort = oscparms.GetIncomingPort();
-	const uint16_t nOutgoingPort = oscparms.GetOutgoingPort();
-
+	uint8_t nTextLength;
 	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
-	printf("OSC, Incoming port: %d, Outgoing port: %d\n", nIncomingPort, nOutgoingPort);
+	puts("OSC Real-time DMX Monitor");
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
 
-	const int32_t nHandle = nw.Begin(nIncomingPort);
+	Handler handler;
+	server.SetOscServerHandler(&handler);
+
+	DMXMonitor monitor;
+	DMXMonitorParams params;
+
+	if (params.Load()) {
+		params.Dump();
+		params.Set(&monitor);
+	}
+
+	server.SetOutput(&monitor);
+
 	nw.Print();
+	server.Print();
+
+	server.Start();
+
+#if defined (RASPPI)
+	while (spiFlashStore.Flash())
+		;
+
+	spiFlashStore.Dump();
+#endif
 
 	for (;;) {
-		const int nBytesReceived = nw.RecvFrom(nHandle, buffer, sizeof buffer, &nRemoteIp, &nRemotePort);
-
-		if (nBytesReceived > 0) {
-			struct timeval tv;
-			gettimeofday(&tv, NULL);
-			struct tm ltm = *localtime(&tv.tv_sec);
-
-			printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.3d [" IPSTR "] ", ltm.tm_mday, ltm.tm_mon + 1, ltm.tm_year + 1900, ltm.tm_hour, ltm.tm_min, ltm.tm_sec, (int)((double)tv.tv_usec / 1000), IP2STR(nRemoteIp));
-
-			if (OSC::isMatch((const char*) buffer, "/ping")) {
-				OSCSend MsgSend(nHandle, nRemoteIp, nOutgoingPort, "/pong", 0);
-				printf("ping->pong\n");
-			} else {
-				OSCMessage Msg((char *) buffer, nBytesReceived);
-				printf("path : %s\n", OSC::GetPath((char*) buffer, nBytesReceived));
-				int argc = Msg.GetArgc();
-
-				for (int i = 0; i < argc; i++) {
-					int type = (int) Msg.GetType(i);
-
-					printf("\targ %d, ", i);
-
-					switch (type) {
-					case OSC_INT32: {
-						printf("int, %d", Msg.GetInt(i));
-						break;
-					}
-					case OSC_FLOAT: {
-						printf("float, %f", Msg.GetFloat(i));
-						break;
-					}
-					case OSC_STRING: {
-						printf("string, %s", Msg.GetString(i));
-						break;
-					}
-					case OSC_BLOB: {
-						OSCBlob blob = Msg.GetBlob(i);
-
-						int size = (int) blob.GetDataSize();
-						printf("blob, size %d, [", (int) size);
-
-						for (int j = 0; j < size && j < 16; j++) {
-							printf("%02x", blob.GetByte(j));
-							if (j + 1 < size) {
-								printf(" ");
-							}
-						}
-
-						printf("]");
-						break;
-					}
-					}
-
-					const int nResult = Msg.GetResult();
-
-					if (nResult != OSC_OK) {
-						printf(", result = %d\n", nResult);
-					} else {
-						puts("");
-					}
-				}
-			}
-
-			if (OSC::isMatch((const char*) buffer, "/2")) {
-				unsigned char nLength;
-				OSCSend MsgSendModel(nHandle, nRemoteIp, nOutgoingPort, "/info/model", "s", Hardware::Get()->GetBoardName(nLength));
-				OSCSend MsgSendInfo(nHandle, nRemoteIp, nOutgoingPort, "/info/os", "s", Hardware::Get()->GetSysName(nLength));
-				OSCSend MsgSendSoc(nHandle, nRemoteIp, nOutgoingPort, "/info/soc", "s", Hardware::Get()->GetSocName(nLength));
-			}
-		}
+		server.Run();
 	}
 
 	return 0;
