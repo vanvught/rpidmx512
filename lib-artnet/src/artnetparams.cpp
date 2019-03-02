@@ -69,7 +69,7 @@ static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a",
 		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 static const char PARAMS_PROTOCOL[] ALIGNED = "protocol";
 static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a",
-		"protocol_port_b", "protocol_port_a", "protocol_port_d" };
+		"protocol_port_b", "protocol_port_c", "protocol_port_d" };
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tArtNetParams;
