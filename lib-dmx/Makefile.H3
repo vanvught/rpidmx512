@@ -1,5 +1,5 @@
 #
-DEFINES = NDEBUG #LOGIC_ANALYZER #DO_NOT_USE_UART0 
+DEFINES = NDEBUG #DO_NOT_USE_UART0 
 #
 EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include
 #

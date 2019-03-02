@@ -631,6 +631,7 @@ static void dmx_start_data(void) {
 		dmx_receive_state = IDLE;
 
 		irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_receive);
+		H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
 
 		while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 			(void) EXT_UART->O00.RBR;
@@ -638,6 +639,8 @@ static void dmx_start_data(void) {
 
 		uart_disable_fifo();
 		__enable_fiq();
+
+		isb();
 
 		break;
 	default:
@@ -758,10 +761,15 @@ void dmx_init(void) {
 	h3_gpio_clr(dmx_data_direction_gpio_pin);	// 0 = input, 1 = output
 
 #ifdef LOCIG_ANALYZER
+	h3_gpio_fsel(12, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(12); // FIQ
+	h3_gpio_fsel(11, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(11); // BREAK
+	h3_gpio_fsel(6, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(6);  // DR
+	h3_gpio_fsel(14, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(14); // SC
+	h3_gpio_fsel(16, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(16); // DATA
 #endif
 
