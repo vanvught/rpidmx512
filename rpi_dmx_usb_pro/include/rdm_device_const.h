@@ -38,7 +38,7 @@ static const char DEVICE_SUPPORTED_LANGUAGE[] ALIGNED = "en";
 #if defined(H3)
  #include "h3_board.h"
  static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " DMX USB Pro";
- static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.1";
+ static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "1.2";
 #else
  static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi DMX USB Pro";
  static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.2";
