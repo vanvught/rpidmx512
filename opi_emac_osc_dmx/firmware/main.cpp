@@ -45,8 +45,11 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
-
 #include "handler.h"
+// PWM Led
+#include "tlc59711dmxparams.h"
+#include "tlc59711dmx.h"
+#include "handlertlc59711.h"
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -74,15 +77,12 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
-#endif
-
-	OscServer server;
-
-#if defined (ORANGE_PI)
 	OSCServerParams params((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
 #else
 	OSCServerParams params;
 #endif
+
+	OscServer server;
 
 	if (params.Load()) {
 		params.Dump();
@@ -111,49 +111,74 @@ void notmain(void) {
 
 	DMXSend dmx;
 	LightSet *pSpi;
-	Handler *pHandler;
+	OscServerHandler *pHandler;
 
 	if (tOutputType == OSC_OUTPUT_TYPE_SPI) {
+		bool isLedTypeSet = false;
+
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+		TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) spiFlashStore.GetStoreTLC59711());
 #else
-		WS28xxDmxParams ws28xxparms;
+		TLC59711DmxParams pwmledparms;
 #endif
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Dump();
+
+		if (pwmledparms.Load()) {
+			if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
+				TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
+				assert(pTLC59711Dmx != 0);
+				pwmledparms.Dump();
+				pwmledparms.Set(pTLC59711Dmx);
+				pSpi = pTLC59711Dmx;
+
+				pHandler = new HandlerTLC59711(pTLC59711Dmx); // TODO
+				assert(pHandler != 0);
+
+				//FIXME display.Printf(7,
+			}
 		}
 
-		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
-
-		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-			display.Printf(7, "%s:%d G", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
-			pHandler = new Handler(pWS28xxDmxGrouping);
-			assert(pHandler != 0);
-		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
-
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
-
-			// For the time being, just 1 Universe
-			if (pWS28xxDmx->GetLEDType() == SK6812W) {
-				if (nLedCount > 128) {
-					pWS28xxDmx->SetLEDCount(128);
-				}
-			} else {
-				if (nLedCount > 170) {
-					pWS28xxDmx->SetLEDCount(170);
-				}
+		if (!isLedTypeSet) {
+#if defined (ORANGE_PI)
+			WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+#else
+			WS28xxDmxParams ws28xxparms;
+#endif
+			if (ws28xxparms.Load()) {
+				ws28xxparms.Dump();
 			}
-			display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
-			pHandler = new Handler(pWS28xxDmx);
-			assert(pHandler != 0);
+
+			display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+
+			if (ws28xxparms.IsLedGrouping()) {
+				WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+				assert(pWS28xxDmxGrouping != 0);
+				ws28xxparms.Set(pWS28xxDmxGrouping);
+				pSpi = pWS28xxDmxGrouping;
+				display.Printf(7, "%s:%d G", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+				pHandler = new Handler(pWS28xxDmxGrouping);
+				assert(pHandler != 0);
+			} else  {
+				WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
+				assert(pWS28xxDmx != 0);
+				ws28xxparms.Set(pWS28xxDmx);
+				pSpi = pWS28xxDmx;
+
+				const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+
+				// For the time being, just 1 Universe
+				if (pWS28xxDmx->GetLEDType() == SK6812W) {
+					if (nLedCount > 128) {
+						pWS28xxDmx->SetLEDCount(128);
+					}
+				} else {
+					if (nLedCount > 170) {
+						pWS28xxDmx->SetLEDCount(170);
+					}
+				}
+				display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
+				pHandler = new Handler(pWS28xxDmx);
+				assert(pHandler != 0);
+			}
 		}
 
 		server.SetOutput(pSpi);

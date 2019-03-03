@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file handlertlc59711.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef HANDLERTLC59711_H_
+#define HANDLERTLC59711_H_
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "oscserverhandler.h"
+
+#include "tlc59711dmx.h"
+
+class HandlerTLC59711: public OscServerHandler  {
+public:
+	HandlerTLC59711(TLC59711Dmx *pTLC59711Dmx);
+	~HandlerTLC59711(void);
+
+	void Blackout(void);
+	void Update(void);
+
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
+
+private:
+	TLC59711Dmx *m_pTLC59711Dmx;
+	uint16_t m_nLedCount;
+	char *m_pLedTypeString;
+};
+
+#endif /* HANDLERTLC59711_H_ */

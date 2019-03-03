@@ -8,6 +8,7 @@
 		<project>lib-debug</project>
 		<project>lib-display</project>
 		<project>lib-oscserver</project>
+		<project>lib-tlc59711dmx</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

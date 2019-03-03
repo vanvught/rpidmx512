@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file handlertlc59711.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
+#include <assert.h>
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include "handlertlc59711.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "tlc59711dmx.h"
+#include "tlc59711dmxparams.h"
+
+#include "oscsend.h"
+
+#include "debug.h"
+
+HandlerTLC59711::HandlerTLC59711(TLC59711Dmx *pTLC59711Dmx):
+	m_pTLC59711Dmx(pTLC59711Dmx),
+	m_nLedCount(pTLC59711Dmx->GetLEDCount()),
+	m_pLedTypeString((char *)TLC59711DmxParams::GetLedTypeString(pTLC59711Dmx->GetLEDType()))
+{
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+HandlerTLC59711::~HandlerTLC59711(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void HandlerTLC59711::Blackout(void) {
+	DEBUG_ENTRY
+
+	m_pTLC59711Dmx->Blackout(true);
+
+	DEBUG_EXIT
+}
+
+void HandlerTLC59711::Update(void) {
+	DEBUG_ENTRY
+
+	m_pTLC59711Dmx->Blackout(false);
+
+	DEBUG_EXIT
+}
+
+void HandlerTLC59711::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
+	DEBUG_ENTRY
+
+	OSCSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
+	OSCSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
+
+	DEBUG_EXIT
+}

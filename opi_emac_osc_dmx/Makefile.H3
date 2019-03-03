@@ -1,7 +1,7 @@
 #
 DEFINES = OSC_SERVER EMAC NDEBUG
 #
-LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx ledblink lightset artnet
+LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 ledblink lightset
 #
 SRCDIR = firmware lib
 
