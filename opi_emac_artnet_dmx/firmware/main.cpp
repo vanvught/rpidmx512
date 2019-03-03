@@ -48,6 +48,9 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+// PWM Led
+#include "tlc59711dmxparams.h"
+#include "tlc59711dmx.h"
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -130,8 +133,6 @@ void notmain(void) {
 
 #if defined (ORANGE_PI)
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
-
-	spiFlashStore.Dump();
 #endif
 
 	const uint8_t nUniverse = artnetparams.GetUniverse();
@@ -143,51 +144,73 @@ void notmain(void) {
 	LightSet *pSpi;
 
 	if (tOutputType == OUTPUT_TYPE_SPI) {
+		bool isLedTypeSet = false;
+
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+		TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) spiFlashStore.GetStoreTLC59711());
 #else
-		WS28xxDmxParams ws28xxparms;
+		TLC59711DmxParams pwmledparms;
 #endif
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Dump();
+
+		if (pwmledparms.Load()) {
+			if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
+				TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
+				assert(pTLC59711Dmx != 0);
+				pwmledparms.Dump();
+				pwmledparms.Set(pTLC59711Dmx);
+				pSpi = pTLC59711Dmx;
+
+				//FIXME display.Printf(7,
+			}
 		}
 
-		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+		if (!isLedTypeSet) {
+#if defined (ORANGE_PI)
+			WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+#else
+			WS28xxDmxParams ws28xxparms;
+#endif
+			if (ws28xxparms.Load()) {
+				ws28xxparms.Dump();
+			}
 
-		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
+			display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
 
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+			if (ws28xxparms.IsLedGrouping()) {
+				WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+				assert(pWS28xxDmxGrouping != 0);
+				ws28xxparms.Set(pWS28xxDmxGrouping);
+				pSpi = pWS28xxDmxGrouping;
+			} else  {
+				WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
+				assert(pWS28xxDmx != 0);
+				ws28xxparms.Set(pWS28xxDmx);
+				pSpi = pWS28xxDmx;
 
-			if (pWS28xxDmx->GetLEDType() == SK6812W) {
-				if (nLedCount > 128) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 256) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 384) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-				}
-			} else {
-				if (nLedCount > 170) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 340) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 510) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+				const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+
+				if (pWS28xxDmx->GetLEDType() == SK6812W) {
+					if (nLedCount > 128) {
+						node.SetDirectUpdate(true);
+						node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+					}
+					if (nLedCount > 256) {
+						node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+					}
+					if (nLedCount > 384) {
+						node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+					}
+				} else {
+					if (nLedCount > 170) {
+						node.SetDirectUpdate(true);
+						node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+					}
+					if (nLedCount > 340) {
+						node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+					}
+					if (nLedCount > 510) {
+						node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+					}
 				}
 			}
 		}
@@ -225,33 +248,36 @@ void notmain(void) {
 		dmx.Print();
 	}
 
-	if (display.isDetected()) {
-		display.Cls();
-		display.Write(1, "Eth Art-Net 3 ");
-
-		if (tOutputType == OUTPUT_TYPE_SPI) {
-			display.PutString("Pixel");
-		} else {
-			if (artnetparams.IsRdm()) {
-				display.PutString("RDM");
-			} else {
-				display.PutString("DMX");
-			}
-		}
-
-		display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
-		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-		if (nw.IsDhcpKnown()) {
-			if (nw.IsDhcpUsed()) {
-				display.PutString(" D");
-			} else {
-				display.PutString(" S");
-			}
-		}
-		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(),node.GetSubnetSwitch(), nUniverse);
-		display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+	for (unsigned i = 0; i < 7; i++) {
+		display.ClearLine(i);
 	}
+	
+	display.Write(1, "Eth Art-Net 3 ");
+
+	if (tOutputType == OUTPUT_TYPE_SPI) {
+		display.PutString("Pixel");
+	} else {
+		if (artnetparams.IsRdm()) {
+			display.PutString("RDM");
+		} else {
+			display.PutString("DMX");
+		}
+	}
+
+	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+	
+	if (nw.IsDhcpKnown()) {
+		if (nw.IsDhcpUsed()) {
+			display.PutString(" D");
+		} else {
+			display.PutString(" S");
+		}
+	}
+	
+	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+	display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nUniverse);
+	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
 	display.TextStatus(START_NODE);

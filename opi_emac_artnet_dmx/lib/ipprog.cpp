@@ -2,7 +2,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,9 @@
 
 #include "display.h"
 
-#include "spiflashstore.h"
+#if defined(ORANGE_PI)
+ #include "spiflashstore.h"
+#endif
 
 union uip {
 	uint32_t u32;
@@ -45,7 +47,9 @@ union uip {
 } static ip_union;
 
 IpProg::IpProg(void) {
+#if defined(ORANGE_PI)
 	assert(SpiFlashStore::Get() != 0);
+#endif
 }
 
 IpProg::~IpProg(void) {
@@ -72,7 +76,9 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
 
 		Network::Get()->SetIp(ip_union.u32);
+#if defined(ORANGE_PI)
 		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
+#endif
 		Display::Get()->Printf(3, "IP: " IPSTR " S", IP2STR(ip_union.u32));
 
 #ifndef NDEBUG
