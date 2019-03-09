@@ -2,7 +2,7 @@
  * @file ws28xx.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
 #if defined(__linux__)
  #include "bcm2835.h"
@@ -33,6 +36,12 @@
  #include "h3_spi.h"
 #else
  #include "bcm2835_spi.h"
+#endif
+
+#if defined(H3)
+ 	#define FUNC_PREFIX(x) h3_##x
+#else
+ 	#define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
 #include "ws28xx.h"
@@ -43,9 +52,9 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	m_nClockSpeedHz(nClockSpeed),
 	m_nGlobalBrightness(0xFF),
 	m_bUpdating(false),
-	m_nHighCode(Type == WS2812B ? 0xF8 : 0xF0)
+	m_nHighCode(Type == WS2812B ? 0xF8 : (Type == UCS1903 ? 0xFC : 0xF0))
 {
-	assert(m_tLEDType <= APA102);
+	assert(m_tLEDType <= UCS1903);
 	assert(m_nLEDCount > 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
@@ -54,7 +63,7 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 		m_nBufSize = nLEDCount * 3;
 	}
 
-	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W) {
+	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903) {
 		m_nBufSize *= 8;
 	}
 
@@ -85,23 +94,25 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	}
 #endif
 
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());
 
 	if ((Type == WS2801) || (Type == APA102)){
 		if (nClockSpeed == 0) {
 			m_nClockSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
-			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) WS2801_SPI_SPEED_DEFAULT_HZ));
-		} else if (nClockSpeed < WS2801_SPI_SPEED_MAX_HZ) {
-			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / nClockSpeed));
-		} else {
+		} else if (nClockSpeed > WS2801_SPI_SPEED_MAX_HZ) {
 			m_nClockSpeedHz = WS2801_SPI_SPEED_MAX_HZ;
-			bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) WS2801_SPI_SPEED_MAX_HZ));
 		}
 	} else {
-		bcm2835_spi_setClockDivider((uint16_t) ((uint32_t) BCM2835_CORE_CLK_HZ / (uint32_t) 6400000));
+		m_nClockSpeedHz = 6400000;
 	}
 
-	Update();
+	FUNC_PREFIX(spi_set_speed_hz(m_nClockSpeedHz));
+
+	Blackout();
+
+#ifndef NDEBUG
+	printf("m_tLEDType=%d, m_nLEDCount=%d, m_nClockSpeedHz=%d, m_nHighCode=%X\n", m_tLEDType, m_nLEDCount, m_nClockSpeedHz, m_nHighCode);
+#endif
 }
 
 WS28xx::~WS28xx(void) {
@@ -115,13 +126,11 @@ WS28xx::~WS28xx(void) {
 void WS28xx::Update(void) {
 	assert (m_pBuffer != 0);
 
-	__sync_synchronize();
-	bcm2835_spi_writenb((char *) m_pBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_writenb((char *) m_pBuffer, m_nBufSize));
 }
 
 void WS28xx::Blackout(void) {
 	assert (m_pBlackoutBuffer != 0);
 
-	__sync_synchronize();
-	bcm2835_spi_writenb((char *) m_pBlackoutBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_writenb((char *) m_pBlackoutBuffer, m_nBufSize));
 }

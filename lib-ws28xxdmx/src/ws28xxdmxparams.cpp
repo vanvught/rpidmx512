@@ -59,9 +59,9 @@ static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 static const char PARAMS_CLOCK_SPEED_HZ[] ALIGNED = "clock_speed_hz";
 static const char PARAMS_GLOBAL_BRIGHTNESS[] ALIGNED = "global_brightness";
 
-#define LED_TYPES_COUNT 			9
+#define LED_TYPES_COUNT 			10
 #define LED_TYPES_MAX_NAME_LENGTH 	8
-static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0", "SK6812\0", "SK6812W", "APA102\0" };
+static const char led_types[LED_TYPES_COUNT][LED_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0", "SK6812\0", "SK6812W", "APA102\0", "UCS1903" };
 
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;
@@ -94,6 +94,20 @@ bool WS28xxDmxParams::Load(void) {
 	}
 
 	return true;
+}
+
+void WS28xxDmxParams::Load(const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pWS28xxParamsStore != 0);
+
+	m_tWS28xxParams.nSetList = 0;
+
+	ReadConfigFile config(WS28xxDmxParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pWS28xxParamsStore->Update(&m_tWS28xxParams);
 }
 
 void WS28xxDmxParams::callbackFunction(const char *pLine) {

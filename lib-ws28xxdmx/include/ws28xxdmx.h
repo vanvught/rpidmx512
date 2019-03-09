@@ -62,11 +62,11 @@ public:
 		return m_nLedCount;
 	}
 
-	 void SetClockSpeedHz(uint32_t nClockSpeedHz) {
+	void SetClockSpeedHz(uint32_t nClockSpeedHz) {
 		m_nClockSpeedHz = nClockSpeedHz;
 	}
 
-	 uint32_t GetClockSpeedHz(void) const {
+	uint32_t GetClockSpeedHz(void) const {
 		return m_nClockSpeedHz;
 	}
 
@@ -83,11 +83,11 @@ public:
 public: // RDM
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 
-	 uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
-	 uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint(void) {
 		return m_nDmxFootprint;
 	}
 

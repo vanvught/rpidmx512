@@ -2,7 +2,7 @@
  * @file devicesparams.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,30 +56,33 @@ public:
 	~WS28xxDmxParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
 	void Set(WS28xxDmx *);
+
 	void Dump(void);
 
-	 TWS28XXType GetLedType(void) {
+	TWS28XXType GetLedType(void) {
 		return m_tWS28xxParams.tLedType;
 	}
 
-	 uint16_t GetLedCount(void) {
+	uint16_t GetLedCount(void) {
 		return m_tWS28xxParams.nLedCount;
 	}
 
-	 uint32_t GetClockSpeedHz(void) {
+	uint32_t GetClockSpeedHz(void) {
 		return m_tWS28xxParams.nClockSpeedHz;
 	}
 
-	 uint8_t GetGlobalBrightness(void) {
+	uint8_t GetGlobalBrightness(void) {
 		return m_tWS28xxParams.nGlobalBrightness;
 	}
 
-	 uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress(void) {
 		return m_tWS28xxParams.nDmxStartAddress;
 	}
 
-	 bool IsLedGrouping(void) {
+	bool IsLedGrouping(void) {
 		return m_tWS28xxParams.bLedGrouping;
 	}
 
@@ -88,7 +91,7 @@ public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *s);
+    void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const;
 
 private:
