@@ -2,7 +2,7 @@
  * @file micros.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +25,8 @@
 
 #include "stdint.h"
 
-#if defined(__linux__)
-#include <time.h>
-#include <sys/time.h>
+#include "bcm2835.h"
+
 uint32_t micros(void) {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * (__time_t) 1000000) + tv.tv_usec;
+	return BCM2835_ST->CLO;
 }
-#else
-#if defined ( RPI1 )
-#define BCM2835_PERI_BASE		0x20000000
-#else
-#define BCM2835_PERI_BASE		0x3F000000
-#endif
-#define BCM2835_ST_BASE			(BCM2835_PERI_BASE + 0x003000)
-uint32_t micros(void) {
-	return *(volatile uint32_t *) (BCM2835_ST_BASE + 0x04);
-}
-#endif
