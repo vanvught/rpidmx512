@@ -1,8 +1,8 @@
 /**
- * @file console.h
+ * @file console_fb.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CONSOLE_H_
-#define H3_CONSOLE_H_
+#ifndef CONSOLE_FB_H_
+#define CONSOLE_FB_H_
 
-// ANSI colors
+#if !defined ORANGE_PI_ONE
+ #error Support for Orange Pi One only
+#endif
+
+#include <stdint.h>
+
+#define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
+
+// some RGB color definitions
 typedef enum {
-	CONSOLE_BLACK = 0,
-	CONSOLE_RED = 1,
-	CONSOLE_GREEN = 2,
-	CONSOLE_YELLOW = 3,
-	CONSOLE_BLUE = 4,
-	CONSOLE_MAGENTA = 5
-,	CONSOLE_CYAN = 6,
-	CONSOLE_WHITE = 7,
-	CONSOLE_DEFAULT = 9
+	CONSOLE_BLACK = 0x00000000,		///<   0,   0,   0
+	CONSOLE_BLUE = 0x000000FF,		///<   0,   0, 255
+	CONSOLE_GREEN = 0x0000FF00,		///<   0, 255,   0
+	CONSOLE_CYAN = 0x0000FFFF,		///<   0, 255, 255
+	CONSOLE_RED = 0x00FF0000,		///< 255,   0,   0
+	CONSOLE_YELLOW = 0x00FFFF00,	///< 255, 255,   0
+	CONSOLE_WHITE = 0x00FFFFFF		///< 255, 255, 255
 } _console_colors;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// The following functions are not supported with debug UART
-inline static void console_set_top_row(uint16_t __d) {}
-inline static void console_clear_line(uint16_t __d) {}
-inline static void console_set_cursor(uint16_t __d, uint16_t __e) {}
-inline static void console_save_cursor(void) {}
-inline static void console_restore_cursor(void) {}
+extern void console_set_fg_color(uint32_t);
+extern void console_set_bg_color(uint32_t);
+extern void console_set_fg_bg_color(uint32_t, uint32_t);
+
+extern void console_puthex_fg_bg(uint8_t, uint32_t, uint32_t);
+extern void console_putpct_fg_bg(uint8_t, uint32_t, uint32_t);
+extern void console_put3dec_fg_bg(uint8_t, uint32_t, uint32_t);
+
+extern int console_status(uint32_t, const char *);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* H3_CONSOLE_H_ */
+#endif /* CONSOLE_FB_H_ */

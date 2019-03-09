@@ -1,6 +1,5 @@
-#if defined(CONSOLE_ILI9340) && (defined(RASPPI) || defined(H3) || defined(BARE_METAL))
 /**
- * @file console_ili9340.c
+ * @file ili9340.c
  *
  */
 /* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -39,42 +38,44 @@
  #include "bcm2835_spi.h"
 #endif
 
-#include "console.h"
+#include "ili9340.h"
+
+#include "font_cp437.h"
 
 #if !defined(H3)
  #define D_C  	RPI_V2_GPIO_P1_16
  #define RES  	RPI_V2_GPIO_P1_18
 #else
- #define D_C	GPIO_EXT_33
- #define RES	GPIO_EXT_35
+ #if defined (ORANGE_PI)
+  #define D_C	GPIO_EXT_16
+  #define RES	GPIO_EXT_18
+ #else
+  #define D_C	GPIO_EXT_33
+  #define RES	GPIO_EXT_35
+ #endif
 #endif
 
-#include "./../../lib-bob/src/font_cp437.h" //FIXME font_cp437
-
-#define FONT_CHAR_W			8
-#define FONT_CHAR_H			8
-
-#define TFT_WIDTH			320
-#define TFT_HEIGHT			240
+#define FONT_CHAR_W		FONT_CP437_CHAR_W
+#define FONT_CHAR_H		FONT_CP437_CHAR_H
 
 static uint16_t current_x = 0;
 static uint16_t current_y = 0;
 static uint16_t saved_x = 0;
 static uint16_t saved_y = 0;
-static uint16_t cur_fore = CONSOLE_WHITE;
-static uint16_t cur_back = CONSOLE_BLACK;
-static uint16_t saved_fore = CONSOLE_WHITE;
-static uint16_t saved_back = CONSOLE_BLACK;
+static uint16_t cur_fore = ILI9340_WHITE;
+static uint16_t cur_back = ILI9340_BLACK;
+static uint16_t saved_fore = ILI9340_WHITE;
+static uint16_t saved_back = ILI9340_BLACK;
 
 static uint16_t top_row = 0;
 
-static uint16_t buffer[TFT_HEIGHT * TFT_WIDTH] __attribute__((aligned(4)));
+static uint16_t buffer[ILI9340_HEIGHT * ILI9340_WIDTH] __attribute__((aligned(4)));
 
 struct char_info {
 	int ch;
 	uint16_t fore;
 	uint16_t back;
-} static shadow_ram[(TFT_HEIGHT / FONT_CHAR_H) * (TFT_WIDTH / FONT_CHAR_W)] __attribute__((aligned(4)));
+} static shadow_ram[(ILI9340_HEIGHT / FONT_CHAR_H) * (ILI9340_WIDTH / FONT_CHAR_W)] __attribute__((aligned(4)));
 
 inline static void write_command(uint8_t c) {
 	bcm2835_gpio_clr(D_C);
@@ -175,15 +176,9 @@ static void _setup(void) {
 	write_command(0x29);
 }
 
-int console_init(void) {
+int ili9340_init(void) {
 	int i;
 
-#if defined (__linux__)
-	if (bcm2835_init() == -1) {
-		printf("bmc2835_init Error\n");
-		return -1;
-	}
-#endif
 	bcm2835_spi_begin();
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_spi_setClockDivider(8);
@@ -199,28 +194,20 @@ int console_init(void) {
 		*p++ = cur_back << 16 | cur_back;
 	}
 
-	console_clear();
+	ili9340_clear();
 	return 0;
 }
 
-void console_off(void) {
+void ili9340_off(void) {
   write_command(0x28);
 }
 
-void console_on(void) {
+void ili9340_on(void) {
   write_command(0x29);
 }
 
-uint16_t console_get_line_width(void) {
-	return TFT_WIDTH / FONT_CHAR_W;
-}
-
-uint16_t console_get_top_row(void) {
-	return top_row;
-}
-
-void console_set_top_row(uint16_t row) {
-	if (row > TFT_HEIGHT / FONT_CHAR_H) {
+void ili9340_set_top_row(uint16_t row) {
+	if (row > ILI9340_HEIGHT / FONT_CHAR_H) {
 		top_row = 0;
 	} else {
 		top_row = row;
@@ -293,17 +280,17 @@ inline static void newline(void) {
 	current_y++;
 	current_x = 0;
 
-	if (current_y == TFT_HEIGHT / FONT_CHAR_H) {
+	if (current_y == ILI9340_HEIGHT / FONT_CHAR_H) {
 		scroll();
 		current_y--;
 	}
 }
 
-void console_newline(void){
+void ili9340_newline(void){
 	newline();
 }
 
-void console_clear(void) {
+void ili9340_clear(void) {
 	write_command(0x2A);
 	write_data_word(0);
 	write_data_word(239);
@@ -312,14 +299,14 @@ void console_clear(void) {
 	write_data_word(319);
 	write_command(0x2C);
 
-	bcm2835_spi_writenb((char *) buffer, 2 * TFT_HEIGHT * TFT_WIDTH);
+	bcm2835_spi_writenb((char *) buffer, 2 * ILI9340_HEIGHT * ILI9340_WIDTH);
 }
 
-void console_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
-	if (x >= TFT_HEIGHT)
+void ili9340_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
+	if (x >= ILI9340_HEIGHT)
 		return;
 
-	if (y >= TFT_WIDTH)
+	if (y >= ILI9340_WIDTH)
 		return;
 
 	write_command(0x2A);
@@ -332,7 +319,7 @@ void console_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {
 	write_data_word(color);
 }
 
-int console_putc(int ch) {
+int ili9340_putc(int ch) {
 	if (ch == (int)'\n') {
 		newline();
 	} else if (ch == (int)'\r') {
@@ -342,7 +329,7 @@ int console_putc(int ch) {
 	} else {
 		draw_char(ch, current_y, current_x, cur_fore, cur_back);
 		current_x++;
-		if (current_x == TFT_WIDTH / FONT_CHAR_W) {
+		if (current_x == ILI9340_WIDTH / FONT_CHAR_W) {
 			newline();
 		}
 	}
@@ -350,28 +337,28 @@ int console_putc(int ch) {
 	return ch;
 }
 
-int console_puts(const char *s) {
+int ili9340_puts(const char *s) {
 	char c;
 	int i = 0;;
 
 	while ((c = *s++) != (char) 0) {
 		i++;
-		(void) console_putc((int) c);
+		(void) ili9340_putc((int) c);
 	}
 
 	return i;
 }
 
-void console_write(const char *s, unsigned int n) {
+void ili9340_write(const char *s, unsigned int n) {
 	char c;
 
 	while (((c = *s++) != (char) 0) && (n-- != 0)) {
-		(void) console_putc((int) c);
+		(void) ili9340_putc((int) c);
 	}
 }
 
-void console_clear_line(uint16_t line) {
-	if (line > TFT_HEIGHT / FONT_CHAR_H) {
+void ili9340_clear_line(uint16_t line) {
+	if (line > ILI9340_HEIGHT / FONT_CHAR_H) {
 		return;
 	} else {
 		current_y = line;
@@ -387,7 +374,7 @@ void console_clear_line(uint16_t line) {
 
 }
 
-int console_status(uint16_t color, const char *s) {
+int ili9340_status(uint16_t color, const char *s) {
 	char c;
 	int i = 0;
 
@@ -397,14 +384,14 @@ int console_status(uint16_t color, const char *s) {
 	const uint16_t s_y = current_x;
 	const uint16_t s_x = current_y;
 
-	console_clear_line(29);
+	ili9340_clear_line(29);
 
 	cur_fore = color;
-	cur_back = CONSOLE_BLACK;
+	cur_back = ILI9340_BLACK;
 
 	while ((c = *s++) != (char) 0) {
 		i++;
-		(void) console_putc((int) c);
+		(void) ili9340_putc((int) c);
 	}
 
 	current_x = s_y;
@@ -416,24 +403,24 @@ int console_status(uint16_t color, const char *s) {
 	return i;
 }
 
-int console_error(const char *s) {
+int ili9340_error(const char *s) {
 	char c;
 	int i = 0;;
 
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
-	cur_fore = CONSOLE_RED;
-	cur_back = CONSOLE_BLACK;
+	cur_fore = ILI9340_RED;
+	cur_back = ILI9340_BLACK;
 
-	(void) console_puts("Error <");
+	(void) ili9340_puts("Error <");
 
 	while ((c = *s++) != (char) 0) {
 		i++;
-		(void) console_putc((int) c);
+		(void) ili9340_putc((int) c);
 	}
 
-	(void) console_puts(">\n");
+	(void) ili9340_puts(">\n");
 
 	cur_fore = fore_current;
 	cur_back = back_current;
@@ -441,49 +428,49 @@ int console_error(const char *s) {
 	return i;
 }
 
-void console_set_cursor(uint16_t x, uint16_t y) {
-	if (x > TFT_WIDTH / FONT_CHAR_W) {
+void ili9340_set_cursor(uint16_t x, uint16_t y) {
+	if (x > ILI9340_WIDTH / FONT_CHAR_W) {
 		current_x = 0;
 	} else {
 		current_x = x;
 	}
 
-	if (y > TFT_HEIGHT / FONT_CHAR_H) {
+	if (y > ILI9340_HEIGHT / FONT_CHAR_H) {
 		current_y = 0;
 	} else {
 		current_y = y;
 	}
 }
 
-void console_save_cursor(void) {
+void ili9340_save_cursor(void) {
 	saved_y = current_y;
 	saved_x = current_x;
 	saved_back = cur_back;
 	saved_fore = cur_fore;
 }
 
-void console_restore_cursor(void) {
+void ili9340_restore_cursor(void) {
 	current_y = saved_y;
 	current_x = saved_x;
 	cur_back = saved_back;
 	cur_fore = saved_fore;
 }
 
-void console_save_color(void) {
+void ili9340_save_color(void) {
 	saved_back = cur_back;
 	saved_fore = cur_fore;
 }
 
-void console_restore_color(void) {
+void ili9340_restore_color(void) {
 	cur_back = saved_back;
 	cur_fore = saved_fore;
 }
 
-void console_set_fg_color(uint16_t fore) {
+void ili9340_set_fg_color(uint16_t fore) {
 	cur_fore = fore;
 }
 
-void console_set_bg_color(uint16_t back) {
+void ili9340_set_bg_color(uint16_t back) {
 	int i;
 
 	cur_back = back;
@@ -495,29 +482,7 @@ void console_set_bg_color(uint16_t back) {
 	}
 }
 
-void console_set_fg_bg_color(uint16_t fore, uint16_t back) {
+void ili9340_set_fg_bg_color(uint16_t fore, uint16_t back) {
 	cur_fore = fore;
 	cur_back = back;
 }
-
-#define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
-
-void console_puthex(uint8_t data) {
-	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	(void) console_putc((int) (TO_HEX(data & 0x0F)));
-}
-
-void console_puthex_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
-	uint16_t fore_current = cur_fore;
-	uint16_t back_current = cur_back;
-
-	cur_fore = fore;
-	cur_back = back;
-
-	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	(void) console_putc((int) (TO_HEX(data & 0x0F)));
-
-	cur_fore = fore_current;
-	cur_back = back_current;
-}
-#endif

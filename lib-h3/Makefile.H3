@@ -1,7 +1,7 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_SRCDIR = arm arm/aeabi device/mmc device/emac net
+EXTRA_SRCDIR = arm arm/aeabi device/mmc device/emac device/fb net
 #
 EXTRA_INCLUDES = ../lib-ff12c/src
 #

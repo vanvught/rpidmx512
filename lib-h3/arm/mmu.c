@@ -9,7 +9,7 @@
  * https://github.com/rsta2/circle/blob/master/lib/memory.cpp
  * https://github.com/rsta2/circle/blob/master/lib/pagetable.cpp
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,11 +135,15 @@ void mmu_enable(void) {
 		page_table[entry] = entry << 20 | MACRO_PERI;
 	}
 
-	for (; entry < (H3_MEM_DRAM_START / MEGABYTE) + dram_size; entry++) {
+	for (; entry < (H3_MEM_DRAM_START / MEGABYTE) + dram_size - (H3_MEM_FB_SIZE / MEGABYTE); entry++) {
 		page_table[entry] = entry << 20 | MACRO_DRAM;
 #ifdef ARM_ALLOW_MULTI_CORE
 		page_table[entry] |= S_BIT;
 #endif
+	}
+
+	for (; entry < (H3_MEM_DRAM_START / MEGABYTE) + dram_size; entry++) {
+		page_table[entry] = entry << 20 | MACRO_COHE;
 	}
 
 	for (; entry < (H3_MEM_BROM_START / MEGABYTE); entry++) {

@@ -55,9 +55,11 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="device|arm|net|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="fb|device|arm|net|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="arm"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="device"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/emac"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/fb"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/mmc"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="net"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>

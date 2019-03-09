@@ -1,5 +1,5 @@
 /**
- * @file bob.h
+ * @file console_fb.h
  *
  */
 /* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,47 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef BOB_H_
-#define BOB_H_
+#ifndef CONSOLE_FB_H_
+#define CONSOLE_FB_H_
 
-#include <string.h>
+// some RGB color definitions
+typedef enum {
+	CONSOLE_BLACK = 0x0000,		///<   0,   0,   0
+	CONSOLE_BLUE = 0x001F,		///<   0,   0, 255
+	CONSOLE_GREEN = 0x07E0,		///<   0, 255,   0
+	CONSOLE_CYAN = 0x07FF,		///<   0, 255, 255
+	CONSOLE_RED = 0xF800,		///< 255,   0,   0
+	CONSOLE_YELLOW = 0xFFE0,	///< 255, 255,   0
+	CONSOLE_WHITE = 0xFFFF,		///< 255, 255, 255
+} _console_colors;
 
-#if defined(__linux__)
- #include "bcm2835.h"
-#elif defined(H3)
- #include "h3_gpio.h"
- #include "h3_hs_timer.h"
- #include "h3_spi.h"
-
- #define bcm2835_aux_spi_begin()					(void)0
- #define bcm2835_aux_spi_setClockDivider(__p)		(void)0
- #define bcm2835_aux_spi_write(__p)					(void)0
- #define bcm2835_aux_spi_writenb(__p1,__p2)			(void)0
- #define bcm2835_aux_spi_transfern(__p1,__p2)		(void)0
- #define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
- static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
-#else
- #include "bcm2835.h"
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#include "i2c.h"
+extern void console_set_fg_color(uint16_t);
+extern void console_set_bg_color(uint16_t);
+extern void console_set_fg_bg_color(uint16_t, uint16_t);
 
-#if defined(__linux__) || defined(__circle__)
-  #define udelay bcm2835_delayMicroseconds
+extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
+extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
+extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
+
+extern int console_status(uint16_t, const char *);
+
+#ifdef __cplusplus
+}
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-#if defined(H3)
- 	#define FUNC_PREFIX(x) h3_##x
-#else
- 	#define FUNC_PREFIX(x) bcm2835_##x
-#endif
-
-#include "device_info.h"
-
-#endif
+#endif /* CONSOLE_FB_H_ */

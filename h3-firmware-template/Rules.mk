@@ -87,6 +87,7 @@ COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
 
 BUILD_DIRS:=$(addprefix $(BUILD),$(SRCDIR))
 
@@ -98,6 +99,9 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
 
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
+	
+$(BUILD)$1/%.o: $(SOURCE)$1/%.S
+	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
 THISDIR = $(CURDIR)

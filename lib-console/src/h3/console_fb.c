@@ -1,9 +1,13 @@
-#if !(defined(CONSOLE_ILI9340) || defined(CONSOLE_NONE))
+#if 0
+#define CONSOLE_FB
+#define ORANGE_PI_ONE
+#endif
+#if defined (CONSOLE_FB) && defined (ORANGE_PI_ONE)
 /**
- * @file console.c
+ * @file console_fb.c
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,33 +37,42 @@
 
 #include "arm/arm.h"
 
-extern uint32_t fb_addr;	///< Address of buffer allocated by VC
+extern unsigned char FONT[] __attribute__((aligned(4)));
+
+#define FB_CHAR_W	8
+#define FB_CHAR_H	16
 
 static uint16_t current_x = 0;
 static uint16_t current_y = 0;
 static uint16_t saved_x = 0;
 static uint16_t saved_y = 0;
-static uint16_t cur_fore = CONSOLE_WHITE;
-static uint16_t cur_back = CONSOLE_BLACK;
-static uint16_t saved_fore = CONSOLE_WHITE;
-static uint16_t saved_back = CONSOLE_BLACK;
 
 static uint16_t top_row = 0;
 
-#if defined (ARM_ALLOW_MULTI_CORE)
-static volatile int lock = 0;
+static uint32_t cur_fore = CONSOLE_WHITE;
+static uint32_t cur_back = CONSOLE_BLACK;
+static uint32_t saved_fore = CONSOLE_WHITE;
+static uint32_t saved_back = CONSOLE_BLACK;
+
+#if !defined(FB_FIXED_SIZE)
+#undef FB_WIDTH
+#define FB_WIDTH	fb_width
+
+#undef FB_HEIGHT
+#define FB_HEIGHT	fb_height
+
+#undef FB_PITCH
+#define FB_PITCH	fb_pitch
 #endif
 
 int console_init(void) {
-	return fb_init();
-}
+	int r = fb_init();
 
-uint16_t console_get_line_width(void) {
-	return FB_WIDTH / FB_CHAR_W;
-}
+	if (r == FB_OK) {
+		console_clear();
+	}
 
-uint16_t console_get_top_row(void) {
-	return top_row;
+	return r;
 }
 
 void console_set_top_row(uint16_t row) {
@@ -74,11 +87,10 @@ void console_set_top_row(uint16_t row) {
 }
 
 inline static void clear_row(uint32_t *address) {
-	uint16_t i;
-	const uint32_t value = ((uint32_t)cur_back << 16) | (uint32_t)cur_back;
+	uint32_t i;
 
-	for (i = 0 ; i < (FB_CHAR_H * FB_WIDTH) / 2 ; i++) {
-		*address++ =  value;
+	for (i = 0 ; i < (FB_CHAR_H * FB_WIDTH) ; i++) {
+		*address++ =  cur_back;
 	}
 }
 
@@ -96,31 +108,31 @@ inline static void newline(void) {
 			/* Pointer to row = 0 */
 			to = (uint32_t *) (fb_addr);
 			/* Pointer to row = 1 */
-			from = to + (FB_CHAR_H * FB_WIDTH) / 2;
+			from = to + (FB_CHAR_H * FB_WIDTH);
 			/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
-			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH) / 2;
+			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH);
 		} else {
-			to = (uint32_t *) (fb_addr) + ((FB_CHAR_H * FB_WIDTH) * top_row) / 2;
-			from = to + (FB_CHAR_H * FB_WIDTH) / 2;
-			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH - ((FB_CHAR_H * FB_WIDTH) * top_row)) / 2;
+			to = (uint32_t *) (fb_addr) + ((FB_CHAR_H * FB_WIDTH) * top_row);
+			from = to + (FB_CHAR_H * FB_WIDTH);
+			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH - ((FB_CHAR_H * FB_WIDTH) * top_row));
 		}
 
 		memcpy_blk(to, from, i/8);
 
 		/* Clear last row */
-		address = (uint32_t *)(fb_addr) + ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH) / 2;
+		address = (uint32_t *)(fb_addr) + ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH);
 		clear_row(address);
 
 		current_y--;
 	}
 }
 
-inline static void draw_pixel(uint32_t x, uint32_t y, uint16_t color) {
-	volatile uint16_t *address = (volatile uint16_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
-	*address = color;
+inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
+	volatile uint32_t *address = (volatile uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+	*address = (uint32_t) color;
 }
 
-inline static void draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint16_t back) {
+inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back) {
 	uint32_t i, j;
 	uint8_t line;
 	unsigned char *p = FONT + (c * (int) FB_CHAR_H);
@@ -139,16 +151,12 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint1
 	}
 }
 
-int console_draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t back) {
+int console_draw_char(int ch, uint16_t x, uint16_t y, uint32_t fore, uint32_t back) {
 	draw_char(ch, x * FB_CHAR_W, y * FB_CHAR_H, fore, back);
 	return (int)ch;
 }
 
 int console_putc(int ch) {
-#if defined (ARM_ALLOW_MULTI_CORE)
-	while (__sync_lock_test_and_set(&lock, 1) == 1);
-#endif
-
 	if (ch == (int)'\n') {
 		newline();
 	} else if (ch == (int)'\r') {
@@ -162,10 +170,6 @@ int console_putc(int ch) {
 			newline();
 		}
 	}
-
-#if defined (ARM_ALLOW_MULTI_CORE)
-	__sync_lock_release(&lock);
-#endif
 
 	return ch;
 }
@@ -192,7 +196,7 @@ void console_write(const char *s, unsigned int n) {
 
 int console_error(const char *s) {
 	char c;
-	int i = 0;;
+	int i = 0;
 
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
@@ -215,7 +219,7 @@ int console_error(const char *s) {
 	return i;
 }
 
-int console_status(uint16_t color, const char *s) {
+int console_status(uint32_t color, const char *s) {
 	char c;
 	int i = 0;
 
@@ -251,7 +255,7 @@ void console_puthex(uint8_t data) {
 	(void) console_putc((int) (TO_HEX(data & 0x0F)));
 }
 
-void console_puthex_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void console_puthex_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
@@ -265,7 +269,7 @@ void console_puthex_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 	cur_back = back_current;
 }
 
-void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void console_putpct_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
@@ -283,7 +287,7 @@ void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 	cur_back = back_current;
 }
 
-void console_put3dec_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
+void console_put3dec_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
@@ -308,11 +312,11 @@ void console_newline(void){
 }
 
 void console_clear(void) {
-	uint16_t *address = (uint16_t *)(fb_addr);
+	uint32_t *address = (uint32_t *)(fb_addr);
 	uint32_t i;
 
 	for (i = 0; i < (FB_HEIGHT * FB_WIDTH); i++) {
-		*address++ = cur_back;
+		*address++ = (uint32_t) cur_back;
 	}
 
 	current_x = 0;
@@ -320,10 +324,6 @@ void console_clear(void) {
 }
 
 void console_set_cursor(uint16_t x, uint16_t y) {
-#if defined (ARM_ALLOW_MULTI_CORE)
-	while (__sync_lock_test_and_set(&lock, 1) == 1);
-#endif
-
 	if (x > FB_WIDTH / FB_CHAR_W)
 		current_x = 0;
 	else
@@ -333,10 +333,6 @@ void console_set_cursor(uint16_t x, uint16_t y) {
 		current_y = 0;
 	else
 		current_y = y;
-
-#if defined (ARM_ALLOW_MULTI_CORE)
-	__sync_lock_release(&lock);
-#endif
 }
 
 void console_save_cursor(void) {
@@ -363,15 +359,15 @@ void console_restore_color(void) {
 	cur_fore = saved_fore;
 }
 
-void console_set_fg_color(uint16_t fore) {
+void console_set_fg_color(uint32_t fore) {
 	cur_fore = fore;
 }
 
-void console_set_bg_color(uint16_t back) {
+void console_set_bg_color(uint32_t back) {
 	cur_back = back;
 }
 
-void console_set_fg_bg_color(uint16_t fore, uint16_t back) {
+void console_set_fg_bg_color(uint32_t fore, uint32_t back) {
 	cur_fore = fore;
 	cur_back = back;
 }
@@ -387,7 +383,7 @@ void console_clear_line(uint16_t line) {
 
 	current_x = 0;
 
-	address = (uint32_t *)(fb_addr) + (line * FB_CHAR_H * FB_WIDTH) / 2;
+	address = (uint32_t *)(fb_addr) + (line * FB_CHAR_H * FB_WIDTH);
 	clear_row(address);
 }
 #endif

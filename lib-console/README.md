@@ -3,16 +3,9 @@
 
 Supported boards:
 
-* Raspberry Pi 
 * Orange Pi Zero
 * Orange Pi One
-* NanaPi NEO
-
-Supported SPI LCD controller:
-
-* ili9340
-
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+* Raspberry Pi 
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

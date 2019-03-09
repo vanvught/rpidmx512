@@ -31,7 +31,11 @@ do
 			cd "$f"
 			
 			if [ -f Makefile.H3 ]; then
-				if [ $(grep -c NO_EMAC Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
+				if [ $(grep -c ESP8266 Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
+					echo -e "\e[33mSkipping...\e[0m"
+				elif [ $(grep -c RDM_CONTROLLER Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
+					echo -e "\e[33mSkipping...\e[0m"					
+				elif [ $(grep -c MONITOR_DMX Makefile.H3) -ne 0 ] && [[ $1 = "PLATFORM=ORANGE_PI" ]]; then
 					echo -e "\e[33mSkipping...\e[0m"
 				else
 					make -f Makefile.H3 $1 $2 || exit

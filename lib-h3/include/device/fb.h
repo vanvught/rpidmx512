@@ -1,8 +1,8 @@
 /**
- * @file bob.h
+ * @file fb.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef BOB_H_
-#define BOB_H_
+#ifndef DEVICE_FB_H_
+#define DEVICE_FB_H_
 
-#include <string.h>
-
-#if defined(__linux__)
- #include "bcm2835.h"
-#elif defined(H3)
- #include "h3_gpio.h"
- #include "h3_hs_timer.h"
- #include "h3_spi.h"
-
- #define bcm2835_aux_spi_begin()					(void)0
- #define bcm2835_aux_spi_setClockDivider(__p)		(void)0
- #define bcm2835_aux_spi_write(__p)					(void)0
- #define bcm2835_aux_spi_writenb(__p1,__p2)			(void)0
- #define bcm2835_aux_spi_transfern(__p1,__p2)		(void)0
- #define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
- static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
-#else
- #include "bcm2835.h"
- #include "bcm2835_spi.h"
- #include "bcm2835_aux_spi.h"
+#if !defined ORANGE_PI_ONE
+ #error Support for Orange Pi One only
 #endif
 
-#include "i2c.h"
+extern volatile uint32_t fb_width;
+extern volatile uint32_t fb_height;
+extern volatile uint32_t fb_pitch;
+extern volatile uint32_t fb_addr;
 
-#if defined(__linux__) || defined(__circle__)
-  #define udelay bcm2835_delayMicroseconds
+#define FB_WIDTH			800
+#define FB_HEIGHT			480
+#define FB_BYTES_PER_PIXEL	4
+#define FB_BPP				(FB_BYTES_PER_PIXEL << 3)
+#define FB_PITCH			(FB_WIDTH * FB_BYTES_PER_PIXEL)
+
+#define FB_OK	0
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+extern int fb_init(void);
+
+#ifdef __cplusplus
+}
 #endif
 
-#if defined(H3)
- 	#define FUNC_PREFIX(x) h3_##x
-#else
- 	#define FUNC_PREFIX(x) bcm2835_##x
-#endif
-
-#include "device_info.h"
-
-#endif
+#endif /* DEVICE_FB_H_ */

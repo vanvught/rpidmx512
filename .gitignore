@@ -39,6 +39,10 @@ uImage
 orangepi*.*
 nanopi_neo.*
 
+# Broadcom binaries
+kernel.img
+kernel7.img
+
 # examples binaries
 # lib-i2c
 i2cdetect

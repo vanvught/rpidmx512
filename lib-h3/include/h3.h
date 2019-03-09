@@ -38,6 +38,12 @@
 #define H3_MEM_COHERENT_SIZE	(1 * MEGABYTE)
 #define H3_MEM_BROM_START		0xFFFF0000
 
+#if defined (ORANGE_PI_ONE)
+	#define H3_MEM_FB_SIZE		(32 * MEGABYTE)
+#else
+	#define H3_MEM_FB_SIZE		0
+#endif
+
 #define H3_SYSTEM_BASE			0x01C00000
 #define H3_DMA_BASE				0x01C02000
 #define H3_SD_MMC_BASE			0x01C0F000
