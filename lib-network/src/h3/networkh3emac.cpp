@@ -2,7 +2,7 @@
  * networkh3emac.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,11 +81,12 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	const uint8_t *p = (const uint8_t *) params.GetHostName();
 
 	if (*p == '\0') {
-		uint8_t i;
-		uint8_t k = 0;
-		for (i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < NETWORK_HOSTNAME_SIZE - 7); i++) {
+		unsigned k = 0;
+
+		for (unsigned i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < NETWORK_HOSTNAME_SIZE - 7); i++) {
 			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
+
 		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[3] >> 4);
 		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[3] & 0x0F);
 		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[4] >> 4);

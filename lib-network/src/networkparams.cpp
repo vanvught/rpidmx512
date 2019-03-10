@@ -175,18 +175,6 @@ void NetworkParams::Dump(void) {
 #endif
 }
 
-uint32_t NetworkParams::GetMaskIpAddress(void) {
-	return NETWORK_PARAMS_MASK_IP_ADDRESS;
-}
-
-uint32_t NetworkParams::GetMaskNetMask(void) {
-	return NETWORK_PARAMS_MASK_NET_MASK;
-}
-
-uint32_t NetworkParams::GetMaskDhcpUsed(void) {
-	return NETWORK_PARAMS_MASK_DHCP;
-}
-
 void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);

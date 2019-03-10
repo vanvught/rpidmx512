@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef NETWORKPARAMS_H_
 #define NETWORKPARAMS_H_
 
@@ -43,7 +42,7 @@ struct TNetworkParams {
 	bool bResetEmac;
 };
 
-enum NETWORK_PARAMS_MASK {
+enum TNetworkParamsMask {
 	NETWORK_PARAMS_MASK_DHCP = (1 << 0),
 	NETWORK_PARAMS_MASK_IP_ADDRESS = (1 << 1),
 	NETWORK_PARAMS_MASK_NET_MASK = (1 << 2),
@@ -72,39 +71,34 @@ public:
 	bool Load(void);
 	void Dump(void);
 
-	 bool isDhcpUsed(void) {
+	bool isDhcpUsed(void) {
 		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
-	 uint32_t GetIpAddress(void) {
+	uint32_t GetIpAddress(void) {
 		return m_tNetworkParams.nLocalIp;
 	}
 
-	 uint32_t GetNetMask(void) {
+	uint32_t GetNetMask(void) {
 		return m_tNetworkParams.nNetmask;
 	}
 
-	 uint32_t GetDefaultGateway(void) {
+	uint32_t GetDefaultGateway(void) {
 		return m_tNetworkParams.nGatewayIp;
 	}
 
-	 uint32_t GetNameServer(void) {
+	uint32_t GetNameServer(void) {
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	 const uint8_t *GetHostName(void) {
+	const uint8_t *GetHostName(void) {
 		return m_tNetworkParams.aHostName;
 	}
 
 	// H2+/H3 Only
-	 bool GetResetEmac(void) {
+	bool GetResetEmac(void) {
 		return m_tNetworkParams.bResetEmac;
 	}
-
-public:
-	static uint32_t GetMaskDhcpUsed(void);
-	static uint32_t GetMaskIpAddress(void);
-	static uint32_t GetMaskNetMask(void);
 
 private:
 	bool isMaskSet(uint32_t nMask) const;

@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-properties/include ../lib-wiznet ../lib-wiznet/ioLibrary_Driver/Ethernet
+EXTRA_INCLUDES = ../lib-properties/include
 #
 include ../linux-template/lib/Rules.mk
