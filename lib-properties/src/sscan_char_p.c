@@ -2,7 +2,7 @@
  * @file sscan_char_p.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,19 +45,11 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
+	while ((*b != (char) 0) && (k < (int) *len)) {
 		*v++ = *b++;
 		k++;
-	}
-
-	if ((*b != (char) 0) && (*b != (char) '\n')) {
-		return SSCAN_VALUE_ERROR;
 	}
 
 	*len = (uint8_t) k;

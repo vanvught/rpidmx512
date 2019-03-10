@@ -2,7 +2,7 @@
  * @file sscan_float.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,16 +47,12 @@ int sscan_float(const char *buf, const char *name, float *value) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	if (*b == (char) '-') {
 		b++;
 		is_negative = true;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
+	if ((*b == ' ') || (*b == (char) 0)) {
 		return SSCAN_VALUE_ERROR;
 	}
 
@@ -68,7 +64,7 @@ int sscan_float(const char *buf, const char *name, float *value) {
 		}
 		k = k * 10 + (float) *b - (float) '0';
 		b++;
-	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0) && (*b != '\n'));
+	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0));
 
 	if (*b != '.') {
 		if (is_negative) {
@@ -85,7 +81,7 @@ int sscan_float(const char *buf, const char *name, float *value) {
 	div = 1;
 	b++;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0)) {
 		if (isdigit((int) *b) == 0) {
 			return SSCAN_VALUE_ERROR;
 		}

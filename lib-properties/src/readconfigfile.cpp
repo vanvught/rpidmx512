@@ -1,7 +1,7 @@
 /**
  * @file readconfigfile.cpp
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,13 +56,12 @@ bool ReadConfigFile::Read(const char *pFileName) {
 				break; // Error or end of file
 			}
 
-			if (buffer[0] != '#') {
-				char *q = (char *)buffer;
+			if (buffer[0] >= 'a') {
+				char *q = (char *) buffer;
 
 				for (unsigned i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
-					if (*q == '\r') {
+					if ((*q == '\r') || (*q == '\n')) {
 						*q = '\0';
-						break;
 					}
 					q++;
 				}
@@ -76,4 +75,33 @@ bool ReadConfigFile::Read(const char *pFileName) {
 	}
 
 	return true;
+}
+
+void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+
+	char *p = (char *) pBuffer;
+
+	while (nLength != 0) {
+		char *pLine = (char *) p;
+
+		while ((nLength != 0) && (*p != '\r') && (*p != '\n')) {
+			p++;
+			nLength--;
+		}
+
+		while ((nLength != 0) && ((*p == '\r') || (*p == '\n'))) {
+			*p++ = '\0';
+			nLength--;
+		}
+
+#ifndef NDEBUG
+		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, pLine);
+#endif
+
+		if (*pLine >= 'a') {
+			(void) m_cb(m_p, (const char *) pLine);
+		}
+	}
 }

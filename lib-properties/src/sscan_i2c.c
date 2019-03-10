@@ -2,7 +2,7 @@
  * @file scan_i2c.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 	b++;
 	k = 0;
 
-	while ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
+	while ((*b != (char) '\0') && (*b != (char) ',') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -69,7 +69,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 		b++;
 	}
 
-	if ((*b != (char) ':') && (*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) ':') && (*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 
@@ -88,7 +88,7 @@ int sscan_i2c(const char *buf, char *name, uint8_t *len, uint8_t *address, uint8
 		return SSCAN_VALUE_ERROR;
 	}
 
-	if ((*b == (char) '\n') || (*b == (char) '\0') || (*b == (char) ' ')) {
+	if ((*b == (char) '\0') || (*b == (char) ' ')) {
 		return SSCAN_VALUE_ERROR;
 	}
 

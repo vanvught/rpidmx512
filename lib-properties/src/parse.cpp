@@ -2,7 +2,7 @@
  * @file parse.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ char* Parse::DmxSlotInfo(char* s, bool& isValid, uint8_t& nType, uint16_t& nCate
 		return 0;
 	}
 
-	if ((*b != ',') && (*b != ' ') && (*b != '\n') && (*b != '\0')) {
+	if ((*b != ',') && (*b != ' ') && (*b != '\0')) {
 		isValid = false;
 		return 0;
 	}
@@ -87,7 +87,7 @@ char* Parse::DmxSlotInfo(char* s, bool& isValid, uint8_t& nType, uint16_t& nCate
 
 	isValid = true;
 
-	if ((*b == '\0') || (*b == '\n')) {
+	if ((*b == '\0')) {
 		return 0;
 	}
 

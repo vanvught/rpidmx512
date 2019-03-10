@@ -2,7 +2,7 @@
  * @file sscan_i2c_address.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +50,9 @@ int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	k = 0;
 
-	while ((*b != (char) '\n') && (*b != (char) '\0') && (k < 2)) {
+	while ((*b != (char) '\0') && (k < 2)) {
 		if (isxdigit((int) *b) == 0) {
 			return SSCAN_NAME_ERROR;
 		}
@@ -65,7 +61,7 @@ int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
 		b++;
 	}
 
-	if ((*b != (char) '\n') && (*b != (char) '\0') && (*b != (char) ' ')) {
+	if ((*b != (char) '\0') && (*b != (char) ' ')) {
 		return SSCAN_NAME_ERROR;
 	}
 

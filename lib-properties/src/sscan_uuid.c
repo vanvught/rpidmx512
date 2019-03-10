@@ -2,7 +2,7 @@
  * @file scan_uuid.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,17 +50,13 @@ int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	k = 0;
 
-	while ((*b != (char) 0) && (*b != (char) '\n') && (k < (int) *len)) {
+	while ((*b != (char) 0) && (k < (int) *len)) {
 		const char ch = *b;
 		if ((k == 8) || (k == 13) || (k == 18) || (k == 23)) {
 			if (ch != '-') {
-				*len = (uint8_t)k;
+				*len = (uint8_t) k;
 				return 1;
 			}
 		} else if (isxdigit((int) ch) == 0) {
@@ -72,17 +68,16 @@ int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
 	}
 
 	if (k != 36) {
-		*len = (uint8_t)k;
+		*len = (uint8_t) k;
 		return 1;
 	}
 
-	if ((*b != (char) 0) && (*b != (char) '\n')) {
-		*len = (uint8_t)k;
+	if ((*b != (char) 0)) {
+		*len = (uint8_t) k;
 		return 1;
 	}
 
-	*len = (uint8_t)36;
+	*len = (uint8_t) 36;
 
 	return SSCAN_OK;
-
 }

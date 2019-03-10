@@ -2,7 +2,7 @@
  * @file sscan_uint16_t.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +44,6 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	k = 0;
 
 	do {
@@ -56,7 +52,7 @@ int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
 		}
 		k = k * 10 + (int32_t) *b - (int32_t) '0';
 		b++;
-	} while ((*b != ' ') && (*b != (char) 0) && (*b != '\n'));
+	} while ((*b != ' ') && (*b != (char) 0));
 
 	if (k > (int32_t) ((uint16_t) ~0)) {
 		return SSCAN_VALUE_ERROR;

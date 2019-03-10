@@ -43,5 +43,9 @@ char *get_name(const char *buf, const char *name) {
 		return NULL;
 	}
 
+	if ((*b == ' ') || (*b == (char) 0)) {
+		return NULL;
+	}
+
 	return b;
 }

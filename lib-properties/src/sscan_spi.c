@@ -2,7 +2,7 @@
  * @file sscan_spi.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -129,7 +129,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	i++;
 	uint32 = 0;
 
-	while ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (k < 9) && (buf[i] != (char) ' ') && (buf[i] != (char) ':')) {
+	while ((buf[i] != (char) 0) && (k < 9) && (buf[i] != (char) ' ') && (buf[i] != (char) ':')) {
 		if (!isdigit((int)buf[i])) {
 			return SSCAN_VALUE_ERROR;
 		}
@@ -138,7 +138,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 		i++;
 	}
 
-	if ((k == 0) || ((buf[i] != (char) 0) && (buf[i] != (char) '\n') && (buf[i] != (char) ' ') && (buf[i] != (char) ':'))) {
+	if ((k == 0) || ((buf[i] != (char) 0) && (buf[i] != (char) ' ') && (buf[i] != (char) ':'))) {
 		return SSCAN_VALUE_ERROR;
 	}
 

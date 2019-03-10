@@ -2,7 +2,7 @@
  * @file sscan_ip_address.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,15 +50,11 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 		return SSCAN_NAME_ERROR;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0) || (*b == '\n')) {
-		return SSCAN_VALUE_ERROR;
-	}
-
 	for (i = 0 ; i < 3 ; i++) {
 		j = 0;
 		k = 0;
 
-		while ((*b != '.') && (*b != (char) 0) && (*b != '\n')) {
+		while ((*b != '.') && (*b != (char) 0)) {
 			if (j == 3) {
 				return SSCAN_VALUE_ERROR;
 			}
@@ -80,7 +76,7 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 	j= 0;
 	k= 0;
 
-	while ((*b != ' ') && (*b != (char) 0) && (*b != '\n')) {
+	while ((*b != ' ') && (*b != (char) 0)) {
 		if (j == 3) {
 			return SSCAN_VALUE_ERROR;
 		}
