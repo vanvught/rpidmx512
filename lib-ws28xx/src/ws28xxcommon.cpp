@@ -54,13 +54,6 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		SetColorWS28xx(nOffset, nRed);
 		SetColorWS28xx(nOffset + 8, nGreen);
 		SetColorWS28xx(nOffset + 16, nBlue);
-	} else if (m_tLEDType == UCS1903) {
-		uint32_t nOffset = nLEDIndex * 3;
-		nOffset *= 8;
-
-		SetColorWS28xx(nOffset, nBlue);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nGreen);
 	} else {
 		uint32_t nOffset = nLEDIndex * 3;
 		nOffset *= 8;
