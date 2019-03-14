@@ -87,7 +87,7 @@ char* Parse::DmxSlotInfo(char* s, bool& isValid, uint8_t& nType, uint16_t& nCate
 
 	isValid = true;
 
-	if ((*b == '\0')) {
+	if (*b == '\0') {
 		return 0;
 	}
 

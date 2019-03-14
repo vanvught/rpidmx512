@@ -25,6 +25,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "readconfigfile.h"
@@ -81,7 +82,9 @@ void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 
-	char *p = (char *) pBuffer;
+	char *p = new char[nLength];
+	char *pFree = p;
+	memcpy(p, pBuffer, nLength);
 
 	while (nLength != 0) {
 		char *pLine = (char *) p;
@@ -104,4 +107,6 @@ void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
 			(void) m_cb(m_p, (const char *) pLine);
 		}
 	}
+
+	delete [] pFree;
 }
