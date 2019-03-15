@@ -1,7 +1,7 @@
 #
 DEFINES = ARTNET_NODE ESP8266 ENABLE_MMU NO_EMAC NDEBUG
 #
-LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx dmx rdm lightset ledblink
+LIBS = display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx tlc59711dmx tlc59711 dmx rdm lightset ledblink
 #
 SRCDIR = firmware lib
 

@@ -92,27 +92,27 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	const TOutputType tOutputType = artnetparams.GetOutputType();
+	const TLightSetOutputType tOutputType = artnetparams.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi Art-Net 3 Node ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == LIGHTSET_OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -147,12 +147,12 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
-	if (artnetparams.IsUseTimeCode() || tOutputType == OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeCode() || tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
 	}
 
-	if (artnetparams.IsUseTimeSync() || tOutputType == OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeSync() || tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		timesync.Start();
 		node.SetTimeSyncHandler(&timesync);
 	}
@@ -165,7 +165,7 @@ void notmain(void) {
 	DMXSend dmx;
 	LightSet *pSpi;
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 #if defined (ORANGE_PI)
 		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
 #else
@@ -217,7 +217,7 @@ void notmain(void) {
 		node.SetOutput(pSpi);
 	}
 #ifndef H3
-	else if (tOutputType == OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// There is support for HEX output only
 		node.SetOutput(&monitor);
 		monitor.Cls();
@@ -249,10 +249,10 @@ void notmain(void) {
 
 	node.Print();
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else if (tOutputType == OUTPUT_TYPE_MONITOR) {
+	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// Nothing
 	} else {
 		dmx.Print();
@@ -266,10 +266,10 @@ void notmain(void) {
 		display.Write(1, "WiFi Art-Net 3 ");
 
 		switch (tOutputType) {
-		case OUTPUT_TYPE_SPI:
+		case LIGHTSET_OUTPUT_TYPE_SPI:
 			display.PutString("Pixel");
 			break;
-		case OUTPUT_TYPE_MONITOR:
+		case LIGHTSET_OUTPUT_TYPE_MONITOR:
 			display.PutString("Monitor");
 			break;
 		default:
@@ -315,7 +315,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		node.HandlePacket();
-		if (tOutputType == OUTPUT_TYPE_MONITOR) {
+		if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 			timesync.ShowSystemTime();
 		}
 		lb.Run();
