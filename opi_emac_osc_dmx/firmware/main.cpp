@@ -89,7 +89,7 @@ void notmain(void) {
 		params.Set(&server);
 	}
 
-	const TOscOutputType tOutputType = params.GetOutputType();
+	const TLightSetOutputType tOutputType = params.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -113,7 +113,7 @@ void notmain(void) {
 	LightSet *pSpi;
 	OscServerHandler *pHandler;
 
-	if (tOutputType == OSC_OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		bool isLedTypeSet = false;
 
 #if defined (ORANGE_PI)
@@ -199,7 +199,7 @@ void notmain(void) {
 
 	server.Print();
 
-	if (tOutputType == OSC_OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
 	} else {
@@ -209,7 +209,7 @@ void notmain(void) {
 	for (unsigned i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
-	display.Printf(1, "Eth OSC %s", tOutputType == OSC_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	display.Printf(1, "Eth OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	if (nw.IsDhcpKnown()) {
