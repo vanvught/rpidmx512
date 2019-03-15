@@ -184,7 +184,7 @@ TShutdownMode CKernel::Run(void)
 		artnetparams.Dump();
 	}
 
-	const TOutputType tOutputType = artnetparams.GetOutputType();
+	const TLightSetOutputType tOutputType = artnetparams.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -197,7 +197,7 @@ TShutdownMode CKernel::Run(void)
 
 	LightSet *pSpi;
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		WS28xxDmxParams ws28xxparms;
 
 		if (ws28xxparms.Load()) {
@@ -262,7 +262,7 @@ TShutdownMode CKernel::Run(void)
 	nw.Print();
 	node.Print();
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
 	} else {
