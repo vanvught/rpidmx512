@@ -89,23 +89,23 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const TE131OutputType tOutputType = e131params.GetOutputType();
+	const TLightSetOutputType tOutputType = e131params.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
-	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -144,7 +144,7 @@ void notmain(void) {
 	DMXSend dmx;
 	LightSet *pSpi;
 
-	if (tOutputType == E131_OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 #if defined (ORANGE_PI)
 		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
 #else
@@ -197,7 +197,7 @@ void notmain(void) {
 		bridge.SetOutput(pSpi);
 	}
 #ifndef H3
-	else if (tOutputType == E131_OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// There is support for HEX output only
 		bridge.SetOutput(&monitor);
 		monitor.Cls();
@@ -220,10 +220,10 @@ void notmain(void) {
 
 	bridge.Print();
 
-	if (tOutputType == E131_OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else if (tOutputType == E131_OUTPUT_TYPE_MONITOR) {
+	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// Nothing to do
 	} else {
 		dmx.Print();
@@ -234,7 +234,7 @@ void notmain(void) {
 	}
 
 
-	display.Printf(1, "WiFi sACN E1.31 %s", tOutputType == E131_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	display.Printf(1, "WiFi sACN E1.31 %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 
 	if (wifi_get_opmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", wifi_get_ssid());

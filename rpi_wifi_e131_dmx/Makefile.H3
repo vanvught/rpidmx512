@@ -1,7 +1,7 @@
 #
 DEFINES = E131_BRIDGE ESP8266 ENABLE_MMU NO_EMAC NDEBUG
 #
-LIBS = display e131 uuid dmxsend dmx ws28xxdmx ws28xx lightset ledblink artnet
+LIBS = display e131 uuid dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 lightset ledblink artnet
 #
 SRCDIR = firmware
 
