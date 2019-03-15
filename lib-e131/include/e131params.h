@@ -30,16 +30,11 @@
 #include <stdbool.h>
 
 #include "e131bridge.h"
-
-enum TE131OutputType {
-	E131_OUTPUT_TYPE_DMX,
-	E131_OUTPUT_TYPE_SPI,
-	E131_OUTPUT_TYPE_MONITOR
-};
+#include "lightset.h"
 
 struct TE131Params {
     uint32_t nSetList;
-    TE131OutputType tOutputType;
+    TLightSetOutputType tOutputType;
     char aCidString[UUID_STRING_LENGTH + 2];
     bool bHaveCustomCid;
     uint16_t nUniverse;
@@ -66,26 +61,29 @@ public:
 	~E131Params(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
 	void Set(E131Bridge *);
+
 	void Dump(void);
 
-	 TE131OutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType(void) {
 		return m_tE131Params.tOutputType;
 	}
 
-	 uint16_t GetUniverse(void) {
+	uint16_t GetUniverse(void) {
 		return m_tE131Params.nUniverse;
 	}
 
-	 TE131Merge GetMergeMode(void) {
+	TE131Merge GetMergeMode(void) {
 		return (TE131Merge) m_tE131Params.nMergeMode;
 	}
 
-	 bool HaveCustomCid(void) {
+	bool HaveCustomCid(void) {
 		return m_tE131Params.bHaveCustomCid;
 	}
 
-	 const char* GetCidString(void) {
+	const char* GetCidString(void) {
 		return (const char*) m_tE131Params.aCidString;
 	}
 

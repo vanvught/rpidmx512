@@ -35,6 +35,8 @@
 #include "oscserverparms.h"
 #include "osc.h"
 
+#include "lightset.h"
+
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -113,11 +115,11 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "mon", 3) == 0) {
-			m_tOSCServerParams.tOutputType = OSC_OUTPUT_TYPE_MONITOR;
+			m_tOSCServerParams.tOutputType = LIGHTSET_OUTPUT_TYPE_MONITOR;
 		} else if (memcmp(value, "spi", 3) == 0) {
-			m_tOSCServerParams.tOutputType = OSC_OUTPUT_TYPE_SPI;
+			m_tOSCServerParams.tOutputType = LIGHTSET_OUTPUT_TYPE_SPI;
 		} else {
-			m_tOSCServerParams.tOutputType = OSC_OUTPUT_TYPE_DMX;
+			m_tOSCServerParams.tOutputType = LIGHTSET_OUTPUT_TYPE_DMX;
 		}
 		m_tOSCServerParams.nSetList |= SET_OUTPUT_MASK;
 		return;
@@ -218,7 +220,7 @@ void OSCServerParams::Dump(void) {
 	}
 
 	if (isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_OUTPUT, (int) m_tOSCServerParams.tOutputType, m_tOSCServerParams.tOutputType == OSC_OUTPUT_TYPE_MONITOR ? "mon" : (m_tOSCServerParams.tOutputType == OSC_OUTPUT_TYPE_SPI ? "spi" : "dmx"));
+		printf(" %s=%d [%s]\n", PARAMS_OUTPUT, (int) m_tOSCServerParams.tOutputType, m_tOSCServerParams.tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? "mon" : (m_tOSCServerParams.tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "spi" : "dmx"));
 	}
 #endif
 }

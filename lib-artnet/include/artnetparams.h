@@ -40,18 +40,14 @@
 
 #include "artnetnode.h"
 
-enum TOutputType {
-	OUTPUT_TYPE_DMX,
-	OUTPUT_TYPE_SPI,
-	OUTPUT_TYPE_MONITOR
-};
+#include "lightset.h"
 
 struct TArtNetParams {
 	uint32_t nSetList;
 	uint8_t nNet;
 	uint8_t nSubnet;
 	uint8_t nUniverse;
-	TOutputType tOutputType;
+	TLightSetOutputType tOutputType;
 	bool bUseTimeCode;
 	bool bUseTimeSync;
 	bool bEnableRdm;
@@ -69,7 +65,7 @@ struct TArtNetParams {
 	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
 };
 
-enum ARTNET_PARAMS_MASK {
+enum TArtnetParamsMask {
 	ARTNET_PARAMS_MASK_LONG_NAME = (1 << 0),
 	ARTNET_PARAMS_MASK_SHORT_NAME = (1 << 1),
 	ARTNET_PARAMS_MASK_NET = (1 << 2),
@@ -118,52 +114,52 @@ public:
 	void Set(ArtNetNode *);
 	void Dump(void);
 
-	 uint8_t GetNet(void) {
+	uint8_t GetNet(void) {
 		return m_tArtNetParams.nNet;
 	}
 
-	 uint8_t GetSubnet(void) {
+	uint8_t GetSubnet(void) {
 		return m_tArtNetParams.nSubnet;
 	}
 
-	 uint8_t GetUniverse(void) {
+	uint8_t GetUniverse(void) {
 		return m_tArtNetParams.nUniverse;
 	}
 
-	 const uint8_t *GetShortName(void) {
+	const uint8_t *GetShortName(void) {
 		return m_tArtNetParams.aShortName;
 	}
 
-	 const uint8_t *GetLongName(void) {
+	const uint8_t *GetLongName(void) {
 		return m_tArtNetParams.aLongName;
 	}
 
-	 TOutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType(void) {
 		return m_tArtNetParams.tOutputType;
 	}
 
-	 const uint8_t *GetManufacturerId(void) {
+	const uint8_t *GetManufacturerId(void) {
 		return m_tArtNetParams.aManufacturerId;
 	}
 
-	 time_t GetNetworkTimeout(void) {
+	time_t GetNetworkTimeout(void) {
 		return m_tArtNetParams.nNetworkTimeout;
 	}
 
-	 bool IsUseTimeCode(void) {
+	bool IsUseTimeCode(void) {
 		return m_tArtNetParams.bUseTimeCode;
 	}
 
-	 bool IsUseTimeSync(void) {
+	bool IsUseTimeSync(void) {
 		return m_tArtNetParams.bUseTimeSync;
 
 	}
 
-	 bool IsRdm(void) {
+	bool IsRdm(void) {
 		return m_tArtNetParams.bEnableRdm;
 	}
 
-	 bool IsRdmDiscovery(void) {
+	bool IsRdmDiscovery(void) {
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
@@ -173,9 +169,9 @@ public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
-	void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t) const;
-	uint16_t HexUint16(const char *) const;
+	void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const;
+	uint16_t HexUint16(const char *s) const;
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;

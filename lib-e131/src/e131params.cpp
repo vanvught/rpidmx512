@@ -59,7 +59,6 @@
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
 static const char PARAMS_OUTPUT[] ALIGNED = "output";
-//static const char PARAMS_CID[] ALIGNED = "cid";
 static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a",
 		"universe_port_b", "universe_port_c", "universe_port_d" };
 static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
@@ -101,6 +100,20 @@ bool E131Params::Load(void) {
 	return true;
 }
 
+void E131Params::Load(const char* pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pE131ParamsStore != 0);
+
+	m_tE131Params.nSetList = 0;
+
+	ReadConfigFile config(E131Params::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pE131ParamsStore->Update(&m_tE131Params);
+}
+
 void E131Params::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
@@ -123,13 +136,13 @@ void E131Params::callbackFunction(const char *pLine) {
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "spi", 3) == 0) {
-			m_tE131Params.tOutputType = E131_OUTPUT_TYPE_SPI;
+			m_tE131Params.tOutputType = LIGHTSET_OUTPUT_TYPE_SPI;
 			m_tE131Params.nSetList |= SET_OUTPUT_MASK;
 		} else if (memcmp(value, "mon", 3) == 0) {
-			m_tE131Params.tOutputType = E131_OUTPUT_TYPE_MONITOR;
+			m_tE131Params.tOutputType = LIGHTSET_OUTPUT_TYPE_MONITOR;
 			m_tE131Params.nSetList |= SET_OUTPUT_MASK;
 		} else {
-			m_tE131Params.tOutputType = E131_OUTPUT_TYPE_DMX;
+			m_tE131Params.tOutputType = LIGHTSET_OUTPUT_TYPE_DMX;
 			m_tE131Params.nSetList |= SET_OUTPUT_MASK;
 		}
 		return;
@@ -225,7 +238,7 @@ void E131Params::Dump(void) {
 	}
 
 	if (isMaskSet(SET_OUTPUT_MASK)) {
-		printf(" %s=%s [%d]\n", PARAMS_OUTPUT, m_tE131Params.tOutputType == E131_OUTPUT_TYPE_MONITOR ? "mon" : (m_tE131Params.tOutputType == E131_OUTPUT_TYPE_SPI ? "spi": "dmx"), (int) m_tE131Params.tOutputType);
+		printf(" %s=%s [%d]\n", PARAMS_OUTPUT, m_tE131Params.tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? "mon" : (m_tE131Params.tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "spi": "dmx"), (int) m_tE131Params.tOutputType);
 	}
 
 	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {

@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,12 @@ enum {
 	DMX_ADDRESS_INVALID = 0xFFFF,
 	DMX_START_ADDRESS_DEFAULT = 1,
 	DMX_MAX_CHANNELS = 512
+};
+
+enum TLightSetOutputType {
+	LIGHTSET_OUTPUT_TYPE_DMX,
+	LIGHTSET_OUTPUT_TYPE_SPI,
+	LIGHTSET_OUTPUT_TYPE_MONITOR
 };
 
 class LightSet {

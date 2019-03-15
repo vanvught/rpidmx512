@@ -40,6 +40,8 @@
 #include "artnetparams.h"
 #include "artnetnode.h"
 
+#include "lightset.h"
+
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -160,11 +162,11 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	len = 3;
 	if (Sscan::Char(pLine, PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "spi", 3) == 0) {
-			m_tArtNetParams.tOutputType = OUTPUT_TYPE_SPI;
+			m_tArtNetParams.tOutputType = LIGHTSET_OUTPUT_TYPE_SPI;
 		} else if (memcmp(value, "mon", 3) == 0) {
-			m_tArtNetParams.tOutputType = OUTPUT_TYPE_MONITOR;
+			m_tArtNetParams.tOutputType = LIGHTSET_OUTPUT_TYPE_MONITOR;
 		} else {
-			m_tArtNetParams.tOutputType = OUTPUT_TYPE_DMX;
+			m_tArtNetParams.tOutputType = LIGHTSET_OUTPUT_TYPE_DMX;
 		}
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_OUTPUT;
 		return;

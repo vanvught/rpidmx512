@@ -30,17 +30,13 @@
 
 #include "oscserver.h"
 
-enum TOscOutputType {
-	OSC_OUTPUT_TYPE_DMX,
-	OSC_OUTPUT_TYPE_SPI,
-	OSC_OUTPUT_TYPE_MONITOR
-};
+#include "lightset.h"
 
 struct TOSCServerParams {
     uint32_t nSetList;
 	uint16_t nIncomingPort;
 	uint16_t nOutgoingPort;
-	TOscOutputType tOutputType;
+	TLightSetOutputType tOutputType;
 	bool bPartialTransmission;
 	char aPath[OSCSERVER_PATH_LENGTH_MAX];
 	char aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
@@ -61,22 +57,24 @@ public:
 	~OSCServerParams(void);
 
 	bool Load(void);
+
 	void Set(OscServer *pOscServer);
+
 	void Dump(void);
 
-	 uint16_t GetIncomingPort(void) {
+	uint16_t GetIncomingPort(void) {
 		return m_tOSCServerParams.nIncomingPort;
 	}
 
-	 uint16_t GetOutgoingPort(void) {
+	uint16_t GetOutgoingPort(void) {
 		return m_tOSCServerParams.nOutgoingPort;
 	}
 
-	 bool GetPartialTransmission(void) {
+	bool GetPartialTransmission(void) {
 		return m_tOSCServerParams.bPartialTransmission;
 	}
 
-	 TOscOutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType(void) {
 		return m_tOSCServerParams.tOutputType;
 	}
 
