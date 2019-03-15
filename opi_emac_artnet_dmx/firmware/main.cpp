@@ -88,21 +88,21 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	const TOutputType tOutputType = artnetparams.GetOutputType();
+	const TLightSetOutputType tOutputType = artnetparams.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("Ethernet Art-Net 3 Node ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == LIGHTSET_OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
@@ -143,7 +143,7 @@ void notmain(void) {
 	DMXSend dmx;
 	LightSet *pSpi;
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		bool isLedTypeSet = false;
 
 #if defined (ORANGE_PI)
@@ -241,7 +241,7 @@ void notmain(void) {
 
 	node.Print();
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
 	} else {
@@ -254,7 +254,7 @@ void notmain(void) {
 	
 	display.Write(1, "Eth Art-Net 3 ");
 
-	if (tOutputType == OUTPUT_TYPE_SPI) {
+	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		display.PutString("Pixel");
 	} else {
 		if (artnetparams.IsRdm()) {
