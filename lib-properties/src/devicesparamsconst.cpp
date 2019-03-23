@@ -1,5 +1,5 @@
 /**
- * @file propertiesbuilder.h
+ * @file devicesparamsconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef PROPERTIESBUILDER_H_
-#define PROPERTIESBUILDER_H_
+#include "devicesparamsconst.h"
 
-#include <stdint.h>
+#ifndef ALIGNED
+ #define ALIGNED __attribute__((aligned(4)))
+#endif
 
-class PropertiesBuilder {
-public:
-	PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength);
-	~PropertiesBuilder(void);
+char DevicesParamsConst::DEVICES_TXT[] ALIGNED = "devices.txt";
+char DevicesParamsConst::LED_TYPE[] ALIGNED = "led_type";
+char DevicesParamsConst::LED_COUNT[] ALIGNED = "led_count";
 
-	bool Add(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
-	bool Add(const char *pProperty, float fValue, bool bDoAdd = true);
-	bool Add(const char *pProperty, const char *pValue, bool bDoAdd = true);
+char DevicesParamsConst::DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
+char DevicesParamsConst::SPI_SPEED_HZ[] ALIGNED = "clock_speed_hz";
 
-	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
-
-	unsigned GetSize(void) {
-		return m_nSize;
-	}
-
-private:
-	uint8_t *m_pBuffer;
-	uint32_t m_nLength;
-	uint32_t m_nSize;
-};
-
-#endif /* PROPERTIESBUILDER_H_ */
+char DevicesParamsConst::LED_GROUPING[] ALIGNED = "led_grouping";
+char DevicesParamsConst::GLOBAL_BRIGHTNESS[] ALIGNED = "global_brightness";

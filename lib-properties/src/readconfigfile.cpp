@@ -82,9 +82,14 @@ void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 
-	char *p = new char[nLength];
+	char *p = new char[nLength + 1];
 	char *pFree = p;
 	memcpy(p, pBuffer, nLength);
+	p[nLength] = '\0';
+
+#ifndef NDEBUG
+		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, p);
+#endif
 
 	while (nLength != 0) {
 		char *pLine = (char *) p;

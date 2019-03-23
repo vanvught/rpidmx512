@@ -1,5 +1,5 @@
 /**
- * @file propertiesbuilder.h
+ * @file devicesparamsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef PROPERTIESBUILDER_H_
-#define PROPERTIESBUILDER_H_
+#ifndef DEVICESPARAMSCONST_H_
+#define DEVICESPARAMSCONST_H_
 
 #include <stdint.h>
 
-class PropertiesBuilder {
+class DevicesParamsConst {
 public:
-	PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength);
-	~PropertiesBuilder(void);
+	alignas(uint32_t) static char DEVICES_TXT[];
+	alignas(uint32_t) static char LED_TYPE[];
+	alignas(uint32_t) static char LED_COUNT[];
 
-	bool Add(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
-	bool Add(const char *pProperty, float fValue, bool bDoAdd = true);
-	bool Add(const char *pProperty, const char *pValue, bool bDoAdd = true);
+	alignas(uint32_t) static char DMX_START_ADDRESS[];
+	alignas(uint32_t) static char SPI_SPEED_HZ[];
 
-	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
-
-	unsigned GetSize(void) {
-		return m_nSize;
-	}
-
-private:
-	uint8_t *m_pBuffer;
-	uint32_t m_nLength;
-	uint32_t m_nSize;
+	alignas(uint32_t) static char LED_GROUPING[];
+	alignas(uint32_t) static char GLOBAL_BRIGHTNESS[];
 };
 
-#endif /* PROPERTIESBUILDER_H_ */
+#endif /* DEVICESPARAMSCONST_H_ */
