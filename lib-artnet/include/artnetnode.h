@@ -286,8 +286,8 @@ private:
 	bool m_IsLightSetRunning[ARTNET_MAX_PORTS];
 	bool m_IsRdmResponder;
 
-	char m_aSysName[16];
-	char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
+	alignas(uint32_t) char m_aSysName[16];
+	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 };
 
 #endif /* ARTNETNODE_H_ */

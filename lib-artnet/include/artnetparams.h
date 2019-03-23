@@ -101,8 +101,6 @@ public:
 
 	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
 	virtual void Copy(struct TArtNetParams *pArtNetParams)=0;
-
-private:
 };
 
 class ArtNetParams {
@@ -111,7 +109,12 @@ public:
 	~ArtNetParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+
 	void Set(ArtNetNode *);
+
 	void Dump(void);
 
 	uint8_t GetNet(void) {

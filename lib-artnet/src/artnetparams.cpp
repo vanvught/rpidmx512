@@ -27,10 +27,12 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -39,6 +41,7 @@
 
 #include "artnetparams.h"
 #include "artnetnode.h"
+#include "artnetconst.h"
 
 #include "lightset.h"
 
@@ -49,7 +52,6 @@
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
 static const char PARAMS_NET[] ALIGNED = "net";												///< 0 {default}
 static const char PARAMS_SUBNET[] ALIGNED = "subnet";										///< 0 {default}
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";									///< 0 {default}
@@ -64,14 +66,11 @@ static const char PARAMS_NODE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";
 static const char PARAMS_NODE_OEM_VALUE[] ALIGNED = "oem_value";
 static const char PARAMS_NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";	///< 10 {default}
 static const char PARAMS_NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";			///< 0 {default}
-static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a",
-		"universe_port_b", "universe_port_c", "universe_port_d" };
+static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
 static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
-static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a",
-		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 static const char PARAMS_PROTOCOL[] ALIGNED = "protocol";
-static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a",
-		"protocol_port_b", "protocol_port_c", "protocol_port_d" };
+static const char PARAMS_PROTOCOL_PORT[4][16] ALIGNED = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tArtNetParams;
@@ -86,6 +85,7 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 }
 
 ArtNetParams::~ArtNetParams(void) {
+	m_tArtNetParams.nSetList = 0;
 }
 
 bool ArtNetParams::Load(void) {
@@ -93,7 +93,7 @@ bool ArtNetParams::Load(void) {
 
 	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(ArtNetConst::ARTNET_TXT)) {
 		// There is a configuration file
 		if (m_pArtNetParamsStore != 0) {
 			m_pArtNetParamsStore->Update(&m_tArtNetParams);
@@ -107,6 +107,20 @@ bool ArtNetParams::Load(void) {
 	return true;
 }
 
+void ArtNetParams::Load(const char* pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pArtNetParamsStore != 0);
+
+	m_tArtNetParams.nSetList = 0;
+
+	ReadConfigFile config(ArtNetParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pArtNetParamsStore->Update(&m_tArtNetParams);
+}
+
 void ArtNetParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
@@ -115,33 +129,26 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	uint8_t value8;
 
 	if (Sscan::Uint8(pLine, PARAMS_TIMECODE, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNetParams.bUseTimeCode = true;
-			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_TIMECODE;
-		}
+		m_tArtNetParams.bUseTimeCode = (value8 != 0);
+		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_TIMECODE;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_TIMESYNC, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNetParams.bUseTimeSync = true;
-			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_TIMESYNC;
-		}
+		m_tArtNetParams.bUseTimeSync = (value8 != 0);
+		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_TIMESYNC;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_RDM, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNetParams.bEnableRdm = true;
-			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_RDM;
-		}
+		m_tArtNetParams.bEnableRdm = (value8 != 0);
+		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_RDM;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_RDM_DISCOVERY, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNetParams.bRdmDiscovery = true;
-		}
+		m_tArtNetParams.bRdmDiscovery = (value8 != 0);
+		//FIXME Missing m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_RDM_DISCOVERY
 		return;
 	}
 
@@ -201,10 +208,8 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_NODE_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNetParams.bDisableMergeTimeout = true;
-			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_MERGE_TIMEOUT;
-		}
+		m_tArtNetParams.bDisableMergeTimeout = (value8 != 0);
+		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_MERGE_TIMEOUT;
 		return;
 	}
 
@@ -279,14 +284,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 }
 
-uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) const {
-	assert(nPort < ARTNET_MAX_PORTS);
-
-	IsSet = isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << nPort);
-
-	return m_tArtNetParams.nUniversePort[nPort];
-}
-
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	assert(pArtNetNode != 0);
 
@@ -347,7 +344,7 @@ void ArtNetParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetConst::ARTNET_TXT);
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {
 		printf(" %s=%s\n", PARAMS_NODE_SHORT_NAME, m_tArtNetParams.aShortName);
@@ -430,6 +427,14 @@ void ArtNetParams::Dump(void) {
 		}
 	}
 #endif
+}
+
+uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) const {
+	assert(nPort < ARTNET_MAX_PORTS);
+
+	IsSet = isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << nPort);
+
+	return m_tArtNetParams.nUniversePort[nPort];
 }
 
 uint16_t ArtNetParams::HexUint16(const char *s) const {
