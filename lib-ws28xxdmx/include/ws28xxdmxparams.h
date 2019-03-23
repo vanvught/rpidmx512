@@ -38,7 +38,7 @@ struct TWS28xxDmxParams {
 	uint16_t nLedCount;
 	uint16_t nDmxStartAddress;
 	bool bLedGrouping;
-	uint32_t nClockSpeedHz;
+	uint32_t nSpiSpeedHz;
 	uint8_t nGlobalBrightness;
 };
 
@@ -58,6 +58,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+
 	void Set(WS28xxDmx *);
 
 	void Dump(void);
@@ -71,7 +73,7 @@ public:
 	}
 
 	uint32_t GetClockSpeedHz(void) {
-		return m_tWS28xxParams.nClockSpeedHz;
+		return m_tWS28xxParams.nSpiSpeedHz;
 	}
 
 	uint8_t GetGlobalBrightness(void) {

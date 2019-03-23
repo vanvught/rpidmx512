@@ -39,17 +39,18 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
+
+#include "devicesparamsconst.h"
 
 #define SET_LED_TYPE_MASK			(1 << 0)
 #define SET_LED_COUNT_MASK			(1 << 1)
 #define SET_DMX_START_ADDRESS_MASK	(1 << 2)
 #define SET_SPI_SPEED_MASK			(1 << 3)
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
-static const char PARAMS_LED_TYPE[] ALIGNED = "led_type";
-static const char PARAMS_LED_COUNT[] ALIGNED = "led_count";
-static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
-static const char PARAMS_SPI_SPEED_HZ[] ALIGNED = "clock_speed_hz";
+#define TLC59711_TYPES_COUNT 				2
+#define TLC59711_TYPES_MAX_NAME_LENGTH 		10
+static const char sLedTypes[TLC59711_TYPES_COUNT][TLC59711_TYPES_MAX_NAME_LENGTH] ALIGNED = { "TLC59711\0", "TLC59711W" };
 
 TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore): m_pLC59711ParamsStore(pTLC59711ParamsStore) {
 	m_tLC59711Params.nSetList = 0;
@@ -59,12 +60,16 @@ TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStor
 	m_tLC59711Params.nSpiSpeedHz = 0;
 }
 
+TLC59711DmxParams::~TLC59711DmxParams(void) {
+	m_tLC59711Params.nSetList = 0;
+}
+
 bool TLC59711DmxParams::Load(void) {
 	m_tLC59711Params.nSetList = 0;
 
 	ReadConfigFile configfile(TLC59711DmxParams::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(DevicesParamsConst::DEVICES_TXT)) {
 		// There is a configuration file
 		if (m_pLC59711ParamsStore != 0) {
 			m_pLC59711ParamsStore->Update(&m_tLC59711Params);
@@ -78,7 +83,62 @@ bool TLC59711DmxParams::Load(void) {
 	return true;
 }
 
-TLC59711DmxParams::~TLC59711DmxParams(void) {
+void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pLC59711ParamsStore != 0);
+
+	m_tLC59711Params.nSetList = 0;
+
+	ReadConfigFile config(TLC59711DmxParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pLC59711ParamsStore->Update(&m_tLC59711Params);
+}
+
+void TLC59711DmxParams::callbackFunction(const char* pLine) {
+	assert(pLine != 0);
+
+	uint8_t value8;
+	uint16_t value16;
+	uint32_t value32;
+	uint8_t len;
+	char buffer[12];
+
+	len = 9;
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, buffer, &len) == SSCAN_OK) {
+		buffer[len] = '\0';
+		if (strcasecmp(buffer, sLedTypes[TTLC59711_TYPE_RGB]) == 0) {
+			m_tLC59711Params.LedType = TTLC59711_TYPE_RGB;
+			m_tLC59711Params.nSetList |= SET_LED_TYPE_MASK;
+		} else if (strcasecmp(buffer, sLedTypes[TTLC59711_TYPE_RGBW]) == 0) {
+			m_tLC59711Params.LedType = TTLC59711_TYPE_RGBW;
+			m_tLC59711Params.nSetList |= SET_LED_TYPE_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_COUNT, &value8) == SSCAN_OK) {
+		if ((value8 != 0) && (value8 <= 170)) {
+			m_tLC59711Params.nLedCount = value8;
+			m_tLC59711Params.nSetList |= SET_LED_COUNT_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, DevicesParamsConst::DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if ((value16 != 0) && (value16 <= 512)) {
+			m_tLC59711Params.nDmxStartAddress = value16;
+			m_tLC59711Params.nSetList |= SET_DMX_START_ADDRESS_MASK;
+		}
+		return;
+	}
+
+	if (Sscan::Uint32(pLine, DevicesParamsConst::SPI_SPEED_HZ, &value32) == SSCAN_OK) {
+		m_tLC59711Params.nSpiSpeedHz = value32;
+		m_tLC59711Params.nSetList |= SET_SPI_SPEED_MASK;
+	}
 }
 
 void TLC59711DmxParams::Set(TLC59711Dmx* pTLC59711Dmx) {
@@ -109,28 +169,38 @@ void TLC59711DmxParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DevicesParamsConst::DEVICES_TXT);
 
 	if(isMaskSet(SET_LED_TYPE_MASK)) {
-		printf(" %s=%d {RGB%s}\n", PARAMS_LED_TYPE, m_tLC59711Params.LedType, m_tLC59711Params.LedType == TTLC59711_TYPE_RGB ? "" : "W");
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, sLedTypes[m_tLC59711Params.LedType], (int) m_tLC59711Params.LedType);
 	}
 
 	if(isMaskSet(SET_LED_COUNT_MASK)) {
-		printf(" %s=%d\n", PARAMS_LED_COUNT, m_tLC59711Params.nLedCount);
+		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, m_tLC59711Params.nLedCount);
 	}
 
 	if(isMaskSet(SET_DMX_START_ADDRESS_MASK)) {
-		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, m_tLC59711Params.nDmxStartAddress);
+		printf(" %s=%d\n", DevicesParamsConst::DMX_START_ADDRESS, m_tLC59711Params.nDmxStartAddress);
 	}
 
 	if(isMaskSet(SET_SPI_SPEED_MASK)) {
-		printf(" %s=%d Hz\n", PARAMS_SPI_SPEED_HZ, m_tLC59711Params.nSpiSpeedHz);
+		printf(" %s=%d Hz\n", DevicesParamsConst::SPI_SPEED_HZ, m_tLC59711Params.nSpiSpeedHz);
 	}
 #endif
 }
 
-bool TLC59711DmxParams::isMaskSet(uint32_t nMask) const {
-	return (m_tLC59711Params.nSetList & nMask) == nMask;
+const char* TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTTLC59711Type) {
+	assert (tTTLC59711Type < TLC59711_TYPES_COUNT);
+
+	return sLedTypes[tTTLC59711Type];
+}
+
+bool TLC59711DmxParams::IsSetLedType(void) const {
+	return isMaskSet(SET_LED_TYPE_MASK);
+}
+
+bool TLC59711DmxParams::IsSetLedCount(void) const {
+	return isMaskSet(SET_LED_COUNT_MASK);
 }
 
 void TLC59711DmxParams::staticCallbackFunction(void* p, const char* s) {
@@ -140,63 +210,6 @@ void TLC59711DmxParams::staticCallbackFunction(void* p, const char* s) {
 	((TLC59711DmxParams *) p)->callbackFunction(s);
 }
 
-void TLC59711DmxParams::callbackFunction(const char* pLine) {
-	uint8_t value8;
-	uint16_t value16;
-	uint32_t value32;
-	uint8_t len;
-	char buffer[12];
-
-	len = 9;
-	buffer[8] = '\0';
-	buffer[9] = '\0';
-	if (Sscan::Char(pLine, PARAMS_LED_TYPE, buffer, &len) == SSCAN_OK) {
-		if ((len == 8) && (strcasecmp(buffer, "tlc59711") == 0)) {
-			m_tLC59711Params.LedType = TTLC59711_TYPE_RGB;
-			m_tLC59711Params.nSetList |= SET_LED_TYPE_MASK;
-		} else if ((len == 9) && (strcasecmp(buffer, "tlc59711w") == 0)) {
-			m_tLC59711Params.LedType = TTLC59711_TYPE_RGBW;
-			m_tLC59711Params.nSetList |= SET_LED_TYPE_MASK;
-		}
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_LED_COUNT, &value8) == SSCAN_OK) {
-		if ((value8 != 0) && (value8 <= 170)) {
-			m_tLC59711Params.nLedCount = value8;
-			m_tLC59711Params.nSetList |= SET_LED_COUNT_MASK;
-		}
-		return;
-	}
-
-	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if ((value16 != 0) && (value16 <= 512)) {
-			m_tLC59711Params.nDmxStartAddress = value16;
-			m_tLC59711Params.nSetList |= SET_DMX_START_ADDRESS_MASK;
-		}
-		return;
-	}
-
-	if (Sscan::Uint32(pLine, PARAMS_SPI_SPEED_HZ, &value32) == SSCAN_OK) {
-		m_tLC59711Params.nSpiSpeedHz = value32;
-		m_tLC59711Params.nSetList |= SET_SPI_SPEED_MASK;
-	}
-}
-
-const char* TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTTLC59711Type) {
-	if (tTTLC59711Type == TTLC59711_TYPE_RGB) {
-		return "TLC59711 (RGB)";
-	} else if (tTTLC59711Type == TTLC59711_TYPE_RGBW) {
-		return "TLC59711 (RGBW)";
-	}
-
-	return "TLC59711 (Unknown)";
-}
-
-bool TLC59711DmxParams::IsSetLedType(void) const {
-	return isMaskSet(SET_LED_TYPE_MASK);
-}
-
-bool TLC59711DmxParams::IsSetLedCount(void) const {
-	return isMaskSet(SET_LED_COUNT_MASK);
+bool TLC59711DmxParams::isMaskSet(uint32_t nMask) const {
+	return (m_tLC59711Params.nSetList & nMask) == nMask;
 }

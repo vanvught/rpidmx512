@@ -91,8 +91,8 @@ private:
 	uint8_t m_nBoards;
 	uint32_t m_nSpiSpeedHz;
 	uint32_t m_nFirst32;
-	uint16_t *m_pBuffer;
-	uint16_t *m_pBufferBlackout;
+	alignas(uint32_t) uint16_t *m_pBuffer;
+	alignas(uint32_t) uint16_t *m_pBufferBlackout;
 	uint32_t m_nBufSize;
 };
 

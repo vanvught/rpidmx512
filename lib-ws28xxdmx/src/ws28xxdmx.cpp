@@ -35,7 +35,7 @@
 #if defined (__circle__)
  #include <circle/logger.h>
 #elif (__linux__)
-#else
+#elif defined (BARE_METAL)
  #include "monitor.h"
 #endif
 #endif
@@ -162,7 +162,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 #ifndef NDEBUG
 #if defined (__circle__)
 	CLogger::Get ()->Write(__FUNCTION__, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
-#else
+#elif defined (BARE_METAL)
 	monitor_line(MONITOR_LINE_STATS, "%d-%d:%x %x %x-%d|%s", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength, bUpdate == false ? "False" : "True");
 #endif
 #endif

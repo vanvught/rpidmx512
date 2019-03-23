@@ -108,18 +108,18 @@ private:
 #endif
 
 private:
-	TWS28XXType			m_tLEDType;
-	uint16_t			m_nLEDCount;
-	uint32_t			m_nClockSpeedHz;
-	uint8_t				m_nGlobalBrightness;
-	uint32_t			m_nBufSize;
-	uint8_t				*m_pBuffer;
-	uint8_t				*m_pBlackoutBuffer;
-	volatile bool	 	m_bUpdating;
-	uint8_t				m_nHighCode;
+	TWS28XXType m_tLEDType;
+	uint16_t m_nLEDCount;
+	uint32_t m_nClockSpeedHz;
+	uint8_t m_nGlobalBrightness;
+	alignas(uint32_t) uint32_t m_nBufSize;
+	alignas(uint32_t) uint8_t *m_pBuffer;
+	alignas(uint32_t) uint8_t *m_pBlackoutBuffer;
+	volatile bool m_bUpdating;
+	uint8_t m_nHighCode;
 #if defined (__circle__)
-	uint8_t				*m_pReadBuffer;
-	CSPIMasterDMA	 	m_SPIMaster;
+	uint8_t *m_pReadBuffer;
+	CSPIMasterDMA m_SPIMaster;
 #endif
 };
 

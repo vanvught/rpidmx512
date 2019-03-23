@@ -44,8 +44,6 @@ public:
 
 	virtual void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
 	virtual void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
-
-private:
 };
 
 class TLC59711DmxParams {
@@ -54,8 +52,21 @@ public:
 	~TLC59711DmxParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+
 	void Set(TLC59711Dmx *);
+
 	void Dump(void);
+
+	TTLC59711Type GetLedType(void) {
+		return m_tLC59711Params.LedType;
+	}
+
+	uint16_t GetLedCount(void) {
+		return m_tLC59711Params.nLedCount;
+	}
 
 	bool IsSetLedType(void) const;
 	bool IsSetLedCount(void) const;
