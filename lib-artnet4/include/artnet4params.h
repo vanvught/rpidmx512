@@ -32,6 +32,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "artnetparams.h"
+#include "artnet4node.h"
+
 struct TArtNet4Params {
 	uint32_t nSetList;
 	bool bMapUniverse0;
@@ -45,18 +48,25 @@ public:
 	virtual void Copy(struct TArtNet4Params *pArtNet4Params)=0;
 };
 
-class ArtNet4Params {
+class ArtNet4Params: public ArtNetParams {
 public:
 	ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore = 0);
 	~ArtNet4Params(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+
+	void Set(ArtNet4Node *pArtNet4Node);
+
 	void Dump(void);
 
-	 bool IsMapUniverse0(void) {
+	bool IsMapUniverse0(void) {
 		return m_tArtNet4Params.bMapUniverse0;
 	}
 
+public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

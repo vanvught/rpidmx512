@@ -39,7 +39,7 @@
 
 class ArtNet4Node: public ArtNetNode, ArtNet4Handler {
 public:
-	ArtNet4Node(bool bMapUniverse0 = false);
+	ArtNet4Node(void);
 	~ArtNet4Node(void);
 
 	void SetPort(uint8_t nPortId);
@@ -53,7 +53,14 @@ public:
 	void HandleAddress(uint8_t nCommand);
 	uint8_t GetStatus(uint8_t nPortId);
 
-	 bool IsStatusChanged(void) {
+	void SetMapUniverse0(bool bMapUniverse0 = false) {
+		m_bMapUniverse0 = bMapUniverse0;
+	}
+	bool IsMapUniverse0(void) {
+		return m_bMapUniverse0;
+	}
+
+	bool IsStatusChanged(void) {
 		return m_Bridge.IsStatusChanged();
 	}
 

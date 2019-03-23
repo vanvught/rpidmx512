@@ -27,44 +27,56 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
+
+#include "debug.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "artnet4params.h"
+#include "artnetconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "spiflashstore.h"
+
 #define BOOL2STRING(b)				(b) ? "Yes" : "No"
 
-#define SET_MAP_UNIVERSE0_MASK		(1 << 0)
+enum TArtNet4ParamsMask {
+	ARTNET4_PARAMS_MASK_MAP_UNIVERSE0 = (1 << 0)
+};
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "artnet.txt";
 static const char PARAMS_MAP_UNIVERSE0[] ALIGNED = "map_universe0";
 
-ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore* pArtNet4ParamsStore): m_pArtNet4ParamsStore(pArtNet4ParamsStore)  {
-	uint8_t *p = (uint8_t *) &m_tArtNet4Params;
-
-	for (uint32_t i = 0; i < sizeof(struct TArtNet4Params); i++) {
-		*p++ = 0;
-	}
-
+ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore* pArtNet4ParamsStore):
+	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : (ArtNetParamsStore *)SpiFlashStore::Get()->GetStoreArtNet()),
+	m_pArtNet4ParamsStore(pArtNet4ParamsStore)
+{
+	m_tArtNet4Params.nSetList = 0;
+	m_tArtNet4Params.bMapUniverse0 = false;
 }
 
 ArtNet4Params::~ArtNet4Params(void) {
+	m_tArtNet4Params.nSetList = 0;
 }
 
 bool ArtNet4Params::Load(void) {
+	DEBUG_ENTRY
+
+	ArtNetParams::Load();
+
 	m_tArtNet4Params.nSetList = 0;
 
 	ReadConfigFile configfile(ArtNet4Params::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(ArtNetConst::ARTNET_TXT)) {
 		// There is a configuration file
 		if (m_pArtNet4ParamsStore != 0) {
 			m_pArtNet4ParamsStore->Update(&m_tArtNet4Params);
@@ -72,32 +84,32 @@ bool ArtNet4Params::Load(void) {
 	} else if (m_pArtNet4ParamsStore != 0) {
 		m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
 
+	DEBUG_EXIT
 	return true;
 }
 
-void ArtNet4Params::Dump(void) {
-#ifndef NDEBUG
-	if (m_tArtNet4Params.nSetList == 0) {
-		return;
-	}
+void ArtNet4Params::Load(const char* pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pArtNet4ParamsStore != 0);
 
-	if(isMaskSet(SET_MAP_UNIVERSE0_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_MAP_UNIVERSE0, (int) m_tArtNet4Params.bMapUniverse0, BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
-	}
+	ArtNetParams::Load(pBuffer, nLength);
 
-	#endif
-}
+	m_tArtNet4Params.nSetList = 0;
 
-void ArtNet4Params::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	ReadConfigFile config(ArtNet4Params::staticCallbackFunction, this);
 
-	((ArtNet4Params *) p)->callbackFunction(s);
+	config.Read(pBuffer, nLength);
+
+	m_pArtNet4ParamsStore->Update(&m_tArtNet4Params);
+
+	DEBUG_EXIT
 }
 
 void ArtNet4Params::callbackFunction(const char* pLine) {
@@ -107,9 +119,44 @@ void ArtNet4Params::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, PARAMS_MAP_UNIVERSE0, &value8) == SSCAN_OK) {
 		m_tArtNet4Params.bMapUniverse0 = (value8 != 0);
-		m_tArtNet4Params.nSetList |= SET_MAP_UNIVERSE0_MASK;
+		m_tArtNet4Params.nSetList |= ARTNET4_PARAMS_MASK_MAP_UNIVERSE0;
 		return;
 	}
+}
+
+void ArtNet4Params::Set(ArtNet4Node* pArtNet4Node) {
+	DEBUG_ENTRY
+
+	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
+		pArtNet4Node->SetMapUniverse0(m_tArtNet4Params.bMapUniverse0);
+	}
+
+	ArtNetParams::Set((ArtNetNode *)pArtNet4Node);
+
+	DEBUG_EXIT
+}
+
+void ArtNet4Params::Dump(void) {
+#ifndef NDEBUG
+	ArtNetParams::Dump();
+
+	if (m_tArtNet4Params.nSetList == 0) {
+		return;
+	}
+
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetConst::ARTNET_TXT);
+
+	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
+		printf(" %s=%d [%s]\n", PARAMS_MAP_UNIVERSE0, (int) m_tArtNet4Params.bMapUniverse0, BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
+	}
+#endif
+}
+
+void ArtNet4Params::staticCallbackFunction(void* p, const char* s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((ArtNet4Params *) p)->callbackFunction(s);
 }
 
 bool ArtNet4Params::isMaskSet(uint32_t nMask) const {

@@ -41,7 +41,7 @@
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
-ArtNet4Node::ArtNet4Node(bool bMapUniverse0): ArtNetNode(4), m_bMapUniverse0(bMapUniverse0) {
+ArtNet4Node::ArtNet4Node(void): ArtNetNode(4), m_bMapUniverse0(false) {
 	DEBUG_ENTRY
 
 	assert((uint16_t) ARTNET_MAX_PORTS <= (uint16_t) E131_MAX_PORTS);
