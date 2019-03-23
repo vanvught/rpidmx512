@@ -23,8 +23,10 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -36,6 +38,7 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
 #define SET_SOURCE				(1 << 0)
 #define SET_MAX7219_TYPE		(1 << 1)
@@ -58,11 +61,11 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 }
 
 LtcParams::~LtcParams(void) {
-	m_tLtcParams.bSetList = 0;
+	m_tLtcParams.nSetList = 0;
 }
 
 bool LtcParams::Load(void) {
-	m_tLtcParams.bSetList = 0;
+	m_tLtcParams.nSetList = 0;
 
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
@@ -80,16 +83,71 @@ bool LtcParams::Load(void) {
 	return true;
 }
 
+void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pLTcParamsStore != 0);
+
+	m_tLtcParams.nSetList = 0;
+
+	ReadConfigFile config(LtcParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pLTcParamsStore->Update(&m_tLtcParams);
+}
+
+void LtcParams::callbackFunction(const char* pLine) {
+	assert(pLine != 0);
+
+	uint8_t value8;
+	char source[16];
+	uint8_t len = sizeof(source);
+
+	if (Sscan::Char(pLine, PARAMS_SOURCE, source, &len) == SSCAN_OK) {
+		if (strncasecmp(source, "artnet", len) == 0) {
+			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_ARTNET;
+			m_tLtcParams.nSetList |= SET_SOURCE;
+		} else if (strncasecmp(source, "midi", len) == 0) {
+			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_MIDI;
+			m_tLtcParams.nSetList |= SET_SOURCE;
+		} else if (strncasecmp(source, "ltc", len) == 0) {
+			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
+			m_tLtcParams.nSetList |= SET_SOURCE;
+		}
+	}
+
+	len = sizeof(source);
+
+	if (Sscan::Char(pLine, PARAMS_MAX7219_TYPE, source, &len) == SSCAN_OK) {
+		if (strncasecmp(source, "7segment", len) == 0) {
+			m_tLtcParams.tMax7219Type = 1;
+			m_tLtcParams.nSetList |= SET_MAX7219_TYPE;
+		} else if (strncasecmp(source, "matrix", len) == 0) {
+			m_tLtcParams.tMax7219Type = 0;
+			m_tLtcParams.nSetList |= SET_MAX7219_TYPE;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_MAX7219_INTENSITY, &value8) == SSCAN_OK) {
+		if (value8 <= 0x0F) {
+			m_tLtcParams.nMax7219Intensity = value8;
+			m_tLtcParams.nSetList |= SET_MAX7219_INTENSITY;
+		}
+		return;
+	}
+}
+
 void LtcParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tLtcParams.bSetList == 0) {
+	if (m_tLtcParams.nSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(SET_SOURCE)) {
-		printf(" %s=%d\n", PARAMS_SOURCE, m_tLtcParams.tSource);
+		printf(" %s=%d [%s]\n", PARAMS_SOURCE, m_tLtcParams.tSource, m_tLtcParams.tSource == (uint8_t) LTC_READER_SOURCE_ARTNET ? "artnet" : (m_tLtcParams.tSource == (uint8_t) LTC_READER_SOURCE_MIDI ? "midi" : "ltc"));
 	}
 
 	if (isMaskSet(SET_MAX7219_TYPE)) {
@@ -103,10 +161,6 @@ void LtcParams::Dump(void) {
 #endif
 }
 
-bool LtcParams::isMaskSet(uint32_t nMask) const {
-	return (m_tLtcParams.bSetList & nMask) == nMask;
-}
-
 void LtcParams::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
@@ -114,43 +168,6 @@ void LtcParams::staticCallbackFunction(void* p, const char* s) {
 	((LtcParams *) p)->callbackFunction(s);
 }
 
-void LtcParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
-
-	uint8_t value8;
-	char source[16];
-	uint8_t len = sizeof(source);
-
-	if (Sscan::Char(pLine, PARAMS_SOURCE, source, &len) == SSCAN_OK) {
-		if (strncasecmp(source, "artnet", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_ARTNET;
-			m_tLtcParams.bSetList |= SET_SOURCE;
-		} else if (strncasecmp(source, "midi", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_MIDI;
-			m_tLtcParams.bSetList |= SET_SOURCE;
-		} else if (strncasecmp(source, "ltc", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
-			m_tLtcParams.bSetList |= SET_SOURCE;
-		}
-	}
-
-	len = sizeof(source);
-
-	if (Sscan::Char(pLine, PARAMS_MAX7219_TYPE, source, &len) == SSCAN_OK) {
-		if (strncasecmp(source, "7segment", len) == 0) {
-			m_tLtcParams.tMax7219Type = 1;
-			m_tLtcParams.bSetList |= SET_MAX7219_TYPE;
-		} else if (strncasecmp(source, "matrix", len) == 0) {
-			m_tLtcParams.tMax7219Type = 0;
-			m_tLtcParams.bSetList |= SET_MAX7219_TYPE;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_MAX7219_INTENSITY, &value8) == SSCAN_OK) {
-		if (value8 <= 0x0F) {
-			m_tLtcParams.nMax7219Intensity = value8;
-			m_tLtcParams.bSetList |= SET_MAX7219_INTENSITY;
-		}
-		return;
-	}
+bool LtcParams::isMaskSet(uint32_t nMask) const {
+	return (m_tLtcParams.nSetList & nMask) == nMask;
 }

@@ -111,7 +111,7 @@ private:
 	bool m_bHaveFlashChip;
 	bool m_bIsNew;
 	uint32_t m_nStartAddress;
-	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
+	alignas(uint32_t) uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
 	uint32_t m_nSpiFlashStoreSize;
 	TStoreState m_tState;
 

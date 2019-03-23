@@ -28,7 +28,7 @@
 #include <stdint.h>
 
 struct TMidiParams {
-	uint32_t bSetList;
+	uint32_t nSetList;
 	uint32_t nBaudrate;
 	uint8_t nActiveSense;
 };
@@ -39,9 +39,6 @@ public:
 
 	virtual void Update(const struct TMidiParams *pMidiParams)=0;
 	virtual void Copy(struct TMidiParams *pMidiParams)=0;
-
-private:
-
 };
 
 class MidiParams {
@@ -50,32 +47,32 @@ public:
 	~MidiParams(void);
 
 	bool Load(void);
-	void Dump(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(void);
 
-	 uint32_t GetBaudrate(void) {
+	void Dump(void);
+
+	uint32_t GetBaudrate(void) {
 		return m_tMidiParams.nBaudrate;
 	}
 
-	 bool GetActiveSense(void) {
+	bool GetActiveSense(void) {
 		return (m_tMidiParams.nActiveSense != 0);
 	}
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const;
 
 private:
     MidiParamsStore 	*m_pMidiParamsStore;
     struct TMidiParams	m_tMidiParams;
 };
-
-
 
 #endif /* MIDIPARAMS_H_ */

@@ -2,7 +2,7 @@
  * @file simple_move.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,26 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "bcm2835.h"
-
 #include "autodriver.h"
 
 #define GPIO_BUSY_IN	RPI_V2_GPIO_P1_35
 #define GPIO_RESET_OUT 	RPI_V2_GPIO_P1_38
 
 int main(int argc, char **argv) {
-	/****************************************************************************************************/
-	/*                                                                                                  */
-	if (bcm2835_init() == 0) {
-		fprintf(stderr, "Not able to init the bmc2835 library\n");
+	/***************************************************************************/
+	/*                                                                         */
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
 		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
 	}
 
 	bcm2835_spi_begin();
@@ -51,8 +57,8 @@ int main(int argc, char **argv) {
 	bcm2835_delayMicroseconds(10000);
 	bcm2835_gpio_set(GPIO_RESET_OUT);
 	bcm2835_delayMicroseconds(10000);
-	/*                                                                                                  */
-	/****************************************************************************************************/
+	/*                                                                         */
+	/***************************************************************************/
 
 	AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT);
 	//AutoDriver board(0, BCM2835_SPI_CS0, GPIO_RESET_OUT, GPIO_BUSY_IN);

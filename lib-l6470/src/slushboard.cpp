@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,12 +70,6 @@ extern "C" {
 
 
 SlushBoard::SlushBoard(void) {
-#if defined (__linux__)
-	if (bcm2835_init() == 0) {
-		printf("Not able to init the bmc2835 library\n");
-	}
-#endif
-
 	bcm2835_gpio_fsel(SLUSH_L6470_RESET, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_set(SLUSH_L6470_RESET);
 

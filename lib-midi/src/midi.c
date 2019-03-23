@@ -1,3 +1,4 @@
+#if !defined(RASPPI)
 /**
  * @file midi.c
  *
@@ -858,4 +859,5 @@ void midi_init(_midi_direction dir) {
 
 	midi_interface_f.init();
 }
+#endif
 #endif

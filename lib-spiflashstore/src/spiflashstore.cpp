@@ -177,6 +177,8 @@ void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void* pData, ui
 
 	DEBUG_PRINTF("[%s]:%d:%p[%d]:%d-%d", s_aStoreName[tStore], tStore, pData, nOffset, nDataLength, m_tState);
 
+	debug_dump(pData, nDataLength);
+
 	bool bIsChanged = false;
 
 	const uint32_t nBase = nOffset + GetStoreOffset(tStore);

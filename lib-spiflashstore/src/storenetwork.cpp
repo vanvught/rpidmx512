@@ -2,7 +2,7 @@
  * @file storenetwork.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ void StoreNetwork::UpdateIp(uint32_t nIp) {
 
 	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, nLocalIp));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), (void *)&nIp, sizeof(uint32_t), NetworkParams::GetMaskIpAddress());
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), (void *)&nIp, sizeof(uint32_t), NETWORK_PARAMS_MASK_IP_ADDRESS);
 
 	DEBUG_EXIT
 }
@@ -83,7 +83,7 @@ void StoreNetwork::UpdateNetMask(uint32_t nNetMask) {
 
 	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, nNetmask));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), (void *)&nNetMask, sizeof(uint32_t), NetworkParams::GetMaskNetMask());
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), (void *)&nNetMask, sizeof(uint32_t), NETWORK_PARAMS_MASK_NET_MASK);
 
 	DEBUG_EXIT
 }

@@ -59,25 +59,18 @@ static const char PARAMS_MAB_TIME[] ALIGNED = "dmxsend_mab_time";
 static const char PARAMS_REFRESH_RATE[] ALIGNED = "dmxsend_refresh_rate";
 
 DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXParamsStore) {
-	m_tDMXParams.bSetList = 0;
+	m_tDMXParams.nSetList = 0;
 	m_tDMXParams.nBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
 	m_tDMXParams.nMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
 	m_tDMXParams.nRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
 }
 
 DMXParams::~DMXParams(void) {
-	m_tDMXParams.bSetList = 0;
-}
-
-void DMXParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((DMXParams *) p)->callbackFunction(s);
+	m_tDMXParams.nSetList = 0;
 }
 
 bool DMXParams::Load(void) {
-	m_tDMXParams.bSetList = 0;
+	m_tDMXParams.nSetList = 0;
 
 	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
 
@@ -103,16 +96,16 @@ void DMXParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, PARAMS_BREAK_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_BREAK_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_BREAK_TIME)) {
 			m_tDMXParams.nBreakTime = value8;
-			m_tDMXParams.bSetList |= SET_BREAK_TIME_MASK;
+			m_tDMXParams.nSetList |= SET_BREAK_TIME_MASK;
 		}
 	} else if (Sscan::Uint8(pLine, PARAMS_MAB_TIME, &value8) == SSCAN_OK) {
 		if ((value8 >= (uint8_t) DMX_PARAMS_MIN_MAB_TIME) && (value8 <= (uint8_t) DMX_PARAMS_MAX_MAB_TIME)) {
 			m_tDMXParams.nMabTime = value8;
-			m_tDMXParams.bSetList |= SET_MAB_TIME_MASK;
+			m_tDMXParams.nSetList |= SET_MAB_TIME_MASK;
 		}
 	} else if (Sscan::Uint8(pLine, PARAMS_REFRESH_RATE, &value8) == SSCAN_OK) {
 		m_tDMXParams.nRefreshRate = value8;
-		m_tDMXParams.bSetList |= SET_REFRESH_RATE_MASK;
+		m_tDMXParams.nSetList |= SET_REFRESH_RATE_MASK;
 	}
 }
 
@@ -152,7 +145,7 @@ void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
 
 void DMXParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tDMXParams.bSetList == 0) {
+	if (m_tDMXParams.nSetList == 0) {
 		return;
 	}
 
@@ -172,7 +165,14 @@ void DMXParams::Dump(void) {
 #endif
 }
 
+void DMXParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((DMXParams *) p)->callbackFunction(s);
+}
+
 bool DMXParams::isMaskSet(uint32_t nMask) const {
-	return (m_tDMXParams.bSetList & nMask) == nMask;
+	return (m_tDMXParams.nSetList & nMask) == nMask;
 }
 

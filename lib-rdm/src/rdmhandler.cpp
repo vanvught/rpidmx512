@@ -897,10 +897,10 @@ void RDMHandler::GetDeviceHours(uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
 	pRdmDataOut->param_data_length = RDM_DEVICE_HOURS_SIZE;
-	pRdmDataOut->param_data[0] = (uint8_t)(device_hours >> 24);
-	pRdmDataOut->param_data[1] = (uint8_t)(device_hours >> 16);
-	pRdmDataOut->param_data[2] = (uint8_t)(device_hours >> 8);
-	pRdmDataOut->param_data[3] = (uint8_t)device_hours;
+	pRdmDataOut->param_data[0] = (uint8_t) (device_hours >> 24);
+	pRdmDataOut->param_data[1] = (uint8_t) (device_hours >> 16);
+	pRdmDataOut->param_data[2] = (uint8_t) (device_hours >> 8);
+	pRdmDataOut->param_data[3] = (uint8_t) device_hours;
 
 	RespondMessageAck();
 }
@@ -1103,7 +1103,7 @@ void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
 
 	uint16_t j = 0;
 
-	for (uint16_t i = 0; i < nDmxFootPrint; i++) {
+	for (uint16_t i = 0; i < nDmxFootPrint; i++) { // FIXME PDL
 		if (m_pRDMDeviceResponder->GetSlotInfo(nSubDevice, i, tSlotInfo)) {
 			rdm_response->param_data[j++] = (uint8_t) (i >> 8);
 			rdm_response->param_data[j++] = (uint8_t) i;

@@ -3,7 +3,7 @@
  * @file bwui.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ int ButtonsBw::GetChar(void) {
 
 void ButtonsBw::Setup(void) {
 	i2c_set_address(m_nSlaveAddress >> 1);
-	i2c_set_clockdivider(I2C_CLOCK_DIVIDER_100kHz);
+	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
 void ButtonsBw::Write(const char *buffer, uint32_t size) {

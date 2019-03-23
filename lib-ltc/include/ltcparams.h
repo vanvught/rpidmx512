@@ -36,7 +36,7 @@ enum TLtcReaderSource {
 };
 
 struct TLtcParams {
-	uint32_t bSetList;
+	uint32_t nSetList;
 	uint8_t tSource;
 	uint8_t tMax7219Type;
 	uint8_t nMax7219Intensity;
@@ -48,9 +48,6 @@ public:
 
 	virtual void Update(const struct TLtcParams *pTLtcParams)=0;
 	virtual void Copy(struct TLtcParams *pTLtcParams)=0;
-
-private:
-
 };
 
 class LtcParams {
@@ -59,29 +56,30 @@ public:
 	~LtcParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
 
-	 TLtcReaderSource GetSource(void) {
-		return (TLtcReaderSource) m_tLtcParams.tSource;
-	}
-
-	 uint8_t GetMax7219Intensity(void) {
-		return m_tLtcParams.nMax7219Intensity;
-	}
-
-	 tMax7219Types GetMax7219Type(void) {
-		return (tMax7219Types) m_tLtcParams.tMax7219Type;
-	}
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump(void);
 
-private:
-	bool isMaskSet(uint32_t nMask) const;
+	TLtcReaderSource GetSource(void) {
+		return (TLtcReaderSource) m_tLtcParams.tSource;
+	}
+
+	uint8_t GetMax7219Intensity(void) {
+		return m_tLtcParams.nMax7219Intensity;
+	}
+
+	tMax7219Types GetMax7219Type(void) {
+		return (tMax7219Types) m_tLtcParams.tMax7219Type;
+	}
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const;
 
 private:
     LtcParamsStore 	*m_pLTcParamsStore;
