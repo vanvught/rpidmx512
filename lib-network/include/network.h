@@ -102,7 +102,7 @@ public:
 	void Print(void);
 
 public:
-	 static Network* Get(void) {
+	static Network* Get(void) {
 		return s_pThis;
 	}
 

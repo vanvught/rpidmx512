@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include "network.h"
 
 struct TNetworkParams {
-	uint32_t bSetList;
+	uint32_t nSetList;
 	uint32_t nLocalIp;
 	uint32_t nNetmask;
 	uint32_t nGatewayIp;
@@ -58,9 +58,6 @@ public:
 
 	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
 	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
-
-private:
-
 };
 
 class NetworkParams {
@@ -69,6 +66,10 @@ public:
 	~NetworkParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize);
+
 	void Dump(void);
 
 	bool isDhcpUsed(void) {
@@ -83,6 +84,10 @@ public:
 		return m_tNetworkParams.nNetmask;
 	}
 
+	const uint8_t *GetHostName(void) {
+		return m_tNetworkParams.aHostName;
+	}
+
 	uint32_t GetDefaultGateway(void) {
 		return m_tNetworkParams.nGatewayIp;
 	}
@@ -91,27 +96,21 @@ public:
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	const uint8_t *GetHostName(void) {
-		return m_tNetworkParams.aHostName;
-	}
-
-	// H2+/H3 Only
+	// Allwinner H2+/H3 Only
 	bool GetResetEmac(void) {
 		return m_tNetworkParams.bResetEmac;
 	}
-
-private:
-	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+	bool isMaskSet(uint32_t nMask) const;
 
 private:
-    NetworkParamsStore 		*m_pNetworkParamsStore;
-    struct TNetworkParams	m_tNetworkParams;
+	NetworkParamsStore *m_pNetworkParamsStore;
+	struct TNetworkParams m_tNetworkParams;
 };
 
 #endif /* NETWORKPARAMS_H_ */

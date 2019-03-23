@@ -2,7 +2,7 @@
  * @file networkbaremetalmacaddress.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,28 +37,29 @@ public:
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	// Dummy
-	 int32_t Begin(uint16_t nPort) {
+	// Dummy methods
+
+	int32_t Begin(uint16_t nPort) {
 		return 0;
 	}
 
-	 void End(void) {
+	void End(void) {
 	}
 
-	 void JoinGroup(uint32_t nHandle, uint32_t nIp) {
+	void JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	 void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+	void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	 uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
+	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 		return 0;
 	}
 
-	 void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	}
 
-	 void SetIp(uint32_t nIp) {
+	void SetIp(uint32_t nIp) {
 	}
 };
 

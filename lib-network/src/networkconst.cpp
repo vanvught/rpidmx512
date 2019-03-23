@@ -1,8 +1,8 @@
 /**
- * networkh3emac.h
+ * @file networkconst.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKH3EMAC_H_
-#define NETWORKH3EMAC_H_
+#include "networkconst.h"
 
-#include <stdint.h>
+#ifndef ALIGNED
+ #define ALIGNED __attribute__((aligned(4)))
+#endif
 
-#include "network.h"
-
-#include "networkparams.h"
-
-class NetworkH3emac: public Network {
-public:
-	NetworkH3emac(void);
-	~NetworkH3emac(void);
-
-	int Init(NetworkParamsStore *pNetworkParamsStore = 0);
-
-	int32_t Begin(uint16_t nPort);
-	void End(void);
-
-	void MacAddressCopyTo(uint8_t *pMacAddress);
-
-	void JoinGroup(uint32_t nHandle, uint32_t nIp);
-	void LeaveGroup(uint32_t nHandle, uint32_t nIp);
-
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
-
-	void SetIp(uint32_t nIp);
-
-	void Run(void);
-};
-
-#endif /* NETWORKH3EMAC_H_ */
+char NetworkConst::MSG_NETWORK_INIT[] ALIGNED = "Network init";
