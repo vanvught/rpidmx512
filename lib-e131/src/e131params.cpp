@@ -24,8 +24,10 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -37,6 +39,7 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
@@ -59,11 +62,9 @@
 static const char PARAMS_FILE_NAME[] ALIGNED = "e131.txt";
 static const char PARAMS_UNIVERSE[] ALIGNED = "universe";
 static const char PARAMS_OUTPUT[] ALIGNED = "output";
-static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a",
-		"universe_port_b", "universe_port_c", "universe_port_d" };
+static const char PARAMS_UNIVERSE_PORT[4][16] ALIGNED = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
 static const char PARAMS_MERGE_MODE[] ALIGNED = "merge_mode";
-static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a",
-		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+static const char PARAMS_MERGE_MODE_PORT[4][18] ALIGNED = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 static const char PARAMS_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
 static const char PARAMS_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
 
@@ -79,6 +80,7 @@ E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE1
 }
 
 E131Params::~E131Params(void) {
+	m_tE131Params.nSetList = 0;
 }
 
 bool E131Params::Load(void) {
@@ -193,14 +195,6 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 }
 
-uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
-	assert(nPort < E131_MAX_PORTS);
-
-	IsSet = isMaskSet(SET_UNIVERSE_A_MASK << nPort);
-
-	return m_tE131Params.nUniversePort[nPort];
-}
-
 void E131Params::Set(E131Bridge *pE131Bridge) {
 	assert(pE131Bridge != 0);
 
@@ -267,6 +261,14 @@ void E131Params::Dump(void) {
 #endif
 }
 
+uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
+	assert(nPort < E131_MAX_PORTS);
+
+	IsSet = isMaskSet(SET_UNIVERSE_A_MASK << nPort);
+
+	return m_tE131Params.nUniversePort[nPort];
+}
+
 void E131Params::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
@@ -276,16 +278,4 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 
 bool E131Params::isMaskSet(uint32_t nMask) const {
 	return (m_tE131Params.nSetList & nMask) == nMask;
-}
-
-uint32_t E131Params::GetMaskUniverse(uint8_t nPort) {
-	assert(nPort < E131_MAX_PORTS);
-
-	return SET_UNIVERSE_A_MASK << nPort;
-}
-
-uint32_t E131Params::GetMaskMergeMode(uint8_t nPort) {
-	assert(nPort < E131_MAX_PORTS);
-
-	return SET_MERGE_MODE_A_MASK << nPort;
 }

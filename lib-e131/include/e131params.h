@@ -30,6 +30,7 @@
 #include <stdbool.h>
 
 #include "e131bridge.h"
+
 #include "lightset.h"
 
 struct TE131Params {
@@ -51,8 +52,6 @@ public:
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
-
-private:
 };
 
 class E131Params {
@@ -62,6 +61,8 @@ public:
 
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(E131Bridge *);
 
@@ -90,8 +91,6 @@ public:
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet) const;
 
 public:
-	static uint32_t GetMaskUniverse(uint8_t nPort);
-	static uint32_t GetMaskMergeMode(uint8_t nPort);
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
