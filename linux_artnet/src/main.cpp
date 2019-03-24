@@ -29,12 +29,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#if defined (RASPPI)
+ #include "bcm2835.h"
+#endif
+
 #include "hardwarelinux.h"
 #include "networklinux.h"
 #include "ledblinklinux.h"
 
 #include "artnet4node.h"
-#include "artnetparams.h"
 #include "artnet4params.h"
 
 #include "dmxmonitor.h"
@@ -61,6 +64,18 @@ int main(int argc, char **argv) {
 	NetworkLinux nw;
 	LedBlinkLinux lb;
 
+#if defined (RASPPI)
+	if (getuid() != 0) {
+		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
+	}
+#endif
+
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
@@ -77,24 +92,18 @@ int main(int argc, char **argv) {
 #if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
 	ArtNet4Params artnet4params((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
 #else
 	ArtNet4Params artnet4params;
-	ArtNetParams artnetparams;
 #endif
+
+	ArtNet4Node node;
 
 	if (artnet4params.Load()) {
 		artnet4params.Dump();
+		artnet4params.Set(&node);
 	}
 
-	ArtNet4Node node(artnet4params.IsMapUniverse0());
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-		artnetparams.Set(&node);
-	}
-
-	if(artnetparams.IsRdm()) {
+	if(artnet4params.IsRdm()) {
 		printf("Art-Net %d Node - Real-time DMX Monitor / RDM Responder {1 Universe}\n", node.GetVersion());
 	} else {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
@@ -117,10 +126,10 @@ int main(int argc, char **argv) {
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
-	if(artnetparams.IsRdm()) {
-		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	if(artnet4params.IsRdm()) {
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4params.GetUniverse());
 
-		if (artnetparams.IsRdmDiscovery()) {
+		if (artnet4params.IsRdmDiscovery()) {
 			RdmResponder.Full(0);
 		}
 
@@ -131,7 +140,7 @@ int main(int argc, char **argv) {
 		bool bIsSet;
 
 		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-			nAddress = artnetparams.GetUniverse(i, bIsSet);
+			nAddress = artnet4params.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
 				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, nAddress);
@@ -140,10 +149,10 @@ int main(int argc, char **argv) {
 		}
 
 		if (!bIsSetIndividual) {
-			node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetparams.GetUniverse());
-			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetparams.GetUniverse());
-			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetparams.GetUniverse());
-			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetparams.GetUniverse());
+			node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnet4params.GetUniverse());
+			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnet4params.GetUniverse());
+			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnet4params.GetUniverse());
+			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnet4params.GetUniverse());
 		}
 	}
 
@@ -166,7 +175,7 @@ int main(int argc, char **argv) {
 	nw.Print();
 	node.Print();
 
-	if(artnetparams.IsRdm()) {
+	if(artnet4params.IsRdm()) {
 		RdmResponder.GetRDMDeviceResponder()->Print();
 	}
 

@@ -7,29 +7,28 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
+DEFAULT_INCLUDES=artnet artnet4 e131 midi ltc oscserver ws28xx ws28xxdmx tlc59711 tlc59711dmx dmx dmxsend
+
+LIBS:=$(LIBS)
+
 DEFINES:=$(addprefix -D,$(DEFINES))
 
-LIBS += network
-
-ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
-	LIBS += wiznet
-endif
-
-LIBS += hal properties
-
 ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+	ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
+		LIBS+=spiflashstore spiflash
+	endif
+
 	LIBS+= bob i2c
 	BCM2835 = ./../lib-bcm2835_raspbian
 	ifneq "$(wildcard $(BCM2835) )" ""
-		LIBS+= bcm2835_raspbian
+		LIBS+=bcm2835_raspbian
 	else
-		LIBS+= bcm2835
+		LIBS+=bcm2835
 	endif
 	DEFINES+=-DRASPPI
-	ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-		LIBS:=spiflashstore spiflash $(LIBS)
-	endif
 endif
+
+LIBS+=network properties hal debug
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./include) $(wildcard ./*/include)
@@ -37,6 +36,7 @@ INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
+LIBINCDIRS+=$(addprefix -I../lib-,$(DEFAULT_INCLUDES))
 LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
 
 # The variables for the ld -L flag
@@ -47,7 +47,7 @@ LIB:=$(addsuffix /lib_linux, $(LIB))
 LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
-LIBDEP = $(addprefix ../lib-,$(LIBS))
+LIBDEP=$(addprefix ../lib-,$(LIBS))
 LIBDEP:=$(addsuffix /lib_linux/lib, $(LIBDEP))
 LIBDEP:=$(join $(LIBDEP), $(LIBS))
 LIBDEP:=$(addsuffix .a, $(LIBDEP))
@@ -62,8 +62,8 @@ CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 
 BUILD = build_linux/
 
-C_OBJECTS = $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
-C_OBJECTS += $(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
+C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
+C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 
 BUILD_DIRS:=$(addprefix build_linux/,$(SRCDIR))
 
@@ -96,7 +96,7 @@ clean:
 	rm -f $(TARGET)
 
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS)
 	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
