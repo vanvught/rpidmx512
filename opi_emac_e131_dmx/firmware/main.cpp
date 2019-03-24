@@ -34,6 +34,9 @@
 #include "console.h"
 #include "display.h"
 
+#include "networkconst.h"
+#include "e131const.h"
+
 #include "e131bridge.h"
 #include "e131params.h"
 
@@ -55,11 +58,6 @@
 #endif
 
 #include "software_version.h"
-
-static const char NETWORK_INIT[] = "Network init ...";
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 
@@ -101,8 +99,8 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -111,8 +109,8 @@ void notmain(void) {
 #endif
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
-	display.TextStatus(BRIDGE_PARMAS);
+	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
+	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS);
 
 	E131Bridge bridge;
 	e131params.Set(&bridge);
@@ -142,7 +140,7 @@ void notmain(void) {
 				pwmledparms.Set(pTLC59711Dmx);
 				pSpi = pTLC59711Dmx;
 
-				//FIXME display.Printf(7,
+				display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 			}
 		}
 
@@ -226,7 +224,7 @@ void notmain(void) {
 	}
 
 	display.Printf(1, "Eth sACN E1.31 %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
-	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	if (nw.IsDhcpKnown()) {
 		if (nw.IsDhcpUsed()) {
@@ -239,13 +237,13 @@ void notmain(void) {
 	display.Printf(5, "U: %d", nUniverse);
 	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
 
-	console_status(CONSOLE_YELLOW, START_BRIDGE);
-	display.TextStatus(START_BRIDGE);
+	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
+	display.TextStatus(E131Const::MSG_BRIDGE_START);
 
 	bridge.Start();
 
-	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
-	display.TextStatus(BRIDGE_STARTED);
+	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
+	display.TextStatus(E131Const::MSG_BRIDGE_STARTED);
 
 #if defined (ORANGE_PI)
 	while (spiFlashStore.Flash())
