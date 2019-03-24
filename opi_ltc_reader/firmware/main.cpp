@@ -42,6 +42,9 @@
 #include "display.h"
 #include "displaymax7219.h"
 
+#include "networkconst.h"
+#include "artnetconst.h"
+
 #include "ltcleds.h"
 
 #include "artnetreader.h"
@@ -56,11 +59,6 @@
 #endif
 
 #include "software_version.h"
-
-static const char NETWORK_INIT[] = "Network init ...";
-static const char NODE_PARMAS[] = "Setting Node parameters ...";
-static const char START_NODE[] = "Starting the Node ...";
-static const char NODE_STARTED[] = "Node started";
 
 extern "C" {
 
@@ -100,8 +98,8 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -110,8 +108,8 @@ void notmain(void) {
 #endif
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, NODE_PARMAS);
-	display.TextStatus(NODE_PARMAS);
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
+	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS);
 
 	node.SetShortName("LTC Node");
 
@@ -129,14 +127,14 @@ void notmain(void) {
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
-	console_status(CONSOLE_YELLOW, START_NODE);
-	display.TextStatus(START_NODE);
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
+	display.TextStatus(ArtNetConst::MSG_NODE_START);
 
 	node.Print();
 	node.Start();
 
-	console_status(CONSOLE_GREEN, NODE_STARTED);
-	display.TextStatus(NODE_STARTED);
+	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
+	display.TextStatus(ArtNetConst::MSG_NODE_STARTED);
 
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type());
 	max7219.Init(ltcParams.GetMax7219Intensity());

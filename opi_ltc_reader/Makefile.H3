@@ -1,5 +1,5 @@
 #
-DEFINES = LTC_READER EMAC #NDEBUG
+DEFINES = LTC_READER EMAC NDEBUG
 #
 LIBS = ltc artnet midi ledblink lightset
 #
