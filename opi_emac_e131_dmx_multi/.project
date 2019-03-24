@@ -17,6 +17,7 @@
 		<project>lib-network</project>
 		<project>lib-spiflashinstall</project>
 		<project>lib-spiflashstore</project>
+		<project>lib-tlc59711dmx</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

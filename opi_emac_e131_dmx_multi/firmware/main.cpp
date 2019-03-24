@@ -33,6 +33,9 @@
 #include "console.h"
 #include "display.h"
 
+#include "networkconst.h"
+#include "e131const.h"
+
 #include "e131bridge.h"
 #include "e131params.h"
 
@@ -44,11 +47,6 @@
 #include "spiflashstore.h"
 
 #include "software_version.h"
-
-static const char NETWORK_INIT[] = "Network init ...";
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 
@@ -69,14 +67,14 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const TE131OutputType tOutputType = e131params.GetOutputType();
+	const TLightSetOutputType tOutputType = e131params.GetOutputType();
 
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("Ethernet sACN E1.31 ");
-	console_set_fg_color(tOutputType == E131_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
@@ -87,14 +85,14 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
-	display.TextStatus(BRIDGE_PARMAS);
+	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
+	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS);
 
 	E131Bridge bridge;
 	e131params.Set(&bridge);
@@ -155,7 +153,7 @@ void notmain(void) {
 
 	display.Cls();
 	display.Printf(1, "Eth sACN E1.31 DMX");
-	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	if (nw.IsDhcpKnown()) {
 		if (nw.IsDhcpUsed()) {
@@ -170,13 +168,13 @@ void notmain(void) {
 	}
 	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
 
-	console_status(CONSOLE_YELLOW, START_BRIDGE);
-	display.TextStatus(START_BRIDGE);
+	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
+	display.TextStatus(E131Const::MSG_BRIDGE_START);
 
 	bridge.Start();
 
-	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
-	display.TextStatus(BRIDGE_STARTED);
+	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
+	display.TextStatus(E131Const::MSG_BRIDGE_STARTED);
 
 	while (spiFlashStore.Flash())
 		;

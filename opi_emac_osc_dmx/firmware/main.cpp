@@ -34,6 +34,8 @@
 #include "console.h"
 #include "display.h"
 
+#include "networkconst.h"
+
 #include "oscserver.h"
 #include "oscserverparms.h"
 
@@ -58,7 +60,6 @@
 
 #include "software_version.h"
 
-static const char NETWORK_INIT[] = "Network init ...";
 static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 static const char START_BRIDGE[] = "Starting the Bridge ...";
 static const char BRIDGE_STARTED[] = "Bridge started";
@@ -96,8 +97,8 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -130,10 +131,10 @@ void notmain(void) {
 				pwmledparms.Set(pTLC59711Dmx);
 				pSpi = pTLC59711Dmx;
 
-				pHandler = new HandlerTLC59711(pTLC59711Dmx); // TODO
+				pHandler = new HandlerTLC59711(pTLC59711Dmx);
 				assert(pHandler != 0);
 
-				//FIXME display.Printf(7,
+				display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 			}
 		}
 
@@ -210,7 +211,7 @@ void notmain(void) {
 		display.ClearLine(i);
 	}
 	display.Printf(1, "Eth OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
-	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	if (nw.IsDhcpKnown()) {
 		if (nw.IsDhcpUsed()) {

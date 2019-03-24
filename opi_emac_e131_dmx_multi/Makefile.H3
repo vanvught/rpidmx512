@@ -1,7 +1,7 @@
 #
-DEFINES = E131_BRIDGE EMAC NDEBUG
+DEFINES = E131_BRIDGE_MULTI EMAC NDEBUG
 #
-LIBS = e131 dmxsend dmx lightset ledblink artnet
+LIBS = e131 dmxsend dmx lightset ledblink
 #
 SRCDIR = firmware
 
