@@ -6,6 +6,7 @@
 		<project>firmware-template</project>
 		<project>include</project>
 		<project>lib-artnet</project>
+		<project>lib-artnet4</project>
 		<project>lib-bob</project>
 		<project>lib-c++</project>
 		<project>lib-display</project>

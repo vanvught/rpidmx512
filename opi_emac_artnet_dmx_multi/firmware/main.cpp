@@ -33,9 +33,13 @@
 #include "console.h"
 #include "display.h"
 
-#include "artnetnode.h"
+#include "networkconst.h"
+#include "artnetconst.h"
+
+#include "artnet4node.h"
+#include "artnet4params.h"
+
 #include "artnetdiscovery.h"
-#include "artnetparams.h"
 
 #include "ipprog.h"
 
@@ -46,12 +50,6 @@
 #include "spiflashstore.h"
 
 #include "software_version.h"
-
-static const char NETWORK_INIT[] = "Network init ...";
-static const char NODE_PARMAS[] = "Setting Node parameters ...";
-static const char RUN_RDM[] = "Running RDM Discovery ...";
-static const char START_NODE[] = "Starting the Node ...";
-static const char NODE_STARTED[] = "Node started";
 
 extern "C" {
 
@@ -68,23 +66,23 @@ void notmain(void) {
 
 	SpiFlashStore spiFlashStore;
 
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+	ArtNet4Params artnetParams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
 
 	if (!hw.IsButtonPressed()) {
-		if (artnetparams.Load()) {
-			artnetparams.Dump();
+		if (artnetParams.Load()) {
+			artnetParams.Dump();
 		}
 	}
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("Ethernet Art-Net 3 Node ");
+	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color((artnetParams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
@@ -95,42 +93,43 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
-	ArtNetNode node;
+	ArtNet4Node node;
 
-	console_status(CONSOLE_YELLOW, NODE_PARMAS);
-	display.TextStatus(NODE_PARMAS);
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
+	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS);
 
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	uint8_t nAddress;
 	bool bIsSetIndividual = false;
 	bool bIsSet;
 
-	nAddress = artnetparams.GetUniverse(0, bIsSet);
+	nAddress = artnetParams.GetUniverse(0, bIsSet);
+
 	if (bIsSet) {
 		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nAddress);
 		bIsSetIndividual = true;
 	}
 
-	nAddress = artnetparams.GetUniverse(1, bIsSet);
+	nAddress = artnetParams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nAddress);
 		bIsSetIndividual = true;
 	}
 #if defined (ORANGE_PI_ONE)
-	nAddress = artnetparams.GetUniverse(2, bIsSet);
+	nAddress = artnetParams.GetUniverse(2, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nAddress);
 		bIsSetIndividual = true;
 	}
 #ifndef DO_NOT_USE_UART0
-	nAddress = artnetparams.GetUniverse(3, bIsSet);
+	nAddress = artnetParams.GetUniverse(3, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nAddress);
 		bIsSetIndividual = true;
@@ -139,27 +138,27 @@ void notmain(void) {
 #endif
 
 	if (!bIsSetIndividual) { // Backwards compatibility
-		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetparams.GetUniverse());
-		node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnetParams.GetUniverse());
+		node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnetParams.GetUniverse());
 #if defined (ORANGE_PI_ONE)
-		node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnetParams.GetUniverse());
 #ifndef DO_NOT_USE_UART0
-		node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnetParams.GetUniverse());
 #endif
 #endif
 	}
 
-	DMXSendMulti dmx;
-	DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+	DMXSendMulti dmxMulti;
+	DMXParams dmxParams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
 
 	if (!hw.IsButtonPressed()) {
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-			dmxparams.Set(&dmx);
+		if (dmxParams.Load()) {
+			dmxParams.Dump();
+			dmxParams.Set(&dmxMulti);
 		}
 	}
 
-	node.SetOutput(&dmx);
+	node.SetOutput(&dmxMulti);
 	node.SetDirectUpdate(false);
 
 	IpProg ipprog;
@@ -171,35 +170,14 @@ void notmain(void) {
 	spiFlashStore.Dump();
 
 	node.Print();
-	dmx.Print();
-
-	if (display.isDetected()) {
-		uint8_t nAddress;
-		node.GetUniverseSwitch(0, nAddress);
-
-		display.Cls();
-		display.Printf(1, "Eth Art-Net 3 %s", artnetparams.IsRdm() ? "RDM" : "DMX");
-		display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
-		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-		if (nw.IsDhcpKnown()) {
-			if (nw.IsDhcpUsed()) {
-				display.PutString(" D");
-			} else {
-				display.PutString(" S");
-			}
-		}
-		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		display.Printf(5, "SN: %s", node.GetShortName());
-		display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch() ,node.GetSubnetSwitch(), nAddress);
-		display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
-	}
+	dmxMulti.Print();
 
 	ArtNetRdmController discovery;
 
-	if(artnetparams.IsRdm()) {
-		if (artnetparams.IsRdmDiscovery()) {
-			console_status(CONSOLE_YELLOW, RUN_RDM);
-			display.TextStatus(RUN_RDM);
+	if(artnetParams.IsRdm()) {
+		if (artnetParams.IsRdmDiscovery()) {
+			console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
+			display.TextStatus(ArtNetConst::MSG_RDM_RUN);
 
 			for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 				uint8_t nAddress;
@@ -211,22 +189,45 @@ void notmain(void) {
 		node.SetRdmHandler(&discovery);
 	}
 
-	console_status(CONSOLE_YELLOW, START_NODE);
-	display.TextStatus(START_NODE);
+	node.GetUniverseSwitch(0, nAddress);
+
+	for (unsigned i = 0; i < 7; i++) {
+		display.ClearLine(i);
+	}
+
+	display.Printf(1, "Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
+	display.Write(2, hw.GetBoardName(nHwTextLength));
+	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+
+	if (nw.IsDhcpKnown()) {
+		if (nw.IsDhcpUsed()) {
+			display.PutString(" D");
+		} else {
+			display.PutString(" S");
+		}
+	}
+
+	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+	display.Printf(5, "SN: %s", node.GetShortName());
+	display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nAddress);
+	display.Printf(7, "Active ports: %d", node.GetActiveOutputPorts());
+
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
+	display.TextStatus(ArtNetConst::MSG_NODE_START);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, NODE_STARTED);
-	display.TextStatus(NODE_STARTED);
+	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
+	display.TextStatus(ArtNetConst::MSG_NODE_STARTED);
 
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		(void) node.HandlePacket();
+		node.HandlePacket();
 		lb.Run();
-		(void) spiFlashStore.Flash();
+		spiFlashStore.Flash();
 	}
 }
 

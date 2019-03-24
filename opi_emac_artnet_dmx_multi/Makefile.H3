@@ -1,7 +1,7 @@
 #
-DEFINES = ARTNET_NODE EMAC ENABLE_SPIFLASH NDEBUG #DO_NOT_USE_UART0
+DEFINES = ARTNET_NODE_MULTI EMAC ENABLE_SPIFLASH NDEBUG #DO_NOT_USE_UART0
 #
-LIBS = rdmdiscovery artnet dmxsend ws28xxdmx ws28xx monitor dmx rdm lightset ledblink
+LIBS = rdmdiscovery artnet4 artnet dmxsend dmx rdm lightset ledblink
 #
 SRCDIR = firmware lib
 
