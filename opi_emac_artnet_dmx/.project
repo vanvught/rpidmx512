@@ -8,6 +8,7 @@
 		<project>lib-artnet</project>
 		<project>lib-bob</project>
 		<project>lib-c++</project>
+		<project>lib-console</project>
 		<project>lib-display</project>
 		<project>lib-dmxsend</project>
 		<project>lib-esp8266</project>

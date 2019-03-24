@@ -1,7 +1,7 @@
 #
 DEFINES = ARTNET_NODE EMAC NDEBUG
 #
-LIBS = rdmdiscovery artnet dmxsend ws28xxdmx ws28xx tlc59711dmx tlc59711 dmx rdm lightset ledblink
+LIBS = rdmdiscovery artnet4 artnet dmxsend ws28xxdmx ws28xx tlc59711dmx tlc59711 dmx rdm lightset ledblink spiflashstore spiflash
 #
 SRCDIR = firmware lib
 

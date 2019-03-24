@@ -34,8 +34,11 @@
 #include "console.h"
 #include "display.h"
 
-#include "artnetnode.h"
-#include "artnetparams.h"
+#include "networkconst.h"
+#include "artnetconst.h"
+
+#include "artnet4node.h"
+#include "artnet4params.h"
 
 #include "ipprog.h"
 
@@ -59,12 +62,6 @@
 
 #include "software_version.h"
 
-static const char NETWORK_INIT[] = "Network init ...";
-static const char NODE_PARMAS[] = "Setting Node parameters ...";
-static const char RUN_RDM[] = "Running RDM Discovery ...";
-static const char START_NODE[] = "Starting the Node ...";
-static const char NODE_STARTED[] = "Node started";
-
 extern "C" {
 
 void notmain(void) {
@@ -79,9 +76,9 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+	ArtNet4Params artnetparams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
 #else
-	ArtNetParams artnetparams;
+	ArtNet4Params artnetparams;
 #endif
 
 	if (artnetparams.Load()) {
@@ -93,7 +90,7 @@ void notmain(void) {
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
-	console_puts("Ethernet Art-Net 3 Node ");
+	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
@@ -109,8 +106,8 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NETWORK_INIT);
-	display.TextStatus(NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -119,11 +116,11 @@ void notmain(void) {
 #endif
 	nw.Print();
 
-	ArtNetNode node;
+	ArtNet4Node node;
 	ArtNetRdmController discovery;
 
-	console_status(CONSOLE_YELLOW, NODE_PARMAS);
-	display.TextStatus(NODE_PARMAS);
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
+	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS);
 
 	artnetparams.Set(&node);
 
@@ -160,7 +157,7 @@ void notmain(void) {
 				pwmledparms.Set(pTLC59711Dmx);
 				pSpi = pTLC59711Dmx;
 
-				//FIXME display.Printf(7,
+				display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 			}
 		}
 
@@ -231,8 +228,8 @@ void notmain(void) {
 
 		if(artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, RUN_RDM);
-				display.TextStatus(RUN_RDM);
+				console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
+				display.TextStatus(ArtNetConst::MSG_RDM_RUN);
 				discovery.Full();
 			}
 			node.SetRdmHandler(&discovery);
@@ -252,7 +249,7 @@ void notmain(void) {
 		display.ClearLine(i);
 	}
 	
-	display.Write(1, "Eth Art-Net 3 ");
+	display.Write(1, "Eth Art-Net 4 ");
 
 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		display.PutString("Pixel");
@@ -264,7 +261,7 @@ void notmain(void) {
 		}
 	}
 
-	display.Printf(2, "%s", hw.GetBoardName(nHwTextLength));
+	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	
 	if (nw.IsDhcpKnown()) {
@@ -279,13 +276,13 @@ void notmain(void) {
 	display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nUniverse);
 	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 
-	console_status(CONSOLE_YELLOW, START_NODE);
-	display.TextStatus(START_NODE);
+	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
+	display.TextStatus(ArtNetConst::MSG_NODE_START);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, NODE_STARTED);
-	display.TextStatus(NODE_STARTED);
+	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
+	display.TextStatus(ArtNetConst::MSG_NODE_STARTED);
 
 	hw.WatchdogInit();
 
