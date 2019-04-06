@@ -43,6 +43,10 @@
 // DMX Out
 #include "dmxparams.h"
 #include "dmxsend.h"
+#if defined (ORANGE_PI_ONE)
+ // Monitor Output
+ #include "dmxmonitor.h"
+#endif
 // Pixel controller
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
@@ -91,11 +95,21 @@ void notmain(void) {
 	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
+#if defined (ORANGE_PI_ONE)
+	console_puts(" / ");
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Real-time DMX Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
+#endif
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
+
+#if defined (ORANGE_PI_ONE)
+	DMXMonitor monitor;
+#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -196,15 +210,24 @@ void notmain(void) {
 		}
 
 		bridge.SetOutput(pSpi);
-	} else {
+	}
+#if defined(ORANGE_PI_ONE)
+	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+		// There is support for HEX output only
+		bridge.SetOutput(&monitor);
+		monitor.Cls();
+		console_set_top_row(20);
+	}
+#endif
+	else {
 #if defined (ORANGE_PI)
 		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
 #else
 		DMXParams dmxparams;
 #endif
 		if (dmxparams.Load()) {
-			dmxparams.Dump();
 			dmxparams.Set(&dmx);
+			dmxparams.Dump();
 		}
 
 		bridge.SetOutput(&dmx);
@@ -215,6 +238,8 @@ void notmain(void) {
 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
+	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+		// Nothing to print
 	} else {
 		dmx.Print();
 	}
@@ -223,7 +248,22 @@ void notmain(void) {
 		display.ClearLine(i);
 	}
 
-	display.Printf(1, "Eth sACN E1.31 %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	display.Write(1, "Eth sACN E1.31 ");
+
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
+		display.PutString("Pixel");
+		break;
+#if defined(ORANGE_PI_ONE)
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		display.PutString("Monitor");
+		break;
+#endif
+	default:
+		display.PutString("DMX");
+		break;
+	}
+
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
 	if (nw.IsDhcpKnown()) {
