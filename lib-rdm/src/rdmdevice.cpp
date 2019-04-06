@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,11 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
 #include "rdmdevice.h"
@@ -38,6 +40,7 @@
 #include "sscan.h"
 
 #include "network.h"
+#include "hardware.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -48,19 +51,6 @@
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
-#define MANUFACTURER_NAME_MASK	1<<0
-#define MANUFACTURER_ID_MASK	1<<1
-#define LABEL_MASK				1<<2
-#define EXTERNAL_MONITOR_MASK	1<<3
-#define PRODUCT_CATEGORY_MASK	1<<4
-#define PRODUCT_DETAIL_MASK		1<<5
-
-#if defined (H3)
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "http://www.orangepi-dmx.org";
-#else
-static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "http://www.raspberrypi-dmx.org";
-#endif
-static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
 static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 
 static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";
@@ -71,6 +61,196 @@ static const char RDM_DEVICE_EXTERNAL_MONITOR[] ALIGNED = "device_external_monit
 static const char RDM_DEVICE_PRODUCT_CATEGORY[] ALIGNED = "product_category";
 static const char RDM_DEVICE_PRODUCT_DETAIL[] ALIGNED = "product_detail";
 
+RDMDevice::RDMDevice(const struct TRDMDeviceInfoData *tLabel, RDMDeviceStore* m_pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(m_pRDMDeviceParamsStore) {
+	m_tRDMDeviceParams.nSetList = 0;
+
+	uint8_t aMacAddress[NETWORK_MAC_SIZE];
+
+	assert((uint32_t) Network::Get());
+	Network::Get()->MacAddressCopyTo(aMacAddress);
+
+	m_tRDMDeviceParams.aDeviceUID[0] = DEVICE_MANUFACTURER_ID[0];
+	m_tRDMDeviceParams.aDeviceUID[1] = DEVICE_MANUFACTURER_ID[1];
+
+	m_tRDMDeviceParams.aDeviceUID[2] = aMacAddress[2];
+	m_tRDMDeviceParams.aDeviceUID[3] = aMacAddress[3];
+	m_tRDMDeviceParams.aDeviceUID[4] = aMacAddress[4];
+	m_tRDMDeviceParams.aDeviceUID[5] = aMacAddress[5];
+
+	m_tRDMDeviceParams.aDeviceSN[0] = m_tRDMDeviceParams.aDeviceUID[5];
+	m_tRDMDeviceParams.aDeviceSN[1] = m_tRDMDeviceParams.aDeviceUID[4];
+	m_tRDMDeviceParams.aDeviceSN[2] = m_tRDMDeviceParams.aDeviceUID[3];
+	m_tRDMDeviceParams.aDeviceSN[3] = m_tRDMDeviceParams.aDeviceUID[2];
+
+	assert((uint32_t) Hardware::Get());
+	const char* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
+
+	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(WebsiteUrl));
+	memcpy(m_tRDMDeviceParams.aDeviceManufacturerName, WebsiteUrl, length);
+	m_tRDMDeviceParams.nDdeviceManufacturerNameLength = length;
+
+	memset(m_tRDMDeviceParams.aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
+	m_tRDMDeviceParams.nDeviceRootLabelLength = 0;
+
+	if (tLabel != 0) {
+		memcpy(m_tRDMDeviceParams.aDeviceRootLabel, tLabel->data, tLabel->length);
+		m_tRDMDeviceParams.nDeviceRootLabelLength = tLabel->length;
+	}
+
+	m_tRDMDeviceParams.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
+	m_tRDMDeviceParams.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
+
+	m_tRDMDeviceParams.nExtMonLevel = 0;
+}
+
+RDMDevice::~RDMDevice(void) {
+	m_tRDMDeviceParams.nSetList = 0;
+}
+
+bool RDMDevice::Load(void) {
+	m_tRDMDeviceParams.nSetList = 0;
+
+	ReadConfigFile configfile(RDMDevice::staticCallbackFunction, this);
+
+	if (configfile.Read(RDM_DEVICE_FILE_NAME)) {
+		// There is a configuration file
+		if (m_pRDMDeviceParamsStore != 0) {
+			m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
+		}
+	} else if (m_pRDMDeviceParamsStore != 0) {
+		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+void RDMDevice::Load(const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pRDMDeviceParamsStore != 0);
+
+	if (m_pRDMDeviceParamsStore == 0) {
+		return;
+	}
+
+	m_tRDMDeviceParams.nSetList = 0;
+
+	ReadConfigFile config(RDMDevice::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
+}
+
+void RDMDevice::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
+	uint8_t len;
+	uint8_t uint8;
+	uint16_t uint16;
+
+	if (Sscan::Uint8(pLine, RDM_DEVICE_EXTERNAL_MONITOR, &uint8) == SSCAN_OK) {
+		m_tRDMDeviceParams.nExtMonLevel = uint8;
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_EXTERNAL_MONITOR;
+		return;
+	}
+
+	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
+	if (Sscan::Char(pLine, RDM_DEVICE_MANUFACTURER_NAME, m_tRDMDeviceParams.aDeviceManufacturerName, &len) == SSCAN_OK) {
+		m_tRDMDeviceParams.nDdeviceManufacturerNameLength = len;
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_MANUFACTURER_NAME;
+		return;
+	}
+
+	len = RDM_DEVICE_LABEL_MAX_LENGTH;
+	if (Sscan::Char(pLine, RDM_DEVICE_LABEL, m_tRDMDeviceParams.aDeviceRootLabel, &len) == SSCAN_OK) {
+		m_tRDMDeviceParams.nDeviceRootLabelLength = len;
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_LABEL;
+		return;
+	}
+
+	if (Sscan::HexUint16(pLine, RDM_DEVICE_MANUFACTURER_ID, &uint16) == SSCAN_OK) {
+		m_tRDMDeviceParams.aDeviceUID[0] = (uint8_t) (uint16 >> 8);
+		m_tRDMDeviceParams.aDeviceUID[1] = (uint8_t) (uint16 & 0xFF);
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_MANUFACTURER_ID;
+		return;
+	}
+
+	if (Sscan::HexUint16(pLine, RDM_DEVICE_PRODUCT_CATEGORY, &uint16) == SSCAN_OK) {
+		m_tRDMDeviceParams.nProductCategory = uint16;
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_PRODUCT_CATEGORY;
+		return;
+	}
+
+	if (Sscan::HexUint16(pLine, RDM_DEVICE_PRODUCT_DETAIL, &uint16) == SSCAN_OK) {
+		m_tRDMDeviceParams.nProductDetail = uint16;
+		m_tRDMDeviceParams.nSetList |= RDMDEVICE_MASK_PRODUCT_DETAIL;
+	}
+}
+
+void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
+	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceRootLabel;
+	info->length = m_tRDMDeviceParams.nDeviceRootLabelLength;
+}
+
+void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
+	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
+	memcpy(m_tRDMDeviceParams.aDeviceRootLabel, info->data, nLength);
+	m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
+
+	if (m_pRDMDeviceParamsStore != 0) {
+		m_pRDMDeviceParamsStore->SaveLabel((const uint8_t *)m_tRDMDeviceParams.aDeviceRootLabel, nLength);
+	}
+}
+
+void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
+	info->data[0] = m_tRDMDeviceParams.aDeviceUID[1];
+	info->data[1] = m_tRDMDeviceParams.aDeviceUID[0];
+	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
+}
+
+void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
+	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceManufacturerName;
+	info->length = m_tRDMDeviceParams.nDdeviceManufacturerNameLength;
+}
+
+void RDMDevice::Dump(void) {
+#ifndef NDEBUG
+	if (m_tRDMDeviceParams.nSetList == 0) {
+		return;
+	}
+
+	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, RDM_DEVICE_FILE_NAME);
+
+
+	if (isMaskSet(RDMDEVICE_MASK_LABEL)) {
+		printf(" %s=%.*s\n", RDM_DEVICE_LABEL, m_tRDMDeviceParams.nDeviceRootLabelLength, m_tRDMDeviceParams.aDeviceRootLabel);
+	}
+
+	if (isMaskSet(RDMDEVICE_MASK_MANUFACTURER_NAME)) {
+		printf(" %s=%.*s\n", RDM_DEVICE_MANUFACTURER_NAME, m_tRDMDeviceParams.nDdeviceManufacturerNameLength, m_tRDMDeviceParams.aDeviceManufacturerName);
+	}
+
+	if (isMaskSet(RDMDEVICE_MASK_MANUFACTURER_ID)) {
+		printf(" %s=%x%x\n", RDM_DEVICE_MANUFACTURER_ID, m_tRDMDeviceParams.aDeviceUID[0], m_tRDMDeviceParams.aDeviceUID[1]);
+	}
+
+	if (isMaskSet(RDMDEVICE_MASK_PRODUCT_CATEGORY)) {
+		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory);
+	}
+
+	if (isMaskSet(RDMDEVICE_MASK_PRODUCT_DETAIL)) {
+		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail);
+	}
+
+	if (isMaskSet(RDMDEVICE_MASK_PRODUCT_CATEGORY)) {
+		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory);
+	}
+#endif
+}
+
 void RDMDevice::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
@@ -78,193 +258,7 @@ void RDMDevice::staticCallbackFunction(void *p, const char *s) {
 	((RDMDevice *) p)->callbackFunction(s);
 }
 
-void RDMDevice::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
-
-	char value[4];
-	uint8_t len;
-	uint16_t uint16;
-
-	len = 1;
-	if (Sscan::Char(pLine, RDM_DEVICE_EXTERNAL_MONITOR, value, &len) == SSCAN_OK) {
-		if (len == 1) {
-			if (isdigit((int) value[0])) {
-				m_nExtMonLevel = (uint8_t) (value[0] - (char) '0');
-				m_bSetList |= EXTERNAL_MONITOR_MASK;
-			}
-		}
-		return;
-	}
-
-	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
-	if (Sscan::Char(pLine, RDM_DEVICE_MANUFACTURER_NAME, m_aDeviceManufacturerName, &len) == SSCAN_OK) {
-		m_nDdeviceManufacturerNameLength = len;
-		m_bSetList |= MANUFACTURER_NAME_MASK;
-		return;
-	}
-
-	len = RDM_DEVICE_LABEL_MAX_LENGTH;
-	if (Sscan::Char(pLine, RDM_DEVICE_LABEL, m_aDeviceRootLabel, &len) == SSCAN_OK) {
-		m_nDeviceRootLabelLength = len;
-		m_bSetList |= LABEL_MASK;
-		return;
-	}
-
-	if (Sscan::HexUint16(pLine, RDM_DEVICE_MANUFACTURER_ID, &uint16) == SSCAN_OK) {
-		m_aDeviceUID[0] = (uint8_t) (uint16 >> 8);
-		m_aDeviceUID[1] = (uint8_t) (uint16 & 0xFF);
-		m_bSetList |= MANUFACTURER_ID_MASK;
-		return;
-	}
-
-	if (Sscan::HexUint16(pLine, RDM_DEVICE_PRODUCT_CATEGORY, &uint16) == SSCAN_OK) {
-		m_nProductCategory = uint16;
-		m_bSetList |= PRODUCT_CATEGORY_MASK;
-		return;
-	}
-
-	if (Sscan::HexUint16(pLine, RDM_DEVICE_PRODUCT_DETAIL, &uint16) == SSCAN_OK) {
-		m_nProductDetail = uint16;
-		m_bSetList |= PRODUCT_DETAIL_MASK;
-	}
-}
-
-RDMDevice::RDMDevice(void): m_bSetList(0) {
-	uint8_t aMacAddress[NETWORK_MAC_SIZE];
-
-	assert(Network::Get());
-	Network::Get()->MacAddressCopyTo(aMacAddress);
-
-	m_aDeviceUID[0] = DEVICE_MANUFACTURER_ID[0];
-	m_aDeviceUID[1] = DEVICE_MANUFACTURER_ID[1];
-
-	m_aDeviceUID[2] = aMacAddress[2];
-	m_aDeviceUID[3] = aMacAddress[3];
-	m_aDeviceUID[4] = aMacAddress[4];
-	m_aDeviceUID[5] = aMacAddress[5];
-
-	m_aDeviceSN[0] = m_aDeviceUID[5];
-	m_aDeviceSN[1] = m_aDeviceUID[4];
-	m_aDeviceSN[2] = m_aDeviceUID[3];
-	m_aDeviceSN[3] = m_aDeviceUID[2];
-
-	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, DEVICE_MANUFACTURER_NAME_LENGTH);
-	memcpy(m_aDeviceManufacturerName, DEVICE_MANUFACTURER_NAME, length);
-	m_nDdeviceManufacturerNameLength = length;
-
-	memset(m_aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
-	m_nDeviceRootLabelLength = 0;
-
-	m_nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
-	m_nProductDetail = E120_PRODUCT_DETAIL_OTHER;
-
-	m_nExtMonLevel = 0;
-}
-
-RDMDevice::~RDMDevice(void) {
-}
-
-void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *)m_aDeviceRootLabel;
-	info->length = m_nDeviceRootLabelLength;
-}
-
-void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
-	const uint8_t length = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
-	memcpy(m_aDeviceRootLabel, info->data, length);
-	m_nDeviceRootLabelLength = length;
-}
-
-void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
-	info->data[0] = m_aDeviceUID[1];
-	info->data[1] = m_aDeviceUID[0];
-	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-void RDMDevice::SetManufacturerId(const struct TRDMDeviceInfoData *info) {
-	if (info->length != RDM_DEVICE_MANUFACTURER_ID_LENGTH) {
-		return;
-	}
-
-	m_aDeviceUID[1] = info->data[0];
-	m_aDeviceUID[0] = info->data[1];
-}
-
-const uint8_t* RDMDevice::GetUID(void) const {
-	return (const uint8_t *)m_aDeviceUID;
-}
-
-const uint8_t* RDMDevice::GetSN(void) const {
-	return (const uint8_t *)m_aDeviceSN;
-}
-
-void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info){
-	info->data = (uint8_t *)m_aDeviceManufacturerName;
-	info->length = m_nDdeviceManufacturerNameLength;
-}
-
-void RDMDevice::SetManufacturerName(const struct TRDMDeviceInfoData *info) {
-	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, info->length);
-	memcpy(m_aDeviceManufacturerName, info->data, length);
-	m_nDdeviceManufacturerNameLength = length;
-}
-
-uint16_t RDMDevice::GetProductCategory(void) const {
-	return m_nProductCategory;
-}
-
-uint16_t RDMDevice::GetProductDetail(void) const {
-	return m_nProductDetail;
-}
-
-bool RDMDevice::Load(void) {
-	m_bSetList = 0;
-
-	ReadConfigFile configfile(RDMDevice::staticCallbackFunction, this);
-	return configfile.Read(RDM_DEVICE_FILE_NAME);
-}
-
-void RDMDevice::Dump(void) {
-#ifndef NDEBUG
-	if (m_bSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, RDM_DEVICE_FILE_NAME);
-
-
-	if (isMaskSet(LABEL_MASK)) {
-		printf(" %s=%.*s\n", RDM_DEVICE_LABEL, m_nDeviceRootLabelLength, m_aDeviceRootLabel);
-	}
-
-	if (isMaskSet(MANUFACTURER_NAME_MASK)) {
-		printf(" %s=%.*s\n", RDM_DEVICE_MANUFACTURER_NAME, m_nDdeviceManufacturerNameLength, m_aDeviceManufacturerName);
-	}
-
-	if (isMaskSet(MANUFACTURER_ID_MASK)) {
-		printf(" %s=%x%x\n", RDM_DEVICE_MANUFACTURER_ID, m_aDeviceUID[0], m_aDeviceUID[1]);
-	}
-
-	if (isMaskSet(PRODUCT_CATEGORY_MASK)) {
-		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_CATEGORY, m_nProductCategory);
-	}
-
-	if (isMaskSet(PRODUCT_DETAIL_MASK)) {
-		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_DETAIL, m_nProductDetail);
-	}
-
-	if (isMaskSet(PRODUCT_CATEGORY_MASK)) {
-		printf(" %s=%x\n", RDM_DEVICE_PRODUCT_CATEGORY, m_nProductCategory);
-	}
-
-#endif
-}
-
-uint8_t RDMDevice::GetExtMonLevel(void) const {
-	return m_nExtMonLevel;
-}
-
 bool RDMDevice::isMaskSet(uint32_t nMask) {
-	return (m_bSetList & nMask) == nMask;
+	return (m_tRDMDeviceParams.nSetList & nMask) == nMask;
 }
 
