@@ -29,6 +29,8 @@
 
 #include "propertiesbuilder.h"
 
+#include "network.h"
+
 PropertiesBuilder::PropertiesBuilder(const char* pFileName, uint8_t* pBuffer, uint32_t nLength): m_pBuffer(pBuffer), m_nLength(nLength), m_nSize(0) {
 	assert(pFileName != 0);
 	assert(pBuffer != 0);
@@ -74,6 +76,33 @@ bool PropertiesBuilder::Add(const char* pProperty, uint32_t nValue, bool bDoAdd)
 	return true;
 }
 
+bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bDoAdd) {
+	if (!bDoAdd) {
+		return false;
+	}
+
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = (char *) &m_pBuffer[m_nSize];
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	const int i = snprintf(p, nSize, "%s=%.1f\n", pProperty, fValue);
+
+	if (i > (int) nSize) {
+		return false;
+	}
+
+	m_nSize += i;
+
+#ifndef NDEBUG
+	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
+#endif
+
+	return true;
+}
+
 bool PropertiesBuilder::Add(const char* pProperty, const char* pValue, bool bDoAdd) {
 	if (!bDoAdd) {
 		return false;
@@ -87,6 +116,60 @@ bool PropertiesBuilder::Add(const char* pProperty, const char* pValue, bool bDoA
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	const int i = snprintf(p, nSize, "%s=%s\n", pProperty, pValue);
+
+	if (i > (int) nSize) {
+		return false;
+	}
+
+	m_nSize += i;
+
+#ifndef NDEBUG
+	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
+#endif
+
+	return true;
+}
+
+bool PropertiesBuilder::AddIpAddress(const char* pProperty, uint32_t nValue, bool bDoAdd) {
+	if (!bDoAdd) {
+		return false;
+	}
+
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = (char *) &m_pBuffer[m_nSize];
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	const int i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
+
+	if (i > (int) nSize) {
+		return false;
+	}
+
+	m_nSize += i;
+
+#ifndef NDEBUG
+	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
+#endif
+
+	return true;
+}
+
+bool PropertiesBuilder::AddHex16(const char* pProperty, uint8_t nValue[2], bool bDoAdd) {
+	if (!bDoAdd) {
+		return false;
+	}
+
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = (char *) &m_pBuffer[m_nSize];
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	const int i = snprintf(p, nSize, "%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
 
 	if (i > (int) nSize) {
 		return false;

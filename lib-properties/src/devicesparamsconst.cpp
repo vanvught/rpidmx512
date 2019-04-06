@@ -25,16 +25,12 @@
 
 #include "devicesparamsconst.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__((aligned(4)))
-#endif
+alignas(uint32_t) char DevicesParamsConst::DEVICES_TXT[] = "devices.txt";
+alignas(uint32_t) char DevicesParamsConst::LED_TYPE[] = "led_type";
+alignas(uint32_t) char DevicesParamsConst::LED_COUNT[] = "led_count";
 
-char DevicesParamsConst::DEVICES_TXT[] ALIGNED = "devices.txt";
-char DevicesParamsConst::LED_TYPE[] ALIGNED = "led_type";
-char DevicesParamsConst::LED_COUNT[] ALIGNED = "led_count";
+alignas(uint32_t) char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
+alignas(uint32_t) char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
 
-char DevicesParamsConst::DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
-char DevicesParamsConst::SPI_SPEED_HZ[] ALIGNED = "clock_speed_hz";
-
-char DevicesParamsConst::LED_GROUPING[] ALIGNED = "led_grouping";
-char DevicesParamsConst::GLOBAL_BRIGHTNESS[] ALIGNED = "global_brightness";
+alignas(uint32_t) char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
+alignas(uint32_t) char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";

@@ -39,6 +39,8 @@ public:
 
 	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
 
+	bool AddHex16(const char *pProperty, uint8_t nValue[2], bool bDoAdd = true);
+
 	unsigned GetSize(void) {
 		return m_nSize;
 	}
