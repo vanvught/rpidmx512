@@ -2,7 +2,7 @@
  * @file ft245rl.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void FT245RL_init(void);
 
 extern bool FT245RL_data_available(void);
@@ -36,5 +40,9 @@ extern uint8_t FT245RL_read_data();
 
 extern bool FT245RL_can_write(void);
 extern void FT245RL_write_data(uint8_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FT245RL_H_ */

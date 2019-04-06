@@ -2,7 +2,7 @@
  * @file usb.h
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,10 @@
 
 #include "ft245rl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern uint8_t usb_read_byte(void);
 extern void usb_send_byte(uint8_t);
 
@@ -45,5 +49,9 @@ inline static void usb_init(void) {
 inline static const bool usb_can_write(void) {
 	return FT245RL_can_write();
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* USB_H_ */
