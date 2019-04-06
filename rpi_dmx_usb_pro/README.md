@@ -1,12 +1,6 @@
-## Raspberry Pi DMX USB Pro
+## Raspberry Pi Zero DMX USB Pro
 
-Open source Raspberry Pi RDM Controller with USB, DMX512 isolated board and compatible with software that supports **Enttec USB Pro**.
-
-[http://www.raspberrypi-dmx.org/raspberry-pi-rdm-controller](http://www.raspberrypi-dmx.org/raspberry-pi-rdm-controller)
-
-## Orange Pi Zero DMX USB Pro
-
-Open source Orange Pi Zero RDM Controller with USB, DMX512 isolated board and compatible with software that supports **Enttec USB Pro**.
+Open source Raspberry Pi Zero RDM Controller with USB, DMX512 isolated board and compatible with software that supports **Enttec USB Pro**.
 
 [http://www.orangepi-dmx.org/raspberry-pi-rdm-controller](http://www.orangepi-dmx.org/raspberry-pi-rdm-controller)
 

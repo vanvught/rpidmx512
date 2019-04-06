@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,20 @@
 #include "dmx.h"
 #include "rdm.h"
 
-#include "rdm_device_info.h"
-#include "rdm_device_const.h"
+#include "usb.h"
 
-#include "widget_params.h"
+#include "rdm_device_const.h"
+#include "rdm_device_info.h"
+
 #include "widget.h"
 #include "widget_monitor.h"
-
-#include "usb.h"
+#include "widget_params.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-#if defined (HAVE_I2C)
- #include "oled.h"
-#endif
+#include "oled.h"
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 
@@ -99,14 +97,14 @@ int notmain(void) {
 	_widget_mode widget_mode;
 	const uint8_t *uid_device;
 	struct _rdm_device_info_data rdm_device_info_label;
-#if defined (HAVE_I2C)
+
 	oled_info_t oled_info  = { OLED_128x64_SPI_CS2_DEFAULT };
 	bool oled_connected = oled_start(&oled_info);
-#endif
+
 	usb_init();
 
 	dmx_init();
-	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
 	widget_params_init();
 	rdm_device_info_init();
@@ -121,7 +119,6 @@ int notmain(void) {
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 	printf("Label : %.*s\n", (int) rdm_device_info_label.length, (const char *)rdm_device_info_label.data);
 
-#if defined (HAVE_I2C)
 	if (oled_connected) {
 		oled_set_cursor(&oled_info,0,0);
 		(void) oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
@@ -132,7 +129,6 @@ int notmain(void) {
 		oled_set_cursor(&oled_info,5,0);
 		(void) oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
 	}
-#endif
 
 	hardware_watchdog_init();
 
