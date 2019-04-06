@@ -51,7 +51,9 @@ public:
 	~DMXMonitorParams(void);
 
 	bool Load(void);
+	
 	void Set(DMXMonitor *pDMXMonitor);
+	
 	void Dump(void);
 
 public:
