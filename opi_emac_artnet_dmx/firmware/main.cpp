@@ -46,6 +46,10 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "artnetdiscovery.h"
+#if defined (ORANGE_PI_ONE)
+ // Monitor Output
+ #include "dmxmonitor.h"
+#endif
 // Pixel Controller
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
@@ -98,11 +102,21 @@ void notmain(void) {
 	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == LIGHTSET_OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
+#if defined (ORANGE_PI_ONE)
+	console_puts(" / ");
+	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_puts("Real-time DMX Monitor");
+	console_set_fg_color(CONSOLE_WHITE);
+#endif
 	console_puts(" / ");
 	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
+
+#if defined (ORANGE_PI_ONE)
+	DMXMonitor monitor;
+#endif
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -213,15 +227,24 @@ void notmain(void) {
 		}
 
 		node.SetOutput(pSpi);
-	} else {
+	}
+#if defined(ORANGE_PI_ONE)
+	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+		// There is support for HEX output only
+		node.SetOutput(&monitor);
+		monitor.Cls();
+		console_set_top_row(20);
+	}
+#endif
+	else {
 #if defined (ORANGE_PI)
 		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
 #else
 		DMXParams dmxparams;
 #endif
 		if (dmxparams.Load()) {
-			dmxparams.Dump();
 			dmxparams.Set(&dmx);
+			dmxparams.Dump();
 		}
 
 		node.SetOutput(&dmx);
@@ -241,6 +264,8 @@ void notmain(void) {
 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
+	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+		// Nothing to print
 	} else {
 		dmx.Print();
 	}
@@ -251,14 +276,22 @@ void notmain(void) {
 	
 	display.Write(1, "Eth Art-Net 4 ");
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
 		display.PutString("Pixel");
-	} else {
+		break;
+#if defined(ORANGE_PI_ONE)
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		display.PutString("Monitor");
+		break;
+#endif
+	default:
 		if (artnetparams.IsRdm()) {
 			display.PutString("RDM");
 		} else {
 			display.PutString("DMX");
 		}
+		break;
 	}
 
 	display.Write(2, hw.GetBoardName(nHwTextLength));
