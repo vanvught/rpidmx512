@@ -38,9 +38,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480,    64};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480,    64,         32,        96};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC", "TLC59711"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC", "TLC59711", "USB Pro", "RDM Device"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -223,7 +223,11 @@ void SpiFlashStore::Copy(enum TStore tStore, void* pData, uint32_t nDataLength) 
 	assert(pData != 0);
 	assert(nDataLength <= s_aStorSize[tStore]);
 
-	if (__builtin_expect((m_bIsNew), 0)) {
+	const uint32_t *pSet = (uint32_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
+
+	DEBUG_PRINTF("*pSet=%d", (int) *pSet);
+
+	if ((__builtin_expect((m_bIsNew), 0)) || (__builtin_expect((*pSet == 0), 0))) {
 		Update(tStore, pData, nDataLength);
 		DEBUG1_EXIT
 		return;
@@ -338,22 +342,11 @@ StoreE131 *SpiFlashStore::GetStoreE131(void) {
 	return &m_StoreE131;
 }
 
-StoreLtc *SpiFlashStore::GetStoreLtc(void) {
-	return &m_StoreLtc;
-}
-
-StoreMidi *SpiFlashStore::GetStoreMidi(void) {
-	return &m_StoreMidi;
-}
-
 StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
 	return &m_StoreArtNet4;
-}
-
-StoreOscServer *SpiFlashStore::GetStoreOscServer(void) {
-	return &m_StoreOscServer;
 }
 
 StoreTLC59711* SpiFlashStore::GetStoreTLC59711(void) {
 	return &m_StoreTLC59711;
 }
+

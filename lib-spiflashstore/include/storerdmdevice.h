@@ -1,5 +1,5 @@
 /**
- * @file storeoscserver.cpp
+ * @file storerdmdevice.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,53 +23,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STORERDMDEVICE_H_
+#define STORERDMDEVICE_H_
 
-#include "storeoscserver.h"
+#include "rdmdevice.h"
 
-#include "oscserverparms.h"
+class StoreRDMDevice: public RDMDeviceStore {
+public:
+	StoreRDMDevice(void);
+	~StoreRDMDevice(void);
 
-#include "spiflashstore.h"
+	void Update(const struct TRDMDeviceParams *pRDMDeviceParams);
+	void Copy(struct TRDMDeviceParams *pRDMDeviceParams);
 
-#include "debug.h"
+	void SaveLabel(const uint8_t *pLabel, uint8_t nLength);
 
-StoreOscServer *StoreOscServer::s_pThis = 0;
+public:
+	static StoreRDMDevice* Get(void) {
+		return s_pThis;
+	}
 
-OSCServerParamsStore::~OSCServerParamsStore(void) {
-	DEBUG_ENTRY
+private:
+	static StoreRDMDevice *s_pThis;
+};
 
-	DEBUG_EXIT
-}
-
-StoreOscServer::StoreOscServer(void) {
-	DEBUG_ENTRY
-
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreOscServer::~StoreOscServer(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreOscServer::Update(const struct TOSCServerParams* pOSCServerParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
-
-	DEBUG_EXIT
-}
-
-void StoreOscServer::Copy(struct TOSCServerParams* pOSCServerParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
-
-	DEBUG_EXIT
-}
+#endif /* STORERDMDEVICE_H_ */

@@ -26,11 +26,15 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "spiflashstore.h"
+#include "storeltc.h"
 
 #include "ltcparams.h"
 
+#include "spiflashstore.h"
+
 #include "debug.h"
+
+StoreLtc *StoreLtc::s_pThis = 0;
 
 LtcParamsStore::~LtcParamsStore(void) {
 	DEBUG_ENTRY
@@ -41,7 +45,9 @@ LtcParamsStore::~LtcParamsStore(void) {
 StoreLtc::StoreLtc(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }

@@ -26,11 +26,15 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "spiflashstore.h"
+#include "storemidi.h"
 
 #include "midiparams.h"
 
+#include "spiflashstore.h"
+
 #include "debug.h"
+
+StoreMidi *StoreMidi::s_pThis = 0;
 
 MidiParamsStore::~MidiParamsStore(void) {
 	DEBUG_ENTRY
@@ -41,7 +45,9 @@ MidiParamsStore::~MidiParamsStore(void) {
 StoreMidi::StoreMidi(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }

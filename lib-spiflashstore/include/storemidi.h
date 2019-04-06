@@ -35,6 +35,14 @@ public:
 
 	void Update(const struct TMidiParams *pMidiParams);
 	void Copy(struct TMidiParams *pMidiParams);
+
+public:
+	static StoreMidi* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreMidi *s_pThis;
 };
 
 #endif /* STOREMIDI_H_ */

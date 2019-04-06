@@ -34,10 +34,7 @@
 #include "storedmxsend.h"
 #include "storews28xxdmx.h"
 #include "storee131.h"
-#include "storeltc.h"
-#include "storemidi.h"
 #include "storeartnet4.h"
-#include "storeoscserver.h"
 #include "storetlc5711.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
@@ -53,6 +50,8 @@ enum TStore {
 	STORE_ARTNET4,
 	STORE_OSC,
 	STORE_TLC5711DMX,
+	STORE_WIDGET,
+	STORE_RDMDEVICE,
 	STORE_LAST
 };
 
@@ -89,10 +88,7 @@ public:
 	StoreDmxSend *GetStoreDmxSend(void);
 	StoreWS28xxDmx *GetStoreWS28xxDmx(void);
 	StoreE131 *GetStoreE131(void);
-	StoreLtc *GetStoreLtc(void);
-	StoreMidi *GetStoreMidi(void);
 	StoreArtNet4 *GetStoreArtNet4(void);
-	StoreOscServer *GetStoreOscServer(void);
 	StoreTLC59711 *GetStoreTLC59711(void);
 
 private:
@@ -120,10 +116,7 @@ private:
 	StoreDmxSend m_StoreDmxSend;
 	StoreWS28xxDmx m_StoreWS28xxDmx;
 	StoreE131 m_StoreE131;
-	StoreLtc m_StoreLtc;
-	StoreMidi m_StoreMidi;
 	StoreArtNet4 m_StoreArtNet4;
-	StoreOscServer m_StoreOscServer;
 	StoreTLC59711 m_StoreTLC59711;
 };
 

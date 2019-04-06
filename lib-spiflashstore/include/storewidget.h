@@ -1,5 +1,5 @@
 /**
- * @file storeoscserver.cpp
+ * @file storewidget.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,53 +23,31 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STOREWIDGET_H_
+#define STOREWIDGET_H_
 
-#include "storeoscserver.h"
+#include "widgetparams.h"
+#include "widgetstore.h"
 
-#include "oscserverparms.h"
+class StoreWidget: public WidgetParamsStore, WidgetStore {
+public:
+	StoreWidget(void);
+	~StoreWidget(void);
 
-#include "spiflashstore.h"
+	void Update(const struct TWidgetParams *pWidgetParams);
+	void Copy(struct TWidgetParams *pWidgetParams);
 
-#include "debug.h"
+	void UpdateBreakTime(uint8_t nBreakTime);
+	void UpdateMabTime(uint8_t nMabTime);
+	void UpdateRefreshRate(uint8_t nRefreshRate);
 
-StoreOscServer *StoreOscServer::s_pThis = 0;
+public:
+	static StoreWidget* Get(void) {
+		return s_pThis;
+	}
 
-OSCServerParamsStore::~OSCServerParamsStore(void) {
-	DEBUG_ENTRY
+private:
+	static StoreWidget *s_pThis;
+};
 
-	DEBUG_EXIT
-}
-
-StoreOscServer::StoreOscServer(void) {
-	DEBUG_ENTRY
-
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreOscServer::~StoreOscServer(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreOscServer::Update(const struct TOSCServerParams* pOSCServerParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
-
-	DEBUG_EXIT
-}
-
-void StoreOscServer::Copy(struct TOSCServerParams* pOSCServerParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_OSC, (void *)pOSCServerParams, sizeof(struct TOSCServerParams));
-
-	DEBUG_EXIT
-}
+#endif /* STOREWIDGET_H_ */
