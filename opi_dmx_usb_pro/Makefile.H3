@@ -1,0 +1,12 @@
+#
+DEFINES = ENABLE_MMU NO_EMAC RDM_CONTROLLER ENABLE_SPIFLASH NDEBUG
+#
+LIBS = widget dmx rdm monitor usb
+#
+SRCDIR = firmware lib
+#
+EXTRA_INCLUDES = 
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
