@@ -56,7 +56,9 @@ enum TArtNet4ParamsMask {
 static const char PARAMS_MAP_UNIVERSE0[] ALIGNED = "map_universe0";
 
 ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore* pArtNet4ParamsStore):
+#if defined (H3) || defined (RASPPI)
 	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : (ArtNetParamsStore *)SpiFlashStore::Get()->GetStoreArtNet()),
+#endif
 	m_pArtNet4ParamsStore(pArtNet4ParamsStore)
 {
 	m_tArtNet4Params.nSetList = 0;
