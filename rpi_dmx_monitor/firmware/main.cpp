@@ -51,15 +51,15 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	LedBlinkBaremetal lb;
 
-	uint32_t nMicrosPrevious = (uint32_t) 0;
+	uint32_t nMicrosPrevious = 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
-	uint32_t nUpdatesPerSecondeMax = (uint32_t) 0;
+	uint32_t nUpdatesPerSecondeMax = 0;
 	uint32_t nSlotsInPacketMin = UINT32_MAX;
-	uint32_t nSlotsInPacketMax = (uint32_t) 0;
+	uint32_t nSlotsInPacketMax = 0;
 	uint32_t nSotToSlotMin = UINT32_MAX;
-	uint32_t nSlotToSlotMax = (uint32_t) 0;
+	uint32_t nSlotToSlotMax = 0;
 	uint32_t nBreakToBreakMin = UINT32_MAX;
-	uint32_t nBreakToBreakMax = (uint32_t) 0;
+	uint32_t nBreakToBreakMax = 0;
 	int16_t nLength;
 
 	uint8_t nHwTextLength;
@@ -72,8 +72,8 @@ void notmain(void) {
 	DMXMonitorParams monitorparams;
 
 	if (monitorparams.Load()) {
-		monitorparams.Dump();
 		monitorparams.Set(&dmxmonitor);
+		monitorparams.Dump();
 	}
 
 	dmxmonitor.Cls();
@@ -87,7 +87,8 @@ void notmain(void) {
 	hw.WatchdogInit();
 
 	DMXReceiver dmxreceiver;
-	dmxreceiver.SetOutput(&dmxmonitor);
+
+	dmxreceiver.SetOutput((LightSet *)&dmxmonitor);
 	dmxreceiver.Start();
 
 	for(;;) {
@@ -118,10 +119,13 @@ void notmain(void) {
 
 				nUpdatesPerSecondeMin = MIN(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
 				nUpdatesPerSecondeMax = MAX(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
+
 				nSlotsInPacketMin = MIN(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
 				nSlotsInPacketMax = MAX(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMax);
+
 				nSotToSlotMin = MIN(dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin);
 				nSlotToSlotMax = MAX(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
+
 				nBreakToBreakMin = MIN(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
 				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
 
