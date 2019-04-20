@@ -179,6 +179,8 @@ bool HardwareBaremetal::Reboot(void) {
 	for (;;)
 		;
 
+	__builtin_unreachable ();
+
 	return true;
 }
 

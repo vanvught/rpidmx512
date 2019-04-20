@@ -73,12 +73,18 @@ public:
 	void SetCursor(TCursorMode);
 	void SetCursorPos(uint8_t, uint8_t);
 
+	void SetSleep(bool bSleep);
+
 	uint8_t getNCols(void) {
 		return m_nCols;
 	}
 
 	uint8_t getNRows(void) {
 		return m_nRows;
+	}
+
+	bool isSleep(void) {
+		return m_bIsSleep;
 	}
 
 	static Display* Get(void) {
@@ -93,6 +99,7 @@ private:
 	uint8_t m_nRows;
 	TDisplayTypes m_tType;
 	DisplaySet *m_LcdDisplay;
+	bool m_bIsSleep;
 
 	static Display *s_pThis;
 };

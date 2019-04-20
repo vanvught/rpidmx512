@@ -2,7 +2,7 @@
  * @file ssd1306.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -198,25 +198,16 @@ static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 
 static uint8_t _ClearBuffer[1025] __attribute__((aligned(4)));
 
-Ssd1306 *Ssd1306::s_pThis = 0;
-
 Ssd1306::Ssd1306(void): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(OLED_PANEL_128x64_8ROWS) {
-	s_pThis = this;
-
 	InitMembers();
 }
 
-
 Ssd1306::Ssd1306(TOledPanel tOledPanel): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT) {
-	s_pThis = this;
 	m_OledPanel = tOledPanel;
-
 	InitMembers();
 }
 
 Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) {
-	s_pThis = this;
-
 	if (nSlaveAddress == (uint8_t) 0) {
 		m_nSlaveAddress = OLED_I2C_SLAVE_ADDRESS_DEFAULT;
 	}
@@ -227,7 +218,6 @@ Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) {
 }
 
 Ssd1306::~Ssd1306(void) {
-	s_pThis = 0;
 	delete[] m_pShadowRam;
 }
 
@@ -331,7 +321,7 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 
 	SetCursorPos(0, nLine - 1);
 
-	for (int i = 0; i < (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W); i++) {
+	for (uint32_t i = 0; i < (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W); i++) {
 		PutChar((int) ' ');
 	}
 
@@ -348,13 +338,11 @@ void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 }
 
 void Ssd1306::Text(const char *data, uint8_t nLength) {
-	uint8_t i;
-
 	if (nLength > m_nCols) {
 		nLength = m_nCols;
 	}
 
-	for (i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		PutChar((int) data[i]);
 	}
 }
@@ -450,8 +438,8 @@ void Ssd1306::SetCursorBlinkOn(void) {
 }
 
 void Ssd1306::SetCursorOff(void) {
-	uint8_t col = m_nShadowRamIndex % OLED_FONT8x6_COLS;
-	uint8_t row =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
+	const uint8_t col = m_nShadowRamIndex % OLED_FONT8x6_COLS;
+	const uint8_t row =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 
 	SendCommand((uint8_t) SSD1306_CMD_SET_LOWCOLUMN | ((m_nCursorOnCol * OLED_FONT8x6_CHAR_W) & 0XF));
 	SendCommand((uint8_t) SSD1306_CMD_SET_HIGHCOLUMN | ((m_nCursorOnCol * OLED_FONT8x6_CHAR_W) >> 4));
@@ -464,6 +452,14 @@ void Ssd1306::SetCursorOff(void) {
 	SendCommand((uint8_t) SSD1306_CMD_SET_LOWCOLUMN | ((col * OLED_FONT8x6_CHAR_W) & 0XF));
 	SendCommand((uint8_t) SSD1306_CMD_SET_HIGHCOLUMN | ((col * OLED_FONT8x6_CHAR_W) >> 4));
 	SendCommand((uint8_t) SSD1306_CMD_SET_STARTPAGE | row);
+}
+
+void Ssd1306::SetSleep(bool bSleep) {
+	if (bSleep) {
+		SendCommand((uint8_t) SSD1306_CMD_DISPLAY_OFF);
+	} else {
+		SendCommand((uint8_t) SSD1306_CMD_DISPLAY_ON);
+	}
 }
 
 void Ssd1306::Setup(void) {
@@ -513,7 +509,3 @@ void Ssd1306::DumpShadowRam(void) {
 	}
 }
 #endif
-
-Ssd1306 *Ssd1306::Get (void) {
-	return s_pThis;
-}

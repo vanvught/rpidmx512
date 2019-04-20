@@ -43,7 +43,8 @@ public:
 		return 0;
 	}
 
-	void End(void) {
+	int32_t End(uint16_t nPort) {
+		return 0;
 	}
 
 	void JoinGroup(uint32_t nHandle, uint32_t nIp) {

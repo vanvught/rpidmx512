@@ -35,6 +35,7 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
@@ -57,11 +58,11 @@ MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pM
 }
 
 MidiParams::~MidiParams(void) {
-	m_tMidiParams.bSetList = 0;
+	m_tMidiParams.nSetList = 0;
 }
 
 bool MidiParams::Load(void) {
-	m_tMidiParams.bSetList = 0;
+	m_tMidiParams.nSetList = 0;
 
 	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
 
@@ -79,8 +80,50 @@ bool MidiParams::Load(void) {
 	return true;
 }
 
+void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pMidiParamsStore != 0);
+
+	if (m_pMidiParamsStore == 0) {
+		return;
+	}
+
+	m_tMidiParams.nSetList = 0;
+
+	ReadConfigFile config(MidiParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pMidiParamsStore->Update(&m_tMidiParams);
+}
+
+void MidiParams::callbackFunction(const char* pLine) {
+	assert(pLine != 0);
+
+	uint8_t value8;
+	uint32_t value32;
+
+	if (Sscan::Uint32(pLine, PARAMS_BAUDRATE, &value32) == SSCAN_OK) {
+		if (value32 == 0) {
+			m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
+			m_tMidiParams.nSetList |= SET_BAUDRATE;
+		} else if ((value32 >= 9600) && (value32 <= 115200)) {
+			m_tMidiParams.nBaudrate = value32;
+			m_tMidiParams.nSetList |= SET_BAUDRATE;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PARAMS_ACTIVE_SENSE, &value8) == SSCAN_OK) {
+		m_tMidiParams.nActiveSense = !(value8 == 0);
+		m_tMidiParams.nSetList |= SET_ACTIVE_SENSE;
+		return;
+	}
+}
+
 void MidiParams::Set(void) {
-	if (m_tMidiParams.bSetList == 0) {
+	if (m_tMidiParams.nSetList == 0) {
 		return;
 	}
 
@@ -95,7 +138,7 @@ void MidiParams::Set(void) {
 
 void MidiParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tMidiParams.bSetList == 0) {
+	if (m_tMidiParams.nSetList == 0) {
 		return;
 	}
 
@@ -112,10 +155,6 @@ void MidiParams::Dump(void) {
 #endif
 }
 
-bool MidiParams::isMaskSet(uint32_t nMask) const {
-	return (m_tMidiParams.bSetList & nMask) == nMask;
-}
-
 void MidiParams::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
@@ -123,26 +162,6 @@ void MidiParams::staticCallbackFunction(void* p, const char* s) {
 	((MidiParams *) p)->callbackFunction(s);
 }
 
-void MidiParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
-
-	uint8_t value8;
-	uint32_t value32;
-
-	if (Sscan::Uint32(pLine, PARAMS_BAUDRATE, &value32) == SSCAN_OK) {
-		if (value32 == 0) {
-			m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
-			m_tMidiParams.bSetList |= SET_BAUDRATE;
-		} else if ((value32 >= 9600) && (value32 <= 115200)) {
-			m_tMidiParams.nBaudrate = value32;
-			m_tMidiParams.bSetList |= SET_BAUDRATE;
-		}
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_ACTIVE_SENSE, &value8) == SSCAN_OK) {
-		m_tMidiParams.nActiveSense = !(value8 == 0);
-		m_tMidiParams.bSetList |= SET_ACTIVE_SENSE;
-		return;
-	}
+bool MidiParams::isMaskSet(uint32_t nMask) const {
+	return (m_tMidiParams.nSetList & nMask) == nMask;
 }

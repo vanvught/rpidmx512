@@ -8,6 +8,7 @@
 -  **sACN E1.31 Ethernet** DMX Bridge / **Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx.zip?raw=true)}
 -  **sACN E1.31 Ethernet** DMX Bridge **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx_multi.zip?raw=true)}
 - RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_dmx_usb_pro.zip?raw=true)}  {*Orange Pi Zero only*}
+- **DMX Real-time Monitor** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_dmx_monitor.zip?raw=true)}  {*Orange Pi One only*}
 - **SMPTE** Timecode LTC Reader {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_ltc_reader.zip?raw=true)}   {*Orange Pi Zero only*}
 -  **OSC Ethernet** DMX Bridge / **Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_dmx.zip?raw=true)}
 - RDM Responder / **DMX Pixel (WS28xx/SK6812) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/h3_rdm_responder.zip?raw=true)}

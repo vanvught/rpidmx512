@@ -23,10 +23,16 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "networkconst.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__((aligned(4)))
-#endif
+alignas(uint32_t) const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
+alignas(uint32_t) const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
+alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
+alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
+alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
+alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
+alignas(uint32_t) const char NetworkConst::PARAMS_RESET_EMAC[] = "reset_emac";
 
-char NetworkConst::MSG_NETWORK_INIT[] ALIGNED = "Network init";
+alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";

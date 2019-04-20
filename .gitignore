@@ -15,6 +15,7 @@ lib*.a
 *.map
 *.elf
 *.prefs
+*.class
 
 *.txt
 *._txt

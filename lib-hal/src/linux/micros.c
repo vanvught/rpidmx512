@@ -30,5 +30,5 @@
 uint32_t micros(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * (__time_t) 1000000) + tv.tv_usec;
+	return (tv.tv_sec * 1000000) + tv.tv_usec;
 }

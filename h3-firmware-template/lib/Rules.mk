@@ -9,12 +9,18 @@ AR	= $(PREFIX)ar
 PLATFORM?=ORANGE_PI
 CONSOLE?=
 
+ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
+	
+else
+#	DISPLAYS=ENABLE_TC1602 ENABLE_LCDBW
+endif
+
 SRCDIR = src src/h3 $(EXTRA_SRCDIR)
 
 INCLUDES:= -I./include -I../include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
-DEFINES:=$(addprefix -D,$(DEFINES)) -D$(PLATFORM)
+DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
 
 ifneq ($(CONSOLE),)
 	DEFINES+=-D$(CONSOLE)

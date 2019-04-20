@@ -43,6 +43,16 @@ struct TOSCServerParams {
 	char aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
 };
 
+enum TOSCServerParamsMask {
+	OSCSERVER_PARAMS_MASK_INCOMING_PORT = (1 << 0),
+	OSCSERVER_PARAMS_MASK_OUTGOING_PORT = (1 << 1),
+	OSCSERVER_PARAMS_MASK_PATH = (1 << 2),
+	OSCSERVER_PARAMS_MASK_TRANSMISSION = (1 << 3),
+	OSCSERVER_PARAMS_MASK_OUTPUT = (1 << 4),
+	OSCSERVER_PARAMS_MASK_PATH_INFO = (1 << 5),
+	OSCSERVER_PARAMS_MASK_PATH_BLACKOUT = (1 << 6)
+};
+
 class OSCServerParamsStore {
 public:
 	virtual ~OSCServerParamsStore(void);
@@ -57,6 +67,9 @@ public:
 	~OSCServerParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(OscServer *pOscServer);
 

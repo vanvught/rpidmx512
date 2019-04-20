@@ -30,7 +30,15 @@
 
 class NetworkConst {
 public:
-	alignas(uint32_t) static char MSG_NETWORK_INIT[];
+	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
+	alignas(uint32_t) static const char PARAMS_USE_DHCP[];
+	alignas(uint32_t) static const char PARAMS_IP_ADDRESS[];
+	alignas(uint32_t) static const char PARAMS_NET_MASK[];
+	alignas(uint32_t) static const char PARAMS_DEFAULT_GATEWAY[];
+	alignas(uint32_t) static const char PARAMS_HOSTNAME[];
+	alignas(uint32_t) static const char PARAMS_RESET_EMAC[];
+
+	alignas(uint32_t) static const char MSG_NETWORK_INIT[];
 };
 
 #endif /* NETWORKCONST_H_ */

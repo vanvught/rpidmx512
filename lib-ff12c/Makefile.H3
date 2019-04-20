@@ -2,7 +2,7 @@ ARMGNU ?= arm-none-eabi
 
 COPS_COMMON = -std=c99 -pedantic -Wall -O2 -nostdlib -nostartfiles -ffreestanding -mhard-float -mfloat-abi=hard
 
-COPS = -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
+COPS = -DH3 -mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS += $(COPS_COMMON)
 
 SOURCE = ./src

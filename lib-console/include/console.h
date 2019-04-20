@@ -66,6 +66,7 @@ extern "C" {
 	inline static void console_save_cursor(void) {}
     inline static void console_restore_cursor(void) {}
 	inline static void console_status(uint16_t _p1, const char *_p2) {}
+	inline static void console_puthex(uint8_t _p1) {}
 	inline static void console_puthex_fg_bg(uint8_t _p1, uint16_t _p2, uint16_t _p3) {}
     inline static void console_putpct_fg_bg(uint8_t _p1, uint16_t _p2, uint16_t _p3) {}
     inline static void console_put3dec_fg_bg(uint8_t _p1, uint16_t _p2, uint16_t _p3) {}

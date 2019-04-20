@@ -2,7 +2,7 @@
  * @file ledblinktask.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <ledblinkbaremetal.h>
+#include "ledblinkbaremetal.h"
+
 #include "c/led.h"
+#include "c/hardware.h"
 
 LedBlinkBaremetal::LedBlinkBaremetal(void) {
 }
@@ -37,6 +39,7 @@ void LedBlinkBaremetal::SetFrequency(unsigned nFreqHz) {
 
 	if (nFreqHz == 0) {
 		led_set_ticks_per_second(0);
+		hardware_led_set(0);
 	} else {
 		led_set_ticks_per_second(1000000 / nFreqHz);
 	}

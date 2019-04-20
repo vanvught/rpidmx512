@@ -14,6 +14,7 @@
 		<project>lib-midi</project>
 		<project>lib-network</project>
 		<project>lib-oscserver</project>
+		<project>lib-remoteconfig</project>
 		<project>lib-spiflash</project>
 		<project>lib-tlc59711dmx</project>
 		<project>lib-widget</project>

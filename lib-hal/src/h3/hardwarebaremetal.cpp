@@ -46,7 +46,7 @@ const char s_Release[] __attribute__((aligned(4))) = "1.0";
 #define RELEASE_LENGTH (sizeof(s_Release)/sizeof(s_Release[0]) - 1)
 
 static const char s_SocName[2][4] __attribute__((aligned(4))) = { "H2+", "H3\0" };
-static const uint8_t s_SocNameLenghth[2] = { 3, 2};
+static const uint8_t s_SocNameLenghth[2] = { 3, 2 };
 
 static const char s_CpuName[] __attribute__((aligned(4))) = "Cortex-A7";
 #define CPU_NAME_LENGHTH (sizeof(s_CpuName) / sizeof(s_CpuName[0]) - 1)
@@ -182,6 +182,8 @@ bool HardwareBaremetal::Reboot(void) {
 
 	for (;;)
 		;
+
+	__builtin_unreachable ();
 
 	return true;
 }

@@ -30,15 +30,17 @@
 
 class DevicesParamsConst {
 public:
-	alignas(uint32_t) static char DEVICES_TXT[];
-	alignas(uint32_t) static char LED_TYPE[];
-	alignas(uint32_t) static char LED_COUNT[];
+	alignas(uint32_t) static const char FILE_NAME[];
+	alignas(uint32_t) static const char LED_TYPE[];
+	alignas(uint32_t) static const char LED_COUNT[];
 
-	alignas(uint32_t) static char DMX_START_ADDRESS[];
-	alignas(uint32_t) static char SPI_SPEED_HZ[];
+	alignas(uint32_t) static const char ACTIVE_PORTS[];
 
-	alignas(uint32_t) static char LED_GROUPING[];
-	alignas(uint32_t) static char GLOBAL_BRIGHTNESS[];
+	alignas(uint32_t) static const char DMX_START_ADDRESS[];
+	alignas(uint32_t) static const char SPI_SPEED_HZ[];
+
+	alignas(uint32_t) static const char LED_GROUPING[];
+	alignas(uint32_t) static const char GLOBAL_BRIGHTNESS[];
 };
 
 #endif /* DEVICESPARAMSCONST_H_ */

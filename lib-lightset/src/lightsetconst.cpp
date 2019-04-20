@@ -1,5 +1,5 @@
 /**
- * @file storetlc5711.h
+ * @file lightsetconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,18 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORETLC5711_H_
-#define STORETLC5711_H_
+#include <stdint.h>
 
-#include "tlc59711dmxparams.h"
+#include "lightsetconst.h"
 
-class StoreTLC59711: public TLC59711DmxParamsStore {
-public:
-	StoreTLC59711(void);
-	~StoreTLC59711(void);
-
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
-};
-
-#endif /* STORETLC5711_H_ */
+alignas(uint32_t) const char LightSetConst::PARAMS_OUTPUT[] = "output";
+alignas(uint32_t) const char LightSetConst::PARAMS_UNIVERSE[] = "universe";

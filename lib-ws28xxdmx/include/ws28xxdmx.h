@@ -114,10 +114,10 @@ protected:
 private:
 	uint32_t m_nClockSpeedHz;
 	uint8_t m_nGlobalBrightness;
-	uint16_t m_nBeginIndexPortId1;
-	uint16_t m_nBeginIndexPortId2;
-	uint16_t m_nBeginIndexPortId3;
-	uint16_t m_nChannelsPerLed;
+	uint32_t m_nBeginIndexPortId1;
+	uint32_t m_nBeginIndexPortId2;
+	uint32_t m_nBeginIndexPortId3;
+	uint32_t m_nChannelsPerLed;
 };
 
 #endif /* WS28XXDMX_H_ */

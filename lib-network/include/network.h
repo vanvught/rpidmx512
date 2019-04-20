@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,28 +54,28 @@ public:
 	virtual ~Network(void);
 
 	virtual int32_t Begin(uint16_t nPort)=0;
-	virtual void End(void)=0;
+	virtual int32_t End(uint16_t nPort)=0;
 
 	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
-	 uint32_t GetIp(void) {
+	uint32_t GetIp(void) {
 		return m_nLocalIp;
 	}
 
-	 uint32_t GetNetmask(void) {
+	uint32_t GetNetmask(void) {
 		return m_nNetmask;
 	}
 
-	 uint32_t GetBroadcastIp(void) {
+	uint32_t GetBroadcastIp(void) {
 		return m_nBroadcastIp;
 	}
 
-	 bool IsDhcpCapable(void) {
+	bool IsDhcpCapable(void) {
 		return m_IsDhcpCapable;
 
 	}
 
-	 bool IsDhcpUsed(void) {
+	bool IsDhcpUsed(void) {
 		return m_IsDhcpUsed;
 	}
 
@@ -87,7 +87,7 @@ public:
 #endif
 	}
 
-	 const char* GetHostName(void) {
+	const char* GetHostName(void) {
 		return m_aHostName;
 	}
 

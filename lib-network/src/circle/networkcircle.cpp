@@ -43,11 +43,9 @@ union uip {
 static const char FromNetwork[] = "network";
 
 NetworkCircle::NetworkCircle(void) : m_pNet(0), m_pSocket(0) {
-
 }
 
 NetworkCircle::~NetworkCircle(void) {
-	End();
 }
 
 void NetworkCircle::Init(CNetSubSystem *pNet) {
@@ -106,13 +104,13 @@ int32_t NetworkCircle::Begin(uint16_t nPort) {
 	return 0;
 }
 
-void NetworkCircle::End(void) {
-	m_pNet = 0;
-
+int32_t NetworkCircle::End(uint16_t nPort) {
 	if (m_pSocket != 0 ) {
 		delete m_pSocket;
 		m_pSocket = 0;
 	}
+
+	return 0;
 }
 
 void NetworkCircle::MacAddressCopyTo(uint8_t* pMacAddress) {

@@ -1,5 +1,5 @@
 /**
- * @file storetlc5711.cpp
+ * @file storeremoteconfig.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,47 +23,52 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <assert.h>
+
+#include "storeremoteconfig.h"
+
+#include "remoteconfigparams.h"
 
 #include "spiflashstore.h"
 
-#include "tlc59711dmxparams.h"
-
 #include "debug.h"
 
-TLC59711DmxParamsStore::~TLC59711DmxParamsStore(void) {
+StoreRemoteConfig *StoreRemoteConfig::s_pThis = 0;
+
+RemoteConfigParamsStore::~RemoteConfigParamsStore(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-StoreTLC59711::StoreTLC59711(void) {
+StoreRemoteConfig::StoreRemoteConfig(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }
 
-StoreTLC59711::~StoreTLC59711(void) {
+StoreRemoteConfig::~StoreRemoteConfig(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void StoreTLC59711::Update(const struct TTLC59711DmxParams* pTLC59711DmxParams) {
+void StoreRemoteConfig::Update(const struct TRemoteConfigParams* pRemoteConfigParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, (void *)pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	SpiFlashStore::Get()->Update(STORE_RCONFIG, (void *)pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 
 	DEBUG_EXIT
 }
 
-void StoreTLC59711::Copy(struct TTLC59711DmxParams* pTLC59711DmxParams) {
+void StoreRemoteConfig::Copy(struct TRemoteConfigParams* pRemoteConfigParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, (void *)pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	SpiFlashStore::Get()->Copy(STORE_RCONFIG, (void *)pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 
 	DEBUG_EXIT
 }

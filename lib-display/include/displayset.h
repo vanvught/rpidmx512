@@ -2,7 +2,7 @@
  * @file dislpayset.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define DISPLAYSET_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum TCursorMode {
 	SET_CURSOR_OFF = 0,
@@ -39,11 +40,11 @@ class DisplaySet {
 public:
 	virtual ~DisplaySet(void);
 
-	 const uint8_t GetColumns(void) {
+	uint8_t GetColumns(void) {
 		return m_nCols;
 	}
 
-	 const uint8_t GetRows(void) {
+	uint8_t GetRows(void) {
 		return m_nRows;
 	}
 
@@ -60,10 +61,10 @@ public:
 	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 	virtual void SetCursor(TCursorMode)= 0;
 
+	virtual void SetSleep(bool bSleep);
 protected:
 	uint8_t m_nCols;
 	uint8_t m_nRows;
 };
-
 
 #endif /* DISPLAYSET_H_ */

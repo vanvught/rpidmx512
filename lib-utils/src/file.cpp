@@ -143,6 +143,7 @@ char *fgets(char *s, int size, FILE *stream) {
 	return s;
 }
 
+#if !defined(H3)
 int fputs(const char *s, FILE *stream) {
 	assert(s != NULL);
 
@@ -152,4 +153,6 @@ int fputs(const char *s, FILE *stream) {
 
 	return f_puts((const TCHAR *) s, &file_object);
 }
+#endif
+
 #endif

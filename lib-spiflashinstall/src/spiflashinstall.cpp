@@ -42,7 +42,6 @@
 
 #define OFFSET_UBOOT_SPI	0x000000
 #define OFFSET_UIMAGE		0x180000
-#define MAX_UIMAGE_SIZE		0x20000
 
 #define COMPARE_BYTES		1024
 
@@ -152,6 +151,7 @@ bool SpiFlashInstall::Open(const char* pFileName) {
 		return false;
 	}
 
+	Display::Get()->ClearLine(2);
 	Display::Get()->Write(2, pFileName);
 	puts(pFileName);
 
@@ -291,6 +291,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	}
 
 	if (bSuccess) {
+		Display::Get()->ClearLine(3);
 		Display::Get()->Printf(3, "%d", (int) nTotalBytes);
 		printf("%d bytes written\n", (int) nTotalBytes);
 	}

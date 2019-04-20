@@ -30,7 +30,6 @@
 #include <stdbool.h>
 
 #include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
 
 struct TWS28xxDmxParams {
     uint32_t nSetList;
@@ -40,6 +39,17 @@ struct TWS28xxDmxParams {
 	bool bLedGrouping;
 	uint32_t nSpiSpeedHz;
 	uint8_t nGlobalBrightness;
+	uint8_t nActiveOutputs;
+};
+
+enum TWS28xxDmxParamsMask {
+	WS28XXDMX_PARAMS_MASK_LED_TYPE = (1 << 0),
+	WS28XXDMX_PARAMS_MASK_LED_COUNT = (1 << 1),
+	WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS = (1 << 2),
+	WS28XXDMX_PARAMS_MASK_LED_GROUPING = (1 << 3),
+	WS28XXDMX_PARAMS_MASK_SPI_SPEED = (1 << 4),
+	WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 5),
+	WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS = (1 << 6)
 };
 
 class WS28xxDmxParamsStore {
@@ -86,6 +96,10 @@ public:
 
 	bool IsLedGrouping(void) {
 		return m_tWS28xxParams.bLedGrouping;
+	}
+
+	uint8_t GetActivePorts(void){
+		return m_tWS28xxParams.nActiveOutputs;
 	}
 
 public:

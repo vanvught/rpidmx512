@@ -42,7 +42,8 @@ enum {
 enum TLightSetOutputType {
 	LIGHTSET_OUTPUT_TYPE_DMX,
 	LIGHTSET_OUTPUT_TYPE_SPI,
-	LIGHTSET_OUTPUT_TYPE_MONITOR
+	LIGHTSET_OUTPUT_TYPE_MONITOR,
+	LIGHTSET_OUTPUT_TYPE_UNDEFINED
 };
 
 class LightSet {
@@ -63,6 +64,10 @@ public: // RDM Optional
 	virtual uint16_t GetDmxFootprint(void);
 
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+
+public:
+	static const char* GetOutputType(TLightSetOutputType type);
+	static TLightSetOutputType GetOutputType(const char* sType);
 };
 
 #endif /* LIGHTSET_H_ */

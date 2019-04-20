@@ -88,6 +88,10 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 	assert(nLength != 0);
 	assert(m_pLTcParamsStore != 0);
 
+	if (m_pLTcParamsStore == 0) {
+		return;
+	}
+
 	m_tLtcParams.nSetList = 0;
 
 	ReadConfigFile config(LtcParams::staticCallbackFunction, this);

@@ -8,7 +8,7 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/circle/networkcircle.o src/networkparams.o src/network.o
+OBJS	= src/circle/networkcircle.o src/networkparams.o src/network.o src/networkconst.o
 
 EXTRACLEAN = src/circle/*.o src/*.o
 

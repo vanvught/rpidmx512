@@ -52,7 +52,6 @@ NetworkH3emac::NetworkH3emac(void) {
 }
 
 NetworkH3emac::~NetworkH3emac(void) {
-	End();
 }
 
 int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
@@ -121,7 +120,16 @@ int32_t NetworkH3emac::Begin(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::End(void) {
+int32_t NetworkH3emac::End(uint16_t nPort) {
+	DEBUG_ENTRY
+
+	const int32_t n = udp_unbind(nPort);
+
+	assert(n == 0);
+
+	return n;
+
+	DEBUG_EXIT
 }
 
 void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {

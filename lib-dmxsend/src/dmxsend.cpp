@@ -1,3 +1,4 @@
+#if !defined (__linux__)
 /**
  * @file dmxsender.cpp
  *
@@ -72,4 +73,4 @@ void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 
 	DEBUG_EXIT
 }
-
+#endif

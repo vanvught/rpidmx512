@@ -11,10 +11,6 @@ CONSOLE?=
 
 SUFFIX=orangepi_zero
 
-ifeq ($(findstring NANO_PI,$(PLATFORM)),NANO_PI)
-	SUFFIX=nanopi_neo
-endif
-
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	SUFFIX=orangepi_one
 endif
@@ -29,7 +25,7 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 endif
 
 ifdef COND
-	LIBS:=spiflashinstall spiflashstore spiflash artnet artnet4 e131 midi ltc oscserver ws28xx ws28xxdmx tlc59711 tlc59711dmx dmx dmxsend $(LIBS)
+	LIBS:=spiflashinstall remoteconfig spiflashstore spiflash artnet artnet4 e131 oscserver osc ws28xxdmx ws28xx tlc59711dmx tlc59711 dmxsend dmx lightset ledblink $(LIBS)
 endif
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)

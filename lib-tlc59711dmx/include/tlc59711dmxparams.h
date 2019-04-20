@@ -38,6 +38,13 @@ struct TTLC59711DmxParams {
     uint32_t nSpiSpeedHz;
 };
 
+enum TTLC59711DmxParamsMask {
+	TLC59711DMX_PARAMS_MASK_LED_TYPE = (1 << 0),
+	TLC59711DMX_PARAMS_MASK_LED_COUNT = (1 << 1),
+	TLC59711DMX_PARAMS_MASK_START_ADDRESS = (1 << 2),
+	TLC59711DMX_PARAMS_MASK_SPI_SPEED = (1 << 3)
+};
+
 class TLC59711DmxParamsStore {
 public:
 	virtual ~TLC59711DmxParamsStore(void);
@@ -61,11 +68,11 @@ public:
 	void Dump(void);
 
 	TTLC59711Type GetLedType(void) {
-		return m_tLC59711Params.LedType;
+		return m_tTLC59711Params.LedType;
 	}
 
 	uint16_t GetLedCount(void) {
-		return m_tLC59711Params.nLedCount;
+		return m_tTLC59711Params.nLedCount;
 	}
 
 	bool IsSetLedType(void) const;
@@ -81,7 +88,7 @@ private:
 
 private:
 	TLC59711DmxParamsStore *m_pLC59711ParamsStore;
-    struct TTLC59711DmxParams m_tLC59711Params;
+    struct TTLC59711DmxParams m_tTLC59711Params;
 };
 
 #endif /* TLC59711DMXPARAMS_H_ */

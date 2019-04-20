@@ -32,11 +32,8 @@
 #endif
 
 #ifndef NDEBUG
-#if defined (__circle__)
- #include <circle/logger.h>
-#elif (__linux__)
-#elif defined (BARE_METAL)
- #include "monitor.h"
+#if (__linux__)
+ #include <stdio.h>
 #endif
 #endif
 
@@ -119,8 +116,8 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	assert(pData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
-	uint16_t i = (uint16_t) 0;
-	uint16_t beginIndex, endIndex;
+	uint32_t i = 0;
+	uint32_t beginIndex, endIndex;
 
 	bool bUpdate = false;
 
@@ -130,26 +127,26 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 
 	switch (nPortId) {
 	case 0:
-		beginIndex = (uint16_t) 0;
-		endIndex = MIN(m_nLedCount, (uint16_t) (nLength / (uint16_t) m_nChannelsPerLed));
+		beginIndex = 0;
+		endIndex = MIN(m_nLedCount, (nLength / m_nChannelsPerLed));
 		bUpdate = (endIndex == m_nLedCount);
 		if (m_nLedCount < m_nBeginIndexPortId1) {
 			i = m_nDmxStartAddress - 1;
 		}
 		break;
 	case 1:
-		beginIndex = (uint16_t) m_nBeginIndexPortId1;
-		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		beginIndex = m_nBeginIndexPortId1;
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 2:
-		beginIndex = (uint16_t) m_nBeginIndexPortId2;
-		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		beginIndex = m_nBeginIndexPortId2;
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 3:
-		beginIndex = (uint16_t) m_nBeginIndexPortId3;
-		endIndex = MIN(m_nLedCount, (uint16_t) ((uint16_t) beginIndex + (nLength / (uint16_t) m_nChannelsPerLed)));
+		beginIndex = m_nBeginIndexPortId3;
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		bUpdate = (endIndex == m_nLedCount);
 		break;
 	default:
@@ -160,10 +157,8 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	}
 
 #ifndef NDEBUG
-#if defined (__circle__)
-	CLogger::Get ()->Write(__FUNCTION__, LogDebug, "%u %u %u %s", nPortId, beginIndex, endIndex, bUpdate == false ? "False" : "True");
-#elif defined (BARE_METAL)
-	monitor_line(MONITOR_LINE_STATS, "%d-%d:%x %x %x-%d|%s", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength, bUpdate == false ? "False" : "True");
+#if defined (__linux__)
+	printf("%d-%d:%x %x %x-%d|%s", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength, bUpdate == false ? "False" : "True");
 #endif
 #endif
 
@@ -171,7 +166,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 		// wait for completion
 	}
 
-	for (uint16_t j = beginIndex; j < endIndex; j++) {
+	for (uint32_t j = beginIndex; j < endIndex; j++) {
 		__builtin_prefetch(&pData[i]);
 		if (m_tLedType == SK6812W) {
 			if (i + 3 > nLength) {

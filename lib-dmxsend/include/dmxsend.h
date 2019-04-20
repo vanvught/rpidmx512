@@ -1,5 +1,5 @@
 /**
- * @file dmxsender.h
+ * @file dmxsend.h
  *
  */
 /* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl

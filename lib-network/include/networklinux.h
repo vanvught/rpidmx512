@@ -2,7 +2,7 @@
  * @file networklinux.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ public:
 	int Init(const char *s);
 
 	int32_t Begin(uint16_t nPort);
-	void End(void);
+	int32_t End(uint16_t nPort);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 

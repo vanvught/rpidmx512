@@ -27,6 +27,7 @@
 #define SPIFLASHSTORE_H_
 
 #include <stdint.h>
+#include <storetlc59711.h>
 #include <uuid/uuid.h>
 
 #include "storenetwork.h"
@@ -35,7 +36,6 @@
 #include "storews28xxdmx.h"
 #include "storee131.h"
 #include "storeartnet4.h"
-#include "storetlc5711.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
 
@@ -52,6 +52,7 @@ enum TStore {
 	STORE_TLC5711DMX,
 	STORE_WIDGET,
 	STORE_RDMDEVICE,
+	STORE_RCONFIG,
 	STORE_LAST
 };
 

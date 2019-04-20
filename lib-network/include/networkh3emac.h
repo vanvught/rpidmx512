@@ -40,7 +40,7 @@ public:
 	int Init(NetworkParamsStore *pNetworkParamsStore = 0);
 
 	int32_t Begin(uint16_t nPort);
-	void End(void);
+	int32_t End(uint16_t nPort);
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 

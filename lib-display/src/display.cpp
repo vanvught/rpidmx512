@@ -54,18 +54,22 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 	m_tType = tDisplayType;
 
 	switch (tDisplayType) {
+#if defined(ENABLE_LCDBW)
 		case DISPLAY_BW_UI_1602:
 			m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, 16, 2);
 			break;
 		case DISPLAY_BW_LCD_1602:
 			m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, 16, 2);
 			break;
+#endif
+#if defined(ENABLE_TC1602)
 		case DISPLAY_PCF8574T_1602:
 			m_LcdDisplay = new Tc1602(16, 2);
 			break;
 		case DISPLAY_PCF8574T_2004:
 			m_LcdDisplay = new Tc1602(20, 4);
 			break;
+#endif
 		case DISPLAY_SSD1306:
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 			break;
@@ -81,6 +85,7 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 			m_LcdDisplay = 0;
 			m_tType = DISPLAY_TYPE_UNKNOWN;
 		} else {
+			m_LcdDisplay->Cls();
 			m_nCols = m_LcdDisplay->GetColumns();
 			m_nRows = m_LcdDisplay->GetRows();
 		}
@@ -110,13 +115,18 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 			m_tType = DISPLAY_SSD1306;
 			Printf(1, "SSD1306");
 		}
-	} else if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
+	}
+#if defined(ENABLE_TC1602)
+	else if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
 			m_tType = DISPLAY_PCF8574T_1602;
 			Printf(1, "TC1602_PCF8574T");
 		}
-	} else if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
+	}
+#endif
+#if defined(ENABLE_LCDBW)
+	else if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
 			m_tType = DISPLAY_BW_LCD_1602;
@@ -128,7 +138,9 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 			m_tType = DISPLAY_BW_UI_1602;
 			Printf(1, "BW_UI");
 		}
-	} else {
+	}
+#endif
+	else {
 #ifndef BARE_METAL
 		puts("Unknown or no display attached");
 #endif
@@ -196,7 +208,7 @@ uint8_t Display::Write(uint8_t nLine, const char *pText) {
 		return 0;
 	}
 
-	while (*p != (char)0) {
+	while (*p != (char) 0) {
 		++p;
 	}
 
@@ -240,4 +252,12 @@ void Display::ClearLine(uint8_t nLine) {
 		return;
 	}
 	m_LcdDisplay->ClearLine(nLine);
+}
+
+void Display::SetSleep(bool bSleep) {
+	if (m_LcdDisplay == 0) {
+		return;
+	}
+	m_bIsSleep = bSleep;
+	m_LcdDisplay->SetSleep(bSleep);
 }

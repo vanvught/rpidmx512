@@ -36,20 +36,16 @@
 
 #include "networkparams.h"
 #include "network.h"
+#include "networkconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "network.txt";
-static const char PARAMS_USE_DHCP[] ALIGNED = "use_dhcp";
-static const char PARAMS_IP_ADDRESS[] ALIGNED = "ip_address";
-static const char PARAMS_NET_MASK[] ALIGNED = "net_mask";
-static const char PARAMS_DEFAULT_GATEWAY[] ALIGNED = "default_gateway";
+#if !defined (H3)
 static const char PARAMS_NAME_SERVER[] ALIGNED = "name_server";
-static const char PARAMS_HOSTNAME[] ALIGNED = "hostname";
-static const char PARAMS_RESET_EMAC[] ALIGNED = "reset_emac";
+#endif
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tNetworkParams;
@@ -62,6 +58,7 @@ NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetwor
 }
 
 NetworkParams::~NetworkParams(void) {
+	m_tNetworkParams.nSetList = 0;
 }
 
 bool NetworkParams::Load(void) {
@@ -69,7 +66,7 @@ bool NetworkParams::Load(void) {
 
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(NetworkConst::PARAMS_FILE_NAME)) {
 		// There is a configuration file
 		if (m_pNetworkParamsStore != 0) {
 			m_pNetworkParamsStore->Update(&m_tNetworkParams);
@@ -88,6 +85,10 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(nLength != 0);
 	assert(m_pNetworkParamsStore != 0);
 
+	if (m_pNetworkParamsStore == 0) {
+		return;
+	}
+
 	m_tNetworkParams.nSetList = 0;
 
 	ReadConfigFile config(NetworkParams::staticCallbackFunction, this);
@@ -102,52 +103,52 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	uint8_t value8;
 	uint32_t value32;
-	char value[NETWORK_HOSTNAME_SIZE];
 	uint8_t len;
 
-	if (Sscan::Uint8(pLine, PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
 		m_tNetworkParams.bIsDhcpUsed = !(value8 == 0);
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_DHCP;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_IP_ADDRESS, &value32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nLocalIp = value32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_IP_ADDRESS;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_NET_MASK, &value32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNetmask = value32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NET_MASK;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, PARAMS_DEFAULT_GATEWAY, &value32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nGatewayIp = value32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_DEFAULT_GATEWAY;
 		return;
 	}
 
+	len = NETWORK_HOSTNAME_SIZE - 1;
+	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, (char *) m_tNetworkParams.aHostName, &len) == SSCAN_OK) {
+		m_tNetworkParams.aHostName[len] = '\0';
+		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_HOSTNAME;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
+		m_tNetworkParams.bResetEmac = (value8 != 0);
+		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_EMAC;
+		return;
+	}
+
+#if !defined (H3)
 	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
 		m_tNetworkParams.nNameServerIp = value32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NAME_SERVER;
 		return;
 	}
-
-	len = NETWORK_HOSTNAME_SIZE;
-	if (Sscan::Char(pLine, PARAMS_HOSTNAME, value, &len) == SSCAN_OK) {
-		strncpy((char *) m_tNetworkParams.aHostName, value, len);
-		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_HOSTNAME;
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
-		m_tNetworkParams.bResetEmac = (value8 != 0);
-		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_EMAC;
-		return;
-	}
+#endif
 }
 
 void NetworkParams::Dump(void) {
@@ -156,34 +157,36 @@ void NetworkParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_DHCP)) {
-		printf(" %s=%d [%s]\n", PARAMS_USE_DHCP, (int) m_tNetworkParams.bIsDhcpUsed, BOOL2STRING(m_tNetworkParams.bIsDhcpUsed));
+		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP, (int) m_tNetworkParams.bIsDhcpUsed, BOOL2STRING(m_tNetworkParams.bIsDhcpUsed));
 	}
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS)) {
-		printf(" %s=" IPSTR "\n", PARAMS_IP_ADDRESS, IP2STR(m_tNetworkParams.nLocalIp));
+		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_IP_ADDRESS, IP2STR(m_tNetworkParams.nLocalIp));
 	}
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_NET_MASK)) {
-		printf(" %s=" IPSTR "\n", PARAMS_NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
+		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
 	}
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY)) {
-		printf(" %s=" IPSTR "\n", PARAMS_DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
+		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
 	}
 
+#if !defined (H3)
 	if (isMaskSet(NETWORK_PARAMS_MASK_NAME_SERVER)) {
 		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
 	}
+#endif
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
-		printf(" %s=%s\n", PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
+		printf(" %s=%s\n", NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
 	}
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_EMAC)) {
-		printf(" %s=%d [%s]\n", PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
+		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
 	}
 #endif
 }

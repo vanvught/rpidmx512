@@ -37,21 +37,17 @@
  #endif
 #endif
 
-#define DMX_PARAMS_MIN_BREAK_TIME		9	///<
-#define DMX_PARAMS_DEFAULT_BREAK_TIME	9	///<
-#define DMX_PARAMS_MAX_BREAK_TIME		127	///<
-
-#define DMX_PARAMS_MIN_MAB_TIME			1	///<
-#define DMX_PARAMS_DEFAULT_MAB_TIME		1	///<
-#define DMX_PARAMS_MAX_MAB_TIME			127	///<
-
-#define DMX_PARAMS_DEFAULT_REFRESH_RATE	40	///<
-
 struct TDMXParams {
     uint32_t nSetList;
 	uint8_t nBreakTime;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
 	uint8_t nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
 	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+};
+
+enum TDmxSendParamsMask {
+	DMX_SEND_PARAMS_MASK_BREAK_TIME = (1 << 0),
+	DMX_SEND_PARAMS_MASK_MAB_TIME = (1 << 1),
+	DMX_SEND_PARAMS_MASK_REFRESH_RATE = (1 << 2)
 };
 
 class DMXParamsStore {

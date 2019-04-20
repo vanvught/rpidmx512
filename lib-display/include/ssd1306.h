@@ -2,7 +2,7 @@
  * @file ssd1306.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ public:
 	void SetCursorPos(uint8_t, uint8_t);
 	void SetCursor(TCursorMode);
 
-	static Ssd1306 *Get (void);
+	void SetSleep(bool bSleep) override;
 
 private:
 	void Setup(void);
@@ -79,14 +79,11 @@ private:
 	uint8_t m_nSlaveAddress;
 	TOledPanel m_OledPanel;
 	TCursorMode m_tCursorMode;
-	char *m_pShadowRam;
+	alignas(uint32_t) char *m_pShadowRam;
 	uint16_t m_nShadowRamIndex;
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
-
-	static Ssd1306 *s_pThis;
 };
-
 
 #endif /* SSD1306_H_ */

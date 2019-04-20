@@ -266,8 +266,9 @@ void LtcReader::Run(void) {
 		dmb();
 		bTimeCodeAvailable = false;
 
+#ifndef NDEBUG
 		nNowUs =  h3_hs_timer_lo_us();
-
+#endif
 		TimeCodeType = TC_TYPE_UNKNOWN;
 
 		dmb();

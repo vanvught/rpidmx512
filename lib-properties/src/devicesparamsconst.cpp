@@ -23,14 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "devicesparamsconst.h"
 
-alignas(uint32_t) char DevicesParamsConst::DEVICES_TXT[] = "devices.txt";
-alignas(uint32_t) char DevicesParamsConst::LED_TYPE[] = "led_type";
-alignas(uint32_t) char DevicesParamsConst::LED_COUNT[] = "led_count";
+alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
+alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
+alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
 
-alignas(uint32_t) char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
-alignas(uint32_t) char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
+alignas(uint32_t) const char DevicesParamsConst::ACTIVE_PORTS[] = "active_ports";
 
-alignas(uint32_t) char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-alignas(uint32_t) char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
+alignas(uint32_t) const char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
+alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
+
+alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
+alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";

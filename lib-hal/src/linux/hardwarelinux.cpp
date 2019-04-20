@@ -254,12 +254,10 @@ bool HardwareLinux::Reboot(void) {
 		}
 
 		perror("Call to reboot(RB_AUTOBOOT) failed.\n");
-		return false;
 	}
-
 	printf("Only the superuser may call reboot(RB_AUTOBOOT).\n");
-	return false;
 #endif
+	return false;
 }
 
 bool HardwareLinux::PowerOff(void) {

@@ -124,8 +124,8 @@ void MidiReader::Start(void) {
 }
 
 void MidiReader::Run(void) {
-	uint32_t nLimitUs = 0;
 #ifndef NDEBUG
+	uint32_t nLimitUs = 0;
 	char aLimitWarning[16] ALIGNED;
 	const uint32_t nNowUs = h3_hs_timer_lo_us();
 #endif
@@ -156,6 +156,7 @@ void MidiReader::Run(void) {
 	if (isMtc) {
 		nUpdates++;
 
+#ifndef NDEBUG
 		switch (m_tTimeCodeType) {
 		case TC_TYPE_FILM:
 			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
@@ -172,7 +173,6 @@ void MidiReader::Run(void) {
 			break;
 		}
 
-#ifndef NDEBUG
 		const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
 
 		if (nLimitUs == 0) {
@@ -246,7 +246,6 @@ void MidiReader::Update(void) {
 		m_tTimeCodeTypePrevious = m_tTimeCodeType;
 
 		Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
-
 		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
 	}
 }

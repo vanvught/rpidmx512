@@ -2,7 +2,7 @@
  * @file networklinux.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,17 @@
 
 #include "networklinux.h"
 
+/**
+ * BEGIN - needed H3 code compatibility
+ */
+#define MAX_PORTS_ALLOWED	4
+
+static uint16_t sPortsAllowed[MAX_PORTS_ALLOWED];
+static uint8_t snPortsUsed = 0;
+/**
+ * END
+ */
+
 NetworkLinux::NetworkLinux(void) {
 	for (unsigned i = 0; i < sizeof(m_aIfName); i++) {
 		m_aIfName[i] = '\0';
@@ -44,11 +55,23 @@ NetworkLinux::NetworkLinux(void) {
 }
 
 NetworkLinux::~NetworkLinux(void) {
-	End();
 }
 
 int NetworkLinux::Init(const char *s) {
 	int result;
+/**
+ * BEGIN - needed H3 code compatibility
+ */
+	uint32_t i;
+
+	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		sPortsAllowed[i] = 0;
+	}
+
+	snPortsUsed = 0;
+/**
+ * END
+ */
 
 	assert(s != NULL);
 
@@ -81,11 +104,28 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	int nSocket;
 	struct sockaddr_in si_me;
 	int true_flag = true;
+	uint32_t i;
 
 #ifndef NDEBUG
 	printf("NetworkLinux::Begin, port = %d\n", nPort);
 #endif
 
+/**
+ * BEGIN - needed H3 code compatibility
+ */
+	if (snPortsUsed == MAX_PORTS_ALLOWED) {
+		perror("MAX_PORTS_ALLOWED");
+		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < snPortsUsed; i++) {
+		if (sPortsAllowed[i] == nPort) {
+			return 0;
+		}
+	}
+/**
+ * END
+ */
 
 	if ((nSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 		perror("socket");
@@ -117,6 +157,14 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		exit(EXIT_FAILURE);
 	}
 
+/**
+ * BEGIN - needed H3 code compatibility
+ */
+		sPortsAllowed[snPortsUsed++] = nPort;
+/**
+ * END
+ */
+
 	return nSocket;
 }
 
@@ -126,12 +174,38 @@ void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
 	}
 }
 
-void NetworkLinux::End(void) {
-	m_nLocalIp = 0;
-	m_nGatewayIp = 0;
-	m_nNetmask = 0;
-	m_nBroadcastIp = 0;
-	m_IsDhcpUsed = false;
+int32_t NetworkLinux::End(uint16_t nPort) {
+#ifndef NDEBUG
+	printf("NetworkLinux::End, port = %d\n", nPort);
+#endif
+
+/**
+ * BEGIN - needed H3 code compatibility
+ */
+#ifndef NDEBUG
+	printf("s_ports_allowed_index=%d\n", snPortsUsed);
+#endif
+
+	if (snPortsUsed == 0) {
+		perror("s_ports_used_index == 0");
+		exit(EXIT_FAILURE);
+	}
+
+#ifndef NDEBUG
+	printf("s_ports_allowed[s_ports_allowed_index - 1]=%d\n", sPortsAllowed[snPortsUsed - 1]);
+#endif
+
+	if ((sPortsAllowed[snPortsUsed - 1]) == nPort) {
+		sPortsAllowed[snPortsUsed - 1] = 0;
+		snPortsUsed--;
+		return 0;
+	}
+
+	perror("port not in use");
+	exit(EXIT_FAILURE);
+/**
+ * END
+ */
 }
 
 void NetworkLinux::SetIp(uint32_t nIp) {
@@ -199,7 +273,6 @@ void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
 }
 
 uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSize, uint32_t* pFromIp, uint16_t* pFromPort) {
-	assert(nHandle != -1);
 	assert(pPacket != NULL);
 	assert(pFromIp != NULL);
 	assert(pFromPort != NULL);
@@ -224,8 +297,6 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSi
 }
 
 void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
-	assert(nHandle != -1);
-
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
 
