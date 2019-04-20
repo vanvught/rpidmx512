@@ -1,5 +1,5 @@
 /**
- * @file e131const.cpp
+ * @file e131paramsconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include "e131const.h"
+#include <stdint.h>
 
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";
+#include "e131paramsconst.h"
 
+alignas(uint32_t) const char E131ParamsConst::PARAMS_FILE_NAME[] = "e131.txt";
+alignas(uint32_t) const char E131ParamsConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE[] = "merge_mode";
+alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+alignas(uint32_t) const char E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+alignas(uint32_t) const char E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";

@@ -1,5 +1,5 @@
 /**
- * @file e131const.cpp
+ * @file e131paramsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include "e131const.h"
+#ifndef E131PARAMSCONST_H_
+#define E131PARAMSCONST_H_
 
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";
+#include <stdint.h>
 
+class E131ParamsConst {
+public:
+	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
+	alignas(uint32_t) static const char PARAMS_UNIVERSE_PORT[4][16];
+	alignas(uint32_t) static const char PARAMS_MERGE_MODE[];
+	alignas(uint32_t) static const char PARAMS_MERGE_MODE_PORT[4][18];
+	alignas(uint32_t) static const char PARAMS_NETWORK_DATA_LOSS_TIMEOUT[];
+	alignas(uint32_t) static const char PARAMS_DISABLE_MERGE_TIMEOUT[];
+};
+
+#endif /* E131PARAMSCONST_H_ */
