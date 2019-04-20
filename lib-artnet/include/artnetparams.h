@@ -174,7 +174,6 @@ public:
 private:
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const;
-	uint16_t HexUint16(const char *s) const;
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;

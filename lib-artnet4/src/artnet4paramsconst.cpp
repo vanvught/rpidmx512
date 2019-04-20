@@ -1,5 +1,5 @@
 /**
- * @file artnet4paramssave.cpp
+ * @file artnet4paramsconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,49 +24,7 @@
  */
 
 #include <stdint.h>
-#include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
-#include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+#include "artnet4paramsconst.h"
 
-#include "artnet4params.h"
-
-#include "readconfigfile.h"
-#include "sscan.h"
-
-#include "propertiesbuilder.h"
-
-#include "artnetconst.h"
-
-#include "debug.h"
-
-static const char PARAMS_MAP_UNIVERSE0[] ALIGNED = "map_universe0";
-
-bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pArtNet4ParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
-	}
-
-	m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
-
-	PropertiesBuilder builder(ArtNetConst::ARTNET_TXT, pBuffer, nLength);
-
-	bool isAdded = builder.Add(PARAMS_MAP_UNIVERSE0, (uint32_t) m_tArtNet4Params.bMapUniverse0, isMaskSet((1 << 0)));
-
-	nSize = builder.GetSize();
-
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
-
-	DEBUG_EXIT
-
-	return isAdded;
-}
+alignas(uint32_t) const char ArtNet4ParamsConst::MAP_UNIVERSE0[] = "map_universe0";

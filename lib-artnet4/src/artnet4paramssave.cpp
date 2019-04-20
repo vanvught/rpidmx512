@@ -1,5 +1,5 @@
 /**
- * @file artnetconst.h
+ * @file artnet4paramssave.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,17 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETCONST_H_
-#define ARTNETCONST_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-class ArtNetConst {
-public:
-	alignas(uint32_t) static const char MSG_NODE_PARAMS[];
-	alignas(uint32_t) static const char MSG_NODE_START[];
-	alignas(uint32_t) static const char MSG_NODE_STARTED[];
-	alignas(uint32_t) static const char MSG_RDM_RUN[];
-};
+#include "artnet4params.h"
+#include "artnet4paramsconst.h"
+#include "artnetparamsconst.h"
 
-#endif /* ARTNETCONST_H_ */
+#include "propertiesbuilder.h"
+
+#include "debug.h"
+
+bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pArtNet4ParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
+
+	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
+
+	bool isAdded = builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, (uint32_t) m_tArtNet4Params.bMapUniverse0, isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+
+	DEBUG_EXIT
+
+	return isAdded;
+}

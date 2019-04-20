@@ -1,9 +1,6 @@
 /**
- * @file artnet4node.h
+ * @file artnetparamsconst.h
  *
- */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -26,47 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNET4NODE_H_
-#define ARTNET4NODE_H_
+#ifndef ARTNETPARAMSCONST_H_
+#define ARTNETPARAMSCONST_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "artnetnode.h"
-#include "artnet4handler.h"
+#include "artnet.h"
 
-#include "e131bridge.h"
-
-class ArtNet4Node: public ArtNetNode, ArtNet4Handler {
+class ArtNetParamsConst {
 public:
-	ArtNet4Node(uint8_t nPages = 1);
-	~ArtNet4Node(void);
-
-	void SetPort(uint8_t nPortId);
-
-	void Print(void);
-
-	void Start(void);
-	void Stop(void);
-	int HandlePacket(void);
-
-	void HandleAddress(uint8_t nCommand);
-	uint8_t GetStatus(uint8_t nPortId);
-
-	void SetMapUniverse0(bool bMapUniverse0 = false) {
-		m_bMapUniverse0 = bMapUniverse0;
-	}
-	bool IsMapUniverse0(void) {
-		return m_bMapUniverse0;
-	}
-
-	bool IsStatusChanged(void) {
-		return m_Bridge.IsStatusChanged();
-	}
-
-private:
-	E131Bridge m_Bridge;
-	bool m_bMapUniverse0;
+	alignas(uint32_t) static const char FILE_NAME[];
+	alignas(uint32_t) static const char NET[];
+	alignas(uint32_t) static const char SUBNET[];
+	alignas(uint32_t) static const char TIMECODE[];
+	alignas(uint32_t) static const char TIMESYNC[];
+	alignas(uint32_t) static const char RDM[];
+	alignas(uint32_t) static const char RDM_DISCOVERY[];
+	alignas(uint32_t) static const char NODE_SHORT_NAME[];
+	alignas(uint32_t) static const char NODE_LONG_NAME[];
+	alignas(uint32_t) static const char NODE_MANUFACTURER_ID[];
+	alignas(uint32_t) static const char NODE_OEM_VALUE[];
+	alignas(uint32_t) static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
+	alignas(uint32_t) static const char NODE_DISABLE_MERGE_TIMEOUT[];
+	alignas(uint32_t) static const char UNIVERSE_PORT[ARTNET_MAX_PORTS][16];
+	alignas(uint32_t) static const char MERGE_MODE[];
+	alignas(uint32_t) static const char MERGE_MODE_PORT[ARTNET_MAX_PORTS][18];
+	alignas(uint32_t) static const char PROTOCOL[];
+	alignas(uint32_t) static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
 };
 
-#endif /* ARTNET4NODE_H_ */
+#endif /* ARTNETPARAMSCONST_H_ */

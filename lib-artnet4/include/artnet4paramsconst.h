@@ -1,5 +1,5 @@
 /**
- * @file artnetconst.h
+ * @file artnet4paramsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETCONST_H_
-#define ARTNETCONST_H_
+#ifndef ARTNET4PARAMSCONST_H_
+#define ARTNET4PARAMSCONST_H_
 
 #include <stdint.h>
 
-class ArtNetConst {
+class ArtNet4ParamsConst {
 public:
-	alignas(uint32_t) static const char MSG_NODE_PARAMS[];
-	alignas(uint32_t) static const char MSG_NODE_START[];
-	alignas(uint32_t) static const char MSG_NODE_STARTED[];
-	alignas(uint32_t) static const char MSG_RDM_RUN[];
+	alignas(uint32_t) static const char MAP_UNIVERSE0[];
 };
 
-#endif /* ARTNETCONST_H_ */
+#endif /* ARTNET4PARAMSCONST_H_ */

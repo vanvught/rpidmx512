@@ -41,10 +41,13 @@
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
-ArtNet4Node::ArtNet4Node(void): ArtNetNode(4), m_bMapUniverse0(false) {
+ArtNet4Node::ArtNet4Node(uint8_t nPages):
+	ArtNetNode(4, nPages),
+	m_bMapUniverse0(false)
+{
 	DEBUG_ENTRY
 
-	assert((uint16_t) ARTNET_MAX_PORTS <= (uint16_t) E131_MAX_PORTS);
+	assert((ARTNET_MAX_PORTS * ARTNET_MAX_PAGES) <= E131_MAX_PORTS);
 
 	ArtNetNode::SetArtNet4Handler((ArtNet4Handler *)this);
 
@@ -91,7 +94,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId) {
 void ArtNet4Node::Start(void) {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 		

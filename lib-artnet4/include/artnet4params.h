@@ -40,6 +40,10 @@ struct TArtNet4Params {
 	bool bMapUniverse0;
 };
 
+enum TArtNet4ParamsMask {
+	ARTNET4_PARAMS_MASK_MAP_UNIVERSE0 = (1 << 0)
+};
+
 class ArtNet4ParamsStore {
 public:
 	virtual ~ArtNet4ParamsStore(void);

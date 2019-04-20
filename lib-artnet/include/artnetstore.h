@@ -44,8 +44,6 @@ public:
 	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
 	virtual void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge)=0;
 	virtual void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol)=0;
-
-private:
 };
 
 #endif /* ARTNETSTORE_H_ */

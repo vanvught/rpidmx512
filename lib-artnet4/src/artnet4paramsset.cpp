@@ -1,6 +1,9 @@
 /**
- * @file artnetconst.h
+ * @file artnet4paramsset.cpp
  *
+ */
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -23,17 +26,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETCONST_H_
-#define ARTNETCONST_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-class ArtNetConst {
-public:
-	alignas(uint32_t) static const char MSG_NODE_PARAMS[];
-	alignas(uint32_t) static const char MSG_NODE_START[];
-	alignas(uint32_t) static const char MSG_NODE_STARTED[];
-	alignas(uint32_t) static const char MSG_RDM_RUN[];
-};
+#include "artnet4params.h"
+#include "artnetconst.h"
 
-#endif /* ARTNETCONST_H_ */
+#include "debug.h"
+
+void ArtNet4Params::Set(ArtNet4Node* pArtNet4Node) {
+	DEBUG_ENTRY
+
+	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
+		pArtNet4Node->SetMapUniverse0(m_tArtNet4Params.bMapUniverse0);
+	}
+
+	ArtNetParams::Set((ArtNetNode *)pArtNet4Node);
+
+	DEBUG_EXIT
+}

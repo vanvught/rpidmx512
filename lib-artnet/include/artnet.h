@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,19 @@
 #ifndef ARTNET_H_
 #define ARTNET_H_
 
-#define ARTNET_PROTOCOL_REVISION	14							///< Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
+#define ARTNET_PROTOCOL_REVISION	14
 
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-
 
 /**
  * The maximum ports per node built into the ArtNet protocol.
  */
 enum {
 	ARTNET_MAX_PORTS = 4
+};
+
+enum {
+	ARTNET_MAX_PAGES = 1	///< Art-Net 3
 };
 
 /**

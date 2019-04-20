@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,7 +142,7 @@ struct TOutputPort {
 
 class ArtNetNode {
 public:
-	ArtNetNode(uint8_t nVersion = 3);
+	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
 	~ArtNetNode(void);
 
 	void Start(void);
@@ -150,42 +150,48 @@ public:
 
 	int HandlePacket(void);
 
-	 uint8_t GetVersion(void) {
+	uint8_t GetVersion(void) {
 		return m_nVersion;
 	}
 
 	void SetOutput(LightSet *pLightSet);
-	 LightSet* GetOutput(void) {
+	LightSet* GetOutput(void) {
 		return m_pLightSet;
 	}
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	 uint8_t GetActiveOutputPorts(void) {
+	uint8_t GetActiveInputPorts(void) { return 0; }
+
+	uint8_t GetActiveOutputPorts(void) {
 		return m_State.nActivePorts;
 	}
 
-	 void SetDirectUpdate(bool bDirectUpdate) {
+	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	 bool GetDirectUpdate(void) {
+	bool GetDirectUpdate(void) {
 		return m_bDirectUpdate;
 	}
 
 	void SetShortName(const char *);
-	const char *GetShortName(void);
+	const char *GetShortName(void) {
+		return (const char *) m_Node.ShortName;
+	}
 
 	void SetLongName(const char *);
-	const char *GetLongName(void);
+	const char *GetLongName(void) {
+		return (const char *) m_Node.LongName;
+	}
 
 	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
 	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress) const;
 
-	void SetNetSwitch(uint8_t nAddress);
-	uint8_t GetNetSwitch(void) const;
+	void SetNetSwitch(uint8_t nAddress, uint8_t nPage = 0);
+	uint8_t GetNetSwitch(uint8_t nPage = 0) const;
 
-	void SetSubnetSwitch(uint8_t nAddress);
-	uint8_t GetSubnetSwitch(void) const;
+	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage = 0);
+	uint8_t GetSubnetSwitch(uint8_t nPage = 0) const;
 
 	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress) const;
 
@@ -196,19 +202,24 @@ public:
 	TPortProtocol GetPortProtocol(uint8_t nPortIndex) const;
 
 	void SetManufacturerId(const uint8_t *);
-	const uint8_t *GetManufacturerId(void);
+	const uint8_t* GetManufacturerId(void) {
+		return m_Node.Esta;
+	}
 
 	void SetOemValue(const uint8_t *);
-	const uint8_t *GetOemValue(void);
+	const uint8_t* GetOemValue(void) {
+		return m_Node.Oem;
+	}
 
 	void SetNetworkTimeout(time_t);
-	time_t GetNetworkTimeout(void) const;
+	time_t GetNetworkTimeout(void) {
+		return m_State.nNetworkDataLossTimeout;
+	}
 
 	void SetDisableMergeTimeout(bool);
-	bool GetDisableMergeTimeout(void) const;
-
-	uint8_t GetActiveOutputPorts(void) const;
-	uint8_t GetActiveInputPorts(void) { return 0; }
+	bool GetDisableMergeTimeout(void) {
+		return m_State.bDisableMergeTimeout;
+	}
 
 	void SendDiag(const char *, TPriorityCodes);
 	void SendTimeCode(const struct TArtNetTimeCode *);
@@ -254,6 +265,7 @@ private:
 
 private:
 	uint8_t m_nVersion;
+	uint8_t m_nPages;
 	int32_t m_nHandle;
 	LightSet *m_pLightSet;
 
@@ -275,7 +287,7 @@ private:
 	struct TArtTodData *m_pTodData;
 	struct TArtIpProgReply *m_pIpProgReply;
 
-	struct TOutputPort m_OutputPorts[ARTNET_MAX_PORTS];
+	struct TOutputPort m_OutputPorts[ARTNET_MAX_PORTS * ARTNET_MAX_PAGES];
 
 	bool m_bDirectUpdate;
 
@@ -283,7 +295,7 @@ private:
 	time_t m_nPreviousPacketTime;
 	TOpCodes m_tOpCodePrevious;
 
-	bool m_IsLightSetRunning[ARTNET_MAX_PORTS];
+	bool m_IsLightSetRunning[ARTNET_MAX_PORTS * ARTNET_MAX_PAGES];
 	bool m_IsRdmResponder;
 
 	alignas(uint32_t) char m_aSysName[16];

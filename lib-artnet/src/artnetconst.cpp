@@ -25,13 +25,7 @@
 
 #include "artnetconst.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__((aligned(4)))
-#endif
-
-char ArtNetConst::ARTNET_TXT[] ALIGNED = "artnet.txt";
-
-char ArtNetConst::MSG_NODE_PARAMS[] ALIGNED = "Setting Node parameters";
-char ArtNetConst::MSG_NODE_START[] ALIGNED = "Starting the Node";
-char ArtNetConst::MSG_NODE_STARTED[] ALIGNED = "Node started";
-char ArtNetConst::MSG_RDM_RUN[] ALIGNED = "Running RDM Discovery";
+alignas(uint32_t) const char ArtNetConst::MSG_NODE_PARAMS[] = "Setting Node parameters";
+alignas(uint32_t) const char ArtNetConst::MSG_NODE_START[] = "Starting the Node";
+alignas(uint32_t) const char ArtNetConst::MSG_NODE_STARTED[] = "Node started";
+alignas(uint32_t) const char ArtNetConst::MSG_RDM_RUN[] = "Running RDM Discovery";
