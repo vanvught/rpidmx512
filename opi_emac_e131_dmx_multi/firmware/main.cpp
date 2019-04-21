@@ -45,6 +45,10 @@
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
+//
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "software_version.h"
 
@@ -61,20 +65,18 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
 	E131Params e131params((E131ParamsStore *) spiFlashStore.GetStoreE131());
 
 	if (e131params.Load()) {
 		e131params.Dump();
 	}
 
-	const TLightSetOutputType tOutputType = e131params.GetOutputType();
-
-
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("Ethernet sACN E1.31 ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
@@ -151,6 +153,16 @@ void notmain(void) {
 
 	bridge.SetOutput(&dmx);
 
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, bridge.GetActiveOutputPorts());
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
 	display.Cls();
 	display.Printf(1, "Eth sACN E1.31 DMX");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
@@ -185,6 +197,8 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 		lb.Run();
 	}
 }
