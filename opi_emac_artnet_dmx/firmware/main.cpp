@@ -62,6 +62,9 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "remoteconfig.h"
+ #include "remoteconfigparams.h"
+ #include "storeremoteconfig.h"
 #endif
 
 #include "software_version.h"
@@ -270,6 +273,18 @@ void notmain(void) {
 		dmx.Print();
 	}
 
+#if defined (ORANGE_PI)
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX)), node.GetActiveOutputPorts());
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+#endif
+
 	for (unsigned i = 0; i < 7; i++) {
 		display.ClearLine(i);
 	}
@@ -325,6 +340,7 @@ void notmain(void) {
 		node.HandlePacket();
 		lb.Run();
 #if defined (ORANGE_PI)
+		remoteConfig.Run();
 		spiFlashStore.Flash();
 #endif
 	}
