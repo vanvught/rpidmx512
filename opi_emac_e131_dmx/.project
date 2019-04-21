@@ -14,6 +14,7 @@
 		<project>lib-lightset</project>
 		<project>lib-monitor</project>
 		<project>lib-network</project>
+		<project>lib-remoteconfig</project>
 		<project>lib-spiflashinstall</project>
 		<project>lib-spiflashstore</project>
 		<project>lib-tlc59711dmx</project>

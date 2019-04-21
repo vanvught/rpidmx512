@@ -48,6 +48,10 @@
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
+//
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "software_version.h"
 
@@ -189,12 +193,17 @@ void notmain(void) {
 		node.SetRdmHandler(&discovery);
 	}
 
-	node.GetUniverseSwitch(0, nAddress);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetParams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, node.GetActiveOutputPorts());
 
-	for (unsigned i = 0; i < 7; i++) {
-		display.ClearLine(i);
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
 
+	display.Cls();
 	display.Printf(1, "Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
@@ -206,6 +215,8 @@ void notmain(void) {
 			display.PutString(" S");
 		}
 	}
+
+	node.GetUniverseSwitch(0, nAddress);
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "SN: %s", node.GetShortName());
@@ -226,8 +237,9 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.HandlePacket();
-		lb.Run();
+		remoteConfig.Run();
 		spiFlashStore.Flash();
+		lb.Run();
 	}
 }
 

@@ -59,6 +59,9 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "remoteconfig.h"
+ #include "remoteconfigparams.h"
+ #include "storeremoteconfig.h"
 #endif
 
 #include "software_version.h"
@@ -77,6 +80,7 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
 	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
 #else
 	E131Params e131params;
@@ -244,6 +248,18 @@ void notmain(void) {
 		dmx.Print();
 	}
 
+#if defined (ORANGE_PI)
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX), bridge.GetActiveOutputPorts());
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+#endif
+
 	for (unsigned i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
@@ -296,6 +312,10 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+#if defined (ORANGE_PI)
+		remoteConfig.Run();
+		spiFlashStore.Flash();
+#endif
 		lb.Run();
 	}
 }
