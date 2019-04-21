@@ -1,5 +1,5 @@
 #
-DEFINES = OSC_SERVER EMAC NDEBUG
+DEFINES = OSC_SERVER EMAC ENABLE_SPIFLASH NDEBUG
 #
 LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 ledblink lightset
 #

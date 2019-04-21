@@ -56,6 +56,10 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "storeoscserver.h"
+ #include "remoteconfig.h"
+ #include "remoteconfigparams.h"
+ #include "storeremoteconfig.h"
 #endif
 
 #include "software_version.h"
@@ -78,7 +82,9 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
-	OSCServerParams params((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
+	StoreOscServer storeOscServer;
+
+	OSCServerParams params((OSCServerParamsStore *)&storeOscServer);
 #else
 	OSCServerParams params;
 #endif
@@ -207,6 +213,18 @@ void notmain(void) {
 		dmx.Print();
 	}
 
+#if defined (ORANGE_PI)
+	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC, tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX), 1);
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+#endif
+
 	for (unsigned i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
@@ -244,8 +262,11 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		server.Run();
+#if defined (ORANGE_PI)
+		remoteConfig.Run();
+		spiFlashStore.Flash();
+#endif
 		lb.Run();
 	}
 }
-
 }
