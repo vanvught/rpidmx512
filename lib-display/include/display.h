@@ -32,6 +32,8 @@
 
 #include "displayset.h"
 
+#include "display7segment.h"
+
 enum TDisplayTypes {
 	DISPLAY_BW_UI_1602 = 0,
 	DISPLAY_BW_LCD_1602,
@@ -41,50 +43,53 @@ enum TDisplayTypes {
 	DISPLAY_TYPE_UNKNOWN = -1
 };
 
-#define DISPLAY_CONNECTED(b,f)	\
-do {						\
-	if(b) {					\
-		(void) f;			\
-	}						\
-} while (0);
-
 class Display {
 public:
-	Display(void);
-	Display(uint8_t, uint8_t);
-	Display(TDisplayTypes);
+	Display(uint8_t nCols, uint8_t nRows);
+	Display(TDisplayTypes tDisplayType = DISPLAY_SSD1306);
 	~Display(void);
 
 	void Cls(void);
-	void ClearLine(uint8_t);
+	void ClearLine(uint8_t nLine);
 
-	void PutChar(int);
-	void PutString(const char *);
+	void PutChar(int c);
+	void PutString(const char *pText);
 
 	void TextLine(uint8_t, const char *, uint8_t);
-	void TextStatus(const char *);
+	void TextStatus(const char *pText);
+
+	void Status(TDisplay7SegmentMessages nStatus);
+	void TextStatus(const char *pText, TDisplay7SegmentMessages nStatus);
 
 	uint8_t Write(uint8_t, const char *);
 	uint8_t Printf(uint8_t, const char *, ...);
 
-	bool isDetected(void) const;
-	TDisplayTypes GetDetectedType(void) const;
+	bool isDetected(void) {
+		return m_LcdDisplay == 0 ? false : true;
+	}
 
-	void SetCursor(TCursorMode);
-	void SetCursorPos(uint8_t, uint8_t);
+	TDisplayTypes GetDetectedType(void) {
+		return m_tType;
+	}
+
+	void SetCursor(TCursorMode EnumTCursorOnOff);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void SetSleep(bool bSleep);
+	bool isSleep(void) {
+		return m_bIsSleep;
+	}
 
-	uint8_t getNCols(void) {
+	uint8_t getCols(void) {
 		return m_nCols;
 	}
 
-	uint8_t getNRows(void) {
+	uint8_t getRows(void) {
 		return m_nRows;
 	}
 
-	bool isSleep(void) {
-		return m_bIsSleep;
+	bool isHave7Segment(void) {
+		return m_bHave7Segment;
 	}
 
 	static Display* Get(void) {
@@ -92,7 +97,8 @@ public:
 	}
 
 private:
-	void Detect(uint8_t, uint8_t);
+	void Detect(uint8_t nCols, uint8_t nRows);
+	void Init7Segment(void);
 
 private:
 	uint8_t m_nCols;
@@ -100,6 +106,7 @@ private:
 	TDisplayTypes m_tType;
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
+	bool m_bHave7Segment;
 
 	static Display *s_pThis;
 };

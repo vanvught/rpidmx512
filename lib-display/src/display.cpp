@@ -33,23 +33,36 @@
 #include "tc1602.h"
 #include "ssd1306.h"
 
+#include "display7segment.h"
+
 #include "i2c.h"
+
+#define MCP23017_I2C_ADDRESS	0x20
+#define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
+#define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
+#define MCP23X17_GPIOA			0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
 
 Display *Display::s_pThis = 0;
 
-Display::Display(void): m_nCols(0), m_nRows(0), m_tType(DISPLAY_TYPE_UNKNOWN), m_LcdDisplay(0) {
-	s_pThis = this;
-
-	Detect(16,2);
-}
-
-Display::Display(const uint8_t nCols, const uint8_t nRows): m_tType(DISPLAY_TYPE_UNKNOWN), m_LcdDisplay(0) {
+Display::Display(uint8_t nCols, uint8_t nRows):
+	m_tType(DISPLAY_TYPE_UNKNOWN),
+	m_LcdDisplay(0),
+	m_bIsSleep(false),
+	m_bHave7Segment(false)
+{
 	s_pThis = this;
 
 	Detect(nCols, nRows);
+	Init7Segment();
 }
 
-Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDisplay(0) {
+Display::Display(TDisplayTypes tDisplayType):
+	m_nCols(0),
+	m_nRows(0),
+	m_LcdDisplay(0),
+	m_bIsSleep(false),
+	m_bHave7Segment(false)
+{
 	s_pThis = this;
 	m_tType = tDisplayType;
 
@@ -90,6 +103,8 @@ Display::Display(TDisplayTypes tDisplayType): m_nCols(0), m_nRows(0), m_LcdDispl
 			m_nRows = m_LcdDisplay->GetRows();
 		}
 	}
+
+	Init7Segment();
 }
 
 void Display::Detect(uint8_t nCols, uint8_t nRows) {
@@ -103,13 +118,10 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 	}
 
 	if (i2c_is_connected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
-		switch (nRows) {
-		case 4:
+		if (nRows <= 4) {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_4ROWS);
-			break;
-		default:
+		} else {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
-			break;
 		}
 		if (m_LcdDisplay->Start()) {
 			m_tType = DISPLAY_SSD1306;
@@ -193,14 +205,6 @@ uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
 	return i;
 }
 
-bool Display::isDetected(void) const {
-	return m_LcdDisplay == 0 ? false : true;
-}
-
-TDisplayTypes Display::GetDetectedType(void) const {
-	return m_tType;
-}
-
 uint8_t Display::Write(uint8_t nLine, const char *pText) {
 	const char *p = pText;
 
@@ -216,7 +220,7 @@ uint8_t Display::Write(uint8_t nLine, const char *pText) {
 
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 
-	return (uint8_t) nLength;
+	return nLength;
 }
 
 void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
@@ -226,11 +230,11 @@ void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
 	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
 
-void Display::SetCursorPos(uint8_t col, uint8_t row) {
+void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if (m_LcdDisplay == 0) {
 		return;
 	}
-	m_LcdDisplay->SetCursorPos(col, row);
+	m_LcdDisplay->SetCursorPos(nCol, nRow);
 }
 
 void Display::PutChar(int c) {
@@ -260,4 +264,28 @@ void Display::SetSleep(bool bSleep) {
 	}
 	m_bIsSleep = bSleep;
 	m_LcdDisplay->SetSleep(bSleep);
+}
+
+// Support for 2 digits 7-segment based on MCP23017
+
+void Display::Init7Segment(void) {
+	m_bHave7Segment = i2c_is_connected(SEGMENT7_I2C_ADDRESS);
+
+	if (m_bHave7Segment) {
+		i2c_set_address(SEGMENT7_I2C_ADDRESS);
+		i2c_write_reg_uint16(MCP23X17_IODIRA, 0x0000); // All output
+		Status(DISPLAY_7SEGMENT_MSG_INFO_STARTUP);
+	}
+}
+
+void Display::Status(TDisplay7SegmentMessages nStatus) {
+	if (m_bHave7Segment) {
+		i2c_set_address(SEGMENT7_I2C_ADDRESS);
+		i2c_write_reg_uint16(MCP23X17_GPIOA, (uint16_t)~nStatus);
+	}
+}
+
+void Display::TextStatus(const char* pText, TDisplay7SegmentMessages nStatus) {
+	TextStatus(pText);
+	Status(nStatus);
 }
