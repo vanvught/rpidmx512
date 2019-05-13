@@ -208,7 +208,7 @@ Ssd1306::Ssd1306(TOledPanel tOledPanel): m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_
 }
 
 Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) {
-	if (nSlaveAddress == 0) {
+	if (nSlaveAddress == (uint8_t) 0) {
 		m_nSlaveAddress = OLED_I2C_SLAVE_ADDRESS_DEFAULT;
 	}
 
@@ -219,10 +219,11 @@ Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) {
 
 Ssd1306::~Ssd1306(void) {
 	delete[] m_pShadowRam;
-	m_pShadowRam = 0;
 }
 
 bool Ssd1306::Start(void) {
+	int i;
+
 	i2c_begin();
 
 	Setup();
@@ -233,14 +234,14 @@ bool Ssd1306::Start(void) {
 
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:
-		for (int i = 0; i < (int) sizeof(oled_128x64_init); i++) {
+		for (i = 0; i < (int) sizeof(oled_128x64_init); i++) {
 			SendCommand(oled_128x64_init[i]);
 		}
 		break;
 	case OLED_PANEL_128x64_4ROWS:
 		/* no break */
 	case OLED_PANEL_128x32_4ROWS:
-		for (int i = 0; i < (int) sizeof(oled_128x32_init); i++) {
+		for (i = 0; i < (int) sizeof(oled_128x32_init); i++) {
 			SendCommand(oled_128x32_init[i]);
 		}
 		break;
@@ -249,10 +250,10 @@ bool Ssd1306::Start(void) {
 	}
 
 	for (int i = 0; i < (int) sizeof(_ClearBuffer); i++) {
-		_ClearBuffer[i] = 0;
+		_ClearBuffer[i] = (uint8_t) 0;
 	}
 
-	_ClearBuffer[0] = 0x40;
+	_ClearBuffer[0] = (uint8_t) 0x40;
 
 	Cls();
 

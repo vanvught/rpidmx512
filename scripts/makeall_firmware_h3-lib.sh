@@ -1,5 +1,4 @@
 #!/bin/bash
-echo $1 $2 $3
 
 DIR=../lib-*
 
@@ -9,7 +8,7 @@ do
 	cd "$f"
 	
 	if [ -f Makefile.H3 ]; then
-		make -f Makefile.H3 $1 $2 $3 || exit
+		make -f Makefile.H3 $1 $2 || exit
 	fi
 	
 	cd -

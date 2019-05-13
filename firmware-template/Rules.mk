@@ -6,6 +6,10 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
+ifeq ($(findstring WIZNET,$(DEFINES)),WIZNET)
+	LIBS += network wiznet
+endif
+
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 	LIBS += network esp8266
 endif

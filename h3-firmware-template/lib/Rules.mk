@@ -8,7 +8,6 @@ AR	= $(PREFIX)ar
 
 PLATFORM?=ORANGE_PI
 CONSOLE?=
-NO_EXT_LED?=
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	
@@ -25,10 +24,6 @@ DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
 
 ifneq ($(CONSOLE),)
 	DEFINES+=-D$(CONSOLE)
-endif
-
-ifeq ($(NO_EXT_LED),1)
-	DEFINES+=-DDO_NOT_USE_EXTERNAL_LED
 endif
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(INCLUDES)
