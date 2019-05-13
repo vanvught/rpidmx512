@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,20 +44,20 @@
 #include "ff.h"
 
 #define POWER_LED_PIO	10	// PL10
+#define EXTERNAL_LED 	GPIO_EXT_16
 
 #if (_FFCONF == 68300)		// R0.12c
  static FATFS fat_fs;
 #endif
 
-static bool s_is_pwr_button_pressed = false;
+#if defined (ORANGE_PI_ONE)
+ static bool s_is_pwr_button_pressed = false;
+#endif
+
 static volatile uint64_t s_hardware_init_startup_seconds = 0;
 
 extern void h3_timer_init(void);
 extern void h3_hs_timer_init(void);
-
-bool hardware_is_pwr_button_pressed(void) {
-	return s_is_pwr_button_pressed;
-}
 
 uint64_t hardware_uptime_seconds(void) {
 	const uint64_t now = h3_read_cnt64() / (uint64_t) (24 * 1000000);
@@ -88,14 +88,42 @@ int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 
 void hardware_led_init(void) {
 	h3_gpio_fsel(H3_BOARD_STATUS_LED, GPIO_FSEL_OUTPUT);
+#if !defined(DO_NOT_USE_EXTERNAL_LED)
+	h3_gpio_fsel(EXTERNAL_LED, GPIO_FSEL_OUTPUT);
+#endif
 }
 
 void hardware_led_set(int state) {
+#if defined(ORANGE_PI_ONE)
 	if (state == 0) {
 		h3_gpio_clr(H3_BOARD_STATUS_LED);
+#if !defined(DO_NOT_USE_EXTERNAL_LED)
+		h3_gpio_clr(EXTERNAL_LED);
+#endif
 	} else {
 		h3_gpio_set(H3_BOARD_STATUS_LED);
+#if !defined(DO_NOT_USE_EXTERNAL_LED)
+		h3_gpio_set(EXTERNAL_LED);
+#endif
 	}
+#else
+
+#if !defined(DO_NOT_USE_EXTERNAL_LED)
+	#define MASK_LED 		(((uint32_t)1 << H3_BOARD_STATUS_LED) | ((uint32_t)1 << EXTERNAL_LED))
+#else
+	#define MASK_LED 		((uint32_t)1 << H3_BOARD_STATUS_LED)
+#endif
+
+	uint32_t dat = H3_PIO_PORTA->DAT;
+
+	if (state == 0) {
+		dat &= ~(MASK_LED);
+	} else {
+		dat |= (MASK_LED);
+	}
+
+	H3_PIO_PORTA->DAT = dat;
+#endif
 }
 
 void hardware_init(void) {

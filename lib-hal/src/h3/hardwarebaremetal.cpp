@@ -35,8 +35,8 @@
 
 #include "h3.h"
 #include "h3_hs_timer.h"
-#include "h3_thermal.h"
 #include "h3_watchdog.h"
+#include "h3_thermal.h"
 
 #include "h3_board.h"
 
@@ -114,14 +114,6 @@ const char* HardwareBaremetal::GetCpuName(uint8_t& nLength) {
 const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
 	nLength = s_SocNameLenghth[m_tSocType];
 	return s_SocName[m_tSocType];
-}
-
-float HardwareBaremetal::GetCoreTemperature(void) {
-	return (float) h3_thermal_gettemp();
-}
-
-float HardwareBaremetal::GetCoreTemperatureMax(void) {
-	return (float) h3_thermal_getalarm();
 }
 
 uint32_t HardwareBaremetal::GetReleaseId(void) {
@@ -213,14 +205,18 @@ uint32_t HardwareBaremetal::Millis(void) {
 	return millis();
 }
 
-bool HardwareBaremetal::IsButtonPressed(void) {
-	return hardware_is_pwr_button_pressed();
-}
-
 TBootDevice HardwareBaremetal::GetBootDevice(void) {
 	return (TBootDevice) h3_get_boot_device();
 }
 
 const char* HardwareBaremetal::GetWebsiteUrl(void) {
 	return "www.orangepi-dmx.org";
+}
+
+float HardwareBaremetal::GetCoreTemperature(void) {
+	return (float) h3_thermal_gettemp();
+}
+
+float HardwareBaremetal::GetCoreTemperatureMax(void) {
+	return (float) h3_thermal_getalarm();
 }

@@ -2,7 +2,7 @@
  * @file hardwarebaremetal.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,8 +88,6 @@ public:
 	void WatchdogInit(void);
 	void WatchdogFeed(void);
 	void WatchdogStop(void);
-
-	bool IsButtonPressed(void);
 
 #ifdef H3
 	TBootDevice GetBootDevice(void);

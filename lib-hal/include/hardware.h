@@ -88,8 +88,6 @@ public:
 	virtual void WatchdogFeed(void);
 	virtual void WatchdogStop(void);
 
-	virtual bool IsButtonPressed(void);
-
 	virtual const char* GetWebsiteUrl(void);
 
 public:
