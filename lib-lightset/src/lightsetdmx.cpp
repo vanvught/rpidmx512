@@ -23,10 +23,19 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "lightset.h"
 
-LightSet::~LightSet(void) {
+uint16_t LightSet::GetDmxStartAddress(void) {
+	return DMX_START_ADDRESS_DEFAULT;
 }
 
-void LightSet::Print(void) {
+uint16_t LightSet::GetDmxFootprint(void) {
+	return DMX_MAX_CHANNELS;
+}
+
+bool LightSet::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	return false;
 }
