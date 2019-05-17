@@ -56,6 +56,7 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "storeltc.h"
 #endif
 
 #include "software_version.h"
@@ -74,8 +75,9 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+	StoreLtc storeLtc;
 
-	LtcParams ltcParams((LtcParamsStore *)spiFlashStore.GetStoreLtc());
+	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
 #else
 	LtcParams ltcParams;
 #endif
@@ -99,7 +101,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -109,7 +111,7 @@ void notmain(void) {
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS);
+	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
 	node.SetShortName("LTC Node");
 
@@ -128,13 +130,13 @@ void notmain(void) {
 	node.SetIpProgHandler(&ipprog);
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START);
+	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
 
 	node.Print();
 	node.Start();
 
 	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED);
+	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
 
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type());
 	max7219.Init(ltcParams.GetMax7219Intensity());
