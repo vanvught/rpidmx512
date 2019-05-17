@@ -73,7 +73,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 		params.Dump();
 
 		if (spi_flash_probe(0, 0, 0) < 0) {
-			Display::Get()->TextStatus("No SPI flash");
+			Display::Get()->TextStatus("No SPI flash", DISPLAY_7SEGMENT_MSG_INFO_SPI_NONE);
 			DEBUG_PUTS("No SPI flash chip");
 		} else {
 			m_nFlashSize = spi_flash_get_size();
@@ -122,15 +122,15 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 
 void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
 	if (Open(pFileName)) {
-		Display::Get()->TextStatus(sCheckDifference);
+		Display::Get()->TextStatus(sCheckDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_CHECK);
 		puts(sCheckDifference);
 
 		if (Diff(nOffset)) {
-			Display::Get()->TextStatus(sWriting);
+			Display::Get()->TextStatus(sWriting, DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
 			puts(sWriting);
 			Write(nOffset);
 		} else {
-			Display::Get()->TextStatus(sNoDifference);
+			Display::Get()->TextStatus(sNoDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_NODIFF);
 			puts(sNoDifference);
 		}
 		Close();
@@ -165,7 +165,7 @@ void SpiFlashInstall::Close(void) {
 	(void) fclose(m_pFile);
 	m_pFile = 0;
 
-	Display::Get()->TextStatus(sDone);
+	Display::Get()->TextStatus(sDone, DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
 	puts(sDone);
 
 	DEBUG_EXIT

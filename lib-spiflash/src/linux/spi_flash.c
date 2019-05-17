@@ -37,12 +37,10 @@ int spi_init(void) {
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 	bcm2835_gpio_fsel(RPI_V2_GPIO_P1_24, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_set(RPI_V2_GPIO_P1_24);
-
 	return 0;
 }
 
 int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
-
 	if (flags & SPI_XFER_BEGIN) {
 		bcm2835_gpio_clr(RPI_V2_GPIO_P1_24);
 	}
