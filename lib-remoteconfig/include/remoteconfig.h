@@ -48,6 +48,14 @@ enum {
 	REMOTE_CONFIG_ID_LENGTH = (32 + REMOTE_CONFIG_DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
 };
 
+struct TRemoteConfigListBin {
+	uint8_t aMacAddress[6];
+	uint8_t nType;				// TRemoteConfig
+	uint8_t nMode;				// TRemoteConfigMode
+	uint8_t nActiveUniverses;
+	uint8_t aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
+}__attribute__((packed));
+
 class RemoteConfig {
 public:
 	RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs = 1);
@@ -62,6 +70,8 @@ public:
 	int Run(void);
 
 private:
+	uint32_t GetIndex(const void *p);
+
 	void HandleReboot(void);
 	void HandleList(void);
 	void HandleUptime(void);
@@ -84,7 +94,11 @@ private:
 	void HandleTxtFileParams(void);
 	void HandleTxtFileDevices(void);
 
-	void HandleSetDisplay(void);
+	void HandleDisplaySet(void);
+	void HandleDisplayGet(void);
+
+	void HandleStoreSet(void);
+	void HandleStoreGet(void);
 
 private:
 	bool m_bDisable;
@@ -93,6 +107,7 @@ private:
 	bool m_bEnableUptime;
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
 	uint8_t m_nIdLength;
+	struct TRemoteConfigListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle;
 	alignas(uint32_t) uint8_t *m_pUdpBuffer;
 	uint32_t m_nIPAddressFrom;

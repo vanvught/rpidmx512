@@ -36,7 +36,6 @@
 
 #include "hardware.h"
 #include "network.h"
-
 #include "display.h"
 
 #include "spiflashstore.h"
@@ -80,6 +79,12 @@ static const char sRequestGet[] ALIGNED = "?get#";
 static const char sRequestUptime[] ALIGNED = "?uptime#";
 #define REQUEST_UPTIME_LENGTH (sizeof(sRequestUptime)/sizeof(sRequestUptime[0]) - 1)
 
+static const char sRequestStore[] ALIGNED = "?store#";
+#define REQUEST_STORE_LENGTH (sizeof(sRequestStore)/sizeof(sRequestStore[0]) - 1)
+
+static const char sGetDisplay[] ALIGNED = "?display#";
+#define GET_DISPLAY_LENGTH (sizeof(sGetDisplay)/sizeof(sGetDisplay[0]) - 1)
+
 static const char sSetDisplay[] ALIGNED = "!display#";
 #define SET_DISPLAY_LENGTH (sizeof(sSetDisplay)/sizeof(sSetDisplay[0]) - 1)
 
@@ -111,16 +116,25 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_pUdpBuffer(0),
 	m_nIPAddressFrom(0),
 	m_nBytesReceived(0)
-
 {
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
 	assert(tRemoteConfigMode < REMOTE_CONFIG_MODE_LAST);
 
 	memset(m_aId, 0, sizeof m_aId);
+	memset(&m_tRemoteConfigListBin, 0, sizeof m_tRemoteConfigListBin);
 
 	m_nIdLength = snprintf(m_aId, sizeof(m_aId) - 1, "" IPSTR ",%s,%s,%d\n", IP2STR(Network::Get()->GetIp()), sRemoteConfigs[tRemoteConfig], sRemoteConfigModes[tRemoteConfigMode], nOutputs);
 
 	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
+
+	Network::Get()->MacAddressCopyTo(m_tRemoteConfigListBin.aMacAddress);
+	m_tRemoteConfigListBin.nType = tRemoteConfig;
+	m_tRemoteConfigListBin.nMode = tRemoteConfigMode;
+	m_tRemoteConfigListBin.nActiveUniverses = nOutputs;
+
+#ifndef NDEBUG
+	debug_dump((void *)&m_tRemoteConfigListBin, sizeof m_tRemoteConfigListBin);
+#endif
 
 	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
@@ -142,7 +156,6 @@ void RemoteConfig::SetDisable(bool bDisable) {
 	} else if (!bDisable && m_bDisable) {
 		m_nHandle = Network::Get()->Begin(UDP_PORT);
 		assert(m_nHandle != -1);
-
 		m_bDisable = false;
 	}
 
@@ -172,7 +185,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 
 	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
 
-	// BUG there is sanity check for adding multiple times
+	// BUG there is NO sanity check for adding multiple times
 	uint32_t nSize = strlen(pDisplayName);
 
 	if ((m_nIdLength + nSize + 2) < REMOTE_CONFIG_ID_LENGTH) {
@@ -184,6 +197,11 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	m_nIdLength += (nSize + 1);
 
 	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
+
+	strncpy((char *)m_tRemoteConfigListBin.aDisplayName, pDisplayName, REMOTE_CONFIG_DISPLAY_NAME_LENGTH);
+#ifndef NDEBUG
+	debug_dump((void *)&m_tRemoteConfigListBin, sizeof m_tRemoteConfigListBin);
+#endif
 
 	DEBUG_EXIT
 }
@@ -205,6 +223,11 @@ int RemoteConfig::Run(void) {
 	debug_dump((void *)m_pUdpBuffer, m_nBytesReceived);
 #endif
 
+	if (m_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
+		DEBUG_PUTS("\'\\n\'");
+		m_nBytesReceived--;
+	}
+
 	if (m_pUdpBuffer[0] == '?') {
 		DEBUG_PUTS("?");
 		if ((m_bEnableReboot) && (memcmp(m_pUdpBuffer, sRequestReboot, REQUEST_REBOOT_LENGTH) == 0)) {
@@ -215,6 +238,10 @@ int RemoteConfig::Run(void) {
 			HandleList();
 		} else if ((m_nBytesReceived > REQUEST_GET_LENGTH) && (memcmp(m_pUdpBuffer, sRequestGet, REQUEST_GET_LENGTH) == 0)) {
 			HandleGet();
+		} else if ((m_nBytesReceived > REQUEST_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sRequestStore, REQUEST_STORE_LENGTH) == 0)) {
+			HandleStoreGet();
+		} else if ((m_nBytesReceived >= GET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sGetDisplay, GET_DISPLAY_LENGTH) == 0)) {
+			HandleDisplayGet();
 		} else {
 #ifndef NDEBUG
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"?#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -223,14 +250,35 @@ int RemoteConfig::Run(void) {
 	} else if ((!m_bDisableWrite) && (m_pUdpBuffer[0] == '#')) {
 		DEBUG_PUTS("#");
 		HandleTxtFile();
-	} else if ((m_nBytesReceived >= (SET_DISPLAY_LENGTH + 1)) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
-		DEBUG_PUTS(sSetDisplay);
-		HandleSetDisplay();
+	} else if (m_pUdpBuffer[0] == '!') {
+		DEBUG_PUTS("!");
+		if ((m_nBytesReceived >= (SET_DISPLAY_LENGTH)) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
+			DEBUG_PUTS(sSetDisplay);
+			HandleDisplaySet();
+		} else {
+#ifndef NDEBUG
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+#endif
+		}
 	} else {
 		return 0;
 	}
 
 	return m_nBytesReceived;
+}
+
+uint32_t RemoteConfig::GetIndex(const void *p) {
+	uint32_t i;
+
+	for (i = 0; i < TXT_FILE_LAST; i++) {
+		if (memcmp(p, (const void *) sTxtFile[i], sTxtFileNameLength[i]) == 0) {
+			break;
+		}
+	}
+
+	DEBUG_PRINTF("i=%d", i);
+
+	return i;
 }
 
 void RemoteConfig::HandleReboot(void) {
@@ -241,6 +289,7 @@ void RemoteConfig::HandleReboot(void) {
 
 	Display::Get()->Cls();
 	Display::Get()->Write(2, "Rebooting ...");
+	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 
 	Hardware::Get()->Reboot();
 
@@ -251,9 +300,16 @@ void RemoteConfig::HandleUptime() {
 	DEBUG_ENTRY
 
 	const uint64_t nUptime = Hardware::Get()->GetUpTime();
-	const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "uptime:%ds\n", (int) nUptime);
 
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	if (m_nBytesReceived == REQUEST_UPTIME_LENGTH) {
+		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "uptime:%ds\n", (int) nUptime);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	} else if (m_nBytesReceived == REQUEST_UPTIME_LENGTH + 3) {
+		DEBUG_PUTS("Check for \'bin\' parameter");
+		if (memcmp((const void *)&	m_pUdpBuffer[REQUEST_UPTIME_LENGTH], "bin", 3) == 0) {
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&nUptime, sizeof(uint64_t) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		}
+	}
 
 	DEBUG_EXIT
 }
@@ -261,12 +317,19 @@ void RemoteConfig::HandleUptime() {
 void RemoteConfig::HandleList(void) {
 	DEBUG_ENTRY
 
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_aId, (uint16_t) m_nIdLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	if (m_nBytesReceived == REQUEST_LIST_LENGTH) {
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_aId, (uint16_t) m_nIdLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	} else if (m_nBytesReceived == REQUEST_LIST_LENGTH + 3) {
+		DEBUG_PUTS("Check for \'bin\' parameter");
+		if (memcmp((const void *)&	m_pUdpBuffer[REQUEST_LIST_LENGTH], "bin", 3) == 0) {
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_tRemoteConfigListBin, sizeof(struct TRemoteConfigListBin) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		}
+	}
 
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleSetDisplay() {
+void RemoteConfig::HandleDisplaySet() {
 	DEBUG_ENTRY
 
 	DEBUG_PRINTF("%c", m_pUdpBuffer[SET_DISPLAY_LENGTH]);
@@ -276,19 +339,76 @@ void RemoteConfig::HandleSetDisplay() {
 	DEBUG_EXIT
 }
 
+void RemoteConfig::HandleDisplayGet() {
+	DEBUG_ENTRY
+
+	const bool isOn = !(Display::Get()->isSleep());
+
+	if (m_nBytesReceived == GET_DISPLAY_LENGTH) {
+		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "display:%s\n", isOn ? "On" : "Off");
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	} else if (m_nBytesReceived == GET_DISPLAY_LENGTH + 3) {
+		DEBUG_PUTS("Check for \'bin\' parameter");
+		if (memcmp((const void *)&	m_pUdpBuffer[GET_DISPLAY_LENGTH], "bin", 3) == 0) {
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&isOn, sizeof(bool) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleStoreGet(void) {
+	DEBUG_ENTRY
+
+	uint32_t nLenght = 0;
+	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH]);
+
+	switch (i) {
+	case TXT_FILE_RCONFIG:
+		SpiFlashStore::Get()->CopyTo(STORE_RCONFIG, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_NETWORK:
+		SpiFlashStore::Get()->CopyTo(STORE_NETWORK, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_ARTNET:
+		SpiFlashStore::Get()->CopyTo(STORE_ARTNET, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_E131:
+		SpiFlashStore::Get()->CopyTo(STORE_E131, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_OSC:
+		SpiFlashStore::Get()->CopyTo(STORE_OSC, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_PARAMS:
+		SpiFlashStore::Get()->CopyTo(STORE_DMXSEND, m_pUdpBuffer, nLenght);
+		break;
+	case TXT_FILE_DEVICES:
+		SpiFlashStore::Get()->CopyTo(STORE_WS28XXDMX, m_pUdpBuffer, nLenght);
+		break;
+	default:
+#ifndef NDEBUG
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+#endif
+		DEBUG_EXIT
+		return;
+		__builtin_unreachable ();
+		break;
+	}
+
+#ifndef NDEBUG
+	debug_dump((void *)m_pUdpBuffer, nLenght);
+#endif
+	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nLenght, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+
+	DEBUG_EXIT
+}
+
 void RemoteConfig::HandleGet(void) {
 	DEBUG_ENTRY
 
 	uint32_t nSize = 0;
-	const uint8_t *a1 = &m_pUdpBuffer[REQUEST_GET_LENGTH];
 
-	uint32_t i;
-
-	for(i = 0; i < TXT_FILE_LAST; i++) {
-		if (memcmp((void *) a1, sTxtFile[i], sTxtFileNameLength[i]) == 0) {
-				break;
-		}
-	}
+	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_GET_LENGTH]);
 
 	switch (i) {
 	case TXT_FILE_RCONFIG:
@@ -318,6 +438,7 @@ void RemoteConfig::HandleGet(void) {
 #endif
 		DEBUG_EXIT
 		return;
+		__builtin_unreachable ();
 		break;
 	}
 
@@ -420,16 +541,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
-	debug_dump((void *)m_pUdpBuffer, m_nBytesReceived);
-
-	const uint8_t *a1 = &m_pUdpBuffer[1];
-	uint32_t i;
-
-	for(i = 0; i < TXT_FILE_LAST; i++) {
-		if (memcmp((void *) a1, sTxtFile[i], sTxtFileNameLength[i]) == 0) {
-				break;
-		}
-	}
+	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[1]);
 
 	switch (i) {
 	case TXT_FILE_RCONFIG:

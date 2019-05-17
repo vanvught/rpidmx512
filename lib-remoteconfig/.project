@@ -11,7 +11,6 @@
 		<project>lib-dmxsend</project>
 		<project>lib-e131</project>
 		<project>lib-hal</project>
-		<project>lib-ltc</project>
 		<project>lib-network</project>
 		<project>lib-oscserver</project>
 		<project>lib-tlc59711dmx</project>
