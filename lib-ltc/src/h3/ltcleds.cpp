@@ -26,52 +26,36 @@
 #include <stdint.h>
 
 #include "ltcleds.h"
-
 #include "ltc.h"
 
-#include "h3_gpio.h"
-
-#define ENABLE		2  // GPIO_EXT_22
-#define SELECT_A	18 // GPIO_EXT_18
-#define SELECT_B	19 // GPIO_EXT_16
+#include "display.h"
 
 LtcLeds *LtcLeds::s_pThis = 0;
 
 LtcLeds::LtcLeds(void) {
 	s_pThis = this;
-
-	h3_gpio_fsel(ENABLE, GPIO_FSEL_OUTPUT);
-	h3_gpio_fsel(SELECT_A, GPIO_FSEL_OUTPUT);
-	h3_gpio_fsel(SELECT_B, GPIO_FSEL_OUTPUT);
-
-	h3_gpio_set(ENABLE);
 }
 
 LtcLeds::~LtcLeds(void) {
-	h3_gpio_set(ENABLE);
 }
 
 void LtcLeds::Show(TTimecodeTypes tTimecodeType) {
-	uint32_t gpioa = H3_PIO_PORTA->DAT;
-	gpioa &= ~((1 << ENABLE) | (1 << SELECT_B) | (1 << SELECT_A));
-
 	switch (tTimecodeType) {
 	case TC_TYPE_FILM:
-		/* Nothing to here */
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_FILM);
 		break;
 	case TC_TYPE_EBU:
-		gpioa |= (1 << SELECT_A);
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_EBU);
 		break;
 	case TC_TYPE_DF:
-		gpioa |= (1 << SELECT_B);
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_DF);
 		break;
 	case TC_TYPE_SMPTE:
-		gpioa |= ((1 << SELECT_B) | (1 << SELECT_A));
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_SMPTE);
 		break;
 	default:
-		gpioa |= (1 << ENABLE);
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
 		break;
 	}
 
-	H3_PIO_PORTA->DAT = gpioa;
 }
