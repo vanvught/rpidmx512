@@ -447,20 +447,3 @@ void h3_i2c_set_slave_address(uint8_t address) {
 	s_slave_address = address;
 }
 
-// Obsolete - Backwards compatibility with Raspberry Pi
-#define BCM2835_CORE_CLK_HZ 250000000
-
-void h3_i2c_setClockDivider(uint16_t divider) {
-	assert(divider != 0);
-
-	const uint32_t baudrate = (uint32_t) BCM2835_CORE_CLK_HZ / divider;
-#ifndef NDEBUG
-	printf("%s divider=%d, baudrate=%ld\n", __FUNCTION__, (int) divider, (long int) baudrate);
-#endif
-
-	if (divider <= ((uint32_t) BCM2835_CORE_CLK_HZ / H3_I2C_FULL_SPEED)) {
-		_set_clock((uint32_t) H3_F_24M, H3_I2C_FULL_SPEED);
-	} else {
-		_set_clock((uint32_t) H3_F_24M, baudrate);
-	}
-}
