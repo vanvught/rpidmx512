@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 enum {
-	E131_MAX_PORTS = 4
+	E131_MAX_PORTS = 16
 };
 
 enum TE131PortDir {

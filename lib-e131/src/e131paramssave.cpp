@@ -61,7 +61,7 @@ bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 
 	isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(SET_MERGE_MODE_MASK));
 
-	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {
+	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		isAdded &= builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(SET_UNIVERSE_A_MASK << i));
 		isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(SET_MERGE_MODE_A_MASK << i));
 	}

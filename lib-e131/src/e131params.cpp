@@ -152,7 +152,7 @@ void E131Params::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, E131ParamsConst::PARAMS_UNIVERSE_PORT[i], &value16) == SSCAN_OK) {
 			m_tE131Params.nUniversePort[i] = value16;
 			m_tE131Params.nSetList |= (SET_UNIVERSE_A_MASK << i);
@@ -201,7 +201,7 @@ void E131Params::Dump(void) {
 		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_OUTPUT, (int) m_tE131Params.tOutputType, LightSet::GetOutputType((TLightSetOutputType) m_tE131Params.tOutputType));
 	}
 
-	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {
+	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (isMaskSet(SET_UNIVERSE_A_MASK << i)) {
 			printf(" %s=%d\n", E131ParamsConst::PARAMS_UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
 		}
@@ -211,7 +211,7 @@ void E131Params::Dump(void) {
 		printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode));
 	}
 
-	for (unsigned i = 0; i < E131_MAX_PORTS; i++) {
+	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
 			printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]));
 		}
@@ -228,7 +228,7 @@ void E131Params::Dump(void) {
 }
 
 uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
-	assert(nPort < E131_MAX_PORTS);
+	assert(nPort < E131_PARAMS_MAX_PORTS);
 
 	IsSet = isMaskSet(SET_UNIVERSE_A_MASK << nPort);
 

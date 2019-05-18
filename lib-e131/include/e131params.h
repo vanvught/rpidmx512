@@ -33,15 +33,15 @@
 
 #include "lightset.h"
 
+#define E131_PARAMS_MAX_PORTS	4
+
 struct TE131Params {
     uint32_t nSetList;
     TLightSetOutputType tOutputType;
-    char aCidString[UUID_STRING_LENGTH + 2];
-    bool bHaveCustomCid;
     uint16_t nUniverse;
-    uint16_t nUniversePort[E131_MAX_PORTS];
+    uint16_t nUniversePort[E131_PARAMS_MAX_PORTS];
 	uint8_t nMergeMode;
-	uint8_t nMergeModePort[E131_MAX_PORTS];
+	uint8_t nMergeModePort[E131_PARAMS_MAX_PORTS];
 	float nNetworkTimeout;
 	bool bDisableMergeTimeout;
 };
@@ -78,14 +78,6 @@ public:
 
 	TE131Merge GetMergeMode(void) {
 		return (TE131Merge) m_tE131Params.nMergeMode;
-	}
-
-	bool HaveCustomCid(void) {
-		return m_tE131Params.bHaveCustomCid;
-	}
-
-	const char* GetCidString(void) {
-		return (const char*) m_tE131Params.aCidString;
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet) const;

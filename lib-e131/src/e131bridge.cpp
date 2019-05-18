@@ -50,7 +50,7 @@
 #include "hardware.h"
 #include "network.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 9 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 10 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 E131Bridge::E131Bridge(void) :
@@ -556,7 +556,7 @@ void E131Bridge::HandleDmx(void) {
 					m_OutputPort[i].IsTransmitting = true;
 				}
 			} else {
-				m_OutputPort[i].IsDataPending = true;
+				m_OutputPort[i].IsDataPending = sendNewData;
 			}
 
 		}
@@ -574,18 +574,18 @@ void E131Bridge::HandleSynchronization(void) {
 	const uint16_t nSynchronizationAddress = __builtin_bswap16(m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber);
 
 	if ((nSynchronizationAddress != m_State.nSynchronizationAddressSourceA) && (nSynchronizationAddress != m_State.nSynchronizationAddressSourceB)) {
-		assert(0);
+		DEBUG_PUTS("");
 		return;
 	}
 
 	m_State.SynchronizationTime = m_nCurrentPacketMillis;
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-		if (m_OutputPort[i].IsDataPending) {
+		if ((m_OutputPort[i].IsDataPending) || (m_OutputPort[i].bIsEnabled && m_bDirectUpdate)){
 
 			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].length);
 
-			if (m_OutputPort[i].IsTransmitting) {
+			if (!m_OutputPort[i].IsTransmitting) {
 				m_pLightSet->Start(i);
 				m_OutputPort[i].IsTransmitting = true;
 			}
@@ -609,29 +609,35 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 		m_State.nPriority = E131_PRIORITY_LOWEST;
 
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-			m_pLightSet->Stop(i);
-			m_OutputPort[i].sourceA.ip = 0;
-			memset(m_OutputPort[i].sourceA.cid, 0, E131_CID_LENGTH);
-			m_OutputPort[i].sourceB.ip = 0;
-			memset(m_OutputPort[i].sourceB.cid, 0, E131_CID_LENGTH);
-			m_OutputPort[i].length = 0;
-			m_OutputPort[i].IsDataPending = false;
-			m_OutputPort[i].IsTransmitting = false;
-			m_OutputPort[i].IsMerging = false;
+			if (m_OutputPort[i].IsTransmitting) {
+				m_pLightSet->Stop(i);
+				m_OutputPort[i].sourceA.ip = 0;
+				memset(m_OutputPort[i].sourceA.cid, 0, E131_CID_LENGTH);
+				m_OutputPort[i].sourceB.ip = 0;
+				memset(m_OutputPort[i].sourceB.cid, 0, E131_CID_LENGTH);
+				m_OutputPort[i].length = 0;
+				m_OutputPort[i].IsDataPending = false;
+				m_OutputPort[i].IsTransmitting = false;
+				m_OutputPort[i].IsMerging = false;
+			}
 		}
+
 	} else {
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 			if (m_OutputPort[i].IsTransmitting) {
+
 				if ((bSourceA) && (m_OutputPort[i].sourceA.ip != 0)) {
 					m_OutputPort[i].sourceA.ip = 0;
 					memset(m_OutputPort[i].sourceA.cid, 0, E131_CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
+
 				if ((bSourceB) && (m_OutputPort[i].sourceB.ip != 0)) {
 					m_OutputPort[i].sourceB.ip = 0;
 					memset(m_OutputPort[i].sourceB.cid, 0, E131_CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
+
 				if (!m_State.IsMergeMode) {
 					m_pLightSet->Stop(i);
 					m_OutputPort[i].length = 0;
