@@ -94,11 +94,11 @@ struct TArtNetNodeState {
 	TNodeStatus status;					///< See \ref TNodeStatus
 	bool IsSynchronousMode;				///< ArtSync received
 	time_t ArtSyncTime;					///< Latest ArtSync received time
-	bool IsMergeMode;					///<
-	bool IsChanged;						///<
-	uint8_t nActivePorts;				///<
-	time_t nNetworkDataLossTimeout;		///<
-	bool bDisableMergeTimeout;			///<
+	bool IsMergeMode;
+	bool IsChanged;
+	uint8_t nActivePorts;
+	time_t nNetworkDataLossTimeout;
+	bool bDisableMergeTimeout;
 };
 
 struct TArtNetNode {
@@ -106,8 +106,8 @@ struct TArtNetNode {
 	uint32_t IPAddressLocal;						///< Local IP Address
 	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
 	uint32_t IPSubnetMask;							///< The subnet mask
-	uint8_t  NetSwitch;								///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t  SubSwitch;								///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t  NetSwitch[ARTNET_MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t  SubSwitch[ARTNET_MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t  Oem[2];								///< The Oem word describes the equipment vendor and the feature set available.
 	uint8_t  ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
 	uint8_t  LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
@@ -152,6 +152,10 @@ public:
 
 	uint8_t GetVersion(void) {
 		return m_nVersion;
+	}
+
+	uint8_t GetPages(void) {
+		return m_nPages;
 	}
 
 	void SetOutput(LightSet *pLightSet);
@@ -235,12 +239,12 @@ public:
 	void Print(void);
 
 private:
-	void GetType(void);
-
 	void FillPollReply(void);
+#if defined ( ENABLE_SENDDIAG )
 	void FillDiagData(void);
+#endif
 
-	uint16_t MakePortAddress(uint16_t);
+	void GetType(void);
 
 	void HandlePoll(void);
 	void HandleDmx(void);
@@ -253,6 +257,8 @@ private:
 	void HandleRdm(void);
 	void HandleIpProg(void);
 	//void HandleDirectory(void);
+
+	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
 
 	bool IsMergedDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
 	void CheckMergeTimeouts(uint8_t);
@@ -282,7 +288,9 @@ private:
 
 	struct TArtNetPacket m_ArtNetPacket;	///< The received Art-Net package
 	struct TArtPollReply m_PollReply;
+#if defined ( ENABLE_SENDDIAG )
 	struct TArtDiagData m_DiagData;
+#endif
 	struct TArtTimeCode *m_pTimeCodeData;
 	struct TArtTodData *m_pTodData;
 	struct TArtIpProgReply *m_pIpProgReply;

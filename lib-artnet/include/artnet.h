@@ -41,7 +41,7 @@ enum {
 };
 
 enum {
-	ARTNET_MAX_PAGES = 1	///< Art-Net 3
+	ARTNET_MAX_PAGES = 4	///< Art-Net 4
 };
 
 /**

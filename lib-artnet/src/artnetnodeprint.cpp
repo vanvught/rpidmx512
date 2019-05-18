@@ -40,13 +40,14 @@ void ArtNetNode::Print(void) {
 	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
-	printf(" Net        : %d\n", m_Node.NetSwitch);
-	printf(" Sub-Net    : %d\n", m_Node.SubSwitch);
 
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
 		uint8_t nAddress;
 		if (GetUniverseSwitch(i, nAddress)) {
-			printf("  Port %c Universe %d [%s]", (char) ('A' + i), nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+			const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
+			const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
+
+			printf("  Port %c %d:%d:%d [%s]", (char) ('A' + i), nNet, nSubSwitch, nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
 			if (m_nVersion == 4) {
 				printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
 			} else {

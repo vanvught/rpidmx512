@@ -47,7 +47,7 @@ ArtNet4Node::ArtNet4Node(uint8_t nPages):
 {
 	DEBUG_ENTRY
 
-	assert((ARTNET_MAX_PORTS * ARTNET_MAX_PAGES) <= E131_MAX_PORTS);
+	assert((ARTNET_MAX_PORTS * nPages) <= E131_MAX_PORTS);
 
 	ArtNetNode::SetArtNet4Handler((ArtNet4Handler *)this);
 
@@ -93,8 +93,9 @@ void ArtNet4Node::SetPort(uint8_t nPortId) {
 
 void ArtNet4Node::Start(void) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
+	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 		
@@ -144,8 +145,9 @@ int ArtNet4Node::HandlePacket(void) {
 
 void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 

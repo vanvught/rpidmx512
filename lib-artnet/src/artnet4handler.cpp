@@ -28,6 +28,14 @@
 
 #include "artnet4handler.h"
 
+#include "artnetnode.h"
+
 ArtNet4Handler::~ArtNet4Handler(void) {
 
+}
+
+void ArtNetNode::SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler) {
+	if (m_nVersion >= 4) {
+		m_pArtNet4Handler = pArtNet4Handler;
+	}
 }
