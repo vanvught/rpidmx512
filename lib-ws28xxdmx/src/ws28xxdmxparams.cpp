@@ -55,10 +55,11 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.tLedType = WS2812B;
 	m_tWS28xxParams.nLedCount = 170;
 	m_tWS28xxParams.nDmxStartAddress = 1;
-	m_tWS28xxParams.bLedGrouping = 0;
+	m_tWS28xxParams.bLedGrouping = false;
 	m_tWS28xxParams.nSpiSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
 	m_tWS28xxParams.nGlobalBrightness = 0xFF;
 	m_tWS28xxParams.nActiveOutputs = 1;
+	m_tWS28xxParams.bUseSI5351A = false;
 }
 
 WS28xxDmxParams::~WS28xxDmxParams(void) {
@@ -135,6 +136,12 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_PORTS, &value8) == SSCAN_OK) {
 		m_tWS28xxParams.nActiveOutputs = value8;
 		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, DevicesParamsConst::USE_SI5351A, &value8) == SSCAN_OK) {
+		m_tWS28xxParams.bUseSI5351A = (value8 != 0);
+		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_USE_SI5351A;
 		return;
 	}
 

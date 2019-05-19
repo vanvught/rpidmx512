@@ -118,6 +118,8 @@ private:
 	uint32_t m_nBeginIndexPortId2;
 	uint32_t m_nBeginIndexPortId3;
 	uint32_t m_nChannelsPerLed;
+
+	uint32_t m_nPortIdLast;
 };
 
 #endif /* WS28XXDMX_H_ */

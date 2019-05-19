@@ -32,6 +32,7 @@ alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
 alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
 
 alignas(uint32_t) const char DevicesParamsConst::ACTIVE_PORTS[] = "active_ports";
+alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
 
 alignas(uint32_t) const char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
 alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";

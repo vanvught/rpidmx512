@@ -47,7 +47,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		m_pBuffer[nOffset] = nRed;
 		m_pBuffer[nOffset + 1] = nGreen;
 		m_pBuffer[nOffset + 2] = nBlue;
-	} else if (m_tLEDType == WS2811) {
+	} else if ((m_tLEDType == WS2811) || (m_tLEDType == UCS2903)) {
 		uint32_t nOffset = nLEDIndex * 3;
 		nOffset *= 8;
 

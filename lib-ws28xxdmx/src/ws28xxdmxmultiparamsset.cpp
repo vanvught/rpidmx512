@@ -1,5 +1,5 @@
 /**
- * @file devicesparamsconst.h
+ * @file ws28xxparamsset.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,25 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICESPARAMSCONST_H_
-#define DEVICESPARAMSCONST_H_
+#include <assert.h>
 
-#include <stdint.h>
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmxmulti.h"
 
-class DevicesParamsConst {
-public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char LED_TYPE[];
-	alignas(uint32_t) static const char LED_COUNT[];
+void WS28xxDmxParams::Set(WS28xxDmxMulti *pWS28xxDmxMulti) {
+	assert(pWS28xxDmxMulti != 0);
 
-	alignas(uint32_t) static const char ACTIVE_PORTS[];
-	alignas(uint32_t) static const char USE_SI5351A[];
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
+		pWS28xxDmxMulti->SetLEDType((TWS28xxMultiType)m_tWS28xxParams.tLedType);
+	}
 
-	alignas(uint32_t) static const char DMX_START_ADDRESS[];
-	alignas(uint32_t) static const char SPI_SPEED_HZ[];
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
+		pWS28xxDmxMulti->SetLEDCount(m_tWS28xxParams.nLedCount);
+	}
 
-	alignas(uint32_t) static const char LED_GROUPING[];
-	alignas(uint32_t) static const char GLOBAL_BRIGHTNESS[];
-};
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS)) {
+		pWS28xxDmxMulti->SetActivePorts(m_tWS28xxParams.nActiveOutputs);
+	}
 
-#endif /* DEVICESPARAMSCONST_H_ */
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_USE_SI5351A)) {
+		pWS28xxDmxMulti->SetUseSI5351A(m_tWS28xxParams.bUseSI5351A);
+	}
+}

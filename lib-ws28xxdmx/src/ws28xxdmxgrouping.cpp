@@ -114,6 +114,14 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
+void WS28xxDmxGrouping::Print(void) {
+	printf("Led (grouping) parameters\n");
+	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
+	printf(" Count : %d\n", (int) m_nLedCount);
+}
+
+// RDM
+
 bool WS28xxDmxGrouping::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
@@ -141,8 +149,3 @@ bool WS28xxDmxGrouping::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotIn
 	return true;
 }
 
-void WS28xxDmxGrouping::Print(void) {
-	printf("Led (grouping) parameters\n");
-	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-}

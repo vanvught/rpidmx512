@@ -1,6 +1,6 @@
 #
 DEFINES = RASPPI #NDEBUG
 #
-EXTRA_INCLUDES =
+EXTRA_INCLUDES = ../lib-bob/include ../lib-display/include
 #
 include ../linux-template/lib/Rules.mk

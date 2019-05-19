@@ -1,5 +1,5 @@
 /**
- * @file ws28xxstripe.h
+ * @file ws28xx.h
  *
  */
 /* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -43,7 +43,8 @@ enum TWS28XXType {
 	SK6812,
 	SK6812W,
 	APA102,
-	UCS1903
+	UCS1903,
+	UCS2903
 };
 
 #define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
@@ -112,9 +113,9 @@ private:
 	uint16_t m_nLEDCount;
 	uint32_t m_nClockSpeedHz;
 	uint8_t m_nGlobalBrightness;
-	alignas(uint32_t) uint32_t m_nBufSize;
-	alignas(uint32_t) uint8_t *m_pBuffer;
-	alignas(uint32_t) uint8_t *m_pBlackoutBuffer;
+	uint32_t m_nBufSize;
+	uint8_t *m_pBuffer;
+	uint8_t *m_pBlackoutBuffer;
 	volatile bool m_bUpdating;
 	uint8_t m_nHighCode;
 #if defined (__circle__)

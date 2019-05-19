@@ -40,11 +40,11 @@
 #include "ws28xxdmx.h"
 #include "ws28xx.h"
 
+#include "lightset.h"
+
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
-
-#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
 
 #if defined (__circle__)
 WS28xxDmx::WS28xxDmx(CInterruptSystem *pInterruptSystem) :
@@ -64,7 +64,10 @@ WS28xxDmx::WS28xxDmx(void) :
 	m_nBeginIndexPortId1(170),
 	m_nBeginIndexPortId2(340),
 	m_nBeginIndexPortId3(510),
-	m_nChannelsPerLed(3) {
+	m_nChannelsPerLed(3),
+	m_nPortIdLast(3)
+{
+	UpdateMembers();
 }
 
 WS28xxDmx::~WS28xxDmx(void) {
@@ -119,17 +122,14 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
 
-	bool bUpdate = false;
-
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
 
-	switch (nPortId) {
+	switch (nPortId & 0x03) {
 	case 0:
 		beginIndex = 0;
 		endIndex = MIN(m_nLedCount, (nLength / m_nChannelsPerLed));
-		bUpdate = (endIndex == m_nLedCount);
 		if (m_nLedCount < m_nBeginIndexPortId1) {
 			i = m_nDmxStartAddress - 1;
 		}
@@ -137,28 +137,23 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	case 1:
 		beginIndex = m_nBeginIndexPortId1;
 		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 2:
 		beginIndex = m_nBeginIndexPortId2;
 		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLedCount);
 		break;
 	case 3:
 		beginIndex = m_nBeginIndexPortId3;
 		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
-		bUpdate = (endIndex == m_nLedCount);
 		break;
 	default:
-		beginIndex = 0;
-		endIndex = 0;
-		bUpdate = false;
+		__builtin_unreachable();
 		break;
 	}
 
 #ifndef NDEBUG
 #if defined (__linux__)
-	printf("%d-%d:%x %x %x-%d|%s", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength, bUpdate == false ? "False" : "True");
+	printf("%d-%d:%x %x %x-%d", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength);
 #endif
 #endif
 
@@ -183,9 +178,8 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 		}
 	}
 
-	if (bUpdate) {
+	if (nPortId == m_nPortIdLast) {
 		m_pLEDStripe->Update();
-		m_bIsStarted = true;
 	}
 }
 
@@ -209,6 +203,32 @@ void WS28xxDmx::SetLEDCount(uint16_t nCount) {
 	UpdateMembers();
 }
 
+void WS28xxDmx::UpdateMembers(void) {
+	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
+
+	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {
+		m_nDmxFootprint = DMX_MAX_CHANNELS;
+	}
+
+	m_nPortIdLast = m_nLedCount / (1 + m_nBeginIndexPortId1);
+}
+
+void WS28xxDmx::Blackout(bool bBlackout) {
+	m_bBlackout = bBlackout;
+
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
+	}
+
+	if (bBlackout) {
+		m_pLEDStripe->Blackout();
+	} else {
+		m_pLEDStripe->Update();
+	}
+}
+
+// DMX
+
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
 
@@ -221,6 +241,10 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	return false;
 }
+
+// RDM
+
+#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
 
 bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	unsigned nIndex;
@@ -255,26 +279,4 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 	}
 
 	return true;
-}
-
-void WS28xxDmx::UpdateMembers(void) {
-	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
-
-	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {
-		m_nDmxFootprint = DMX_MAX_CHANNELS;
-	}
-}
-
-void WS28xxDmx::Blackout(bool bBlackout) {
-	m_bBlackout = bBlackout;
-
-	while (m_pLEDStripe->IsUpdating()) {
-		// wait for completion
-	}
-
-	if (bBlackout) {
-		m_pLEDStripe->Blackout();
-	} else {
-		m_pLEDStripe->Update();
-	}
 }

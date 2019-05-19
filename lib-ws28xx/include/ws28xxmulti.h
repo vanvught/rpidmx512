@@ -1,5 +1,5 @@
 /**
- * @file ws28xxdmxmulti.h
+ * @file ws28xxmulti.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,77 +23,65 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMXMULTI_H_
-#define WS28XXDMXMULTI_H_
+#ifndef WS28XXMULTI_H_
+#define WS28XXMULTI_H_
 
 #include <stdint.h>
 
-#include "lightset.h"
+enum TWS28xxMultiType {
+	WS28XXMULTI_WS2801_NOT_SUPPORTED = 0,
+	WS28XXMULTI_WS2811,
+	WS28XXMULTI_WS2812,
+	WS28XXMULTI_WS2812B,
+	WS28XXMULTI_WS2813,
+	WS28XXMULTI_WS2815,
+	WS28XXMULTI_SK6812,
+	WS28XXMULTI_SK6812W,
+	WS28XXMULTI_APA102_NOT_SUPPORTED,
+	WS28XXMULTI_UCS1903,
+	WS28XXMULTI_UCS2903
+};
 
-#include "ws28xxmulti.h"
+enum WS28xxMultiActivePorts {
+	WS28XXMULTI_ACTIVE_PORTS_MAX = 4
+};
 
-class WS28xxDmxMulti: public LightSet {
+class WS28xxMulti {
 public:
-	WS28xxDmxMulti(void);
-	virtual ~WS28xxDmxMulti(void);
+	WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, bool bUseSI5351A = false);
+	~WS28xxMulti(void);
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
-
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
-
-	void Blackout(bool bBlackout);
-
-	virtual void SetLEDType(TWS28xxMultiType tWS28xxMultiType);
 	TWS28xxMultiType GetLEDType(void) {
-		return m_tLedType;
+		return m_tWS28xxMultiType;
 	}
 
-	void SetLEDCount(uint16_t nLedCount);
-	uint32_t GetLEDCount(void) {
+	uint16_t GetLEDCount(void) {
 		return m_nLedCount;
 	}
 
-	void SetActivePorts(uint8_t nActiveOutputs);
-	uint32_t GetActivePorts(void) {
+	uint8_t GetActiveOutputs(void) {
 		return m_nActiveOutputs;
 	}
 
-	uint32_t GetUniverses(void) {
-		return m_nUniverses;
-	}
+	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
-	void SetUseSI5351A(bool bUse) {
-		m_bUseSI5351A = bUse;
-	}
-	bool GetUseSI5351A(void) {
-		return m_bUseSI5351A;
-	}
-
-	void Print(void);
+	void Update(void);
+	void Blackout(void);
 
 private:
-	void UpdateMembers(void);
+	uint8_t ReverseBits(uint8_t nBits);
+	bool SetupSI5351A(void);
+	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
+	void Generate800kHz(const uint32_t *pBuffer);
 
 private:
-	TWS28xxMultiType m_tLedType;
-	uint32_t m_nLedCount;
-	uint32_t m_nActiveOutputs;
-
-	WS28xxMulti* m_pLEDStripe;
-
-	bool m_bIsStarted;
-	bool m_bBlackout;
-
-	uint32_t m_nUniverses;
-
-	uint32_t m_nBeginIndexPortId1;
-	uint32_t m_nBeginIndexPortId2;
-	uint32_t m_nBeginIndexPortId3;
-	uint32_t m_nChannelsPerLed;
-
-	uint32_t m_nPortIdLast;
-	bool m_bUseSI5351A;
+	TWS28xxMultiType m_tWS28xxMultiType;
+	uint16_t m_nLedCount;
+	uint8_t m_nActiveOutputs;
+	uint32_t m_nBufSize;
+	uint32_t *m_pBuffer;
+	uint32_t *m_pBlackoutBuffer;
 };
 
-#endif /* WS28XXDMXMULTI_H_ */
+#endif /* WS28XXMULTI_H_ */

@@ -40,10 +40,10 @@ WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t n
 	m_nClockSpeedHz(nClockSpeed),
 	m_nGlobalBrightness(0xFF),
 	m_bUpdating (FALSE),
-	m_nHighCode(Type == WS2812B ? 0xF8 : (Type == UCS1903 ? 0xFC : 0xF0)),
+	m_nHighCode(Type == WS2812B ? 0xF8 : (((Type == UCS1903) || (Type == UCS2903)) ? 0xFC : 0xF0)),
 	m_SPIMaster (pInterruptSystem, ((m_tLEDType == WS2801) || (m_tLEDType == APA102)) ? (nClockSpeed == 0 ? WS2801_SPI_SPEED_DEFAULT_HZ : nClockSpeed) : 6400000, 0, 0)
 {
-	assert(m_tLEDType <= UCS1903);
+	assert(m_tLEDType <= UCS2903);
 	assert(m_nLEDCount > 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
@@ -52,7 +52,7 @@ WS28xx::WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t n
 		m_nBufSize = m_nLEDCount * 3;
 	}
 
-	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903) {
+	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903 || m_tLEDType == UCS2903) {
 		m_nBufSize *= 8;
 	}
 

@@ -55,6 +55,8 @@ bool WS28xxDmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) 
 	isAdded &= builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz, isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED));
 	isAdded &= builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, (uint32_t) m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS));
 
+	isAdded &= builder.Add(DevicesParamsConst::USE_SI5351A, (uint32_t) m_tWS28xxParams.bUseSI5351A, isMaskSet(WS28XXDMX_PARAMS_MASK_USE_SI5351A));
+
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);

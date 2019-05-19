@@ -52,9 +52,9 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	m_nClockSpeedHz(nClockSpeed),
 	m_nGlobalBrightness(0xFF),
 	m_bUpdating(false),
-	m_nHighCode(Type == WS2812B ? 0xF8 : (Type == UCS1903 ? 0xFC : 0xF0))
+	m_nHighCode(Type == WS2812B ? 0xF8 : (((Type == UCS1903) || (Type == UCS2903)) ? 0xFC : 0xF0))
 {
-	assert(m_tLEDType <= UCS1903);
+	assert(m_tLEDType <= UCS2903);
 	assert(m_nLEDCount > 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
@@ -63,7 +63,7 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 		m_nBufSize = nLEDCount * 3;
 	}
 
-	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903) {
+	if (m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903 || m_tLEDType == UCS2903) {
 		m_nBufSize *= 8;
 	}
 

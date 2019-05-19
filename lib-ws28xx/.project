@@ -7,6 +7,10 @@
 		<project>include</project>
 		<project>lib-bcm2835</project>
 		<project>lib-bcm2835_raspbian</project>
+		<project>lib-bob</project>
+		<project>lib-debug</project>
+		<project>lib-display</project>
+		<project>lib-h3</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
