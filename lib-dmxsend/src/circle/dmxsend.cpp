@@ -246,6 +246,10 @@ void DMXSend::Stop(uint8_t nPort) {
 }
 
 void DMXSend::SetData(/* unused */uint8_t nPortId, const uint8_t *data, uint16_t length) {
+	if (__builtin_expect((length == 0), 0)) {
+		return;
+	}
+
 	while (!SetDataTry (data, length)) {
 		// just wait
 	}

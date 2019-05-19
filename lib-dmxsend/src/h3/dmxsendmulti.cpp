@@ -94,6 +94,11 @@ void DMXSendMulti::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength
 	assert(pData != 0);
 	assert(nLength != 0);
 
+	if (__builtin_expect((nLength == 0), 0)) {
+		DEBUG_EXIT
+		return;
+	}
+
 	dmx_multi_set_port_send_data_without_sc(nPort, pData, nLength);
 
 	DEBUG_EXIT

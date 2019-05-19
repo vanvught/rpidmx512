@@ -2,7 +2,7 @@
  * @file dmx.c
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,10 @@
 #include "dmx.h"
 #include "rdm.h"
 #include "rdm_e120.h"
+
+#if (GPIO_DMX_DATA_DIRECTION != RPI_V2_GPIO_P1_12)
+ #error
+#endif
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

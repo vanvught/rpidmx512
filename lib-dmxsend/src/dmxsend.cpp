@@ -69,6 +69,11 @@ void DMXSend::Stop(uint8_t nPort) {
 void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY
 
+	if (__builtin_expect((nLength == 0), 0)) {
+		DEBUG_EXIT
+		return;
+	}
+
 	dmx_set_send_data_without_sc(pData, nLength);
 
 	DEBUG_EXIT

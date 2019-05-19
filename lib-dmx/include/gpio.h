@@ -2,7 +2,7 @@
  * @file gpio.h
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef DMX_GPIO_H_
 #define DMX_GPIO_H_
 
 #if defined(H3)
  #include "h3_board.h"
  #define GPIO_DMX_DATA_DIRECTION			GPIO_EXT_12	///< UART1 or UART2 , single output
- #if defined(ORANGE_PI) || defined(NANO_PI)
+ 
+ #if defined(ORANGE_PI)
   #define GPIO_DMX_DATA_DIRECTION_OUT_B		GPIO_EXT_22	///< UART2
   #define GPIO_DMX_DATA_DIRECTION_OUT_C		GPIO_EXT_12	///< UART1
  #elif defined(ORANGE_PI_ONE)
@@ -50,7 +50,8 @@
   #define GPIO_ANALYZER_CH6
   #define GPIO_ANALYZER_CH7
  #endif
-#else
+ 
+#elif defined (BARE_METAL)
  #include "bcm2835.h"
  #define GPIO_DMX_DATA_DIRECTION			RPI_V2_GPIO_P1_12
 
@@ -64,6 +65,9 @@
   #define GPIO_ANALYZER_CH6
   #define GPIO_ANALYZER_CH7
  #endif
+ 
+#else
+ #define GPIO_DMX_DATA_DIRECTION	0
 #endif
 
 #endif /* DMX_GPIO_H_ */
