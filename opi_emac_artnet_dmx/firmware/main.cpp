@@ -124,7 +124,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -137,7 +137,7 @@ void notmain(void) {
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS);
+	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
 	artnetparams.Set(&node);
 
@@ -255,7 +255,7 @@ void notmain(void) {
 		if(artnetparams.IsRdm()) {
 			if (artnetparams.IsRdmDiscovery()) {
 				console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
-				display.TextStatus(ArtNetConst::MSG_RDM_RUN);
+				display.TextStatus(ArtNetConst::MSG_RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN);
 				discovery.Full();
 			}
 			node.SetRdmHandler(&discovery);
@@ -283,6 +283,9 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 #endif
 
 	for (unsigned i = 0; i < 7; i++) {
@@ -310,27 +313,18 @@ void notmain(void) {
 	}
 
 	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-	
-	if (nw.IsDhcpKnown()) {
-		if (nw.IsDhcpUsed()) {
-			display.PutString(" D");
-		} else {
-			display.PutString(" S");
-		}
-	}
-	
+	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nUniverse);
-	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+	display.Printf(6, "AP: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START);
+	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
 
 	node.Start();
 
 	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED);
+	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
 
 	hw.WatchdogInit();
 
@@ -338,11 +332,11 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.HandlePacket();
-		lb.Run();
 #if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 #endif
+		lb.Run();
 	}
 }
 
