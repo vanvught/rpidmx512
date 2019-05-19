@@ -104,7 +104,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -114,7 +114,7 @@ void notmain(void) {
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
-	display.TextStatus(BRIDGE_PARMAS);
+	display.TextStatus(BRIDGE_PARMAS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	DMXSend dmx;
 	LightSet *pSpi;
@@ -230,26 +230,19 @@ void notmain(void) {
 	}
 	display.Printf(1, "Eth OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-	if (nw.IsDhcpKnown()) {
-		if (nw.IsDhcpUsed()) {
-			display.PutString(" D");
-		} else {
-			display.PutString(" S");
-		}
-	}
+	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
 	console_status(CONSOLE_YELLOW, START_BRIDGE);
-	display.TextStatus(START_BRIDGE);
+	display.TextStatus(START_BRIDGE, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
 
 	server.Start();
 
 	hw.SetLed(HARDWARE_LED_FLASH);
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
-	display.TextStatus(BRIDGE_STARTED);
+	display.TextStatus(BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
 
 #if defined (ORANGE_PI)
 	while (spiFlashStore.Flash())
