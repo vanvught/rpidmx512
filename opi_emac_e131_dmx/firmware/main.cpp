@@ -118,7 +118,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
@@ -128,7 +128,7 @@ void notmain(void) {
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
-	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
+	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS);
 
 	E131Bridge bridge;
 	e131params.Set(&bridge);
@@ -258,9 +258,6 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
-
-	while (spiFlashStore.Flash())
-		;
 #endif
 
 	for (unsigned i = 0; i < 7 ; i++) {
@@ -284,18 +281,30 @@ void notmain(void) {
 	}
 
 	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+	if (nw.IsDhcpKnown()) {
+		if (nw.IsDhcpUsed()) {
+			display.PutString(" D");
+		} else {
+			display.PutString(" S");
+		}
+	}
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	display.Printf(5, "U: %d", nUniverse);
-	display.Printf(6, "AP: %d", bridge.GetActiveOutputPorts());
+	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
-	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
+	display.TextStatus(E131Const::MSG_BRIDGE_START);
 
 	bridge.Start();
 
 	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
-	display.TextStatus(E131Const::MSG_BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
+	display.TextStatus(E131Const::MSG_BRIDGE_STARTED);
+
+#if defined (ORANGE_PI)
+	while (spiFlashStore.Flash())
+		;
+#endif
 
 	hw.WatchdogInit();
 
