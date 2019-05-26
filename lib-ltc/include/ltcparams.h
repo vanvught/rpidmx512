@@ -32,14 +32,7 @@
 enum TLtcReaderSource {
 	LTC_READER_SOURCE_LTC,
 	LTC_READER_SOURCE_ARTNET,
-	LTC_READER_SOURCE_MIDI,
-	LTC_READER_SOURCE_TCNET,
-	LTC_READER_SOURCE_UNDEFINED
-};
-
-enum TLtcParamsMax7219Type {
-	LTC_PARAMS_MAX7219_TYPE_MATRIX,
-	LTC_PARAMS_MAX7219_TYPE_7SEGMENT
+	LTC_READER_SOURCE_MIDI
 };
 
 struct TLtcParams {
@@ -47,12 +40,6 @@ struct TLtcParams {
 	uint8_t tSource;
 	uint8_t tMax7219Type;
 	uint8_t nMax7219Intensity;
-};
-
-enum TLtcParamsMask {
-	LTC_PARAMS_MASK_SOURCE = (1 << 0),
-	LTC_PARAMS_MASK_MAX7219_TYPE = (1 << 1),
-	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2)
 };
 
 class LtcParamsStore {
@@ -78,9 +65,6 @@ public:
 	TLtcReaderSource GetSource(void) {
 		return (TLtcReaderSource) m_tLtcParams.tSource;
 	}
-
-	const char *GetSourceType(enum TLtcReaderSource tSource);
-	enum TLtcReaderSource GetSourceType(const char *pType);
 
 	uint8_t GetMax7219Intensity(void) {
 		return m_tLtcParams.nMax7219Intensity;

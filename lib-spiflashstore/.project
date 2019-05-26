@@ -16,7 +16,6 @@
 		<project>lib-oscserver</project>
 		<project>lib-remoteconfig</project>
 		<project>lib-spiflash</project>
-		<project>lib-tcnet</project>
 		<project>lib-tlc59711dmx</project>
 		<project>lib-widget</project>
 		<project>lib-ws28xxdmx</project>
