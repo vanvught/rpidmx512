@@ -46,3 +46,7 @@ void Hardware::WatchdogStop(void) {
 const char* Hardware::GetWebsiteUrl(void) {
 	return "www.orangepi-dmx.org";
 }
+
+TBootDevice Hardware::GetBootDevice(void) {
+	return BOOT_DEVICE_MMC0;
+}

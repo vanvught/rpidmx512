@@ -67,6 +67,7 @@ public:
 	bool SetTime(const struct THardwareTime &pTime);
 	void GetTime(struct THardwareTime *pTime);
 
+	uint32_t Micros(void);
 	uint32_t Millis(void);
 
 	void WatchdogInit(void);

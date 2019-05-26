@@ -62,12 +62,11 @@ const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
 
 HardwareBaremetal::HardwareBaremetal(void):
 		m_nBoardRevision(-1),
-		m_tSocType(SOC_TYPE_UNKNOWN),
-		m_nBoardId(0)
+		m_tSocType(SOC_TYPE_UNKNOWN)
 {
 #if defined(ORANGE_PI)
 	m_tSocType = SOC_TYPE_H2_PLUS;
-#elif defined(NANO_PI) || defined(ORANGE_PI_ONE)
+#elif defined(ORANGE_PI_ONE)
 	m_tSocType = SOC_TYPE_H3;
 #else
  #error Platform not supported
@@ -103,7 +102,11 @@ const char* HardwareBaremetal::GetBoardName(uint8_t& nLength) {
 }
 
 uint32_t HardwareBaremetal::GetBoardId(void) {
-	return m_nBoardId;
+#if defined(ORANGE_PI)
+	return 0;
+#else
+	return 1;
+#endif
 }
 
 const char* HardwareBaremetal::GetCpuName(uint8_t& nLength) {
@@ -169,6 +172,8 @@ bool HardwareBaremetal::Reboot(void) {
 	h3_watchdog_enable();
 
 	invalidate_instruction_cache();
+	flush_branch_target_cache();
+	flush_prefetch_buffer();
 	clean_data_cache();
 	invalidate_data_cache();
 

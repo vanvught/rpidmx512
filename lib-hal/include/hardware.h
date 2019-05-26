@@ -38,6 +38,13 @@ enum THardwareLedStatus {
 	HARDWARE_LED_FLASH
 };
 
+enum TBootDevice {
+	BOOT_DEVICE_UNK,
+	BOOT_DEVICE_FEL,	// H3 Only
+	BOOT_DEVICE_MMC0,
+	BOOT_DEVICE_SPI		// H3 Only
+};
+
 struct THardwareTime {
 	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
 	int tm_min;		///< Minutes.		[0-59]
@@ -82,12 +89,14 @@ public:
 
 	virtual uint64_t GetUpTime(void)=0;
 
+	virtual uint32_t Micros(void)=0;
 	virtual uint32_t Millis(void)=0;
 
 	virtual void WatchdogInit(void);
 	virtual void WatchdogFeed(void);
 	virtual void WatchdogStop(void);
 
+	virtual TBootDevice GetBootDevice(void);
 	virtual const char* GetWebsiteUrl(void);
 
 public:

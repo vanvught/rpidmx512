@@ -41,13 +41,6 @@ enum TSocType {
 };
 #endif
 
-enum TBootDevice {
-	BOOT_DEVICE_UNK,
-	BOOT_DEVICE_FEL,	// H3 Only
-	BOOT_DEVICE_MMC0,
-	BOOT_DEVICE_SPI		// H3 Only
-};
-
 class HardwareBaremetal: public Hardware {
 public:
 	HardwareBaremetal(void);
@@ -99,7 +92,6 @@ public:
 private:
 	int32_t m_nBoardRevision;
 	TSocType m_tSocType;
-	uint32_t m_nBoardId;
 };
 
 #endif /* HARDWAREBAREMETAL_H_ */

@@ -369,6 +369,12 @@ bool HardwareLinux::ExecCmd(const char* pCmd, char* Result, int nResultSize) {
 	return true;
 }
 
+uint32_t HardwareLinux::Micros(void) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000000) + tv.tv_usec;
+}
+
 uint32_t HardwareLinux::Millis(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -378,10 +384,6 @@ uint32_t HardwareLinux::Millis(void) {
 #else
 	return (tv.tv_sec * (__time_t) 1000) + (tv.tv_usec / (__suseconds_t) 1000);
 #endif
-}
-
-bool HardwareLinux::IsButtonPressed(void) {
-	return false;
 }
 
 void HardwareLinux::WatchdogInit(void) {
