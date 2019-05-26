@@ -1,5 +1,6 @@
 /**
- * @file ltcparamssave.h
+ * @file ltcparamsgetsourcetype.cpp
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -23,30 +24,29 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "ltcparams.h"
-#include "ltcreader.h"
 
-#include "propertiesbuilder.h"
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-#include "ltcparamsconst.h"
+static const char sSource[LTC_READER_SOURCE_UNDEFINED][7] ALIGNED = {"ltc", "artnet", "midi", "tcnet"};
 
-bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pLTcParamsStore == 0) {
-		nSize = 0;
-		return false;
+const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
+	assert(tSource < LTC_READER_SOURCE_UNDEFINED);
+
+	return sSource[tSource];
+}
+
+enum TLtcReaderSource LtcParams::GetSourceType(const char* pType) {
+	for (uint32_t i = 0; i < sizeof(sSource) / sizeof(sSource[0]); i++) {
+		if (strncasecmp(sSource[i], pType, 3) == 0) {
+			return (TLtcReaderSource) i;
+		}
 	}
 
-	m_pLTcParamsStore->Copy(&m_tLtcParams);
-
-	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
-
-	bool isAdded = builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_INTENSITY, (uint32_t) m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
-
-	nSize = builder.GetSize();
-
-	return isAdded;
+	return LTC_READER_SOURCE_LTC;
 }

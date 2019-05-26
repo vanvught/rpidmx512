@@ -1,5 +1,6 @@
 /**
- * @file ltcparamssave.h
+ * @file storetcnet.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,31 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#ifndef STORETCNET_H_
+#define STORETCNET_H_
 
-#include "ltcparams.h"
-#include "ltcreader.h"
+#include "tcnetparams.h"
 
-#include "propertiesbuilder.h"
+class StoreTCNet: public TCNetParamsStore {
+public:
+	StoreTCNet(void);
+	~StoreTCNet(void);
 
-#include "ltcparamsconst.h"
+	void Update(const struct TTCNetParams *pTCNetParams);
+	void Copy(struct TTCNetParams *pTCNetParams);
 
-bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pLTcParamsStore == 0) {
-		nSize = 0;
-		return false;
+public:
+	static StoreTCNet* Get(void) {
+		return s_pThis;
 	}
 
-	m_pLTcParamsStore->Copy(&m_tLtcParams);
+private:
+	static StoreTCNet *s_pThis;
+};
 
-	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
-
-	bool isAdded = builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_INTENSITY, (uint32_t) m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
-
-	nSize = builder.GetSize();
-
-	return isAdded;
-}
+#endif /* STORETCNET_H_ */

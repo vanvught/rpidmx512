@@ -53,6 +53,7 @@ enum TStore {
 	STORE_WIDGET,
 	STORE_RDMDEVICE,
 	STORE_RCONFIG,
+	STORE_TCNET,
 	STORE_LAST
 };
 
@@ -77,8 +78,7 @@ public:
 	}
 	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength);
 
-	void UuidUpdate(const uuid_t uuid);
-	void UuidCopyTo(uuid_t uuid);
+	void CopyTo(enum TStore tStore, void *pData, uint32_t& nDataLength);
 
 	bool Flash(void);
 

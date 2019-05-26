@@ -29,25 +29,14 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "ltcparams.h"
 #include "ltcreader.h"
+
+#include  "ltcparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
-
-#define SET_SOURCE				(1 << 0)
-#define SET_MAX7219_TYPE		(1 << 1)
-#define SET_MAX7219_INTENSITY	(1 << 2)
-
-static const char PARAMS_FILE_NAME[] ALIGNED = "ltc.txt";
-static const char PARAMS_SOURCE[] ALIGNED = "source";
-static const char PARAMS_MAX7219_TYPE[] ALIGNED = "max7219_type";
-static const char PARAMS_MAX7219_INTENSITY[] ALIGNED = "max7219_intensity";
 
 LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tLtcParams;
@@ -69,7 +58,7 @@ bool LtcParams::Load(void) {
 
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pLTcParamsStore != 0) {
 			m_pLTcParamsStore->Update(&m_tLtcParams);
@@ -108,35 +97,27 @@ void LtcParams::callbackFunction(const char* pLine) {
 	char source[16];
 	uint8_t len = sizeof(source);
 
-	if (Sscan::Char(pLine, PARAMS_SOURCE, source, &len) == SSCAN_OK) {
-		if (strncasecmp(source, "artnet", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_ARTNET;
-			m_tLtcParams.nSetList |= SET_SOURCE;
-		} else if (strncasecmp(source, "midi", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_MIDI;
-			m_tLtcParams.nSetList |= SET_SOURCE;
-		} else if (strncasecmp(source, "ltc", len) == 0) {
-			m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
-			m_tLtcParams.nSetList |= SET_SOURCE;
-		}
+	if (Sscan::Char(pLine, LtcParamsConst::SOURCE, source, &len) == SSCAN_OK) {
+		m_tLtcParams.tSource = GetSourceType((const char *) source);
+		m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SOURCE;
 	}
 
 	len = sizeof(source);
 
-	if (Sscan::Char(pLine, PARAMS_MAX7219_TYPE, source, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, LtcParamsConst::MAX7219_TYPE, source, &len) == SSCAN_OK) {
 		if (strncasecmp(source, "7segment", len) == 0) {
-			m_tLtcParams.tMax7219Type = 1;
-			m_tLtcParams.nSetList |= SET_MAX7219_TYPE;
+			m_tLtcParams.tMax7219Type = LTC_PARAMS_MAX7219_TYPE_7SEGMENT;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_TYPE;
 		} else if (strncasecmp(source, "matrix", len) == 0) {
-			m_tLtcParams.tMax7219Type = 0;
-			m_tLtcParams.nSetList |= SET_MAX7219_TYPE;
+			m_tLtcParams.tMax7219Type = LTC_PARAMS_MAX7219_TYPE_MATRIX;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_TYPE;
 		}
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_MAX7219_INTENSITY, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, LtcParamsConst::MAX7219_INTENSITY, &value8) == SSCAN_OK) {
 		if (value8 <= 0x0F) {
 			m_tLtcParams.nMax7219Intensity = value8;
-			m_tLtcParams.nSetList |= SET_MAX7219_INTENSITY;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_INTENSITY;
 		}
 		return;
 	}
@@ -148,18 +129,18 @@ void LtcParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::FILE_NAME);
 
-	if (isMaskSet(SET_SOURCE)) {
-		printf(" %s=%d [%s]\n", PARAMS_SOURCE, m_tLtcParams.tSource, m_tLtcParams.tSource == (uint8_t) LTC_READER_SOURCE_ARTNET ? "artnet" : (m_tLtcParams.tSource == (uint8_t) LTC_READER_SOURCE_MIDI ? "midi" : "ltc"));
+	if (isMaskSet(LTC_PARAMS_MASK_SOURCE)) {
+		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
 	}
 
-	if (isMaskSet(SET_MAX7219_TYPE)) {
-		printf(" %s=%d\n", PARAMS_MAX7219_TYPE, m_tLtcParams.tMax7219Type);
+	if (isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE)) {
+		printf(" %s=%d [%s]\n", LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix");
 	}
 
-	if (isMaskSet(SET_MAX7219_INTENSITY)) {
-		printf(" %s=%d\n", PARAMS_MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity);
+	if (isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY)) {
+		printf(" %s=%d\n", LtcParamsConst::MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity);
 	}
 
 #endif
