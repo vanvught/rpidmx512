@@ -1,5 +1,5 @@
 /**
- * @file ltcparamssave.h
+ * @file ltcparamsconst.h
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,31 +22,17 @@
  * THE SOFTWARE.
  */
 
+#ifndef LTCPARAMSCONST_H_
+#define LTCPARAMSCONST_H_
+
 #include <stdint.h>
-#include <assert.h>
 
-#include "ltcparams.h"
-#include "ltcreader.h"
+class LtcParamsConst {
+public:
+	alignas(uint32_t) static const char FILE_NAME[];
+	alignas(uint32_t) static const char SOURCE[];
+	alignas(uint32_t) static const char MAX7219_TYPE[];
+	alignas(uint32_t) static const char MAX7219_INTENSITY[];
+};
 
-#include "propertiesbuilder.h"
-
-#include "ltcparamsconst.h"
-
-bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pLTcParamsStore == 0) {
-		nSize = 0;
-		return false;
-	}
-
-	m_pLTcParamsStore->Copy(&m_tLtcParams);
-
-	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
-
-	bool isAdded = builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_INTENSITY, (uint32_t) m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
-
-	nSize = builder.GetSize();
-
-	return isAdded;
-}
+#endif /* LTCPARAMSCONST_H_ */
