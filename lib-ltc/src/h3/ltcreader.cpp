@@ -290,9 +290,6 @@ void LtcReader::Run(void) {
 
 		tMidiTimeCode.rate = (_midi_timecode_type)TimeCodeType;
 
-		Display::Get()->TextLine(1, (const char *) aTimeCode, TC_CODE_MAX_LENGTH);
-		DisplayMax7219::Get()->Show((const char *) aTimeCode);
-
 		struct TArtNetTimeCode ArtNetTimeCode;
 
 		ArtNetTimeCode.Frames = tMidiTimeCode.frame;
@@ -304,7 +301,6 @@ void LtcReader::Run(void) {
 		m_pNode->SendTimeCode(&ArtNetTimeCode);
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
-			pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) TimeCodeType);
 			m_tTimeCodeTypePrevious = TimeCodeType;
 
 			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
@@ -315,10 +311,14 @@ void LtcReader::Run(void) {
 			H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+			pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) TimeCodeType);
 
+			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
 			LtcLeds::Get()->Show((TTimecodeTypes) TimeCodeType);
 		}
+
+		Display::Get()->TextLine(1, (const char *) aTimeCode, TC_CODE_MAX_LENGTH);
+		DisplayMax7219::Get()->Show((const char *) aTimeCode);
 
 #ifndef NDEBUG
 		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;
@@ -333,9 +333,10 @@ void LtcReader::Run(void) {
 #endif
 	}
 
+	dmb();
 	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
 		dmb();
-		if (IsMidiQuarterFrameMessage) {
+		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
 

@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "artnetreader.h"
 
@@ -50,10 +51,6 @@
 #include "displaymax7219.h"
 #include "midi.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
@@ -65,6 +62,8 @@ static volatile uint32_t nMidiQuarterFramePiece = 0;
 static volatile bool IsMidiQuarterFrameMessage = false;
 
 static volatile struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
+
+static volatile uint32_t nLimitUs;
 
 static void irq_timer0_update_handler(uint32_t clo) {
 	dmb();
@@ -136,19 +135,13 @@ void ArtNetReader::Stop(void) {
 }
 
 void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
-	uint32_t nLimitUs = 0;
 	char *pTimeCodeType;
 #ifndef NDEBUG
-	char aLimitWarning[16] ALIGNED;
+	char aLimitWarning[16];
 	const uint32_t nNowUs = h3_hs_timer_lo_us();
 #endif
 
 	nUpdates++;
-
-	itoa_base10(ArtNetTimeCode->Hours, (char *) &m_aTimeCode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, (char *) &m_aTimeCode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, (char *) &m_aTimeCode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, (char *) &m_aTimeCode[9]);
 
 	tMidiTimeCode.hour = ArtNetTimeCode->Hours;
 	tMidiTimeCode.minute = ArtNetTimeCode->Minutes;
@@ -156,28 +149,24 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	tMidiTimeCode.frame = ArtNetTimeCode->Frames;
 	tMidiTimeCode.rate = (_midi_timecode_type) ArtNetTimeCode->Type;
 
-	switch ((_midi_timecode_type) ArtNetTimeCode->Type) {
-	case TC_TYPE_FILM:
-		nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
-		break;
-	case TC_TYPE_EBU:
-		nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
-		break;
-	case TC_TYPE_DF:
-	case TC_TYPE_SMPTE:
-		nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
-		break;
-	default:
-		nLimitUs = 0;
-		break;
-	}
-
-	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
-
 	if ((m_tTimeCodeTypePrevious != (TTimecodeTypes )ArtNetTimeCode->Type)) {
-		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
 		m_tTimeCodeTypePrevious = (TTimecodeTypes) ArtNetTimeCode->Type;
+
+		switch ((_midi_timecode_type) ArtNetTimeCode->Type) {
+		case TC_TYPE_FILM:
+			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
+			break;
+		case TC_TYPE_EBU:
+			nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
+			break;
+		case TC_TYPE_DF:
+		case TC_TYPE_SMPTE:
+			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
+			break;
+		default:
+			assert(0);
+			break;
+		}
 
 		Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
 
@@ -187,10 +176,19 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 		H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-		Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
 
+		Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
 		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
 	}
+
+	itoa_base10(ArtNetTimeCode->Hours, (char *) &m_aTimeCode[0]);
+	itoa_base10(ArtNetTimeCode->Minutes, (char *) &m_aTimeCode[3]);
+	itoa_base10(ArtNetTimeCode->Seconds, (char *) &m_aTimeCode[6]);
+	itoa_base10(ArtNetTimeCode->Frames, (char *) &m_aTimeCode[9]);
+
+	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 
 #ifndef NDEBUG
 	const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
@@ -206,9 +204,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 }
 
 void ArtNetReader::Run(void) {
+	dmb();
 	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
 		dmb();
-		if (IsMidiQuarterFrameMessage) {
+		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
 
