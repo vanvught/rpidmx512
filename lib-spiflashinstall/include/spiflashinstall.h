@@ -2,7 +2,7 @@
  * @file spiflashinstall.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@ public:
 	SpiFlashInstall(void);
 	~SpiFlashInstall(void);
 
+	bool WriteFirmware(const uint8_t *pBuffer, uint32_t nSize);
+
 private:
 	bool Open(const char *pFileName);
 	void Close(void);
@@ -43,14 +45,21 @@ private:
 	void Write(uint32_t nOffset);
 	void Process(const char *pFileName, uint32_t nOffset);
 
+public:
+	static SpiFlashInstall* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static SpiFlashInstall *s_pThis;
+
 private:
 	bool m_bHaveFlashChip;
 	uint32_t m_nEraseSize;
 	uint32_t m_nFlashSize;
-	uint8_t *m_pFileBuffer;
-	uint8_t *m_pFlashBuffer;
+	alignas(uint32_t) uint8_t *m_pFileBuffer;
+	alignas(uint32_t) uint8_t *m_pFlashBuffer;
 	FILE *m_pFile;
 };
-
 
 #endif /* SPIFLASHINSTALL_H_ */

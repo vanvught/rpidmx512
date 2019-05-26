@@ -34,6 +34,8 @@
 
 #include "spi_flash.h"
 
+#include "hardware.h"
+
 #include "debug.h"
 
 #ifndef ALIGNED
@@ -55,6 +57,8 @@ static const char sCheckDifference[] ALIGNED = "Check difference";
 static const char sNoDifference[] ALIGNED = "No difference";
 static const char sDone[] ALIGNED = "Done";
 
+SpiFlashInstall *SpiFlashInstall::s_pThis = 0;
+
 SpiFlashInstall::SpiFlashInstall(void):
 	m_bHaveFlashChip(false),
 	m_nEraseSize(0),
@@ -65,21 +69,27 @@ SpiFlashInstall::SpiFlashInstall(void):
 {
 	DEBUG_ENTRY
 
-	SpiFlashInstallParams params;
+	s_pThis = this;
 
 	Display::Get()->Cls();
 
-	if (params.Load()) {
-		params.Dump();
+	if (spi_flash_probe(0, 0, 0) < 0) {
+		Display::Get()->TextStatus("No SPI flash", DISPLAY_7SEGMENT_MSG_INFO_SPI_NONE);
+		DEBUG_PUTS("No SPI flash chip");
+	} else {
+		m_nFlashSize = spi_flash_get_size();
 
-		if (spi_flash_probe(0, 0, 0) < 0) {
-			Display::Get()->TextStatus("No SPI flash", DISPLAY_7SEGMENT_MSG_INFO_SPI_NONE);
-			DEBUG_PUTS("No SPI flash chip");
-		} else {
-			m_nFlashSize = spi_flash_get_size();
+		printf("%s, sector size %d, %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), m_nFlashSize);
+		Display::Get()->Write(1, spi_flash_get_name());
+	}
 
-			printf("%s, sector size %d, %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), m_nFlashSize);
-			Display::Get()->Write(1, spi_flash_get_name());
+	if (Hardware::Get()->GetBootDevice() == BOOT_DEVICE_MMC0) {
+		DEBUG_PUTS("BOOT_DEVICE_MMC0");
+
+		SpiFlashInstallParams params;
+
+		if (params.Load()) {
+			params.Dump();
 
 			if (m_nFlashSize >= FLASH_SIZE_MINIMUM) {
 
@@ -298,3 +308,48 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 
 	DEBUG_EXIT
 }
+
+bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
+	DEBUG_PRINTF("(%d + %d)=%d, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
+
+	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
+		printf("error: flash size %d > %d\n", (OFFSET_UIMAGE + nSize), m_nFlashSize);
+		DEBUG_EXIT
+		return false;
+	}
+
+	printf("Write firmware\n");
+
+	const uint32_t nSectorSize = spi_flash_get_sector_size();
+	const uint32_t nEraseSize = (nSize + nSectorSize - 1) & ~(nSectorSize - 1);
+
+	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
+
+	Hardware::Get()->WatchdogStop();
+
+	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_ERASE);
+
+	if (spi_flash_cmd_erase(OFFSET_UIMAGE, nEraseSize) < 0) {
+		printf("error: flash erase\n");
+		return false;
+	}
+
+	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
+
+	if (spi_flash_cmd_write_multi(OFFSET_UIMAGE, nSize, pBuffer) < 0) {
+		printf("error: flash write\n");
+		return false;
+	}
+
+	Hardware::Get()->WatchdogInit();
+
+	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
+
+	return true;
+
+	DEBUG_EXIT
+}
+
