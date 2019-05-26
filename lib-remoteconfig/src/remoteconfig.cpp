@@ -57,6 +57,16 @@
 /* devices.txt */
 #include "tlc59711dmxparams.h"
 #include "ws28xxdmxparams.h"
+/* ltc.txt */
+#include "ltcparams.h"
+#include "storeltc.h"
+
+// nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
+// #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
+#define FIRMWARE_MAX_SIZE	0x22000
+
+#include "tftpfileserver.h"
+#include "spiflashinstall.h"
 
 #include "debug.h"
 
@@ -64,8 +74,8 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sRemoteConfigs[REMOTE_CONFIG_LAST][12] ALIGNED = { "Art-Net", "sACN E1.31", "OSC" };
-static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][8] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel" };
+static const char sRemoteConfigs[REMOTE_CONFIG_LAST][12] ALIGNED = { "Art-Net", "sACN E1.31", "OSC", "LTC" };
+static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode" };
 
 static const char sRequestReboot[] ALIGNED = "?reboot##";
 #define REQUEST_REBOOT_LENGTH (sizeof(sRequestReboot)/sizeof(sRequestReboot[0]) - 1)
@@ -88,6 +98,12 @@ static const char sGetDisplay[] ALIGNED = "?display#";
 static const char sSetDisplay[] ALIGNED = "!display#";
 #define SET_DISPLAY_LENGTH (sizeof(sSetDisplay)/sizeof(sSetDisplay[0]) - 1)
 
+static const char sGetTFTP[] ALIGNED = "?tftp#";
+#define GET_TFTP_LENGTH (sizeof(sGetTFTP)/sizeof(sGetTFTP[0]) - 1)
+
+static const char sSetTFTP[] ALIGNED = "!tftp#";
+#define SET_TFTP_LENGTH (sizeof(sSetTFTP)/sizeof(sSetTFTP[0]) - 1)
+
 enum TTxtFile {
 	TXT_FILE_RCONFIG,
 	TXT_FILE_NETWORK,
@@ -96,11 +112,12 @@ enum TTxtFile {
 	TXT_FILE_OSC,
 	TXT_FILE_PARAMS,
 	TXT_FILE_DEVICES,
+	TXT_FILE_LTC,
 	TXT_FILE_LAST
 };
 
-static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt" };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11};
+static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt" };
+static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11,           7};
 
 #define UDP_PORT			0x2905
 #define UDP_BUFFER_SIZE		512
@@ -111,11 +128,15 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_bDisableWrite(false),
 	m_bEnableReboot(false),
 	m_bEnableUptime(false),
+	m_bEnableTFTP(false),
+	m_pTFTPFileServer(0),
+	m_pTFTPBuffer(0),
 	m_nIdLength(0),
 	m_nHandle(-1),
 	m_pUdpBuffer(0),
 	m_nIPAddressFrom(0),
 	m_nBytesReceived(0)
+
 {
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
 	assert(tRemoteConfigMode < REMOTE_CONFIG_MODE_LAST);
@@ -209,13 +230,17 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 int RemoteConfig::Run(void) {
 	uint16_t nForeignPort;
 
-	if (__builtin_expect ((m_bDisable), 0)) {
+	if (__builtin_expect((m_bDisable), 1)) {
 		return 0;
+	}
+
+	if (__builtin_expect((m_pTFTPFileServer != 0), 0)) {
+		m_pTFTPFileServer->Run();
 	}
 
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pUdpBuffer, (uint16_t) UDP_BUFFER_SIZE, &m_nIPAddressFrom, &nForeignPort);
 
-	if (m_nBytesReceived < (int) UDP_DATA_MIN_SIZE) {
+	if (__builtin_expect((m_nBytesReceived < (int) UDP_DATA_MIN_SIZE), 1)) {
 		return 0;
 	}
 
@@ -242,6 +267,8 @@ int RemoteConfig::Run(void) {
 			HandleStoreGet();
 		} else if ((m_nBytesReceived >= GET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sGetDisplay, GET_DISPLAY_LENGTH) == 0)) {
 			HandleDisplayGet();
+		} else if ((m_nBytesReceived >= GET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sGetTFTP, GET_TFTP_LENGTH) == 0)) {
+			HandleTftpGet();
 		} else {
 #ifndef NDEBUG
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"?#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -255,6 +282,9 @@ int RemoteConfig::Run(void) {
 		if ((m_nBytesReceived >= (SET_DISPLAY_LENGTH)) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
 			DEBUG_PUTS(sSetDisplay);
 			HandleDisplaySet();
+		} else if ((m_nBytesReceived >= (GET_TFTP_LENGTH)) && (memcmp(m_pUdpBuffer, sSetTFTP, GET_TFTP_LENGTH) == 0)) {
+			DEBUG_PUTS(sSetTFTP);
+			HandleTftpSet();
 		} else {
 #ifndef NDEBUG
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -287,9 +317,10 @@ void RemoteConfig::HandleReboot(void) {
 	while (SpiFlashStore::Get()->Flash())
 		;
 
+	printf("Rebooting ...\n");
+
 	Display::Get()->Cls();
-	Display::Get()->Write(2, "Rebooting ...");
-	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+	Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 
 	Hardware::Get()->Reboot();
 
@@ -385,6 +416,11 @@ void RemoteConfig::HandleStoreGet(void) {
 	case TXT_FILE_DEVICES:
 		SpiFlashStore::Get()->CopyTo(STORE_WS28XXDMX, m_pUdpBuffer, nLenght);
 		break;
+#if defined (ENABLE_LTC_TXT)
+	case TXT_FILE_LTC:
+		SpiFlashStore::Get()->CopyTo(STORE_LTC, m_pUdpBuffer, nLenght);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -432,6 +468,11 @@ void RemoteConfig::HandleGet(void) {
 	case TXT_FILE_DEVICES:
 		HandleGetDevicesTxt(nSize);
 		break;
+#if defined (ENABLE_LTC_TXT)
+	case TXT_FILE_LTC:
+		HandleGetLtcTxt(nSize);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -538,6 +579,17 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
+#if defined (ENABLE_LTC_TXT)
+void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	LtcParams ltcParams((LtcParamsStore *)  StoreLtc::Get());
+	ltcParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
@@ -565,6 +617,11 @@ void RemoteConfig::HandleTxtFile(void) {
 	case TXT_FILE_DEVICES:
 		HandleTxtFileDevices();
 		break;
+#if defined (ENABLE_LTC_TXT)
+	case TXT_FILE_LTC:
+		HandleTxtFileLtc();
+		break;
+#endif
 	default:
 		break;
 	}
@@ -663,3 +720,87 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 
 	DEBUG_EXIT
 }
+
+#if defined (ENABLE_LTC_TXT)
+void RemoteConfig::HandleTxtFileLtc(void) {
+	DEBUG_ENTRY
+
+	LtcParams ltcParams((LtcParamsStore *) StoreLtc::Get());
+	ltcParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	ltcParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+/**
+ * TFTP Update firmware
+ */
+
+void RemoteConfig::HandleTftpSet(void) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("%c", m_pUdpBuffer[GET_TFTP_LENGTH]);
+
+	m_bEnableTFTP = (m_pUdpBuffer[GET_TFTP_LENGTH] != '0');
+
+	if (m_bEnableTFTP && (m_pTFTPFileServer == 0)) {
+		DEBUG_PUTS("Create TFTP Server");
+
+		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
+		assert(m_pTFTPBuffer != 0);
+
+		m_pTFTPFileServer = new TFTPFileServer(m_pTFTPBuffer, FIRMWARE_MAX_SIZE);
+		assert(m_pTFTPFileServer != 0);
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_ON);
+	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != 0)) {
+		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
+		DEBUG_PRINTF("nFileSize=%d", (int) nFileSize);
+
+		bool bSucces = true;
+
+		if (nFileSize != 0) {
+#ifndef NDEBUG
+			debug_dump((void *)m_pTFTPBuffer, 512);
+#endif
+			bSucces = SpiFlashInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
+
+			if (!bSucces) {
+				Display::Get()->Status(DISPLAY_7SEGMENT_MSG_ERROR_TFTP);
+			}
+		}
+
+		DEBUG_PUTS("Delete TFTP Server");
+
+		delete m_pTFTPFileServer;
+		m_pTFTPFileServer = 0;
+
+		delete[] m_pTFTPBuffer;
+		m_pTFTPBuffer = 0;
+
+		if (bSucces) { // Keep error message
+			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_OFF);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleTftpGet(void) {
+	DEBUG_ENTRY
+
+	if (m_nBytesReceived == GET_TFTP_LENGTH) {
+		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	} else if (m_nBytesReceived == GET_TFTP_LENGTH + 3) {
+		DEBUG_PUTS("Check for \'bin\' parameter");
+		if (memcmp((const void *)&	m_pUdpBuffer[GET_TFTP_LENGTH], "bin", 3) == 0) {
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_bEnableTFTP, sizeof(bool) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		}
+	}
+
+	DEBUG_EXIT
+}
+

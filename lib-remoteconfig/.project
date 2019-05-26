@@ -13,6 +13,9 @@
 		<project>lib-hal</project>
 		<project>lib-network</project>
 		<project>lib-oscserver</project>
+		<project>lib-properties</project>
+		<project>lib-spiflashinstall</project>
+		<project>lib-tftpdeamon</project>
 		<project>lib-tlc59711dmx</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>

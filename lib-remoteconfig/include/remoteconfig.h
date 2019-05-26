@@ -28,10 +28,13 @@
 
 #include <stdint.h>
 
+#include "tftpfileserver.h"
+
 enum TRemoteConfig {
 	REMOTE_CONFIG_ARTNET,
 	REMOTE_CONFIG_E131,
 	REMOTE_CONFIG_OSC,
+	REMOTE_CONFIG_LTC,
 	REMOTE_CONFIG_LAST
 };
 
@@ -40,6 +43,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_RDM,
 	REMOTE_CONFIG_MODE_MONITOR,
 	REMOTE_CONFIG_MODE_PIXEL,
+	REMOTE_CONFIG_MODE_TIMECODE,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -84,6 +88,7 @@ private:
 	void HandleGetOscTxt(uint32_t& nSize);
 	void HandleGetParamsTxt(uint32_t& nSize);
 	void HandleGetDevicesTxt(uint32_t& nSize);
+	void HandleGetLtcTxt(uint32_t& nSize);
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -93,6 +98,7 @@ private:
 	void HandleTxtFileOsc(void);
 	void HandleTxtFileParams(void);
 	void HandleTxtFileDevices(void);
+	void HandleTxtFileLtc(void);
 
 	void HandleDisplaySet(void);
 	void HandleDisplayGet(void);
@@ -100,11 +106,17 @@ private:
 	void HandleStoreSet(void);
 	void HandleStoreGet(void);
 
+	void HandleTftpSet(void);
+	void HandleTftpGet(void);
+
 private:
 	bool m_bDisable;
 	bool m_bDisableWrite;
 	bool m_bEnableReboot;
 	bool m_bEnableUptime;
+	bool m_bEnableTFTP;
+	TFTPFileServer* m_pTFTPFileServer;
+	alignas(uint32_t) uint8_t *m_pTFTPBuffer;
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
 	uint8_t m_nIdLength;
 	struct TRemoteConfigListBin m_tRemoteConfigListBin;
