@@ -29,6 +29,7 @@
 #include <assert.h>
 
 #include "dhcp_internal.h"
+#include "tftp_internal.h"
 
 #include "net/net.h"
 
@@ -47,7 +48,7 @@ extern void emac_eth_send(void *, int);
 extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 extern uint16_t net_chksum(void *, uint32_t);
 
-#define MAX_PORTS_ALLOWED	4
+#define MAX_PORTS_ALLOWED	8
 #define MAX_ENTRIES			(1 << 2) // Must always be a power of 2
 #define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
 
@@ -118,7 +119,7 @@ void udp_handle(struct t_udp *p_udp) {
 	const uint16_t dest_port = __builtin_bswap16(p_udp->udp.destination_port);
 
 	// Optimize ? store lowest port in use ?
-	if ((dest_port != DHCP_PORT_CLIENT) && (dest_port < 1024)) { // There is no support for other UDP defined services
+	if ((dest_port != DHCP_PORT_CLIENT) && (dest_port != TFTP_PORT_SERVER) && (dest_port < 1024)) { // There is no support for other UDP defined services
 		DEBUG_PRINTF("Not supported port:%d", dest_port);
 		return;
 	}
@@ -160,6 +161,7 @@ int udp_bind(uint16_t local_port) {
 	uint32_t i;
 
 	if (s_ports_used_index == MAX_PORTS_ALLOWED) {
+		DEBUG_PUTS("s_ports_used_index == MAX_PORTS_ALLOWED");
 		return -1;
 	}
 
