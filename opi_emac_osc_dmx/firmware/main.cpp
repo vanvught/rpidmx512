@@ -77,9 +77,7 @@ void notmain(void) {
 	Display display(DISPLAY_SSD1306);
 
 #if defined (ORANGE_PI)
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
+	SpiFlashInstall spiFlashInstall;
 
 	SpiFlashStore spiFlashStore;
 	StoreOscServer storeOscServer;
