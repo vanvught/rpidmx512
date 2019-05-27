@@ -60,9 +60,7 @@ void notmain(void) {
 	LedBlinkBaremetal lb;
 	Display display(DISPLAY_SSD1306);
 
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
+	SpiFlashInstall spiFlashInstall;
 
 	SpiFlashStore spiFlashStore;
 
