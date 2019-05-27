@@ -91,6 +91,7 @@ public class RemoteConfig extends JFrame {
 	private JLabel lblDisplayName;
 	private JMenuItem mntmUptime;
 	private JMenuItem mntmDisplayOnoff;
+	private JMenuItem mntmTftp;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -253,6 +254,21 @@ public class RemoteConfig extends JFrame {
 			}
 		});
 		
+		mntmTftp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						doSetTFTP((OrangePi) node.getUserObject());
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for TFTP action.");
+				}
+			}
+		});
+		
 		mntmUptime.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -297,7 +313,6 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-
 	}
 
 	private void InitComponents() {
@@ -334,6 +349,10 @@ public class RemoteConfig extends JFrame {
 		mntmSave = new JMenuItem("Save");
 		mnAction.add(mntmSave);
 		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		
+		mntmTftp = new JMenuItem("TFTP On/Off");
+		mntmTftp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK));
+		mnAction.add(mntmTftp);
 		
 		mntmUptime = new JMenuItem("Uptime");
 		mntmUptime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK));
@@ -389,26 +408,26 @@ public class RemoteConfig extends JFrame {
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(scrollPaneLeft, GroupLayout.PREFERRED_SIZE, 228, GroupLayout.PREFERRED_SIZE)
+					.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
-						.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-						.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-						.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+						.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+						.addComponent(scrollPaneRight, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 199, GroupLayout.PREFERRED_SIZE))
 					.addGap(0))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
+						.addComponent(scrollPaneLeft, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
 						.addGroup(gl_contentPane.createSequentialGroup()
 							.addComponent(lblDisplayName, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(lblNodeId, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
 							.addGap(18)
-							.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
-						.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+							.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)))
 					.addContainerGap())
 		);
 		
@@ -453,9 +472,29 @@ public class RemoteConfig extends JFrame {
 	
 	private void doSetDisplay(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			int n = JOptionPane.showConfirmDialog(null, "Display ON : YES\nDisplay OFF : NO", lblDisplayName.getText(), JOptionPane.YES_NO_CANCEL_OPTION);
-			if (n != 2) {
-				opi.doSetDisplay(n == JOptionPane.YES_OPTION);
+			String s = opi.doGetDisplay();
+			
+			if (s.contains("On")) {
+				int n = JOptionPane.showConfirmDialog(null, "Display is On\nSet display Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetDisplay(n != JOptionPane.OK_OPTION);
+			} else {
+				int n = JOptionPane.showConfirmDialog(null, "Display is Off\nSet display On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetDisplay(n == JOptionPane.OK_OPTION);				
+			}
+		}
+	}
+	
+
+	private void doSetTFTP(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			String s = opi.doGetTFTP();
+			
+			if (s.contains("On")) {
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is On\nSet TFTP Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetTFTP(n != JOptionPane.OK_OPTION);
+			} else {
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is Off\nSet TFTP On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetTFTP(n == JOptionPane.OK_OPTION);				
 			}
 		}
 	}
@@ -524,7 +563,7 @@ public class RemoteConfig extends JFrame {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+				
 		Iterator<OrangePi> it = h.iterator();
 
 		while (it.hasNext()) {
@@ -557,7 +596,7 @@ public class RemoteConfig extends JFrame {
 
 		DatagramSocket socketBroadcast = new DatagramSocket(null);
 		socketBroadcast.setReuseAddress(true);
-		SocketAddress sockaddr = new InetSocketAddress((InetAddress) null, PORT);
+		SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
 		socketBroadcast.bind(sockaddr);
 		socketBroadcast.setBroadcast(true);
 		socketBroadcast.send(packet);
@@ -565,6 +604,9 @@ public class RemoteConfig extends JFrame {
 	}
 	
 	private void createReceiveSocket() {
+		if (socketReceive != null) {
+			socketReceive.close();
+		}
 		try {
 			socketReceive = new DatagramSocket(null);
 			socketReceive.setReuseAddress(true);
@@ -575,4 +617,5 @@ public class RemoteConfig extends JFrame {
 			e.printStackTrace();
 		}
 	}
+	
 }
