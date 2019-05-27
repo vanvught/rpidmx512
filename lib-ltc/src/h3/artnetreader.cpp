@@ -212,7 +212,7 @@ void ArtNetReader::Run(void) {
 			IsMidiQuarterFrameMessage = false;
 
 			uint8_t bytes[2] = { 0xF1, 0x00 };
-			uint8_t data = nMidiQuarterFramePiece << 4;
+			const uint8_t data = nMidiQuarterFramePiece << 4;
 
 			switch (nMidiQuarterFramePiece) {
 			case 0:

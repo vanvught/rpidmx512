@@ -50,7 +50,7 @@ enum TNodeUnicastPort {
 };
 
 TCNet::TCNet(TTCNetNodeType tNodeType) :
-	m_tLayer(TCNET_LAYER_M), //FIXME must be undefined
+	m_tLayer(TCNET_LAYER_UNDEFINED),
 	m_pLTime((uint32_t *)&m_TTCNet.TCNetPacket.Time.LMTime),
 	m_pTCNetTimeCode(0),
 	m_tTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS),

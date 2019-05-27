@@ -24,11 +24,10 @@
  */
 
 #ifdef NDEBUG
-#undef NDEBUG
+ #undef NDEBUG
 #endif
 
 #include <stdint.h>
-#include <stdio.h>
 #include <assert.h>
 
 #include "hardwarebaremetal.h"
@@ -39,6 +38,7 @@
 #include "irq_timer.h"
 
 #ifndef NDEBUG
+ #include <stdio.h>
  #include "console.h"
 #endif
 
@@ -108,6 +108,7 @@ TCNetTimeCode::~TCNetTimeCode(void) {
 
 TCNetReader::TCNetReader(ArtNetNode* pNode) :
 	m_pNode(pNode),
+	m_nTimeCodePrevious(0xFF),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
 	for (uint32_t i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]) ; i++) {
@@ -151,7 +152,11 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 
 	nUpdates++;
 
-	m_pNode->SendTimeCode((const struct TArtNetTimeCode *)pTimeCode);
+	const uint32_t *p = (uint32_t *)pTimeCode;
+
+	if (m_nTimeCodePrevious != *p) {
+		m_pNode->SendTimeCode((const struct TArtNetTimeCode *) pTimeCode);
+	}
 
 	tMidiTimeCode.hour = pTimeCode->nHours;
 	tMidiTimeCode.minute = pTimeCode->nMinutes;
@@ -192,18 +197,28 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 		LtcLeds::Get()->Show((TTimecodeTypes) pTimeCode->nType);
 	}
 
-	itoa_base10(pTimeCode->nHours, (char *) &m_aTimeCode[0]);
-	itoa_base10(pTimeCode->nMinutes, (char *) &m_aTimeCode[3]);
-	itoa_base10(pTimeCode->nSeconds, (char *) &m_aTimeCode[6]);
-	itoa_base10(pTimeCode->nFrames, (char *) &m_aTimeCode[9]);
+	if (m_nTimeCodePrevious != *p) {
+		m_nTimeCodePrevious = *p;
 
-	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		itoa_base10(pTimeCode->nHours, (char *) &m_aTimeCode[0]);
+		itoa_base10(pTimeCode->nMinutes, (char *) &m_aTimeCode[3]);
+		itoa_base10(pTimeCode->nSeconds, (char *) &m_aTimeCode[6]);
+		itoa_base10(pTimeCode->nFrames, (char *) &m_aTimeCode[9]);
+
+		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	}
 
 #ifndef NDEBUG
 	const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
-	sprintf(aLimitWarning, "%.2d[%.2d]:%.5d:%.5d[%.2d]", (int) nUpdatesPerSecond, (int)(1000 / nUpdatesPerSecond), (int) nLimitUs, (int) nDeltaUs, (int) (nDeltaUs/1000));
-	console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
+
+	if (nLimitUs == 0) {
+		sprintf(aLimitWarning, "%.2d:-----:%.5d", (int) nUpdatesPerSecond, (int) nDeltaUs);
+		console_status(CONSOLE_CYAN, aLimitWarning);
+	} else {
+		sprintf(aLimitWarning, "%.2d:%.5d:%.5d", (int) nUpdatesPerSecond, (int) nLimitUs, (int) nDeltaUs);
+		console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
+	}
 #endif
 }
 
@@ -216,7 +231,7 @@ void TCNetReader::Run(void) {
 			IsMidiQuarterFrameMessage = false;
 
 			uint8_t bytes[2] = { 0xF1, 0x00 };
-			uint8_t data = nMidiQuarterFramePiece << 4;
+			const uint8_t data = nMidiQuarterFramePiece << 4;
 
 			switch (nMidiQuarterFramePiece) {
 			case 0:

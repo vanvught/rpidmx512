@@ -126,7 +126,7 @@ void MidiReader::Start(void) {
 void MidiReader::Run(void) {
 #ifndef NDEBUG
 	uint32_t nLimitUs = 0;
-	char aLimitWarning[16] ALIGNED;
+	char aLimitWarning[16];
 	const uint32_t nNowUs = h3_hs_timer_lo_us();
 #endif
 
@@ -229,9 +229,6 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
-	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
-
 	struct TArtNetTimeCode ArtNetTimeCode;
 
 	ArtNetTimeCode.Frames = m_MidiTimeCode.frame;
@@ -248,4 +245,7 @@ void MidiReader::Update(void) {
 		Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
 		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
 	}
+
+	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 }

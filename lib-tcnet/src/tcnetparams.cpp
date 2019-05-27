@@ -123,7 +123,11 @@ void TCNetParams::callbackFunction(const char* pLine) {
 	ch = ' ';
 	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &len) == SSCAN_OK) {
 		m_tTTCNetParams.nLayer = (uint8_t) GetLayer((uint8_t) ch);
-		m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_LAYER;
+		if (m_tTTCNetParams.nLayer != TCNET_LAYER_UNDEFINED) {
+			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_LAYER;
+		} else {
+			m_tTTCNetParams.nSetList &= ~TCNET_PARAMS_MASK_LAYER;
+		}
 		return;
 	}
 }
