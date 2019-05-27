@@ -118,6 +118,7 @@ enum TTxtFile {
 
 static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt" };
 static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11,           7};
+static const TStore sMap[TXT_FILE_LAST] = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC};
 
 #define UDP_PORT			0x2905
 #define UDP_BUFFER_SIZE		512
@@ -394,41 +395,12 @@ void RemoteConfig::HandleStoreGet(void) {
 	uint32_t nLenght = 0;
 	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH]);
 
-	switch (i) {
-	case TXT_FILE_RCONFIG:
-		SpiFlashStore::Get()->CopyTo(STORE_RCONFIG, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_NETWORK:
-		SpiFlashStore::Get()->CopyTo(STORE_NETWORK, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_ARTNET:
-		SpiFlashStore::Get()->CopyTo(STORE_ARTNET, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_E131:
-		SpiFlashStore::Get()->CopyTo(STORE_E131, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_OSC:
-		SpiFlashStore::Get()->CopyTo(STORE_OSC, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_PARAMS:
-		SpiFlashStore::Get()->CopyTo(STORE_DMXSEND, m_pUdpBuffer, nLenght);
-		break;
-	case TXT_FILE_DEVICES:
-		SpiFlashStore::Get()->CopyTo(STORE_WS28XXDMX, m_pUdpBuffer, nLenght);
-		break;
-#if defined (ENABLE_LTC_TXT)
-	case TXT_FILE_LTC:
-		SpiFlashStore::Get()->CopyTo(STORE_LTC, m_pUdpBuffer, nLenght);
-		break;
-#endif
-	default:
+	if (i != TXT_FILE_LAST) {
+		SpiFlashStore::Get()->CopyTo(sMap[i], m_pUdpBuffer, nLenght);
+	} else {
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 #endif
-		DEBUG_EXIT
-		return;
-		__builtin_unreachable ();
-		break;
 	}
 
 #ifndef NDEBUG

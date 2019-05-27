@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "tftpfileserver.h"
+#include "ubootheader.h"
 
 #include "display.h"
 
@@ -100,7 +101,6 @@ int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount, unsigned nBlockNumb
 }
 
 int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBlockNumber) {
-	//DEBUG_ENTRY
 	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
 
 	if (nBlockNumber > (m_nSize / 512)) {
@@ -109,14 +109,21 @@ int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBl
 
 	assert(nBlockNumber != 0);
 
+	if (nBlockNumber == 1) {
+		UBootHeader uImage((uint8_t *)pBuffer);
+		if (!uImage.IsValid()) {
+			DEBUG_PUTS("uImage is not valid");
+			return -1;
+		}
+	}
+
 	uint32_t nOffset = (nBlockNumber - 1) * 512;
 
 	assert((nOffset + nCount) <= m_nSize);
 
 	memcpy((void *)&m_pBuffer[nOffset], pBuffer, nCount);
 
-	m_nFileSize += nCount; //BUG When in retry ?
+	m_nFileSize += nCount; //FIXME BUG When in retry ?
 
-	//DEBUG_EXIT
 	return nCount;
 }
