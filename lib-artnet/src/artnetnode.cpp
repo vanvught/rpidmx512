@@ -68,7 +68,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 32 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 33 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -458,7 +458,7 @@ void ArtNetNode::FillPollReply(void) {
 
 	m_PollReply.Status2 = m_Node.Status2;
 
-	m_PollReply.NumPortsLo = 2;//m_State.nActivePorts;
+	m_PollReply.NumPortsLo = 4; // Default
 }
 
 void ArtNetNode::SendPollRelply(bool bResponse) {
@@ -476,6 +476,8 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 		m_PollReply.BindIndex = nPage + 1;
 
 		const uint32_t nPortIndexStart = nPage * ARTNET_MAX_PORTS;
+
+		uint8_t NumPortsLo = 0;
 
 		for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ARTNET_MAX_PORTS); nPortIndex++) {
 
@@ -498,11 +500,14 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 			if (m_OutputPorts[nPortIndex].bIsEnabled) {
 				m_PollReply.PortTypes[nPortIndex - nPortIndexStart] = ARTNET_ENABLE_OUTPUT | ARTNET_PORT_DMX;
+				NumPortsLo++;
 			}
 
 			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;
 			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nDefaultAddress;
 		}
+
+		m_PollReply.NumPortsLo = NumPortsLo;
 
 		snprintf((char *) m_PollReply.NodeReport, ARTNET_REPORT_LENGTH, "%04x [%04d] %s AvV", (int) m_State.reportCode, (int) m_State.ArtPollReplyCount, m_aSysName);
 
