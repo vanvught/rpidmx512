@@ -239,6 +239,8 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 	struct TRdmMessage *p;
 	uint8_t r_uid[RDM_UID_SIZE];
 
+	Hardware::Get()->WatchdogFeed();
+
 #ifndef NDEBUG
 	printf("QuickFind : ");
 	PrintUid((uint8_t *)uid);
@@ -256,6 +258,8 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 			AddUid(uid);
 		}
 	}
+
+	Hardware::Get()->WatchdogFeed();
 
 	m_DiscUniqueBranch.Send(m_nPort);
 

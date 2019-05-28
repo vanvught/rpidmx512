@@ -27,6 +27,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "hardware.h"
+
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 
@@ -48,7 +50,6 @@ ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
 	}
 
 	m_pRdmCommand = new struct TRdmMessage;
-
 	assert(m_pRdmCommand != 0);
 
 	m_pRdmCommand->start_code = E120_SC_RDM;
@@ -102,6 +103,8 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 		return 0;
 	}
 
+	Hardware::Get()->WatchdogFeed();
+
 	while (0 != RDMMessage::Receive(nPort)) {
 		// Discard late responses
 	}
@@ -123,5 +126,4 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 	RDMMessage::Print(pResponse);
 #endif
 	return pResponse;
-
 }

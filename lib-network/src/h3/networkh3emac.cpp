@@ -61,10 +61,8 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	NetworkParams params(pNetworkParamsStore);
 
-	if (!Hardware::Get()->IsButtonPressed()) {
-		if (params.Load()) {
-			params.Dump();
-		}
+	if (params.Load()) {
+		params.Dump();
 	}
 
 	emac_start(params.GetResetEmac());

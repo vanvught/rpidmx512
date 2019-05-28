@@ -55,8 +55,8 @@ extern uint16_t net_chksum(void *, uint32_t);
 struct queue_entry {
 	uint8_t data[FRAME_BUFFER_SIZE];
 	uint32_t from_ip;
-	uint16_t size;
 	uint16_t from_port;
+	uint16_t size;
 }ALIGNED;
 
 struct queue {
@@ -131,7 +131,7 @@ void udp_handle(struct t_udp *p_udp) {
 		}
 	}
 
-	if (port_index == MAX_PORTS_ALLOWED) {
+	if (__builtin_expect ((port_index == MAX_PORTS_ALLOWED), 0)) {
 		DEBUG_PRINTF(MACSTR " - " IPSTR ":%d", MAC2STR(p_udp->ether.dst), p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port);
 		return;
 	}
@@ -227,7 +227,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	_pcast32 dst;
 
-	if (s_ports_allowed[idx] == 0) {
+	if (__builtin_expect ((s_ports_allowed[idx] == 0), 0)) {
 		DEBUG_PUTS("ports_allowed[idx] == 0");
 		return -1;
 	}

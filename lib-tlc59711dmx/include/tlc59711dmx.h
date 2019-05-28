@@ -2,7 +2,7 @@
  * @file tlc59711dmx.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,13 +51,19 @@ public:
 	void Blackout(bool bBlackout);
 
 	void SetLEDType(TTLC59711Type tTLC59711Type);
-	TTLC59711Type GetLEDType(void) const;
+	TTLC59711Type GetLEDType(void) {
+		return m_LEDType;
+	}
 
 	void SetLEDCount(uint8_t nLEDCount);
-	uint8_t GetLEDCount(void) const;
+	uint8_t GetLEDCount(void) {
+		return m_nLEDCount;
+	}
 
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
-	uint32_t GetSpiSpeedHz(void) const;
+	uint32_t GetSpiSpeedHz(void) {
+		return m_nSpiSpeedHz;
+	}
 
 	void Print(void);
 

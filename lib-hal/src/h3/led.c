@@ -2,7 +2,7 @@
  * @file led.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void led_blink(void) {
 
 	const uint32_t micros_now = h3_hs_timer_lo_us();
 
-	if (micros_now - micros_previous < ticks_per_second) {
+	if (__builtin_expect ((micros_now - micros_previous < ticks_per_second), 0)) {
 		return;
 	}
 

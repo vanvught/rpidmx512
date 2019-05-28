@@ -37,6 +37,8 @@
 
 #include "networklinux.h"
 
+#include "debug.h"
+
 /**
  * BEGIN - needed H3 code compatibility
  */
@@ -44,6 +46,7 @@
 
 static uint16_t sPortsAllowed[MAX_PORTS_ALLOWED];
 static uint8_t snPortsUsed = 0;
+static int snHandles[MAX_PORTS_ALLOWED];
 /**
  * END
  */
@@ -66,6 +69,7 @@ int NetworkLinux::Init(const char *s) {
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		sPortsAllowed[i] = 0;
+		snHandles[i] = -1;
 	}
 
 	snPortsUsed = 0;
@@ -101,14 +105,14 @@ int NetworkLinux::Init(const char *s) {
 }
 
 int32_t NetworkLinux::Begin(uint16_t nPort) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("port = %d", nPort);
+
 	int nSocket;
 	struct sockaddr_in si_me;
 	int true_flag = true;
 	uint32_t i;
 
-#ifndef NDEBUG
-	printf("NetworkLinux::Begin, port = %d\n", nPort);
-#endif
 
 /**
  * BEGIN - needed H3 code compatibility
@@ -120,6 +124,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 
 	for (i = 0; i < snPortsUsed; i++) {
 		if (sPortsAllowed[i] == nPort) {
+			DEBUG_EXIT
 			return 0;
 		}
 	}
@@ -160,6 +165,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 /**
  * BEGIN - needed H3 code compatibility
  */
+		snHandles[snPortsUsed] = nSocket;
 		sPortsAllowed[snPortsUsed++] = nPort;
 /**
  * END
@@ -175,33 +181,34 @@ void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
 }
 
 int32_t NetworkLinux::End(uint16_t nPort) {
-#ifndef NDEBUG
-	printf("NetworkLinux::End, port = %d\n", nPort);
-#endif
-
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nPort = %d", nPort);
 /**
  * BEGIN - needed H3 code compatibility
  */
-#ifndef NDEBUG
-	printf("s_ports_allowed_index=%d\n", snPortsUsed);
-#endif
+	DEBUG_PRINTF("s_ports_allowed_index=%d", snPortsUsed);
 
 	if (snPortsUsed == 0) {
 		perror("s_ports_used_index == 0");
+		DEBUG_EXIT
 		exit(EXIT_FAILURE);
 	}
 
-#ifndef NDEBUG
-	printf("s_ports_allowed[s_ports_allowed_index - 1]=%d\n", sPortsAllowed[snPortsUsed - 1]);
-#endif
+	DEBUG_PRINTF("s_ports_allowed[s_ports_allowed_index - 1]=%d", sPortsAllowed[snPortsUsed - 1]);
 
 	if ((sPortsAllowed[snPortsUsed - 1]) == nPort) {
 		sPortsAllowed[snPortsUsed - 1] = 0;
+		if (close(snHandles[snPortsUsed - 1]) == -1) {
+			perror("bind");
+			exit(EXIT_FAILURE);
+		}
 		snPortsUsed--;
+		DEBUG_EXIT
 		return 0;
 	}
 
 	perror("port not in use");
+	DEBUG_EXIT
 	exit(EXIT_FAILURE);
 /**
  * END

@@ -44,7 +44,3 @@ void LedBlinkBaremetal::SetFrequency(unsigned nFreqHz) {
 		led_set_ticks_per_second(1000000 / nFreqHz);
 	}
 }
-
-void LedBlinkBaremetal::Run(void) {
-	led_blink();
-}

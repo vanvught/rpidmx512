@@ -56,11 +56,11 @@ static void _dump_page_table(const uint32_t *p) {
 		}
 		p++;
 	}
-	p--;
-	i--;
-
-	printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, (uint32_t) (*p & 0xFFFFF));
-	_print_bits((uint32_t) (*p & 0xFFFFF));
+//	p--;
+//	i--;
+//
+//	printf(" %.4d : %p : 0x%.8x : %.5x -> bits ", i, p, i * MEGABYTE, (uint32_t) (*p & 0xFFFFF));
+//	_print_bits((uint32_t) (*p & 0xFFFFF));
 }
 
 

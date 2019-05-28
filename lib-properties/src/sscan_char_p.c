@@ -52,7 +52,11 @@ int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
 		k++;
 	}
 
-	*len = (uint8_t) k;
+	if ((k < (int) *len) || (*b == '\0') || (*b == '\n')) {
+		*len = (uint8_t) k;
+		return SSCAN_OK;
+	}
 
-	return SSCAN_OK;
+	return SSCAN_VALUE_ERROR;
 }
+

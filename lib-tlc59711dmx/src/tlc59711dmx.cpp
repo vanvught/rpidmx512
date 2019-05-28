@@ -24,18 +24,12 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
 #include "tlc59711dmx.h"
 #include "tlc59711.h"
 
-#define DMX_MAX_CHANNELS	512
-#define BOARD_INSTANCES_MAX	32
-
-#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
+#include "lightset.h"
 
 static unsigned long ceil(float f) {
 	int i = (int) f;
@@ -118,6 +112,51 @@ void TLC59711Dmx::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLeng
 	}
 }
 
+void TLC59711Dmx::SetLEDType(TTLC59711Type tTLC59711Type) {
+	m_LEDType = tTLC59711Type;
+	UpdateMembers();
+}
+
+void TLC59711Dmx::SetLEDCount(uint8_t nLEDCount) {
+	m_nLEDCount = nLEDCount;
+	UpdateMembers();
+}
+
+void TLC59711Dmx::SetSpiSpeedHz(uint32_t nSpiSpeedHz) {
+	m_nSpiSpeedHz = nSpiSpeedHz;
+}
+
+void TLC59711Dmx::Initialize(void) {
+	assert(m_pTLC59711 == 0);
+	m_pTLC59711 = new TLC59711(m_nBoardInstances, m_nSpiSpeedHz);
+	assert(m_pTLC59711 != 0);
+	m_pTLC59711->Dump();
+}
+
+void TLC59711Dmx::UpdateMembers(void) {
+	if (m_LEDType == TTLC59711_TYPE_RGB) {
+		m_nDmxFootprint = m_nLEDCount * 3;
+	} else {
+		m_nDmxFootprint = m_nLEDCount * 4;
+	}
+
+	m_nBoardInstances = (uint8_t) ceil((float) m_nDmxFootprint / TLC59711_OUT_CHANNELS);
+}
+
+void TLC59711Dmx::Blackout(bool bBlackout) {
+	m_bBlackout = bBlackout;
+
+	if (bBlackout) {
+		m_pTLC59711->Blackout();
+	} else {
+		m_pTLC59711->Update();
+	}
+}
+
+// DMX
+
+#define BOARD_INSTANCES_MAX	32
+
 bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
 
@@ -128,6 +167,10 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	return false;
 }
+
+// RDM
+
+#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
 
 bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	unsigned nIndex;
@@ -162,57 +205,4 @@ bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tS
 	}
 
 	return true;
-}
-
-void TLC59711Dmx::SetLEDType(TTLC59711Type tTLC59711Type) {
-	m_LEDType = tTLC59711Type;
-	UpdateMembers();
-}
-
-TTLC59711Type TLC59711Dmx::GetLEDType(void) const {
-	return m_LEDType;
-}
-
-void TLC59711Dmx::SetLEDCount(uint8_t nLEDCount) {
-	m_nLEDCount = nLEDCount;
-	UpdateMembers();
-}
-
-uint8_t TLC59711Dmx::GetLEDCount(void) const {
-	return m_nLEDCount;
-}
-
-void TLC59711Dmx::SetSpiSpeedHz(uint32_t nSpiSpeedHz) {
-	m_nSpiSpeedHz = nSpiSpeedHz;
-}
-
-uint32_t TLC59711Dmx::GetSpiSpeedHz(void) const {
-	return m_nSpiSpeedHz;
-}
-
-void TLC59711Dmx::Initialize(void) {
-	assert(m_pTLC59711 == 0);
-	m_pTLC59711 = new TLC59711(m_nBoardInstances, m_nSpiSpeedHz);
-	assert(m_pTLC59711 != 0);
-	m_pTLC59711->Dump();
-}
-
-void TLC59711Dmx::UpdateMembers(void) {
-	if (m_LEDType == TTLC59711_TYPE_RGB) {
-		m_nDmxFootprint = m_nLEDCount * 3;
-	} else {
-		m_nDmxFootprint = m_nLEDCount * 4;
-	}
-
-	m_nBoardInstances = (uint8_t) ceil((float) m_nDmxFootprint / TLC59711_OUT_CHANNELS);
-}
-
-void TLC59711Dmx::Blackout(bool bBlackout) {
-	m_bBlackout = bBlackout;
-
-	if (bBlackout) {
-		m_pTLC59711->Blackout();
-	} else {
-		m_pTLC59711->Update();
-	}
 }

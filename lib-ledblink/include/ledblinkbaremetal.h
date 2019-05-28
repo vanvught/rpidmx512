@@ -2,7 +2,7 @@
  * @file ledblinktask.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #define LEDBLINKBAREMETAL_H_
 
 #include "ledblink.h"
+#include "c/led.h"
 
 class LedBlinkBaremetal : public LedBlink
 {
@@ -37,7 +38,9 @@ public:
 
 	void SetFrequency (unsigned nFreqHz);
 
-	void Run(void);
+	void Run(void) {
+		led_blink();
+	}
 };
 
 #endif /* LEDBLINKBAREMETAL_H_ */

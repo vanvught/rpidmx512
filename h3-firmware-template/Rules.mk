@@ -25,7 +25,7 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 endif
 
 ifdef COND
-	LIBS:=spiflashinstall remoteconfig spiflashstore spiflash artnet artnet4 e131 oscserver osc ws28xxdmx ws28xx tlc59711dmx tlc59711 dmxsend dmx lightset ledblink $(LIBS)
+	LIBS:=spiflashinstall remoteconfig spiflashstore spiflash tftpdeamon artnet artnet4 e131 oscserver osc ws28xxdmx ws28xx tlc59711dmx tlc59711 dmxsend dmx ltc lightset ledblink $(LIBS)
 endif
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)

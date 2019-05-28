@@ -34,7 +34,7 @@ public:
 	alignas(uint32_t) static const char LED_TYPE[];
 	alignas(uint32_t) static const char LED_COUNT[];
 
-	alignas(uint32_t) static const char ACTIVE_PORTS[];
+	alignas(uint32_t) static const char ACTIVE_OUT[];
 	alignas(uint32_t) static const char USE_SI5351A[];
 
 	alignas(uint32_t) static const char DMX_START_ADDRESS[];

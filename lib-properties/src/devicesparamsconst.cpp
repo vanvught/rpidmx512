@@ -31,7 +31,7 @@ alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
 alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
 alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
 
-alignas(uint32_t) const char DevicesParamsConst::ACTIVE_PORTS[] = "active_ports";
+alignas(uint32_t) const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
 alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
 
 alignas(uint32_t) const char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
