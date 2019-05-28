@@ -1,0 +1,10 @@
+#
+DEFINES = E131_BRIDGE PIXEL_MULTI EMAC NDEBUG
+#
+LIBS = e131 ws28xxdmx ws28xx lightset ledblink
+#
+SRCDIR = firmware
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
