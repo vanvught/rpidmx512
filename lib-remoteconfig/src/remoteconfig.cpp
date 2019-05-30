@@ -60,6 +60,9 @@
 /* ltc.txt */
 #include "ltcparams.h"
 #include "storeltc.h"
+/* tcnet.txt */
+#include "tcnetparams.h"
+#include "storetcnet.h"
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
@@ -113,12 +116,13 @@ enum TTxtFile {
 	TXT_FILE_PARAMS,
 	TXT_FILE_DEVICES,
 	TXT_FILE_LTC,
+	TXT_FILE_TCNET,
 	TXT_FILE_LAST
 };
 
-static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt" };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11,           7};
-static const TStore sMap[TXT_FILE_LAST] = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC};
+static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt" };
+static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11,           7,         9};
+static const TStore sMap[TXT_FILE_LAST] = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET};
 
 #define UDP_PORT			0x2905
 #define UDP_BUFFER_SIZE		512
@@ -445,6 +449,11 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetLtcTxt(nSize);
 		break;
 #endif
+#if defined (ENABLE_TCNET_TXT)
+	case TXT_FILE_TCNET:
+		HandleGetTCNetTxt(nSize);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -562,6 +571,17 @@ void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined (ENABLE_TCNET_TXT)
+void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	TCNetParams tcnetParams((TCNetParamsStore *)  StoreTCNet::Get());
+	tcnetParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
@@ -592,6 +612,11 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined (ENABLE_LTC_TXT)
 	case TXT_FILE_LTC:
 		HandleTxtFileLtc();
+		break;
+#endif
+#if defined (ENABLE_TCNET_TXT)
+	case TXT_FILE_TCNET:
+		HandleTxtFileTCNet();
 		break;
 #endif
 	default:
@@ -701,6 +726,20 @@ void RemoteConfig::HandleTxtFileLtc(void) {
 	ltcParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	ltcParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (ENABLE_TCNET_TXT)
+void RemoteConfig::HandleTxtFileTCNet(void) {
+	DEBUG_ENTRY
+
+	TCNetParams tcnetParams((TCNetParamsStore *) StoreTCNet::Get());
+	tcnetParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	tcnetParams.Dump();
 #endif
 
 	DEBUG_EXIT

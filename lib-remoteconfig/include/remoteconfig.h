@@ -89,6 +89,7 @@ private:
 	void HandleGetParamsTxt(uint32_t& nSize);
 	void HandleGetDevicesTxt(uint32_t& nSize);
 	void HandleGetLtcTxt(uint32_t& nSize);
+	void HandleGetTCNetTxt(uint32_t& nSize);
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -99,6 +100,7 @@ private:
 	void HandleTxtFileParams(void);
 	void HandleTxtFileDevices(void);
 	void HandleTxtFileLtc(void);
+	void HandleTxtFileTCNet(void);
 
 	void HandleDisplaySet(void);
 	void HandleDisplayGet(void);
