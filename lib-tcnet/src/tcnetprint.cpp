@@ -32,8 +32,8 @@ void TCNet::Print(void) {
 	printf("TCNet configuration\n");
 
 	printf(" Node name : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
-	if (m_tLayer != TCNET_LAYER_UNDEFINED) {
-		printf(" Layer     : L%c Time", GetLayerName((TTCNetLayers) m_tLayer));
+		if (m_tLayer != TCNET_LAYER_UNDEFINED) {
+	printf(" Layer     : L%c Time\n", GetLayerName((TTCNetLayers) m_tLayer));
 	} else {
 		printf(" Using SMTPE fields\n");
 	}

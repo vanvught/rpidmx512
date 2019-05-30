@@ -35,11 +35,13 @@ struct TTCNetParams {
 	uint32_t nSetList;
 	uint8_t aNodeName[TCNET_NODE_NAME_LENGTH];
 	uint8_t nLayer;
+	uint8_t nTimeCodeType;
 };
 
 enum TTCNetParamsMask {
 	TCNET_PARAMS_MASK_NODE_NAME = (1 << 0),
-	TCNET_PARAMS_MASK_LAYER = (1 << 1)
+	TCNET_PARAMS_MASK_LAYER = (1 << 1),
+	TCNET_PARAMS_MASK_TIMECODE_TYPE = (1 << 2)
 };
 
 class TCNetParamsStore {

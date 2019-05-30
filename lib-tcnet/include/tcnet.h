@@ -82,6 +82,15 @@ public:
 		return m_tLayer;
 	}
 
+	void SetTimeCodeType(TTCNetTimeCodeType tType);
+	TTCNetTimeCodeType GetTimeCodeType(void) {
+		return m_tTimeCodeType;
+	}
+
+	bool IsSetTimeCodeType(void) {
+		return m_tTimeCodeType;
+	}
+
 	void SetTimeCodeHandler(TCNetTimeCode *pTCNetTimeCode) {
 		m_pTCNetTimeCode = pTCNetTimeCode;
 	}
@@ -112,6 +121,7 @@ private:
 
 	TCNetTimeCode *m_pTCNetTimeCode;
 	TTCNetTimeCodeType m_tTimeCodeType;
+	bool m_bIsSetTimeCodeType;
 	float m_fTypeDivider;
 
 };

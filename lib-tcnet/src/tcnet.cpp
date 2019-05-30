@@ -290,3 +290,28 @@ char TCNet::GetLayerName(TTCNetLayers tLayer) {
 	__builtin_unreachable ();
 	return ' ';
 }
+
+void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
+	m_tTimeCodeType = tType;
+	m_bIsSetTimeCodeType = true;
+
+	switch (m_tTimeCodeType) {
+	case TCNET_TIMECODE_TYPE_FILM:
+		m_fTypeDivider = (float) 1000 / 24;
+		break;
+	case TCNET_TIMECODE_TYPE_EBU_25FPS:
+		m_fTypeDivider = (float) 1000 / 25;
+		break;
+	case TCNET_TIMECODE_TYPE_DF:
+		m_fTypeDivider = (float) 1000 / (float) 29.97;
+		break;
+	case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
+		m_fTypeDivider = (float) 1000 / 30;
+		break;
+	default:
+		m_fTypeDivider = (float) 1000 / 30;
+		m_tTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
+		m_bIsSetTimeCodeType = false;
+		break;
+	}
+}

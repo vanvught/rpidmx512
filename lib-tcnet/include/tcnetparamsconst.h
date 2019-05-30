@@ -33,6 +33,7 @@ public:
 	alignas(uint32_t) static const char FILE_NAME[];
 	alignas(uint32_t) static const char NODE_NAME[];
 	alignas(uint32_t) static const char LAYER[];
+	alignas(uint32_t) static const char TIMECODE_TYPE[];
 };
 
 #endif /* TCNETPARAMSCONST_H_ */
