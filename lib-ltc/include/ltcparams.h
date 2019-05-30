@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 
+#include "ltc.h"
 #include "displaymax7219.h"
 
 enum TLtcReaderSource {
@@ -42,17 +43,28 @@ enum TLtcParamsMax7219Type {
 	LTC_PARAMS_MAX7219_TYPE_7SEGMENT
 };
 
+enum TLtcParamsMaskDisabledOutputs { //FIXEM refactor with _MASK
+	LTC_PARAMS_DISABLE_DISPLAY = (1 << 0),
+	LTC_PARAMS_DISABLE_MAX7219 = (1 << 1),
+	LTC_PARAMS_DISABLE_MIDI = (1 << 2),
+	LTC_PARAMS_DISABLE_ARTNET = (1 << 3),
+	LTC_PARAMS_DISABLE_TCNET = (1 << 4),
+	LTC_PARAMS_DISABLE_LTC = (1 << 5)
+};
+
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
 	uint8_t tMax7219Type;
 	uint8_t nMax7219Intensity;
+	uint8_t nDisabledOutputs;
 };
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),
 	LTC_PARAMS_MASK_MAX7219_TYPE = (1 << 1),
-	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2)
+	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2),
+	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3)
 };
 
 class LtcParamsStore {
@@ -90,12 +102,15 @@ public:
 		return (tMax7219Types) m_tLtcParams.tMax7219Type;
 	}
 
+	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const;
+	bool isDisabledOutputMaskSet(uint8_t nMask) const;
 
 private:
     LtcParamsStore 	*m_pLTcParamsStore;

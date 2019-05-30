@@ -35,6 +35,15 @@ enum TTimecodeTypes {
 	TC_TYPE_INVALID = 255
 };
 
+struct TLtcDisabledOutputs {
+	bool bDisplay;
+	bool bMax7219;
+	bool bMidi;
+	bool bArtNet;
+	bool bTCNet;
+	bool bLtc;
+};
+
 #define TC_CODE_MAX_LENGTH	11
 #define TC_TYPE_MAX_LENGTH	11
 

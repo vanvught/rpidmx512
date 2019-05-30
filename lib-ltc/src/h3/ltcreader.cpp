@@ -212,7 +212,9 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-LtcReader::LtcReader(ArtNetNode *pNode): m_pNode(pNode),
+LtcReader::LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
+	m_pNode(pNode),
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
 	for (uint32_t i = 0; i < sizeof(aTimeCode) / sizeof(aTimeCode[0]) ; i++) {

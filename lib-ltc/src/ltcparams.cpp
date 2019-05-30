@@ -38,6 +38,8 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
+#define IS_DISABLED(x)	(x) ? "Yes" : "No"
+
 LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tLtcParams;
 
@@ -121,6 +123,53 @@ void LtcParams::callbackFunction(const char* pLine) {
 		}
 		return;
 	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_DISPLAY, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_DISPLAY;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_MAX7219, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_MIDI, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MIDI;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_ARTNET, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_ARTNET;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_ARTNET;
+		}
+	}
+
+#if 0 //TODO When MASTER is implemented
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TCNET, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_TCNET;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_TCNET;
+		}
+	}
+#endif
 }
 
 void LtcParams::Dump(void) {
@@ -143,6 +192,35 @@ void LtcParams::Dump(void) {
 		printf(" %s=%d\n", LtcParamsConst::MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity);
 	}
 
+	if (isMaskSet(LTC_PARAMS_MASK_DISABLED_OUTPUTS)) {
+		assert(m_tLtcParams.nDisabledOutputs != 0);
+
+		printf(" Disabled outputs %.2x:\n", m_tLtcParams.nDisabledOutputs);
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY)) {
+			printf("  Display\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219)) {
+			printf("  Max7219\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI)) {
+			printf("  MIDI\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET)) {
+			printf("  Art-Net\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET)) {
+			printf("  TCNet\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC)) {
+			printf("  LTC\n");
+		}
+	}
 #endif
 }
 
@@ -155,4 +233,8 @@ void LtcParams::staticCallbackFunction(void* p, const char* s) {
 
 bool LtcParams::isMaskSet(uint32_t nMask) const {
 	return (m_tLtcParams.nSetList & nMask) == nMask;
+}
+
+bool LtcParams::isDisabledOutputMaskSet(uint8_t nMask) const {
+	return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
 }

@@ -93,8 +93,9 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	}
 }
 
-MidiReader::MidiReader(ArtNetNode* pNode):
+MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_pNode(pNode),
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
 	m_tTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0)

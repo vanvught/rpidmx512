@@ -102,7 +102,9 @@ static void itoa_base10(int arg, char *buf) {
 	*n = (char) '0' + (char) (arg % 10);
 }
 
-ArtNetReader::ArtNetReader(void) : m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
+ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
+	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
 	for (uint32_t i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]) ; i++) {
 		m_aTimeCode[i] = ' ';

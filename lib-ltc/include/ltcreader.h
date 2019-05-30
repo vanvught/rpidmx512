@@ -30,7 +30,7 @@
 
 class LtcReader {
 public:
-	LtcReader(ArtNetNode *pNode);
+	LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~LtcReader(void);
 
 	void Start(void);
@@ -38,6 +38,7 @@ public:
 
 private:
 	ArtNetNode *m_pNode;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_tTimeCodeTypePrevious;
 };
 

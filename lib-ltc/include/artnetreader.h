@@ -33,7 +33,7 @@
 
 class ArtNetReader: public ArtNetTimeCode {
 public:
-	ArtNetReader(void);
+	ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~ArtNetReader(void);
 
 	void Start(void);
@@ -44,6 +44,7 @@ public:
 	void Handler(const struct TArtNetTimeCode *);
 
 private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };

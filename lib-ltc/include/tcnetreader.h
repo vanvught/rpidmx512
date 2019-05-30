@@ -32,7 +32,7 @@
 
 class TCNetReader : public TCNetTimeCode {
 public:
-	TCNetReader(ArtNetNode* pNode);
+	TCNetReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~TCNetReader(void);
 
 	void Start(void);
@@ -44,6 +44,7 @@ public:
 
 private:
 	ArtNetNode *m_pNode;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint32_t m_nTimeCodePrevious;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
