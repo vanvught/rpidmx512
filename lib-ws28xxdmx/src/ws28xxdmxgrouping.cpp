@@ -33,22 +33,38 @@
 
 #include "lightset.h"
 
-#define DMX_FOOTPRINT_DEFAULT		3
+#include "debug.h"
 
 #if defined (__circle__)
-WS28xxDmxGrouping::WS28xxDmxGrouping(CInterruptSystem *pInterruptSystem) : WS28xxDmx(pInterruptSystem) {
+WS28xxDmxGrouping::WS28xxDmxGrouping(CInterruptSystem *pInterruptSystem) :
+	WS28xxDmx(pInterruptSystem)
+	m_pDmxData(0),
+	m_nLEDGroupCount(0),
+	m_nGroups(0)
+{
 #else
-WS28xxDmxGrouping::WS28xxDmxGrouping(void) {
+WS28xxDmxGrouping::WS28xxDmxGrouping(void):
+	m_pDmxData(0),
+	m_nLEDGroupCount(0),
+	m_nGroups(0)
+{
 #endif
-	for (uint32_t i = 0; i < sizeof(m_aDmxData); i++) {
-		m_aDmxData[i] = 0;
-	}
+	UpdateMembers();
 }
 
 WS28xxDmxGrouping::~WS28xxDmxGrouping(void) {
+	delete [] m_pDmxData;
+	m_pDmxData = 0;
 }
 
-void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLenght) {
+void WS28xxDmxGrouping::Start(uint8_t nPort) {
+	m_pDmxData = new uint8_t[m_nDmxFootprint];
+	assert(m_pDmxData != 0);
+
+	WS28xxDmx::Start();
+}
+
+void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
@@ -57,53 +73,80 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 		// wait for completion
 	}
 
-	const uint8_t *p = pData + m_nDmxStartAddress - 1;
+//	const uint8_t *p = pData + m_nDmxStartAddress - 1;
 	bool bIsChanged = false;
 
-	if (m_tLedType == SK6812W) {
-		for (uint32_t i = 0; i < 4; i++) {
-			if (p[i] != m_aDmxData[i]) {
-				m_aDmxData[i] = p[i];
-				bIsChanged = true;
-			}
-		}
-		if (bIsChanged) {
-			for (uint32_t j = 0; j < m_nLedCount; j++) {
-				m_pLEDStripe->SetLED(j, m_aDmxData[0], m_aDmxData[1], m_aDmxData[2], m_aDmxData[3]);
-			}
-		}
-	} else {
-		for (uint32_t i = 0; i < 3; i++) {
-			if (p[i] != m_aDmxData[i]) {
-				m_aDmxData[i] = p[i];
-				bIsChanged = true;
-			}
-		}
-		if (bIsChanged) {
-			for (uint32_t j = 0; j < m_nLedCount; j++) {
-				m_pLEDStripe->SetLED(j, m_aDmxData[0], m_aDmxData[1], m_aDmxData[2]);
-			}
+	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nDmxFootprint); i++, j++) {
+		if (pData[i] != m_pDmxData[j]) {
+			m_pDmxData[j] = pData[i];
+			bIsChanged = true;
 		}
 	}
 
-	if (!m_bBlackout) {
-		m_pLEDStripe->Update();
+//	for (uint32_t i = 0; i < m_nDmxFootprint; i++) {
+//		if (p[i] != m_pDmxData[i]) {
+//			m_pDmxData[i] = p[i];
+//			bIsChanged = true;
+//		}
+//	}
+
+	if (bIsChanged) {
+		uint32_t i = 0;
+		uint32_t d = 0;
+
+		if (m_tLedType == SK6812W) {
+			for (uint32_t g = 0; g < m_nGroups; g++) {
+				__builtin_prefetch(&m_pDmxData[d]);
+				for (uint32_t k = 0; k < m_nLEDGroupCount; k++) {
+					m_pLEDStripe->SetLED(k + i, m_pDmxData[d + 0], m_pDmxData[d + 1], m_pDmxData[d + 2], m_pDmxData[d + 3]);
+				}
+				i = i + m_nLEDGroupCount;
+				d = d + 4;
+			}
+		} else {
+			for (uint32_t g = 0; g < m_nGroups; g++) {
+				__builtin_prefetch(&m_pDmxData[d]);
+				for (uint32_t k = 0; k < m_nLEDGroupCount; k++) {
+					m_pLEDStripe->SetLED(k + i, m_pDmxData[d + 0], m_pDmxData[d + 1], m_pDmxData[d + 2]);
+				}
+				i = i + m_nLEDGroupCount;
+				d = d + 3;
+			}
+		}
+
+		if (!m_bBlackout) {
+			m_pLEDStripe->Update();
+		}
 	}
 }
 
 void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {
+	DEBUG_PRINTF("tLedType=%d", (int)tLedType);
+
 	m_tLedType = tLedType;
 
-	if (tLedType == SK6812W) {
-		m_nDmxFootprint = 4;
-	}
+	UpdateMembers();
 }
 
 void WS28xxDmxGrouping::SetLEDCount(uint16_t nLedCount) {
+	DEBUG_PRINTF("nLedCount=%d", (int)nLedCount);
+
 	m_nLedCount = nLedCount;
+
+	UpdateMembers();
+}
+
+void WS28xxDmxGrouping::SetLEDGroupCount(uint16_t nLedGroupCount) {
+	DEBUG_PRINTF("nLedGroupCount=%d", (int)nLedGroupCount);
+
+	m_nLEDGroupCount = nLedGroupCount;
+
+	UpdateMembers();
 }
 
 bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	DEBUG_PRINTF("nDmxStartAddress=%d", (int) nDmxStartAddress);
+
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint)));
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint))) {
@@ -114,10 +157,33 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
+void WS28xxDmxGrouping::UpdateMembers(void) {
+	if ((m_nLEDGroupCount > m_nLedCount) || (m_nLEDGroupCount == 0)) {
+		m_nLEDGroupCount = m_nLedCount;
+	}
+
+	m_nGroups = m_nLedCount / m_nLEDGroupCount;
+
+	if (m_tLedType == SK6812W) {
+		if (m_nGroups > (DMX_MAX_CHANNELS / 4)) {
+			m_nGroups = DMX_MAX_CHANNELS / 4;
+		}
+		m_nDmxFootprint = m_nGroups * 4;
+	} else {
+		if (m_nGroups > (DMX_MAX_CHANNELS / 3)) {
+			m_nGroups = DMX_MAX_CHANNELS / 3;
+		}
+		m_nDmxFootprint = m_nGroups * 3;
+	}
+
+	DEBUG_PRINTF("m_nLEDGroupCount=%d, m_nGroups=%d, m_nDmxFootprint=%d", m_nLEDGroupCount, m_nGroups, m_nDmxFootprint);
+}
+
 void WS28xxDmxGrouping::Print(void) {
 	printf("Led (grouping) parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", (int) m_nLedCount);
+	printf(" Group : %d\n", (int) m_nLEDGroupCount);
 }
 
 // RDM

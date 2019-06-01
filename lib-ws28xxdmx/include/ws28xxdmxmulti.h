@@ -32,9 +32,14 @@
 
 #include "ws28xxmulti.h"
 
+enum TWS28xxDmxMultiSrc {
+	WS28XXDMXMULTI_SRC_ARTNET,
+	WS28XXDMXMULTI_SRC_E131
+};
+
 class WS28xxDmxMulti: public LightSet {
 public:
-	WS28xxDmxMulti(void);
+	WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc);
 	virtual ~WS28xxDmxMulti(void);
 
 	void Start(uint8_t nPort);
@@ -76,6 +81,7 @@ private:
 	void UpdateMembers(void);
 
 private:
+	TWS28xxDmxMultiSrc m_tSrc;
 	TWS28xxMultiType m_tLedType;
 	uint32_t m_nLedCount;
 	uint32_t m_nActiveOutputs;

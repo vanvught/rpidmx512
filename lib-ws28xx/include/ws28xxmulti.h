@@ -48,7 +48,7 @@ enum WS28xxMultiActivePorts {
 
 class WS28xxMulti {
 public:
-	WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, bool bUseSI5351A = false);
+	WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 	~WS28xxMulti(void);
 
 	TWS28xxMultiType GetLEDType(void) {
@@ -63,6 +63,14 @@ public:
 		return m_nActiveOutputs;
 	}
 
+	uint8_t GetLowCode(void) {
+		return m_nLowCode;
+	}
+
+	uint8_t GetHighCode(void) {
+		return m_nHighCode;
+	}
+
 	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
@@ -70,6 +78,7 @@ public:
 	void Blackout(void);
 
 private:
+	uint8_t CalculateBits(uint8_t nNanoSeconds);
 	uint8_t ReverseBits(uint8_t nBits);
 	bool SetupSI5351A(void);
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
@@ -79,6 +88,8 @@ private:
 	TWS28xxMultiType m_tWS28xxMultiType;
 	uint16_t m_nLedCount;
 	uint8_t m_nActiveOutputs;
+	uint8_t m_nLowCode;
+	uint8_t m_nHighCode;
 	uint32_t m_nBufSize;
 	uint32_t *m_pBuffer;
 	uint32_t *m_pBlackoutBuffer;

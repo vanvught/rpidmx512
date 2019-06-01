@@ -39,7 +39,7 @@ void WS28xxDmxParams::Set(WS28xxDmxMulti *pWS28xxDmxMulti) {
 		pWS28xxDmxMulti->SetLEDCount(m_tWS28xxParams.nLedCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS)) {
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT)) {
 		pWS28xxDmxMulti->SetActivePorts(m_tWS28xxParams.nActiveOutputs);
 	}
 

@@ -49,12 +49,16 @@ bool WS28xxDmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) 
 
 	bool isAdded = builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TWS28XXType) m_tWS28xxParams.tLedType), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
 	isAdded &= builder.Add(DevicesParamsConst::LED_COUNT, (uint32_t) m_tWS28xxParams.nLedCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT));
+
 	isAdded &= builder.Add(DevicesParamsConst::LED_GROUPING, (uint32_t) m_tWS28xxParams.bLedGrouping, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING));
-	isAdded &= builder.Add(DevicesParamsConst::ACTIVE_PORTS, (uint32_t) m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS));
+	isAdded &= builder.Add(DevicesParamsConst::LED_GROUP_COUNT, (uint32_t) m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT));
+
 	isAdded &= builder.Add(DevicesParamsConst::DMX_START_ADDRESS, (uint32_t) m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS));
+
 	isAdded &= builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz, isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED));
 	isAdded &= builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, (uint32_t) m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS));
 
+	isAdded &= builder.Add(DevicesParamsConst::ACTIVE_OUT, (uint32_t) m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT));
 	isAdded &= builder.Add(DevicesParamsConst::USE_SI5351A, (uint32_t) m_tWS28xxParams.bUseSI5351A, isMaskSet(WS28XXDMX_PARAMS_MASK_USE_SI5351A));
 
 	nSize = builder.GetSize();

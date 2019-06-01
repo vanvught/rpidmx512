@@ -2,7 +2,7 @@
  * @file ws28xxdmxgrouping.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,21 +44,30 @@ public:
 #endif
 	~WS28xxDmxGrouping(void);
 
+	void Start(uint8_t nPort = 0);
+
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght);
 
 	void SetLEDType(TWS28XXType tLedType);
-
 	void SetLEDCount(uint16_t nLedCount);
+	void SetLEDGroupCount(uint16_t nLedGroupCount);
+	uint32_t GetLEDGroupCount(void) {
+		return m_nLEDGroupCount;
+	}
 
 	void Print(void);
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-
 	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 private:
-	alignas(uint32_t) uint8_t m_aDmxData[4];
+	void UpdateMembers(void);
+
+private:
+	uint8_t* m_pDmxData;
+	uint32_t m_nLEDGroupCount;
+	uint32_t m_nGroups;
 };
 
 #endif /* WS28XXDMXGROUPING_H_ */

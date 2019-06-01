@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -60,6 +62,7 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nGlobalBrightness = 0xFF;
 	m_tWS28xxParams.nActiveOutputs = 1;
 	m_tWS28xxParams.bUseSI5351A = false;
+	m_tWS28xxParams.nLedGroupCount = DMX_MAX_CHANNELS;
 }
 
 WS28xxDmxParams::~WS28xxDmxParams(void) {
@@ -133,9 +136,9 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_PORTS, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, &value8) == SSCAN_OK) {
 		m_tWS28xxParams.nActiveOutputs = value8;
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS;
+		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_ACTIVE_OUT;
 		return;
 	}
 
@@ -148,6 +151,14 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_GROUPING, &value8) == SSCAN_OK) {
 		m_tWS28xxParams.bLedGrouping = (value8 != 0);
 		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_GROUPING;
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_GROUP_COUNT, &value16) == SSCAN_OK) {
+		if (value16 != 0 && value16 <= (4 * 170)) {
+			m_tWS28xxParams.nLedGroupCount = value16;
+			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT;
+		}
 		return;
 	}
 
@@ -187,12 +198,16 @@ void WS28xxDmxParams::Dump(void) {
 		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, (int) m_tWS28xxParams.nLedCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS)) {
-		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_PORTS, (int) m_tWS28xxParams.nActiveOutputs);
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT)) {
+		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, (int) m_tWS28xxParams.nActiveOutputs);
 	}
 
 	if(isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING)) {
 		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_GROUPING, (int) m_tWS28xxParams.bLedGrouping, BOOL2STRING(m_tWS28xxParams.bLedGrouping));
+	}
+
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT)) {
+		printf(" %s=%d\n", DevicesParamsConst::LED_GROUP_COUNT, (int) m_tWS28xxParams.nLedGroupCount);
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED)) {

@@ -38,4 +38,6 @@ alignas(uint32_t) const char DevicesParamsConst::DMX_START_ADDRESS[] = "dmx_star
 alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
 
 alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
+alignas(uint32_t) const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
+
 alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";

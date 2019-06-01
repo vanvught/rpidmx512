@@ -42,6 +42,7 @@ struct TWS28xxDmxParams {
 	uint8_t nGlobalBrightness;
 	uint8_t nActiveOutputs;
 	bool bUseSI5351A;
+	uint16_t nLedGroupCount;
 };
 
 enum TWS28xxDmxParamsMask {
@@ -51,8 +52,9 @@ enum TWS28xxDmxParamsMask {
 	WS28XXDMX_PARAMS_MASK_LED_GROUPING = (1 << 3),
 	WS28XXDMX_PARAMS_MASK_SPI_SPEED = (1 << 4),
 	WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 5),
-	WS28XXDMX_PARAMS_MASK_ACTIVE_OUTPUTS = (1 << 6),
-	WS28XXDMX_PARAMS_MASK_USE_SI5351A = (1 << 7)
+	WS28XXDMX_PARAMS_MASK_ACTIVE_OUT = (1 << 6),
+	WS28XXDMX_PARAMS_MASK_USE_SI5351A = (1 << 7),
+	WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT = (1 << 8)
 };
 
 class WS28xxDmxParamsStore {
@@ -108,6 +110,10 @@ public:
 
 	bool UseSI5351A(void) {
 		return m_tWS28xxParams.bUseSI5351A;
+	}
+
+	uint16_t GetLedGroupCount(void) {
+		return m_tWS28xxParams.nLedGroupCount;
 	}
 
 public:

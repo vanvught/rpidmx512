@@ -38,7 +38,8 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-WS28xxDmxMulti::WS28xxDmxMulti(void):
+WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
+	m_tSrc(tSrc),
 	m_tLedType(WS28XXMULTI_WS2812B),
 	m_nLedCount(170),
 	m_nActiveOutputs(WS28XXMULTI_ACTIVE_PORTS_MAX),
@@ -79,6 +80,7 @@ void WS28xxDmxMulti::Start(uint8_t nPort) {
 	if (m_pLEDStripe == 0) {
 		m_pLEDStripe = new WS28xxMulti(m_tLedType, m_nLedCount, m_nActiveOutputs, m_bUseSI5351A);
 		assert(m_pLEDStripe != 0);
+		m_pLEDStripe->Blackout();
 	} else {
 		m_pLEDStripe->Update();
 	}
@@ -109,7 +111,7 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 		Start(0);
 	}
 
-	switch (nPortId & 0x03) {
+	switch (nPortId & ~(uint8_t)m_nUniverses & (uint8_t)0x03) {
 	case 0:
 		beginIndex = 0;
 		endIndex = MIN(m_nLedCount, (nLength / m_nChannelsPerLed));
@@ -131,9 +133,17 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 		break;
 	}
 
-	const uint32_t nOutIndex = nPortId / 4;
+	uint32_t nOutIndex;
 
-	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d", (int) nPortId, (int) nLength, (int) nOutIndex);
+	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
+		nOutIndex = nPortId / m_nUniverses;
+	} else {
+		nOutIndex = nPortId / 4;
+	}
+
+	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nPortId=%d, beginIndex=%d, endIndex=%d",
+			(int ) nPortId, (int ) nLength, (int ) nOutIndex,
+			(int )nPortId & ~m_nUniverses & 0x03, (int)beginIndex, (int)endIndex);
 
 	for (uint32_t j = beginIndex; j < endIndex; j++) {
 		__builtin_prefetch(&pData[i]);
@@ -207,7 +217,12 @@ void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
 
 void WS28xxDmxMulti::UpdateMembers(void) {
 	m_nUniverses = 1 + (m_nLedCount / (1 + m_nBeginIndexPortId1));
-	m_nPortIdLast = ((m_nActiveOutputs - 1) * 4) + m_nUniverses - 1;
+
+	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
+		m_nPortIdLast = (m_nActiveOutputs * m_nUniverses)  - 1;
+	} else {
+		m_nPortIdLast = ((m_nActiveOutputs - 1) * 4) + m_nUniverses - 1;
+	}
 
 	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_nUniverses=%d, m_nPortIndexLast=%d", (int)m_tLedType, (int)m_nLedCount, (int)m_nUniverses, (int) m_nPortIdLast);
 }

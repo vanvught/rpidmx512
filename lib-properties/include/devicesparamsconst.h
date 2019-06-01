@@ -41,6 +41,8 @@ public:
 	alignas(uint32_t) static const char SPI_SPEED_HZ[];
 
 	alignas(uint32_t) static const char LED_GROUPING[];
+	alignas(uint32_t) static const char LED_GROUP_COUNT[];
+
 	alignas(uint32_t) static const char GLOBAL_BRIGHTNESS[];
 };
 
