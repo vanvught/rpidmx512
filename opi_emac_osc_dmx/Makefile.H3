@@ -1,8 +1,8 @@
 #
-DEFINES = OSC_SERVER EMAC ENABLE_SPIFLASH NDEBUG
+DEFINES = OSC_SERVER ENABLE_SPIFLASH NDEBUG
 #
-LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 ledblink lightset
-#
+LIBS = oscserver osc
+
 SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk

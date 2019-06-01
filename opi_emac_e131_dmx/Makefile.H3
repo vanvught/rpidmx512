@@ -1,7 +1,7 @@
 #
-DEFINES = E131_BRIDGE EMAC NDEBUG
+DEFINES = E131_BRIDGE NDEBUG
 #
-LIBS = e131 dmxsend dmx dmxmonitor ws28xxdmx ws28xx tlc59711dmx tlc59711 lightset ledblink
+LIBS = dmxmonitor
 #
 SRCDIR = firmware
 

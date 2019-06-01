@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-bcm2835</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

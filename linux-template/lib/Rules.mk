@@ -21,9 +21,7 @@ ifneq (, $(shell which /opt/vc/bin/vcgencmd))
 	BCM2835 = ./../lib-bcm2835_raspbian
 
 	ifneq "$(wildcard $(BCM2835) )" ""
-		ifeq ($(findstring RASPPI,$(DEFINES)),RASPPI)
-			INCLUDES+=-I../lib-bcm2835_raspbian/include
-		endif
+		INCLUDES+=-I../lib-bcm2835_raspbian/include
 	endif
 
 	ifneq ($(findstring RASPPI,$(DEFINES)),RASPPI)

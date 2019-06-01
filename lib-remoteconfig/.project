@@ -4,19 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-artnet4</project>
-		<project>lib-debug</project>
-		<project>lib-display</project>
-		<project>lib-dmxsend</project>
-		<project>lib-e131</project>
-		<project>lib-hal</project>
-		<project>lib-network</project>
-		<project>lib-oscserver</project>
-		<project>lib-properties</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-tftpdeamon</project>
-		<project>lib-tlc59711dmx</project>
 		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>

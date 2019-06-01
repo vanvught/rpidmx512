@@ -24,16 +24,21 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 	COND=1
 endif
 
-ifdef COND
-	LIBS:=spiflashinstall remoteconfig spiflashstore spiflash tftpdeamon artnet artnet4 e131 oscserver osc ws28xxdmx ws28xx tlc59711dmx tlc59711 dmxsend dmx ltc lightset ledblink $(LIBS)
+ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
+else
+	ifdef COND
+		LIBS:=remoteconfig tftpdeamon $(LIBS)
+	endif
 endif
+
+ifdef COND
+	LIBS+=artnet4 artnet e131 dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
+endif
+
+LIBS+=network
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
-	LIBS+=network esp8266
-endif
-
-ifeq ($(findstring EMAC,$(DEFINES)),EMAC)
-	LIBS+=network
+	LIBS+=esp8266
 endif
 
 # Output 
@@ -47,7 +52,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=properties display c++ hal bob i2c utils console ff12c h3 debug arm
+LIBS+=lightset ledblink properties display c++ hal bob i2c utils console ff12c h3 debug arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -78,7 +83,7 @@ LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard
 COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
@@ -100,14 +105,15 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
-THISDIR = $(CURDIR)
-
-all : builddirs prerequisites $(TARGET)
+all : clearlibs builddirs prerequisites $(TARGET)
 	
 .PHONY: clean builddirs
 
-buildlibs:
-	cd .. && ./makeall-lib.sh && cd $(THISDIR)
+clearlibs:
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-console
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
@@ -118,18 +124,30 @@ clean:
 	rm -f $(MAP)
 	rm -f $(LIST)
 	rm -f $(SUFFIX).uImage
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \
+		done
+#
+# Build libraries
+#
+$(LIBSDEP):
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.H3 'PLATFORM=$(PLATFORM)' 'MAKE_FLAGS=$(DEFINES)' --directory=$$d;       \
+		done
 
 # Build uImage
 
 $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
-$(BUILD)main.elf : Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
+$(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS)
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 
-$(TARGET) : $(BUILD)main.elf
+$(TARGET) : $(BUILD)main.elf 
 	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)
 	mkimage -n 'http://www.orangepi-dmx.org' -A arm -O u-boot -T standalone -C none -a 0x40000000 -d $(TARGET) $(SUFFIX).uImage
 

@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-i2c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

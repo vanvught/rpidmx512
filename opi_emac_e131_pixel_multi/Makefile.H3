@@ -1,7 +1,7 @@
 #
-DEFINES = E131_BRIDGE PIXEL_MULTI EMAC NDEBUG
+DEFINES = E131_BRIDGE PIXEL_MULTI NDEBUG
 #
-LIBS = e131 ws28xxdmx ws28xx lightset ledblink
+LIBS =
 #
 SRCDIR = firmware
 

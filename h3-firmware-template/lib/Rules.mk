@@ -11,9 +11,7 @@ CONSOLE?=
 NO_EXT_LED?=
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
-	
 else
-#	DISPLAYS=ENABLE_TC1602 ENABLE_LCDBW
 endif
 
 SRCDIR = src src/h3 $(EXTRA_SRCDIR)
@@ -31,9 +29,9 @@ ifeq ($(NO_EXT_LED),1)
 	DEFINES+=-DDO_NOT_USE_EXTERNAL_LED
 endif
 
-COPS=-DBARE_METAL -DH3 $(DEFINES) $(INCLUDES)
+COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 -mhard-float -mfloat-abi=hard
-COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
+COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))

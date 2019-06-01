@@ -1,9 +1,8 @@
-#if defined (__linux__)
 /**
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +24,36 @@
  */
 
 #include <stddef.h>
-#include <string.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <string.h>
+#include <assert.h>
 
 #include "artnetipprog.h"
-#include "common.h"
+#include "artnet.h"
 
 #include "ipprog.h"
 
 #include "network.h"
+
+#include "display.h"
+
+#if defined(ORANGE_PI)
+ #include "spiflashstore.h"
+#endif
 
 union uip {
 	uint32_t u32;
 	uint8_t u8[4];
 } static ip_union;
 
-IpProg::IpProg(void): m_IsRoot(false) {
-	m_IsRoot = (getuid() == 0);
-#ifndef NDEBUG
-	printf("IpProg::IpProg, m_IsRoot = %s\n", m_IsRoot ? "true" : "false");
+IpProg::IpProg(void) {
+#if defined(ORANGE_PI)
+	assert(SpiFlashStore::Get() != 0);
 #endif
 }
 
 IpProg::~IpProg(void) {
-	m_IsRoot = false;
+
 }
 
 void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIpProgReply *pArtNetIpProgReply) {
@@ -59,26 +62,32 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 
 #ifndef NDEBUG
 	printf("IpProg::Handler, Command = %d\n", pArtNetIpProg->Command);
+	printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
+	printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
 #endif
+
 	if (pArtNetIpProg->Command == 0) {
 		ip_union.u32 = Network::Get()->GetIp();
-		memcpy((void *)&pArtNetIpProgReply->ProgIpHi, (void *)ip_union.u8, ARTNET_IP_SIZE);
+		memcpy((void *) &pArtNetIpProgReply->ProgIpHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
 		ip_union.u32 = Network::Get()->GetNetmask();
-		memcpy((void *)&pArtNetIpProgReply->ProgSmHi, (void *)ip_union.u8, ARTNET_IP_SIZE);
-	} else if (m_IsRoot) {
-		if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
-			// Get IPAddress from IpProg
-			memcpy((void *)ip_union.u8, (void *)&pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
-			Network::Get()->SetIp(ip_union.u32);
-#ifndef NDEBUG
-			printf("\tIP : " IPSTR "\n", IP2STR(network_get_ip()));
-			printf("\tNetmask : " IPSTR "\n", IP2STR(network_get_netmask()));
+		memcpy((void *) &pArtNetIpProgReply->ProgSmHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+	} else if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
+		// Get IPAddress from IpProg
+		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+
+		Network::Get()->SetIp(ip_union.u32);
+#if defined(ORANGE_PI)
+		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
 #endif
-			// Set IPAddress in IpProgReply
-			memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
-			pArtNetIpProgReply->Status = 0; // DHCP Disabled;
-		}
+		Display::Get()->Printf(3, "IP: " IPSTR " S", IP2STR(ip_union.u32));
+
+#ifndef NDEBUG
+		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
+		printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
+#endif
+		// Set IPAddress in IpProgReply
+		memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+		pArtNetIpProgReply->Status = 0; // DHCP Disabled;
 	}
 }
 
-#endif

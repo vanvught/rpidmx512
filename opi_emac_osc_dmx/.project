@@ -3,16 +3,8 @@
 	<name>opi_emac_osc_dmx</name>
 	<comment></comment>
 	<projects>
+		<project>h3-firmware-template</project>
 		<project>include</project>
-		<project>lib-console</project>
-		<project>lib-debug</project>
-		<project>lib-display</project>
-		<project>lib-oscserver</project>
-		<project>lib-remoteconfig</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
-		<project>lib-tlc59711dmx</project>
-		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

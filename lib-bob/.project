@@ -3,8 +3,6 @@
 	<name>lib-bob</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-i2c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

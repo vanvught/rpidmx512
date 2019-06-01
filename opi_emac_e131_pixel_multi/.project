@@ -3,20 +3,8 @@
 	<name>opi_emac_e131_pixel_multi</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
-		<project>lib-bob</project>
-		<project>lib-c++</project>
-		<project>lib-display</project>
-		<project>lib-e131</project>
-		<project>lib-ledblink</project>
-		<project>lib-lightset</project>
-		<project>lib-monitor</project>
-		<project>lib-network</project>
-		<project>lib-remoteconfig</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
-		<project>lib-tlc59711dmx</project>
-		<project>lib-ws28xxdmx</project>
+		<project>h3-firmware-template</project>
+		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

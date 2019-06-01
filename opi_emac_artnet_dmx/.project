@@ -4,23 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-console</project>
-		<project>lib-display</project>
-		<project>lib-dmxsend</project>
-		<project>lib-hal</project>
-		<project>lib-ledblink</project>
-		<project>lib-lightset</project>
-		<project>lib-monitor</project>
-		<project>lib-network</project>
-		<project>lib-rdmdiscovery</project>
-		<project>lib-remoteconfig</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
-		<project>lib-tlc59711</project>
-		<project>lib-tlc59711dmx</project>
-		<project>lib-ws28xx</project>
-		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

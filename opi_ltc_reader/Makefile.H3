@@ -1,7 +1,7 @@
 #
-DEFINES = LTC_READER EMAC NDEBUG
+DEFINES = LTC_READER NDEBUG
 #
-LIBS = ltc artnet midi ledblink lightset
+LIBS = ltc tcnet midi
 #
 SRCDIR = firmware lib
 

@@ -3,8 +3,8 @@
 	<name>lib-debug</name>
 	<comment></comment>
 	<projects>
+		<project>h3-firmware-template</project>
 		<project>include</project>
-		<project>lib-fb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,7 +1,8 @@
 #
-DEFINES = MONITOR_DMX ENABLE_MMU NO_EMAC NDEBUG
+DEFINES = MONITOR_DMX NO_EMAC CONSOLE_FB NDEBUG
+PLATFORM = ORANGE_PI_ONE
 #
-LIBS = dmxreceiver dmx dmxmonitor lightset ledblink
+LIBS = dmxreceiver dmxmonitor  
 #
 SRCDIR = firmware
 

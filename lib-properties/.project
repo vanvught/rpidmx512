@@ -3,7 +3,7 @@
 	<name>lib-properties</name>
 	<comment></comment>
 	<projects>
-		<project>lib-debug</project>
+		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,7 +1,7 @@
 #
-DEFINES = ESP8266 ENABLE_MMU NO_EMAC NDEBUG
+DEFINES = OSC_SERVER ESP8266 DO_NOT_USE_EXTERNAL_LED NDEBUG
 #
-LIBS = oscserver osc dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 lightset ledblink
+LIBS =
 #
 SRCDIR = firmware lib
 

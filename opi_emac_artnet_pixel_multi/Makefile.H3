@@ -1,7 +1,7 @@
 #
-DEFINES = ARTNET_NODE PIXEL_MULTI EMAC NDEBUG
+DEFINES = ARTNET_NODE PIXEL_MULTI NDEBUG
 #
-LIBS = artnet4 artnet ws28xxdmx ws28xx lightset ledblink
+LIBS =
 #
 SRCDIR = firmware lib
 

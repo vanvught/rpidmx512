@@ -5,18 +5,6 @@
 	<projects>
 		<project>h3-firmware-template</project>
 		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-artnet4</project>
-		<project>lib-console</project>
-		<project>lib-display</project>
-		<project>lib-ledblink</project>
-		<project>lib-lightset</project>
-		<project>lib-network</project>
-		<project>lib-remoteconfig</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
-		<project>lib-ws28xx</project>
-		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

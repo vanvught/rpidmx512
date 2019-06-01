@@ -47,22 +47,26 @@
 #include "networkparams.h"
 /* artnet.txt */
 #include "artnet4params.h"
-/* params.txt */
-#include "dmxparams.h"
 /* e131.txt */
 #include "e131params.h"
-/* osc.txt */
-#include "oscserverparms.h"
-#include "storeoscserver.h"
+#if defined (OSC_SERVER)
+ /* osc.txt */
+ #include "oscserverparms.h"
+ #include "storeoscserver.h"
+#endif
+/* params.txt */
+#include "dmxparams.h"
 /* devices.txt */
 #include "tlc59711dmxparams.h"
 #include "ws28xxdmxparams.h"
-/* ltc.txt */
-#include "ltcparams.h"
-#include "storeltc.h"
-/* tcnet.txt */
-#include "tcnetparams.h"
-#include "storetcnet.h"
+#if defined (LTC_READER)
+ /* ltc.txt */
+ #include "ltcparams.h"
+ #include "storeltc.h"
+ /* tcnet.txt */
+ #include "tcnetparams.h"
+ #include "storetcnet.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
@@ -435,21 +439,21 @@ void RemoteConfig::HandleGet(void) {
 	case TXT_FILE_E131:
 		HandleGetE131Txt(nSize);
 		break;
+#if defined (OSC_SERVER)
 	case TXT_FILE_OSC:
 		HandleGetOscTxt(nSize);
 		break;
+#endif
 	case TXT_FILE_PARAMS:
 		HandleGetParamsTxt(nSize);
 		break;
 	case TXT_FILE_DEVICES:
 		HandleGetDevicesTxt(nSize);
 		break;
-#if defined (ENABLE_LTC_TXT)
+#if defined (LTC_READER)
 	case TXT_FILE_LTC:
 		HandleGetLtcTxt(nSize);
 		break;
-#endif
-#if defined (ENABLE_TCNET_TXT)
 	case TXT_FILE_TCNET:
 		HandleGetTCNetTxt(nSize);
 		break;
@@ -521,6 +525,7 @@ void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
+#if defined (OSC_SERVER)
 void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -529,6 +534,7 @@ void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
 
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
@@ -560,7 +566,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-#if defined (ENABLE_LTC_TXT)
+#if defined (LTC_READER)
 void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -569,9 +575,7 @@ void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
-#endif
 
-#if defined (ENABLE_TCNET_TXT)
 void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -600,21 +604,22 @@ void RemoteConfig::HandleTxtFile(void) {
 	case TXT_FILE_E131:
 		HandleTxtFileE131();
 		break;
+#if defined (OSC_SERVER)
 	case TXT_FILE_OSC:
 		HandleTxtFileOsc();
 		break;
+#endif
 	case TXT_FILE_PARAMS:
 		HandleTxtFileParams();
 		break;
 	case TXT_FILE_DEVICES:
 		HandleTxtFileDevices();
 		break;
-#if defined (ENABLE_LTC_TXT)
+#if defined (LTC_READER)
 	case TXT_FILE_LTC:
 		HandleTxtFileLtc();
 		break;
-#endif
-#if defined (ENABLE_TCNET_TXT)
+
 	case TXT_FILE_TCNET:
 		HandleTxtFileTCNet();
 		break;
@@ -673,6 +678,7 @@ void RemoteConfig::HandleTxtFileE131(void) {
 	DEBUG_EXIT
 }
 
+#if defined (OSC_SERVER)
 void RemoteConfig::HandleTxtFileOsc(void) {
 	DEBUG_ENTRY
 
@@ -684,6 +690,7 @@ void RemoteConfig::HandleTxtFileOsc(void) {
 
 	DEBUG_EXIT
 }
+#endif
 
 void RemoteConfig::HandleTxtFileParams(void) {
 	DEBUG_ENTRY
@@ -718,7 +725,7 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 	DEBUG_EXIT
 }
 
-#if defined (ENABLE_LTC_TXT)
+#if defined (LTC_READER)
 void RemoteConfig::HandleTxtFileLtc(void) {
 	DEBUG_ENTRY
 
@@ -730,9 +737,7 @@ void RemoteConfig::HandleTxtFileLtc(void) {
 
 	DEBUG_EXIT
 }
-#endif
 
-#if defined (ENABLE_TCNET_TXT)
 void RemoteConfig::HandleTxtFileTCNet(void) {
 	DEBUG_ENTRY
 
@@ -814,4 +819,3 @@ void RemoteConfig::HandleTftpGet(void) {
 
 	DEBUG_EXIT
 }
-

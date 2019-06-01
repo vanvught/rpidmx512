@@ -5,16 +5,6 @@
 	<projects>
 		<project>h3-firmware-template</project>
 		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-bob</project>
-		<project>lib-console</project>
-		<project>lib-display</project>
-		<project>lib-hal</project>
-		<project>lib-ltc</project>
-		<project>lib-midi</project>
-		<project>lib-network</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

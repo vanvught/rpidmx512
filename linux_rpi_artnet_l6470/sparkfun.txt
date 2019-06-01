@@ -1,2 +1,0 @@
-sparkfun_spi_cs=0
-sparkfun_busy_pin=19

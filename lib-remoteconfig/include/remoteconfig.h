@@ -85,22 +85,30 @@ private:
 	void HandleGetNetworkTxt(uint32_t& nSize);
 	void HandleGetArtnetTxt(uint32_t& nSize);
 	void HandleGetE131Txt(uint32_t& nSize);
+#if defined (OSC_SERVER)
 	void HandleGetOscTxt(uint32_t& nSize);
+#endif
 	void HandleGetParamsTxt(uint32_t& nSize);
 	void HandleGetDevicesTxt(uint32_t& nSize);
+#if defined (LTC_READER)
 	void HandleGetLtcTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
 	void HandleTxtFileNetwork(void);
 	void HandleTxtFileArtnet(void);
 	void HandleTxtFileE131(void);
+#if defined (OSC_SERVER)
 	void HandleTxtFileOsc(void);
+#endif
 	void HandleTxtFileParams(void);
 	void HandleTxtFileDevices(void);
+#if defined (LTC_READER)
 	void HandleTxtFileLtc(void);
 	void HandleTxtFileTCNet(void);
+#endif
 
 	void HandleDisplaySet(void);
 	void HandleDisplayGet(void);

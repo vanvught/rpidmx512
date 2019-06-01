@@ -1,5 +1,5 @@
 #
-DEFINES = ENABLE_MMU NDEBUG
+DEFINES = RDM_RESPONDER ENABLE_MMU NDEBUG
 #
 LIBS = dmxreceiver rdmresponder dmx rdm rdmsensor rdmsubdevice ws28xxdmx ws28xx tlc59711dmx tlc59711 monitor ledblink lightset network
 #
