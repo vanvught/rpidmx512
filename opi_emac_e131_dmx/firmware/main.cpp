@@ -170,18 +170,21 @@ void notmain(void) {
 				ws28xxparms.Dump();
 			}
 
-			display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+			const bool bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
 
-			if (ws28xxparms.IsLedGrouping()) {
+			if (bIsLedGrouping) {
 				WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
 				assert(pWS28xxDmxGrouping != 0);
 				ws28xxparms.Set(pWS28xxDmxGrouping);
+				pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
 				pSpi = pWS28xxDmxGrouping;
+				display.Printf(7, "%s:%d G%d", ws28xxparms.GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
 			} else  {
 				WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
 				assert(pWS28xxDmx != 0);
 				ws28xxparms.Set(pWS28xxDmx);
 				pSpi = pWS28xxDmx;
+				display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
 
 				const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 
