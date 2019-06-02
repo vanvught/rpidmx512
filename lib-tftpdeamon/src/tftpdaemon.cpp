@@ -183,11 +183,23 @@ void TFTPDaemon::HandleRequest(void) {
 		return;
 	}
 
-	DEBUG_PRINTF("Incoming %s request from " IPSTR, nOpCode == OP_CODE_RRQ ? "read" : "write", IP2STR(m_nFromIp));
+	const char *pMode = &packet->FileNameMode[nNameLen + 1];
+	TTFTPMode tMode;
+
+	if (strncmp(pMode, "octet", 5) == 0) {
+		tMode = TFTP_MODE_BINARY;
+	} else if (strncmp(pMode, "netascii", 8) == 0) {
+		tMode = TFTP_MODE_ASCII;
+	} else {
+		SendError(ERROR_CODE_ILL_OPER, "Invalid operation");
+		return;
+	}
+
+	DEBUG_PRINTF("Incoming %s request from " IPSTR " %s %s", nOpCode == OP_CODE_RRQ ? "read" : "write", IP2STR(m_nFromIp), pFileName, pMode);
 
 	switch (nOpCode) {
 		case OP_CODE_RRQ:
-			if(!FileOpen(pFileName)) {
+			if(!FileOpen(pFileName, tMode)) {
 				SendError(ERROR_CODE_NO_FILE, "File not found");
 				m_nState = STATE_WAITING_RQ;
 			} else {
@@ -198,7 +210,7 @@ void TFTPDaemon::HandleRequest(void) {
 			}
 			break;
 		case OP_CODE_WRQ:
-			if(!FileCreate(pFileName)) {
+			if(!FileCreate(pFileName, tMode)) {
 				SendError(ERROR_CODE_ACCESS, "Access violation");
 				m_nState = STATE_WAITING_RQ;
 			} else {

@@ -60,19 +60,25 @@ TFTPFileServer::~TFTPFileServer(void) {
 	DEBUG_EXIT
 }
 
-bool TFTPFileServer::FileOpen(const char* pFileName) {
+bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 	return (false);
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName) {
+bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
 	DEBUG_ENTRY
 
 	assert(pFileName != 0);
 
+	if (tMode != TFTP_MODE_BINARY) {
+		DEBUG_EXIT
+		return false;
+	}
+
 	if (strncmp(sFileName, pFileName, FILE_NAME_LENGTH) != 0) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -104,6 +110,7 @@ int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBl
 	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
 
 	if (nBlockNumber > (m_nSize / 512)) {
+		m_nFileSize = 0;
 		return -1;
 	}
 

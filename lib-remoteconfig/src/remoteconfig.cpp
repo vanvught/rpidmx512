@@ -407,7 +407,7 @@ void RemoteConfig::HandleStoreGet(void) {
 		SpiFlashStore::Get()->CopyTo(sMap[i], m_pUdpBuffer, nLenght);
 	} else {
 #ifndef NDEBUG
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?store#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 #endif
 	}
 

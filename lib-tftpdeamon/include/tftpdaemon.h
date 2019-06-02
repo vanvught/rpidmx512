@@ -29,6 +29,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum TTFTPMode {
+	TFTP_MODE_BINARY,
+	TFTP_MODE_ASCII
+};
+
 class TFTPDaemon {
 public:
 	TFTPDaemon(void);
@@ -36,11 +41,11 @@ public:
 
 	bool Run(void);
 
-	virtual bool FileOpen (const char *pFileName)=0;
-	virtual bool FileCreate (const char *pFileName)=0;
-	virtual bool FileClose (void)=0;
-	virtual int FileRead (void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
-	virtual int FileWrite (const void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
+	virtual bool FileOpen(const char *pFileName, TTFTPMode tMode)=0;
+	virtual bool FileCreate(const char *pFileName, TTFTPMode tMode)=0;
+	virtual bool FileClose(void)=0;
+	virtual int FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
+	virtual int FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
 
 private:
 	void HandleRequest(void);
@@ -62,6 +67,5 @@ private:
 	uint16_t m_nPacketLength;
 	bool m_bIsLastBlock;
 };
-
 
 #endif /* TFTPDAEMON_H_ */

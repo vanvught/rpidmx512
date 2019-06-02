@@ -8,12 +8,12 @@ TFTPFileServer::TFTPFileServer(void): m_pFile(0) {
 TFTPFileServer::~TFTPFileServer(void) {
 }
 
-bool TFTPFileServer::FileOpen(const char* pFileName) {
+bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
 	m_pFile = fopen(pFileName, "r");
 	return (m_pFile != NULL);
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName) {
+bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
 	m_pFile = fopen(pFileName, "wb");
 	return (m_pFile != NULL);
 }
