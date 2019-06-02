@@ -37,6 +37,7 @@ public class OrangePi {
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt"};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC", "LTC"};
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt" };
+	private static final String[] EXTRAS_TXT = {"tcnet.txt" };
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -52,11 +53,13 @@ public class OrangePi {
 	private String nodeNetwork = null;
 	private String nodeType = null;
 	private String nodeMode = null;
+	private String nodeExtras = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbNetwork = null;
 	private String sbType = null;
 	private String sbMode = null;
+	private String sbExtras = null;
 	
 	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
 		super();
@@ -80,6 +83,7 @@ public class OrangePi {
 					nodeMode = MODES_TXT[2];
 				} else if (Mode[0].equals("TimeCode")) {
 					nodeMode = MODES_TXT[3];
+					nodeExtras = EXTRAS_TXT[0];
 				}  
 				else {
 					isValid = false;
@@ -139,6 +143,11 @@ public class OrangePi {
 				sbMode = doGet(txt);
 			}
 			return sbMode.toString();
+		} else if (isExtrasTxt(txt)) {
+			if (sbExtras == null) {
+				sbExtras = doGet(txt);
+			}
+			return sbExtras.toString();
 		}
 
 		return null;
@@ -215,6 +224,9 @@ public class OrangePi {
 			bDoSave = true;
 		} else if (isTypeTxt(txt)) {
 			sbType = null;
+			bDoSave = true;
+		} else if (isExtrasTxt(txt)) {
+			sbExtras = null;
 			bDoSave = true;
 		}
 		
@@ -383,7 +395,16 @@ public class OrangePi {
 			}
 		}
 		return false;
-	}	
+	}
+	
+	private Boolean isExtrasTxt(String mode) {
+		for (int i = 0; i < EXTRAS_TXT.length; i++) {
+			if (mode.equals(EXTRAS_TXT[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
 		
 	public Boolean getIsValid() {
 		return isValid;
@@ -411,6 +432,10 @@ public class OrangePi {
 
 	public String getNodeMode() {
 		return nodeMode;
+	}
+	
+	public String getNodeExtras() {
+		return nodeExtras;
 	}
 		
 	@Override

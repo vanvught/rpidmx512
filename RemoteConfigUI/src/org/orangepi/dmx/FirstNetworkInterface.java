@@ -24,6 +24,7 @@ import java.net.NetworkInterface;
 import java.util.Enumeration;
 
 public class FirstNetworkInterface {
+	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 
 	public static NetworkInterface get() {
 
@@ -41,10 +42,9 @@ public class FirstNetworkInterface {
 				while (addresses.hasMoreElements()) {
 					InetAddress ia = addresses.nextElement();
 
-					System.out.println("\t" + ia);
-
-					if (!ia.isAnyLocalAddress() && !ia.isLinkLocalAddress() && !ia.isLoopbackAddress()
-							&& ia.isSiteLocalAddress() && !ni.isPointToPoint()) {
+					System.out.println("\t" + ia + " " + ia.isAnyLocalAddress() + " " + ia.isLoopbackAddress() + " " + ni.isPointToPoint());
+					
+					if (ia.getHostAddress().matches(ipv4Pattern) && !ia.isAnyLocalAddress() && !ia.isLoopbackAddress() && !ni.isPointToPoint()) {
 						return ni;
 					}
 				}

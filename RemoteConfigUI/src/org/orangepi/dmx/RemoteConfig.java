@@ -39,6 +39,7 @@ import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -112,14 +113,22 @@ public class RemoteConfig extends JFrame {
 		
 		NetworkInterface ifDefault = FirstNetworkInterface.get();
 		
-		Enumeration<InetAddress> enumIP = ifDefault.getInetAddresses(); 
-		
-		while (enumIP.hasMoreElements()) {
-			InetAddress ip = (InetAddress) enumIP.nextElement();
+		if (ifDefault == null) {
+			try {
+				localAddress = InetAddress.getLocalHost();
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Enumeration<InetAddress> enumIP = ifDefault.getInetAddresses();
 
-			if (ip.getHostAddress().matches(ipv4Pattern)) {
-				localAddress = ip;
-				break;
+			while (enumIP.hasMoreElements()) {
+				InetAddress ip = (InetAddress) enumIP.nextElement();
+
+				if (ip.getHostAddress().matches(ipv4Pattern)) {
+					localAddress = ip;
+					break;
+				}
 			}
 		}
 		
@@ -572,6 +581,12 @@ public class RemoteConfig extends JFrame {
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeType()));
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeMode()));
+			
+			String extras =  ((OrangePi) child.getUserObject()).getNodeExtras();
+			
+			if (extras != null) {
+				child.add(new DefaultMutableTreeNode(extras));
+			}
 			root.add(child);
 		}
 
