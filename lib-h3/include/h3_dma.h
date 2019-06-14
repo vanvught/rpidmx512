@@ -2,7 +2,7 @@
  * @file h3_dma.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,8 @@ enum H3_DMA_DRQDST {
 	DRQDST_UART0TX = 6,
 	DRQDST_UART1TX = 7,
 	DRQDST_UART2TX = 8,
-	DRQDST_UART3TX = 9
+	DRQDST_UART3TX = 9,
+	DRQDST_AUDIO_CODEC = 15
 };
 
 	#define DMA_IRQ_EN_MASK			(0x07)

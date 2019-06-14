@@ -2,7 +2,7 @@
  * @file h3.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,6 +122,7 @@ typedef enum T_H3_IRQn {
 	H3_PA_EINT_IRQn = 43,
 	H3_TIMER0_IRQn = 50,
 	H3_TIMER1_IRQn = 51,
+	H3_AUDIO_CODEC_IRQn = 61,
 	H3_DMA_IRQn = 82
 } H3_IRQn_TypeDef;
 
@@ -288,7 +289,7 @@ typedef struct T_H3_CCU {
 	__IO uint32_t csi_CLK_CFG;		///< 0x134 CSI module clock
 	__IO uint32_t RES16;			///< 0x138
 	__IO uint32_t ve_CLK_CFG;		///< 0x13c VE module clock
-	__IO uint32_t RES17;			///< 0x140
+	__IO uint32_t AC_DIG_CLK;		///< 0x140 AC Digital Clock Register
 	__IO uint32_t AVS_CLK_CFG;		///< 0x144 AVS module clock
 	__IO uint32_t RES18[2];			///< 0x148
 	__IO uint32_t HDMI_CLK_CFG;		///< 0x150 HDMI module clock
@@ -322,7 +323,7 @@ typedef struct T_H3_CCU {
 	__IO uint32_t C0_TUNING_CFG;	///< 0x250 PLL C0cpu# TUNING register
 	__IO uint32_t C1_TUNING_CFG;	///< 0x254 PLL C1cpu# TUNING register
 	__IO uint32_t RES26[11];		///< 0x258
-	__IO uint32_t PLL2_pattern_CFG0;///< 0x284 PLL2 Pattern register 0
+	__IO uint32_t PLL_AUDIO_PAT_CTRL;	///< 0x284 PLL_AUDIO Pattern Control Register
 	__IO uint32_t PLL3_pattern_CFG0;///< 0x288 PLL3 Pattern register 0
 	__IO uint32_t RES27;			///< 0x28c
 	__IO uint32_t PLL5_pattern_CFG0;///< 0x290 PLL5 Pattern register 0

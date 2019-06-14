@@ -2,7 +2,7 @@
  * @file h3_ccu.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@ typedef enum H3_CCU_PLL {
 #define CCU_BUS_CLK_GATING0_SPI0	(1 << 20)
 #define CCU_BUS_CLK_GATING0_SPI1	(1 << 21)
 
+#define CCU_BUS_CLK_GATING2_AC_DIG	(1 << 0)
 #define CCU_BUS_CLK_GATING2_THS		(1 << 8)
 
 #define CCU_BUS_CLK_GATING3_TWI0	(1 << 0)
@@ -57,6 +58,7 @@ typedef enum H3_CCU_PLL {
 #define CCU_BUS_SOFT_RESET0_SPI0	(1 << 20)
 #define CCU_BUS_SOFT_RESET0_SPI1	(1 << 21)
 
+#define CCU_BUS_SOFT_RESET3_AC		(1 << 0)
 #define CCU_BUS_SOFT_RESET3_THS		(1 << 8)
 
 #define CCU_BUS_SOFT_RESET4_TWI0	(1 << 0)
