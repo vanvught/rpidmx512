@@ -33,7 +33,10 @@
 
 DisplayMax7219 *DisplayMax7219::s_pThis = 0;
 
-DisplayMax7219::DisplayMax7219(tMax7219Types tType): m_pMax7219Set(0) {
+DisplayMax7219::DisplayMax7219(tMax7219Types tType, bool bShowSysTime):
+	m_pMax7219Set(0),
+	m_bShowSysTime(bShowSysTime)
+{
 	s_pThis = this;
 
 	if (tType == MAX7219_7SEGMENT) {
@@ -51,13 +54,15 @@ DisplayMax7219::~DisplayMax7219(void) {
 }
 
 void DisplayMax7219::Init(uint8_t nIntensity) {
-	assert(m_pMax7219Set != 0);
-
 	m_pMax7219Set->Init(nIntensity);
 }
 
 void DisplayMax7219::Show(const char* pTimecode) {
-	assert(m_pMax7219Set != 0);
-
 	m_pMax7219Set->Show(pTimecode);
+}
+
+void DisplayMax7219::ShowSysTime(void) {
+	if (m_bShowSysTime) {
+		m_pMax7219Set->ShowSysTime();
+	}
 }

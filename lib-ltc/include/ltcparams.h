@@ -58,13 +58,17 @@ struct TLtcParams {
 	uint8_t tMax7219Type;
 	uint8_t nMax7219Intensity;
 	uint8_t nDisabledOutputs;
+	uint8_t nShowSysTime;
+	uint8_t nDisableTimeSync;
 };
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),
 	LTC_PARAMS_MASK_MAX7219_TYPE = (1 << 1),
 	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2),
-	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3)
+	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3),
+	LTC_PARAMS_MASK_SHOW_SYSTIME = (1 << 4),
+	LTC_PARAMS_MASK_DISABLE_TIMESYNC = (1 << 5)
 };
 
 class LtcParamsStore {
@@ -103,6 +107,14 @@ public:
 	}
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
+	bool IsShowSysTime(void) {
+		return (m_tLtcParams.nShowSysTime != 0);
+	}
+
+	bool IsTimeSyncDisabled(void) {
+		return  (m_tLtcParams.nDisableTimeSync == 1);
+	}
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

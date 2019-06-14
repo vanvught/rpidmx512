@@ -38,6 +38,7 @@ public:
 	void Init(uint8_t nIntensity);
 
 	void Show(const char *pTimecode);
+	void ShowSysTime(void);
 
 	 static Max72197Segment* Get(void) {
 		return s_pThis;
@@ -45,6 +46,7 @@ public:
 
 private:
 	device_info_t m_DeviceInfo;
+	uint32_t m_nSecondsPrevious;
 
 	static Max72197Segment *s_pThis;
 };

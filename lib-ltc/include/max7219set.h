@@ -32,7 +32,9 @@ public:
 	virtual ~Max7219Set(void);
 
 	virtual void Init(uint8_t nIntensity)=0;
+
 	virtual void Show(const char *pTimecode)=0;
+	virtual void ShowSysTime(void)=0;
 
 private:
 };

@@ -57,5 +57,4 @@ void LtcLeds::Show(TTimecodeTypes tTimecodeType) {
 		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
 		break;
 	}
-
 }

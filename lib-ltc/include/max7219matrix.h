@@ -42,6 +42,7 @@ public:
 	void Init(uint8_t nIntensity);
 
 	void Show(const char *pTimecode);
+	void ShowSysTime(void);
 
 	static Max7219Matrix* Get(void) {
 		return s_pThis;
@@ -50,6 +51,7 @@ public:
 private:
 	device_info_t m_DeviceInfo;
 	uint8_t m_aBuffer[SEGMENTS];
+	uint32_t m_nSecondsPrevious;
 
 	static Max7219Matrix *s_pThis;
 };

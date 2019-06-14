@@ -377,5 +377,7 @@ void LtcReader::Run(void) {
 			Midi::Get()->SendRaw(bytes, 2);
 			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 		}
+	} else {
+		DisplayMax7219::Get()->ShowSysTime();
 	}
 }

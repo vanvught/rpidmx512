@@ -37,8 +37,10 @@ public:
 	alignas(uint32_t) static const char DISABLE_MAX7219[];
 	alignas(uint32_t) static const char DISABLE_MIDI[];
 	alignas(uint32_t) static const char DISABLE_ARTNET[];
-	//alignas(uint32_t) static const char DISABLE_TCNET[];
-	//alignas(uint32_t) static const char DISABLE_LTC[];
+	alignas(uint32_t) static const char DISABLE_TCNET[];
+	alignas(uint32_t) static const char DISABLE_LTC[];
+	alignas(uint32_t) static const char SHOW_SYSTIME[];
+	alignas(uint32_t) static const char DISABLE_TIMESYNC[];
 };
 
 #endif /* LTCPARAMSCONST_H_ */

@@ -277,5 +277,8 @@ void TCNetReader::Run(void) {
 			Midi::Get()->SendRaw(bytes, 2);
 			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 		}
+	} else {
+		m_nTimeCodePrevious = 0xFF;
+		DisplayMax7219::Get()->ShowSysTime();
 	}
 }

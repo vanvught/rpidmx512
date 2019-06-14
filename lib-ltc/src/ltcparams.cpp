@@ -170,6 +170,26 @@ void LtcParams::callbackFunction(const char* pLine) {
 		}
 	}
 #endif
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nShowSysTime = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SHOW_SYSTIME;
+		} else {
+			m_tLtcParams.nShowSysTime = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_SHOW_SYSTIME;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisableTimeSync = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLE_TIMESYNC;
+		} else {
+			m_tLtcParams.nDisableTimeSync = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_DISABLE_TIMESYNC;
+		}
+	}
 }
 
 void LtcParams::Dump(void) {

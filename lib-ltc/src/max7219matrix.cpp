@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "max7219matrix.h"
 
@@ -32,7 +33,22 @@
 
 Max7219Matrix *Max7219Matrix::s_pThis = 0;
 
-Max7219Matrix::Max7219Matrix(void) {
+static char systime[] __attribute__ ((aligned (4))) = "--:--:--";
+
+static void itoa_base10(int arg, char *buf) {
+	char *n = buf;
+
+	if (arg == 0) {
+		*n++ = '0';
+		*n = '0';
+		return;
+	}
+
+	*n++ = (char) '0' + (char) (arg / 10);
+	*n = (char) '0' + (char) (arg % 10);
+}
+
+Max7219Matrix::Max7219Matrix(void): m_nSecondsPrevious(60) {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
@@ -59,4 +75,24 @@ void Max7219Matrix::Show(const char *pTimecode) {
 	m_aBuffer[7] = (uint8_t) (pTimecode[10]);
 
 	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
+}
+
+void Max7219Matrix::ShowSysTime(void) {
+	time_t ltime;
+	struct tm *local_time;
+
+	ltime = time(0);
+	local_time = localtime(&ltime);
+
+	if (__builtin_expect((m_nSecondsPrevious == (uint32_t) local_time->tm_sec), 1)) {
+		return;
+	}
+
+	m_nSecondsPrevious = local_time->tm_sec;
+
+	itoa_base10(local_time->tm_hour, (char *) &systime[0]);
+	itoa_base10(local_time->tm_min, (char *) &systime[3]);
+	itoa_base10(local_time->tm_sec, (char *) &systime[6]);
+
+	d8x8matrix_write(&m_DeviceInfo, (const char *)systime, SEGMENTS);
 }

@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <time.h>
 #include <assert.h>
 
 #include "max72197segment.h"
@@ -35,7 +36,7 @@
 
 Max72197Segment *Max72197Segment::s_pThis = 0;
 
-Max72197Segment::Max72197Segment(void) {
+Max72197Segment::Max72197Segment(void): m_nSecondsPrevious(60)  {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
@@ -63,4 +64,28 @@ void Max72197Segment::Show(const char* pTimecode) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (uint8_t) (pTimecode[7] - '0') | 0x80);
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (uint8_t) (pTimecode[9] - '0'));
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (uint8_t) (pTimecode[10] - '0'));
+}
+
+void Max72197Segment::ShowSysTime(void) {
+	time_t ltime;
+	struct tm *local_time;
+
+	ltime = time(0);
+	local_time = localtime(&ltime);
+
+	if (__builtin_expect((m_nSecondsPrevious == (uint32_t) local_time->tm_sec), 1)) {
+		return;
+	}
+
+	m_nSecondsPrevious = local_time->tm_sec;
+
+
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (uint8_t) MAX7219_CHAR_BLANK);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (uint8_t) (local_time->tm_hour / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (uint8_t) (local_time->tm_hour % 10) | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (uint8_t) (local_time->tm_min  / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (uint8_t) (local_time->tm_min  % 10) | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (uint8_t) (local_time->tm_sec  / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (uint8_t) (local_time->tm_sec  % 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (uint8_t) MAX7219_CHAR_BLANK);
 }

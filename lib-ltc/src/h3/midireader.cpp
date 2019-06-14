@@ -186,6 +186,13 @@ void MidiReader::Run(void) {
 #endif
 	}
 
+	dmb();
+	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
+		// Nothing to do here
+	} else {
+		DisplayMax7219::Get()->ShowSysTime();
+	}
+
 }
 
 void MidiReader::HandleMtc(void) {
