@@ -71,18 +71,13 @@ extern void h3_spi_writenb(const char *tx_buffer, uint32_t data_length);
 extern void h3_spi_set_ws28xx_mode(bool off_on);
 extern bool h3_spi_get_ws28xx_mode(void);
 
-extern void h3_spi_setClockDivider(uint16_t divider);	// Backwards compatibility with Raspberry Pi
-
 #ifdef __cplusplus
 }
 #endif
 
 //FIXME Remove
 //TODO Backwards compatibility with the Raspberry Pi API's
-#define BCM2835_CORE_CLK_HZ 					250000000
-
 #define bcm2835_spi_begin						h3_spi_begin
-#define bcm2835_spi_setClockDivider				h3_spi_setClockDivider
 #define bcm2835_spi_set_speed_hz				h3_spi_set_speed_hz
 #define bcm2835_spi_setDataMode(__p)			h3_spi_setDataMode((h3_spi_mode_t)__p)
 #define bcm2835_spi_setChipSelectPolarity		h3_spi_setChipSelectPolarity

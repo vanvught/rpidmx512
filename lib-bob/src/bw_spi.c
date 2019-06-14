@@ -48,7 +48,7 @@ void bw_spi_read_id(const device_info_t *device_info, char *id) {
 		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
 		bcm2835_aux_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
 	} else {
-		bcm2835_spi_setClockDivider(5000);
+		bcm2835_spi_set_speed_hz(50000);
 		bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
 		bcm2835_spi_chipSelect(device_info->chip_select);
 		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);

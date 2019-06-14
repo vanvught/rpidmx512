@@ -194,14 +194,4 @@ inline static void h3_gpio_set(uint32_t pin) {
 }
 #endif
 
-//FIXME Remove
-//TODO Backwards compatibility with the Raspberry Pi API's
-#define bcm2835_gpio_clr	h3_gpio_clr
-#define bcm2835_gpio_set	h3_gpio_set
-#define bcm2835_gpio_fsel	h3_gpio_fsel
-//
-#define BCM2835_GPIO_FSEL_OUTP	GPIO_FSEL_OUTPUT
-//
-#define bcm2835_delay(x)		udelay(x * 1000)
-
 #endif /* H3_GPIO_H_ */

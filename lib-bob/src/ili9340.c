@@ -27,19 +27,13 @@
 
 #if defined(RASPPI)
  #include <stdio.h>
- #include "bcm2835.h"
 #elif defined(H3)
- #include "h3_gpio.h"
- #include "h3_spi.h"
- #include "h3_board.h"
 #else
- #include "bcm2835.h"
- #include "bcm2835_gpio.h"
- #include "bcm2835_spi.h"
 #endif
 
 #include "ili9340.h"
 
+#include "bob.h"
 #include "font_cp437.h"
 
 #if !defined(H3)
@@ -181,7 +175,7 @@ int ili9340_init(void) {
 
 	bcm2835_spi_begin();
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
-	bcm2835_spi_setClockDivider(8);
+	bcm2835_spi_set_speed_hz(10000000);
 	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
 	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
 

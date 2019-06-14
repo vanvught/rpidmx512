@@ -67,7 +67,6 @@ bool mcp23s08_start(device_info_t *device_info) {
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
 		bcm2835_spi_begin();
-		device_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / device_info->speed_hz);
 	}
 
 	mcp23s08_reg_write(device_info, MCP23S08_IOCON, MCP23S08_IOCON_HAEN);
@@ -85,7 +84,7 @@ uint8_t mcp23s08_reg_read(const device_info_t *device_info, uint8_t reg) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_transfern(spiData, 3);
 	} else {
-		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
+		bcm2835_spi_set_speed_hz(device_info->speed_hz);
 		bcm2835_spi_chipSelect(device_info->chip_select);
 		bcm2835_spi_transfern(spiData, 3);
 	}
@@ -104,7 +103,7 @@ void mcp23s08_reg_write(const device_info_t *device_info, uint8_t reg, uint8_t v
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb(spiData, 3);
 	} else {
-		bcm2835_spi_setClockDivider(device_info->internal.clk_div);
+		bcm2835_spi_set_speed_hz(device_info->speed_hz);
 		bcm2835_spi_chipSelect(device_info->chip_select);
 		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
 		bcm2835_spi_writenb(spiData, 3);

@@ -46,7 +46,6 @@
 
 static bool s_ws28xx_mode = false;
 static uint32_t s_current_speed_hz = 0; // This forces an update
-static uint16_t s_current_divider = 0;	// This forces an update
 
 struct spi_status {
 	bool		transfer_active;
@@ -526,20 +525,4 @@ uint8_t h3_spi_transfer(uint8_t data) {
 	EXT_SPI->IE = 0;
 
 	return ret;
-}
-
-// Backwards compatibility with Raspberry Pi
-#define BCM2835_CORE_CLK_HZ 250000000
-
-void h3_spi_setClockDivider(uint16_t divider) {
-	assert(divider != 0);
-
-	if (__builtin_expect((s_current_divider != divider), 0)) {
-		const uint32_t freq = (uint32_t) BCM2835_CORE_CLK_HZ / divider;
-#ifndef NDEBUG
-		printf("divider=%d, freq=%ld\n", divider, (long int) freq);
-#endif
-		s_current_divider = divider; // It is expected that the function h3_spi_set_speed_hz is not used in RPi code
-		_setup_clock((uint32_t) CCU_PERIPH0_CLOCK_HZ, freq);
-	}
 }

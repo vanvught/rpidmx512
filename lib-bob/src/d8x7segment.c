@@ -2,7 +2,7 @@
  * @file d8x7segment.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,8 @@
 #include "max7219.h"
 #include "max7219_spi.h"
 
-
 void d8x7segment_init(const device_info_t *device_info, uint8_t intensity) {
-	(void) max7219_spi_start((device_info_t *)device_info);
+	max7219_spi_start((device_info_t *)device_info);
 
 	max7219_spi_write_reg(device_info, MAX7219_REG_SHUTDOWN, MAX7219_SHUTDOWN_NORMAL_OP);
 	max7219_spi_write_reg(device_info, MAX7219_REG_DISPLAY_TEST, 0);
@@ -44,7 +43,7 @@ void d8x7segment_init(const device_info_t *device_info, uint8_t intensity) {
 }
 
 void d8x7segment_cls(const device_info_t *device_info) {
-	uint8_t i = 8;
+	uint32_t i = 8;
 
 	do {
 		max7219_spi_write_reg(device_info, i, MAX7219_CHAR_BLANK);
@@ -53,8 +52,8 @@ void d8x7segment_cls(const device_info_t *device_info) {
 
 void d8x7segment_int(const device_info_t *device_info, int32_t number) {
 	bool is_negative = false;
-	uint8_t max_digits = 8;
-	uint8_t i = 1;
+	uint32_t max_digits = 8;
+	uint32_t i = 1;
 
 	d8x7segment_cls(device_info);
 
@@ -63,7 +62,7 @@ void d8x7segment_int(const device_info_t *device_info, int32_t number) {
 		return;
 	}
 
-	if (number < (int32_t) 0) {
+	if (number < 0) {
 		is_negative = true;
 		max_digits = 7;
 		number *= -1;
@@ -72,9 +71,9 @@ void d8x7segment_int(const device_info_t *device_info, int32_t number) {
 	do {
 		max7219_spi_write_reg(device_info, i++, (uint8_t) (number % 10));
 		number /= 10;
-	} while ((number != (int32_t) 0) && (i <= (uint8_t) max_digits));
+	} while ((number != 0) && (i <= max_digits));
 
-	if ((number != (int32_t) 0)) {
+	if ((number != 0)) {
 		max7219_spi_write_reg(device_info, (i - 1), MAX7219_CHAR_E);
 	}
 
@@ -82,4 +81,3 @@ void d8x7segment_int(const device_info_t *device_info, int32_t number) {
 		max7219_spi_write_reg(device_info, i, MAX7219_CHAR_NEGATIVE);
 	}
 }
-
