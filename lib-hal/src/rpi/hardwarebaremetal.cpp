@@ -2,7 +2,7 @@
  * @file hardwarebaremetal.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,7 +117,7 @@ float HardwareBaremetal::GetCoreTemperature(void) {
 }
 
 float HardwareBaremetal::GetCoreTemperatureMax(void) {
-	return 85; //TODO GetCoreTemperatureMax
+	return 85;
 }
 
 uint32_t HardwareBaremetal::GetReleaseId(void) {
@@ -207,8 +207,4 @@ uint32_t HardwareBaremetal::Micros(void) {
 
 uint32_t HardwareBaremetal::Millis(void) {
 	return millis();
-}
-
-bool HardwareBaremetal::IsButtonPressed(void) {
-	return false;
 }

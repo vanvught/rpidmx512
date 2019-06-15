@@ -69,9 +69,7 @@ public:
 
 	bool SetTime(const struct THardwareTime &pTime);
 	void GetTime(struct THardwareTime *pTime);
-	 time_t GetTime(void) {
-		return time(0);
-	}
+	time_t GetTime(void) { return time(0); }
 
 	uint64_t GetUpTime(void);
 
@@ -91,7 +89,11 @@ public:
 
 private:
 	int32_t m_nBoardRevision;
+#ifdef H3
+#else
 	TSocType m_tSocType;
+	uint32_t m_nBoardId;
+#endif
 };
 
 #endif /* HARDWAREBAREMETAL_H_ */

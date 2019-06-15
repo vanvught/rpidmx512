@@ -42,6 +42,12 @@
 
 #include "arm/synchronize.h"
 
+#if defined(ORANGE_PI)
+#elif defined(ORANGE_PI_ONE)
+#else
+ #error Platform not supported
+#endif
+
 const char s_Release[] __attribute__((aligned(4))) = "1.0";
 #define RELEASE_LENGTH (sizeof(s_Release)/sizeof(s_Release[0]) - 1)
 
@@ -60,17 +66,7 @@ const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
 #define VERSION_LENGTH (sizeof(s_Version)/sizeof(s_Version[0]) - 1)
 
-HardwareBaremetal::HardwareBaremetal(void):
-		m_nBoardRevision(-1),
-		m_tSocType(SOC_TYPE_UNKNOWN)
-{
-#if defined(ORANGE_PI)
-	m_tSocType = SOC_TYPE_H2_PLUS;
-#elif defined(ORANGE_PI_ONE)
-	m_tSocType = SOC_TYPE_H3;
-#else
- #error Platform not supported
-#endif
+HardwareBaremetal::HardwareBaremetal(void): m_nBoardRevision(-1) {
 }
 
 HardwareBaremetal::~HardwareBaremetal(void) {
@@ -104,8 +100,10 @@ const char* HardwareBaremetal::GetBoardName(uint8_t& nLength) {
 uint32_t HardwareBaremetal::GetBoardId(void) {
 #if defined(ORANGE_PI)
 	return 0;
-#else
+#elif defined(ORANGE_PI_ONE)
 	return 1;
+#else
+ #error Platform not supported
 #endif
 }
 
@@ -115,12 +113,17 @@ const char* HardwareBaremetal::GetCpuName(uint8_t& nLength) {
 }
 
 const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
-	nLength = s_SocNameLenghth[m_tSocType];
-	return s_SocName[m_tSocType];
+#if defined(ORANGE_PI)
+	nLength = s_SocNameLenghth[0];
+	return s_SocName[0];
+#else
+	nLength = s_SocNameLenghth[1];
+	return s_SocName[1];
+#endif
 }
 
 uint32_t HardwareBaremetal::GetReleaseId(void) {
-	return (uint32_t) 0;
+	return 0;
 }
 
 uint64_t HardwareBaremetal::GetUpTime(void) {
@@ -146,7 +149,7 @@ void HardwareBaremetal::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
-	ltime = time(NULL);
+	ltime = time(0);
     local_time = localtime(&ltime);
 
     pTime->tm_year = local_time->tm_year;

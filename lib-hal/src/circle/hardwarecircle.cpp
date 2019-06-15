@@ -101,7 +101,7 @@ float HardwareCircle::GetCoreTemperature(void) {
 }
 
 float HardwareCircle::GetCoreTemperatureMax(void) {
-	return 85; //TODO GetCoreTemperatureMax
+	return 85;
 }
 
 uint32_t HardwareCircle::GetReleaseId(void) {
