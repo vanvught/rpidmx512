@@ -40,27 +40,11 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
-#include "propertiesbuilder.h"
 
 #include "lightsetconst.h"
 
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
-
-#define SET_UNIVERSE_MASK		(1 << 0)
-#define SET_MERGE_MODE_MASK		(1 << 1)
-#define SET_OUTPUT_MASK			(1 << 2)
-#define SET_CID_MASK			(1 << 3)
-#define SET_UNIVERSE_A_MASK		(1 << 4)
-#define SET_UNIVERSE_B_MASK		(1 << 5)
-#define SET_UNIVERSE_C_MASK		(1 << 6)
-#define SET_UNIVERSE_D_MASK		(1 << 7)
-#define SET_MERGE_MODE_A_MASK	(1 << 8)
-#define SET_MERGE_MODE_B_MASK	(1 << 9)
-#define SET_MERGE_MODE_C_MASK	(1 << 10)
-#define SET_MERGE_MODE_D_MASK	(1 << 11)
-#define SET_NETWORK_TIMEOUT		(1 << 12)
-#define SET_MERGE_TIMEOUT		(1 << 13)
 
 E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE131ParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tE131Params;
@@ -99,6 +83,7 @@ bool E131Params::Load(void) {
 void E131Params::Load(const char* pBuffer, uint32_t nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
+
 	assert(m_pE131ParamsStore != 0);
 
 	if (m_pE131ParamsStore == 0) {
@@ -129,14 +114,14 @@ void E131Params::callbackFunction(const char *pLine) {
 		} else {
 			m_tE131Params.nUniverse = value16;
 		}
-		m_tE131Params.nSetList |= SET_UNIVERSE_MASK;
+		m_tE131Params.nSetList |= E131_PARAMS_MASK_UNIVERSE;
 		return;
 	}
 
 	len = 3;
 	if (Sscan::Char(pLine, LightSetConst::PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
 		m_tE131Params.tOutputType = LightSet::GetOutputType((const char *) value);
-		m_tE131Params.nSetList |= SET_OUTPUT_MASK;
+		m_tE131Params.nSetList |= E131_PARAMS_MASK_OUTPUT;
 		return;
 	}
 
@@ -144,10 +129,10 @@ void E131Params::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, E131ParamsConst::PARAMS_MERGE_MODE, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "ltp", 3) == 0) {
 			m_tE131Params.nMergeMode = E131_MERGE_LTP;
-			m_tE131Params.nSetList |= SET_MERGE_MODE_MASK;
+			m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_MODE;
 		} else if (memcmp(value, "htp", 3) == 0) {
 			m_tE131Params.nMergeMode = E131_MERGE_HTP;
-			m_tE131Params.nSetList |= SET_MERGE_MODE_MASK;
+			m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_MODE;
 		}
 		return;
 	}
@@ -155,7 +140,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, E131ParamsConst::PARAMS_UNIVERSE_PORT[i], &value16) == SSCAN_OK) {
 			m_tE131Params.nUniversePort[i] = value16;
-			m_tE131Params.nSetList |= (SET_UNIVERSE_A_MASK << i);
+			m_tE131Params.nSetList |= (E131_PARAMS_MASK_UNIVERSE_A << i);
 			return;
 		}
 
@@ -163,10 +148,10 @@ void E131Params::callbackFunction(const char *pLine) {
 		if (Sscan::Char(pLine, E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], value, &len) == SSCAN_OK) {
 			if (memcmp(value, "ltp", 3) == 0) {
 				m_tE131Params.nMergeModePort[i] = E131_MERGE_LTP;
-				m_tE131Params.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+				m_tE131Params.nSetList |= (E131_PARAMS_MASK_MERGE_MODE_A << i);
 			} else if (memcmp(value, "htp", 3) == 0) {
 				m_tE131Params.nMergeModePort[i] = E131_MERGE_HTP;
-				m_tE131Params.nSetList |= (SET_MERGE_MODE_A_MASK << i);
+				m_tE131Params.nSetList |= (E131_PARAMS_MASK_MERGE_MODE_A << i);
 			}
 			return;
 		}
@@ -174,13 +159,13 @@ void E131Params::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, &fValue) == SSCAN_OK) {
 		m_tE131Params.nNetworkTimeout = fValue;
-		m_tE131Params.nSetList |= SET_NETWORK_TIMEOUT;
+		m_tE131Params.nSetList |= E131_PARAMS_MASK_NETWORK_TIMEOUT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
 		m_tE131Params.bDisableMergeTimeout = (value8 != 0);
-		m_tE131Params.nSetList |= SET_MERGE_TIMEOUT;
+		m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_TIMEOUT;
 		return;
 	}
 }
@@ -193,35 +178,35 @@ void E131Params::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::PARAMS_FILE_NAME);
 
-	if (isMaskSet(SET_UNIVERSE_MASK)) {
+	if (isMaskSet(E131_PARAMS_MASK_UNIVERSE)) {
 		printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE, (int) m_tE131Params.nUniverse);
 	}
 
-	if (isMaskSet(SET_OUTPUT_MASK)) {
+	if (isMaskSet(E131_PARAMS_MASK_OUTPUT)) {
 		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_OUTPUT, (int) m_tE131Params.tOutputType, LightSet::GetOutputType((TLightSetOutputType) m_tE131Params.tOutputType));
 	}
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		if (isMaskSet(SET_UNIVERSE_A_MASK << i)) {
+		if (isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i)) {
 			printf(" %s=%d\n", E131ParamsConst::PARAMS_UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
 		}
 	}
 
-	if (isMaskSet(SET_MERGE_MODE_MASK)) {
+	if (isMaskSet(E131_PARAMS_MASK_MERGE_MODE)) {
 		printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode));
 	}
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+		if (isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i)) {
 			printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]));
 		}
 	}
 
-	if (isMaskSet(SET_NETWORK_TIMEOUT)) {
+	if (isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT)) {
 		printf(" %s=%.1f [%s]\n", E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
-	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
 		printf(" %s=%d [%s]\n", E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (int) m_tE131Params.bDisableMergeTimeout, BOOL2STRING(m_tE131Params.bDisableMergeTimeout));
 	}
 #endif
@@ -230,7 +215,7 @@ void E131Params::Dump(void) {
 uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
 	assert(nPort < E131_PARAMS_MAX_PORTS);
 
-	IsSet = isMaskSet(SET_UNIVERSE_A_MASK << nPort);
+	IsSet = isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << nPort);
 
 	return m_tE131Params.nUniversePort[nPort];
 }

@@ -34,40 +34,25 @@
 #include "lightset.h"
 #include "lightsetconst.h"
 
-#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
-
-#define SET_UNIVERSE_MASK		(1 << 0)
-#define SET_MERGE_MODE_MASK		(1 << 1)
-#define SET_OUTPUT_MASK			(1 << 2)
-#define SET_CID_MASK			(1 << 3)
-#define SET_UNIVERSE_A_MASK		(1 << 4)
-#define SET_UNIVERSE_B_MASK		(1 << 5)
-#define SET_UNIVERSE_C_MASK		(1 << 6)
-#define SET_UNIVERSE_D_MASK		(1 << 7)
-#define SET_MERGE_MODE_A_MASK	(1 << 8)
-#define SET_MERGE_MODE_B_MASK	(1 << 9)
-#define SET_MERGE_MODE_C_MASK	(1 << 10)
-#define SET_MERGE_MODE_D_MASK	(1 << 11)
-#define SET_NETWORK_TIMEOUT		(1 << 12)
-#define SET_MERGE_TIMEOUT		(1 << 13)
+#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "htp" : "ltp"
 
 bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	m_pE131ParamsStore->Copy(&m_tE131Params);
 
 	PropertiesBuilder builder(E131ParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(SET_UNIVERSE_MASK));
-	isAdded &= builder.Add(LightSetConst::PARAMS_OUTPUT, LightSet::GetOutputType(m_tE131Params.tOutputType), isMaskSet(SET_OUTPUT_MASK));
+	bool isAdded = builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
+	isAdded &= builder.Add(LightSetConst::PARAMS_OUTPUT, LightSet::GetOutputType(m_tE131Params.tOutputType), isMaskSet(E131_PARAMS_MASK_OUTPUT));
 
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(SET_MERGE_MODE_MASK));
+	isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		isAdded &= builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(SET_UNIVERSE_A_MASK << i));
-		isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(SET_MERGE_MODE_A_MASK << i));
+		isAdded &= builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+		isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
 	}
 
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(SET_NETWORK_TIMEOUT));
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(SET_MERGE_TIMEOUT));
+	isAdded &= builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
+	isAdded &= builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
 
 	nSize = builder.GetSize();
 

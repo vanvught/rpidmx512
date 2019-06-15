@@ -23,25 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <assert.h>
 
 #include "e131params.h"
 #include "e131.h"
-
-#define SET_UNIVERSE_MASK		(1 << 0)
-#define SET_MERGE_MODE_MASK		(1 << 1)
-#define SET_OUTPUT_MASK			(1 << 2)
-#define SET_CID_MASK			(1 << 3)
-#define SET_UNIVERSE_A_MASK		(1 << 4)
-#define SET_UNIVERSE_B_MASK		(1 << 5)
-#define SET_UNIVERSE_C_MASK		(1 << 6)
-#define SET_UNIVERSE_D_MASK		(1 << 7)
-#define SET_MERGE_MODE_A_MASK	(1 << 8)
-#define SET_MERGE_MODE_B_MASK	(1 << 9)
-#define SET_MERGE_MODE_C_MASK	(1 << 10)
-#define SET_MERGE_MODE_D_MASK	(1 << 11)
-#define SET_NETWORK_TIMEOUT		(1 << 12)
-#define SET_MERGE_TIMEOUT		(1 << 13)
 
 void E131Params::Set(E131Bridge *pE131Bridge) {
 	assert(pE131Bridge != 0);
@@ -51,18 +37,18 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 	}
 
 	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		if (isMaskSet(SET_MERGE_MODE_A_MASK << i)) {
+		if (isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i)) {
 			pE131Bridge->SetMergeMode(i, (TE131Merge) m_tE131Params.nMergeModePort[i]);
 		} else {
 			pE131Bridge->SetMergeMode(i, (TE131Merge) m_tE131Params.nMergeMode);
 		}
 	}
 
-	if(isMaskSet(SET_NETWORK_TIMEOUT)) {
+	if(isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT)) {
 		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
 	}
 
-	if(isMaskSet(SET_MERGE_TIMEOUT)) {
+	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
 		pE131Bridge->SetDisableMergeTimeout(m_tE131Params.bDisableMergeTimeout);
 	}
 }
