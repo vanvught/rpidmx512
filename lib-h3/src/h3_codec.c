@@ -2,6 +2,9 @@
  * @file h3_codec.h
  *
  */
+/*
+ * Based on https://github.com/allwinner-zh/linux-3.4-sunxi/blob/master/sound/soc/sunxi/audiocodec/sun8iw7_sndcodec.c
+ */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,7 +45,6 @@
 #include "h3.h"
 #include "h3_dma.h"
 #include "h3_board.h"
-#include "board/h3_opi_zero.h"
 #include "h3_gpio.h"
 
 #ifndef ALIGNED
@@ -68,18 +70,6 @@
 #define SUNXI_DAC_DAP_COFF           (0x68)
 #define SUNXI_DAC_DAP_OPT            (0x6c)
 
-#define SUNXI_ADC_DAP_CTR            (0x70)
-#define SUNXI_ADC_DAP_LCTR           (0x74)
-#define SUNXI_ADC_DAP_RCTR           (0x78)
-#define SUNXI_ADC_DAP_PARA           (0x7C)
-#define SUNXI_ADC_DAP_LAC	         (0x80)
-#define SUNXI_ADC_DAP_LDAT	         (0x84)
-#define SUNXI_ADC_DAP_RAC	         (0x88)
-#define SUNXI_ADC_DAP_RDAT	         (0x8C)
-#define SUNXI_ADC_DAP_HPFC	         (0x90)
-#define SUNXI_ADC_DAP_LINAC	         (0x94)
-#define SUNXI_ADC_DAP_RINAC	         (0x98)
-#define SUNXI_ADC_DAP_ORT	         (0x9C)
 #define SUNXI_DAC_DRC_HHPFC			(0X100)
 #define SUNXI_DAC_DRC_LHPFC			(0X104)
 #define SUNXI_DAC_DRC_CTRL			(0X108)
@@ -194,7 +184,7 @@
 */
 #define DAC_FS					  (29)
 #define FIR_VER					  (28)
-#define SEND_LAST                 (26)
+#define SEND_LASAT                 (26)
 #define FIFO_MODE              	  (24)
 #define DAC_DRQ_CLR_CNT           (21)
 #define TX_TRI_LEVEL              (8)
@@ -382,22 +372,18 @@ static void write_prcm_wvalue(uint32_t addr, uint32_t val) {
 	writel(reg, ADDA_PR_CFG_REG);
 }
 
-static int codec_wrreg_prcm_bits(unsigned short reg, uint32_t mask, uint32_t value) {
+static void codec_wrreg_prcm_bits(unsigned short reg, uint32_t mask, uint32_t value) {
 	uint32_t old, new;
-
 	old = read_prcm_wvalue(reg);
 	new = (old & ~mask) | value;
 	write_prcm_wvalue(reg, new);
-
-	return 0;
 }
 
-static int codec_wr_prcm_control(uint32_t reg, uint32_t mask, uint32_t shift, uint32_t val) {
+static void codec_wr_prcm_control(uint32_t reg, uint32_t mask, uint32_t shift, uint32_t val) {
 	uint32_t reg_val;
 	reg_val = val << shift;
 	mask = mask << shift;
 	codec_wrreg_prcm_bits(reg, mask, reg_val);
-	return 0;
 }
 
 #define codec_rdreg(reg)		readl((CODEC_BASSADDRESS +(reg)))
@@ -491,32 +477,23 @@ void dacdrc_enable(bool on) {
 }
 
 static void codec_init(uint32_t lineout_vol) {
-	codec_wr_control(SUNXI_DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x0);
 	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
-	codec_wr_control(SUNXI_ADC_FIFOC, 0x1, ADC_FIFO_FLUSH, 0x1);
-
 
 	codec_wr_prcm_control(PAEN_CTR, 0x1, LINEOUTEN, 0x1);
-	//codec_wr_prcm_control(PAEN_CTR, 0x3, PA_ANTI_POP_CTRL, 0x3);
 
 	codec_wr_prcm_control(LINEOUT_VOLC, 0x1f, LINEOUTVOL, lineout_vol);
 
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTL_EN, 0x1);
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_EN, 0x1);
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_SS, 0x1); // Differential output
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACAREN, 0x1);	// Internal Analog Right channel DAC enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACALEN, 0x1);	// Internal Analog Left channel DAC enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, RMIXEN, 0x1);	// Right Analog Output Mixer Enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, LMIXEN, 0x1);	// Left Analog Output Mixer Enable
 
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACALEN, 0x1);
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACAREN, 0x1);
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, LMIXEN, 0x1);
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, RMIXEN, 0x1);
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTL_EN, 0x1); // Enable Line-out Left
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_EN, 0x1); // Enable Line-out Right
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_SS, 0x1); // Differential output
 
 	codec_wr_prcm_control(LOMIXSC, 0x1, LMIXMUTEDACL, 0x1);
 	codec_wr_prcm_control(ROMIXSC, 0x1, RMIXMUTEDACR, 0x1);
-
-	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, FIFO_MODE, 0x1);
-	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, TX_SAMPLE_BITS, 0x0);
-
-	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, FIR_VER, 0x0);
 }
 
 static void clk_set_rate_codec(uint32_t rate) {
@@ -567,23 +544,35 @@ static void clk_set_rate_codec_module(uint32_t rate) {
 	H3_CCU->BUS_CLK_GATING2 |= CCU_BUS_CLK_GATING2_AC_DIG;
 }
 
-static void codec_pa_play_open(void) {
+static void codec_prepare(uint32_t rate) {
 	codec_wr_control(SUNXI_DAC_DPC, 0x1, DAC_EN, 0x1);
 	codec_wr_prcm_control(LINEOUT_PA_GAT, 0x1, PA_CLK_GC, 0x0);
 
-	codec_wr_control(SUNXI_DAC_FIFOC, 0x7f, TX_TRI_LEVEL, 0xF);
-	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, SEND_LAST, 0x0);
-	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
 	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, DAC_DRQ_EN, 0x1);
 
-	codec_wr_control(SUNXI_DAC_FIFOC, 0xf, 0, 0xf);
-	codec_wr_control(SUNXI_DAC_FIFOS, 0xf, 0, 0xf);
+	/* Flush the TX FIFO */
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
+
+	/* Set TX FIFO Empty Trigger Level */
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x3f, TX_TRI_LEVEL, 0xf);
+
+	if (rate > 32000) {
+		/* Use 64 bits FIR filter */
+		codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIR_VER, 0x0);
+	} else {
+		/* Use 32 bits FIR filter */
+		codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIR_VER, 0x1);
+	}
+
+	/* Send zeros when we have an underrun */
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, SEND_LASAT, 0x0);
 }
 
 
-static void sndpcm_perpare(uint32_t rate, uint32_t channels) {
-	unsigned int reg_val;
+static void codec_hw_params(uint32_t rate, uint32_t channels) {
+	uint32_t reg_val;
 
+	/* Set DAC sample rate */
 	switch (rate) {
 	case 44100:
 		clk_set_rate_codec(22579200);
@@ -683,9 +672,10 @@ static void sndpcm_perpare(uint32_t rate, uint32_t channels) {
 		break;
 	}
 
+	/* Set the number of channels we want to use */
 	if (channels == 1) {
 		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
-		reg_val |= (1 << 6);
+		reg_val |= (1 << 6);		// TODO use define
 		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
 	} else {
 		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
@@ -693,7 +683,15 @@ static void sndpcm_perpare(uint32_t rate, uint32_t channels) {
 		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
 	}
 
-	codec_pa_play_open();
+	/* Set the number of sample bits to 16 bits */
+	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, TX_SAMPLE_BITS, 0x0);
+
+	/* Set TX FIFO mode to repeat the MSB */
+	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, FIFO_MODE, 0x1);
+
+	/* DMA_SLAVE_BUSWIDTH_2_BYTES */
+
+	codec_prepare(rate);
 }
 
 static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
@@ -723,9 +721,17 @@ void h3_codec_begin(void) {
 	h3_gpio_clr(6);
 #endif
 
+	/*
+	 * DMA setup
+	 */
+
 	uint32_t i;
 
 	int16_t *txbuffs = &p_coherent_region->txbuffer[0];
+
+	for (i = 0; i < TX_TOTAL_BUFSIZE; i++) {
+		p_coherent_region->txbuffer[i] = 0;
+	}
 
 	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
 		struct sunxi_dma_lli *lli = &p_coherent_region->lli[i];
@@ -746,7 +752,6 @@ void h3_codec_begin(void) {
 
 	struct sunxi_dma_lli *lli_last = &p_coherent_region->lli[CONFIG_TX_DESCR_NUM - 1];
 	lli_last->p_lli_next =  (uint32_t) &p_coherent_region->lli[0];
-	//lli_last->p_lli_next =  DMA_LLI_LAST_ITEM;
 
 	__disable_fiq();
 
@@ -766,13 +771,34 @@ void h3_codec_begin(void) {
 
 	isb();
 
+	/**
+	 * Codec setup
+	 */
+
 	__enable_fiq();
 
 	codec_init(31);
 
-	sndpcm_perpare(48000, 1);
+	codec_hw_params(48000, 1);
+
+	/*
+	 * Stop issuing DRQ when we have room for less than 16 samples
+	 * in our TX FIFO
+	 */
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
+}
+
+void h3_codec_start(void) {
+	writel(0, CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR);
 
 #ifndef NDEBUG
+	uint32_t i;
+
+	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
+		const struct sunxi_dma_lli *lli = &p_coherent_region->lli[i];
+		h3_dma_dump_lli(lli);
+	}
+
 	uint32_t value = H3_CCU->PLL_AUDIO_CTRL;
 	const uint32_t n = (value >> PLL_FACTOR_N_SHIFT) & PLL_FACTOR_N_MASK;
 	const uint32_t p = (value >> PLL_FACTOR_P_SHIFT) & PLL_FACTOR_P_MASK;
@@ -789,44 +815,37 @@ void h3_codec_begin(void) {
 	printf("CCU_PLL_AUDIO=%ld n=%d,m=%d,p=%d\n", (long int) freq, n, m, p);
 	printf("================\n");
 
-	printf("SUNXI_DAC_DPC=%p ", readl(CODEC_BASSADDRESS));
+	printf("AC_DAC_DPC=%p ", readl(CODEC_BASSADDRESS));
 	debug_print_bits(readl(CODEC_BASSADDRESS));
 
-	printf("SUNXI_DAC_FIFOC=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOC));
+	printf("AC_DAC_FIFOC=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOC));
 	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOC));
 
-	printf("SUNXI_DAC_FIFOS=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
+	printf("AC_DAC_FIFOS=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
 	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
 
-	writel(0, CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR);
-
-	printf("SUNXI_DAC_DAP_CTR=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR));
+	printf("AC_DAC_DAP_CTR=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR));
 	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR));
 
+	printf("AC_DAC_DRC_CTRL=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_DRC_CTRL));
+	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_DRC_CTRL));
+
 	printf("================\n");
-#endif
-}
 
-void h3_codec_start(void) {
-	uint32_t i;
-#ifndef NDEBUG
-	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
-		const struct sunxi_dma_lli *lli = &p_coherent_region->lli[i];
-		h3_dma_dump_lli(lli);
-	}
+	printf("DAC_PA_SRC=%p ", read_prcm_wvalue(DAC_PA_SRC));
+	debug_print_bits(read_prcm_wvalue(DAC_PA_SRC));
 
-	//const int16_t *txbuffs = &p_coherent_region->txbuffer[0];
+	printf("MIC2G_LINEOUT_CTR=%p ", read_prcm_wvalue(MIC2G_LINEOUT_CTR));
+	debug_print_bits(read_prcm_wvalue(MIC2G_LINEOUT_CTR));
 
-	//debug_dump((void *)txbuffs, 128);
+	printf("================\n");
+
+	//debug_dump(p_coherent_region->txbuffer, p_coherent_region->lli[0].len);
 #endif
 
 	H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_START;
 
 	h3_dma_dump_chl(H3_DMA_CHL0_BASE);
-
-#ifndef NDEBUG
-	//debug_dump((void *)txbuffs, 128);
-#endif
 }
 
 int16_t *h3_codec_get_pointer(uint32_t index, uint32_t length) {
@@ -842,10 +861,3 @@ int16_t *h3_codec_get_pointer(uint32_t index, uint32_t length) {
 	return (int16_t *)&txbuffs[index * CONFIG_BUFSIZE];
 }
 
-void h3_run(void) {
-	if(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS) & 6) {
-		printf("SUNXI_DAC_FIFOS=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
-		debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
-		codec_wr_control(SUNXI_DAC_FIFOS, 0xf, 0, 0xf);
-	}
-}
