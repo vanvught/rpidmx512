@@ -51,6 +51,7 @@
 #define H3_CCU_BASE				0x01C20000
 #define H3_PIO_BASE				0x01C20800
 #define H3_TIMER_BASE			0x01C20C00
+#define H3_AC_BASE				0x01C22C00
 #define H3_THS_BASE				0x01C25000
 #define H3_UART_BASE			0x01C28000
 #define H3_TWI_BASE				0x01C2AC00
@@ -389,6 +390,30 @@ typedef struct T_H3_TIMER {
 	__IO uint32_t WDOG0_MODE;		///< 0xB8 Watchdog 0 Mode Register
 } H3_TIMER_TypeDef;
 
+typedef struct H3_AC {
+	__IO uint32_t DAC_DPC;			///< 0x000 DAC Digital Part Control Register
+	__IO uint32_t DAC_FIFOC;		///< 0x004 DAC FIFO Control Register
+	__IO uint32_t DAC_FIFOS;		///< 0x008 DAC FIFO Status Register
+	__I  uint32_t RES1;				///< 0x00C
+	__IO uint32_t ADC_FIFOC;		///< 0x010 ADC FIFO Control Register
+	__IO uint32_t ADC_FIFOS;		///< 0x014 ADC FIFO Status Register
+	__I  uint32_t ADC_RXDATA;		///< 0x018 ADC RX Data Register
+	__I  uint32_t RES2;				///< 0x01C
+	__O  uint32_t DAC_TXDATA;		///< 0x020 DAC TX Data Register
+	__I  uint32_t RES3[7];			///< 0x024
+	__IO uint32_t DAC_CNT;			///< 0x040 DAC TX FIFO Counter Register
+	__IO uint32_t ADC_CNT;			///< 0x044 ADC RX FIFO Counter Register
+	__IO uint32_t DAC_DG;			///< 0x048 DAC Debug Register
+	__IO uint32_t ADC_DG;			///< 0x04C ADC Debug Register
+	__I  uint32_t RES4[4];			///< 0x050
+	__IO uint32_t DAC_DAP_CTR;		///< 0x060 DAC DAP Control Register
+	__I  uint32_t RES5[3];			///< 0x064
+	__I  uint32_t ADC_DAP[36];		///< 0x070 ADC_DAP TODO
+	__IO uint32_t DAC_DRC_HHPFC;	///< 0x100 DAC DRC High HPF Coef Register
+	__IO uint32_t DAC_DRC_LHPFC;	///< 0x104 DAC DRC Low HPF Coef Register
+	__IO uint32_t DAC_DRC_CTRL;		///< 0x108 DAC DRC Control Register
+} H3_AC_TypeDef;
+
 typedef struct T_H3_THS {
 	__IO uint32_t CTRL0;			///< 0x00 THS Control register 0
 	__IO uint32_t CTRL1;			///< 0x04 THS Control register 1
@@ -526,42 +551,46 @@ typedef struct T_H3_CNT64 {
 	__IO uint32_t HIGH;
 } H3_CNT64_TypeDef;
 
+/* http://linux-sunxi.org/PRCM */
+
 typedef struct T_H3_PRCM {
-	__IO uint32_t CPUs_CFG;			///< 0x000
-	__IO uint32_t RES0[2];			///< 0x004,0x008
-	__IO uint32_t APB0_ratio;		///< 0x00c
-	__IO uint32_t CPU0_CFG;			///< 0x010
-	__IO uint32_t CPU1_CFG;			///< 0x014
-	__IO uint32_t CPU2_CFG;			///< 0x018
-	__IO uint32_t CPU3_CFG;			///< 0x01c
-	__IO uint32_t RES1[2];			///< 0x020,0x024
-	__IO uint32_t APB0_GATE;		///< 0x028
-	__IO uint32_t RES2[5];			///< 0x02c
-	__IO uint32_t PLL_CTRL0;		///< 0x040
-	__IO uint32_t PLL_CTRL1;		///< 0x044
-	__IO uint32_t RES3[2];			///< 0x048,0x04C
+	__IO uint32_t CPUs_CFG;			///< 0x000 CPU0 (AR100) clock configuration
+	__I  uint32_t RES0[2];			///< 0x004,0x008
+	__IO uint32_t APB0_ratio;		///< 0x00c APB0 clock divide ratio
+	__IO uint32_t CPU0_CFG;			///< 0x010 CPU0 clock/NEON enable
+	__IO uint32_t CPU1_CFG;			///< 0x014 CPU1 clock/NEON enable
+	__IO uint32_t CPU2_CFG;			///< 0x018 CPU2 clock/NEON enable
+	__IO uint32_t CPU3_CFG;			///< 0x01c CPU3 clock/NEON enable
+	__I  uint32_t RES1[2];			///< 0x020,0x024
+	__IO uint32_t APB0_GATE;		///< 0x028 APB0 clock gating control
+	__I  uint32_t RES2[5];			///< 0x02c
+	__IO uint32_t PLL_CTRL0;		///< 0x040 PLL control 0
+	__IO uint32_t PLL_CTRL1;		///< 0x044 PLL control 1
+	__I  uint32_t RES3[2];			///< 0x048,0x04C
 	__IO uint32_t CLK_1wire;		///< 0x050
 	__IO uint32_t CLK_IR;			///< 0x054
-	__IO uint32_t RES4[22];			///< 0x058
+	__I  uint32_t RES4[22];			///< 0x058
 	__IO uint32_t APB0_RESET;		///< 0x0b0
-	__IO uint32_t RES5[15];			///< 0x0b4
+	__I  uint32_t RES5[15];			///< 0x0b4
 	__IO uint32_t CLK_outd;			///< 0x0f0
-	__IO uint32_t RES6[3];			///< 0x0f4,0x0F8,0x0FC
+	__I  uint32_t RES6[3];			///< 0x0f4,0x0F8,0x0FC
 	__IO uint32_t CPU_PWROFF;		///< 0x100
-	__IO uint32_t RES7[3];			///< 0x104,0x108,0x10C
+	__I  uint32_t RES7[3];			///< 0x104,0x108,0x10C
 	__IO uint32_t vdd_sys_PWROFF;	///< 0x110
-	__IO uint32_t RES8;				///< 0x114
-	__IO uint32_t gpu_PWROFF;		///< 0x118
-	__IO uint32_t RES9;				///< 0x11C
+	__I  uint32_t RES8;				///< 0x114
+	__IO uint32_t gpu_PWROFF;		///< 0x118 GPU power off gating control
+	__I  uint32_t RES9;				///< 0x11C
 	__IO uint32_t vdd_PWR_RESet;	///< 0x120
-	__IO uint32_t RES10[8];			///< 0x124
-	__IO uint32_t CPU1_PWR_CLAMP;	///< 0x144
-	__IO uint32_t CPU2_PWR_CLAMP;	///< 0x148
-	__IO uint32_t CPU3_PWR_CLAMP;	///< 0x14c
-	__IO uint32_t RES11[12];		///< 0x150
+	__I  uint32_t RES10[8];			///< 0x124
+	__IO uint32_t CPU1_PWR_CLAMP;	///< 0x144 CPU1 power clamp
+	__IO uint32_t CPU2_PWR_CLAMP;	///< 0x148 CPU2 power clamp
+	__IO uint32_t CPU3_PWR_CLAMP;	///< 0x14c CPU3 power clamp
+	__I  uint32_t RES11[12];		///< 0x150
 	__IO uint32_t dram_PWR;			///< 0x180
-	__IO uint32_t RES12[3];			///< 0x184,0x188,0x18C
+	__I  uint32_t RES12[3];			///< 0x184,0x188,0x18C
 	__IO uint32_t dram_tst;			///< 0x190
+	__I  uint32_t RES13[11];
+	__IO uint32_t AUDIO_CFG;		///< 0x1C0
 } H3_PRCM_TypeDef;
 
 #define H3_SYSTEM		((H3_SYSTEM_TypeDef *) H3_SYSTEM_BASE)
@@ -591,6 +620,7 @@ typedef struct T_H3_PRCM {
 #define H3_EMAC			((H3_EMAC_TypeDef *) H3_EMAC_BASE)
 #define H3_TIMER		((H3_TIMER_TypeDef *) H3_TIMER_BASE)
 #define H3_HS_TIMER		((H3_HS_TIMER_TypeDef *) H3_HS_TIMER_BASE)
+#define H3_AC			((H3_AC_TypeDef *) H3_AC_BASE)
 #define H3_THS			((H3_THS_TypeDef *) H3_THS_BASE)
 #define H3_UART0		((H3_UART_TypeDef *) H3_UART0_BASE)
 #define H3_UART1		((H3_UART_TypeDef *) H3_UART1_BASE)
@@ -609,14 +639,6 @@ extern "C" {
 
 extern void udelay(uint32_t);
 
-inline static uint64_t h3_read_cnt64(void) {
-	uint64_t value;
-	asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (value));
-	return value;
-}
-
-extern uint32_t h3_get_dram_size(void);
-
 typedef enum H3_BOOT_DEVICE {
 	H3_BOOT_DEVICE_UNK,
 	H3_BOOT_DEVICE_FEL,
@@ -624,8 +646,16 @@ typedef enum H3_BOOT_DEVICE {
 	H3_BOOT_DEVICE_SPI
 } h3_boot_device_t;
 
+inline static uint64_t h3_read_cnt64(void) {
+	uint64_t value;
+	asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (value));
+	return value;
+}
+
+extern uint32_t h3_get_dram_size(void);
 extern h3_boot_device_t h3_get_boot_device(void);
-extern void h3_memory_map_dump(void);
+
+extern void h3_dump_memory_map(void);
 
 #ifdef __cplusplus
 }

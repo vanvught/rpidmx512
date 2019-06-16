@@ -2,7 +2,7 @@
  * @file net_packets.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +50,13 @@ enum IPv4_ADDR {
 };
 
 enum IPv4_PROTO {
-	IPv4_PROTO_ICMP = 1,	// Not implemented
+	IPv4_PROTO_ICMP = 1,
 	IPv4_PROTO_IGMP = 2,
 	IPv4_PROTO_TCP = 6,		// Not implemented
 	IPv4_PROTO_UDP = 17
 };
 
-enum Pv4_FLAG {
+enum IPv4_FLAG {
 	IPv4_FLAG_LF = 0x0000,
 	IPv4_FLAG_MF = 0x2000,
 	IPv4_FLAG_DF = 0x4000
@@ -188,13 +188,13 @@ struct t_icmp {
 	struct t_icmp_packet icmp;
 }PACKED;
 
-#define UDP_HEADER_SIZE			(sizeof(struct t_udp_packet) - FRAME_BUFFER_SIZE)
-#define IPv4_UDP_HEADERS_SIZE 	(sizeof(struct t_ip4_packet) + UDP_HEADER_SIZE)
-#define UDP_PACKET_HEADERS_SIZE	(sizeof(struct ether_packet) + IPv4_UDP_HEADERS_SIZE)
+#define UDP_HEADER_SIZE					(sizeof(struct t_udp_packet) - FRAME_BUFFER_SIZE)
+#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct t_ip4_packet) + UDP_HEADER_SIZE)
+#define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_packet) + IPv4_UDP_HEADERS_SIZE)
 
 #define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_packet))
 #define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
 
-#define IPv4_ICMP_HEADERS_SIZE 	(sizeof(struct t_icmp) - sizeof(struct ether_packet))
+#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct ether_packet))
 
 #endif /* NET_PACKETS_H_ */

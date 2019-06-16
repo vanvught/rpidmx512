@@ -2,7 +2,7 @@
  * @file h3_cpu.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,6 @@ typedef enum h3_cpu {
 extern "C" {
 #endif
 
-extern void h3_cpu_on(h3_cpu_t);
 extern void h3_cpu_off(h3_cpu_t);
 
 extern void h3_cpu_set_clock(uint64_t);
@@ -50,6 +49,5 @@ extern uint64_t h3_cpu_get_clock(void);
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* H3_CPU_H_ */
