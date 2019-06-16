@@ -127,6 +127,7 @@ struct mmc *find_mmc_device(int dev_num) {
 	return NULL;
 }
 
+#ifdef SD_WRITE_SUPPORT
 unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt, const void*src) {
 	DEBUG1_ENTRY
 
@@ -187,6 +188,7 @@ unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt,
 	DEBUG1_EXIT
 	return blkcnt;
 }
+#endif
 
 int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned blkcnt) {
 	DEBUG1_ENTRY

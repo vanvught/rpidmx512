@@ -35,7 +35,7 @@
 
 #include "mmc_internal.h"
 
-#define SD_WRITE_SUPPORT
+// #define SD_WRITE_SUPPORT
 #define CACHE_ENABLED
 
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
