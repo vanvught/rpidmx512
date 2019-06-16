@@ -1,8 +1,8 @@
 /**
- * @file h3_dma_dump.c
+ * @file h3_dma.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,15 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
 #include "h3_dma.h"
 #include "h3.h"
 
 void h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
+#ifndef NDEBUG
 	printf("DMA lli %p:\n", (void *)lli);
 	printf("\tcfg        0x%08x\n", lli->cfg);
 	printf("\tsrc        0x%08x\n", lli->src);
@@ -38,9 +41,11 @@ void h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
 	printf("\tpara       0x%08x\n", lli->para);
 	printf("\tp_lli_next 0x%08x\n", lli->p_lli_next);
 	printf("\n");
+#endif
 }
 
 void h3_dma_dump_common(void) {
+#ifndef NDEBUG
 	printf("DMA common registers:\n");
 	printf("\t[%p] IRQ_EN0    0x%08x\n", &H3_DMA->IRQ_EN0, H3_DMA->IRQ_EN0);
 	printf("\t[%p] IRQ_EN1    0x%08x\n", &H3_DMA->IRQ_EN1, H3_DMA->IRQ_EN1);
@@ -50,9 +55,11 @@ void h3_dma_dump_common(void) {
 	printf("\t[%p] AUTO_GATE  0x%08x\n", &H3_DMA->AUTO_GATE, H3_DMA->AUTO_GATE);
 	printf("\t[%p] STA        0x%08x\n", &H3_DMA->STA, H3_DMA->STA);
 	printf("\n");
+#endif
 }
 
 void h3_dma_dump_chl(uint32_t base) {
+#ifndef NDEBUG
 	const uint32_t chl = (base - H3_DMA_CHL0_BASE) / 0x40;
 	H3_DMA_CHL_TypeDef *p = (H3_DMA_CHL_TypeDef *)base;
 
@@ -76,4 +83,5 @@ void h3_dma_dump_chl(uint32_t base) {
 	printf("\t[%p] FDESC_ADDR 0x%08x\n", &p->FDESC_ADDR, p->FDESC_ADDR);
 	printf("\t[%p] PKG_NUM    0x%08x\n", &p->PKG_NUM, p->PKG_NUM);
 	printf("\n");
+#endif
 }

@@ -2,7 +2,7 @@
  * @file h3_cpu.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,12 @@
 #define CPU_CLK_SRC_PLL_CPUX		(2 << 16)
 	#define CPU_CLK_SRC_MASK	0x03
 	#define CPU_CLK_SRC_SHIFT	16
+
+void h3_cpu_on(h3_cpu_t cpuid) {
+	assert(H3_CPU0 != cpuid);
+	assert(cpuid);
+	//TODO Implement void h3_cpu_on(h3_cpu_t cpuid)
+}
 
 void h3_cpu_off(h3_cpu_t cpuid) {
 	assert(H3_CPU0 != cpuid);

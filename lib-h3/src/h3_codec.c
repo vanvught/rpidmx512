@@ -4,7 +4,6 @@
  */
 /*
  * Based on https://github.com/allwinner-zh/linux-3.4-sunxi/blob/master/sound/soc/sunxi/audiocodec/sun8iw7_sndcodec.c
- * Based on https://elixir.bootlin.com/linux/latest/source/sound/soc/sunxi/sun4i-codec.c
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -52,80 +51,249 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-//TODO This should be moved to h3.h
-#define WRREG_BITS(reg,mask,value)			reg = ((reg) & ~(mask)) | (value);
-#define WR_CONTROL(reg,mask,shift,value)	WRREG_BITS(reg,(mask << shift),(value << shift))
+#define CODEC_BASSADDRESS         (0x01c22c00)
+#define SUNXI_DAC_DPC                (0x00)
+#define SUNXI_DAC_FIFOC              (0x04)
+#define SUNXI_DAC_FIFOS              (0x08)
+
+#define SUNXI_ADC_FIFOC              (0x10)
+#define SUNXI_ADC_FIFOS              (0x14)
+#define SUNXI_ADC_RXDATA			 (0x18)
+
+#define SUNXI_DAC_TXDATA             (0x20)
+
+#define SUNXI_DAC_DEBUG              (0x48)
+#define SUNXI_ADC_DEBUG              (0x4c)
+
+#define SUNXI_DAC_DAP_CTR            (0x60)
+#define SUNXI_DAC_DAP_VOL            (0x64)
+#define SUNXI_DAC_DAP_COFF           (0x68)
+#define SUNXI_DAC_DAP_OPT            (0x6c)
+
+#define SUNXI_DAC_DRC_HHPFC			(0X100)
+#define SUNXI_DAC_DRC_LHPFC			(0X104)
+#define SUNXI_DAC_DRC_CTRL			(0X108)
+#define SUNXI_DAC_DRC_LPFHAT		(0X10C)
+#define SUNXI_DAC_DRC_LPFLAT		(0X110)
+#define SUNXI_DAC_DRC_RPFHAT		(0X114)
+#define SUNXI_DAC_DRC_RPFLAT		(0X118)
+#define SUNXI_DAC_DRC_LPFHRT		(0X11C)
+#define SUNXI_DAC_DRC_LPFLRT		(0X120)
+#define SUNXI_DAC_DRC_RPFHRT		(0X124)
+#define SUNXI_DAC_DRC_RPFLRT		(0X128)
+#define SUNXI_DAC_DRC_LRMSHAT		(0X12C)
+#define SUNXI_DAC_DRC_LRMSLAT		(0X130)
+#define SUNXI_DAC_DRC_RRMSHAT		(0X134)
+#define SUNXI_DAC_DRC_RRMSLAT		(0X138)
+#define SUNXI_DAC_DRC_HCT		(0X13C)
+#define SUNXI_DAC_DRC_LCT		(0X140)
+#define SUNXI_DAC_DRC_HKC		(0X144)
+#define SUNXI_DAC_DRC_LKC		(0X148)
+#define SUNXI_DAC_DRC_HOPC		(0X14C)
+#define SUNXI_DAC_DRC_LOPC		(0X150)
+#define SUNXI_DAC_DRC_HLT		(0X154)
+#define SUNXI_DAC_DRC_LLT		(0X158)
+#define SUNXI_DAC_DRC_HKI		(0X15C)
+#define SUNXI_DAC_DRC_LKI		(0X160)
+#define SUNXI_DAC_DRC_HOPL		(0X164)
+#define SUNXI_DAC_DRC_LOPL		(0X168)
+#define SUNXI_DAC_DRC_HET		(0X16C)
+#define	SUNXI_DAC_DRC_LET		(0X170)
+#define SUNXI_DAC_DRC_HKE		(0X174)
+#define SUNXI_DAC_DRC_LKE		(0X178)
+#define SUNXI_DAC_DRC_HOPE		(0X17C)
+#define SUNXI_DAC_DRC_LOPE		(0X180)
+#define SUNXI_DAC_DRC_HKN		(0X184)
+#define SUNXI_DAC_DRC_LKN		(0X188)
+#define SUNXI_DAC_DRC_SFHAT		(0X18C)
+#define SUNXI_DAC_DRC_SFLAT		(0X190)
+#define SUNXI_DAC_DRC_SFHRT		(0X194)
+#define	SUNXI_DAC_DRC_SFLRT		(0X198)
+#define	SUNXI_DAC_DRC_MXGHS		(0X19C)
+#define SUNXI_DAC_DRC_MXGLS		(0X1A0)
+#define SUNXI_DAC_DRC_MNGHS		(0X1A4)
+#define SUNXI_DAC_DRC_MNGLS		(0X1A8)
+#define SUNXI_DAC_DRC_EPSHC		(0X1AC)
+#define SUNXI_DAC_DRC_EPSLC		(0X1B0)
+#define SUNXI_DAC_DRC_OPT		(0X1B4)
+#define SUNXI_DAC_HPF_HG		(0x1B8)
+#define SUNXI_DAC_HPF_LG		(0x1BC)
+
+
+#define SUNXI_ADC_DRC_HHPFC		(0X200)
+#define SUNXI_ADC_DRC_LHPFC		(0X204)
+#define SUNXI_ADC_DRC_CTRL		(0X208)
+#define SUNXI_ADC_DRC_LPFHAT		(0X20C)
+#define SUNXI_ADC_DRC_LPFLAT		(0X210)
+#define SUNXI_ADC_DRC_RPFHAT		(0X214)
+#define SUNXI_ADC_DRC_RPFLAT		(0X218)
+#define SUNXI_ADC_DRC_LPFHRT		(0X21C)
+#define SUNXI_ADC_DRC_LPFLRT		(0X220)
+#define SUNXI_ADC_DRC_RPFHRT		(0X224)
+#define SUNXI_ADC_DRC_RPFLRT		(0X228)
+#define SUNXI_ADC_DRC_LRMSHAT		(0X22C)
+#define SUNXI_ADC_DRC_LRMSLAT		(0X230)
+#define SUNXI_ADC_DRC_RRMSHAT		(0X234)
+#define SUNXI_ADC_DRC_RRMSLAT		(0X238)
+#define SUNXI_ADC_DRC_HCT		(0X23C)
+#define SUNXI_ADC_DRC_LCT		(0X240)
+#define SUNXI_ADC_DRC_HKC		(0X244)
+#define SUNXI_ADC_DRC_LKC		(0X248)
+#define SUNXI_ADC_DRC_HOPC		(0X24C)
+#define SUNXI_ADC_DRC_LOPC		(0X250)
+#define SUNXI_ADC_DRC_HLT		(0X254)
+#define SUNXI_ADC_DRC_LLT		(0X258)
+#define SUNXI_ADC_DRC_HKI		(0X25C)
+#define SUNXI_ADC_DRC_LKI		(0X260)
+#define SUNXI_ADC_DRC_HOPL		(0X264)
+#define SUNXI_ADC_DRC_LOPL		(0X268)
+#define SUNXI_ADC_DRC_HET		(0X26C)
+#define SUNXI_ADC_DRC_LET		(0X270)
+#define	SUNXI_ADC_DRC_HKE		(0X274)
+#define SUNXI_ADC_DRC_LKE		(0X278)
+#define SUNXI_ADC_DRC_HOPE		(0X27C)
+#define SUNXI_ADC_DRC_LOPE		(0X280)
+#define SUNXI_ADC_DRC_HKN		(0X284)
+#define SUNXI_ADC_DRC_LKN		(0X288)
+#define SUNXI_ADC_DRC_SFHAT		(0X28C)
+#define SUNXI_ADC_DRC_SFLAT		(0X290)
+#define SUNXI_ADC_DRC_SFHRT		(0X294)
+#define SUNXI_ADC_DRC_SFLRT		(0X298)
+#define SUNXI_ADC_DRC_MXGHS		(0X29C)
+#define SUNXI_ADC_DRC_MXGLS		(0X2A0)
+#define SUNXI_ADC_DRC_MNGHS		(0X2A4)
+#define SUNXI_ADC_DRC_MNGLS		(0X2A8)
+#define SUNXI_ADC_DRC_EPSHC		(0X2AC)
+#define SUNXI_ADC_DRC_EPSLC		(0X2B0)
+#define SUNXI_ADC_DRC_OPT		(0X2B4)
+#define SUNXI_ADC_HPF_HG		(0x2B8)
+#define SUNXI_ADC_HPF_LG		(0x2BC)
+
+/*DAC Digital Part Control Register
+* codecbase+0x00
+* SUNXI_DAC_DPC
+*/
+#define DAC_EN                    (31)
+#define HPF_EN					  (18)
+#define DIGITAL_VOL               (12)
+#define HUB_EN					  (0)
+
+/*DAC FIFO Control Register
+* codecbase+0x04
+* SUNXI_DAC_FIFOC
+*/
+#define DAC_FS					  (29)
+#define FIR_VER					  (28)
+#define SEND_LASAT                 (26)
+#define FIFO_MODE              	  (24)
+#define DAC_DRQ_CLR_CNT           (21)
+#define TX_TRI_LEVEL              (8)
+#define ADDA_LOOP_EN			  (7)
+#define DAC_MONO_EN               (6)
+#define TX_SAMPLE_BITS            (5)
+#define DAC_DRQ_EN                (4)
+#define FIFO_FLUSH 				(0)
+
+/*ADC FIFO Control Register
+* codecbase+0x10
+* SUNXI_ADC_FIFOC
+*/
+#define ADFS					  (29)
+#define EN_AD                	  (28)
+#define RX_FIFO_MODE              (24)
+#define ADCFDT					  (17)
+#define ADCDFEN					  (16)
+#define RX_FIFO_TRG_LEVEL         (8)
+#define ADC_MONO_EN               (7)
+#define RX_SAMPLE_BITS            (6)
+#define ADC_DRQ_EN                (4)
+#define ADC_FIFO_FLUSH (0)
+
+#define SUNXI_R_PRCM_PBASE 0x01f01400
+
+#define ADDA_PR_CFG_REG     	  (SUNXI_R_PRCM_PBASE+0x1c0)
+#define LINEOUT_PA_GAT			  (0x00)
+#define LOMIXSC					  (0x01)
+#define ROMIXSC					  (0x02)
+#define DAC_PA_SRC				  (0x03)
+#define LINEIN_GCTR				  (0x05)
+#define MIC_GCTR				  (0x06)
+#define PAEN_CTR				  (0x07)
+#define LINEOUT_VOLC			  (0x09)
+#define MIC2G_LINEOUT_CTR		  (0x0A)
+#define MIC1G_MICBIAS_CTR		  (0x0B)
+#define LADCMIXSC		  		  (0x0C)
+#define RADCMIXSC				  (0x0D)
+#define ADC_AP_EN				  (0x0F)
+#define ADDA_APT0				  (0x10)
+#define ADDA_APT1				  (0x11)
+#define ADDA_APT2				  (0x12)
+#define BIAS_DA16_CTR0			  (0x13)
+#define BIAS_DA16_CTR1			  (0x14)
+#define DA16CAL					  (0x15)
+#define DA16VERIFY				  (0x16)
+#define BIASCALI				  (0x17)
+#define BIASVERIFY	(0x18)
 
 /*
- * DAC Digital Part Control Register
- * DAC_DPC
- */
-#define DAC_EN			(31)
-#define HPF_EN			(18)
-#define DIGITAL_VOL		(12)
-#define HUB_EN			(0)
+*	0x00 LINEOUT_PA_GAT
+*/
+#define PA_CLK_GC		(7)
 
 /*
- * DAC FIFO Control Register
- * DAC_FIFOC
- */
-#define DAC_FS			(29)
-#define FIR_VER			(28)
-#define SEND_LASAT		(26)
-#define FIFO_MODE		(24)
-#define DAC_DRQ_CLR_CNT	(21)
-#define TX_TRI_LEVEL	(8)
-#define ADDA_LOOP_EN	(7)
-#define DAC_MONO_EN		(6)
-#define TX_SAMPLE_BITS	(5)
-#define DAC_DRQ_EN		(4)
-#define FIFO_FLUSH		(0)
+*	0x01 LOMIXSC
+*/
+#define LMIXMUTE				  (0)
+#define LMIXMUTEDACR			  (0)
+#define LMIXMUTEDACL			  (1)
+#define LMIXMUTELINEINL			  (2)
+#define LMIXMUTEMIC2BOOST		  (5)
+#define LMIXMUTEMIC1BOOST		  (6)
 
 /*
- * PRCM
- * AUDIO_CFG 0x1C0
- */
-#define LINEOUT_PA_GAT		(0x00)
-	#define PA_CLK_GC			(7)
-#define LOMIXSC				(0x01)
-	#define LMIXMUTEDACR		(0)
-	#define LMIXMUTEDACL		(1)
-#define ROMIXSC				(0x02)
-	#define RMIXMUTEDACL		(0)
-	#define RMIXMUTEDACR		(1)
-#define DAC_PA_SRC			(0x03)
-	#define DACAREN				(7)
-	#define DACALEN				(6)
-	#define RMIXEN				(5)
-	#define LMIXEN				(4)
-#define LINEIN_GCTR			(0x05)
-#define MIC_GCTR			(0x06)
-#define PAEN_CTR			(0x07)
-	#define LINEOUTEN			(7)
-#define LINEOUT_VOLC		(0x09)
-	#define LINEOUTVOL			(3)
-#define MIC2G_LINEOUT_CTR	(0x0A)
-	#define MIC2AMPEN			(7)
-	#define MIC2BOOST			(4)
-	#define LINEOUTL_EN			(3)
-	#define LINEOUTR_EN			(2)
-	#define LINEOUTL_SS			(1)
-	#define LINEOUTR_SS			(0)
-#define MIC1G_MICBIAS_CTR	(0x0B)
-#define LADCMIXSC			(0x0C)
-#define RADCMIXSC			(0x0D)
-#define ADC_AP_EN			(0x0F)
-#define ADDA_APT0			(0x10)
-#define ADDA_APT1			(0x11)
-#define ADDA_APT2			(0x12)
-#define BIAS_DA16_CTR0		(0x13)
-#define BIAS_DA16_CTR1		(0x14)
-#define DA16CAL				(0x15)
-#define DA16VERIFY			(0x16)
-#define BIASCALI			(0x17)
-#define BIASVERIFY			(0x18)
+*	0x02 ROMIXSC
+*/
+#define RMIXMUTE				  (0)
+#define RMIXMUTEDACL			  (0)
+#define RMIXMUTEDACR			  (1)
+#define RMIXMUTELINEINR			  (2)
+#define RMIXMUTEMIC2BOOST		  (5)
+#define RMIXMUTEMIC1BOOST	(6)
 
-#define SCLK_1X_GATING		(1 << 31)
+/*
+*	0x03 DAC_PA_SRC
+*/
+#define DACAREN			(7)
+#define DACALEN			(6)
+#define RMIXEN			(5)
+#define LMIXEN	(4)
+
+/*
+*	0x07 PAEN_CTR
+*/
+#define LINEOUTEN		 (7)
+#define PA_ANTI_POP_CTRL (2)
+
+/*
+*	0x09 LINEOUT_VOLC
+*/
+#define LINEOUTVOL	(3)
+
+/*
+*	0x0A MIC2G_LINEOUT_CTR
+*/
+#define MIC2AMPEN		(7)
+#define MIC2BOOST		(4)
+#define LINEOUTL_EN		(3)
+#define LINEOUTR_EN		(2)
+#define LINEOUTL_SS		(1)
+#define LINEOUTR_SS		(0)
+
+#define SCLK_1X_GATING	(1 << 31)
+
+/*                            ns  nw  ks  kw  ms  mw  ps  pw  d1s  d1w  d2s  d2w  {frac  out  mode}  en-s   sdmss  sdmsw  	sdmpat      sdmval
+SUNXI_CLK_FACTORS(pll_audio,  8,  7,  0,  0,  0,  5,  16, 4,  0,   0,   0,   0,    0,    0,   0,     31,   24,     1,       PLL_AUDIOPAT,0xc0010d84);
+*/
 
 #define PLL_FACTOR_M_MASK	0x1F
 #define PLL_FACTOR_M_SHIFT	0
@@ -136,9 +304,16 @@
 #define PLL_FACTOR_P_MASK	0x0F
 #define PLL_FACTOR_P_SHIFT	16
 
-#define PLL_LOCK			(1 << 28)	// Read only, 1 indicates that the PLL has been stable
-#define PLL_SDM_ENABLE		(1 << 24)
-#define PLL_ENABLE			(1 << 31)
+#define PLL_LOCK					(1 << 28)	// Read only, 1 indicates that the PLL has been stable
+#define PLL_SDM_ENABLE				(1 << 24)
+#define PLL_ENABLE					(1 << 31)
+
+#define writel(v,a) (*(volatile uint32_t *)(a) = (v))
+#define readl(a)	(*(volatile uint32_t *)(a))
+
+#define msleep(x)	__msdelay(x)
+
+#define	ARM_DMA_ALIGN	64
 
 #define	CONFIG_BUFSIZE		(16 * 1024)
 #define CONFIG_TX_DESCR_NUM	(1)
@@ -152,22 +327,21 @@ struct coherent_region {
 static struct coherent_region *p_coherent_region = (struct coherent_region *)(H3_MEM_COHERENT_REGION + MEGABYTE/2);
 
 static uint32_t read_prcm_wvalue(uint32_t addr) {
-	uint32_t reg;
-
-	reg = H3_PRCM->AUDIO_CFG;
+	unsigned int reg;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg |= (0x1 << 28);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= ~(0x1 << 24);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= ~(0x1f << 16);
 	reg |= (addr << 16);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= (0xff << 0);
 
 	return reg;
@@ -175,33 +349,31 @@ static uint32_t read_prcm_wvalue(uint32_t addr) {
 
 static void write_prcm_wvalue(uint32_t addr, uint32_t val) {
 	uint32_t reg;
-
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg |= (0x1 << 28);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= ~(0x1f << 16);
 	reg |= (addr << 16);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= ~(0xff << 8);
 	reg |= (val << 8);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg |= (0x1 << 24);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 
-	reg = H3_PRCM->AUDIO_CFG;
+	reg = readl(ADDA_PR_CFG_REG);
 	reg &= ~(0x1 << 24);
-	H3_PRCM->AUDIO_CFG = reg;
+	writel(reg, ADDA_PR_CFG_REG);
 }
 
-static void codec_wrreg_prcm_bits(uint32_t reg, uint32_t mask, uint32_t value) {
+static void codec_wrreg_prcm_bits(unsigned short reg, uint32_t mask, uint32_t value) {
 	uint32_t old, new;
-
 	old = read_prcm_wvalue(reg);
 	new = (old & ~mask) | value;
 	write_prcm_wvalue(reg, new);
@@ -209,27 +381,116 @@ static void codec_wrreg_prcm_bits(uint32_t reg, uint32_t mask, uint32_t value) {
 
 static void codec_wr_prcm_control(uint32_t reg, uint32_t mask, uint32_t shift, uint32_t val) {
 	uint32_t reg_val;
-
 	reg_val = val << shift;
 	mask = mask << shift;
 	codec_wrreg_prcm_bits(reg, mask, reg_val);
 }
 
+#define codec_rdreg(reg)		readl((CODEC_BASSADDRESS +(reg)))
+#define codec_wrreg(reg,val) 	writel((val),(CODEC_BASSADDRESS+(reg)))
+
+static int codec_wrreg_bits(unsigned short reg, uint32_t mask, uint32_t value) {
+	uint32_t old, new;
+
+	old = codec_rdreg(reg);
+	new = (old & ~mask) | value;
+	codec_wrreg(reg, new);
+
+	return 0;
+}
+
+static int codec_wr_control(uint32_t reg, uint32_t mask, uint32_t shift, uint32_t val) {
+	uint32_t reg_val;
+	reg_val = val << shift;
+	mask = mask << shift;
+	codec_wrreg_bits(reg, mask, reg_val);
+	return 0;
+}
+
+void dacdrc_config(void) {
+	//codec_wr_control(SUNXI_DAC_DRC_HHPFC    , 0xffff, 0,    0x00000000);
+	//codec_wr_control(SUNXI_DAC_DRC_LHPFC    , 0xffff, 0,    0x00000000);
+
+	codec_wr_control(SUNXI_DAC_DRC_CTRL     , 0xffff, 0,    0x00000000);
+
+	codec_wr_control(SUNXI_DAC_DRC_LPFHAT   , 0xffff, 0,    0x00000000); // Left
+	codec_wr_control(SUNXI_DAC_DRC_LPFLAT   , 0xffff, 0,    0x00000000);
+
+	codec_wr_control(SUNXI_DAC_DRC_RPFHAT   , 0xffff, 0,    0x0000000B);
+	codec_wr_control(SUNXI_DAC_DRC_RPFLAT   , 0xffff, 0,    0x000077EF);
+
+	codec_wr_control(SUNXI_DAC_DRC_LPFHRT   , 0xffff, 0,    0x00000000); // Left
+	codec_wr_control(SUNXI_DAC_DRC_LPFLRT   , 0xffff, 0,    0x00000000);
+
+	codec_wr_control(SUNXI_DAC_DRC_RPFHRT   , 0xffff, 0,    0x000000FF);
+	codec_wr_control(SUNXI_DAC_DRC_RPFLRT   , 0xffff, 0,    0x0000E1F8);
+
+	codec_wr_control(SUNXI_DAC_DRC_LRMSHAT  , 0xffff, 0,    0x00000000); // Left
+	codec_wr_control(SUNXI_DAC_DRC_LRMSLAT  , 0xffff, 0,    0x00000000);
+
+	codec_wr_control(SUNXI_DAC_DRC_RRMSHAT  , 0xffff, 0,    0x00000001);
+	codec_wr_control(SUNXI_DAC_DRC_RRMSLAT  , 0xffff, 0,    0x00002BAF);
+
+	codec_wr_control(SUNXI_DAC_DRC_HCT      , 0xffff, 0,    0x000006A4); // 0x000004FB
+	codec_wr_control(SUNXI_DAC_DRC_LCT      , 0xffff, 0,    0x0000D3C0); // 0x00009ED0
+
+	codec_wr_control(SUNXI_DAC_DRC_HKC      , 0xffff, 0,    0x00000100);
+	codec_wr_control(SUNXI_DAC_DRC_LKC      , 0xffff, 0,    0x00000000);
+	codec_wr_control(SUNXI_DAC_DRC_HOPC     , 0xffff, 0,    0x0000FBD8);
+	codec_wr_control(SUNXI_DAC_DRC_LOPC     , 0xffff, 0,    0x0000FBA8);
+	codec_wr_control(SUNXI_DAC_DRC_HLT      , 0xffff, 0,    0x00000352);
+	codec_wr_control(SUNXI_DAC_DRC_LLT      , 0xffff, 0,    0x000069E0);
+	codec_wr_control(SUNXI_DAC_DRC_HKI      , 0xffff, 0,    0x00000080);
+	codec_wr_control(SUNXI_DAC_DRC_LKI      , 0xffff, 0,    0x00000000);
+	codec_wr_control(SUNXI_DAC_DRC_HOPL     , 0xffff, 0,    0x0000FD82);
+	codec_wr_control(SUNXI_DAC_DRC_LOPL     , 0xffff, 0,    0x00003098);
+	codec_wr_control(SUNXI_DAC_DRC_HET      , 0xffff, 0,    0x00000779);
+	codec_wr_control(SUNXI_DAC_DRC_LET      , 0xffff, 0,    0x00006E38);
+	codec_wr_control(SUNXI_DAC_DRC_HKE      , 0xffff, 0,    0x00000100);
+	codec_wr_control(SUNXI_DAC_DRC_LKE      , 0xffff, 0,    0x00000000);
+	codec_wr_control(SUNXI_DAC_DRC_HOPE     , 0xffff, 0,    0x0000F906);
+	codec_wr_control(SUNXI_DAC_DRC_LOPE     , 0xffff, 0,    0x000021A9);
+	codec_wr_control(SUNXI_DAC_DRC_HKN      , 0xffff, 0,    0x00000122);
+	codec_wr_control(SUNXI_DAC_DRC_LKN      , 0xffff, 0,    0x00002222);
+	codec_wr_control(SUNXI_DAC_DRC_SFHAT    , 0xffff, 0,    0x00000002);
+	codec_wr_control(SUNXI_DAC_DRC_SFLAT    , 0xffff, 0,    0x00005600);
+	codec_wr_control(SUNXI_DAC_DRC_SFHRT    , 0xffff, 0,    0x00000000);
+	codec_wr_control(SUNXI_DAC_DRC_SFLRT    , 0xffff, 0,    0x00000F04);
+	codec_wr_control(SUNXI_DAC_DRC_MXGHS    , 0xffff, 0,    0x0000FE56);
+	codec_wr_control(SUNXI_DAC_DRC_MXGLS    , 0xffff, 0,    0x0000CB0F);
+	codec_wr_control(SUNXI_DAC_DRC_MNGHS    , 0xffff, 0,    0x0000F95B);
+	codec_wr_control(SUNXI_DAC_DRC_MNGLS    , 0xffff, 0,    0x00002C3F);
+	codec_wr_control(SUNXI_DAC_DRC_EPSHC    , 0xffff, 0,    0x00000000);
+	codec_wr_control(SUNXI_DAC_DRC_EPSLC    , 0xffff, 0,    0x0000640C);
+}
+
+void dacdrc_enable(bool on) {
+	if (on) {
+		codec_wr_control( SUNXI_DAC_DAP_CTR, 0x1, 15, 1);
+		codec_wr_control( SUNXI_DAC_DAP_CTR, 0x1, 31, 1);
+
+	} else {
+		codec_wr_control( SUNXI_DAC_DAP_CTR, 0x1, 15, 0);
+		codec_wr_control( SUNXI_DAC_DAP_CTR, 0x1, 31, 0);
+	}
+
+}
+
 static void codec_init(uint32_t lineout_vol) {
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
 
 	codec_wr_prcm_control(PAEN_CTR, 0x1, LINEOUTEN, 0x1);
 
 	codec_wr_prcm_control(LINEOUT_VOLC, 0x1f, LINEOUTVOL, lineout_vol);
 
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACAREN, 0x1);				// Internal Analog Right channel DAC enable
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACALEN, 0x1);				// Internal Analog Left channel DAC enable
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, RMIXEN, 0x1);				// Right Analog Output Mixer Enable
-	codec_wr_prcm_control(DAC_PA_SRC, 0x1, LMIXEN, 0x1);				// Left Analog Output Mixer Enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACAREN, 0x1);	// Internal Analog Right channel DAC enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, DACALEN, 0x1);	// Internal Analog Left channel DAC enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, RMIXEN, 0x1);	// Right Analog Output Mixer Enable
+	codec_wr_prcm_control(DAC_PA_SRC, 0x1, LMIXEN, 0x1);	// Left Analog Output Mixer Enable
 
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTL_EN, 0x1);	// Enable Line-out Left
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_EN, 0x1);	// Enable Line-out Right
-	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_SS, 0x1);	// Differential output
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTL_EN, 0x1); // Enable Line-out Left
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_EN, 0x1); // Enable Line-out Right
+	codec_wr_prcm_control(MIC2G_LINEOUT_CTR, 0x1, LINEOUTR_SS, 0x1); // Differential output
 
 	codec_wr_prcm_control(LOMIXSC, 0x1, LMIXMUTEDACL, 0x1);
 	codec_wr_prcm_control(ROMIXSC, 0x1, RMIXMUTEDACR, 0x1);
@@ -268,7 +529,12 @@ static void clk_set_rate_codec(uint32_t rate) {
 	} while (!(value & PLL_LOCK));
 }
 
-static void clk_set_rate_codec_module(void) {
+/*
+SUNXI_CLK_PERIPH(name,    mux_reg,    mux_shift, mux_width, div_reg,    div_mshift, div_mwidth, div_nshift, div_nwidth, gate_flags, enable_reg, reset_reg, bus_gate_reg, drm_gate_reg, enable_shift, reset_shift, bus_gate_shift, dram_gate_shift, lock,com_gate,com_gate_off)
+SUNXI_CLK_PERIPH(adda,    0,           0,        0,         0,          0,          0,          0,          0,          0,          ADDA_CFG,   BUS_RST3,  BUS_GATE2,    0,           31,            0,           0,              0,               &clk_lock,NULL,             0);
+*/
+
+static void clk_set_rate_codec_module(uint32_t rate) {
 	H3_CCU->AC_DIG_CLK = SCLK_1X_GATING;
 
 	H3_CCU->BUS_SOFT_RESET3 |= CCU_BUS_SOFT_RESET3_AC;
@@ -279,125 +545,149 @@ static void clk_set_rate_codec_module(void) {
 }
 
 static void codec_prepare(uint32_t rate) {
-	WR_CONTROL(H3_AC->DAC_DPC, 0x1, DAC_EN, 0x1);
-
+	codec_wr_control(SUNXI_DAC_DPC, 0x1, DAC_EN, 0x1);
 	codec_wr_prcm_control(LINEOUT_PA_GAT, 0x1, PA_CLK_GC, 0x0);
 
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, DAC_DRQ_EN, 0x1);
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, DAC_DRQ_EN, 0x1);
 
 	/* Flush the TX FIFO */
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIFO_FLUSH, 0x1);
 
 	/* Set TX FIFO Empty Trigger Level */
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x3f, TX_TRI_LEVEL, 0xf);
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x3f, TX_TRI_LEVEL, 0xf);
 
 	if (rate > 32000) {
 		/* Use 64 bits FIR filter */
-		WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIR_VER, 0x0);
+		codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIR_VER, 0x0);
 	} else {
 		/* Use 32 bits FIR filter */
-		WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIR_VER, 0x1);
+		codec_wr_control(SUNXI_DAC_FIFOC, 0x1, FIR_VER, 0x1);
 	}
 
 	/* Send zeros when we have an underrun */
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, SEND_LASAT, 0x0);
-}
-
-static uint32_t codec_get_mod_freq(uint32_t rate) {
-	switch (rate) {
-	case 176400:
-	case 88200:
-	case 44100:
-	case 33075:
-	case 22050:
-	case 14700:
-	case 11025:
-	case 7350:
-		return 22579200;
-
-	case 192000:
-	case 96000:
-	case 48000:
-	case 32000:
-	case 24000:
-	case 16000:
-	case 12000:
-	case 8000:
-		return 24576000;
-
-	default:
-		return 24576000; // Default for 48000
-	}
-}
-
-static uint32_t codec_get_hw_rate(uint32_t rate) {
-	switch (rate) {
-	case 192000:
-	case 176400:
-		return 6;
-
-	case 96000:
-	case 88200:
-		return 7;
-
-	case 48000:
-	case 44100:
-		return 0;
-
-	case 32000:
-	case 33075:
-		return 1;
-
-	case 24000:
-	case 22050:
-		return 2;
-
-	case 16000:
-	case 14700:
-		return 3;
-
-	case 12000:
-	case 11025:
-		return 4;
-
-	case 8000:
-	case 7350:
-		return 5;
-
-	default:
-		return 0; // Default for 48000
-	}
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x1, SEND_LASAT, 0x0);
 }
 
 
 static void codec_hw_params(uint32_t rate, uint32_t channels) {
-	clk_set_rate_codec_module();
+	uint32_t reg_val;
 
 	/* Set DAC sample rate */
-	const uint32_t hw_rate = codec_get_hw_rate(rate);
-
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x7, DAC_FS, hw_rate);
-
-	DEBUG_PRINTF("hw_rate=%d", hw_rate);
-
-	const uint32_t mod_freq = codec_get_mod_freq(rate);
-
-	clk_set_rate_codec(mod_freq);
-
-	DEBUG_PRINTF("mod_freq=%d", mod_freq);
+	switch (rate) {
+	case 44100:
+		clk_set_rate_codec(22579200);
+		clk_set_rate_codec_module(22579200);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (0 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 22050:
+		clk_set_rate_codec(22579200);
+		clk_set_rate_codec_module(22579200);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (2 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 11025:
+		clk_set_rate_codec(22579200);
+		clk_set_rate_codec_module(22579200);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (4 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 48000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (0 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 96000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (7 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 192000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (6 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 32000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (1 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 24000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (2 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 16000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (3 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 12000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (4 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	case 8000:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (5 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	default:
+		clk_set_rate_codec(24576000);
+		clk_set_rate_codec_module(24576000);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(7 << 29);
+		reg_val |= (0 << 29);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		break;
+	}
 
 	/* Set the number of channels we want to use */
 	if (channels == 1) {
-		WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, DAC_MONO_EN, 0x1);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val |= (1 << 6);		// TODO use define
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
 	} else {
-		WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, DAC_MONO_EN, 0x0);
+		reg_val = readl(CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
+		reg_val &= ~(1 << 6);
+		writel(reg_val, CODEC_BASSADDRESS + SUNXI_DAC_FIFOC);
 	}
 
 	/* Set the number of sample bits to 16 bits */
-	WR_CONTROL(H3_AC->DAC_FIFOC ,0x1, TX_SAMPLE_BITS, 0x0);
+	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, TX_SAMPLE_BITS, 0x0);
 
 	/* Set TX FIFO mode to repeat the MSB */
-	WR_CONTROL(H3_AC->DAC_FIFOC ,0x1, FIFO_MODE, 0x1);
+	codec_wr_control(SUNXI_DAC_FIFOC ,0x1, FIFO_MODE, 0x1);
 
 	/* DMA_SLAVE_BUSWIDTH_2_BYTES */
 
@@ -417,7 +707,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 	gic_unpend(H3_DMA_IRQn);
 	isb();
 
-	udelay(10); //FIXME Replace with read circular buffer
+	udelay(10);
 
 #ifdef LOGIC_ANALYZER
 	h3_gpio_clr(6);
@@ -450,7 +740,7 @@ void h3_codec_begin(void) {
 					| DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(1) | DMA_CHAN_CFG_SRC_BURST(1)
 					| DMA_CHAN_CFG_DST_DRQ(DRQDST_AUDIO_CODEC) | DMA_CHAN_CFG_DST_WIDTH(1) | DMA_CHAN_CFG_DST_BURST(1);
 		lli->src = (uint32_t) &txbuffs[i * CONFIG_BUFSIZE];
-		lli->dst = (uint32_t) &H3_AC->DAC_TXDATA;
+		lli->dst = (uint32_t) CODEC_BASSADDRESS + SUNXI_DAC_TXDATA;
 		lli->len = CONFIG_BUFSIZE;
 		lli->para = DMA_NORMAL_WAIT;
 
@@ -495,11 +785,11 @@ void h3_codec_begin(void) {
 	 * Stop issuing DRQ when we have room for less than 16 samples
 	 * in our TX FIFO
 	 */
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
+	codec_wr_control(SUNXI_DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
 }
 
 void h3_codec_start(void) {
-	H3_AC->DAC_DAP_CTR = 0;
+	writel(0, CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR);
 
 #ifndef NDEBUG
 	uint32_t i;
@@ -525,20 +815,20 @@ void h3_codec_start(void) {
 	printf("CCU_PLL_AUDIO=%ld n=%d,m=%d,p=%d\n", (long int) freq, n, m, p);
 	printf("================\n");
 
-	printf("H3_AC->DAC_DPC=%p ", H3_AC->DAC_DPC);
-	debug_print_bits(H3_AC->DAC_DPC);
+	printf("AC_DAC_DPC=%p ", readl(CODEC_BASSADDRESS));
+	debug_print_bits(readl(CODEC_BASSADDRESS));
 
-	printf("H3_AC->DAC_FIFOC=%p ", H3_AC->DAC_FIFOC);
-	debug_print_bits(H3_AC->DAC_FIFOC);
+	printf("AC_DAC_FIFOC=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOC));
+	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOC));
 
-	printf("H3_AC->DAC_FIFOS=%p ", H3_AC->DAC_FIFOS);
-	debug_print_bits(H3_AC->DAC_FIFOS);
+	printf("AC_DAC_FIFOS=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
+	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_FIFOS));
 
-	printf("H3_AC->DAC_DAP_CTR=%p ", H3_AC->DAC_DAP_CTR);
-	debug_print_bits(H3_AC->DAC_DAP_CTR);
+	printf("AC_DAC_DAP_CTR=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR));
+	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_DAP_CTR));
 
-	printf("H3_AC->DAC_DRC_CTRL=%p ", H3_AC->DAC_DRC_CTRL);
-	debug_print_bits(H3_AC->DAC_DRC_CTRL);
+	printf("AC_DAC_DRC_CTRL=%p ", readl(CODEC_BASSADDRESS+SUNXI_DAC_DRC_CTRL));
+	debug_print_bits(readl(CODEC_BASSADDRESS+SUNXI_DAC_DRC_CTRL));
 
 	printf("================\n");
 
@@ -549,13 +839,13 @@ void h3_codec_start(void) {
 	debug_print_bits(read_prcm_wvalue(MIC2G_LINEOUT_CTR));
 
 	printf("================\n");
+
+	//debug_dump(p_coherent_region->txbuffer, p_coherent_region->lli[0].len);
 #endif
 
 	H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_START;
 
-#ifndef NDEBUG
 	h3_dma_dump_chl(H3_DMA_CHL0_BASE);
-#endif
 }
 
 int16_t *h3_codec_get_pointer(uint32_t index, uint32_t length) {
@@ -570,3 +860,4 @@ int16_t *h3_codec_get_pointer(uint32_t index, uint32_t length) {
 
 	return (int16_t *)&txbuffs[index * CONFIG_BUFSIZE];
 }
+
