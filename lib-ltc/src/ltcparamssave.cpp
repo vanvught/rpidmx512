@@ -26,7 +26,6 @@
 #include <assert.h>
 
 #include "ltcparams.h"
-#include "ltcreader.h"
 
 #include "propertiesbuilder.h"
 

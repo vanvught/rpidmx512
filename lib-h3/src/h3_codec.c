@@ -28,7 +28,6 @@
  */
 
 #undef NDEBUG
-#define LOGIC_ANALYZER
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -52,7 +51,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-//TODO This should be moved to h3.h
+//TODO This could be moved to h3.h
 #define WRREG_BITS(reg,mask,value)			reg = ((reg) & ~(mask)) | (value);
 #define WR_CONTROL(reg,mask,shift,value)	WRREG_BITS(reg,(mask << shift),(value << shift))
 
@@ -98,8 +97,6 @@
 	#define DACALEN				(6)
 	#define RMIXEN				(5)
 	#define LMIXEN				(4)
-#define LINEIN_GCTR			(0x05)
-#define MIC_GCTR			(0x06)
 #define PAEN_CTR			(0x07)
 	#define LINEOUTEN			(7)
 #define LINEOUT_VOLC		(0x09)
@@ -111,19 +108,6 @@
 	#define LINEOUTR_EN			(2)
 	#define LINEOUTL_SS			(1)
 	#define LINEOUTR_SS			(0)
-#define MIC1G_MICBIAS_CTR	(0x0B)
-#define LADCMIXSC			(0x0C)
-#define RADCMIXSC			(0x0D)
-#define ADC_AP_EN			(0x0F)
-#define ADDA_APT0			(0x10)
-#define ADDA_APT1			(0x11)
-#define ADDA_APT2			(0x12)
-#define BIAS_DA16_CTR0		(0x13)
-#define BIAS_DA16_CTR1		(0x14)
-#define DA16CAL				(0x15)
-#define DA16VERIFY			(0x16)
-#define BIASCALI			(0x17)
-#define BIASVERIFY			(0x18)
 
 #define SCLK_1X_GATING		(1 << 31)
 
@@ -140,13 +124,25 @@
 #define PLL_SDM_ENABLE		(1 << 24)
 #define PLL_ENABLE			(1 << 31)
 
-#define	CONFIG_BUFSIZE		(16 * 1024)
-#define CONFIG_TX_DESCR_NUM	(1)
-#define TX_TOTAL_BUFSIZE	(CONFIG_BUFSIZE * CONFIG_TX_DESCR_NUM)
+#define	CONFIG_BUFSIZE				(8 * 1024)
+#define CONFIG_TX_DESCR_NUM			(1 << 1)		// INFO This cannot be changed without rewriting FIQ handler
+#define CONFIG_TX_DESCR_NUM_MASK    (CONFIG_TX_DESCR_NUM - 1)
+
+static volatile uint32_t circular_buffer_index_head;
+static volatile uint32_t circular_buffer_index_tail;
+static uint32_t circular_buffer_size;
+#ifndef NDEBUG
+ static volatile bool circular_buffer_full;
+#endif
+
+#define CIRCULAR_BUFFER_INDEX_ENTRIES	(1 << 1)
+#define CIRCULAR_BUFFER_INDEX_MASK 		(CIRCULAR_BUFFER_INDEX_ENTRIES - 1)
+
+static int16_t circular_buffer[CIRCULAR_BUFFER_INDEX_ENTRIES][CONFIG_BUFSIZE] ALIGNED;
 
 struct coherent_region {
 	struct sunxi_dma_lli lli[CONFIG_TX_DESCR_NUM];
-	int16_t txbuffer[TX_TOTAL_BUFSIZE] ALIGNED;
+	int16_t txbuffer[CONFIG_TX_DESCR_NUM][CONFIG_BUFSIZE] ALIGNED;
 };
 
 static struct coherent_region *p_coherent_region = (struct coherent_region *)(H3_MEM_COHERENT_REGION + MEGABYTE/2);
@@ -299,8 +295,8 @@ static void codec_prepare(uint32_t rate) {
 		WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, FIR_VER, 0x1);
 	}
 
-	/* Send zeros when we have an underrun */
-	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, SEND_LASAT, 0x0);
+	/* Send last when we have an underrun */
+	WR_CONTROL(H3_AC->DAC_FIFOC, 0x1, SEND_LASAT, 0x1);
 }
 
 static uint32_t codec_get_mod_freq(uint32_t rate) {
@@ -369,7 +365,6 @@ static uint32_t codec_get_hw_rate(uint32_t rate) {
 	}
 }
 
-
 static void codec_hw_params(uint32_t rate, uint32_t channels) {
 	clk_set_rate_codec_module();
 
@@ -404,12 +399,46 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 	codec_prepare(rate);
 }
 
-static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
+static void __attribute__((interrupt("FIQ"))) codec_fiq_handler(void) {
 	dmb();
+	clean_data_cache();
+	isb();
 
 #ifdef LOGIC_ANALYZER
 	h3_gpio_set(6);
 #endif
+
+
+#if (CONFIG_TX_DESCR_NUM != 2)
+ #error
+#endif
+	int16_t *txbuffs = &p_coherent_region->txbuffer[0][0];
+
+	if ((H3_DMA_CHL0->CUR_SRC & (2 * CONFIG_BUFSIZE)) == ((uint32_t) txbuffs & (2 * CONFIG_BUFSIZE))) {
+		txbuffs = &p_coherent_region->txbuffer[1][0];
+	}
+
+	int16_t *src;
+
+	if (circular_buffer_index_head != circular_buffer_index_tail) {
+		src = &circular_buffer[circular_buffer_index_tail][0];
+		circular_buffer_index_tail = (circular_buffer_index_tail + 1) & CIRCULAR_BUFFER_INDEX_MASK;
+#ifndef NDEBUG
+		circular_buffer_full = false;
+#endif
+	} else {
+		src = &circular_buffer[1 - circular_buffer_index_head][0];
+	}
+
+	uint32_t i;
+
+	for (i = 0; i < circular_buffer_size; i++) {
+		*txbuffs = *src;
+		txbuffs++;
+		src++;
+	}
+
+	dmb();
 
 	H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
 
@@ -417,16 +446,19 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 	gic_unpend(H3_DMA_IRQn);
 	isb();
 
-	udelay(10); //FIXME Replace with read circular buffer
-
 #ifdef LOGIC_ANALYZER
 	h3_gpio_clr(6);
 #endif
+
 	dmb();
 }
 
 void h3_codec_begin(void) {
+	__disable_fiq();
+
 #ifdef LOGIC_ANALYZER
+	h3_gpio_fsel(1, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(1);
 	h3_gpio_fsel(6, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(6);
 #endif
@@ -435,12 +467,12 @@ void h3_codec_begin(void) {
 	 * DMA setup
 	 */
 
-	uint32_t i;
+	uint32_t i,j;
 
-	int16_t *txbuffs = &p_coherent_region->txbuffer[0];
-
-	for (i = 0; i < TX_TOTAL_BUFSIZE; i++) {
-		p_coherent_region->txbuffer[i] = 0;
+	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
+		for (j = 0; j < CONFIG_BUFSIZE; j++) {
+			p_coherent_region->txbuffer[i][j] = 0;
+		}
 	}
 
 	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
@@ -449,7 +481,8 @@ void h3_codec_begin(void) {
 		lli->cfg = DMA_CHAN_CFG_DST_IO_MODE | DMA_CHAN_CFG_SRC_LINEAR_MODE
 					| DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(1) | DMA_CHAN_CFG_SRC_BURST(1)
 					| DMA_CHAN_CFG_DST_DRQ(DRQDST_AUDIO_CODEC) | DMA_CHAN_CFG_DST_WIDTH(1) | DMA_CHAN_CFG_DST_BURST(1);
-		lli->src = (uint32_t) &txbuffs[i * CONFIG_BUFSIZE];
+
+		lli->src = (uint32_t) &p_coherent_region->txbuffer[i][0];
 		lli->dst = (uint32_t) &H3_AC->DAC_TXDATA;
 		lli->len = CONFIG_BUFSIZE;
 		lli->para = DMA_NORMAL_WAIT;
@@ -458,14 +491,14 @@ void h3_codec_begin(void) {
 			struct sunxi_dma_lli *lli_prev = &p_coherent_region->lli[i - 1];
 			lli_prev->p_lli_next = (uint32_t) lli;
 		}
+
+		h3_dma_dump_lli(lli);
 	}
 
 	struct sunxi_dma_lli *lli_last = &p_coherent_region->lli[CONFIG_TX_DESCR_NUM - 1];
 	lli_last->p_lli_next =  (uint32_t) &p_coherent_region->lli[0];
 
-	__disable_fiq();
-
-	arm_install_handler((unsigned) fiq_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
+	arm_install_handler((unsigned) codec_fiq_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
 
 	gic_fiq_config(H3_DMA_IRQn, GIC_CORE0);
 
@@ -480,12 +513,11 @@ void h3_codec_begin(void) {
 	H3_DMA_CHL0->DESC_ADDR = (uint32_t) &p_coherent_region->lli[0];
 
 	isb();
+	__enable_fiq();
 
 	/**
 	 * Codec setup
 	 */
-
-	__enable_fiq();
 
 	codec_init(31);
 
@@ -496,6 +528,12 @@ void h3_codec_begin(void) {
 	 * in our TX FIFO
 	 */
 	WR_CONTROL(H3_AC->DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
+
+	circular_buffer_index_head = 0;
+	circular_buffer_index_tail = 0;
+#ifndef NDEBUG
+	circular_buffer_full = false;
+#endif
 }
 
 void h3_codec_start(void) {
@@ -558,15 +596,45 @@ void h3_codec_start(void) {
 #endif
 }
 
-int16_t *h3_codec_get_pointer(uint32_t index, uint32_t length) {
-	assert(index < CONFIG_TX_DESCR_NUM);
+void h3_codec_set_buffer_length(uint32_t length) {
 	assert((length * 2) < CONFIG_BUFSIZE);
 
-	struct sunxi_dma_lli *lli = &p_coherent_region->lli[index];
+	__disable_fiq();
 
-	lli->len = length * 2;
+	H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_STOP;
 
-	const int16_t *txbuffs = &p_coherent_region->txbuffer[0];
+	circular_buffer_size = length;
 
-	return (int16_t *)&txbuffs[index * CONFIG_BUFSIZE];
+	uint32_t i;
+
+	for (i = 0; i < CONFIG_TX_DESCR_NUM; i++) {
+		struct sunxi_dma_lli *lli = &p_coherent_region->lli[i];
+		lli->len = length * 2;;
+
+	}
+
+	__enable_fiq();
+}
+
+void h3_codec_push_data(const int16_t *src) {
+#ifndef NDEBUG
+	if (circular_buffer_full) {
+		printf("f");
+	}
+#endif
+	uint32_t i;
+
+	int16_t *dst = &circular_buffer[circular_buffer_index_head][0];
+
+	for (i = 0; i < circular_buffer_size; i++) {
+		*dst = *src;
+		dst++;
+		src++;
+	}
+
+	circular_buffer_index_head = (circular_buffer_index_head + 1) & CIRCULAR_BUFFER_INDEX_MASK;
+
+#ifndef NDEBUG
+	circular_buffer_full = (circular_buffer_index_head == circular_buffer_index_tail);
+#endif
 }

@@ -24,10 +24,13 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
-#include "artnetreader.h"
+#include "h3/artnetreader.h"
+#include "ltc.h"
 
 #include "hardwarebaremetal.h"
 
@@ -40,8 +43,6 @@
  #include "console.h"
 #endif
 
-#include "ltc.h"
-
 // Input
 #include "artnettimecode.h"
 
@@ -50,6 +51,7 @@
 #include "display.h"
 #include "displaymax7219.h"
 #include "midi.h"
+#include "h3/ltcsender.h"
 
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
@@ -89,7 +91,7 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-static void itoa_base10(int arg, char *buf) {
+static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -98,8 +100,8 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = (char) ('0' + (arg / 10));
+	*n = (char) ('0' + (arg % 10));
 }
 
 ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
@@ -127,8 +129,10 @@ void ArtNetReader::Start(void) {
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-	irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
-	H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
+	if (!m_ptLtcDisabledOutputs->bMidi) {
+		irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
+		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
+	}
 }
 
 void ArtNetReader::Stop(void) {
@@ -144,6 +148,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 #endif
 
 	nUpdates++;
+
+	if (!m_ptLtcDisabledOutputs->bLtc) {
+		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
+	}
 
 	tMidiTimeCode.hour = ArtNetTimeCode->Hours;
 	tMidiTimeCode.minute = ArtNetTimeCode->Minutes;
@@ -170,7 +178,9 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 			break;
 		}
 
-		Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+		if (!m_ptLtcDisabledOutputs->bMidi) {
+			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+		}
 
 		nMidiQuarterFramePiece = 0;
 		nMidiQuarterFrameUs = nLimitUs / 4;
@@ -180,7 +190,9 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 
 		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
 
-		Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
+			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+		}
 		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
 	}
 
@@ -189,8 +201,12 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	itoa_base10(ArtNetTimeCode->Seconds, (char *) &m_aTimeCode[6]);
 	itoa_base10(ArtNetTimeCode->Frames, (char *) &m_aTimeCode[9]);
 
-	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	if (!m_ptLtcDisabledOutputs->bDisplay) {
+		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+	}
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
+		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	}
 
 #ifndef NDEBUG
 	const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;

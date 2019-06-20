@@ -24,11 +24,14 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <stdbool.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
-#include "midireader.h"
+#include "h3/midireader.h"
+#include "ltc.h"
 
 #include "hardwarebaremetal.h"
 
@@ -40,8 +43,6 @@
 #ifndef NDEBUG
  #include "console.h"
 #endif
-
-#include "ltc.h"
 
 // Input
 #include "midi.h"
@@ -64,7 +65,7 @@ static volatile uint32_t nLedToggle = 0;
 
 static uint8_t qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
-static void itoa_base10(uint8_t arg, char *buf) {
+static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -73,8 +74,8 @@ static void itoa_base10(uint8_t arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = (char) ('0' + (arg / 10));
+	*n = (char) ('0' + (arg % 10));
 }
 
 static void irq_timer0_update_handler(uint32_t clo) {
@@ -185,14 +186,6 @@ void MidiReader::Run(void) {
 		}
 #endif
 	}
-
-	dmb();
-	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
-		// Nothing to do here
-	} else {
-		DisplayMax7219::Get()->ShowSysTime();
-	}
-
 }
 
 void MidiReader::HandleMtc(void) {
@@ -237,23 +230,21 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
-	struct TArtNetTimeCode ArtNetTimeCode;
-
-	ArtNetTimeCode.Frames = m_MidiTimeCode.frame;
-	ArtNetTimeCode.Hours = m_MidiTimeCode.hour;
-	ArtNetTimeCode.Minutes = m_MidiTimeCode.minute;
-	ArtNetTimeCode.Seconds = m_MidiTimeCode.second;
-	ArtNetTimeCode.Type = (uint8_t) m_MidiTimeCode.rate;
-
-	m_pNode->SendTimeCode(&ArtNetTimeCode);
+	m_pNode->SendTimeCode((struct TArtNetTimeCode *)&m_MidiTimeCode);
 
 	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {
 		m_tTimeCodeTypePrevious = m_tTimeCodeType;
 
-		Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
+			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
+		}
 		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
 	}
 
-	Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	if (!m_ptLtcDisabledOutputs->bDisplay) {
+		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+	}
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
+		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	}
 }

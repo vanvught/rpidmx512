@@ -1,5 +1,5 @@
 /**
- * @file h3_codec.h
+ * @file ltcreader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,25 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CODEC_H_
-#define H3_CODEC_H_
+#ifndef H3_LTC_READER_H_
+#define H3_LTC_READER_H_
 
-#include <stdint.h>
+#include "artnetnode.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class LtcReader {
+public:
+	LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	~LtcReader(void);
 
-extern void h3_codec_begin(void);
+	void Start(void);
+	void Run(void);
 
-extern void h3_codec_start(void);
-extern void h3_codec_stop(void);
+private:
+	ArtNetNode *m_pNode;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	uint8_t m_tTimeCodeTypePrevious;
+};
 
-extern void h3_codec_set_buffer_length(uint32_t length);
-extern void h3_codec_push_data(const int16_t *src);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* H3_CODEC_H_ */
+#endif /* H3_LTC_READER_H_ */

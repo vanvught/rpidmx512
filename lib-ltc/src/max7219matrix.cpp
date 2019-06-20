@@ -35,7 +35,7 @@ Max7219Matrix *Max7219Matrix::s_pThis = 0;
 
 static char systime[] __attribute__ ((aligned (4))) = "--:--:--";
 
-static void itoa_base10(int arg, char *buf) {
+static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -44,8 +44,8 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = (char) ('0' + (arg / 10));
+	*n = (char) ('0' + (arg % 10));
 }
 
 Max7219Matrix::Max7219Matrix(void): m_nSecondsPrevious(60) {

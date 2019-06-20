@@ -1,5 +1,5 @@
 /**
- * @file ltcreader.h
+ * @file ltcsender.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,23 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC_READER_H_
-#define LTC_READER_H_
+#ifndef LTCSENDER_H_
+#define LTCSENDER_H_
 
-#include "artnetnode.h"
+#include "ltcencoder.h"
 
-class LtcReader {
+class LtcSender: public LtcEncoder {
 public:
-	LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcReader(void);
+	LtcSender(void);
+	~LtcSender(void);
 
 	void Start(void);
-	void Run(void);
+	void Stop(void);
+
+	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
+
+	static LtcSender* Get(void) {
+		return s_pThis;
+	}
 
 private:
-	ArtNetNode *m_pNode;
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	uint8_t m_tTimeCodeTypePrevious;
+	uint32_t m_nTypePrevious;
+	static LtcSender *s_pThis;
 };
 
-#endif /* LTC_READER_H_ */
+#endif /* LTCSENDER_H_ */

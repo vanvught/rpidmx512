@@ -1,5 +1,5 @@
 /**
- * @file h3_codec.h
+ * @file ltcsender.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,25 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CODEC_H_
-#define H3_CODEC_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "h3/ltcsender.h"
+#include "ltc.h"
 
-extern void h3_codec_begin(void);
+#include "h3_codec.h"
 
-extern void h3_codec_start(void);
-extern void h3_codec_stop(void);
+#include "debug.h"
 
-extern void h3_codec_set_buffer_length(uint32_t length);
-extern void h3_codec_push_data(const int16_t *src);
+LtcSender *LtcSender::s_pThis = 0;
 
-#ifdef __cplusplus
+LtcSender::LtcSender(void): m_nTypePrevious(TC_TYPE_INVALID) {
+	s_pThis = this;
 }
-#endif
 
-#endif /* H3_CODEC_H_ */
+LtcSender::~LtcSender(void) {
+}
+
+void LtcSender::Start(void) {
+	h3_codec_begin();
+}
+
+void LtcSender::Stop(void) {
+
+}
+
+void LtcSender::SetTimeCode(const struct TLtcTimeCode* pLtcSenderTimeCode, bool nExternalClock) {
+	LtcEncoder::SetTimeCode(pLtcSenderTimeCode, nExternalClock);
+	LtcEncoder::Get()->Encode();
+
+	if (__builtin_expect((m_nTypePrevious != pLtcSenderTimeCode->nType), 0)) {
+		m_nTypePrevious = pLtcSenderTimeCode->nType;
+		h3_codec_set_buffer_length(LtcEncoder::Get()->GetBufferSize()); // This is an implicit stop
+		h3_codec_start();
+	}
+
+	h3_codec_push_data(LtcEncoder::Get()->GetBufferPointer());
+}

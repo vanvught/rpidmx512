@@ -23,13 +23,14 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
-
 #include <stdint.h>
-#include <stdio.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
 
-#include "ltcreader.h"
+#include "h3/ltcreader.h"
+#include "ltc.h"
 
 #include "hardwarebaremetal.h"
 
@@ -44,8 +45,6 @@
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 #include "arm/gic.h"
-
-#include "ltc.h"
 
 #ifndef NDEBUG
  #include "console.h"
@@ -107,7 +106,6 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 
 	H3_PIO_PA_INT->STA = ~0x0;
 
-	dmb();
 	nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 
 	if ((nBitTime < ONE_TIME_MIN) || (nBitTime > ZERO_TIME_MAX)) {
@@ -159,7 +157,6 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 		}
 
 		if (bTimeCodeValid) {
-			dmb();
 			nUpdates++;
 
 			bTimeCodeValid = false;
@@ -180,7 +177,6 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 
 			bIsDropFrameFlagSet = (aTimeCodeBits[1] & (1 << 2));
 
-			dmb();
 			bTimeCodeAvailable = true;
 		}
 	}
@@ -294,20 +290,14 @@ void LtcReader::Run(void) {
 
 		tMidiTimeCode.rate = (_midi_timecode_type)TimeCodeType;
 
-		struct TArtNetTimeCode ArtNetTimeCode;
-
-		ArtNetTimeCode.Frames = tMidiTimeCode.frame;
-		ArtNetTimeCode.Hours = tMidiTimeCode.hour;
-		ArtNetTimeCode.Minutes = tMidiTimeCode.minute;
-		ArtNetTimeCode.Seconds = tMidiTimeCode.second;
-		ArtNetTimeCode.Type = (uint8_t) tMidiTimeCode.rate;
-
-		m_pNode->SendTimeCode(&ArtNetTimeCode);
+		if (!m_ptLtcDisabledOutputs->bArtNet) {
+			m_pNode->SendTimeCode((const struct TArtNetTimeCode *)&tMidiTimeCode);
+		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
 			m_tTimeCodeTypePrevious = TimeCodeType;
 
-			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+			Midi::Get()->SendTimeCode((const struct _midi_send_tc *) &tMidiTimeCode);
 
 			nMidiQuarterFramePiece = 0;
 			nMidiQuarterFrameUs = nLimitUs / 4;
@@ -317,12 +307,18 @@ void LtcReader::Run(void) {
 
 			pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) TimeCodeType);
 
-			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+			if (!m_ptLtcDisabledOutputs->bDisplay) {
+				Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+			}
 			LtcLeds::Get()->Show((TTimecodeTypes) TimeCodeType);
 		}
 
-		Display::Get()->TextLine(1, (const char *) aTimeCode, TC_CODE_MAX_LENGTH);
-		DisplayMax7219::Get()->Show((const char *) aTimeCode);
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
+			Display::Get()->TextLine(1, (const char *) aTimeCode, TC_CODE_MAX_LENGTH);
+		}
+		if (!m_ptLtcDisabledOutputs->bMax7219) {
+			DisplayMax7219::Get()->Show((const char *) aTimeCode);
+		}
 
 #ifndef NDEBUG
 		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;
@@ -345,7 +341,7 @@ void LtcReader::Run(void) {
 			IsMidiQuarterFrameMessage = false;
 
 			uint8_t bytes[2] = { 0xF1, 0x00 };
-			uint8_t data = nMidiQuarterFramePiece << 4;
+			const uint8_t data = nMidiQuarterFramePiece << 4;
 
 			switch (nMidiQuarterFramePiece) {
 				case 0:
@@ -379,7 +375,5 @@ void LtcReader::Run(void) {
 			Midi::Get()->SendRaw(bytes, 2);
 			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 		}
-	} else {
-		DisplayMax7219::Get()->ShowSysTime();
 	}
 }

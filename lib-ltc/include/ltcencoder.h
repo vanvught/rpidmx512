@@ -1,6 +1,5 @@
 /**
- * @file h3_codec.h
- *
+ * @file ltcencoder.h
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -23,25 +22,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CODEC_H_
-#define H3_CODEC_H_
+#ifndef LTCENCODER_H_
+#define LTCENCODER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct TLtcTimeCode {
+	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
+	uint8_t nSeconds;		///< Seconds. 0 - 59.
+	uint8_t nMinutes;		///< Minutes. 0 - 59.
+	uint8_t nHours;			///< Hours. 0 - 59.
+	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+};
 
-extern void h3_codec_begin(void);
+class LtcEncoder {
+public:
+	LtcEncoder(void);
+	~LtcEncoder(void);
 
-extern void h3_codec_start(void);
-extern void h3_codec_stop(void);
+	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
+	void Encode(void);
+	void Send(void);
 
-extern void h3_codec_set_buffer_length(uint32_t length);
-extern void h3_codec_push_data(const int16_t *src);
+	void Dump(void);
+	void DumpBuffer(void);
 
-#ifdef __cplusplus
-}
-#endif
+	int16_t *GetBufferPointer(void) {
+		return m_pBuffer;
+	}
 
-#endif /* H3_CODEC_H_ */
+	uint32_t GetBufferSize(void);
+
+	static LtcEncoder* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	bool GetParity(uint32_t nValue);
+	void SetPolarity(uint32_t nType);
+	uint8_t ReverseBits(uint8_t nBits);
+
+private:
+	uint8_t *m_pLtcBits;
+	int16_t *m_pBuffer;
+	uint32_t m_nBufferSize;
+	uint32_t m_nType;
+	static LtcEncoder *s_pThis;
+};
+
+#endif /* LTCENCODER_H_ */

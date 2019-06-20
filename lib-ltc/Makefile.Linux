@@ -1,0 +1,7 @@
+# Debug purposes ONLY
+#
+DEFINES = RASPPI #NDEBUG
+#
+EXTRA_INCLUDES = ../lib-bob/include ../lib-artnet/include ../lib-lightset/include ../lib-ledblink/include ../lib-properties/include
+#
+include ../linux-template/lib/Rules.mk

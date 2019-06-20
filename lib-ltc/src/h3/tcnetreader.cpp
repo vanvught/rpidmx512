@@ -24,7 +24,12 @@
  */
 
 #include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 #include <assert.h>
+
+#include "h3/tcnetreader.h"
 
 #include "hardwarebaremetal.h"
 
@@ -34,11 +39,8 @@
 #include "irq_timer.h"
 
 #ifndef NDEBUG
- #include <stdio.h>
  #include "console.h"
 #endif
-
-#include "tcnetreader.h"
 
 // Output
 #include "ltcleds.h"
@@ -46,6 +48,7 @@
 #include "displaymax7219.h"
 #include "artnetnode.h"
 #include "midi.h"
+#include "h3/ltcsender.h"
 
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
@@ -85,7 +88,7 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-static void itoa_base10(int arg, char *buf) {
+static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -94,8 +97,8 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = (char) ('0' + (arg / 10));
+	*n = (char) ('0' + (arg % 10));
 }
 
 TCNetTimeCode::~TCNetTimeCode(void) {
@@ -159,6 +162,10 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 	const uint32_t *p = (uint32_t *)pTimeCode;
 
 	if (m_nTimeCodePrevious != *p) {
+		if (!m_ptLtcDisabledOutputs->bLtc) {
+			LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)pTimeCode);
+		}
+
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
 			m_pNode->SendTimeCode((const struct TArtNetTimeCode *) pTimeCode);
 		}
@@ -204,9 +211,9 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 		if (!m_ptLtcDisabledOutputs->bDisplay) {
 			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
 		}
-		if (!m_ptLtcDisabledOutputs->bMax7219) {
-			LtcLeds::Get()->Show((TTimecodeTypes) pTimeCode->nType);
-		}
+
+		LtcLeds::Get()->Show((TTimecodeTypes) pTimeCode->nType);
+
 	}
 
 	if (m_nTimeCodePrevious != *p) {
@@ -217,8 +224,12 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 		itoa_base10(pTimeCode->nSeconds, (char *) &m_aTimeCode[6]);
 		itoa_base10(pTimeCode->nFrames, (char *) &m_aTimeCode[9]);
 
-		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
+			Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+		}
+		if (!m_ptLtcDisabledOutputs->bMax7219) {
+			DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		}
 	}
 
 #ifndef NDEBUG
