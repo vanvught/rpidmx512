@@ -37,6 +37,8 @@
 
 #include "i2c.h"
 
+#include "hardware.h"
+
 #define MCP23017_I2C_ADDRESS	0x20
 #define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
 #define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
@@ -48,7 +50,8 @@ Display::Display(uint8_t nCols, uint8_t nRows):
 	m_tType(DISPLAY_TYPE_UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false)
+	m_bHave7Segment(false),
+	m_nMillis(Hardware::Get()->Millis())
 {
 	s_pThis = this;
 
@@ -61,7 +64,8 @@ Display::Display(TDisplayTypes tDisplayType):
 	m_nRows(0),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false)
+	m_bHave7Segment(false),
+	m_nMillis(Hardware::Get()->Millis())
 {
 	s_pThis = this;
 	m_tType = tDisplayType;
@@ -264,6 +268,10 @@ void Display::SetSleep(bool bSleep) {
 	}
 	m_bIsSleep = bSleep;
 	m_LcdDisplay->SetSleep(bSleep);
+
+	if(!bSleep) {
+		m_nMillis = Hardware::Get()->Millis();
+	}
 }
 
 // Support for 2 digits 7-segment based on MCP23017
@@ -288,4 +296,12 @@ void Display::Status(TDisplay7SegmentMessages nStatus) {
 void Display::TextStatus(const char* pText, TDisplay7SegmentMessages nStatus) {
 	TextStatus(pText);
 	Status(nStatus);
+}
+
+void Display::Run(void) {
+	if (!m_bIsSleep) {
+		if ((Hardware::Get()->Millis() - m_nMillis) > (5 * 60 * 1000)) {
+			SetSleep(true);
+		}
+	}
 }

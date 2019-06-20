@@ -49,6 +49,8 @@ public:
 	Display(TDisplayTypes tDisplayType = DISPLAY_SSD1306);
 	~Display(void);
 
+	void Run(void);
+
 	void Cls(void);
 	void ClearLine(uint8_t nLine);
 
@@ -107,6 +109,7 @@ private:
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
 	bool m_bHave7Segment;
+	uint32_t m_nMillis;
 
 	static Display *s_pThis;
 };

@@ -2,7 +2,7 @@
 DEFINES = NDEBUG 
 #ENABLE_TC1602 ENABLE_LCDBW
 #
-EXTRA_INCLUDES = ../lib-i2c/include
+EXTRA_INCLUDES = ../lib-i2c/include ../lib-hal/include
 #
 include ../h3-firmware-template/lib/Rules.mk
 	
