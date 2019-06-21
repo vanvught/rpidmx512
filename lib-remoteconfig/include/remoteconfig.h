@@ -52,6 +52,11 @@ enum {
 	REMOTE_CONFIG_ID_LENGTH = (32 + REMOTE_CONFIG_DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
 };
 
+enum TRemoteConfigHandleMode {
+	REMOTE_CONFIG_HANDLE_MODE_TXT,
+	REMOTE_CONFIG_HANDLE_MODE_BIN
+};
+
 struct TRemoteConfigListBin {
 	uint8_t aMacAddress[6];
 	uint8_t nType;				// TRemoteConfig
@@ -134,6 +139,8 @@ private:
 	alignas(uint32_t) uint8_t *m_pUdpBuffer;
 	uint32_t m_nIPAddressFrom;
 	uint16_t m_nBytesReceived;
+	TRemoteConfigHandleMode m_tRemoteConfigHandleMode;
+	alignas(uint32_t) uint8_t *m_pStoreBuffer;
 };
 
 #endif /* REMOTECONFIG_H_ */

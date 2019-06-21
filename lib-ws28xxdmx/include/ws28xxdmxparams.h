@@ -73,6 +73,7 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
+	bool Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(WS28xxDmx *);

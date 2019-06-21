@@ -38,7 +38,9 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-#define BOOL2STRING(b)	(b) ? "Yes" : "No"
+#include "debug.h"
+
+#define BOOL2STRING(b)			(b) ? "Yes" : "No"
 
 RemoteConfigParams::RemoteConfigParams(RemoteConfigParamsStore* pTRemoteConfigParamsStore): m_pRemoteConfigParamsStore(pTRemoteConfigParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tRemoteConfigParams;
@@ -123,14 +125,14 @@ void RemoteConfigParams::callbackFunction(const char* pLine) {
 	}
 }
 
-bool RemoteConfigParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfigParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
 
-	if (m_pRemoteConfigParamsStore == 0) {
-		nSize = 0;
-		return false;
+	if (pRemoteConfigParams != 0) {
+		memcpy(&m_tRemoteConfigParams, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
+	} else {
+		m_pRemoteConfigParamsStore->Copy(&m_tRemoteConfigParams);
 	}
-
-	m_pRemoteConfigParamsStore->Copy(&m_tRemoteConfigParams);
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
@@ -142,7 +144,20 @@ bool RemoteConfigParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSiz
 
 	nSize = builder.GetSize();
 
+	DEBUG_EXIT
 	return isAdded;
+}
+
+bool RemoteConfigParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pRemoteConfigParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }
 
 void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {

@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "tlc59711dmxparams.h"
@@ -34,16 +35,14 @@
 
 #include "debug.h"
 
-bool TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (m_pLC59711ParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
+	if (ptTLC59711Params != 0) {
+		memcpy(&m_tTLC59711Params, ptTLC59711Params, sizeof(struct TTLC59711DmxParams));
+	} else {
+		m_pLC59711ParamsStore->Copy(&m_tTLC59711Params);
 	}
-
-	m_pLC59711ParamsStore->Copy(&m_tTLC59711Params);
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
@@ -57,6 +56,17 @@ bool TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
 
 	DEBUG_EXIT
-
 	return isAdded;
+}
+
+bool TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pLC59711ParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

@@ -45,10 +45,15 @@ public:
 		return m_nFileSize;
 	}
 
+	bool isDone(void)  {
+		return m_bDone;
+	}
+
 private:
 	uint8_t* m_pBuffer;
 	uint32_t m_nSize;
 	uint32_t m_nFileSize;
+	bool m_bDone;
 };
 
 #endif /* TFTPFILESERVER_H_ */

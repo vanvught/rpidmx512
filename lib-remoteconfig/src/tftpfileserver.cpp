@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "tftpfileserver.h"
@@ -45,7 +46,8 @@
 TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 		m_pBuffer(pBuffer),
 		m_nSize(nSize),
-		m_nFileSize(0)
+		m_nFileSize(0),
+		m_bDone(false)
 {
 	DEBUG_ENTRY
 
@@ -82,6 +84,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
 		return false;
 	}
 
+	printf("TFTP started ...\n");
 	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_STARTED);
 
 	m_nFileSize = 0;
@@ -93,6 +96,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
 bool TFTPFileServer::FileClose(void) {
 	DEBUG_ENTRY
 
+	m_bDone = true;
 	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_ENDED);
 
 	DEBUG_EXIT

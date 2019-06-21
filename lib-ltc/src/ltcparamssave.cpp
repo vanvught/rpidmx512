@@ -23,6 +23,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "ltcparams.h"
@@ -31,15 +32,18 @@
 
 #include "ltcparamsconst.h"
 
-bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+#include "debug.h"
+
+bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != 0);
 
-	if (m_pLTcParamsStore == 0) {
-		nSize = 0;
-		return false;
+	if (ptLtcParams != 0) {
+		memcpy(&m_tLtcParams, ptLtcParams, sizeof(struct TLtcParams));
+	} else {
+		m_pLTcParamsStore->Copy(&m_tLtcParams);
 	}
-
-	m_pLTcParamsStore->Copy(&m_tLtcParams);
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
@@ -60,5 +64,20 @@ bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 
 	nSize = builder.GetSize();
 
+	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+
+	DEBUG_EXIT
 	return isAdded;
+}
+
+bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pLTcParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

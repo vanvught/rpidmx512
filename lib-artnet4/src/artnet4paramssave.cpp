@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "artnet4params.h"
@@ -34,16 +35,14 @@
 
 #include "debug.h"
 
-bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (m_pArtNet4ParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
+	if (pArtNet4Params != 0) {
+		memcpy(&m_tArtNet4Params, pArtNet4Params, sizeof(struct TArtNet4Params));
+	} else {
+		m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
 	}
-
-	m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
@@ -54,6 +53,17 @@ bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
 
 	DEBUG_EXIT
-
 	return isAdded;
+}
+
+bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pArtNet4ParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

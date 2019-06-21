@@ -48,10 +48,12 @@ enum {
 
 static TWS28xxMultiType s_NotSupported[] = {WS28XXMULTI_WS2801_NOT_SUPPORTED, WS28XXMULTI_APA102_NOT_SUPPORTED};
 
-WS28xxMulti::WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, bool bUseSI5351A):
+WS28xxMulti::WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, uint8_t nT0H, uint8_t nT1H, bool bUseSI5351A):
 	m_tWS28xxMultiType(tWS28xxMultiType),
 	m_nLedCount(nLedCount),
 	m_nActiveOutputs(nActiveOutputs),
+	m_nLowCode(CalculateBits(nT0H)),
+	m_nHighCode(CalculateBits(nT1H)),
 	m_nBufSize(0),
 	m_pBuffer(0),
 	m_pBlackoutBuffer(0)

@@ -27,7 +27,6 @@
 #define REMOTECONFIGPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "remoteconfig.h"
 
@@ -64,6 +63,7 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
+	bool Builder(const struct TRemoteConfigParams *pRemoteConfigParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(RemoteConfig *);

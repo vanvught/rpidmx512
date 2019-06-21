@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "oscserverparms.h"
@@ -34,13 +35,18 @@
 
 #include "propertiesbuilder.h"
 
-bool OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pOSCServerParamsStore == 0) {
-		nSize = 0;
-		return false;
-	}
+#include "debug.h"
 
-	m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
+bool OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
+
+	if (ptOSCServerParams != 0) {
+		memcpy(&m_tOSCServerParams, ptOSCServerParams, sizeof(struct TOSCServerParams));
+	} else {
+		m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
+	}
 
 	PropertiesBuilder builder(OSCServerConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
@@ -54,5 +60,18 @@ bool OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) 
 
 	nSize = builder.GetSize();
 
+	DEBUG_EXIT
 	return isAdded;
+}
+
+bool OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pOSCServerParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

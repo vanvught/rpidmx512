@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "e131params.h"
@@ -34,10 +35,18 @@
 #include "lightset.h"
 #include "lightsetconst.h"
 
+#include "debug.h"
+
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "htp" : "ltp"
 
-bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	m_pE131ParamsStore->Copy(&m_tE131Params);
+bool E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (ptE131Params != 0) {
+		memcpy(&m_tE131Params, ptE131Params, sizeof(struct TE131Params));
+	} else {
+		m_pE131ParamsStore->Copy(&m_tE131Params);
+	}
 
 	PropertiesBuilder builder(E131ParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
@@ -56,5 +65,18 @@ bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 
 	nSize = builder.GetSize();
 
+	DEBUG_EXIT
 	return isAdded;
+}
+
+bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pE131ParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "networkparams.h"
@@ -33,16 +34,14 @@
 
 #include "debug.h"
 
-bool NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (m_pNetworkParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
+	if (ptNetworkParams != 0) {
+		memcpy(&m_tNetworkParams, ptNetworkParams, sizeof(struct TNetworkParams));
+	} else {
+		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
 	}
-
-	m_pNetworkParamsStore->Copy(&m_tNetworkParams);
 
 	PropertiesBuilder builder(NetworkConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
@@ -58,6 +57,17 @@ bool NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
 
 	DEBUG_EXIT
-
 	return isAdded;
+}
+
+bool NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pNetworkParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

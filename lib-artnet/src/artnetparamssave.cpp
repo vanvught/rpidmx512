@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "artnetparams.h"
@@ -36,19 +37,18 @@
 
 #include "debug.h"
 
+#define BOOL2STRING(b)			(b) ? "Yes" : "No"
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "htp" : "ltp"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn"
 
-bool ArtNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (m_pArtNetParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
+	if (pArtNetParams != 0) {
+		memcpy(&m_tArtNetParams, pArtNetParams, sizeof(struct TArtNetParams));
+	} else {
+		m_pArtNetParamsStore->Copy(&m_tArtNetParams);
 	}
-
-	m_pArtNetParamsStore->Copy(&m_tArtNetParams);
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
@@ -85,6 +85,17 @@ bool ArtNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
 
 	DEBUG_EXIT
-
 	return isAdded;
+}
+
+bool ArtNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pArtNetParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

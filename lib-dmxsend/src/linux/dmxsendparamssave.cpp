@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "dmxparams.h"
@@ -33,16 +34,14 @@
 
 #include "debug.h"
 
-bool DMXParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (m_pDMXParamsStore == 0) {
-		nSize = 0;
-		DEBUG_EXIT
-		return false;
+	if (ptDMXParams != 0) {
+		memcpy(&m_tDMXParams, ptDMXParams, sizeof(struct TDMXParams));
+	} else {
+		m_pDMXParamsStore->Copy(&m_tDMXParams);
 	}
-
-	m_pDMXParamsStore->Copy(&m_tDMXParams);
 
 	PropertiesBuilder builder(DMXSendConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
@@ -55,6 +54,19 @@ bool DMXParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
 
 	DEBUG_EXIT
-
 	return isAdded;
+}
+
+bool DMXParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
+
+	if (m_pDMXParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

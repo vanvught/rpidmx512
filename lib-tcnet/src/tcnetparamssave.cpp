@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "tcnetparams.h"
@@ -31,13 +32,18 @@
 
 #include "propertiesbuilder.h"
 
-bool TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pTCNetParamsStore == 0) {
-		nSize = 0;
-		return false;
-	}
+#include "debug.h"
 
-	m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
+bool TCNetParams::Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
+
+	if (pTTCNetParams != 0) {
+		memcpy(&m_tTTCNetParams, pTTCNetParams, sizeof(struct TTCNetParams));
+	} else {
+		m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
+	}
 
 	char name[2];
 	name[0] = TCNet::GetLayerName((TTCNetLayers) m_tTTCNetParams.nLayer);
@@ -71,5 +77,20 @@ bool TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 
 	nSize = builder.GetSize();
 
+	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+
+	DEBUG_EXIT
 	return isAdded;
+}
+
+bool TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pTCNetParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return false;
+	}
+
+	return Builder(0, pBuffer, nLength, nSize);
 }

@@ -3,6 +3,8 @@
 	<name>lib-oscserver</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
+		<project>lib-debug</project>
 		<project>lib-lightset</project>
 		<project>lib-network</project>
 		<project>lib-osc</project>

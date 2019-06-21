@@ -5,6 +5,7 @@
 	<projects>
 		<project>include</project>
 		<project>lib-network</project>
+		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

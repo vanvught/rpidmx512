@@ -99,6 +99,9 @@ static const char sRequestUptime[] ALIGNED = "?uptime#";
 static const char sRequestStore[] ALIGNED = "?store#";
 #define REQUEST_STORE_LENGTH (sizeof(sRequestStore)/sizeof(sRequestStore[0]) - 1)
 
+static const char sSetStore[] ALIGNED = "!store#";
+#define SET_STORE_LENGTH (sizeof(sSetStore)/sizeof(sSetStore[0]) - 1)
+
 static const char sGetDisplay[] ALIGNED = "?display#";
 #define GET_DISPLAY_LENGTH (sizeof(sGetDisplay)/sizeof(sGetDisplay[0]) - 1)
 
@@ -144,7 +147,9 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_nHandle(-1),
 	m_pUdpBuffer(0),
 	m_nIPAddressFrom(0),
-	m_nBytesReceived(0)
+	m_nBytesReceived(0),
+	m_tRemoteConfigHandleMode(REMOTE_CONFIG_HANDLE_MODE_TXT),
+	m_pStoreBuffer(0)
 
 {
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
@@ -171,9 +176,15 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 
 	m_pUdpBuffer = new uint8_t[UDP_BUFFER_SIZE];
 	assert(m_pUdpBuffer != 0);
+
+	m_pStoreBuffer = new uint8_t[UDP_BUFFER_SIZE];
+	assert(m_pStoreBuffer != 0);
 }
 
 RemoteConfig::~RemoteConfig(void) {
+	delete [] m_pStoreBuffer;
+	m_pStoreBuffer = 0;
+
 	delete [] m_pUdpBuffer;
 	m_pUdpBuffer = 0;
 }
@@ -215,7 +226,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 
 	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
 
-	// BUG there is NO sanity check for adding multiple times
+	// BUG there is NO sanity check for adding multiple times - won't fix
 	uint32_t nSize = strlen(pDisplayName);
 
 	if ((m_nIdLength + nSize + 2) < REMOTE_CONFIG_ID_LENGTH) {
@@ -285,15 +296,20 @@ int RemoteConfig::Run(void) {
 		}
 	} else if ((!m_bDisableWrite) && (m_pUdpBuffer[0] == '#')) {
 		DEBUG_PUTS("#");
+		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
 		HandleTxtFile();
 	} else if (m_pUdpBuffer[0] == '!') {
 		DEBUG_PUTS("!");
-		if ((m_nBytesReceived >= (SET_DISPLAY_LENGTH)) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
+		if ((m_nBytesReceived >= SET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
 			DEBUG_PUTS(sSetDisplay);
 			HandleDisplaySet();
-		} else if ((m_nBytesReceived >= (GET_TFTP_LENGTH)) && (memcmp(m_pUdpBuffer, sSetTFTP, GET_TFTP_LENGTH) == 0)) {
+		} else if ((m_nBytesReceived >= SET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sSetTFTP, SET_TFTP_LENGTH) == 0)) {
 			DEBUG_PUTS(sSetTFTP);
 			HandleTftpSet();
+		} else if ((!m_bDisableWrite) && (m_nBytesReceived > SET_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sSetStore, SET_STORE_LENGTH) == 0)) {
+			DEBUG_PUTS(sSetStore);
+			m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_BIN;
+			HandleTxtFile();
 		} else {
 #ifndef NDEBUG
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -308,6 +324,10 @@ int RemoteConfig::Run(void) {
 
 uint32_t RemoteConfig::GetIndex(const void *p) {
 	uint32_t i;
+
+#ifndef NDEBUG
+	debug_dump((void *)p, 16);
+#endif
 
 	for (i = 0; i < TXT_FILE_LAST; i++) {
 		if (memcmp(p, (const void *) sTxtFile[i], sTxtFileNameLength[i]) == 0) {
@@ -589,7 +609,18 @@ void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
-	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[1]);
+	uint32_t i;
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
+		i = GetIndex((void *) &m_pUdpBuffer[1]);
+	} else {
+		i = GetIndex((void *) &m_pUdpBuffer[SET_STORE_LENGTH]);
+		if (i < TXT_FILE_LAST) {
+			memcpy(m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE);
+		} else {
+			return;
+		}
+	}
 
 	switch (i) {
 	case TXT_FILE_RCONFIG:
@@ -635,6 +666,13 @@ void RemoteConfig::HandleTxtFileRconfig(void) {
 	DEBUG_ENTRY
 
 	RemoteConfigParams remoteConfigParams((RemoteConfigParamsStore *) StoreRemoteConfig::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TRemoteConfigParams)))  {
+		uint32_t nSize;
+		remoteConfigParams.Builder((const struct TRemoteConfigParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	remoteConfigParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	remoteConfigParams.Dump();
@@ -647,6 +685,13 @@ void RemoteConfig::HandleTxtFileNetwork(void) {
 	DEBUG_ENTRY
 
 	NetworkParams params((NetworkParamsStore *) SpiFlashStore::Get()->GetStoreNetwork());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TNetworkParams))){
+		uint32_t nSize;
+		params.Builder((const struct TNetworkParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	params.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	params.Dump();
@@ -657,8 +702,23 @@ void RemoteConfig::HandleTxtFileNetwork(void) {
 
 void RemoteConfig::HandleTxtFileArtnet(void) {
 	DEBUG_ENTRY
+	assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams));
 
 	ArtNet4Params artnet4params((ArtNet4ParamsStore *) SpiFlashStore::Get()->GetStoreArtNet4());
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+		if (m_nBytesReceived == sizeof(struct TArtNetParams)) {
+			ArtNetParams artnetparams((ArtNetParamsStore *) SpiFlashStore::Get()->GetStoreArtNet());
+			uint32_t nSize;
+			artnetparams.Builder((const struct TArtNetParams *) m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		} else if (m_nBytesReceived == sizeof(struct TArtNet4Params)) {
+			uint32_t nSize;
+			artnet4params.Builder((const struct TArtNet4Params *) m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		}
+	}
+
 	artnet4params.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	artnet4params.Dump();
@@ -671,6 +731,13 @@ void RemoteConfig::HandleTxtFileE131(void) {
 	DEBUG_ENTRY
 
 	E131Params e131params((E131ParamsStore *) SpiFlashStore::Get()->GetStoreE131());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TE131Params))){
+		uint32_t nSize;
+		e131params.Builder((const struct TE131Params *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	e131params.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	e131params.Dump();
@@ -683,6 +750,13 @@ void RemoteConfig::HandleTxtFileOsc(void) {
 	DEBUG_ENTRY
 
 	OSCServerParams oscServerParams((OSCServerParamsStore *)StoreOscServer::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TOSCServerParams))){
+		uint32_t nSize;
+		oscServerParams.Builder((const struct TOSCServerParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	oscServerParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	oscServerParams.Dump();
@@ -696,6 +770,13 @@ void RemoteConfig::HandleTxtFileParams(void) {
 	DEBUG_ENTRY
 
 	DMXParams dmxparams((DMXParamsStore *) SpiFlashStore::Get()->GetStoreDmxSend());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TDMXParams))){
+		uint32_t nSize;
+		dmxparams.Builder((const struct TDMXParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	dmxparams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	dmxparams.Dump();
@@ -706,8 +787,16 @@ void RemoteConfig::HandleTxtFileParams(void) {
 
 void RemoteConfig::HandleTxtFileDevices(void) {
 	DEBUG_ENTRY
+	assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams));
 
 	TLC59711DmxParams tlc59711params((TLC59711DmxParamsStore *) SpiFlashStore::Get()->GetStoreTLC59711());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TTLC59711DmxParams))){
+		uint32_t nSize;
+		tlc59711params.Builder((const struct TTLC59711DmxParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	tlc59711params.Load((const char *)m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	tlc59711params.Dump();
@@ -716,6 +805,13 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 
 	if (!tlc59711params.IsSetLedType()) {
 		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) SpiFlashStore::Get()->GetStoreWS28xxDmx());
+
+		if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TWS28xxDmxParams))){
+			uint32_t nSize;
+			ws28xxparms.Builder((const struct TWS28xxDmxParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		}
+
 		ws28xxparms.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 		ws28xxparms.Dump();
@@ -730,6 +826,13 @@ void RemoteConfig::HandleTxtFileLtc(void) {
 	DEBUG_ENTRY
 
 	LtcParams ltcParams((LtcParamsStore *) StoreLtc::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TLtcParams))){
+		uint32_t nSize;
+		ltcParams.Builder((const struct TLtcParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	ltcParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	ltcParams.Dump();
@@ -742,6 +845,13 @@ void RemoteConfig::HandleTxtFileTCNet(void) {
 	DEBUG_ENTRY
 
 	TCNetParams tcnetParams((TCNetParamsStore *) StoreTCNet::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TTCNetParams))){
+		uint32_t nSize;
+		tcnetParams.Builder((const struct TTCNetParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
 	tcnetParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	tcnetParams.Dump();
@@ -763,7 +873,7 @@ void RemoteConfig::HandleTftpSet(void) {
 	m_bEnableTFTP = (m_pUdpBuffer[GET_TFTP_LENGTH] != '0');
 
 	if (m_bEnableTFTP && (m_pTFTPFileServer == 0)) {
-		DEBUG_PUTS("Create TFTP Server");
+		printf("Create TFTP Server\n");
 
 		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
 		assert(m_pTFTPBuffer != 0);
@@ -773,11 +883,11 @@ void RemoteConfig::HandleTftpSet(void) {
 		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_ON);
 	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != 0)) {
 		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
-		DEBUG_PRINTF("nFileSize=%d", (int) nFileSize);
+		DEBUG_PRINTF("nFileSize=%d, %d", (int) nFileSize, m_pTFTPFileServer->isDone());
 
 		bool bSucces = true;
 
-		if (nFileSize != 0) {
+		if (m_pTFTPFileServer->isDone()) {
 #ifndef NDEBUG
 			debug_dump((void *)m_pTFTPBuffer, 512);
 #endif
@@ -788,7 +898,7 @@ void RemoteConfig::HandleTftpSet(void) {
 			}
 		}
 
-		DEBUG_PUTS("Delete TFTP Server");
+		printf("Delete TFTP Server\n");
 
 		delete m_pTFTPFileServer;
 		m_pTFTPFileServer = 0;
