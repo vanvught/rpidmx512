@@ -84,6 +84,7 @@ private:
 	void HandleReboot(void);
 	void HandleList(void);
 	void HandleUptime(void);
+	void HandleVersion(void);
 
 	void HandleGet(void);
 	void HandleGetRconfigTxt(uint32_t& nSize);

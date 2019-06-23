@@ -64,6 +64,8 @@
  #include "storeremoteconfig.h"
 #endif
 
+#include "firmwareversion.h"
+
 #include "software_version.h"
 
 extern "C" {
@@ -73,6 +75,7 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	Display display(DISPLAY_SSD1306);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
@@ -90,8 +93,7 @@ void notmain(void) {
 
 	const TLightSetOutputType tOutputType = e131params.GetOutputType();
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
@@ -284,6 +286,8 @@ void notmain(void) {
 		break;
 	}
 
+	uint8_t nHwTextLength;
+
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
@@ -309,6 +313,7 @@ void notmain(void) {
 		spiFlashStore.Flash();
 #endif
 		lb.Run();
+		display.Run();
 	}
 }
 

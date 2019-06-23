@@ -34,6 +34,8 @@
 
 #include "remoteconfig.h"
 
+#include "firmwareversion.h"
+
 #include "hardware.h"
 #include "network.h"
 #include "display.h"
@@ -95,6 +97,9 @@ static const char sRequestGet[] ALIGNED = "?get#";
 
 static const char sRequestUptime[] ALIGNED = "?uptime#";
 #define REQUEST_UPTIME_LENGTH (sizeof(sRequestUptime)/sizeof(sRequestUptime[0]) - 1)
+
+static const char sRequestVersion[] ALIGNED = "?version#";
+#define REQUEST_VERSION_LENGTH (sizeof(sRequestVersion)/sizeof(sRequestVersion[0]) - 1)
 
 static const char sRequestStore[] ALIGNED = "?store#";
 #define REQUEST_STORE_LENGTH (sizeof(sRequestStore)/sizeof(sRequestStore[0]) - 1)
@@ -279,6 +284,8 @@ int RemoteConfig::Run(void) {
 			HandleReboot();
 		} else if ((m_bEnableUptime) && (memcmp(m_pUdpBuffer, sRequestUptime, REQUEST_UPTIME_LENGTH) == 0)) {
 			HandleUptime();
+		} else if (memcmp(m_pUdpBuffer, sRequestVersion, REQUEST_VERSION_LENGTH) == 0) {
+			HandleVersion();
 		} else if (memcmp(m_pUdpBuffer, sRequestList, REQUEST_LIST_LENGTH) == 0) {
 			HandleList();
 		} else if ((m_nBytesReceived > REQUEST_GET_LENGTH) && (memcmp(m_pUdpBuffer, sRequestGet, REQUEST_GET_LENGTH) == 0)) {
@@ -366,8 +373,26 @@ void RemoteConfig::HandleUptime() {
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 	} else if (m_nBytesReceived == REQUEST_UPTIME_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
-		if (memcmp((const void *)&	m_pUdpBuffer[REQUEST_UPTIME_LENGTH], "bin", 3) == 0) {
+		if (memcmp((const void *)&m_pUdpBuffer[REQUEST_UPTIME_LENGTH], "bin", 3) == 0) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&nUptime, sizeof(uint64_t) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleVersion() {
+	DEBUG_ENTRY
+
+	if (m_nBytesReceived == REQUEST_VERSION_LENGTH) {
+		const char *p = FirmwareVersion::Get()->GetPrint();
+		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "version:%s", p);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	} else if (m_nBytesReceived == REQUEST_VERSION_LENGTH + 3) {
+		DEBUG_PUTS("Check for \'bin\' parameter");
+		if (memcmp((const void *)&m_pUdpBuffer[REQUEST_VERSION_LENGTH], "bin", 3) == 0) {
+			const uint8_t *p = (const uint8_t *)FirmwareVersion::Get()->GetVersion();
+			Network::Get()->SendTo(m_nHandle, p, sizeof(struct TFirmwareVersion) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
 		}
 	}
 
@@ -421,14 +446,15 @@ void RemoteConfig::HandleStoreGet(void) {
 	DEBUG_ENTRY
 
 	uint32_t nLenght = 0;
-	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH]);
+	const uint32_t nIndex = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH]);
 
-	if (i != TXT_FILE_LAST) {
-		SpiFlashStore::Get()->CopyTo(sMap[i], m_pUdpBuffer, nLenght);
+	if (nIndex != TXT_FILE_LAST) {
+		SpiFlashStore::Get()->CopyTo(sMap[nIndex], m_pUdpBuffer, nLenght);
 	} else {
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?store#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 #endif
+		return;
 	}
 
 #ifndef NDEBUG

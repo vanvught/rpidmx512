@@ -62,6 +62,8 @@
  #include "storeremoteconfig.h"
 #endif
 
+#include "firmwareversion.h"
+
 #include "software_version.h"
 
 static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
@@ -75,6 +77,7 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	Display display(DISPLAY_SSD1306);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
@@ -96,8 +99,7 @@ void notmain(void) {
 
 	const TLightSetOutputType tOutputType = params.GetOutputType();
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -226,6 +228,9 @@ void notmain(void) {
 	for (unsigned i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
+
+	uint8_t nHwTextLength;
+
 	display.Printf(1, "Eth OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
@@ -258,6 +263,7 @@ void notmain(void) {
 		spiFlashStore.Flash();
 #endif
 		lb.Run();
+		display.Run();
 	}
 }
 }

@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
+#include <assert.h>
 
 #include "hardwarebaremetal.h"
 #include "networkh3emac.h"
@@ -35,9 +37,14 @@
 #include "artnetnode.h"
 #include "artnetparams.h"
 #include "ipprog.h"
+#include "timesync.h"
 
 #include "midi.h"
 #include "midiparams.h"
+
+#include "tcnet.h"
+#include "tcnetparams.h"
+#include "tcnettimecode.h"
 
 #include "display.h"
 #include "displaymax7219.h"
@@ -47,17 +54,25 @@
 
 #include "ltcleds.h"
 
-#include "artnetreader.h"
-#include "ltcreader.h"
-#include "midireader.h"
+#include "h3/artnetreader.h"
+#include "h3/ltcreader.h"
+#include "h3/ltcsender.h"
+#include "h3/midireader.h"
+#include "h3/tcnetreader.h"
 
 #include "ltcparams.h"
 
-#if defined(ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
- #include "storeltc.h"
-#endif
+#include "spiflashinstall.h"
+
+#include "spiflashstore.h"
+#include "storeltc.h"
+#include "storetcnet.h"
+#include "storeremoteconfig.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+
+#include "firmwareversion.h"
 
 #include "software_version.h"
 
@@ -68,46 +83,44 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	Display display(0,4);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-#if defined (ORANGE_PI)
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
+	SpiFlashInstall spiFlashInstall;
 
 	SpiFlashStore spiFlashStore;
+
 	StoreLtc storeLtc;
 
 	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
-#else
-	LtcParams ltcParams;
-#endif
+
+	struct TLtcDisabledOutputs tLtcDisabledOutputs;
+	memset(&tLtcDisabledOutputs, 0, sizeof(struct TLtcDisabledOutputs));
 
 	if (ltcParams.Load()) {
 		ltcParams.Dump();
+		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
 	}
 
 	LtcLeds leds;
 
 	Midi midi;
 	ArtNetNode node;
+	TCNet tcnet;
+	LtcSender ltcSender;
 
-	LtcReader ltcReader(&node);
-	MidiReader midiReader(&node);
-	ArtNetReader artnetReader;
+	LtcReader ltcReader(&node, &tLtcDisabledOutputs);
+	MidiReader midiReader(&node, &tLtcDisabledOutputs);
+	ArtNetReader artnetReader(&tLtcDisabledOutputs);
+	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-#if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-#else
-	nw.Init();
-#endif
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -115,11 +128,7 @@ void notmain(void) {
 
 	node.SetShortName("LTC Node");
 
-#if defined (ORANGE_PI)
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
-#else
-	ArtNetParams artnetparams;
-#endif
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
@@ -128,6 +137,11 @@ void notmain(void) {
 
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
+
+	TimeSync timeSync;
+	if (!ltcParams.IsTimeSyncDisabled()) {
+		node.SetTimeSyncHandler(&timeSync);
+	}
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
@@ -138,13 +152,26 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
 	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
 
-	DisplayMax7219 max7219(ltcParams.GetMax7219Type());
+	StoreTCNet storetcnet;
+	TCNetParams tcnetparams((TCNetParamsStore *) &storetcnet);
+
+
+	if (tcnetparams.Load()) {
+		tcnetparams.Set(&tcnet);
+		tcnetparams.Dump();
+	}
+
+	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
 	max7219.Init(ltcParams.GetMax7219Intensity());
 
 	const TLtcReaderSource source = ltcParams.GetSource();
 
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
+	}
+
+	if (source != LTC_READER_SOURCE_LTC) {
+		ltcSender.Start();
 	}
 
 	switch (source) {
@@ -155,16 +182,37 @@ void notmain(void) {
 	case LTC_READER_SOURCE_MIDI:
 		midiReader.Start();
 		break;
+	case LTC_READER_SOURCE_TCNET:
+		tcnet.SetTimeCodeHandler(&tcnetReader);
+		tcnet.Start(); //FIXME Remove here when MASTER is implemented
+		tcnetReader.Start();
+		break;
 	default:
 		ltcReader.Start();
 		break;
 	}
 
 	midi.Print();
+	tcnet.Print();
 
-	console_puts("Source : ");
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE , 0);
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	display.ClearLine(1);
+	display.ClearLine(2);
+	display.ClearLine(3);
 	display.ClearLine(4);
-	display.Printf(4, "Src: ");
+
+	display.Printf(3, IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+	console_puts("Source : ");
+	display.Printf(4, "S: ");
 
 	switch (source) {
 	case LTC_READER_SOURCE_ARTNET:
@@ -175,10 +223,65 @@ void notmain(void) {
 		puts("MIDI");
 		display.PutString("MIDI");
 		break;
+	case LTC_READER_SOURCE_TCNET:
+		console_puts("TCNet ");
+		display.PutString("TCNet ");
+		if (tcnet.GetLayer() != TCNET_LAYER_UNDEFINED) {
+			console_putc('L');
+			display.PutChar('L');
+			console_putc(TCNet::GetLayerName(tcnet.GetLayer()));
+			display.PutChar(TCNet::GetLayerName(tcnet.GetLayer()));
+			console_puts(" Time");
+			display.PutString(" Time");
+
+			if (tcnet.IsSetTimeCodeType()) {
+				switch (tcnet.GetTimeCodeType()) {
+				case TCNET_TIMECODE_TYPE_FILM:
+					console_puts(" F24");
+					display.PutString(" F24");
+					break;
+				case TCNET_TIMECODE_TYPE_EBU_25FPS:
+					console_puts(" F25");
+					display.PutString(" F25");
+					break;
+				case TCNET_TIMECODE_TYPE_DF:
+					console_puts(" F29");
+					display.PutString(" F29");
+					break;
+				case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
+					console_puts(" F30");
+					display.PutString(" F30");
+					break;
+				default:
+					break;
+				}
+				puts("FPS");
+			}
+		} else {
+			puts("SMPTE");
+			display.PutString("SMPTE");
+		}
+		break;
 	default:
 		puts("LTC");
 		display.PutString("LTC");
 		break;
+	}
+
+	if (tLtcDisabledOutputs.bDisplay) {
+		printf(" Display is disabled\n");
+	}
+
+	if (tLtcDisabledOutputs.bMax7219) {
+		printf(" Max7219 is disabled\n");
+	}
+
+	if ((source != LTC_READER_SOURCE_MIDI) && (tLtcDisabledOutputs.bMidi)) {
+		printf(" MIDI output is disabled\n");
+	}
+
+	if ((source != LTC_READER_SOURCE_ARTNET) && (tLtcDisabledOutputs.bArtNet)) {
+		printf(" Art-Net output is disabled\n");
 	}
 
 	hw.WatchdogInit();
@@ -188,6 +291,9 @@ void notmain(void) {
 
 		nw.Run();
 		node.HandlePacket();
+		if (source == LTC_READER_SOURCE_TCNET) {	//FIXME Remove when MASTER is implemented
+			tcnet.Run();
+		}
 
 		switch (source) {
 		case LTC_READER_SOURCE_LTC:
@@ -199,13 +305,19 @@ void notmain(void) {
 		case LTC_READER_SOURCE_MIDI:
 			midiReader.Run();
 			break;
+		case LTC_READER_SOURCE_TCNET:
+			tcnetReader.Run();	// Handles MIDI Quarter Frame output messages
+			break;
 		default:
 			break;
 		}
 
-#if defined (ORANGE_PI)
+		remoteConfig.Run();
 		spiFlashStore.Flash();
-#endif
+
+		if (tLtcDisabledOutputs.bDisplay) {
+			display.Run();
+		}
 	}
 }
 

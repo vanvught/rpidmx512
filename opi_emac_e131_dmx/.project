@@ -3,7 +3,6 @@
 	<name>opi_emac_e131_dmx</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
 		<project>h3-firmware-template</project>
 	</projects>
 	<buildSpec>

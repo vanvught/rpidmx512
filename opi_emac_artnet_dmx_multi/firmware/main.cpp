@@ -53,6 +53,8 @@
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
+#include "firmwareversion.h"
+
 #include "software_version.h"
 
 extern "C" {
@@ -62,6 +64,7 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
 	Display display(DISPLAY_SSD1306);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
 
@@ -73,8 +76,7 @@ void notmain(void) {
 		artnetParams.Dump();
 	}
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color(CONSOLE_GREEN);
@@ -196,6 +198,8 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
+	uint8_t nHwTextLength;
+
 	display.Cls();
 	display.Printf(1, "Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
@@ -225,6 +229,7 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+		display.Run();
 	}
 }
 
