@@ -262,8 +262,7 @@ public class OrangePi {
 		sendUdpPacket(buffer);
 	}
 	
-	public String doGetDisplay() {
-		String p = new String("?display#");
+	private String doRequest(String p) {
 		System.out.println(address + ":" + PORT + " " + p);
 
 		byte[] bufferSendReceive = p.getBytes();
@@ -286,6 +285,24 @@ public class OrangePi {
 		}
 		
 		return new String("#ERROR - time out");
+	}
+	
+	public String doGetDisplay() {
+		return doRequest("?display#");
+	}
+	
+	public String doUptime() {
+		return doRequest("?uptime#");
+
+	}
+	
+	public String doVersion() {
+		return doRequest("?version#");
+
+	}
+	
+	public String doGetTFTP() {
+		return doRequest("?tftp#");
 	}
 	
 	public void doSetTFTP(Boolean bOnOff) {
@@ -302,59 +319,7 @@ public class OrangePi {
 		
 		sendUdpPacket(buffer);
 	}
-	
-	public String doGetTFTP() {
-		String p = new String("?tftp#");
-		System.out.println(address + ":" + PORT + " " + p);
-
-		byte[] bufferSendReceive = p.getBytes();
-		
-		sendUdpPacket(bufferSendReceive);
 			
-		bufferSendReceive = new byte[BUFFERSIZE];
-		DatagramPacket packetReceive = new DatagramPacket(bufferSendReceive, bufferSendReceive.length);
-		
-		try {
-			while (true) {
-				socketReceive.receive(packetReceive);
-				System.out.println("Message received");
-				return new String(packetReceive.getData()).trim();
-			}
-		} catch (SocketTimeoutException e) {
-			System.out.println("Timeout reached!");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return new String("#ERROR - time out");
-	}
-	
-	public String doUptime() {
-		String p = new String("?uptime#");
-		System.out.println(address + ":" + PORT + " " + p);
-
-		byte[] bufferSendReceive = p.getBytes();
-		
-		sendUdpPacket(bufferSendReceive);
-			
-		bufferSendReceive = new byte[BUFFERSIZE];
-		DatagramPacket packetReceive = new DatagramPacket(bufferSendReceive, bufferSendReceive.length);
-		
-		try {
-			while (true) {
-				socketReceive.receive(packetReceive);
-				System.out.println("Message received");
-				return new String(packetReceive.getData()).trim();
-			}
-		} catch (SocketTimeoutException e) {
-			System.out.println("Timeout reached!");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return new String("#ERROR - time out");
-	}
-	
 	private Boolean isMapTypeValues(String type) {
 		for (int i = 0; i < TYPEVALUES.length; i++) {
 			if (type.equals(TYPEVALUES[i])) {
@@ -436,6 +401,10 @@ public class OrangePi {
 	
 	public String getNodeExtras() {
 		return nodeExtras;
+	}
+	
+	public InetAddress getAddress() {
+		return address;
 	}
 		
 	@Override

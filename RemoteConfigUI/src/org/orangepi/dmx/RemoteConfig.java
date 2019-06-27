@@ -93,6 +93,9 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmUptime;
 	private JMenuItem mntmDisplayOnoff;
 	private JMenuItem mntmTftp;
+	private JMenu mnRun;
+	private JMenuItem mntmTftpClient;
+	private JMenuItem mntmVersion;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -293,6 +296,21 @@ public class RemoteConfig extends JFrame {
 			}
 		});
 		
+		mntmVersion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						doVersion((OrangePi) node.getUserObject());
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for uptime action.");
+				}
+			}
+		});
+		
 		mntmSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -319,6 +337,22 @@ public class RemoteConfig extends JFrame {
 					setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
 					createReceiveSocket();
 					constructTree();
+				}
+			}
+		});
+		
+		mntmTftpClient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						TFTPClient client = new TFTPClient("", ((OrangePi) node.getUserObject()).getAddress());
+						client.Show();
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for TFTP Client to run.");
 				}
 			}
 		});
@@ -366,6 +400,17 @@ public class RemoteConfig extends JFrame {
 		mntmUptime = new JMenuItem("Uptime");
 		mntmUptime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK));
 		mnAction.add(mntmUptime);
+		
+		mntmVersion = new JMenuItem("Version");
+		mntmVersion.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
+		mnAction.add(mntmVersion);
+		
+		mnRun = new JMenu("Run");
+		menuBar.add(mnRun);
+		
+		mntmTftpClient = new JMenuItem("TFTP Client");
+		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
+		mnRun.add(mntmTftpClient);
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
@@ -417,12 +462,14 @@ public class RemoteConfig extends JFrame {
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+					.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-						.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-						.addComponent(scrollPaneRight, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 199, GroupLayout.PREFERRED_SIZE))
+						.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+						.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+						.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
+							.addGap(4)
+							.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)))
 					.addGap(0))
 		);
 		gl_contentPane.setVerticalGroup(
@@ -466,12 +513,8 @@ public class RemoteConfig extends JFrame {
 			int n = JOptionPane.showConfirmDialog(null, "Reboot", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.OK_OPTION) {
 				try {
-					//if (opi.isRebootEnabled()) {
-						opi.doReboot();
-						JOptionPane.showMessageDialog(null, "Reboot message has been sent.");
-					//} else {
-					//	JOptionPane.showMessageDialog(null, "No message has been sent.\nRemote reboot is disabled!");
-					//}
+					opi.doReboot();
+					JOptionPane.showMessageDialog(null, "Reboot message has been sent.");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -514,6 +557,12 @@ public class RemoteConfig extends JFrame {
 		}
 	}
 	
+	private void doVersion(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doVersion());
+		}
+	}
+	
 	private void doSave(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			int n = JOptionPane.showConfirmDialog(null, "Save " + textArea.getText().trim().substring(1, textArea.getText().indexOf('\n')) + " ?", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
@@ -551,28 +600,31 @@ public class RemoteConfig extends JFrame {
 
 		byte[] buffer = new byte[BUFFERSIZE];
 		DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
+		int times = 0;
 
+		while (h.isEmpty() && times++ < 3) {
 
-		try {
-			broadcast("?list#", InetAddress.getByName("255.255.255.255"));			
-			
-			while (true) {
-				socketReceive.receive(dpack);
-				
-				String str = new String(dpack.getData());
-				String data[] = str.split("\n");
-				
-				OrangePi opi = new OrangePi(data[0], localAddress, socketReceive);
-				if (opi.getIsValid()) {
-					h.add(opi);
+			try {
+				broadcast("?list#", InetAddress.getByName("255.255.255.255"));
+
+				while (true) {
+					socketReceive.receive(dpack);
+
+					String str = new String(dpack.getData());
+					String data[] = str.split("\n");
+
+					OrangePi opi = new OrangePi(data[0], localAddress, socketReceive);
+					if (opi.getIsValid()) {
+						h.add(opi);
+					}
 				}
+			} catch (SocketTimeoutException e) {
+				System.out.println("No more messages.");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (SocketTimeoutException e) {
-			System.out.println("No more messages.");
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-				
+
 		Iterator<OrangePi> it = h.iterator();
 
 		while (it.hasNext()) {
