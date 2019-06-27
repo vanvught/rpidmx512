@@ -191,11 +191,17 @@ void notmain(void) {
 	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetParams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
+	if (SpiFlashStore::Get()->HaveFlashChip()) {
+		RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+		if (remoteConfigParams.Load()) {
+			remoteConfigParams.Set(&remoteConfig);
+			remoteConfigParams.Dump();
+		}
+	} else {
+		remoteConfig.SetDisable(true);
+		printf("Remote configuration is disabled\n");
 	}
 
 	uint8_t nHwTextLength;

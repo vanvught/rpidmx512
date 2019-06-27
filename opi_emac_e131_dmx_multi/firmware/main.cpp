@@ -151,14 +151,23 @@ void notmain(void) {
 
 	bridge.SetOutput(&dmx);
 
+	bridge.Print();
+	dmx.Print();
+
 	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, bridge.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
+	if (SpiFlashStore::Get()->HaveFlashChip()) {
+		RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+		if (remoteConfigParams.Load()) {
+			remoteConfigParams.Set(&remoteConfig);
+			remoteConfigParams.Dump();
+		}
+	} else {
+		remoteConfig.SetDisable(true);
+		printf("Remote configuration is disabled\n");
 	}
 
 	uint8_t nHwTextLength;
