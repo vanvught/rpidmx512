@@ -2,7 +2,7 @@
  * @file mcp4902.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,10 @@
 
 bool mcp4902_start(device_info_t *device_info) {
 
-	if (device_info->speed_hz == (uint32_t) 0) {
-		device_info->speed_hz = (uint32_t) MCP49X2_SPI_SPEED_DEFAULT_HZ;
+	if (device_info->speed_hz == 0) {
+		device_info->speed_hz = MCP49X2_SPI_SPEED_DEFAULT_HZ;
 	} else if (device_info->speed_hz > (uint32_t) MCP49X2_SPI_SPEED_MAX_HZ) {
-		device_info->speed_hz = (uint32_t) MCP49X2_SPI_SPEED_MAX_HZ;
+		device_info->speed_hz = MCP49X2_SPI_SPEED_MAX_HZ;
 	}
 
 	if (device_info->chip_select >= SPI_CS2) {
@@ -50,7 +50,7 @@ bool mcp4902_start(device_info_t *device_info) {
 		bcm2835_aux_spi_begin();
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
-		bcm2835_spi_begin();
+		FUNC_PREFIX(spi_begin());;
 	}
 
 	return true;
@@ -63,9 +63,9 @@ void mcp4902_write_a(const device_info_t *device_info, uint8_t data) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_write(data);
 	} else {
-		bcm2835_spi_set_speed_hz(device_info->speed_hz);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_write(data);
+		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+		FUNC_PREFIX(spi_write(data));
 	}
 }
 
@@ -76,10 +76,10 @@ void mcp4902_write_b(const device_info_t *device_info, uint8_t data) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_write(data);
 	} else {
-		bcm2835_spi_set_speed_hz(device_info->speed_hz);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
-		bcm2835_spi_write(data);
+		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+		FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
+		FUNC_PREFIX(spi_write(data));
 	}
 
 }
@@ -93,10 +93,10 @@ void mcp4902_write_ab(const device_info_t *device_info, uint8_t data_a, uint8_t 
 		bcm2835_aux_spi_write(data_a);
 		bcm2835_aux_spi_write(data_b);
 	} else {
-		bcm2835_spi_set_speed_hz(device_info->speed_hz);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_write(data_a);
-		bcm2835_spi_write(data_b);
+		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+		FUNC_PREFIX(spi_write(data_a));
+		FUNC_PREFIX(spi_write(data_b));
 	}
 
 }

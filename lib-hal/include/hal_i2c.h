@@ -1,8 +1,8 @@
 /**
- * @file i2c_is_connected.c
+ * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,36 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#ifndef HAL_I2C_H_
+#define HAL_I2C_H_
 
-#include "i2c.h"
+#if defined(__linux__)
+ #include "bcm2835.h"
+#elif defined(H3)
+ #include "h3_i2c.h"
+#else
+ #include "bcm2835_i2c.h"
+#endif
 
-bool i2c_is_connected(uint8_t address) {
-	uint8_t ret;
-	char buf;
+enum {
+	I2C_NORMAL_SPEED = 100000,
+	I2C_FULL_SPEED = 400000
+};
 
-	i2c_set_address(address);
-
-	if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
-		ret = FUNC_PREFIX(i2c_read(&buf, 1));
-	} else {
-		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		ret = FUNC_PREFIX(i2c_write(NULL, 0));
+#if defined(H3)
+	inline static void h3_i2c_set_address(uint8_t address) {
+		h3_i2c_set_slave_address(address);
 	}
+#else
+	inline static void bcm2835_i2c_set_address(uint8_t address) {
+		bcm2835_i2c_setSlaveAddress(address);
+	}
+#endif
 
-	return (ret == 0) ? true : false;
-}
+#if defined(H3)
+ #define FUNC_PREFIX(x) h3_##x
+#else
+ #define FUNC_PREFIX(x) bcm2835_##x
+#endif
+
+#endif /* HAL_I2C_H_ */

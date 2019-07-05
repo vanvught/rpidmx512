@@ -2,7 +2,7 @@
  * @file bw_spi.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,11 +48,11 @@ void bw_spi_read_id(const device_info_t *device_info, char *id) {
 		bcm2835_aux_spi_setClockDivider(bcm2835_aux_spi_CalcClockDivider(32000));
 		bcm2835_aux_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
 	} else {
-		bcm2835_spi_set_speed_hz(50000);
-		bcm2835_spi_setChipSelectPolarity(device_info->chip_select, LOW);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
-		bcm2835_spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0]));
+		FUNC_PREFIX(spi_set_speed_hz(50000));
+		FUNC_PREFIX(spi_setChipSelectPolarity(device_info->chip_select, LOW));
+		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+		FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
+		FUNC_PREFIX(spi_transfern(buffer, sizeof(buffer) / sizeof(buffer[0])));
 	}
 
 	s1 = (char *) id;

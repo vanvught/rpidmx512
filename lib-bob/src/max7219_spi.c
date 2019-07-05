@@ -43,7 +43,7 @@ void max7219_spi_start(device_info_t *device_info) {
 		bcm2835_aux_spi_begin();
 		device_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(device_info->speed_hz);
 	} else {
-		bcm2835_spi_begin();
+		FUNC_PREFIX(spi_begin());;
 	}
 
 }
@@ -55,7 +55,7 @@ void max7219_spi_write_reg(const device_info_t *device_info, uint8_t reg, uint8_
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_write(spi_data);
 	} else {
-		bcm2835_spi_set_speed_hz(device_info->speed_hz);
-		bcm2835_spi_write(spi_data);
+		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+		FUNC_PREFIX(spi_write(spi_data));
 	}
 }

@@ -190,6 +190,35 @@ inline static void h3_gpio_set(uint32_t pin) {
 	}
 }
 
+inline static uint8_t h3_gpio_lev(uint32_t pin) {
+	uint32_t value = 0;
+
+	switch H3_GPIO_TO_PORT(pin) {
+		case H3_GPIO_PORTA:
+			value = H3_PIO_PORTA->DAT;
+			break;
+		case H3_GPIO_PORTC:
+			value = H3_PIO_PORTC->DAT;
+			break;
+		case H3_GPIO_PORTD:
+			value = H3_PIO_PORTD->DAT;
+			break;
+		case H3_GPIO_PORTE:
+			value = H3_PIO_PORTE->DAT;
+			break;
+		case H3_GPIO_PORTF:
+			value = H3_PIO_PORTF->DAT;
+			break;
+		case H3_GPIO_PORTG:
+			value = H3_PIO_PORTG->DAT;
+			break;
+		default:
+			break;
+	}
+
+	return (value & (1 << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
+}
+
 #ifdef __cplusplus
 }
 #endif

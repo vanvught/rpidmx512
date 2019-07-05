@@ -37,8 +37,8 @@
 static char buffer_tx[SC16IS7X0_FIFO_TX + 1] __attribute__((aligned(4)));
 
 inline static void sc16is740_setup(const device_info_t *device_info) {
-	bcm2835_spi_set_speed_hz(device_info->speed_hz);
-	bcm2835_spi_chipSelect(device_info->chip_select);
+	FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+	FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
 }
 
 uint8_t sc16is740_reg_read(const device_info_t *device_info, uint8_t reg) {
@@ -49,7 +49,7 @@ uint8_t sc16is740_reg_read(const device_info_t *device_info, uint8_t reg) {
 	spiData[1] = SPI_DUMMY_CHAR;
 
 	sc16is740_setup(device_info);
-	bcm2835_spi_transfern(spiData, 2);
+	FUNC_PREFIX(spi_transfern(spiData, 2));
 
 	return (uint8_t) spiData[1];
 }
@@ -60,7 +60,7 @@ void sc16is740_reg_write(const device_info_t *device_info, uint8_t reg, uint8_t 
 	spiData[1] = (char) value;
 
 	sc16is740_setup(device_info);
-	bcm2835_spi_writenb(spiData, 2);
+	FUNC_PREFIX(spi_writenb(spiData, 2));
 }
 
 bool sc16is740_is_readable(const device_info_t *device_info) {
@@ -146,7 +146,7 @@ int sc16is740_write(const device_info_t *device_info, const void *buffer, unsign
 		}
 
 		sc16is740_setup(device_info);
-		bcm2835_spi_writenb(buffer_tx, fifo_space + 1);
+		FUNC_PREFIX(spi_writenb(buffer_tx, fifo_space + 1));
 
 		count -= (unsigned) fifo_space;
 
@@ -223,7 +223,7 @@ void sc16is740_set_format(const device_info_t *device_info, int bits, _serial_pa
 
 void sc16is740_start(device_info_t *device_info) {
 
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());;
 
 	if (device_info->speed_hz == (uint32_t) 0) {
 		device_info->speed_hz = (uint32_t) SC16IS7X0_SPI_SPEED_DEFAULT_HZ;

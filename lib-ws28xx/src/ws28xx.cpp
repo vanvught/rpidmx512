@@ -25,26 +25,14 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-
-#if defined(__linux__)
- #include "bcm2835.h"
-#elif defined(H3)
- #include "h3_spi.h"
-#else
- #include "bcm2835_spi.h"
-#endif
-
-#if defined(H3)
- 	#define FUNC_PREFIX(x) h3_##x
-#else
- 	#define FUNC_PREFIX(x) bcm2835_##x
-#endif
+#include <assert.h>
 
 #include "ws28xx.h"
+
+#include "hal_spi.h"
 
 WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	m_tLEDType(Type),

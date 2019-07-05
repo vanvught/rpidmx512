@@ -1,8 +1,8 @@
 /**
- * @file i2c_is_connected.c
+ * @file hal_spi.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#ifndef HAL_SPI_H_
+#define HAL_SPI_H_
 
-#include "i2c.h"
+#if defined(__linux__)
+ #include "bcm2835.h"
+#elif defined(H3)
+ #include "h3_spi.h"
+#else
+ #include "bcm2835_spi.h"
+#endif
 
-bool i2c_is_connected(uint8_t address) {
-	uint8_t ret;
-	char buf;
+#if defined(H3)
+ #define SPI_BIT_ORDER_MSBFIRST	H3_SPI_BIT_ORDER_MSBFIRST
+ #define SPI_MODE0				H3_SPI_MODE0
+ #define SPI_MODE3				H3_SPI_MODE3
+ #define SPI_CS0				H3_SPI_CS0
+ #define SPI_CS_NONE			H3_SPI_CS_NONE
+#else
+ #define SPI_BIT_ORDER_MSBFIRST	BCM2835_SPI_BIT_ORDER_MSBFIRST
+ #define SPI_MODE0				BCM2835_SPI_MODE0
+ #define SPI_MODE3				BCM2835_SPI_MODE3
+ #define SPI_CS0				BCM2835_SPI_CS0
+ #define SPI_CS_NONE			BCM2835_SPI_CS_NONE
+#endif
 
-	i2c_set_address(address);
+#if defined(H3)
+ #define FUNC_PREFIX(x) h3_##x
+#else
+ #define FUNC_PREFIX(x) bcm2835_##x
+#endif
 
-	if ((address >= 0x30 && address <= 0x37) || (address >= 0x50 && address <= 0x5F)) {
-		ret = FUNC_PREFIX(i2c_read(&buf, 1));
-	} else {
-		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		ret = FUNC_PREFIX(i2c_write(NULL, 0));
-	}
-
-	return (ret == 0) ? true : false;
-}
+#endif /* HAL_SPI_H_ */

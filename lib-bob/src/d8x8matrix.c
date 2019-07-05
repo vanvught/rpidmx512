@@ -69,9 +69,9 @@ static void write_all(const device_info_t *device_info, const uint8_t reg, const
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 		bcm2835_aux_spi_writenb((const char *) spi_data, device_info->internal.count * 2);
 	} else {
-		bcm2835_spi_set_speed_hz(device_info->speed_hz);
-		bcm2835_spi_chipSelect(device_info->chip_select);
-		bcm2835_spi_writenb((const char *) spi_data, device_info->internal.count * 2);
+		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+		FUNC_PREFIX(spi_writenb((const char *) spi_data, device_info->internal.count * 2));
 	}
 
 }
@@ -114,9 +114,9 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 			bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
 			bcm2835_aux_spi_writenb((const char *) spi_data, (uint32_t) j);
 		} else {
-			bcm2835_spi_set_speed_hz(device_info->speed_hz);
-			bcm2835_spi_chipSelect(device_info->chip_select);
-			bcm2835_spi_writenb((const char *) spi_data, (uint32_t) j);
+			FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
+			FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
+			FUNC_PREFIX(spi_writenb((const char *) spi_data, (uint32_t) j));
 		}
 	}
 }

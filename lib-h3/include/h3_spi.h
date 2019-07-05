@@ -26,6 +26,7 @@
 #ifndef H3_SPI_H_
 #define H3_SPI_H_
 
+#include <stdint.h>
 #include <stdbool.h>
 
 typedef enum H3_SPI_BIT_ORDER {
@@ -58,8 +59,8 @@ extern void h3_spi_end(void);
 extern void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order);
 extern void h3_spi_set_speed_hz(uint32_t speed_hz);
 extern void h3_spi_setDataMode(h3_spi_mode_t mode);
-extern void h3_spi_chipSelect(h3_spi_chip_select_t chip_select);
-extern void h3_spi_setChipSelectPolarity(h3_spi_chip_select_t chip_select, uint8_t polarity);
+extern void h3_spi_chipSelect(uint8_t chip_select);
+extern void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
 
 extern uint8_t h3_spi_transfer(uint8_t data);
 extern void h3_spi_transfernb(char *tx_buffer, /*@null@*/char *rx_buffer, uint32_t data_length);
@@ -74,26 +75,5 @@ extern bool h3_spi_get_ws28xx_mode(void);
 #ifdef __cplusplus
 }
 #endif
-
-//FIXME Remove
-//TODO Backwards compatibility with the Raspberry Pi API's
-#define bcm2835_spi_begin						h3_spi_begin
-#define bcm2835_spi_set_speed_hz				h3_spi_set_speed_hz
-#define bcm2835_spi_setDataMode(__p)			h3_spi_setDataMode((h3_spi_mode_t)__p)
-#define bcm2835_spi_setChipSelectPolarity		h3_spi_setChipSelectPolarity
-#define bcm2835_spi_chipSelect(__p)				h3_spi_chipSelect((h3_spi_chip_select_t)__p)
-#define bcm2835_spi_write						h3_spi_write
-#define bcm2835_spi_writenb						h3_spi_writenb
-#define bcm2835_spi_transfer					h3_spi_transfer
-#define bcm2835_spi_transfern					h3_spi_transfern
-#define bcm2835_spi_transfernb					h3_spi_transfernb
-
-#define BCM2835_SPI_BIT_ORDER_MSBFIRST			H3_SPI_BIT_ORDER_MSBFIRST
-
-#define BCM2835_SPI_MODE0						H3_SPI_MODE0
-#define BCM2835_SPI_MODE3						H3_SPI_MODE3
-
-#define BCM2835_SPI_CS0							H3_SPI_CS0
-#define BCM2835_SPI_CS_NONE						H3_SPI_CS_NONE
 
 #endif /* H3_SPI_H_ */

@@ -355,7 +355,7 @@ void h3_spi_setDataMode(h3_spi_mode_t mode) {
 	EXT_SPI->TC = value;
 }
 
-void h3_spi_chipSelect(h3_spi_chip_select_t chip_select) {
+void h3_spi_chipSelect(uint8_t chip_select) {
 	uint32_t value = EXT_SPI->TC;
 
 	if (chip_select < H3_SPI_CS_NONE) {
@@ -369,7 +369,7 @@ void h3_spi_chipSelect(h3_spi_chip_select_t chip_select) {
 	EXT_SPI->TC = value;
 }
 
-void h3_spi_setChipSelectPolarity(h3_spi_chip_select_t chip_select, uint8_t polarity) {
+void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity) {
 	uint32_t value = EXT_SPI->TC;
 
 	if (polarity == HIGH) {

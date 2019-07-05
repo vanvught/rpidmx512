@@ -1,5 +1,5 @@
 /**
- * @file si5351a.c
+ * @file hal_gpio.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,46 @@
  * THE SOFTWARE.
  */
 
-#ifndef SI5351A_H_
-#define SI5351A_H_
+#ifndef HAL_GPIO_H_
+#define HAL_GPIO_H_
 
-#include <stdbool.h>
-
-#include "device_info.h"
-
-#define SI5351A_I2C_DEFAULT_SLAVE_ADDRESS	0x60
-
-#define SI5351A_REVB_REG_CONFIG_NUM_REGS	57
-
-typedef struct {
-	unsigned int address; /* 16-bit register address */
-	unsigned char value; /* 8-bit register data */
-
-} si5351a_revb_register_t;
-
-#ifdef __cplusplus
-extern "C" {
+#if defined(__linux__)
+ #include "bcm2835.h"
+#elif defined(H3)
+ #include "h3_gpio.h"
+ #include "h3_board.h"
+#else
+ #include "bcm2835_gpio.h"
 #endif
 
-extern bool si5351a_start(device_info_t *);
+#if !defined (H3)
+ #define GPIO_EXT_7		RPI_V2_GPIO_P1_07
+ #define GPIO_EXT_11	RPI_V2_GPIO_P1_11
+ #define GPIO_EXT_12	RPI_V2_GPIO_P1_12
+ #define GPIO_EXT_13	RPI_V2_GPIO_P1_13
+ #define GPIO_EXT_15	RPI_V2_GPIO_P1_15
+ #define GPIO_EXT_16	RPI_V2_GPIO_P1_16
+ #define GPIO_EXT_18	RPI_V2_GPIO_P1_18
+ #define GPIO_EXT_22	RPI_V2_GPIO_P1_22
+ #define GPIO_EXT_24	RPI_V2_GPIO_P1_24
+ #define GPIO_EXT_29	RPI_V2_GPIO_P1_29
+ #define GPIO_EXT_31	RPI_V2_GPIO_P1_31
+ #define GPIO_EXT_32	RPI_V2_GPIO_P1_32
+ #define GPIO_EXT_33	RPI_V2_GPIO_P1_33
+ #define GPIO_EXT_35	RPI_V2_GPIO_P1_35
+ #define GPIO_EXT_36	RPI_V2_GPIO_P1_36
+ #define GPIO_EXT_37	RPI_V2_GPIO_P1_37
+ #define GPIO_EXT_38 	RPI_V2_GPIO_P1_38
+ #define GPIO_EXT_40 	RPI_V2_GPIO_P1_40
 
-extern bool si5351a_clock_builder(const device_info_t *);
-#if defined (__linux__)
-extern bool si5351a_csv(const device_info_t *, const char *);
+ #define GPIO_FSEL_INPUT	BCM2835_GPIO_FSEL_INPT
+ #define GPIO_FSEL_OUTPUT	BCM2835_GPIO_FSEL_OUTP
 #endif
 
-extern void si5351a_dump(device_info_t *);
-
-#ifdef __cplusplus
-}
+#if defined (H3)
+ #define FUNC_PREFIX(x) h3_##x
+#else
+ #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
-#endif /* SI5351A_H_ */
+#endif /* HAL_GPIO_H_ */

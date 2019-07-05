@@ -25,12 +25,6 @@
 
 #include <stdint.h>
 
-#if defined(RASPPI)
- #include <stdio.h>
-#elif defined(H3)
-#else
-#endif
-
 #include "ili9340.h"
 
 #include "bob.h"
@@ -72,28 +66,28 @@ struct char_info {
 } static shadow_ram[(ILI9340_HEIGHT / FONT_CHAR_H) * (ILI9340_WIDTH / FONT_CHAR_W)] __attribute__((aligned(4)));
 
 inline static void write_command(uint8_t c) {
-	bcm2835_gpio_clr(D_C);
-	bcm2835_spi_transfer(c);
-	bcm2835_gpio_set(D_C);
+	FUNC_PREFIX(gpio_clr(D_C));
+	FUNC_PREFIX(spi_transfer(c));
+	FUNC_PREFIX(gpio_set(D_C));
 }
 
 inline static void write_data_byte(uint8_t c) {
-	bcm2835_spi_transfer(c);
+	FUNC_PREFIX(spi_transfer(c));
 }
 
 inline static void write_data_word(uint16_t w) {
-	bcm2835_spi_write(w);
+	FUNC_PREFIX(spi_write(w));
 }
 
 void _reset(void) {
-	bcm2835_gpio_fsel(D_C, BCM2835_GPIO_FSEL_OUTP); // D/C
-	bcm2835_gpio_fsel(RES, BCM2835_GPIO_FSEL_OUTP); // Reset
-	bcm2835_gpio_set(D_C);
+	FUNC_PREFIX(gpio_fsel(D_C, GPIO_FSEL_OUTPUT)); // D/C
+	FUNC_PREFIX(gpio_fsel(RES, GPIO_FSEL_OUTPUT)); // Reset
+	FUNC_PREFIX(gpio_set(D_C));
 
-	bcm2835_gpio_clr(RES);   // Reset
-	bcm2835_delay(100);
-	bcm2835_gpio_set(RES);   // Reset off
-	bcm2835_delay(100);
+	FUNC_PREFIX(gpio_clr(RES));   // Reset
+	udelay(1000 *100);
+	FUNC_PREFIX(gpio_set(RES));   // Reset off
+	udelay(1000 *100);
 }
 
 static void _setup(void) {
@@ -166,18 +160,18 @@ static void _setup(void) {
 	write_data_byte(0x0F);
 
 	write_command(0x11);    //Exit Sleep
-	bcm2835_delay(120);
+	udelay(1000 *120);
 	write_command(0x29);
 }
 
 int ili9340_init(void) {
 	int i;
 
-	bcm2835_spi_begin();
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);
-	bcm2835_spi_set_speed_hz(10000000);
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
-	bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);
+	FUNC_PREFIX(spi_begin());;
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
+	FUNC_PREFIX(spi_set_speed_hz(10000000));
+	FUNC_PREFIX(spi_chipSelect(SPI_CS0));
+	FUNC_PREFIX(spi_setChipSelectPolarity(SPI_CS0, LOW));
 
 	_reset();
 	_setup();
@@ -240,7 +234,7 @@ inline static void _draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint
 	write_data_word(y + FONT_CHAR_W - 1);
 	write_command(0x2C);
 
-	bcm2835_spi_writenb((char *) buffer, 2 * FONT_CHAR_H * FONT_CHAR_W);
+	FUNC_PREFIX(spi_writenb((char *) buffer, 2 * FONT_CHAR_H * FONT_CHAR_W));
 }
 
 static void draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t back) {
@@ -293,7 +287,7 @@ void ili9340_clear(void) {
 	write_data_word(319);
 	write_command(0x2C);
 
-	bcm2835_spi_writenb((char *) buffer, 2 * ILI9340_HEIGHT * ILI9340_WIDTH);
+	FUNC_PREFIX(spi_writenb((char *) buffer, 2 * ILI9340_HEIGHT * ILI9340_WIDTH));
 }
 
 void ili9340_draw_pixel(uint16_t x, uint16_t y, uint16_t color) {

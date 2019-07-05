@@ -442,7 +442,7 @@ const bool oled_start(oled_info_t *oled_info) {
 			bcm2835_aux_spi_begin();
 			oled_info->internal.clk_div = bcm2835_aux_spi_CalcClockDivider(oled_info->speed_hz);
 		} else {
-			bcm2835_spi_begin();
+			FUNC_PREFIX(spi_begin());;
 			oled_info->internal.clk_div = (uint16_t)((uint32_t) BCM2835_CORE_CLK_HZ / oled_info->speed_hz);
 		}
 		bcm2835_gpio_fsel(OLED_RST, BCM2835_GPIO_FSEL_OUTP);

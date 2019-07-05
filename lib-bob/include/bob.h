@@ -26,8 +26,6 @@
 #ifndef BOB_H_
 #define BOB_H_
 
-#include <string.h>
-
 #if defined(__linux__)
  #include "bcm2835.h"
 #elif defined(H3)
@@ -35,7 +33,7 @@
  #include "h3_gpio.h"
  #include "h3_hs_timer.h"
  #include "h3_spi.h"
-
+//
  #define bcm2835_aux_spi_begin()					(void)0
  #define bcm2835_aux_spi_setClockDivider(__p)		(void)0
  #define bcm2835_aux_spi_write(__p)					(void)0
@@ -44,18 +42,27 @@
  #define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
  static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
  //
- #define bcm2835_gpio_clr	h3_gpio_clr
- #define bcm2835_gpio_set	h3_gpio_set
- #define bcm2835_gpio_fsel	h3_gpio_fsel
- //
- #define BCM2835_GPIO_FSEL_OUTP	GPIO_FSEL_OUTPUT
- //
- #define bcm2835_delay(x)		udelay(x * 1000)
- //
 #else
  #include "bcm2835.h"
  #include "bcm2835_spi.h"
  #include "bcm2835_aux_spi.h"
+#endif
+
+#if !defined (H3)
+ #define GPIO_FSEL_INPUT		BCM2835_GPIO_FSEL_INPT
+ #define GPIO_FSEL_OUTPUT		BCM2835_GPIO_FSEL_OUTP
+#endif
+
+#if defined(H3)
+ #define SPI_BIT_ORDER_MSBFIRST	H3_SPI_BIT_ORDER_MSBFIRST
+ #define SPI_MODE0				H3_SPI_MODE0
+ #define SPI_MODE3				H3_SPI_MODE3
+ #define SPI_CS_NONE			H3_SPI_CS_NONE
+#else
+ #define SPI_BIT_ORDER_MSBFIRST	BCM2835_SPI_BIT_ORDER_MSBFIRST
+ #define SPI_MODE0				BCM2835_SPI_MODE0
+ #define SPI_MODE3				BCM2835_SPI_MODE3
+ #define SPI_CS_NONE			BCM2835_SPI_CS_NONE
 #endif
 
 #include "i2c.h"

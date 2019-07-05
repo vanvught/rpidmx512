@@ -37,7 +37,7 @@
 
 #if defined (__circle__)
 WS28xxDmxGrouping::WS28xxDmxGrouping(CInterruptSystem *pInterruptSystem) :
-	WS28xxDmx(pInterruptSystem)
+	WS28xxDmx(pInterruptSystem),
 	m_pDmxData(0),
 	m_nLEDGroupCount(0),
 	m_nGroups(0)
