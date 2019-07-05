@@ -1,3 +1,4 @@
+#if !defined(ORANGE_PI)
 /**
  * @file slushtemp.cpp
  *
@@ -5,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/blob/master/Slush/Temprature.py
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +30,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "bcm2835.h"
-
-#if defined(__linux__)
-#else
- #include "bcm2835_i2c.h"
-#endif
+#include "hal_i2c.h"
 
 #include "slushboard.h"
 
@@ -48,9 +44,9 @@
 uint16_t SlushBoard::getTempRaw(void) {
 	uint8_t buf[2] = { 0, 0 };
 
-	bcm2835_i2c_setSlaveAddress(MAX1164_I2C_ADDRESS);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
-	(void) bcm2835_i2c_read((char *) buf, (uint32_t) 2);
+	FUNC_PREFIX(i2c_set_address(MAX1164_I2C_ADDRESS));
+	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
+	FUNC_PREFIX(i2c_read((char *) buf, (uint32_t) 2));
 
 	return (uint16_t) ((uint16_t) buf[0] << 8 | (uint16_t) buf[1]);
 }
@@ -60,10 +56,10 @@ float SlushBoard::getTemprature(void) {
 }
 
 float SlushBoard::calcTemp(uint16_t tempraw) {
-	float voltage = (float) tempraw / 1024 * 5;
-	float resistance = (float) POTENTIAL_DIVIDER_RESISTOR / (5 / voltage - 1);
-	float temp = (float) 1 / (1 / THERMISTOR_REF_TEMP + logf(resistance / THERMISTOR_REF_RESISTANCE) / THERMISTOR_B_VALUE);
+	const float voltage = (float) tempraw / 1024 * 5;
+	const float resistance = (float) POTENTIAL_DIVIDER_RESISTOR / (5 / voltage - 1);
+	const float temp = (float) 1 / (1 / THERMISTOR_REF_TEMP + logf(resistance / THERMISTOR_REF_RESISTANCE) / THERMISTOR_B_VALUE);
 
 	return temp - 273.15;
 }
-
+#endif

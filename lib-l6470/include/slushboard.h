@@ -1,3 +1,4 @@
+#if !defined(ORANGE_PI)
 /**
  * @file slushengineboard.h
  *
@@ -5,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +33,12 @@
 #include <stdint.h>
 
 enum TSlushIOPorts {
-	SLUSH_IO_PORTA = 0,
-	SLUSH_IO_PORTB = 1
+	SLUSH_IO_PORTA,
+	SLUSH_IO_PORTB
 };
 
 enum TSlushIOPins {
-	SLUSH_IO_PIN0 = 0,
+	SLUSH_IO_PIN0,
 	SLUSH_IO_PIN1,
 	SLUSH_IO_PIN2,
 	SLUSH_IO_PIN3,
@@ -48,28 +49,28 @@ enum TSlushIOPins {
 };
 
 enum TSlushIOFSel {
-	SLUSH_IO_FSEL_OUTP = 0,
-	SLUSH_IO_FSEL_INPT = 1
+	SLUSH_IO_FSEL_OUTP,
+	SLUSH_IO_FSEL_INPT
 };
 
-#define SLUSH_L6470_RESET		23 // RPI_V2_GPIO_P1_38
+#define SLUSH_L6470_RESET		GPIO_EXT_16 // 23 // RPI_V2_GPIO_P1_16 // RPI_V2_GPIO_P1_38
 
-#define SLUSH_MTR0_STEPCLOCK	4
-#define SLUSH_MTR1_STEPCLOCK	5
-#define SLUSH_MTR2_STEPCLOCK	6
-#define SLUSH_MTR3_STEPCLOCK	12
+#define SLUSH_MTR0_STEPCLOCK	GPIO_EXT_7  // 4  // RPI_V2_GPIO_P1_07
+#define SLUSH_MTR1_STEPCLOCK	GPIO_EXT_29 // 5  // RPI_V2_GPIO_P1_29
+#define SLUSH_MTR2_STEPCLOCK	GPIO_EXT_31 // 6  // RPI_V2_GPIO_P1_31
+#define SLUSH_MTR3_STEPCLOCK	GPIO_EXT_32 // 12 // RPI_V2_GPIO_P1_32
 
-#define SLUSH_MTR0_BUSY			16 // RPI_V2_GPIO_P1_35
-#define SLUSH_MTR1_BUSY			17
-#define SLUSH_MTR2_BUSY			18
-#define SLUSH_MTR3_BUSY			19
+#define SLUSH_MTR0_BUSY			GPIO_EXT_36 // 16 // RPI_V2_GPIO_P1_36 // RPI_V2_GPIO_P1_35
+#define SLUSH_MTR1_BUSY			GPIO_EXT_11 // 17 // RPI_V2_GPIO_P1_11
+#define SLUSH_MTR2_BUSY			GPIO_EXT_12 // 18 // RPI_V2_GPIO_P1_12
+#define SLUSH_MTR3_BUSY			GPIO_EXT_35 // 19 // RPI_V2_GPIO_P1_35
 
-#define SLUSH_MTR0_CHIPSELECT	24 // RPI_V2_GPIO_P1_24
-#define SLUSH_MTR1_CHIPSELECT	25
-#define SLUSH_MTR2_CHIPSELECT	26
-#define SLUSH_MTR3_CHIPSELECT	27
+#define SLUSH_MTR0_CHIPSELECT	GPIO_EXT_18 // 24 // RPI_V2_GPIO_P1_18 // RPI_V2_GPIO_P1_24
+#define SLUSH_MTR1_CHIPSELECT	GPIO_EXT_22 // 25 // RPI_V2_GPIO_P1_22
+#define SLUSH_MTR2_CHIPSELECT	GPIO_EXT_37 // 26 // RPI_V2_GPIO_P1_37
+#define SLUSH_MTR3_CHIPSELECT	GPIO_EXT_13 // 27 // RPI_V2_GPIO_P1_13
 
-#define SLUSH_MTR_FLAG			13
+#define SLUSH_MTR_FLAG			GPIO_EXT_33 // 13 // RPI_V2_GPIO_P1_33
 
 class SlushBoard {
 public:
@@ -106,3 +107,4 @@ private:
 };
 
 #endif /* SLUSHBOARD_H_ */
+#endif /* !defined(ORANGE_PI) */

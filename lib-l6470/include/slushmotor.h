@@ -1,3 +1,4 @@
+#if !defined(ORANGE_PI)
 /**
  * @file slushmotor.h
  *
@@ -5,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,3 +72,4 @@ private:
 };
 
 #endif /* SLUSHMOTOR_H_ */
+#endif /* !defined(ORANGE_PI) */

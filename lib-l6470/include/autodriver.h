@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,22 +51,6 @@ private:
 public:
 	bool IsConnected(void) const;
 
-	inline static uint16_t getNumBoards(void) {
-		int n = 0;
-		for (int i = 0; i < (int) (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0])); i++) {
-			n += m_nNumBoards[i];
-		}
-		return n;
-	}
-
-	inline static uint8_t getNumBoards(int cs) {
-		if (cs < (int) (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0]))) {
-			return m_nNumBoards[cs];
-		} else {
-			return 0;
-		}
-	}
-
 	inline int getMotorNumber(void) {
 		return m_nMotorNumber;
 	}
@@ -75,14 +59,21 @@ public:
 		m_nMotorNumber = nMotorNumber;
 	}
 
+	static uint16_t getNumBoards(void);
+	static uint8_t getNumBoards(int cs);
+
+	bool IsConnected(void) {
+		return m_bIsConnected;
+	}
+
 private:
 	uint8_t m_nSpiChipSelect;
 	uint8_t m_nResetPin;
 	uint8_t m_nBusyPin;
 	uint8_t m_nPosition;
 	bool m_bIsBusy;
-	static uint8_t m_nNumBoards[2];
 	bool m_bIsConnected;
+	static uint8_t m_nNumBoards[2];
 };
 
 #endif /* AUTODRIVER_H_ */

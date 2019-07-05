@@ -1,3 +1,4 @@
+#if !defined(ORANGE_PI)
 /**
  * @file slushboard.cpp
  *
@@ -30,28 +31,15 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "bcm2835.h"
-
-#if defined(__linux__)
-#else
- #include "bcm2835_gpio.h"
- #include "bcm2835_spi.h"
- #include "bcm2835_i2c.h"
-#endif
+#include "hal_gpio.h"
+#include "hal_spi.h"
+#include "hal_i2c.h"
 
 #include "slushboard.h"
 
-extern "C" {
-#if defined(__linux__)
- extern void bcm2835_delayMicroseconds (uint64_t);
- #define udelay bcm2835_delayMicroseconds
-#else
-#endif
-}
-
-#define SLUSH_MCP23017_RESET	20
-#define SLUSH_MCP23017_INTA		21
-#define SLUSH_MCP23017_INTB		22
+#define SLUSH_MCP23017_RESET	GPIO_EXT_38 // 20 // RPI_V2_GPIO_P1_38
+#define SLUSH_MCP23017_INTA		GPIO_EXT_40 // 21 // RPI_V2_GPIO_P1_40
+#define SLUSH_MCP23017_INTB		GPIO_EXT_15 // 22 // RPI_V2_GPIO_P1_15
 
 #define MAX1164_I2C_ADDRESS		0x36
 
@@ -70,31 +58,31 @@ extern "C" {
 
 
 SlushBoard::SlushBoard(void) {
-	bcm2835_gpio_fsel(SLUSH_L6470_RESET, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(SLUSH_L6470_RESET);
+	FUNC_PREFIX(gpio_fsel(SLUSH_L6470_RESET, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_set(SLUSH_L6470_RESET));
 
-	bcm2835_gpio_fsel(SLUSH_MTR0_CHIPSELECT, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(SLUSH_MTR1_CHIPSELECT, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(SLUSH_MTR2_CHIPSELECT, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_fsel(SLUSH_MTR3_CHIPSELECT, BCM2835_GPIO_FSEL_OUTP);
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR0_CHIPSELECT, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR1_CHIPSELECT, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR2_CHIPSELECT, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR3_CHIPSELECT, GPIO_FSEL_OUTPUT));
 
-	bcm2835_gpio_set(SLUSH_MTR0_CHIPSELECT);
-	bcm2835_gpio_set(SLUSH_MTR1_CHIPSELECT);
-	bcm2835_gpio_set(SLUSH_MTR2_CHIPSELECT);
-	bcm2835_gpio_set(SLUSH_MTR3_CHIPSELECT);
+	FUNC_PREFIX(gpio_set(SLUSH_MTR0_CHIPSELECT));
+	FUNC_PREFIX(gpio_set(SLUSH_MTR1_CHIPSELECT));
+	FUNC_PREFIX(gpio_set(SLUSH_MTR2_CHIPSELECT));
+	FUNC_PREFIX(gpio_set(SLUSH_MTR3_CHIPSELECT));
 
-	bcm2835_gpio_fsel(SLUSH_MTR0_BUSY, BCM2835_GPIO_FSEL_INPT);
-	bcm2835_gpio_fsel(SLUSH_MTR1_BUSY, BCM2835_GPIO_FSEL_INPT);
-	bcm2835_gpio_fsel(SLUSH_MTR2_BUSY, BCM2835_GPIO_FSEL_INPT);
-	bcm2835_gpio_fsel(SLUSH_MTR3_BUSY, BCM2835_GPIO_FSEL_INPT);
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR0_BUSY, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR1_BUSY, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR2_BUSY, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_fsel(SLUSH_MTR3_BUSY, GPIO_FSEL_INPUT));
 
-	bcm2835_gpio_clr(SLUSH_L6470_RESET);
+	FUNC_PREFIX(gpio_clr(SLUSH_L6470_RESET));
 	udelay(10000);
-	bcm2835_gpio_set(SLUSH_L6470_RESET);
+	FUNC_PREFIX(gpio_set(SLUSH_L6470_RESET));
 	udelay(10000);
 
-	bcm2835_gpio_fsel(SLUSH_MCP23017_RESET, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(SLUSH_MCP23017_RESET);
+	FUNC_PREFIX(gpio_fsel(SLUSH_MCP23017_RESET, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_set(SLUSH_MCP23017_RESET));
 
 	InitSpi();
 	InitI2c();
@@ -105,17 +93,17 @@ SlushBoard::~SlushBoard(void) {
 }
 
 void SlushBoard::InitSpi(void) {
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());
 
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE3);
+	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
+	FUNC_PREFIX(spi_set_speed_hz(4000000));
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 }
 
 void SlushBoard::InitI2c(void) {
 	char data;
 
-	bcm2835_i2c_begin();
+	FUNC_PREFIX(i2c_begin());
 
 	/*
 	 *  MCP23017
@@ -138,14 +126,14 @@ void SlushBoard::InitI2c(void) {
 	I2cSetup(MAX1164_I2C_ADDRESS);
 
 	data = 0x8a;
-	(void) bcm2835_i2c_write((char *)&data, 1);
+	FUNC_PREFIX(i2c_write((char *)&data, 1));
 	data = 0x01;
-	(void) bcm2835_i2c_write((char *)&data, 1);
+	FUNC_PREFIX(i2c_write((char *)&data, 1));
 }
 
 void SlushBoard::I2cSetup(uint8_t address) {
-	bcm2835_i2c_setSlaveAddress(address);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+	FUNC_PREFIX(i2c_set_address(address));
+	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
 }
 
 uint8_t SlushBoard::Mcp23017ReadReg(uint8_t reg) {
@@ -153,8 +141,8 @@ uint8_t SlushBoard::Mcp23017ReadReg(uint8_t reg) {
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 
-	(void) bcm2835_i2c_write((char *)&data, 1);
-	(void) bcm2835_i2c_read((char *)&data, 1);
+	FUNC_PREFIX(i2c_write((char *)&data, 1));
+	FUNC_PREFIX(i2c_read((char *)&data, 1));
 
 	return data;
 }
@@ -167,7 +155,7 @@ void SlushBoard::Mcp23017WriteReg(uint8_t reg, uint8_t data) {
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 
-	bcm2835_i2c_write((char *)buffer, 2);
+	FUNC_PREFIX(i2c_write((char *)buffer, 2));
 }
 
 void SlushBoard::setIOState(TSlushIOPorts nPort, TSlushIOPins nPinNumber, uint8_t state) {
@@ -265,4 +253,4 @@ void SlushBoard::IOWrite(TSlushIOPorts nPort, uint8_t data) {
 
 	Mcp23017WriteReg(MCP23017_OLATA + nPort, data);
 }
-
+#endif

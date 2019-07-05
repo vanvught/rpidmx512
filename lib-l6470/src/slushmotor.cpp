@@ -1,3 +1,4 @@
+#if !defined(ORANGE_PI)
 /**
  * @file slushengine.cpp
  *
@@ -31,18 +32,15 @@
  #include <stdio.h>
 #endif
 
-#include "bcm2835.h"
-
-#if defined(__linux__)
-#else
- #include "bcm2835_gpio.h"
- #include "bcm2835_spi.h"
-#endif
+#include "hal_spi.h"
+#include "hal_gpio.h"
 
 #include "slushmotor.h"
 #include "slushboard.h"
 
 #include "l6470constants.h"
+
+#include "debug.h"
 
 SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nMotor <= 3);
@@ -115,7 +113,7 @@ int SlushMotor::busyCheck(void) {
 			}
 		}
 		// By default, the BUSY pin is forced low when the device is performing a command
-		if (bcm2835_gpio_lev(m_nBusyPin) == HIGH) {
+		if (FUNC_PREFIX(gpio_lev(m_nBusyPin)) == HIGH) {
 			m_bIsBusy = false;
 			return 0;
 		} else {
@@ -129,13 +127,13 @@ uint8_t SlushMotor::SPIXfer(uint8_t data) {
 
 	dataPacket[0] = (char) data;
 
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE3);
+	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
+	FUNC_PREFIX(spi_set_speed_hz(4000000));
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 
-	bcm2835_gpio_clr(m_nSpiChipSelect);
-	bcm2835_spi_transfern(dataPacket, 1);
-	bcm2835_gpio_set(m_nSpiChipSelect);
+	FUNC_PREFIX(gpio_clr(m_nSpiChipSelect));
+	FUNC_PREFIX(spi_transfern(dataPacket, 1));
+	FUNC_PREFIX(gpio_set(m_nSpiChipSelect));
 
 	return (uint8_t) dataPacket[0];
 }
@@ -184,3 +182,4 @@ bool SlushMotor::GetUseSpiBusy(void) const {
 void SlushMotor::SetUseSpiBusy(bool bUseSpiBusy) {
 	m_bUseSpiBusy = bUseSpiBusy;
 }
+#endif

@@ -28,15 +28,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "bcm2835.h"
-#if defined(__linux__)
- #define udelay bcm2835_delayMicroseconds
-#else
- #include "bcm2835_gpio.h"
- #include "bcm2835_spi.h"
-#endif
-
 #include "sparkfundmx.h"
+#include "lightset.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -46,6 +39,9 @@
 
 #include "motorparams.h"
 #include "modeparams.h"
+
+#include "hal_spi.h"
+#include "hal_gpio.h"
 
 #include "debug.h"
 
@@ -60,13 +56,18 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-#define GPIO_BUSY_IN		RPI_V2_GPIO_P1_35
-#define GPIO_RESET_OUT 		RPI_V2_GPIO_P1_38
-
-#define DMX_MAX_CHANNELS	512
+#if !defined (H3)
+ #define GPIO_BUSY_IN		GPIO_EXT_35
+ #define GPIO_RESET_OUT 	GPIO_EXT_38
+#else
+ #define GPIO_BUSY_IN		GPIO_EXT_11
+ #define GPIO_RESET_OUT 	GPIO_EXT_13
+#endif
 
 static const char SPARKFUN_PARAMS_POSITION[] ALIGNED = "sparkfun_position";
+#if !defined (H3)
 static const char SPARKFUN_PARAMS_SPI_CS[] ALIGNED = "sparkfun_spi_cs";
+#endif
 static const char SPARKFUN_PARAMS_RESET_PIN[] ALIGNED = "sparkfun_reset_pin";
 static const char SPARKFUN_PARAMS_BUSY_PIN[] ALIGNED = "sparkfun_busy_pin";
 
@@ -93,10 +94,14 @@ void SparkFunDmx::callbackFunction(const char *pLine) {
 	} else if (sscan_uint8_t(pLine, SPARKFUN_PARAMS_POSITION, &value8) == SSCAN_OK) {
 		m_nPosition = value8;
 		m_bIsPositionSet = true;
-	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_SPI_CS, &value8) == SSCAN_OK) {
+	}
+#if !defined (H3)
+	else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_SPI_CS, &value8) == SSCAN_OK) {
 		m_nSpiCs = value8;
 		m_bIsSpiCsSet = true;
-	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_RESET_PIN, &value8) == SSCAN_OK) {
+	}
+#endif
+	else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_RESET_PIN, &value8) == SSCAN_OK) {
 		m_nResetPin = value8;
 		m_bIsResetSet = true;
 	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_BUSY_PIN, &value8) == SSCAN_OK) {
@@ -109,12 +114,16 @@ SparkFunDmx::SparkFunDmx(void): m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxF
 	DEBUG_ENTRY;
 
 	m_nPosition = 0;
-	m_nSpiCs = 0;
-	m_nResetPin = 0;
-	m_nBusyPin = 0;
+	m_nSpiCs = SPI_CS0;
+	m_nResetPin = GPIO_RESET_OUT;
+	m_nBusyPin = GPIO_BUSY_IN;
 
 	m_bIsPositionSet = false;
+#if !defined (H3)
 	m_bIsSpiCsSet = false;
+#else
+	m_bIsSpiCsSet = true;
+#endif
 	m_bIsResetSet = false;
 	m_bIsBusyPinSet = false;
 
@@ -185,8 +194,9 @@ void SparkFunDmx::Stop(uint8_t nPort) {
 
 void SparkFunDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
-
+#if !defined (H3)
 	m_bIsSpiCsSet = false;
+#endif
 	m_bIsResetSet = false;
 	m_bIsBusyPinSet = false;
 
@@ -195,11 +205,11 @@ void SparkFunDmx::ReadConfigFiles(void) {
 	if (configfile.Read("sparkfun.txt")) {
 #ifndef NDEBUG
 		printf("\'sparkfun.txt\' (global settings):\n");
-
+#if !defined (H3)
 		if (m_bIsSpiCsSet) {
 			printf("\tSPI CS : %d\n", m_nSpiCs);
 		}
-
+#endif
 		if (m_bIsResetSet) {
 			printf("\tReset pin: %d\n", m_nResetPin);
 		}
@@ -210,27 +220,19 @@ void SparkFunDmx::ReadConfigFiles(void) {
 #endif
 	}
 
-	if (!m_bIsResetSet) {
-		m_nResetPin = GPIO_RESET_OUT;
-		m_bIsResetSet = true;
-#ifndef NDEBUG
-		printf("\tReset pin: %d\n", m_nResetPin);
-#endif
-	}
-
 	if (m_bIsBusyPinSet) {
-		bcm2835_gpio_fsel(m_nBusyPin, BCM2835_GPIO_FSEL_INPT);
+		FUNC_PREFIX(gpio_fsel(m_nBusyPin, GPIO_FSEL_INPUT));
 	}
 
-	bcm2835_gpio_fsel(m_nResetPin, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(m_nResetPin);
+	FUNC_PREFIX(gpio_fsel(m_nResetPin, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_set(m_nResetPin));
 
-	bcm2835_gpio_clr(m_nResetPin);
+	FUNC_PREFIX(gpio_clr(m_nResetPin));
 	udelay(10000);
-	bcm2835_gpio_set(m_nResetPin);
+	FUNC_PREFIX(gpio_set(m_nResetPin));
 	udelay(10000);
 
-	bcm2835_spi_begin();
+	FUNC_PREFIX(spi_begin());
 
 	char fileName[] = "motor%.txt";
 
@@ -247,7 +249,9 @@ void SparkFunDmx::ReadConfigFiles(void) {
 			if (m_bIsPositionSet && m_bIsSpiCsSet) {
 #ifndef NDEBUG
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_POSITION, m_nPosition);
+#if !defined (H3)
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_SPI_CS, m_nSpiCs);
+#endif
 				printf("\t%s=%d\n", SPARKFUN_PARAMS_RESET_PIN, m_nResetPin);
 				if(m_bIsBusyPinSet) {
 					printf("\t%s=%d\n", SPARKFUN_PARAMS_BUSY_PIN, m_nBusyPin);
@@ -319,9 +323,13 @@ void SparkFunDmx::ReadConfigFiles(void) {
 				if(!m_bIsPositionSet) {
 					printf("Missing %s=\n", SPARKFUN_PARAMS_POSITION);
 				}
+#if !defined (H3)
 				if(!m_bIsSpiCsSet) {
 					printf("Missing %s=\n", SPARKFUN_PARAMS_SPI_CS);
 				}
+#else
+				assert(m_bIsSpiCsSet);
+#endif
 			}
 #ifndef NDEBUG
 			printf("Motor %d: --------- end ---------\n", i);

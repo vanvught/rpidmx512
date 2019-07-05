@@ -4,8 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-bcm2835</project>
-		<project>lib-bcm2835_raspbian</project>
+		<project>lib-debug</project>
+		<project>lib-hal</project>
 		<project>lib-l6470</project>
 		<project>lib-lightset</project>
 		<project>lib-properties</project>
