@@ -9,11 +9,12 @@ Supported devices :
 
 Supported platforms :
 
-- Linux Raspbian
+- Orange Pi Zero
+- Orange Pi One
+- Raspberry Pi boards Linux Raspbian
     -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
-- Raspberry Pi baords bare-metal
+- Raspberry Pi boards bare-metal
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
-- *Orange Pi Zero (replacing Raspberry Pi boards) Work In Progress*
 
 Compile and build the library on Linux Raspbian
 
@@ -68,5 +69,5 @@ Additional parameter for the `SlushMotor` object:
 ![](https://cdn.shopify.com/s/files/1/0742/2899/products/SlushEngineLT-white_grande.png?v=1487710515)
 ![](https://cdn.sparkfun.com//assets/parts/1/1/2/8/8/13752-01a.jpg)
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

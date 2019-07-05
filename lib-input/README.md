@@ -32,5 +32,5 @@ Methods :
 ![](https://opencircuit.nl/ContentImage/100034/crop/400-286/Infrarood-ontvanger-en-afstandsbediening-kit.jpg)
 
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

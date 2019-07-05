@@ -41,5 +41,5 @@ The OSC Server accepts the following message formats:
   </tr>
 </table> 
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

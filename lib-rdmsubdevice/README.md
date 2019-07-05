@@ -11,5 +11,5 @@ A device may contain one or more sub-devices, all having a common set of paramet
 ----------
 
 Supported Sub-Devices: 
-[http://www.raspberrypi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sub-devices](http://www.raspberrypi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sub-devices)
+[http://www.orangepi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sub-devices](http://www.orangepi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sub-devices)
 

@@ -45,5 +45,5 @@ Compile and build on Linux Raspbian
 	objdump -D i2cdetect | c++filt > i2cdetect.lst
 
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

@@ -60,5 +60,5 @@ The file functions are implemented on top of the **FatFs - FAT file system modul
     float log2f(float)
     float logf(float)
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

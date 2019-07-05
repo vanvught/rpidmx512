@@ -34,4 +34,4 @@ Compile and build the examples on Linux Raspbian
 	g++ simple_move.cpp -I./../../../lib-l6470/include -I./../../../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 -DNDEBUG -o simple_move -L./../../../lib-l6470/lib_linux -L./../../../lib-bcm2835_raspbian/lib_linux -ll6470  -lbcm2835_raspbian
 
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

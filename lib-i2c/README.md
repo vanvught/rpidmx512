@@ -48,5 +48,5 @@ Compile and build the library on Linux Raspbian
 	ar: creating lib_linux/libi2c.a
 	objdump -D lib_linux/libi2c.a  | c++filt > lib_linux.list
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

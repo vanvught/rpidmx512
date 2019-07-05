@@ -3,6 +3,8 @@
 	<name>lib-rdm</name>
 	<comment></comment>
 	<projects>
+		<project>h3-firmware-template</project>
+		<project>include</project>
 		<project>lib-debug</project>
 		<project>lib-dmx</project>
 		<project>lib-h3</project>

@@ -7,6 +7,6 @@ Supported boards:
 * Orange Pi Zero
 * Orange Pi One
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

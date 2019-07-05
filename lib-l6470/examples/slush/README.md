@@ -35,4 +35,4 @@ Compile and build the examples on Linux Raspbian
 
 ![](https://cdn.shopify.com/s/files/1/0742/2899/products/SlushEngineLT-white_grande.png?v=1487710515)
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

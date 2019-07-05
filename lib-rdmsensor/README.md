@@ -16,5 +16,5 @@ Valid sensor numbers are in the range from 0x00 – 0xFE. The sensor number 0xFF
 ----------
 
 Supported Sensors: 
-[http://www.raspberrypi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sensors](http://www.raspberrypi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sensors)
+[http://www.orangepi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sensors](http://www.orangepi-dmx.org/raspberry-pi-dmx512-rdm/rdm/built-in-supported-sensors)
 

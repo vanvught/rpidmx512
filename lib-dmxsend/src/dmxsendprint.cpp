@@ -32,8 +32,8 @@
 #endif
 
 void DMXSend::Print(void) {
-	printf("\nDMX Send configuration\n");
+	printf("DMX Send configuration\n");
 	printf(" Break time   : %d\n", (int) GetDmxBreakTime());
 	printf(" MAB time     : %d\n", (int) GetDmxMabTime());
-	printf(" Refresh rate : %d\n", (int) (1000000 / GetDmxPeriodTime()));
+	printf(" Refresh rate : %d\n", (int) ((float) 1000000 / GetDmxPeriodTime()));
 }

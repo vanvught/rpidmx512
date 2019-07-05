@@ -4,11 +4,11 @@
 **Open Source** solutions:
 
 - **Art-Net 4 Ethernet** DMX Node / **RDM** Controller / **Pixel (WS28xx/SK6812/APA102/UCSx903) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_artnet_dmx.zip?raw=true)}
-- **Art-Net 4 Ethernet Pixel** (WS28xx/SK6812/UCSx903) controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_artnet_pixel_multi.zip?raw=true)} 
+- **Art-Net 4 Ethernet Pixel** (WS28xx/SK6812/UCSx903) controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_artnet_pixel_multi.zip?raw=true)}  {*Orange Pi Zero*} 
 - **Art-Net 4 Ethernet** DMX Node / RDM Controller **2 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_artnet_dmx_multi.zip?raw=true)} {*Orange Pi Zero*}
 - **Art-Net 4 Ethernet** DMX Node / RDM Controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_artnet_dmx_multi.zip?raw=true)} {*Orange Pi One*}
 -  **sACN E1.31 Ethernet** DMX Bridge / **Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx.zip?raw=true)}
--  **sACN E1.31 Ethernet Pixel** (WS28xx/SK6812/UCSx903) controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_pixel_multi.zip?raw=true)}
+-  **sACN E1.31 Ethernet Pixel** (WS28xx/SK6812/UCSx903) controller **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_pixel_multi.zip?raw=true)} {*Orange Pi Zero*}
 -  **sACN E1.31 Ethernet** DMX Bridge **2 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx_multi.zip?raw=true)} {*Orange Pi Zero*}
 -  **sACN E1.31 Ethernet** DMX Bridge **4 Ports** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx_multi.zip?raw=true)} {*Orange Pi One*}
 - RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_dmx_usb_pro.zip?raw=true)}  {*Orange Pi Zero*}
@@ -52,19 +52,18 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
 
-# Raspberry Pi Raspbian #
-## Art-Net 3 / L6470 / Stepper
+# Raspberry Pi Zero Raspbian
+## Art-Net
 
-Linux Raspbian **Open Source** solutions:
+Linux Raspbian **Open Source** solution:
 
 - ArtIpProg Widget Raspberry Pi Zero
-- **Art-Net 3** L6470 Stepper Motor Controller {will be moved to Orange Pi Zero baremetal}
 
 # Linux / Cygwin / Mac OS X #
-## Art-Net 3 / sACN E1.31 / OSC ##
+## Art-Net 4 / sACN E1.31 / OSC ##
 
 Linux **Open Source** solutions:
 
-- **Art-Net 3** Real-time DMX Monitor
+- **Art-Net 4** Real-time DMX Monitor
 - sACN **E.131** Real-time DMX Monitor
-- **OSC** Real-time Sniffer 
+- **OSC** Real-time DMX Monitor

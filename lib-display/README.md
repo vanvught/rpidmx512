@@ -10,5 +10,5 @@ Supported displays:
 - OLED display 128x64 SSD1306 I2C ([https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C](https://opencircuit.nl/Product/11809/OLED-display-wit-128-x-64-I2C))
 
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 
