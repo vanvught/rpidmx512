@@ -2,7 +2,7 @@
  * @file rdmmessage.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "rdmmessage.h"
 
 #include "rdm.h"
@@ -44,7 +40,6 @@ RDMMessage::RDMMessage(void)  {
 	m_pRdmCommand->message_length = RDM_MESSAGE_MINIMUM_SIZE;
 	memcpy(m_pRdmCommand->source_uid, UID_ALL, RDM_UID_SIZE);
 	memcpy(m_pRdmCommand->destination_uid, UID_ALL, RDM_UID_SIZE);
-	//m_pRdmCommand->transaction_number = m_TransactionNumber;
 	m_pRdmCommand->slot16.port_id = 1;
 	m_pRdmCommand->message_count = 0;
 	m_pRdmCommand->sub_device[0] = 0;
@@ -64,21 +59,21 @@ void RDMMessage::SetDstUid(const uint8_t *DstUid){
 	memcpy(m_pRdmCommand->destination_uid, DstUid, RDM_UID_SIZE);
 }
 
-void RDMMessage::SetSubDevice(const uint16_t SubDevice) {
+void RDMMessage::SetSubDevice(uint16_t SubDevice) {
 	m_pRdmCommand->sub_device[0] = (uint8_t) (SubDevice >> 8);
 	m_pRdmCommand->sub_device[1] = (uint8_t) SubDevice;
 }
 
-void RDMMessage::SetCc(const uint8_t cc) {
+void RDMMessage::SetCc(uint8_t cc) {
 	m_pRdmCommand->command_class = cc;
 }
 
-void RDMMessage::SetPid(const uint16_t pid) {
+void RDMMessage::SetPid(uint16_t pid) {
 	m_pRdmCommand->param_id[0] = (uint8_t) (pid >> 8);
 	m_pRdmCommand->param_id[1] = (uint8_t) pid;
 }
 
-void RDMMessage::SetPd(const uint8_t *pd, const uint8_t length) {
+void RDMMessage::SetPd(const uint8_t *pd, uint8_t length) {
 	m_pRdmCommand->message_length -= m_pRdmCommand->param_data_length;
 	m_pRdmCommand->param_data_length = length;
 	memcpy(m_pRdmCommand->param_data, pd, length);

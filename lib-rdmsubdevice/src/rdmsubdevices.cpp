@@ -41,7 +41,7 @@
 #include "rdmsubdevice.h"
 //
 #include "rdmsubdevicedummy.h"
-#if defined(BARE_METAL)
+#if defined(BARE_METAL) && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
 #include "rdmsubdevicebw7fets.h"
 #include "rdmsubdevicebwdimmer.h"
 #include "rdmsubdevicebwdio.h"
@@ -77,7 +77,7 @@ void RDMSubDevices::Init(void) {
 #ifndef NDEBUG
 	Add(new RDMSubDeviceDummy);
 #endif
-#if defined(BARE_METAL)
+#if defined(BARE_METAL)  && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
 	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
 	(void) configfile.Read(SUBDEVICES_PARAMS_FILE_NAME);
 #endif
@@ -243,7 +243,7 @@ void RDMSubDevices::staticCallbackFunction(void* p, const char* s) {
 
 void RDMSubDevices::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
-#if defined(BARE_METAL)
+#if defined(BARE_METAL)  && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
 	int nReturnCode;
 	char aDeviceName[65];
 	uint8_t nLength = sizeof(aDeviceName) - 1;

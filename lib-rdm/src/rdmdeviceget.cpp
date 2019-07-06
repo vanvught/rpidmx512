@@ -1,8 +1,8 @@
 /**
- * @file rdmmessage.h
+ * @file rdmdeviceget.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMMESSAGE_H_
-#define RDMMESSAGE_H_
+#include <stdint.h>
 
-#include "rdm.h"
+#include "rdmdevice.h"
 
-class RDMMessage: public Rdm {
-public:
-	RDMMessage(void);
-	~RDMMessage(void);
+void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
+	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceRootLabel;
+	info->length = m_tRDMDeviceParams.nDeviceRootLabelLength;
+}
 
-	void SetSrcUid(const uint8_t *);
-	void SetDstUid(const uint8_t *);
+void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
+	info->data[0] = m_tRDMDeviceParams.aDeviceUID[1];
+	info->data[1] = m_tRDMDeviceParams.aDeviceUID[0];
+	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
+}
 
-	void SetCc(uint8_t);
-	void SetPid(uint16_t);
-
-	void SetSubDevice(uint16_t);
-
-	void SetPd(const uint8_t *, const uint8_t);
-
-	void Send(uint8_t nPort = 0);
-
-public:
-	static void Print(const uint8_t *);
-
-private:
-	struct TRdmMessage *m_pRdmCommand;
-};
-
-#endif /* RDMMESSAGE_H_ */
+void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
+	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceManufacturerName;
+	info->length = m_tRDMDeviceParams.nDdeviceManufacturerNameLength;
+}

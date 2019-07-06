@@ -190,32 +190,6 @@ void RDMDevice::callbackFunction(const char *pLine) {
 	}
 }
 
-void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceRootLabel;
-	info->length = m_tRDMDeviceParams.nDeviceRootLabelLength;
-}
-
-void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
-	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
-	memcpy(m_tRDMDeviceParams.aDeviceRootLabel, info->data, nLength);
-	m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
-
-	if (m_pRDMDeviceParamsStore != 0) {
-		m_pRDMDeviceParamsStore->SaveLabel((const uint8_t *)m_tRDMDeviceParams.aDeviceRootLabel, nLength);
-	}
-}
-
-void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
-	info->data[0] = m_tRDMDeviceParams.aDeviceUID[1];
-	info->data[1] = m_tRDMDeviceParams.aDeviceUID[0];
-	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceManufacturerName;
-	info->length = m_tRDMDeviceParams.nDdeviceManufacturerNameLength;
-}
-
 void RDMDevice::Dump(void) {
 #ifndef NDEBUG
 	if (m_tRDMDeviceParams.nSetList == 0) {
