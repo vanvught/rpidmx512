@@ -34,8 +34,15 @@
 
 #include "console.h"
 
+#include "ltcparams.h"
+#include "ltcleds.h"
+
 #include "artnetnode.h"
 #include "artnetparams.h"
+
+#include "artnetconst.h"
+#include "networkconst.h"
+
 #include "ipprog.h"
 #include "timesync.h"
 
@@ -49,18 +56,11 @@
 #include "display.h"
 #include "displaymax7219.h"
 
-#include "networkconst.h"
-#include "artnetconst.h"
-
-#include "ltcleds.h"
-
 #include "h3/artnetreader.h"
 #include "h3/ltcreader.h"
 #include "h3/ltcsender.h"
 #include "h3/midireader.h"
 #include "h3/tcnetreader.h"
-
-#include "ltcparams.h"
 
 #include "spiflashinstall.h"
 

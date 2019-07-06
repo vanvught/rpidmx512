@@ -5,7 +5,6 @@
 	<projects>
 		<project>h3-firmware-template</project>
 		<project>include</project>
-		<project>lib-remoteconfig</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
