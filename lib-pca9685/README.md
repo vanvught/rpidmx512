@@ -45,5 +45,5 @@ Compile and build the examples on Linux Raspbian
 ![](https://cdn-shop.adafruit.com/970x728/2327-12.jpg)
 ![](https://cdn-shop.adafruit.com/970x728/815-04.jpg)
 
-[http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
+[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

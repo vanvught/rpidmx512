@@ -2,7 +2,7 @@
  * @file pca9685.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,22 +29,10 @@
 #endif
 #include <assert.h>
 
-#include "bcm2835.h"
-
-#if defined(__linux__)
-#else
- #include "bcm2835_i2c.h"
-#endif
+#include "hal_i2c.h"
+#include "hal_gpio.h"
 
 #include "pca9685.h"
-
-extern "C" {
-#if defined(__linux__)
- extern void bcm2835_delayMicroseconds (uint64_t);
- #define udelay bcm2835_delayMicroseconds
-#else
-#endif
-}
 
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
 
@@ -92,13 +80,7 @@ enum TPCA9685Mode2 {
 };
 
 PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
-#if defined (__linux__)
-	if (bcm2835_init() == 0) {
-		printf("Not able to init the bmc2835 library\n");
-	}
-#endif
-
-	bcm2835_i2c_begin();
+	FUNC_PREFIX(i2c_begin());
 
 	AutoIncrement(true);
 
@@ -379,8 +361,8 @@ void PCA9685::AutoIncrement(bool bMode) {
 }
 
 void PCA9685::I2cSetup(void) {
-	bcm2835_i2c_setSlaveAddress(m_nAddress);
-	bcm2835_i2c_setClockDivider(BCM2835_I2C_CLOCK_DIVIDER_626);
+	FUNC_PREFIX(i2c_set_address(m_nAddress));
+	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {
@@ -391,7 +373,7 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {
 
 	I2cSetup();
 
-	bcm2835_i2c_write((char *)buffer, 2);
+	FUNC_PREFIX(i2c_write((char *)buffer, 2));
 }
 
 uint8_t PCA9685::I2cReadReg(uint8_t reg) {
@@ -399,8 +381,8 @@ uint8_t PCA9685::I2cReadReg(uint8_t reg) {
 
 	I2cSetup();
 
-	(void) bcm2835_i2c_write((char *)&data, 1);
-	(void) bcm2835_i2c_read((char *)&data, 1);
+	FUNC_PREFIX(i2c_write((char *)&data, 1));
+	FUNC_PREFIX(i2c_read((char *)&data, 1));
 
 	return data;
 }
@@ -414,7 +396,7 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data) {
 
 	I2cSetup();
 
-	bcm2835_i2c_write((char *) buffer, 3);
+	FUNC_PREFIX(i2c_write((char *) buffer, 3));
 }
 
 uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
@@ -423,8 +405,8 @@ uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
 
 	I2cSetup();
 
-	(void) bcm2835_i2c_write((char *)&data, 1);
-	(void) bcm2835_i2c_read((char *)&buffer, 2);
+	FUNC_PREFIX(i2c_write((char *)&data, 1));
+	FUNC_PREFIX(i2c_read((char *)&buffer, 2));
 
 	return (uint16_t) ((uint16_t) buffer[1] << 8 | (uint16_t) buffer[0]);
 }
@@ -440,6 +422,6 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data, uint16_t data2) {
 
 	I2cSetup();
 
-	bcm2835_i2c_write((char *) buffer, 5);
+	FUNC_PREFIX(i2c_write((char *) buffer, 5));
 }
 

@@ -28,6 +28,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "bcm2835.h"
 #include "pca9685pwmled.h"
 
 static void sleep_ms(int milliseconds) {
@@ -41,6 +42,11 @@ int main(int argc, char **argv) {
 	if (getuid() != 0) {
 		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
 		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
 	}
 
 	int i;
