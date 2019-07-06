@@ -144,7 +144,7 @@ struct TArtDiagData {
 	uint8_t Filler3;		///< Ignore by receiver, set to zero by sender
 	uint8_t LengthHi;		///< The length of the text array below. High Byte.
 	uint8_t LengthLo;		///< Low byte
-	uint8_t Data[512];		///< ASCII text array, null terminated. Max length is 512 bytes including the null terminator. // TODO #define
+	uint8_t Data[512];		///< ASCII text array, null terminated. Max length is 512 bytes including the null terminator.
 }PACKED;
 
 /**
@@ -301,7 +301,7 @@ struct TArtTodData {
 	uint8_t UidTotalLo;
 	uint8_t BlockCount; 	///< The index number of this packet. When UidTotal exceeds 200, multiple ArtTodData packets are used.
 	uint8_t UidCount;		///< The number of UIDs encoded in this packet. This is the index of the following array.
-	uint8_t Tod[200][6];	///< 48 bit An array of RDM UID. // TODO #define
+	uint8_t Tod[200][6];	///< 48 bit An array of RDM UID.
 }PACKED;
 
 /**
@@ -326,7 +326,7 @@ struct TArtRdm {
 	uint8_t Net;			///< The top 7 bits of the 15 bit Port-Address of Nodes that must respond to this packet.
 	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
 	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
-	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode. // TODO #define
+	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
 }PACKED;
 
 /**
@@ -385,14 +385,14 @@ struct TArtIpProgReply {
  */
 struct TArtTrigger {
 	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
-	uint16_t OpCode;	///< OpPollReply \ref TOpCodes
+	uint16_t OpCode;	///< OpPollReply
 	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
 	uint8_t ProtVerLo;	///< Low byte of the Art-Net protocol revision number. Current value 14.
 	uint8_t OemCodeHi;	///< The manufacturer code (high byte) of nodes that shall accept this trigger.
 	uint8_t OemCodeLo;	///< The manufacturer code (low byte) of nodes that shall accept this trigger.
 	uint8_t Key;		///< The Trigger Key.
 	uint8_t SubKey;		///< The Trigger SubKey.
-	uint8_t Data[512];	///< The interpretation of the payload is defined by the Key. // TODO #define
+	uint8_t Data[512];	///< The interpretation of the payload is defined by the Key.
 }PACKED;
 
 /**

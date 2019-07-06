@@ -68,7 +68,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 33 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 34 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -346,19 +346,21 @@ TMerge ArtNetNode::GetMergeMode(uint8_t nPortIndex) const {
 }
 
 void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
-	assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+	if (m_nVersion > 3) {
+		assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
 
-	m_OutputPorts[nPortIndex].tPortProtocol = tPortProtocol;
+		m_OutputPorts[nPortIndex].tPortProtocol = tPortProtocol;
 
-	if (tPortProtocol == PORT_ARTNET_SACN) {
-		m_OutputPorts[nPortIndex].port.nStatus |= GO_OUTPUT_IS_SACN;
-	} else {
-		m_OutputPorts[nPortIndex].port.nStatus &= (~GO_OUTPUT_IS_SACN);
-	}
+		if (tPortProtocol == PORT_ARTNET_SACN) {
+			m_OutputPorts[nPortIndex].port.nStatus |= GO_OUTPUT_IS_SACN;
+		} else {
+			m_OutputPorts[nPortIndex].port.nStatus &= (~GO_OUTPUT_IS_SACN);
+		}
 
-	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
-		if (nPortIndex < ARTNET_MAX_PORTS) {
-			m_pArtNetStore->SavePortProtocol(nPortIndex, tPortProtocol);
+		if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
+			if (nPortIndex < ARTNET_MAX_PORTS) {
+				m_pArtNetStore->SavePortProtocol(nPortIndex, tPortProtocol);
+			}
 		}
 	}
 }

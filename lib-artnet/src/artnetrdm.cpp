@@ -125,8 +125,15 @@ void ArtNetNode::HandleRdm(void) {
 	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 
-			if ((!m_IsRdmResponder) && m_IsLightSetRunning[i]) {
-				m_pLightSet->Stop(i); // Stop DMX if was running
+			if (!m_IsRdmResponder) {
+				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != 0)) {
+					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
+					m_IsLightSetRunning[i] = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
+				}
+
+				if (m_IsLightSetRunning[i]) {
+					m_pLightSet->Stop(i); // Stop DMX if was running
+				}
 			}
 
 			const uint8_t *response = (uint8_t *) m_pArtNetRdm->Handler(i, packet->RdmPacket);

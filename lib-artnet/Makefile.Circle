@@ -10,7 +10,7 @@ INCLUDE	+= -I ../lib-lightset/include -I ../lib-ledblink/include
 INCLUDE	+= -I ../lib-hal/include -I ../lib-network/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/artnetconst.o src/artnetnode.o src/artnetparams.o src/artnetparamsconst.o src/artnetparamsset.o src/artnetnodeprint.o
+OBJS	= src/artnetconst.o src/artnetnode.o src/artnetipprog.o src/artnetrdm.o src/artnettimecode.o src/artnettimesync.o src/artnetparams.o src/artnetparamsconst.o src/artnetparamsset.o src/artnetnodeprint.o
 
 EXTRACLEAN = src/*.o
 
