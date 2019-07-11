@@ -53,8 +53,12 @@
 #include "tcnetparams.h"
 #include "tcnettimecode.h"
 
+#include "ntpserver.h"
+
 #include "display.h"
 #include "displaymax7219.h"
+
+#include "ntpserver.h"
 
 #include "h3/artnetreader.h"
 #include "h3/ltcreader.h"
@@ -101,6 +105,9 @@ void notmain(void) {
 		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
 	}
 
+	const bool bEnableNtp = ltcParams.IsNtpEnabled();
+	tLtcDisabledOutputs.bNtp = !bEnableNtp;
+
 	LtcLeds leds;
 
 	Midi midi;
@@ -112,6 +119,8 @@ void notmain(void) {
 	MidiReader midiReader(&node, &tLtcDisabledOutputs);
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
+
+	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	fw.Print();
 
@@ -155,7 +164,6 @@ void notmain(void) {
 	StoreTCNet storetcnet;
 	TCNetParams tcnetparams((TCNetParamsStore *) &storetcnet);
 
-
 	if (tcnetparams.Load()) {
 		tcnetparams.Set(&tcnet);
 		tcnetparams.Dump();
@@ -170,7 +178,7 @@ void notmain(void) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
 
-	if (source != LTC_READER_SOURCE_LTC) {
+	if ((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc)) {
 		ltcSender.Start();
 	}
 
@@ -190,6 +198,21 @@ void notmain(void) {
 	default:
 		ltcReader.Start();
 		break;
+	}
+
+	if (bEnableNtp) {
+
+		struct TLtcTimeCode LtcTimeCode;
+
+		LtcTimeCode.nFrames = 0;
+		LtcTimeCode.nHours = 0;
+		LtcTimeCode.nMinutes = 0;
+		LtcTimeCode.nSeconds = 0;
+		LtcTimeCode.nType = TC_TYPE_SMPTE;
+
+		ntpServer.SetTimeCode(&LtcTimeCode);
+		ntpServer.Print();
+		ntpServer.Start();
 	}
 
 	midi.Print();
@@ -276,6 +299,14 @@ void notmain(void) {
 		printf(" Max7219 is disabled\n");
 	}
 
+	if ((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc)) {
+		printf(" LTC output is disabled\n");
+	}
+
+	if ((source != LTC_READER_SOURCE_TCNET) && (tLtcDisabledOutputs.bTCNet)) {
+		printf(" TCNet output is disabled\n");
+	}
+
 	if ((source != LTC_READER_SOURCE_MIDI) && (tLtcDisabledOutputs.bMidi)) {
 		printf(" MIDI output is disabled\n");
 	}
@@ -284,13 +315,17 @@ void notmain(void) {
 		printf(" Art-Net output is disabled\n");
 	}
 
+	if (tLtcDisabledOutputs.bNtp) {
+		printf(" NTP output is disabled\n");
+	}
+
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 
 		nw.Run();
-		node.HandlePacket();
+		node.Run();
 		if (source == LTC_READER_SOURCE_TCNET) {	//FIXME Remove when MASTER is implemented
 			tcnet.Run();
 		}
@@ -310,6 +345,10 @@ void notmain(void) {
 			break;
 		default:
 			break;
+		}
+
+		if (bEnableNtp) {
+			ntpServer.Run();
 		}
 
 		remoteConfig.Run();

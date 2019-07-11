@@ -1,5 +1,5 @@
 /**
- * @file tftp_internal.h
+ * @file ntp_internal.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTP_INTERNAL_H_
-#define TFTP_INTERNAL_H_
+#ifndef NTP_INTERNAL_H_
+#define NTP_INTERNAL_H_
 
 enum {
-	TFTP_PORT_SERVER = 69
+	NTP_PORT_SERVER = 123
 };
 
-#endif /* TFTP_INTERNAL_H_ */
+#endif /* NTP_INTERNAL_H_ */

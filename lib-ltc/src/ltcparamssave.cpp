@@ -54,13 +54,23 @@ bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_DISPLAY, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_MAX7219, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
+	isAdded &= builder.Add(LtcParamsConst::DISABLE_LTC, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_MIDI, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI));
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_ARTNET, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET));
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_TCNET, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_LTC, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
 
 	isAdded &= builder.Add(LtcParamsConst::SHOW_SYSTIME, (uint32_t) m_tLtcParams.nShowSysTime, isMaskSet(LTC_PARAMS_MASK_SHOW_SYSTIME));
 	isAdded &= builder.Add(LtcParamsConst::DISABLE_TIMESYNC, (uint32_t) m_tLtcParams.nDisableTimeSync, isMaskSet(LTC_PARAMS_MASK_DISABLE_TIMESYNC));
+
+	isAdded &= builder.Add(LtcParamsConst::YEAR, (uint32_t) m_tLtcParams.nYear, isMaskSet(LTC_PARAMS_MASK_YEAR));
+	isAdded &= builder.Add(LtcParamsConst::MONTH, (uint32_t) m_tLtcParams.nMonth, isMaskSet(LTC_PARAMS_MASK_MONTH));
+	isAdded &= builder.Add(LtcParamsConst::DAY, (uint32_t) m_tLtcParams.nDay, isMaskSet(LTC_PARAMS_MASK_DAY));
+
+	isAdded &= builder.Add(LtcParamsConst::NTP_ENABLE, (uint32_t) m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
+
+#if 0
+	isAdded &= builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
+#endif
 
 	nSize = builder.GetSize();
 

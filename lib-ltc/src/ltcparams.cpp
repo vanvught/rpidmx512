@@ -22,6 +22,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+ #undef NDEBUG
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -31,13 +35,11 @@
 
 #include "ltcparams.h"
 
-#include  "ltcparamsconst.h"
+#include "ltcparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
-
-#define IS_DISABLED(x)	(x) ? "Yes" : "No"
 
 LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tLtcParams;
@@ -48,6 +50,9 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 
 	m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
 	m_tLtcParams.nMax7219Intensity = 4;
+	m_tLtcParams.nYear = 19;
+	m_tLtcParams.nMonth = 1;
+	m_tLtcParams.nDay = 1;
 }
 
 LtcParams::~LtcParams(void) {
@@ -141,6 +146,15 @@ void LtcParams::callbackFunction(const char* pLine) {
 		}
 	}
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_LTC, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_LTC;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_LTC;
+		}
+	}
+
 	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_MIDI, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MIDI;
@@ -159,7 +173,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 		}
 	}
 
-#if 0 //TODO When MASTER is implemented
 	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TCNET, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_TCNET;
@@ -168,7 +181,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_TCNET;
 		}
 	}
-#endif
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
@@ -189,6 +201,53 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_DISABLE_TIMESYNC;
 		}
 	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::YEAR, &value8) == SSCAN_OK) {
+		if (value8 >= 19) {
+			m_tLtcParams.nYear = value8;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_YEAR;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::MONTH, &value8) == SSCAN_OK) {
+		if ((value8 >= 1) && (value8 <= 12)) {
+			m_tLtcParams.nMonth = value8;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MONTH;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DAY, &value8) == SSCAN_OK) {
+		if ((value8 >= 1) && (value8 <= 31)) {
+			m_tLtcParams.nDay = value8;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DAY;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nEnableNtp = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_NTP;
+		} else {
+			m_tLtcParams.nEnableNtp = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_NTP;
+		}
+	}
+
+#if 0
+	if (Sscan::Uint8(pLine, LtcParamsConst::SET_DATE, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nSetDate = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SET_DATE;
+		} else {
+			m_tLtcParams.nSetDate = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_SET_DATE;
+		}
+	}
+#endif
+
 }
 
 void LtcParams::Dump(void) {
@@ -240,6 +299,28 @@ void LtcParams::Dump(void) {
 			printf("  LTC\n");
 		}
 	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_YEAR)) {
+		printf(" %s=%d\n", LtcParamsConst::YEAR, m_tLtcParams.nYear);
+	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_MONTH)) {
+		printf(" %s=%d\n", LtcParamsConst::MONTH, m_tLtcParams.nMonth);
+	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_DAY)) {
+		printf(" %s=%d\n", LtcParamsConst::DAY, m_tLtcParams.nDay);
+	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP)) {
+		printf(" NTP is enabled\n");
+	}
+
+#if 0
+	if (isMaskSet(LTC_PARAMS_MASK_SET_DATE)) {
+		printf(" %s=%d\n", LtcParamsConst::SET_DATE, m_tLtcParams.nSetDate);
+	}
+#endif
 #endif
 }
 

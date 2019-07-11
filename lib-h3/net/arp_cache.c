@@ -2,7 +2,7 @@
  * @file arp_cache.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +128,7 @@ uint32_t arp_cache_lookup(uint32_t ip, uint8_t *mac_address) {
 	}
 
 	uint16_t current_entry = s_entry_current;
-	int16_t timeout;
+	int32_t timeout;
 	int8_t retries = 3;
 
 	while (retries--) {

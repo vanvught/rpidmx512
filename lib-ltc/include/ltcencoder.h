@@ -28,13 +28,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct TLtcTimeCode {
-	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
-	uint8_t nSeconds;		///< Seconds. 0 - 59.
-	uint8_t nMinutes;		///< Minutes. 0 - 59.
-	uint8_t nHours;			///< Hours. 0 - 59.
-	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
-};
+#include "ltc.h"
 
 class LtcEncoder {
 public:

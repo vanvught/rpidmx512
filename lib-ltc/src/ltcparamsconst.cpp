@@ -26,15 +26,22 @@
 
 #include "ltcparamsconst.h"
 
-alignas(uint32_t)  const char LtcParamsConst::FILE_NAME[]  = "ltc.txt";
-alignas(uint32_t)  const char LtcParamsConst::SOURCE[]  = "source";
-alignas(uint32_t)  const char LtcParamsConst::MAX7219_TYPE[]  = "max7219_type";
-alignas(uint32_t)  const char LtcParamsConst::MAX7219_INTENSITY[]  = "max7219_intensity";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_DISPLAY[]  = "disable_display";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_MAX7219[]  = "disable_max7219";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_MIDI[]  = "disable_midi";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_ARTNET[]  = "disable_artnet";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_TCNET[]  = "disable_tcnet";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_LTC[]  = "disable_ltc";
-alignas(uint32_t)  const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
-alignas(uint32_t)  const char LtcParamsConst::DISABLE_TIMESYNC[]  = "disable_timesync";
+alignas(uint32_t) const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
+alignas(uint32_t) const char LtcParamsConst::SOURCE[] = "source";
+alignas(uint32_t) const char LtcParamsConst::MAX7219_TYPE[] = "max7219_type";
+alignas(uint32_t) const char LtcParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_TCNET[] = "disable_tcnet";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
+alignas(uint32_t) const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_TIMESYNC[] = "disable_timesync";
+alignas(uint32_t) const char LtcParamsConst::YEAR[] = "year";
+alignas(uint32_t) const char LtcParamsConst::MONTH[] = "month";
+alignas(uint32_t) const char LtcParamsConst::DAY[] = "day";
+alignas(uint32_t) const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
+#if 0
+alignas(uint32_t) const char LtcParamsConst::SET_DATE[] = "set_date";
+#endif

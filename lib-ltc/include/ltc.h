@@ -26,6 +26,14 @@
 #ifndef LTC_H_
 #define LTC_H_
 
+struct TLtcTimeCode {
+	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
+	uint8_t nSeconds;		///< Seconds. 0 - 59.
+	uint8_t nMinutes;		///< Minutes. 0 - 59.
+	uint8_t nHours;			///< Hours. 0 - 59.
+	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
+};
+
 enum TTimecodeTypes {
 	TC_TYPE_FILM = 0,
 	TC_TYPE_EBU,
@@ -42,6 +50,7 @@ struct TLtcDisabledOutputs {
 	bool bArtNet;
 	bool bTCNet;
 	bool bLtc;
+	bool bNtp;
 };
 
 #define TC_CODE_MAX_LENGTH	11

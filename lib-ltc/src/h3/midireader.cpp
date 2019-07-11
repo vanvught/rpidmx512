@@ -52,6 +52,7 @@
 #include "artnetnode.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "ntpserver.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -230,7 +231,13 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
-	m_pNode->SendTimeCode((struct TArtNetTimeCode *)&m_MidiTimeCode);
+	if (!m_ptLtcDisabledOutputs->bArtNet) {
+		m_pNode->SendTimeCode((struct TArtNetTimeCode *) &m_MidiTimeCode);
+	}
+
+	if (!m_ptLtcDisabledOutputs->bNtp) {
+		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
+	}
 
 	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {
 		m_tTimeCodeTypePrevious = m_tTimeCodeType;

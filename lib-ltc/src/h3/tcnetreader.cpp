@@ -49,6 +49,7 @@
 #include "artnetnode.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
+#include "ntpserver.h"
 
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
@@ -163,11 +164,15 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 
 	if (m_nTimeCodePrevious != *p) {
 		if (!m_ptLtcDisabledOutputs->bLtc) {
-			LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)pTimeCode);
+			LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) pTimeCode);
 		}
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
 			m_pNode->SendTimeCode((const struct TArtNetTimeCode *) pTimeCode);
+		}
+
+		if (!m_ptLtcDisabledOutputs->bNtp) {
+			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) pTimeCode);
 		}
 	}
 

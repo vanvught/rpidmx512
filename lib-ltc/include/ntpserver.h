@@ -1,5 +1,5 @@
 /**
- * @file tftp_internal.h
+ * @file ntpserver.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,11 +23,61 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTP_INTERNAL_H_
-#define TFTP_INTERNAL_H_
+#ifndef NTPSERVER_H_
+#define NTPSERVER_H_
 
-enum {
-	TFTP_PORT_SERVER = 69
+#include <stdint.h>
+#include <time.h>
+
+#include "ltc.h"
+
+struct TNtpPacket {
+	uint8_t LiVnMode;
+	uint8_t Stratum;
+	uint8_t Poll;
+	uint8_t Precision;
+	uint32_t RootDelay;
+	uint32_t RootDispersion;
+	uint32_t ReferenceID;
+	uint32_t ReferenceTimestamp_s;
+	uint32_t ReferenceTimestamp_f;
+	uint32_t OriginTimestamp_s;
+	uint32_t OriginTimestamp_f;
+	uint32_t ReceiveTimestamp_s;
+	uint32_t ReceiveTimestamp_f;
+	uint32_t TransmitTimestamp_s;
+	uint32_t TransmitTimestamp_f;
+}__attribute__((packed));
+
+class NtpServer {
+public:
+	NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay);
+	~NtpServer(void);
+
+	void Start(void);
+	void Stop(void);
+
+	void SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode);
+
+	void Run(void);
+
+	void Print(void);
+
+	static NtpServer* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static NtpServer *s_pThis;
+
+private:
+	time_t m_tDate;
+	time_t m_tTimeDate;
+	uint32_t m_nFraction;
+	int32_t m_nHandle;
+
+	struct TNtpPacket m_Request;
+	struct TNtpPacket m_Reply;
 };
 
-#endif /* TFTP_INTERNAL_H_ */
+#endif /* NTPSERVER_H_ */

@@ -52,6 +52,7 @@
 #include "displaymax7219.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
+#include "ntpserver.h"
 
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
@@ -151,6 +152,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 
 	if (!m_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
+	}
+
+	if (!m_ptLtcDisabledOutputs->bNtp) {
+		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
 	}
 
 	tMidiTimeCode.hour = ArtNetTimeCode->Hours;

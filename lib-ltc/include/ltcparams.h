@@ -43,13 +43,14 @@ enum TLtcParamsMax7219Type {
 	LTC_PARAMS_MAX7219_TYPE_7SEGMENT
 };
 
-enum TLtcParamsMaskDisabledOutputs { //FIXEM refactor with _MASK
+enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_DISPLAY = (1 << 0),
 	LTC_PARAMS_DISABLE_MAX7219 = (1 << 1),
 	LTC_PARAMS_DISABLE_MIDI = (1 << 2),
 	LTC_PARAMS_DISABLE_ARTNET = (1 << 3),
 	LTC_PARAMS_DISABLE_TCNET = (1 << 4),
-	LTC_PARAMS_DISABLE_LTC = (1 << 5)
+	LTC_PARAMS_DISABLE_LTC = (1 << 5),
+	LTC_PARAMS_DISABLE_NTP = (1 << 6)
 };
 
 struct TLtcParams {
@@ -60,6 +61,11 @@ struct TLtcParams {
 	uint8_t nDisabledOutputs;
 	uint8_t nShowSysTime;
 	uint8_t nDisableTimeSync;
+	uint8_t nYear;
+	uint8_t nMonth;
+	uint8_t nDay;
+	uint8_t nEnableNtp;
+	uint8_t nSetDate;
 };
 
 enum TLtcParamsMask {
@@ -68,7 +74,12 @@ enum TLtcParamsMask {
 	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2),
 	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3),
 	LTC_PARAMS_MASK_SHOW_SYSTIME = (1 << 4),
-	LTC_PARAMS_MASK_DISABLE_TIMESYNC = (1 << 5)
+	LTC_PARAMS_MASK_DISABLE_TIMESYNC = (1 << 5),
+	LTC_PARAMS_MASK_YEAR = (1 << 6),
+	LTC_PARAMS_MASK_MONTH = (1 << 7),
+	LTC_PARAMS_MASK_DAY = (1 << 8),
+	LTC_PARAMS_MASK_ENABLE_NTP = (1 << 9),
+	LTC_PARAMS_MASK_SET_DATE = (1 << 10)
 };
 
 class LtcParamsStore {
@@ -115,6 +126,26 @@ public:
 
 	bool IsTimeSyncDisabled(void) {
 		return  (m_tLtcParams.nDisableTimeSync == 1);
+	}
+
+	uint8_t GetYear(void) {
+		return m_tLtcParams.nYear;
+	}
+
+	uint8_t GetMonth(void) {
+		return m_tLtcParams.nMonth;
+	}
+
+	uint8_t GetDay(void) {
+		return m_tLtcParams.nDay;
+	}
+
+	bool IsNtpEnabled(void) {
+		return (m_tLtcParams.nEnableNtp == 1);
+	}
+
+	bool IsSetDate(void) {
+		return (m_tLtcParams.nSetDate == 1);
 	}
 
 public:

@@ -56,6 +56,7 @@
 #include "display.h"
 #include "displaymax7219.h"
 #include "midi.h"
+#include "ntpserver.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -291,7 +292,11 @@ void LtcReader::Run(void) {
 		tMidiTimeCode.rate = (_midi_timecode_type)TimeCodeType;
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
-			m_pNode->SendTimeCode((const struct TArtNetTimeCode *)&tMidiTimeCode);
+			m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &tMidiTimeCode);
+		}
+
+		if (!m_ptLtcDisabledOutputs->bNtp) {
+			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &tMidiTimeCode);
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {

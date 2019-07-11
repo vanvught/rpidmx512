@@ -2,7 +2,7 @@
  * @file arp.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,12 @@ static struct t_arp s_arp_announce ALIGNED;
 static struct t_arp s_arp_request ALIGNED;
 static struct t_arp s_arp_reply ALIGNED;
 
-static void arp_announce(void) {
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
+
+void arp_announce(void) {
 	DEBUG_ENTRY
 
 	if(s_arp_announce.arp.sender_ip == 0) {
@@ -60,8 +65,22 @@ static void arp_announce(void) {
 	DEBUG_EXIT
 }
 
-static void arp_handle_request(struct t_arp *p_arp) {
+void arp_handle_request(struct t_arp *p_arp) {
 	DEBUG2_ENTRY
+
+	DEBUG_PRINTF(IPSTR, IP2STR(p_arp->arp.sender_ip));
+
+	_pcast32 target;
+
+	const uint8_t *p = (uint8_t *) &p_arp->arp.target_ip;
+
+	memcpy(target.u8, p, 4);
+
+	if (target.u32 != s_arp_announce.arp.sender_ip) {
+		DEBUG_PRINTF(IPSTR, IP2STR(target.u32));
+		DEBUG2_EXIT
+		return;
+	}
 
 	// Ethernet header
 	memcpy(s_arp_reply.ether.dst, p_arp->ether.src, ETH_ADDR_LEN);
@@ -70,14 +89,14 @@ static void arp_handle_request(struct t_arp *p_arp) {
 	memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, ETH_ADDR_LEN);
 	s_arp_reply.arp.target_ip = p_arp->arp.sender_ip;
 
-	DEBUG_PRINTF(IPSTR, IP2STR(p_arp->arp.sender_ip));
+	debug_dump((void *)&s_arp_reply, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_reply, sizeof(struct t_arp));
 
-	DEBUG2_EXIT
+	//DEBUG2_EXIT
 }
 
-static void arp_handle_reply(struct t_arp *p_arp) {
+void arp_handle_reply(struct t_arp *p_arp) {
 	DEBUG2_ENTRY
 
 	arp_cache_update(p_arp->arp.sender_mac, p_arp->arp.sender_ip);
@@ -148,6 +167,8 @@ void arp_send_request(uint32_t ip) {
 	s_arp_request.arp.target_ip = ip;
 
 	DEBUG_PRINTF(IPSTR, IP2STR(ip));
+
+	debug_dump((void *)&s_arp_request, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_request, sizeof(struct t_arp));
 

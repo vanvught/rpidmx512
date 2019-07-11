@@ -41,6 +41,13 @@ public:
 	alignas(uint32_t) static const char DISABLE_LTC[];
 	alignas(uint32_t) static const char SHOW_SYSTIME[];
 	alignas(uint32_t) static const char DISABLE_TIMESYNC[];
+	alignas(uint32_t) static const char YEAR[];
+	alignas(uint32_t) static const char MONTH[];
+	alignas(uint32_t) static const char DAY[];
+	alignas(uint32_t) static const char NTP_ENABLE[];
+#if 0
+	alignas(uint32_t) static const char SET_DATE[];
+#endif
 };
 
 #endif /* LTCPARAMSCONST_H_ */

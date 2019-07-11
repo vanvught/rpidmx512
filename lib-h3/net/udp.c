@@ -30,6 +30,7 @@
 
 #include "dhcp_internal.h"
 #include "tftp_internal.h"
+#include "ntp_internal.h"
 
 #include "net/net.h"
 
@@ -119,7 +120,7 @@ void udp_handle(struct t_udp *p_udp) {
 	const uint16_t dest_port = __builtin_bswap16(p_udp->udp.destination_port);
 
 	// Optimize ? store lowest port in use ?
-	if ((dest_port != DHCP_PORT_CLIENT) && (dest_port != TFTP_PORT_SERVER) && (dest_port < 1024)) { // There is no support for other UDP defined services
+	if ((dest_port != DHCP_PORT_CLIENT) && (dest_port != TFTP_PORT_SERVER) && (dest_port != NTP_PORT_SERVER) && (dest_port < 1024)) { // There is no support for other UDP defined services
 		DEBUG_PRINTF("Not supported port:%d", dest_port);
 		return;
 	}
