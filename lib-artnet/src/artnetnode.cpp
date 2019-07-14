@@ -68,7 +68,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 34 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 35 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -767,6 +767,8 @@ void ArtNetNode::HandleDmx(void) {
 				SendDiag("Data not changed", ARTNET_DP_LOW);
 #endif
 			}
+
+			m_State.bIsReceivingDmx = true;
 		}
 	}
 }
@@ -948,7 +950,7 @@ void ArtNetNode::GetType(void) {
 	}
 }
 
-int ArtNetNode::HandlePacket(void) {
+int ArtNetNode::Run(void) {
 	const char *packet = (char *) &(m_ArtNetPacket.ArtPacket);
 	uint16_t nForeignPort;
 
@@ -968,6 +970,12 @@ int ArtNetNode::HandlePacket(void) {
 			}
 			if (doSend) {
 				SendPollRelply(false);
+			}
+		}
+
+		if ((m_nCurrentPacketTime - m_nPreviousPacketTime) >= 1) {
+			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+				LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 			}
 		}
 
@@ -1038,6 +1046,15 @@ int ArtNetNode::HandlePacket(void) {
 		return 0;
 		__builtin_unreachable ();
 		break;
+	}
+
+	if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+		if (m_State.bIsReceivingDmx) {
+			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+			m_State.bIsReceivingDmx = false;
+		} else {
+			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+		}
 	}
 
 	return m_ArtNetPacket.length;

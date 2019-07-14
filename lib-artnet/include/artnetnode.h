@@ -83,39 +83,40 @@ enum TNodeStatus {
 };
 
 struct TArtNetNodeState {
-	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	uint32_t ArtPollReplyCount;			///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
-	bool SendArtDiagData;				///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
-	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 	uint32_t IPAddressDiagSend;			///< ArtPoll : Destination IPAddress for the ArtDiag
 	uint32_t IPAddressArtPoll;			///< ArtPoll : IPAddress for the ArtPoll package
-	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
 	TArtNetNodeReportCode reportCode;	///< See \ref TArtNetNodeReportCode
 	TNodeStatus status;					///< See \ref TNodeStatus
-	bool IsSynchronousMode;				///< ArtSync received
+	time_t nNetworkDataLossTimeout;
 	time_t ArtSyncTime;					///< Latest ArtSync received time
+	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
+	bool SendArtDiagData;				///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
+	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
+	bool IsSynchronousMode;				///< ArtSync received
 	bool IsMergeMode;
 	bool IsChanged;
-	uint8_t nActivePorts;
-	time_t nNetworkDataLossTimeout;
 	bool bDisableMergeTimeout;
+	bool bIsReceivingDmx;
+	uint8_t nActivePorts;
+	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 };
 
 struct TArtNetNode {
-	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
 	uint32_t IPAddressLocal;						///< Local IP Address
 	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
 	uint32_t IPSubnetMask;							///< The subnet mask
-	uint8_t  NetSwitch[ARTNET_MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t  SubSwitch[ARTNET_MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-	uint8_t  Oem[2];								///< The Oem word describes the equipment vendor and the feature set available.
-	uint8_t  ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
-	uint8_t  LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
-	uint8_t  Esta[ARTNET_ESTA_SIZE];				///< The ESTA manufacturer code.
 	uint32_t IPAddressRemote;						///< The remote IP Address
-	uint8_t  TalkToMe;								///< Behavior of Node
-	uint8_t  Status1;								///< General Status register
-	uint8_t  Status2;
+	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
+	uint8_t NetSwitch[ARTNET_MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[ARTNET_MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
+	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
+	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
+	uint8_t Esta[ARTNET_ESTA_SIZE];					///< The ESTA manufacturer code.
+	uint8_t TalkToMe;								///< Behavior of Node
+	uint8_t Status1;								///< General Status register
+	uint8_t Status2;
 };
 
 struct TGenericPort {
@@ -148,7 +149,7 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	int HandlePacket(void);
+	int Run(void);
 
 	uint8_t GetVersion(void) {
 		return m_nVersion;

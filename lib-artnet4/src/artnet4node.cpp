@@ -137,7 +137,7 @@ void ArtNet4Node::Stop(void) {
 }
 
 int ArtNet4Node::HandlePacket(void) {
-	const int r = ArtNetNode::HandlePacket();
+	const int r = ArtNetNode::Run();
 	m_Bridge.Run();
 
 	return r;
@@ -172,18 +172,31 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_PRINTF("nPort=%d", nPort);
 
 	switch (nCommand) {
+
+	case ARTNET_PC_LED_NORMAL:
+		m_Bridge.SetEnableDataIndicator(true);
+		break;
+	case ARTNET_PC_LED_MUTE:
+		m_Bridge.SetEnableDataIndicator(false);
+		break;
+	case ARTNET_PC_LED_LOCATE:
+		m_Bridge.SetEnableDataIndicator(false);
+		break;
+
 	case ARTNET_PC_MERGE_LTP_O:
 	case ARTNET_PC_MERGE_LTP_1:
 	case ARTNET_PC_MERGE_LTP_2:
 	case ARTNET_PC_MERGE_LTP_3:
 		m_Bridge.SetMergeMode(nPort, E131_MERGE_LTP);
 		break;
+
 	case ARTNET_PC_MERGE_HTP_0:
 	case ARTNET_PC_MERGE_HTP_1:
 	case ARTNET_PC_MERGE_HTP_2:
 	case ARTNET_PC_MERGE_HTP_3:
 		m_Bridge.SetMergeMode(nPort, E131_MERGE_HTP);
 		break;
+
 	case ARTNET_PC_CLR_0:
 	case ARTNET_PC_CLR_1:
 	case ARTNET_PC_CLR_2:
@@ -192,6 +205,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 			m_Bridge.Clear(nPort);
 		}
 		break;
+
 	default:
 		break;
 	}
