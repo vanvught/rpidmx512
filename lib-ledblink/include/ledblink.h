@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 enum tLedBlinkMode {
 	LEDBLINK_MODE_OFF,
 	LEDBLINK_MODE_NORMAL,
+	LEDBLINK_MODE_DATA,
 	LEDBLINK_MODE_FAST,
 	LEDBLINK_MODE_UNKNOWN
 };
@@ -40,20 +41,27 @@ public:
 	LedBlink(void);
 	virtual ~LedBlink(void);
 
-	virtual void SetFrequency (unsigned )= 0;
-	 unsigned GetFrequency(void) { return m_nFreqHz; }
+	virtual void SetFrequency(unsigned)= 0;
+	unsigned GetFrequency(void) {
+		return m_nFreqHz;
+	}
 
 	void SetMode(tLedBlinkMode Mode);
-	tLedBlinkMode GetMode(void) const;
+	tLedBlinkMode GetMode(void) {
+		return m_tMode;
+	}
 
 public:
-	 static LedBlink* Get(void) { return s_pThis; }
+	static LedBlink* Get(void) {
+		return s_pThis;
+	}
 
 protected:
 	unsigned m_nFreqHz;
 
 private:
 	static LedBlink *s_pThis;
+	tLedBlinkMode m_tMode;
 };
 
 #endif /* LEDBLINK_H */

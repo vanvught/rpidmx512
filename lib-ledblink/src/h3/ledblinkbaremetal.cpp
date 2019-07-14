@@ -37,10 +37,22 @@ LedBlinkBaremetal::~LedBlinkBaremetal(void) {
 void LedBlinkBaremetal::SetFrequency(unsigned nFreqHz) {
 	m_nFreqHz = nFreqHz;
 
-	if (nFreqHz == 0) {
-		led_set_ticks_per_second(0);
-		hardware_led_set(0);
-	} else {
-		led_set_ticks_per_second(1000000 / nFreqHz);
+	switch (nFreqHz) {
+		case 0:
+			led_set_ticks_per_second(0);
+			hardware_led_set(0);
+			break;
+		case 1:
+			led_set_ticks_per_second(1000000 / 1);
+			break;
+		case 3:
+			led_set_ticks_per_second(1000000 / 3);
+			break;
+		case 5:
+			led_set_ticks_per_second(1000000 / 5);
+			break;
+		default:
+			led_set_ticks_per_second(1000000 / nFreqHz);
+			break;
 	}
 }

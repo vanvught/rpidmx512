@@ -28,7 +28,9 @@
 #define LEDBLINKBAREMETAL_H_
 
 #include "ledblink.h"
+
 #include "c/led.h"
+#include "c/hardware.h"
 
 class LedBlinkBaremetal : public LedBlink
 {
@@ -36,7 +38,7 @@ public:
 	LedBlinkBaremetal (void);
 	~LedBlinkBaremetal (void);
 
-	void SetFrequency (unsigned nFreqHz);
+	void SetFrequency(unsigned nFreqHz);
 
 	void Run(void) {
 		led_blink();
