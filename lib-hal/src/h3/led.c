@@ -25,11 +25,11 @@
 
 #include <stdint.h>
 
-#include "h3_hs_timer.h"
+#include "h3.h"
 
 #include "c/hardware.h"
 
-static uint32_t ticks_per_second = (uint32_t) (1000000 / 2);
+static uint32_t ticks_per_second = 1000000 / 2;
 static uint32_t led_counter = 0;
 static uint32_t micros_previous = 0;
 
@@ -37,21 +37,19 @@ void led_set_ticks_per_second(uint32_t ticks) {
 	ticks_per_second = ticks;
 }
 
-uint32_t led_get_ticks_per_second(void) {
-	return ticks_per_second;
-}
-
 void led_blink(void) {
 	if (__builtin_expect (ticks_per_second == 0, 0)) {
 		return;
 	}
 
-	const uint32_t micros_now = h3_hs_timer_lo_us();
+	const uint32_t micros_now = H3_TIMER->AVS_CNT1;
 
 	if (__builtin_expect ((micros_now - micros_previous < ticks_per_second), 0)) {
 		return;
 	}
 
-	hardware_led_set((int) (led_counter++ & 0x01));
 	micros_previous = micros_now;
+
+	led_counter ^= 0x1;
+	hardware_led_set((int) led_counter);
 }

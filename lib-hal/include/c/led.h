@@ -2,7 +2,7 @@
  * @file led.h
  *
  */
-/* Copyright (C) 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef LED_H_
-#define LED_H_
+#ifndef C_LED_H_
+#define C_LED_H_
 
 #include <stdint.h>
-
-#define LED_BLINK_NORMAL	(uint32_t) (1E6 / 2)	///< 1Hz
-#define LED_BLINK_IDENTIFY	(uint32_t) (1E6 / 4)	///< 2Hz
-#define LED_BLINK_DMX_DATA	(uint32_t) (1E6 / 6)	///< 3Hz
-#define LED_BLINK_RDM_DATA	(uint32_t) (1E6 / 8)	///< 4Hz
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern void led_set_ticks_per_second(uint32_t);
-extern uint32_t ticks_per_second_get(void);
-
 extern void led_blink(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LED_H_ */
+#endif /* C_LED_H_ */

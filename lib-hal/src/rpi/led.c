@@ -2,7 +2,7 @@
  * @file led.c
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,17 +30,13 @@
 
 #include "hardware.h"
 
-static uint32_t ticks_per_second = (uint32_t) (1000000 / 2);
+static uint32_t ticks_per_second = 1000000 / 2;
 
 static uint32_t led_counter = 0;
 static uint32_t micros_previous = 0;
 
 void led_set_ticks_per_second(uint32_t ticks) {
 	ticks_per_second = ticks;
-}
-
-uint32_t led_get_ticks_per_second(void) {
-	return ticks_per_second;
 }
 
 void led_blink(void) {
@@ -56,6 +52,7 @@ void led_blink(void) {
 		return;
 	}
 
-	hardware_led_set((int)(led_counter++ & 0x01));
 	micros_previous = micros_now;
+
+	hardware_led_set((int)(led_counter++ & 0x01));
 }
