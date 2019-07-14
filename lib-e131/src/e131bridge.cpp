@@ -49,14 +49,16 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 10 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 11 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 E131Bridge::E131Bridge(void) :
 	m_nHandle(-1),
 	m_pLightSet(0),
 	m_bDirectUpdate(false),
+	m_bEnableDataIndicator(true),
 	m_nCurrentPacketMillis(0),
 	m_nPreviousPacketMillis(0)
 {
@@ -75,8 +77,6 @@ E131Bridge::E131Bridge(void) :
 	m_State.IsSynchronized = false;
 	m_State.IsForcedSynchronized = false;
 	m_State.nPriority = E131_PRIORITY_LOWEST;
-
-	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT);
 }
 
 E131Bridge::~E131Bridge(void) {
@@ -86,6 +86,9 @@ E131Bridge::~E131Bridge(void) {
 void E131Bridge::Start(void) {
 	assert(m_pLightSet != 0);
 	assert(m_nHandle != -1);
+
+	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT);
+	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 }
 
 void E131Bridge::Stop(void) {
@@ -560,6 +563,8 @@ void E131Bridge::HandleDmx(void) {
 			}
 
 		}
+
+		m_State.bIsReceivingDmx = true;
 	}
 }
 
@@ -747,12 +752,21 @@ int E131Bridge::Run(void) {
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
 	if (nBytesReceived == 0) {
-		if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (uint32_t)(E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
-			if (!m_State.IsNetworkDataLoss) {
-				DEBUG_PUTS("");
-				SetNetworkDataLossCondition();
+		if (m_State.nActivePorts != 0) {
+			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (uint32_t)(E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
+				if (!m_State.IsNetworkDataLoss) {
+					DEBUG_PUTS("");
+					SetNetworkDataLossCondition();
+				}
+			}
+
+			if (m_bEnableDataIndicator){
+				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+				}
 			}
 		}
+
 		return 0;
 	}
 
@@ -764,7 +778,7 @@ int E131Bridge::Run(void) {
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
 
 	if (m_State.IsSynchronized && !m_State.IsForcedSynchronized) {
-		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (uint32_t) (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
 			m_State.IsSynchronized = false;
 		}
 	}
@@ -783,6 +797,15 @@ int E131Bridge::Run(void) {
 			HandleSynchronization();
 		}
 
+	}
+
+	if (m_bEnableDataIndicator){
+		if (m_State.bIsReceivingDmx) {
+			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+			m_State.bIsReceivingDmx = false;
+		} else {
+			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+		}
 	}
 
 	return nBytesReceived;
