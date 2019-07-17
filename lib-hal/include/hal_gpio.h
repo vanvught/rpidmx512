@@ -28,6 +28,7 @@
 
 #if defined(__linux__)
  #include "bcm2835.h"
+ #define udelay bcm2835_delayMicroseconds
 #elif defined(H3)
  #include "h3_gpio.h"
  #include "h3_board.h"
