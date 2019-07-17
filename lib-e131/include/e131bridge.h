@@ -36,8 +36,6 @@
 #define UUID_STRING_LENGTH	36
 
 struct TE131BridgeState {
-	uint8_t nActivePorts;
-	uint8_t nPriority;
 	bool IsNetworkDataLoss;
 	bool IsMergeMode;				///< Is the Bridge in merging mode?
 	bool IsSynchronized;			///< “Synchronized” or an “Unsynchronized” state.
@@ -45,11 +43,14 @@ struct TE131BridgeState {
 	bool IsChanged;
 	bool bDisableNetworkDataLossTimeout;
 	bool bDisableMergeTimeout;
+	bool bIsReceivingDmx;
 	uint32_t SynchronizationTime;
 	uint32_t DiscoveryTime;
 	uint16_t DiscoveryPacketLength;
 	uint16_t nSynchronizationAddressSourceA;
 	uint16_t nSynchronizationAddressSourceB;
+	uint8_t nActivePorts;
+	uint8_t nPriority;
 };
 
 struct TSource {
@@ -88,33 +89,40 @@ public:
 	void SetMergeMode(uint8_t nPortIndex, TE131Merge tE131Merge);
 	TE131Merge GetMergeMode(uint8_t nPortIndex) const;
 
-	 uint8_t GetActiveOutputPorts(void) {
+	uint8_t GetActiveOutputPorts(void) {
 		return m_State.nActivePorts;
 	}
 
-	 void SetDirectUpdate(bool bDirectUpdate) {
+	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	 bool GetDirectUpdate(void) {
+	bool GetDirectUpdate(void) {
 		return m_bDirectUpdate;
 	}
 
 	bool IsTransmitting(uint8_t nPortIndex) const;
 	bool IsMerging(uint8_t nPortIndex) const;
 	bool IsStatusChanged(void);
-	
-	 void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
+
+	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
 		m_State.bDisableNetworkDataLossTimeout = bDisable;
 	}
-	 bool GetDisableNetworkDataLossTimeout(void) {
+	bool GetDisableNetworkDataLossTimeout(void) {
 		return m_State.bDisableNetworkDataLossTimeout;
 	}
 
-	 void SetDisableMergeTimeout(bool bDisable = true) {
+	void SetDisableMergeTimeout(bool bDisable = true) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-	 bool GetDisableMergeTimeout(void) {
+	bool GetDisableMergeTimeout(void) {
 		return m_State.bDisableMergeTimeout;
+	}
+
+	void SetEnableDataIndicator(bool bEnable = true) {
+		m_bEnableDataIndicator = bEnable;
+	}
+	bool GetEnableDataIndicator(void) {
+		return m_bEnableDataIndicator;
 	}
 
 	void Clear(uint8_t nPortIndex);
@@ -148,15 +156,17 @@ private:
 
 private:
 	int32_t m_nHandle;
+
 	LightSet *m_pLightSet;
+
 	bool m_bDirectUpdate;
+	bool m_bEnableDataIndicator;
 
 	uint32_t m_nCurrentPacketMillis;
 	uint32_t m_nPreviousPacketMillis;
 
 	struct TE131BridgeState m_State;
 	struct TE131OutputPort m_OutputPort[E131_MAX_PORTS];
-
 	struct TE131 m_E131;
 };
 

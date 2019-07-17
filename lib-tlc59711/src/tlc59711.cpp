@@ -30,22 +30,9 @@
 #include <string.h>
 #include <assert.h>
 
-#if defined(__linux__)
- #include "bcm2835.h"
- #include <string.h>
-#elif defined(H3)
- #include "h3_spi.h"
-#else
- #include "bcm2835_spi.h"
-#endif
-
-#if defined(H3)
- 	#define FUNC_PREFIX(x) h3_##x
-#else
- 	#define FUNC_PREFIX(x) bcm2835_##x
-#endif
-
 #include "tlc59711.h"
+
+#include "hal_spi.h"
 
 #define TLC59711_COMMAND			0x25
 	#define TLC59711_COMMAND_SHIFT	26
@@ -359,17 +346,17 @@ void TLC59711::Dump(void) {
 void TLC59711::Update(void) {
 	assert(m_pBuffer != 0);
 
-	FUNC_PREFIX(spi_chipSelect(BCM2835_SPI_CS_NONE));
+	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
-	FUNC_PREFIX(spi_setDataMode(BCM2835_SPI_MODE0));
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
 	FUNC_PREFIX(spi_writenb((char *) m_pBuffer, m_nBufSize * 2));
 }
 
 void TLC59711::Blackout(void) {
 	assert(m_pBufferBlackout != 0);
 
-	FUNC_PREFIX(spi_chipSelect(BCM2835_SPI_CS_NONE));
+	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
-	FUNC_PREFIX(spi_setDataMode(BCM2835_SPI_MODE0));
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
 	FUNC_PREFIX(spi_writenb((char *) m_pBufferBlackout, m_nBufSize * 2));
 }

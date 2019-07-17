@@ -34,6 +34,8 @@ void debug_dump(void *packet, uint16_t len) {
 	uint16_t chars_this_line = 0;
 	uint8_t *p = (uint8_t *) packet;
 
+	printf("size=%d\n", len);
+
 	do {
 		chars_this_line = 0;
 

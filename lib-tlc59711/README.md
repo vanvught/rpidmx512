@@ -7,20 +7,12 @@ Successfully tested with :
 
 Supported platforms :
 
-- Linux Raspbian
-    -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
 - Bare-metal Allwinner H2+/H3 SoC (Orange Pi Zero/One)
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-h3](https://github.com/vanvught/rpidmx512/tree/master/lib-h3)
+- Linux Raspbian
+    -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
 - Bare-metal Broadcom BCM2835 (Raspberry Pi)
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
-
-Compile and build the library on Linux Raspbian
-
-	pi@raspberrypi-3:/development/workspace/lib-tlc59711 $ make -f Makefile.Linux "DEF=-DRASPPI"
-	g++ -DRASPPI -DNDEBUG  -I./include -I../lib-bcm2835_raspbian/include -Wall -Werror -O3 -fno-rtti -std=c++11 src/tlc59711.cpp -c -o build_linux/tlc59711.o
-	ar -r lib_linux/libtlc59711.a   build_linux/tlc59711.o
-	ar: creating lib_linux/libtlc59711.a
-	objdump -D lib_linux/libtlc59711.a  | c++filt > lib_linux.list
 
 Compile and build the examples on Linux Raspbian
 
