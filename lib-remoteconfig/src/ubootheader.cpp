@@ -57,11 +57,11 @@ void UBootHeader::Dump(void) {
 
 	printf("Magic Number        : %.8x\n", __builtin_bswap32(pImageHeader->ih_magic));
 	printf("CRC Checksum        : %.8x\n", __builtin_bswap32(pImageHeader->ih_hcrc));
-
+#if !defined(BARE_METAL)
 	time_t rawtime = (time_t)__builtin_bswap32(pImageHeader->ih_time);
 	struct tm *info = localtime( &rawtime );
-
 	printf("Creation Timestamp  : %.8x - %s", __builtin_bswap32(pImageHeader->ih_time), asctime(info));
+#endif
 	printf("Data Size           : %.8x - %d kBytes\n", __builtin_bswap32(pImageHeader->ih_size), __builtin_bswap32(pImageHeader->ih_size) / 1024);
 	printf("Data Load Address   : %.8x\n", __builtin_bswap32(pImageHeader->ih_load));
 	printf("Entry Point Address : %.8x\n", __builtin_bswap32(pImageHeader->ih_ep));

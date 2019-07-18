@@ -35,6 +35,7 @@ enum TRemoteConfig {
 	REMOTE_CONFIG_E131,
 	REMOTE_CONFIG_OSC,
 	REMOTE_CONFIG_LTC,
+	REMOTE_CONFIG_OSC_CLIENT,
 	REMOTE_CONFIG_LAST
 };
 
@@ -44,6 +45,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_MONITOR,
 	REMOTE_CONFIG_MODE_PIXEL,
 	REMOTE_CONFIG_MODE_TIMECODE,
+	REMOTE_CONFIG_MODE_OSC,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -100,6 +102,9 @@ private:
 	void HandleGetLtcTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 #endif
+#if defined (OSC_CLIENT)
+	void HandleGetOscClntTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -114,6 +119,9 @@ private:
 #if defined (LTC_READER)
 	void HandleTxtFileLtc(void);
 	void HandleTxtFileTCNet(void);
+#endif
+#if defined (OSC_CLIENT)
+	void HandleTxtFileOscClient(void);
 #endif
 
 	void HandleDisplaySet(void);

@@ -27,13 +27,13 @@
 #define SPIFLASHSTORE_H_
 
 #include <stdint.h>
-#include <storetlc59711.h>
 #include <uuid/uuid.h>
 
 #include "storenetwork.h"
 #include "storeartnet.h"
 #include "storedmxsend.h"
 #include "storews28xxdmx.h"
+#include "storetlc59711.h"
 #include "storee131.h"
 #include "storeartnet4.h"
 
@@ -54,6 +54,7 @@ enum TStore {
 	STORE_RDMDEVICE,
 	STORE_RCONFIG,
 	STORE_TCNET,
+	STORE_OSC_CLIENT,
 	STORE_LAST
 };
 

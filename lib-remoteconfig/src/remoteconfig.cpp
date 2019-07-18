@@ -69,6 +69,11 @@
  #include "tcnetparams.h"
  #include "storetcnet.h"
 #endif
+#if defined (OSC_CLIENT)
+ /* oscclnt.txt */
+ #include "oscclientparams.h"
+ #include "storeoscclient.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
@@ -83,8 +88,8 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sRemoteConfigs[REMOTE_CONFIG_LAST][12] ALIGNED = { "Art-Net", "sACN E1.31", "OSC", "LTC" };
-static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode" };
+static const char sRemoteConfigs[REMOTE_CONFIG_LAST][12] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client" };
+static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC" };
 
 static const char sRequestReboot[] ALIGNED = "?reboot##";
 #define REQUEST_REBOOT_LENGTH (sizeof(sRequestReboot)/sizeof(sRequestReboot[0]) - 1)
@@ -129,15 +134,16 @@ enum TTxtFile {
 	TXT_FILE_DEVICES,
 	TXT_FILE_LTC,
 	TXT_FILE_TCNET,
+	TXT_FILE_OSC_CLIENT,
 	TXT_FILE_LAST
 };
 
-static const char sTxtFile[TXT_FILE_LAST][12] =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt" };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {  11,            11,            10,           8,          7,         10,           11,           7,         9};
-static const TStore sMap[TXT_FILE_LAST] = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET};
+static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt"  };
+static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11};
+static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT};
 
 #define UDP_PORT			0x2905
-#define UDP_BUFFER_SIZE		512
+#define UDP_BUFFER_SIZE		768
 #define UDP_DATA_MIN_SIZE	MIN(MIN(MIN(MIN(REQUEST_REBOOT_LENGTH, REQUEST_LIST_LENGTH),REQUEST_GET_LENGTH),REQUEST_UPTIME_LENGTH),SET_DISPLAY_LENGTH)
 
 RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs):
@@ -301,26 +307,29 @@ int RemoteConfig::Run(void) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"?#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 #endif
 		}
-	} else if ((!m_bDisableWrite) && (m_pUdpBuffer[0] == '#')) {
-		DEBUG_PUTS("#");
-		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
-		HandleTxtFile();
-	} else if (m_pUdpBuffer[0] == '!') {
-		DEBUG_PUTS("!");
-		if ((m_nBytesReceived >= SET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
-			DEBUG_PUTS(sSetDisplay);
-			HandleDisplaySet();
-		} else if ((m_nBytesReceived >= SET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sSetTFTP, SET_TFTP_LENGTH) == 0)) {
-			DEBUG_PUTS(sSetTFTP);
-			HandleTftpSet();
-		} else if ((!m_bDisableWrite) && (m_nBytesReceived > SET_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sSetStore, SET_STORE_LENGTH) == 0)) {
-			DEBUG_PUTS(sSetStore);
-			m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_BIN;
+	} else if (!m_bDisableWrite) {
+		if (m_pUdpBuffer[0] == '#') {
+			DEBUG_PUTS("#");
+			m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
 			HandleTxtFile();
-		} else {
+		} else if (m_pUdpBuffer[0] == '!') {
+			DEBUG_PUTS("!");
+			if ((m_nBytesReceived >= SET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sSetDisplay, SET_DISPLAY_LENGTH) == 0)) {
+				DEBUG_PUTS(sSetDisplay);
+				HandleDisplaySet();
+			} else if ((m_nBytesReceived >= SET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sSetTFTP, SET_TFTP_LENGTH) == 0)) {
+				DEBUG_PUTS(sSetTFTP);
+				HandleTftpSet();
+			} else if ((m_nBytesReceived > SET_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sSetStore, SET_STORE_LENGTH) == 0)) {
+				DEBUG_PUTS(sSetStore);
+				m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_BIN;
+				HandleTxtFile();
+			} else {
 #ifndef NDEBUG
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, (const uint8_t *) "!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
 #endif
+				return 0;
+			}
 		}
 	} else {
 		return 0;
@@ -504,6 +513,11 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetTCNetTxt(nSize);
 		break;
 #endif
+#if defined (OSC_CLIENT)
+	case TXT_FILE_OSC_CLIENT:
+		HandleGetOscClntTxt(nSize);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -577,6 +591,17 @@ void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
 
 	OSCServerParams oscServerParams((OSCServerParamsStore *)StoreOscServer::Get());
 	oscServerParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (OSC_CLIENT)
+void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	OscClientParams oscClientParams((OscClientParamsStore *)StoreOscClient::Get());
+	oscClientParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
 }
@@ -676,9 +701,13 @@ void RemoteConfig::HandleTxtFile(void) {
 	case TXT_FILE_LTC:
 		HandleTxtFileLtc();
 		break;
-
 	case TXT_FILE_TCNET:
 		HandleTxtFileTCNet();
+		break;
+#endif
+#if defined (OSC_CLIENT)
+	case TXT_FILE_OSC_CLIENT:
+		HandleTxtFileOscClient();
 		break;
 #endif
 	default:
@@ -786,6 +815,27 @@ void RemoteConfig::HandleTxtFileOsc(void) {
 	oscServerParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	oscServerParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (OSC_CLIENT)
+void RemoteConfig::HandleTxtFileOscClient(void) {
+	DEBUG_ENTRY
+
+	OscClientParams oscClientParams((OscClientParamsStore *)StoreOscClient::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TOscClientParams))){
+		uint32_t nSize;
+		oscClientParams.Builder((const struct TOscClientParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
+	oscClientParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	oscClientParams.Dump();
 #endif
 
 	DEBUG_EXIT

@@ -1,0 +1,10 @@
+#
+DEFINES = OSC_CLIENT ENABLE_SPIFLASH #NDEBUG
+#
+LIBS = oscclient osc
+
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
