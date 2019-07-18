@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MIDIREADER_H_
-#define MIDIREADER_H_
+#ifndef H3_MIDIREADER_H_
+#define H3_MIDIREADER_H_
 
 #include "ltc.h"
 #include "artnetnode.h"
@@ -53,4 +53,4 @@ private:
 	uint8_t m_nPartPrevious;
 };
 
-#endif /* MIDIREADER_H_ */
+#endif /* H3_MIDIREADER_H_ */

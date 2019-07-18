@@ -65,6 +65,7 @@
 #include "h3/ltcsender.h"
 #include "h3/midireader.h"
 #include "h3/tcnetreader.h"
+#include "h3/ltcgenerator.h"
 
 #include "spiflashinstall.h"
 
@@ -119,6 +120,15 @@ void notmain(void) {
 	MidiReader midiReader(&node, &tLtcDisabledOutputs);
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
+
+	struct TLtcTimeCode tStartTimeCode = { ltcParams.GetStartFrame(),
+			ltcParams.GetStartSecond(), ltcParams.GetStartMinute(),
+			ltcParams.GetStartHour(), (uint8_t) Ltc::GetType(ltcParams.GetFps()) };
+	struct TLtcTimeCode tStopTimeCode = { ltcParams.GetStopFrame(),
+			ltcParams.GetStopSecond(), ltcParams.GetStopMinute(),
+			ltcParams.GetStopHour(), (uint8_t) Ltc::GetType(ltcParams.GetFps()) };
+
+	LtcGenerator ltcGenerator(&node, &tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
@@ -178,7 +188,7 @@ void notmain(void) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
 
-	if ((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc)) {
+	if ((source != LTC_READER_SOURCE_LTC) && (!tLtcDisabledOutputs.bLtc)) {
 		ltcSender.Start();
 	}
 
@@ -194,6 +204,12 @@ void notmain(void) {
 		tcnet.SetTimeCodeHandler(&tcnetReader);
 		tcnet.Start(); //FIXME Remove here when MASTER is implemented
 		tcnetReader.Start();
+		break;
+	case LTC_READER_SOURCE_INTERNAL:
+		if (!tLtcDisabledOutputs.bLtc) {
+			ltcSender.SetTimeCode(&tStartTimeCode, false);
+		}
+		ltcGenerator.Start();
 		break;
 	default:
 		ltcReader.Start();
@@ -285,6 +301,10 @@ void notmain(void) {
 			display.PutString("SMPTE");
 		}
 		break;
+	case LTC_READER_SOURCE_INTERNAL:
+		puts("Internal");
+		display.PutString("Internal");
+		break;
 	default:
 		puts("LTC");
 		display.PutString("LTC");
@@ -342,6 +362,9 @@ void notmain(void) {
 			break;
 		case LTC_READER_SOURCE_TCNET:
 			tcnetReader.Run();	// Handles MIDI Quarter Frame output messages
+			break;
+		case LTC_READER_SOURCE_INTERNAL:
+			ltcGenerator.Run();	// Handles MIDI Quarter Frame output messages
 			break;
 		default:
 			break;

@@ -1,5 +1,5 @@
 /**
- * @file ltcsender.h
+ * @file ltcgenerator.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,28 +23,45 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCSENDER_H_
-#define H3_LTCSENDER_H_
+#ifndef H3_LTCGENERATOR_H_
+#define H3_LTCGENERATOR_H_
 
-#include "ltcencoder.h"
+#include <stdint.h>
 
-class LtcSender: public LtcEncoder {
+#include "ltc.h"
+
+#include "artnetnode.h"
+
+class LtcGenerator {
 public:
-	LtcSender(void);
-	~LtcSender(void);
+	LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	~LtcGenerator(void);
 
 	void Start(void);
 	void Stop(void);
 
-	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
-
-	static LtcSender* Get(void) {
-		return s_pThis;
-	}
+	void Run(void);
 
 private:
-	uint32_t m_nTypePrevious;
-	static LtcSender *s_pThis;
+	void HandleAction(void);
+
+	void ActionStart(void);
+	void ActionStop(void);
+	void ActionResume(void);
+
+	void Update(void);
+	void Increment(void);
+
+private:
+	struct TLtcTimeCode *m_pStartLtcTimeCode;
+	struct TLtcTimeCode *m_pStopLtcTimeCode;
+	uint8_t m_nFps;
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	uint32_t m_nTimer0Interval;
+	int m_nHandle;
+	uint8_t m_Buffer[64];
+	int m_nBytesReceived;
+	bool m_bIncrement;
 };
 
-#endif /* H3_LTCSENDER_H_ */
+#endif /* H3_LTCGENERATOR_H_ */

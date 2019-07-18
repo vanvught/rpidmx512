@@ -35,6 +35,7 @@ enum TLtcReaderSource {
 	LTC_READER_SOURCE_ARTNET,
 	LTC_READER_SOURCE_MIDI,
 	LTC_READER_SOURCE_TCNET,
+	LTC_READER_SOURCE_INTERNAL,
 	LTC_READER_SOURCE_UNDEFINED
 };
 
@@ -66,6 +67,15 @@ struct TLtcParams {
 	uint8_t nDay;
 	uint8_t nEnableNtp;
 	uint8_t nSetDate;
+	uint8_t nFps;
+	uint8_t nStartFrame;
+	uint8_t nStartSecond;
+	uint8_t nStartMinute;
+	uint8_t nStartHour;
+	uint8_t nStopFrame;
+	uint8_t nStopSecond;
+	uint8_t nStopMinute;
+	uint8_t nStopHour;
 };
 
 enum TLtcParamsMask {
@@ -79,7 +89,16 @@ enum TLtcParamsMask {
 	LTC_PARAMS_MASK_MONTH = (1 << 7),
 	LTC_PARAMS_MASK_DAY = (1 << 8),
 	LTC_PARAMS_MASK_ENABLE_NTP = (1 << 9),
-	LTC_PARAMS_MASK_SET_DATE = (1 << 10)
+	LTC_PARAMS_MASK_SET_DATE = (1 << 10),
+	LTC_PARAMS_MASK_FPS = (1 << 11),
+	LTC_PARAMS_MASK_START_FRAME = (1 << 12),
+	LTC_PARAMS_MASK_START_SECOND = (1 << 13),
+	LTC_PARAMS_MASK_START_MINUTE = (1 << 14),
+	LTC_PARAMS_MASK_START_HOUR = (1 << 15),
+	LTC_PARAMS_MASK_STOP_FRAME = (1 << 16),
+	LTC_PARAMS_MASK_STOP_SECOND = (1 << 17),
+	LTC_PARAMS_MASK_STOP_MINUTE = (1 << 18),
+	LTC_PARAMS_MASK_STOP_HOUR = (1 << 19)
 };
 
 class LtcParamsStore {
@@ -146,6 +165,42 @@ public:
 
 	bool IsSetDate(void) {
 		return (m_tLtcParams.nSetDate == 1);
+	}
+
+	uint8_t GetFps(void) {
+		return m_tLtcParams.nFps;
+	}
+
+	uint8_t GetStartFrame(void) {
+		return m_tLtcParams.nStartFrame;
+	}
+
+	uint8_t GetStartSecond(void) {
+		return m_tLtcParams.nStartSecond;
+	}
+
+	uint8_t GetStartMinute(void) {
+		return m_tLtcParams.nStartMinute;
+	}
+
+	uint8_t GetStartHour(void) {
+		return m_tLtcParams.nStartHour;
+	}
+
+	uint8_t GetStopFrame(void) {
+		return m_tLtcParams.nStopFrame;
+	}
+
+	uint8_t GetStopSecond(void) {
+		return m_tLtcParams.nStopSecond;
+	}
+
+	uint8_t GetStopMinute(void) {
+		return m_tLtcParams.nStopMinute;
+	}
+
+	uint8_t GetStopHour(void) {
+		return m_tLtcParams.nStopHour;
 	}
 
 public:

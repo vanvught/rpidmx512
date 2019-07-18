@@ -45,6 +45,15 @@ public:
 	alignas(uint32_t) static const char MONTH[];
 	alignas(uint32_t) static const char DAY[];
 	alignas(uint32_t) static const char NTP_ENABLE[];
+	alignas(uint32_t) static const char FPS[];
+	alignas(uint32_t) static const char START_FRAME[];
+	alignas(uint32_t) static const char START_SECOND[];
+	alignas(uint32_t) static const char START_MINUTE[];
+	alignas(uint32_t) static const char START_HOUR[];
+	alignas(uint32_t) static const char STOP_FRAME[];
+	alignas(uint32_t) static const char STOP_SECOND[];
+	alignas(uint32_t) static const char STOP_MINUTE[];
+	alignas(uint32_t) static const char STOP_HOUR[];
 #if 0
 	alignas(uint32_t) static const char SET_DATE[];
 #endif

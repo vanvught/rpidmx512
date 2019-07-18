@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef TCNETREADER_H_
-#define TCNETREADER_H_
+#ifndef H3_TCNETREADER_H_
+#define H3_TCNETREADER_H_
 
 #include "tcnettimecode.h"
 #include "artnetnode.h"
@@ -50,5 +50,4 @@ private:
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 
-
-#endif /* TCNETREADER_H_ */
+#endif /* H3_TCNETREADER_H_ */

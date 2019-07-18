@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
-
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>

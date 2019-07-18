@@ -59,6 +59,7 @@ struct TLtcDisabledOutputs {
 class Ltc {
 public:
 	static const char *GetType(TTimecodeTypes tTimeCodeType);
+	static TTimecodeTypes GetType(uint8_t nFps);
 
 private:
 };

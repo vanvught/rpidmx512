@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETREADER_H_
-#define ARTNETREADER_H_
+#ifndef H3_ARTNETREADER_H_
+#define H3_ARTNETREADER_H_
 
 #include <stdint.h>
 
@@ -49,4 +49,4 @@ private:
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 
-#endif /* ARTNETREADER_H_ */
+#endif /* H3_ARTNETREADER_H_ */

@@ -68,6 +68,16 @@ bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 
 	isAdded &= builder.Add(LtcParamsConst::NTP_ENABLE, (uint32_t) m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
 
+	isAdded &= builder.Add(LtcParamsConst::FPS, (uint32_t) m_tLtcParams.nFps, isMaskSet(LTC_PARAMS_MASK_FPS));
+	isAdded &= builder.Add(LtcParamsConst::START_HOUR, (uint32_t) m_tLtcParams.nStartHour, isMaskSet(LTC_PARAMS_MASK_START_HOUR));
+	isAdded &= builder.Add(LtcParamsConst::START_MINUTE, (uint32_t) m_tLtcParams.nStartMinute, isMaskSet(LTC_PARAMS_MASK_START_MINUTE));
+	isAdded &= builder.Add(LtcParamsConst::START_SECOND, (uint32_t) m_tLtcParams.nStartSecond, isMaskSet(LTC_PARAMS_MASK_START_SECOND));
+	isAdded &= builder.Add(LtcParamsConst::START_FRAME, (uint32_t) m_tLtcParams.nStartFrame, isMaskSet(LTC_PARAMS_MASK_START_FRAME));
+	isAdded &= builder.Add(LtcParamsConst::STOP_HOUR, (uint32_t) m_tLtcParams.nStopHour, isMaskSet(LTC_PARAMS_MASK_STOP_HOUR));
+	isAdded &= builder.Add(LtcParamsConst::STOP_MINUTE, (uint32_t) m_tLtcParams.nStopMinute, isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE));
+	isAdded &= builder.Add(LtcParamsConst::STOP_SECOND, (uint32_t) m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
+	isAdded &= builder.Add(LtcParamsConst::STOP_FRAME, (uint32_t) m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
+
 #if 0
 	isAdded &= builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
 #endif

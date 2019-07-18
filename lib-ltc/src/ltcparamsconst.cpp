@@ -42,6 +42,15 @@ alignas(uint32_t) const char LtcParamsConst::YEAR[] = "year";
 alignas(uint32_t) const char LtcParamsConst::MONTH[] = "month";
 alignas(uint32_t) const char LtcParamsConst::DAY[] = "day";
 alignas(uint32_t) const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
+alignas(uint32_t) const char LtcParamsConst::FPS[] = "fps";
+alignas(uint32_t) const char LtcParamsConst::START_FRAME[] = "start_frame";
+alignas(uint32_t) const char LtcParamsConst::START_SECOND[] = "start_second";
+alignas(uint32_t) const char LtcParamsConst::START_MINUTE[] = "start_minute";
+alignas(uint32_t) const char LtcParamsConst::START_HOUR[] = "start_hour";
+alignas(uint32_t) const char LtcParamsConst::STOP_FRAME[] = "stop_frame";
+alignas(uint32_t) const char LtcParamsConst::STOP_SECOND[] = "stop_second";
+alignas(uint32_t) const char LtcParamsConst::STOP_MINUTE[] = "stop_minute";
+alignas(uint32_t) const char LtcParamsConst::STOP_HOUR[] = "stop_hour";
 #if 0
 alignas(uint32_t) const char LtcParamsConst::SET_DATE[] = "set_date";
 #endif

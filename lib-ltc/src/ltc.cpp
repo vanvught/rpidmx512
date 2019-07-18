@@ -42,3 +42,24 @@ const char* Ltc::GetType(TTimecodeTypes tTimeCodeType) {
 
 	return aTypes[tTimeCodeType];
 }
+
+TTimecodeTypes Ltc::GetType(uint8_t nFps) {
+	switch (nFps) {
+		case 24:
+			return TC_TYPE_FILM;
+			break;
+		case 25:
+			return TC_TYPE_EBU;
+			break;
+		case 29:
+			return TC_TYPE_DF;
+			break;
+		case 30:
+			return TC_TYPE_SMPTE;
+			break;
+		default:
+			break;
+	}
+
+	return TC_TYPE_UNKNOWN;
+}
