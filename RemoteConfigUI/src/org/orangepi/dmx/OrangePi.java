@@ -34,8 +34,8 @@ public class OrangePi {
 	
 	private static final String RCONFIG_TXT = "rconfig.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt"};
-	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC", "LTC"};
+	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt"};
+	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client"};
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt" };
 	private static final String[] EXTRAS_TXT = {"tcnet.txt" };
 	
@@ -84,6 +84,7 @@ public class OrangePi {
 				} else if (Mode[0].equals("TimeCode")) {
 					nodeMode = MODES_TXT[3];
 					nodeExtras = EXTRAS_TXT[0];
+				} else if (Mode[0].equals("OSC")) {
 				}  
 				else {
 					isValid = false;
@@ -108,9 +109,10 @@ public class OrangePi {
 					nodeDisplayName = values[4];
 				} else {
 					nodeId = constructNodeId(arg);
+					nodeDisplayName = "";
 				}
 				
-				System.out.println("{" + nodeId + "}");
+				System.out.println("{" + nodeId + "} {" + nodeDisplayName + "}");
 			} else {
 				System.out.println("Invalid respone");
 			}

@@ -96,6 +96,7 @@ public class RemoteConfig extends JFrame {
 	private JMenu mnRun;
 	private JMenuItem mntmTftpClient;
 	private JMenuItem mntmVersion;
+	private JMenuItem mntmLtcGenerator;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -306,7 +307,7 @@ public class RemoteConfig extends JFrame {
 						doVersion((OrangePi) node.getUserObject());
 					}
 				} else {
-					JOptionPane.showMessageDialog(null, "No node selected for uptime action.");
+					JOptionPane.showMessageDialog(null, "No node selected for version action.");
 				}
 			}
 		});
@@ -354,6 +355,30 @@ public class RemoteConfig extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(null, "No node selected for TFTP Client to run.");
 				}
+			}
+		});
+		
+		mntmLtcGenerator.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							LTCGenerator client = new LTCGenerator(pi.getAddress());
+							client.Show();
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for LTC Generator to run.");
+				}	
 			}
 		});
 	}
@@ -407,6 +432,11 @@ public class RemoteConfig extends JFrame {
 		
 		mnRun = new JMenu("Run");
 		menuBar.add(mnRun);
+		
+		mntmLtcGenerator = new JMenuItem("LTC Generator");
+
+		mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_MASK));
+		mnRun.add(mntmLtcGenerator);
 		
 		mntmTftpClient = new JMenuItem("TFTP Client");
 		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
@@ -632,13 +662,19 @@ public class RemoteConfig extends JFrame {
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeRemoteConfig()));
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeType()));
-			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeMode()));
 			
-			String extras =  ((OrangePi) child.getUserObject()).getNodeExtras();
+			String nodeMode = ((OrangePi) child.getUserObject()).getNodeMode();
 			
-			if (extras != null) {
-				child.add(new DefaultMutableTreeNode(extras));
+			if (nodeMode != null) {
+				child.add(new DefaultMutableTreeNode(nodeMode));
 			}
+			
+			String nodeExtras =  ((OrangePi) child.getUserObject()).getNodeExtras();
+			
+			if (nodeExtras != null) {
+				child.add(new DefaultMutableTreeNode(nodeExtras));
+			}
+			
 			root.add(child);
 		}
 
