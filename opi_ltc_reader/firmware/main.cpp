@@ -101,9 +101,17 @@ void notmain(void) {
 	struct TLtcDisabledOutputs tLtcDisabledOutputs;
 	memset(&tLtcDisabledOutputs, 0, sizeof(struct TLtcDisabledOutputs));
 
+	struct TLtcTimeCode tStartTimeCode;
+	memset(&tStartTimeCode, 0, sizeof(struct TLtcTimeCode));
+
+	struct TLtcTimeCode tStopTimeCode;
+	memset(&tStopTimeCode, 0, sizeof(struct TLtcTimeCode));
+
 	if (ltcParams.Load()) {
 		ltcParams.Dump();
 		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
+		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
+		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
 	}
 
 	const bool bEnableNtp = ltcParams.IsNtpEnabled();
@@ -121,13 +129,6 @@ void notmain(void) {
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
 
-	struct TLtcTimeCode tStartTimeCode = { ltcParams.GetStartFrame(),
-			ltcParams.GetStartSecond(), ltcParams.GetStartMinute(),
-			ltcParams.GetStartHour(), (uint8_t) Ltc::GetType(ltcParams.GetFps()) };
-	struct TLtcTimeCode tStopTimeCode = { ltcParams.GetStopFrame(),
-			ltcParams.GetStopSecond(), ltcParams.GetStopMinute(),
-			ltcParams.GetStopHour(), (uint8_t) Ltc::GetType(ltcParams.GetFps()) };
-
 	LtcGenerator ltcGenerator(&node, &tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
@@ -135,6 +136,9 @@ void notmain(void) {
 	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
+
+	display.ClearLine(1);
+	display.ClearLine(2);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
@@ -206,9 +210,6 @@ void notmain(void) {
 		tcnetReader.Start();
 		break;
 	case LTC_READER_SOURCE_INTERNAL:
-		if (!tLtcDisabledOutputs.bLtc) {
-			ltcSender.SetTimeCode(&tStartTimeCode, false);
-		}
 		ltcGenerator.Start();
 		break;
 	default:
@@ -233,6 +234,7 @@ void notmain(void) {
 
 	midi.Print();
 	tcnet.Print();
+	ltcGenerator.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE , 0);
 
@@ -244,8 +246,6 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	display.ClearLine(1);
-	display.ClearLine(2);
 	display.ClearLine(3);
 	display.ClearLine(4);
 
