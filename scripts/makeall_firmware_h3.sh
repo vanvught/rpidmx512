@@ -17,7 +17,7 @@ do
 			echo -e "\e[33mSkipping...\e[0m"
 		elif [ $(grep -c PIXEL_MULTI Makefile.H3) -ne 0 ] && [[ $1 = *"ORANGE_PI_ONE"* ]]; then
 			echo -e "\e[33mSkipping...\e[0m"
-		elif [ $(grep -c ARTNET_NODE Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
+		elif [ $(grep -c ARTNET_NODE Makefile.H3) -ne 0 ] && [ $(grep -c STEPPER Makefile.H3) -eq 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 			echo -e "\e[33mSkipping...\e[0m"
 		elif [ $(grep -c E131_BRIDGE Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 			echo -e "\e[33mSkipping...\e[0m"
@@ -25,7 +25,10 @@ do
 			echo -e "\e[33mSkipping...\e[0m"
 		elif [ $(grep -c LTC_READER Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 			echo -e "\e[33mSkipping...\e[0m"
+		elif [ $(grep -c STEPPER Makefile.H3) -ne 0 ] && [[ $2 = *"CONSOLE_FB"* ]]; then
+			echo -e "\e[33mSkipping...\e[0m"
 		else
+			echo $1 $2 $3
 			make -f Makefile.H3 $1 $2 $3 || exit
 		fi
 			
@@ -59,6 +62,7 @@ do
 				elif [ $(grep -c RDM_RESPONDER Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 					echo -e "\e[33mSkipping...\e[0m"
 				else
+					echo $1 $2 $3
 					make -f Makefile.H3 $1 $2 $3 || exit
 				fi
 			else

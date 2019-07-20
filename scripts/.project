@@ -3,6 +3,7 @@
 	<name>scripts</name>
 	<comment></comment>
 	<projects>
+		<project>h3-firmware-template</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
