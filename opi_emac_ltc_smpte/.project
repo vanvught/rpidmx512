@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>opi_ltc_reader</name>
+	<name>opi_emac_ltc_smpte</name>
 	<comment></comment>
 	<projects>
 		<project>h3-firmware-template</project>
