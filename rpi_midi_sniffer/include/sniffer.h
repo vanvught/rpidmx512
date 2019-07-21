@@ -1,7 +1,7 @@
 /**
  * @file sniffer.h
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,15 @@
 #ifndef SNIFFER_H_
 #define SNIFFER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void sniffer_init(void);
 extern void sniffer_midi(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SNIFFER_H_ */

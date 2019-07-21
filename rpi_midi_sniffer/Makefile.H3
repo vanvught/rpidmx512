@@ -1,0 +1,11 @@
+#
+DEFINES = MONITOR_MIDI NO_EMAC CONSOLE_FB NDEBUG
+PLATFORM = ORANGE_PI_ONE
+#
+LIBS = midi monitor
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
