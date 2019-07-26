@@ -262,45 +262,43 @@ void notmain(void) {
 		display.ClearLine(i);
 	}
 
-	if (display.isDetected()) {
-		display.Write(1, "WiFi Art-Net 3 ");
+	display.Write(1, "WiFi Art-Net 3 ");
 
-		switch (tOutputType) {
-		case LIGHTSET_OUTPUT_TYPE_SPI:
-			display.PutString("Pixel");
-			break;
-		case LIGHTSET_OUTPUT_TYPE_MONITOR:
-			display.PutString("Monitor");
-			break;
-		default:
-			if (artnetparams.IsRdm()) {
-				display.PutString("RDM");
-			} else {
-				display.PutString("DMX");
-			}
-			break;
-		}
-
-		if (wifi_get_opmode() == WIFI_STA) {
-			display.Printf(2, "S: %s", wifi_get_ssid());
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
+		display.PutString("Pixel");
+		break;
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		display.PutString("Monitor");
+		break;
+	default:
+		if (artnetparams.IsRdm()) {
+			display.PutString("RDM");
 		} else {
-			display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
+			display.PutString("DMX");
 		}
-
-		display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
-
-		if (nw.IsDhcpKnown()) {
-			if (nw.IsDhcpUsed()) {
-				display.PutString(" D");
-			} else {
-				display.PutString(" S");
-			}
-		}
-
-		display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-		display.Printf(5, "U: %d", nUniverse);
-		display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
+		break;
 	}
+
+	if (wifi_get_opmode() == WIFI_STA) {
+		display.Printf(2, "S: %s", wifi_get_ssid());
+	} else {
+		display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
+	}
+
+	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));
+
+	if (nw.IsDhcpKnown()) {
+		if (nw.IsDhcpUsed()) {
+			display.PutString(" D");
+		} else {
+			display.PutString(" S");
+		}
+	}
+
+	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+	display.Printf(5, "U: %d", nUniverse);
+	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
 	display.TextStatus(START_NODE);
@@ -314,7 +312,7 @@ void notmain(void) {
 
 	for (;;) {
 		hw.WatchdogFeed();
-		node.HandlePacket();
+		node.Run();
 		if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 			timesync.ShowSystemTime();
 		}
