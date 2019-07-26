@@ -57,6 +57,7 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "storeoscserver.h"
 #endif
 
 #include "software_version.h"
@@ -84,7 +85,9 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
-	OSCServerParams params((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
+	StoreOscServer storeOscServer;
+
+	OSCServerParams params((OSCServerParamsStore *)&storeOscServer);
 #else
 	OSCServerParams params;
 #endif
