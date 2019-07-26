@@ -30,10 +30,6 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "oscserverparms.h"
 #include "oscserverconst.h"
 #include "osc.h"
@@ -151,6 +147,12 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_OUTPUT;
 		return;
 	}
+
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &value8) == SSCAN_OK) {
+		m_tOSCServerParams.bEnableNoChangeUpdate = (value8 != 0);
+		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
+		return;
+	}
 }
 
 void OSCServerParams::Dump(void) {
@@ -187,6 +189,10 @@ void OSCServerParams::Dump(void) {
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION)) {
 		printf(" %s=%d\n", OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission);
+	}
+
+	if(isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate);
 	}
 #endif
 }

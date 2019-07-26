@@ -44,4 +44,8 @@ void E131Bridge::Print(void) {
 			printf("  Port %c Universe %d [%s]\n", (char) ('A' + i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
 		}
 	}
+
+	if (m_bDirectUpdate) {
+		printf(" Direct update : Yes\n");
+	}
 }

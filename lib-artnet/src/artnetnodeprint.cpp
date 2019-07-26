@@ -55,4 +55,8 @@ void ArtNetNode::Print(void) {
 			}
 		}
 	}
+
+	if (m_bDirectUpdate) {
+		printf(" Direct update : Yes\n");
+	}
 }

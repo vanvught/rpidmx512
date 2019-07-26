@@ -63,6 +63,8 @@ bool E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 	isAdded &= builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
 	isAdded &= builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
 
+	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT

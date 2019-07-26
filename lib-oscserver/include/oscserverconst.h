@@ -28,6 +28,10 @@
 
 class OSCServerConst {
 public:
+	alignas(uint32_t) static const char MSG_BRIDGE_PARAMS[];
+	alignas(uint32_t) static const char MSG_BRIDGE_START[];
+	alignas(uint32_t) static const char MSG_BRIDGE_STARTED[];
+
 	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
 	alignas(uint32_t) static const char PARAMS_INCOMING_PORT[];
 	alignas(uint32_t) static const char PARAMS_OUTGOING_PORT[];

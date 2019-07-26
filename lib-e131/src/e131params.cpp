@@ -168,6 +168,12 @@ void E131Params::callbackFunction(const char *pLine) {
 		m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_TIMEOUT;
 		return;
 	}
+
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &value8) == SSCAN_OK) {
+		m_tE131Params.bEnableNoChangeUpdate = (value8 != 0);
+		m_tE131Params.nSetList |= E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
+		return;
+	}
 }
 
 void E131Params::Dump(void) {
@@ -208,6 +214,10 @@ void E131Params::Dump(void) {
 
 	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
 		printf(" %s=%d [%s]\n", E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (int) m_tE131Params.bDisableMergeTimeout, BOOL2STRING(m_tE131Params.bDisableMergeTimeout));
+	}
+
+	if(isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (int) m_tE131Params.bEnableNoChangeUpdate, BOOL2STRING(m_tE131Params.bEnableNoChangeUpdate));
 	}
 #endif
 }

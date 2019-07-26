@@ -63,6 +63,7 @@ struct TArtNetParams {
 	uint8_t nMergeModePort[ARTNET_MAX_PORTS];
 	uint8_t nProtocol;
 	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
+	bool bEnableNoChangeUpdate;
 };
 
 enum TArtnetParamsMask {
@@ -92,7 +93,8 @@ enum TArtnetParamsMask {
 	ARTNET_PARAMS_MASK_PROTOCOL_A = (1 << 23),
 	ARTNET_PARAMS_MASK_PROTOCOL_B = (1 << 24),
 	ARTNET_PARAMS_MASK_PROTOCOL_C = (1 << 25),
-	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26)
+	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26),
+	ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 27)
 };
 
 class ArtNetParamsStore {
@@ -168,6 +170,10 @@ public:
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+
+	bool IsEnableNoChangeUpdate(void) {
+		return m_tArtNetParams.bEnableNoChangeUpdate;
+	}
 
 public:
 	static void staticCallbackFunction(void *p, const char *s);

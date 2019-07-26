@@ -58,6 +58,8 @@ bool OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT));
 	isAdded &= builder.Add(OSCServerConst::PARAMS_TRANSMISSION, (uint32_t) m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION));
 
+	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT

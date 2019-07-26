@@ -60,6 +60,7 @@ OscServer::OscServer(void):
 	m_nPortOutgoing(OSCSERVER_DEFAULT_PORT_OUTGOING),
 	m_nHandle(-1),
 	m_bPartialTransmission(false),
+	m_bEnableNoChangeUpdate(false),
 	m_nLastChannel(0),
 	m_pOscServerHandler(0),
 	m_pLightSet(0)
@@ -316,6 +317,8 @@ int OscServer::Run(void) {
 			DEBUG_PUTS("Update");
 		}
 	} else {
+		bool bIsDmxDataChanged = false;
+
 		OSCMessage Msg((char *) m_pBuffer, nBytesReceived);
 
 		debug_dump(m_pBuffer, nBytesReceived);
@@ -333,7 +336,10 @@ int OscServer::Run(void) {
 
 				if (size <= DMX_UNIVERSE) {
 					const uint8_t *ptr = (const uint8_t *) blob.GetDataPtr();
-					if (IsDmxDataChanged(ptr, 1, size)) {
+
+					bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
+
+					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 						if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE)) {
 							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
 						} else {
@@ -367,7 +373,9 @@ int OscServer::Run(void) {
 
 				DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
 
-				if (IsDmxDataChanged(&nData, nChannel, 1)) {
+				bIsDmxDataChanged = IsDmxDataChanged(&nData, nChannel, 1);
+
+				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 					if (!m_bPartialTransmission) {
 						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
 					} else {
@@ -397,7 +405,9 @@ int OscServer::Run(void) {
 
 					DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
 
-					if (IsDmxDataChanged(&nData, nChannel, 1)) {
+					bIsDmxDataChanged = IsDmxDataChanged(&nData, nChannel, 1);
+
+					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 						if (!m_bPartialTransmission) {
 							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
 						} else {

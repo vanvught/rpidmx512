@@ -54,4 +54,8 @@ void OSCServerParams::Set(OscServer *pOscServer) {
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION)) {
 		pOscServer->SetPartialTransmission(m_tOSCServerParams.bPartialTransmission);
 	}
+
+	if(isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+		pOscServer->SetEnableNoChangeUpdate(m_tOSCServerParams.bEnableNoChangeUpdate);
+	}
 }

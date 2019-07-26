@@ -30,6 +30,7 @@ class LightSetConst {
 public:
 	alignas(uint32_t) static const char PARAMS_OUTPUT[];
 	alignas(uint32_t) static const char PARAMS_UNIVERSE[];
+	alignas(uint32_t) static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
 };
 
 #endif /* LIGHTSETCONST_H_ */

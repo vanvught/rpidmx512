@@ -51,4 +51,8 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
 		pE131Bridge->SetDisableMergeTimeout(m_tE131Params.bDisableMergeTimeout);
 	}
+
+	if(isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+		pE131Bridge->SetDirectUpdate(m_tE131Params.bEnableNoChangeUpdate);
+	}
 }

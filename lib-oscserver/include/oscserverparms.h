@@ -41,6 +41,7 @@ struct TOSCServerParams {
 	char aPath[OSCSERVER_PATH_LENGTH_MAX];
 	char aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
 	char aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
+	bool bEnableNoChangeUpdate;
 };
 
 enum TOSCServerParamsMask {
@@ -50,7 +51,8 @@ enum TOSCServerParamsMask {
 	OSCSERVER_PARAMS_MASK_TRANSMISSION = (1 << 3),
 	OSCSERVER_PARAMS_MASK_OUTPUT = (1 << 4),
 	OSCSERVER_PARAMS_MASK_PATH_INFO = (1 << 5),
-	OSCSERVER_PARAMS_MASK_PATH_BLACKOUT = (1 << 6)
+	OSCSERVER_PARAMS_MASK_PATH_BLACKOUT = (1 << 6),
+	OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 7)
 };
 
 class OSCServerParamsStore {
@@ -90,6 +92,10 @@ public:
 
 	TLightSetOutputType GetOutputType(void) {
 		return m_tOSCServerParams.tOutputType;
+	}
+
+	bool IsEnableNoChangeUpdate(void) {
+		return m_tOSCServerParams.bEnableNoChangeUpdate;
 	}
 
 public:

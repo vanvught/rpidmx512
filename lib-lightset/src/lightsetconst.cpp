@@ -29,3 +29,4 @@
 
 alignas(uint32_t) const char LightSetConst::PARAMS_OUTPUT[] = "output";
 alignas(uint32_t) const char LightSetConst::PARAMS_UNIVERSE[] = "universe";
+alignas(uint32_t) const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_update";

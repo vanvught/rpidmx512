@@ -44,6 +44,7 @@ struct TE131Params {
 	uint8_t nMergeModePort[E131_PARAMS_MAX_PORTS];
 	float nNetworkTimeout;
 	bool bDisableMergeTimeout;
+	bool bEnableNoChangeUpdate;
 };
 
 enum TE131ParamsMask {
@@ -60,7 +61,8 @@ enum TE131ParamsMask {
 	E131_PARAMS_MASK_MERGE_MODE_C = (1 << 10),
 	E131_PARAMS_MASK_MERGE_MODE_D = (1 << 11),
 	E131_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 12),
-	E131_PARAMS_MASK_MERGE_TIMEOUT = (1 << 13)
+	E131_PARAMS_MASK_MERGE_TIMEOUT = (1 << 13),
+	E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 14)
 };
 
 class E131ParamsStore {
@@ -99,6 +101,10 @@ public:
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+
+	bool IsEnableNoChangeUpdate(void) {
+		return m_tE131Params.bEnableNoChangeUpdate;
+	}
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

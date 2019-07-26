@@ -256,6 +256,12 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			return;
 		}
 	}
+
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &value8) == SSCAN_OK) {
+		m_tArtNetParams.bEnableNoChangeUpdate = (value8 != 0);
+		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
+		return;
+	}
 }
 
 void ArtNetParams::Dump(void) {
@@ -345,6 +351,10 @@ void ArtNetParams::Dump(void) {
 		if (isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i)) {
 			printf(" %s=%s\n", ArtNetParamsConst::PROTOCOL_PORT[i], PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]));
 		}
+	}
+
+	if(isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (int) m_tArtNetParams.bEnableNoChangeUpdate, BOOL2STRING(m_tArtNetParams.bEnableNoChangeUpdate));
 	}
 #endif
 }

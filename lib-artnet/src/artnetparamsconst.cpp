@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "artnetparamsconst.h"
 #include "artnet.h"
 

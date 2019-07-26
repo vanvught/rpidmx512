@@ -62,6 +62,13 @@ public:
 	void SetPartialTransmission(bool bPartialTransmission = false);
 	bool IsPartialTransmission(void) const;
 
+	void SetEnableNoChangeUpdate(bool bEnableNoChangeUpdate) {
+		m_bEnableNoChangeUpdate = bEnableNoChangeUpdate;
+	}
+	bool GetEnableNoChangeUpdate(void) {
+		return m_bEnableNoChangeUpdate;
+	}
+
 	void Print(void);
 
 	void Start(void);
@@ -78,6 +85,7 @@ private:
 	uint16_t m_nPortOutgoing;
 	int32_t m_nHandle;
 	bool m_bPartialTransmission;
+	bool m_bEnableNoChangeUpdate;
 	uint16_t m_nLastChannel;
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
 	char m_aPathSecond[OSCSERVER_PATH_LENGTH_MAX];

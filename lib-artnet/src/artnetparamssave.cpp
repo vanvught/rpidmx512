@@ -80,6 +80,8 @@ bool ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	isAdded &= builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, (uint32_t) m_tArtNetParams.nNetworkTimeout, isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT));
 	isAdded &= builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT));
 
+	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
