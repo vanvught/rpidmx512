@@ -49,7 +49,7 @@ private:
 	 * Additional methods
 	 */
 public:
-	bool IsConnected(void) const;
+	bool IsConnected(void);
 
 	inline int getMotorNumber(void) {
 		return m_nMotorNumber;
@@ -62,17 +62,13 @@ public:
 	static uint16_t getNumBoards(void);
 	static uint8_t getNumBoards(int cs);
 
-	bool IsConnected(void) {
-		return m_bIsConnected;
-	}
-
 private:
 	uint8_t m_nSpiChipSelect;
 	uint8_t m_nResetPin;
 	uint8_t m_nBusyPin;
 	uint8_t m_nPosition;
 	bool m_bIsBusy;
-	bool m_bIsConnected;
+
 	static uint8_t m_nNumBoards[2];
 };
 

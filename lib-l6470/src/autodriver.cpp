@@ -47,18 +47,15 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_nResetPin(nResetPin),
 	m_nBusyPin(nBusyPin),
 	m_nPosition(nPosition),
-	m_bIsBusy(false),
-	m_bIsConnected(false)
+	m_bIsBusy(false)
 {
 	DEBUG_ENTRY
 
+	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", (int) nPosition, (int) nSpiChipSelect);
+
 	m_nNumBoards[nSpiChipSelect]++;
 
-	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
-		m_bIsConnected = true;
-	}
-
-	DEBUG_PRINTF("m_bIsConnected=%d", (int) m_bIsConnected);
+	DEBUG_PRINTF("m_nNumBoards[%d]=%d", (int) nSpiChipSelect, (int) m_nNumBoards[nSpiChipSelect]);
 	DEBUG_EXIT
 }
 
@@ -67,25 +64,21 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_nResetPin(nResetPin),
 	m_nBusyPin(BUSY_PIN_NOT_USED),
 	m_nPosition(nPosition),
-	m_bIsBusy(false),
-	m_bIsConnected(false)
+	m_bIsBusy(false)
 {
 	DEBUG_ENTRY
 
+	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", (int) nPosition, (int) nSpiChipSelect);
+
 	m_nNumBoards[nSpiChipSelect]++;
 
-	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
-		m_bIsConnected = true;
-	}
-
-	DEBUG_PRINTF("m_bIsConnected=%d", (int) m_bIsConnected);
+	DEBUG_PRINTF("m_nNumBoards[%d]=%d", (int) nSpiChipSelect, (int) m_nNumBoards[nSpiChipSelect]);
 	DEBUG_EXIT
 }
 
 AutoDriver::~AutoDriver(void) {
 	hardHiZ();
 	m_bIsBusy = false;
-	m_bIsConnected = false;
 	m_nNumBoards[m_nSpiChipSelect]--;
 }
 
@@ -146,4 +139,12 @@ uint8_t AutoDriver::getNumBoards(int cs) {
 	} else {
 		return 0;
 	}
+}
+
+bool AutoDriver::IsConnected(void) {
+	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
+		return true;
+	}
+
+	return false;
 }
