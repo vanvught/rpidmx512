@@ -171,7 +171,10 @@ public:
 		return m_tLtcParams.nFps;
 	}
 
-	uint8_t GetStartFrame(void) {
+	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
+	void StopTimeCodeCopyTo(TLtcTimeCode *ptStopTimeCode);
+
+/*	uint8_t GetStartFrame(void) {
 		return m_tLtcParams.nStartFrame;
 	}
 
@@ -201,7 +204,7 @@ public:
 
 	uint8_t GetStopHour(void) {
 		return m_tLtcParams.nStopHour;
-	}
+	}*/
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

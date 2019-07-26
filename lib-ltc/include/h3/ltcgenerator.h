@@ -42,6 +42,8 @@ public:
 
 	void Run(void);
 
+	void Print(void);
+
 private:
 	void HandleAction(void);
 
@@ -62,6 +64,7 @@ private:
 	uint8_t m_Buffer[64];
 	int m_nBytesReceived;
 	bool m_bIncrement;
+	bool m_bIsStopped;
 };
 
 #endif /* H3_LTCGENERATOR_H_ */

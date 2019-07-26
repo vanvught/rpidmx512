@@ -50,6 +50,10 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nMonth = 1;
 	m_tLtcParams.nDay = 1;
 	m_tLtcParams.nFps = 25;
+	m_tLtcParams.nStopFrame = m_tLtcParams.nFps - 1;
+	m_tLtcParams.nStopSecond = 59;
+	m_tLtcParams.nStopMinute = 29;
+	m_tLtcParams.nStopHour = 23;
 }
 
 LtcParams::~LtcParams(void) {
@@ -427,6 +431,68 @@ void LtcParams::Dump(void) {
 	}
 #endif
 #endif
+}
+
+void LtcParams::StartTimeCodeCopyTo(TLtcTimeCode* ptStartTimeCode) {
+	assert(ptStartTimeCode != 0);
+
+	if ((isMaskSet(LTC_PARAMS_MASK_START_FRAME)) || (isMaskSet(LTC_PARAMS_MASK_START_SECOND)) || (isMaskSet(LTC_PARAMS_MASK_START_MINUTE)) || (isMaskSet(LTC_PARAMS_MASK_START_HOUR)) ) {
+		memset(ptStartTimeCode, 0, sizeof(struct TLtcTimeCode));
+
+		if (isMaskSet(LTC_PARAMS_MASK_START_FRAME)) {
+			ptStartTimeCode->nFrames = m_tLtcParams.nStartFrame;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_START_SECOND)) {
+			ptStartTimeCode->nSeconds = m_tLtcParams.nStartSecond;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_START_MINUTE)) {
+			ptStartTimeCode->nMinutes = m_tLtcParams.nStartMinute;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_START_HOUR)) {
+			ptStartTimeCode->nHours = m_tLtcParams.nStartHour;
+		}
+	} else {
+		ptStartTimeCode->nFrames = m_tLtcParams.nStartFrame;
+		ptStartTimeCode->nSeconds = m_tLtcParams.nStartSecond;
+		ptStartTimeCode->nMinutes = m_tLtcParams.nStartMinute;
+		ptStartTimeCode->nHours = m_tLtcParams.nStartHour;
+	}
+
+	ptStartTimeCode->nType = Ltc::GetType(m_tLtcParams.nFps);
+}
+
+void LtcParams::StopTimeCodeCopyTo(TLtcTimeCode* ptStopTimeCode) {
+	assert(ptStopTimeCode != 0);
+
+	if ((isMaskSet(LTC_PARAMS_MASK_STOP_FRAME)) || (isMaskSet(LTC_PARAMS_MASK_STOP_SECOND)) || (isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE)) || (isMaskSet(LTC_PARAMS_MASK_STOP_HOUR)) ) {
+		memset(ptStopTimeCode, 0, sizeof(struct TLtcTimeCode));
+
+		if (isMaskSet(LTC_PARAMS_MASK_STOP_FRAME)) {
+			ptStopTimeCode->nFrames = m_tLtcParams.nStopFrame;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_STOP_SECOND)) {
+			ptStopTimeCode->nSeconds = m_tLtcParams.nStopSecond;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE)) {
+			ptStopTimeCode->nMinutes = m_tLtcParams.nStopMinute;
+		}
+
+		if (isMaskSet(LTC_PARAMS_MASK_STOP_HOUR)) {
+			ptStopTimeCode->nHours = m_tLtcParams.nStopHour;
+		}
+	} else {
+		ptStopTimeCode->nFrames = m_tLtcParams.nStopFrame;
+		ptStopTimeCode->nSeconds = m_tLtcParams.nStopSecond;
+		ptStopTimeCode->nMinutes = m_tLtcParams.nStopMinute;
+		ptStopTimeCode->nHours = m_tLtcParams.nStopHour;
+	}
+
+	ptStopTimeCode->nType = Ltc::GetType(m_tLtcParams.nFps);
 }
 
 void LtcParams::staticCallbackFunction(void* p, const char* s) {

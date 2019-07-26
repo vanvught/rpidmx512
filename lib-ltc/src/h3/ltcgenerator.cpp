@@ -46,10 +46,6 @@
 #include "h3_timer.h"
 #include "irq_timer.h"
 
-#ifndef NDEBUG
- #include "console.h"
-#endif
-
 // Output
 #include "ltcleds.h"
 #include "display.h"
@@ -77,15 +73,15 @@ enum tUdpPort {
 static ArtNetNode* s_pNode;
 static struct TLtcDisabledOutputs* s_ptLtcDisabledOutputs;
 
-static 	struct TLtcTimeCode s_tLtcTimeCode;
+static struct TLtcTimeCode s_tLtcTimeCode;
 static volatile bool bTimeCodeAvailable;
 
 static volatile uint32_t nMidiQuarterFramePiece;
 static volatile uint32_t nMidiQuarterFrameUs12;
 static volatile bool IsMidiQuarterFrameMessage;
 
-static void itoa_base10(uint32_t arg, char *buf) {
-	char *n = buf;
+static void itoa_base10(uint32_t arg, char *buffer) {
+	char *n = buffer;
 
 	if (arg == 0) {
 		*n++ = '0';
@@ -123,7 +119,8 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	m_nTimer0Interval(0),
 	m_nHandle(-1),
 	m_nBytesReceived(0),
-	m_bIncrement(false)
+	m_bIncrement(false),
+	m_bIsStopped(false)
 {
 	assert(pNode != 0);
 	assert(pStartLtcTimeCode != 0);
@@ -136,10 +133,10 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	bTimeCodeAvailable = false;
 	IsMidiQuarterFrameMessage = false;
 
-	for (uint32_t i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]) ; i++) {
-		m_aTimeCode[i] = ' ';
-	}
+	memset(&s_tLtcTimeCode, 0, sizeof(struct TLtcTimeCode));
+	s_tLtcTimeCode.nType = pStartLtcTimeCode->nType;
 
+	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
 	m_aTimeCode[5] = ':';
 	m_aTimeCode[8] = '.';
@@ -163,6 +160,14 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 		break;
 	}
 
+	if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
+		m_pStartLtcTimeCode->nFrames = m_nFps - 1;
+	}
+
+	if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
+		m_pStopLtcTimeCode->nFrames = m_nFps - 1;
+	}
+
 	nMidiQuarterFrameUs12 = m_nTimer0Interval / 4;
 }
 
@@ -177,13 +182,29 @@ void LtcGenerator::Start(void) {
 	assert(m_nHandle != -1);
 
 	irq_timer_init();
-	__disable_irq();
 
 	irq_timer_set(IRQ_TIMER_0, irq_timer0_handler);
 
+	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
+	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+
 	if (!s_ptLtcDisabledOutputs->bMidi) {
+
 		irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
+
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
+
+		Midi::Get()->SendTimeCode((struct _midi_send_tc *) &s_tLtcTimeCode);
+
+		H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs12;
+		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+
+		nMidiQuarterFramePiece = 0;
+	}
+
+	if (!s_ptLtcDisabledOutputs->bDisplay) {
+		Display::Get()->TextLine(2, (const char *) Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType), TC_TYPE_MAX_LENGTH);
 	}
 
 	LtcLeds::Get()->Show((TTimecodeTypes) m_pStartLtcTimeCode->nType);
@@ -196,6 +217,7 @@ void LtcGenerator::Stop(void) {
 
 	__disable_irq();
 	irq_timer_set(IRQ_TIMER_0, 0);
+
 
 	if (!s_ptLtcDisabledOutputs->bMidi) {
 		irq_timer_set(IRQ_TIMER_1, 0);
@@ -211,26 +233,8 @@ void LtcGenerator::ActionStart(void) {
 
 	memcpy((void *)&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
 
-	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-	if (!s_ptLtcDisabledOutputs->bMidi) {
-		Midi::Get()->SendTimeCode((struct _midi_send_tc *) &s_tLtcTimeCode);
-
-		H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs12;
-		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-		nMidiQuarterFramePiece = 0;
-	}
-
+	m_bIsStopped = false;
 	m_bIncrement = true;
-
-	__enable_irq();
-
-	if (!s_ptLtcDisabledOutputs->bDisplay) {
-		Display::Get()->TextLine(2, (const char *) Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType), TC_TYPE_MAX_LENGTH);
-	}
 
 	DEBUG_EXIT
 }
@@ -238,6 +242,7 @@ void LtcGenerator::ActionStart(void) {
 void LtcGenerator::ActionStop(void) {
 	DEBUG_ENTRY
 
+	m_bIsStopped = true;
 	m_bIncrement = false;
 
 	DEBUG_EXIT
@@ -246,7 +251,10 @@ void LtcGenerator::ActionStop(void) {
 void LtcGenerator::ActionResume(void) {
 	DEBUG_ENTRY
 
-	m_bIncrement = true;
+	if (m_bIsStopped) {
+		m_bIsStopped = false;
+		m_bIncrement = true;
+	}
 
 	DEBUG_EXIT
 }
@@ -296,9 +304,12 @@ void LtcGenerator::Increment(void) {
 			}
 		}
 	}
+
+	//FIXME Add support for DF
 }
 
 void LtcGenerator::Update(void) {
+	dmb();
 	if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 		dmb();
 		IsMidiQuarterFrameMessage = false;
@@ -390,4 +401,11 @@ void LtcGenerator::Run(void) {
 	} else {
 		DEBUG_PUTS("Invalid command");
 	}
+}
+
+void LtcGenerator::Print(void) {
+	printf("Internal clock configuration\n");
+	printf(" %s\n", Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType));
+	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
+	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);
 }
