@@ -75,6 +75,10 @@ int console_init(void) {
 	return r;
 }
 
+uint16_t console_get_line_width(void) {
+	return FB_WIDTH / FB_CHAR_W;
+}
+
 void console_set_top_row(uint16_t row) {
 	if (row > FB_HEIGHT / FB_CHAR_H) {
 		top_row = 0;
