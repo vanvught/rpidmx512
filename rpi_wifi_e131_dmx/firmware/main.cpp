@@ -233,8 +233,21 @@ void notmain(void) {
 		display.ClearLine(i);
 	}
 
+	display.Write(1, "WiFi sACN E1.31 ");
 
-	display.Printf(1, "WiFi sACN E1.31 %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
+		display.PutString("Pixel");
+		break;
+#ifndef H3
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		display.PutString("Monitor");
+		break;
+#endif
+	default:
+		display.PutString("DMX");
+		break;
+	}
 
 	if (wifi_get_opmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", wifi_get_ssid());
