@@ -1,5 +1,5 @@
 /**
- * @file oscclientparamsconst.h
+ * @file oscclientled.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,21 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCCLIENTPARAMSCONST_H_
-#define OSCCLIENTPARAMSCONST_H_
+#ifndef OSCCLIENTLED_H_
+#define OSCCLIENTLED_H_
 
-#include <stdint.h>
+#include <stdbool.h>
 
-class OscClientParamsConst {
+class OscClientLed {
 public:
-	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
-	alignas(uint32_t) static const char PARAMS_SERVER_IP[];
-	alignas(uint32_t) static const char PARAMS_OUTGOING_PORT[];
-	alignas(uint32_t) static const char PARAMS_INCOMING_PORT[];
-	alignas(uint32_t) static const char PARAMS_PING_DISABLE[];
-	alignas(uint32_t) static const char PARAMS_PING_DELAY[];
-	alignas(uint32_t) static const char PARAMS_CMD[];
-	alignas(uint32_t) static const char PARAMS_LED[];
+	virtual ~OscClientLed(void);
+
+	virtual void SetLed(uint8_t nLed, bool bOn) = 0;
+
 };
 
-#endif /* OSCCLIENTPARAMSCONST_H_ */
+#endif /* OSCCLIENTLED_H_ */

@@ -27,20 +27,24 @@
 #define BUTTONSGPIO_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "buttonsset.h"
+#include "oscclientled.h"
 
 #include "oscclient.h"
 
-class ButtonsGpio: public ButtonsSet {
+class ButtonsGpio: public ButtonsSet, OscClientLed  {
 public:
 	ButtonsGpio(OscClient *pOscClient);
 	~ButtonsGpio(void);
 
 	bool Start(void);
-	bool Stop(void);
+	void Stop(void);
 
 	void Run(void);
+
+	void SetLed(uint8_t nLed, bool bOn);
 
 private:
 	OscClient *m_pOscClient;

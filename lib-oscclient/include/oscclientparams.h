@@ -30,8 +30,10 @@
 
 #include "oscclient.h"
 
-#define OSCCLIENT_PARAMS_CMD_MAX_COUNT				10
-#define OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH		64 // (1 << 6)
+#define OSCCLIENT_PARAMS_CMD_MAX_COUNT				8
+#define OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH		64
+#define OSCCLIENT_PARAMS_LED_MAX_COUNT				8
+#define OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH		48
 
 struct TOscClientParams {
     uint32_t nSetList;
@@ -41,6 +43,7 @@ struct TOscClientParams {
 	uint8_t nPingDisable;
 	uint8_t nPingDelay;
 	uint8_t aCmd[OSCCLIENT_PARAMS_CMD_MAX_COUNT][OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH];
+	uint8_t aLed[OSCCLIENT_PARAMS_LED_MAX_COUNT][OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH];
 };
 
 enum TOscClientParamsMask {
@@ -49,7 +52,8 @@ enum TOscClientParamsMask {
 	OSCCLIENT_PARAMS_MASK_INCOMING_PORT = (1 << 2),
 	OSCCLIENT_PARAMS_MASK_PING_DISABLE = (1 << 3),
 	OSCCLIENT_PARAMS_MASK_PING_DELAY = (1 << 4),
-	OSCCLIENT_PARAMS_MASK_CMD = (1 << 5)
+	OSCCLIENT_PARAMS_MASK_CMD = (1 << 5),
+	OSCCLIENT_PARAMS_MASK_LED = (1 << 6)
 };
 
 class OscClientParamsStore {
@@ -62,7 +66,7 @@ public:
 
 class OscClientParams {
 public:
-	OscClientParams(OscClientParamsStore *m_pOscClientParamsStore=0);
+	OscClientParams(OscClientParamsStore *pOscClientParamsStore=0);
 	~OscClientParams(void);
 
 	bool Load(void);
@@ -98,6 +102,7 @@ private:
 	OscClientParamsStore *m_pOscClientParamsStore;
     struct TOscClientParams m_tOscClientParams;
     char m_aCmd[8];
+    char m_aLed[8];
 };
 
 #endif /* OSCCLIENTPARAMS_H_ */

@@ -30,11 +30,15 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include "oscclientled.h"
+
 #define OSCCLIENT_DEFAULT_PORT_OUTGOING		8000
 #define OSCCLIENT_DEFAULT_PORT_INCOMING		9000
 #define OSCCLIENT_DEFAULT_PING_DELAY		10
-#define OSCCLIENT_CMD_MAX_COUNT				10
-#define OSCCLIENT_CMD_MAX_PATH_LENGTH		64	// (1 << 6)
+#define OSCCLIENT_CMD_MAX_COUNT				8
+#define OSCCLIENT_CMD_MAX_PATH_LENGTH		64
+#define OSCCLIENT_LED_MAX_COUNT				8
+#define OSCCLIENT_LED_MAX_PATH_LENGTH		48
 
 class OscClient {
 public:
@@ -81,6 +85,12 @@ public:
 	}
 
 	void CopyCmds(const uint8_t *pCmds, uint32_t nCount, uint32_t nLength);
+	void CopyLeds(const uint8_t *pLeds, uint32_t nCount, uint32_t nLength);
+
+	void SetLedHandler(OscClientLed *pOscClientLed);
+
+private:
+	bool HandleLedMessage(void);
 
 private:
 	uint32_t m_nServerIP;
@@ -92,10 +102,13 @@ private:
 	bool m_bPingSent;
 	bool m_bPongReceived;
 	uint8_t *m_pBuffer;
+	uint16_t m_nBytesReceived;
 	time_t m_nCurrentTime;
 	time_t m_nPreviousTime;
 	time_t m_nPingTime;
 	uint8_t *m_pCmds;
+	uint8_t *m_pLeds;
+	OscClientLed *m_pOscClientLed;
 };
 
 #endif /* OSCCLIENT_H_ */

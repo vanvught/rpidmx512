@@ -60,6 +60,12 @@ bool OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 		isAdded &= builder.Add(m_aCmd, cmd, *cmd == '/');
 	}
 
+	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
+		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
+		const char *led = (const char *) &m_tOscClientParams.aLed[i];
+		isAdded &= builder.Add(m_aLed, led, *led == '/');
+	}
+
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT

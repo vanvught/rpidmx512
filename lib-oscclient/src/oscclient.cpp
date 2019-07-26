@@ -45,8 +45,9 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define OSCCLIENT_BUFFER_SIZE 		64
+#define OSCCLIENT_BUFFER_SIZE 		(32 + OSCCLIENT_LED_MAX_PATH_LENGTH)
 #define OSCCLIENT_CMD_BUFFER_SIZE 	(OSCCLIENT_CMD_MAX_COUNT * OSCCLIENT_CMD_MAX_PATH_LENGTH * sizeof(uint8_t))
+#define OSCCLIENT_LED_BUFFER_SIZE 	(OSCCLIENT_LED_MAX_COUNT * OSCCLIENT_LED_MAX_PATH_LENGTH * sizeof(uint8_t))
 
 OscClient::OscClient(void):
 	m_nServerIP(0),
@@ -57,9 +58,11 @@ OscClient::OscClient(void):
 	m_nPingDelay(OSCCLIENT_DEFAULT_PING_DELAY),
 	m_bPingSent(false),
 	m_bPongReceived(false),
+	m_nBytesReceived(0),
 	m_nCurrentTime(0),
 	m_nPreviousTime(0),
-	m_nPingTime(0)
+	m_nPingTime(0),
+	m_pOscClientLed(0)
 {
 	m_pBuffer = new uint8_t[OSCCLIENT_BUFFER_SIZE];
 	assert(m_pBuffer != 0);
@@ -68,6 +71,11 @@ OscClient::OscClient(void):
 	assert(m_pCmds != 0);
 
 	memset((void *)m_pCmds, 0, OSCCLIENT_CMD_BUFFER_SIZE);
+
+	m_pLeds = new uint8_t[OSCCLIENT_LED_BUFFER_SIZE];
+	assert(m_pLeds != 0);
+
+	memset((void *)m_pLeds, 0, OSCCLIENT_LED_BUFFER_SIZE);
 }
 
 OscClient::~OscClient(void) {
@@ -100,9 +108,9 @@ int OscClient::Run(void) {
 
 		uint32_t nRemoteIp;
 		uint16_t nRemotePort;
-		const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCCLIENT_BUFFER_SIZE, &nRemoteIp, &nRemotePort);
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCCLIENT_BUFFER_SIZE, &nRemoteIp, &nRemotePort);
 
-		if (__builtin_expect((nBytesReceived == 0), 1)) {
+		if (__builtin_expect((m_nBytesReceived == 0), 1)) {
 			if (m_bPingSent && ((m_nCurrentTime - m_nPingTime) >= 1)) {
 				if (m_bPongReceived) {
 					m_bPongReceived = false;
@@ -120,9 +128,11 @@ int OscClient::Run(void) {
 			return 0;
 		}
 
-		if (!OSC::isMatch((const char*) m_pBuffer, "/pong")) {
-			DEBUG_PUTS(m_pBuffer);
-			return 0;
+		if ((m_pOscClientLed != 0) && (!HandleLedMessage())) {
+			if (!OSC::isMatch((const char*) m_pBuffer, "/pong")) {
+				DEBUG_PUTS(m_pBuffer);
+				return 0;
+			}
 		}
 
 		if (!m_bPongReceived) {
@@ -135,7 +145,7 @@ int OscClient::Run(void) {
 		m_bPongReceived = true;
 		m_bPingSent = false;
 
-		return nBytesReceived;
+		return m_nBytesReceived;
 	}
 
 	return 0;
@@ -156,6 +166,13 @@ void OscClient::Print(void) {
 		const char *p = (const char *) &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  cmd%c             : [%s]\n", i + '0', p);
+		}
+	}
+
+	for (uint32_t i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
+		const char *p = (const char *) &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+		if (*p != '\0') {
+			printf("  led%c             : [%s]\n", i + '0', p);
 		}
 	}
 }
@@ -187,4 +204,65 @@ void OscClient::CopyCmds(const uint8_t* pCmds, uint32_t nCount, uint32_t nLength
 		strncpy((char *)dst, (const char *) src, OSCCLIENT_CMD_MAX_PATH_LENGTH);
 		dst[OSCCLIENT_CMD_MAX_PATH_LENGTH - 1] = '\0';
 	}
+}
+
+void OscClient::CopyLeds(const uint8_t *pLeds, uint32_t nCount,	uint32_t nLength) {
+	assert(pLeds != 0);
+
+	for (uint32_t i = 0; i < MIN(nCount, OSCCLIENT_LED_MAX_COUNT); i++) {
+
+		const uint8_t *src = &pLeds[i * nLength];
+		uint8_t *dst = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+
+		strncpy((char *)dst, (const char *) src, OSCCLIENT_LED_MAX_PATH_LENGTH);
+		dst[OSCCLIENT_LED_MAX_PATH_LENGTH - 1] = '\0';
+	}
+}
+
+void OscClient::SetLedHandler(OscClientLed *pOscClientLed) {
+	assert(pOscClientLed != 0);
+
+	m_pOscClientLed = pOscClientLed;
+}
+
+bool OscClient::HandleLedMessage(void) {
+	DEBUG_ENTRY
+
+	uint32_t i;
+
+	for (i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
+		const char *src = (const char *) &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+		if (OSC::isMatch((const char*) m_pBuffer, src)) {
+			DEBUG_PUTS("");
+			break;
+		}
+	}
+
+	if (i == OSCCLIENT_LED_MAX_COUNT) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	OSCMessage Msg((char *) m_pBuffer, m_nBytesReceived);
+
+	const int nArgc = Msg.GetArgc();
+
+	if (nArgc != 1) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if (Msg.GetType(0) == OSC_INT32) {
+		m_pOscClientLed->SetLed(i, Msg.GetInt(0) != 0);
+		DEBUG_PRINTF("%d", Msg.GetInt(0));
+	} else if (Msg.GetType(0) == OSC_FLOAT) {
+		m_pOscClientLed->SetLed(i, Msg.GetFloat(0) != 0);
+		DEBUG_PRINTF("%f", Msg.GetFloat(0));
+	} else {
+		return false;
+	}
+
+	return true;
+
+	DEBUG_EXIT
 }

@@ -26,12 +26,14 @@
 #ifndef BUTTONSSET_H_
 #define BUTTONSSET_H_
 
+#include <stdbool.h>
+
 class ButtonsSet {
 public:
 	virtual ~ButtonsSet(void);
 
 	virtual bool Start(void)= 0;
-	virtual bool Stop(void)= 0;
+	virtual void Stop(void)= 0;
 
 	virtual void Run(void)= 0;
 };

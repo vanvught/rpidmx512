@@ -34,3 +34,4 @@ alignas(uint32_t) const char OscClientParamsConst::PARAMS_INCOMING_PORT[] = "inc
 alignas(uint32_t) const char OscClientParamsConst::PARAMS_PING_DISABLE[] = "ping_disable";
 alignas(uint32_t) const char OscClientParamsConst::PARAMS_PING_DELAY[] = "ping_delay";
 alignas(uint32_t) const char OscClientParamsConst::PARAMS_CMD[] = "cmd?";
+alignas(uint32_t) const char OscClientParamsConst::PARAMS_LED[] = "led?";

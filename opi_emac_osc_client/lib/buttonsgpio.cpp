@@ -46,6 +46,11 @@ volatile uint32_t s_nButtons;
 #define BUTTON(x)			((m_nButtons >> x) & 0x01)
 #define BUTTON_STATE(x)		((m_nButtons & (1 << x)) == (1 << x))
 
+#define LED0_GPIO			GPIO_EXT_7		// PA6
+#define LED1_GPIO			GPIO_EXT_12		// PA7
+#define LED2_GPIO			GPIO_EXT_26		// PA10
+#define LED3_GPIO			GPIO_EXT_18		// PA18
+
 static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 	dmb();
 
@@ -65,6 +70,7 @@ ButtonsGpio::ButtonsGpio(OscClient* pOscClient):
 }
 
 ButtonsGpio::~ButtonsGpio(void) {
+	Stop();
 }
 
 bool ButtonsGpio::Start(void) {
@@ -72,6 +78,11 @@ bool ButtonsGpio::Start(void) {
 	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_EINT);	// PA1
 	h3_gpio_fsel(GPIO_EXT_22, GPIO_FSEL_EINT);	// PA2
 	h3_gpio_fsel(GPIO_EXT_15, GPIO_FSEL_EINT);	// PA3
+
+	h3_gpio_fsel(LED0_GPIO, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(LED1_GPIO, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(LED2_GPIO, GPIO_FSEL_OUTPUT);
+	h3_gpio_fsel(LED3_GPIO, GPIO_FSEL_OUTPUT);
 
 #ifndef NDEBUG
 	printf("H3_PIO_PORTA->PUL0=%p ", H3_PIO_PORTA->PUL0);
@@ -111,7 +122,7 @@ bool ButtonsGpio::Start(void) {
 	return true;
 }
 
-bool ButtonsGpio::Stop(void) {
+void ButtonsGpio::Stop(void) {
 	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_DISABLE);	// PA0
 	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_DISABLE);	// PA1
 	h3_gpio_fsel(GPIO_EXT_22, GPIO_FSEL_DISABLE);	// PA2
@@ -121,7 +132,10 @@ bool ButtonsGpio::Stop(void) {
 
 	s_nButtons = 0;
 
-	return true;
+	h3_gpio_fsel(LED0_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(LED1_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(LED2_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(LED3_GPIO, GPIO_FSEL_DISABLE);
 }
 
 void ButtonsGpio::Run(void) {
@@ -158,4 +172,29 @@ void ButtonsGpio::Run(void) {
 			DEBUG_PUTS("");
 		}
 	}
+}
+
+void ButtonsGpio::SetLed(uint8_t nLed, bool bOn) {
+	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
+
+	switch (nLed) {
+		case 0:
+			bOn ? h3_gpio_set(LED0_GPIO) : h3_gpio_clr(LED0_GPIO);
+			break;
+		case 1:
+			bOn ? h3_gpio_set(LED1_GPIO) : h3_gpio_clr(LED1_GPIO);
+			break;
+		case 2:
+			bOn ? h3_gpio_set(LED2_GPIO) : h3_gpio_clr(LED2_GPIO);
+			break;
+		case 3:
+			bOn ? h3_gpio_set(LED3_GPIO) : h3_gpio_clr(LED3_GPIO);
+			break;
+		default:
+			break;
+	}
+}
+
+OscClientLed::~OscClientLed(void) {
+
 }

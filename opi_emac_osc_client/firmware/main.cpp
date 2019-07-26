@@ -39,6 +39,7 @@
 #include "oscclient.h"
 #include "oscclientconst.h"
 #include "oscclientparams.h"
+#include "oscclientled.h"
 
 #include "buttonsset.h"
 #include "buttonsgpio.h"
@@ -102,14 +103,18 @@ void notmain(void) {
 
 	client.Print();
 
-	ButtonsSet *pButtonsSet = 0;
 	// In the future,we can support more Buttons Classes
-	pButtonsSet = new ButtonsGpio(&client);
-	assert(pButtonsSet != 0);
+	ButtonsGpio *pButtonsGpio = new ButtonsGpio(&client);
+	assert(pButtonsGpio != 0);
+
+	client.SetLedHandler((OscClientLed *)pButtonsGpio);
+
+	ButtonsSet *pButtonsSet = (ButtonsSet *)pButtonsGpio;
 
 	if (!pButtonsSet->Start()) {
 		// TODO Show error message
 	}
+
 
 #if defined (ORANGE_PI)
 	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC_CLIENT, REMOTE_CONFIG_MODE_OSC, 0);

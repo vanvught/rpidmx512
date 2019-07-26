@@ -39,7 +39,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-OscClientParams::OscClientParams(OscClientParamsStore* m_pOscClientParamsStore): m_pOscClientParamsStore(m_pOscClientParamsStore) {
+OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m_pOscClientParamsStore(pOscClientParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tOscClientParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TOscClientParams); i++) {
@@ -53,6 +53,10 @@ OscClientParams::OscClientParams(OscClientParamsStore* m_pOscClientParamsStore):
 	assert(sizeof(m_aCmd) > strlen(OscClientParamsConst::PARAMS_CMD));
 	const char *src = (char *)OscClientParamsConst::PARAMS_CMD;
 	strncpy(m_aCmd, src, sizeof(m_aCmd));
+
+	assert(sizeof(m_aLed) > strlen(OscClientParamsConst::PARAMS_LED));
+	src = (char *)OscClientParamsConst::PARAMS_LED;
+	strncpy(m_aLed, src, sizeof(m_aLed));
 }
 
 OscClientParams::~OscClientParams(void) {
@@ -156,6 +160,18 @@ void OscClientParams::callbackFunction(const char* pLine) {
 			}
 		}
 	}
+
+	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
+		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
+		value8 = OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH;
+		if (Sscan::Char(pLine, (const char *)m_aLed, (char *)&m_tOscClientParams.aLed[i], &value8) == SSCAN_OK) {
+			if (m_tOscClientParams.aLed[i][0] == '/') {
+				m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_LED;
+			} else {
+				m_tOscClientParams.aLed[i][0] = '\0';
+			}
+		}
+	}
 }
 
 void OscClientParams::Set(OscClient* pOscClient) {
@@ -183,6 +199,10 @@ void OscClientParams::Set(OscClient* pOscClient) {
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_CMD)) {
 		pOscClient->CopyCmds((const uint8_t *) &m_tOscClientParams.aCmd, OSCCLIENT_PARAMS_CMD_MAX_COUNT, OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH);
+	}
+
+	if (isMaskSet(OSCCLIENT_PARAMS_MASK_LED)) {
+		pOscClient->CopyLeds((const uint8_t *) &m_tOscClientParams.aLed, OSCCLIENT_PARAMS_LED_MAX_COUNT, OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH);
 	}
 }
 
@@ -218,6 +238,13 @@ void OscClientParams::Dump(void) {
 		for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
 			m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
 			printf(" %s=[%s]\n", m_aCmd, (const char *) &m_tOscClientParams.aCmd[i]);
+		}
+	}
+
+	if (isMaskSet(OSCCLIENT_PARAMS_MASK_LED)) {
+		for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
+			m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
+			printf(" %s=[%s]\n", m_aLed, (const char *) &m_tOscClientParams.aLed[i]);
 		}
 	}
 #endif
