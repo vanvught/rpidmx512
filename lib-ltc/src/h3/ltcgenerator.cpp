@@ -80,7 +80,7 @@ static volatile uint32_t nMidiQuarterFramePiece;
 static volatile uint32_t nMidiQuarterFrameUs12;
 static volatile bool IsMidiQuarterFrameMessage;
 
-static void itoa_base10(uint32_t arg, char *buffer) {
+inline static void itoa_base10(uint32_t arg, char *buffer) {
 	char *n = buffer;
 
 	if (arg == 0) {

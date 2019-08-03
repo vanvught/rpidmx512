@@ -70,7 +70,7 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 
-	if ((nUpdatesPerSecond >= 25) && (nUpdatesPerSecond <= 1000)) {
+	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 1000)) {
 		if (nLedToggle++ & 0x01) {
 			Hardware::Get()->SetLed(HARDWARE_LED_ON);
 		} else {
@@ -89,7 +89,7 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-static void itoa_base10(uint32_t arg, char *buf) {
+inline static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {

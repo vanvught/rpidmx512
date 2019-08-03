@@ -33,7 +33,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-static const char sSource[LTC_READER_SOURCE_UNDEFINED][9] ALIGNED = {"ltc", "artnet", "midi", "tcnet", "internal"};
+static const char sSource[LTC_READER_SOURCE_UNDEFINED][9] ALIGNED = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi"};
 
 const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 	assert(tSource < LTC_READER_SOURCE_UNDEFINED);

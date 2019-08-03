@@ -66,7 +66,7 @@ static volatile uint32_t nLedToggle = 0;
 
 static uint8_t qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
-static void itoa_base10(uint32_t arg, char *buf) {
+inline static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -100,7 +100,8 @@ MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabl
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
 	m_tTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
-	m_nPartPrevious(0)
+	m_nPartPrevious(0),
+	m_bDirection(true)
 {
 	for (unsigned i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]); i++) {
 		m_aTimeCode[i] = ' ';
@@ -220,14 +221,27 @@ void MidiReader::HandleMtcQf(void) {
 
 	m_tTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
 
-	if (((nPart == 7) && (m_nPartPrevious == 6)) || ((nPart == 0) && (m_nPartPrevious == 7))) {
-		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char *) &m_aTimeCode[0]);
-		itoa_base10(qf[4] | (qf[5] << 4), (char *) &m_aTimeCode[3]);
-		itoa_base10(qf[2] | (qf[3] << 4), (char *) &m_aTimeCode[6]);
-		itoa_base10(qf[0] | (qf[1] << 4), (char *) &m_aTimeCode[9]);
+	if ((nPart == 7) || (m_nPartPrevious == 7)) {
+	} else {
+		m_bDirection = (m_nPartPrevious < nPart);
+	}
+
+	if ((m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0))) {
+		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char*) &m_aTimeCode[0]);
+		itoa_base10(qf[4] | (qf[5] << 4), (char*) &m_aTimeCode[3]);
+		itoa_base10(qf[2] | (qf[3] << 4), (char*) &m_aTimeCode[6]);
+		itoa_base10(qf[0] | (qf[1] << 4), (char*) &m_aTimeCode[9]);
+
+		m_MidiTimeCode.hour = qf[6] | ((qf[7] & 0x1) << 4);
+		m_MidiTimeCode.minute = qf[4] | (qf[5] << 4);
+		m_MidiTimeCode.second = qf[2] | (qf[3] << 4);
+		m_MidiTimeCode.frame = qf[0] | (qf[1] << 4);
+		m_MidiTimeCode.rate = m_tTimeCodeType;
 
 		Update();
 	}
+
+	m_nPartPrevious = nPart;
 }
 
 void MidiReader::Update(void) {

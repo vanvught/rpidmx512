@@ -92,7 +92,7 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-static void itoa_base10(uint32_t arg, char *buf) {
+inline static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {

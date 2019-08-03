@@ -1,5 +1,5 @@
 /**
- * @file midireader.h
+ * @file rtpmidireader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,25 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_MIDIREADER_H_
-#define H3_MIDIREADER_H_
+#ifndef H3_RTPMIDIREADER_H_
+#define H3_RTPMIDIREADER_H_
 
-#include "ltc.h"
+#include <stdint.h>
+
+#include "rtpmidihandler.h"
 #include "artnetnode.h"
-#include "midi.h"
+#include "ltc.h"
 
-class MidiReader {
+class RtpMidiReader: public RtpMidiHandler {
 public:
-	MidiReader (ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~MidiReader(void);
+	RtpMidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	~RtpMidiReader(void);
 
 	void Start(void);
+	void Stop(void);
+
 	void Run(void);
 
+	void MidiMessage(const struct _midi_message *ptMidiMessage);
+
 private:
-	void HandleMtc(void);
-	void HandleMtcQf(void);
-	void Update(void);
+	void HandleMtc(const struct _midi_message *ptMidiMessage);
+	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
+	void Update(const struct _midi_message *ptMidiMessage);
 
 private:
 	ArtNetNode *m_pNode;
@@ -49,9 +55,10 @@ private:
 	_midi_timecode_type m_tTimeCodeType;
 	_midi_timecode_type m_tTimeCodeTypePrevious;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	struct _midi_send_tc m_MidiTimeCode;
+	TLtcTimeCode m_tLtcTimeCode;
 	uint8_t m_nPartPrevious;
 	bool m_bDirection;
 };
 
-#endif /* H3_MIDIREADER_H_ */
+
+#endif /* H3_RTPMIDIREADER_H_ */

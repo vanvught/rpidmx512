@@ -47,6 +47,7 @@
 #include "timesync.h"
 
 #include "midi.h"
+#include "rtpmidi.h"
 #include "midiparams.h"
 
 #include "tcnet.h"
@@ -66,6 +67,7 @@
 #include "h3/midireader.h"
 #include "h3/tcnetreader.h"
 #include "h3/ltcgenerator.h"
+#include "h3/rtpmidireader.h"
 
 #include "spiflashinstall.h"
 
@@ -123,11 +125,13 @@ void notmain(void) {
 	ArtNetNode node;
 	TCNet tcnet;
 	LtcSender ltcSender;
+	RtpMidi rtpMidi;
 
 	LtcReader ltcReader(&node, &tLtcDisabledOutputs);
 	MidiReader midiReader(&node, &tLtcDisabledOutputs);
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
+	RtpMidiReader rtpMidiReader(&node, &tLtcDisabledOutputs);
 
 	LtcGenerator ltcGenerator(&node, &tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 
@@ -206,11 +210,16 @@ void notmain(void) {
 		break;
 	case LTC_READER_SOURCE_TCNET:
 		tcnet.SetTimeCodeHandler(&tcnetReader);
-		tcnet.Start(); //FIXME Remove here when MASTER is implemented
+		tcnet.Start();
 		tcnetReader.Start();
 		break;
 	case LTC_READER_SOURCE_INTERNAL:
 		ltcGenerator.Start();
+		break;
+	case LTC_READER_SOURCE_APPLEMIDI:
+		rtpMidi.SetHandler(&rtpMidiReader);
+		rtpMidi.Start();
+		rtpMidiReader.Start();
 		break;
 	default:
 		ltcReader.Start();
@@ -305,6 +314,10 @@ void notmain(void) {
 		puts("Internal");
 		display.PutString("Internal");
 		break;
+	case LTC_READER_SOURCE_APPLEMIDI:
+		puts("rtpMIDI");
+		display.PutString("rtpMIDI");
+		break;
 	default:
 		puts("LTC");
 		display.PutString("LTC");
@@ -350,21 +363,28 @@ void notmain(void) {
 			tcnet.Run();
 		}
 
+		if (source == LTC_READER_SOURCE_APPLEMIDI) {
+			rtpMidi.Run();
+		}
+
 		switch (source) {
 		case LTC_READER_SOURCE_LTC:
 			ltcReader.Run();
 			break;
 		case LTC_READER_SOURCE_ARTNET:
-			artnetReader.Run();	// Handles MIDI Quarter Frame output messages
+			artnetReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
 		case LTC_READER_SOURCE_MIDI:
 			midiReader.Run();
 			break;
 		case LTC_READER_SOURCE_TCNET:
-			tcnetReader.Run();	// Handles MIDI Quarter Frame output messages
+			tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
 		case LTC_READER_SOURCE_INTERNAL:
-			ltcGenerator.Run();	// Handles MIDI Quarter Frame output messages
+			ltcGenerator.Run();		// Handles MIDI Quarter Frame output messages
+			break;
+		case LTC_READER_SOURCE_APPLEMIDI:
+			rtpMidiReader.Run();	// Handles status led
 			break;
 		default:
 			break;
