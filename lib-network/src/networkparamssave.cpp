@@ -50,7 +50,7 @@ bool NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	isAdded &= builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
 	isAdded &= builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
 	isAdded &= builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
-	isAdded &= builder.Add(NetworkConst::PARAMS_RESET_EMAC, (uint32_t) m_tNetworkParams.bResetEmac, isMaskSet(NETWORK_PARAMS_MASK_EMAC));
+//	isAdded &= builder.Add(NetworkConst::PARAMS_RESET_EMAC, (uint32_t) m_tNetworkParams.bResetEmac, isMaskSet(NETWORK_PARAMS_MASK_EMAC));
 
 	nSize = builder.GetSize();
 

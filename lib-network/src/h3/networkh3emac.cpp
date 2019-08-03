@@ -65,7 +65,8 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		params.Dump();
 	}
 
-	emac_start(params.GetResetEmac());
+	//emac_start(params.GetResetEmac());
+	emac_start(true);
 
 	hardware_get_mac_address((uint8_t *) m_aNetMacaddr);
 

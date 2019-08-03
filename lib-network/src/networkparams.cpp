@@ -142,13 +142,13 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-#if !defined (H3)
-	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nNameServerIp = value32;
-		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NAME_SERVER;
-		return;
-	}
-#endif
+//#if !defined (H3)
+//	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
+//		m_tNetworkParams.nNameServerIp = value32;
+//		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NAME_SERVER;
+//		return;
+//	}
+//#endif
 }
 
 void NetworkParams::Dump(void) {
@@ -185,9 +185,9 @@ void NetworkParams::Dump(void) {
 		printf(" %s=%s\n", NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
 	}
 
-	if (isMaskSet(NETWORK_PARAMS_MASK_EMAC)) {
-		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
-	}
+//	if (isMaskSet(NETWORK_PARAMS_MASK_EMAC)) {
+//		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_RESET_EMAC, (int) m_tNetworkParams.bResetEmac, BOOL2STRING(m_tNetworkParams.bResetEmac));
+//	}
 #endif
 }
 
