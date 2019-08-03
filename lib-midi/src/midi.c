@@ -1,4 +1,4 @@
-#if !defined(RASPPI)
+#if !defined(RASPPI) && !defined(__linux__)
 /**
  * @file midi.c
  *
@@ -551,6 +551,15 @@ void midi_send_tc(const struct _midi_send_tc *tc) {
 	data[8] = tc->frame & 0x1F;
 
 	midi_interface_f.send(data, (uint16_t) 10);
+}
+
+void midi_send_qf(uint8_t value) {
+	uint8_t data[2];
+
+	data[0] = 0xF1;
+	data[1] = value;
+
+	midi_interface_f.send(data, (uint16_t) 2);
 }
 
 void midi_send_raw(const uint8_t *data, const uint16_t length) {

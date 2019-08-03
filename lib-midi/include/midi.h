@@ -176,6 +176,7 @@ extern bool midi_active_get_sense(void);
 extern void midi_active_set_sense(bool);
 
 extern void midi_send_tc(const struct _midi_send_tc *);
+extern void midi_send_qf(uint8_t);
 extern void midi_send_raw(const uint8_t *, uint16_t);
 
 #ifdef __cplusplus
@@ -234,6 +235,10 @@ public:
 
 	 void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
 		midi_send_raw(pBuffer, nLength);
+	}
+
+	 void SendQf(uint8_t nData) {
+		midi_send_qf(nData);
 	}
 
 	 bool Read(void) {

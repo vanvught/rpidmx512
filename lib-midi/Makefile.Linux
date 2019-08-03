@@ -1,7 +1,6 @@
 #
-DEFINES = NDEBUG
+DEFINES = NDEBUG #RASPPI #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-properties/include ../lib-network/include ../lib-hal/include
 #
-include ../h3-firmware-template/lib/Rules.mk
-
+include ../linux-template/lib/Rules.mk

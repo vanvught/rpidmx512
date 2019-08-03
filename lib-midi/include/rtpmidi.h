@@ -1,5 +1,6 @@
 /**
- * @file midiparams.h
+ * @file rtpmidi.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,58 +23,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef MIDIPARAMS_H_
-#define MIDIPARAMS_H_
+#ifndef RTPMIDI_H_
+#define RTPMIDI_H_
 
 #include <stdint.h>
 
-struct TMidiParams {
-	uint32_t nSetList;
-	uint32_t nBaudrate;
-	uint8_t nActiveSense;
-};
+#include "applemidi.h"
+#include "midi.h"
 
-class MidiParamsStore {
+#include "rtpmidihandler.h"
+
+class RtpMidi: public AppleMidi {
 public:
-	virtual ~MidiParamsStore(void);
+	RtpMidi(void);
+	~RtpMidi(void);
 
-	virtual void Update(const struct TMidiParams *pMidiParams)=0;
-	virtual void Copy(struct TMidiParams *pMidiParams)=0;
-};
+	void Start(void);
+	void Stop(void);
 
-class MidiParams {
-public:
-	MidiParams(MidiParamsStore *pMidiParamsStore = 0);
-	~MidiParams(void);
+	void Run(void);
 
-	bool Load(void);
-	void Load(const char *pBuffer, uint32_t nLength);
-
-	bool Builder(const struct TMidiParams *ptMidiParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-
-	void Set(void);
-
-	void Dump(void);
-
-	uint32_t GetBaudrate(void) {
-		return m_tMidiParams.nBaudrate;
+	void SetHandler(RtpMidiHandler *pRtpMidiHandler) {
+		m_pRtpMidiHandler = pRtpMidiHandler;
 	}
 
-	bool GetActiveSense(void) {
-		return (m_tMidiParams.nActiveSense != 0);
-	}
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	void Print(void);
 
 private:
-    void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+	void HandleRtpMidi(const uint8_t *pBuffer) override;
+
+	int32_t DecodeTime(uint32_t nCommandLength, uint32_t nOffset);
+	int32_t DecodeMidi(uint32_t nCommandLength, uint32_t nOffset);
+	uint8_t GetTypeFromStatusByte(uint8_t nStatusByte);
+	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte);
 
 private:
-    MidiParamsStore *m_pMidiParamsStore;
-    struct TMidiParams m_tMidiParams;
+	struct _midi_message m_tMidiMessage;
+	RtpMidiHandler *m_pRtpMidiHandler;
+	uint8_t *m_pBuffer;
 };
 
-#endif /* MIDIPARAMS_H_ */
+#endif /* RTPMIDI_H_ */

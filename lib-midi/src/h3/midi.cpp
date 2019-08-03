@@ -45,7 +45,7 @@ void Midi::Print(void) {
 	const uint32_t nBaudrate = GetBaudrate();
 	const uint8_t nChannel = GetChannel();
 
-	printf("MIDI configuration:\n");
+	printf("MIDI configuration\n");
 	printf(" Direction    : %s\n", dir == MIDI_DIRECTION_INPUT ? "Input" : "Output");
 	if (dir == MIDI_DIRECTION_INPUT) {
 		printf(" Channel      : %d %d\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
