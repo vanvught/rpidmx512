@@ -1,7 +1,7 @@
 #
-DEFINES = RDM_RESPONDER ENABLE_MMU NDEBUG
+DEFINES = NO_EMAC RDM_RESPONDER  NDEBUG
 #
-LIBS = dmxreceiver rdmresponder dmx rdm rdmsensor rdmsubdevice ws28xxdmx ws28xx tlc59711dmx tlc59711 monitor ledblink lightset network
+LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice monitor 
 #
 SRCDIR = firmware lib
 

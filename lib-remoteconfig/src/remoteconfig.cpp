@@ -47,20 +47,30 @@
 #include "storeremoteconfig.h"
 /* network.txt */
 #include "networkparams.h"
-/* artnet.txt */
-#include "artnet4params.h"
-/* e131.txt */
-#include "e131params.h"
+
+#if defined (ARTNET_NODE)
+ /* artnet.txt */
+ #include "artnetparams.h"
+ #include "artnet4params.h"
+#endif
+#if defined (E131_BRIDGE)
+ /* e131.txt */
+ #include "e131params.h"
+#endif
 #if defined (OSC_SERVER)
  /* osc.txt */
  #include "oscserverparms.h"
  #include "storeoscserver.h"
 #endif
-/* params.txt */
-#include "dmxparams.h"
-/* devices.txt */
-#include "tlc59711dmxparams.h"
-#include "ws28xxdmxparams.h"
+#if defined (DMXSEND)
+ /* params.txt */
+ #include "dmxparams.h"
+#endif
+#if defined (PIXEL)
+ /* devices.txt */
+ #include "tlc59711dmxparams.h"
+ #include "ws28xxdmxparams.h"
+#endif
 #if defined (LTC_READER)
  /* ltc.txt */
  #include "ltcparams.h"
@@ -488,23 +498,31 @@ void RemoteConfig::HandleGet(void) {
 	case TXT_FILE_NETWORK:
 		HandleGetNetworkTxt(nSize);
 		break;
+#if defined (ARTNET_NODE)
 	case TXT_FILE_ARTNET:
 		HandleGetArtnetTxt(nSize);
 		break;
+#endif
+#if defined (E131_BRIDGE)
 	case TXT_FILE_E131:
 		HandleGetE131Txt(nSize);
 		break;
+#endif
 #if defined (OSC_SERVER)
 	case TXT_FILE_OSC:
 		HandleGetOscTxt(nSize);
 		break;
 #endif
+#if defined (DMXSEND)
 	case TXT_FILE_PARAMS:
 		HandleGetParamsTxt(nSize);
 		break;
+#endif
+#if defined (PIXEL)
 	case TXT_FILE_DEVICES:
 		HandleGetDevicesTxt(nSize);
 		break;
+#endif
 #if defined (LTC_READER)
 	case TXT_FILE_LTC:
 		HandleGetLtcTxt(nSize);
@@ -554,6 +572,7 @@ void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
+#if defined (ARTNET_NODE)
 void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -575,7 +594,9 @@ void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
 
+#if defined (E131_BRIDGE)
 void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -584,6 +605,7 @@ void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
 
 #if defined (OSC_SERVER)
 void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
@@ -607,6 +629,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined (DMXSEND)
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -615,7 +638,9 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
 
+#if defined (PIXEL)
 void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -636,6 +661,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
 
 #if defined (LTC_READER)
 void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
@@ -680,23 +706,31 @@ void RemoteConfig::HandleTxtFile(void) {
 	case TXT_FILE_NETWORK:
 		HandleTxtFileNetwork();
 		break;
+#if defined (ARTNET_NODE)
 	case TXT_FILE_ARTNET:
 		HandleTxtFileArtnet();
 		break;
+#endif
+#if defined (E131_BRIDGE)
 	case TXT_FILE_E131:
 		HandleTxtFileE131();
 		break;
+#endif
 #if defined (OSC_SERVER)
 	case TXT_FILE_OSC:
 		HandleTxtFileOsc();
 		break;
 #endif
+#if defined (DMXSEND)
 	case TXT_FILE_PARAMS:
 		HandleTxtFileParams();
 		break;
+#endif
+#if defined (PIXEL)
 	case TXT_FILE_DEVICES:
 		HandleTxtFileDevices();
 		break;
+#endif
 #if defined (LTC_READER)
 	case TXT_FILE_LTC:
 		HandleTxtFileLtc();
@@ -755,6 +789,7 @@ void RemoteConfig::HandleTxtFileNetwork(void) {
 	DEBUG_EXIT
 }
 
+#if defined (ARTNET_NODE)
 void RemoteConfig::HandleTxtFileArtnet(void) {
 	DEBUG_ENTRY
 	assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams));
@@ -781,7 +816,9 @@ void RemoteConfig::HandleTxtFileArtnet(void) {
 
 	DEBUG_EXIT
 }
+#endif
 
+#if defined (E131_BRIDGE)
 void RemoteConfig::HandleTxtFileE131(void) {
 	DEBUG_ENTRY
 
@@ -799,6 +836,7 @@ void RemoteConfig::HandleTxtFileE131(void) {
 #endif
 	DEBUG_EXIT
 }
+#endif
 
 #if defined (OSC_SERVER)
 void RemoteConfig::HandleTxtFileOsc(void) {
@@ -842,6 +880,7 @@ void RemoteConfig::HandleTxtFileOscClient(void) {
 }
 #endif
 
+#if defined (DMXSEND)
 void RemoteConfig::HandleTxtFileParams(void) {
 	DEBUG_ENTRY
 
@@ -860,7 +899,9 @@ void RemoteConfig::HandleTxtFileParams(void) {
 
 	DEBUG_EXIT
 }
+#endif
 
+#if defined (PIXEL)
 void RemoteConfig::HandleTxtFileDevices(void) {
 	DEBUG_ENTRY
 	assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams));
@@ -896,6 +937,7 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 
 	DEBUG_EXIT
 }
+#endif
 
 #if defined (LTC_READER)
 void RemoteConfig::HandleTxtFileLtc(void) {

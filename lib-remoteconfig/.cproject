@@ -48,6 +48,10 @@
 									<listOptionValue builtIn="false" value="OSC_SERVER"/>
 									<listOptionValue builtIn="false" value="LTC_READER"/>
 									<listOptionValue builtIn="false" value="OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="E131_BRIDGE_MULTI"/>
+									<listOptionValue builtIn="false" value="ARTNET_NODE_MULTI"/>
+									<listOptionValue builtIn="false" value="PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="DMXSEND_MULTI"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1698677010" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -78,6 +82,10 @@
 									<listOptionValue builtIn="false" value="OSC_SERVER"/>
 									<listOptionValue builtIn="false" value="LTC_READER"/>
 									<listOptionValue builtIn="false" value="OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="E131_BRIDGE_MULTI"/>
+									<listOptionValue builtIn="false" value="ARTNET_NODE_MULTI"/>
+									<listOptionValue builtIn="false" value="PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="DMXSEND_MULTI"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -174,6 +182,10 @@
 									<listOptionValue builtIn="false" value="OSC_SERVER"/>
 									<listOptionValue builtIn="false" value="LTC_READER"/>
 									<listOptionValue builtIn="false" value="OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="E131_BRIDGE_MULTI"/>
+									<listOptionValue builtIn="false" value="ARTNET_NODE_MULTI"/>
+									<listOptionValue builtIn="false" value="PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="DMXSEND_MULTI"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1810325769" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -207,6 +219,10 @@
 									<listOptionValue builtIn="false" value="OSC_SERVER"/>
 									<listOptionValue builtIn="false" value="LTC_READER"/>
 									<listOptionValue builtIn="false" value="OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="E131_BRIDGE_MULTI"/>
+									<listOptionValue builtIn="false" value="ARTNET_NODE_MULTI"/>
+									<listOptionValue builtIn="false" value="PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="DMXSEND_MULTI"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1213842804" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

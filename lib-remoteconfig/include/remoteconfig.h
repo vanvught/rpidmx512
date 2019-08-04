@@ -28,6 +28,22 @@
 
 #include <stdint.h>
 
+#if defined (ARTNET_NODE_MULTI)
+ #define ARTNET_NODE
+#endif
+
+#if defined (E131_BRIDGE_MULTI)
+ #define E131_BRIDGE
+#endif
+
+#if defined (PIXEL_MULTI)
+ #define PIXEL
+#endif
+
+#if defined (DMXSEND_MULTI)
+ #define DMXSEND
+#endif
+
 #include "tftpfileserver.h"
 
 enum TRemoteConfig {
@@ -91,13 +107,22 @@ private:
 	void HandleGet(void);
 	void HandleGetRconfigTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
+
+#if defined (ARTNET_NODE)
 	void HandleGetArtnetTxt(uint32_t& nSize);
+#endif
+#if defined (E131_BRIDGE)
 	void HandleGetE131Txt(uint32_t& nSize);
+#endif
 #if defined (OSC_SERVER)
 	void HandleGetOscTxt(uint32_t& nSize);
 #endif
+#if defined (DMXSEND)
 	void HandleGetParamsTxt(uint32_t& nSize);
+#endif
+#if defined (PIXEL)
 	void HandleGetDevicesTxt(uint32_t& nSize);
+#endif
 #if defined (LTC_READER)
 	void HandleGetLtcTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
@@ -109,13 +134,22 @@ private:
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
 	void HandleTxtFileNetwork(void);
+
+#if defined (ARTNET_NODE)
 	void HandleTxtFileArtnet(void);
+#endif
+#if defined (E131_BRIDGE)
 	void HandleTxtFileE131(void);
+#endif
 #if defined (OSC_SERVER)
 	void HandleTxtFileOsc(void);
 #endif
+#if defined (DMXSEND)
 	void HandleTxtFileParams(void);
+#endif
+#if defined (PIXEL)
 	void HandleTxtFileDevices(void);
+#endif
 #if defined (LTC_READER)
 	void HandleTxtFileLtc(void);
 	void HandleTxtFileTCNet(void);
