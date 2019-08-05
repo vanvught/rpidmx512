@@ -40,7 +40,7 @@ public:
 private:
 	bool Open(const char *pFileName);
 	void Close(void);
-	bool BuffesCompare(uint32_t nSize);
+	bool BuffersCompare(uint32_t nSize);
 	bool Diff(uint32_t nOffset);
 	void Write(uint32_t nOffset);
 	void Process(const char *pFileName, uint32_t nOffset);

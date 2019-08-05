@@ -181,12 +181,12 @@ void SpiFlashInstall::Close(void) {
 	DEBUG_EXIT
 }
 
-bool SpiFlashInstall::BuffesCompare(uint32_t nSize) {
+bool SpiFlashInstall::BuffersCompare(uint32_t nSize) {
 	DEBUG1_ENTRY
 
 	assert(nSize <= m_nEraseSize);
 
-	const uint32_t *src32 = (uint32_t *) m_pFileBuffer;
+	const uint32_t *src32 = (uint32_t *) m_pFileBuffer ;
 	assert(((uint32_t )src32 & 0x3) == 0);
 
 	const uint32_t *dst32 = (uint32_t *) m_pFlashBuffer;
@@ -237,7 +237,7 @@ bool SpiFlashInstall::Diff(uint32_t nOffset) {
 		return false;
 	}
 
-	if (!BuffesCompare(COMPARE_BYTES)) {
+	if (!BuffersCompare(COMPARE_BYTES)) {
 		DEBUG_EXIT
 		return true;
 	}
@@ -285,7 +285,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 			break;
 		}
 
-		if (!BuffesCompare(nBytes)) {
+		if (!BuffersCompare(nBytes)) {
 			printf("error: flash verify\n");
 			break;
 		}
@@ -352,4 +352,3 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 
 	DEBUG_EXIT
 }
-
