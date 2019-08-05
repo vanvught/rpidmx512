@@ -2,7 +2,7 @@
  * @file emac.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -291,6 +291,8 @@ void emac_eth_send(void *packet, int len) {
 
 	memcpy((void *) data_start, packet, len);
 
+	debug_dump((void *) data_start, (uint16_t) len);
+
 	/* frame end */
 	desc_p->st |= (1 << 30);
 	desc_p->st |= (1 << 31);
@@ -371,11 +373,11 @@ void emac_start(bool reset_emac) {
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 #endif
 
-	if (reset_emac) {
+	//if (reset_emac) {
 		_set_syscon_ephy();
 
 		_autonegotiation();
-	}
+	//}
 
 	_adjust_link(false, 100);
 
