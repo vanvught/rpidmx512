@@ -1,8 +1,8 @@
 /**
- * @file detect.cpp
+ * @file micros.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdint.h>
+#include <time.h>
+#include <sys/time.h>
 
-#include "bcm2835.h"
-
-#include "display.h"
-
-int main(int argc, char **argv) {
-	if (getuid() != 0) {
-		fprintf(stderr, "Error: Not started with 'root'\n");
-		return -1;
-	}
-
-	if (bcm2835_init() != 1) {
-		fprintf(stderr, "bcm2835_init() failed\n");
-		return -2;
-	}
-
-	// When there is SSD1306 detected, then we go for for the OLED_PANEL_128x64_8ROWS
-	Display display(0, 8);
-
-	bool isDetected = display.isDetected();
-
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
-
-	if (isDetected) {
-		printf("Display type : %d\n", (int) display.GetDetectedType());
-		display.Printf(2, "Line 2");
-	}
-
-	return 0;
+uint32_t micros(void) {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000000) + tv.tv_usec;
 }

@@ -24,10 +24,24 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#include "bcm2835.h"
 
 #include "display.h"
 
 int main(int argc, char **argv) {
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
+	}
+
 	Display display(DISPLAY_SSD1306);
 
 	bool isDetected = display.isDetected();

@@ -1,8 +1,8 @@
 /**
- * @file detect.cpp
+ * @file lcd1602.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,14 @@
  */
 
 #include <stdio.h>
+
+#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "bcm2835.h"
 
-#include "display.h"
+#include "tc1602.h"
 
 int main(int argc, char **argv) {
 	if (getuid() != 0) {
@@ -42,16 +44,16 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	// When there is SSD1306 detected, then we go for for the OLED_PANEL_128x64_8ROWS
-	Display display(0, 8);
+	Tc1602 display;
 
-	bool isDetected = display.isDetected();
+	bool isDetected = display.Start();
 
 	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
 
 	if (isDetected) {
-		printf("Display type : %d\n", (int) display.GetDetectedType());
-		display.Printf(2, "Line 2");
+		display.SetCursor(SET_CURSOR_ON);
+		display.TextLine(1, "Line 1", 6);
+		display.TextLine(2, "Line 2", 6);
 	}
 
 	return 0;

@@ -14,7 +14,7 @@ LIBDEP := $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/l
 
 INCLUDES := -I$(ROOT)/lib-display/include -I$(ROOT)/lib-i2c/include
 
-COPS := -Wall -Werror -O3 -fno-rtti -std=c++11 -DRASPI -DNDEBUG
+COPS := -Wall -Werror -O3 -fno-rtti -std=c++11 -DRASPPI -DNDEBUG
 
 BCM2835 = $(ROOT)/lib-bcm2835_raspbian
 
@@ -26,7 +26,7 @@ else
 	LDLIBS += -lbcm2835
 endif
 
-all : detect oled128x32 ssd1306 lcd2004
+all : detect oled128x32 ssd1306 lcd1602 lcd2004
 
 clean :
 	rm -f *.o
@@ -40,15 +40,20 @@ $(ROOT)/lib-display/lib_linux/libdisplay.a :
 $(ROOT)/lib-i2c/lib_linux/libi2c.a :
 	cd $(ROOT)/lib-i2c && make -f Makefile.Linux
 	
-detect : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
-	$(CPP) detect.cpp $(INCLUDES) $(COPS) -o detect $(LIB) $(LDLIBS)
+mircos.o	: Makefile micros.c
+	$(CC) -c micros.c
 	
-oled128x32 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
-	$(CPP) oled128x32.cpp $(INCLUDES) $(COPS) -o oled128x32 $(LIB) $(LDLIBS)
+detect : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a mircos.o
+	$(CPP) detect.cpp micros.o $(INCLUDES) $(COPS) -o detect $(LIB) $(LDLIBS) 
 	
-ssd1306 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
-	$(CPP) ssd1306.cpp $(INCLUDES) $(COPS) -o ssd1306 $(LIB) $(LDLIBS)
+oled128x32 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a mircos.o
+	$(CPP) oled128x32.cpp micros.o $(INCLUDES) $(COPS) -o oled128x32 $(LIB) $(LDLIBS) 
 	
-lcd2004 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a
-	$(CPP) lcd2004.cpp $(INCLUDES) $(COPS) -o lcd2004 $(LIB) $(LDLIBS)	
+ssd1306 : Makefile ssd1306.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a mircos.o
+	$(CPP) ssd1306.cpp micros.o $(INCLUDES) $(COPS) -o ssd1306 $(LIB) $(LDLIBS)
 
+lcd1602 : Makefile lcd1602.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a mircos.o
+	$(CPP) lcd1602.cpp micros.o $(INCLUDES) $(COPS) -o lcd1602 $(LIB) $(LDLIBS)
+	
+lcd2004 : Makefile lcd2004.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a $(ROOT)/lib-i2c/lib_linux/libi2c.a mircos.o
+	$(CPP) lcd2004.cpp micros.o $(INCLUDES) $(COPS) -o lcd2004 $(LIB) $(LDLIBS)

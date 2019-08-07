@@ -25,11 +25,27 @@
 
 #include <stdio.h>
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#include "bcm2835.h"
+
 #include "ssd1306.h"
 
 static char line[] = "Line ";
 
 int main(int argc, char **argv) {
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return -1;
+	}
+
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
+	}
+
 	Ssd1306 ssd1306(OLED_PANEL_128x32_4ROWS);
 
 	bool isDetected = ssd1306.Start();

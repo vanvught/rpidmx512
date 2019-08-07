@@ -34,6 +34,8 @@
 
 #include "display7segment.h"
 
+#define DISPLAY_SLEEP_TIMEOUT_DEFAULT	5
+
 enum TDisplayTypes {
 	DISPLAY_BW_UI_1602 = 0,
 	DISPLAY_BW_LCD_1602,
@@ -77,10 +79,19 @@ public:
 	void SetCursor(TCursorMode EnumTCursorOnOff);
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
+#if !defined(RASPPI)
 	void SetSleep(bool bSleep);
 	bool isSleep(void) {
 		return m_bIsSleep;
 	}
+
+	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
+		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
+	}
+	uint8_t GetSleepTimeout(void) {
+		return m_nSleepTimeout / 1000 / 60;
+	}
+#endif
 
 	uint8_t getCols(void) {
 		return m_nCols;
@@ -109,7 +120,10 @@ private:
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
 	bool m_bHave7Segment;
+#if !defined(RASPPI)
 	uint32_t m_nMillis;
+#endif
+	uint32_t m_nSleepTimeout;
 
 	static Display *s_pThis;
 };

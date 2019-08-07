@@ -39,6 +39,9 @@ extern void udelay(uint32_t);
 
 #include "i2c.h"
 
+#define MIN_COLS	16
+#define MIN_ROWS	2
+
 #define MAX_COLS	20
 #define MAX_ROWS	4
 
@@ -93,8 +96,8 @@ Tc1602::Tc1602(void): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMo
 }
 
 Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
-	m_nCols = (nCols <= MAX_COLS) ? nCols : MAX_COLS;
-	m_nRows = (nRows <= MAX_ROWS) ? nRows : MAX_ROWS;
+	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
+	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
 Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
@@ -102,8 +105,8 @@ Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t n
 		m_nSlaveAddress = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
-	m_nCols = (nCols <= MAX_COLS) ? nCols : MAX_COLS;
-	m_nRows = (nRows <= MAX_ROWS) ? nRows : MAX_ROWS;
+	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
+	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
 Tc1602::~Tc1602(void) {
