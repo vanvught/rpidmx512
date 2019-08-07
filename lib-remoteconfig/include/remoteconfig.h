@@ -130,6 +130,9 @@ private:
 #if defined (OSC_CLIENT)
 	void HandleGetOscClntTxt(uint32_t& nSize);
 #endif
+#if defined(DISPLAY_UDF)
+	void HandleGetDisplayTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -156,6 +159,9 @@ private:
 #endif
 #if defined (OSC_CLIENT)
 	void HandleTxtFileOscClient(void);
+#endif
+#if defined(DISPLAY_UDF)
+	void HandleTxtFileDisplay(void);
 #endif
 
 	void HandleDisplaySet(void);

@@ -84,6 +84,11 @@
  #include "oscclientparams.h"
  #include "storeoscclient.h"
 #endif
+#if defined(DISPLAY_UDF)
+ /* display.txt */
+ #include "displayudfparams.h"
+ #include "storedisplayudf.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
@@ -145,12 +150,13 @@ enum TTxtFile {
 	TXT_FILE_LTC,
 	TXT_FILE_TCNET,
 	TXT_FILE_OSC_CLIENT,
+	TXT_FILE_DISPLAY_UDF,
 	TXT_FILE_LAST
 };
 
-static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt"  };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11};
-static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT};
+static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt"  };
+static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11,            11 };
+static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT, STORE_DISPLAYUDF};
 
 #define UDP_PORT			0x2905
 #define UDP_BUFFER_SIZE		768
@@ -536,6 +542,11 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetOscClntTxt(nSize);
 		break;
 #endif
+#if defined(DISPLAY_UDF)
+	case TXT_FILE_DISPLAY_UDF:
+		HandleGetDisplayTxt(nSize);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -683,6 +694,17 @@ void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined(DISPLAY_UDF)
+void RemoteConfig::HandleGetDisplayTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	DisplayUdfParams displayParams((DisplayUdfParamsStore *)  StoreDisplayUdf::Get());
+	displayParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
@@ -742,6 +764,11 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined (OSC_CLIENT)
 	case TXT_FILE_OSC_CLIENT:
 		HandleTxtFileOscClient();
+		break;
+#endif
+#if defined(DISPLAY_UDF)
+	case TXT_FILE_DISPLAY_UDF:
+		HandleTxtFileDisplay();
 		break;
 #endif
 	default:
@@ -964,7 +991,7 @@ void RemoteConfig::HandleTxtFileTCNet(void) {
 
 	TCNetParams tcnetParams((TCNetParamsStore *) StoreTCNet::Get());
 
-	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TTCNetParams))){
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TTCNetParams))){
 		uint32_t nSize;
 		tcnetParams.Builder((const struct TTCNetParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
 		m_nBytesReceived = nSize;
@@ -973,6 +1000,27 @@ void RemoteConfig::HandleTxtFileTCNet(void) {
 	tcnetParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	tcnetParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined(DISPLAY_UDF)
+void RemoteConfig::HandleTxtFileDisplay(void) {
+	DEBUG_ENTRY
+
+	DisplayUdfParams displayParams((DisplayUdfParamsStore *) StoreDisplayUdf::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TDisplayUdfParams))){
+		uint32_t nSize;
+		displayParams.Builder((const struct TDisplayUdfParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
+	displayParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	displayParams.Dump();
 #endif
 
 	DEBUG_EXIT

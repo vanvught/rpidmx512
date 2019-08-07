@@ -34,7 +34,10 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "e131const.h"
 #include "e131bridge.h"
@@ -61,7 +64,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	Display display(DISPLAY_SSD1306);
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -149,6 +152,25 @@ void notmain(void) {
 	bridge.Print();
 	ws28xxDmxMulti.Print();
 
+	display.SetTitle("Eth sACN E1.31 Pixel");
+	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(3, DISPLAY_UDF_LABEL_IP);
+	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
+	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if(displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show(&bridge);
+
+
 	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_PIXEL, bridge.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
@@ -161,18 +183,6 @@ void notmain(void) {
 
 	while (spiFlashStore.Flash())
 		;
-
-	for (unsigned i = 0; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
-
-	display.Write(1, "Eth sACN E1.31 Pixel");
-	display.Write(2, "Orange Pi Zero");
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nUniverseStart);
-	display.Printf(6, "AP: %d", nActivePorts);
-	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
 	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);

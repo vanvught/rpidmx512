@@ -31,7 +31,10 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "networkconst.h"
 #include "artnetconst.h"
@@ -63,7 +66,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	Display display(DISPLAY_SSD1306);
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -188,6 +191,30 @@ void notmain(void) {
 		node.SetRdmHandler(&discovery);
 	}
 
+	display.SetTitle("Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
+	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(3, DISPLAY_UDF_LABEL_BOARDNAME);
+	display.Set(4, DISPLAY_UDF_LABEL_IP);
+	display.Set(5, DISPLAY_UDF_LABEL_NETMASK);
+	if (!bIsSetIndividual) {
+		display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE);
+	}
+	display.Set(7, DISPLAY_UDF_LABEL_AP);
+
+	StoreDisplayUdf storeDisplayUdf;
+#if defined (ORANGE_PI)
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+#else
+	DisplayUdfParams displayUdfParams;
+#endif
+
+	if(displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show(&node);
+
 	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetParams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
@@ -203,20 +230,6 @@ void notmain(void) {
 		remoteConfig.SetDisable(true);
 		printf("Remote configuration is disabled\n");
 	}
-
-	uint8_t nHwTextLength;
-
-	display.Cls();
-	display.Printf(1, "Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
-	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "SN: %s", node.GetShortName());
-	if (!bIsSetIndividual) {
-		node.GetUniverseSwitch(0, nAddress);
-		display.Printf(6, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nAddress);
-	}
-	display.Printf(7, "AP: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);

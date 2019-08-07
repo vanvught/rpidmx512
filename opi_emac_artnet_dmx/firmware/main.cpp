@@ -32,7 +32,10 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "networkconst.h"
 #include "artnetconst.h"
@@ -77,7 +80,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	Display display(DISPLAY_SSD1306);
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
@@ -152,7 +155,6 @@ void notmain(void) {
 	const uint8_t nUniverse = artnetparams.GetUniverse();
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
-	node.SetDirectUpdate(false);
 
 	DMXSend dmx;
 	LightSet *pSpi;
@@ -237,6 +239,7 @@ void notmain(void) {
 #if defined(ORANGE_PI_ONE)
 	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// There is support for HEX output only
+		node.SetDirectUpdate(false);
 		node.SetOutput(&monitor);
 		monitor.Cls();
 		console_set_top_row(20);
@@ -253,6 +256,7 @@ void notmain(void) {
 			dmxparams.Dump();
 		}
 
+		node.SetDirectUpdate(false);
 		node.SetOutput(&dmx);
 
 		if(artnetparams.IsRdm()) {
@@ -276,6 +280,48 @@ void notmain(void) {
 		dmx.Print();
 	}
 
+	uint32_t pType;
+	const char pTypes[4][8] = { "Pixel", "Monitor", "RDM", "DMX" };
+
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
+		pType = 0;
+		break;
+#if defined(ORANGE_PI_ONE)
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		pType = 1;
+		break;
+#endif
+	default:
+		if (artnetparams.IsRdm()) {
+			pType = 2;
+		} else {
+			pType = 3;
+		}
+		break;
+	}
+
+	display.SetTitle("Eth Art-Net 4 %s", pTypes[pType]);
+	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(3, DISPLAY_UDF_LABEL_IP);
+	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
+	display.Set(6, DISPLAY_UDF_LABEL_AP);
+
+	StoreDisplayUdf storeDisplayUdf;
+#if defined (ORANGE_PI)
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+#else
+	DisplayUdfParams displayUdfParams;
+#endif
+
+	if(displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show(&node);
+
 #if defined (ORANGE_PI)
 	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX)), node.GetActiveOutputPorts());
 
@@ -290,38 +336,6 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 #endif
-
-	for (unsigned i = 0; i < 7; i++) {
-		display.ClearLine(i);
-	}
-	
-	display.Write(1, "Eth Art-Net 4 ");
-
-	switch (tOutputType) {
-	case LIGHTSET_OUTPUT_TYPE_SPI:
-		display.PutString("Pixel");
-		break;
-#if defined(ORANGE_PI_ONE)
-	case LIGHTSET_OUTPUT_TYPE_MONITOR:
-		display.PutString("Monitor");
-		break;
-#endif
-	default:
-		if (artnetparams.IsRdm()) {
-			display.PutString("RDM");
-		} else {
-			display.PutString("DMX");
-		}
-		break;
-	}
-
-	uint8_t nHwTextLength;
-
-	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nUniverse);
-	display.Printf(6, "AP: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);

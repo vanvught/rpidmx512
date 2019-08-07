@@ -25,7 +25,6 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <uuid/uuid.h>
 #include <assert.h>
 
 #include "spiflashstore.h"
@@ -38,9 +37,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480,           64,         32,        96,           48,        32,      768};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480,           64,         32,        96,           48,        32,      944,          48,        32};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "SparkFun"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -133,7 +132,7 @@ bool SpiFlashStore::Init(void) {
 		return true;
 	}
 
-	for (uint32_t j = STORE_E131; j < STORE_LAST; j++) {
+	for (uint32_t j = 0; j < STORE_LAST; j++) {
 		uint8_t *pbSetList = &m_aSpiFlashData[GetStoreOffset((enum TStore) j)];
 		if ((pbSetList[0] == 0xFF) && (pbSetList[1] == 0xFF) && (pbSetList[2] == 0xFF) && (pbSetList[3] == 0xFF)) {
 			DEBUG_PRINTF("[%s]: bSetList \'FF...FF\'", s_aStoreName[j]);
@@ -329,20 +328,20 @@ StoreArtNet *SpiFlashStore::GetStoreArtNet(void) {
 	return &m_StoreArtNet;
 }
 
-StoreDmxSend *SpiFlashStore::GetStoreDmxSend(void) {
-	return &m_StoreDmxSend;
-}
-
-StoreWS28xxDmx *SpiFlashStore::GetStoreWS28xxDmx(void) {
-	return &m_StoreWS28xxDmx;
+StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
+	return &m_StoreArtNet4;
 }
 
 StoreE131 *SpiFlashStore::GetStoreE131(void) {
 	return &m_StoreE131;
 }
 
-StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
-	return &m_StoreArtNet4;
+StoreDmxSend *SpiFlashStore::GetStoreDmxSend(void) {
+	return &m_StoreDmxSend;
+}
+
+StoreWS28xxDmx *SpiFlashStore::GetStoreWS28xxDmx(void) {
+	return &m_StoreWS28xxDmx;
 }
 
 StoreTLC59711* SpiFlashStore::GetStoreTLC59711(void) {

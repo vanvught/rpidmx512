@@ -35,7 +35,7 @@
 
 #include "network.h"
 
-#include "display.h"
+#include "displayudf.h"
 
 #if defined(ORANGE_PI)
  #include "spiflashstore.h"
@@ -79,7 +79,7 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 #if defined(ORANGE_PI)
 		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
 #endif
-		Display::Get()->Printf(3, "IP: " IPSTR " S", IP2STR(ip_union.u32));
+		DisplayUdf::Get()->ShowIpAddress();
 
 #ifndef NDEBUG
 		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));

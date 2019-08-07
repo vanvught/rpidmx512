@@ -31,6 +31,12 @@ else
 	endif
 endif
 
+ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
+	ifdef COND
+		LIBS+=displayudf
+	endif
+endif
+
 ifdef COND
 	LIBS+=artnet4 artnet e131 dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
 endif
@@ -39,6 +45,10 @@ LIBS+=network
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 	LIBS+=esp8266
+endif
+
+ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
+	DEFINES+=ENABLE_TC1602
 endif
 
 # Output 

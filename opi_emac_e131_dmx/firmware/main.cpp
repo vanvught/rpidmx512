@@ -32,7 +32,10 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "networkconst.h"
 #include "e131const.h"
@@ -74,7 +77,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	Display display(DISPLAY_SSD1306);
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
@@ -136,7 +139,6 @@ void notmain(void) {
 	const uint8_t nUniverse = e131params.GetUniverse();
 
 	bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
-	bridge.SetDirectUpdate(false);
 
 	DMXSend dmx;
 	LightSet *pSpi;
@@ -221,6 +223,7 @@ void notmain(void) {
 #if defined(ORANGE_PI_ONE)
 	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
 		// There is support for HEX output only
+		bridge.SetDirectUpdate(false);
 		bridge.SetOutput(&monitor);
 		monitor.Cls();
 		console_set_top_row(20);
@@ -237,6 +240,7 @@ void notmain(void) {
 			dmxparams.Dump();
 		}
 
+		bridge.SetDirectUpdate(false);
 		bridge.SetOutput(&dmx);
 	}
 
@@ -250,6 +254,44 @@ void notmain(void) {
 	} else {
 		dmx.Print();
 	}
+
+	uint32_t pType;
+	const char pTypes[4][8] = { "Pixel", "Monitor", "DMX" };
+
+	switch (tOutputType) {
+	case LIGHTSET_OUTPUT_TYPE_SPI:
+		pType = 0;
+		break;
+#if defined(ORANGE_PI_ONE)
+	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+		pType = 1;
+		break;
+#endif
+	default:
+		pType = 2;
+		break;
+	}
+
+	display.SetTitle("Eth sACN E1.31 %s", pTypes[pType]);
+	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
+	display.Set(3, DISPLAY_UDF_LABEL_IP);
+	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
+	display.Set(6, DISPLAY_UDF_LABEL_AP);
+
+	StoreDisplayUdf storeDisplayUdf;
+#if defined (ORANGE_PI)
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+#else
+	DisplayUdfParams displayUdfParams;
+#endif
+
+	if(displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show(&bridge);
 
 #if defined (ORANGE_PI)
 	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX), bridge.GetActiveOutputPorts());
@@ -265,34 +307,6 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 #endif
-
-	for (unsigned i = 0; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
-
-	display.Write(1, "Eth sACN E1.31 ");
-
-	switch (tOutputType) {
-	case LIGHTSET_OUTPUT_TYPE_SPI:
-		display.PutString("Pixel");
-		break;
-#if defined(ORANGE_PI_ONE)
-	case LIGHTSET_OUTPUT_TYPE_MONITOR:
-		display.PutString("Monitor");
-		break;
-#endif
-	default:
-		display.PutString("DMX");
-		break;
-	}
-
-	uint8_t nHwTextLength;
-
-	display.Write(2, hw.GetBoardName(nHwTextLength));
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nUniverse);
-	display.Printf(6, "AP: %d", bridge.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
 	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);

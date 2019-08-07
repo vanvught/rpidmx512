@@ -533,9 +533,9 @@ public class RemoteConfig extends JFrame {
 	}
 	
 	private void doExit() {
-		int n = JOptionPane.showConfirmDialog(null, "Are you sure?", "Exit", JOptionPane.OK_CANCEL_OPTION);
-		if (n == JOptionPane.OK_OPTION)
-			System.exit(0);
+		//int n = JOptionPane.showConfirmDialog(null, "Are you sure?", "Exit", JOptionPane.OK_CANCEL_OPTION);
+		//if (n == JOptionPane.OK_OPTION)
+		System.exit(0);
 	}
 	
 	private void doReboot(OrangePi opi) {
@@ -654,12 +654,26 @@ public class RemoteConfig extends JFrame {
 				e.printStackTrace();
 			}
 		}
+		
+/*
+		h.add(new OrangePi("192.168.2.150,Art-Net,Pixel,4", localAddress, socketReceive));
+		h.add(new OrangePi("192.168.2.151,Art-Net,Pixel,4", localAddress, socketReceive));
+		h.add(new OrangePi("192.168.2.152,Art-Net,Pixel,2", localAddress, socketReceive));
+		h.add(new OrangePi("192.168.2.153,Art-Net,Pixel,2", localAddress, socketReceive));
+*/		
 
 		Iterator<OrangePi> it = h.iterator();
 
 		while (it.hasNext()) {
 			child = new DefaultMutableTreeNode(it.next());
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeRemoteConfig()));
+			
+			String nodeDisplay = ((OrangePi) child.getUserObject()).getNodeDisplay();
+			
+			if (nodeDisplay != null) {
+				child.add(new DefaultMutableTreeNode(nodeDisplay));
+			}
+			
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeType()));
 			

@@ -2,7 +2,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 #include "ipprog.h"
 
 #include "network.h"
+
+#include "displayudf.h"
 
 #include "spiflashstore.h"
 
@@ -68,8 +70,11 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	} else if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
 		// Get IPAddress from IpProg
 		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+
 		Network::Get()->SetIp(ip_union.u32);
 		SpiFlashStore::Get()->GetStoreNetwork()->UpdateIp(ip_union.u32);
+		DisplayUdf::Get()->ShowIpAddress();
+
 #ifndef NDEBUG
 		printf("\tIP : " IPSTR "\n", IP2STR(Network::Get()->GetIp()));
 		printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));

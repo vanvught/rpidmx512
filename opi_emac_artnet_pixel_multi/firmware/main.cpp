@@ -32,7 +32,10 @@
 #include "ledblinkbaremetal.h"
 
 #include "console.h"
-#include "display.h"
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "networkconst.h"
 #include "artnetconst.h"
@@ -61,7 +64,7 @@ void notmain(void) {
 	HardwareBaremetal hw;
 	NetworkH3emac nw;
 	LedBlinkBaremetal lb;
-	Display display(DISPLAY_SSD1306);
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -168,6 +171,24 @@ void notmain(void) {
 	node.Print();
 	ws28xxDmxMulti.Print();
 
+	display.SetTitle("Eth Art-Net 4 Pixel");
+	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(3, DISPLAY_UDF_LABEL_IP);
+	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
+	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if(displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show(&node);
+
 	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET,  REMOTE_CONFIG_MODE_PIXEL, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
@@ -180,18 +201,6 @@ void notmain(void) {
 
 	while (spiFlashStore.Flash())
 		;
-
-	for (unsigned i = 0; i < 7; i++) {
-		display.ClearLine(i);
-	}
-	
-	display.Write(1, "Eth Art-Net 4 Pixel");
-	display.Write(2, "Orange Pi Zero");
-	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "N: %d SubN: %d U: %d", node.GetNetSwitch(), node.GetSubnetSwitch(), nUniverseStart);
-	display.Printf(6, "AP: %d", nActivePorts);
-	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);

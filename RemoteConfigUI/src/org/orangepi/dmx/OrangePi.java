@@ -33,6 +33,7 @@ public class OrangePi {
 	private static final int PORT = 0x2905;
 	
 	private static final String RCONFIG_TXT = "rconfig.txt";
+	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NETWORK_TXT = "network.txt";
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt"};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client"};
@@ -50,12 +51,14 @@ public class OrangePi {
 	private String nodeDisplayName = "";
 	
 	private String nodeRemoteConfig = null;
+	private String nodeDisplay = null;
 	private String nodeNetwork = null;
 	private String nodeType = null;
 	private String nodeMode = null;
 	private String nodeExtras = null;
 	
 	private String sbRemoteConfig = null;
+	private String sbDisplay = null;
 	private String sbNetwork = null;
 	private String sbType = null;
 	private String sbMode = null;
@@ -130,6 +133,11 @@ public class OrangePi {
 				sbRemoteConfig = doGet(txt);
 			}
 			return sbRemoteConfig.toString();
+		} else if (isDisplayTxt(txt)) {
+			if (sbDisplay == null) {
+				sbDisplay = doGet(txt);
+			}
+			return sbDisplay.toString();
 		} else if (isNetworkTxt(txt)) {
 			if (sbNetwork == null) {
 				sbNetwork = doGet(txt);
@@ -217,6 +225,9 @@ public class OrangePi {
 
 		if (isRemoteConfigTxt(txt)) {
 			sbRemoteConfig = null;
+			bDoSave = true;
+		} else if (isDisplayTxt(txt)) {
+			sbDisplay = null;
 			bDoSave = true;
 		} else if (isNetworkTxt(txt)) {
 			sbNetwork = null;
@@ -326,6 +337,9 @@ public class OrangePi {
 		for (int i = 0; i < TYPEVALUES.length; i++) {
 			if (type.equals(TYPEVALUES[i])) {
 				nodeType = TYPES_TXT[i];
+				if ((i == 0) || (i == 1)) {
+					nodeDisplay = DISPLAY_TXT;
+				}
 				return true;
 			}
 		}
@@ -334,6 +348,13 @@ public class OrangePi {
 	
 	private Boolean isRemoteConfigTxt(String config) {
 		if (config.equals(RCONFIG_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
+	private Boolean isDisplayTxt(String config) {
+		if (config.equals(DISPLAY_TXT)) {
 			return true;
 		}
 		return false;
@@ -387,6 +408,10 @@ public class OrangePi {
 	
 	public String getNodeRemoteConfig() {
 		return nodeRemoteConfig;
+	}
+	
+	public String getNodeDisplay() {
+		return nodeDisplay;
 	}
 	
 	public String getNodeNetwork() {
