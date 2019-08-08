@@ -1046,7 +1046,7 @@ void RemoteConfig::HandleTftpSet(void) {
 
 		m_pTFTPFileServer = new TFTPFileServer(m_pTFTPBuffer, FIRMWARE_MAX_SIZE);
 		assert(m_pTFTPFileServer != 0);
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_ON);
+		Display::Get()->TextStatus("TFTP On", DISPLAY_7SEGMENT_MSG_INFO_TFTP_ON);
 	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != 0)) {
 		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
 		DEBUG_PRINTF("nFileSize=%d, %d", (int) nFileSize, m_pTFTPFileServer->isDone());
@@ -1060,7 +1060,7 @@ void RemoteConfig::HandleTftpSet(void) {
 			bSucces = SpiFlashInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
 
 			if (!bSucces) {
-				Display::Get()->Status(DISPLAY_7SEGMENT_MSG_ERROR_TFTP);
+				Display::Get()->TextStatus("Error: TFTP", DISPLAY_7SEGMENT_MSG_ERROR_TFTP);
 			}
 		}
 
@@ -1073,7 +1073,7 @@ void RemoteConfig::HandleTftpSet(void) {
 		m_pTFTPBuffer = 0;
 
 		if (bSucces) { // Keep error message
-			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_TFTP_OFF);
+			Display::Get()->TextStatus("TFTP Off", DISPLAY_7SEGMENT_MSG_INFO_TFTP_OFF);
 		}
 	}
 
