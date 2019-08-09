@@ -153,12 +153,12 @@ void notmain(void) {
 	ws28xxDmxMulti.Print();
 
 	display.SetTitle("Eth sACN E1.31 Pixel");
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(2, DISPLAY_UDF_LABEL_HOSTNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
-	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+	display.Set(6, DISPLAY_UDF_LABEL_BOARDNAME);
+	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(),  ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
