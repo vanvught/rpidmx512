@@ -6,7 +6,6 @@
 		<project>h3-firmware-template</project>
 		<project>include</project>
 		<project>lib-arm</project>
-		<project>lib-bcm2835</project>
 		<project>lib-h3</project>
 		<project>lib-hal</project>
 		<project>lib-properties</project>

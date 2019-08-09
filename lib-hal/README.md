@@ -1,3 +1,4 @@
+# Library HAL
 ## Hardware Abstraction Layer (HAL) implementation ##
 
 Supported platforms:

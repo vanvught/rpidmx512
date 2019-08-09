@@ -36,7 +36,7 @@ public:
 	alignas(uint32_t) static const char PARAMS_NET_MASK[];
 	alignas(uint32_t) static const char PARAMS_DEFAULT_GATEWAY[];
 	alignas(uint32_t) static const char PARAMS_HOSTNAME[];
-	alignas(uint32_t) static const char PARAMS_RESET_EMAC[];
+//	alignas(uint32_t) static const char PARAMS_RESET_EMAC[];
 
 	alignas(uint32_t) static const char MSG_NETWORK_INIT[];
 };

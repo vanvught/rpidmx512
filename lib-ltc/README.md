@@ -1,4 +1,5 @@
-## Open Source library for SMPTE TimeCode Reader / LTC - Protocol Converter
+# Library LTC
+## Open Source C++ library for SMPTE TimeCode Reader / LTC - Protocol Converter
 
 Supported board :
 

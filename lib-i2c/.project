@@ -3,8 +3,6 @@
 	<name>lib-i2c</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-bcm2835_raspbian</project>
 		<project>lib-h3</project>
 	</projects>
 	<buildSpec>

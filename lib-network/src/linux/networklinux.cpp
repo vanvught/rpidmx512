@@ -42,7 +42,7 @@
 /**
  * BEGIN - needed H3 code compatibility
  */
-#define MAX_PORTS_ALLOWED	4
+#define MAX_PORTS_ALLOWED	8
 
 static uint16_t sPortsAllowed[MAX_PORTS_ALLOWED];
 static uint8_t snPortsUsed = 0;

@@ -44,7 +44,7 @@ struct TOscClientParams {
 	uint8_t nPingDelay;
 	uint8_t aCmd[OSCCLIENT_PARAMS_CMD_MAX_COUNT][OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH];
 	uint8_t aLed[OSCCLIENT_PARAMS_LED_MAX_COUNT][OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH];
-};
+} __attribute__((packed));
 
 enum TOscClientParamsMask {
 	OSCCLIENT_PARAMS_MASK_SERVER_IP = (1 << 0),

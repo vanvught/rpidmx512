@@ -1,30 +1,4 @@
-## Open source Raspberry Pi Baremetal C library for standard C functions ##
-
-*ctype.h* functions :
-  
-	int isdigit(const int c) { return (c >= (int) '0' && c <= (int) '9') ? 1 : 0; }
-	int isxdigit(const int c) { return ((isdigit(c) != 0) || (((unsigned) c | 32) - (int) 'a' < 6)) ? 1 : 0; }
-	int isprint(const int c) { return ((c >= (int) ' ' && c <= (int) '~')) ? 1 : 0; }
-	int isupper(const int c) { return (c >= (int) 'A' && c <= (int) 'Z') ? 1 : 0; }
-	int islower(const int c) { return (c >= (int) 'a' && c <= (int) 'z') ? 1 : 0; }
-	int isalpha(const int c) { return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0; }
-	int tolower(const int c) { return ((isupper(c) != 0) ? (c + 32) : c); }
-	int toupper(const int c) { return ((islower(c) != 0) ? (c - 32) : c); }
-
-*string.h* functions :
-
-	int memcmp(const void *s1, const void *s2, size_t n)
-	void *memcpy(void *dest, const void *src, size_t n)
-	void *memmove(void *dst, const void *src, size_t n)
-	void *memset(void *dest, int c, size_t n)
-
-	size_t strlen(const char *s)
-	char *strcpy(char *s1, const char *s2)
-	char *strncpy(char *s1, const char *s2, size_t n)
-	int strcmp(const char *s1, const char *s2)
-	int strncmp(const char *s1, const char *s2, size_t n)
-	int strcasecmp(const char *s1, const char *s2)
-	int strncasecmp(const char *s1, const char *s2, size_t n)
+## Open source C library for standard C functions
 
 *assert.h* function :
 

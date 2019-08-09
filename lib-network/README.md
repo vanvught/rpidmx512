@@ -1,4 +1,7 @@
+# Library Network
 ## Network Abstraction Layer (UDP/IP) implementation ##
+
+Included is also a mDNS implementation.
 
 Supported platforms:
 
@@ -8,7 +11,5 @@ Supported platforms:
 - Cygwin
 - Mac OS X
 
-[http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
-

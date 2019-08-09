@@ -1,4 +1,5 @@
-## Open Source library for the MIDI implementation ##
+# Library MIDI
+## Open Source library for the MIDI implementation
 
 Supported boards:
 
@@ -6,6 +7,4 @@ Supported boards:
 - Raspberry Pi boards
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
-
-<img src="https://raw.githubusercontent.com/vanvught/rpidmx512/master/lib-midi/classMidi__coll__graph.png" />
 

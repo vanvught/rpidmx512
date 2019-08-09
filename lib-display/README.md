@@ -1,4 +1,5 @@
-## Open Source Raspberry Pi C++ library for displays implementation ##
+# Library Display
+## Cross-platform Open Source C++
 
 Supported displays:
 

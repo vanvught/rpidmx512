@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+//#define IS_MASK_SET(x, y)	(((x->nSetList) & (y)) == (y))
+
 class PropertiesBuilder {
 public:
 	PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength);

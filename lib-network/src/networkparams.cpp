@@ -136,11 +136,11 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
-		m_tNetworkParams.bResetEmac = (value8 != 0);
-		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_EMAC;
-		return;
-	}
+//	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_RESET_EMAC, &value8) == SSCAN_OK) {
+//		m_tNetworkParams.bResetEmac = (value8 != 0);
+//		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_EMAC;
+//		return;
+//	}
 
 //#if !defined (H3)
 //	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
