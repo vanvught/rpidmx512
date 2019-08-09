@@ -50,6 +50,8 @@
 #include "rtpmidi.h"
 #include "midiparams.h"
 
+#include "mdnsservices.h"
+
 #include "tcnet.h"
 #include "tcnetparams.h"
 #include "tcnettimecode.h"
@@ -219,6 +221,7 @@ void notmain(void) {
 	case LTC_READER_SOURCE_APPLEMIDI:
 		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidi.Start();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 		rtpMidiReader.Start();
 		break;
 	default:
@@ -351,6 +354,8 @@ void notmain(void) {
 	if (tLtcDisabledOutputs.bNtp) {
 		printf(" NTP output is disabled\n");
 	}
+
+	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
 
 	hw.WatchdogInit();
 
