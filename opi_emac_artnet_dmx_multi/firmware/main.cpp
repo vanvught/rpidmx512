@@ -45,6 +45,7 @@
 #include "artnetdiscovery.h"
 
 #include "ipprog.h"
+#include "displayudfhandler.h"
 
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
@@ -164,12 +165,12 @@ void notmain(void) {
 	node.SetDirectUpdate(false);
 
 	IpProg ipprog;
-
 	node.SetIpProgHandler(&ipprog);
 
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+	DisplayUdfHandler displayUdfHandler(&node);
+	node.SetArtNetDisplay(&displayUdfHandler);
 
-	spiFlashStore.Dump();
+	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	node.Print();
 	dmxMulti.Print();
@@ -193,13 +194,12 @@ void notmain(void) {
 
 	display.SetTitle("Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_BOARDNAME);
-	display.Set(4, DISPLAY_UDF_LABEL_IP);
-	display.Set(5, DISPLAY_UDF_LABEL_NETMASK);
-	if (!bIsSetIndividual) {
-		display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE);
-	}
-	display.Set(7, DISPLAY_UDF_LABEL_AP);
+	display.Set(3, DISPLAY_UDF_LABEL_IP);
+	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
+	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE_PORT_B);
+	uint8_t nTextLength;
+	display.Write(7, hw.GetBoardName(nTextLength));
 
 	StoreDisplayUdf storeDisplayUdf;
 #if defined (ORANGE_PI)
