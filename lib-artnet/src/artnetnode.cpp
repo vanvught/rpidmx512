@@ -36,16 +36,17 @@
 #include "packets.h"
 
 #include "lightset.h"
-#include "ledblink.h"
 
 #include "artnetrdm.h"
 #include "artnettimecode.h"
 #include "artnettimesync.h"
 #include "artnetipprog.h"
 #include "artnetstore.h"
+#include "artnetdisplay.h"
 
 #include "hardware.h"
 #include "network.h"
+#include "ledblink.h"
 
 #include "artnetnode_internal.h"
 
@@ -68,7 +69,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 35 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 36 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -88,6 +89,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_pArtNetRdm(0),
 	m_pArtNetIpProg(0),
 	m_pArtNetStore(0),
+	m_pArtNetDisplay(0),
 	m_pArtNet4Handler(0),
 	m_pTimeCodeData(0),
 	m_pTodData(0),
@@ -145,12 +147,6 @@ ArtNetNode::~ArtNetNode(void) {
 	if (m_pTimeCodeData != 0) {
 		delete m_pTimeCodeData;
 	}
-}
-
-void ArtNetNode::SetArtNetStore(ArtNetStore *pArtNetStore) {
-	assert(pArtNetStore != 0);
-
-	m_pArtNetStore = pArtNetStore;
 }
 
 void ArtNetNode::Start(void) {
@@ -239,9 +235,14 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 		m_pArtNet4Handler->SetPort(nPortIndex);
 	}
 
-	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
-		if (nPortIndex < ARTNET_MAX_PORTS) {
-			m_pArtNetStore->SaveUniverseSwitch(nPortIndex, nAddress);
+	if (m_State.status == ARTNET_ON) {
+		if (m_pArtNetStore != 0) {
+			if (nPortIndex < ARTNET_MAX_PORTS) {
+				m_pArtNetStore->SaveUniverseSwitch(nPortIndex, nAddress);
+			}
+		}
+		if (m_pArtNetDisplay != 0) {
+			m_pArtNetDisplay->ShowUniverseSwitch(nPortIndex, nAddress);
 		}
 	}
 
@@ -332,9 +333,14 @@ void ArtNetNode::SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode) {
 		m_OutputPorts[nPortIndex].port.nStatus &= (~GO_MERGE_MODE_LTP);
 	}
 
-	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
+	if (m_State.status == ARTNET_ON) {
 		if (nPortIndex < ARTNET_MAX_PORTS) {
-			m_pArtNetStore->SaveMergeMode(nPortIndex, tMergeMode);
+			if (m_pArtNetStore != 0) {
+				m_pArtNetStore->SaveMergeMode(nPortIndex, tMergeMode);
+			}
+			if (m_pArtNetDisplay != 0) {
+				m_pArtNetDisplay->ShowMergeMode(nPortIndex, tMergeMode);
+			}
 		}
 	}
 }
@@ -357,9 +363,14 @@ void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol
 			m_OutputPorts[nPortIndex].port.nStatus &= (~GO_OUTPUT_IS_SACN);
 		}
 
-		if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
+		if (m_State.status == ARTNET_ON) {
 			if (nPortIndex < ARTNET_MAX_PORTS) {
-				m_pArtNetStore->SavePortProtocol(nPortIndex, tPortProtocol);
+				if (m_pArtNetStore != 0) {
+					m_pArtNetStore->SavePortProtocol(nPortIndex, tPortProtocol);
+				}
+				if (m_pArtNetDisplay != 0) {
+					m_pArtNetDisplay->ShowPortProtocol(nPortIndex, tPortProtocol);
+				}
 			}
 		}
 	}
@@ -379,8 +390,13 @@ void ArtNetNode::SetShortName(const char *pName) {
 
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, ARTNET_SHORT_NAME_LENGTH);
 
-	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
-		m_pArtNetStore->SaveShortName((const char *) m_Node.ShortName);
+	if (m_State.status == ARTNET_ON) {
+		if (m_pArtNetStore != 0) {
+			m_pArtNetStore->SaveShortName((const char*) m_Node.ShortName);
+		}
+		if (m_pArtNetDisplay != 0) {
+			m_pArtNetDisplay->ShowShortName((const char*) m_Node.ShortName);
+		}
 	}
 }
 

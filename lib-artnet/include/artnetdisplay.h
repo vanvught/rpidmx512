@@ -1,11 +1,11 @@
 /**
- * @file artnetstore.h
+ * @file artnetdisplay.h
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETSTORE_H_
-#define ARTNETSTORE_H_
+#ifndef ARTNETDISPLAY_H_
+#define ARTNETDISPLAY_H_
 
 #include <stdint.h>
 
 #include "artnet.h"
 
-class ArtNetStore {
+class ArtNetDisplay {
 public:
-	virtual ~ArtNetStore(void);
+	virtual ~ArtNetDisplay(void);
 
-	virtual void SaveShortName(const char *pShortName)=0;
-	virtual void SaveLongName(const char *pLongName)=0;
-	virtual void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
-	virtual void SaveNetSwitch(uint8_t nAddress)=0;
-	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-	virtual void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge)=0;
-	virtual void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol)=0;
+	virtual void ShowShortName(const char *pShortName)= 0;
+	virtual void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
+	virtual void ShowNetSwitch(uint8_t nAddress)=0;
+	virtual void ShowSubnetSwitch(uint8_t nAddress)=0;
+	virtual void ShowMergeMode(uint8_t nPortIndex, TMerge tMerge)=0;
+	virtual void ShowPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol)=0;
 };
 
-#endif /* ARTNETSTORE_H_ */
+#endif /* ARTNETDISPLAY_H_ */

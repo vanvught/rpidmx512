@@ -49,6 +49,7 @@
 #include "artnetrdm.h"
 #include "artnetipprog.h"
 #include "artnetstore.h"
+#include "artnetdisplay.h"
 
 #include "artnet4handler.h"
 
@@ -204,7 +205,7 @@ public:
 	TMerge GetMergeMode(uint8_t nPortIndex = 0) const;
 
 	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
-	TPortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;
 
 	void SetManufacturerId(const uint8_t *);
 	const uint8_t* GetManufacturerId(void) {
@@ -230,10 +231,17 @@ public:
 	void SendTimeCode(const struct TArtNetTimeCode *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
-	void SetTimeSyncHandler(ArtNetTimeSync *);
+	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
+		m_pArtNetTimeSync = pArtNetTimeSync;
+	}
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
-	void SetArtNetStore(ArtNetStore *pArtNetStore);
+	void SetArtNetStore(ArtNetStore *pArtNetStore) {
+		m_pArtNetStore = pArtNetStore;
+	}
+	void SetArtNetDisplay(ArtNetDisplay *pArtNetDisplay) {
+		m_pArtNetDisplay = pArtNetDisplay;
+	}
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
@@ -281,6 +289,7 @@ private:
 	ArtNetRdm *m_pArtNetRdm;
 	ArtNetIpProg *m_pArtNetIpProg;
 	ArtNetStore *m_pArtNetStore;
+	ArtNetDisplay *m_pArtNetDisplay;
 
 	ArtNet4Handler *m_pArtNet4Handler;
 

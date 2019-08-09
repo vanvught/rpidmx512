@@ -36,12 +36,6 @@
 ArtNetTimeSync::~ArtNetTimeSync(void) {
 }
 
-void ArtNetNode::SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
-	assert(pArtNetTimeSync != 0);
-
-	m_pArtNetTimeSync = pArtNetTimeSync;
-}
-
 void ArtNetNode::HandleTimeSync(void) {
 	struct TArtTimeSync *packet = (struct TArtTimeSync *) &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
 
