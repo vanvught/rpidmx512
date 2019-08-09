@@ -36,6 +36,9 @@
 
 #include "networkconst.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "oscclient.h"
 #include "oscclientconst.h"
 #include "oscclientparams.h"
@@ -98,6 +101,15 @@ void notmain(void) {
 #endif
 	nw.Print();
 
+	MDNS mDns;
+
+	mDns.Start();
+#if defined(ORANGE_PI)
+	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+#endif
+	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
+	mDns.Print();
+
 	console_status(CONSOLE_YELLOW, OscClientConst::MSG_CLIENT_PARAMS);
 	display.TextStatus(OscClientConst::MSG_CLIENT_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS);
 
@@ -128,18 +140,16 @@ void notmain(void) {
 	}
 #endif
 
-	for (unsigned i = 0; i < 7 ; i++) {
+	for (unsigned i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	uint8_t nHwTextLength;
-
 	display.Write(1, "Eth OSC Client");
-	display.Write(2, hw.GetBoardName(nHwTextLength));
+	display.Printf(2, "%s.local", nw.GetHostName());
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
-	display.Printf(4, "S: " IPSTR, IP2STR(client.GetServerIP()));
-	display.Printf(5, "Out: %d", client.GetPortOutgoing());
-	display.Printf(6, "In: %d", client.GetPortIncoming());
+	display.Printf(4, "S : " IPSTR, IP2STR(client.GetServerIP()));
+	display.Printf(5, "O : %d", client.GetPortOutgoing());
+	display.Printf(6, "I : %d", client.GetPortIncoming());
 
 	console_status(CONSOLE_YELLOW, OscClientConst::MSG_CLIENT_START);
 	display.TextStatus(OscClientConst::MSG_CLIENT_START, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_START);
@@ -166,6 +176,7 @@ void notmain(void) {
 #if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();
+		mDns.Run();
 #endif
 		lb.Run();
 		display.Run();
