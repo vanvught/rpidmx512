@@ -44,6 +44,7 @@
 #include "artnet4params.h"
 
 #include "ipprog.h"
+#include "displayudfhandler.h"
 
 // DMX Out, RDM Controller
 #include "dmxparams.h"
@@ -145,8 +146,10 @@ void notmain(void) {
 	artnetparams.Set(&node);
 
 	IpProg ipprog;
-
 	node.SetIpProgHandler(&ipprog);
+
+	DisplayUdfHandler displayUdfHandler(&node);
+	node.SetArtNetDisplay(&displayUdfHandler);
 
 #if defined (ORANGE_PI)
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
