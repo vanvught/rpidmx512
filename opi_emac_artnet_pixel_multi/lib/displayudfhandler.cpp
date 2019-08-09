@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file displayudfhandler.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <assert.h>
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include "displayudfhandler.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnetnode.h"
+
+ArtNetDisplay::~ArtNetDisplay(void) {
+
+}
+
+DisplayUdfHandler::DisplayUdfHandler(ArtNetNode *pArtNetNode): m_pArtNetNode(pArtNetNode) {
+	assert(m_pArtNetNode != 0);
+}
+
+DisplayUdfHandler::~DisplayUdfHandler(void) {
+}

@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file displayudfhandler.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef DISPLAYUDFHANDLER_H_
+#define DISPLAYUDFHANDLER_H_
 
-static const char SOFTWARE_VERSION[] = "1.1";
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnetdisplay.h"
+
+#include "artnetnode.h"
+
+#include "displayudf.h"
+
+class DisplayUdfHandler: public ArtNetDisplay {
+public:
+	DisplayUdfHandler(ArtNetNode *pArtNetNode);
+	~DisplayUdfHandler(void);
+
+	void ShowShortName(const char *pShortName) {
+		DisplayUdf::Get()->ShowNodeName(m_pArtNetNode);
+	}
+
+	void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+	void ShowNetSwitch(uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+	void ShowSubnetSwitch(uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+	void ShowMergeMode(uint8_t nPortIndex, TMerge tMerge) {
+		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+	void ShowPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
+		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+private:
+	ArtNetNode *m_pArtNetNode;
+};
+
+#endif /* DISPLAYUDFHANDLER_H_ */

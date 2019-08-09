@@ -44,6 +44,7 @@
 #include "artnet4params.h"
 
 #include "ipprog.h"
+#include "displayudfhandler.h"
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
@@ -111,8 +112,11 @@ void notmain(void) {
 	}
 
 	IpProg ipprog;
-
 	node.SetIpProgHandler(&ipprog);
+
+	DisplayUdfHandler displayUdfHandler(&node);
+	node.SetArtNetDisplay(&displayUdfHandler);
+
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();
@@ -173,11 +177,11 @@ void notmain(void) {
 
 	display.SetTitle("Eth Art-Net 4 Pixel");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
-	display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+	display.Set(3, DISPLAY_UDF_LABEL_HOSTNAME);
+	display.Set(4, DISPLAY_UDF_LABEL_IP);
+	display.Set(5, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE);
+	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
