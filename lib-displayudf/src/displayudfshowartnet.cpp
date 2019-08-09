@@ -31,22 +31,35 @@
 
 #include "debug.h"
 
+#define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? 'H' : 'L'
+
 void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 	DEBUG_ENTRY
 
 	Show();
-	ShowNodeName(pArtNetNode);
 
-	uint8_t nAddress;
-	if (pArtNetNode->GetUniverseSwitch(0, nAddress)) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "N: %d SubN: %d U: %d", pArtNetNode->GetNetSwitch(), pArtNetNode->GetSubnetSwitch(), nAddress);
-	}
+	ShowNodeName(pArtNetNode);
+	ShowUniverse(pArtNetNode);
+
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_AP], "AP: %d", pArtNetNode->GetActiveOutputPorts());
 
 	DEBUG_EXIT
 }
 
-
 void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
+	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_NODE_NAME]);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_NODE_NAME], pArtNetNode->GetShortName());
+}
+
+void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
+	uint8_t nAddress;
+	if (pArtNetNode->GetUniverseSwitch(0, nAddress)) {
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(), pArtNetNode->GetSubnetSwitch(), nAddress, MERGEMODE2STRING(pArtNetNode->GetMergeMode()), pArtNetNode->GetPortProtocol() == PORT_ARTNET_ARTNET ? "    " : "sACN");
+	}
+
+	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (pArtNetNode->GetUniverseSwitch(i, nAddress)) {
+			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, MERGEMODE2STRING(pArtNetNode->GetMergeMode(i)), pArtNetNode->GetPortProtocol(i) == PORT_ARTNET_ARTNET ? "    " : "sACN");
+		}
+	}
 }

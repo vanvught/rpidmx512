@@ -53,7 +53,8 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = { DisplayUdfParamsConst::
 		LightSetConst::PARAMS_UNIVERSE,
 		DisplayUdfParamsConst::ACTIVE_PORTS,
 		ArtNetParamsConst::NODE_SHORT_NAME,
-		NetworkConst::PARAMS_HOSTNAME
+		NetworkConst::PARAMS_HOSTNAME,
+		ArtNetParamsConst::UNIVERSE_PORT[0], ArtNetParamsConst::UNIVERSE_PORT[1], ArtNetParamsConst::UNIVERSE_PORT[2], ArtNetParamsConst::UNIVERSE_PORT[3]
 };
 
 

@@ -43,6 +43,10 @@ enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_AP,
 	DISPLAY_UDF_LABEL_NODE_NAME,
 	DISPLAY_UDF_LABEL_HOSTNAME,
+	DISPLAY_UDF_LABEL_UNIVERSE_PORT_A,
+	DISPLAY_UDF_LABEL_UNIVERSE_PORT_B,
+	DISPLAY_UDF_LABEL_UNIVERSE_PORT_C,
+	DISPLAY_UDF_LABEL_UNIVERSE_PORT_D,
 	DISPLAY_UDF_LABEL_UNKNOWN
 };
 
@@ -56,10 +60,12 @@ public:
 	void SetTitle(const char *format, ...);
 
 	void Show(ArtNetNode *pArtNetNode);
+	void ShowNodeName(ArtNetNode *pArtNetNode);
+	void ShowUniverse(ArtNetNode *pArtNetNode);
+
 	void Show(E131Bridge *pE131Bridge);
 
 	void ShowIpAddress(void);
-	void ShowNodeName(ArtNetNode *pArtNetNode);
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 
