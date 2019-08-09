@@ -36,6 +36,9 @@
 
 #include "networkconst.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "oscserver.h"
 #include "oscserverparms.h"
 
@@ -112,6 +115,15 @@ void notmain(void) {
 	nw.Init();
 #endif
 	nw.Print();
+
+	MDNS mDns;
+
+	mDns.Start();
+#if defined(ORANGE_PI)
+	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+#endif
+	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
+	mDns.Print();
 
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
@@ -225,7 +237,7 @@ void notmain(void) {
 	}
 #endif
 
-	for (unsigned i = 0; i < 7 ; i++) {
+	for (unsigned i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
@@ -261,6 +273,7 @@ void notmain(void) {
 #if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();
+		mDns.Run();
 #endif
 		lb.Run();
 		display.Run();
