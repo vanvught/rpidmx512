@@ -31,7 +31,7 @@
 
 #include "h3/tcnetreader.h"
 
-#include "hardwarebaremetal.h"
+#include "c/led.h"
 
 #include "arm/synchronize.h"
 #include "h3_hs_timer.h"
@@ -55,8 +55,6 @@ static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static volatile uint32_t nLedToggle = 0;
-
 static volatile uint32_t nMidiQuarterFrameUs = 0;
 static volatile uint32_t nMidiQuarterFramePiece = 0;
 static volatile bool IsMidiQuarterFrameMessage = false;
@@ -69,16 +67,6 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
-
-	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 1000)) {
-		if (nLedToggle++ & 0x01) {
-			Hardware::Get()->SetLed(HARDWARE_LED_ON);
-		} else {
-			Hardware::Get()->SetLed(HARDWARE_LED_OFF);
-		}
-	} else {
-		Hardware::Get()->SetLed(HARDWARE_LED_ON);
-	}
 }
 
 static void irq_timer1_midi_handler(uint32_t clo) {
@@ -131,15 +119,17 @@ TCNetReader::~TCNetReader(void) {
 void TCNetReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
-		irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
+		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
 	}
+
+	led_set_ticks_per_second(1000000 / 1);
 }
 
 void TCNetReader::Stop(void) {
@@ -293,8 +283,10 @@ void TCNetReader::Run(void) {
 			Midi::Get()->SendRaw(bytes, 2);
 			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 		}
+		led_set_ticks_per_second(1000000 / 3);
 	} else {
 		m_nTimeCodePrevious = 0xFF;
 		DisplayMax7219::Get()->ShowSysTime();
+		led_set_ticks_per_second(1000000 / 1);
 	}
 }

@@ -33,7 +33,7 @@
 #include "h3/midireader.h"
 #include "ltc.h"
 
-#include "hardwarebaremetal.h"
+#include "c/led.h"
 
 #include "arm/synchronize.h"
 #include "h3_hs_timer.h"
@@ -62,8 +62,6 @@ static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static volatile uint32_t nLedToggle = 0;
-
 static uint8_t qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
 inline static void itoa_base10(uint32_t arg, char *buf) {
@@ -83,16 +81,6 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
-
-	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
-		if (nLedToggle++ & 0x01) {
-			Hardware::Get()->SetLed(HARDWARE_LED_ON);
-		} else {
-			Hardware::Get()->SetLed(HARDWARE_LED_OFF);
-		}
-	} else {
-		Hardware::Get()->SetLed(HARDWARE_LED_ON);
-	}
 }
 
 MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
@@ -118,7 +106,7 @@ MidiReader::~MidiReader(void) {
 void MidiReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -187,6 +175,13 @@ void MidiReader::Run(void) {
 			console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
 		}
 #endif
+	}
+
+	dmb();
+	if (nUpdatesPerSecond >= 24)  {
+		led_set_ticks_per_second(1000000 / 3);
+	} else {
+		led_set_ticks_per_second(1000000 / 1);
 	}
 }
 
