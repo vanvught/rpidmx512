@@ -41,11 +41,11 @@
 
 #define NTP_TIMESTAMP_DELTA 2208988800
 
-#if defined(BARE_METAL)
- #define LOCAL_TIME_YEAR_OFFSET	2000
-#else
+//#if defined(BARE_METAL)
+// #define LOCAL_TIME_YEAR_OFFSET	2000
+//#else
  #define LOCAL_TIME_YEAR_OFFSET	1900
-#endif
+//#endif
 
 enum tUdpPort {
 	UDP_PORT = 123
