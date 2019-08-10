@@ -23,13 +23,15 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 
 #include "h3/rtpmidireader.h"
 
-#include "c/led.h"
+#include "hardwarebaremetal.h"
 
 #include "arm/synchronize.h"
 #include "h3_hs_timer.h"
@@ -45,9 +47,13 @@
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
 
+#include "debug.h"
+
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
+
+static volatile uint32_t nLedToggle = 0;
 
 static volatile uint32_t nMidiQuarterFrameUs = 0;
 static volatile bool IsMidiQuarterFrameMessage = false;
@@ -58,6 +64,16 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
+
+	if (nUpdatesPerSecond >= 24) {
+		if (nLedToggle++ & 0x01) {
+			Hardware::Get()->SetLed(HARDWARE_LED_ON);
+		} else {
+			Hardware::Get()->SetLed(HARDWARE_LED_OFF);
+		}
+	} else {
+		Hardware::Get()->SetLed(HARDWARE_LED_ON);
+	}
 }
 
 static void irq_timer1_midi_handler(uint32_t clo) {
@@ -112,17 +128,15 @@ RtpMidiReader::~RtpMidiReader(void) {
 void RtpMidiReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, irq_timer0_update_handler);
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
-		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
+		irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
 	}
-
-	led_set_ticks_per_second(1000000 / 1);
 }
 
 void RtpMidiReader::Stop(void) {
@@ -155,11 +169,9 @@ void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
 void RtpMidiReader::Run(void) {
 	dmb();
 	if (nUpdatesPerSecond >= 24)  {
-		led_set_ticks_per_second(1000000 / 3);
 	} else {
 		m_tTimeCodeTypePrevious = MIDI_TC_TYPE_UNKNOWN;
 		DisplayMax7219::Get()->ShowSysTime();
-		led_set_ticks_per_second(1000000 / 1);
 	}
 }
 

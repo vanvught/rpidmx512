@@ -37,7 +37,7 @@
 
 #include "network.h"
 
-#include "c/led.h"
+#include "hardwarebaremetal.h"
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -120,7 +120,7 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	m_nHandle(-1),
 	m_nBytesReceived(0),
 	m_bIncrement(false),
-	m_bIsStopped(true)
+	m_bIsStopped(false)
 {
 	assert(pNode != 0);
 	assert(pStartLtcTimeCode != 0);
@@ -183,7 +183,7 @@ void LtcGenerator::Start(void) {
 
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_handler);
+	irq_timer_set(IRQ_TIMER_0, irq_timer0_handler);
 
 	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
@@ -191,7 +191,7 @@ void LtcGenerator::Start(void) {
 
 	if (!s_ptLtcDisabledOutputs->bMidi) {
 
-		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
+		irq_timer_set(IRQ_TIMER_1, irq_timer1_midi_handler);
 
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
 
@@ -208,8 +208,6 @@ void LtcGenerator::Start(void) {
 	}
 
 	LtcLeds::Get()->Show((TTimecodeTypes) m_pStartLtcTimeCode->nType);
-
-	led_set_ticks_per_second(1000000 / 1);
 
 	DEBUG_EXIT
 }
@@ -379,12 +377,6 @@ void LtcGenerator::Update(void) {
 
 void LtcGenerator::Run(void) {
 	Update();
-
-	if (!m_bIsStopped) {
-		led_set_ticks_per_second(1000000 / 3);
-	} else {
-		led_set_ticks_per_second(1000000 / 1);
-	}
 
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;

@@ -7,15 +7,13 @@ Supported board :
 
 Supported input :
 
--     LTC SMPTE
--     TCNet
--     Art-Net
--     rtpMIDI
+-     SMPTE LTC
 -     MIDI
+-     Art-Net
+-     TCNet 
 
 Supported output :
 
--     LTC SMPTE
 -     MIDI
 -     Art-Net
 -     Displays :   
