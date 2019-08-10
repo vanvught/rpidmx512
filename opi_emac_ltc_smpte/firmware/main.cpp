@@ -263,7 +263,7 @@ void notmain(void) {
 
 	display.Printf(3, IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	console_puts("Source : ");
-	display.Printf(4, "S: ");
+	display.SetCursorPos(0,3);
 
 	switch (source) {
 	case LTC_READER_SOURCE_ARTNET:
@@ -363,7 +363,7 @@ void notmain(void) {
 		hw.WatchdogFeed();
 
 		nw.Run();
-		node.Run();
+
 		if (source == LTC_READER_SOURCE_TCNET) {	//FIXME Remove when MASTER is implemented
 			tcnet.Run();
 		}
@@ -395,6 +395,8 @@ void notmain(void) {
 			break;
 		}
 
+		node.Run();
+
 		if (bEnableNtp) {
 			ntpServer.Run();
 		}
@@ -405,6 +407,8 @@ void notmain(void) {
 		if (tLtcDisabledOutputs.bDisplay) {
 			display.Run();
 		}
+
+		lb.Run();
 	}
 }
 
