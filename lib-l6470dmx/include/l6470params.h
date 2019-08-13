@@ -2,7 +2,7 @@
  * @file l6470params.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,34 +30,65 @@
 
 #include "l6470.h"
 
+struct TL6470Params {
+    uint32_t nSetList;
+    float fMinSpeed;
+    float fMaxSpeed;
+    float fAcc;
+    float fDec;
+    uint8_t nKvalHold;
+    uint8_t nKvalRun;
+    uint8_t nKvalAcc;
+    uint8_t nKvalDec;
+    uint8_t nMicroSteps;
+}__attribute__((packed));
+
+enum TL6470ParamsMask {
+	L6470_PARAMS_MASK_MIN_SPEED   = (1 << 0),
+	L6470_PARAMS_MASK_MAX_SPEED   = (1 << 1),
+	L6470_PARAMS_MASK_ACC         = (1 << 2),
+	L6470_PARAMS_MASK_DEC         = (1 << 3),
+	L6470_PARAMS_MASK_KVAL_HOLD   = (1 << 4),
+	L6470_PARAMS_MASK_KVAL_RUN    = (1 << 5),
+	L6470_PARAMS_MASK_KVAL_ACC    = (1 << 6),
+	L6470_PARAMS_MASK_KVAL_DEC    = (1 << 7),
+	L6470_PARAMS_MASK_MICRO_STEPS = (1 << 8)
+};
+
+class L6470ParamsStore {
+public:
+	virtual ~L6470ParamsStore(void);
+
+	virtual void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
+	virtual void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
+};
+
 class L6470Params {
 public:
-	L6470Params(const char *);
+	L6470Params(L6470ParamsStore *pL6470ParamsStore=0);
 	~L6470Params(void);
 
-	void Set(L6470 *);
-	void Dump(void);
+	bool Load(uint8_t nMotorIndex);
+	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-private:
-	bool isMaskSet(uint32_t) const;
+	bool Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	bool Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+
+	void Set(L6470 *);
+
+	void Dump(void);
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
+	bool isMaskSet(uint32_t) const;
 
 private:
-    uint32_t m_bSetList;
-    float m_fMinSpeed;
-    float m_fMaxSpeed;
-    float m_fAcc;
-    float m_fDec;
-    uint8_t m_nKvalHold;
-    uint8_t m_nKvalRun;
-    uint8_t m_nKvalAcc;
-    uint8_t m_nKvalDec;
-    uint8_t m_nMicroSteps;
+	L6470ParamsStore *m_pL6470ParamsStore;
+    struct TL6470Params m_tL6470Params;
+    char m_aFileName[16];
 };
 
 #endif /* L6470PARAMS_H_ */

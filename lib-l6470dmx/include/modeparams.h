@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,35 +30,87 @@
 
 #include "l6470.h"
 
+struct TModeParams {
+    uint32_t nSetList;
+    uint8_t nDmxMode;
+    uint16_t nDmxStartAddress;
+    uint32_t nMaxSteps;
+    TL6470Action tSwitchAction;
+    TL6470Direction tSwitchDir;
+    float fSwitchStepsPerSec;
+    bool bSwitch;
+}__attribute__((packed));
+
+enum TModeParamsMask {
+	MODE_PARAMS_MASK_DMX_MODE = (1 << 0),
+	MODE_PARAMS_MASK_DMX_START_ADDRESS = (1 << 1),
+	MODE_PARAMS_MASK_MAX_STEPS = (1 << 2),
+	MODE_PARAMS_MASK_SWITCH_ACT = (1 << 3),
+	MODE_PARAMS_MASK_SWITCH_DIR = (1 << 4),
+	MODE_PARAMS_MASK_SWITCH_SPS = (1 << 5),
+	MODE_PARAMS_MASK_SWITCH = (1 << 6)
+};
+
+class ModeParamsStore {
+public:
+	virtual ~ModeParamsStore(void);
+
+	virtual void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
+	virtual void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams)=0;
+};
+
 class ModeParams {
 public:
-	ModeParams(const char *);
+	ModeParams(ModeParamsStore *pModeParamsStore=0);
 	~ModeParams(void);
+
+	bool Load(uint8_t nMotorIndex);
+	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+
+	bool Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	bool Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump(void);
 
-	uint32_t GetMaxSteps(void) const;
-	TL6470Action GetSwitchAction(void) const;
-	TL6470Direction GetSwitchDir(void) const;
-	float GetSwitchStepsPerSec(void) const;
-	bool HasSwitch(void) const;
+	uint16_t GetDmxMode(void) {
+		return m_tModeParams.nDmxMode;
+	}
+
+	uint16_t GetDmxStartAddress(void) {
+		return m_tModeParams.nDmxStartAddress;
+	}
+
+	uint32_t GetMaxSteps(void) {
+		return m_tModeParams.nMaxSteps;
+	}
+
+	TL6470Action GetSwitchAction(void) {
+		return m_tModeParams.tSwitchAction;
+	}
+
+	TL6470Direction GetSwitchDir(void) {
+		return m_tModeParams.tSwitchDir;
+	}
+
+	float GetSwitchStepsPerSec(void) {
+		return m_tModeParams.fSwitchStepsPerSec;
+	}
+
+	bool HasSwitch(void) {
+		return m_tModeParams.bSwitch;
+	}
 
 private:
-	bool isMaskSet(uint32_t) const;
+    void callbackFunction(const char *s);
+	bool isMaskSet(uint32_t nMask) const;
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *s);
-
-private:
-    uint32_t m_bSetList;
-    uint32_t m_nMaxSteps;
-    TL6470Action m_tSwitchAction;
-    TL6470Direction m_tSwitchDir;
-    float m_fSwitchStepsPerSec;
-    bool m_bSwitch;
+    ModeParamsStore *m_pModeParamsStore;
+    struct TModeParams m_tModeParams;
+    char m_aFileName[16];
 };
 
 #endif /* MODEPARAMS_H_ */

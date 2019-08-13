@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode.h
+ * @file sparkfundmxparamsconst.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
-
 #include <stdint.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED
-};
+#include "sparkfundmxparamsconst.h"
 
-class L6470DmxMode {
-public:
-	virtual ~L6470DmxMode(void);
-
-	virtual void InitSwitch(void);
-	virtual void InitPos(void);
-
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
-
-	virtual void HandleBusy(void);
-	virtual bool BusyCheck(void);
-
-	virtual void Data(const uint8_t *)= 0;
-};
-
-#endif /* L6470DMXMODE_H_ */
+alignas(uint32_t) const char SparkFunDmxParamsConst::FILE_NAME[] = "sparkfun.txt";
+alignas(uint32_t) const char SparkFunDmxParamsConst::POSITION[] = "sparkfun_position";
+#if !defined (H3)
+ alignas(uint32_t) const char SparkFunDmxParamsConst::SPI_CS[] = "sparkfun_spi_cs";
+#endif
+alignas(uint32_t) const char SparkFunDmxParamsConst::RESET_PIN[] = "sparkfun_reset_pin";
+alignas(uint32_t) const char SparkFunDmxParamsConst::BUSY_PIN[] = "sparkfun_busy_pin";

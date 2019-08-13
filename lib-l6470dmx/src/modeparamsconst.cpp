@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode.h
+ * @file modeparamsconst.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
-
 #include <stdint.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED
-};
+#include "modeparamsconst.h"
 
-class L6470DmxMode {
-public:
-	virtual ~L6470DmxMode(void);
-
-	virtual void InitSwitch(void);
-	virtual void InitPos(void);
-
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
-
-	virtual void HandleBusy(void);
-	virtual bool BusyCheck(void);
-
-	virtual void Data(const uint8_t *)= 0;
-};
-
-#endif /* L6470DMXMODE_H_ */
+alignas(uint32_t) const char ModeParamsConst::DMX_MODE[] = "dmx_mode";
+alignas(uint32_t) const char ModeParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
+//
+alignas(uint32_t) const char ModeParamsConst::MAX_STEPS[] = "mode_max_steps";
+alignas(uint32_t) const char ModeParamsConst::SWITCH_ACT[] = "mode_switch_act";
+alignas(uint32_t) const char ModeParamsConst::SWITCH_DIR[] = "mode_switch_dir";
+alignas(uint32_t) const char ModeParamsConst::SWITCH_SPS[] = "mode_switch_sps";
+alignas(uint32_t) const char ModeParamsConst::SWITCH[] = "mode_switch";

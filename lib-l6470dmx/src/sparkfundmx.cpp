@@ -29,6 +29,9 @@
 #include <assert.h>
 
 #include "sparkfundmx.h"
+#include "sparkfundmxparams.h"
+#include "sparkfundmxparamsconst.h"
+
 #include "lightset.h"
 
 #include "readconfigfile.h"
@@ -52,80 +55,34 @@
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-#if !defined (H3)
- #define GPIO_BUSY_IN		GPIO_EXT_35
- #define GPIO_RESET_OUT 	GPIO_EXT_38
-#else
- #define GPIO_BUSY_IN		GPIO_EXT_11
- #define GPIO_RESET_OUT 	GPIO_EXT_13
-#endif
-
-static const char SPARKFUN_PARAMS_POSITION[] ALIGNED = "sparkfun_position";
-#if !defined (H3)
-static const char SPARKFUN_PARAMS_SPI_CS[] ALIGNED = "sparkfun_spi_cs";
-#endif
-static const char SPARKFUN_PARAMS_RESET_PIN[] ALIGNED = "sparkfun_reset_pin";
-static const char SPARKFUN_PARAMS_BUSY_PIN[] ALIGNED = "sparkfun_busy_pin";
-
-static const char PARAMS_DMX_MODE[] ALIGNED = "dmx_mode";
-static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
-
-void SparkFunDmx::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((SparkFunDmx *) p)->callbackFunction(s);
-}
-
-void SparkFunDmx::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
-
-	uint8_t value8;
-	uint16_t value16;
-
-	if (Sscan::Uint8(pLine, PARAMS_DMX_MODE, &value8) == SSCAN_OK) {
-		m_nDmxMode = value8;
-	} else if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		m_nDmxStartAddressMode = value16;
-	} else if (sscan_uint8_t(pLine, SPARKFUN_PARAMS_POSITION, &value8) == SSCAN_OK) {
-		m_nPosition = value8;
-		m_bIsPositionSet = true;
-	}
-#if !defined (H3)
-	else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_SPI_CS, &value8) == SSCAN_OK) {
-		m_nSpiCs = value8;
-		m_bIsSpiCsSet = true;
-	}
-#endif
-	else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_RESET_PIN, &value8) == SSCAN_OK) {
-		m_nResetPin = value8;
-		m_bIsResetSet = true;
-	} else if (Sscan::Uint8(pLine, SPARKFUN_PARAMS_BUSY_PIN, &value8) == SSCAN_OK) {
-		m_nBusyPin = value8;
-		m_bIsBusyPinSet = true;
-	}
-}
-
 SparkFunDmx::SparkFunDmx(void): m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxFootprint(0) {
 	DEBUG_ENTRY;
 
-	m_nPosition = 0;
-	m_nSpiCs = SPI_CS0;
-	m_nResetPin = GPIO_RESET_OUT;
-	m_nBusyPin = GPIO_BUSY_IN;
+	m_nGlobalSpiCs = SPI_CS0;
+	m_nGlobalResetPin = GPIO_RESET_OUT;
+	m_nGlobalBusyPin = GPIO_BUSY_IN;
 
-	m_bIsPositionSet = false;
 #if !defined (H3)
-	m_bIsSpiCsSet = false;
+	m_bIsGlobalSpiCsSet = false;
 #else
-	m_bIsSpiCsSet = true;
+	m_bIsGlobalSpiCsSet = true;
 #endif
-	m_bIsResetSet = false;
-	m_bIsBusyPinSet = false;
+	m_bIsGlobalResetSet = false;
+	m_bIsGlobalBusyPinSet = false;
+
+	m_nLocalPosition = 0;
+	m_nLocalSpiCs = SPI_CS0;
+	m_nLocalResetPin = GPIO_RESET_OUT;
+	m_nLocalBusyPin = GPIO_BUSY_IN;
+
+	m_bIsLocalPositionSet = false;
+#if !defined (H3)
+	m_bIsLocalSpiCsSet = false;
+#else
+	m_bIsLocalSpiCsSet = true;
+#endif
+	m_bIsLocalResetSet = false;
+	m_bIsLocalBusyPinSet = false;
 
 	m_nDmxMode = L6470DMXMODE_UNDEFINED;
 	m_nDmxStartAddressMode = 0;
@@ -195,150 +152,140 @@ void SparkFunDmx::Stop(uint8_t nPort) {
 void SparkFunDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 #if !defined (H3)
-	m_bIsSpiCsSet = false;
+	m_bIsGlobalSpiCsSet = false;
 #endif
-	m_bIsResetSet = false;
-	m_bIsBusyPinSet = false;
+	m_bIsGlobalResetSet = false;
+	m_bIsGlobalBusyPinSet = false;
 
-	ReadConfigFile configfile(SparkFunDmx::staticCallbackFunction, this);
+	SparkFunDmxParams sparkFunDmxParams;
 
-	if (configfile.Read("sparkfun.txt")) {
-#ifndef NDEBUG
-		printf("\'sparkfun.txt\' (global settings):\n");
-#if !defined (H3)
-		if (m_bIsSpiCsSet) {
-			printf("\tSPI CS : %d\n", m_nSpiCs);
-		}
-#endif
-		if (m_bIsResetSet) {
-			printf("\tReset pin: %d\n", m_nResetPin);
-		}
-
-		if (m_bIsBusyPinSet) {
-			printf("\tBusy pin: %d\n", m_nBusyPin);
-		}
-#endif
+	if (sparkFunDmxParams.Load()) {
+		sparkFunDmxParams.SetGlobal(this);
+		sparkFunDmxParams.Dump();
 	}
 
-	if (m_bIsBusyPinSet) {
-		FUNC_PREFIX(gpio_fsel(m_nBusyPin, GPIO_FSEL_INPUT));
+	if (m_bIsGlobalBusyPinSet) {
+		FUNC_PREFIX(gpio_fsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT));
 	}
 
-	FUNC_PREFIX(gpio_fsel(m_nResetPin, GPIO_FSEL_OUTPUT));
-	FUNC_PREFIX(gpio_set(m_nResetPin));
+	FUNC_PREFIX(gpio_fsel(m_nGlobalResetPin, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_set(m_nGlobalResetPin));
 
-	FUNC_PREFIX(gpio_clr(m_nResetPin));
+	FUNC_PREFIX(gpio_clr(m_nGlobalResetPin));
 	udelay(10000);
-	FUNC_PREFIX(gpio_set(m_nResetPin));
+	FUNC_PREFIX(gpio_set(m_nGlobalResetPin));
 	udelay(10000);
 
 	FUNC_PREFIX(spi_begin());
 
-	char fileName[] = "motor%.txt";
+	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		m_bIsLocalPositionSet = false;
+		m_bIsLocalSpiCsSet = true;
+		m_bIsLocalResetSet = false;
+		m_bIsLocalBusyPinSet = false;
+
+		if (sparkFunDmxParams.Load(i)) {
+			sparkFunDmxParams.SetLocal(this);
+			sparkFunDmxParams.Dump(i);
+
+			if (m_bIsLocalPositionSet) {
+				const uint8_t nSpiCs = m_bIsLocalSpiCsSet ? m_nLocalSpiCs : m_nGlobalSpiCs;
+				const uint8_t nResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
+				const uint8_t nBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
+
+				if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet) {
+					m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin, nBusyPin);
+				} else {
+					m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin);
+				}
+			}
+		} else {
+#ifndef NDEBUG
+			printf("Configuration file : motor%c.txt not found\n", (char) i + '0');
+#endif
+		}
+	}
+
+#ifndef NDEBUG
+	printf("NumBoards : %d\n", (int) AutoDriver::getNumBoards());
+#endif
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-
-		fileName[5] = (char) i + '0';
-
-		m_bIsPositionSet = false;
-
-		if (configfile.Read(fileName)) {
+		//if (configfile.Read(fileName)) {
 #ifndef NDEBUG
 			printf("Motor %d:\n", i);
 #endif
-			if (m_bIsPositionSet && m_bIsSpiCsSet) {
+			if (m_pAutoDriver[i] != 0) {
+				m_pModeParams[i] = new ModeParams;
+				assert(m_pModeParams[i] != 0);
+				m_pModeParams[i]->Load(i);
+				m_pModeParams[i]->Dump();
+
+				m_nDmxMode = m_pModeParams[i]->GetDmxMode();
+				m_nDmxStartAddressMode = m_pModeParams[i]->GetDmxStartAddress();
 #ifndef NDEBUG
-				printf("\t%s=%d\n", SPARKFUN_PARAMS_POSITION, m_nPosition);
-#if !defined (H3)
-				printf("\t%s=%d\n", SPARKFUN_PARAMS_SPI_CS, m_nSpiCs);
-#endif
-				printf("\t%s=%d\n", SPARKFUN_PARAMS_RESET_PIN, m_nResetPin);
-				if(m_bIsBusyPinSet) {
-					printf("\t%s=%d\n", SPARKFUN_PARAMS_BUSY_PIN, m_nBusyPin);
-				}
 				printf("\t-----------------------------\n");
-				printf("\t%s=%d (DMX footprint=%d)\n", PARAMS_DMX_MODE, m_nDmxMode, L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode));
-				printf("\t%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddressMode);
+				printf("\tm_nDmxMode=%d (DMX footprint=%d)\n", m_nDmxMode, L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode));
+				printf("\tm_nDmxStartAddressMode=%d\n", m_nDmxStartAddressMode);
 				printf("\t=============================\n");
 #endif
+
 				if ((m_nDmxStartAddressMode <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+					if (m_pAutoDriver[i]->IsConnected()) {
+						m_pAutoDriver[i]->setMotorNumber(i);
+						m_pAutoDriver[i]->Dump();
 
-					if (m_bIsBusyPinSet) {
-						m_pAutoDriver[i] = new AutoDriver(m_nPosition, m_nSpiCs, m_nResetPin, m_nBusyPin);
-					} else {
-						m_pAutoDriver[i] = new AutoDriver(m_nPosition, m_nSpiCs, m_nResetPin);
-					}
+						m_pMotorParams[i] = new MotorParams;
+						assert(m_pMotorParams[i] != 0);
+						m_pMotorParams[i]->Load(i);
+						m_pMotorParams[i]->Dump();
+						m_pMotorParams[i]->Set(m_pAutoDriver[i]);
 
-					assert(m_pAutoDriver[i] != 0);
+						L6470Params l6470Params;
+						l6470Params.Load(i);
+						l6470Params.Dump();
+						l6470Params.Set(m_pAutoDriver[i]);
 
-					if (m_pAutoDriver[i] != 0) {
-						if (m_pAutoDriver[i]->IsConnected()) {
-							m_pAutoDriver[i]->setMotorNumber(i);
-							m_pAutoDriver[i]->Dump();
+						m_pAutoDriver[i]->Dump();
 
-							m_pMotorParams[i] = new MotorParams(fileName);
-							assert(m_pMotorParams[i] != 0);
-							m_pMotorParams[i]->Dump();
-							m_pMotorParams[i]->Set(m_pAutoDriver[i]);
+						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
+						assert(m_pL6470DmxModes[i] != 0);
 
-							L6470Params l6470Params(fileName);
-							l6470Params.Dump();
-							l6470Params.Set(m_pAutoDriver[i]);
+						if (m_pL6470DmxModes[i] != 0) {
+							if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+								m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
+								m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
+							} else {
+								const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
+								m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
 
-							m_pAutoDriver[i]->Dump();
-
-							m_pModeParams[i] = new ModeParams(fileName);
-							assert(m_pModeParams[i] != 0);
-							m_pModeParams[i]->Dump();
-
-							m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
-							assert(m_pL6470DmxModes[i] != 0);
-
-							if (m_pL6470DmxModes[i] != 0) {
-								if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
-									m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
-									m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
-								} else {
-									const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
-									m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
-
-									const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
-									m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
-								}
-#ifndef NDEBUG
-								printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
-								printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
-#endif
+								const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
+								m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 							}
-						} else {
-							delete m_pAutoDriver[i];
-							m_pAutoDriver[i] = 0;
-							printf("Communication issues; check SPI configuration and cables\n");
+#ifndef NDEBUG
+							printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
+							printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+#endif
 						}
 					} else {
-						printf("Internal error!\n");
+						delete m_pAutoDriver[i];
+						m_pAutoDriver[i] = 0;
+						printf("Communication issues; check SPI configuration and cables\n");
 					}
+				} else {
+					printf("Configuration error!\n");
 				}
+#ifndef NDEBUG
+				printf("Motor %d --------- end ---------\n", i);
+#endif
 			} else {
-				if(!m_bIsPositionSet) {
-					printf("Missing %s=\n", SPARKFUN_PARAMS_POSITION);
-				}
-#if !defined (H3)
-				if(!m_bIsSpiCsSet) {
-					printf("Missing %s=\n", SPARKFUN_PARAMS_SPI_CS);
-				}
-#else
-				assert(m_bIsSpiCsSet);
-#endif
+				printf("Skipping Motor %d\n", i);
 			}
+		//} else {
 #ifndef NDEBUG
-			printf("Motor %d: --------- end ---------\n", i);
+		//	printf(" Skipping Motor %d\n", i);
 #endif
-		} else {
-#ifndef NDEBUG
-			printf("Configuration file : %s not found\n", fileName);
-#endif
-		}
+		//}
 	}
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -360,9 +307,6 @@ void SparkFunDmx::ReadConfigFiles(void) {
 		}
 	}
 
-#ifndef NDEBUG
-	printf("Motors connected : %d\n", (int) AutoDriver::getNumBoards());
-#endif
 	DEBUG_EXIT;
 }
 

@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode.h
+ * @file l6470paramsconst.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
+#ifndef L6470PARAMSCONST_H_
+#define L6470PARAMSCONST_H_
 
 #include <stdint.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED
-};
-
-class L6470DmxMode {
+class L6470ParamsConst {
 public:
-	virtual ~L6470DmxMode(void);
-
-	virtual void InitSwitch(void);
-	virtual void InitPos(void);
-
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
-
-	virtual void HandleBusy(void);
-	virtual bool BusyCheck(void);
-
-	virtual void Data(const uint8_t *)= 0;
+	alignas(uint32_t) static const char MIN_SPEED[];
+	alignas(uint32_t) static const char MAX_SPEED[];
+	alignas(uint32_t) static const char ACC[];
+	alignas(uint32_t) static const char DEC[];
+	alignas(uint32_t) static const char KVAL_HOLD[];
+	alignas(uint32_t) static const char KVAL_RUN[];
+	alignas(uint32_t) static const char KVAL_ACC[];
+	alignas(uint32_t) static const char KVAL_DEC[];
+	alignas(uint32_t) static const char MICRO_STEPS[];
 };
 
-#endif /* L6470DMXMODE_H_ */
+#endif /* L6470PARAMSCONST_H_ */

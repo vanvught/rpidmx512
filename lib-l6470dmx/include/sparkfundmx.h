@@ -37,7 +37,18 @@
 
 #include "autodriver.h"
 
+#include "hal_spi.h"
+#include "hal_gpio.h"
+
 #define SPARKFUN_DMX_MAX_MOTORS	4
+
+#if !defined (H3)
+ #define GPIO_BUSY_IN		GPIO_EXT_35
+ #define GPIO_RESET_OUT 	GPIO_EXT_38
+#else
+ #define GPIO_BUSY_IN		GPIO_EXT_11
+ #define GPIO_RESET_OUT 	GPIO_EXT_13
+#endif
 
 class SparkFunDmx: public LightSet {
 public:
@@ -58,14 +69,43 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
+	void SetGlobalSpiCs(uint8_t nSpiCs) {
+		m_nGlobalSpiCs = nSpiCs;
+		m_bIsGlobalSpiCsSet = true;
+	}
+
+	void SetGlobalResetPin(uint8_t nResetPin) {
+		m_nGlobalResetPin = nResetPin;
+		m_bIsGlobalResetSet = true;
+	}
+
+	void SetGlobalBusyPin(uint8_t nBusyPin) {
+		m_nGlobalBusyPin = nBusyPin;
+		m_bIsGlobalBusyPinSet = true;
+	}
+
+	void SetLocalPosition(uint8_t nPosition) {
+		m_nLocalPosition = nPosition;
+		m_bIsLocalPositionSet = true;
+	}
+
+	void SetLocalSpiCs(uint8_t nSpiCs) {
+		m_nLocalSpiCs = nSpiCs;
+		m_bIsLocalSpiCsSet = true;
+	}
+
+	void SetLocalResetPin(uint8_t nResetPin) {
+		m_nLocalResetPin = nResetPin;
+		m_bIsLocalResetSet = true;
+	}
+
+	void SetLocalBusyPin(uint8_t nBusyPin) {
+		m_nLocalBusyPin = nBusyPin;
+		m_bIsLocalBusyPinSet = true;
+	}
+
 public:
 	void ReadConfigFiles(void);
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *s);
 
 private:
 	AutoDriver *m_pAutoDriver[SPARKFUN_DMX_MAX_MOTORS];
@@ -73,18 +113,26 @@ private:
 	ModeParams *m_pModeParams[SPARKFUN_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SPARKFUN_DMX_MAX_MOTORS];
 
-	uint8_t m_nPosition;
-	uint8_t m_nSpiCs;
-	uint8_t m_nResetPin;
-	uint8_t m_nBusyPin;
+	uint8_t m_nGlobalSpiCs;
+	uint8_t m_nGlobalResetPin;
+	uint8_t m_nGlobalBusyPin;
+
+	bool m_bIsGlobalSpiCsSet;
+	bool m_bIsGlobalResetSet;
+	bool m_bIsGlobalBusyPinSet;
+
+	uint8_t m_nLocalPosition;
+	uint8_t m_nLocalSpiCs;
+	uint8_t m_nLocalResetPin;
+	uint8_t m_nLocalBusyPin;
+
+	bool m_bIsLocalPositionSet;
+	bool m_bIsLocalSpiCsSet;
+	bool m_bIsLocalResetSet;
+	bool m_bIsLocalBusyPinSet;
 
 	uint8_t m_nDmxMode;
 	uint16_t m_nDmxStartAddressMode;
-
-	bool m_bIsPositionSet;
-	bool m_bIsSpiCsSet;
-	bool m_bIsResetSet;
-	bool m_bIsBusyPinSet;
 
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nDmxFootprint;

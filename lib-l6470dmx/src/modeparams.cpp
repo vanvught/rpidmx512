@@ -2,7 +2,7 @@
  * @file modeparams.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,89 +30,213 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "modeparams.h"
+#include "modeparamsconst.h"
+
+#include "l6470dmxmode.h"
+#include "l6470dmxconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
-#define SET_MAX_STEPS_MASK		(1 << 0)
-#define SET_SWITCH_ACT_MASK		(1 << 1)
-#define SET_SWITCH_DIR_MASK		(1 << 2)
-#define SET_SWITCH_SPS_MASK		(1 << 3)
-#define SET_SWITCH_MASK			(1 << 4)
+#include "debug.h"
 
-static const char MODE_PARAMS_MAX_STEPS[] ALIGNED = "mode_max_steps";
-static const char MODE_PARAMS_SWITCH_ACT[] ALIGNED = "mode_switch_act";
-static const char MODE_PARAMS_SWITCH_DIR[] ALIGNED = "mode_switch_dir";
-static const char MODE_PARAMS_SWITCH_SPS[] ALIGNED = "mode_switch_sps";
-static const char MODE_PARAMS_SWITCH[] ALIGNED = "mode_switch";
+ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pModeParamsStore) {
+	uint8_t *p = (uint8_t*) &m_tModeParams;
 
-ModeParams::ModeParams(const char *pFileName):
-		m_bSetList(0),
-		m_nMaxSteps (0),
-		m_tSwitchAction(L6470_ABSPOS_RESET),
-		m_tSwitchDir(L6470_DIR_REV),
-		m_fSwitchStepsPerSec(0),
-		m_bSwitch(true)
-{
-	assert(pFileName != 0);
+	for (uint32_t i = 0; i < sizeof(struct TModeParams); i++) {
+		*p++ = 0;
+	}
 
-	ReadConfigFile configfile(ModeParams::staticCallbackFunction, this);
-	configfile.Read(pFileName);
+	m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
+	m_tModeParams.tSwitchDir = L6470_DIR_REV;
+	m_tModeParams.bSwitch = true;
+
+	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
+	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
+	strncpy(m_aFileName, src, sizeof(m_aFileName));
 }
 
 ModeParams::~ModeParams(void) {
+	m_tModeParams.nSetList = 0;
 }
 
-uint32_t ModeParams::GetMaxSteps(void) const {
-	return m_nMaxSteps;
+bool ModeParams::Load(uint8_t nMotorIndex) {
+	m_aFileName[5] = (char) nMotorIndex + '0';
+
+	m_tModeParams.nSetList = 0;
+
+	ReadConfigFile configfile(ModeParams::staticCallbackFunction, this);
+
+	if (configfile.Read(m_aFileName)) {
+		// There is a configuration file
+		if (m_pModeParamsStore != 0) {
+			m_pModeParamsStore->Update(nMotorIndex, &m_tModeParams);
+		}
+	} else if (m_pModeParamsStore != 0) {
+		m_pModeParamsStore->Copy(nMotorIndex, &m_tModeParams);
+	} else {
+		return false;
+	}
+
+	return true;
 }
 
-TL6470Action ModeParams::GetSwitchAction(void) const {
-	return m_tSwitchAction;
+void ModeParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pModeParamsStore != 0);
+
+	if (m_pModeParamsStore == 0) {
+		return;
+	}
+
+	m_tModeParams.nSetList = 0;
+
+	ReadConfigFile config(ModeParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pModeParamsStore->Update(nMotorIndex, &m_tModeParams);
 }
 
-TL6470Direction ModeParams::GetSwitchDir(void) const {
-	return m_tSwitchDir;
+void ModeParams::callbackFunction(const char *pLine) {
+	assert(pLine != 0);
+
+	float f;
+	char value[128];
+	uint8_t len;
+	uint8_t value8;
+
+	if (Sscan::Uint8(pLine, ModeParamsConst::DMX_MODE, &m_tModeParams.nDmxMode) == SSCAN_OK) {
+		m_tModeParams.nSetList |= MODE_PARAMS_MASK_DMX_MODE;
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, ModeParamsConst::DMX_START_ADDRESS, &m_tModeParams.nDmxStartAddress) == SSCAN_OK) {
+		m_tModeParams.nSetList |= MODE_PARAMS_MASK_DMX_START_ADDRESS;
+		return;
+	}
+
+	if (Sscan::Uint32(pLine, ModeParamsConst::MAX_STEPS, &m_tModeParams.nMaxSteps) == SSCAN_OK) {
+		m_tModeParams.nSetList |= MODE_PARAMS_MASK_MAX_STEPS;
+		return;
+	}
+
+	len = 5; //  copy, reset
+	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_ACT, value, &len) == SSCAN_OK) {
+		if (len == 4) {
+			if (memcmp(value, "copy", 4) == 0) {
+				m_tModeParams.tSwitchAction = L6470_ABSPOS_COPY;
+				m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH_ACT;
+				return;
+			}
+		}
+		if (len == 5) {
+			if (memcmp(value, "reset", 5) == 0) {
+				m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
+				m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH_ACT;
+				return;
+			}
+		}
+	}
+
+	len = 7; //  reverse, forward
+	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_DIR, value, &len) == SSCAN_OK) {
+		if (len != 7) {
+			return;
+		}
+		if (memcmp(value, "forward", 7) == 0) {
+			m_tModeParams.tSwitchDir = L6470_DIR_FWD;
+			m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH_DIR;
+			return;
+		}
+		if (memcmp(value, "reverse", 7) == 0) {
+			m_tModeParams.tSwitchDir = L6470_DIR_REV;
+			m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH_DIR;
+			return;
+		}
+	}
+
+	if (Sscan::Float(pLine, ModeParamsConst::SWITCH_SPS, &f) == SSCAN_OK) {
+		m_tModeParams.fSwitchStepsPerSec = f;
+		m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH_SPS;
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, ModeParamsConst::SWITCH, &value8) == SSCAN_OK) {
+		if (value8 == 0) {
+			m_tModeParams.bSwitch = false;
+			m_tModeParams.nSetList |= MODE_PARAMS_MASK_SWITCH;
+		}
+	}
 }
 
-float ModeParams::GetSwitchStepsPerSec(void) const {
-	return m_fSwitchStepsPerSec;
+bool ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+	assert(pBuffer != 0);
+
+	m_aFileName[5] = (char) nMotorIndex + '0';
+
+	if (ptModeParams != 0) {
+		memcpy(&m_tModeParams, ptModeParams, sizeof(struct TModeParams));
+	} else {
+		m_pModeParamsStore->Copy(nMotorIndex, &m_tModeParams);
+	}
+
+	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
+
+	bool isAdded = builder.Add(ModeParamsConst::DMX_MODE, (uint32_t) m_tModeParams.nDmxMode, isMaskSet(MODE_PARAMS_MASK_DMX_MODE));
+	isAdded &= builder.Add(ModeParamsConst::DMX_START_ADDRESS, (uint32_t) m_tModeParams.nDmxStartAddress, isMaskSet(MODE_PARAMS_MASK_DMX_START_ADDRESS));
+
+	nSize = builder.GetSize();
+
+	return isAdded;
 }
 
-bool ModeParams::HasSwitch(void) const {
-	return m_bSwitch;
+bool ModeParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+
+	if (m_pModeParamsStore == 0) {
+		nSize = 0;
+		return false;
+	}
+
+	return Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
 }
 
 void ModeParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_bSetList == 0) {
+	if (m_tModeParams.nSetList == 0) {
 		return;
 	}
 
-	if(isMaskSet(SET_MAX_STEPS_MASK)) {
-		printf("%s=%d steps\n", MODE_PARAMS_MAX_STEPS, m_nMaxSteps);
+	if (isMaskSet(MODE_PARAMS_MASK_DMX_MODE)) {
+		printf(" %s=%d\n", ModeParamsConst::DMX_MODE, m_tModeParams.nDmxMode);
 	}
 
-	if(isMaskSet(SET_SWITCH_ACT_MASK)) {
-		printf("%s=%s\n", MODE_PARAMS_SWITCH_ACT, m_tSwitchAction == L6470_ABSPOS_RESET ? "reset" : "copy");
+	if (isMaskSet(MODE_PARAMS_MASK_DMX_START_ADDRESS)) {
+		printf(" %s=%d\n", ModeParamsConst::DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress);
+	}
+
+	if (isMaskSet(MODE_PARAMS_MASK_MAX_STEPS)) {
+		printf(" %s=%d steps\n", ModeParamsConst::MAX_STEPS, m_tModeParams.nMaxSteps);
+	}
+
+	if(isMaskSet(MODE_PARAMS_MASK_SWITCH_ACT)) {
+		printf(" %s=%s\n", ModeParamsConst::SWITCH_ACT, m_tModeParams.tSwitchAction == L6470_ABSPOS_RESET ? "reset" : "copy");
 
 	}
 
-	if(isMaskSet(SET_SWITCH_DIR_MASK)) {
-		printf("%s=%s\n", MODE_PARAMS_SWITCH_DIR, m_tSwitchDir == L6470_DIR_REV ? "reverse" : "forward");
+	if(isMaskSet(MODE_PARAMS_MASK_SWITCH_DIR)) {
+		printf(" %s=%s\n", ModeParamsConst::SWITCH_DIR, m_tModeParams.tSwitchDir == L6470_DIR_REV ? "reverse" : "forward");
 	}
 
-	if(isMaskSet(SET_SWITCH_SPS_MASK)) {
-		printf("%s=%f step/s\n", MODE_PARAMS_SWITCH_SPS, m_fSwitchStepsPerSec);
+	if(isMaskSet(MODE_PARAMS_MASK_SWITCH_SPS)) {
+		printf(" %s=%f step/s\n", ModeParamsConst::SWITCH_SPS, m_tModeParams.fSwitchStepsPerSec);
 	}
 
-	if(isMaskSet(SET_SWITCH_MASK)) {
-		printf("%s={%s}\n", MODE_PARAMS_SWITCH, m_bSwitch ? "Yes": "No");
+	if(isMaskSet(MODE_PARAMS_MASK_SWITCH)) {
+		printf(" %s={%s}\n", ModeParamsConst::SWITCH, m_tModeParams.bSwitch ? "Yes": "No");
 	}
 #endif
 }
@@ -124,69 +248,7 @@ void ModeParams::staticCallbackFunction(void *p, const char *s) {
 	((ModeParams *) p)->callbackFunction(s);
 }
 
-void ModeParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
-
-	float f;
-	char value[128];
-	uint8_t len;
-	uint8_t value8;
-
-	if (Sscan::Uint32(pLine, MODE_PARAMS_MAX_STEPS, &m_nMaxSteps) == SSCAN_OK) {
-		m_bSetList |= SET_MAX_STEPS_MASK;
-		return;
-	}
-
-
-	len = 5; //  copy, reset
-	if (Sscan::Char(pLine, MODE_PARAMS_SWITCH_ACT, value, &len) == SSCAN_OK) {
-		if (len == 4) {
-			if (memcmp(value, "copy", 4) == 0) {
-				m_tSwitchAction = L6470_ABSPOS_COPY;
-				m_bSetList |= SET_SWITCH_ACT_MASK;
-				return;
-			}
-		}
-		if (len == 5) {
-			if (memcmp(value, "reset", 5) == 0) {
-				m_tSwitchAction = L6470_ABSPOS_RESET;
-				m_bSetList |= SET_SWITCH_ACT_MASK;
-				return;
-			}
-		}
-	}
-
-	len = 7; //  reverse, forward
-	if (Sscan::Char(pLine, MODE_PARAMS_SWITCH_DIR, value, &len) == SSCAN_OK) {
-		if (len != 7) {
-			return;
-		}
-		if (memcmp(value, "forward", 7) == 0) {
-			m_tSwitchDir = L6470_DIR_FWD;
-			m_bSetList |= SET_SWITCH_DIR_MASK;
-			return;
-		}
-		if (memcmp(value, "reverse", 7) == 0) {
-			m_tSwitchDir = L6470_DIR_REV;
-			m_bSetList |= SET_SWITCH_DIR_MASK;
-			return;
-		}
-	}
-
-	if (Sscan::Float(pLine, MODE_PARAMS_SWITCH_SPS, &f) == SSCAN_OK) {
-		m_fSwitchStepsPerSec = f;
-		m_bSetList |= SET_SWITCH_SPS_MASK;
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, MODE_PARAMS_SWITCH, &value8) == SSCAN_OK) {
-		if (value8 == 0) {
-			m_bSwitch = false;
-			m_bSetList |= SET_SWITCH_MASK;
-		}
-	}
+bool ModeParams::isMaskSet(uint32_t nMask) const {
+	return (m_tModeParams.nSetList & nMask) == nMask;
 }
 
-bool ModeParams::isMaskSet(uint32_t mask) const {
-	return (m_bSetList & mask) == mask;
-}

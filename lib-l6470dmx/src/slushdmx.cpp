@@ -392,19 +392,22 @@ void SlushDmx::ReadConfigFiles(void) {
 						nMotorsConnected++;
 						m_pSlushMotor[i]->Dump();
 
-						m_pMotorParams[i] = new MotorParams(fileName);
+						m_pMotorParams[i] = new MotorParams;
 						assert(m_pMotorParams[i] != 0);
+						m_pMotorParams[i]->Load(i);
 						m_pMotorParams[i]->Dump();
 						m_pMotorParams[i]->Set(m_pSlushMotor[i]);
 
-						L6470Params l6470Params(fileName);
+						L6470Params l6470Params;
+						l6470Params.Load(i);
 						l6470Params.Dump();
 						l6470Params.Set(m_pSlushMotor[i]);
 
 						m_pSlushMotor[i]->Dump();
 
-						m_pModeParams[i] = new ModeParams(fileName);
+						m_pModeParams[i] = new ModeParams;
 						assert(m_pModeParams[i] != 0);
+						m_pModeParams[i]->Load(i);
 						m_pModeParams[i]->Dump();
 
 						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pSlushMotor[i], m_pMotorParams[i], m_pModeParams[i]);

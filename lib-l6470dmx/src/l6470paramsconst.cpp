@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode.h
+ * @file l6470paramsconst.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE_H_
-#define L6470DMXMODE_H_
-
 #include <stdint.h>
 
-enum TL6470DmxModes {
-	L6470DMXMODE0 = 0,
-	L6470DMXMODE1,
-	L6470DMXMODE2,
-	L6470DMXMODE3,
-	L6470DMXMODE4,
-	L6470DMXMODE5,
-	L6470DMXMODE6,
-	L6470DMXMODE_UNDEFINED
-};
+#include "l6470paramsconst.h"
 
-class L6470DmxMode {
-public:
-	virtual ~L6470DmxMode(void);
-
-	virtual void InitSwitch(void);
-	virtual void InitPos(void);
-
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
-
-	virtual void HandleBusy(void);
-	virtual bool BusyCheck(void);
-
-	virtual void Data(const uint8_t *)= 0;
-};
-
-#endif /* L6470DMXMODE_H_ */
+alignas(uint32_t) const char L6470ParamsConst::MIN_SPEED[] = "l6470_min_speed";
+alignas(uint32_t) const char L6470ParamsConst::MAX_SPEED[] = "l6470_max_speed";
+alignas(uint32_t) const char L6470ParamsConst::ACC[] = "l6470_acc";
+alignas(uint32_t) const char L6470ParamsConst::DEC[] = "l6470_dec";
+alignas(uint32_t) const char L6470ParamsConst::KVAL_HOLD[] = "l6470_kval_hold";
+alignas(uint32_t) const char L6470ParamsConst::KVAL_RUN[] = "l6470_kval_run";
+alignas(uint32_t) const char L6470ParamsConst::KVAL_ACC[] = "l6470_kval_acc";
+alignas(uint32_t) const char L6470ParamsConst::KVAL_DEC[] = "l6470_kval_dec";
+alignas(uint32_t) const char L6470ParamsConst::MICRO_STEPS[] = "l6470_micro_steps";
