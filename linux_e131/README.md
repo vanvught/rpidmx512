@@ -1,5 +1,5 @@
-# Linux Open Source sACN E1.31 Bridge #
-## Real-time DMX Monitor [Plug & Play] ##
+# Linux Open Source sACN E1.31 Bridge
+## Real-time DMX Monitor [Plug & Play]
 
 This is an example for testing the [lib-e131](https://github.com/vanvught/rpidmx512/tree/master/lib-e131) C++ library.
 

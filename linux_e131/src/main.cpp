@@ -28,9 +28,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "hardwarelinux.h"
+#include "hardware.h"
 #include "networklinux.h"
-#include "ledblinklinux.h"
+#include "ledblink.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -42,20 +42,23 @@
  #include "spiflashstore.h"
 #endif
 
+#include "firmwareversion.h"
+
 #include "software_version.h"
 
 int main(int argc, char **argv) {
-	HardwareLinux hw;
+	Hardware hw;
 	NetworkLinux nw;
-	LedBlinkLinux lb;
+	LedBlink lb;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		return -1;
 	}
 
-	uint8_t nTextLength;
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
+	fw.Print();
+
 	puts("sACN E1.31 Real-time DMX Monitor {4 Universes}");
 
 	if (nw.Init(argv[1]) < 0) {
@@ -96,7 +99,7 @@ int main(int argc, char **argv) {
 	bool bIsSetIndividual = false;
 	bool bIsSet;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		nUniverse = e131params.GetUniverse(i, bIsSet);
 
 		if (bIsSet) {

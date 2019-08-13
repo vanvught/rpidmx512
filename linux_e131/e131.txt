@@ -1,2 +1,0 @@
-universe=4
-#merge_mode=ltp
