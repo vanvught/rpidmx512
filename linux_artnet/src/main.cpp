@@ -33,9 +33,9 @@
  #include "bcm2835.h"
 #endif
 
-#include "hardwarelinux.h"
+#include "hardware.h"
 #include "networklinux.h"
-#include "ledblinklinux.h"
+#include "ledblink.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -57,12 +57,15 @@
  #include "spiflashstore.h"
 #endif
 
+#include "firmwareversion.h"
+
 #include "software_version.h"
 
 int main(int argc, char **argv) {
-	HardwareLinux hw;
+	Hardware hw;
 	NetworkLinux nw;
-	LedBlinkLinux lb;
+	LedBlink lb;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (RASPPI)
 	if (getuid() != 0) {
@@ -81,8 +84,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	uint8_t nTextLength;
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
@@ -149,10 +151,9 @@ int main(int argc, char **argv) {
 		}
 
 		if (!bIsSetIndividual) {
-			node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, 0 + artnet4params.GetUniverse());
-			node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, 1 + artnet4params.GetUniverse());
-			node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, 2 + artnet4params.GetUniverse());
-			node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, 3 + artnet4params.GetUniverse());
+			for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, i + artnet4params.GetUniverse());
+			}
 		}
 	}
 
@@ -182,7 +183,7 @@ int main(int argc, char **argv) {
 	node.Start();
 
 	for (;;) {
-		node.HandlePacket();
+		node.Run();
 		identify.Run();
 #if defined (RASPPI)
 		spiFlashStore.Flash();

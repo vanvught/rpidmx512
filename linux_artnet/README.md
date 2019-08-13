@@ -1,7 +1,7 @@
 # Linux Open Source Art-Net 4 Node
 ## Real-time DMX Monitor / RDM Responder
 
-This is an example for testing the [lib-artnet](https://github.com/vanvught/rpidmx512/tree/master/lib-artnet) C++ library.
+This is an example for testing the [lib-artnet](https://github.com/vanvught/rpidmx512/tree/master/lib-artnet)  [lib-artnet4](https://github.com/vanvught/rpidmx512/tree/master/lib-artnet4) C++ libraries.
 
 Usage :
 

@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
 /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -46,7 +46,9 @@
 #endif
 
 // Poll table
-extern void midi_poll(void);
+extern "C" {
+void midi_poll(void);
+}
 
 struct _poll {
 	void (*f)(void);
@@ -55,7 +57,9 @@ struct _poll {
 		{ sniffer_midi },
 		{ led_blink } };
 
+extern "C" {
 extern void monitor_update(void);
+}
 
 struct _event {
 	const uint32_t period;
@@ -85,6 +89,8 @@ inline static void events_check() {
 	}
 }
 
+extern "C" {
+
 void notmain(void) {
 	int i;
 
@@ -111,4 +117,6 @@ void notmain(void) {
 
 		events_check();
 	}
+}
+
 }
