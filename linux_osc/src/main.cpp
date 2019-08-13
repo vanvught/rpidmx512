@@ -28,7 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "hardwarelinux.h"
+#include "hardware.h"
 #include "networklinux.h"
 
 #include "handler.h"
@@ -41,13 +41,17 @@
 
 #if defined (RASPPI)
  #include "spiflashstore.h"
+ #include "storeoscserver.h"
 #endif
+
+#include "firmwareversion.h"
 
 #include "software_version.h"
 
 int main(int argc, char **argv) {
-	HardwareLinux hw;
+	Hardware hw;
 	NetworkLinux nw;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
@@ -56,7 +60,10 @@ int main(int argc, char **argv) {
 
 #if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
-	OSCServerParams oscparms((OSCServerParamsStore *)spiFlashStore.GetStoreOscServer());
+	StoreOscServer storeOscServer;
+
+	OSCServerParams oscparms((OSCServerParamsStore *)&storeOscServer);
+
 	spiFlashStore.Dump();
 #else
 	OSCServerParams oscparms;
@@ -69,8 +76,8 @@ int main(int argc, char **argv) {
 		oscparms.Set(&server);
 	}
 
-	uint8_t nTextLength;
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
+	fw.Print();
+
 	puts("OSC Real-time DMX Monitor");
 
 	if (nw.Init(argv[1]) < 0) {
