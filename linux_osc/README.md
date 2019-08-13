@@ -1,7 +1,7 @@
-# Linux Open Source OSC Bridge
-## Real-time DMX Monitor [Plug & Play]
+# Linux Open Source OSC Bridge #
+## Real-time DMX Monitor [Plug & Play] ##
 
-This is an example for testing the  [lib-osc](https://github.com/vanvught/rpidmx512/tree/master/lib-osc)[lib-oscserver](https://github.com/vanvught/rpidmx512/tree/master/lib-oscserver) C++ libraries.
+This is an example for testing the [lib-osc](https://github.com/vanvught/rpidmx512/tree/master/lib-osc) C++ library.
 
 Usage :
 
