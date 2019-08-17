@@ -35,7 +35,7 @@
 
 #include "./../lib-h3/include/net/net.h"
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 
 #define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
 
@@ -65,7 +65,6 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		params.Dump();
 	}
 
-	//emac_start(params.GetResetEmac());
 	emac_start(true);
 
 	hardware_get_mac_address((uint8_t *) m_aNetMacaddr);
@@ -174,8 +173,4 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
     m_nLocalIp = nIp;
 
 	DEBUG_EXIT
-}
-
-void NetworkH3emac::Run(void) {
-	net_handle();
 }

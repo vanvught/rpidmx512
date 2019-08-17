@@ -107,6 +107,7 @@ Display::Display(TDisplayTypes tDisplayType):
 
 	if (m_LcdDisplay != 0) {
 		if (!m_LcdDisplay->Start()) {
+			delete m_LcdDisplay;
 			m_LcdDisplay = 0;
 			m_tType = DISPLAY_TYPE_UNKNOWN;
 		} else {
@@ -169,6 +170,11 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 		puts("Unknown or no display attached");
 #endif
 		return;
+	}
+
+	if (m_LcdDisplay != 0) {
+		m_nCols = m_LcdDisplay->GetColumns();
+		m_nRows = m_LcdDisplay->GetRows();
 	}
 }
 

@@ -32,6 +32,8 @@
 
 #include "networkparams.h"
 
+#include "./../lib-h3/include/net/net.h"
+
 class NetworkH3emac: public Network {
 public:
 	NetworkH3emac(void);
@@ -52,7 +54,9 @@ public:
 
 	void SetIp(uint32_t nIp);
 
-	void Run(void);
+	void Run(void) {
+		net_handle();
+	}
 };
 
 #endif /* NETWORKH3EMAC_H_ */

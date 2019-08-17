@@ -33,6 +33,5 @@ alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
 alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
 alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
 alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
-//alignas(uint32_t) const char NetworkConst::PARAMS_RESET_EMAC[] = "reset_emac";
 
 alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";

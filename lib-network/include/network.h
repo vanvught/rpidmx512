@@ -58,6 +58,14 @@ public:
 
 	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
+	virtual void JoinGroup(uint32_t nHandle, uint32_t nIp)=0;
+	virtual void LeaveGroup(uint32_t nHandle, uint32_t nIp)=0;
+
+	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort)=0;
+	virtual void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort)=0;
+
+	virtual void SetIp(uint32_t nIp)=0;
+
 	uint32_t GetIp(void) {
 		return m_nLocalIp;
 	}
@@ -72,7 +80,6 @@ public:
 
 	bool IsDhcpCapable(void) {
 		return m_IsDhcpCapable;
-
 	}
 
 	bool IsDhcpUsed(void) {
@@ -90,14 +97,6 @@ public:
 	const char* GetHostName(void) {
 		return m_aHostName;
 	}
-
-	virtual void JoinGroup(uint32_t nHandle, uint32_t nIp)=0;
-	virtual void LeaveGroup(uint32_t nHandle, uint32_t nIp)=0;
-
-	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort)=0;
-	virtual void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort)=0;
-
-	virtual void SetIp(uint32_t nIp)=0;
 
 	void Print(void);
 

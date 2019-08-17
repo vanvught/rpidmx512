@@ -60,9 +60,10 @@ public:
 	void PutString(const char *pText);
 
 	void TextLine(uint8_t, const char *, uint8_t);
-	void TextStatus(const char *pText);
 
 	void Status(TDisplay7SegmentMessages nStatus);
+
+	void TextStatus(const char *pText);
 	void TextStatus(const char *pText, TDisplay7SegmentMessages nStatus);
 
 	uint8_t Write(uint8_t, const char *);
