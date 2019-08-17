@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,18 @@
 
 #include "artnetcontroller.h"
 
-#include "hardwarelinux.h"
+#include "hardware.h"
 #include "networklinux.h"
+
+#include "bcm2835.h"
 
 #include "input.h"
 #include "kb_linux.h"
 #include "ir_linux.h"
 #include "buttonsbw.h"
 #include "buttonsadafruit.h"
+
+#include "firmwareversion.h"
 
 #include "software_version.h"
 
@@ -61,19 +65,30 @@ void usage(void){
 }
 
 int main(int argc, char **argv) {
-	HardwareLinux hw;
+	Hardware hw;
 	NetworkLinux nw;
-	uint8_t nTextLength;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	int i;
     int input_device = -1;
     bool ioption = false;
     char *if_name = NULL;
-	struct utsname os_info;
+
 	KbLinux input_kb;
 	IrLinux input_ir;
 	ButtonsBw input_bw;
 	ButtonsAdafruit input_af;
 	InputSet *input;
+
+	if (getuid() != 0) {
+		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+		return -1;
+	}
+
+	if (bcm2835_init() == 0) {
+		fprintf(stderr, "Function bcm2835_init() failed\n");
+		return -2;
+	}
 
 	while (1) {
 		char c;
@@ -124,10 +139,7 @@ int main(int argc, char **argv) {
         if_name = argv[0];
     }
 
-	memset(&os_info, 0, sizeof(struct utsname));
-	uname(&os_info);
-
-	printf("[V%s] %s %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetSysName(nTextLength), hw.GetVersion(nTextLength), __DATE__, __TIME__);
+    fw.Print();
 
 	if (if_name == NULL) {
 		// Just give some ifname's a try ...

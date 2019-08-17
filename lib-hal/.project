@@ -3,9 +3,7 @@
 	<name>lib-hal</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
 		<project>include</project>
-		<project>lib-bcm2835</project>
 		<project>lib-bob</project>
 		<project>lib-console</project>
 		<project>lib-ff12c</project>

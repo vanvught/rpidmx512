@@ -16,7 +16,7 @@ endif
 
 SRCDIR = src src/h3 $(EXTRA_SRCDIR)
 
-INCLUDES:= -I./include -I../include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))

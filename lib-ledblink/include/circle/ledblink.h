@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,43 @@
  * THE SOFTWARE.
  */
 
-#include "ledblink.h"
+#ifndef CIRCLE_LEDBLINK_H_
+#define CIRCLE_LEDBLINK_H_
 
-enum tFreqMode {
-	FREQ_MODE_OFF = 0,
-	FREQ_MODE_NORMAL = 1,
-	FREQ_MODE_DATA = 3,
-	FREQ_MODE_FAST = 5
+#include <stdint.h>
+
+#include <circle/actled.h>
+#include <circle/sched/task.h>
+
+class LedBlink: public CTask {
+public:
+	LedBlink(void);
+	~LedBlink(void);
+
+	void SetFrequency(uint32_t nFreqHz);
+	uint32_t GetFrequency(void) {
+		return m_nFreqHz;
+	}
+
+	void SetMode(tLedBlinkMode tMode);
+	tLedBlinkMode GetMode(void) {
+		return m_tMode;
+	}
+
+	void Run(void);
+
+public:
+	static LedBlink* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	uint32_t m_nusPeriod;
+	bool m_bStop;
+	uint32_t m_nFreqHz;
+	tLedBlinkMode m_tMode;
+
+	static LedBlink *s_pThis;
 };
 
-LedBlink *LedBlink::s_pThis = 0;
-
-LedBlink::LedBlink(void) :
-#if defined (__circle__)
-	m_nusPeriod(0),
-	m_bStop(true),
-#endif
-	m_nFreqHz(0),
-	m_tMode(LEDBLINK_MODE_OFF)
-{
-	s_pThis = this;
-}
-
-LedBlink::~LedBlink(void) {
-
-}
-
-void LedBlink::SetMode(tLedBlinkMode Mode) {
-	if (m_tMode == Mode) {
-		return;
-	}
-
-	m_tMode = Mode;
-
-	switch (Mode) {
-	case LEDBLINK_MODE_OFF:
-		SetFrequency(FREQ_MODE_OFF);
-		break;
-	case LEDBLINK_MODE_NORMAL:
-		SetFrequency(FREQ_MODE_NORMAL);
-		break;
-	case LEDBLINK_MODE_DATA:
-		SetFrequency(FREQ_MODE_DATA);
-		break;
-	case LEDBLINK_MODE_FAST:
-		SetFrequency(FREQ_MODE_FAST);
-		break;
-	default:
-		SetFrequency(FREQ_MODE_OFF);
-		break;
-	}
-}
+#endif /* CIRCLE_LEDBLINK_H_ */

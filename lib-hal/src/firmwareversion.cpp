@@ -1,8 +1,8 @@
 /**
- * @file ledblinktask.cpp
+ * @file firmwareversion.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,42 @@
  * THE SOFTWARE.
  */
 
-#include "ledblinklinux.h"
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include <firmwareversion.h>
 
 #include "hardware.h"
 
-LedBlinkLinux::LedBlinkLinux(void) {
+FirmwareVersion *FirmwareVersion::s_pThis = 0;
+
+FirmwareVersion::FirmwareVersion(const char* pVersion, const char* pDate, const char* pTime) {
+	assert(pVersion != 0);
+	assert(pDate != 0);
+	assert(pTime != 0);
+
+	s_pThis = this;
+
+	memcpy(m_tFirmwareVersion.SoftwareVersion, pVersion, SOFTWARE_VERSION_LENGTH);
+	memcpy(m_tFirmwareVersion.BuildDate, pDate, GCC_DATE_LENGTH);
+	memcpy(m_tFirmwareVersion.BuildTime, pTime, GCC_TIME_LENGTH);
+
+	uint8_t nHwTextLength;
+
+	assert((uint32_t) Hardware::Get() != 0);
+
+	snprintf(m_aPrint, sizeof m_aPrint - 1, "[V%.*s] %s Compiled on %.*s at %.*s\n",
+			SOFTWARE_VERSION_LENGTH, m_tFirmwareVersion.SoftwareVersion,
+			Hardware::Get()->GetBoardName(nHwTextLength),
+			GCC_DATE_LENGTH, m_tFirmwareVersion.BuildDate,
+			GCC_TIME_LENGTH, m_tFirmwareVersion.BuildTime);
 }
 
-LedBlinkLinux::~LedBlinkLinux(void) {
+FirmwareVersion::~FirmwareVersion(void) {
 }
 
-void LedBlinkLinux::SetFrequency(unsigned nFreqHz) {
-	m_nFreqHz = nFreqHz;
-
-	if (nFreqHz == 0) {
-		Hardware::Get()->SetLed(HARDWARE_LED_OFF);
-	} else if (nFreqHz > 20) {
-		Hardware::Get()->SetLed(HARDWARE_LED_ON);
-	} else {
-		if (nFreqHz > 1) {
-			Hardware::Get()->SetLed(HARDWARE_LED_HEARTBEAT);
-		} else {
-			Hardware::Get()->SetLed(HARDWARE_LED_FLASH);
-		}
-	}
+void FirmwareVersion::Print(void) {
+	printf("%s", m_aPrint);
 }
-

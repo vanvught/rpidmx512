@@ -27,11 +27,11 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 
 #include "networkh3emac.h"
 #include "networkconst.h"
-#include "ledblinkbaremetal.h"
+#include "ledblink.h"
 
 #include "console.h"
 
@@ -61,9 +61,9 @@
 extern "C" {
 
 void notmain(void) {
-	HardwareBaremetal hw;
+	Hardware hw;
 	NetworkH3emac nw;
-	LedBlinkBaremetal lb;
+	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 

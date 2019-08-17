@@ -27,9 +27,9 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 #include "networkbaremetalmacaddress.h"
-#include "ledblinkbaremetal.h"
+#include "ledblink.h"
 
 #include "console.h"
 
@@ -43,22 +43,24 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
-#include "ws28xxstripeparams.h"
-#include "ws28xxstripedmx.h"
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
 
 #include "software_version.h"
 
 extern "C" {
 
 void notmain(void) {
-	HardwareBaremetal hw;
+	Hardware hw;
 	NetworkBaremetalMacAddress nw;
-	LedBlinkBaremetal lb;
+	LedBlink lb;
+
 	Identify identify;
 	LightSet *pLightSet;
-	uint8_t nHwTextLength;
+
 	char aDescription[32];
 
+	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	hw.SetLed(HARDWARE_LED_ON);
@@ -87,12 +89,12 @@ void notmain(void) {
 	}
 
 	if (!isLedTypeSet) {
-		WS28XXStripeParams deviceparams;
+		WS28xxDmxParams deviceparams;
 		deviceparams.Load();
-		SPISend *pSPISend = new SPISend;
+		WS28xxDmx *pSPISend = new WS28xxDmx;
 		deviceparams.Dump();
 		deviceparams.Set(pSPISend);
-		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28XXStripeParams::GetLedTypeString(pSPISend->GetLEDType()));
+		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xxDmxParams::GetLedTypeString(pSPISend->GetLEDType()));
 		pLightSet = pSPISend;
 	}
 

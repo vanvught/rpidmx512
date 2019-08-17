@@ -1,8 +1,8 @@
 /**
- * @file hardware.h
+ * @file firmwareversion.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,49 @@
  * THE SOFTWARE.
  */
 
-#include "hardware.h"
+#ifndef FIRMWAREVERSION_H_
+#define FIRMWAREVERSION_H_
 
-Hardware *Hardware::s_pThis = 0;
+#define SOFTWARE_VERSION_LENGTH	3
+#define GCC_DATE_LENGTH			11
+#define GCC_TIME_LENGTH			8
 
-Hardware::Hardware(void) {
-	s_pThis = this;
-}
+struct TFirmwareVersion {
+	char SoftwareVersion[SOFTWARE_VERSION_LENGTH];
+	char BuildDate[GCC_DATE_LENGTH];
+	char BuildTime[GCC_TIME_LENGTH];
+};
 
-Hardware::~Hardware(void) {
-}
+class FirmwareVersion {
+public:
+	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
+	~FirmwareVersion(void);
 
-void Hardware::WatchdogInit(void) {
-}
+	void Print(void);
 
-void Hardware::WatchdogFeed(void) {
-}
+	const struct TFirmwareVersion *GetVersion(void) {
+		return &m_tFirmwareVersion;
+	}
 
-void Hardware::WatchdogStop(void) {
-}
+	const char *GetPrint(void) {
+		return (const char *)m_aPrint;
+	}
 
-const char* Hardware::GetWebsiteUrl(void) {
-	return "www.orangepi-dmx.org";
-}
+	const char *GetSoftwareVersion(void) {
+		return (const char *)m_tFirmwareVersion.SoftwareVersion;
+	}
 
-TBootDevice Hardware::GetBootDevice(void) {
-	return BOOT_DEVICE_MMC0;
-}
+public:
+	 static FirmwareVersion* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static FirmwareVersion *s_pThis;
+
+private:
+	struct TFirmwareVersion m_tFirmwareVersion;
+	char m_aPrint[64];
+};
+
+#endif /* FIRMWAREVERSION_H_ */

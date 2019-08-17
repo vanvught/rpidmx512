@@ -1,8 +1,8 @@
 /**
- * @file hardwarelinux.c
+ * @file hardware.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@
 #include <sys/utsname.h>
 #include <assert.h>
 
-#include "hardwarelinux.h"
+#include "hardware.h"
 
 extern "C" {
  char *str_find_replace(char *str, const char *find, const char *replace);
@@ -56,9 +56,11 @@ extern "C" {
  static const char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
 #endif
 
- static const char UNKNOWN[] = "Unknown";
+static const char UNKNOWN[] = "Unknown";
 
-HardwareLinux::HardwareLinux(void):
+Hardware *Hardware::s_pThis = 0;
+
+Hardware::Hardware(void):
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
@@ -69,6 +71,8 @@ HardwareLinux::HardwareLinux(void):
 	m_tBoardType(BOARD_TYPE_UNKNOWN)
 #endif
 {
+	s_pThis = this;
+
 	memset(&m_TOsInfo, 0, sizeof(struct utsname));
 
 	strcpy(m_aCpuName, UNKNOWN);
@@ -139,41 +143,31 @@ HardwareLinux::HardwareLinux(void):
 	}
 }
 
-HardwareLinux::~HardwareLinux(void) {
+Hardware::~Hardware(void) {
 	m_tBoardType = BOARD_TYPE_UNKNOWN;
 }
 
-const char* HardwareLinux::GetMachine(uint8_t &nLength) {
+const char* Hardware::GetMachine(uint8_t &nLength) {
 	nLength = (uint8_t) strlen(m_TOsInfo.machine);
 	return m_TOsInfo.machine;
 }
 
-const char* HardwareLinux::GetRelease(uint8_t& nLength) {
-	nLength = (uint8_t) strlen(m_TOsInfo.release);
-	return m_TOsInfo.release;
-}
-
-const char* HardwareLinux::GetSysName(uint8_t& nLength) {
+const char* Hardware::GetSysName(uint8_t& nLength) {
 	nLength = (uint8_t) strlen(m_TOsInfo.sysname);
 	return m_TOsInfo.sysname;
 }
 
-const char* HardwareLinux::GetVersion(uint8_t& nLength) {
-	nLength = (uint8_t) strlen(m_TOsInfo.version);
-	return m_TOsInfo.version;
-}
-
-const char* HardwareLinux::GetCpuName(uint8_t& nLength) {
+const char* Hardware::GetCpuName(uint8_t& nLength) {
 	nLength = (uint8_t) strlen(m_aCpuName);
 	return m_aCpuName;
 }
 
-const char* HardwareLinux::GetSocName(uint8_t& nLength) {
+const char* Hardware::GetSocName(uint8_t& nLength) {
 	nLength = (uint8_t) strlen(m_aSocName);
 	return m_aSocName;
 }
 
-uint32_t HardwareLinux::GetReleaseId(void) {
+uint32_t Hardware::GetReleaseId(void) {
 	int len = strlen(m_TOsInfo.release);
 	uint32_t rev = 0;
 
@@ -187,16 +181,12 @@ uint32_t HardwareLinux::GetReleaseId(void) {
 	return rev;
 }
 
-const char* HardwareLinux::GetBoardName(uint8_t& nLength) {
+const char* Hardware::GetBoardName(uint8_t& nLength) {
 	nLength = strlen(m_aBoardName);
 	return m_aBoardName;
 }
 
-uint32_t HardwareLinux::GetBoardId(void) {
-	return  m_nBoardId;
-}
-
-uint64_t HardwareLinux::GetUpTime(void) {
+uint64_t Hardware::GetUpTime(void) {
 #if defined (__APPLE__)
 	struct timeval boottime;
 	size_t len = sizeof(boottime);
@@ -222,11 +212,7 @@ uint64_t HardwareLinux::GetUpTime(void) {
 #endif
 }
 
-bool HardwareLinux::SetTime(const struct THardwareTime& pTime) {
-	return false; //TODO SetTime(const struct THardwareTime& pTime)
-}
-
-void HardwareLinux::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
@@ -242,7 +228,7 @@ void HardwareLinux::GetTime(struct THardwareTime* pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-bool HardwareLinux::Reboot(void) {
+bool Hardware::Reboot(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
@@ -260,7 +246,7 @@ bool HardwareLinux::Reboot(void) {
 	return false;
 }
 
-bool HardwareLinux::PowerOff(void) {
+bool Hardware::PowerOff(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
@@ -280,7 +266,7 @@ bool HardwareLinux::PowerOff(void) {
 #endif
 }
 
-float HardwareLinux::GetCoreTemperature(void) {
+float Hardware::GetCoreTemperature(void) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		const char cmd[] = "/opt/vc/bin/vcgencmd measure_temp| egrep \"[0-9.]{4,}\" -o";
@@ -313,7 +299,7 @@ float HardwareLinux::GetCoreTemperature(void) {
 	return (float) -1;
 }
 
-float HardwareLinux::GetCoreTemperatureMax(void) {
+float Hardware::GetCoreTemperatureMax(void) {
 #if defined (__linux__)
 	return (float) 85; //TODO GetCoreTemperatureMax
 #else
@@ -321,7 +307,7 @@ float HardwareLinux::GetCoreTemperatureMax(void) {
 #endif
 }
 
-void HardwareLinux::SetLed(THardwareLedStatus tLedStatus) {
+void Hardware::SetLed(THardwareLedStatus tLedStatus) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		char *p = 0;
@@ -352,7 +338,7 @@ void HardwareLinux::SetLed(THardwareLedStatus tLedStatus) {
 #endif
 }
 
-bool HardwareLinux::ExecCmd(const char* pCmd, char* Result, int nResultSize) {
+bool Hardware::ExecCmd(const char* pCmd, char* Result, int nResultSize) {
 	FILE *fp = popen(pCmd, "r");
 
 	if (fgets(Result, nResultSize-1, fp) == 0) {
@@ -369,13 +355,13 @@ bool HardwareLinux::ExecCmd(const char* pCmd, char* Result, int nResultSize) {
 	return true;
 }
 
-uint32_t HardwareLinux::Micros(void) {
+uint32_t Hardware::Micros(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
-uint32_t HardwareLinux::Millis(void) {
+uint32_t Hardware::Millis(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
@@ -384,13 +370,4 @@ uint32_t HardwareLinux::Millis(void) {
 #else
 	return (tv.tv_sec * (__time_t) 1000) + (tv.tv_usec / (__suseconds_t) 1000);
 #endif
-}
-
-void HardwareLinux::WatchdogInit(void) {
-}
-
-void HardwareLinux::WatchdogFeed(void) {
-}
-
-void HardwareLinux::WatchdogStop(void) {
 }

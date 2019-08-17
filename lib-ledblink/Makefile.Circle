@@ -6,7 +6,7 @@ CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
 
-OBJS	= src/circle/ledblinkcircle.o src/ledblink.o
+OBJS	= src/circle/ledblink.o src/ledblink.o
 
 EXTRACLEAN = src/circle/*.o src/*.o
 

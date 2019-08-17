@@ -1,8 +1,8 @@
 /**
- * @file hardwarebaremetal.h
+ * @file hardware++.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,13 @@
 #include <time.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 
 #include "c/hardware.h"
 #include "c/sys_time.h"
 
 #include "h3.h"
-#include "h3_hs_timer.h"
 #include "h3_watchdog.h"
-#include "h3_thermal.h"
-
 #include "h3_board.h"
 
 #include "arm/synchronize.h"
@@ -47,9 +44,6 @@
 #else
  #error Platform not supported
 #endif
-
-const char s_Release[] __attribute__((aligned(4))) = "1.0";
-#define RELEASE_LENGTH (sizeof(s_Release)/sizeof(s_Release[0]) - 1)
 
 static const char s_SocName[2][4] __attribute__((aligned(4))) = { "H2+", "H3\0" };
 static const uint8_t s_SocNameLenghth[2] = { 3, 2 };
@@ -63,56 +57,36 @@ const char s_Machine[] __attribute__((aligned(4))) = "arm";
 const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 #define SYSNAME_LENGTH (sizeof(s_SysName)/sizeof(s_SysName[0]) - 1)
 
-const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
-#define VERSION_LENGTH (sizeof(s_Version)/sizeof(s_Version[0]) - 1)
+Hardware *Hardware::s_pThis = 0;
 
-HardwareBaremetal::HardwareBaremetal(void): m_nBoardRevision(-1) {
+Hardware::Hardware(void) {
+	s_pThis = this;
 }
 
-HardwareBaremetal::~HardwareBaremetal(void) {
+Hardware::~Hardware(void) {
 }
 
-const char* HardwareBaremetal::GetMachine(uint8_t& nLength) {
+const char* Hardware::GetMachine(uint8_t& nLength) {
 	nLength = MACHINE_LENGTH;
 	return s_Machine;
 }
 
-const char* HardwareBaremetal::GetRelease(uint8_t& nLength) {
-	nLength = RELEASE_LENGTH;
-	return s_Release;
-}
-
-const char* HardwareBaremetal::GetSysName(uint8_t& nLength) {
+const char* Hardware::GetSysName(uint8_t& nLength) {
 	nLength = SYSNAME_LENGTH;
 	return s_SysName;
 }
 
-const char* HardwareBaremetal::GetVersion(uint8_t& nLength) {
-	nLength = VERSION_LENGTH;
-	return s_Version;
-}
-
-const char* HardwareBaremetal::GetBoardName(uint8_t& nLength) {
+const char* Hardware::GetBoardName(uint8_t& nLength) {
 	nLength = sizeof(H3_BOARD_NAME)  - 1;
 	return H3_BOARD_NAME;
 }
 
-uint32_t HardwareBaremetal::GetBoardId(void) {
-#if defined(ORANGE_PI)
-	return 0;
-#elif defined(ORANGE_PI_ONE)
-	return 1;
-#else
- #error Platform not supported
-#endif
-}
-
-const char* HardwareBaremetal::GetCpuName(uint8_t& nLength) {
+const char* Hardware::GetCpuName(uint8_t& nLength) {
 	nLength = CPU_NAME_LENGHTH;
 	return s_CpuName;
 }
 
-const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
+const char* Hardware::GetSocName(uint8_t& nLength) {
 #if defined(ORANGE_PI)
 	nLength = s_SocNameLenghth[0];
 	return s_SocName[0];
@@ -122,15 +96,7 @@ const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
 #endif
 }
 
-uint32_t HardwareBaremetal::GetReleaseId(void) {
-	return 0;
-}
-
-uint64_t HardwareBaremetal::GetUpTime(void) {
-	return hardware_uptime_seconds();
-}
-
-bool HardwareBaremetal::SetTime(const struct THardwareTime& pTime) {
+bool Hardware::SetTime(const struct THardwareTime& pTime) {
 	struct hardware_time tm_hw;
 
 	tm_hw.year = pTime.tm_year;
@@ -145,7 +111,7 @@ bool HardwareBaremetal::SetTime(const struct THardwareTime& pTime) {
 	return true;
 }
 
-void HardwareBaremetal::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
@@ -161,15 +127,7 @@ void HardwareBaremetal::GetTime(struct THardwareTime* pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-void HardwareBaremetal::SetLed(THardwareLedStatus tLedStatus) {
-	if (tLedStatus == HARDWARE_LED_OFF) {
-		hardware_led_set(0);
-	} else {
-		hardware_led_set(1);
-	}
-}
-
-bool HardwareBaremetal::Reboot(void) {
+bool Hardware::Reboot(void) {
 	hardware_led_set(1);
 
 	h3_watchdog_enable();
@@ -186,45 +144,4 @@ bool HardwareBaremetal::Reboot(void) {
 	__builtin_unreachable ();
 
 	return true;
-}
-
-bool HardwareBaremetal::PowerOff(void) {
-	// TODO PowerOff
-	return false;
-}
-
-void HardwareBaremetal::WatchdogInit(void) {
-	h3_watchdog_enable();
-}
-
-void HardwareBaremetal::WatchdogFeed(void) {
-	h3_watchdog_restart();
-}
-
-void HardwareBaremetal::WatchdogStop(void) {
-	h3_watchdog_disable();
-}
-
-uint32_t HardwareBaremetal::Micros(void) {
-	return h3_hs_timer_lo_us();
-}
-
-uint32_t HardwareBaremetal::Millis(void) {
-	return millis();
-}
-
-TBootDevice HardwareBaremetal::GetBootDevice(void) {
-	return (TBootDevice) h3_get_boot_device();
-}
-
-const char* HardwareBaremetal::GetWebsiteUrl(void) {
-	return "www.orangepi-dmx.org";
-}
-
-float HardwareBaremetal::GetCoreTemperature(void) {
-	return (float) h3_thermal_gettemp();
-}
-
-float HardwareBaremetal::GetCoreTemperatureMax(void) {
-	return (float) h3_thermal_getalarm();
 }

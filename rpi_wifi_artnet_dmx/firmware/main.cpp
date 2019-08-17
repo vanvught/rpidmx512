@@ -27,9 +27,9 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 #include "networkesp8266.h"
-#include "ledblinkbaremetal.h"
+#include "ledblink.h"
 
 #include "console.h"
 #include "display.h"
@@ -72,9 +72,9 @@ static const char NODE_STARTED[] = "Node started";
 extern "C" {
 
 void notmain(void) {
-	HardwareBaremetal hw;
+	Hardware hw;
 	NetworkESP8266 nw;
-	LedBlinkBaremetal lb;
+	LedBlink lb;
 	Display display(DISPLAY_SSD1306);
 
 #if defined (ORANGE_PI)

@@ -34,34 +34,16 @@ enum tLedBlinkMode {
 	LEDBLINK_MODE_UNKNOWN
 };
 
-#include <stdint.h>
-
-class LedBlink {
-public:
-	LedBlink(void);
-	virtual ~LedBlink(void);
-
-	virtual void SetFrequency(unsigned)= 0;
-	unsigned GetFrequency(void) {
-		return m_nFreqHz;
-	}
-
-	void SetMode(tLedBlinkMode Mode);
-	tLedBlinkMode GetMode(void) {
-		return m_tMode;
-	}
-
-public:
-	static LedBlink* Get(void) {
-		return s_pThis;
-	}
-
-protected:
-	unsigned m_nFreqHz;
-
-private:
-	static LedBlink *s_pThis;
-	tLedBlinkMode m_tMode;
-};
+#if defined (__circle__)
+ #include "circle/ledblink.h"
+#elif defined (BARE_METAL)
+ #if defined (H3)
+  #include "h3/ledblink.h"
+ #else
+  #include "rpi/ledblink.h"
+ #endif
+#else
+ #include "linux/ledblink.h"
+#endif
 
 #endif /* LEDBLINK_H */

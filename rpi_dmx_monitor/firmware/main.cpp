@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
 /* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "hardwarebaremetal.h"
-#include "ledblinkbaremetal.h"
+#include "hardware.h"
+#include "ledblink.h"
 
 #include "console.h"
 
@@ -48,8 +48,8 @@
 extern "C" {
 
 void notmain(void) {
-	HardwareBaremetal hw;
-	LedBlinkBaremetal lb;
+	Hardware hw;
+	LedBlink lb;
 
 	uint32_t nMicrosPrevious = 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;

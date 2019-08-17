@@ -1,8 +1,8 @@
 /**
- * @file hardwarelinux.h
+ * @file hardware.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARELINUX_H_
-#define HARDWARELINUX_H_
+#ifndef LINUX_HARDWARE_H_
+#define LINUX_HARDWARE_H_
 
+#include <time.h>
 #include <stdint.h>
 #include <sys/utsname.h>
 
 #include "hardware.h"
 
-class HardwareLinux: public Hardware {
+class Hardware {
 public:
-	HardwareLinux(void);
-	~HardwareLinux(void);
+	Hardware(void);
+	~Hardware(void);
 
 	const char* GetMachine(uint8_t &nLength);
 	const char* GetSysName(uint8_t &nLength);
-	const char* GetVersion(uint8_t &nLength);
 
-	const char* GetRelease(uint8_t &nLength);
 	uint32_t GetReleaseId(void);
 
 	const char* GetBoardName(uint8_t &nLength);
-	uint32_t GetBoardId(void);
 
+	uint32_t GetBoardId(void) {
+		return m_nBoardId;
+	}
 
 	const char* GetCpuName(uint8_t &nLength);
 	const char* GetSocName(uint8_t &nLength);
@@ -64,15 +65,31 @@ public:
 		return time(NULL);
 	}
 
-	bool SetTime(const struct THardwareTime &pTime);
+	bool SetTime(const struct THardwareTime &pTime) {
+		return false;	 // Not implemented
+	}
+
 	void GetTime(struct THardwareTime *pTime);
 
 	uint32_t Micros(void);
 	uint32_t Millis(void);
 
-	void WatchdogInit(void);
-	void WatchdogFeed(void);
-	void WatchdogStop(void);
+	void WatchdogInit(void) { } // Not implemented
+	void WatchdogFeed(void) { } // Not implemented
+	void WatchdogStop(void) { } // Not implemented
+
+	const char* GetWebsiteUrl(void) {
+		return "www.orangepi-dmx.org";
+	}
+
+	TBootDevice GetBootDevice(void) {
+		return BOOT_DEVICE_HDD;
+	}
+
+public:
+	 static Hardware* Get(void) {
+		return s_pThis;
+	}
 
 private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
@@ -95,6 +112,8 @@ private:
 	char m_aBoardName[64];
 
 	uint32_t m_nBoardId;
+
+	static Hardware *s_pThis;
 };
 
-#endif /* HARDWARELINUX_H_ */
+#endif /* LINUX_HARDWARE_H_ */

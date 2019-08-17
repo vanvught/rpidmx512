@@ -1,8 +1,8 @@
 /**
- * @file hardwarebaremetal.h
+ * @file hardware++.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 
 #include "c/hardware.h"
 #include "c/sys_time.h"
@@ -37,9 +37,6 @@
 #include "bcm2835_wdog.h"
 
 #include "arm/synchronize.h"
-
-const char s_Release[] __attribute__((aligned(4))) = "1.3";
-#define RELEASE_LENGTH (sizeof(s_Release)/sizeof(s_Release[0]) - 1)
 
 static const char s_SocName[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 static const char s_CpuName[4][24] __attribute__((aligned(4))) = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
@@ -54,7 +51,11 @@ const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
 #define VERSION_LENGTH (sizeof(s_Version)/sizeof(s_Version[0]) - 1)
 
-HardwareBaremetal::HardwareBaremetal(void): m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
+Hardware *Hardware::s_pThis = 0;
+
+Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
+	s_pThis = this;
+
 	m_nBoardRevision = bcm2835_vc_get_get_board_revision();
 
 	if ((m_nBoardRevision & ((int32_t) 1 << 23)) == ((int32_t) 1 << 23)) {
@@ -70,65 +71,35 @@ HardwareBaremetal::HardwareBaremetal(void): m_nBoardRevision(-1), m_tSocType(SOC
 	m_nBoardId = bcm2835_vc_get_get_board_revision();
 }
 
-HardwareBaremetal::~HardwareBaremetal(void) {
+Hardware::~Hardware(void) {
 }
 
-const char* HardwareBaremetal::GetMachine(uint8_t& nLength) {
+const char* Hardware::GetMachine(uint8_t& nLength) {
 	nLength = MACHINE_LENGTH;
 	return s_Machine;
 }
 
-const char* HardwareBaremetal::GetRelease(uint8_t& nLength) {
-	nLength = RELEASE_LENGTH;
-	return s_Release;
-}
-
-const char* HardwareBaremetal::GetSysName(uint8_t& nLength) {
+const char* Hardware::GetSysName(uint8_t& nLength) {
 	nLength = SYSNAME_LENGTH;
 	return s_SysName;
 }
 
-const char* HardwareBaremetal::GetVersion(uint8_t& nLength) {
-	nLength = VERSION_LENGTH;
-	return s_Version;
-}
-
-const char* HardwareBaremetal::GetBoardName(uint8_t& nLength) {
+const char* Hardware::GetBoardName(uint8_t& nLength) {
 	nLength = hardware_board_get_model_length();
 	return hardware_board_get_model();
 }
 
-uint32_t HardwareBaremetal::GetBoardId(void) {
-	return m_nBoardId;
-}
-
-const char* HardwareBaremetal::GetCpuName(uint8_t& nLength) {
+const char* Hardware::GetCpuName(uint8_t& nLength) {
 	nLength = s_nCpuNameLength[m_tSocType];
 	return s_CpuName[m_tSocType];
 }
 
-const char* HardwareBaremetal::GetSocName(uint8_t& nLength) {
+const char* Hardware::GetSocName(uint8_t& nLength) {
 	nLength = sizeof s_SocName[0]; // Same length for all
 	return s_SocName[m_tSocType];
 }
 
-float HardwareBaremetal::GetCoreTemperature(void) {
-	return (float) bcm2835_vc_get_temperature() / 1000;
-}
-
-float HardwareBaremetal::GetCoreTemperatureMax(void) {
-	return 85;
-}
-
-uint32_t HardwareBaremetal::GetReleaseId(void) {
-	return (uint32_t) bcm2835_vc_get_get_firmware_revision();
-}
-
-uint64_t HardwareBaremetal::GetUpTime(void) {
-	return hardware_uptime_seconds();
-}
-
-bool HardwareBaremetal::SetTime(const struct THardwareTime& pTime) {
+bool Hardware::SetTime(const struct THardwareTime& pTime) {
 	struct hardware_time tm_hw;
 
 	tm_hw.year = pTime.tm_year;
@@ -143,7 +114,7 @@ bool HardwareBaremetal::SetTime(const struct THardwareTime& pTime) {
 	return true;
 }
 
-void HardwareBaremetal::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
@@ -159,15 +130,7 @@ void HardwareBaremetal::GetTime(struct THardwareTime* pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-void HardwareBaremetal::SetLed(THardwareLedStatus tLedStatus) {
-	if (tLedStatus == HARDWARE_LED_OFF) {
-		hardware_led_set(0);
-	} else {
-		hardware_led_set(1);
-	}
-}
-
-bool HardwareBaremetal::Reboot(void) {
+bool Hardware::Reboot(void) {
 	hardware_led_set(1);
 
 	bcm2835_watchdog_init();
@@ -184,27 +147,3 @@ bool HardwareBaremetal::Reboot(void) {
 	return true;
 }
 
-bool HardwareBaremetal::PowerOff(void) {
-	// int32_t bcm2835_vc_set_power_state(uint32_t, uint32_t);
-	return false;
-}
-
-void HardwareBaremetal::WatchdogInit(void) {
-	bcm2835_watchdog_init();
-}
-
-void HardwareBaremetal::WatchdogFeed(void) {
-	bcm2835_watchdog_feed();
-}
-
-void HardwareBaremetal::WatchdogStop(void) {
-	bcm2835_watchdog_stop();
-}
-
-uint32_t HardwareBaremetal::Micros(void) {
-	return BCM2835_ST->CLO;
-}
-
-uint32_t HardwareBaremetal::Millis(void) {
-	return millis();
-}

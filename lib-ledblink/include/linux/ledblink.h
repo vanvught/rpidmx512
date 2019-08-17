@@ -1,8 +1,8 @@
 /**
- * @file ledblinktask.h
+ * @file ledblink.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,36 @@
  * THE SOFTWARE.
  */
 
+#ifndef LINUX_LEDBLINK_H_
+#define LINUX_LEDBLINK_H_
 
-#ifndef LEDBLINKBAREMETAL_H_
-#define LEDBLINKBAREMETAL_H_
+#include <stdint.h>
 
-#include "ledblink.h"
-
-#include "c/led.h"
-#include "c/hardware.h"
-
-class LedBlinkBaremetal : public LedBlink
-{
+class LedBlink {
 public:
-	LedBlinkBaremetal (void);
-	~LedBlinkBaremetal (void);
+	LedBlink(void);
+	~LedBlink(void);
 
-	void SetFrequency(unsigned nFreqHz);
-
-	void Run(void) {
-		led_blink();
+	void SetFrequency(uint32_t nFreqHz);
+	uint32_t GetFrequency(void) {
+		return m_nFreqHz;
 	}
+
+	void SetMode(tLedBlinkMode Mode);
+	tLedBlinkMode GetMode(void) {
+		return m_tMode;
+	}
+
+public:
+	static LedBlink* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	uint32_t m_nFreqHz;
+	tLedBlinkMode m_tMode;
+
+	static LedBlink *s_pThis;
 };
 
-#endif /* LEDBLINKBAREMETAL_H_ */
+#endif /* LINUX_LEDBLINK_H_ */

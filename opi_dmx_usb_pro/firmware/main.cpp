@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 #include "networkbaremetalmacaddress.h"
-#include "ledblinkbaremetal.h"
+#include "ledblink.h"
 
 #include "display.h"
 
@@ -77,16 +77,11 @@ struct _poll {
 
 void notmain(void) {
 	// Do not change order
-	HardwareBaremetal hw;
+	Hardware hw;
 	NetworkBaremetalMacAddress nw;
-	LedBlinkBaremetal lb;
-	// Display is not supported. We just need a pointer to object
-	Display display(DISPLAY_TYPE_UNKNOWN);
-
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
-
+	LedBlink lb;
+	Display display(DISPLAY_TYPE_UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 	StoreWidget storeWidget;
 	StoreRDMDevice storeRDMDevice;

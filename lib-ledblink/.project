@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
+		<project>lib-hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

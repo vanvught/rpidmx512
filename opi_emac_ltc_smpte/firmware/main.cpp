@@ -28,9 +28,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "hardwarebaremetal.h"
+#include "hardware.h"
 #include "networkh3emac.h"
-#include "ledblinkbaremetal.h"
+#include "ledblink.h"
 
 #include "console.h"
 
@@ -88,9 +88,9 @@
 extern "C" {
 
 void notmain(void) {
-	HardwareBaremetal hw;
+	Hardware hw;
 	NetworkH3emac nw;
-	LedBlinkBaremetal lb;
+	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 

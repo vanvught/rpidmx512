@@ -35,9 +35,9 @@
 
 #include "kernel.h"
 
-#include "hardwarecircle.h"
+#include "hardware.h"
 #include "networkcircle.h"
-#include "ledblinkcircle.h"
+#include "ledblink.h"
 
 #include "networkparams.h"
 
@@ -173,7 +173,7 @@ boolean CKernel::Configure(void) {
 
 TShutdownMode CKernel::Run(void)
 {
-	HardwareCircle hw;
+	Hardware hw;
 	NetworkCircle nw;
 
 	nw.Init(&m_Net);
@@ -272,7 +272,7 @@ TShutdownMode CKernel::Run(void)
 	node.Start();
 
 	while (1) {
-		node.HandlePacket();
+		node.Run();
 		m_Scheduler.Yield();
 	}
 

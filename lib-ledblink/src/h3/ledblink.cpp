@@ -1,8 +1,8 @@
 /**
- * @file ledblinklinux.h
+ * @file ledblink.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,32 @@
  * THE SOFTWARE.
  */
 
-
-#ifndef LEDBLINKLINUX_H_
-#define LEDBLINKLINUX_H_
+#include <stdint.h>
 
 #include "ledblink.h"
 
-class LedBlinkLinux : public LedBlink
-{
-public:
-	LedBlinkLinux (void);
-	~LedBlinkLinux (void);
+#include "c/led.h"
+#include "c/hardware.h"
 
-	void SetFrequency (unsigned nFreqHz);
-};
+void LedBlink::SetFrequency(uint32_t nFreqHz) {
+	m_nFreqHz = nFreqHz;
 
-#endif /* LEDBLINKLINUX_H_ */
+	switch (nFreqHz) {
+		case 0:
+			led_set_ticks_per_second(0);
+			hardware_led_set(0);
+			break;
+		case 1:
+			led_set_ticks_per_second(1000000 / 1);
+			break;
+		case 3:
+			led_set_ticks_per_second(1000000 / 3);
+			break;
+		case 5:
+			led_set_ticks_per_second(1000000 / 5);
+			break;
+		default:
+			led_set_ticks_per_second(1000000 / nFreqHz);
+			break;
+	}
+}

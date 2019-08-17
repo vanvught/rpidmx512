@@ -45,7 +45,8 @@
 #include <circle/sched/scheduler.h>
 #include <circle/usb/dwhcidevice.h>
 #include <circle/machineinfo.h>
-#include <ledblinkcircle.h>
+
+#include "ledblink.h"
 
 #include "SDCard/emmc.h"
 #include "fatfs/ff.h"
@@ -95,7 +96,7 @@ private:
 	DMXSend				m_DMX;
 
 	CMachineInfo 		m_MachineInfo;
-	LedBlinkCircle 		m_BlinkTask;
+	LedBlink 			m_BlinkTask;
 
 	FATFS				m_FileSystem;
 };

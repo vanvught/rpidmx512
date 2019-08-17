@@ -1,5 +1,5 @@
 /**
- * @file hardwarecircle.h
+ * @file ledblinktask.cpp
  *
  */
 /* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,57 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef HARDWARECIRCLE_H_
-#define HARDWARECIRCLE_H_
-
 #include <stdint.h>
 
-#include "circle/timer.h"
+#include "ledblink.h"
 
 #include "hardware.h"
 
-class HardwareCircle: public Hardware {
-public:
-	HardwareCircle(void);
-	~HardwareCircle(void);
+void LedBlink::SetFrequency(uint32_t nFreqHz) {
+	m_nFreqHz = nFreqHz;
 
-	const char* GetMachine(uint8_t &nLength);
-	const char* GetSysName(uint8_t &nLength);
-	const char* GetVersion(uint8_t &nLength);
-
-	const char* GetRelease(uint8_t &nLength);
-	uint32_t GetReleaseId(void);
-
-	const char* GetBoardName(uint8_t &nLength);
-	uint32_t GetBoardId(void);
-
-
-	const char* GetCpuName(uint8_t &nLength);
-	const char* GetSocName(uint8_t &nLength);
-
-	float GetCoreTemperature(void);
-	float GetCoreTemperatureMax(void);
-
-	void SetLed(THardwareLedStatus tLedStatus);
-
-	bool Reboot(void);
-	bool PowerOff(void);
-
-	uint64_t GetUpTime(void);
-
-	 time_t GetTime(void) {
-		return CTimer::Get()->GetTime();
+	if (nFreqHz == 0) {
+		Hardware::Get()->SetLed(HARDWARE_LED_OFF);
+	} else if (nFreqHz > 20) {
+		Hardware::Get()->SetLed(HARDWARE_LED_ON);
+	} else {
+		if (nFreqHz > 1) {
+			Hardware::Get()->SetLed(HARDWARE_LED_HEARTBEAT);
+		} else {
+			Hardware::Get()->SetLed(HARDWARE_LED_FLASH);
+		}
 	}
+}
 
-	bool SetTime(const struct THardwareTime &pTime);
-	void GetTime(struct THardwareTime *pTime);
-
-	uint32_t Micros(void);
-	uint32_t Millis(void);
-
-	void WatchdogInit(void);
-	void WatchdogFeed(void);
-	void WatchdogStop(void);
-};
-
-#endif /* HARDWARECIRCLE_H_ */

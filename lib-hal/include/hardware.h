@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,6 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
-#include <stdint.h>
-#include <time.h>
-
 #ifdef __cplusplus
 
 enum THardwareLedStatus {
@@ -42,7 +39,8 @@ enum TBootDevice {
 	BOOT_DEVICE_UNK,
 	BOOT_DEVICE_FEL,	// H3 Only
 	BOOT_DEVICE_MMC0,
-	BOOT_DEVICE_SPI		// H3 Only
+	BOOT_DEVICE_SPI,	// H3 Only
+	BOOT_DEVICE_HDD
 };
 
 struct THardwareTime {
@@ -57,56 +55,17 @@ struct THardwareTime {
 	int tm_isdst;	///< DST.			[-1/0/1]
 };
 
-class Hardware {
-public:
-	Hardware(void);
-	virtual ~Hardware(void);
-
-	virtual const char* GetMachine(uint8_t &nLength)=0;
-	virtual const char* GetSysName(uint8_t &nLength)=0;
-	virtual const char* GetVersion(uint8_t &nLength)=0;
-
-	virtual const char* GetRelease(uint8_t &nLength)=0;
-	virtual uint32_t GetReleaseId(void)=0;
-
-	virtual const char* GetBoardName(uint8_t &nLength)=0;
-	virtual uint32_t GetBoardId(void)=0;
-
-	virtual const char* GetCpuName(uint8_t &nLength)=0;
-	virtual const char* GetSocName(uint8_t &nLength)=0;
-
-	virtual float GetCoreTemperature(void)=0;
-	virtual float GetCoreTemperatureMax(void)=0;
-
-	virtual void SetLed(THardwareLedStatus tLedStatus)=0;
-
-	virtual bool Reboot(void)=0;
-	virtual bool PowerOff(void)=0;
-
-	virtual bool SetTime(const struct THardwareTime &pTime)=0;
-	virtual void GetTime(struct THardwareTime *pTime)=0;
-	virtual time_t GetTime(void)=0;
-
-	virtual uint64_t GetUpTime(void)=0;
-
-	virtual uint32_t Micros(void)=0;
-	virtual uint32_t Millis(void)=0;
-
-	virtual void WatchdogInit(void);
-	virtual void WatchdogFeed(void);
-	virtual void WatchdogStop(void);
-
-	virtual TBootDevice GetBootDevice(void);
-	virtual const char* GetWebsiteUrl(void);
-
-public:
-	 static Hardware* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	static Hardware *s_pThis;
-};
+#if defined (__circle__)
+ #include "circle/hardware.h"
+#elif defined (BARE_METAL)
+ #if defined (H3)
+  #include "h3/hardware.h"
+ #else
+  #include "rpi/hardware.h"
+ #endif
+#else
+ #include "linux/hardware.h"
+#endif
 
 #elif defined(BARE_METAL)
  #include "c/hardware.h"
