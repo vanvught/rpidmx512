@@ -41,6 +41,14 @@ ifdef COND
 	LIBS+=artnet4 artnet e131 dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
 endif
 
+ifeq ($(findstring E131,$(DEFINES)),E131)
+	LIBS+=uuid
+endif
+
+ifeq ($(findstring ARTNET,$(DEFINES)),ARTNET)
+	LIBS+=uuid
+endif
+
 LIBS+=network
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
@@ -121,6 +129,7 @@ all : clearlibs builddirs prerequisites $(TARGET)
 
 clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-console
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
@@ -138,6 +147,7 @@ clean:
 		do                               \
 			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \
 		done
+
 #
 # Build libraries
 #
@@ -148,6 +158,9 @@ $(LIBSDEP):
 		done
 
 # Build uImage
+
+$(BUILD_DIRS) :
+	mkdir -p $(BUILD_DIRS)
 
 $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o

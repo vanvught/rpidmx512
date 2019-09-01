@@ -74,8 +74,10 @@ clean :
 	rm -rf build_h3
 	rm -rf lib_h3
 	
-# Build lib
-
+$(BUILD_DIRS) :	
+	mkdir -p $(BUILD_DIRS)
+	mkdir -p lib_h3
+	
 $(TARGET): Makefile.H3 $(OBJECTS)
 	$(AR) -r $(TARGET) $(OBJECTS)
 	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > lib_h3/$(LIST)
