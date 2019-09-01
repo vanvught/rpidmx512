@@ -390,4 +390,17 @@ void console_clear_line(uint16_t line) {
 	address = (uint32_t *)(fb_addr) + (line * FB_CHAR_H * FB_WIDTH);
 	clear_row(address);
 }
+
+void console_clear_top_row(void) {
+	uint32_t line;
+	uint32_t *address;
+
+	for (line = top_row; line < (FB_HEIGHT / FB_CHAR_H) - 1; line++) {
+		address = (uint32_t*) (fb_addr) + (line * FB_CHAR_H * FB_WIDTH);
+		clear_row(address);
+	}
+
+	current_x = 0;
+	current_y = top_row;
+}
 #endif
