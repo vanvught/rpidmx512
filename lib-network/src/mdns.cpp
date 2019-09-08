@@ -375,17 +375,17 @@ uint32_t MDNS::CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination) {
 	pDst += WriteDnsName((const char*) m_aServiceRecords[nIndex].pName, (char*) pDst, false);
 	pDst += WriteDnsName("_udp" MDNS_TLD, (char*) pDst);
 
-	*(uint16_t *) pDst = __builtin_bswap16(DNSRecordTypeSRV);
+	*(uint16_t*) pDst = __builtin_bswap16(DNSRecordTypeSRV);
 	pDst += 2;
-	*(uint16_t *) pDst = __builtin_bswap16(DNSCacheFlushTrue | DNSClassInternet);
+	*(uint16_t*) pDst = __builtin_bswap16(DNSCacheFlushTrue | DNSClassInternet);
 	pDst += 2;
-	*(uint32_t *) pDst = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*(uint32_t*) pDst = __builtin_bswap32(MDNS_RESPONSE_TTL);
 	pDst += 4;
-	*(uint16_t *) pDst = __builtin_bswap16(8 + strlen((const char*) m_pName));
+	*(uint16_t*) pDst = __builtin_bswap16(8 + strlen((const char*) m_pName));
 	pDst += 2;
-	*(uint32_t *) pDst = 0; // Priority and Weight
+	*(uint32_t*) pDst = 0; // Priority and Weight
 	pDst += 4;
-	*(uint16_t *) pDst = __builtin_bswap16(m_aServiceRecords[nIndex].nPort);
+	*(uint16_t*) pDst = __builtin_bswap16(m_aServiceRecords[nIndex].nPort);
 	pDst += 2;
 	pDst += WriteDnsName((const char*) m_pName, (char*) pDst);
 

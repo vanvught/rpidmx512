@@ -2,7 +2,7 @@
  * @file networkesp8266.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ extern "C" {
 }
 
 NetworkESP8266::NetworkESP8266(void): m_IsInitDone(false) {
+	strcpy(m_aIfName, "wlan0");
 }
 
 NetworkESP8266::~NetworkESP8266(void) {

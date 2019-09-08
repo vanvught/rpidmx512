@@ -27,7 +27,6 @@
 #define NETWORKLINUX_H_
 
 #include <stdint.h>
-#include <net/if.h>
 #include <limits.h>
 
 #include "network.h"
@@ -59,9 +58,6 @@ private:
 #if defined(__APPLE__)
 	bool OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress);
 #endif
-
-private:
-	char m_aIfName[IFNAMSIZ];
 };
 
 #endif /* NETWORKLINUX_H_ */

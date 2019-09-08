@@ -52,9 +52,6 @@ static int snHandles[MAX_PORTS_ALLOWED];
  */
 
 NetworkLinux::NetworkLinux(void) {
-	for (unsigned i = 0; i < sizeof(m_aIfName); i++) {
-		m_aIfName[i] = '\0';
-	}
 }
 
 NetworkLinux::~NetworkLinux(void) {

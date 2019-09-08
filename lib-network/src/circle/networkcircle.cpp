@@ -2,7 +2,7 @@
  * @file networkcircle.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "circle/net/ipaddress.h"
@@ -43,6 +44,7 @@ union uip {
 static const char FromNetwork[] = "network";
 
 NetworkCircle::NetworkCircle(void) : m_pNet(0), m_pSocket(0) {
+	strcpy(m_aIfName, "eth0");
 }
 
 NetworkCircle::~NetworkCircle(void) {

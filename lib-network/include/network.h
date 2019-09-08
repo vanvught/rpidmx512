@@ -28,10 +28,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <net/if.h>
 
-#define NETWORK_IP_SIZE			4
-#define NETWORK_MAC_SIZE		6
-#define NETWORK_HOSTNAME_SIZE	48
+enum TNetwork {
+	NETWORK_IP_SIZE = 4,
+	NETWORK_MAC_SIZE = 6,
+	NETWORK_HOSTNAME_SIZE = 48
+};
 
 #ifndef IP2STR
  #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
@@ -74,6 +77,10 @@ public:
 		return m_nNetmask;
 	}
 
+	uint32_t GetNetmaskCIDR(void) {
+		return __builtin_popcount(m_nNetmask);
+	}
+
 	uint32_t GetBroadcastIp(void) {
 		return m_nBroadcastIp;
 	}
@@ -98,6 +105,10 @@ public:
 		return m_aHostName;
 	}
 
+	const char* GetIfName(void) {
+		return m_aIfName;
+	}
+
 	void Print(void);
 
 public:
@@ -114,6 +125,7 @@ protected:
 	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
+	char m_aIfName[IFNAMSIZ];
 
 private:
 	static Network *s_pThis;

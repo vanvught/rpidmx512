@@ -49,6 +49,7 @@ int emac_start(bool reset_emac);
 }
 
 NetworkH3emac::NetworkH3emac(void) {
+	strcpy(m_aIfName, "eth0");
 }
 
 NetworkH3emac::~NetworkH3emac(void) {

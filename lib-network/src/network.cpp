@@ -2,7 +2,7 @@
  * @file network.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "network.h"
 
@@ -39,13 +40,9 @@ Network::Network(void) :
 {
 	s_pThis = this;
 
-	for (unsigned i = 0; i < sizeof(m_aNetMacaddr); i++) {
-		m_aNetMacaddr[i] = 0;
-	}
-
-	for (unsigned i = 0; i < sizeof(m_aHostName); i++) {
-		m_aHostName[i] = 0;
-	}
+	m_aNetMacaddr[0] = '\0';
+	m_aHostName[0] = '\0';
+	m_aIfName[0] = '\0';
 }
 
 Network::~Network(void) {
@@ -55,6 +52,7 @@ Network::~Network(void) {
 	m_nBroadcastIp = 0;
 	m_IsDhcpUsed = false;
 	m_aHostName[0] = '\0';
+	m_aIfName[0] = '\0';
 
 	s_pThis = 0;
 }
@@ -62,7 +60,8 @@ Network::~Network(void) {
 void Network::Print(void) {
 	printf("Network configuration\n");
 	printf(" Hostname   : %s\n", m_aHostName);
-	printf(" Interface  : " IPSTR "\n", IP2STR(m_nLocalIp));
+	printf(" Interface  : %s\n", m_aIfName);
+	printf(" Inet       : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
 	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
 	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	if (IsDhcpKnown()) {

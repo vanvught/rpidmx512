@@ -37,6 +37,7 @@ extern "C" {
 }
 
 NetworkESP8266::NetworkESP8266(void): m_IsInitDone(false) {
+	strcpy(m_aIfName, "wlan0");
 }
 
 NetworkESP8266::~NetworkESP8266(void) {
