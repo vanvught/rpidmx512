@@ -1,5 +1,5 @@
 /**
- * @file midi.cpp
+ * @file midiprint.cpp
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -27,19 +27,6 @@
 
 #include "midi.h"
 
-Midi *Midi::s_pThis = 0;
-
-Midi::Midi(void): m_pMessage(0) {
-	s_pThis = this;
-
-	m_pMessage = midi_message_get();
-}
-
-Midi::~Midi(void) {
-	m_pMessage = 0;
-	s_pThis = 0;
-}
-
 void Midi::Print(void) {
 	const _midi_direction dir = GetDirection();
 	const uint32_t nBaudrate = GetBaudrate();
@@ -48,7 +35,7 @@ void Midi::Print(void) {
 	printf("MIDI configuration\n");
 	printf(" Direction    : %s\n", dir == MIDI_DIRECTION_INPUT ? "Input" : "Output");
 	if (dir == MIDI_DIRECTION_INPUT) {
-		printf(" Channel      : %d %d\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
+		printf(" Channel      : %d %s\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
 	}
 	printf(" Active sense : %s\n", GetActiveSense() ? "Enabled" : "Disabled");
 	printf(" Baudrate     : %d %s\n", (int) nBaudrate, nBaudrate == MIDI_BAUDRATE_DEFAULT ? "(Default)" : "");

@@ -189,93 +189,96 @@ public:
 	Midi(void);
 	~Midi(void);
 
-	 void Init(_midi_direction tMidiDirection) {
+	void Init(_midi_direction tMidiDirection) {
 		midi_init(tMidiDirection);
 	}
 
-	 _midi_direction GetDirection(void) {
+	void Run(void);
+
+	_midi_direction GetDirection(void) {
 		return midi_get_direction();
 	}
 
-	 void SetBaudrate(uint32_t nBaudrate) {
+	void SetBaudrate(uint32_t nBaudrate) {
 		midi_set_baudrate(nBaudrate);
 	}
 
-	 uint32_t GetBaudrate(void) {
+	uint32_t GetBaudrate(void) {
 		return midi_get_baudrate();
 	}
 
-	 void SetActiveSense(bool bActiveSense = true) {
+	void SetActiveSense(bool bActiveSense = true) {
 		midi_active_set_sense(bActiveSense);
 	}
 
-	 bool GetActiveSense(void) {
+	bool GetActiveSense(void) {
 		return midi_active_get_sense();
 	}
 
-	 void SetChannel(uint8_t nChannel) {
+	void SetChannel(uint8_t nChannel) {
 		midi_set_input_channel(nChannel);
 	}
 
-	 uint8_t GetChannel(void) {
+	uint8_t GetChannel(void) {
 		return midi_get_input_channel();
 	}
 
-	 _midi_active_sense_state GetActiveSenseState(void) {
+	_midi_active_sense_state GetActiveSenseState(void) {
 		return midi_active_get_sense_state();
 	}
 
-	 const char* GetInterfaceDescription(void) {
+	const char* GetInterfaceDescription(void) {
 		return midi_get_interface_description();
 	}
 
-	 void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
+	void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
 		midi_send_tc(tTimeCode);
 	}
 
-	 void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
-		midi_send_raw(pBuffer, nLength);
-	}
-
-	 void SendQf(uint8_t nData) {
+	void SendQf(uint8_t nData) {
 		midi_send_qf(nData);
 	}
 
-	 bool Read(void) {
+	void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
+		midi_send_raw(pBuffer, nLength);
+	}
+
+	bool Read(void) {
 		return midi_read();
 	}
 
-	 bool Read(uint8_t nChannel) {
+	bool Read(uint8_t nChannel) {
 		return midi_read_channel(nChannel);
 	}
 
-	 uint32_t GetMessageTimeStamp(void) {
+	uint32_t GetMessageTimeStamp(void) {
 		return m_pMessage->timestamp;
 	}
 
-	 uint8_t GetMessageType(void) {
+	uint8_t GetMessageType(void) {
 		return m_pMessage->type;
 	}
 
-	 void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
+	void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
 		nData1 = m_pMessage->data1;
 		nData2 = m_pMessage->data2;
 	}
 
-	 uint8_t* GetSystemExclusive(uint8_t &nLength) {
+	uint8_t* GetSystemExclusive(uint8_t &nLength) {
 		nLength = m_pMessage->bytes_count;
 		return m_pMessage->system_exclusive;
 	}
 
-	 static Midi* Get(void) {
+	static Midi* Get(void) {
 		return s_pThis;
 	}
 
 	void Print(void);
 
 private:
-	static Midi *s_pThis;
 	struct _midi_message *m_pMessage;
+
+	static Midi *s_pThis;
 };
 #endif
 

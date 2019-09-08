@@ -59,9 +59,9 @@ struct TExchangePacket {
 }__attribute__((packed));
 
 struct TSessionStatus {
-	uint8_t m_nSessionState;
-	uint32_t m_nRemoteIp;
-
+	uint8_t nSessionState;
+	uint32_t nRemoteIp;
+	uint16_t nRemotePortMidi;
 };
 
 class AppleMidi: public MDNS {

@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -149,12 +150,12 @@ void AppleMidi::HandleControlMessage(void) {
 	struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
 
 	debug_dump((void *)m_pBuffer, m_nBytesReceived);
-	DEBUG_PRINTF("Command: %c%c, m_nSessionState=%d", pPacket->aCommand[0], pPacket->aCommand[1], (int) m_tSessionStatus.m_nSessionState);
+	DEBUG_PRINTF("Command: %c%c, m_nSessionState=%d", pPacket->aCommand[0], pPacket->aCommand[1], (int) m_tSessionStatus.nSessionState);
 
-	if (m_tSessionStatus.m_nSessionState == SESSION_STATE_WAITING_IN_CONTROL) {
+	if (m_tSessionStatus.nSessionState == SESSION_STATE_WAITING_IN_CONTROL) {
 		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
 
-		if ((m_tSessionStatus.m_nRemoteIp == 0) && (memcmp(pPacket->aCommand, aInvitation, 2) == 0)) {
+		if ((m_tSessionStatus.nRemoteIp == 0) && (memcmp(pPacket->aCommand, aInvitation, 2) == 0)) {
  			DEBUG_PUTS("Invitation");
 
 			memcpy((void *)&m_ExchangePacketReply.aCommand, (const void *)aInvitationAccepted, sizeof(aInvitationAccepted));
@@ -163,8 +164,8 @@ void AppleMidi::HandleControlMessage(void) {
 			debug_dump((void *)&m_ExchangePacketReply, m_nExchangePacketReplySize);
 			Network::Get()->SendTo(m_nHandleControl, (const uint8_t *) &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
 
-			m_tSessionStatus.m_nSessionState = SESSION_STATE_WAITING_IN_MIDI;
-			m_tSessionStatus.m_nRemoteIp = m_nRemoteIp;
+			m_tSessionStatus.nSessionState = SESSION_STATE_WAITING_IN_MIDI;
+			m_tSessionStatus.nRemoteIp = m_nRemoteIp;
 
 			return;
 		} else {
@@ -172,12 +173,12 @@ void AppleMidi::HandleControlMessage(void) {
 		}
 	}
 
-	if (m_tSessionStatus.m_nSessionState == SESSION_STATE_ESTABLISHED) {
+	if (m_tSessionStatus.nSessionState == SESSION_STATE_ESTABLISHED) {
 		DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-		if ((m_tSessionStatus.m_nRemoteIp == m_nRemoteIp) && (memcmp(pPacket->aCommand, aEndSession, 2) == 0)) {
-			m_tSessionStatus.m_nSessionState = SESSION_STATE_WAITING_IN_CONTROL;
-			m_tSessionStatus.m_nRemoteIp = 0;
+		if ((m_tSessionStatus.nRemoteIp == m_nRemoteIp) && (memcmp(pPacket->aCommand, aEndSession, 2) == 0)) {
+			m_tSessionStatus.nSessionState = SESSION_STATE_WAITING_IN_CONTROL;
+			m_tSessionStatus.nRemoteIp = 0;
 			DEBUG_PUTS("End Session");
 
 			return;
@@ -213,7 +214,7 @@ void AppleMidi::HandleMidiMessage(void) {
 
 		if (memcmp(m_pBuffer, aSignature, sizeof(aSignature)) == 0) {
 
-			if (m_tSessionStatus.m_nSessionState == SESSION_STATE_WAITING_IN_MIDI) {
+			if (m_tSessionStatus.nSessionState == SESSION_STATE_WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
 				struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
@@ -228,13 +229,14 @@ void AppleMidi::HandleMidiMessage(void) {
 
 					Network::Get()->SendTo(m_nHandleMidi, (const uint8_t *) &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
 
-					m_tSessionStatus.m_nSessionState = SESSION_STATE_ESTABLISHED;
+					m_tSessionStatus.nSessionState = SESSION_STATE_ESTABLISHED;
+					m_tSessionStatus.nRemotePortMidi = m_nRemotePort;
 				}
 
 				return;
 			}
 
-			if (m_tSessionStatus.m_nSessionState == SESSION_STATE_ESTABLISHED) {
+			if (m_tSessionStatus.nSessionState == SESSION_STATE_ESTABLISHED) {
 				DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
 				struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
@@ -263,7 +265,7 @@ void AppleMidi::Run(void) {
 
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleMidi, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
-	if ((m_tSessionStatus.m_nRemoteIp == m_nRemoteIp) && (m_nBytesReceived >= 12)) {
+	if ((m_tSessionStatus.nRemoteIp == m_nRemoteIp) && (m_nBytesReceived >= 12)) {
 		HandleMidiMessage();
 	}
 
@@ -284,4 +286,7 @@ void AppleMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 void AppleMidi::Print(void) {
 	MDNS::Print();
+
+	printf("AppleMIDI configuration\n");
+	printf(" Session name : %s\n", m_ExchangePacketReply.aName);
 }
