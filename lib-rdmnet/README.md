@@ -1,4 +1,4 @@
-##Open Source cross platform C++ library for the LLRP/RDMNet E1.33 protocol 
+## Open Source cross platform C++ library for the LLRP/RDMNet E1.33 protocol 
 
 This library implements the UDP based LLRP protocol from RDMNet
 
