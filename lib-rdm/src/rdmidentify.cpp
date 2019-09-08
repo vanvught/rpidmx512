@@ -2,7 +2,7 @@
  * @file rdmidentify.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,14 @@
 
 #include "ledblink.h"
 
+#include "debug.h"
+
 RDMIdentify *RDMIdentify::s_pThis = 0;
 
-RDMIdentify::RDMIdentify(void): m_bIsEnabled(false), m_nMode(IDENTIFY_MODE_QUIET) {
+RDMIdentify::RDMIdentify(void):
+	m_bIsEnabled(false),
+	m_nMode(IDENTIFY_MODE_QUIET)
+{
 	s_pThis = this;
 }
 
@@ -38,20 +43,20 @@ RDMIdentify::~RDMIdentify(void) {
 }
 
 void RDMIdentify::On(void) {
-	if (!m_bIsEnabled) {
+//	if (!m_bIsEnabled) {
 		m_bIsEnabled = true;
 		LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
-	}
+//	}
 }
 
 void RDMIdentify::Off(void) {
-	if (m_bIsEnabled) {
+//	if (m_bIsEnabled) {
 		m_bIsEnabled = false;
 		LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
-	}
+//	}
 }
 
 bool RDMIdentify::IsEnabled(void) {
-	m_bIsEnabled = (LedBlink::Get()->GetMode() == LEDBLINK_MODE_FAST);
+//	m_bIsEnabled = (LedBlink::Get()->GetMode() == LEDBLINK_MODE_FAST);
 	return m_bIsEnabled;
 }

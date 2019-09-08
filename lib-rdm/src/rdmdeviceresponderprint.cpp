@@ -2,7 +2,7 @@
  * @file rdmdeviceresponderprint.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ void RDMDeviceResponder::Print(void) {
 	struct TRDMDeviceInfoData InfoData;
 	GetLabel(RDM_ROOT_DEVICE, &InfoData);
 
-	printf("\nRDM Responder configuration\n");
+	printf("RDM Responder configuration\n");
 	printf(" Protocol Version %d.%d\n", (int) info->protocol_major, (int) info->protocol_minor);
 	printf(" DMX Address   : %d\n", (int) (((uint16_t) info->dmx_start_address[0] << 8) + info->dmx_start_address[1]));
 	printf(" DMX Footprint : %d\n", (int) (((uint16_t) info->dmx_footprint[0] << 8) + info->dmx_footprint[1]));

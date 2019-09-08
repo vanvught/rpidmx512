@@ -65,8 +65,6 @@ RDMDevice::RDMDevice(const struct TRDMDeviceInfoData *tLabel, RDMDeviceStore* m_
 	m_tRDMDeviceParams.nSetList = 0;
 
 	uint8_t aMacAddress[NETWORK_MAC_SIZE];
-
-	assert((uint32_t) Network::Get());
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
 	m_tRDMDeviceParams.aDeviceUID[0] = DEVICE_MANUFACTURER_ID[0];
@@ -82,7 +80,6 @@ RDMDevice::RDMDevice(const struct TRDMDeviceInfoData *tLabel, RDMDeviceStore* m_
 	m_tRDMDeviceParams.aDeviceSN[2] = m_tRDMDeviceParams.aDeviceUID[3];
 	m_tRDMDeviceParams.aDeviceSN[3] = m_tRDMDeviceParams.aDeviceUID[2];
 
-	assert((uint32_t) Hardware::Get());
 	const char* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
 
 	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(WebsiteUrl));

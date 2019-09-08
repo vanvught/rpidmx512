@@ -2,7 +2,7 @@
  * @file rdmhandler.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,15 @@
 #define RDMHANDLER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "rdmdeviceresponder.h"
 #include "rdmmessage.h"
 #include "rdmqueuedmessage.h"
 
-enum TPowerState {
-	POWER_STATE_FULL_OFF = 0x00, ///< Completely disengages power to device. Device can no longer respond.
-	POWER_STATE_SHUTDOWN = 0x01, ///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
-	POWER_STATE_STANDBY = 0x02,	///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
-	POWER_STATE_NORMAL = 0xFF,	///< Normal Operating Mode.
-};
-
 class RDMHandler {
 public:
-	RDMHandler(RDMDeviceResponder *pRDMDeviceResponder);
+	RDMHandler(RDMDeviceResponder *pRDMDeviceResponder, bool bRDM = true);
 	~RDMHandler(void);
 
 	void HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut);
@@ -55,6 +49,8 @@ private:
 		void (RDMHandler::*pSetHandler)(bool IsBroadcast, uint16_t nSubDevice);
 		const uint8_t nGetArgumentSize;
 		const bool bIncludeInSupportedParams;
+		const bool bRDM;
+		const bool bRDMNet;
 	} pid_definition;
 
 	static const pid_definition PID_DEFINITIONS[];
@@ -85,6 +81,19 @@ private:
 	void GetRealTimeClock(uint16_t nSubDevice);
 	void GetPowerState(uint16_t nSubDevice);
 	void GetIdentifyMode(uint16_t nSubDevice);
+	// ANSI E1.37-2 – 2015
+	void GetInterfaceList(uint16_t nSubDevice);
+	void GetInterfaceName(uint16_t nSubDevice);
+	void GetHardwareAddress(uint16_t nSubDevice);
+	void GetDHCPMode(uint16_t nSubDevice);
+	void GetZeroconf(uint16_t nSubDevice);
+	void GetDefaultRoute(uint16_t nSubDevice);
+	void GetAddressNetmask(uint16_t nSubDevice);
+	void GetStaticAddress(uint16_t nSubDevice);
+	void GetNameServers(uint16_t nSubDevice);
+	void GetHostName(uint16_t nSubDevice);
+	void GetDomainName(uint16_t nSubDevice);
+
 	// Set
 	void SetDeviceLabel(bool IsBroadcast, uint16_t nSubDevice);
 	void SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice);
@@ -99,18 +108,20 @@ private:
 	void SetResetDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
+	// ANSI E1.37-2 – 2015
+	void SetZeroconf(bool IsBroadcast, uint16_t nSubDevice);
+	void SetHostName(bool IsBroadcast, uint16_t nSubDevice);
 
 private:
 	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
 	void RespondMessageAck(void);
 	void RespondMessageNack(uint16_t nReason);
-
-private:
 	void HandleString(const char *pString, uint8_t nLenght);
 
 private:
 	RDMDeviceResponder *m_pRDMDeviceResponder;
-	RDMQueuedMessage  m_RDMQueuedMessage;
+	bool m_bIsRDM;
+	RDMQueuedMessage m_RDMQueuedMessage;
 	bool m_IsMuted;
 	uint8_t *m_pRdmDataIn;
 	uint8_t *m_pRdmDataOut;
