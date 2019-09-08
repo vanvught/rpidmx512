@@ -1,8 +1,8 @@
 /**
- * @file math.h
+ * @file if.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MATH_H_
-#define MATH_H_
+#ifndef IF_H_
+#define IF_H_
 
-#ifdef __cplusplus
-extern "C" {
+#define IF_NAMESIZE     16
+
+#ifndef IFNAMSIZ
+#define IFNAMSIZ        IF_NAMESIZE
 #endif
 
-extern float log2f(float);
-extern float logf(float);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* MATH_H_ */
+#endif /* IF_H_ */
