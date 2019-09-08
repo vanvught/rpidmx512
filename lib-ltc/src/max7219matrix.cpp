@@ -96,3 +96,6 @@ void Max7219Matrix::ShowSysTime(void) {
 
 	d8x8matrix_write(&m_DeviceInfo, (const char *)systime, SEGMENTS);
 }
+
+void Max7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {
+}

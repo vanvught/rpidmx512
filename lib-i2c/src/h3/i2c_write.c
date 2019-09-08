@@ -1,7 +1,8 @@
 /**
- * @file displaymax7219.h
+ * @file i2c_write.c
+ *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
-
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
+#include "i2c.h"
 
-enum tMax7219Types {
-	MAX7219_MATRIX,
-	MAX7219_7SEGMENT
-};
+void i2c_write_reg_uint8(uint8_t reg, uint8_t data) {
+	char buffer[2];
 
-class DisplayMax7219 {
-public:
-	DisplayMax7219(tMax7219Types tType = MAX7219_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
+	buffer[0] = reg;
+	buffer[1] = data;
 
-	void Init(uint8_t nIntensity);
+	FUNC_PREFIX(i2c_write(buffer, 2));
+}
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
+void i2c_write_reg_uint16(uint8_t reg, uint16_t data) {
+	char buffer[3];
 
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
+	buffer[0] = reg;
+	buffer[1] = (char) (data >> 8);
+	buffer[2] = (char) (data & 0xFF);
 
-	 static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
+	FUNC_PREFIX(i2c_write(buffer, 3));
+}
 
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
-};
-
-
-#endif /* DISPLAYMAX7219_H_ */

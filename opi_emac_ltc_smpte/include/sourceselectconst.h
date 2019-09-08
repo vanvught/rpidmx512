@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file sourceselectconst.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,41 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
+#ifndef SOURCESELECTCONST_H_
+#define SOURCESELECTCONST_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
+#include "ltcparams.h"
 
-enum tMax7219Types {
-	MAX7219_MATRIX,
-	MAX7219_7SEGMENT
-};
-
-class DisplayMax7219 {
+class SourceSelectConst {
 public:
-	DisplayMax7219(tMax7219Types tType = MAX7219_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
-
-	void Init(uint8_t nIntensity);
-
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	 static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
+	alignas(uint32_t) static const char SOURCE[LTC_READER_SOURCE_UNDEFINED][12];
 };
 
-
-#endif /* DISPLAYMAX7219_H_ */
+#endif /* SOURCESELECTCONST_H_ */

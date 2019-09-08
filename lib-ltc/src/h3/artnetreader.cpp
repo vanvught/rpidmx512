@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
@@ -31,6 +32,7 @@
 
 #include "h3/artnetreader.h"
 #include "ltc.h"
+#include "timecodeconst.h"
 
 #include "c/led.h"
 
@@ -54,53 +56,30 @@
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
 
+// IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
-
-static volatile uint32_t nMidiQuarterFrameUs = 0;
-static volatile uint32_t nMidiQuarterFramePiece = 0;
+// IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
 
-static volatile struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
-
-static volatile uint32_t nLimitUs;
+static uint32_t nMidiQuarterFramePiece = 0;
+static struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
 static void irq_timer0_update_handler(uint32_t clo) {
-	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
 
 static void irq_timer1_midi_handler(uint32_t clo) {
-	H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
-	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-	dmb();
 	IsMidiQuarterFrameMessage = true;
-}
-
-inline static void itoa_base10(uint32_t arg, char *buf) {
-	char *n = buf;
-
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
-		return;
-	}
-
-	*n++ = (char) ('0' + (arg / 10));
-	*n = (char) ('0' + (arg % 10));
 }
 
 ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
-	for (uint32_t i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]) ; i++) {
-		m_aTimeCode[i] = ' ';
-	}
-
+	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
 	m_aTimeCode[5] = ':';
 	m_aTimeCode[8] = '.';
@@ -120,7 +99,7 @@ void ArtNetReader::Start(void) {
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
 		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
-		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
+		H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
 	}
 
 	led_set_ticks_per_second(1000000 / 1);
@@ -135,6 +114,7 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	char *pTimeCodeType;
 #ifndef NDEBUG
 	char aLimitWarning[16];
+	uint32_t nLimitUs;
 	const uint32_t nNowUs = h3_hs_timer_lo_us();
 #endif
 
@@ -157,6 +137,23 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	if ((m_tTimeCodeTypePrevious != (TTimecodeTypes )ArtNetTimeCode->Type)) {
 		m_tTimeCodeTypePrevious = (TTimecodeTypes) ArtNetTimeCode->Type;
 
+		if (!m_ptLtcDisabledOutputs->bMidi) {
+			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+		}
+
+		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) ArtNetTimeCode->Type] / 4;
+		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+
+		nMidiQuarterFramePiece = 0;
+
+		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
+
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
+			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
+		}
+		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
+
+#ifndef NDEBUG
 		switch ((_midi_timecode_type) ArtNetTimeCode->Type) {
 		case TC_TYPE_FILM:
 			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
@@ -172,29 +169,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 			assert(0);
 			break;
 		}
-
-		if (!m_ptLtcDisabledOutputs->bMidi) {
-			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
-		}
-
-		nMidiQuarterFramePiece = 0;
-		nMidiQuarterFrameUs = nLimitUs / 4;
-
-		H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
-		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
-
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
-		}
-		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
+#endif
 	}
 
-	itoa_base10(ArtNetTimeCode->Hours, (char *) &m_aTimeCode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, (char *) &m_aTimeCode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, (char *) &m_aTimeCode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, (char *) &m_aTimeCode[9]);
+	Ltc::ItoaBase10((const struct TLtcTimeCode *) ArtNetTimeCode, m_aTimeCode);
 
 	if (!m_ptLtcDisabledOutputs->bDisplay) {
 		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
@@ -218,10 +196,9 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 
 void ArtNetReader::Run(void) {
 	dmb();
-	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
+	if (nUpdatesPerSecond >= 24) {
 		dmb();
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
-			dmb();
 			IsMidiQuarterFrameMessage = false;
 
 			uint8_t bytes[2] = { 0xF1, 0x00 };
@@ -261,6 +238,7 @@ void ArtNetReader::Run(void) {
 		}
 		led_set_ticks_per_second(1000000 / 3);
 	} else {
+		m_tTimeCodeTypePrevious = TC_TYPE_INVALID;
 		DisplayMax7219::Get()->ShowSysTime();
 		led_set_ticks_per_second(1000000 / 1);
 	}

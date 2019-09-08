@@ -2,7 +2,7 @@
  * @file i2c_read.c
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,26 +25,21 @@
 
 #include <stdint.h>
 
+#include "i2c.h"
+
 #if defined(__linux__)
  #include "bcm2835.h"
  #define udelay bcm2835_delayMicroseconds
 #elif defined(H3)
  #include "h3.h"
- #include "h3_i2c.h"
 #else
- #include "bcm2835_i2c.h"
-#endif
-
-#if defined(H3)
- #define FUNC_PREFIX(x) h3_##x
-#else
- #define FUNC_PREFIX(x) bcm2835_##x
+ #include "bcm2835.h"
 #endif
 
 uint8_t i2c_read_uint8(void) {
 	uint8_t buf[1] = { 0 };
 
-	(void) FUNC_PREFIX(i2c_read((char *) buf, (uint32_t) 1));
+	FUNC_PREFIX(i2c_read((char *) buf, 1));
 
 	return buf[0];
 }
@@ -52,9 +47,19 @@ uint8_t i2c_read_uint8(void) {
 uint16_t i2c_read_uint16(void) {
 	uint8_t buf[2] = { 0, 0 };
 
-	(void) FUNC_PREFIX(i2c_read((char *) buf, (uint32_t) 2));
+	FUNC_PREFIX(i2c_read((char *) buf, 2));
 
 	return (uint16_t) ((uint16_t) buf[0] << 8 | (uint16_t) buf[1]);
+}
+
+uint8_t i2c_read_reg_uint8(uint8_t reg) {
+	uint8_t buf[2] = { 0, 0 };
+
+	buf[0] = reg;
+
+	FUNC_PREFIX(i2c_write((char *) &buf[0], 1));
+
+	return i2c_read_uint8();
 }
 
 uint16_t i2c_read_reg_uint16(uint8_t reg) {
@@ -62,7 +67,7 @@ uint16_t i2c_read_reg_uint16(uint8_t reg) {
 
 	buf[0] = reg;
 
-	(void) FUNC_PREFIX(i2c_write((char *) &buf[0], (uint32_t) 1));
+	FUNC_PREFIX(i2c_write((char *) &buf[0], 1));
 
 	return i2c_read_uint16();
 }
@@ -72,7 +77,7 @@ uint16_t i2c_read_reg_uint16_delayus(uint8_t reg, uint32_t delayus) {
 
 	buf[0] = reg;
 
-	(void) FUNC_PREFIX(i2c_write((char *) &buf[0], (uint32_t) 1));
+	FUNC_PREFIX(i2c_write((char *) &buf[0], 1));
 
 	udelay(delayus);
 

@@ -80,7 +80,6 @@ public:
 	void SetCursor(TCursorMode EnumTCursorOnOff);
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
-#if !defined(RASPPI)
 	void SetSleep(bool bSleep);
 	bool isSleep(void) {
 		return m_bIsSleep;
@@ -92,7 +91,6 @@ public:
 	uint8_t GetSleepTimeout(void) {
 		return m_nSleepTimeout / 1000 / 60;
 	}
-#endif
 
 	uint8_t getCols(void) {
 		return m_nCols;
@@ -121,9 +119,7 @@ private:
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
 	bool m_bHave7Segment;
-#if !defined(RASPPI)
 	uint32_t m_nMillis;
-#endif
 	uint32_t m_nSleepTimeout;
 
 	static Display *s_pThis;

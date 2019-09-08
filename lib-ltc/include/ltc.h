@@ -60,8 +60,7 @@ class Ltc {
 public:
 	static const char *GetType(TTimecodeTypes tTimeCodeType);
 	static TTimecodeTypes GetType(uint8_t nFps);
-
-private:
+	static void ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char aTimeCode[TC_CODE_MAX_LENGTH]);
 };
 
 #endif /* LTC_H_ */

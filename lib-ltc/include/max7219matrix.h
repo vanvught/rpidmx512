@@ -44,6 +44,8 @@ public:
 	void Show(const char *pTimecode);
 	void ShowSysTime(void);
 
+	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+
 	static Max7219Matrix* Get(void) {
 		return s_pThis;
 	}

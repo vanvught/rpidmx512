@@ -1,5 +1,5 @@
 /**
- * @file displaymax7219.h
+ * @file timecodeconst.cpp
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,41 +22,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
-
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
+#include "timecodeconst.h"
 
-enum tMax7219Types {
-	MAX7219_MATRIX,
-	MAX7219_7SEGMENT
-};
-
-class DisplayMax7219 {
-public:
-	DisplayMax7219(tMax7219Types tType = MAX7219_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
-
-	void Init(uint8_t nIntensity);
-
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	 static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
-};
-
-
-#endif /* DISPLAYMAX7219_H_ */
+alignas(uint32_t) const uint8_t TimeCodeConst::FPS[4] = { 24, 25, 30, 30 };
+alignas(uint32_t) const uint32_t TimeCodeConst::TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};

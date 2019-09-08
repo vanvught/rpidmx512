@@ -36,7 +36,7 @@ public:
 	virtual void Show(const char *pTimecode)=0;
 	virtual void ShowSysTime(void)=0;
 
-private:
+	virtual void WriteChar(uint8_t nChar, uint8_t nPos)=0;
 };
 
 #endif /* MAX7219SET_H_ */

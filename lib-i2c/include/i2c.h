@@ -75,6 +75,7 @@ inline static uint8_t i2c_read(char *buf, uint32_t len) {
 
 extern uint8_t i2c_read_uint8(void);
 extern uint16_t i2c_read_uint16(void);
+extern uint8_t i2c_read_reg_uint8(uint8_t);
 extern uint16_t i2c_read_reg_uint16(uint8_t);
 extern uint16_t i2c_read_reg_uint16_delayus(uint8_t, uint32_t);
 

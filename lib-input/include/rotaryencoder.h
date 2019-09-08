@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file rotaryencoder.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,41 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
+#ifndef ROTARYENCODER_H_
+#define ROTARYENCODER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
-
-enum tMax7219Types {
-	MAX7219_MATRIX,
-	MAX7219_7SEGMENT
+enum TRotaryDirection {
+	ROTARY_DIRECTION_NONE = 0x00,
+	ROTARY_DIRECTION_CW = 0x10,
+	ROTARY_DIRECTION_CCW = 0x20
 };
 
-class DisplayMax7219 {
+class RotaryEncoder {
 public:
-	DisplayMax7219(tMax7219Types tType = MAX7219_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
+	RotaryEncoder(void);
+	~RotaryEncoder(void);
 
-	void Init(uint8_t nIntensity);
-
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	 static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
+	TRotaryDirection Process(uint8_t nInputAB);
 
 private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
+	uint8_t m_nState;
 };
 
-
-#endif /* DISPLAYMAX7219_H_ */
+#endif /* INCLUDE_ROTARYENCODER_H_ */

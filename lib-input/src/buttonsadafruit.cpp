@@ -1,4 +1,4 @@
-#if !defined (__CYGWIN__)
+#if defined (RASPPI)
 /**
  * @file buttonsadafruit.cpp
  *

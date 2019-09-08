@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
@@ -58,6 +59,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
+// IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
@@ -91,10 +93,7 @@ MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabl
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
-	for (unsigned i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]); i++) {
-		m_aTimeCode[i] = ' ';
-	}
-
+	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
 	m_aTimeCode[5] = ':';
 	m_aTimeCode[8] = '.';
@@ -240,12 +239,20 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
+	struct TLtcTimeCode tLtcTimeCode;
+
+	tLtcTimeCode.nFrames = m_MidiTimeCode.frame;
+	tLtcTimeCode.nSeconds = m_MidiTimeCode.second;
+	tLtcTimeCode.nMinutes = m_MidiTimeCode.minute;
+	tLtcTimeCode.nHours = m_MidiTimeCode.hour;
+	tLtcTimeCode.nType = (uint8_t) m_MidiTimeCode.rate;
+
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		m_pNode->SendTimeCode((struct TArtNetTimeCode *) &m_MidiTimeCode);
+		m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &tLtcTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bNtp) {
-		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
+		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &tLtcTimeCode);
 	}
 
 	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {

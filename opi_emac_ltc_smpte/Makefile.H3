@@ -1,7 +1,7 @@
 #
 DEFINES = LTC_READER NDEBUG
 #
-LIBS = ltc tcnet midi
+LIBS = ltc tcnet midi input
 #
 SRCDIR = firmware lib
 

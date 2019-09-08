@@ -66,3 +66,7 @@ void DisplayMax7219::ShowSysTime(void) {
 		m_pMax7219Set->ShowSysTime();
 	}
 }
+
+void DisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
+	m_pMax7219Set->WriteChar(nChar, nPos);
+}

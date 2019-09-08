@@ -61,6 +61,9 @@
 #include "display.h"
 #include "displaymax7219.h"
 
+#include "sourceselect.h"
+#include "sourceselectconst.h"
+
 #include "ntpserver.h"
 
 #include "h3/artnetreader.h"
@@ -192,7 +195,19 @@ void notmain(void) {
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
 	max7219.Init(ltcParams.GetMax7219Intensity());
 
-	const TLtcReaderSource source = ltcParams.GetSource();
+	// Select the source
+
+	TLtcReaderSource source = ltcParams.GetSource();
+
+	SourceSelect sourceSelect(source);
+
+	if (sourceSelect.Check()) {
+		while (sourceSelect.Wait(source)) {
+			lb.Run();
+		}
+	}
+
+	// From here work with source selection
 
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
@@ -245,10 +260,11 @@ void notmain(void) {
 	}
 
 	midi.Print();
+	rtpMidi.Print();
 	tcnet.Print();
 	ltcGenerator.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE , 0);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -265,18 +281,13 @@ void notmain(void) {
 	console_puts("Source : ");
 	display.SetCursorPos(0,3);
 
-	switch (source) {
-	case LTC_READER_SOURCE_ARTNET:
-		puts("Art-Net");
-		display.PutString("Art-Net");
-		break;
-	case LTC_READER_SOURCE_MIDI:
-		puts("MIDI");
-		display.PutString("MIDI");
-		break;
-	case LTC_READER_SOURCE_TCNET:
-		console_puts("TCNet ");
-		display.PutString("TCNet ");
+	puts(SourceSelectConst::SOURCE[source]);
+	display.PutString(SourceSelectConst::SOURCE[source]);
+
+	if (source == LTC_READER_SOURCE_TCNET) {
+		console_puts(" ");
+		display.PutString(" ");
+
 		if (tcnet.GetLayer() != TCNET_LAYER_UNDEFINED) {
 			console_putc('L');
 			display.PutChar('L');
@@ -312,19 +323,6 @@ void notmain(void) {
 			puts("SMPTE");
 			display.PutString("SMPTE");
 		}
-		break;
-	case LTC_READER_SOURCE_INTERNAL:
-		puts("Internal");
-		display.PutString("Internal");
-		break;
-	case LTC_READER_SOURCE_APPLEMIDI:
-		puts("rtpMIDI");
-		display.PutString("rtpMIDI");
-		break;
-	default:
-		puts("LTC");
-		display.PutString("LTC");
-		break;
 	}
 
 	if (tLtcDisabledOutputs.bDisplay) {
@@ -361,14 +359,13 @@ void notmain(void) {
 
 	for (;;) {
 		hw.WatchdogFeed();
-
 		nw.Run();
 
-		if (source == LTC_READER_SOURCE_TCNET) {	//FIXME Remove when MASTER is implemented
+		if (source == LTC_READER_SOURCE_TCNET) {		//FIXME Remove when MASTER is implemented
 			tcnet.Run();
 		}
 
-		if (source == LTC_READER_SOURCE_APPLEMIDI) {
+		if (source == LTC_READER_SOURCE_APPLEMIDI) {	//FIXME Remove when Sender is implemented
 			rtpMidi.Run();
 		}
 
@@ -403,6 +400,10 @@ void notmain(void) {
 
 		remoteConfig.Run();
 		spiFlashStore.Flash();
+
+		if (sourceSelect.IsConnected()) {
+			sourceSelect.Run();
+		}
 
 		if (tLtcDisabledOutputs.bDisplay) {
 			display.Run();

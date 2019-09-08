@@ -1,4 +1,4 @@
-## Open source Raspberry Pi C++ library for input devices ##
+## Open Source C++ library for input devices ##
 
 Supported devices :
 

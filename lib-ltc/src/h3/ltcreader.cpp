@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
@@ -31,6 +32,7 @@
 
 #include "h3/ltcreader.h"
 #include "ltc.h"
+#include "timecodeconst.h"
 
 #include "c/led.h"
 
@@ -77,7 +79,6 @@ static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static volatile uint32_t nMidiQuarterFrameUs = 0;
 static volatile bool IsMidiQuarterFrameMessage = false;
 static volatile uint32_t nMidiQuarterFramePiece = 0;
 
@@ -192,10 +193,6 @@ static void irq_timer0_update_handler(uint32_t clo) {
 }
 
 static void irq_timer1_midi_handler(uint32_t clo) {
-	H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
-	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-	dmb();
 	IsMidiQuarterFrameMessage = true;
 }
 
@@ -223,9 +220,9 @@ void LtcReader::Start(void) {
 
 	gic_fiq_config(H3_PA_EINT_IRQn, GIC_CORE0);
 
-	H3_PIO_PA_INT->CFG1 = (0x4 << 8);
-	H3_PIO_PA_INT->CTL = (1 << GPIO_EXT_26);
-	H3_PIO_PA_INT->STA = ~0x0;
+	H3_PIO_PA_INT->CFG1 = (GPIO_INT_CFG_DOUBLE_EDGE << 8);
+	H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_26);
+	H3_PIO_PA_INT->STA = (1 << GPIO_EXT_26);
 	H3_PIO_PA_INT->DEB = 1;
 
 	irq_timer_init();
@@ -236,7 +233,7 @@ void LtcReader::Start(void) {
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
-	H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
+	H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
 
 	__enable_fiq();
 }
@@ -244,9 +241,9 @@ void LtcReader::Start(void) {
 void LtcReader::Run(void) {
 	uint8_t TimeCodeType;
 	char *pTimeCodeType;
-	uint32_t nLimitUs =  0;
 #ifndef NDEBUG
 	char aLimitWarning[16] ALIGNED;
+	uint32_t nLimitUs;
 	uint32_t nNowUs =  0;
 #endif
 
@@ -263,28 +260,44 @@ void LtcReader::Run(void) {
 		dmb();
 		if (bIsDropFrameFlagSet) {
 			TimeCodeType = TC_TYPE_DF;
+#ifndef NDEBUG
 			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
+#endif
 		} else {
 			if (nUpdatesPerSecond == 24) {
 				TimeCodeType = TC_TYPE_FILM;
+#ifndef NDEBUG
 				nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
+#endif
 			} else if (nUpdatesPerSecond == 25) {
 				TimeCodeType = TC_TYPE_EBU;
+#ifndef NDEBUG
 				nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
+#endif
 			} else if (nUpdatesPerSecond == 30) {
+#ifndef NDEBUG
 				nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
+#endif
 				TimeCodeType = TC_TYPE_SMPTE;
 			}
 		}
 
 		tMidiTimeCode.rate = (_midi_timecode_type)TimeCodeType;
 
+		struct TLtcTimeCode tLtcTimeCode;
+
+		tLtcTimeCode.nFrames = tMidiTimeCode.frame;
+		tLtcTimeCode.nSeconds = tMidiTimeCode.second;
+		tLtcTimeCode.nMinutes = tMidiTimeCode.minute;
+		tLtcTimeCode.nHours = tMidiTimeCode.hour;
+		tLtcTimeCode.nType = (uint8_t) tMidiTimeCode.rate;
+
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
-			m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &tMidiTimeCode);
+			m_pNode->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
 		}
 
 		if (!m_ptLtcDisabledOutputs->bNtp) {
-			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &tMidiTimeCode);
+			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *)&tLtcTimeCode);
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
@@ -292,11 +305,10 @@ void LtcReader::Run(void) {
 
 			Midi::Get()->SendTimeCode((const struct _midi_send_tc *) &tMidiTimeCode);
 
-			nMidiQuarterFramePiece = 0;
-			nMidiQuarterFrameUs = nLimitUs / 4;
-
-			H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
+			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) TimeCodeType] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+
+			nMidiQuarterFramePiece = 0;
 
 			pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) TimeCodeType);
 

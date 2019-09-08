@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file sourceselect.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,41 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
+#ifndef SOURCESELECT_H_
+#define SOURCESELECT_H_
 
-#include <stdint.h>
 #include <stdbool.h>
 
-#include "max7219set.h"
+#include "ltcparams.h"
 
-enum tMax7219Types {
-	MAX7219_MATRIX,
-	MAX7219_7SEGMENT
+#include "rotaryencoder.h"
+
+enum TRunStatus {
+	RUN_STATUS_IDLE,
+	RUN_STATUS_CONTINUE,
+	RUN_STATUS_REBOOT
 };
 
-class DisplayMax7219 {
+class SourceSelect {
 public:
-	DisplayMax7219(tMax7219Types tType = MAX7219_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
+	SourceSelect(TLtcReaderSource tLtcReaderSource);
+	~SourceSelect(void);
 
-	void Init(uint8_t nIntensity);
+	bool Check(void);
+	bool Wait(TLtcReaderSource& tLtcReaderSource);
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	 static DisplayMax7219* Get(void) {
-		return s_pThis;
+	bool IsConnected(void) {
+		return m_bIsConnected;
 	}
 
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
+	void Run(void);
 
-	static DisplayMax7219 *s_pThis;
+private:
+	void LedBlink(uint8_t nPortB);
+	void HandleActionLeft(TLtcReaderSource& tLtcReaderSource);
+	void HandleActionRight(TLtcReaderSource& tLtcReaderSource);
+	void HandleRotary(uint8_t nInputAB, TLtcReaderSource& tLtcReaderSource);
+	void UpdateDisaplays(TLtcReaderSource tLtcReaderSource);
+	void HandleActionSelect(void);
+	void SetRunState(TRunStatus tRunState);
+
+private:
+	TLtcReaderSource m_tLtcReaderSource;
+	bool m_bIsConnected;
+	uint8_t m_nPortA;
+	uint8_t m_nPortAPrevious;
+	uint8_t m_nPortB;
+	uint32_t m_nMillisPrevious;
+	RotaryEncoder m_RotaryEncoder;
+	TRotaryDirection m_tRotaryDirection;
+	TRunStatus m_tRunStatus;
+	uint32_t m_nSelectMillis;
 };
 
-
-#endif /* DISPLAYMAX7219_H_ */
+#endif /* SOURCESELECT_H_ */

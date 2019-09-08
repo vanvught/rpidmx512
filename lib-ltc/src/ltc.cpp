@@ -63,3 +63,23 @@ TTimecodeTypes Ltc::GetType(uint8_t nFps) {
 
 	return TC_TYPE_UNKNOWN;
 }
+
+inline static void itoa_base10(uint32_t arg, char *buf) {
+	char *n = buf;
+
+	if (arg == 0) {
+		*n++ = '0';
+		*n = '0';
+		return;
+	}
+
+	*n++ = (char) ('0' + (arg / 10));
+	*n = (char) ('0' + (arg % 10));
+}
+
+void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char aTimeCode[TC_CODE_MAX_LENGTH]) {
+	itoa_base10(ptLtcTimeCode->nHours, (char *) &aTimeCode[0]);
+	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &aTimeCode[3]);
+	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &aTimeCode[6]);
+	itoa_base10(ptLtcTimeCode->nFrames, (char *) &aTimeCode[9]);
+}

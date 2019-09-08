@@ -28,9 +28,16 @@
 
 #include "i2c.h"
 
+#include "bcm2835.h"
+
 #include "software_version.h"
 
 int main(int argc, char **argv) {
+	if (bcm2835_init() == 0) {
+		fprintf(stderr, "Function bcm2835_init() failed\n");
+		return -1;
+	}
+
 	uint8_t first = 0x03, last = 0x77;
 	uint8_t i, j;
 	uint8_t address;

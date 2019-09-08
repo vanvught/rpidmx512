@@ -1,5 +1,5 @@
 /**
- * @file h3_gpio.c
+ * @file h3_gpio_fsel.c
  *
  */
 /* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl

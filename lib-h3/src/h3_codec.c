@@ -27,8 +27,6 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -491,8 +489,9 @@ void h3_codec_begin(void) {
 			struct sunxi_dma_lli *lli_prev = &p_coherent_region->lli[i - 1];
 			lli_prev->p_lli_next = (uint32_t) lli;
 		}
-
+#ifndef NDEBUG
 		h3_dma_dump_lli(lli);
+#endif
 	}
 
 	struct sunxi_dma_lli *lli_last = &p_coherent_region->lli[CONFIG_TX_DESCR_NUM - 1];

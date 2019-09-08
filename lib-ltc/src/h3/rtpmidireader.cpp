@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "h3/rtpmidireader.h"
@@ -45,27 +45,16 @@
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
 
+// IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static volatile uint32_t nMidiQuarterFrameUs = 0;
-static volatile bool IsMidiQuarterFrameMessage = false;
-
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static void irq_timer0_update_handler(uint32_t clo) {
-	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
-}
-
-static void irq_timer1_midi_handler(uint32_t clo) {
-	H3_TIMER->TMR1_INTV = nMidiQuarterFrameUs * 12;
-	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-	dmb();
-	IsMidiQuarterFrameMessage = true;
 }
 
 inline static void itoa_base10(uint32_t arg, char *buf) {
@@ -96,10 +85,7 @@ RtpMidiReader::RtpMidiReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtc
 	assert(m_pNode != 0);
 	assert(m_ptLtcDisabledOutputs != 0);
 
-	for (uint32_t i = 0; i < sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]); i++) {
-		m_aTimeCode[i] = ' ';
-	}
-
+	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
 	m_aTimeCode[5] = ':';
 	m_aTimeCode[8] = '.';
@@ -117,19 +103,11 @@ void RtpMidiReader::Start(void) {
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-	if (!m_ptLtcDisabledOutputs->bMidi) {
-		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
-		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
-	}
-
 	led_set_ticks_per_second(1000000 / 1);
 }
 
 void RtpMidiReader::Stop(void) {
 	irq_timer_set(IRQ_TIMER_0, 0);
-	if (!m_ptLtcDisabledOutputs->bMidi) {
-		irq_timer_set(IRQ_TIMER_1, 0);
-	}
 }
 
 void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {

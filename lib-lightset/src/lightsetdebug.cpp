@@ -29,6 +29,8 @@
 
 #include "lightsetdebug.h"
 
+#include "debug.h"
+
 #define DMX_FOOTPRINT	16
 
 LightSetDebug::LightSetDebug(void): m_bIsStarted(false), m_nDmxStartAddress(1) {
@@ -38,12 +40,12 @@ LightSetDebug::~LightSetDebug(void) {
 }
 
 uint16_t LightSetDebug::GetDmxFootprint(void) {
-	printf("%s:%s\n", __FILE__, __FUNCTION__);
+	DEBUG_PRINTF("DMX_FOOTPRINT=$d", DMX_FOOTPRINT);
 	return DMX_FOOTPRINT;
 }
 
 bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, (int) nDmxStartAddress);
+	DEBUG_PRINTF("nDmxStartAddress=$d", (int) nDmxStartAddress);
 
 	if (nDmxStartAddress > (512 - DMX_FOOTPRINT)) {
 		return false;
@@ -54,20 +56,22 @@ bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 }
 
 uint16_t LightSetDebug::GetDmxStartAddress(void) {
-	printf("%s:%s\n", __FILE__, __FUNCTION__);
+	DEBUG_PRINTF("m_nDmxStartAddress=$d", m_nDmxStartAddress);
 	return m_nDmxStartAddress;
 }
 
 bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
-	printf("%s:%s\n", __FILE__, __FUNCTION__);
+	DEBUG_ENTRY
 
 	if (nSlotOffset > DMX_FOOTPRINT) {
+		DEBUG_EXIT
 		return false;
 	}
 
 	tSlotInfo.nType = 0x00; // ST_PRIMARY
 	tSlotInfo.nCategory = 0x0001; // SD_INTENSITY
 
+	DEBUG_EXIT
 	return true;
 }
 
