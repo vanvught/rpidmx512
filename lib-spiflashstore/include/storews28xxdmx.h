@@ -35,6 +35,14 @@ public:
 
 	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
 	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+
+public:
+	static StoreWS28xxDmx* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreWS28xxDmx *s_pThis;
 };
 
 #endif /* STOREWS28XXDMX_H_ */

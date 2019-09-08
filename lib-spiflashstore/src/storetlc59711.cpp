@@ -26,11 +26,14 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "spiflashstore.h"
+#include "storetlc59711.h"
 
 #include "tlc59711dmxparams.h"
+#include "spiflashstore.h"
 
 #include "debug.h"
+
+StoreTLC59711 *StoreTLC59711::s_pThis = 0;
 
 TLC59711DmxParamsStore::~TLC59711DmxParamsStore(void) {
 	DEBUG_ENTRY
@@ -41,7 +44,9 @@ TLC59711DmxParamsStore::~TLC59711DmxParamsStore(void) {
 StoreTLC59711::StoreTLC59711(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }

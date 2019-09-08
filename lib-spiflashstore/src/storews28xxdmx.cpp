@@ -26,11 +26,14 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "spiflashstore.h"
-
+#include "storews28xxdmx.h"
 #include "ws28xxdmxparams.h"
 
+#include "spiflashstore.h"
+
 #include "debug.h"
+
+StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = 0;
 
 WS28xxDmxParamsStore::~WS28xxDmxParamsStore(void) {
 	DEBUG_ENTRY
@@ -41,7 +44,9 @@ WS28xxDmxParamsStore::~WS28xxDmxParamsStore(void) {
 StoreWS28xxDmx::StoreWS28xxDmx(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }

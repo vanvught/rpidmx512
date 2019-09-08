@@ -35,6 +35,14 @@ public:
 
 	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
 	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+
+public:
+	static StoreTLC59711* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreTLC59711 *s_pThis;
 };
 
 #endif /* STORETLC59711_H_ */

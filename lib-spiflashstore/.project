@@ -4,22 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-artnet4</project>
-		<project>lib-debug</project>
-		<project>lib-dmxsend</project>
-		<project>lib-e131</project>
-		<project>lib-h3</project>
-		<project>lib-ltc</project>
-		<project>lib-midi</project>
-		<project>lib-network</project>
-		<project>lib-oscserver</project>
-		<project>lib-remoteconfig</project>
 		<project>lib-spiflash</project>
-		<project>lib-tcnet</project>
-		<project>lib-tlc59711dmx</project>
-		<project>lib-widget</project>
-		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

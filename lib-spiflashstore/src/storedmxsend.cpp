@@ -27,11 +27,13 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "storedmxsend.h"
+#include "dmxparams.h"
 #include "spiflashstore.h"
 
-#include "dmxparams.h"
-
 #include "debug.h"
+
+StoreDmxSend *StoreDmxSend::s_pThis = 0;
 
 DMXParamsStore::~DMXParamsStore(void) {
 	DEBUG_ENTRY
@@ -42,7 +44,9 @@ DMXParamsStore::~DMXParamsStore(void) {
 StoreDmxSend::StoreDmxSend(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }
