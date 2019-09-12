@@ -40,16 +40,14 @@ U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3
 Raspberry Pi **Open Source** solutions:
 
 * **Ethernet**
- * Art-Net 3 DMX Node / **Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_artnet_dmx.zip?raw=true)}
+  * Art-Net 3 DMX Node / **Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_artnet_dmx.zip?raw=true)}
 * **RDM**
- * RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_usb_pro.zip?raw=true)}
- * RDM Responder / **DMX Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_rdm_responder.zip?raw=true)}
-* **DMX**
- * DMX Real-time Monitor {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_monitor.zip?raw=true)}
+  * RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_usb_pro.zip?raw=true)}
+  * RDM Responder / **DMX Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_rdm_responder.zip?raw=true)}
 * **Wifi**
- * **Art-Net 3** DMX Node / RDM Controller / DMX Real-time Monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_artnet_dmx.zip?raw=true)}
- * sACN **E1.31** DMX Bridge / DMX Real-time monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_e131_dmx.zip?raw=true)}
- * **OSC** DMX Bridge / DMX Real-time monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_osc_dmx.zip?raw=true)}
+  * **Art-Net 3** DMX Node / RDM Controller / DMX Real-time Monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_artnet_dmx.zip?raw=true)}
+  * sACN **E1.31** DMX Bridge / DMX Real-time monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_e131_dmx.zip?raw=true)}
+  * **OSC** DMX Bridge / DMX Real-time monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_osc_dmx.zip?raw=true)}
 
 
 All implementations are fully according to the standards. And successfully used in live lighting shows.
