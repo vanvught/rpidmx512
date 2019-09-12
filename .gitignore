@@ -61,6 +61,8 @@ limit_switch
 precise_move
 simple_move
 SparkFunGetSetParamTest
+#lib-rdmnet
+dummy_device
 # lib-pca9685
 servo
 simple
@@ -73,3 +75,5 @@ linux_osc
 artnet.txt
 e131.txt
 osc.txt
+*.cpp_
+*.h_

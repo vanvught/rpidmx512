@@ -143,7 +143,17 @@ char *fgets(char *s, int size, FILE *stream) {
 	return s;
 }
 
-#if !defined(H3)
+#if defined(H3)
+int fputs(const char *s, FILE *stream) {
+	assert(s != NULL);
+
+	if (stream == NULL) {
+		return 0;
+	}
+
+	return 1;
+}
+#else
 int fputs(const char *s, FILE *stream) {
 	assert(s != NULL);
 
