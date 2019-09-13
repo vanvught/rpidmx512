@@ -30,12 +30,13 @@
 #include <assert.h>
 
 #include "rdmnetdevice.h"
+
 #include "llrpdevice.h"
+#include "rdmpersonality.h"
+#include "lightset.h"
+#include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
-
 #include "e131uuid.h"
-
-#include "network.h"
 
 #include "debug.h"
 
@@ -45,9 +46,8 @@
 
 #define UUID_STRING_LENGTH	36
 
-
-RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality, LightSet *pLightSet):
-	m_Responder(pRDMPersonality, pLightSet, false),
+RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
+	RDMDeviceResponder(pRDMPersonality, LightSet::Get(), false),
 	m_RDMHandler(0),
 	m_pRdmCommand(0)
 {
@@ -58,7 +58,7 @@ RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality, LightSet *pLightSet)
 	m_pRdmCommand = new struct TRdmMessage;
 	assert(m_pRdmCommand != 0);
 
-	m_RDMHandler = new RDMHandler(&m_Responder, false);
+	m_RDMHandler = new RDMHandler(false);
 	assert(m_RDMHandler != 0);
 
 	DEBUG_EXIT
@@ -66,6 +66,12 @@ RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality, LightSet *pLightSet)
 
 RDMNetDevice::~RDMNetDevice(void) {
 	DEBUG_ENTRY
+
+	delete m_RDMHandler;
+	m_RDMHandler = 0;
+
+	delete m_pRdmCommand;
+	m_pRdmCommand = 0;
 
 	DEBUG_EXIT
 }
@@ -91,8 +97,6 @@ void RDMNetDevice::Run(void) {
 }
 
 void RDMNetDevice::Print(void) {
-	m_Responder.Print();
-
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);
@@ -101,11 +105,12 @@ void RDMNetDevice::Print(void) {
 	printf(" CID : %s\n", uuid_str);
 
 	LLRPDevice::Print();
+	RDMDeviceResponder::Print();
 }
 
 void RDMNetDevice::CopyUID(uint8_t *pUID) {
 	assert(pUID != 0);
-	memcpy(pUID, m_Responder.GetUID(), RDM_UID_SIZE);
+	memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 }
 
 void RDMNetDevice::CopyCID(uint8_t *pCID) {
@@ -114,7 +119,7 @@ void RDMNetDevice::CopyCID(uint8_t *pCID) {
 }
 
 uint8_t* RDMNetDevice::LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) {
-	m_RDMHandler->HandleData(pRdmDataNoSC, (uint8_t *)m_pRdmCommand);
+	m_RDMHandler->HandleData(pRdmDataNoSC, (uint8_t*) m_pRdmCommand);
 
-	return (uint8_t *)m_pRdmCommand;
+	return (uint8_t*) m_pRdmCommand;
 }

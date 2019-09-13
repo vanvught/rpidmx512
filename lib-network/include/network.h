@@ -109,6 +109,10 @@ public:
 		return m_aIfName;
 	}
 
+	uint32_t GetIfIndex(void) {
+		return m_nIfIndex;
+	}
+
 	void Print(void);
 
 public:
@@ -126,6 +130,7 @@ protected:
 	bool m_IsDhcpUsed;
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
+	uint32_t m_nIfIndex;
 
 private:
 	static Network *s_pThis;

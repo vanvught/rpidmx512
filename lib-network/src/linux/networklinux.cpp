@@ -81,9 +81,7 @@ int NetworkLinux::Init(const char *s) {
 		strncpy(m_aIfName, s, IFNAMSIZ);
 	}
 
-#ifndef NDEBUG
-	printf("NetworkLinux::Init, _if_name = %s\n", m_aIfName);
-#endif
+	DEBUG_PRINTF("m_aIfName=%s", m_aIfName);
 
 	result = IfDetails(m_aIfName);
 
@@ -93,6 +91,15 @@ int NetworkLinux::Init(const char *s) {
 #if defined (__linux__)
 	else {
 		m_IsDhcpUsed = IsDhclient(m_aIfName);
+	}
+#endif
+
+	m_nIfIndex = (unsigned int)if_nametoindex((const char *)m_aIfName);
+
+#if !defined ( __CYGWIN__ )
+	if (m_nIfIndex == 0) {
+		perror("if_nametoindex");
+		exit(EXIT_FAILURE);
 	}
 #endif
 

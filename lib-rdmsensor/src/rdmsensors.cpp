@@ -2,7 +2,7 @@
  * @file rdmsensors.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,40 +26,56 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #include "rdmsensors.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "debug.h"
+
+#if defined (RASPPI) || defined(BARE_METAL)
+ #define RDM_SENSORS_ENABLE
+#endif
+
 #if !defined (__CYGWIN__) && !defined (__APPLE__)
+ #define RDMSENSOR_CPU_ENABLE
+#endif
+
+#if defined (RDMNET_LLRP_ONLY)
+ #undef RDM_SENSORS_ENABLE
+ #undef RDMSENSOR_CPU_ENABLE
+#endif
+
+#if defined (RDMSENSOR_CPU_ENABLE)
  #include "cputemperature.h"
 #endif
 
-#if defined (RASPPI) || defined(BARE_METAL)
-#include "i2c.h"
+#if defined (RDM_SENSORS_ENABLE)
+ #include "i2c.h"
+ #include "sensorbh1750.h"
+ #include "sensormcp9808.h"
+ #include "sensorhtu21dhumidity.h"
+ #include "sensorhtu21dtemperature.h"
+ #include "sensorina219current.h"
+ #include "sensorina219power.h"
+ #include "sensorina219voltage.h"
+ #include "sensorsi7021humidity.h"
+ #include "sensorsi7021temperature.h"
 
-#include "sensorbh1750.h"
-#include "sensormcp9808.h"
-#include "sensorhtu21dhumidity.h"
-#include "sensorhtu21dtemperature.h"
-#include "sensorina219current.h"
-#include "sensorina219power.h"
-#include "sensorina219voltage.h"
-#include "sensorsi7021humidity.h"
-#include "sensorsi7021temperature.h"
-
-static const char SENSORS_PARAMS_FILE_NAME[] ALIGNED = "sensors.txt";
+ static const char SENSORS_PARAMS_FILE_NAME[] __attribute__ ((aligned (4))) = "sensors.txt";
 #endif
 
+#define RDM_SENSORS_MAX		32
+
+RDMSensors *RDMSensors::s_pThis = 0;
+
 RDMSensors::RDMSensors(void): m_pRDMSensor(0), m_nCount(0) {
+	DEBUG_ENTRY
+
+	s_pThis = this;
+
+	DEBUG_EXIT
 }
 
 RDMSensors::~RDMSensors(void) {
@@ -76,25 +92,30 @@ RDMSensors::~RDMSensors(void) {
 }
 
 void RDMSensors::Init(void) {
-#if !defined (__CYGWIN__) && !defined (__APPLE__)
-	m_pRDMSensor = new RDMSensor*[0xFE];
-	assert(m_pRDMSensor != 0);
+	DEBUG_ENTRY
 
+#if defined (RDM_SENSORS_ENABLE) || defined (RDMSENSOR_CPU_ENABLE)
+	m_pRDMSensor = new RDMSensor*[RDM_SENSORS_MAX];
+	assert(m_pRDMSensor != 0);
+#endif
+
+#if defined (RDMSENSOR_CPU_ENABLE)
 	Add(new CpuTemperature(m_nCount));
 #endif
-#if defined (RASPPI) || defined(BARE_METAL)
+
+#if defined (RDM_SENSORS_ENABLE)
 	if(i2c_begin()) {	// We have I2C sensors only
 		ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);
 		(void) configfile.Read(SENSORS_PARAMS_FILE_NAME);
 	}
 #endif
-#ifndef NDEBUG
-	printf("Sensors added: %d\n", (int) m_nCount);
-#endif
+
+	DEBUG_PRINTF("Sensors added: %d", (int) m_nCount);
+	DEBUG_EXIT
 }
 
-bool RDMSensors::Add(RDMSensor* pRDMSensor) {
-	if (m_nCount == 0xFE) {
+bool RDMSensors::Add(RDMSensor *pRDMSensor) {
+	if (m_nCount == RDM_SENSORS_MAX) {
 		return false;
 	}
 
@@ -129,9 +150,9 @@ const struct TRDMSensorValues* RDMSensors::GetValues(uint8_t nSensor) {
 	return m_pRDMSensor[nSensor]->GetValues();
 }
 
-void RDMSensors::SetSensorValues(uint8_t nSensor) {
-	if (nSensor == (uint8_t) 0xFF) {
-		for (uint8_t i = 0; i < m_nCount ; i++) {
+void RDMSensors::SetValues(uint8_t nSensor) {
+	if (nSensor == 0xFF) {
+		for (uint32_t i = 0; i < m_nCount; i++) {
 			m_pRDMSensor[i]->SetValues();
 		}
 	} else {
@@ -139,9 +160,9 @@ void RDMSensors::SetSensorValues(uint8_t nSensor) {
 	}
 }
 
-void RDMSensors::SetSensorRecord(uint8_t nSensor) {
-	if (nSensor == (uint8_t) 0xFF) {
-		for (uint8_t i = 0; i < m_nCount ; i++) {
+void RDMSensors::SetRecord(uint8_t nSensor) {
+	if (nSensor == 0xFF) {
+		for (uint32_t i = 0; i < m_nCount; i++) {
 			m_pRDMSensor[i]->Record();
 		}
 	} else {
@@ -157,8 +178,8 @@ void RDMSensors::staticCallbackFunction(void *p, const char *s) {
 }
 
 void RDMSensors::callbackFunction(const char *pLine) {
+#if defined (RDM_SENSORS_ENABLE)
 	assert(pLine != 0);
-#if defined (RASPPI) || defined(BARE_METAL)
 	int nReturnCode;
 	char aSensorName[32];
 	uint8_t nLength = sizeof(aSensorName) - 1;
@@ -170,9 +191,9 @@ void RDMSensors::callbackFunction(const char *pLine) {
 	nReturnCode = Sscan::I2c(pLine, aSensorName, &nLength, &nI2cAddress, &nI2cChannel);
 
 	if ((nReturnCode != 0) && (aSensorName[0] != 0) && (nLength != (uint8_t) 0)) {
-#ifndef NDEBUG
-		printf("%s -> sensor_name={%.*s}:%d, address=%.2x, channel=%d\n", pLine, nLength, aSensorName, (int) nLength, nI2cAddress, (int) nI2cChannel);
-#endif
+
+		DEBUG_PRINTF("%s -> sensor_name={%.*s}:%d, address=%.2x, channel=%d", pLine, nLength, aSensorName, (int) nLength, nI2cAddress, (int) nI2cChannel);
+
 		if (memcmp(aSensorName, "bh1750", 6) == 0) {						// BH1750
 			Add(new SensorBH1750(m_nCount, nI2cAddress));
 		} else if (memcmp(aSensorName, "htu21d", 6) == 0) {					// HTU21D

@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,6 @@
 #include "lightset.h"
 
 enum {
-	DMX_DEFAULT_START_ADDRESS = 1
-};
-
-enum {
 	RDM_DEFAULT_CURRENT_PERSONALITY = 1
 };
 
@@ -48,6 +44,9 @@ class RDMDeviceResponder: public RDMDevice {
 public:
 	RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, bool EnableSubDevices = true);
 	~RDMDeviceResponder(void);
+
+	void Init(void);
+	void Print(void);
 
 	// E120_DEVICE_INFO				0x0060
 	struct TRDMDeviceInfo *GetDeviceInfo(uint16_t nSubDevice = RDM_ROOT_DEVICE);
@@ -61,12 +60,18 @@ public:
 	void SetFactoryDefaults(void);
 
 	// E120_LANGUAGE				0x00B0
-	inline const char* GetLanguage(void) { return m_aLanguage; }
+	const char* GetLanguage(void) {
+		return m_aLanguage;
+	}
 	void SetLanguage(const char aLanguage[2]);
 
 	// E120_SOFTWARE_VERSION_LABEL	0x00C0
-	inline const char* GetSoftwareVersion(void) { return m_pSoftwareVersion; }
-	inline uint8_t GetSoftwareVersionLength(void) { return m_nSoftwareVersionLength; }
+	const char* GetSoftwareVersion(void) {
+		return m_pSoftwareVersion;
+	}
+	uint8_t GetSoftwareVersionLength(void) {
+		return m_nSoftwareVersionLength;
+	}
 
 	// E120_DMX_START_ADDRESS		0x00F0
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE);
@@ -83,31 +88,23 @@ public:
 	uint8_t GetPersonalityCurrent(uint16_t nSubDevice = RDM_ROOT_DEVICE);
 	void SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality);
 
-	// Sensors
-	uint8_t GetSensorCount(uint16_t nSubDevice = RDM_ROOT_DEVICE);
-	const struct TRDMSensorDefintion* GetSensorDefinition(uint8_t nSensor);
-	const struct TRDMSensorValues* GetSensorValues(uint8_t nSensor);
-	void SetSensorValues(uint8_t nSensor);
-	void SetSensorRecord(uint8_t nSensor);
-
-	// Sub Devices
-	uint16_t GetSubDeviceCount(void);
-	inline RDMSubDevices* GetRDMSubDevices(void) { return &m_RDMSubDevices; }
-
-	void Print(void);
+public:
+	static RDMDeviceResponder* Get(void) {
+		return s_pThis;
+	}
 
 private:
 	uint16_t CalculateChecksum(void);
 
 private:
+	RDMSensors m_RDMSensors;
+	RDMSubDevices m_RDMSubDevices;
 	RDMPersonality *m_pRDMPersonality;
 	LightSet* m_pLightSet;
 	bool m_IsSubDevicesEnabled;
 	char* m_pSoftwareVersion;
 	uint8_t m_nSoftwareVersionLength;
 	struct TRDMDeviceInfo m_tRDMDeviceInfo;
-	RDMSensors m_RDMSensors;
-	RDMSubDevices m_RDMSubDevices;
 	struct TRDMDeviceInfo m_tRDMSubDeviceInfo;
 	char m_aLanguage[2];
 	//
@@ -115,6 +112,8 @@ private:
 	uint16_t m_nCheckSum;
 	uint16_t m_nDmxStartAddressFactoryDefault;
 	uint8_t m_nCurrentPersonalityFactoryDefault;
+
+	static RDMDeviceResponder *s_pThis;
 };
 
 #endif /* RDMDEVICERESPONDER_H_ */

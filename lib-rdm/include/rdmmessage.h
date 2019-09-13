@@ -46,7 +46,8 @@ public:
 	void Send(uint8_t nPort = 0);
 
 public:
-	static void Print(const uint8_t *);
+	static void Print(const uint8_t *pRdmData);
+	static void PrintNoSc(const uint8_t *pRdmDataNoSc);
 
 private:
 	struct TRdmMessage *m_pRdmCommand;

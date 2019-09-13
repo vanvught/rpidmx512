@@ -102,4 +102,3 @@ Sample output
 [https://www.rdmprotocol.org/rdm/rdmnet/](https://www.rdmprotocol.org/rdm/rdmnet/ "https://www.rdmprotocol.org/rdm/rdmnet/")
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
-

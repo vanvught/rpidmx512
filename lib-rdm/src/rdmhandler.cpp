@@ -39,8 +39,11 @@
 
 #include "rdmhandler.h"
 
+#include "rdmdeviceresponder.h"
+#include "rdmsensors.h"
+#include "rdmsubdevices.h"
+
 #include "rdmidentify.h"
-#include "rdmsensor.h"
 #include "rdmslotinfo.h"
 #include "rdmmessage.h"
 
@@ -52,18 +55,12 @@
 
 #include "debug.h"
 
-enum {
-	DMX_UNIVERSE_SIZE = 512
-};
-
 enum TPowerState {
 	POWER_STATE_FULL_OFF = 0x00,	///< Completely disengages power to device. Device can no longer respond.
 	POWER_STATE_SHUTDOWN = 0x01,	///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
 	POWER_STATE_STANDBY = 0x02,		///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
 	POWER_STATE_NORMAL = 0xFF,		///< Normal Operating Mode.
 };
-
-#define NETWORK_INTERFACE_ID	0x1
 
 enum TDHCPMode {
 	DHCP_STATUS_INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
@@ -76,8 +73,7 @@ enum {
 	NO_DEFAULT_ROUTE = 0x00000000
 };
 
-RDMHandler::RDMHandler(RDMDeviceResponder *pRDMDeviceResponder, bool bIsRdm):
-	m_pRDMDeviceResponder(pRDMDeviceResponder),
+RDMHandler::RDMHandler(bool bIsRdm):
 	m_bIsRDM(bIsRdm),
 	m_IsMuted(false),
 	m_pRdmDataIn(0),
@@ -103,14 +99,6 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 	unsigned i;
 
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc *)m_pRdmDataIn;
-
-#ifndef NDEBUG
-	uint8_t dummy[512];
-	dummy[0] = E120_SC_RDM;
-	memcpy(&dummy[1], m_pRdmDataIn, pRdmDataIn->message_length);
-	RDMMessage::Print(dummy);
-#endif
-
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
 
 	pRdmDataOut->start_code = E120_SC_RDM;
@@ -142,7 +130,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 		// Unreachable code: break;
 	}
 
-	const uint8_t *uid_device = (uint8_t *)m_pRDMDeviceResponder->GetUID();
+	const uint8_t *uid_device = (uint8_t *)RDMDeviceResponder::Get()->GetUID();
 
 	for (i = 0; i < (unsigned) RDM_UID_SIZE; i++) {
 		pRdmDataOut->destination_uid[i] = pRdmDataIn->source_uid[i];
@@ -251,7 +239,7 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut) {
 
 	const uint8_t command_class = pRdmRequest->command_class;
 	const uint16_t param_id = (pRdmRequest->param_id[0] << 8) + pRdmRequest->param_id[1];
-	const uint8_t *uid_device = m_pRDMDeviceResponder->GetUID();
+	const uint8_t *uid_device = RDMDeviceResponder::Get()->GetUID();
 
 	DEBUG_PRINTF("Command class [%.2X]:%d, param_id [%.2x%.2x]:%d, tn:%d", command_class, command_class, pRdmRequest->param_id[0], pRdmRequest->param_id[1], param_id, pRdmRequest->transaction_number);
 
@@ -321,7 +309,7 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut) {
 				pRdmResponse->param_data[0] = 0x00;	// Control Field
 				pRdmResponse->param_data[1] = 0x00;	// Control Field
 
-				if (m_pRDMDeviceResponder->GetSubDeviceCount() != 0) {
+				if (RDMSubDevices::Get()->GetCount() != 0) {
 					pRdmResponse->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
 				}
 
@@ -348,7 +336,7 @@ void RDMHandler::HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut) {
 				pRdmResponse->param_data[0] = 0x00;	// Control Field
 				pRdmResponse->param_data[1] = 0x00;	// Control Field
 
-				if (m_pRDMDeviceResponder->GetSubDeviceCount() != 0) {
+				if (RDMSubDevices::Get()->GetCount() != 0) {
 					pRdmResponse->param_data[1] |= RDM_CONTROL_FIELD_SUB_DEVICE_FLAG;
 				}
 
@@ -376,7 +364,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 		return;
 	}
 
-	const uint16_t sub_device_count = m_pRDMDeviceResponder->GetSubDeviceCount();
+	const uint16_t sub_device_count = RDMSubDevices::Get()->GetCount();
 
 	if ((nSubDevice > sub_device_count) && (nSubDevice != E120_SUB_DEVICE_ALL_CALL)) {
 		RespondMessageNack(E120_NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -491,7 +479,7 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
-	const struct TRDMDeviceInfo *pRdmDeviceInfoRequested = m_pRDMDeviceResponder->GetDeviceInfo(nSubDevice);
+	const struct TRDMDeviceInfo *pRdmDeviceInfoRequested = RDMDeviceResponder::Get()->GetDeviceInfo(nSubDevice);
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 	struct TRDMDeviceInfo *pDeviceInfoOut = (struct TRDMDeviceInfo *)pRdmDataOut->param_data;
@@ -503,7 +491,7 @@ void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetProductDetailIdList(uint16_t nSubDevice) {
-	const uint16_t product_detail = m_pRDMDeviceResponder->GetProductDetail();
+	const uint16_t product_detail = RDMDeviceResponder::Get()->GetProductDetail();
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
@@ -525,7 +513,7 @@ void RDMHandler::GetDeviceModelDescription(uint16_t nSubDevice) {
 void RDMHandler::GetManufacturerLabel(uint16_t nSubDevice) {
 	struct TRDMDeviceInfoData label;
 
-	m_pRDMDeviceResponder->GetManufacturerName(&label);
+	RDMDeviceResponder::Get()->GetManufacturerName(&label);
 
 	HandleString((char *)label.data, label.length);
 	RespondMessageAck();
@@ -534,7 +522,7 @@ void RDMHandler::GetManufacturerLabel(uint16_t nSubDevice) {
 void RDMHandler::GetDeviceLabel(uint16_t nSubDevice) {
 	struct TRDMDeviceInfoData label;
 
-	m_pRDMDeviceResponder->GetLabel(nSubDevice, &label);
+	RDMDeviceResponder::Get()->GetLabel(nSubDevice, &label);
 
 	HandleString((const char *)label.data, label.length);
 	RespondMessageAck();
@@ -553,7 +541,7 @@ void RDMHandler::SetDeviceLabel(bool IsBroadcast, uint16_t nSubDevice) {
 	device_label_length = pRdmDataIn->param_data_length;
 	device_label= &pRdmDataIn->param_data[0];
 
-	m_pRDMDeviceResponder->SetLabel(nSubDevice, device_label, device_label_length);
+	RDMDeviceResponder::Get()->SetLabel(nSubDevice, device_label, device_label_length);
 
 	if(IsBroadcast) {
 		return;
@@ -568,7 +556,7 @@ void RDMHandler::GetFactoryDefaults(uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
 	pRdmDataOut->param_data_length = 1;
-	pRdmDataOut->param_data[0] = m_pRDMDeviceResponder->GetFactoryDefaults() ? (uint8_t) 1 : (uint8_t) 0;
+	pRdmDataOut->param_data[0] = RDMDeviceResponder::Get()->GetFactoryDefaults() ? (uint8_t) 1 : (uint8_t) 0;
 
 	RespondMessageAck();
 }
@@ -581,7 +569,7 @@ void RDMHandler::SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	m_pRDMDeviceResponder->SetFactoryDefaults();
+	RDMDeviceResponder::Get()->SetFactoryDefaults();
 
 	if(IsBroadcast) {
 		return;
@@ -594,7 +582,7 @@ void RDMHandler::SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetLanguage(uint16_t nSubDevice) {
-	const char *pLanguage = m_pRDMDeviceResponder->GetLanguage();
+	const char *pLanguage = RDMDeviceResponder::Get()->GetLanguage();
 
 	HandleString(pLanguage, RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH);
 	RespondMessageAck();
@@ -608,7 +596,7 @@ void RDMHandler::SetLanguage(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	const char *pSupportedLanguage = m_pRDMDeviceResponder->GetLanguage();
+	const char *pSupportedLanguage = RDMDeviceResponder::Get()->GetLanguage();
 
 	if ((pRdmDataIn->param_data[0] != pSupportedLanguage[0]) || (pRdmDataIn->param_data[1] != pSupportedLanguage[1])) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
@@ -626,8 +614,8 @@ void RDMHandler::SetLanguage(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetSoftwareVersionLabel(uint16_t nSubDevice) {
-	const char *software_version = m_pRDMDeviceResponder->GetSoftwareVersion();
-	const uint8_t software_version_length = m_pRDMDeviceResponder->GetSoftwareVersionLength();
+	const char *software_version = RDMDeviceResponder::Get()->GetSoftwareVersion();
+	const uint8_t software_version_length = RDMDeviceResponder::Get()->GetSoftwareVersionLength();
 
 	HandleString(software_version, software_version_length);
 	RespondMessageAck();
@@ -664,8 +652,8 @@ void RDMHandler::GetBootSoftwareVersionLabel(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetPersonality(uint16_t nSubDevice) {
-	const uint8_t nCurrent = m_pRDMDeviceResponder->GetPersonalityCurrent(nSubDevice);
-	const uint8_t nCount = m_pRDMDeviceResponder->GetPersonalityCount(nSubDevice);
+	const uint8_t nCurrent = RDMDeviceResponder::Get()->GetPersonalityCurrent(nSubDevice);
+	const uint8_t nCount = RDMDeviceResponder::Get()->GetPersonalityCount(nSubDevice);
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
@@ -685,14 +673,14 @@ void RDMHandler::SetPersonality(bool IsBroadcast, uint16_t nSubDevice) {
 	}
 
 	const uint8_t personality = pRdmDataIn->param_data[0];
-	const uint8_t max_personalities = m_pRDMDeviceResponder->GetPersonalityCount(nSubDevice);
+	const uint8_t max_personalities = RDMDeviceResponder::Get()->GetPersonalityCount(nSubDevice);
 
 	if ((personality == 0) || (personality > max_personalities)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
-	m_pRDMDeviceResponder->SetPersonalityCurrent(nSubDevice, personality);
+	RDMDeviceResponder::Get()->SetPersonalityCurrent(nSubDevice, personality);
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 	pRdmDataOut->param_data_length = 0;
@@ -703,14 +691,14 @@ void RDMHandler::SetPersonality(bool IsBroadcast, uint16_t nSubDevice) {
 void RDMHandler::GetPersonalityDescription(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *rdm_command = (struct TRdmMessageNoSc *)m_pRdmDataIn;
 	const uint8_t nPersonality = rdm_command->param_data[0];
-	const uint8_t nMaxPersonalities = m_pRDMDeviceResponder->GetPersonalityCount(nSubDevice);
+	const uint8_t nMaxPersonalities = RDMDeviceResponder::Get()->GetPersonalityCount(nSubDevice);
 
 	if ((nPersonality == 0) || (nPersonality > nMaxPersonalities)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
-	const uint16_t nSlots = m_pRDMDeviceResponder->GetPersonality(nSubDevice, nPersonality)->GetSlots();
+	const uint16_t nSlots = RDMDeviceResponder::Get()->GetPersonality(nSubDevice, nPersonality)->GetSlots();
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
@@ -721,7 +709,7 @@ void RDMHandler::GetPersonalityDescription(uint16_t nSubDevice) {
 	char *dst = (char *)&pRdmDataOut->param_data[3];
 	uint8_t nLength = RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH;
 
-	m_pRDMDeviceResponder->GetPersonality(nSubDevice, nPersonality)->CopyTo(dst, nLength);
+	RDMDeviceResponder::Get()->GetPersonality(nSubDevice, nPersonality)->DescriptionCopyTo(dst, nLength);
 
 	pRdmDataOut->param_data_length = 3 + nLength;
 
@@ -729,7 +717,7 @@ void RDMHandler::GetPersonalityDescription(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetDmxStartAddress(uint16_t nSubDevice) {
-	const uint16_t dmx_start_address = m_pRDMDeviceResponder->GetDmxStartAddress(nSubDevice);
+	const uint16_t dmx_start_address = RDMDeviceResponder::Get()->GetDmxStartAddress(nSubDevice);
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
 
@@ -757,7 +745,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	m_pRDMDeviceResponder->SetDmxStartAddress(nSubDevice, nDmxStartAddress);
+	RDMDeviceResponder::Get()->SetDmxStartAddress(nSubDevice, nDmxStartAddress);
 
 	if(IsBroadcast) {
 		return;
@@ -774,13 +762,13 @@ void RDMHandler::GetSensorDefinition(uint16_t nSubDevice) {
 
 	const uint8_t nSensorRequested = rdm_command->param_data[0];
 
-	if ((nSensorRequested == RDM_SENSORS_ALL) || (nSensorRequested + 1 > m_pRDMDeviceResponder->GetSensorCount())) {
+	if ((nSensorRequested == RDM_SENSORS_ALL) || (nSensorRequested + 1 > RDMSensors::Get()->GetCount())) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
-	const struct TRDMSensorDefintion *sensor_definition = m_pRDMDeviceResponder->GetSensorDefinition(nSensorRequested);
+	const struct TRDMSensorDefintion *sensor_definition = RDMSensors::Get()->GetDefintion(nSensorRequested);
 
 	if (nSensorRequested != sensor_definition->sensor) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
@@ -823,13 +811,13 @@ void RDMHandler::GetSensorValue(uint16_t nSubDevice) {
 	const uint8_t nSensorRequested = rdm_command->param_data[0];
 
 
-	if ((nSensorRequested == RDM_SENSORS_ALL) || (nSensorRequested + 1 > m_pRDMDeviceResponder->GetSensorCount())) {
+	if ((nSensorRequested == RDM_SENSORS_ALL) || (nSensorRequested + 1 > RDMSensors::Get()->GetCount())) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
 	struct TRdmMessage* pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
-	const struct TRDMSensorValues* sensor_value = m_pRDMDeviceResponder->GetSensorValues(nSensorRequested);
+	const struct TRDMSensorValues* sensor_value = RDMSensors::Get()->GetValues(nSensorRequested);
 
 	if (nSensorRequested != sensor_value->sensor_requested) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
@@ -862,12 +850,12 @@ void RDMHandler::SetSensorValue(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const uint8_t nSensorRequested = rdm_command->param_data[0];
 
-	if ((nSensorRequested != RDM_SENSORS_ALL) && (nSensorRequested + 1 > m_pRDMDeviceResponder->GetSensorCount())) {
+	if ((nSensorRequested != RDM_SENSORS_ALL) && (nSensorRequested + 1 > RDMSensors::Get()->GetCount())) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
-	m_pRDMDeviceResponder->SetSensorValues(nSensorRequested);
+	RDMSensors::Get()->SetValues(nSensorRequested);
 
 	if(IsBroadcast) {
 		return;
@@ -892,7 +880,7 @@ void RDMHandler::SetSensorValue(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	const struct TRDMSensorValues* sensor_value = m_pRDMDeviceResponder->GetSensorValues(nSensorRequested);
+	const struct TRDMSensorValues* sensor_value = RDMSensors::Get()->GetValues(nSensorRequested);
 
 	pRdmDataOut->param_data_length = 9;
 	pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
@@ -919,17 +907,17 @@ void RDMHandler::SetRecordSensors(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const uint8_t nSensorRequested = rdm_command->param_data[0];
 
-	if ((nSensorRequested == RDM_SENSORS_ALL) && (m_pRDMDeviceResponder->GetSensorCount() == 0)) {
+	if ((nSensorRequested == RDM_SENSORS_ALL) && (RDMSensors::Get()->GetCount() == 0)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
-	if ((nSensorRequested != RDM_SENSORS_ALL) && (nSensorRequested + 1 > m_pRDMDeviceResponder->GetSensorCount())) {
+	if ((nSensorRequested != RDM_SENSORS_ALL) && (nSensorRequested + 1 > RDMSensors::Get()->GetCount())) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
-	m_pRDMDeviceResponder->SetSensorRecord(nSensorRequested);
+	RDMSensors::Get()->SetRecord(nSensorRequested);
 
 	if(IsBroadcast) {
 		return;
@@ -1114,13 +1102,13 @@ void RDMHandler::SetPowerState(bool IsBroadcast, uint16_t nSubDevice) {
 
 void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
     struct TRdmMessage *rdm_response = (struct TRdmMessage *)m_pRdmDataOut;
-	const uint16_t nDmxFootPrint = m_pRDMDeviceResponder->GetDmxFootPrint(nSubDevice);
+	const uint16_t nDmxFootPrint = RDMDeviceResponder::Get()->GetDmxFootPrint(nSubDevice);
 	struct TLightSetSlotInfo tSlotInfo;
 
-	uint16_t j = 0;
+	uint32_t j = 0;
 
-	for (uint16_t i = 0; i < nDmxFootPrint; i++) { // FIXME PDL
-		if (m_pRDMDeviceResponder->GetSlotInfo(nSubDevice, i, tSlotInfo)) {
+	for (uint32_t i = 0; i < nDmxFootPrint; i++) { // FIXME PDL
+		if (RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, i, tSlotInfo)) {
 			rdm_response->param_data[j++] = (uint8_t) (i >> 8);
 			rdm_response->param_data[j++] = (uint8_t) i;
 			rdm_response->param_data[j++] = tSlotInfo.nType;
@@ -1141,7 +1129,7 @@ void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	const uint16_t nSlotOffset = (pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1];
 	struct TLightSetSlotInfo tSlotInfo;
 
-	if(!m_pRDMDeviceResponder->GetSlotInfo(nSubDevice, nSlotOffset, tSlotInfo)) {
+	if(!RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, nSlotOffset, tSlotInfo)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -1221,10 +1209,12 @@ void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
-	pRdmDataOut->param_data[0] = (uint8_t) (NETWORK_INTERFACE_ID >> 24);
-	pRdmDataOut->param_data[1] = (uint8_t) (NETWORK_INTERFACE_ID >> 16);
-	pRdmDataOut->param_data[2] = (uint8_t) (NETWORK_INTERFACE_ID >> 8);
-	pRdmDataOut->param_data[3] = (uint8_t) NETWORK_INTERFACE_ID;
+	const uint32_t nNetworkInterfaceId = Network::Get()->GetIfIndex();
+
+	pRdmDataOut->param_data[0] = (uint8_t) (nNetworkInterfaceId >> 24);
+	pRdmDataOut->param_data[1] = (uint8_t) (nNetworkInterfaceId >> 16);
+	pRdmDataOut->param_data[2] = (uint8_t) (nNetworkInterfaceId >> 8);
+	pRdmDataOut->param_data[3] = (uint8_t) nNetworkInterfaceId;
 	pRdmDataOut->param_data[4] = (uint8_t) (nInterfaceHardwareType >> 8);
 	pRdmDataOut->param_data[5] = (uint8_t) nInterfaceHardwareType;
 
@@ -1311,10 +1301,12 @@ void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
 void RDMHandler::GetDefaultRoute(uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
-	pRdmDataOut->param_data[0] = (uint8_t) (NETWORK_INTERFACE_ID >> 24);
-	pRdmDataOut->param_data[1] = (uint8_t) (NETWORK_INTERFACE_ID >> 16);
-	pRdmDataOut->param_data[2] = (uint8_t) (NETWORK_INTERFACE_ID >> 8);
-	pRdmDataOut->param_data[3] = (uint8_t) NETWORK_INTERFACE_ID;
+	const uint32_t nNetworkInterfaceId = Network::Get()->GetIfIndex();
+
+	pRdmDataOut->param_data[0] = (uint8_t) (nNetworkInterfaceId >> 24);
+	pRdmDataOut->param_data[1] = (uint8_t) (nNetworkInterfaceId >> 16);
+	pRdmDataOut->param_data[2] = (uint8_t) (nNetworkInterfaceId >> 8);
+	pRdmDataOut->param_data[3] = (uint8_t) nNetworkInterfaceId;
 
 	// TODO The Network class does not have GetDefaultRoute
 

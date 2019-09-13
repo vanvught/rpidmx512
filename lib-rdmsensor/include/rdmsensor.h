@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,17 +63,40 @@ public:
 	virtual ~RDMSensor(void);
 
 public:
-	void SetType(uint8_t nType);
-	void SetUnit(uint8_t nUnit);
-	void SetPrefix(uint8_t nPrefix);
-	void SetRangeMin(uint16_t nRangeMin);
-	void SetRangeMax(uint16_t nRangeMax);
-	void SetNormalMin(uint16_t nNormalMin);
-	void SetNormalMax(uint16_t nNormalMax);
+	void SetType(uint8_t nType) {
+		m_tRDMSensorDefintion.type = nType;
+	}
+
+	void SetUnit(uint8_t nUnit) {
+		m_tRDMSensorDefintion.unit = nUnit;
+	}
+
+	void SetPrefix(uint8_t nPrefix) {
+		m_tRDMSensorDefintion.prefix = nPrefix;
+	}
+
+	void SetRangeMin(uint16_t nRangeMin) {
+		m_tRDMSensorDefintion.range_min = nRangeMin;
+	}
+
+	void SetRangeMax(uint16_t nRangeMax) {
+		m_tRDMSensorDefintion.range_max = nRangeMax;
+	}
+
+	void SetNormalMin(uint16_t nNormalMin) {
+		m_tRDMSensorDefintion.normal_min = nNormalMin;
+	}
+
+	void SetNormalMax(uint16_t nNormalMax) {
+		m_tRDMSensorDefintion.normal_max = nNormalMax;
+	}
+
 	void SetDescription(const char *pDescription);
 
 public:
-	inline const struct TRDMSensorDefintion* GetDefintion(void) { return &m_tRDMSensorDefintion; }
+	const struct TRDMSensorDefintion* GetDefintion(void) {
+		return &m_tRDMSensorDefintion;
+	}
 	const struct TRDMSensorValues* GetValues(void);
 	void SetValues(void);
 	void Record(void);
@@ -84,7 +107,7 @@ public:
 
 private:
 	uint8_t m_nSensor;
-	struct TRDMSensorDefintion m_tRDMSensorDefintion ;
+	struct TRDMSensorDefintion m_tRDMSensorDefintion;
 	struct TRDMSensorValues m_tRDMSensorValues;
 };
 

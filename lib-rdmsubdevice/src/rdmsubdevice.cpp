@@ -2,7 +2,7 @@
  * @file rdmsubdevice.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -146,5 +146,5 @@ uint16_t RDMSubDevice::CalculateChecksum(void) {
 }
 
 void RDMSubDevice::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
-	//printf("override\n");
+	// override
 }

@@ -1,5 +1,5 @@
 /**
- * @file rdmnetdevice.h
+ * @file rdmdeviceparamsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,40 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETDEVICE_H_
-#define RDMNETDEVICE_H_
+#ifndef RDMDEVICEPARAMSCONST_H_
+#define RDMDEVICEPARAMSCONST_H_
 
 #include <stdint.h>
 
-#include "rdmdeviceresponder.h"
-#include "llrpdevice.h"
-
-#include "rdmhandler.h"
-
-#include "e131.h"
-#include "e131uuid.h"
-
-class RDMNetDevice: public RDMDeviceResponder, LLRPDevice {
+class RDMDeviceParamsConst {
 public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice(void);
-
-	void Start(void);
-	void Stop(void);
-	void Run(void);
-
-	void Print(void);
-
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
-
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
-
-private:
-	RDMHandler *m_RDMHandler;
-	struct TRdmMessage *m_pRdmCommand;
-	uint8_t m_Cid[E131_CID_LENGTH];
-	E131Uuid m_E131Uuid;
+	alignas(uint32_t) static const char FILE_NAME[];
+	alignas(uint32_t) static const char MANUFACTURER_NAME[];
+	alignas(uint32_t) static const char MANUFACTURER_ID[];
+	alignas(uint32_t) static const char LABEL[];
+	alignas(uint32_t) static const char PRODUCT_CATEGORY[];
+	alignas(uint32_t) static const char PRODUCT_DETAIL[];
 };
 
-#endif /* RDMNETDEVICE_H_ */
+#endif /* RDMDEVICEPARAMSCONST_H_ */

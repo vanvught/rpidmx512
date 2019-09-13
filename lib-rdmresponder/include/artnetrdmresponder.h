@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 
 #include "lightset.h"
 
-class ArtNetRdmResponder: public ArtNetRdm {
+class ArtNetRdmResponder: public RDMDeviceResponder, ArtNetRdm {
 public:
 	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 	~ArtNetRdmResponder(void);
@@ -47,12 +47,7 @@ public:
 	void Copy(uint8_t nPort, uint8_t *);
 	const uint8_t *Handler(uint8_t nPort, const uint8_t *);
 
-	inline RDMDeviceResponder *GetRDMDeviceResponder(void) {
-		return &m_Responder;
-	}
-
 private:
-	RDMDeviceResponder m_Responder;
 	struct TRdmMessage *m_pRdmCommand;
 	RDMHandler *m_RDMHandler;
 };

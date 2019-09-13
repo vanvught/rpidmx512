@@ -39,6 +39,7 @@
 #include "rdmnetdevice.h"
 #include "lightsetdebug.h"
 #include "rdmpersonality.h"
+#include "rdmdeviceparams.h"
 
 #include "identify.h"
 
@@ -70,10 +71,17 @@ int main(int argc, char **argv) {
 
 	RDMPersonality personality("LLRP Dummy device", lighSetDebug.GetDmxFootprint());
 
-	RDMNetDevice device(&personality, &lighSetDebug);
+	RDMNetDevice device(&personality);
+	RDMDeviceParams rdmDeviceParams;
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&device);
+		rdmDeviceParams.Dump();
+	}
+
+	device.Init();
 	device.Print();
 	device.Start();
-
 
 	for (;;) {
 		device.Run();

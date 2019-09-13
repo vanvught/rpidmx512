@@ -3,7 +3,7 @@
  *
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "rdmmessage.h"
@@ -32,22 +33,29 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
-void RDMMessage::Print(const uint8_t *pRdmData) {
-	uint8_t *pUid;
+void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
+	const struct TRdmMessage *p = (struct TRdmMessage *) pRdmDataNoSc;
 
+	uint8_t dummy[512];
+	dummy[0] = E120_SC_RDM;
+	memcpy(&dummy[1], p, p->message_length);
+
+	Print(dummy);
+}
+
+void RDMMessage::Print(const uint8_t *pRdmData) {
 	if (pRdmData == 0) {
 		printf("No RDM data {pRdmData == 0}\n");
 		return;
 	}
 
-	struct TRdmMessage *p = (struct TRdmMessage *) pRdmData;
+	const struct TRdmMessage *p = (struct TRdmMessage *) pRdmData;
 
 	if (pRdmData[0] == E120_SC_RDM) {
-
-		pUid = p->source_uid;
+		uint8_t *pUid = (uint8_t *)p->source_uid;
 		printf("%.2x%.2x:%.2x%.2x%.2x%.2x -> ", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
 
-		pUid = p->destination_uid;
+		pUid = (uint8_t *)p->destination_uid;
 		printf("%.2x%.2x:%.2x%.2x%.2x%.2x ", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
 
 		switch (p->command_class) {
@@ -74,12 +82,12 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 			break;
 		}
 
-		const uint16_t sub_device = (uint16_t) (p->sub_device[0] << 8) + (uint16_t) p->sub_device[1];
+		const uint16_t nSubDevice = (uint16_t) (p->sub_device[0] << 8) + (uint16_t) p->sub_device[1];
 
-		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", sub_device, p->transaction_number, p->param_id[0], p->param_id[1], p->param_data_length);
+		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", nSubDevice, p->transaction_number, p->param_id[0], p->param_id[1], p->param_data_length);
 
 	} else if (pRdmData[0] == 0xFE) {
-		for (uint8_t i = 0 ; i < 24; i++) {
+		for (uint32_t i = 0 ; i < 24; i++) {
 			printf("%.2x ", pRdmData[i]);
 		}
 		printf("\n");

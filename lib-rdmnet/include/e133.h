@@ -50,11 +50,16 @@
 #define VECTOR_PROBE_REPLY_DATA 0x01
 
 /**
+ * Table A.12 RDM Command PDU Vector
+ */
+#define VECTOR_RDM_CMD_RDM_DATA	0xCC
+
+/**
  * Table A-23: LLRP Component Type Codes
  */
-#define LLRP_COMPONENT_TYPE_RPT_DEVICE     0x00
-#define LLRP_COMPONENT_TYPE_RPT_CONTROLLER 0x01
-#define LLRP_COMPONENT_TYPE_BROKER         0x02
-#define LLRP_COMPONENT_TYPE_UNKNOWN        0x03
+#define LLRP_COMPONENT_TYPE_RPT_DEVICE     0x00	///< The LLRP Target is a Device
+#define LLRP_COMPONENT_TYPE_RPT_CONTROLLER 0x01	///< The LLRP Target is a Controller
+#define LLRP_COMPONENT_TYPE_BROKER         0x02	///< The LLRP Target is a Broker
+#define LLRP_COMPONENT_TYPE_NON_RDMNET     0xFF	///< The LLRP Target does not implement any RDMnet protocol other than LLRP
 
 #endif /* E133_H_ */

@@ -2,7 +2,7 @@
  * @file rdmdevicecontroller.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include  "rdmdevicecontroller.h"
+#include "rdmdevicecontroller.h"
+#include "rdmdevice.h"
+
+#include "debug.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -39,14 +42,29 @@
 #endif
 
 RDMDeviceController::RDMDeviceController(void) {
+	DEBUG_ENTRY
+
 	struct TRDMDeviceInfoData info;
 
 	info.data = (uint8_t *) DEVICE_LABEL;
 	info.length = sizeof(DEVICE_LABEL) - 1;
 
 	SetLabel(&info);
+
+	DEBUG_EXIT
 }
 
 RDMDeviceController::~RDMDeviceController(void) {
 }
 
+void RDMDeviceController::Init(void) {
+	DEBUG_ENTRY
+
+	RDMDevice::Init();
+
+	DEBUG_EXIT
+}
+
+void RDMDeviceController::Print(void) {
+	RDMDevice::Print();
+}

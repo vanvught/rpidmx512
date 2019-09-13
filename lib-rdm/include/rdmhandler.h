@@ -29,13 +29,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "rdmdeviceresponder.h"
 #include "rdmmessage.h"
 #include "rdmqueuedmessage.h"
 
 class RDMHandler {
 public:
-	RDMHandler(RDMDeviceResponder *pRDMDeviceResponder, bool bRDM = true);
+	RDMHandler(bool bRDM = true);
 	~RDMHandler(void);
 
 	void HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut);
@@ -119,7 +118,6 @@ private:
 	void HandleString(const char *pString, uint8_t nLenght);
 
 private:
-	RDMDeviceResponder *m_pRDMDeviceResponder;
 	bool m_bIsRDM;
 	RDMQueuedMessage m_RDMQueuedMessage;
 	bool m_IsMuted;

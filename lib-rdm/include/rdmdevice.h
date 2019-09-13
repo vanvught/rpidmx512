@@ -29,17 +29,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-enum TRDMDeviceMask {
-	RDMDEVICE_MASK_MANUFACTURER_NAME = (1 << 0),
-	RDMDEVICE_MASK_MANUFACTURER_ID = (1 << 1),
-	RDMDEVICE_MASK_LABEL = (1 << 2),
-	RDMDEVICE_MASK_EXTERNAL_MONITOR = (1 << 3),
-	RDMDEVICE_MASK_PRODUCT_CATEGORY = (1 << 4),
-	RDMDEVICE_MASK_PRODUCT_DETAIL = (1 << 5)
-};
-
 struct TRDMDeviceInfoData {
-	/*@shared@*//*@null@*/uint8_t *data;
+	uint8_t *data;
 	uint8_t length;
 };
 
@@ -62,8 +53,7 @@ struct TRDMDeviceInfo {
 
 #define DEVICE_SN_LENGTH		4
 
-struct TRDMDeviceParams {
-    uint32_t nSetList;
+struct TRDMDevice {
 	uint8_t aDeviceUID[RDM_UID_SIZE];
 	uint8_t aDeviceSN[DEVICE_SN_LENGTH];
 	char aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
@@ -72,73 +62,66 @@ struct TRDMDeviceParams {
 	uint8_t nDdeviceManufacturerNameLength;
 	uint16_t nProductCategory;
 	uint16_t nProductDetail;
-	uint8_t nExtMonLevel;
-};
-
-class RDMDeviceStore {
-public:
-	virtual ~RDMDeviceStore(void);
-
-	virtual void Update(const struct TRDMDeviceParams *pRDMDeviceParams)=0;
-	virtual void Copy(struct TRDMDeviceParams *pRDMDeviceParams)=0;
-
-	virtual void SaveLabel(const uint8_t* pLabel, uint8_t nLength)=0;
 };
 
 class RDMDevice {
 public:
-	RDMDevice(const struct TRDMDeviceInfoData *tLabel = 0, RDMDeviceStore* m_pRDMDeviceParamsStore = 0);
+	RDMDevice(void);
 	~RDMDevice(void);
 
-	bool Load(void);
-	void Load(const char *pBuffer, uint32_t nLength);
+	void Init(void);
+	void Print(void);
 
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-
-	void Dump(void);
-
-	void SetLabel(const struct TRDMDeviceInfoData *);
-	void GetLabel(struct TRDMDeviceInfoData *);
-
-	void GetManufacturerId(struct TRDMDeviceInfoData *);
-
-	void GetManufacturerName(struct TRDMDeviceInfoData *);
-
-	char *GetSoftwareVersion(void);
-	uint8_t GetSoftwareVersionLength(void) const;
-
-	uint32_t GetSoftwareVersionId(void) const;
+	void SetFactoryDefaults(void);
+	bool GetFactoryDefaults(void);
 
 	const uint8_t* GetUID(void) {
-		return (const uint8_t *) m_tRDMDeviceParams.aDeviceUID;
+		return (const uint8_t*) m_tRDMDevice.aDeviceUID;
 	}
 
 	const uint8_t* GetSN(void) {
-		return (const uint8_t *) m_tRDMDeviceParams.aDeviceSN;
+		return (const uint8_t*) m_tRDMDevice.aDeviceSN;
 	}
 
+	/*
+	 *
+	 */
+	void SetLabel(const struct TRDMDeviceInfoData *pInfo);
+	void GetLabel(struct TRDMDeviceInfoData *pInfo);
+
+	void SetManufacturerId(uint16_t nManufacturerId);
+	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);
+
+	void SetManufacturerNam(const struct TRDMDeviceInfoData *pInfo);
+	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo);
+
+	void SetProductCategory(uint16_t nProductCategory) {
+		m_tRDMDevice.nProductCategory = nProductCategory;
+	}
 	uint16_t GetProductCategory(void) {
-		return m_tRDMDeviceParams.nProductCategory;
+		return m_tRDMDevice.nProductCategory;
 	}
 
+	void SetProductDetail(uint16_t nProductDetail) {
+		m_tRDMDevice.nProductDetail = nProductDetail;
+	}
 	uint16_t GetProductDetail(void) {
-		return m_tRDMDeviceParams.nProductDetail;
+		return m_tRDMDevice.nProductDetail;
 	}
 
-	uint8_t GetExtMonLevel(void) {
-		return m_tRDMDeviceParams.nExtMonLevel;
+	uint8_t GetExtMonLevel(void) { //TODO remove
+		return 0;
 	}
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+private:
+	uint16_t CalculateChecksum(void);
 
 private:
-    void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t nMask);
-
-private:
-	RDMDeviceStore* m_pRDMDeviceParamsStore;
-	struct TRDMDeviceParams m_tRDMDeviceParams;
+	struct TRDMDevice m_tRDMDevice;
+	bool m_IsInit;
+	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t m_nDeviceRootLabelLength;
+	uint16_t m_nCheckSum;
 };
 
 #endif /* RDMDEVICE_H_ */

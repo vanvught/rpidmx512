@@ -47,24 +47,24 @@ void LLRPDevice::DumpCommon(void) {
 	uint8_t *pdu_buf = (uint8_t *)packet->RootLayerPDU.FlagsLength;
 	uint32_t nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
 
-	printf("RootLayerPDU PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) packet->RootLayerPDU.FlagsLength[0] >> 4);
+	printf("RootLayerPDU PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) packet->RootLayerPDU.FlagsLength[0] >> 4);
 	printf("RootLayerPDU.Vector=0x%.8x\n", (int) __builtin_bswap32(packet->RootLayerPDU.Vector));
-	printf("RootLayerPDU.SenderCid ");
+	printf("RootLayerPDU.SenderCid=");
 
 	for (uint32_t i = 0; i < sizeof(packet->RootLayerPDU.SenderCid); i++) {
-			printf("%.02x", packet->RootLayerPDU.SenderCid[i]);
+			printf("%.02X", packet->RootLayerPDU.SenderCid[i]);
 	}
 	printf("\n");
 
 	pdu_buf = (uint8_t *)packet->LlrpPDU.FlagsLength;
 	nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
 
-	printf("LlrpPDU PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) packet->LlrpPDU.FlagsLength[0] >> 4);
+	printf("LlrpPDU PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) packet->LlrpPDU.FlagsLength[0] >> 4);
 	printf("LlrpPDU.Vector=0x%.8x\n", (int) __builtin_bswap32(packet->LlrpPDU.Vector));
-	printf("LlrpPDU.DestinationCid ");
+	printf("LlrpPDU.DestinationCid=");
 
 	for (uint32_t i = 0; i < sizeof(packet->LlrpPDU.DestinationCid); i++) {
-			printf("%.02x", packet->LlrpPDU.DestinationCid[i]);
+			printf("%.02X", packet->LlrpPDU.DestinationCid[i]);
 	}
 	printf("\n");
 
@@ -84,7 +84,28 @@ void LLRPDevice::DumpCommon(void) {
 		}
 		break;
 	case VECTOR_LLRP_PROBE_REPLY:
-		DEBUG_PUTS("VECTOR_LLRP_PROBE_REPLY");
+		{
+			const struct TTProbeReplyPDUPacket *pReply = (struct TTProbeReplyPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
+			pdu_buf = (uint8_t *)pReply->ProbeReplyPDU.FlagsLength;
+			nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+
+			printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) pReply->ProbeReplyPDU.FlagsLength[0] >> 4);
+			printf("ProbeRequestPDU.Vector=0x%.2x\n", (int) pReply->ProbeReplyPDU.Vector);
+
+			printf("ProbeReplyPDU.UID=");
+
+			for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.UID); i++) {
+					printf("%.02X", pReply->ProbeReplyPDU.UID[i]);
+			}
+			printf("\n");
+
+			printf("ProbeReplyPDU.HardwareAddress=");
+
+			for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.HardwareAddress); i++) {
+					printf("%.02X", pReply->ProbeReplyPDU.HardwareAddress[i]);
+			}
+			printf("\n");
+		}
 		break;
 	case VECTOR_LLRP_RDM_CMD:
 		{
@@ -92,13 +113,9 @@ void LLRPDevice::DumpCommon(void) {
 			pdu_buf = (uint8_t *)pRDMCommand->RDMCommandPDU.FlagsLength;
 			nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
 
-			printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) pRDMCommand->RDMCommandPDU.FlagsLength[0] >> 4);
-			printf("ProbeRequestPDU.Vector=0x%.2x\n", (int) pRDMCommand->RDMCommandPDU.Vector);
-
-			pRDMCommand->RDMCommandPDU.Vector = E120_SC_RDM;; // QuickAndDirty
-			RDMMessage::Print(&pRDMCommand->RDMCommandPDU.Vector);
+			printf("RDM Command PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) pRDMCommand->RDMCommandPDU.FlagsLength[0] >> 4);
+			printf("RDMCommandPDU.Vector=0x%.2x\n", (int) pRDMCommand->RDMCommandPDU.Vector);
 		}
-		DEBUG_PUTS("VECTOR_LLRP_RDM_CMD");
 		break;
 	default:
 		break;
@@ -121,15 +138,4 @@ void LLRPDevice::DumpLLRP(void) {
 		printf("%.02X", packet->LlrpPDU.DestinationCid[i]);
 	}
 	printf("\n");
-}
-
-void LLRPDevice::DumpRdmMessageIn(void) {
-	const struct LTRDMCommandPDUPacket *pRDMCommand = (struct LTRDMCommandPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
-	const struct TRdmMessage *pRdmDataIn = (struct TRdmMessage *)pRDMCommand->RDMCommandPDU.RDMData;
-
-	uint8_t dummy[512];
-	dummy[0] = E120_SC_RDM;
-	memcpy(&dummy[1], pRdmDataIn, pRdmDataIn->message_length);
-
-	RDMMessage::Print(dummy);
 }

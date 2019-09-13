@@ -10,7 +10,7 @@ ROOT= ./../..
 SOURCE= .
 BUILD=build_linux/
 
-LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 properties lightset ledblink network hal
+LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 properties lightset ledblink network debug hal
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I$(ROOT)/lib-,$(LIBS))
@@ -26,7 +26,7 @@ LIBSDEP=$(addsuffix /lib_linux/lib, $(LIBDEP))
 LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
 LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
-COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 -DNDEBUG
+COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 #-DNDEBUG
 OBJECTS=$(foreach sdir,$(SOURCE),$(patsubst $(sdir)/%.cpp,$(BUILD)%.o,$(wildcard $(sdir)/*.cpp)))
 BUILD_DIRS=build_linux
 TARGET=dummy_device
@@ -57,7 +57,7 @@ prerequisites:
 $(LIBSDEP):
 	for d in $(LIBDEP); \
 		do                               \
-			$(MAKE) -f Makefile.Linux 'DEFINES=-DNDEBUG' --directory=$$d;       \
+			$(MAKE) -f Makefile.Linux 'DEFINES=-DRDMNET_LLRP_ONLY' --directory=$$d;       \
 		done
 
 $(TARGET) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP) $(LIBSDEP)

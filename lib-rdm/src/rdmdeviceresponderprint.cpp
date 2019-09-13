@@ -23,29 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "rdmdeviceresponder.h"
-#include "rdm.h"
+#include "rdmdevice.h"
 
 void RDMDeviceResponder::Print(void) {
-	const uint8_t *pUuid = GetUID();
-	const struct TRDMDeviceInfo *info = GetDeviceInfo();
-	const char* pPersonalityDescription = m_pRDMPersonality->GetDescription();
-	const uint8_t nPersonalityDescriptionLength = m_pRDMPersonality->GetDescriptionLength();
+	RDMDevice::Print();
 
-	struct TRDMDeviceInfoData InfoData;
-	GetLabel(RDM_ROOT_DEVICE, &InfoData);
+	const struct TRDMDeviceInfo *info = GetDeviceInfo();
+	const char *pPersonalityDescription = m_pRDMPersonality->GetDescription();
+	const uint8_t nPersonalityDescriptionLength = m_pRDMPersonality->GetDescriptionLength();
 
 	printf("RDM Responder configuration\n");
 	printf(" Protocol Version %d.%d\n", (int) info->protocol_major, (int) info->protocol_minor);
-	printf(" DMX Address   : %d\n", (int) (((uint16_t) info->dmx_start_address[0] << 8) + info->dmx_start_address[1]));
-	printf(" DMX Footprint : %d\n", (int) (((uint16_t) info->dmx_footprint[0] << 8) + info->dmx_footprint[1]));
+	printf(" DMX Address      : %d\n", (int) (((uint16_t) info->dmx_start_address[0] << 8) + info->dmx_start_address[1]));
+	printf(" DMX Footprint    : %d\n", (int) (((uint16_t) info->dmx_footprint[0] << 8) + info->dmx_footprint[1]));
 	printf(" Personality %d of %d [%.*s]\n", (int) info->current_personality, (int) info->personality_count, nPersonalityDescriptionLength, pPersonalityDescription);
-	printf(" Sub Devices   : %d\n", (int) (((uint16_t) info->sub_device_count[0] << 8) + info->sub_device_count[1]));
-	printf(" Sensors       : %d\n", (int) info->sensor_count);
-	printf(" UUID          : %.2x%.2x:%.2x%.2x%.2x%.2x\n", pUuid[0], pUuid[1], pUuid[2], pUuid[3], pUuid[4], pUuid[5]);
-	printf(" Device Label  : %.*s\n", InfoData.length, InfoData.data);
+	printf(" Sub Devices      : %d\n", (int) (((uint16_t) info->sub_device_count[0] << 8) + info->sub_device_count[1]));
+	printf(" Sensors          : %d\n", (int) info->sensor_count);
 }

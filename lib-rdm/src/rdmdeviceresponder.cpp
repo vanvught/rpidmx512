@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,18 +29,26 @@
 
 #include "rdmdeviceresponder.h"
 #include "rdmdevice.h"
+
+#include "rdmsensors.h"
+#include "rdmsubdevices.h"
+
 #include "rdmsoftwareversion.h"
 #include "rdmpersonality.h"
+
+#include "lightset.h"
 
 #include "hardware.h"
 
 #include "rdm_e120.h"
 
+#include "debug.h"
+
+static const char LANGUAGE[2] = { 'e', 'n' };
+
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
-
-#define DMX_UNIVERSE_SIZE 512
 
 #if defined(H3)
  #include "h3_board.h"
@@ -57,7 +65,7 @@
  static const char DEVICE_LABEL[] ALIGNED = "RDM Responder";
 #endif
 
-static const char LANGUAGE[2] = { 'e', 'n' };
+RDMDeviceResponder *RDMDeviceResponder::s_pThis = 0;
 
 RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, bool EnableSubDevices) :
 		m_pRDMPersonality(pRDMPersonality),
@@ -65,16 +73,12 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 		m_IsSubDevicesEnabled(EnableSubDevices),
 		m_IsFactoryDefaults(true),
 		m_nCheckSum(0),
-		m_nDmxStartAddressFactoryDefault(DMX_DEFAULT_START_ADDRESS),
+		m_nDmxStartAddressFactoryDefault(DMX_START_ADDRESS_DEFAULT),
 		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY)
 {
-	assert(pLightSet != 0);
-	struct TRDMDeviceInfoData info;
+	DEBUG_ENTRY
 
-	info.data = (uint8_t *) DEVICE_LABEL;
-	info.length = sizeof(DEVICE_LABEL) - 1;
-
-	RDMDevice::SetLabel(&info);
+	s_pThis = this;
 
 	m_aLanguage[0] = LANGUAGE[0];
 	m_aLanguage[1] = LANGUAGE[1];
@@ -84,14 +88,30 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 
 	m_pSoftwareVersion = (char *)RDMSoftwareVersion::GetVersion();
 	m_nSoftwareVersionLength = RDMSoftwareVersion::GetVersionLength();
+	m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
+
+	struct TRDMDeviceInfoData info;
+
+	info.data = (uint8_t *) DEVICE_LABEL;
+	info.length = sizeof(DEVICE_LABEL) - 1;
+
+	RDMDevice::SetLabel(&info);
+
+	DEBUG_EXIT
+}
+
+RDMDeviceResponder::~RDMDeviceResponder(void) {
+	memset(&m_tRDMDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
+	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
+}
+
+void RDMDeviceResponder::Init(void) {
+	DEBUG_ENTRY
+
+	RDMDevice::Init();
 
 	const uint32_t nSoftwareVersionId = RDMSoftwareVersion::GetVersionId();
 	const uint16_t nDeviceModel = Hardware::Get()->GetBoardId();
-
-	m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
-
-	(void) Load();
-	Dump();
 
 	m_RDMSensors.Init();
 
@@ -99,8 +119,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 		m_RDMSubDevices.Init();
 	}
 
-	// Do not move
-	const uint16_t nProductCategory = GetProductCategory();
+	const uint16_t nProductCategory = RDMDevice::GetProductCategory();
 	const uint16_t nSubDevices = m_RDMSubDevices.GetCount();
 
 	m_tRDMDeviceInfo.protocol_major = (uint8_t) (E120_PROTOCOL_VERSION >> 8);
@@ -123,14 +142,11 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	m_tRDMDeviceInfo.sub_device_count[1] = (uint8_t) nSubDevices;
 	m_tRDMDeviceInfo.sensor_count = m_RDMSensors.GetCount();
 
-	memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof (struct TRDMDeviceInfo));
+	memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
 
 	m_nCheckSum = CalculateChecksum();
-}
 
-RDMDeviceResponder::~RDMDeviceResponder(void) {
-	memset(&m_tRDMDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
-	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
+	DEBUG_EXIT
 }
 
 uint16_t RDMDeviceResponder::GetDmxFootPrint(uint16_t nSubDevice) {
@@ -197,30 +213,6 @@ RDMPersonality* RDMDeviceResponder::GetPersonality(uint16_t nSubDevice,  uint8_t
 	return m_pRDMPersonality;
 }
 
-uint16_t RDMDeviceResponder::GetSubDeviceCount(void) {
-	return (m_tRDMDeviceInfo.sub_device_count[0] << 8) + m_tRDMDeviceInfo.sub_device_count[1];
-}
-
-uint8_t RDMDeviceResponder::GetSensorCount(uint16_t nSubDevice) {
-	return m_tRDMDeviceInfo.sensor_count;
-}
-
-const struct TRDMSensorDefintion* RDMDeviceResponder::GetSensorDefinition(uint8_t nSensor) {
-	return m_RDMSensors.GetDefintion(nSensor);
-}
-
-const struct TRDMSensorValues* RDMDeviceResponder::GetSensorValues(uint8_t nSensor) {
-	return m_RDMSensors.GetValues(nSensor);
-}
-
-void RDMDeviceResponder::SetSensorValues(uint8_t nSensor) {
-	 m_RDMSensors.SetSensorValues(nSensor);
-}
-
-void RDMDeviceResponder::SetSensorRecord(uint8_t nSensor) {
-	m_RDMSensors.SetSensorRecord(nSensor);
-}
-
 bool RDMDeviceResponder::GetSlotInfo(uint16_t nSubDevice, uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	if (nSubDevice != RDM_ROOT_DEVICE) {
 		return false; // TODO GetSlotInfo SubDevice
@@ -283,50 +275,47 @@ void RDMDeviceResponder::SetLanguage(const char aLanguage[2]) {
 }
 
 uint16_t RDMDeviceResponder::CalculateChecksum(void) {
-	struct TRDMDeviceInfoData LabelInfo;
+	uint16_t nChecksum = (m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1];
+	nChecksum += m_tRDMDeviceInfo.current_personality;
 
-	uint16_t checksum = (m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1];
-	checksum += m_tRDMDeviceInfo.current_personality;
-
-	RDMDevice::GetLabel(&LabelInfo);
-
-	for (uint8_t i = 0; i < LabelInfo.length; i++) {
-		checksum += (uint16_t) LabelInfo.data[i];
-	}
-
-	return checksum;
+	return nChecksum;
 }
 
 bool RDMDeviceResponder::GetFactoryDefaults(void) {
 	if (m_IsFactoryDefaults) {
+		if (!RDMDevice::GetFactoryDefaults()) {
+			m_IsFactoryDefaults = false;
+			return false;
+		}
+
 		if (m_nCheckSum != CalculateChecksum()) {
 			m_IsFactoryDefaults = false;
 			return false;
 		}
+
+		if (m_IsSubDevicesEnabled) {
+			m_IsFactoryDefaults = m_RDMSubDevices.GetFactoryDefaults();
+		}
 	}
 
-	return m_RDMSubDevices.GetFactoryDefaults();
+	return m_IsFactoryDefaults;
 }
 
 void RDMDeviceResponder::SetFactoryDefaults(void) {
+	DEBUG_ENTRY
+
 	if (!m_IsFactoryDefaults) {
-		struct TRDMDeviceInfoData info;
-
-		info.data = (uint8_t *) DEVICE_LABEL;
-		info.length = sizeof(DEVICE_LABEL) - 1;
-
-		RDMDevice::SetLabel(&info);
-
-		(void) Load();
+		RDMDevice::SetFactoryDefaults();
 
 		SetPersonalityCurrent(RDM_ROOT_DEVICE, m_nCurrentPersonalityFactoryDefault);
 		SetDmxStartAddress(RDM_ROOT_DEVICE, m_nDmxStartAddressFactoryDefault);
 
 		memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
 
-		m_IsFactoryDefaults = true;
+		m_RDMSubDevices.SetFactoryDefaults();
 
+		m_IsFactoryDefaults = true;
 	}
 
-	m_RDMSubDevices.SetFactoryDefaults();
+	DEBUG_EXIT
 }

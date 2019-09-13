@@ -1,5 +1,5 @@
 /**
- * @file rdmnetdevice.h
+ * @file llrponlylightset.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,40 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETDEVICE_H_
-#define RDMNETDEVICE_H_
+#ifndef LLRPONLYLIGHTSET_H_
+#define LLRPONLYLIGHTSET_H_
 
 #include <stdint.h>
+#include <assert.h>
 
-#include "rdmdeviceresponder.h"
-#include "llrpdevice.h"
+#include "lightset.h"
 
-#include "rdmhandler.h"
+class LLRPOnlyLightSet: public LightSet {
+	LLRPOnlyLightSet(void);
+	~LLRPOnlyLightSet(void);
 
-#include "e131.h"
-#include "e131uuid.h"
+	void Start(uint8_t nPort) {
+		assert(0);
+	}
+	void Stop(uint8_t nPort) {
+		assert(0);
+	}
 
-class RDMNetDevice: public RDMDeviceResponder, LLRPDevice {
-public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice(void);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+		assert(0);
+	}
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Print(void) {
 
-	void Print(void);
+	}
 
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
+public: // RDM Optional
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) {
+		return false;
+	}
+	uint16_t GetDmxStartAddress(void) {
+		return DMX_ADDRESS_INVALID;
+	}
 
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
+	uint16_t GetDmxFootprint(void) {
+		return 0;
+	}
 
-private:
-	RDMHandler *m_RDMHandler;
-	struct TRdmMessage *m_pRdmCommand;
-	uint8_t m_Cid[E131_CID_LENGTH];
-	E131Uuid m_E131Uuid;
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
+		return false;
+	}
 };
 
-#endif /* RDMNETDEVICE_H_ */
+#endif /* LLRPONLYLIGHTSET_H_ */

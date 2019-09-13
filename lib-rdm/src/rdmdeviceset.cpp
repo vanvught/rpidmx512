@@ -28,16 +28,3 @@
 
 #include "rdmdevice.h"
 
-#ifndef MAX
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
-
-void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
-	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
-	memcpy(m_tRDMDeviceParams.aDeviceRootLabel, info->data, nLength);
-	m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
-
-	if (m_pRDMDeviceParamsStore != 0) {
-		m_pRDMDeviceParamsStore->SaveLabel((const uint8_t *)m_tRDMDeviceParams.aDeviceRootLabel, nLength);
-	}
-}

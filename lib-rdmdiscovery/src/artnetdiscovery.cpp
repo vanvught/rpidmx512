@@ -2,7 +2,7 @@
  * @file artnetdiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 
+#include "dmx_uarts.h"
+
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "rdmdevicecontroller.h"
@@ -41,12 +43,10 @@
 #include "debug.h"
 
 ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
-	m_Controller.Load();
-
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != 0);
-		m_Discovery[i]->SetUid(m_Controller.GetUID());
+		m_Discovery[i]->SetUid(GetUID());
 	}
 
 	m_pRdmCommand = new struct TRdmMessage;
@@ -62,6 +62,10 @@ ArtNetRdmController::~ArtNetRdmController(void) {
 			m_Discovery[i] = 0;
 		}
 	}
+}
+
+void ArtNetRdmController::Print(void) {
+	RDMDeviceController::Print();
 }
 
 void ArtNetRdmController::Full(uint8_t nPort) {

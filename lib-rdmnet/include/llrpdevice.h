@@ -53,7 +53,7 @@ private:
 	// DEBUG subject for deletions
 	void DumpCommon(void);
 	void DumpLLRP(void);
-	void DumpRdmMessageIn(void);
+	void DumpRdmMessageInNoSc(void);
 
 private:
 	int32_t m_nHandleLLRP;

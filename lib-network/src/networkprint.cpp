@@ -1,8 +1,8 @@
 /**
- * @file rdmnetdevice.h
+ * @file networkprint.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETDEVICE_H_
-#define RDMNETDEVICE_H_
+#include <stdio.h>
 
-#include <stdint.h>
+#include "network.h"
 
-#include "rdmdeviceresponder.h"
-#include "llrpdevice.h"
-
-#include "rdmhandler.h"
-
-#include "e131.h"
-#include "e131uuid.h"
-
-class RDMNetDevice: public RDMDeviceResponder, LLRPDevice {
-public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice(void);
-
-	void Start(void);
-	void Stop(void);
-	void Run(void);
-
-	void Print(void);
-
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
-
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
-
-private:
-	RDMHandler *m_RDMHandler;
-	struct TRdmMessage *m_pRdmCommand;
-	uint8_t m_Cid[E131_CID_LENGTH];
-	E131Uuid m_E131Uuid;
-};
-
-#endif /* RDMNETDEVICE_H_ */
+void Network::Print(void) {
+	printf("Network configuration\n");
+	printf(" Hostname   : %s\n", m_aHostName);
+	printf(" Interface  : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" Inet       : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
+	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
+	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
+	if (IsDhcpKnown()) {
+		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
+	}
+}

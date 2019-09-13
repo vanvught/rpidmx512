@@ -44,8 +44,10 @@
 
 #include "debug.h"
 
-#define SHOW_LLRP_MESSAGE
-#define SHOW_RDM_MESSAGE
+#if !defined(BARE_METAL)
+ #define SHOW_LLRP_MESSAGE
+ #define SHOW_RDM_MESSAGE
+#endif
 
 LLRPDevice::LLRPDevice(void):
 	m_nHandleLLRP(-1),
@@ -95,18 +97,33 @@ void LLRPDevice::Stop(void) {
 void LLRPDevice::HandleRequestMessage(void) {
 	struct TTProbeReplyPDUPacket *pReply = (struct TTProbeReplyPDUPacket *) &(m_tLLRP.LLRPPacket.Reply);
 
+	uint8_t DestinationCid[16];
+	memcpy(DestinationCid, pReply->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
+
 	// Root Layer PDU
+	pReply->Common.RootLayerPDU.FlagsLength[2] = 67;
 	CopyCID(pReply->Common.RootLayerPDU.SenderCid);
 	// LLRP PDU
+	pReply->Common.LlrpPDU.FlagsLength[2] = 44;
 	pReply->Common.LlrpPDU.Vector = __builtin_bswap32(VECTOR_LLRP_PROBE_REPLY);
-	memcpy(pReply->Common.LlrpPDU.DestinationCid, (const void *)pReply->Common.RootLayerPDU.SenderCid, 16);
+	memcpy(pReply->Common.LlrpPDU.DestinationCid, DestinationCid, 16);
 	// Probe Reply PDU
+	pReply->ProbeReplyPDU.FlagsLength[2] = 17;
 	pReply->ProbeReplyPDU.Vector = VECTOR_PROBE_REPLY_DATA;
 	CopyUID(pReply->ProbeReplyPDU.UID);
 	Network::Get()->MacAddressCopyTo(pReply->ProbeReplyPDU.HardwareAddress);
+#if defined (RDMNET_LLRP_ONLY)
+	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;
+#else
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;
+#endif
 
 	Network::Get()->SendTo(m_nHandleLLRP, (const uint8_t *)pReply, sizeof(struct TTProbeReplyPDUPacket), m_nIpAddressLLRPResponse, LLRP_PORT);
+
+#ifndef NDEBUG
+	debug_dump((void *)pReply, sizeof(struct TTProbeReplyPDUPacket));
+	DumpCommon();
+#endif
 }
 
 void LLRPDevice::HandleRdmCommand(void) {
@@ -115,7 +132,8 @@ void LLRPDevice::HandleRdmCommand(void) {
 	struct LTRDMCommandPDUPacket *pRDMCommand = (struct LTRDMCommandPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
 
 #ifdef SHOW_RDM_MESSAGE
-	DumpRdmMessageIn();
+	const uint8_t *pRdmDataInNoSc = (const uint8_t *)pRDMCommand->RDMCommandPDU.RDMData;
+	RDMMessage::PrintNoSc(pRdmDataInNoSc);
 #endif
 
 	const uint8_t *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
@@ -125,23 +143,34 @@ void LLRPDevice::HandleRdmCommand(void) {
 		return;
 	}
 
+	uint8_t DestinationCid[16];
+	memcpy(DestinationCid, pRDMCommand->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
+
+	const uint8_t nMessageLength = pReply[2] + 1;	// RDM Command length without SC
+
+	// Root Layer PDU
+	pRDMCommand->Common.RootLayerPDU.FlagsLength[2] = RDM_ROOT_LAYER_LENGTH(nMessageLength);
+	CopyCID(pRDMCommand->Common.RootLayerPDU.SenderCid);
+	// LLRP PDU
+	pRDMCommand->Common.LlrpPDU.FlagsLength[2] = RDM_LLRP_PDU_LENGHT(nMessageLength);
+	memcpy(pRDMCommand->Common.LlrpPDU.DestinationCid, DestinationCid, 16);
+	// RDM Command
+	pRDMCommand->RDMCommandPDU.FlagsLength[2] = RDM_COMMAND_PDU_LENGTH(nMessageLength);
+	assert(E120_SC_RDM == VECTOR_RDM_CMD_RDM_DATA);
+	memcpy((uint8_t *)pRDMCommand->RDMCommandPDU.RDMData, &pReply[1], nMessageLength);
+
+	const uint16_t nLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(nMessageLength);
+
+	Network::Get()->SendTo(m_nHandleLLRP, (const uint8_t *)pRDMCommand, nLength	, m_nIpAddressLLRPResponse, LLRP_PORT);
+
 #ifdef SHOW_RDM_MESSAGE
 	RDMMessage::Print((uint8_t *)pReply);
 #endif
 
-	// Root Layer PDU
-	CopyCID(pRDMCommand->Common.RootLayerPDU.SenderCid);
-	// LLRP PDU
-	memcpy(pRDMCommand->Common.LlrpPDU.DestinationCid, (const void *)pRDMCommand->Common.RootLayerPDU.SenderCid, 16);
-
-	const uint8_t nMessageLength = pReply[2] + 1;
-	memcpy((uint8_t *) pRDMCommand->RDMCommandPDU.RDMData, &pReply[1], nMessageLength);
-
-	const uint16_t nLength = (uint16_t) sizeof(struct LTRDMCommandPDUPacket) - (uint16_t) sizeof(pRDMCommand->RDMCommandPDU.RDMData) + nMessageLength;
-
-	Network::Get()->SendTo(m_nHandleLLRP, (const uint8_t *)pRDMCommand, nLength	, m_nIpAddressLLRPResponse, LLRP_PORT);
-
+#ifndef NDEBUG
 	debug_dump((void *)pRDMCommand, nLength);
+	DumpCommon();
+#endif
 
 	DEBUG_EXIT
 }
@@ -188,7 +217,10 @@ void LLRPDevice::Run(void) {
 }
 
 void LLRPDevice::Print(void) {
-
+	printf("LLRP Device configuration\n");
+	printf(" Port UDP               : %d\n", LLRP_PORT);
+	printf(" Multicast join Request : " IPSTR "\n", IP2STR(m_nIpAddresLLRPRequest));
+	printf(" Multicast Response     : " IPSTR "\n", IP2STR(m_nIpAddressLLRPResponse));
 }
 
 void LLRPDevice::CopyUID(uint8_t *pUID) {

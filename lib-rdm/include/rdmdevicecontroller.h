@@ -32,6 +32,9 @@ class RDMDeviceController: public RDMDevice  {
 public:
 	RDMDeviceController(void);
 	~RDMDeviceController(void);
+
+	void Init(void);
+	void Print(void);
 };
 
 #endif /* RDMDEVICECONTROLLER_H_ */

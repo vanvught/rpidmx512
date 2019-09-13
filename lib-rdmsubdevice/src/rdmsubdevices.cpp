@@ -2,7 +2,7 @@
  * @file rdmsubdevices.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,26 @@
 #include <string.h>
 #include <assert.h>
 
-#include "debug.h"
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "debug.h"
+
 #include "rdmsubdevices.h"
 #include "rdmsubdevice.h"
-//
+
 #include "rdmsubdevicedummy.h"
+
 #if defined(BARE_METAL) && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
+ #define RDM_SUBDEVICES_ENABLE
+#endif
+
+#if defined (RDMNET_LLRP_ONLY)
+ #undef RDM_SUBDEVICES_ENABLE
+#endif
+
+#if defined(RDM_SUBDEVICES_ENABLE)
+//
 #include "rdmsubdevicebw7fets.h"
 #include "rdmsubdevicebwdimmer.h"
 #include "rdmsubdevicebwdio.h"
@@ -53,13 +59,18 @@
 #include "rdmsubdevicemcp4822.h"
 #include "rdmsubdevicemcp4902.h"
 
-static const char SUBDEVICES_PARAMS_FILE_NAME[] ALIGNED = "devices.txt";
+static const char SUBDEVICES_PARAMS_FILE_NAME[] __attribute__ ((aligned (4))) = "devices.txt";
 #endif
 
 #define RDM_SUBDEVICES_MAX	8
 
-RDMSubDevices::RDMSubDevices(void): m_nCount(0) {
+RDMSubDevices *RDMSubDevices::s_pThis = 0;
+
+RDMSubDevices::RDMSubDevices(void) : m_nCount(0) {
+	s_pThis = this;
+
 	m_pRDMSubDevice = new RDMSubDevice*[RDM_SUBDEVICES_MAX];
+	assert(m_pRDMSubDevice != 0);
 }
 
 RDMSubDevices::~RDMSubDevices(void) {
@@ -77,13 +88,13 @@ void RDMSubDevices::Init(void) {
 #ifndef NDEBUG
 	Add(new RDMSubDeviceDummy);
 #endif
-#if defined(BARE_METAL)  && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
+
+#if defined(RDM_SUBDEVICES_ENABLE)
 	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
 	(void) configfile.Read(SUBDEVICES_PARAMS_FILE_NAME);
 #endif
-#ifndef NDEBUG
-	printf("SubDevices added: %d\n", (int) m_nCount);
-#endif
+
+	DEBUG_PRINTF("SubDevices added: %d", (int) m_nCount);
 }
 
 bool RDMSubDevices::Add(RDMSubDevice* pRDMSubDevice) {
@@ -184,18 +195,19 @@ RDMPersonality* RDMSubDevices::GetPersonality(uint16_t nSubDevice, uint8_t nPers
 void RDMSubDevices::Start(void) {
 	DEBUG_ENTRY
 
-	for (unsigned i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->Start();
 		}
 	}
+
 	DEBUG_EXIT
 }
 
 void RDMSubDevices::Stop(void) {
 	DEBUG_ENTRY
 
-	for (unsigned i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->Stop();
 		}
@@ -215,7 +227,7 @@ void RDMSubDevices::SetData(const uint8_t* pData, uint16_t nLength) {
 }
 
 bool RDMSubDevices::GetFactoryDefaults(void) {
-	for (unsigned i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			if (!m_pRDMSubDevice[i]->GetFactoryDefaults()) {
 				return false;
@@ -227,7 +239,7 @@ bool RDMSubDevices::GetFactoryDefaults(void) {
 }
 
 void RDMSubDevices::SetFactoryDefaults(void) {
-	for (unsigned i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->SetFactoryDefaults();
 		}
@@ -242,8 +254,8 @@ void RDMSubDevices::staticCallbackFunction(void* p, const char* s) {
 }
 
 void RDMSubDevices::callbackFunction(const char* pLine) {
+#if defined(RDM_SUBDEVICES_ENABLE)
 	assert(pLine != 0);
-#if defined(BARE_METAL)  && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
 	int nReturnCode;
 	char aDeviceName[65];
 	uint8_t nLength = sizeof(aDeviceName) - 1;
@@ -257,10 +269,11 @@ void RDMSubDevices::callbackFunction(const char* pLine) {
 	nReturnCode = Sscan::Spi(pLine, &nChipSselect, aDeviceName, &nLength, &nSlaveAddress, &nDmxStartAddress, &nSpiSpeed);
 
 	if ((nReturnCode == SSCAN_OK) && (nLength != 0)) {
-#ifndef NDEBUG
-		printf("%s [%d] SPI%d %x %d %ld\n", aDeviceName, (int) nLength, (int) nChipSselect, (int) nSlaveAddress, (int) nDmxStartAddress, (long int) nSpiSpeed);
-#endif
+
+		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, (int) nLength, (int) nChipSselect, (int) nSlaveAddress, (int) nDmxStartAddress, (long int) nSpiSpeed);
+
 		if ((nChipSselect < 0) || (nChipSselect > 2) || (nDmxStartAddress == 0) || (nDmxStartAddress > 512) ) {
+			DEBUG_EXIT
 			return;
 		}
 

@@ -33,12 +33,13 @@
 
 #include "rdmpersonality.h"
 
-RDMPersonality::RDMPersonality(const char* pDescription, uint16_t nSlots): m_nDescriptionLength(0) {
+RDMPersonality::RDMPersonality(const char* pDescription, uint16_t nSlots):
+	m_nSlots(nSlots),
+	m_nDescriptionLength(0)
+{
 	assert(pDescription != 0);
 
 	SetDescription(pDescription);
-
-	m_nSlots = nSlots;
 }
 
 RDMPersonality::~RDMPersonality(void) {
@@ -49,7 +50,7 @@ uint16_t RDMPersonality::GetSlots(void) const {
 }
 
 const char* RDMPersonality::GetDescription(void) const {
-	return (const char*)m_aDescription;
+	return (const char*) m_aDescription;
 }
 
 void RDMPersonality::SetDescription(const char* pDescription) {
@@ -73,12 +74,12 @@ uint8_t RDMPersonality::GetDescriptionLength(void) const {
 	return m_nDescriptionLength;
 }
 
-void RDMPersonality::CopyTo(char* p, uint8_t &nLength) {
+void RDMPersonality::DescriptionCopyTo(char *p, uint8_t &nLength) {
 	assert(p != 0);
 
-	char *src = (char *)m_aDescription;
-	char *dst = (char *)p;
-	unsigned i;
+	char *src = (char*) m_aDescription;
+	char *dst = (char*) p;
+	uint32_t i;
 
 	for (i = 0; (i < m_nDescriptionLength) && (i < nLength); i++) {
 		*dst = *src;
@@ -86,5 +87,5 @@ void RDMPersonality::CopyTo(char* p, uint8_t &nLength) {
 		dst++;
 	}
 
-	nLength = (uint8_t) i;
+	nLength = i;
 }

@@ -3,7 +3,7 @@
  * @file rdmresponder.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,10 @@
  */
 
 #include <stdint.h>
-//#ifndef NDEBUG
- #include <stdio.h>
-//#endif
 #include <assert.h>
+
+#include "rdmdeviceresponder.h"
+#include "dmxreceiver.h"
 
 #include "rdmresponder.h"
 
@@ -37,19 +37,21 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#include "debug.h"
+
 RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin, bool EnableSubDevices) :
 	DMXReceiver(nGpioPin),
-	m_Responder(pRDMPersonality, pLightSet, EnableSubDevices),
+	RDMDeviceResponder(pRDMPersonality, pLightSet, EnableSubDevices),
 	m_pRdmCommand(0),
 	m_RDMHandler(0),
 	m_IsEnableSubDevices(EnableSubDevices),
 	m_IsSubDeviceActive(false)
 {
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand !=0);
+	assert(m_pRdmCommand != 0);
 
-	m_RDMHandler = new RDMHandler(&m_Responder);
-	assert(m_RDMHandler !=0);
+	m_RDMHandler = new RDMHandler;
+	assert(m_RDMHandler != 0);
 }
 
 RDMResponder::~RDMResponder(void) {
@@ -58,6 +60,10 @@ RDMResponder::~RDMResponder(void) {
 
 	delete m_pRdmCommand;
 	m_pRdmCommand = 0;
+}
+
+void RDMResponder::Init(void) {
+	RDMDeviceResponder::Init();
 }
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
@@ -83,26 +89,24 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 int RDMResponder::Run(void) {
 	int16_t nLength;
 
-	//DMXReceiver::Run(nLength); //TODO Test!
-
 	const uint8_t *pDmxDataIn = DMXReceiver::Run(nLength);
 
 	if (m_IsEnableSubDevices && (nLength == -1)) {
 		if (m_IsSubDeviceActive) {
-			m_Responder.GetRDMSubDevices()->Stop();
+			RDMSubDevices::Get()->Stop();
 			m_IsSubDeviceActive = false;
 		}
 	} else if (pDmxDataIn != 0) {
-		m_Responder.GetRDMSubDevices()->SetData(pDmxDataIn, (uint16_t) nLength);
+		RDMSubDevices::Get()->SetData(pDmxDataIn, (uint16_t) nLength);
 		if (!m_IsSubDeviceActive) {
-			m_Responder.GetRDMSubDevices()->Start();
+			RDMSubDevices::Get()->Start();
 			m_IsSubDeviceActive = true;
 		}
 	}
 
 	const uint8_t *pRdmDataIn = (uint8_t *) Rdm::Receive(0);
 
-	if (pRdmDataIn == NULL) {
+	if (pRdmDataIn == 0) {
 		return RDM_RESPONDER_NO_DATA;
 	}
 
@@ -121,18 +125,21 @@ int RDMResponder::Run(void) {
 			return HandleResponse((uint8_t *)m_pRdmCommand);
 			break;
 		default:
-#ifndef NDEBUG
-			printf("\t%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-#endif
+			DEBUG_PUTS("RDM_RESPONDER_INVALID_DATA_RECEIVED");
 			return RDM_RESPONDER_INVALID_DATA_RECEIVED;
 			break;
 		}
 	}
 
-#ifndef NDEBUG
-	printf("\t%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
-#endif
+	DEBUG_PUTS("RDM_RESPONDER_DISCOVERY_RESPONSE");
 	return RDM_RESPONDER_DISCOVERY_RESPONSE;
 }
+
+void RDMResponder::Print(void) {
+	RDMDeviceResponder::Print();
+	DMXReceiver::Print();
+}
 #endif
+
+
 

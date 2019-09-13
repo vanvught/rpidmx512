@@ -1,5 +1,5 @@
 /**
- * @file rdmnetdevice.h
+ * @file rdmdeviceprint.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,40 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETDEVICE_H_
-#define RDMNETDEVICE_H_
+#include <stdio.h>
 
-#include <stdint.h>
+#include "rdmdevice.h"
 
-#include "rdmdeviceresponder.h"
-#include "llrpdevice.h"
-
-#include "rdmhandler.h"
-
-#include "e131.h"
-#include "e131uuid.h"
-
-class RDMNetDevice: public RDMDeviceResponder, LLRPDevice {
-public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice(void);
-
-	void Start(void);
-	void Stop(void);
-	void Run(void);
-
-	void Print(void);
-
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
-
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
-
-private:
-	RDMHandler *m_RDMHandler;
-	struct TRdmMessage *m_pRdmCommand;
-	uint8_t m_Cid[E131_CID_LENGTH];
-	E131Uuid m_E131Uuid;
-};
-
-#endif /* RDMNETDEVICE_H_ */
+void RDMDevice::Print(void) {
+	printf("RDM Device configuration\n");
+	printf(" Manufacturer Name : %.*s\n", (int) m_tRDMDevice.nDdeviceManufacturerNameLength,  m_tRDMDevice.aDeviceManufacturerName);
+	printf(" Manufacturer ID   : %.2X%.2X\n", (int) m_tRDMDevice.aDeviceUID[0], (int) m_tRDMDevice.aDeviceUID[1]);
+	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", (int) m_tRDMDevice.aDeviceSN[3], (int) m_tRDMDevice.aDeviceSN[2], (int) m_tRDMDevice.aDeviceSN[1], (int) m_tRDMDevice.aDeviceSN[0]);
+	printf(" Root label        : %.*s\n", (int) m_tRDMDevice.nDeviceRootLabelLength,  m_tRDMDevice.aDeviceRootLabel);
+	printf(" Product Category  : %.2X%.2X\n", (int) m_tRDMDevice.nProductCategory >> 8, (int) m_tRDMDevice.nProductCategory & 0xFF);
+	printf(" Product Detail    : %.2X%.2X\n", (int) m_tRDMDevice.nProductDetail >> 8, (int) m_tRDMDevice.nProductDetail & 0xFF);
+}

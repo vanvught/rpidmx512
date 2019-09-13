@@ -114,4 +114,12 @@ struct TLLRP {
 	union ULLRPPacket LLRPPacket;
 };
 
+#define ROOT_LAYER_SIZE				sizeof(struct TRootLayerPDU)
+#define LLRP_PDU_SIZE				sizeof(struct TLlrpPDU)
+#define RDM_COMMAND_PDU_SIZE		sizeof(struct TRDMCommandPDU)
+
+#define RDM_COMMAND_PDU_LENGTH(x)	(RDM_COMMAND_PDU_SIZE - 232 + (x))
+#define RDM_LLRP_PDU_LENGHT(x)		(LLRP_PDU_SIZE + RDM_COMMAND_PDU_LENGTH(x))
+#define RDM_ROOT_LAYER_LENGTH(x)	(ROOT_LAYER_SIZE + RDM_LLRP_PDU_LENGHT(x))
+
 #endif /* LLRPPACKET_H_ */

@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,6 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
 #include "rdmsensor.h"
@@ -55,39 +52,14 @@ RDMSensor::RDMSensor(uint8_t nSensor) : m_nSensor(nSensor) {
 }
 
 RDMSensor::~RDMSensor(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
 }
 
-void RDMSensor::SetType(uint8_t nType) {
-	m_tRDMSensorDefintion.type = nType;
-}
-
-void RDMSensor::SetUnit(uint8_t nUnit) {
-	m_tRDMSensorDefintion.unit = nUnit;
-}
-
-void RDMSensor::SetPrefix(uint8_t nPrefix) {
-	m_tRDMSensorDefintion.prefix = nPrefix;
-}
-
-void RDMSensor::SetRangeMin(uint16_t nRangeMin) {
-	m_tRDMSensorDefintion.range_min = nRangeMin;
-}
-
-void RDMSensor::SetRangeMax(uint16_t nRangeMax) {
-	m_tRDMSensorDefintion.range_max = nRangeMax;
-}
-
-void RDMSensor::SetNormalMin(uint16_t nNormalMin) {
-	m_tRDMSensorDefintion.normal_min = nNormalMin;
-}
-
-void RDMSensor::SetNormalMax(uint16_t nNormalMax) {
-	m_tRDMSensorDefintion.normal_max = nNormalMax;
-}
-
-void RDMSensor::SetDescription(const char* pDescription) {
-	assert(pDescription !=0 );
-	uint8_t i;
+void RDMSensor::SetDescription(const char *pDescription) {
+	assert(pDescription != 0);
+	uint32_t i;
 
 	for (i = 0; i < 32 && pDescription[i] != 0; i++) {
 		m_tRDMSensorDefintion.description[i] = pDescription[i];
@@ -135,4 +107,3 @@ void RDMSensor::Record(void) {
 
 	DEBUG1_EXIT
 }
-

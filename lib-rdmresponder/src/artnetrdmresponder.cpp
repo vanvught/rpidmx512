@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,47 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "artnetrdmresponder.h"
+
+#include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
+#include "rdmmessage.h"
 
 #include "lightset.h"
 
 #include "rdm_e120.h"
 
-#include "rdmmessage.h"
 #include "debug.h"
 
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	m_Responder(pRDMPersonality, pLightSet, false),
+	RDMDeviceResponder(pRDMPersonality, pLightSet, false),
 	m_pRdmCommand(0),
 	m_RDMHandler(0)
 {
+	DEBUG_ENTRY
+
 	m_pRdmCommand = new struct TRdmMessage;
 	assert(m_pRdmCommand != 0);
 
-	m_RDMHandler = new RDMHandler(&m_Responder);
+	m_RDMHandler = new RDMHandler;
 	assert(m_RDMHandler != 0);
+
+	DEBUG_EXIT
 }
 
 ArtNetRdmResponder::~ArtNetRdmResponder(void) {
+	DEBUG_ENTRY
+
 	delete m_RDMHandler;
 	m_RDMHandler = 0;
 
 	delete m_pRdmCommand;
 	m_pRdmCommand = 0;
+
+	DEBUG_EXIT
 }
 
 void ArtNetRdmResponder::Full(uint8_t nPort) {
@@ -65,14 +76,7 @@ const uint8_t ArtNetRdmResponder::GetUidCount(uint8_t nPort) {
 }
 
 void ArtNetRdmResponder::Copy(uint8_t nPort, unsigned char *tod) {
-	unsigned char *src = (unsigned char *) m_Responder.GetUID();
-	unsigned char *dst = tod;
-
-	for (unsigned i = 0; i < RDM_UID_SIZE; i++) {
-		*dst=*src;
-		dst++;
-		src++;
-	}
+	memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 }
 
 const uint8_t *ArtNetRdmResponder::Handler(uint8_t nPort, const uint8_t *pRdmDataNoSC) {
@@ -83,15 +87,21 @@ const uint8_t *ArtNetRdmResponder::Handler(uint8_t nPort, const uint8_t *pRdmDat
 		return 0;
 	}
 
+#ifndef NDEBUG
+	RDMMessage::PrintNoSc(pRdmDataNoSC);
+#endif
+
 	m_RDMHandler->HandleData(pRdmDataNoSC, (uint8_t *)m_pRdmCommand);
 
 	if (m_pRdmCommand->start_code != E120_SC_RDM) {
 		DEBUG_EXIT
 		return 0;
 	}
+
 #ifndef NDEBUG
 	RDMMessage::Print((uint8_t *)m_pRdmCommand);
 #endif
+
 	DEBUG_EXIT
 	return (const uint8_t *)m_pRdmCommand;
 }

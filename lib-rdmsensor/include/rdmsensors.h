@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +41,15 @@ public:
 
 	const struct TRDMSensorDefintion* GetDefintion(uint8_t nSensor);
 	const struct TRDMSensorValues* GetValues(uint8_t nSensor);
-	void SetSensorValues(uint8_t nSensor);
-	void SetSensorRecord(uint8_t nSensor);
+	void SetValues(uint8_t nSensor);
+	void SetRecord(uint8_t nSensor);
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
+
+	static RDMSensors* Get(void) {
+		return s_pThis;
+	}
 
 private:
     void callbackFunction(const char *s);
@@ -53,6 +57,8 @@ private:
 private:
 	RDMSensor **m_pRDMSensor;
 	uint8_t m_nCount;
+
+	static RDMSensors *s_pThis;
 };
 
 #endif /* RDMSENSORS_H_ */

@@ -23,8 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <stdbool.h>
 
 #include "network.h"
 
@@ -36,7 +35,8 @@ Network::Network(void) :
 	m_nNetmask(0),
 	m_nBroadcastIp(0),
 	m_IsDhcpCapable(true),
-	m_IsDhcpUsed(false)
+	m_IsDhcpUsed(false),
+	m_nIfIndex(1)
 {
 	s_pThis = this;
 
@@ -55,16 +55,4 @@ Network::~Network(void) {
 	m_aIfName[0] = '\0';
 
 	s_pThis = 0;
-}
-
-void Network::Print(void) {
-	printf("Network configuration\n");
-	printf(" Hostname   : %s\n", m_aHostName);
-	printf(" Interface  : %s\n", m_aIfName);
-	printf(" Inet       : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
-	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
-	if (IsDhcpKnown()) {
-		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-	}
 }

@@ -49,7 +49,7 @@ typedef union cast {
 
 static _cast uuid_cast;
 
-#define RECEIVE_TIME_OUT (2800*100) //TODO
+#define RECEIVE_TIME_OUT (2800*100) //TODO #define
 
 RDMDiscovery::RDMDiscovery(uint8_t nPort) : m_nPort(nPort) {
 	m_UnMute.SetDstUid(UID_ALL);

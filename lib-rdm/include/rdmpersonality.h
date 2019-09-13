@@ -42,7 +42,7 @@ public:
 
 	uint8_t GetDescriptionLength(void) const;
 
-	void CopyTo(char* p, uint8_t &nLength);
+	void DescriptionCopyTo(char* p, uint8_t &nLength);
 
 private:
 	uint16_t m_nSlots;

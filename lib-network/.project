@@ -3,12 +3,6 @@
 	<name>lib-network</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
-		<project>include</project>
-		<project>lib-debug</project>
-		<project>lib-esp8266</project>
-		<project>lib-hal</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

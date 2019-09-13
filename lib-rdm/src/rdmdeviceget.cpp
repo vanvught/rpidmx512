@@ -27,18 +27,3 @@
 
 #include "rdmdevice.h"
 
-void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceRootLabel;
-	info->length = m_tRDMDeviceParams.nDeviceRootLabelLength;
-}
-
-void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
-	info->data[0] = m_tRDMDeviceParams.aDeviceUID[1];
-	info->data[1] = m_tRDMDeviceParams.aDeviceUID[0];
-	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDeviceParams.aDeviceManufacturerName;
-	info->length = m_tRDMDeviceParams.nDdeviceManufacturerNameLength;
-}

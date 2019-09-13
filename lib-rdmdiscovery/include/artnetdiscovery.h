@@ -9,13 +9,15 @@
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
 
-#include "dmx.h"
+#include "dmx_uarts.h"
 #include "rdm.h"
 
-class ArtNetRdmController: public ArtNetRdm {
+class ArtNetRdmController: public RDMDeviceController, ArtNetRdm {
 public:
 	ArtNetRdmController(void);
 	~ArtNetRdmController(void);
+
+	void Print(void);
 
 	void Full(uint8_t nPort = 0);
 	const uint8_t GetUidCount(uint8_t nPort = 0);
@@ -26,7 +28,6 @@ public:
 
 private:
 	RDMDiscovery *m_Discovery[DMX_MAX_UARTS];
-	RDMDeviceController m_Controller;
 	struct TRdmMessage *m_pRdmCommand;
 };
 
