@@ -1,5 +1,5 @@
 /**
- * @file rdmdeviceparamsconst.h
+ * @file rdmconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,17 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDEVICEPARAMSCONST_H_
-#define RDMDEVICEPARAMSCONST_H_
+#ifndef RDMCONST_H_
+#define RDMCONST_H_
 
 #include <stdint.h>
 
-class RDMDeviceParamsConst {
+class RDMConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char LABEL[];
-	alignas(uint32_t) static const char PRODUCT_CATEGORY[];
-	alignas(uint32_t) static const char PRODUCT_DETAIL[];
+	alignas(uint32_t) static const char MANUFACTURER_NAME[];
+	alignas(uint32_t) static const char MANUFACTURER_ID[];
 };
 
-#endif /* RDMDEVICEPARAMSCONST_H_ */
+#endif /* RDMCONST_H_ */

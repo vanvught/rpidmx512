@@ -83,17 +83,14 @@ public:
 		return (const uint8_t*) m_tRDMDevice.aDeviceSN;
 	}
 
+	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);
+	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo);
+
 	/*
 	 *
 	 */
 	void SetLabel(const struct TRDMDeviceInfoData *pInfo);
 	void GetLabel(struct TRDMDeviceInfoData *pInfo);
-
-	void SetManufacturerId(uint16_t nManufacturerId);
-	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);
-
-	void SetManufacturerNam(const struct TRDMDeviceInfoData *pInfo);
-	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo);
 
 	void SetProductCategory(uint16_t nProductCategory) {
 		m_tRDMDevice.nProductCategory = nProductCategory;

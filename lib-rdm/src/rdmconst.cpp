@@ -1,5 +1,5 @@
 /**
- * @file rdmdeviceparamsconst.h
+ * @file rdmconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,17 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDEVICEPARAMSCONST_H_
-#define RDMDEVICEPARAMSCONST_H_
-
 #include <stdint.h>
 
-class RDMDeviceParamsConst {
-public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char LABEL[];
-	alignas(uint32_t) static const char PRODUCT_CATEGORY[];
-	alignas(uint32_t) static const char PRODUCT_DETAIL[];
-};
+#include "rdmconst.h"
 
-#endif /* RDMDEVICEPARAMSCONST_H_ */
+/*
+ * https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
+ */
+
+alignas(uint32_t) const char RDMConst::MANUFACTURER_NAME[] = "http://www.orangepi-dmx.org";
+alignas(uint32_t) const char RDMConst::MANUFACTURER_ID[2] = { 0x50, 0x00 };

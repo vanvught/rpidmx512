@@ -41,23 +41,8 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#ifndef MIN
-// #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
-
-#define DEVICE_MANUFACTURER_ID 	0x7FF0	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-
 RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(pRDMDeviceParamsStore) {
 	m_tRDMDeviceParams.nSetList = 0;
-
-	m_tRDMDeviceParams.nManufactureID = DEVICE_MANUFACTURER_ID;
-
-	const char *WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-
-	const uint8_t nLength = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(WebsiteUrl));
-	memcpy(m_tRDMDeviceParams.aManufacturerName, WebsiteUrl, nLength);
-	m_tRDMDeviceParams.nManufacturerNameLength = nLength;
 
 	memset(m_tRDMDeviceParams.aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
 	m_tRDMDeviceParams.nDeviceRootLabelLength = 0;
@@ -113,19 +98,6 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 	uint8_t len;
 	uint16_t uint16;
 
-	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
-	if (Sscan::Char(pLine, RDMDeviceParamsConst::MANUFACTURER_NAME, m_tRDMDeviceParams.aManufacturerName, &len) == SSCAN_OK) {
-		m_tRDMDeviceParams.nManufacturerNameLength = len;
-		m_tRDMDeviceParams.nSetList |= RDMDEVICE_PARAMS_MASK_MANUFACTURER_NAME;
-		return;
-	}
-
-	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::MANUFACTURER_ID, &uint16) == SSCAN_OK) {
-		m_tRDMDeviceParams.nManufactureID = uint16;
-		m_tRDMDeviceParams.nSetList |= RDMDEVICE_PARAMS_MASK_MANUFACTURER_ID;
-		return;
-	}
-
 	len = RDM_DEVICE_LABEL_MAX_LENGTH;
 	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, &len) == SSCAN_OK) {
 		m_tRDMDeviceParams.nDeviceRootLabelLength = len;
@@ -156,17 +128,6 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 		pRDMDevice->SetLabel(&Info);
 	}
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_MANUFACTURER_NAME)) {
-		Info.data = (uint8_t*) m_tRDMDeviceParams.aManufacturerName;
-		Info.length = m_tRDMDeviceParams.nManufacturerNameLength;
-		pRDMDevice->SetManufacturerNam(&Info);
-	}
-
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_MANUFACTURER_ID)) {
-		pRDMDevice->SetManufacturerId(m_tRDMDeviceParams.nManufactureID);
-	}
-
-
 	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY)) {
 		pRDMDevice->SetProductCategory(m_tRDMDeviceParams.nProductCategory);
 	}
@@ -182,14 +143,6 @@ void RDMDeviceParams::Dump(void) {
 
 	if (isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL)) {
 		printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.nDeviceRootLabelLength, m_tRDMDeviceParams.aDeviceRootLabel);
-	}
-
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_MANUFACTURER_NAME)) {
-		printf(" %s=%.*s\n", RDMDeviceParamsConst::MANUFACTURER_NAME, m_tRDMDeviceParams.nManufacturerNameLength, m_tRDMDeviceParams.aManufacturerName);
-	}
-
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_MANUFACTURER_ID)) {
-		printf(" %s=%x%x\n", RDMDeviceParamsConst::MANUFACTURER_ID, m_tRDMDeviceParams.nManufactureID << 8, m_tRDMDeviceParams.nManufactureID & 0xFF);
 	}
 
 	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY)) {

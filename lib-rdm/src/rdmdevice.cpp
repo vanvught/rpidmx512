@@ -29,6 +29,7 @@
 
 #include "rdmdevice.h"
 
+#include "rdmconst.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 
@@ -45,8 +46,6 @@
  #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
-
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x7F, 0xF0 };	///< 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
 
 #if defined(H3)
  #include "h3_board.h"
@@ -70,11 +69,15 @@ RDMDevice::RDMDevice(void):
 {
 	DEBUG_ENTRY
 
+	const uint8_t nLength = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(RDMConst::MANUFACTURER_NAME));
+	memcpy(m_tRDMDevice.aDeviceManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
+	m_tRDMDevice.nDdeviceManufacturerNameLength = nLength;
+
+	m_tRDMDevice.aDeviceUID[0] = RDMConst::MANUFACTURER_ID[0];
+	m_tRDMDevice.aDeviceUID[1] = RDMConst::MANUFACTURER_ID[1];
+
 	uint8_t aMacAddress[NETWORK_MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
-
-	m_tRDMDevice.aDeviceUID[0] = DEVICE_MANUFACTURER_ID[0];
-	m_tRDMDevice.aDeviceUID[1] = DEVICE_MANUFACTURER_ID[1];
 
 	m_tRDMDevice.aDeviceUID[2] = aMacAddress[2];
 	m_tRDMDevice.aDeviceUID[3] = aMacAddress[3];
@@ -164,21 +167,10 @@ void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
 	info->length = m_tRDMDevice.nDeviceRootLabelLength;
 }
 
-void RDMDevice::SetManufacturerId(uint16_t nManufacturerId) {
-	m_tRDMDevice.aDeviceUID[0] = (uint8_t) (nManufacturerId >> 8);
-	m_tRDMDevice.aDeviceUID[1] = (uint8_t) (nManufacturerId & 0xFF);
-}
-
 void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
 	info->data[0] = m_tRDMDevice.aDeviceUID[1];
 	info->data[1] = m_tRDMDevice.aDeviceUID[0];
 	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-void RDMDevice::SetManufacturerNam(const struct TRDMDeviceInfoData *info) {
-	const uint8_t nLength = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, info->length);
-	memcpy(m_tRDMDevice.aDeviceManufacturerName, info->data, nLength);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = nLength;
 }
 
 void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {

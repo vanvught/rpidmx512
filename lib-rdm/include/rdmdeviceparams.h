@@ -34,9 +34,6 @@
 
 struct TRDMDeviceParams {
     uint32_t nSetList;
-	char aManufacturerName[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
-	uint8_t nManufacturerNameLength;
-	uint16_t nManufactureID;
 	char aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t nDeviceRootLabelLength;
 	uint16_t nProductCategory;
@@ -44,11 +41,9 @@ struct TRDMDeviceParams {
 };
 
 enum TRDMDeviceParamsMask {
-	RDMDEVICE_PARAMS_MASK_MANUFACTURER_NAME = (1 << 0),
-	RDMDEVICE_PARAMS_MASK_MANUFACTURER_ID = (1 << 1),
-	RDMDEVICE_PARAMS_MASK_LABEL = (1 << 2),
-	RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY = (1 << 3),
-	RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL = (1 << 4)
+	RDMDEVICE_PARAMS_MASK_LABEL = (1 << 0),
+	RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY = (1 << 1),
+	RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL = (1 << 2)
 };
 
 class RDMDeviceParamsStore {
