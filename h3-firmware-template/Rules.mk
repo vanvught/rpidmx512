@@ -38,15 +38,27 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 endif
 
 ifdef COND
-	LIBS+=artnet4 artnet e131 dmxsend dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
+	LIBS+=artnet4 artnet e131
+endif
+
+ifeq ($(findstring ARTNET,$(DEFINES)),ARTNET)
+	LIBS+=uuid
 endif
 
 ifeq ($(findstring E131,$(DEFINES)),E131)
 	LIBS+=uuid
 endif
 
-ifeq ($(findstring ARTNET,$(DEFINES)),ARTNET)
-	LIBS+=uuid
+ifeq ($(findstring DMXSEND,$(DEFINES)),DMXSEND)
+	LIBS+=dmxsend dmx
+endif
+
+#ifeq ($(findstring PIXEL,$(DEFINES)),PIXEL)
+#	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+#endif
+
+ifdef COND
+	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
 endif
 
 LIBS+=network

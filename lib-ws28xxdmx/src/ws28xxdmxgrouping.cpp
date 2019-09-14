@@ -147,9 +147,9 @@ void WS28xxDmxGrouping::SetLEDGroupCount(uint16_t nLedGroupCount) {
 bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG_PRINTF("nDmxStartAddress=%d", (int) nDmxStartAddress);
 
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint)));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint)));
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_MAX_CHANNELS - m_nDmxFootprint))) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
 		return true;
 	}
@@ -165,13 +165,13 @@ void WS28xxDmxGrouping::UpdateMembers(void) {
 	m_nGroups = m_nLedCount / m_nLEDGroupCount;
 
 	if (m_tLedType == SK6812W) {
-		if (m_nGroups > (DMX_MAX_CHANNELS / 4)) {
-			m_nGroups = DMX_MAX_CHANNELS / 4;
+		if (m_nGroups > (DMX_UNIVERSE_SIZE / 4)) {
+			m_nGroups = DMX_UNIVERSE_SIZE / 4;
 		}
 		m_nDmxFootprint = m_nGroups * 4;
 	} else {
-		if (m_nGroups > (DMX_MAX_CHANNELS / 3)) {
-			m_nGroups = DMX_MAX_CHANNELS / 3;
+		if (m_nGroups > (DMX_UNIVERSE_SIZE / 3)) {
+			m_nGroups = DMX_UNIVERSE_SIZE / 3;
 		}
 		m_nDmxFootprint = m_nGroups * 3;
 	}

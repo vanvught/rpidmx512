@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
+
+#include "rdmdeviceparams.h"
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
@@ -99,9 +101,17 @@ void notmain(void) {
 	}
 
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+
 	RDMResponder dmxrdm(&personality, pLightSet, nGpioDataDirection);
 
-	dmxrdm.GetRDMDeviceResponder()->Print();
+	RDMDeviceParams rdmDeviceParams;
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
+		rdmDeviceParams.Dump();
+	}
+
+	dmxrdm.Init();
+	dmxrdm.Print();
 
 	console_set_top_row(12);
 
@@ -112,7 +122,7 @@ void notmain(void) {
 
 	for(;;) {
 		hw.WatchdogFeed();
-		(void) dmxrdm.Run();
+		dmxrdm.Run();
 		lb.Run();
 	}
 }

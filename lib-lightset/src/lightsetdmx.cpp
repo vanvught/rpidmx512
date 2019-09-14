@@ -33,7 +33,7 @@ uint16_t LightSet::GetDmxStartAddress(void) {
 }
 
 uint16_t LightSet::GetDmxFootprint(void) {
-	return DMX_MAX_CHANNELS;
+	return DMX_UNIVERSE_SIZE;
 }
 
 bool LightSet::SetDmxStartAddress(uint16_t nDmxStartAddress) {

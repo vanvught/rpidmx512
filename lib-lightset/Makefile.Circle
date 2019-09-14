@@ -8,7 +8,7 @@ INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-debug/include
 INCLUDE	+= -I ../include
 
-OBJS	= src/lightsetconst.o src/lightset.o src/lightsetdmx.o src/lightsetgetslotinfo.o src/lightsetgetoutputtype.o src/lightsetchain.o src/lightsetdebug.o
+OBJS	= src/lightsetconst.o src/lightset.o src/lightsetdmx.o src/lightsetgetslotinfo.o src/lightsetchain.o src/lightsetdebug.o
 
 EXTRACLEAN = src/circle/*.o src/*.o
 

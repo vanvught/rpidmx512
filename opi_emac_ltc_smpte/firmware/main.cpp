@@ -195,6 +195,9 @@ void notmain(void) {
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
 	max7219.Init(ltcParams.GetMax7219Intensity());
 
+	display.ClearLine(3);
+	display.Printf(3, IPSTR " /%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+
 	// Select the source
 
 	TLtcReaderSource source = ltcParams.GetSource();
@@ -203,6 +206,7 @@ void notmain(void) {
 
 	if (sourceSelect.Check()) {
 		while (sourceSelect.Wait(source)) {
+			nw.Run();
 			lb.Run();
 		}
 	}
@@ -264,7 +268,7 @@ void notmain(void) {
 	tcnet.Print();
 	ltcGenerator.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -274,10 +278,8 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	display.ClearLine(3);
 	display.ClearLine(4);
 
-	display.Printf(3, IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	console_puts("Source : ");
 	display.SetCursorPos(0,3);
 

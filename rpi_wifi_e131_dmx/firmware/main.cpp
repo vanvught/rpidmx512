@@ -44,6 +44,9 @@
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
+#if defined(ORANGE_PI)
+ #include "storedmxsend.h"
+#endif
 #ifndef H3
  // Monitor Output
  #include "dmxmonitor.h"
@@ -53,6 +56,9 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#if defined(ORANGE_PI)
+ #include "storews28xxdmx.h"
+#endif
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -80,6 +86,9 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+	StoreDmxSend storeDmxSend;
+	StoreWS28xxDmx storeWS28xxDmx;
+
 	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
 #else
 	E131Params e131params;
@@ -146,7 +155,7 @@ void notmain(void) {
 
 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
 #else
 		WS28xxDmxParams ws28xxparms;
 #endif
@@ -206,7 +215,7 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
 #else
 		DMXParams dmxparams;
 #endif

@@ -51,11 +51,14 @@
 #if defined (ARTNET_NODE)
  /* artnet.txt */
  #include "artnetparams.h"
+ #include "storeartnet.h"
  #include "artnet4params.h"
+ #include "storeartnet4.h"
 #endif
 #if defined (E131_BRIDGE)
  /* e131.txt */
  #include "e131params.h"
+ #include "storee131.h"
 #endif
 #if defined (OSC_SERVER)
  /* osc.txt */
@@ -65,11 +68,14 @@
 #if defined (DMXSEND)
  /* params.txt */
  #include "dmxparams.h"
+ #include "storedmxsend.h"
 #endif
 #if defined (PIXEL)
  /* devices.txt */
- #include "tlc59711dmxparams.h"
  #include "ws28xxdmxparams.h"
+ #include "storews28xxdmx.h"
+ #include "tlc59711dmxparams.h"
+ #include "storetlc59711.h"
 #endif
 #if defined (LTC_READER)
  /* ltc.txt */
@@ -375,6 +381,8 @@ uint32_t RemoteConfig::GetIndex(const void *p) {
 void RemoteConfig::HandleReboot(void) {
 	DEBUG_ENTRY
 
+	Display::Get()->SetSleep(false);
+
 	while (SpiFlashStore::Get()->Flash())
 		;
 
@@ -644,7 +652,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams((DMXParamsStore *) SpiFlashStore::Get()->GetStoreDmxSend());
+	DMXParams dmxparams((DMXParamsStore *) StoreDmxSend::Get());
 	dmxparams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
@@ -657,7 +665,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 
 	bool bIsSetLedType = false;
 
-	TLC59711DmxParams tlc5911params((TLC59711DmxParamsStore *) SpiFlashStore::Get()->GetStoreTLC59711());
+	TLC59711DmxParams tlc5911params((TLC59711DmxParamsStore *) StoreTLC59711::Get());
 
 	if (tlc5911params.Load()) {
 		if ((bIsSetLedType = tlc5911params.IsSetLedType()) == true) {
@@ -666,7 +674,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	}
 
 	if (!bIsSetLedType) {
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) SpiFlashStore::Get()->GetStoreWS28xxDmx());
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
 		ws28xxparms.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
 	}
 
@@ -911,7 +919,7 @@ void RemoteConfig::HandleTxtFileOscClient(void) {
 void RemoteConfig::HandleTxtFileParams(void) {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams((DMXParamsStore *) SpiFlashStore::Get()->GetStoreDmxSend());
+	DMXParams dmxparams((DMXParamsStore *) StoreDmxSend::Get());
 
 	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TDMXParams))){
 		uint32_t nSize;
@@ -933,7 +941,7 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 	DEBUG_ENTRY
 	assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams));
 
-	TLC59711DmxParams tlc59711params((TLC59711DmxParamsStore *) SpiFlashStore::Get()->GetStoreTLC59711());
+	TLC59711DmxParams tlc59711params((TLC59711DmxParamsStore *) StoreTLC59711::Get());
 
 	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TTLC59711DmxParams))){
 		uint32_t nSize;
@@ -948,7 +956,7 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 	DEBUG_PRINTF("tlc5911params.IsSetLedType()=%d", tlc59711params.IsSetLedType());
 
 	if (!tlc59711params.IsSetLedType()) {
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) SpiFlashStore::Get()->GetStoreWS28xxDmx());
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
 
 		if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TWS28xxDmxParams))){
 			uint32_t nSize;
@@ -1037,6 +1045,10 @@ void RemoteConfig::HandleTftpSet(void) {
 	DEBUG_PRINTF("%c", m_pUdpBuffer[GET_TFTP_LENGTH]);
 
 	m_bEnableTFTP = (m_pUdpBuffer[GET_TFTP_LENGTH] != '0');
+
+	if (m_bEnableTFTP) {
+		Display::Get()->SetSleep(false);
+	}
 
 	if (m_bEnableTFTP && (m_pTFTPFileServer == 0)) {
 		printf("Create TFTP Server\n");

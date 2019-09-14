@@ -34,7 +34,6 @@
 #include "oscserverconst.h"
 #include "osc.h"
 
-#include "lightset.h"
 #include "lightsetconst.h"
 
 #include "readconfigfile.h"
@@ -96,7 +95,6 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 void OSCServerParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	char value[8];
 	uint8_t value8;
 	uint16_t value16;
 	uint8_t len;
@@ -141,13 +139,6 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	len = 3;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
-		m_tOSCServerParams.tOutputType = LightSet::GetOutputType((const char *) value);
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_OUTPUT;
-		return;
-	}
-
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &value8) == SSCAN_OK) {
 		m_tOSCServerParams.bEnableNoChangeUpdate = (value8 != 0);
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
@@ -157,15 +148,7 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 
 void OSCServerParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tOSCServerParams.nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OSCServerConst::PARAMS_FILE_NAME);
-
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_OUTPUT)) {
-		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_OUTPUT, (int) m_tOSCServerParams.tOutputType, LightSet::GetOutputType((TLightSetOutputType) m_tOSCServerParams.tOutputType));
-	}
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT)) {
 		printf(" %s=%d\n", OSCServerConst::PARAMS_INCOMING_PORT, (int) m_tOSCServerParams.nIncomingPort);

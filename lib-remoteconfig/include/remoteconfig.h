@@ -85,7 +85,7 @@ struct TRemoteConfigListBin {
 
 class RemoteConfig {
 public:
-	RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs = 1);
+	RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs = 0);
 	~RemoteConfig(void);
 
 	void SetDisable(bool bDisable = true);

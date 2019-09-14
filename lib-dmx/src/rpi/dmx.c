@@ -85,7 +85,7 @@ static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;	
 static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;		///<
 static uint32_t dmx_output_period = DMX_TRANSMIT_PERIOD_DEFAULT;				///<
 static uint32_t dmx_output_period_requested = DMX_TRANSMIT_PERIOD_DEFAULT;		///<
-static uint16_t dmx_send_data_length = (uint16_t) DMX_UNIVERSE_SIZE + 1;		///< SC + UNIVERSE SIZE
+static uint16_t dmx_send_data_length = (uint16_t) DMX_MAX_CHANNELS + 1;		///< SC + UNIVERSE SIZE
 static uint8_t dmx_port_direction = DMX_PORT_DIRECTION_INP;						///<
 static volatile uint32_t dmx_fiq_micros_current = (uint32_t) 0;					///< Timestamp FIQ
 static volatile uint32_t dmx_fiq_micros_previous = (uint32_t) 0;				///< Timestamp previous FIQ
@@ -369,9 +369,9 @@ static void fiq_dmx_in_handler(void) {
 			}
 			dmx_data[dmx_data_buffer_index_head].data[dmx_data_index++] = data;
 		    BCM2835_ST->C1 = dmx_fiq_micros_current + dmx_data[0].statistics.slot_to_slot + (uint32_t)12;
-			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
+			if (dmx_data_index > DMX_MAX_CHANNELS) {
 				dmx_receive_state = IDLE;
-				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
+				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_MAX_CHANNELS;
 				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
 				dmb();
 #ifdef LOGIC_ANALYZER

@@ -34,6 +34,7 @@ public:
 	alignas(uint32_t) static const char SLEEP_TIMEOUT[];
 	alignas(uint32_t) static const char TITLE[];
 	alignas(uint32_t) static const char BOARD_NAME[];
+	alignas(uint32_t) static const char VERSION[];
 	alignas(uint32_t) static const char ACTIVE_PORTS[];
 };
 

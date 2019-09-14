@@ -49,6 +49,9 @@
 
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
+#include "storedmxsend.h"
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -69,10 +72,10 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
+	StoreDmxSend storeDmxSend;
+	StoreRDMDevice storeRdmDevice;
 
 	ArtNet4Params artnetParams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
 
@@ -154,7 +157,7 @@ void notmain(void) {
 	}
 
 	DMXSendMulti dmxMulti;
-	DMXParams dmxParams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+	DMXParams dmxParams((DMXParamsStore *)&storeDmxSend);
 
 	if (dmxParams.Load()) {
 		dmxParams.Dump();
@@ -178,6 +181,16 @@ void notmain(void) {
 	ArtNetRdmController discovery;
 
 	if(artnetParams.IsRdm()) {
+		RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+
+		if(rdmDeviceParams.Load()) {
+			rdmDeviceParams.Set((RDMDevice *)&discovery);
+			rdmDeviceParams.Dump();
+		}
+
+		discovery.Init();
+		discovery.Print();
+
 		if (artnetParams.IsRdmDiscovery()) {
 			console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
 			display.TextStatus(ArtNetConst::MSG_RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN);
@@ -189,24 +202,21 @@ void notmain(void) {
 				}
 			}
 		}
-		node.SetRdmHandler(&discovery);
+
+		node.SetRdmHandler((ArtNetRdm *)&discovery);
 	}
 
 	display.SetTitle("Eth Art-Net 4 %s", artnetParams.IsRdm() ? "RDM" : "DMX");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
 	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE_PORT_B);
 	uint8_t nTextLength;
 	display.Write(7, hw.GetBoardName(nTextLength));
 
 	StoreDisplayUdf storeDisplayUdf;
-#if defined (ORANGE_PI)
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-#else
-	DisplayUdfParams displayUdfParams;
-#endif
 
 	if(displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
@@ -244,7 +254,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.HandlePacket();
+		node.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

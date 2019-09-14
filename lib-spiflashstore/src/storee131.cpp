@@ -67,3 +67,19 @@ void StoreE131::Copy(struct TE131Params* pE131Params) {
 
 	DEBUG_EXIT
 }
+
+void StoreE131::UpdateUuid(const uuid_t uuid) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->UuidUpdate(uuid);
+
+	DEBUG_EXIT
+}
+
+void StoreE131::CopyUuid(uuid_t uuid) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->UuidCopyTo(uuid);
+
+	DEBUG_EXIT
+}

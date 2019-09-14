@@ -33,10 +33,10 @@ struct TLightSetSlotInfo {
 	uint16_t nCategory;
 };
 
-enum {
+enum TLightSetDmx {
 	DMX_ADDRESS_INVALID = 0xFFFF,
 	DMX_START_ADDRESS_DEFAULT = 1,
-	DMX_MAX_CHANNELS = 512
+	DMX_UNIVERSE_SIZE = 512
 };
 
 enum TLightSetOutputType {
@@ -48,12 +48,13 @@ enum TLightSetOutputType {
 
 class LightSet {
 public:
+	LightSet(void);
 	virtual ~LightSet(void);
 
 	virtual void Start(uint8_t nPort)= 0;
 	virtual void Stop(uint8_t nPort)= 0;
 
-	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t)= 0;
+	virtual void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength)= 0;
 
 	virtual void Print(void);
 
@@ -65,9 +66,17 @@ public: // RDM Optional
 
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
-public:
+public: // WiFi solutions only
 	static const char* GetOutputType(TLightSetOutputType type);
 	static TLightSetOutputType GetOutputType(const char* sType);
+
+public:
+	static LightSet* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static LightSet *s_pThis;
 };
 
 #endif /* LIGHTSET_H_ */

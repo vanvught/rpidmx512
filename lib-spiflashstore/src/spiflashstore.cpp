@@ -335,15 +335,3 @@ StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
 StoreE131 *SpiFlashStore::GetStoreE131(void) {
 	return &m_StoreE131;
 }
-
-StoreDmxSend *SpiFlashStore::GetStoreDmxSend(void) {
-	return &m_StoreDmxSend;
-}
-
-StoreWS28xxDmx *SpiFlashStore::GetStoreWS28xxDmx(void) {
-	return &m_StoreWS28xxDmx;
-}
-
-StoreTLC59711* SpiFlashStore::GetStoreTLC59711(void) {
-	return &m_StoreTLC59711;
-}

@@ -1,7 +1,9 @@
 #
-DEFINES = ARTNET_NODE DMXSEND PIXEL DISPLAY_UDF NDEBUG
+PLATFORM = ORANGE_PI
 #
-LIBS = rdmdiscovery rdm dmxmonitor
+DEFINES = ARTNET_NODE DMXSEND DISPLAY_UDF NDEBUG
+#
+LIBS = rdmdiscovery rdm
 #
 SRCDIR = firmware lib
 

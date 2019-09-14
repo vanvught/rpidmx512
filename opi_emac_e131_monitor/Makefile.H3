@@ -1,0 +1,12 @@
+#
+PLATFORM = ORANGE_PI_ONE
+#
+DEFINES = E131_BRIDGE DISPLAY_UDF CONSOLE_FB NDEBUG
+#
+LIBS = dmxmonitor 
+#
+SRCDIR = firmware
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

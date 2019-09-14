@@ -3,9 +3,6 @@
 	<name>lib-h3</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-arm</project>
-		<project>lib-debug</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -25,5 +25,8 @@
 
 #include "buttonsset.h"
 
+ButtonsSet::ButtonsSet(void): m_nButtonsCount(0) {
+}
+
 ButtonsSet::~ButtonsSet(void) {
 }

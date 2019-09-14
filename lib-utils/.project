@@ -3,10 +3,6 @@
 	<name>lib-utils</name>
 	<comment></comment>
 	<projects>
-		<project>Circle</project>
-		<project>lib-console</project>
-		<project>lib-debug</project>
-		<project>lib-ff12c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

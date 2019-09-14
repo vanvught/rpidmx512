@@ -31,4 +31,5 @@ alignas(uint32_t) const char DisplayUdfParamsConst::FILE_NAME[] = "display.txt";
 alignas(uint32_t) const char DisplayUdfParamsConst::SLEEP_TIMEOUT[] = "sleep_timeout";
 alignas(uint32_t) const char DisplayUdfParamsConst::TITLE[] = "title";
 alignas(uint32_t) const char DisplayUdfParamsConst::BOARD_NAME[] = "board_name";
+alignas(uint32_t) const char DisplayUdfParamsConst::VERSION[] = "version";
 alignas(uint32_t) const char DisplayUdfParamsConst::ACTIVE_PORTS[] = "active_ports";

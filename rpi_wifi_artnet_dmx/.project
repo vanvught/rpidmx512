@@ -3,27 +3,6 @@
 	<name>rpi_wifi_artnet_dmx</name>
 	<comment></comment>
 	<projects>
-		<project>firmware-template</project>
-		<project>h3-firmware-template</project>
-		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-bob</project>
-		<project>lib-c++</project>
-		<project>lib-display</project>
-		<project>lib-dmx</project>
-		<project>lib-dmxmonitor</project>
-		<project>lib-dmxsend</project>
-		<project>lib-esp8266</project>
-		<project>lib-hal</project>
-		<project>lib-ledblink</project>
-		<project>lib-lightset</project>
-		<project>lib-monitor</project>
-		<project>lib-network</project>
-		<project>lib-rdm</project>
-		<project>lib-rdmdiscovery</project>
-		<project>lib-spiflashinstall</project>
-		<project>lib-spiflashstore</project>
-		<project>lib-ws28xxdmx</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

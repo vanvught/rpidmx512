@@ -3,9 +3,6 @@
 	<name>lib-input</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-bcm2835_raspbian</project>
-		<project>lib-i2c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

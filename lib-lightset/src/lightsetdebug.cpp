@@ -40,12 +40,12 @@ LightSetDebug::~LightSetDebug(void) {
 }
 
 uint16_t LightSetDebug::GetDmxFootprint(void) {
-	DEBUG_PRINTF("DMX_FOOTPRINT=$d", DMX_FOOTPRINT);
+	DEBUG_PRINTF("DMX_FOOTPRINT=%d", DMX_FOOTPRINT);
 	return DMX_FOOTPRINT;
 }
 
 bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_PRINTF("nDmxStartAddress=$d", (int) nDmxStartAddress);
+	DEBUG_PRINTF("nDmxStartAddress=%d", (int) nDmxStartAddress);
 
 	if (nDmxStartAddress > (512 - DMX_FOOTPRINT)) {
 		return false;
@@ -56,7 +56,7 @@ bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 }
 
 uint16_t LightSetDebug::GetDmxStartAddress(void) {
-	DEBUG_PRINTF("m_nDmxStartAddress=$d", m_nDmxStartAddress);
+	DEBUG_PRINTF("m_nDmxStartAddress=%d", m_nDmxStartAddress);
 	return m_nDmxStartAddress;
 }
 

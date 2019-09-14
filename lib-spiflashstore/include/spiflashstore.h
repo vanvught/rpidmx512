@@ -31,9 +31,6 @@
 
 #include "storenetwork.h"
 #include "storeartnet.h"
-#include "storedmxsend.h"
-#include "storews28xxdmx.h"
-#include "storetlc59711.h"
 #include "storee131.h"
 #include "storeartnet4.h"
 
@@ -80,8 +77,10 @@ public:
 		Update(tStore, 0, pData, nDataLength);
 	}
 	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength);
-
 	void CopyTo(enum TStore tStore, void *pData, uint32_t& nDataLength);
+
+	void UuidUpdate(const uuid_t uuid);
+	void UuidCopyTo(uuid_t uuid);
 
 	bool Flash(void);
 
@@ -89,11 +88,8 @@ public:
 
 	StoreNetwork *GetStoreNetwork(void);
 	StoreArtNet *GetStoreArtNet(void);
-	StoreDmxSend *GetStoreDmxSend(void);
-	StoreWS28xxDmx *GetStoreWS28xxDmx(void);
 	StoreE131 *GetStoreE131(void);
 	StoreArtNet4 *GetStoreArtNet4(void);
-	StoreTLC59711 *GetStoreTLC59711(void);
 
 private:
 	bool Init(void);
@@ -117,11 +113,8 @@ private:
 
 	StoreNetwork m_StoreNetwork;
 	StoreArtNet m_StoreArtNet;
-	StoreDmxSend m_StoreDmxSend;
-	StoreWS28xxDmx m_StoreWS28xxDmx;
 	StoreE131 m_StoreE131;
 	StoreArtNet4 m_StoreArtNet4;
-	StoreTLC59711 m_StoreTLC59711;
 };
 
 #endif /* SPIFLASHSTORE_H_ */

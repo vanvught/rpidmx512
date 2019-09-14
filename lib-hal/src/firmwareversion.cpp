@@ -47,8 +47,6 @@ FirmwareVersion::FirmwareVersion(const char* pVersion, const char* pDate, const 
 
 	uint8_t nHwTextLength;
 
-	assert((uint32_t) Hardware::Get() != 0);
-
 	snprintf(m_aPrint, sizeof m_aPrint - 1, "[V%.*s] %s Compiled on %.*s at %.*s\n",
 			SOFTWARE_VERSION_LENGTH, m_tFirmwareVersion.SoftwareVersion,
 			Hardware::Get()->GetBoardName(nHwTextLength),

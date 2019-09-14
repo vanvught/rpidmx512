@@ -1,0 +1,10 @@
+#
+DEFINES = OSC_SERVER DMXSEND PIXEL NDEBUG
+#
+LIBS = oscserver osc
+
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

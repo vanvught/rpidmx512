@@ -150,3 +150,7 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 	nLength = 0;
 	return 0;
 }
+
+void DMXReceiver::Print(void) {
+
+}

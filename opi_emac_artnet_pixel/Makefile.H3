@@ -1,0 +1,12 @@
+#
+PLATFORM = ORANGE_PI
+#
+DEFINES = ARTNET_NODE PIXEL DISPLAY_UDF NDEBUG
+#
+LIBS =  
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

@@ -46,15 +46,14 @@
 
 #include "buttonsset.h"
 #include "buttonsgpio.h"
+#include "buttonsmcp.h"
 
-#if defined(ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
- #include "storeoscclient.h"
- #include "remoteconfig.h"
- #include "remoteconfigparams.h"
- #include "storeremoteconfig.h"
-#endif
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storeoscclient.h"
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 
@@ -69,16 +68,12 @@ void notmain(void) {
 	Display display(DISPLAY_SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-#if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
 
 	SpiFlashStore spiFlashStore;
 	StoreOscClient storeOscClient;
 
 	OscClientParams params((OscClientParamsStore *)&storeOscClient);
-#else
-	OscClientParams params;
-#endif
 
 	OscClient client;
 
@@ -94,19 +89,13 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-#if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-#else
-	nw.Init();
-#endif
 	nw.Print();
 
 	MDNS mDns;
 
 	mDns.Start();
-#if defined(ORANGE_PI)
 	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
-#endif
 	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
 	mDns.Print();
 
@@ -115,21 +104,27 @@ void notmain(void) {
 
 	client.Print();
 
-	// In the future,we can support more Buttons Classes
-	ButtonsGpio *pButtonsGpio = new ButtonsGpio(&client);
-	assert(pButtonsGpio != 0);
+	ButtonsSet *pButtonsSet;
 
-	client.SetLedHandler((OscClientLed *)pButtonsGpio);
+	ButtonsMcp *pButtonsMcp = new ButtonsMcp(&client);
+	assert(pButtonsMcp != 0);
 
-	ButtonsSet *pButtonsSet = (ButtonsSet *)pButtonsGpio;
+	if (pButtonsMcp->Start()) {
+		pButtonsSet = (ButtonsSet *) pButtonsMcp;
+		client.SetLedHandler((OscClientLed *)pButtonsMcp);
+	} else {
+		delete pButtonsMcp;
 
-	if (!pButtonsSet->Start()) {
-		// TODO Show error message
+		ButtonsGpio *pButtonsGpio = new ButtonsGpio(&client);
+		assert(pButtonsGpio != 0);
+
+		pButtonsGpio->Start();
+
+		pButtonsSet = (ButtonsSet *) pButtonsGpio;
+		client.SetLedHandler((OscClientLed *)pButtonsGpio);
 	}
 
-
-#if defined (ORANGE_PI)
-	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC_CLIENT, REMOTE_CONFIG_MODE_OSC, 0);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC_CLIENT, REMOTE_CONFIG_MODE_OSC, pButtonsSet->GetButtonsCount());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -138,7 +133,6 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
-#endif
 
 	for (unsigned i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -161,10 +155,8 @@ void notmain(void) {
 	console_status(CONSOLE_GREEN, OscClientConst::MSG_CLIENT_STARTED);
 	display.TextStatus(OscClientConst::MSG_CLIENT_STARTED, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED);
 
-#if defined (ORANGE_PI)
 	while (spiFlashStore.Flash())
 		;
-#endif
 
 	hw.WatchdogInit();
 
@@ -173,11 +165,9 @@ void notmain(void) {
 		nw.Run();
 		client.Run();
 		pButtonsSet->Run();
-#if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		mDns.Run();
-#endif
 		lb.Run();
 		display.Run();
 	}

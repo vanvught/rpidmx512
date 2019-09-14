@@ -1,7 +1,7 @@
 #
 DEFINES = RDM_CONTROLLER UPDATE_CONFIG_FILE ENABLE_MMU NDEBUG
 #
-LIBS = widget dmx rdm monitor usb
+LIBS = widget dmx rdm usb
 #
 SRCDIR = firmware
 #

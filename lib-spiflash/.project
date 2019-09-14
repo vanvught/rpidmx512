@@ -3,10 +3,6 @@
 	<name>lib-spiflash</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-bcm2835_raspbian</project>
-		<project>lib-debug</project>
-		<project>lib-h3</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,7 +3,6 @@
 	<name>lib-i2c</name>
 	<comment></comment>
 	<projects>
-		<project>lib-h3</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

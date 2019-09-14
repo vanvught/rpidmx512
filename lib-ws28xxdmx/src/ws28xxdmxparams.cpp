@@ -41,6 +41,8 @@
 #include "ws28xx.h"
 #include "ws28xxdmx.h"
 
+#include "lightset.h"
+
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -60,7 +62,7 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nGlobalBrightness = 0xFF;
 	m_tWS28xxParams.nActiveOutputs = 1;
 	m_tWS28xxParams.bUseSI5351A = false;
-	m_tWS28xxParams.nLedGroupCount = DMX_MAX_CHANNELS;
+	m_tWS28xxParams.nLedGroupCount = DMX_UNIVERSE_SIZE;
 }
 
 WS28xxDmxParams::~WS28xxDmxParams(void) {

@@ -28,8 +28,6 @@
 #include "rdmdeviceparamsconst.h"
 
 alignas(uint32_t) const char RDMDeviceParamsConst::FILE_NAME[] = "rdm_device.txt";
-alignas(uint32_t) const char RDMDeviceParamsConst::MANUFACTURER_NAME[] = "manufacturer_name";
-alignas(uint32_t) const char RDMDeviceParamsConst::MANUFACTURER_ID[] = "manufacturer_id";
 alignas(uint32_t) const char RDMDeviceParamsConst::LABEL[] = "device_label";
 alignas(uint32_t) const char RDMDeviceParamsConst::PRODUCT_CATEGORY[] = "product_category";
 alignas(uint32_t) const char RDMDeviceParamsConst::PRODUCT_DETAIL[] = "product_detail";

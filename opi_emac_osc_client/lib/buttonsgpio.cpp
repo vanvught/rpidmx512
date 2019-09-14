@@ -35,38 +35,28 @@
 #include "h3_board.h"
 #include "h3_gpio.h"
 
-#include "arm/arm.h"
-#include "arm/synchronize.h"
-#include "arm/gic.h"
-
 #include "debug.h"
-
-volatile uint32_t s_nButtons;
 
 #define BUTTON(x)			((m_nButtons >> x) & 0x01)
 #define BUTTON_STATE(x)		((m_nButtons & (1 << x)) == (1 << x))
+
+#define BUTTON0_GPIO		GPIO_EXT_13		// PA0
+#define BUTTON1_GPIO		GPIO_EXT_11		// PA1
+#define BUTTON2_GPIO		GPIO_EXT_22		// PA2
+#define BUTTON3_GPIO		GPIO_EXT_15		// PA3
+
+#define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO) | (1 << BUTTON3_GPIO))
 
 #define LED0_GPIO			GPIO_EXT_7		// PA6
 #define LED1_GPIO			GPIO_EXT_12		// PA7
 #define LED2_GPIO			GPIO_EXT_26		// PA10
 #define LED3_GPIO			GPIO_EXT_18		// PA18
 
-static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
-	dmb();
-
-	s_nButtons |= H3_PIO_PA_INT->STA & 0x0F;
-
-	H3_PIO_PA_INT->STA = ~0x0;
-
-	dmb();
-}
-
 ButtonsGpio::ButtonsGpio(OscClient* pOscClient):
 	m_pOscClient(pOscClient),
 	m_nButtons(0)
 {
 	assert(m_pOscClient != 0);
-	s_nButtons = 0;
 }
 
 ButtonsGpio::~ButtonsGpio(void) {
@@ -74,41 +64,33 @@ ButtonsGpio::~ButtonsGpio(void) {
 }
 
 bool ButtonsGpio::Start(void) {
-	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_EINT);	// PA0
-	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_EINT);	// PA1
-	h3_gpio_fsel(GPIO_EXT_22, GPIO_FSEL_EINT);	// PA2
-	h3_gpio_fsel(GPIO_EXT_15, GPIO_FSEL_EINT);	// PA3
+	h3_gpio_fsel(BUTTON0_GPIO, GPIO_FSEL_EINT);
+	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);
+	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);
+	h3_gpio_fsel(BUTTON3_GPIO, GPIO_FSEL_EINT);
 
 	h3_gpio_fsel(LED0_GPIO, GPIO_FSEL_OUTPUT);
 	h3_gpio_fsel(LED1_GPIO, GPIO_FSEL_OUTPUT);
 	h3_gpio_fsel(LED2_GPIO, GPIO_FSEL_OUTPUT);
 	h3_gpio_fsel(LED3_GPIO, GPIO_FSEL_OUTPUT);
 
-#ifndef NDEBUG
-	printf("H3_PIO_PORTA->PUL0=%p ", H3_PIO_PORTA->PUL0);
-	debug_print_bits(H3_PIO_PORTA->PUL0);
-#endif
-
 	uint32_t value = H3_PIO_PORTA->PUL0;
-	value &= ~((0x03 << 0) | (0x03 << 2) | (0x03 << 4) | (0x03 << 6));
-	value |= (0x01 << 0) | (0x01 << 2) | (0x01 << 4) | (0x01 << 6); // Pull-Up
+	value &= ~((GPIO_PULL_MASK << 0) | (GPIO_PULL_MASK << 2) | (GPIO_PULL_MASK << 4) | (GPIO_PULL_MASK << 6));
+	value |= (GPIO_PULL_UP << 0) | (GPIO_PULL_UP << 2) | (GPIO_PULL_UP << 4) | (GPIO_PULL_UP << 6);
 	H3_PIO_PORTA->PUL0 = value;
 
-#ifndef NDEBUG
-	printf("H3_PIO_PORTA->PUL0=%p ", H3_PIO_PORTA->PUL0);
-	debug_print_bits(H3_PIO_PORTA->PUL0);
-#endif
+	value = H3_PIO_PA_INT->CFG0;
+	value &= ~((GPIO_INT_CFG_MASK << 0) | (GPIO_INT_CFG_MASK << 4) | (GPIO_INT_CFG_MASK << 8) | (GPIO_INT_CFG_MASK << 12));
+	value |= (GPIO_INT_CFG_NEG_EDGE << 0) | (GPIO_INT_CFG_NEG_EDGE << 4) | (GPIO_INT_CFG_NEG_EDGE << 8) | (GPIO_INT_CFG_NEG_EDGE << 12);
+	H3_PIO_PA_INT->CFG0 = value;
 
-	arm_install_handler((unsigned) fiq_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
-
-	gic_fiq_config(H3_PA_EINT_IRQn, GIC_CORE0);
-
-	H3_PIO_PA_INT->CFG0 = (0x1 << 0) | (0x1 << 4) |  (0x1 << 8) | (0x1 << 12); 									// Negative Edge
-	H3_PIO_PA_INT->CTL = (1 << GPIO_EXT_13) |  (1 << GPIO_EXT_11) | (1 << GPIO_EXT_22) |  (1 << GPIO_EXT_15);	// PA0, PA1, PA2, PA3
-	H3_PIO_PA_INT->STA = ~0x0;
+	H3_PIO_PA_INT->CTL |= BUTTONS_MASK;
+	H3_PIO_PA_INT->STA = BUTTONS_MASK;
 	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
 
 #ifndef NDEBUG
+	printf("H3_PIO_PORTA->PUL0=%p ", H3_PIO_PORTA->PUL0);
+	debug_print_bits(H3_PIO_PORTA->PUL0);
 	printf("H3_PIO_PA_INT->CFG0=%p ", H3_PIO_PA_INT->CFG0);
 	debug_print_bits(H3_PIO_PA_INT->CFG0);
 	printf("H3_PIO_PA_INT->CTL=%p ", H3_PIO_PA_INT->CTL);
@@ -117,20 +99,16 @@ bool ButtonsGpio::Start(void) {
 	debug_print_bits(H3_PIO_PA_INT->DEB);
 #endif
 
-	__enable_fiq();
+	m_nButtonsCount = 4;
 
 	return true;
 }
 
 void ButtonsGpio::Stop(void) {
-	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_DISABLE);	// PA0
-	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_DISABLE);	// PA1
-	h3_gpio_fsel(GPIO_EXT_22, GPIO_FSEL_DISABLE);	// PA2
-	h3_gpio_fsel(GPIO_EXT_15, GPIO_FSEL_DISABLE);	// PA3
-
-	__disable_fiq();
-
-	s_nButtons = 0;
+	h3_gpio_fsel(BUTTON0_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(BUTTON3_GPIO, GPIO_FSEL_DISABLE);
 
 	h3_gpio_fsel(LED0_GPIO, GPIO_FSEL_DISABLE);
 	h3_gpio_fsel(LED1_GPIO, GPIO_FSEL_DISABLE);
@@ -139,35 +117,29 @@ void ButtonsGpio::Stop(void) {
 }
 
 void ButtonsGpio::Run(void) {
+	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
-	dmb();
-	if (s_nButtons != 0) {
-		__disable_fiq();
+	if (__builtin_expect((m_nButtons != 0), 0)) {
+		H3_PIO_PA_INT->STA = BUTTONS_MASK;
 
-		m_nButtons = s_nButtons;
-		s_nButtons = 0;
+		DEBUG_PRINTF("%d-%d-%d-%d", BUTTON(BUTTON0_GPIO), BUTTON(BUTTON1_GPIO), BUTTON(BUTTON2_GPIO), BUTTON(BUTTON3_GPIO));
 
-		dmb();
-		__enable_fiq();
-
-		DEBUG_PRINTF("%d-%d-%d-%d", BUTTON(0), BUTTON(1), BUTTON(2), BUTTON(3));
-
-		if (BUTTON_STATE(0)) {
+		if (BUTTON_STATE(BUTTON0_GPIO)) {
 			m_pOscClient->SendCmd(0);
 			DEBUG_PUTS("");
 		}
 
-		if (BUTTON_STATE(1)) {
+		if (BUTTON_STATE(BUTTON1_GPIO)) {
 			m_pOscClient->SendCmd(1);
 			DEBUG_PUTS("");
 		}
 
-		if (BUTTON_STATE(2)) {
+		if (BUTTON_STATE(BUTTON2_GPIO)) {
 			m_pOscClient->SendCmd(2);
 			DEBUG_PUTS("");
 		}
 
-		if (BUTTON_STATE(3)) {
+		if (BUTTON_STATE(BUTTON3_GPIO)) {
 			m_pOscClient->SendCmd(3);
 			DEBUG_PUTS("");
 		}
@@ -178,23 +150,20 @@ void ButtonsGpio::SetLed(uint8_t nLed, bool bOn) {
 	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
 
 	switch (nLed) {
-		case 0:
-			bOn ? h3_gpio_set(LED0_GPIO) : h3_gpio_clr(LED0_GPIO);
-			break;
-		case 1:
-			bOn ? h3_gpio_set(LED1_GPIO) : h3_gpio_clr(LED1_GPIO);
-			break;
-		case 2:
-			bOn ? h3_gpio_set(LED2_GPIO) : h3_gpio_clr(LED2_GPIO);
-			break;
-		case 3:
-			bOn ? h3_gpio_set(LED3_GPIO) : h3_gpio_clr(LED3_GPIO);
-			break;
-		default:
-			break;
+	case 0:
+		bOn ? h3_gpio_set(LED0_GPIO) : h3_gpio_clr(LED0_GPIO);
+		break;
+	case 1:
+		bOn ? h3_gpio_set(LED1_GPIO) : h3_gpio_clr(LED1_GPIO);
+		break;
+	case 2:
+		bOn ? h3_gpio_set(LED2_GPIO) : h3_gpio_clr(LED2_GPIO);
+		break;
+	case 3:
+		bOn ? h3_gpio_set(LED3_GPIO) : h3_gpio_clr(LED3_GPIO);
+		break;
+	default:
+		break;
 	}
 }
 
-OscClientLed::~OscClientLed(void) {
-
-}

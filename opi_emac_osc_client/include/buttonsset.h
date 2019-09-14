@@ -26,17 +26,25 @@
 #ifndef BUTTONSSET_H_
 #define BUTTONSSET_H_
 
+#include <stdint.h>
 #include <stdbool.h>
 
 class ButtonsSet {
 public:
+	ButtonsSet(void);
 	virtual ~ButtonsSet(void);
 
 	virtual bool Start(void)= 0;
 	virtual void Stop(void)= 0;
 
 	virtual void Run(void)= 0;
-};
 
+	uint8_t GetButtonsCount(void) {
+		return m_nButtonsCount;
+	}
+
+protected:
+	uint8_t m_nButtonsCount;
+};
 
 #endif /* BUTTONSSET_H_ */

@@ -43,6 +43,8 @@ public:
 		DisplayUdf::Get()->ShowNodeName(m_pArtNetNode);
 	}
 
+	void ShowLongName(const char *pLongName) {}
+
 	void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
 	}

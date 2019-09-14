@@ -37,6 +37,7 @@
 #include "dmx.h"
 
 #include "rdmdevice.h"
+#include "rdmdeviceparams.h"
 
 #include "widget.h"
 #include "widgetparams.h"
@@ -102,11 +103,17 @@ void notmain(void) {
 
 	const TWidgetMode tWidgetMode = widgetParams.GetMode();
 
-	RDMDevice rdmDevice(&deviceLabel, (RDMDeviceStore *) &storeRDMDevice);
+	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);
+	RDMDevice rdmDevice;
 
-	if (rdmDevice.Load()) {
-		rdmDevice.Dump();
+	rdmDevice.SetLabel(&deviceLabel);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&rdmDevice);
+		rdmDeviceParams.Dump();
 	}
+
+	rdmDevice.Init();
 
 	rdm_device_info_init(&rdmDevice);
 

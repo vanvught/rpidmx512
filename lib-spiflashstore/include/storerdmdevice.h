@@ -26,9 +26,9 @@
 #ifndef STORERDMDEVICE_H_
 #define STORERDMDEVICE_H_
 
-#include "rdmdevice.h"
+#include "rdmdeviceparams.h"
 
-class StoreRDMDevice: public RDMDeviceStore {
+class StoreRDMDevice: public RDMDeviceParamsStore {
 public:
 	StoreRDMDevice(void);
 	~StoreRDMDevice(void);

@@ -3,9 +3,6 @@
 	<name>lib-osc</name>
 	<comment></comment>
 	<projects>
-		<project>lib-debug</project>
-		<project>lib-network</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

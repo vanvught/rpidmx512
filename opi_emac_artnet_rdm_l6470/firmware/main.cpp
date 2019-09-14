@@ -46,6 +46,9 @@
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
+
 #include "identify.h"
 #include "artnetrdmresponder.h"
 
@@ -57,6 +60,7 @@
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
+#include "storetlc59711.h"
 
 #include "lightsetchain.h"
 
@@ -84,9 +88,9 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 //	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+	StoreTLC59711 storeTLC59711;
 
 	LightSet *pBoard;
 
@@ -113,7 +117,7 @@ void notmain(void) {
 #endif
 
 #if defined (ORANGE_PI)
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) spiFlashStore.GetStoreTLC59711());
+	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
 #else
 	TLC59711DmxParams pwmledparms;
 #endif
@@ -160,6 +164,8 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
+	Identify identify;
+
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
@@ -174,16 +180,23 @@ void notmain(void) {
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, pBoard);
 
-	node.SetRdmHandler(&RdmResponder, true);
+	RDMDeviceParams rdmDeviceParams;
 
-	Identify identify;
+	if(rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set((RDMDevice *)&RdmResponder);
+		rdmDeviceParams.Dump();
+	}
 
+	RdmResponder.Init();
+	RdmResponder.Print();
+
+	node.SetRdmHandler((ArtNetRdm *)&RdmResponder, true);
 	node.Print();
 
 	display.SetTitle("Eth Art-Net 3 L6470");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
 	display.Set(6, DISPLAY_UDF_LABEL_AP);
 

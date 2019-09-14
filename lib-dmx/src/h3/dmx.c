@@ -93,7 +93,7 @@ static uint32_t dmx_output_break_time_intv = (uint32_t) (DMX_TRANSMIT_BREAK_TIME
 static uint32_t dmx_output_mab_time_intv = (uint32_t) (DMX_TRANSMIT_MAB_TIME_MIN * 12);
 static uint32_t dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - (DMX_TRANSMIT_MAB_TIME_MIN * 12) - (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
 
-static uint32_t dmx_send_data_length = (uint32_t) (DMX_UNIVERSE_SIZE + 1);		///< SC + UNIVERSE SIZE
+static uint32_t dmx_send_data_length = (uint32_t) (DMX_MAX_CHANNELS + 1);		///< SC + UNIVERSE SIZE
 static _dmx_port_direction dmx_port_direction = DMX_PORT_DIRECTION_INP;
 static volatile uint32_t dmx_fiq_micros_current = 0;
 static volatile uint32_t dmx_fiq_micros_previous = 0;
@@ -376,12 +376,12 @@ static void fiq_dmx_in_handler(void) {
 			H3_TIMER->TMR0_INTV = (dmx_data[0].statistics.slot_to_slot + (uint32_t) 12) * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-			if (dmx_data_index > DMX_UNIVERSE_SIZE) {
+			if (dmx_data_index > DMX_MAX_CHANNELS) {
 #ifdef LOCIG_ANALYZER
 				h3_gpio_clr(16);
 #endif
 				dmx_receive_state = IDLE;
-				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_UNIVERSE_SIZE;
+				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_MAX_CHANNELS;
 				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
 				dmb();
 			}

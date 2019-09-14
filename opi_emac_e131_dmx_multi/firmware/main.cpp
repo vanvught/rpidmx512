@@ -45,10 +45,11 @@
 // DMX Out
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
+#include "storedmxsend.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-//
+
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
@@ -65,10 +66,9 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
+	StoreDmxSend storeDmxSend;
 
 	E131Params e131params((E131ParamsStore *) spiFlashStore.GetStoreE131());
 
@@ -145,7 +145,7 @@ void notmain(void) {
 	}
 
 	DMXSendMulti dmx;
-	DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+	DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
 
 	if (dmxparams.Load()) {
 		dmxparams.Dump();

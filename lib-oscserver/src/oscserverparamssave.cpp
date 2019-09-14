@@ -30,7 +30,6 @@
 #include "oscserverparms.h"
 #include "oscserverconst.h"
 
-#include "lightset.h"
 #include "lightsetconst.h"
 
 #include "propertiesbuilder.h"
@@ -50,8 +49,7 @@ bool OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 
 	PropertiesBuilder builder(OSCServerConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(LightSetConst::PARAMS_OUTPUT, LightSet::GetOutputType(m_tOSCServerParams.tOutputType), isMaskSet(OSCSERVER_PARAMS_MASK_OUTPUT));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_INCOMING_PORT, (uint32_t) m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
+	bool isAdded = builder.Add(OSCServerConst::PARAMS_INCOMING_PORT, (uint32_t) m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
 	isAdded &= builder.Add(OSCServerConst::PARAMS_OUTGOING_PORT, (uint32_t) m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
 	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCSERVER_PARAMS_MASK_PATH));
 	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO));

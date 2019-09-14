@@ -46,26 +46,13 @@
 // DMX Out
 #include "dmxparams.h"
 #include "dmxsend.h"
-#if defined (ORANGE_PI_ONE)
- // Monitor Output
- #include "dmxmonitor.h"
-#endif
-// Pixel controller
-#include "lightset.h"
-#include "ws28xxdmxparams.h"
-#include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
-// PWM Led
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmx.h"
+#include "storedmxsend.h"
 
-#if defined(ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
- #include "remoteconfig.h"
- #include "remoteconfigparams.h"
- #include "storeremoteconfig.h"
-#endif
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 
@@ -79,212 +66,64 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-#if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
-
-	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
-#else
-	E131Params e131params;
-#endif
-
-	if (e131params.Load()) {
-		e131params.Dump();
-	}
-
-	const TLightSetOutputType tOutputType = e131params.GetOutputType();
+	StoreDmxSend storeDmxSend;
 
 	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
-#if defined (ORANGE_PI_ONE)
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Real-time DMX Monitor");
-	console_set_fg_color(CONSOLE_WHITE);
-#endif
-	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
-	console_puts("Pixel controller {4 Universes}");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
-
-#if defined (ORANGE_PI_ONE)
-	DMXMonitor monitor;
-#endif
+	console_puts(" {1 Universe}\n");
 
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-#if defined (ORANGE_PI)
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-#else
-	nw.Init();
-#endif
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	E131Bridge bridge;
-	e131params.Set(&bridge);
+	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
+
+	if (e131params.Load()) {
+		e131params.Set(&bridge);
+		e131params.Dump();
+	}
 
 	const uint8_t nUniverse = e131params.GetUniverse();
 
 	bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
 
 	DMXSend dmx;
-	LightSet *pSpi;
+	DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
-		bool isLedTypeSet = false;
-
-#if defined (ORANGE_PI)
-		TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) spiFlashStore.GetStoreTLC59711());
-#else
-		TLC59711DmxParams pwmledparms;
-#endif
-
-		if (pwmledparms.Load()) {
-			if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-				TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
-				assert(pTLC59711Dmx != 0);
-				pwmledparms.Dump();
-				pwmledparms.Set(pTLC59711Dmx);
-				pSpi = pTLC59711Dmx;
-
-				display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-			}
-		}
-
-		if (!isLedTypeSet) {
-#if defined (ORANGE_PI)
-			WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
-#else
-			WS28xxDmxParams ws28xxparms;
-#endif
-			if (ws28xxparms.Load()) {
-				ws28xxparms.Dump();
-			}
-
-			const bool bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
-
-			if (bIsLedGrouping) {
-				WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-				assert(pWS28xxDmxGrouping != 0);
-				ws28xxparms.Set(pWS28xxDmxGrouping);
-				pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
-				pSpi = pWS28xxDmxGrouping;
-				display.Printf(7, "%s:%d G%d", ws28xxparms.GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
-			} else  {
-				WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-				assert(pWS28xxDmx != 0);
-				ws28xxparms.Set(pWS28xxDmx);
-				pSpi = pWS28xxDmx;
-				display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
-
-				const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
-
-				if (pWS28xxDmx->GetLEDType() == SK6812W) {
-					if (nLedCount > 128) {
-						bridge.SetDirectUpdate(true);
-						bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse + 1);
-					}
-					if (nLedCount > 256) {
-						bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse + 2);
-					}
-					if (nLedCount > 384) {
-						bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse + 3);
-					}
-				} else {
-					if (nLedCount > 170) {
-						bridge.SetDirectUpdate(true);
-						bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse + 1);
-					}
-					if (nLedCount > 340) {
-						bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse + 2);
-					}
-					if (nLedCount > 510) {
-						bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse + 3);
-					}
-				}
-			}
-		}
-
-		bridge.SetOutput(pSpi);
-	}
-#if defined(ORANGE_PI_ONE)
-	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
-		// There is support for HEX output only
-		bridge.SetDirectUpdate(false);
-		bridge.SetOutput(&monitor);
-		monitor.Cls();
-		console_set_top_row(20);
-	}
-#endif
-	else {
-#if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
-#else
-		DMXParams dmxparams;
-#endif
-		if (dmxparams.Load()) {
-			dmxparams.Set(&dmx);
-			dmxparams.Dump();
-		}
-
-		bridge.SetDirectUpdate(false);
-		bridge.SetOutput(&dmx);
+	if (dmxparams.Load()) {
+		dmxparams.Set(&dmx);
+		dmxparams.Dump();
 	}
 
+	bridge.SetDirectUpdate(false);
+	bridge.SetOutput(&dmx);
 	bridge.Print();
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
-		assert(pSpi != 0);
-		pSpi->Print();
-	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
-		// Nothing to print
-	} else {
-		dmx.Print();
-	}
+	dmx.Print();
 
-	uint32_t pType;
-	const char pTypes[4][8] = { "Pixel", "Monitor", "DMX" };
-
-	switch (tOutputType) {
-	case LIGHTSET_OUTPUT_TYPE_SPI:
-		pType = 0;
-		break;
-#if defined(ORANGE_PI_ONE)
-	case LIGHTSET_OUTPUT_TYPE_MONITOR:
-		pType = 1;
-		break;
-#endif
-	default:
-		pType = 2;
-		break;
-	}
-
-	display.SetTitle("Eth sACN E1.31 %s", pTypes[pType]);
+	display.SetTitle("Eth sACN E1.31 DMX");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_NETMASK);
+	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
 	display.Set(6, DISPLAY_UDF_LABEL_AP);
 
 	StoreDisplayUdf storeDisplayUdf;
-#if defined (ORANGE_PI)
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-#else
-	DisplayUdfParams displayUdfParams;
-#endif
 
 	if(displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
@@ -293,8 +132,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-#if defined (ORANGE_PI)
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? REMOTE_CONFIG_MODE_PIXEL : (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? REMOTE_CONFIG_MODE_MONITOR : REMOTE_CONFIG_MODE_DMX), bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, bridge.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -306,7 +144,6 @@ void notmain(void) {
 
 	while (spiFlashStore.Flash())
 		;
-#endif
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
 	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
@@ -322,10 +159,8 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
-#if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();
-#endif
 		lb.Run();
 		display.Run();
 	}

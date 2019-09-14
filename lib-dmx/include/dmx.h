@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(H3)
- #if defined(ORANGE_PI_ONE)
-  #define DMX_MAX_UARTS	4
- #else
-  #define DMX_MAX_UARTS	2	///< Orange Pi Zero & NanoPi NEO
- #endif
-#else
- #define DMX_MAX_UARTS	1	///< All Raspberry Pi's
-#endif
-
 #define DMX_MAX_OUT		4
 
 #define DMX_DATA_BUFFER_SIZE					516									///< including SC, aligned 4
@@ -57,13 +47,13 @@
 #define DMX_MAX_SLOT_VALUE 						255		///< The maximum value a DMX512 slot can take.
 #define DMX512_START_CODE						0		///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 
-enum {
-	DMX_UNIVERSE_SIZE = 512		///< The number of slots in a DMX512 universe.
+enum TDmxChannels {
+	DMX_MAX_CHANNELS = 512
 };
 
 typedef enum {
-	DMX_PORT_DIRECTION_OUTP,	///< DMX output
-	DMX_PORT_DIRECTION_INP		///< DMX input
+	DMX_PORT_DIRECTION_OUTP,
+	DMX_PORT_DIRECTION_INP
 } _dmx_port_direction;
 
 struct _dmx_statistics {

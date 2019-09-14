@@ -45,6 +45,8 @@ public:
 
 	const uint8_t* Run(int16_t &nLength);
 
+	void Print(void);
+
 private:
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nLength);
 

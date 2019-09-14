@@ -48,6 +48,7 @@
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
+#include "storews28xxdmx.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -67,10 +68,9 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
+	StoreWS28xxDmx storeWS28xxDmx;
 
 	fw.Print();
 
@@ -92,7 +92,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
 	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_ARTNET);
-	WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+	WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) &storeWS28xxDmx);
 
 	if (ws28xxparms.Load()) {
 		ws28xxparms.Set(&ws28xxDmxMulti);
@@ -219,7 +219,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.HandlePacket();;
+		node.Run();;
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

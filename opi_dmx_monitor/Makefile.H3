@@ -1,0 +1,12 @@
+#
+DEFINES = MONITOR_DMX NO_EMAC CONSOLE_FB NDEBUG
+#
+PLATFORM = ORANGE_PI_ONE
+#
+LIBS = dmxreceiver dmx dmxmonitor  
+#
+SRCDIR = firmware
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

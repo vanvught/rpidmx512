@@ -26,6 +26,8 @@
 #ifndef STOREE131_H_
 #define STOREE131_H_
 
+#include <uuid/uuid.h>
+
 #include "e131params.h"
 
 class StoreE131: public E131ParamsStore {
@@ -35,6 +37,9 @@ public:
 
 	void Update(const struct TE131Params *pE131Params);
 	void Copy(struct TE131Params *pE131Params);
+
+	void UpdateUuid(const uuid_t uuid);
+	void CopyUuid(uuid_t uuid);
 };
 
 #endif /* STOREE131_H_ */

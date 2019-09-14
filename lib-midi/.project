@@ -3,12 +3,6 @@
 	<name>lib-midi</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-arm</project>
-		<project>lib-bcm2835</project>
-		<project>lib-bob</project>
-		<project>lib-hal</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,13 +3,6 @@
 	<name>lib-dmx</name>
 	<comment></comment>
 	<projects>
-		<project>h3-firmware-template</project>
-		<project>include</project>
-		<project>lib-arm</project>
-		<project>lib-h3</project>
-		<project>lib-hal</project>
-		<project>lib-properties</project>
-		<project>lib-rdm</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -230,7 +230,7 @@ void SparkFunDmx::ReadConfigFiles(void) {
 				printf("\t=============================\n");
 #endif
 
-				if ((m_nDmxStartAddressMode <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+				if ((m_nDmxStartAddressMode <= DMX_UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 					if (m_pAutoDriver[i]->IsConnected()) {
 						m_pAutoDriver[i]->setMotorNumber(i);
 						m_pAutoDriver[i]->Dump();
@@ -314,7 +314,7 @@ void SparkFunDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLengt
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
-	assert(nLength <= DMX_MAX_CHANNELS);
+	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	bool bIsDmxDataChanged[SPARKFUN_DMX_MAX_MOTORS];
 

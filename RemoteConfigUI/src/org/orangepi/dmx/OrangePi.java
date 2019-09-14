@@ -107,11 +107,10 @@ public class OrangePi {
 			}
 			
 			if (isValid) {
+				nodeId = values[0] + " " + values[1] + " " + values[2]  + " " + values[3];
 				if (values.length == 5) {
-					nodeId = constructNodeId(arg.substring(0, arg.indexOf(values[4]) - 1));
 					nodeDisplayName = values[4];
 				} else {
-					nodeId = constructNodeId(arg);
 					nodeDisplayName = "";
 				}
 				
@@ -122,11 +121,6 @@ public class OrangePi {
 		}
 	}
 	
-	private String constructNodeId(String in) {
-		String[] values = in.split(",");
-		return values[0] + " " + values[1] + " " + values[2]  + " " + values[3];
-	}
-
 	public String getTxt(String txt) {
 		if (isRemoteConfigTxt(txt)) {
 			if (sbRemoteConfig == null) {

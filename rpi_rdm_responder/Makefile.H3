@@ -1,7 +1,7 @@
 #
 DEFINES = NO_EMAC RDM_RESPONDER  NDEBUG
 #
-LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice monitor 
+LIBS = dmxreceiver rdmresponder rdm dmx rdmsensor rdmsubdevice 
 #
 SRCDIR = firmware lib
 

@@ -2,7 +2,7 @@
  * @file dmxsendmultiprint.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "h3/dmxsendmulti.h"
 
 void DMXSendMulti::Print(void) {
-	printf("\nDMX Send configuration\n");
+	printf("DMX Send configuration\n");
 	printf(" Break time   : %d\n", (int) GetDmxBreakTime());
 	printf(" MAB time     : %d\n", (int) GetDmxMabTime());
 	printf(" Refresh rate : %d\n", (int) (1000000 / GetDmxPeriodTime()));

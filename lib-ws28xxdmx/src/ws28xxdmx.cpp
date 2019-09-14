@@ -117,7 +117,7 @@ void WS28xxDmx::Stop(uint8_t nPort) {
 
 void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	assert(pData != 0);
-	assert(nLength <= DMX_MAX_CHANNELS);
+	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
@@ -206,8 +206,8 @@ void WS28xxDmx::SetLEDCount(uint16_t nCount) {
 void WS28xxDmx::UpdateMembers(void) {
 	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
 
-	if (m_nDmxFootprint > DMX_MAX_CHANNELS) {
-		m_nDmxFootprint = DMX_MAX_CHANNELS;
+	if (m_nDmxFootprint > DMX_UNIVERSE_SIZE) {
+		m_nDmxFootprint = DMX_UNIVERSE_SIZE;
 	}
 
 	m_nPortIdLast = m_nLedCount / (1 + m_nBeginIndexPortId1);
@@ -230,11 +230,11 @@ void WS28xxDmx::Blackout(bool bBlackout) {
 // DMX
 
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE));
 
 	//FIXME Footprint
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_MAX_CHANNELS)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 		return true;
 	}

@@ -25,8 +25,15 @@
 
 #include "lightset.h"
 
+LightSet *LightSet::s_pThis = 0;
+
+LightSet::LightSet(void) {
+	s_pThis = this;
+}
+
 LightSet::~LightSet(void) {
 }
 
 void LightSet::Print(void) {
+	// override
 }

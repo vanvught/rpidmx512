@@ -42,6 +42,8 @@
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
 
+#include "rdmdeviceparams.h"
+
 #include "slushdmx.h"
 #include "sparkfundmx.h"
 
@@ -132,7 +134,14 @@ void notmain(void) {
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	RDMResponder dmxrdm(&personality, pBoard, nGpioDataDirection, false);
 
-	dmxrdm.GetRDMDeviceResponder()->Print();
+	RDMDeviceParams rdmDeviceParams;
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
+		rdmDeviceParams.Dump();
+	}
+
+	dmxrdm.Init();
+	dmxrdm.Print();
 
 	hw.WatchdogInit();
 

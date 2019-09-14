@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_MMU NDEBUG
 #
-LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 monitor ledblink lightset network
+LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice dmx ws28xxdmx ws28xx tlc59711dmx tlc59711 ledblink lightset network
 #
 SRCDIR = firmware lib
 

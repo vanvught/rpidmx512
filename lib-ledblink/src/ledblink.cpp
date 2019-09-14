@@ -25,6 +25,8 @@
 
 #include "ledblink.h"
 
+#include "debug.h"
+
 enum tFreqMode {
 	FREQ_MODE_OFF = 0,
 	FREQ_MODE_NORMAL = 1,
@@ -53,6 +55,8 @@ void LedBlink::SetMode(tLedBlinkMode Mode) {
 	if (m_tMode == Mode) {
 		return;
 	}
+
+	DEBUG_PRINTF("Mode=%d", (int)Mode);
 
 	m_tMode = Mode;
 

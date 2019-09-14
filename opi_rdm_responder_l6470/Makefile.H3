@@ -1,7 +1,7 @@
 #
 DEFINES = NO_EMAC RDM_RESPONDER STEPPER NDEBUG
 #
-LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice l6470dmx l6470
+LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice dmx l6470dmx l6470
 #
 SRCDIR = firmware lib
 

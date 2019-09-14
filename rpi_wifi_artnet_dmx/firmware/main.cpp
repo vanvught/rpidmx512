@@ -42,9 +42,14 @@
 #include "timecode.h"
 #include "timesync.h"
 
-// DMX output
+// DMX output / RDM
 #include "dmxparams.h"
 #include "dmxsend.h"
+#include "rdmdeviceparams.h"
+#if defined(ORANGE_PI)
+ #include "storedmxsend.h"
+ #include "storerdmdevice.h"
+#endif
 #include "artnetdiscovery.h"
 #ifndef H3
  // Monitor Output
@@ -55,6 +60,9 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#if defined(ORANGE_PI)
+ #include "storews28xxdmx.h"
+#endif
 
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
@@ -83,6 +91,10 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+	StoreDmxSend storeDmxSend;
+	StoreWS28xxDmx storeWS28xxDmx;
+	StoreRDMDevice storeRdmDevice;
+
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
 #else
 	ArtNetParams artnetparams;
@@ -167,7 +179,7 @@ void notmain(void) {
 
 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) spiFlashStore.GetStoreWS28xxDmx());
+		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
 #else
 		WS28xxDmxParams ws28xxparms;
 #endif
@@ -226,7 +238,7 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)spiFlashStore.GetStoreDmxSend());
+		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
 #else
 		DMXParams dmxparams;
 #endif
@@ -238,12 +250,26 @@ void notmain(void) {
 		node.SetOutput(&dmx);
 
 		if (artnetparams.IsRdm()) {
+#if defined (ORANGE_PI)
+			RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+#else
+			RDMDeviceParams rdmDeviceParams;
+#endif
+			if(rdmDeviceParams.Load()) {
+				rdmDeviceParams.Set((RDMDevice *)&discovery);
+				rdmDeviceParams.Dump();
+			}
+
+			discovery.Init();
+			discovery.Print();
+
 			if (artnetparams.IsRdmDiscovery()) {
 				console_status(CONSOLE_YELLOW, RUN_RDM);
 				display.TextStatus(RUN_RDM);
 				discovery.Full();
 			}
-			node.SetRdmHandler(&discovery);
+
+			node.SetRdmHandler((ArtNetRdm *)&discovery);
 		}
 	}
 
