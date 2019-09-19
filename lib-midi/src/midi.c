@@ -545,10 +545,10 @@ bool midi_read_channel(uint8_t channel) {
 void midi_send_tc(const struct _midi_send_tc *tc) {
 	uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
-	data[5] = (((tc->rate) & 0x03) << 5) | (tc->hour & 0x1F);
-	data[6] = tc->minute & 0x3F;
-	data[7] = tc->second & 0x3F;
-	data[8] = tc->frame & 0x1F;
+	data[5] = (((tc->nType) & 0x03) << 5) | (tc->nHours & 0x1F);
+	data[6] = tc->nMinutes & 0x3F;
+	data[7] = tc->nSeconds & 0x3F;
+	data[8] = tc->nFrames & 0x1F;
 
 	midi_interface_f.send(data, (uint16_t) 10);
 }

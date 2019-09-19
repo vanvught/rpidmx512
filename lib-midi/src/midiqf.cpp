@@ -1,5 +1,5 @@
 /**
- * @file rtpmidi.h
+ * @file midiqf.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,56 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef RTPMIDI_H_
-#define RTPMIDI_H_
-
 #include <stdint.h>
 
-#include "applemidi.h"
 #include "midi.h"
 
-#include "rtpmidihandler.h"
+void Midi::SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
+	uint8_t data = nMidiQuarterFramePiece << 4;
 
-class RtpMidi: public AppleMidi {
-public:
-	RtpMidi(void);
-	~RtpMidi(void);
-
-	void Start(void);
-	void Stop(void);
-
-	void Run(void);
-
-	void SendTimeCode(const struct _midi_send_tc *tTimeCode);
-
-	void SetHandler(RtpMidiHandler *pRtpMidiHandler) {
-		m_pRtpMidiHandler = pRtpMidiHandler;
+	switch (nMidiQuarterFramePiece) {
+	case 0:
+		data = data | (tMidiTimeCode->nFrames & 0x0F);
+		break;
+	case 1:
+		data = data | ((tMidiTimeCode->nFrames & 0x10) >> 4);
+		break;
+	case 2:
+		data = data | (tMidiTimeCode->nSeconds & 0x0F);
+		break;
+	case 3:
+		data = data | ((tMidiTimeCode->nSeconds & 0x30) >> 4);
+		break;
+	case 4:
+		data = data | (tMidiTimeCode->nMinutes & 0x0F);
+		break;
+	case 5:
+		data = data | ((tMidiTimeCode->nMinutes & 0x30) >> 4);
+		break;
+	case 6:
+		data = data | (tMidiTimeCode->nHours & 0x0F);
+		break;
+	case 7:
+		data = data | (tMidiTimeCode->nType << 1) | ((tMidiTimeCode->nHours & 0x10) >> 4);
+		break;
+	default:
+		break;
 	}
 
-	void Print(void);
+	midi_send_qf(data);
 
-	static RtpMidi* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	void HandleRtpMidi(const uint8_t *pBuffer) override;
-
-	int32_t DecodeTime(uint32_t nCommandLength, uint32_t nOffset);
-	int32_t DecodeMidi(uint32_t nCommandLength, uint32_t nOffset);
-	uint8_t GetTypeFromStatusByte(uint8_t nStatusByte);
-	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte);
-
-	void Send(uint32_t nLength);
-
-private:
-	struct _midi_message m_tMidiMessage;
-	RtpMidiHandler *m_pRtpMidiHandler;
-	uint8_t *m_pReceiveBuffer;
-	uint8_t *m_pSendBuffer;
-	uint16_t m_nSequenceNumber;
-
-	static RtpMidi *s_pThis;
-};
-
-#endif /* RTPMIDI_H_ */
+	nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+}

@@ -31,6 +31,7 @@
 #define APPLEMIDI_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "midi.h"
 
@@ -50,8 +51,8 @@ enum TAppleMidiVersion {
 };
 
 struct TExchangePacket {
-	uint8_t aSignature[2];
-	uint8_t aCommand[2];
+	uint16_t nSignature;
+	uint16_t nCommand;
 	uint32_t nProtocolVersion;
 	uint32_t nInitiatorToken;
 	uint32_t nSSRC;
@@ -77,7 +78,15 @@ public:
 	void SetPort(uint16_t nPort = APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT);
 	void SetSessionName(const uint8_t *pSessionName);
 
+	uint32_t GetSSRC(void) {
+		return m_nSSRC;
+	}
+
 	void Print(void);
+
+protected:
+	uint32_t Now(void);
+	bool Send(const uint8_t *pBuffer, uint32_t nLength);
 
 private:
 	void HandleControlMessage(void);
@@ -86,6 +95,8 @@ private:
 	virtual void HandleRtpMidi(const uint8_t *pBuffer);
 
 private:
+	uint32_t m_nStartTime;
+	uint32_t m_nSSRC;
 	uint16_t m_nPort;
 	int32_t m_nHandleControl;
 	int32_t m_nHandleMidi;

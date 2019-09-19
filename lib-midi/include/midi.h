@@ -31,6 +31,10 @@
 
 #include "midi_interface.h"
 
+#if  ! defined (PACKED)
+#define PACKED __attribute__((packed))
+#endif
+
 #define MIDI_RX_BUFFER_INDEX_ENTRIES			(1 << 6)							///<
 #define MIDI_RX_BUFFER_INDEX_MASK 				(MIDI_RX_BUFFER_INDEX_ENTRIES - 1)	///<
 
@@ -147,12 +151,12 @@ typedef enum midi_direction {
 } _midi_direction;
 
 struct _midi_send_tc {
-	uint8_t hour;
-	uint8_t minute;
-	uint8_t second;
-	uint8_t frame;
-	_midi_timecode_type rate;
-} ;
+	uint8_t nFrames;
+	uint8_t nSeconds;
+	uint8_t nMinutes;
+	uint8_t nHours;
+	uint8_t nType;
+}PACKED;
 
 #ifdef __cplusplus
 extern "C" {
@@ -238,6 +242,8 @@ public:
 	void SendQf(uint8_t nData) {
 		midi_send_qf(nData);
 	}
+
+	void SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
 
 	void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
 		midi_send_raw(pBuffer, nLength);

@@ -24,11 +24,14 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "rtpmidi.h"
 #include "applemidi.h"
 
 #include "rtpmidihandler.h"
+
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -53,8 +56,19 @@ struct TRtpHeader {
 #define RTP_MIDI_CS_MASK_SHORTLEN 		0x0f
 #define RTP_MIDI_CS_MASK_LONGLEN 		0x0fff
 
-RtpMidi::RtpMidi(void): m_pRtpMidiHandler(0), m_pBuffer(0) {
+#define BUFFER_SIZE	512
+
+RtpMidi *RtpMidi::s_pThis = 0;
+
+RtpMidi::RtpMidi(void):
+	m_pRtpMidiHandler(0),
+	m_pReceiveBuffer(0),
+	m_pSendBuffer(0),
+	m_nSequenceNumber(0)
+{
 	DEBUG_ENTRY
+
+	s_pThis = this;
 
 	DEBUG_EXIT
 }
@@ -69,6 +83,13 @@ void RtpMidi::Start(void) {
 	DEBUG_ENTRY
 
 	AppleMidi::Start();
+
+	m_pSendBuffer = new uint8_t[BUFFER_SIZE];
+	assert(m_pSendBuffer != 0);
+
+	TRtpHeader *pHeader = (TRtpHeader *)m_pSendBuffer;
+	pHeader->nStatic = 0x6180;
+	pHeader->nSenderSSRC = AppleMidi::GetSSRC();
 
 	DEBUG_EXIT
 }
@@ -92,7 +113,7 @@ int32_t RtpMidi::DecodeTime(uint32_t nCommandLength, uint32_t nOffset) {
 	unsigned long deltatime = 0;
 
 	for (uint32_t i = 0; i < 4; i++ ) {
-		const uint8_t nOctet = m_pBuffer[nOffset + nSize];
+		const uint8_t nOctet = m_pReceiveBuffer[nOffset + nSize];
 		deltatime = ( deltatime << 7 ) | ( nOctet & RTP_MIDI_DELTA_TIME_OCTET_MASK );
 		nSize++;
 
@@ -128,7 +149,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 
 	int32_t nSize = -1;
 
-	const uint8_t nStatusByte = m_pBuffer[nOffset];
+	const uint8_t nStatusByte = m_pReceiveBuffer[nOffset];
 	const uint8_t nType = GetTypeFromStatusByte(nStatusByte);
 
 	m_tMidiMessage.type = nType;
@@ -147,7 +168,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 			|| (nType == MIDI_TYPES_TIME_CODE_QUARTER_FRAME)
 			|| (nType == MIDI_TYPES_SONG_SELECT)) {
 		m_tMidiMessage.channel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.data1 = m_pBuffer[++nOffset];
+		m_tMidiMessage.data1 = m_pReceiveBuffer[++nOffset];
 		m_tMidiMessage.bytes_count = 2;
 		nSize = 2;
 	} else if ((nType == MIDI_TYPES_NOTE_ON) || (nType == MIDI_TYPES_NOTE_OFF)
@@ -156,13 +177,13 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 			|| (nType == MIDI_TYPES_AFTER_TOUCH_POLY)
 			|| (nType == MIDI_TYPES_SONG_POSITION)) {
 		m_tMidiMessage.channel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.data1 = m_pBuffer[++nOffset];
-		m_tMidiMessage.data2 = m_pBuffer[++nOffset];
+		m_tMidiMessage.data1 = m_pReceiveBuffer[++nOffset];
+		m_tMidiMessage.data2 = m_pReceiveBuffer[++nOffset];
 		m_tMidiMessage.bytes_count = 3;
 		nSize = 3;
 	} else if (nType == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
 		for (nSize = 0; (uint32_t) nSize < nCommandLength && (uint32_t) nSize < MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES; nSize++) {
-			m_tMidiMessage.system_exclusive[nSize] = m_pBuffer[nOffset++];
+			m_tMidiMessage.system_exclusive[nSize] = m_pReceiveBuffer[nOffset++];
 			if (m_tMidiMessage.system_exclusive[nSize] == 0xF7) {
 				break;
 			}
@@ -184,15 +205,15 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	DEBUG_ENTRY
 
-	m_pBuffer = (uint8_t *)pBuffer;
+	m_pReceiveBuffer = (uint8_t *)pBuffer;
 
-	const uint8_t nFlags = m_pBuffer[RTP_MIDI_COMMAND_OFFSET];
+	const uint8_t nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
 
 	uint32_t nCommandLength = nFlags & RTP_MIDI_CS_MASK_SHORTLEN;
 	uint32_t nOffset;
 
 	if (nFlags & RTP_MIDI_CS_FLAG_B) {
-		const uint8_t nOctet = m_pBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
+		const uint8_t nOctet = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
 		nCommandLength = (nCommandLength << 8) | nOctet;
 		nOffset = RTP_MIDI_COMMAND_OFFSET + 2;
 	} else {
@@ -201,7 +222,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", (int) nCommandLength, (int) nOffset);
 
-	debug_dump((void *)&m_pBuffer[nOffset], nCommandLength);
+	debug_dump((void *)&m_pReceiveBuffer[nOffset], nCommandLength);
 
 	uint32_t nCommandCount = 0;
 
@@ -231,6 +252,34 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	}
 
 	DEBUG_EXIT
+}
+
+void RtpMidi::SendTimeCode(const struct _midi_send_tc *tTimeCode) {
+	uint8_t *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
+
+	data[0] = 0xF0;
+	data[1] = 0x7F;
+	data[2] = 0x7F;
+	data[3] = 0x01;
+	data[4] = 0x01;
+	data[5] = (((tTimeCode->nType) & 0x03) << 5) | (tTimeCode->nHours & 0x1F);
+	data[6] = tTimeCode->nMinutes & 0x3F;
+	data[7] = tTimeCode->nSeconds & 0x3F;
+	data[8] = tTimeCode->nFrames & 0x1F;
+	data[9] = 0xF7;
+
+	Send(10);
+}
+
+void  RtpMidi::Send(uint32_t nLength) {
+	TRtpHeader *pHeader = (TRtpHeader *)m_pSendBuffer;
+
+	pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
+	pHeader->nTimestamp = __builtin_bswap32(Now());
+
+	m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET] = nLength; //FIXME BUG works now only
+
+	AppleMidi::Send(m_pSendBuffer, 1 + sizeof(struct TRtpHeader) + nLength);
 }
 
 void RtpMidi::Print(void) {
