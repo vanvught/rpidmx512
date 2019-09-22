@@ -32,6 +32,9 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JSpinner;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SpinnerNumberModel;
 
 public class LTCGenerator extends JDialog {
 	private static final long serialVersionUID = -8623371832596143765L;
@@ -40,8 +43,18 @@ public class LTCGenerator extends JDialog {
 	private JButton btnStart;
 	private JButton btnStop;
 	private JButton btnResume;
+	private JButton btnSetStart;
 	
 	static final int UDP_PORT = 21571;
+	private JSpinner spinnerStartHours;
+	private JSpinner spinnerStartMinutes;
+	private JSpinner spinnerStartSeconds;
+	private JSpinner spinnerStartFrames;
+	private JButton btnSetStop;
+	private JSpinner spinnerStopHours;
+	private JSpinner spinnerStopMinutes;
+	private JSpinner spinnerStopSeconds;
+	private JSpinner spinnerStopFrames;
 
 	/**
 	 * Launch the application.
@@ -50,7 +63,7 @@ public class LTCGenerator extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					LTCGenerator dialog = new LTCGenerator(InetAddress.getByName("192.168.2.250"));
+					LTCGenerator dialog = new LTCGenerator(InetAddress.getByName("192.168.2.120"));
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.Show();
 				} catch (Exception e) {
@@ -83,34 +96,81 @@ public class LTCGenerator extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 322, 70);
+		setBounds(100, 100, 348, 156);
 		
 		btnStart = new JButton("Start");		
 		btnStop = new JButton("Stop");
 		btnResume = new JButton("Resume");
+		btnSetStart = new JButton("Set Start");
+		btnSetStop = new JButton("Set Stop");
+		
+		spinnerStartHours = new JSpinner(new SpinnerNumberModel(0, 0, 23, 1));
+		spinnerStartMinutes = new JSpinner(new SpinnerNumberModel(0, 0, 59, 1));
+		spinnerStartSeconds = new JSpinner(new SpinnerNumberModel(0, 0, 59, 1));
+		spinnerStartFrames = new JSpinner(new SpinnerNumberModel(0, 0, 30, 1));
+		
+		spinnerStopHours = new JSpinner(new SpinnerNumberModel(23, 0, 23, 1));
+		spinnerStopMinutes = new JSpinner(new SpinnerNumberModel(59, 0, 59, 1));
+		spinnerStopSeconds = new JSpinner(new SpinnerNumberModel(29, 0, 59, 1));
+		spinnerStopFrames = new JSpinner(new SpinnerNumberModel(25, 0, 30, 1));
 		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(16)
-					.addComponent(btnStart)
-					.addGap(18)
-					.addComponent(btnStop)
-					.addGap(18)
-					.addComponent(btnResume)
-					.addContainerGap(47, Short.MAX_VALUE))
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnSetStop, GroupLayout.PREFERRED_SIZE, 92, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStopHours, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStopMinutes, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStopSeconds, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStopFrames, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnSetStart, GroupLayout.PREFERRED_SIZE, 92, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStartHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStartMinutes, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStartSeconds, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(spinnerStartFrames, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnStart)
+							.addGap(35)
+							.addComponent(btnStop)
+							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(btnResume)))
+					.addGap(31))
 		);
-		
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-					.addContainerGap(68, Short.MAX_VALUE)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnStart)
 						.addComponent(btnStop)
 						.addComponent(btnResume))
-					.addGap(59))
+					.addGap(18)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnSetStart)
+						.addComponent(spinnerStartHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStartMinutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStartSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStartFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnSetStop)
+						.addComponent(spinnerStopHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStopMinutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStopSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(spinnerStopFrames, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(17, Short.MAX_VALUE))
 		);
 		
 		getContentPane().setLayout(groupLayout);
@@ -132,6 +192,32 @@ public class LTCGenerator extends JDialog {
 		btnResume.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SendUpd("ltc!resume");
+			}
+		});
+		
+		btnSetStart.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+	
+				String ltcStart = String.format("ltc!start#%02d:%02d:%02d.%02d", 
+						Integer.parseInt(spinnerStartHours.getValue().toString()),
+						Integer.parseInt(spinnerStartMinutes.getValue().toString()), 
+						Integer.parseInt(spinnerStartSeconds.getValue().toString()), 
+						Integer.parseInt(spinnerStartFrames.getValue().toString()));
+
+				SendUpd(ltcStart);
+			}
+		});
+		
+		btnSetStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				String ltcStop = String.format("ltc!stop#%02d:%02d:%02d.%02d", 
+						Integer.parseInt(spinnerStopHours.getValue().toString()),
+						Integer.parseInt(spinnerStopMinutes.getValue().toString()), 
+						Integer.parseInt(spinnerStopSeconds.getValue().toString()), 
+						Integer.parseInt(spinnerStopFrames.getValue().toString()));
+
+				SendUpd(ltcStop);
 			}
 		});
 	}

@@ -115,7 +115,7 @@ public class TFTPClient extends JDialog {
 	
 	private void InitComponents() {
 		setTitle("TFTP Client");
-		setBounds(100, 100, 450, 94);
+		setBounds(100, 100, 450, 106);
 		
 		textField = new JTextField();
 		textField.setEditable(false);
@@ -145,9 +145,9 @@ public class TFTPClient extends JDialog {
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnUimage)
 						.addComponent(btnPut))
-					.addPreferredGap(ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap())
+					.addContainerGap(11, Short.MAX_VALUE))
 		);
 		getContentPane().setLayout(groupLayout);
 	}
