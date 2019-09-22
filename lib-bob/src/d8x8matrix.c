@@ -39,11 +39,10 @@
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
-static uint8_t rotate(const uint8_t r, const uint8_t x) {
+static uint8_t rotate(uint8_t r, uint8_t x) {
 	uint8_t y;
-	uint8_t set, b;
-
-	b = 0;
+	uint8_t set;
+	uint8_t b = 0;
 
 	for (y = 0; y < 8; y++) {
 		set = cp437_font[r][y] & (1 << x);
@@ -54,7 +53,7 @@ static uint8_t rotate(const uint8_t r, const uint8_t x) {
 }
 
 static void write_all(const device_info_t *device_info, const uint8_t reg, const uint8_t data) {
-	uint8_t i;
+	uint32_t i;
 
 	if ((device_info->internal.count * 2) > sizeof(spi_data)) {
 		return;
@@ -89,7 +88,7 @@ void d8x8matrix_cls(const device_info_t *device_info) {
 
 void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t nbyte) {
 	char c;
-	uint8_t i;
+	uint32_t i;
 	int j, k;
 
 	if (nbyte > device_info->internal.count) {
@@ -97,7 +96,7 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 	}
 
 	for (i = 1; i < 9; i++) {
-		k = (int) nbyte;
+		k = nbyte;
 
 		for (j = 0; j < ((int) device_info->internal.count * 2) - ((int) nbyte * 2); j = j + 2) {
 			spi_data[j] = MAX7219_REG_NOOP;
@@ -106,6 +105,9 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 
 		while (--k >= 0) {
 			c = buf[k];
+			if (c >= (sizeof(cp437_font)/sizeof(cp437_font[0]))) {
+				c = ' ';
+			}
 			spi_data[j++] = i;
 			spi_data[j++] = rotate((uint8_t) c, 8 - i);
 		}
@@ -116,17 +118,17 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 		} else {
 			FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 			FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
-			FUNC_PREFIX(spi_writenb((const char *) spi_data, (uint32_t) j));
+			FUNC_PREFIX(spi_writenb((const char *) spi_data, j));
 		}
 	}
 }
 
-void d8x8matrix_init(const device_info_t *device_info, const uint8_t count, const uint8_t intensity) {
-	device_info_t *p = (device_info_t *)device_info;
+void d8x8matrix_init(const device_info_t *device_info, uint8_t count, uint8_t intensity) {
+	device_info_t *p = (device_info_t*) device_info;
 
 	p->internal.count = MIN(count, sizeof(spi_data) / 2);
 
-	(void) max7219_spi_start((device_info_t *) device_info);
+	max7219_spi_start((device_info_t*) device_info);
 
 	write_all(device_info, MAX7219_REG_SHUTDOWN, MAX7219_SHUTDOWN_NORMAL_OP);
 	write_all(device_info, MAX7219_REG_DISPLAY_TEST, 0);
