@@ -109,13 +109,15 @@ private:
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
 	void SetZeroconf(bool IsBroadcast, uint16_t nSubDevice);
+	void SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice);
+	void ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice);
 	void SetHostName(bool IsBroadcast, uint16_t nSubDevice);
 
 private:
 	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
 	void RespondMessageAck(void);
 	void RespondMessageNack(uint16_t nReason);
-	void HandleString(const char *pString, uint8_t nLenght);
+	void HandleString(const char *pString, uint32_t nLenght);
 
 private:
 	bool m_bIsRDM;
