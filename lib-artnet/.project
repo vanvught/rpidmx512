@@ -4,6 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>include</project>
+		<project>lib-ledblink</project>
+		<project>lib-lightset</project>
 		<project>lib-network</project>
 		<project>lib-properties</project>
 	</projects>

@@ -32,7 +32,6 @@
 
 #include "propertiesbuilder.h"
 
-#include "lightset.h"
 #include "lightsetconst.h"
 
 #include "debug.h"
@@ -55,8 +54,6 @@ bool ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	bool isAdded = builder.Add(ArtNetParamsConst::NET, (uint32_t) m_tArtNetParams.nNet, isMaskSet(ARTNET_PARAMS_MASK_NET));
 	isAdded &= builder.Add(ArtNetParamsConst::SUBNET, (uint32_t) m_tArtNetParams.nSubnet, isMaskSet(ARTNET_PARAMS_MASK_SUBNET));
 	isAdded &= builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tArtNetParams.nUniverse, isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE));
-
-	isAdded &= builder.Add(LightSetConst::PARAMS_OUTPUT, (const char *) LightSet::GetOutputType(m_tArtNetParams.tOutputType), isMaskSet(ARTNET_PARAMS_MASK_OUTPUT));
 
 	isAdded &= builder.Add(ArtNetParamsConst::NODE_LONG_NAME, (const char *) m_tArtNetParams.aLongName, isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
 	isAdded &= builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, (const char *) m_tArtNetParams.aShortName, isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));

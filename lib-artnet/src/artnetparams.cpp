@@ -39,8 +39,9 @@
 #include "artnetparamsconst.h"
 #include "artnetnode.h"
 
-#include "lightset.h"
 #include "lightsetconst.h"
+
+#include "network.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -147,13 +148,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, (char *)m_tArtNetParams.aLongName, &len) == SSCAN_OK) {
 		m_tArtNetParams.aLongName[len] = '\0';
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_LONG_NAME;
-		return;
-	}
-
-	len = 3;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_OUTPUT, value, &len) == SSCAN_OK) {
-		m_tArtNetParams.tOutputType = LightSet::GetOutputType((const char *) value);
-		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_OUTPUT;
 		return;
 	}
 
@@ -266,10 +260,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 void ArtNetParams::Dump(void) {
 #ifndef NDEBUG
-	if (m_tArtNetParams.nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE)) {
@@ -282,10 +272,6 @@ void ArtNetParams::Dump(void) {
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_NET)) {
 		printf(" %s=%d\n", ArtNetParamsConst::NET, m_tArtNetParams.nNet);
-	}
-
-	if(isMaskSet(ARTNET_PARAMS_MASK_OUTPUT)) {
-		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_OUTPUT, (int) m_tArtNetParams.tOutputType, LightSet::GetOutputType((TLightSetOutputType) m_tArtNetParams.tOutputType));
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {

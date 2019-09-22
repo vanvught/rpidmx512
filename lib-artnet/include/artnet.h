@@ -234,4 +234,8 @@ enum TGoodOutput {
 	GO_OUTPUT_IS_SACN  = (1 << 0)				///< Bit 0 Set – Output is selected to transmit sACN.
 };
 
+enum TGoodInput {
+	GI_DATA_RECIEVED  = (1 << 7)				///< Bit 7 Set – Data received.
+};
+
 #endif /* ARTNET_H_ */

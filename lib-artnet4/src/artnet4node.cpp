@@ -33,7 +33,6 @@
 #include <assert.h>
 
 #include "artnet4node.h"
-
 #include "e131bridge.h"
 
 #include "debug.h"
@@ -60,13 +59,13 @@ ArtNet4Node::~ArtNet4Node(void) {
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::SetPort(uint8_t nPortId) {
+void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	DEBUG_ENTRY
 
 	uint16_t nUniverse;
-	const bool isActive = GetPortAddress(nPortId, nUniverse);
+	const bool isActive = GetPortAddress(nPortId, nUniverse, dir);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d", (int )nPortId, isActive ? 'Y' : 'N', nUniverse);
+	DEBUG_PRINTF("Port %d, Active %c, Universe %d, [%s]", (int )nPortId, isActive ? 'Y' : 'N', nUniverse, dir == ARTNET_OUTPUT_PORT ? "Output" : "Input");
 
 	if (isActive) {
 		const TPortProtocol tPortProtocol = GetPortProtocol(nPortId);
@@ -84,7 +83,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId) {
 				return;
 			}
 
-			m_Bridge.SetUniverse(nPortId, E131_OUTPUT_PORT, nUniverse);
+			m_Bridge.SetUniverse(nPortId, dir == ARTNET_OUTPUT_PORT ? E131_OUTPUT_PORT : E131_INPUT_PORT, nUniverse);
 		}
 	}
 
@@ -136,11 +135,9 @@ void ArtNet4Node::Stop(void) {
 	DEBUG_EXIT
 }
 
-int ArtNet4Node::HandlePacket(void) {
-	const int r = ArtNetNode::Run();
+void ArtNet4Node::Run(void) {
+	ArtNetNode::Run();
 	m_Bridge.Run();
-
-	return r;
 }
 
 void ArtNet4Node::HandleAddress(uint8_t nCommand) {

@@ -50,6 +50,7 @@
 #include "artnetipprog.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
+#include "artnetdmx.h"
 
 #include "artnet4handler.h"
 
@@ -99,7 +100,8 @@ struct TArtNetNodeState {
 	bool IsChanged;
 	bool bDisableMergeTimeout;
 	bool bIsReceivingDmx;
-	uint8_t nActivePorts;
+	uint8_t nActiveOutputPorts;
+	uint8_t nActiveInputPorts;
 	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 };
 
@@ -142,6 +144,12 @@ struct TOutputPort {
 	TPortProtocol tPortProtocol;		///< Art-Net 4
 };
 
+struct TInputPort {
+	bool bIsEnabled;
+	TGenericPort port;
+	uint8_t nSequence;
+};
+
 class ArtNetNode {
 public:
 	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
@@ -150,7 +158,7 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	int Run(void);
+	void Run(void);
 
 	uint8_t GetVersion(void) {
 		return m_nVersion;
@@ -170,7 +178,7 @@ public:
 	uint8_t GetActiveInputPorts(void) { return 0; }
 
 	uint8_t GetActiveOutputPorts(void) {
-		return m_State.nActivePorts;
+		return m_State.nActiveOutputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
@@ -191,7 +199,7 @@ public:
 	}
 
 	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress) const;
+	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
 
 	void SetNetSwitch(uint8_t nAddress, uint8_t nPage = 0);
 	uint8_t GetNetSwitch(uint8_t nPage = 0) const;
@@ -199,7 +207,7 @@ public:
 	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage = 0);
 	uint8_t GetSubnetSwitch(uint8_t nPage = 0) const;
 
-	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress) const;
+	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
 
 	void SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode);
 	TMerge GetMergeMode(uint8_t nPortIndex = 0) const;
@@ -243,6 +251,13 @@ public:
 		m_pArtNetDisplay = pArtNetDisplay;
 	}
 
+	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
+		m_pArtNetDmx = pArtNetDmx;
+	}
+	ArtNetDmx *GetArtNetDmx(void) {
+		return m_pArtNetDmx;
+	}
+
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
 	void Print(void);
@@ -266,6 +281,7 @@ private:
 	void HandleRdm(void);
 	void HandleIpProg(void);
 	//void HandleDirectory(void);
+	void HandleDmxIn(void);
 
 	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
 
@@ -290,6 +306,7 @@ private:
 	ArtNetIpProg *m_pArtNetIpProg;
 	ArtNetStore *m_pArtNetStore;
 	ArtNetDisplay *m_pArtNetDisplay;
+	ArtNetDmx *m_pArtNetDmx;
 
 	ArtNet4Handler *m_pArtNet4Handler;
 
@@ -306,6 +323,7 @@ private:
 	struct TArtIpProgReply *m_pIpProgReply;
 
 	struct TOutputPort m_OutputPorts[ARTNET_MAX_PORTS * ARTNET_MAX_PAGES];
+	struct TInputPort m_InputPorts[ARTNET_MAX_PORTS];
 
 	bool m_bDirectUpdate;
 
@@ -318,6 +336,8 @@ private:
 
 	alignas(uint32_t) char m_aSysName[16];
 	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
+
+	uint32_t m_nDestinationIp;
 };
 
 #endif /* ARTNETNODE_H_ */

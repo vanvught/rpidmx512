@@ -1,5 +1,5 @@
 /**
- * @file artnet4node.h
+ * @file artnetnodehandledmxin.cpp
  *
  */
 /**
@@ -26,46 +26,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNET4NODE_H_
-#define ARTNET4NODE_H_
-
 #include <stdint.h>
-#include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 #include "artnetnode.h"
-#include "artnet4handler.h"
-#include "e131bridge.h"
+#include "artnet.h"
+#include "artnetdmx.h"
 
-class ArtNet4Node: public ArtNetNode, ArtNet4Handler {
-public:
-	ArtNet4Node(uint8_t nPages = 1);
-	~ArtNet4Node(void);
+#include "network.h"
 
-	void SetPort(uint8_t nPortId, TArtNetPortDir dir = ARTNET_OUTPUT_PORT);
+#include "debug.h"
 
-	void Print(void);
+void ArtNetNode::HandleDmxIn(void) {
+	struct TArtDmx  artDmx;
+	uint16_t nLength;
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	memcpy((void *)artDmx.Id, (const char *) NODE_ID, sizeof m_PollReply.Id);
+	artDmx.OpCode = OP_DMX;
+	artDmx.ProtVerHi = 0;
+	artDmx.ProtVerLo = ARTNET_PROTOCOL_REVISION;
 
-	void HandleAddress(uint8_t nCommand);
-	uint8_t GetStatus(uint8_t nPortId);
+	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (m_InputPorts[i].bIsEnabled){
+			const uint8_t *pDmxData = m_pArtNetDmx->Handler(i, nLength);
 
-	void SetMapUniverse0(bool bMapUniverse0 = false) {
-		m_bMapUniverse0 = bMapUniverse0;
+			if (pDmxData != 0) {
+				artDmx.Sequence = m_InputPorts[i].nSequence++;
+				artDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
+				artDmx.LengthHi = (nLength & 0xFF00) >> 8;
+				artDmx.Length = (nLength & 0xFF);
+
+				memcpy(artDmx.Data, &pDmxData[1], nLength-1);
+
+				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
+
+				Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(artDmx), (uint16_t) sizeof(struct TArtDmx), m_nDestinationIp, (uint16_t) ARTNET_UDP_PORT);
+			}
+		}
+
 	}
-	bool IsMapUniverse0(void) {
-		return m_bMapUniverse0;
-	}
-
-	bool IsStatusChanged(void) {
-		return m_Bridge.IsStatusChanged();
-	}
-
-private:
-	E131Bridge m_Bridge;
-	bool m_bMapUniverse0;
-};
-
-#endif /* ARTNET4NODE_H_ */
+}

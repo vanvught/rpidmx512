@@ -50,6 +50,8 @@ public:
 	alignas(uint32_t) static const char MERGE_MODE_PORT[ARTNET_MAX_PORTS][18];
 	alignas(uint32_t) static const char PROTOCOL[];
 	alignas(uint32_t) static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
+	alignas(uint32_t) static const char DIRECTION[];
+	alignas(uint32_t) static const char DESTINATION_IP[];
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

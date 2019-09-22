@@ -1,5 +1,5 @@
 /**
- * @file artnet4node.h
+ * @file artnetdmx.h
  *
  */
 /**
@@ -26,46 +26,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNET4NODE_H_
-#define ARTNET4NODE_H_
+#ifndef ARTNETDMX_H_
+#define ARTNETDMX_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "artnetnode.h"
-#include "artnet4handler.h"
-#include "e131bridge.h"
-
-class ArtNet4Node: public ArtNetNode, ArtNet4Handler {
+class ArtNetDmx {
 public:
-	ArtNet4Node(uint8_t nPages = 1);
-	~ArtNet4Node(void);
+	virtual ~ArtNetDmx(void);
 
-	void SetPort(uint8_t nPortId, TArtNetPortDir dir = ARTNET_OUTPUT_PORT);
+	virtual void Start(uint8_t nPort)=0;
+	virtual void Stop(uint8_t nPort)=0;
 
-	void Print(void);
-
-	void Start(void);
-	void Stop(void);
-	void Run(void);
-
-	void HandleAddress(uint8_t nCommand);
-	uint8_t GetStatus(uint8_t nPortId);
-
-	void SetMapUniverse0(bool bMapUniverse0 = false) {
-		m_bMapUniverse0 = bMapUniverse0;
-	}
-	bool IsMapUniverse0(void) {
-		return m_bMapUniverse0;
-	}
-
-	bool IsStatusChanged(void) {
-		return m_Bridge.IsStatusChanged();
-	}
-
-private:
-	E131Bridge m_Bridge;
-	bool m_bMapUniverse0;
+	virtual const uint8_t *Handler(uint8_t nPort, uint16_t& nLength)=0;
 };
 
-#endif /* ARTNET4NODE_H_ */
+#endif /* ARTNETDMX_H_ */

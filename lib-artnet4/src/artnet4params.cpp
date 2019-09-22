@@ -42,7 +42,9 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "spiflashstore.h"
+#if defined (H3) || defined (RASPPI)
+ #include "spiflashstore.h"
+#endif
 
 #define BOOL2STRING(b)				(b) ? "Yes" : "No"
 
@@ -124,10 +126,6 @@ void ArtNet4Params::callbackFunction(const char* pLine) {
 void ArtNet4Params::Dump(void) {
 #ifndef NDEBUG
 	ArtNetParams::Dump();
-
-	if (m_tArtNet4Params.nSetList == 0) {
-		return;
-	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 

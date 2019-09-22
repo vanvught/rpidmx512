@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,22 +41,36 @@ void ArtNetNode::Print(void) {
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
 
-	for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
-		uint8_t nAddress;
-		if (GetUniverseSwitch(i, nAddress)) {
-			const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
-			const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
+	if (m_State.nActiveOutputPorts != 0) {
+		for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
+			uint8_t nAddress;
+			if (GetUniverseSwitch(i, nAddress)) {
+				const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
 
-			printf("  Port %c %d:%d:%d [%s]", (char) ('A' + i), nNet, nSubSwitch, nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
-			if (m_nVersion == 4) {
-				printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
-			} else {
-				printf("\n");
+				printf("  Port %c %d:%d:%d [%s]", (char) ('A' + i), nNet, nSubSwitch, nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+				if (m_nVersion == 4) {
+					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
+				} else {
+					printf("\n");
+				}
 			}
+		}
+
+		if (m_bDirectUpdate) {
+			printf(" Direct update : Yes\n");
 		}
 	}
 
-	if (m_bDirectUpdate) {
-		printf(" Direct update : Yes\n");
+	if (m_State.nActiveInputPorts != 0) {
+		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS); i++) {
+			uint8_t nAddress;
+			if (GetUniverseSwitch(i, nAddress, ARTNET_INPUT_PORT)) {
+				const uint8_t nNet = m_Node.NetSwitch[i];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[i];
+
+				printf("  Port %c %d:%d:%d\n", (char) ('A' + i), nNet, nSubSwitch, nAddress);
+			}
+		}
 	}
 }

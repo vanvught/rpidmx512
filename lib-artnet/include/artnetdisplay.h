@@ -38,6 +38,7 @@ public:
 	virtual ~ArtNetDisplay(void);
 
 	virtual void ShowShortName(const char *pShortName)= 0;
+	virtual void ShowLongName(const char *pLongName)= 0;
 	virtual void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
 	virtual void ShowNetSwitch(uint8_t nAddress)=0;
 	virtual void ShowSubnetSwitch(uint8_t nAddress)=0;

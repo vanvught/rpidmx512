@@ -31,12 +31,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#if defined (__circle__)
-#include <circle/time.h>
-#else
 #include <time.h>
-#endif
 
 #include "artnetnode.h"
 
@@ -64,6 +59,8 @@ struct TArtNetParams {
 	uint8_t nProtocol;
 	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
 	bool bEnableNoChangeUpdate;
+	uint8_t nDirection;
+	uint32_t nDestinationIp;
 };
 
 enum TArtnetParamsMask {
@@ -94,7 +91,9 @@ enum TArtnetParamsMask {
 	ARTNET_PARAMS_MASK_PROTOCOL_B = (1 << 24),
 	ARTNET_PARAMS_MASK_PROTOCOL_C = (1 << 25),
 	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26),
-	ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 27)
+	ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 27),
+	ARTNET_PARAMS_MASK_DIRECTION = (1 << 28),
+	ARTNET_PARAMS_MASK_DESTINATION_IP = (1 << 29)
 };
 
 class ArtNetParamsStore {
@@ -158,7 +157,6 @@ public:
 
 	bool IsUseTimeSync(void) {
 		return m_tArtNetParams.bUseTimeSync;
-
 	}
 
 	bool IsRdm(void) {
@@ -173,6 +171,10 @@ public:
 
 	bool IsEnableNoChangeUpdate(void) {
 		return m_tArtNetParams.bEnableNoChangeUpdate;
+	}
+
+	uint32_t GetDestinationIp(void) {
+		return m_tArtNetParams.nDestinationIp;
 	}
 
 public:
