@@ -90,6 +90,12 @@
 
 extern "C" {
 
+__attribute__((noinline)) static void print_disabled(bool b, const char *p) {
+	if (b) {
+		printf(" %s output is disabled\n", p);
+	}
+}
+
 void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
@@ -126,6 +132,19 @@ void notmain(void) {
 
 	LtcLeds leds;
 
+	fw.Print();
+
+	hw.SetLed(HARDWARE_LED_ON);
+
+	display.ClearLine(1);
+	display.ClearLine(2);
+
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+
+	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.Print();
+
 	Midi midi;
 	ArtNetNode node;
 	TCNet tcnet;
@@ -139,21 +158,7 @@ void notmain(void) {
 	RtpMidiReader rtpMidiReader(&node, &tLtcDisabledOutputs);
 
 	LtcGenerator ltcGenerator(&node, &tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
-
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
-
-	fw.Print();
-
-	hw.SetLed(HARDWARE_LED_ON);
-
-	display.ClearLine(1);
-	display.ClearLine(2);
-
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
-
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
@@ -239,8 +244,6 @@ void notmain(void) {
 		break;
 	case LTC_READER_SOURCE_APPLEMIDI:
 		rtpMidi.SetHandler(&rtpMidiReader);
-		rtpMidi.Start();
-		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 		rtpMidiReader.Start();
 		break;
 	default:
@@ -248,8 +251,12 @@ void notmain(void) {
 		break;
 	}
 
-	if (bEnableNtp) {
+	if ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi) {
+		rtpMidi.Start();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+	}
 
+	if (bEnableNtp) {
 		struct TLtcTimeCode LtcTimeCode;
 
 		LtcTimeCode.nFrames = 0;
@@ -327,33 +334,14 @@ void notmain(void) {
 		}
 	}
 
-	if (tLtcDisabledOutputs.bDisplay) {
-		printf(" Display is disabled\n");
-	}
-
-	if (tLtcDisabledOutputs.bMax7219) {
-		printf(" Max7219 is disabled\n");
-	}
-
-	if ((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc)) {
-		printf(" LTC output is disabled\n");
-	}
-
-	if ((source != LTC_READER_SOURCE_TCNET) && (tLtcDisabledOutputs.bTCNet)) {
-		printf(" TCNet output is disabled\n");
-	}
-
-	if ((source != LTC_READER_SOURCE_MIDI) && (tLtcDisabledOutputs.bMidi)) {
-		printf(" MIDI output is disabled\n");
-	}
-
-	if ((source != LTC_READER_SOURCE_ARTNET) && (tLtcDisabledOutputs.bArtNet)) {
-		printf(" Art-Net output is disabled\n");
-	}
-
-	if (tLtcDisabledOutputs.bNtp) {
-		printf(" NTP output is disabled\n");
-	}
+	print_disabled(tLtcDisabledOutputs.bDisplay, "Display");
+	print_disabled(tLtcDisabledOutputs.bMax7219, "Max7219");
+	print_disabled((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc), "LTC");
+	print_disabled((source != LTC_READER_SOURCE_TCNET) && (tLtcDisabledOutputs.bTCNet), "TCNet");
+	print_disabled((source != LTC_READER_SOURCE_APPLEMIDI) && (tLtcDisabledOutputs.bRtpMidi), "AppleMIDI");
+	print_disabled((source != LTC_READER_SOURCE_MIDI) && (tLtcDisabledOutputs.bMidi), "MIDI");
+	print_disabled((source != LTC_READER_SOURCE_ARTNET) && (tLtcDisabledOutputs.bArtNet), "Art-Net");
+	print_disabled(tLtcDisabledOutputs.bNtp, "NTP");
 
 	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
 
@@ -367,7 +355,7 @@ void notmain(void) {
 			tcnet.Run();
 		}
 
-		if (source == LTC_READER_SOURCE_APPLEMIDI) {	//FIXME Remove when Sender is implemented
+		if ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi) {
 			rtpMidi.Run();
 		}
 
