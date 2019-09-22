@@ -68,17 +68,19 @@ public:
 	virtual void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort)=0;
 
 	virtual void SetIp(uint32_t nIp)=0;
-
 	uint32_t GetIp(void) {
 		return m_nLocalIp;
 	}
+
+	bool SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask = 0);
 
 	uint32_t GetNetmask(void) {
 		return m_nNetmask;
 	}
 
 	uint32_t GetNetmaskCIDR(void) {
-		return __builtin_popcount(m_nNetmask);
+		//return __builtin_popcount(m_nNetmask);
+		return  32 -  __builtin_clz(m_nNetmask);
 	}
 
 	uint32_t GetBroadcastIp(void) {
@@ -133,6 +135,9 @@ protected:
 	uint32_t m_nIfIndex;
 
 private:
+	uint32_t m_nQueuedLocalIp;
+	uint32_t m_nQueuedNetmask;
+
 	static Network *s_pThis;
 };
 

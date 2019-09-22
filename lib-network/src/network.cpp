@@ -27,6 +27,8 @@
 
 #include "network.h"
 
+#include "debug.h"
+
 Network *Network::s_pThis = 0;
 
 Network::Network(void) :
@@ -36,7 +38,9 @@ Network::Network(void) :
 	m_nBroadcastIp(0),
 	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false),
-	m_nIfIndex(1)
+	m_nIfIndex(1),
+	m_nQueuedLocalIp(0),
+	m_nQueuedNetmask(0)
 {
 	s_pThis = this;
 
@@ -55,4 +59,27 @@ Network::~Network(void) {
 	m_aIfName[0] = '\0';
 
 	s_pThis = 0;
+}
+
+bool Network::SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask) {
+
+	DEBUG_PRINTF("bQueueing=%d, nLocalIp=" IPSTR ", nNetmask=" IPSTR, (int) bQueueing, IP2STR(nLocalIp), IP2STR(nNetmask));
+
+	if (bQueueing) {
+		m_nQueuedLocalIp = nLocalIp;
+		m_nQueuedNetmask = nNetmask;
+		return true;
+	}
+
+	if (m_nQueuedLocalIp != 0) {
+
+		SetIp(m_nQueuedLocalIp);
+
+		m_nQueuedLocalIp = 0;
+		m_nQueuedNetmask = 0;
+
+		return true;
+	}
+
+	return false;
 }
