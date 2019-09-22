@@ -28,12 +28,18 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <uuid/uuid.h>
 
 #include "e131bridge.h"
 
 #include "lightset.h"
 
 #define E131_PARAMS_MAX_PORTS	4
+
+enum TE131ParamsDirection {
+	E131_PARAMS_DIRECTION_OUTPUT = 0,
+	E131_PARAMS_DIRECTION_INPUT
+};
 
 struct TE131Params {
     uint32_t nSetList;
@@ -45,6 +51,8 @@ struct TE131Params {
 	float nNetworkTimeout;
 	bool bDisableMergeTimeout;
 	bool bEnableNoChangeUpdate;
+	uint8_t nDirection;
+	uint8_t nPriority;
 };
 
 enum TE131ParamsMask {
@@ -62,7 +70,9 @@ enum TE131ParamsMask {
 	E131_PARAMS_MASK_MERGE_MODE_D = (1 << 11),
 	E131_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 12),
 	E131_PARAMS_MASK_MERGE_TIMEOUT = (1 << 13),
-	E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 14)
+	E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 14),
+	E131_PARAMS_MASK_DIRECTION = (1 << 15),
+	E131_PARAMS_MASK_PRIORITY = (1 << 16)
 };
 
 class E131ParamsStore {
@@ -71,6 +81,9 @@ public:
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
+
+	virtual void UpdateUuid(const uuid_t uuid)=0;
+	virtual void CopyUuid(uuid_t uuid)=0;
 };
 
 class E131Params {
@@ -106,6 +119,10 @@ public:
 		return m_tE131Params.bEnableNoChangeUpdate;
 	}
 
+	TE131ParamsDirection GetDirection(void) {
+		return (TE131ParamsDirection) m_tE131Params.nDirection;
+	}
+
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
@@ -116,6 +133,7 @@ private:
 private:
     E131ParamsStore *m_pE131ParamsStore;
     struct TE131Params m_tE131Params;
+    uuid_t m_uuid;
 };
 
 #endif /* E131PARAMS_H_ */

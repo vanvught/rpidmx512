@@ -1,7 +1,8 @@
 /**
- * @file e131paramsconst.cpp
+ * @file e117.h
  *
  */
+
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef E117_H_
+#define E117_H_
 
-#include "e131paramsconst.h"
+enum {
+	E117_PACKET_IDENTIFIER_LENGTH = 12
+};
 
-alignas(uint32_t) const char E131ParamsConst::PARAMS_FILE_NAME[] = "e131.txt";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
-alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE[] = "merge_mode";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
-alignas(uint32_t) const char E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_DIRECTION[] = "direction";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_PRIORITY[] = "priority";
+#endif /* E117_H_ */

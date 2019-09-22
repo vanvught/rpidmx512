@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "e131.h"
+
 class E131Const {
 public:
 	alignas(uint32_t) static const char MSG_BRIDGE_PARAMS[];

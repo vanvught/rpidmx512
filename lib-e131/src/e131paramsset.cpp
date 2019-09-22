@@ -44,15 +44,19 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 		}
 	}
 
-	if(isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT)) {
+	if (isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT)) {
 		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
 	}
 
-	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
+	if (isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
 		pE131Bridge->SetDisableMergeTimeout(m_tE131Params.bDisableMergeTimeout);
 	}
 
-	if(isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+	if (isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
 		pE131Bridge->SetDirectUpdate(m_tE131Params.bEnableNoChangeUpdate);
+	}
+
+	if (isMaskSet(E131_PARAMS_MASK_PRIORITY)) {
+		pE131Bridge->SetPriority(m_tE131Params.nPriority);
 	}
 }

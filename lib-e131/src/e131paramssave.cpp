@@ -32,7 +32,6 @@
 
 #include "propertiesbuilder.h"
 
-#include "lightset.h"
 #include "lightsetconst.h"
 
 #include "debug.h"
@@ -51,7 +50,6 @@ bool E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 	PropertiesBuilder builder(E131ParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
 	bool isAdded = builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
-	isAdded &= builder.Add(LightSetConst::PARAMS_OUTPUT, LightSet::GetOutputType(m_tE131Params.tOutputType), isMaskSet(E131_PARAMS_MASK_OUTPUT));
 
 	isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
 

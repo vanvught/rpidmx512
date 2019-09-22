@@ -25,23 +25,42 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <uuid/uuid.h>
 #include <assert.h>
 
 #include "e131bridge.h"
-
-#include "network.h"
 
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
 
 void E131Bridge::Print(void) {
 	const uint8_t *firmware_version = GetSoftwareVersion();
+	char uuid_str[UUID_STRING_LENGTH + 1];
+	uuid_str[UUID_STRING_LENGTH] = '\0';
+	uuid_unparse(m_Cid, uuid_str);
 
 	printf("Bridge configuration\n");
 	printf(" Firmware : %d.%d\n", firmware_version[0], firmware_version[1]);
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-		uint16_t nUniverse;
-		if (GetUniverse(i, nUniverse)) {
-			printf("  Port %c Universe %d [%s]\n", (char) ('A' + i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
+
+	if (m_State.nActiveOutputPorts != 0) {
+		printf(" Output\n");
+
+		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+			uint16_t nUniverse;
+			if (GetUniverse(i, nUniverse, E131_OUTPUT_PORT)) {
+				printf("  Port %c Universe %d [%s]\n", (char) ('A' + i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
+			}
+		}
+	}
+
+	if (m_State.nActiveInputPorts != 0) {
+		printf(" CID      : %s\n", uuid_str);
+		printf(" Input\n");
+
+		for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+			uint16_t nUniverse;
+			if (GetUniverse(i, nUniverse, E131_INPUT_PORT)) {
+				printf("  Port %c Universe %d [%d]\n", (char) ('A' + i), nUniverse, GetPriority(i));
+			}
 		}
 	}
 

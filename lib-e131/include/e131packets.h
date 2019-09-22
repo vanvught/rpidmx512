@@ -1,5 +1,5 @@
 /**
- * @file packets.h
+ * @file e131packets.h
  *
  */
 /* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "e131.h"
+#include "e117.h"
 
 #if  ! defined (PACKED)
 #define PACKED __attribute__((packed))
@@ -163,5 +164,25 @@ struct TE131 {
 	uint32_t IPAddressTo;			///<
 	union UE131Packet E131Packet;	///<
 };
+
+#define ROOT_LAYER_SIZE						sizeof(struct TRootLayer)
+
+#define DATA_FRAME_LAYER_SIZE				sizeof(struct TDataFrameLayer)
+#define DATA_LAYER_SIZE						sizeof(struct TDataDMPLayer)
+
+#define DISCOVERY_FRAME_LAYER_SIZE			sizeof(struct TDiscoveryFrameLayer)
+#define DISCOVERY_LAYER_SIZE				sizeof(struct TUniverseDiscoveryLayer)
+
+#define DISCOVERY_LAYER_LENGTH(x)			(DISCOVERY_LAYER_SIZE - ((512 - (x)) * 2))
+#define DISCOVERY_FRAME_LAYER_LENGTH(x)		(DISCOVERY_FRAME_LAYER_SIZE + DISCOVERY_LAYER_LENGTH(x))
+#define DISCOVERY_ROOT_LAYER_LENGTH(x)		(ROOT_LAYER_SIZE - 16 + DISCOVERY_FRAME_LAYER_LENGTH(x))
+
+#define DISCOVERY_PACKET_SIZE(x)			(ROOT_LAYER_SIZE + DISCOVERY_FRAME_LAYER_SIZE + DISCOVERY_LAYER_LENGTH(x))
+
+#define DATA_LAYER_LENGTH(x)				(DATA_LAYER_SIZE - 513 + (x))
+#define DATA_FRAME_LAYER_LENGTH(x)			(DATA_FRAME_LAYER_SIZE + DATA_LAYER_LENGTH(x))
+#define DATA_ROOT_LAYER_LENGTH(x)			(ROOT_LAYER_SIZE - 16 + DATA_FRAME_LAYER_LENGTH(x))
+
+#define DATA_PACKET_SIZE(x)					(ROOT_LAYER_SIZE + DATA_FRAME_LAYER_SIZE +  DATA_LAYER_LENGTH(x))
 
 #endif /* E131PACKETS_H_ */

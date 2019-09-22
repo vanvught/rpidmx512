@@ -27,11 +27,18 @@
 #define E131BRIDGE_H_
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "e131.h"
 #include "e131packets.h"
 
+#include "e131dmx.h"
+
 #include "lightset.h"
+
+enum {
+	E131_MAX_UARTS = 4
+};
 
 #define UUID_STRING_LENGTH	36
 
@@ -49,7 +56,8 @@ struct TE131BridgeState {
 	uint16_t DiscoveryPacketLength;
 	uint16_t nSynchronizationAddressSourceA;
 	uint16_t nSynchronizationAddressSourceB;
-	uint8_t nActivePorts;
+	uint8_t nActiveInputPorts;
+	uint8_t nActiveOutputPorts;
 	uint8_t nPriority;
 };
 
@@ -74,23 +82,38 @@ struct TE131OutputPort {
 	struct TSource sourceB;
 };
 
+struct TE131InputPort {
+	uint16_t nUniverse;
+	bool bIsEnabled;
+	bool IsTransmitting;
+	uint8_t nSequenceNumber;
+	uint8_t nPriority;
+	uint32_t nMulticastIp;
+};
+
 class E131Bridge {
 public:
 	E131Bridge(void);
 	~E131Bridge(void);
 
-	void SetOutput(LightSet *pLightSet);
+	void SetOutput(LightSet *pLightSet) {
+		m_pLightSet = pLightSet;
+	}
 
 	const uint8_t *GetSoftwareVersion(void);
 
 	void SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse);
-	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse) const;
+	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir = E131_OUTPUT_PORT) const;
 
 	void SetMergeMode(uint8_t nPortIndex, TE131Merge tE131Merge);
 	TE131Merge GetMergeMode(uint8_t nPortIndex) const;
 
 	uint8_t GetActiveOutputPorts(void) {
-		return m_State.nActivePorts;
+		return m_State.nActiveOutputPorts;
+	}
+
+	uint8_t GetActiveInputPorts(void) {
+		return m_State.nActiveInputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
@@ -125,12 +148,36 @@ public:
 		return m_bEnableDataIndicator;
 	}
 
+	void SetE131Dmx(E131Dmx *pE131Dmx) {
+		m_pE131DmxIn = pE131Dmx;
+	}
+
+	const uint8_t *GetCid(void) {
+		return m_Cid;
+	}
+
+	void SetSourceName(const char *pSourceName);
+	const char *GetSourceName(void) {
+		return m_SourceName;
+	}
+
+	void SetPriority(uint8_t nPriority, uint8_t nPortIndex = 0) {
+		assert(nPortIndex < E131_MAX_UARTS);
+		if ((nPriority >= E131_PRIORITY_LOWEST) && (nPriority <= E131_PRIORITY_HIGHEST)) {
+			m_InputPort[nPortIndex].nPriority = nPriority;
+		}
+	}
+	uint8_t GetPriority(uint8_t nPortIndex = 0) {
+		assert(nPortIndex < E131_MAX_UARTS);
+		return m_InputPort[nPortIndex].nPriority;
+	}
+
 	void Clear(uint8_t nPortIndex);
 
 	void Start(void);
 	void Stop(void);
 
-	int Run(void);
+	void Run(void);
 
 	void Print(void);
 
@@ -154,6 +201,12 @@ private:
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
 	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
 
+	// Input
+	void HandleDmxIn(void);
+	void FillDataPacket(void);
+	void FillDiscoveryPacket(void);
+	void SendDiscoveryPacket(void);
+
 private:
 	int32_t m_nHandle;
 
@@ -167,7 +220,16 @@ private:
 
 	struct TE131BridgeState m_State;
 	struct TE131OutputPort m_OutputPort[E131_MAX_PORTS];
+	struct TE131InputPort m_InputPort[E131_MAX_UARTS];
 	struct TE131 m_E131;
+
+	// Input
+	E131Dmx *m_pE131DmxIn;
+	TE131DataPacket *m_pE131DataPacket;
+	TE131DiscoveryPacket *m_pE131DiscoveryPacket;
+	uint32_t m_DiscoveryIpAddress;
+	uint8_t m_Cid[E131_CID_LENGTH];
+	char m_SourceName[E131_SOURCE_NAME_LENGTH];
 };
 
 #endif /* E131BRIDGE_H_ */

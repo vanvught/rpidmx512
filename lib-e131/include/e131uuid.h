@@ -1,5 +1,5 @@
-/**
- * @file e131paramsconst.cpp
+ /**
+ * @file e131uuid.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,15 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef E131UUID_H_
+#define E131UUID_H_
 
-#include "e131paramsconst.h"
+#include <stdbool.h>
+#include <uuid/uuid.h>
 
-alignas(uint32_t) const char E131ParamsConst::PARAMS_FILE_NAME[] = "e131.txt";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
-alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE[] = "merge_mode";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
-alignas(uint32_t) const char E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_DIRECTION[] = "direction";
-alignas(uint32_t) const char E131ParamsConst::PARAMS_PRIORITY[] = "priority";
+#define UUID_STRING_LENGTH	36
+
+class E131Uuid {
+public:
+	E131Uuid(void);
+	~E131Uuid(void);
+
+	void GetHardwareUuid(uuid_t out);
+};
+
+#endif /* E131UUID_H_ */

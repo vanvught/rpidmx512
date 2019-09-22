@@ -36,6 +36,8 @@ public:
 	alignas(uint32_t) static const char PARAMS_MERGE_MODE_PORT[4][18];
 	alignas(uint32_t) static const char PARAMS_NETWORK_DATA_LOSS_TIMEOUT[];
 	alignas(uint32_t) static const char PARAMS_DISABLE_MERGE_TIMEOUT[];
+	alignas(uint32_t) static const char PARAMS_DIRECTION[];
+	alignas(uint32_t) static const char PARAMS_PRIORITY[];
 };
 
 #endif /* E131PARAMSCONST_H_ */

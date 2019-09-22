@@ -107,6 +107,7 @@ enum TE131Merge {
  */
 enum TPriority {
 	E131_PRIORITY_LOWEST	= 1,	///<
+	E131_PRIORITY_DEFAULT	= 100,	///<
 	E131_PRIORITY_HIGHEST	= 200	///<
 };
 

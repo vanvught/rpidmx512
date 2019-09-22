@@ -27,13 +27,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <assert.h>
 
 #include "debug.h"
-
-#if !defined(BARE_METAL)
- #include <arpa/inet.h>
-#endif
 
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -44,6 +41,7 @@
 #endif
 
 #include "e131bridge.h"
+#include "e131uuid.h"
 
 #include "lightset.h"
 
@@ -51,7 +49,7 @@
 #include "network.h"
 #include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 11 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 12 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 E131Bridge::E131Bridge(void) :
@@ -60,10 +58,15 @@ E131Bridge::E131Bridge(void) :
 	m_bDirectUpdate(false),
 	m_bEnableDataIndicator(true),
 	m_nCurrentPacketMillis(0),
-	m_nPreviousPacketMillis(0)
+	m_nPreviousPacketMillis(0),
+	m_pE131DmxIn(0),
+	m_pE131DataPacket(0),
+	m_pE131DiscoveryPacket(0),
+	m_DiscoveryIpAddress(0)
 {
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
+	assert(LedBlink::Get() != 0);
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(struct TE131OutputPort));
@@ -71,12 +74,24 @@ E131Bridge::E131Bridge(void) :
 		m_OutputPort[i].mergeMode = E131_MERGE_HTP;
 	}
 
+	for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+		memset(&m_InputPort[i], 0, sizeof(struct TE131InputPort));
+		m_InputPort[i].nPriority = 100;
+	}
+
 	memset(&m_State, 0, sizeof(struct TE131BridgeState));
-	m_State.IsNetworkDataLoss = true;
-	m_State.IsMergeMode = false;
-	m_State.IsSynchronized = false;
-	m_State.IsForcedSynchronized = false;
 	m_State.nPriority = E131_PRIORITY_LOWEST;
+
+	char aSourceName[E131_SOURCE_NAME_LENGTH];
+	uint8_t nLength;
+	snprintf(aSourceName, E131_SOURCE_NAME_LENGTH, "%s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
+	SetSourceName((const char *)aSourceName);
+
+	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT); 	// This must be here (and not in Start) for Mac OS and Linux
+	assert(m_nHandle != -1);								// ToDO Rewrite SetUniverse
+
+	E131Uuid e131UUID;
+	e131UUID.GetHardwareUuid(m_Cid);
 }
 
 E131Bridge::~E131Bridge(void) {
@@ -84,10 +99,29 @@ E131Bridge::~E131Bridge(void) {
 }
 
 void E131Bridge::Start(void) {
-	assert(m_pLightSet != 0);
-	assert(m_nHandle != -1);
+	if (m_pE131DmxIn != 0) {
+		if (m_pE131DataPacket == 0) {
+			struct in_addr addr;
+			(void) inet_aton("239.255.0.0", &addr);
+			m_DiscoveryIpAddress = addr.s_addr
+					| ((uint32_t) (((uint32_t) E131_UNIVERSE_DISCOVERY & (uint32_t) 0xFF) << 24))
+					| ((uint32_t) (((uint32_t) E131_UNIVERSE_DISCOVERY & (uint32_t) 0xFF00) << 8));
+			// TE131DataPacket
+			m_pE131DataPacket = new struct TE131DataPacket;
+			assert(m_pE131DataPacket != 0);
+			FillDataPacket();
+			// TE131DiscoveryPacket
+			m_pE131DiscoveryPacket = new struct TE131DiscoveryPacket;
+			assert(m_pE131DiscoveryPacket != 0);
+			FillDiscoveryPacket();
+		}
+		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
+			if (m_InputPort[nPortIndex].bIsEnabled) {
+				m_pE131DmxIn->Start(nPortIndex);
+			}
+		}
+	}
 
-	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT);
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 }
 
@@ -99,16 +133,27 @@ void E131Bridge::Stop(void) {
 		m_OutputPort[i].length = 0;
 		m_OutputPort[i].IsDataPending = false;
 	}
+
+	if (m_pE131DmxIn != 0) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
+			if (m_InputPort[nPortIndex].bIsEnabled) {
+				m_pE131DmxIn->Stop(nPortIndex);
+			}
+		}
+	}
+
+	LedBlink::Get()->SetMode(LEDBLINK_MODE_OFF);
 }
 
 const uint8_t *E131Bridge::GetSoftwareVersion(void) {
 	return DEVICE_SOFTWARE_VERSION;
 }
 
-void E131Bridge::SetOutput(LightSet *pLightSet) {
-	assert(pLightSet != 0);
+void E131Bridge::SetSourceName(const char *pSourceName) {
+	assert(pSourceName != 0);
 
-	m_pLightSet = pLightSet;
+	strncpy((char *)m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH);
+	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
 }
 
 uint32_t E131Bridge::UniverseToMulticastIp(uint16_t nUniverse) const {
@@ -187,18 +232,37 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
 
 	if (dir == E131_INPUT_PORT) {
-		// Not supported. We have output ports only.
+		assert(nPortIndex < E131_MAX_UARTS);
+		if (m_InputPort[nPortIndex].bIsEnabled) {
+			if (m_InputPort[nPortIndex].nUniverse == nUniverse) {
+				return;
+			}
+		} else {
+			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
+			assert(m_State.nActiveInputPorts <= E131_MAX_UARTS);
+			m_InputPort[nPortIndex].bIsEnabled = true;
+		}
+
+		m_InputPort[nPortIndex].nUniverse = nUniverse;
+		m_InputPort[nPortIndex].nMulticastIp = UniverseToMulticastIp(nUniverse);
+
 		return;
 	}
 
 	if (dir == E131_DISABLE_PORT) {
 		if (m_OutputPort[nPortIndex].bIsEnabled) {
 			m_OutputPort[nPortIndex].bIsEnabled = false;
-			m_State.nActivePorts = m_State.nActivePorts - 1;
+			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
 			LeaveUniverse(nPortIndex, nUniverse);
+		}
+		if (m_InputPort[nPortIndex].bIsEnabled) {
+			m_InputPort[nPortIndex].bIsEnabled = false;
+			m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
 		}
 		return;
 	}
+
+	// From here we handle Output ports only
 
 	if (m_OutputPort[nPortIndex].bIsEnabled) {
 		if (m_OutputPort[nPortIndex].nUniverse == nUniverse) {
@@ -207,8 +271,8 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 			LeaveUniverse(nPortIndex, nUniverse);
 		}
 	} else {
-		m_State.nActivePorts = m_State.nActivePorts + 1;
-		assert(m_State.nActivePorts <= E131_MAX_PORTS);
+		m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
+		assert(m_State.nActiveOutputPorts <= E131_MAX_PORTS);
 		m_OutputPort[nPortIndex].bIsEnabled = true;
 	}
 
@@ -217,7 +281,15 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 	m_OutputPort[nPortIndex].nUniverse = nUniverse;
 }
 
-bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse) const{
+bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir) const {
+	if (tDir == E131_INPUT_PORT) {
+		assert(nPortIndex < E131_MAX_UARTS);
+
+		nUniverse = m_InputPort[nPortIndex].nUniverse;
+
+		return m_InputPort[nPortIndex].bIsEnabled;
+	}
+
 	assert(nPortIndex < E131_MAX_PORTS);
 
 	nUniverse = m_OutputPort[nPortIndex].nUniverse;
@@ -658,13 +730,11 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 
 bool E131Bridge::IsTransmitting(uint8_t nPortIndex) const {
 	assert(nPortIndex < E131_MAX_PORTS);
-
 	return m_OutputPort[nPortIndex].IsTransmitting;
 }
 
 bool E131Bridge::IsMerging(uint8_t nPortIndex) const {
 	assert(nPortIndex < E131_MAX_PORTS);
-
 	return m_OutputPort[nPortIndex].IsMerging;
 }
 
@@ -743,7 +813,7 @@ bool E131Bridge::IsValidDataPacket(void) {
 	return true;
 }
 
-int E131Bridge::Run(void) {
+void E131Bridge::Run(void) {
 	const char *packet = (char *) &(m_E131.E131Packet);
 	uint16_t nForeignPort;
 
@@ -751,8 +821,8 @@ int E131Bridge::Run(void) {
 
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
-	if (nBytesReceived == 0) {
-		if (m_State.nActivePorts != 0) {
+	if (__builtin_expect((nBytesReceived == 0), 1)) {
+		if (m_State.nActiveOutputPorts != 0) {
 			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (uint32_t)(E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
 				if (!m_State.IsNetworkDataLoss) {
 					DEBUG_PUTS("");
@@ -767,11 +837,16 @@ int E131Bridge::Run(void) {
 			}
 		}
 
-		return 0;
+		if (m_pE131DmxIn != 0) {
+			HandleDmxIn();
+			SendDiscoveryPacket();
+		}
+
+		return;
 	}
 
 	if (!IsValidRoot()) {
-		return 0;
+		return;
 	}
 
 	m_State.IsNetworkDataLoss = false;
@@ -786,17 +861,22 @@ int E131Bridge::Run(void) {
 	const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
 	if (nRootVector == E131_VECTOR_ROOT_DATA) {
-		if (!IsValidDataPacket()) {
-			return 0;
+		if (IsValidDataPacket()) {
+			HandleDmx();
 		}
-		HandleDmx();
 	} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
 		const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
-
-		if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
+			if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
 			HandleSynchronization();
 		}
+	} else {
+		DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
+	}
 
+
+	if (m_pE131DmxIn != 0) {
+		HandleDmxIn();
+		SendDiscoveryPacket();
 	}
 
 	if (m_bEnableDataIndicator){
@@ -808,5 +888,5 @@ int E131Bridge::Run(void) {
 		}
 	}
 
-	return nBytesReceived;
+	return;
 }
