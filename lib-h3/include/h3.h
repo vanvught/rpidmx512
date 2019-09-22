@@ -130,6 +130,7 @@ typedef enum T_H3_IRQn {
 #ifdef __ASSEMBLY__
 #else
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 #define		__I		volatile		///< defines 'read only' permissions
@@ -638,6 +639,7 @@ extern "C" {
 #endif
 
 extern void udelay(uint32_t);
+extern void* h3_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n);
 
 typedef enum H3_BOOT_DEVICE {
 	H3_BOOT_DEVICE_UNK,

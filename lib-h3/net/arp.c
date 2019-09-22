@@ -178,17 +178,15 @@ void arp_send_request(uint32_t ip) {
 void arp_handle(struct t_arp *p_arp) {
 	DEBUG1_ENTRY
 
-	const uint16_t opcode = __builtin_bswap16(p_arp->arp.opcode);
-
-	switch (opcode) {
-		case ARP_OPCODE_RQST:
+	switch (p_arp->arp.opcode) {
+		case __builtin_bswap16(ARP_OPCODE_RQST):
 			arp_handle_request(p_arp);
 			break;
-		case ARP_OPCODE_REPLY:
+		case __builtin_bswap16(ARP_OPCODE_REPLY):
 			arp_handle_reply(p_arp);
 			break;
 		default:
-			DEBUG_PRINTF("opcode %04x not handled", opcode);
+			DEBUG_PRINTF("opcode %04x not handled", __builtin_bswap16(p_arp->arp.opcode));
 			break;
 	}
 

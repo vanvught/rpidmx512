@@ -249,8 +249,7 @@ static void _tx_descs_init(void) {
 int emac_eth_recv(uint8_t **packetp) {
 	uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
 	struct emac_dma_desc *desc_p = &p_coherent_region->rx_chain[desc_num];
-	int length = -1;
-	int good_packet = 1;
+	int length;
 
 	status = desc_p->status;
 
@@ -259,24 +258,24 @@ int emac_eth_recv(uint8_t **packetp) {
 		length = (desc_p->status >> 16) & 0x3FFF;
 
 		if (length < 0x40) {
-			good_packet = 0;
 			DEBUG_PUTS("Bad Packet (length < 0x40)");
-		}
-
-		if (good_packet) {
+			return -1;
+		} else {
 			if (length > CONFIG_ETH_RXSIZE) {
-				DEBUG_PRINTF("Received packet is too big (len=%d)\n", length);
+				DEBUG_PRINTF("Received packet is too big (length=%d)\n", length);
 				return -1;
 			}
-			*packetp = (uint8_t *) (uint32_t) desc_p->buf_addr;
+
+			*packetp = (uint8_t*) (uint32_t) desc_p->buf_addr;
+
 #ifndef NDEBUG
-			debug_dump((void *) *packetp, (uint16_t) length);
+			debug_dump((void*) *packetp, (uint16_t) length);
 #endif
 			return length;
 		}
 	}
 
-	return length;
+	return -1;
 }
 
 void emac_eth_send(void *packet, int len) {
@@ -358,9 +357,9 @@ void emac_start(bool reset_emac) {
 	uint32_t value;
 #ifndef NDEBUG
 	uint8_t *p = (uint8_t *)H3_EMAC;
-#endif
 
 	debug_dump(p, 212);
+#endif
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
 	udelay(1000); // 1ms
@@ -373,17 +372,13 @@ void emac_start(bool reset_emac) {
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 #endif
 
-	//if (reset_emac) {
-		_set_syscon_ephy();
-
-		_autonegotiation();
-	//}
-
+	_set_syscon_ephy();
+	_autonegotiation();
 	_adjust_link(false, 100);
 
+#ifndef NDEBUG
 	debug_dump(p, 212);
 
-#ifndef NDEBUG
 	printf("H3_SYSTEM->EMAC_CLK=%p ", H3_SYSTEM->EMAC_CLK);
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 	printf("H3_EMAC->CTL0=%p ", H3_EMAC->CTL0);

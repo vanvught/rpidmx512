@@ -37,6 +37,8 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
+#include "h3.h"
+
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
@@ -146,7 +148,7 @@ void udp_handle(struct t_udp *p_udp) {
 
 	i = MIN(FRAME_BUFFER_SIZE, data_length);
 
-	memcpy(p_queue_entry->data, p_udp->udp.data, i);
+	h3_memcpy(p_queue_entry->data, p_udp->udp.data, i);
 
 	memcpy(src.u8, p_udp->ip4.src, IPv4_ADDR_LEN);
 	p_queue_entry->from_ip = src.u32;
@@ -211,7 +213,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	const uint16_t i = MIN(size, p_queue_entry->size);
 
-	memcpy(packet, p_queue_entry->data, i);
+	h3_memcpy(packet, p_queue_entry->data, i);
 
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
@@ -263,7 +265,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16(size + UDP_HEADER_SIZE);
 
-	memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
+	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 
 	debug_dump((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 

@@ -49,6 +49,8 @@ extern int dhcp_client(const uint8_t *, struct ip_info  *, const uint8_t *);
 static struct ip_info s_ip_info;
 static uint8_t s_mac_address[ETH_ADDR_LEN];
 
+static uint8_t *s_p;
+
 void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool use_dhcp) {
 	uint16_t i;
 
@@ -86,23 +88,17 @@ void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8
 }
 
 void net_handle(void) {
-	uint8_t *p;
+	const int length = emac_eth_recv(&s_p);
 
-	const int length = emac_eth_recv(&p);
+	if (__builtin_expect((length > 0), 0)) {
+		const struct ether_packet *eth = (struct ether_packet*) s_p;
 
-	if (__builtin_expect((length > 0), 1)) {
-		const struct ether_packet *eth = (struct ether_packet *) p;
-
-		switch (__builtin_bswap16(eth->type)) {
-		case ETHER_TYPE_ARP:
-			arp_handle((struct t_arp *) p);
-			break;
-		case ETHER_TYPE_IPv4:
-			ip_handle((struct t_ip4 *) p);
-			break;
-		default:
+		if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {
+			ip_handle((struct t_ip4*) s_p);
+		} else if (eth->type == __builtin_bswap16(ETHER_TYPE_ARP)) {
+			arp_handle((struct t_arp*) s_p);
+		} else {
 			DEBUG_PRINTF("type %04x is not implemented", __builtin_bswap16(eth->type));
-			break;
 		}
 
 		emac_free_pkt();
