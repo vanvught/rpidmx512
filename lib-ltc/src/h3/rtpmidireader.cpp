@@ -77,8 +77,8 @@ RtpMidiHandler::~RtpMidiHandler(void) {
 RtpMidiReader::RtpMidiReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_pNode(pNode),
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_tTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_tTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
+	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
+	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
@@ -135,7 +135,7 @@ void RtpMidiReader::Run(void) {
 	if (nUpdatesPerSecond >= 24)  {
 		led_set_ticks_per_second(1000000 / 3);
 	} else {
-		m_tTimeCodeTypePrevious = MIDI_TC_TYPE_UNKNOWN;
+		m_nTimeCodeTypePrevious = MIDI_TC_TYPE_UNKNOWN;
 		DisplayMax7219::Get()->ShowSysTime();
 		led_set_ticks_per_second(1000000 / 1);
 	}
@@ -144,7 +144,7 @@ void RtpMidiReader::Run(void) {
 void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 	const uint8_t *pSystemExclusive =ptMidiMessage->system_exclusive;
 
-	m_tTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
+	m_nTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
 
 	itoa_base10((pSystemExclusive[5] & 0x1F), (char *) &m_aTimeCode[0]);
 	itoa_base10(pSystemExclusive[6], (char *) &m_aTimeCode[3]);
@@ -155,7 +155,7 @@ void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 	m_tLtcTimeCode.nSeconds = pSystemExclusive[7];
 	m_tLtcTimeCode.nMinutes = pSystemExclusive[6];
 	m_tLtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
-	m_tLtcTimeCode.nType = m_tTimeCodeType;
+	m_tLtcTimeCode.nType = m_nTimeCodeType;
 
 	Update(ptMidiMessage);
 }
@@ -166,7 +166,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_tTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
+	m_nTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
 		midi_send_qf(ptMidiMessage->data1);
@@ -187,7 +187,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 		m_tLtcTimeCode.nSeconds = qf[2] | (qf[3] << 4);
 		m_tLtcTimeCode.nMinutes = qf[4] | (qf[5] << 4);
 		m_tLtcTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
-		m_tLtcTimeCode.nType = m_tTimeCodeType;
+		m_tLtcTimeCode.nType = m_nTimeCodeType;
 
 		Update(ptMidiMessage);
 	}
@@ -210,13 +210,13 @@ void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
 		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_tLtcTimeCode);
 	}
 
-	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {
-		m_tTimeCodeTypePrevious = m_tTimeCodeType;
+	if (m_nTimeCodeType != m_nTimeCodeTypePrevious) {
+		m_nTimeCodeTypePrevious = m_nTimeCodeType;
 
 		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
+			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_nTimeCodeType), TC_TYPE_MAX_LENGTH);
 		}
-		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
+		LtcLeds::Get()->Show((TTimecodeTypes) m_nTimeCodeType);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bDisplay) {

@@ -56,6 +56,7 @@
 #include "display.h"
 #include "displaymax7219.h"
 #include "artnetnode.h"
+#include "rtpmidi.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
@@ -92,15 +93,10 @@ static struct TLtcDisabledOutputs* s_ptLtcDisabledOutputs;
 static volatile bool IsMidiQuarterFrameMessage;
 
 static struct TLtcTimeCode s_tLtcTimeCode;
-static uint32_t nMidiQuarterFramePiece;
 
 static void irq_timer0_handler(uint32_t clo) {
 	if (!s_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode, false);
-	}
-
-	if (!s_ptLtcDisabledOutputs->bArtNet) {
-		s_pNode->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
 	}
 
 	bTimeCodeAvailable = true;
@@ -118,6 +114,7 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	m_nFps(0),
 	m_nTimer0Interval(0),
 	m_nMidiQuarterFrameUs12(0),
+	nMidiQuarterFramePiece(0),
 	m_nButtons(0),
 	m_nHandle(-1),
 	m_nBytesReceived(0),
@@ -204,10 +201,14 @@ void LtcGenerator::Start(void) {
 		s_pNode->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
 	}
 
+	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
+		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+	}
+
 	if (!s_ptLtcDisabledOutputs->bMidi) {
 		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
 
-		Midi::Get()->SendTimeCode((struct _midi_send_tc *) &s_tLtcTimeCode);
+		Midi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
 
 		H3_TIMER->TMR1_INTV = m_nMidiQuarterFrameUs12;
 		H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
@@ -284,6 +285,22 @@ void LtcGenerator::ActionResume(void) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetStart(void) {
+	DEBUG_ENTRY
+
+	Ltc::ParseTimeCode((const char *)&m_Buffer[(4 + START_LENGTH + 1)], m_nFps, m_pStartLtcTimeCode);
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::ActionSetStop(void) {
+	DEBUG_ENTRY
+
+	Ltc::ParseTimeCode((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)], m_nFps, m_pStopLtcTimeCode);
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -308,7 +325,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < (int) 4), 1)) {
+	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
 		return;
 	}
 
@@ -326,11 +343,23 @@ void LtcGenerator::HandleUdpRequest(void) {
 		return;
 	}
 
-	if ((m_nBytesReceived == (4 + START_LENGTH)) && (memcmp(&m_Buffer[4], sStart, START_LENGTH) == 0)) {
-		ActionStart();
-	} else if ((m_nBytesReceived == (4 + STOP_LENGTH)) && (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0)) {
-		ActionStop();
-	} else if ((m_nBytesReceived == (4 + RESUME_LENGTH)) && (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0)) {
+	if (memcmp(&m_Buffer[4], sStart, START_LENGTH) == 0) {
+		if (m_nBytesReceived == (4 + START_LENGTH)) {
+			ActionStart();
+		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
+			ActionSetStart();
+		} else {
+			DEBUG_PUTS("Invalid !start command");
+		}
+	} else if (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0) {
+		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
+			ActionStop();
+		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
+			ActionSetStop();
+		} else {
+			DEBUG_PUTS("Invalid !stop command");
+		}
+	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
 		ActionResume();
 	} else {
 		DEBUG_PUTS("Invalid command");
@@ -376,47 +405,21 @@ void LtcGenerator::Update(void) {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-
-			uint8_t bytes[2] = { 0xF1, 0x00 };
-			const uint8_t data = nMidiQuarterFramePiece << 4;
-
-			switch (nMidiQuarterFramePiece) {
-			case 0:
-				bytes[1] = data | (s_tLtcTimeCode.nFrames & 0x0F);
-				break;
-			case 1:
-				bytes[1] = data | ((s_tLtcTimeCode.nFrames & 0x10) >> 4);
-				break;
-			case 2:
-				bytes[1] = data | (s_tLtcTimeCode.nSeconds & 0x0F);
-				break;
-			case 3:
-				bytes[1] = data | ((s_tLtcTimeCode.nSeconds & 0x30) >> 4);
-				break;
-			case 4:
-				bytes[1] = data | (s_tLtcTimeCode.nMinutes & 0x0F);
-				break;
-			case 5:
-				bytes[1] = data | ((s_tLtcTimeCode.nMinutes & 0x30) >> 4);
-				break;
-			case 6:
-				bytes[1] = data | (s_tLtcTimeCode.nHours & 0x0F);
-				break;
-			case 7:
-				bytes[1] = data | (s_tLtcTimeCode.nType << 1) | ((s_tLtcTimeCode.nHours & 0x10) >> 4);
-				break;
-			default:
-				break;
-			}
-
-			Midi::Get()->SendRaw(bytes, 2);
-			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+			Midi::Get()->SendQf((const struct _midi_send_tc*)&s_tLtcTimeCode, nMidiQuarterFramePiece);
 		}
 	}
 
 	dmb();
 	if (bTimeCodeAvailable) {
 		bTimeCodeAvailable = false;
+
+		if (!s_ptLtcDisabledOutputs->bArtNet) {
+			s_pNode->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+		}
+
+		if (!s_ptLtcDisabledOutputs->bRtpMidi) {
+			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+		}
 
 		if (!s_ptLtcDisabledOutputs->bNtp) {
 			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode);

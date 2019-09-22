@@ -25,9 +25,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
 #include "h3/tcnetreader.h"
@@ -40,15 +37,12 @@
 #include "h3_timer.h"
 #include "irq_timer.h"
 
-#ifndef NDEBUG
- #include "console.h"
-#endif
-
 // Output
 #include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
 #include "artnetnode.h"
+#include "rtpmidi.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
@@ -60,9 +54,6 @@ static volatile uint32_t nUpdates = 0;
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
 
-static uint32_t nMidiQuarterFramePiece = 0;
-static struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
-
 static void irq_timer0_update_handler(uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
@@ -72,19 +63,13 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-TCNetTimeCode::~TCNetTimeCode(void) {
-
-}
-
 TCNetReader::TCNetReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_pNode(pNode),
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
+	m_nMidiQuarterFramePiece(0),
 	m_nTimeCodePrevious(0xFF),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
-	assert(m_pNode != 0);
-	assert(m_ptLtcDisabledOutputs != 0);
-
 	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
 	m_aTimeCode[5] = ':';
@@ -117,17 +102,13 @@ void TCNetReader::Stop(void) {
 }
 
 void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
-	assert(((uint32_t )pTimeCode & 0x3) == 0); // Check if we can do 4-byte compare
-
 	char *pTimeCodeType;
-#ifndef NDEBUG
-	char aLimitWarning[16];
-	uint32_t nLimitUs;
-	const uint32_t nNowUs = h3_hs_timer_lo_us();
-#endif
 
 	nUpdates++;
 
+	memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct _midi_send_tc));
+
+	assert(((uint32_t )pTimeCode & 0x3) == 0); // Check if we can do 4-byte compare
 	const uint32_t *p = (uint32_t *)pTimeCode;
 
 	if (m_nTimeCodePrevious != *p) {
@@ -139,28 +120,26 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 			m_pNode->SendTimeCode((const struct TArtNetTimeCode *) pTimeCode);
 		}
 
+		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+			RtpMidi::Get()->SendTimeCode(&m_tMidiTimeCode);
+		}
+
 		if (!m_ptLtcDisabledOutputs->bNtp) {
 			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) pTimeCode);
 		}
 	}
 
-	tMidiTimeCode.hour = pTimeCode->nHours;
-	tMidiTimeCode.minute = pTimeCode->nMinutes;
-	tMidiTimeCode.second = pTimeCode->nSeconds;
-	tMidiTimeCode.frame = pTimeCode->nFrames;
-	tMidiTimeCode.rate = (_midi_timecode_type) pTimeCode->nType;
-
 	if ((m_tTimeCodeTypePrevious != (TTimecodeTypes) pTimeCode->nType)) {
 		m_tTimeCodeTypePrevious = (TTimecodeTypes) pTimeCode->nType;
 
 		if (!m_ptLtcDisabledOutputs->bMidi) {
-			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &m_tMidiTimeCode);
 		}
 
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) pTimeCode->nType] / 4;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-		nMidiQuarterFramePiece = 0;
+		m_nMidiQuarterFramePiece = 0;
 
 		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) pTimeCode->nType);
 
@@ -169,24 +148,6 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 		}
 
 		LtcLeds::Get()->Show((TTimecodeTypes) pTimeCode->nType);
-
-#ifndef NDEBUG
-		switch ((_midi_timecode_type) pTimeCode->nType) {
-		case TC_TYPE_FILM:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
-			break;
-		case TC_TYPE_EBU:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
-			break;
-		case TC_TYPE_DF:
-		case TC_TYPE_SMPTE:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
-			break;
-		default:
-			assert(0);
-			break;
-		}
-#endif
 	}
 
 	if (m_nTimeCodePrevious != *p) {
@@ -201,18 +162,6 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 			DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 		}
 	}
-
-#ifndef NDEBUG
-	const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
-
-	if (nLimitUs == 0) {
-		sprintf(aLimitWarning, "%.2d:-----:%.5d", (int) nUpdatesPerSecond, (int) nDeltaUs);
-		console_status(CONSOLE_CYAN, aLimitWarning);
-	} else {
-		sprintf(aLimitWarning, "%.2d:%.5d:%.5d", (int) nUpdatesPerSecond, (int) nLimitUs, (int) nDeltaUs);
-		console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
-	}
-#endif
 }
 
 void TCNetReader::Run(void) {
@@ -222,45 +171,11 @@ void TCNetReader::Run(void) {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-
-			uint8_t bytes[2] = { 0xF1, 0x00 };
-			const uint8_t data = nMidiQuarterFramePiece << 4;
-
-			switch (nMidiQuarterFramePiece) {
-			case 0:
-				bytes[1] = data | (tMidiTimeCode.frame & 0x0F);
-				break;
-			case 1:
-				bytes[1] = data | ((tMidiTimeCode.frame & 0x10) >> 4);
-				break;
-			case 2:
-				bytes[1] = data | (tMidiTimeCode.second & 0x0F);
-				break;
-			case 3:
-				bytes[1] = data | ((tMidiTimeCode.second & 0x30) >> 4);
-				break;
-			case 4:
-				bytes[1] = data | (tMidiTimeCode.minute & 0x0F);
-				break;
-			case 5:
-				bytes[1] = data | ((tMidiTimeCode.minute & 0x30) >> 4);
-				break;
-			case 6:
-				bytes[1] = data | (tMidiTimeCode.hour & 0x0F);
-				break;
-			case 7:
-				bytes[1] = data | (tMidiTimeCode.rate << 1) | ((tMidiTimeCode.hour & 0x10) >> 4);
-				break;
-			default:
-				break;
-			}
-
-			Midi::Get()->SendRaw(bytes, 2);
-			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+			Midi::Get()->SendQf(&m_tMidiTimeCode, m_nMidiQuarterFramePiece);
 		}
 		led_set_ticks_per_second(1000000 / 3);
 	} else {
-		m_nTimeCodePrevious = 0xFF;
+		m_nTimeCodePrevious = TC_TYPE_INVALID;
 		DisplayMax7219::Get()->ShowSysTime();
 		led_set_ticks_per_second(1000000 / 1);
 	}

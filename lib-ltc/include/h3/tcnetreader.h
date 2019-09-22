@@ -27,6 +27,8 @@
 #define H3_TCNETREADER_H_
 
 #include "tcnettimecode.h"
+
+#include "midi.h"
 #include "artnetnode.h"
 #include "ltc.h"
 
@@ -44,7 +46,9 @@ public:
 
 private:
 	ArtNetNode *m_pNode;
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
+	uint32_t m_nMidiQuarterFramePiece;
 	uint32_t m_nTimeCodePrevious;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];

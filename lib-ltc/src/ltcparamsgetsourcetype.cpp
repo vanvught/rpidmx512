@@ -43,7 +43,7 @@ const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 
 enum TLtcReaderSource LtcParams::GetSourceType(const char* pType) {
 	for (uint32_t i = 0; i < sizeof(sSource) / sizeof(sSource[0]); i++) {
-		if (strncasecmp(sSource[i], pType, 3) == 0) {
+		if (strcasecmp(sSource[i], pType) == 0) {
 			return (TLtcReaderSource) i;
 		}
 	}

@@ -3,16 +3,6 @@
 	<name>lib-ltc</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-arm</project>
-		<project>lib-artnet</project>
-		<project>lib-bob</project>
-		<project>lib-display</project>
-		<project>lib-h3</project>
-		<project>lib-hal</project>
-		<project>lib-midi</project>
-		<project>lib-properties</project>
-		<project>lib-tcnet</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

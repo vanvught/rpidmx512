@@ -105,6 +105,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 	uint8_t len = sizeof(source);
 
 	if (Sscan::Char(pLine, LtcParamsConst::SOURCE, source, &len) == SSCAN_OK) {
+		source[len] = '\0';
 		m_tLtcParams.tSource = GetSourceType((const char *) source);
 		m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SOURCE;
 	}
@@ -161,7 +162,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MIDI;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MIDI;
 		}
 	}
 
@@ -180,6 +181,15 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
 			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_TCNET;
+		}
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_RTPMIDI, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_RTPMIDI;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_RTPMIDI;
 		}
 	}
 
@@ -358,6 +368,10 @@ void LtcParams::Dump(void) {
 
 		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI)) {
 			printf("  MIDI\n");
+		}
+
+		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI)) {
+			printf("  RtpMIDI\n");
 		}
 
 		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET)) {

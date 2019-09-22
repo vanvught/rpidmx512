@@ -52,7 +52,8 @@ enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_ARTNET = (1 << 3),
 	LTC_PARAMS_DISABLE_TCNET = (1 << 4),
 	LTC_PARAMS_DISABLE_LTC = (1 << 5),
-	LTC_PARAMS_DISABLE_NTP = (1 << 6)
+	LTC_PARAMS_DISABLE_NTP = (1 << 6),
+	LTC_PARAMS_DISABLE_RTPMIDI = (1 << 7)
 };
 
 struct TLtcParams {
@@ -174,38 +175,6 @@ public:
 
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
 	void StopTimeCodeCopyTo(TLtcTimeCode *ptStopTimeCode);
-
-/*	uint8_t GetStartFrame(void) {
-		return m_tLtcParams.nStartFrame;
-	}
-
-	uint8_t GetStartSecond(void) {
-		return m_tLtcParams.nStartSecond;
-	}
-
-	uint8_t GetStartMinute(void) {
-		return m_tLtcParams.nStartMinute;
-	}
-
-	uint8_t GetStartHour(void) {
-		return m_tLtcParams.nStartHour;
-	}
-
-	uint8_t GetStopFrame(void) {
-		return m_tLtcParams.nStopFrame;
-	}
-
-	uint8_t GetStopSecond(void) {
-		return m_tLtcParams.nStopSecond;
-	}
-
-	uint8_t GetStopMinute(void) {
-		return m_tLtcParams.nStopMinute;
-	}
-
-	uint8_t GetStopHour(void) {
-		return m_tLtcParams.nStopHour;
-	}*/
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

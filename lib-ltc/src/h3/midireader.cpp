@@ -26,9 +26,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
 #include "h3/midireader.h"
@@ -41,16 +38,13 @@
 #include "h3_timer.h"
 #include "irq_timer.h"
 
-#ifndef NDEBUG
- #include "console.h"
-#endif
-
 // Input
 #include "midi.h"
 
 // Output
 #include "ltcleds.h"
 #include "artnetnode.h"
+#include "rtpmidi.h"
 #include "display.h"
 #include "displaymax7219.h"
 #include "ntpserver.h"
@@ -88,8 +82,8 @@ static void irq_timer0_update_handler(uint32_t clo) {
 MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_pNode(pNode),
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_tTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_tTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
+	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
+	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
@@ -115,17 +109,11 @@ void MidiReader::Start(void) {
 }
 
 void MidiReader::Run(void) {
-#ifndef NDEBUG
-	uint32_t nLimitUs = 0;
-	char aLimitWarning[16];
-	const uint32_t nNowUs = h3_hs_timer_lo_us();
-#endif
-
 	bool isMtc = false;
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
+	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
 		if (Midi::Get()->GetChannel() == 0) {
 			switch (Midi::Get()->GetMessageType()) {
 			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
@@ -146,34 +134,6 @@ void MidiReader::Run(void) {
 
 	if (isMtc) {
 		nUpdates++;
-
-#ifndef NDEBUG
-		switch (m_tTimeCodeType) {
-		case TC_TYPE_FILM:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
-			break;
-		case TC_TYPE_EBU:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
-			break;
-		case TC_TYPE_DF:
-		case TC_TYPE_SMPTE:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
-			break;
-		default:
-			nLimitUs = 0;
-			break;
-		}
-
-		const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
-
-		if (nLimitUs == 0) {
-			sprintf(aLimitWarning, "%.2d:-----:%.5d", (int) nUpdatesPerSecond, (int) nDeltaUs);
-			console_status(CONSOLE_CYAN, aLimitWarning);
-		} else {
-			sprintf(aLimitWarning, "%.2d:%.5d:%.5d", (int) nUpdatesPerSecond, (int) nLimitUs, (int) nDeltaUs);
-			console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
-		}
-#endif
 	}
 
 	dmb();
@@ -188,18 +148,18 @@ void MidiReader::HandleMtc(void) {
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-	m_tTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
+	m_nTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
 
 	itoa_base10((pSystemExclusive[5] & 0x1F), (char *) &m_aTimeCode[0]);
 	itoa_base10(pSystemExclusive[6], (char *) &m_aTimeCode[3]);
 	itoa_base10(pSystemExclusive[7], (char *) &m_aTimeCode[6]);
 	itoa_base10(pSystemExclusive[8], (char *) &m_aTimeCode[9]);
 
-	m_MidiTimeCode.hour = pSystemExclusive[5] & 0x1F;
-	m_MidiTimeCode.minute = pSystemExclusive[6];
-	m_MidiTimeCode.second = pSystemExclusive[7];
-	m_MidiTimeCode.frame = pSystemExclusive[8];
-	m_MidiTimeCode.rate = m_tTimeCodeType;
+	m_MidiTimeCode.nHours = pSystemExclusive[5] & 0x1F;
+	m_MidiTimeCode.nMinutes = pSystemExclusive[6];
+	m_MidiTimeCode.nSeconds = pSystemExclusive[7];
+	m_MidiTimeCode.nFrames = pSystemExclusive[8];
+	m_MidiTimeCode.nType = m_nTimeCodeType;
 
 	Update();
 }
@@ -213,7 +173,7 @@ void MidiReader::HandleMtcQf(void) {
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_tTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
+	m_nTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
 
 	if ((nPart == 7) || (m_nPartPrevious == 7)) {
 	} else {
@@ -226,11 +186,11 @@ void MidiReader::HandleMtcQf(void) {
 		itoa_base10(qf[2] | (qf[3] << 4), (char*) &m_aTimeCode[6]);
 		itoa_base10(qf[0] | (qf[1] << 4), (char*) &m_aTimeCode[9]);
 
-		m_MidiTimeCode.hour = qf[6] | ((qf[7] & 0x1) << 4);
-		m_MidiTimeCode.minute = qf[4] | (qf[5] << 4);
-		m_MidiTimeCode.second = qf[2] | (qf[3] << 4);
-		m_MidiTimeCode.frame = qf[0] | (qf[1] << 4);
-		m_MidiTimeCode.rate = m_tTimeCodeType;
+		m_MidiTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
+		m_MidiTimeCode.nMinutes = qf[4] | (qf[5] << 4);
+		m_MidiTimeCode.nSeconds = qf[2] | (qf[3] << 4);
+		m_MidiTimeCode.nFrames = qf[0] | (qf[1] << 4);
+		m_MidiTimeCode.nType = m_nTimeCodeType;
 
 		Update();
 	}
@@ -239,29 +199,25 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
-	struct TLtcTimeCode tLtcTimeCode;
-
-	tLtcTimeCode.nFrames = m_MidiTimeCode.frame;
-	tLtcTimeCode.nSeconds = m_MidiTimeCode.second;
-	tLtcTimeCode.nMinutes = m_MidiTimeCode.minute;
-	tLtcTimeCode.nHours = m_MidiTimeCode.hour;
-	tLtcTimeCode.nType = (uint8_t) m_MidiTimeCode.rate;
-
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &tLtcTimeCode);
+		m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &m_MidiTimeCode);
+	}
+
+	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bNtp) {
-		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &tLtcTimeCode);
+		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
 	}
 
-	if (m_tTimeCodeType != m_tTimeCodeTypePrevious) {
-		m_tTimeCodeTypePrevious = m_tTimeCodeType;
+	if (m_nTimeCodeType != m_nTimeCodeTypePrevious) {
+		m_nTimeCodeTypePrevious = m_nTimeCodeType;
 
 		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_tTimeCodeType), TC_TYPE_MAX_LENGTH);
+			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_nTimeCodeType), TC_TYPE_MAX_LENGTH);
 		}
-		LtcLeds::Get()->Show((TTimecodeTypes) m_tTimeCodeType);
+		LtcLeds::Get()->Show((TTimecodeTypes) m_nTimeCodeType);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bDisplay) {

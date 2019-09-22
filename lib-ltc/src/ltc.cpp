@@ -24,6 +24,8 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
 
 #include "ltc.h"
 
@@ -82,4 +84,101 @@ void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char aTimeCode[TC
 	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &aTimeCode[3]);
 	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &aTimeCode[6]);
 	itoa_base10(ptLtcTimeCode->nFrames, (char *) &aTimeCode[9]);
+}
+
+#define DIGIT(x)	((int32_t) (x) - '0')
+#define VALUE(x,y)	(((x) * 10) + (y))
+
+bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
+	assert(ptLtcTimeCode != 0);
+
+	int32_t nTenths;
+	int32_t nDigit;
+	uint32_t nValue;
+
+	if ((aTimeCode[2] != ':') || (aTimeCode[5] != ':') || (aTimeCode[8] != '.')) {
+		return false;
+	}
+
+	// Frames first
+
+	nTenths = DIGIT(aTimeCode[9]);
+	if ((nTenths < 0) || (nTenths > 3)) {
+		return false;
+	}
+
+	nDigit = DIGIT(aTimeCode[10]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	if (nValue >= nFps) {
+		return false;
+	}
+
+	ptLtcTimeCode->nFrames = nValue;
+
+	// Seconds
+
+	nTenths = DIGIT(aTimeCode[6]);
+	if ((nTenths < 0) || (nTenths > 5)) {
+		return false;
+	}
+
+	nDigit = DIGIT(aTimeCode[7]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	if (nValue > 59) {
+		return false;
+	}
+
+	ptLtcTimeCode->nSeconds = nValue;
+
+	// Minutes
+
+	nTenths = DIGIT(aTimeCode[3]);
+	if ((nTenths < 0) || (nTenths > 5)) {
+		return false;
+	}
+
+	nDigit = DIGIT(aTimeCode[4]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	if (nValue > 59) {
+		return false;
+	}
+
+	ptLtcTimeCode->nMinutes = nValue;
+
+	// Hours
+
+	nTenths = DIGIT(aTimeCode[0]);
+	if ((nTenths < 0) || (nTenths > 2)) {
+		return false;
+	}
+
+	nDigit = DIGIT(aTimeCode[1]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	if (nValue > 23) {
+		return false;
+	}
+
+	ptLtcTimeCode->nHours = nValue;
+
+	return true;
 }

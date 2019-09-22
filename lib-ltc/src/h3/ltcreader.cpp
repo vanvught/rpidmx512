@@ -57,6 +57,7 @@
 #include "artnetnode.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
 
@@ -80,7 +81,7 @@ static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
 static volatile bool IsMidiQuarterFrameMessage = false;
-static volatile uint32_t nMidiQuarterFramePiece = 0;
+static uint32_t nMidiQuarterFramePiece = 0;
 
 static volatile uint32_t nFiqUsPrevious = 0;
 static volatile uint32_t nFiqUsCurrent = 0;
@@ -97,7 +98,7 @@ static volatile uint8_t aTimeCodeBits[8] ALIGNED;
 static volatile bool bIsDropFrameFlagSet = false;
 
 static volatile bool bTimeCodeAvailable = false;
-static volatile struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
+static volatile struct _midi_send_tc s_tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
 static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 	dmb();
@@ -161,10 +162,10 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 
 			bTimeCodeValid = false;
 
-			tMidiTimeCode.frame  = (10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F);
-			tMidiTimeCode.second = (10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F);
-			tMidiTimeCode.minute = (10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F);
-			tMidiTimeCode.hour   = (10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F);
+			s_tMidiTimeCode.nFrames  = (10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F);
+			s_tMidiTimeCode.nSeconds = (10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F);
+			s_tMidiTimeCode.nMinutes = (10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F);
+			s_tMidiTimeCode.nHours   = (10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F);
 
 			aTimeCode[10] = (aTimeCodeBits[0] & 0x0F) + '0';	// frames
 			aTimeCode[9]  = (aTimeCodeBits[1] & 0x03) + '0';	// 10's of frames
@@ -201,10 +202,7 @@ LtcReader::LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabled
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
-	for (uint32_t i = 0; i < sizeof(aTimeCode) / sizeof(aTimeCode[0]) ; i++) {
-		aTimeCode[i] = ' ';
-	}
-
+	memset((void *)&aTimeCode, ' ', sizeof(aTimeCode) / sizeof(aTimeCode[0]));
 	aTimeCode[2] = ':';
 	aTimeCode[5] = ':';
 	aTimeCode[8] = '.';
@@ -282,18 +280,22 @@ void LtcReader::Run(void) {
 			}
 		}
 
-		tMidiTimeCode.rate = (_midi_timecode_type)TimeCodeType;
+		s_tMidiTimeCode.nType = (_midi_timecode_type)TimeCodeType;
 
 		struct TLtcTimeCode tLtcTimeCode;
 
-		tLtcTimeCode.nFrames = tMidiTimeCode.frame;
-		tLtcTimeCode.nSeconds = tMidiTimeCode.second;
-		tLtcTimeCode.nMinutes = tMidiTimeCode.minute;
-		tLtcTimeCode.nHours = tMidiTimeCode.hour;
-		tLtcTimeCode.nType = (uint8_t) tMidiTimeCode.rate;
+		tLtcTimeCode.nFrames = s_tMidiTimeCode.nFrames;
+		tLtcTimeCode.nSeconds = s_tMidiTimeCode.nSeconds;
+		tLtcTimeCode.nMinutes = s_tMidiTimeCode.nMinutes;
+		tLtcTimeCode.nHours = s_tMidiTimeCode.nHours;
+		tLtcTimeCode.nType = (uint8_t) s_tMidiTimeCode.nType;
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
 			m_pNode->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
+		}
+
+		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tMidiTimeCode);
 		}
 
 		if (!m_ptLtcDisabledOutputs->bNtp) {
@@ -303,7 +305,7 @@ void LtcReader::Run(void) {
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
 			m_tTimeCodeTypePrevious = TimeCodeType;
 
-			Midi::Get()->SendTimeCode((const struct _midi_send_tc *) &tMidiTimeCode);
+			Midi::Get()->SendTimeCode((const struct _midi_send_tc *) &s_tMidiTimeCode);
 
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) TimeCodeType] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -344,41 +346,7 @@ void LtcReader::Run(void) {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-
-			uint8_t bytes[2] = { 0xF1, 0x00 };
-			const uint8_t data = nMidiQuarterFramePiece << 4;
-
-			switch (nMidiQuarterFramePiece) {
-			case 0:
-				bytes[1] = data | (tMidiTimeCode.frame & 0x0F);
-				break;
-			case 1:
-				bytes[1] = data | ((tMidiTimeCode.frame & 0x10) >> 4);
-				break;
-			case 2:
-				bytes[1] = data | (tMidiTimeCode.second & 0x0F);
-				break;
-			case 3:
-				bytes[1] = data | ((tMidiTimeCode.second & 0x30) >> 4);
-				break;
-			case 4:
-				bytes[1] = data | (tMidiTimeCode.minute & 0x0F);
-				break;
-			case 5:
-				bytes[1] = data | ((tMidiTimeCode.minute & 0x30) >> 4);
-				break;
-			case 6:
-				bytes[1] = data | (tMidiTimeCode.hour & 0x0F);
-				break;
-			case 7:
-				bytes[1] = data | (tMidiTimeCode.rate << 1) | ((tMidiTimeCode.hour & 0x10) >> 4);
-				break;
-			default:
-				break;
-			}
-
-			Midi::Get()->SendRaw(bytes, 2);
-			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+			Midi::Get()->SendQf((const struct _midi_send_tc*)&s_tMidiTimeCode, nMidiQuarterFramePiece);
 		}
 		led_set_ticks_per_second(1000000 / 3);
 	} else {

@@ -28,8 +28,10 @@
 
 #include <stdint.h>
 
-#include "ltc.h"
 #include "artnettimecode.h"
+
+#include "ltc.h"
+#include "midi.h"
 
 class ArtNetReader: public ArtNetTimeCode {
 public:
@@ -46,6 +48,8 @@ public:
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
+	struct _midi_send_tc m_tMidiTimeCode;
+	uint32_t m_nMidiQuarterFramePiece;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 

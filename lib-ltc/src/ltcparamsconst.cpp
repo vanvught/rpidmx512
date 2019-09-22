@@ -36,6 +36,7 @@ alignas(uint32_t) const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_TCNET[] = "disable_tcnet";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
+alignas(uint32_t) const char LtcParamsConst::DISABLE_RTPMIDI[] = "disable_rtp-midi";
 alignas(uint32_t) const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_TIMESYNC[] = "disable_timesync";
 alignas(uint32_t) const char LtcParamsConst::YEAR[] = "year";

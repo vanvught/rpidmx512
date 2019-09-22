@@ -35,4 +35,5 @@ void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs* pLtcDisabledOutp
 	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET);
 	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET);
 	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC);
+	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI);
 }

@@ -45,11 +45,11 @@ private:
 
 private:
 	ArtNetNode *m_pNode;
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	_midi_timecode_type m_tTimeCodeType;
-	_midi_timecode_type m_tTimeCodeTypePrevious;
+	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	alignas(uint32_t) struct _midi_send_tc m_MidiTimeCode;
+	_midi_timecode_type m_nTimeCodeType;
+	_midi_timecode_type m_nTimeCodeTypePrevious;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	struct _midi_send_tc m_MidiTimeCode;
 	uint8_t m_nPartPrevious;
 	bool m_bDirection;
 };

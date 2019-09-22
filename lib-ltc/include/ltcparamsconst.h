@@ -39,6 +39,7 @@ public:
 	alignas(uint32_t) static const char DISABLE_ARTNET[];
 	alignas(uint32_t) static const char DISABLE_TCNET[];
 	alignas(uint32_t) static const char DISABLE_LTC[];
+	alignas(uint32_t) static const char DISABLE_RTPMIDI[];
 	alignas(uint32_t) static const char SHOW_SYSTIME[];
 	alignas(uint32_t) static const char DISABLE_TIMESYNC[];
 	alignas(uint32_t) static const char YEAR[];

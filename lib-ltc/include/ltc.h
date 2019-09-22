@@ -26,13 +26,21 @@
 #ifndef LTC_H_
 #define LTC_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
+
+#if  ! defined (PACKED)
+#define PACKED __attribute__((packed))
+#endif
+
 struct TLtcTimeCode {
 	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
 	uint8_t nSeconds;		///< Seconds. 0 - 59.
 	uint8_t nMinutes;		///< Minutes. 0 - 59.
 	uint8_t nHours;			///< Hours. 0 - 59.
 	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
-};
+}PACKED;
 
 enum TTimecodeTypes {
 	TC_TYPE_FILM = 0,
@@ -51,6 +59,7 @@ struct TLtcDisabledOutputs {
 	bool bTCNet;
 	bool bLtc;
 	bool bNtp;
+	bool bRtpMidi;
 };
 
 #define TC_CODE_MAX_LENGTH	11
@@ -61,6 +70,7 @@ public:
 	static const char *GetType(TTimecodeTypes tTimeCodeType);
 	static TTimecodeTypes GetType(uint8_t nFps);
 	static void ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char aTimeCode[TC_CODE_MAX_LENGTH]);
+	static bool ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode);
 };
 
 #endif /* LTC_H_ */

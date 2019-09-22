@@ -1,5 +1,5 @@
 /**
- * @file ltcreader.h
+ * @file tcnettimecode.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,23 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTC_READER_H_
-#define H3_LTC_READER_H_
+#include "tcnettimecode.h"
 
-#include "artnetnode.h"
+TCNetTimeCode::~TCNetTimeCode(void) {
 
-class LtcReader {
-public:
-	LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcReader(void);
-
-	void Start(void);
-	void Run(void);
-
-private:
-	ArtNetNode *m_pNode;
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	uint8_t m_tTimeCodeTypePrevious;
-};
-
-#endif /* H3_LTC_READER_H_ */
+}

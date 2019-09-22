@@ -25,9 +25,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <assert.h>
 
 #include "h3/artnetreader.h"
@@ -41,10 +38,6 @@
 #include "h3_timer.h"
 #include "irq_timer.h"
 
-#ifndef NDEBUG
- #include "console.h"
-#endif
-
 // Input
 #include "artnettimecode.h"
 
@@ -52,6 +45,7 @@
 #include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "rtpmidi.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
 #include "ntpserver.h"
@@ -62,9 +56,6 @@ static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
-
-static uint32_t nMidiQuarterFramePiece = 0;
-static struct _midi_send_tc tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
 static void irq_timer0_update_handler(uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
@@ -77,7 +68,8 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 
 ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
+	m_tTimeCodeTypePrevious(TC_TYPE_INVALID),
+	m_nMidiQuarterFramePiece(0)
 {
 	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
 	m_aTimeCode[2] = ':';
@@ -112,11 +104,6 @@ void ArtNetReader::Stop(void) {
 
 void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	char *pTimeCodeType;
-#ifndef NDEBUG
-	char aLimitWarning[16];
-	uint32_t nLimitUs;
-	const uint32_t nNowUs = h3_hs_timer_lo_us();
-#endif
 
 	nUpdates++;
 
@@ -124,52 +111,36 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
 	}
 
+	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&ArtNetTimeCode);
+	}
+
 	if (!m_ptLtcDisabledOutputs->bNtp) {
 		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
 	}
 
-	tMidiTimeCode.hour = ArtNetTimeCode->Hours;
-	tMidiTimeCode.minute = ArtNetTimeCode->Minutes;
-	tMidiTimeCode.second = ArtNetTimeCode->Seconds;
-	tMidiTimeCode.frame = ArtNetTimeCode->Frames;
-	tMidiTimeCode.rate = (_midi_timecode_type) ArtNetTimeCode->Type;
+	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof (struct _midi_send_tc ));
 
 	if ((m_tTimeCodeTypePrevious != (TTimecodeTypes )ArtNetTimeCode->Type)) {
 		m_tTimeCodeTypePrevious = (TTimecodeTypes) ArtNetTimeCode->Type;
 
 		if (!m_ptLtcDisabledOutputs->bMidi) {
-			Midi::Get()->SendTimeCode((struct _midi_send_tc *) &tMidiTimeCode);
+			Midi::Get()->SendTimeCode(&m_tMidiTimeCode);
 		}
 
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) ArtNetTimeCode->Type] / 4;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-		nMidiQuarterFramePiece = 0;
+		m_nMidiQuarterFramePiece = 0;
 
 		pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) ArtNetTimeCode->Type);
 
 		if (!m_ptLtcDisabledOutputs->bDisplay) {
 			Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
 		}
+
 		LtcLeds::Get()->Show((TTimecodeTypes) ArtNetTimeCode->Type);
 
-#ifndef NDEBUG
-		switch ((_midi_timecode_type) ArtNetTimeCode->Type) {
-		case TC_TYPE_FILM:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
-			break;
-		case TC_TYPE_EBU:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
-			break;
-		case TC_TYPE_DF:
-		case TC_TYPE_SMPTE:
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
-			break;
-		default:
-			assert(0);
-			break;
-		}
-#endif
 	}
 
 	Ltc::ItoaBase10((const struct TLtcTimeCode *) ArtNetTimeCode, m_aTimeCode);
@@ -180,18 +151,6 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 	}
-
-#ifndef NDEBUG
-	const uint32_t nDeltaUs = h3_hs_timer_lo_us() - nNowUs;
-
-	if (nLimitUs == 0) {
-		sprintf(aLimitWarning, "%.2d:-----:%.5d", (int) nUpdatesPerSecond, (int) nDeltaUs);
-		console_status(CONSOLE_CYAN, aLimitWarning);
-	} else {
-		sprintf(aLimitWarning, "%.2d:%.5d:%.5d", (int) nUpdatesPerSecond, (int) nLimitUs, (int) nDeltaUs);
-		console_status(nDeltaUs < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
-	}
-#endif
 }
 
 void ArtNetReader::Run(void) {
@@ -200,41 +159,7 @@ void ArtNetReader::Run(void) {
 		dmb();
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			IsMidiQuarterFrameMessage = false;
-
-			uint8_t bytes[2] = { 0xF1, 0x00 };
-			const uint8_t data = nMidiQuarterFramePiece << 4;
-
-			switch (nMidiQuarterFramePiece) {
-			case 0:
-				bytes[1] = data | (tMidiTimeCode.frame & 0x0F);
-				break;
-			case 1:
-				bytes[1] = data | ((tMidiTimeCode.frame & 0x10) >> 4);
-				break;
-			case 2:
-				bytes[1] = data | (tMidiTimeCode.second & 0x0F);
-				break;
-			case 3:
-				bytes[1] = data | ((tMidiTimeCode.second & 0x30) >> 4);
-				break;
-			case 4:
-				bytes[1] = data | (tMidiTimeCode.minute & 0x0F);
-				break;
-			case 5:
-				bytes[1] = data | ((tMidiTimeCode.minute & 0x30) >> 4);
-				break;
-			case 6:
-				bytes[1] = data | (tMidiTimeCode.hour & 0x0F);
-				break;
-			case 7:
-				bytes[1] = data | (tMidiTimeCode.rate << 1)	| ((tMidiTimeCode.hour & 0x10) >> 4);
-				break;
-			default:
-				break;
-			}
-
-			Midi::Get()->SendRaw(bytes, 2);
-			nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
+			Midi::Get()->SendQf(&m_tMidiTimeCode, m_nMidiQuarterFramePiece);
 		}
 		led_set_ticks_per_second(1000000 / 3);
 	} else {
