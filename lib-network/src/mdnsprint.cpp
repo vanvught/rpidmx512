@@ -1,8 +1,8 @@
 /**
- * @file networkcircle.h
+ * @file mdnsprint.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,53 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef NETWORKCIRCLE_H_
-#define NETWORKCIRCLE_H_
 
 #include <stdint.h>
+#include <stdio.h>
 
-#include "circle/net/netsubsystem.h"
-#include "circle/net/socket.h"
+#include "mdns.h"
 
-#include "network.h"
-
-#ifndef HOST_NAME_MAX
- #define HOST_NAME_MAX	64
-#endif
-
-class NetworkCircle: public Network {
-public:
-	NetworkCircle(void);
-	~NetworkCircle(void);
-
-	void Init(CNetSubSystem *pNet);
-
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
-
-	void MacAddressCopyTo(uint8_t *pMacAddress);
-
-	void JoinGroup(uint32_t nHandle, uint32_t nIp) {
-		// Not supported
+void MDNS::Print(void) {
+	printf("mDNS configuration\n");
+	printf(" Host    : %s\n", m_pName);
+	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
+		if (m_aServiceRecords[i].pName != 0) {
+			printf(" Service : %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == 0 ? "" : (char *)m_aServiceRecords[i].pTextContent);
+		}
 	}
-	void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
-		// Not supported
-	}
-
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
-
-	void SetIp(uint32_t nIp) {
-		// Not supported
-	}
-
-	void SetNetmask(uint32_t nNetmask) {
-		// Not supported
-	}
-
-private:
-	CNetSubSystem *m_pNet;
-	CSocket *m_pSocket;
-};
-
-#endif /* NETWORKCIRCLE_H_ */
+}

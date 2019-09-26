@@ -54,6 +54,10 @@ public:
 		// Not supported
 	}
 
+	void SetNetmask(uint32_t nNetmask) {
+		// Not supported
+	}
+
 private:
 	bool m_IsInitDone;
 };

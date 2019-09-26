@@ -62,6 +62,10 @@ public:
 
 	void SetIp(uint32_t nIp) {
 	}
+
+	void SetNetmask(uint32_t nNetmask) {
+
+	}
 };
 
 #endif /* NETWORKBAREMETALMACADDRESS_H_ */

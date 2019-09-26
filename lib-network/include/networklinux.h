@@ -44,6 +44,7 @@ public:
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
 	void SetIp(uint32_t nIp);
+	void SetNetmask(uint32_t nNetmask);
 
 	void JoinGroup(uint32_t nHandle, uint32_t nIp);
 	void LeaveGroup(uint32_t nHandle, uint32_t nIp);

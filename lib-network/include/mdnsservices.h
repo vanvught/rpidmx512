@@ -29,5 +29,6 @@
 #define MDNS_SERVICE_MIDI		"._apple-midi"
 #define MDNS_SERVICE_OSC		"._osc"
 #define MDNS_SERVICE_CONFIG		"._config"
+#define MDNS_SERVICE_TFTP		"._tftp"
 
 #endif /* INCLUDE_MDNSSERVICES_H_ */

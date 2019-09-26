@@ -1,8 +1,8 @@
 /**
- * @file networkcircle.h
+ * @file lightsetllrponly.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,53 +22,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef NETWORKCIRCLE_H_
-#define NETWORKCIRCLE_H_
+
+#ifndef LIGHTSETLLRPONLY_H_
+#define LIGHTSETLLRPONLY_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "circle/net/netsubsystem.h"
-#include "circle/net/socket.h"
+#include "lightset.h"
 
-#include "network.h"
-
-#ifndef HOST_NAME_MAX
- #define HOST_NAME_MAX	64
-#endif
-
-class NetworkCircle: public Network {
+class LightSetLLRPOnly: public LightSet {
 public:
-	NetworkCircle(void);
-	~NetworkCircle(void);
-
-	void Init(CNetSubSystem *pNet);
-
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
-
-	void MacAddressCopyTo(uint8_t *pMacAddress);
-
-	void JoinGroup(uint32_t nHandle, uint32_t nIp) {
-		// Not supported
+	LightSetLLRPOnly(void) {
 	}
-	void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
-		// Not supported
+	~LightSetLLRPOnly(void) {
 	}
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
-
-	void SetIp(uint32_t nIp) {
-		// Not supported
+	void Start(uint8_t nPort) {
+	}
+	void Stop(uint8_t nPort) {
 	}
 
-	void SetNetmask(uint32_t nNetmask) {
-		// Not supported
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	}
 
-private:
-	CNetSubSystem *m_pNet;
-	CSocket *m_pSocket;
+	void Print(void) {
+	}
+
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) {
+		return false;
+	}
+
+	uint16_t GetDmxStartAddress(void) {
+		return DMX_ADDRESS_INVALID;
+	}
+
+	uint16_t GetDmxFootprint(void) {
+		return 0;
+	}
+
+	bool GetSlotInfo(uint16_t nSlotOffset,
+			struct TLightSetSlotInfo &tSlotInfo) {
+		return false;
+	}
 };
 
-#endif /* NETWORKCIRCLE_H_ */
+#endif /* LIGHTSETLLRPONLY_H_ */

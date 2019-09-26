@@ -26,12 +26,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <netinet/in.h>
 #include <assert.h>
 
 #include "debug.h"
 
 #include "networkh3emac.h"
 #include "networkparams.h"
+
+#include "networkdisplay.h"
+#include "networkstore.h"
 
 #include "./../lib-h3/include/net/net.h"
 
@@ -45,7 +49,6 @@ extern "C" {
 int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 // MAC-PHY
 int emac_start(bool reset_emac);
-// Net
 }
 
 NetworkH3emac::NetworkH3emac(void) {
@@ -96,11 +99,15 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		strncpy(m_aHostName, (const char *) p, sizeof(m_aHostName) - 1);
 	}
 
-	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, m_IsDhcpUsed);
+	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, &m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;
 	m_nGatewayIp = tIpInfo.gw.addr;
+
+	if (m_nGatewayIp == 0) {
+		m_nGatewayIp = m_nLocalIp;
+	}
 
 	DEBUG_EXIT
 
@@ -168,10 +175,42 @@ void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t siz
 void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
-	net_set_ip(nIp);
+	if (nIp == 0) {
+		struct ip_info tIpInfo;
+		net_set_default_ip(&tIpInfo);
 
-    m_IsDhcpUsed = false;
-    m_nLocalIp = nIp;
+		m_nLocalIp = tIpInfo.ip.addr;
+		m_nNetmask = tIpInfo.netmask.addr;
+		m_nGatewayIp = tIpInfo.gw.addr;
+	} else {
+		net_set_ip(nIp);
+		m_nLocalIp = nIp;
+		m_IsDhcpUsed = false;
+
+		if (m_pNetworkStore != 0) {
+			m_pNetworkStore->SaveIp(nIp);
+		}
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowIp();
+	}
+
+	DEBUG_EXIT
+}
+
+void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
+	DEBUG_ENTRY
+
+	m_nNetmask = nNetmask;
+
+	if (m_pNetworkStore != 0) {
+		m_pNetworkStore->SaveNetMask(nNetmask);
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowNetMask();
+	}
 
 	DEBUG_EXIT
 }

@@ -1,8 +1,11 @@
 /**
- * @file networkprint.c
+ * @file networkstore.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +26,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef NETWORKSTORE_H_
+#define NETWORKSTORE_H_
 
-#include "network.h"
+#include <stdint.h>
 
-void Network::Print(void) {
-	printf("Network configuration\n");
-	printf(" Hostname   : %s\n", m_aHostName);
-	printf(" Interface  : %d: %s\n", m_nIfIndex, m_aIfName);
-	printf(" Inet       : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
-	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" Gateway    : " IPSTR "\n", IP2STR(m_nGatewayIp));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
-	if (IsDhcpKnown()) {
-		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-	}
-}
+class NetworkStore {
+public:
+	virtual ~NetworkStore(void);
+
+	virtual void SaveIp(uint32_t nIp)=0;
+	virtual void SaveNetMask(uint32_t nNetMask)=0;
+	virtual void SaveHostName(const uint8_t *pHostName)=0;
+};
+
+#endif /* NETWORKSTORE_H_ */

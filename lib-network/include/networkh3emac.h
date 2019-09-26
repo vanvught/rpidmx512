@@ -53,6 +53,7 @@ public:
 	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
 
 	void SetIp(uint32_t nIp);
+	void SetNetmask(uint32_t nNetmask);
 
 	void Run(void) {
 		net_handle();

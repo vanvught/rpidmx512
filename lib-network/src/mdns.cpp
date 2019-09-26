@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
 #if !defined(BARE_METAL)
@@ -118,8 +117,6 @@ void MDNS::Start(void) {
 	m_nHandle = Network::Get()->Begin(MDNS_PORT);
 	Network::Get()->JoinGroup(m_nHandle, m_nMulticastIp);
 
-	DEBUG_PRINTF("m_nHandle=%d", m_nHandle);
-
 	if (m_pName == 0) {
 		SetName(Network::Get()->GetHostName());
 	}
@@ -146,10 +143,6 @@ void MDNS::SetName(const char *pName) {
 	strcpy((char *)m_pName + strlen(pName), MDNS_TLD);
 
 	DEBUG_PUTS(m_pName);
-}
-
-void  MDNS::Print(void) {
-
 }
 
 void MDNS::CreateMDNSMessage(uint32_t nIndex) {

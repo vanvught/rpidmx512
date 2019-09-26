@@ -30,6 +30,9 @@
 #include <stdbool.h>
 #include <net/if.h>
 
+#include "networkdisplay.h"
+#include "networkstore.h"
+
 enum TNetwork {
 	NETWORK_IP_SIZE = 4,
 	NETWORK_MAC_SIZE = 6,
@@ -56,6 +59,8 @@ public:
 	Network(void);
 	virtual ~Network(void);
 
+	void Print(void);
+
 	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual int32_t End(uint16_t nPort)=0;
 
@@ -74,6 +79,11 @@ public:
 
 	bool SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask = 0);
 
+	uint32_t GetGatewayIp(void) {
+		return m_nGatewayIp;
+	}
+
+	virtual void SetNetmask(uint32_t nNetmask)=0;
 	uint32_t GetNetmask(void) {
 		return m_nNetmask;
 	}
@@ -115,7 +125,13 @@ public:
 		return m_nIfIndex;
 	}
 
-	void Print(void);
+	void SetNetworkDisplay(NetworkDisplay *pNetworkDisplay) {
+		m_pNetworkDisplay = pNetworkDisplay;
+	}
+
+	void SetNetworkStore(NetworkStore *pNetworkStore) {
+		m_pNetworkStore = pNetworkStore;
+	}
 
 public:
 	static Network* Get(void) {
@@ -133,6 +149,9 @@ protected:
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
 	uint32_t m_nIfIndex;
+
+	NetworkDisplay *m_pNetworkDisplay;
+	NetworkStore *m_pNetworkStore;
 
 private:
 	uint32_t m_nQueuedLocalIp;

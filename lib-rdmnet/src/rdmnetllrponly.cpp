@@ -1,8 +1,8 @@
 /**
- * @file network.c
+ * @file rdmnetllrponly.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,57 +24,70 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
+#include <assert.h>
 
-#include "network.h"
+#include "rdmnetllrponly.h"
+
+#include "rdmnetdevice.h"
+#include "lightset.h"
+#include "rdmidentify.h"
+#include "rdmpersonality.h"
 
 #include "debug.h"
 
-Network *Network::s_pThis = 0;
+#define DESCRIPTION		"RDMNet LLRP Only"
+#define LABEL			DESCRIPTION
+#define LABEL_LENGTH	(sizeof(LABEL) - 1)
 
-Network::Network(void) :
-	m_nLocalIp(0),
-	m_nGatewayIp(0),
-	m_nNetmask(0),
-	m_nBroadcastIp(0),
-	m_IsDhcpCapable(true),
-	m_IsDhcpUsed(false),
-	m_nIfIndex(1),
-	m_pNetworkDisplay(0),
-	m_pNetworkStore(0),
-	m_nQueuedLocalIp(0),
-	m_nQueuedNetmask(0)
+RDMNetLLRPOnly::RDMNetLLRPOnly(void):
+	m_RDMNetDevice(new RDMPersonality(DESCRIPTION, LightSet::Get()->GetDmxFootprint()))
 {
-	s_pThis = this;
+	DEBUG_ENTRY
 
-	m_aNetMacaddr[0] = '\0';
-	m_aHostName[0] = '\0';
-	m_aIfName[0] = '\0';
+	DEBUG_EXIT
 }
 
-Network::~Network(void) {
-	s_pThis = 0;
+RDMNetLLRPOnly::~RDMNetLLRPOnly(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
-bool Network::SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask) {
-	DEBUG_PRINTF("bQueueing=%d, nLocalIp=" IPSTR ", nNetmask=" IPSTR, (int) bQueueing, IP2STR(nLocalIp), IP2STR(nNetmask));
+void RDMNetLLRPOnly::Init(void) {
+	DEBUG_ENTRY
 
-	if (bQueueing) {
-		m_nQueuedLocalIp = nLocalIp;
-		m_nQueuedNetmask = nNetmask;
-		return true;
-	}
+	m_RDMNetDevice.SetLabel(0, (const uint8_t*)LABEL, LABEL_LENGTH);
+	m_RDMNetDevice.Init();
 
-	if (m_nQueuedLocalIp != 0) {
+	DEBUG_EXIT
+}
 
-		SetIp(m_nQueuedLocalIp);
-		SetNetmask(m_nQueuedNetmask);
+void RDMNetLLRPOnly::Start(void) {
+	DEBUG_ENTRY
 
-		m_nQueuedLocalIp = 0;
-		m_nQueuedNetmask = 0;
+	m_RDMNetDevice.Start();
 
-		return true;
-	}
+	DEBUG_EXIT
+}
 
-	return false;
+void RDMNetLLRPOnly::Stop(void) {
+	DEBUG_ENTRY
+
+	m_RDMNetDevice.Stop();
+
+	DEBUG_EXIT
+}
+
+void RDMNetLLRPOnly::Run(void) {
+	m_RDMNetDevice.Run();
+}
+
+void RDMNetLLRPOnly::Print(void) {
+	m_RDMNetDevice.Print();
+}
+
+void RDMNetLLRPOnly::SetMode(TRdmIdentifyMode nMode) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }

@@ -1223,6 +1223,7 @@ void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
 void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1231,6 +1232,7 @@ void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1245,6 +1247,7 @@ void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
 void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1253,6 +1256,7 @@ void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1267,6 +1271,7 @@ void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
 void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1275,6 +1280,7 @@ void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1296,9 +1302,9 @@ void RDMHandler::GetDefaultRoute(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[2] = (uint8_t) (nNetworkInterfaceId >> 8);
 	pRdmDataOut->param_data[3] = (uint8_t) nNetworkInterfaceId;
 
-	// TODO The Network class does not have GetDefaultRoute
-
-	memset(&pRdmDataOut->param_data[4], 0, 4);
+	uint32_t nIpAddress = Network::Get()->GetGatewayIp();
+	const uint8_t *p = (const uint8_t*) &nIpAddress;
+	memcpy(&pRdmDataOut->param_data[4], p, 4);
 
 	pRdmDataOut->param_data_length = 8;
 
@@ -1328,6 +1334,7 @@ void RDMHandler::GetNameServers(uint16_t nSubDevice) {
 void RDMHandler::GetZeroconf(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1336,6 +1343,7 @@ void RDMHandler::GetZeroconf(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1354,6 +1362,7 @@ void RDMHandler::SetZeroconf(bool IsBroadcast, uint16_t nSubDevice) {
 void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1362,6 +1371,7 @@ void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1381,6 +1391,7 @@ void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
 void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1389,6 +1400,7 @@ void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
 
@@ -1412,6 +1424,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
+#if 0
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
 			+ (pRdmDataIn->param_data[2] << 8) + pRdmDataIn->param_data[3];
@@ -1420,6 +1433,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	 uint32_t nIpAddress;
 	 uint8_t *p = (uint8_t *)&nIpAddress;
@@ -1433,6 +1447,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
+#if 0
 	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc*) m_pRdmDataIn;
 
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
@@ -1443,6 +1458,7 @@ void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
+#endif // TODO DMX Workshop
 
 	if (Network::Get()->SetStaticIp(false, 0, 0)) { // Not Queuing -> Apply
 		RespondMessageAck();

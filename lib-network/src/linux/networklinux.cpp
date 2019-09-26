@@ -261,6 +261,12 @@ void NetworkLinux::SetIp(uint32_t nIp) {
 #endif
 }
 
+void NetworkLinux::SetNetmask(uint32_t nNetmask) {
+#if defined(__linux__)
+	m_nNetmask = nNetmask;
+#endif
+}
+
 void NetworkLinux::JoinGroup(uint32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
