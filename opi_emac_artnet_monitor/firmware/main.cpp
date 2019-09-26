@@ -92,7 +92,8 @@ void notmain(void) {
 	node.SetIpProgHandler(&ipprog);
 
 	DisplayUdfHandler displayUdfHandler(&node);
-	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 

@@ -43,9 +43,6 @@
 #include "artnet4node.h"
 #include "artnet4params.h"
 
-#include "ipprog.h"
-#include "displayudfhandler.h"
-
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
@@ -62,6 +59,9 @@
 #include "firmwareversion.h"
 
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "ipprog.h"
 
 extern "C" {
 
@@ -100,6 +100,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	ArtNet4Node node;
@@ -114,7 +115,9 @@ void notmain(void) {
 	node.SetIpProgHandler(&ipprog);
 
 	DisplayUdfHandler displayUdfHandler(&node);
-	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	const uint8_t nUniverse = artnetparams.GetUniverse();

@@ -1,8 +1,8 @@
 /**
- * @file ipprog.h
+ * @file displayudfhandler.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef IPPROG_H_
-#define IPPROG_H_
+#include <assert.h>
 
-#include <stdbool.h>
+#include "displayudfhandler.h"
 
-#include "artnetipprog.h"
+#include "artnetnode.h"
 
-class IpProg: public ArtNetIpProg {
-public:
-	IpProg(void);
-	~IpProg(void);
+#include "artnetdisplay.h"
+#include "networkdisplay.h"
 
-	void Handler(const struct TArtNetIpProg *, struct TArtNetIpProgReply *);
+ArtNetDisplay::~ArtNetDisplay(void) {
 
-private:
-};
+}
 
-#endif /* IPPROG_H_ */
+NetworkDisplay::~NetworkDisplay(void) {
+
+}
+
+DisplayUdfHandler::DisplayUdfHandler(ArtNetNode *pArtNetNode): m_pArtNetNode(pArtNetNode) {
+	assert(m_pArtNetNode != 0);
+}
+
+DisplayUdfHandler::~DisplayUdfHandler(void) {
+}

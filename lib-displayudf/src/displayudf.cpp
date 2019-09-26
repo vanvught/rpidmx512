@@ -82,15 +82,24 @@ void DisplayUdf::Show(void) {
 	Write(m_aLabels[DISPLAY_UDF_LABEL_TITLE], (const char *)m_aTitle);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_BOARDNAME], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_VERSION], "Firmware V%.*s", SOFTWARE_VERSION_LENGTH, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_NETMASK], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
 	ShowIpAddress();
+	ShowNetmask();
+	ShowHostName();
 
 	DEBUG1_EXIT
 }
 
 void DisplayUdf::ShowIpAddress(void) {
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR " /%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+}
+
+void DisplayUdf::ShowNetmask(void) {
+	ShowIpAddress();
+	Printf(m_aLabels[DISPLAY_UDF_LABEL_NETMASK], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+}
+
+void DisplayUdf::ShowHostName(void) {
+	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
 }
 
 void DisplayUdf::Set(uint8_t nLine, enum TDisplayUdfLabels tLabel) {

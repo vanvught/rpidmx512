@@ -34,7 +34,9 @@
 
 #include "displayudf.h"
 
-class DisplayUdfHandler: public ArtNetDisplay {
+#include "networkdisplay.h"
+
+class DisplayUdfHandler: public ArtNetDisplay, NetworkDisplay {
 public:
 	DisplayUdfHandler(ArtNetNode *pArtNetNode);
 	~DisplayUdfHandler(void);
@@ -63,6 +65,18 @@ public:
 
 	void ShowPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
 		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+	}
+
+	void ShowIp(void) {
+		DisplayUdf::Get()->ShowIpAddress();
+	}
+
+	void ShowNetMask(void) {
+		DisplayUdf::Get()->ShowNetmask();
+	}
+
+	void ShowHostName(void) {
+		DisplayUdf::Get()->ShowHostName();
 	}
 
 private:

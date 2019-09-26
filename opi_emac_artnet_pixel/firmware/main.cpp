@@ -96,6 +96,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -108,7 +109,9 @@ void notmain(void) {
 	node.SetIpProgHandler(&ipprog);
 
 	DisplayUdfHandler displayUdfHandler(&node);
-	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	const uint8_t nUniverse = artnetparams.GetUniverse();

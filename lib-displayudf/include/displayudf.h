@@ -67,6 +67,8 @@ public:
 	void Show(E131Bridge *pE131Bridge);
 
 	void ShowIpAddress(void);
+	void ShowNetmask(void);
+	void ShowHostName(void);
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 
@@ -74,7 +76,6 @@ public:
 		return s_pThis;
 	}
 
-private:
 	void Show(void);
 
 private:

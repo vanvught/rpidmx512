@@ -77,3 +77,7 @@ e131.txt
 osc.txt
 *.cpp_
 *.h_
+*.list_
+sofware_version_id.h
+*/sofware_version_id.h
+*/include/sofware_version_id.h
