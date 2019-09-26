@@ -55,3 +55,4 @@ alignas(uint32_t) const char LtcParamsConst::STOP_HOUR[] = "stop_hour";
 #if 0
 alignas(uint32_t) const char LtcParamsConst::SET_DATE[] = "set_date";
 #endif
+alignas(uint32_t) const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";

@@ -285,18 +285,18 @@ void LtcGenerator::ActionResume(void) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionSetStart(void) {
+void LtcGenerator::ActionSetStart(const char *pTimeCode) {
 	DEBUG_ENTRY
 
-	Ltc::ParseTimeCode((const char *)&m_Buffer[(4 + START_LENGTH + 1)], m_nFps, m_pStartLtcTimeCode);
+	Ltc::ParseTimeCode(pTimeCode, m_nFps, m_pStartLtcTimeCode);
 
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionSetStop(void) {
+void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_ENTRY
 
-	Ltc::ParseTimeCode((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)], m_nFps, m_pStopLtcTimeCode);
+	Ltc::ParseTimeCode(pTimeCode, m_nFps, m_pStopLtcTimeCode);
 
 	DEBUG_EXIT
 }
@@ -347,7 +347,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
-			ActionSetStart();
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
@@ -355,7 +355,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop();
+			ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !stop command");
 		}

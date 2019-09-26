@@ -48,8 +48,8 @@ public:
 	void ActionStart(void);
 	void ActionStop(void);
 	void ActionResume(void);
-	void ActionSetStart(void);
-	void ActionSetStop(void);
+	void ActionSetStart(const char *pTimeCode);
+	void ActionSetStop(const char *pTimeCode);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;

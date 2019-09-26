@@ -58,6 +58,8 @@
 
 #include "ntpserver.h"
 
+#include "oscserver.h"
+
 #include "display.h"
 #include "displaymax7219.h"
 
@@ -96,6 +98,11 @@ __attribute__((noinline)) static void print_disabled(bool b, const char *p) {
 	}
 }
 
+__attribute__((noinline)) static void console_display_puts(const char *p) {
+	console_puts(p);
+	Display::Get()->PutString(p);
+}
+
 void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
@@ -104,27 +111,20 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
 
 	StoreLtc storeLtc;
-
 	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
 
 	struct TLtcDisabledOutputs tLtcDisabledOutputs;
-	memset(&tLtcDisabledOutputs, 0, sizeof(struct TLtcDisabledOutputs));
-
 	struct TLtcTimeCode tStartTimeCode;
-	memset(&tStartTimeCode, 0, sizeof(struct TLtcTimeCode));
-
 	struct TLtcTimeCode tStopTimeCode;
-	memset(&tStopTimeCode, 0, sizeof(struct TLtcTimeCode));
 
 	if (ltcParams.Load()) {
-		ltcParams.Dump();
 		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
 		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
 		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
+		ltcParams.Dump();
 	}
 
 	const bool bEnableNtp = ltcParams.IsNtpEnabled();
@@ -143,6 +143,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	Midi midi;
@@ -150,6 +151,7 @@ void notmain(void) {
 	TCNet tcnet;
 	LtcSender ltcSender;
 	RtpMidi rtpMidi;
+	OSCServer oscServer;
 
 	LtcReader ltcReader(&node, &tLtcDisabledOutputs);
 	MidiReader midiReader(&node, &tLtcDisabledOutputs);
@@ -256,16 +258,16 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 	}
 
+	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL) && ltcParams.IsOscEnabled());
+
+	if (bRunOSCServer) {
+		oscServer.Start();
+		oscServer.Print();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
+	}
+
 	if (bEnableNtp) {
-		struct TLtcTimeCode LtcTimeCode;
-
-		LtcTimeCode.nFrames = 0;
-		LtcTimeCode.nHours = 0;
-		LtcTimeCode.nMinutes = 0;
-		LtcTimeCode.nSeconds = 0;
-		LtcTimeCode.nType = TC_TYPE_SMPTE;
-
-		ntpServer.SetTimeCode(&LtcTimeCode);
+		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Print();
 		ntpServer.Start();
 	}
@@ -294,34 +296,28 @@ void notmain(void) {
 	display.PutString(SourceSelectConst::SOURCE[source]);
 
 	if (source == LTC_READER_SOURCE_TCNET) {
-		console_puts(" ");
-		display.PutString(" ");
+		console_display_puts(" ");
 
 		if (tcnet.GetLayer() != TCNET_LAYER_UNDEFINED) {
 			console_putc('L');
 			display.PutChar('L');
 			console_putc(TCNet::GetLayerName(tcnet.GetLayer()));
 			display.PutChar(TCNet::GetLayerName(tcnet.GetLayer()));
-			console_puts(" Time");
-			display.PutString(" Time");
+			console_display_puts(" Time");
 
 			if (tcnet.IsSetTimeCodeType()) {
 				switch (tcnet.GetTimeCodeType()) {
 				case TCNET_TIMECODE_TYPE_FILM:
-					console_puts(" F24");
-					display.PutString(" F24");
+					console_display_puts(" F24");
 					break;
 				case TCNET_TIMECODE_TYPE_EBU_25FPS:
-					console_puts(" F25");
-					display.PutString(" F25");
+					console_display_puts(" F25");
 					break;
 				case TCNET_TIMECODE_TYPE_DF:
-					console_puts(" F29");
-					display.PutString(" F29");
+					console_display_puts(" F29");
 					break;
 				case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
-					console_puts(" F30");
-					display.PutString(" F30");
+					console_display_puts(" F30");
 					break;
 				default:
 					break;
@@ -329,8 +325,7 @@ void notmain(void) {
 				puts("FPS");
 			}
 		} else {
-			puts("SMPTE");
-			display.PutString("SMPTE");
+			console_display_puts("SMPTE");
 		}
 	}
 
@@ -383,6 +378,10 @@ void notmain(void) {
 		}
 
 		node.Run();
+
+		if (bRunOSCServer) {
+			oscServer.Run();
+		}
 
 		if (bEnableNtp) {
 			ntpServer.Run();

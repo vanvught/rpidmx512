@@ -331,6 +331,16 @@ void LtcParams::callbackFunction(const char* pLine) {
 	}
 #endif
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nEnableOsc = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_OSC;
+		} else {
+			m_tLtcParams.nEnableOsc = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_OSC;
+		}
+	}
+
 }
 
 void LtcParams::Dump(void) {
@@ -444,6 +454,10 @@ void LtcParams::Dump(void) {
 		printf(" %s=%d\n", LtcParamsConst::SET_DATE, m_tLtcParams.nSetDate);
 	}
 #endif
+
+	if (isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC)) {
+		printf(" OSC is enabled\n");
+	}
 #endif
 }
 

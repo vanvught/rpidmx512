@@ -112,7 +112,7 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&ArtNetTimeCode);
+		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)ArtNetTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bNtp) {

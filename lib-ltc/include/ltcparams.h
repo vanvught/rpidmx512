@@ -78,6 +78,7 @@ struct TLtcParams {
 	uint8_t nStopSecond;
 	uint8_t nStopMinute;
 	uint8_t nStopHour;
+	uint8_t nEnableOsc;
 };
 
 enum TLtcParamsMask {
@@ -100,7 +101,8 @@ enum TLtcParamsMask {
 	LTC_PARAMS_MASK_STOP_FRAME = (1 << 16),
 	LTC_PARAMS_MASK_STOP_SECOND = (1 << 17),
 	LTC_PARAMS_MASK_STOP_MINUTE = (1 << 18),
-	LTC_PARAMS_MASK_STOP_HOUR = (1 << 19)
+	LTC_PARAMS_MASK_STOP_HOUR = (1 << 19),
+	LTC_PARAMS_MASK_ENABLE_OSC = (1 << 20)
 };
 
 class LtcParamsStore {
@@ -171,6 +173,10 @@ public:
 
 	uint8_t GetFps(void) {
 		return m_tLtcParams.nFps;
+	}
+
+	bool IsOscEnabled(void) {
+		return (m_tLtcParams.nEnableOsc == 1);
 	}
 
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);

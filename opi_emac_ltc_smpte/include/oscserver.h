@@ -1,8 +1,8 @@
 /**
- * @file ipprog.h
+ * @file oscserver.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef IPPROG_H_
-#define IPPROG_H_
+#ifndef OSCSERVER_H_
+#define OSCSERVER_H_
 
-#include <stdbool.h>
+#include <stdint.h>
 
-#include "artnetipprog.h"
+#define OSCSERVER_PATH_LENGTH_MAX	128
 
-class IpProg: public ArtNetIpProg {
+class OSCServer {
 public:
-	IpProg(void);
-	~IpProg(void);
+	OSCServer(void);
+	~OSCServer(void);
 
-	void Handler(const struct TArtNetIpProg *, struct TArtNetIpProgReply *);
+	void Start(void);
+	void Stop(void);
+	void Run(void);
+
+	void Print(void);
+
+	void SetPortIncoming(uint16_t nPortIncoming) {
+		m_nPortIncoming = nPortIncoming;
+	}
+	uint16_t GetPortIncoming(void) {
+		return m_nPortIncoming;
+	}
+
+	void SetPortOutgoing(uint16_t nPortOutgoing) {
+		m_nPortOutgoing = nPortOutgoing;
+	}
+	uint16_t GetPortOutgoing(void) {
+		return m_nPortOutgoing;
+	}
 
 private:
+	uint16_t m_nPortIncoming;
+	uint16_t m_nPortOutgoing;
+	int32_t m_nHandle;
+	uint32_t m_nRemoteIp;
+	uint16_t m_nRemotePort;
+	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
+	uint32_t m_nPathLength;
+	uint8_t *m_pBuffer;
 };
 
-#endif /* IPPROG_H_ */
+#endif /* OSCSERVER_H_ */
