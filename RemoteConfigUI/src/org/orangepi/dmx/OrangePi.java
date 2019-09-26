@@ -35,8 +35,8 @@ public class OrangePi {
 	private static final String RCONFIG_TXT = "rconfig.txt";
 	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt"};
-	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client"};
+	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", ""};
+	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only"};
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt" };
 	private static final String[] EXTRAS_TXT = {"tcnet.txt" };
 	
@@ -88,6 +88,7 @@ public class OrangePi {
 					nodeMode = MODES_TXT[3];
 					nodeExtras = EXTRAS_TXT[0];
 				} else if (Mode[0].equals("OSC")) {
+				} else if (Mode[0].equals("Config")) {
 				}  
 				else {
 					isValid = false;
@@ -107,7 +108,7 @@ public class OrangePi {
 			}
 			
 			if (isValid) {
-				nodeId = values[0] + " " + values[1] + " " + values[2]  + " " + values[3];
+				nodeId = values[0] + " " + values[1] + " " + values[2]  + " " + (values[3].equals("0") ? "" : values[3]);
 				if (values.length == 5) {
 					nodeDisplayName = values[4];
 				} else {
@@ -413,6 +414,9 @@ public class OrangePi {
 	}
 
 	public String getNodeType() {
+		if (nodeType.trim().length() == 0) {
+			return null;
+		}
 		return nodeType;
 	}
 
