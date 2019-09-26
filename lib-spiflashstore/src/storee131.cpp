@@ -26,11 +26,15 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "storee131.h"
+
 #include "spiflashstore.h"
 
 #include "e131params.h"
 
 #include "debug.h"
+
+StoreE131 *StoreE131::s_pThis = 0;
 
 E131ParamsStore::~E131ParamsStore(void) {
 	DEBUG_ENTRY
@@ -40,6 +44,8 @@ E131ParamsStore::~E131ParamsStore(void) {
 
 StoreE131::StoreE131(void) {
 	DEBUG_ENTRY
+
+	s_pThis = this;
 
 	DEBUG_PRINTF("%p", this);
 

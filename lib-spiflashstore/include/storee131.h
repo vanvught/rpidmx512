@@ -40,6 +40,14 @@ public:
 
 	void UpdateUuid(const uuid_t uuid);
 	void CopyUuid(uuid_t uuid);
+
+public:
+	static StoreE131* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreE131 *s_pThis;
 };
 
 #endif /* STOREE131_H_ */

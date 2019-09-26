@@ -52,6 +52,7 @@ enum TRemoteConfig {
 	REMOTE_CONFIG_OSC,
 	REMOTE_CONFIG_LTC,
 	REMOTE_CONFIG_OSC_CLIENT,
+	REMOTE_CONFIG_RDMNET_LLRP_ONLY,
 	REMOTE_CONFIG_LAST
 };
 
@@ -62,6 +63,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_PIXEL,
 	REMOTE_CONFIG_MODE_TIMECODE,
 	REMOTE_CONFIG_MODE_OSC,
+	REMOTE_CONFIG_MODE_CONFIG,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -89,10 +91,19 @@ public:
 	~RemoteConfig(void);
 
 	void SetDisable(bool bDisable = true);
-	void SetDisableWrite(bool bDisableWrite = true);
-	void SetEnableReboot(bool bDisableReboot = true);
-	void SetEnableUptime(bool bDisableReboot = true);
 	void SetDisplayName(const char *pDisplayName);
+
+	void SetDisableWrite(bool bDisableWrite) {
+		m_bDisableWrite = bDisableWrite;
+	}
+
+	void SetEnableReboot(bool bEnableReboot) {
+		m_bEnableReboot = bEnableReboot;
+	}
+
+	void SetEnableUptime(bool bEnableUptime) {
+		m_bEnableUptime = bEnableUptime;
+	}
 
 	int Run(void);
 
@@ -174,6 +185,9 @@ private:
 	void HandleTftpGet(void);
 
 private:
+	TRemoteConfig m_tRemoteConfig;
+	TRemoteConfigMode m_tRemoteConfigMode;
+	uint8_t m_nOutputs;
 	bool m_bDisable;
 	bool m_bDisableWrite;
 	bool m_bEnableReboot;

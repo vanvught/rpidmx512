@@ -2,7 +2,7 @@
  * @file storenetwork.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,9 @@
 #define STORENETWORK_H_
 
 #include "networkparams.h"
+#include "networkstore.h"
 
-class StoreNetwork: public NetworkParamsStore {
+class StoreNetwork: public NetworkParamsStore, NetworkStore {
 public:
 	StoreNetwork(void);
 	~StoreNetwork(void);
@@ -36,8 +37,9 @@ public:
 	void Update(const struct TNetworkParams *pNetworkParams);
 	void Copy(struct TNetworkParams *pNetworkParams);
 
-	void UpdateIp(uint32_t nIp);
-	void UpdateNetMask(uint32_t nNetMask);
+	void SaveIp(uint32_t nIp);
+	void SaveNetMask(uint32_t nNetMask);
+	void SaveHostName(const uint8_t *pHostName);
 };
 
 #endif /* STORENETWORK_H_ */

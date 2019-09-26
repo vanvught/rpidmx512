@@ -56,6 +56,7 @@
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
+#include "storee131.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
@@ -74,6 +75,7 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+	StoreE131 storeE131;
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;
 
@@ -87,13 +89,14 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	E131Bridge bridge;
-	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
+	E131Params e131params((E131ParamsStore*) &storeE131);
 
 	if (e131params.Load()) {
 		e131params.Set(&bridge);

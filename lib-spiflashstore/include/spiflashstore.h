@@ -31,7 +31,6 @@
 
 #include "storenetwork.h"
 #include "storeartnet.h"
-#include "storee131.h"
 #include "storeartnet4.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
@@ -88,7 +87,6 @@ public:
 
 	StoreNetwork *GetStoreNetwork(void);
 	StoreArtNet *GetStoreArtNet(void);
-	StoreE131 *GetStoreE131(void);
 	StoreArtNet4 *GetStoreArtNet4(void);
 
 private:
@@ -113,7 +111,6 @@ private:
 
 	StoreNetwork m_StoreNetwork;
 	StoreArtNet m_StoreArtNet;
-	StoreE131 m_StoreE131;
 	StoreArtNet4 m_StoreArtNet4;
 };
 

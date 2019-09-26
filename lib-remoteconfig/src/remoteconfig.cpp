@@ -109,8 +109,8 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sRemoteConfigs[REMOTE_CONFIG_LAST][12] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client" };
-static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC" };
+static const char sRemoteConfigs[REMOTE_CONFIG_LAST][18] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only" };
+static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config" };
 
 static const char sRequestReboot[] ALIGNED = "?reboot##";
 #define REQUEST_REBOOT_LENGTH (sizeof(sRequestReboot)/sizeof(sRequestReboot[0]) - 1)
@@ -169,6 +169,9 @@ static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NE
 #define UDP_DATA_MIN_SIZE	MIN(MIN(MIN(MIN(REQUEST_REBOOT_LENGTH, REQUEST_LIST_LENGTH),REQUEST_GET_LENGTH),REQUEST_UPTIME_LENGTH),SET_DISPLAY_LENGTH)
 
 RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs):
+	m_tRemoteConfig(tRemoteConfig),
+	m_tRemoteConfigMode(tRemoteConfigMode),
+	m_nOutputs(nOutputs),
 	m_bDisable(false),
 	m_bDisableWrite(false),
 	m_bEnableReboot(false),
@@ -188,17 +191,11 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
 	assert(tRemoteConfigMode < REMOTE_CONFIG_MODE_LAST);
 
-	memset(m_aId, 0, sizeof m_aId);
-	memset(&m_tRemoteConfigListBin, 0, sizeof m_tRemoteConfigListBin);
-
-	m_nIdLength = snprintf(m_aId, sizeof(m_aId) - 1, "" IPSTR ",%s,%s,%d\n", IP2STR(Network::Get()->GetIp()), sRemoteConfigs[tRemoteConfig], sRemoteConfigModes[tRemoteConfigMode], nOutputs);
-
-	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
-
 	Network::Get()->MacAddressCopyTo(m_tRemoteConfigListBin.aMacAddress);
 	m_tRemoteConfigListBin.nType = tRemoteConfig;
 	m_tRemoteConfigListBin.nMode = tRemoteConfigMode;
 	m_tRemoteConfigListBin.nActiveUniverses = nOutputs;
+	m_tRemoteConfigListBin.aDisplayName[0] = '\0';
 
 #ifndef NDEBUG
 	debug_dump((void *)&m_tRemoteConfigListBin, sizeof m_tRemoteConfigListBin);
@@ -236,41 +233,8 @@ void RemoteConfig::SetDisable(bool bDisable) {
 	DEBUG_PRINTF("m_bDisable=%d", (int) m_bDisable);
 }
 
-void RemoteConfig::SetDisableWrite(bool bDisableWrite) {
-	m_bDisableWrite = bDisableWrite;
-
-	DEBUG_PRINTF("m_bDisableWrite=%d", (int) m_bDisableWrite);
-}
-
-void RemoteConfig::SetEnableReboot(bool bEnableReboot) {
-	m_bEnableReboot = bEnableReboot;
-
-	DEBUG_PRINTF("m_bEnableReboot=%d", (int) m_bEnableReboot);
-}
-
-void RemoteConfig::SetEnableUptime(bool bEnableUptime) {
-	m_bEnableUptime = bEnableUptime;
-
-	DEBUG_PRINTF("m_bEnableUptime=%d", (int) m_bEnableUptime);
-}
-
 void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_ENTRY
-
-	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
-
-	// BUG there is NO sanity check for adding multiple times - won't fix
-	uint32_t nSize = strlen(pDisplayName);
-
-	if ((m_nIdLength + nSize + 2) < REMOTE_CONFIG_ID_LENGTH) {
-		m_aId[m_nIdLength - 1] = ',';
-		strcpy((char *) &m_aId[m_nIdLength], pDisplayName);
-		m_aId[m_nIdLength + nSize] = '\n';
-	}
-
-	m_nIdLength += (nSize + 1);
-
-	DEBUG_PRINTF("%d:[%s]", m_nIdLength, m_aId);
 
 	strncpy((char *)m_tRemoteConfigListBin.aDisplayName, pDisplayName, REMOTE_CONFIG_DISPLAY_NAME_LENGTH);
 #ifndef NDEBUG
@@ -434,6 +398,12 @@ void RemoteConfig::HandleVersion() {
 
 void RemoteConfig::HandleList(void) {
 	DEBUG_ENTRY
+
+	if (m_tRemoteConfigListBin.aDisplayName[0] != '\0') {
+		m_nIdLength = snprintf(m_aId, sizeof(m_aId) - 1, "" IPSTR ",%s,%s,%d,%s\n", IP2STR(Network::Get()->GetIp()), sRemoteConfigs[m_tRemoteConfig], sRemoteConfigModes[m_tRemoteConfigMode], m_nOutputs, m_tRemoteConfigListBin.aDisplayName);
+	} else {
+		m_nIdLength = snprintf(m_aId, sizeof(m_aId) - 1, "" IPSTR ",%s,%s,%d\n", IP2STR(Network::Get()->GetIp()), sRemoteConfigs[m_tRemoteConfig], sRemoteConfigModes[m_tRemoteConfigMode], m_nOutputs);
+	}
 
 	if (m_nBytesReceived == REQUEST_LIST_LENGTH) {
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_aId, (uint16_t) m_nIdLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -619,7 +589,7 @@ void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	E131Params e131params((E131ParamsStore *) SpiFlashStore::Get()->GetStoreE131());
+	E131Params e131params((E131ParamsStore *) StoreE131::Get());
 	e131params.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
@@ -857,7 +827,7 @@ void RemoteConfig::HandleTxtFileArtnet(void) {
 void RemoteConfig::HandleTxtFileE131(void) {
 	DEBUG_ENTRY
 
-	E131Params e131params((E131ParamsStore *) SpiFlashStore::Get()->GetStoreE131());
+	E131Params e131params((E131ParamsStore *) StoreE131::Get());
 
 	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TE131Params))){
 		uint32_t nSize;

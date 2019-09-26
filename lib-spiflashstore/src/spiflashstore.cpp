@@ -331,7 +331,3 @@ StoreArtNet *SpiFlashStore::GetStoreArtNet(void) {
 StoreArtNet4 *SpiFlashStore::GetStoreArtNet4(void) {
 	return &m_StoreArtNet4;
 }
-
-StoreE131 *SpiFlashStore::GetStoreE131(void) {
-	return &m_StoreE131;
-}
