@@ -2,7 +2,7 @@
  * @file net.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,36 +51,44 @@ static uint8_t s_mac_address[ETH_ADDR_LEN];
 
 static uint8_t *s_p;
 
-void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool use_dhcp) {
+static void s_get_default_ip(const uint8_t *mac_address, struct ip_info *p_ip_info) {
+	p_ip_info->ip.addr = 2
+			+ (((uint32_t) mac_address[3]) << 8)
+			+ (((uint32_t) mac_address[4]) << 16)
+			+ (((uint32_t) mac_address[5]) << 24);
+	p_ip_info->netmask.addr = 255;
+	p_ip_info->gw.addr = p_ip_info->ip.addr;
+}
+
+void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp) {
 	uint16_t i;
 
 	net_timers_init();
 
-	if (use_dhcp) {
-		p_ip_info->ip.addr = 0;
-		p_ip_info->gw.addr = 0;
-		p_ip_info->netmask.addr = 0;
+	if (*use_dhcp) {
+		s_get_default_ip(mac_address, p_ip_info);
 	} else {
 		arp_init(mac_address, p_ip_info);
 	}
 
 	ip_init(mac_address, p_ip_info);
 
-	if (use_dhcp) {
+	if (*use_dhcp) {
 		if (dhcp_client(mac_address, p_ip_info, hostname) < 0) {
+			*use_dhcp = false;
 			DEBUG_PUTS("DHCP Client failed");
-		} else {
-			arp_init(mac_address, p_ip_info);
-			ip_set_ip(p_ip_info);
 		}
+
+		arp_init(mac_address, p_ip_info);
+		ip_set_ip(p_ip_info);
 	}
 
 	for (i = 0; i < ETH_ADDR_LEN; i++) {
 		s_mac_address[i] = mac_address[i];
 	}
 
-	uint8_t *src = (uint8_t *) p_ip_info;
-	uint8_t *dst = (uint8_t *) &s_ip_info;
+	const uint8_t *src = (const uint8_t*) p_ip_info;
+	uint8_t *dst = (uint8_t*) &s_ip_info;
 
 	for (i = 0; i < sizeof(struct ip_info); i++) {
 		*dst++ = *src++;
@@ -109,6 +117,23 @@ void net_handle(void) {
 
 void net_set_ip(uint32_t ip) {
 	s_ip_info.ip.addr = ip;
+
 	arp_init(s_mac_address, &s_ip_info);
 	ip_set_ip(&s_ip_info);
+}
+
+void net_set_default_ip(struct ip_info *p_ip_info) {
+	uint32_t i;
+
+	s_get_default_ip(s_mac_address, &s_ip_info);
+
+	arp_init(s_mac_address, &s_ip_info);
+	ip_set_ip(&s_ip_info);
+
+	const uint8_t *src = (const uint8_t*) &s_ip_info;
+	uint8_t *dst = (uint8_t*) p_ip_info;
+
+	for (i = 0; i < sizeof(struct ip_info); i++) {
+		*dst++ = *src++;
+	}
 }

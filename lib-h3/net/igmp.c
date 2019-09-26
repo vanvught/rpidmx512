@@ -42,7 +42,9 @@ extern void emac_eth_send(void *, int);
 #define MAX_JOINS_ALLOWED	(4 + (4 * 4))
 
 typedef enum s_state {
-	NON_MEMBER = 0, DELAYING_MEMBER, IDLE_MEMBER
+	NON_MEMBER = 0,
+	DELAYING_MEMBER,
+	IDLE_MEMBER
 } _state;
 
 struct t_group_info {
@@ -60,7 +62,7 @@ static struct t_igmp s_report ALIGNED;
 static struct t_igmp s_leave ALIGNED;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] ALIGNED;
 static struct t_group_info s_groups[MAX_JOINS_ALLOWED] ALIGNED;
-static uint8_t s_joins_allowed_index ALIGNED;
+static uint32_t s_joins_allowed_index;
 static uint16_t s_id ALIGNED;
 
 void igmp_set_ip(const struct ip_info  *p_ip_info) {

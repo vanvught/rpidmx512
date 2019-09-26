@@ -63,8 +63,8 @@ struct queue_entry {
 }ALIGNED;
 
 struct queue {
-	uint8_t queue_head;
-	uint8_t queue_tail;
+	uint32_t queue_head;
+	uint32_t queue_tail;
 	struct queue_entry entries[MAX_ENTRIES] ALIGNED;
 }ALIGNED;
 
@@ -73,8 +73,8 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static uint16_t s_ports_allowed[MAX_PORTS_ALLOWED] ALIGNED;
-static uint8_t s_ports_used_index ALIGNED;
+static uint32_t s_ports_allowed[MAX_PORTS_ALLOWED];
+static uint32_t s_ports_used_index;
 static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
 static uint16_t s_id ALIGNED;
@@ -117,34 +117,35 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 void udp_handle(struct t_udp *p_udp) {
 	uint32_t port_index;
 	_pcast32 src;
-	uint16_t i;
+	uint32_t i;
 
 	const uint16_t dest_port = __builtin_bswap16(p_udp->udp.destination_port);
 
-	// Optimize ? store lowest port in use ?
-	if ((dest_port != DHCP_PORT_CLIENT) && (dest_port != TFTP_PORT_SERVER) && (dest_port != NTP_PORT_SERVER) && (dest_port < 1024)) { // There is no support for other UDP defined services
-		DEBUG_PRINTF("Not supported port:%d", dest_port);
+	if ((dest_port != DHCP_PORT_CLIENT)
+			&& (dest_port != TFTP_PORT_SERVER)
+			&& (dest_port != NTP_PORT_SERVER)
+			&& (dest_port < 1024)) { // There is no support for other UDP defined services
+		DEBUG_PRINTF("Not supported -> " IPSTR ":%d", p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port);
 		return;
 	}
 
 	for (port_index = 0; port_index < MAX_PORTS_ALLOWED; port_index++) {
 		if (s_ports_allowed[port_index] == dest_port) {
-			DEBUG_PUTS("");
 			break;
 		}
 	}
 
 	if (__builtin_expect ((port_index == MAX_PORTS_ALLOWED), 0)) {
-		DEBUG_PRINTF(MACSTR " - " IPSTR ":%d", MAC2STR(p_udp->ether.dst), p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port);
+		DEBUG_PRINTF(IPSTR ":%d", p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port);
 		return;
 	}
 
-	const uint8_t entry = s_recv_queue[port_index].queue_tail;
+	const uint32_t entry = s_recv_queue[port_index].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[port_index].entries[entry];
 
-	const uint16_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;
+	const uint32_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;
 
-	debug_dump(p_udp->udp.data, data_length);
+	// debug_dump(p_udp->udp.data, data_length);
 
 	i = MIN(FRAME_BUFFER_SIZE, data_length);
 
@@ -267,7 +268,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 
-	debug_dump((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	// debug_dump((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
 	emac_eth_send((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
