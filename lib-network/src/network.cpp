@@ -78,3 +78,13 @@ bool Network::SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask) 
 
 	return false;
 }
+
+uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
+	if (nCDIR != 0) {
+		const uint32_t nNetmask = __builtin_bswap32(~0x0 << (32 - nCDIR));
+		DEBUG_PRINTF("%d " IPSTR, nCDIR, IP2STR(nNetmask));
+		return nNetmask;
+	}
+
+	return 0;
+}

@@ -89,6 +89,10 @@ private:
 
 	void CreateMDNSMessage(uint32_t nIndex);
 
+#ifndef NDEBUG
+	void Dump(const struct TmDNSHeader *pmDNSHeader, uint16_t nFlags);
+#endif
+
 private:
 	uint32_t m_nMulticastIp;
 	int32_t m_nHandle;

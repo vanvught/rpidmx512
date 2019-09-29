@@ -28,14 +28,14 @@
 #include "network.h"
 
 void Network::Print(void) {
-	printf("Network configuration\n");
-	printf(" Hostname   : %s\n", m_aHostName);
-	printf(" Interface  : %d: %s\n", m_nIfIndex, m_aIfName);
-	printf(" Inet       : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
-	printf(" Netmask    : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" Gateway    : " IPSTR "\n", IP2STR(m_nGatewayIp));
-	printf(" MacAddress : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
+	printf("Network\n");
+	printf(" Hostname : %s\n", m_aHostName);
+	printf(" If       : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" Inet     : " IPSTR " /%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
+	printf(" Netmask  : " IPSTR "\n", IP2STR(m_nNetmask));
+	printf(" Gateway  : " IPSTR "\n", IP2STR(m_nGatewayIp));
+	printf(" Mac      : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	if (IsDhcpKnown()) {
-		printf(" DHCP       : %s\n", m_IsDhcpUsed ? "Yes" : "No");
+		printf(" DHCP     : %s\n", m_IsDhcpUsed ? "Yes" : "No");
 	}
 }

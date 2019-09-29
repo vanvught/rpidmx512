@@ -510,6 +510,45 @@ void MDNS::Parse(void) {
 	const uint16_t nFlags = __builtin_bswap16(pmDNSHeader->nFlags);
 
 #ifndef NDEBUG
+	Dump(pmDNSHeader, nFlags);
+#endif
+
+	if ((((nFlags >> 15) & 1) == 0) && (((nFlags >> 14) & 0xf) == DNSOpQuery)) {
+		if (pmDNSHeader->queryCount != 0) {
+			HandleRequest((uint16_t)__builtin_bswap16(pmDNSHeader->queryCount));
+		}
+	}
+
+	DEBUG_EXIT
+}
+
+void MDNS::Run(void) {
+#if 0
+	 uint32_t nNow = Hardware::Get()->Millis();
+#endif
+
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
+
+	if ((m_nRemotePort == MDNS_PORT) && (m_nBytesReceived > sizeof(struct TmDNSHeader))) {
+		Parse();
+	}
+
+#if 0
+	if (__builtin_expect(((nNow - m_nLastAnnounceMillis) > 1000 * ANNOUNCE_TIMEOUT), 0)) {
+		DEBUG_PUTS("> Announce <");
+		for (uint32_t i = 0; i < m_nDNSServiceRecords; i++) {
+			if (m_aServiceRecords[i].pName != 0) {
+				//Network::Get()->SendTo(m_nHandle, (uint8_t *)&m_aServiceRecordsData[i].aBuffer, m_aServiceRecordsData[i].nSize, m_nMulticastIp, MDNS_PORT);
+			}
+		}
+
+		m_nLastAnnounceMillis = nNow;
+	}
+#endif
+}
+
+#ifndef NDEBUG
+void MDNS::Dump(const struct TmDNSHeader *pmDNSHeader, uint16_t nFlags) {
 	TmDNSFlags tmDNSFlags;
 
 	tmDNSFlags.rcode = nFlags & 0xf;
@@ -544,34 +583,5 @@ void MDNS::Parse(void) {
 	printf("Answers   : %u\n", nAnswers);
 	printf("Authority : %u\n", nAuthority);
 	printf("Additional: %u\n", nAdditional);
+}
 #endif
-
-	if ((((nFlags >> 15) & 1) == 0) && (((nFlags >> 14) & 0xf) == DNSOpQuery)) {
-		if (pmDNSHeader->queryCount != 0) {
-			HandleRequest((uint16_t)__builtin_bswap16(pmDNSHeader->queryCount));
-		}
-	}
-
-	DEBUG_EXIT
-}
-
-void MDNS::Run(void) {
-	 uint32_t nNow = Hardware::Get()->Millis();
-
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
-
-	if ((m_nRemotePort == MDNS_PORT) && (m_nBytesReceived > sizeof(struct TmDNSHeader))) {
-		Parse();
-	}
-
-	if (__builtin_expect(((nNow - m_nLastAnnounceMillis) > 1000 * ANNOUNCE_TIMEOUT), 0)) {
-		DEBUG_PUTS("> Announce <");
-		for (uint32_t i = 0; i < m_nDNSServiceRecords; i++) {
-			if (m_aServiceRecords[i].pName != 0) {
-				//Network::Get()->SendTo(m_nHandle, (uint8_t *)&m_aServiceRecordsData[i].aBuffer, m_aServiceRecordsData[i].nSize, m_nMulticastIp, MDNS_PORT);
-			}
-		}
-
-		m_nLastAnnounceMillis = nNow;
-	}
-}

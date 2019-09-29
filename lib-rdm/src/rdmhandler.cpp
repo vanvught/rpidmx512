@@ -1439,7 +1439,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 	 uint8_t *p = (uint8_t *)&nIpAddress;
 	 memcpy(p, &pRdmDataIn->param_data[4], 4);
 
-	if (Network::Get()->SetStaticIp(true, nIpAddress, pRdmDataIn->param_data[8])) {
+	if (Network::Get()->SetStaticIp(true, nIpAddress, Network::CIDRToNetmask(pRdmDataIn->param_data[8]))) {
 		RespondMessageAck();
 	}
 

@@ -89,8 +89,7 @@ public:
 	}
 
 	uint32_t GetNetmaskCIDR(void) {
-		//return __builtin_popcount(m_nNetmask);
-		return  32 -  __builtin_clz(m_nNetmask);
+		return __builtin_popcount(m_nNetmask);
 	}
 
 	uint32_t GetBroadcastIp(void) {
@@ -137,6 +136,8 @@ public:
 	static Network* Get(void) {
 		return s_pThis;
 	}
+
+	static uint32_t CIDRToNetmask(uint8_t nCDIR);
 
 protected:
 	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
