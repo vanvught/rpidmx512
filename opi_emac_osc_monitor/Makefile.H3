@@ -1,9 +1,9 @@
 PLATFORM = ORANGE_PI_ONE
 #
-DEFINES = MONITOR_DMX NO_EMAC CONSOLE_FB NDEBUG
+DEFINES = OSC_SERVER CONSOLE_FB NDEBUG
 #
-LIBS = dmxreceiver dmx dmxmonitor  
-#
+LIBS = oscserver osc dmxmonitor
+
 SRCDIR = firmware
 
 include ../h3-firmware-template/Rules.mk

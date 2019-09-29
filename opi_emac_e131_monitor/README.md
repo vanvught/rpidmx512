@@ -1,4 +1,3 @@
-# Orange Pi One Art-Net 4 Node Ethernet
-## Real-time DMX monitor {1 Universe} [Plug & Play]
-
-[http://www.orangepi-dmx.org/raspberry-pi-art-net-dmx-out](http://www.orangepi-dmx.org/raspberry-pi-art-net-dmx-out)
+# Real-time sACN E1.31 DMX monitor {1 Universe} [Plug & Play]
+## Orange Pi One [HDMI output]
+[http://www.orangepi-dmx.org/raspberry-pi-dmx-real-time-monitor](http://www.orangepi-dmx.org/raspberry-pi-dmx-real-time-monitor)
