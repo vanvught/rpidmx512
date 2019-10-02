@@ -30,7 +30,7 @@ ifeq ($(NO_EXT_LED),1)
 endif
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 -mhard-float -mfloat-abi=hard
+COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mhard-float -mfloat-abi=hard
 COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))

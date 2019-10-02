@@ -38,15 +38,13 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 endif
 
 ifdef COND
-	LIBS+=artnet4 artnet e131
+	LIBS+=artnet4 artnet artnethandlers e131 uuid
 endif
 
-ifeq ($(findstring ARTNET,$(DEFINES)),ARTNET)
-	LIBS+=uuid
-endif
-
-ifeq ($(findstring E131,$(DEFINES)),E131)
-	LIBS+=uuid
+ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	ifneq ($(findstring uuid,$(LIBS)),uuid)
+		LIBS+=uuid
+	endif
 endif
 
 ifeq ($(findstring DMXSEND,$(DEFINES)),DMXSEND)
@@ -113,8 +111,8 @@ LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard
-COPS+=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
+COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float  -fno-unwind-tables -fprefetch-loop-arrays
+COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
