@@ -1,7 +1,7 @@
 #
-DEFINES= ARTNET_NODE ARTNET4_NODE ENABLE_SPIFLASH NDEBUG
+DEFINES= ARTNET_NODE ARTNET4_NODE ENABLE_SPIFLASH #NDEBUG
 #
-LIBS=dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet4 artnet e131 properties lightset ledblink debug
+LIBS=dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet4 artnet artnethandlers e131 properties lightset ledblink debug
 #
 SRCDIR= src lib
 

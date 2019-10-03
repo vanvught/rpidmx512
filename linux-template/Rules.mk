@@ -7,7 +7,7 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-DEFAULT_INCLUDES=artnet artnet4 e131 midi ltc oscserver ws28xx ws28xxdmx tlc59711 tlc59711dmx dmx dmxsend
+DEFAULT_INCLUDES=artnet artnet4 artnethandlers e131 midi ltc oscserver ws28xx ws28xxdmx tlc59711 tlc59711dmx dmx dmxsend
 
 LIBS:=$(LIBS)
 
@@ -96,7 +96,7 @@ clean:
 	rm -f $(TARGET)
 
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS)
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
 	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

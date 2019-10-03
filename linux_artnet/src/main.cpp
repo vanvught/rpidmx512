@@ -43,11 +43,12 @@
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
 
-#include "rdmdeviceresponder.h"
-#include "rdmpersonality.h"
-
 #include "identify.h"
 #include "artnetrdmresponder.h"
+
+#include "rdmdeviceresponder.h"
+#include "rdmpersonality.h"
+#include "rdmdeviceparams.h"
 
 #if defined (__linux__)
  #include "ipprog.h"
@@ -129,13 +130,22 @@ int main(int argc, char **argv) {
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
 	if(artnet4params.IsRdm()) {
+		RDMDeviceParams rdmDeviceParams;
+		if (rdmDeviceParams.Load()) {
+			rdmDeviceParams.Set(&RdmResponder);
+			rdmDeviceParams.Dump();
+		}
+
+		RdmResponder.Init();
+		RdmResponder.Print();
+
 		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4params.GetUniverse());
 
 		if (artnet4params.IsRdmDiscovery()) {
 			RdmResponder.Full(0);
 		}
 
-		node.SetRdmHandler(&RdmResponder, true);
+		node.SetRdmHandler((ArtNetRdm *)&RdmResponder, true);
 	} else {
 		uint8_t nAddress;
 		bool bIsSetIndividual = false;
@@ -177,7 +187,7 @@ int main(int argc, char **argv) {
 	node.Print();
 
 	if(artnet4params.IsRdm()) {
-		RdmResponder.GetRDMDeviceResponder()->Print();
+		RdmResponder.Print();
 	}
 
 	node.Start();

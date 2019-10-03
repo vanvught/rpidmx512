@@ -8,7 +8,7 @@ AR	=$(PREFIX)ar
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
-INCLUDES:=-I./include -I../lib-debug/include
+INCLUDES:=-I./include -I../lib-hal/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifneq (, $(shell which /opt/vc/bin/vcgencmd))
