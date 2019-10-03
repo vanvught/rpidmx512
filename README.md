@@ -74,4 +74,4 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 - **OSC** Real-time DMX Monitor
 
 <br>
-[PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL "Donate")
+[PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL)
