@@ -59,10 +59,18 @@ struct TExchangePacket {
 	uint8_t aName[APPLE_MIDI_SESSION_NAME_LENGTH_MAX + 1];
 }__attribute__((packed));
 
+enum TSessionState {
+	SESSION_STATE_WAITING_IN_CONTROL,
+	SESSION_STATE_WAITING_IN_MIDI,
+	SESSION_STATE_IN_SYNC,
+	SESSION_STATE_ESTABLISHED
+};
+
 struct TSessionStatus {
-	uint8_t nSessionState;
+	TSessionState tSessionState;
 	uint32_t nRemoteIp;
 	uint16_t nRemotePortMidi;
+	uint32_t nSynchronizationTimestamp;
 };
 
 class AppleMidi: public MDNS {

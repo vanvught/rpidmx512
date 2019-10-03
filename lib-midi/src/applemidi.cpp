@@ -60,13 +60,6 @@ enum TAppleMidiCommand {
 	APPLEMIDI_COMMAND_BITRATE_RECEIVE_LIMIT = __builtin_bswap16(0x524c)	///< Bitrate 'RL'
 };
 
-enum TSessionState {
-	SESSION_STATE_WAITING_IN_CONTROL,
-	SESSION_STATE_WAITING_IN_MIDI,
-	SESSION_STATE_IN_SYNC,
-	SESSION_STATE_ESTABLISHED
-};
-
 #define BUFFER_SIZE	512
 
 struct TTimestampSynchronization {
@@ -123,7 +116,7 @@ void AppleMidi::Start(void) {
 
 	DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
 
-	m_nStartTime = Hardware::Get()->Micros();
+	m_nStartTime = Hardware::Get()->Millis();
 
 	DEBUG_EXIT
 }
@@ -156,9 +149,9 @@ void AppleMidi::HandleControlMessage(void) {
 	struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
 
 	debug_dump((void *)m_pBuffer, m_nBytesReceived);
-	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, (int) m_tSessionStatus.nSessionState);
+	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, (int) m_tSessionStatus.tSessionState);
 
-	if (m_tSessionStatus.nSessionState == SESSION_STATE_WAITING_IN_CONTROL) {
+	if (m_tSessionStatus.tSessionState == SESSION_STATE_WAITING_IN_CONTROL) {
 		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
 
 		if ((m_tSessionStatus.nRemoteIp == 0) && (pPacket->nCommand == APPLEMIDI_COMMAND_INVITATION)) {
@@ -171,7 +164,7 @@ void AppleMidi::HandleControlMessage(void) {
 
 			debug_dump((void *)&m_ExchangePacketReply, m_nExchangePacketReplySize);
 
-			m_tSessionStatus.nSessionState = SESSION_STATE_WAITING_IN_MIDI;
+			m_tSessionStatus.tSessionState = SESSION_STATE_WAITING_IN_MIDI;
 			m_tSessionStatus.nRemoteIp = m_nRemoteIp;
 
 			return;
@@ -180,11 +173,11 @@ void AppleMidi::HandleControlMessage(void) {
 		}
 	}
 
-	if (m_tSessionStatus.nSessionState == SESSION_STATE_ESTABLISHED) {
+	if (m_tSessionStatus.tSessionState == SESSION_STATE_ESTABLISHED) {
 		DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
 		if ((m_tSessionStatus.nRemoteIp == m_nRemoteIp) && (pPacket->nCommand == APPLEMIDI_COMMAND_ENDSESSION)) {
-			m_tSessionStatus.nSessionState = SESSION_STATE_WAITING_IN_CONTROL;
+			m_tSessionStatus.tSessionState = SESSION_STATE_WAITING_IN_CONTROL;
 			m_tSessionStatus.nRemoteIp = 0;
 			DEBUG_PUTS("End Session");
 
@@ -222,7 +215,7 @@ void AppleMidi::HandleMidiMessage(void) {
 
 		if (*(uint16_t *)m_pBuffer == APPLEMIDI_SIGNATURE) {
 
-			if (m_tSessionStatus.nSessionState == SESSION_STATE_WAITING_IN_MIDI) {
+			if (m_tSessionStatus.tSessionState == SESSION_STATE_WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
 				struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
@@ -237,14 +230,15 @@ void AppleMidi::HandleMidiMessage(void) {
 
 					Network::Get()->SendTo(m_nHandleMidi, (const uint8_t *) &m_ExchangePacketReply, m_nExchangePacketReplySize, m_nRemoteIp, m_nRemotePort);
 
-					m_tSessionStatus.nSessionState = SESSION_STATE_ESTABLISHED;
+					m_tSessionStatus.tSessionState = SESSION_STATE_ESTABLISHED;
 					m_tSessionStatus.nRemotePortMidi = m_nRemotePort;
+					m_tSessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
 				}
 
 				return;
 			}
 
-			if (m_tSessionStatus.nSessionState == SESSION_STATE_ESTABLISHED) {
+			if (m_tSessionStatus.tSessionState == SESSION_STATE_ESTABLISHED) {
 				DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
 				struct TExchangePacket *pPacket = (struct TExchangePacket *) m_pBuffer;
@@ -252,6 +246,8 @@ void AppleMidi::HandleMidiMessage(void) {
 				if (pPacket->nCommand == APPLEMIDI_COMMAND_SYNCHRONIZATION) {
 					DEBUG_PUTS("Timestamp Synchronization");
 					struct TTimestampSynchronization *t = (struct TTimestampSynchronization*) m_pBuffer;
+
+					m_tSessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
 
 					if (t->nCount == 0) {
 						t->nSSRC = m_nSSRC;
@@ -300,6 +296,14 @@ void AppleMidi::Run(void) {
 		}
 	}
 
+	if (m_tSessionStatus.tSessionState == SESSION_STATE_ESTABLISHED) {
+		if (__builtin_expect((Hardware::Get()->Millis() - m_tSessionStatus.nSynchronizationTimestamp > (90 * 1000)), 0)) {
+			m_tSessionStatus.tSessionState = SESSION_STATE_WAITING_IN_CONTROL;
+			m_tSessionStatus.nRemoteIp = 0;
+			DEBUG_PUTS("End Session {time-out}");
+		}
+	}
+
 	MDNS::Run();
 }
 
@@ -308,13 +312,13 @@ void AppleMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 }
 
 uint32_t AppleMidi::Now(void) {
-	const uint32_t nElapsed = Hardware::Get()->Micros() - m_nStartTime;
+	const uint32_t nElapsed = Hardware::Get()->Millis() - m_nStartTime;
 
-	return (nElapsed / 100);
+	return (nElapsed * 10);
 }
 
 bool AppleMidi::Send(const uint8_t *pBuffer, uint32_t nLength) {
-	if (m_tSessionStatus.nSessionState != SESSION_STATE_ESTABLISHED) {
+	if (m_tSessionStatus.tSessionState != SESSION_STATE_ESTABLISHED) {
 		return false;
 	}
 
@@ -328,8 +332,10 @@ bool AppleMidi::Send(const uint8_t *pBuffer, uint32_t nLength) {
 
 void AppleMidi::Print(void) {
 	MDNS::Print();
+	
+	const uint32_t nSSRC = __builtin_bswap32(m_nSSRC);
 
-	printf("AppleMIDI configuration\n");
-	printf(" SSRC         : %x (%d)\n", m_nSSRC, m_nSSRC);
-	printf(" Session name : %s\n", m_ExchangePacketReply.aName);
+	printf("AppleMIDI\n");
+	printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);
+	printf(" Session : %s\n", m_ExchangePacketReply.aName);
 }

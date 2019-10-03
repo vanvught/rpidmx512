@@ -49,7 +49,6 @@ Raspberry Pi **Open Source** solutions:
   * Art-Net 3 DMX Node / **Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_circle_artnet_dmx.zip?raw=true)}
 * **RDM**
   * RDM Controller with USB [Compatible with **Enttec USB Pro protocol**] {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_dmx_usb_pro.zip?raw=true)}
-  * RDM Responder / **DMX Pixel (WS28xx/SK6812/AP102/UCSx903) controller** {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_rdm_responder.zip?raw=true)}
 * **Wifi**
   * **Art-Net 3** DMX Node / RDM Controller / DMX Real-time Monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_artnet_dmx.zip?raw=true)}
   * sACN **E1.31** DMX Bridge / DMX Real-time monitor / Pixel Controller (WS28xx/SK6812/AP102/UCSx903) {[SDCard](https://github.com/vanvught/rpidmx512-zip/blob/master/rpi_wifi_e131_dmx.zip?raw=true)}
@@ -73,3 +72,6 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 - **Art-Net 4** Real-time DMX Monitor
 - sACN **E.131** Real-time DMX Monitor
 - **OSC** Real-time DMX Monitor
+
+<br>
+[PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL "Donate")
