@@ -199,7 +199,7 @@ void NtpServer::Run(void) {
 }
 
 void NtpServer::Print(void) {
-	printf("NTP v%d Server configuration\n", VERSION >> 3);
+	printf("NTP v%d Server\n", VERSION >> 3);
 	printf(" Port    : %d\n", UDP_PORT);
 	printf(" Stratum : %d\n", STRATUM);
 

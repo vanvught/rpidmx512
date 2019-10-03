@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 #include "ltc.h"
@@ -79,35 +80,35 @@ inline static void itoa_base10(uint32_t arg, char *buf) {
 	*n = (char) ('0' + (arg % 10));
 }
 
-void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char aTimeCode[TC_CODE_MAX_LENGTH]) {
-	itoa_base10(ptLtcTimeCode->nHours, (char *) &aTimeCode[0]);
-	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &aTimeCode[3]);
-	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &aTimeCode[6]);
-	itoa_base10(ptLtcTimeCode->nFrames, (char *) &aTimeCode[9]);
+void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode) {
+	itoa_base10(ptLtcTimeCode->nHours, (char *) &pTimeCode[0]);
+	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &pTimeCode[3]);
+	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &pTimeCode[6]);
+	itoa_base10(ptLtcTimeCode->nFrames, (char *) &pTimeCode[9]);
 }
 
 #define DIGIT(x)	((int32_t) (x) - '0')
 #define VALUE(x,y)	(((x) * 10) + (y))
 
-bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
+bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
 	assert(ptLtcTimeCode != 0);
 
 	int32_t nTenths;
 	int32_t nDigit;
 	uint32_t nValue;
 
-	if ((aTimeCode[2] != ':') || (aTimeCode[5] != ':') || (aTimeCode[8] != '.')) {
+	if ((pTimeCode[2] != ':') || (pTimeCode[5] != ':') || (pTimeCode[8] != '.')) {
 		return false;
 	}
 
 	// Frames first
 
-	nTenths = DIGIT(aTimeCode[9]);
+	nTenths = DIGIT(pTimeCode[9]);
 	if ((nTenths < 0) || (nTenths > 3)) {
 		return false;
 	}
 
-	nDigit = DIGIT(aTimeCode[10]);
+	nDigit = DIGIT(pTimeCode[10]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -122,12 +123,12 @@ bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, 
 
 	// Seconds
 
-	nTenths = DIGIT(aTimeCode[6]);
+	nTenths = DIGIT(pTimeCode[6]);
 	if ((nTenths < 0) || (nTenths > 5)) {
 		return false;
 	}
 
-	nDigit = DIGIT(aTimeCode[7]);
+	nDigit = DIGIT(pTimeCode[7]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -142,12 +143,12 @@ bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, 
 
 	// Minutes
 
-	nTenths = DIGIT(aTimeCode[3]);
+	nTenths = DIGIT(pTimeCode[3]);
 	if ((nTenths < 0) || (nTenths > 5)) {
 		return false;
 	}
 
-	nDigit = DIGIT(aTimeCode[4]);
+	nDigit = DIGIT(pTimeCode[4]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -162,12 +163,12 @@ bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, 
 
 	// Hours
 
-	nTenths = DIGIT(aTimeCode[0]);
+	nTenths = DIGIT(pTimeCode[0]);
 	if ((nTenths < 0) || (nTenths > 2)) {
 		return false;
 	}
 
-	nDigit = DIGIT(aTimeCode[1]);
+	nDigit = DIGIT(pTimeCode[1]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -181,4 +182,12 @@ bool Ltc::ParseTimeCode(const char aTimeCode[TC_CODE_MAX_LENGTH], uint8_t nFps, 
 	ptLtcTimeCode->nHours = nValue;
 
 	return true;
+}
+
+void Ltc::InitTimeCode(char *pTimeCode) {
+	memset(pTimeCode, ' ', TC_CODE_MAX_LENGTH);
+
+	pTimeCode[2] = ':';
+	pTimeCode[5] = ':';
+	pTimeCode[8] = '.';
 }

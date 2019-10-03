@@ -79,18 +79,16 @@ static void irq_timer0_update_handler(uint32_t clo) {
 	nUpdatesPrevious = nUpdates;
 }
 
-MidiReader::MidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_pNode(pNode),
+MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
 	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
-	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
-	m_aTimeCode[2] = ':';
-	m_aTimeCode[5] = ':';
-	m_aTimeCode[8] = '.';
+	assert(m_ptLtcDisabledOutputs != 0);
+
+	Ltc::InitTimeCode(m_aTimeCode);
 }
 
 MidiReader::~MidiReader(void) {
@@ -200,7 +198,7 @@ void MidiReader::HandleMtcQf(void) {
 
 void MidiReader::Update(void) {
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		m_pNode->SendTimeCode((const struct TArtNetTimeCode *) &m_MidiTimeCode);
+		ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &m_MidiTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {

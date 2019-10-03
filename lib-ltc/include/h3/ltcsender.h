@@ -44,6 +44,7 @@ public:
 
 private:
 	uint32_t m_nTypePrevious;
+
 	static LtcSender *s_pThis;
 };
 

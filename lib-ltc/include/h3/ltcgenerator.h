@@ -30,11 +30,9 @@
 
 #include "ltc.h"
 
-#include "artnetnode.h"
-
 class LtcGenerator {
 public:
-	LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~LtcGenerator(void);
 
 	void Start(void);

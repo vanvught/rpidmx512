@@ -71,10 +71,9 @@ ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID),
 	m_nMidiQuarterFramePiece(0)
 {
-	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
-	m_aTimeCode[2] = ':';
-	m_aTimeCode[5] = ':';
-	m_aTimeCode[8] = '.';
+	assert(m_ptLtcDisabledOutputs != 0);
+
+	Ltc::InitTimeCode(m_aTimeCode);
 }
 
 ArtNetReader::~ArtNetReader(void) {

@@ -197,15 +197,11 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-LtcReader::LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_pNode(pNode),
+LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
-	memset((void *)&aTimeCode, ' ', sizeof(aTimeCode) / sizeof(aTimeCode[0]));
-	aTimeCode[2] = ':';
-	aTimeCode[5] = ':';
-	aTimeCode[8] = '.';
+	Ltc::InitTimeCode((char *)aTimeCode);
 }
 
 LtcReader::~LtcReader(void) {
@@ -291,7 +287,7 @@ void LtcReader::Run(void) {
 		tLtcTimeCode.nType = (uint8_t) s_tMidiTimeCode.nType;
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
-			m_pNode->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
+			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {

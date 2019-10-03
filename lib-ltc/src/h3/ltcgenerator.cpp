@@ -87,7 +87,6 @@ enum tUdpPort {
 
 // IRQ Timer0
 static volatile bool bTimeCodeAvailable;
-static ArtNetNode* s_pNode;
 static struct TLtcDisabledOutputs* s_ptLtcDisabledOutputs;
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage;
@@ -108,7 +107,7 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 
 LtcGenerator *LtcGenerator::s_pThis = 0;
 
-LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
+LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_pStartLtcTimeCode((struct TLtcTimeCode *)pStartLtcTimeCode),
 	m_pStopLtcTimeCode((struct TLtcTimeCode *)pStopLtcTimeCode),
 	m_nFps(0),
@@ -120,14 +119,12 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	m_nBytesReceived(0),
 	m_bIsStarted(false)
 {
-	assert(pNode != 0);
 	assert(pStartLtcTimeCode != 0);
 	assert(pStopLtcTimeCode != 0);
 	assert(pLtcDisabledOutputs != 0);
 
 	s_pThis = this;
 
-	s_pNode = pNode;
 	s_ptLtcDisabledOutputs = pLtcDisabledOutputs;
 
 	bTimeCodeAvailable = false;
@@ -136,10 +133,7 @@ LtcGenerator::LtcGenerator(ArtNetNode* pNode, const struct TLtcTimeCode* pStartL
 	memset(&s_tLtcTimeCode, 0, sizeof(struct TLtcTimeCode));
 	s_tLtcTimeCode.nType = pStartLtcTimeCode->nType;
 
-	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
-	m_aTimeCode[2] = ':';
-	m_aTimeCode[5] = ':';
-	m_aTimeCode[8] = '.';
+	Ltc::InitTimeCode(m_aTimeCode);
 
 	m_nFps = TimeCodeConst::FPS[(int) pStartLtcTimeCode->nType];
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) pStartLtcTimeCode->nType];
@@ -198,7 +192,7 @@ void LtcGenerator::Start(void) {
 	}
 
 	if (!s_ptLtcDisabledOutputs->bArtNet) {
-		s_pNode->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+		ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
 	}
 
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
@@ -414,7 +408,7 @@ void LtcGenerator::Update(void) {
 		bTimeCodeAvailable = false;
 
 		if (!s_ptLtcDisabledOutputs->bArtNet) {
-			s_pNode->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
 		}
 
 		if (!s_ptLtcDisabledOutputs->bRtpMidi) {
@@ -453,7 +447,7 @@ void LtcGenerator::Run(void) {
 }
 
 void LtcGenerator::Print(void) {
-	printf("Internal clock configuration\n");
+	printf("Internal clock\n");
 	printf(" %s\n", Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType));
 	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
 	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);

@@ -79,6 +79,7 @@ struct TLtcParams {
 	uint8_t nStopMinute;
 	uint8_t nStopHour;
 	uint8_t nEnableOsc;
+	uint16_t nOscPort;
 };
 
 enum TLtcParamsMask {
@@ -102,7 +103,8 @@ enum TLtcParamsMask {
 	LTC_PARAMS_MASK_STOP_SECOND = (1 << 17),
 	LTC_PARAMS_MASK_STOP_MINUTE = (1 << 18),
 	LTC_PARAMS_MASK_STOP_HOUR = (1 << 19),
-	LTC_PARAMS_MASK_ENABLE_OSC = (1 << 20)
+	LTC_PARAMS_MASK_ENABLE_OSC = (1 << 20),
+	LTC_PARAMS_MASK_OSC_PORT = (1 << 21)
 };
 
 class LtcParamsStore {
@@ -179,6 +181,11 @@ public:
 		return (m_tLtcParams.nEnableOsc == 1);
 	}
 
+	uint16_t GetOscPort(bool& bIsSet) {
+		bIsSet = isMaskSet(LTC_PARAMS_MASK_OSC_PORT);
+		return m_tLtcParams.nOscPort;
+	}
+
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
 	void StopTimeCodeCopyTo(TLtcTimeCode *ptStopTimeCode);
 
@@ -189,6 +196,7 @@ private:
     void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const;
 	bool isDisabledOutputMaskSet(uint8_t nMask) const;
+	void HandleDisabledOutput(const char *pLine, const char *pKeyword, TLtcParamsMaskDisabledOutputs tLtcParamsMaskDisabledOutputs);
 
 private:
     LtcParamsStore 	*m_pLTcParamsStore;

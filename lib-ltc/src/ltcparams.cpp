@@ -22,6 +22,9 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -97,10 +100,24 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 	m_pLTcParamsStore->Update(&m_tLtcParams);
 }
 
+void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, TLtcParamsMaskDisabledOutputs tLtcParamsMaskDisabledOutputs) {
+	uint8_t value8;
+
+	if (Sscan::Uint8(pLine, pKeyword, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nDisabledOutputs |= (uint8_t) tLtcParamsMaskDisabledOutputs;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
+		} else {
+			m_tLtcParams.nDisabledOutputs &= ~((uint8_t) tLtcParamsMaskDisabledOutputs);
+		}
+	}
+}
+
 void LtcParams::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
 
 	uint8_t value8;
+	uint16_t value16;
 	char source[16];
 	uint8_t len = sizeof(source);
 
@@ -130,68 +147,13 @@ void LtcParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_DISPLAY, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_DISPLAY;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_MAX7219, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_DISPLAY;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_LTC, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_LTC;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_LTC;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_MIDI, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MIDI;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MIDI;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_ARTNET, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_ARTNET;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_ARTNET;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TCNET, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_TCNET;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_TCNET;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_RTPMIDI, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_RTPMIDI;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
-		} else {
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_RTPMIDI;
-		}
-	}
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LTC_PARAMS_DISABLE_DISPLAY);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_MAX7219, LTC_PARAMS_DISABLE_MAX7219);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_LTC, LTC_PARAMS_DISABLE_LTC);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_MIDI, LTC_PARAMS_DISABLE_MIDI);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_ARTNET, LTC_PARAMS_DISABLE_ARTNET);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_TCNET, LTC_PARAMS_DISABLE_TCNET);
+	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_RTPMIDI, LTC_PARAMS_DISABLE_RTPMIDI);
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
@@ -341,6 +303,14 @@ void LtcParams::callbackFunction(const char* pLine) {
 		}
 	}
 
+	if (Sscan::Uint16(pLine, LtcParamsConst::OSC_PORT, &value16) == SSCAN_OK) {
+		if (value16 > 1023) {
+			m_tLtcParams.nOscPort = value16;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_OSC_PORT;
+		}
+		return;
+	}
+
 }
 
 void LtcParams::Dump(void) {
@@ -457,6 +427,10 @@ void LtcParams::Dump(void) {
 
 	if (isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC)) {
 		printf(" OSC is enabled\n");
+
+		if (isMaskSet(LTC_PARAMS_MASK_OSC_PORT)) {
+			printf(" %s=%d\n", LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort);
+		}
 	}
 #endif
 }

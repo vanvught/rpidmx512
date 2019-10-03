@@ -26,18 +26,17 @@
 #ifndef H3_LTC_READER_H_
 #define H3_LTC_READER_H_
 
-#include "artnetnode.h"
+#include "ltc.h"
 
 class LtcReader {
 public:
-	LtcReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~LtcReader(void);
 
 	void Start(void);
 	void Run(void);
 
 private:
-	ArtNetNode *m_pNode;
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_tTimeCodeTypePrevious;
 };

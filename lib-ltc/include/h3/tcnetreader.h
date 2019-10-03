@@ -29,12 +29,11 @@
 #include "tcnettimecode.h"
 
 #include "midi.h"
-#include "artnetnode.h"
 #include "ltc.h"
 
 class TCNetReader : public TCNetTimeCode {
 public:
-	TCNetReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~TCNetReader(void);
 
 	void Start(void);
@@ -45,7 +44,6 @@ public:
 	void Handler(const struct TTCNetTimeCode *pTimeCode);
 
 private:
-	ArtNetNode *m_pNode;
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
 	uint32_t m_nMidiQuarterFramePiece;

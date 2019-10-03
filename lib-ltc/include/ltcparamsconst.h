@@ -59,6 +59,7 @@ public:
 	alignas(uint32_t) static const char SET_DATE[];
 #endif
 	alignas(uint32_t) static const char OSC_ENABLE[];
+	alignas(uint32_t) static const char OSC_PORT[];
 };
 
 #endif /* LTCPARAMSCONST_H_ */

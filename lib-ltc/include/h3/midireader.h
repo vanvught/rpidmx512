@@ -27,12 +27,11 @@
 #define H3_MIDIREADER_H_
 
 #include "ltc.h"
-#include "artnetnode.h"
 #include "midi.h"
 
 class MidiReader {
 public:
-	MidiReader (ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	MidiReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~MidiReader(void);
 
 	void Start(void);
@@ -44,7 +43,6 @@ private:
 	void Update(void);
 
 private:
-	ArtNetNode *m_pNode;
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	alignas(uint32_t) struct _midi_send_tc m_MidiTimeCode;
 	_midi_timecode_type m_nTimeCodeType;

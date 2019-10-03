@@ -50,20 +50,20 @@ void Max72197Segment::Init(uint8_t nIntensity) {
 	d8x7segment_init(&m_DeviceInfo, nIntensity);
 	d8x7segment_cls(&m_DeviceInfo);
 
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (uint8_t) 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (uint8_t) 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (uint8_t) 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, 0x80);
 }
 
 void Max72197Segment::Show(const char* pTimecode) {
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (uint8_t) (pTimecode[0] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (uint8_t) (pTimecode[1] - '0') | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (uint8_t) (pTimecode[3] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (uint8_t) (pTimecode[4] - '0') | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (uint8_t) (pTimecode[6] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (uint8_t) (pTimecode[7] - '0') | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (uint8_t) (pTimecode[9] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (uint8_t) (pTimecode[10] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (pTimecode[0] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pTimecode[1] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pTimecode[3] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (pTimecode[4] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (pTimecode[6] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (pTimecode[7] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (pTimecode[9] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (pTimecode[10] - '0'));
 }
 
 void Max72197Segment::ShowSysTime(void) {
@@ -79,15 +79,14 @@ void Max72197Segment::ShowSysTime(void) {
 
 	m_nSecondsPrevious = local_time->tm_sec;
 
-
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (uint8_t) MAX7219_CHAR_BLANK);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (uint8_t) (local_time->tm_hour / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (uint8_t) (local_time->tm_hour % 10) | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (uint8_t) (local_time->tm_min  / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (uint8_t) (local_time->tm_min  % 10) | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (uint8_t) (local_time->tm_sec  / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (uint8_t) (local_time->tm_sec  % 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (uint8_t) MAX7219_CHAR_BLANK);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7,  MAX7219_CHAR_BLANK);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (local_time->tm_hour / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (local_time->tm_hour % 10) | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (local_time->tm_min  / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (local_time->tm_min  % 10) | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (local_time->tm_sec  / 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (local_time->tm_sec  % 10));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0,  MAX7219_CHAR_BLANK);
 }
 
 void Max72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {

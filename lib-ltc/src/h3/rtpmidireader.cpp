@@ -74,21 +74,16 @@ RtpMidiHandler::~RtpMidiHandler(void) {
 
 }
 
-RtpMidiReader::RtpMidiReader(ArtNetNode *pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
-	m_pNode(pNode),
+RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
 	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
-	assert(m_pNode != 0);
 	assert(m_ptLtcDisabledOutputs != 0);
 
-	memset(&m_aTimeCode, ' ', sizeof(m_aTimeCode) / sizeof(m_aTimeCode[0]));
-	m_aTimeCode[2] = ':';
-	m_aTimeCode[5] = ':';
-	m_aTimeCode[8] = '.';
+	Ltc::InitTimeCode(m_aTimeCode);
 }
 
 RtpMidiReader::~RtpMidiReader(void) {
@@ -197,7 +192,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 
 void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		m_pNode->SendTimeCode((struct TArtNetTimeCode *) &m_tLtcTimeCode);
+		ArtNetNode::Get()->SendTimeCode((struct TArtNetTimeCode *) &m_tLtcTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {

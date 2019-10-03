@@ -30,7 +30,17 @@
 
 #include "display.h"
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 LtcLeds *LtcLeds::s_pThis = 0;
+
+const TDisplay7SegmentMessages msg[4] ALIGNED = {
+		DISPLAY_7SEGMENT_MSG_LTC_FILM,
+		DISPLAY_7SEGMENT_MSG_LTC_EBU,
+		DISPLAY_7SEGMENT_MSG_LTC_DF,
+		DISPLAY_7SEGMENT_MSG_LTC_SMPTE };
 
 LtcLeds::LtcLeds(void) {
 	s_pThis = this;
@@ -40,21 +50,10 @@ LtcLeds::~LtcLeds(void) {
 }
 
 void LtcLeds::Show(TTimecodeTypes tTimecodeType) {
-	switch (tTimecodeType) {
-	case TC_TYPE_FILM:
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_FILM);
-		break;
-	case TC_TYPE_EBU:
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_EBU);
-		break;
-	case TC_TYPE_DF:
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_DF);
-		break;
-	case TC_TYPE_SMPTE:
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_SMPTE);
-		break;
-	default:
+	if (tTimecodeType < TC_TYPE_UNKNOWN) {
+		Display::Get()->Status(msg[tTimecodeType]);
+	} else {
 		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
-		break;
 	}
 }
+

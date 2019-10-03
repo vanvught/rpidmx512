@@ -47,7 +47,7 @@ public:
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	 static DisplayMax7219* Get(void) {
+	static DisplayMax7219* Get(void) {
 		return s_pThis;
 	}
 
@@ -57,6 +57,5 @@ private:
 
 	static DisplayMax7219 *s_pThis;
 };
-
 
 #endif /* DISPLAYMAX7219_H_ */

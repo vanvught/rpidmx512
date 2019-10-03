@@ -29,12 +29,11 @@
 #include <stdint.h>
 
 #include "rtpmidihandler.h"
-#include "artnetnode.h"
 #include "ltc.h"
 
 class RtpMidiReader: public RtpMidiHandler {
 public:
-	RtpMidiReader(ArtNetNode* pNode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 	~RtpMidiReader(void);
 
 	void Start(void);
@@ -50,7 +49,6 @@ private:
 	void Update(const struct _midi_message *ptMidiMessage);
 
 private:
-	ArtNetNode *m_pNode;
 	alignas(uint32_t)  struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	_midi_timecode_type m_nTimeCodeType;
 	_midi_timecode_type m_nTimeCodeTypePrevious;
@@ -59,6 +57,5 @@ private:
 	uint8_t m_nPartPrevious;
 	bool m_bDirection;
 };
-
 
 #endif /* H3_RTPMIDIREADER_H_ */

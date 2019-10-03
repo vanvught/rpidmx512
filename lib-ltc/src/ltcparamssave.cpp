@@ -84,7 +84,7 @@ bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 #endif
 
 	isAdded &= builder.Add(LtcParamsConst::OSC_ENABLE, (uint32_t) m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
-
+	isAdded &= builder.Add(LtcParamsConst::OSC_PORT, (uint32_t) m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
 
 	nSize = builder.GetSize();
 
