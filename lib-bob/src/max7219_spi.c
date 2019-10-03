@@ -48,7 +48,7 @@ void max7219_spi_start(device_info_t *device_info) {
 
 }
 
-void max7219_spi_write_reg(const device_info_t *device_info, uint8_t reg, uint8_t data) {
+void max7219_spi_write_reg(const device_info_t *device_info, uint32_t reg, uint32_t data) {
 	const uint16_t spi_data = ((uint16_t) reg << 8) | (uint16_t) data;
 
 	if (device_info->chip_select == SPI_CS2) {

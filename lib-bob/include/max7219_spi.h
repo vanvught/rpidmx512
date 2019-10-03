@@ -2,7 +2,7 @@
  * @file max7219_spi.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@
 extern "C" {
 #endif
 
-extern void max7219_spi_start(device_info_t *);
-extern void max7219_spi_write_reg(const device_info_t *, uint8_t, uint8_t);
+extern void max7219_spi_start(device_info_t *device_info);
+extern void max7219_spi_write_reg(const device_info_t *device_info, uint32_t reg, uint32_t data);
 
 #ifdef __cplusplus
 }

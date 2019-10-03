@@ -7,8 +7,9 @@ CIRCLEHOME = ../Circle
 INCLUDE	+= -I ./include
 INCLUDE	+= -I ../lib-properties/include
 INCLUDE	+= -I ../include
+INCLUDE	+= -I ../lib-debug/include
 
-OBJS	= src/circle/networkcircle.o src/networkparams.o src/network.o src/networkconst.o
+OBJS	= src/circle/networkcircle.o src/networkparams.o src/network.o src/networkconst.o src/networkprint.o
 
 EXTRACLEAN = src/circle/*.o src/*.o
 

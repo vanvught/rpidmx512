@@ -3,11 +3,6 @@
 	<name>lib-hal</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-bob</project>
-		<project>lib-console</project>
-		<project>lib-ff12c</project>
-		<project>lib-h3</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,10 +3,6 @@
 	<name>lib-esp8266</name>
 	<comment></comment>
 	<projects>
-		<project>lib-bcm2835</project>
-		<project>lib-console</project>
-		<project>lib-hal</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

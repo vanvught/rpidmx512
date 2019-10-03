@@ -5,6 +5,7 @@
 CIRCLEHOME = ../Circle
 
 INCLUDE	+= -I ./include
+INCLUDE	+= -I ../lib-debug/include
 
 OBJS	= src/circle/ledblink.o src/ledblink.o
 

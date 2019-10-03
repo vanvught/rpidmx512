@@ -3,8 +3,6 @@
 	<name>lib-dmxsend</name>
 	<comment></comment>
 	<projects>
-		<project>lib-lightset</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

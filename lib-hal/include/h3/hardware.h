@@ -107,6 +107,7 @@ public:
 	}
 
 	uint32_t Millis(void) {
+		//return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
 		return millis();
 	}
 

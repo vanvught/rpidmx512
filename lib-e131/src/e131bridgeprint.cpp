@@ -38,7 +38,7 @@ void E131Bridge::Print(void) {
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);
 
-	printf("Bridge configuration\n");
+	printf("Bridge\n");
 	printf(" Firmware : %d.%d\n", firmware_version[0], firmware_version[1]);
 
 	if (m_State.nActiveOutputPorts != 0) {

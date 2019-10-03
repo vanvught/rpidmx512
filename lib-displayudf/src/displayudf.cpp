@@ -90,15 +90,18 @@ void DisplayUdf::Show(void) {
 }
 
 void DisplayUdf::ShowIpAddress(void) {
+	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR " /%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
 }
 
 void DisplayUdf::ShowNetmask(void) {
-	ShowIpAddress();
+	DEBUG_PRINTF("%d " IPSTR, Network::Get()->GetNetmaskCIDR(), IP2STR(Network::Get()->GetNetmask()));
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_NETMASK], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+	ShowIpAddress();
 }
 
 void DisplayUdf::ShowHostName(void) {
+	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME]);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
 }
 

@@ -42,6 +42,10 @@
 
 #include "debug.h"
 
+ArtNetRdm::~ArtNetRdm(void) {
+
+}
+
 ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);

@@ -39,6 +39,10 @@
 
 #include "debug.h"
 
+ArtNetRdm::~ArtNetRdm(void) {
+
+}
+
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 	RDMDeviceResponder(pRDMPersonality, pLightSet, false),
 	m_pRdmCommand(0),

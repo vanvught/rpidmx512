@@ -87,10 +87,6 @@ public:
 		return m_tTimeCodeType;
 	}
 
-	bool IsSetTimeCodeType(void) {
-		return m_tTimeCodeType;
-	}
-
 	void SetTimeCodeHandler(TCNetTimeCode *pTCNetTimeCode) {
 		m_pTCNetTimeCode = pTCNetTimeCode;
 	}

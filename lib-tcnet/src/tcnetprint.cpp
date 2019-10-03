@@ -28,13 +28,15 @@
 
 #include "tcnet.h"
 
-void TCNet::Print(void) {
-	printf("TCNet configuration\n");
+static const uint32_t s_nFps[4] = { 24, 25, 29, 30 };
 
-	printf(" Node name : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
-		if (m_tLayer != TCNET_LAYER_UNDEFINED) {
-	printf(" Layer     : L%c Time\n", GetLayerName((TTCNetLayers) m_tLayer));
+void TCNet::Print(void) {
+	printf("TCNet\n");
+	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
+	if (m_tLayer != TCNET_LAYER_UNDEFINED) {
+		printf(" L%c\n", GetLayerName((TTCNetLayers) m_tLayer));
 	} else {
 		printf(" Using SMTPE fields\n");
 	}
+	printf(" %d FPS\n", s_nFps[m_tTimeCodeType]);
 }

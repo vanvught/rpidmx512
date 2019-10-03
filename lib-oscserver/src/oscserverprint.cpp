@@ -28,7 +28,7 @@
 #include "oscserver.h"
 
 void OscServer::Print(void) {
-	printf("OSC Server configuration:\n");
+	printf("OSC Server\n");
 	printf(" Incoming Port        : %d\n", m_nPortIncoming);
 	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
 	printf(" DMX Path             : [%s][%s]\n", m_aPath, m_aPathSecond);

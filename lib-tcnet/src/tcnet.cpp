@@ -56,9 +56,6 @@ TCNet::TCNet(TTCNetNodeType tNodeType) :
 	m_tTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS),
 	m_fTypeDivider((float) 1000 / 30)
 {
-	assert(Hardware::Get() != 0);
-	assert(Network::Get() != 0);
-
 	// Fill the static fields for Opt-IN
 	m_tOptIn.ManagementHeader.ProtocolVersionMajor = 3;
 	m_tOptIn.ManagementHeader.ProtocolVersionMinor = 3;
@@ -128,7 +125,7 @@ void TCNet::HandlePort60000Incoming(void) {
 				m_fTypeDivider = (float) 1000 / 24;
 				break;
 			case TCNET_TIMECODE_TYPE_EBU_25FPS:
-				m_fTypeDivider = (float) 1000 / 25;
+				m_fTypeDivider = 1000 / 25;
 				break;
 			case TCNET_TIMECODE_TYPE_DF:
 				m_fTypeDivider = (float) 1000 / (float) 29.97;
@@ -195,19 +192,17 @@ void TCNet::HandlePort60002Incoming(void) {
 }
 
 void TCNet::HandlePortUnicastIncoming(void) {
+	DEBUG_ENTRY
 
+	DEBUG_EXIT
 }
 
 void TCNet::HandleOptInOutgoing(void) {
-	//DEBUG_ENTRY
-
 	m_tOptIn.ManagementHeader.SEQ += 1;
 	m_tOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
 	m_tOptIn.Uptime = Hardware::Get()->GetUpTime();
 
-	Network::Get()->SendTo(m_aHandles[0],  (const uint8_t *) &m_tOptIn, (uint16_t) sizeof(struct TOptIn), m_tNode.IPAddressBroadcast, (uint16_t) NODE_BROADCAST_PORT_0);
-
-	//DEBUG_EXIT
+	Network::Get()->SendTo(m_aHandles[0],  (const uint8_t *) &m_tOptIn, (uint16_t) sizeof(struct TOptIn), m_tNode.IPAddressBroadcast, NODE_BROADCAST_PORT_0);
 }
 
 int TCNet::Run(void) {
@@ -300,7 +295,7 @@ void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
 		m_fTypeDivider = (float) 1000 / 24;
 		break;
 	case TCNET_TIMECODE_TYPE_EBU_25FPS:
-		m_fTypeDivider = (float) 1000 / 25;
+		m_fTypeDivider = 1000 / 25;
 		break;
 	case TCNET_TIMECODE_TYPE_DF:
 		m_fTypeDivider = (float) 1000 / (float) 29.97;

@@ -48,10 +48,6 @@ enum TDMXSendState {
 	DMXSendUnknown
 };
 
-enum {
-	DMX_UNIVERSE_SIZE = 512	///< The number of slots in a DMX512 universe.
-};
-
 class DMXSend: public LightSet {
 public:
 	DMXSend(CInterruptSystem *);
