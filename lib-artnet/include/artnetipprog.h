@@ -41,12 +41,13 @@
 #endif
 
 #define IPPROG_COMMAND_NONE					0
-#define IPPROG_COMMAND_ENABLE_PROGRAMMING	(1<<7)
-#define IPPROG_COMMAND_ENABLE_DHCP			((1<<6) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_SET_TO_DEFAULT		((1<<3) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_IPADDRESS	((1<<2) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_SUBNETMASK	((1<<1) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_PORT			(0      | IPPROG_COMMAND_ENABLE_PROGRAMMING)
+#define IPPROG_COMMAND_ENABLE_PROGRAMMING	(1 << 7)
+#define IPPROG_COMMAND_ENABLE_DHCP			((1 << 6) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
+#define IPPROG_COMMAND_PROGRAM_GATEWAY		((1 << 4) | IPPROG_COMMAND_ENABLE_PROGRAMMING)	///< Not documented!
+#define IPPROG_COMMAND_SET_TO_DEFAULT		((1 << 3) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
+#define IPPROG_COMMAND_PROGRAM_IPADDRESS	((1 << 2) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
+#define IPPROG_COMMAND_PROGRAM_SUBNETMASK	((1 << 1) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
+#define IPPROG_COMMAND_PROGRAM_PORT			((1 << 0) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
 
 struct TArtNetIpProg {
 	uint8_t Command;	///< Defines the how this packet is processed.
@@ -61,6 +62,10 @@ struct TArtNetIpProg {
 	uint8_t ProgSmLo;
 	uint8_t ProgPortHi;	///< PortAddress to be programmed into Node if enabled by Command Field
 	uint8_t ProgPortLo;
+	uint8_t ProgGwHi;	///< Gateway to be programmed into Node if enabled by Command Field
+	uint8_t ProgGw2;
+	uint8_t ProgGw1;
+	uint8_t ProgGwtLo;
 } PACKED;
 
 struct TArtNetIpProgReply {
@@ -75,6 +80,11 @@ struct TArtNetIpProgReply {
 	uint8_t ProgPortHi;	///< Port Address of Node
 	uint8_t ProgPortLo;
 	uint8_t Status;		///< Bit 6 DHCP enabled.
+	uint8_t Filler;
+	uint8_t ProgGwHi;	///< Gateway of Node
+	uint8_t ProgGw2;
+	uint8_t ProgGw1;
+	uint8_t ProgGwtLo;
 } PACKED;
 
 class ArtNetIpProg {

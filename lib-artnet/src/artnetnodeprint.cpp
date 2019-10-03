@@ -36,7 +36,7 @@
 void ArtNetNode::Print(void) {
 	const uint8_t *firmware_version = GetSoftwareVersion();
 
-	printf("Node %d configuration\n", m_nVersion);
+	printf("Node %d\n", m_nVersion);
 	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);

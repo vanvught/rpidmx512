@@ -307,7 +307,6 @@ private:
 	ArtNetStore *m_pArtNetStore;
 	ArtNetDisplay *m_pArtNetDisplay;
 	ArtNetDmx *m_pArtNetDmx;
-
 	ArtNet4Handler *m_pArtNet4Handler;
 
 	struct TArtNetNode m_Node;				///< Struct describing the node
@@ -338,6 +337,14 @@ private:
 	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 
 	uint32_t m_nDestinationIp;
+
+public:
+	static ArtNetNode* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static ArtNetNode *s_pThis;
 };
 
 #endif /* ARTNETNODE_H_ */

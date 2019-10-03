@@ -39,10 +39,6 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-
-ArtNetIpProg::~ArtNetIpProg(void) {
-}
-
 void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 	assert(pArtNetIpProg != 0);
 

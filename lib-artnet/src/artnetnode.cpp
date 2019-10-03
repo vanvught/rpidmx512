@@ -70,7 +70,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 37 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 38 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -79,6 +79,8 @@ static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 #define NETWORK_DATA_LOSS_TIMEOUT		10	///< Seconds
 
 #define PORT_IN_STATUS_DISABLED_MASK	0x08
+
+ArtNetNode *ArtNetNode::s_pThis = 0;
 
 ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_nVersion(nVersion),
@@ -105,6 +107,8 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
 	assert(LedBlink::Get() != 0);
+
+	s_pThis = this;
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
@@ -1059,11 +1063,11 @@ void ArtNetNode::Run(void) {
 				LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 			}
 		}
-
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
 		if (m_pArtNetDmx != 0) {
 			HandleDmxIn();
 		}
-
+#endif
 		return;
 	}
 
@@ -1133,9 +1137,11 @@ void ArtNetNode::Run(void) {
 		break;
 	}
 
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
 	if (m_pArtNetDmx != 0) {
 		HandleDmxIn();
 	}
+#endif
 
 	if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
 		if (m_State.bIsReceivingDmx) {

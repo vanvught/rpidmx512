@@ -36,10 +36,6 @@
 
 #include "artnetnode_internal.h"
 
-ArtNetRdm::~ArtNetRdm(void) {
-
-}
-
 void ArtNetNode::HandleTodControl(void) {
 	const struct TArtTodControl *packet = (struct TArtTodControl *) &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const uint16_t portAddress = (uint16_t)(packet->Net << 8) | (uint16_t)(packet->Address);
