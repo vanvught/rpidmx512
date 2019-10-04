@@ -37,8 +37,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-// 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };
+static uint8_t uid_device[RDM_UID_SIZE] = { 0x50, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH] ALIGNED;
 static uint8_t root_device_label_length =  0;

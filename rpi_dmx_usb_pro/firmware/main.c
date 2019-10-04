@@ -37,12 +37,13 @@
 
 #include "usb.h"
 
-#include "rdm_device_const.h"
 #include "rdm_device_info.h"
 
 #include "widget.h"
 #include "widget_monitor.h"
 #include "widget_params.h"
+
+#include "device_software_version.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -121,13 +122,13 @@ int notmain(void) {
 
 	if (oled_connected) {
 		oled_set_cursor(&oled_info,0,0);
-		(void) oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
+		oled_printf(&oled_info, "[V%s] RDM Controller", DEVICE_SOFTWARE_VERSION);
 		oled_set_cursor(&oled_info,1,0);
-		(void) oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
+		oled_printf(&oled_info,"UUID: %.2x%.2x:%.2x%.2x%.2x%.2x", uid_device[0], uid_device[1], uid_device[2], uid_device[3], uid_device[4], uid_device[5]);
 		oled_set_cursor(&oled_info,2,0);
-		(void) oled_printf(&oled_info,"L: %.*s", (int) rdm_device_info_label.length, (const char *)rdm_device_info_label.data);
+		oled_printf(&oled_info,"L: %.*s", (int) rdm_device_info_label.length, (const char *)rdm_device_info_label.data);
 		oled_set_cursor(&oled_info,5,0);
-		(void) oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
+		oled_printf(&oled_info,"Mode: %d (%s)", widget_mode, widget_mode_names[widget_mode]);
 	}
 
 	hardware_watchdog_init();

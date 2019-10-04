@@ -90,17 +90,14 @@
 
 #include "software_version.h"
 
+static const char sFps[4][3] = { "24", "25", "29", "30" };
+
 extern "C" {
 
 __attribute__((noinline)) static void print_disabled(bool b, const char *p) {
 	if (b) {
 		printf(" %s output is disabled\n", p);
 	}
-}
-
-__attribute__((noinline)) static void console_display_puts(const char *p) {
-	console_puts(p);
-	Display::Get()->PutString(p);
 }
 
 void notmain(void) {
@@ -153,13 +150,13 @@ void notmain(void) {
 	RtpMidi rtpMidi;
 	OSCServer oscServer;
 
-	LtcReader ltcReader(&node, &tLtcDisabledOutputs);
-	MidiReader midiReader(&node, &tLtcDisabledOutputs);
+	LtcReader ltcReader(&tLtcDisabledOutputs);
+	MidiReader midiReader(&tLtcDisabledOutputs);
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
-	TCNetReader tcnetReader(&node, &tLtcDisabledOutputs);
-	RtpMidiReader rtpMidiReader(&node, &tLtcDisabledOutputs);
+	TCNetReader tcnetReader(&tLtcDisabledOutputs);
+	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
 
-	LtcGenerator ltcGenerator(&node, &tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
+	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -261,6 +258,11 @@ void notmain(void) {
 	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL) && ltcParams.IsOscEnabled());
 
 	if (bRunOSCServer) {
+		bool isSet;
+		const uint16_t nPort = ltcParams.GetOscPort(isSet);
+		if (isSet) {
+			oscServer.SetPortIncoming(nPort);
+		}
 		oscServer.Start();
 		oscServer.Print();
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
@@ -296,46 +298,24 @@ void notmain(void) {
 	display.PutString(SourceSelectConst::SOURCE[source]);
 
 	if (source == LTC_READER_SOURCE_TCNET) {
-		console_display_puts(" ");
-
+		display.PutString(" ");
 		if (tcnet.GetLayer() != TCNET_LAYER_UNDEFINED) {
-			console_putc('L');
 			display.PutChar('L');
-			console_putc(TCNet::GetLayerName(tcnet.GetLayer()));
 			display.PutChar(TCNet::GetLayerName(tcnet.GetLayer()));
-			console_display_puts(" Time");
-
-			if (tcnet.IsSetTimeCodeType()) {
-				switch (tcnet.GetTimeCodeType()) {
-				case TCNET_TIMECODE_TYPE_FILM:
-					console_display_puts(" F24");
-					break;
-				case TCNET_TIMECODE_TYPE_EBU_25FPS:
-					console_display_puts(" F25");
-					break;
-				case TCNET_TIMECODE_TYPE_DF:
-					console_display_puts(" F29");
-					break;
-				case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
-					console_display_puts(" F30");
-					break;
-				default:
-					break;
-				}
-				puts("FPS");
-			}
 		} else {
-			console_display_puts("SMPTE");
+			display.PutString("SMPTE");
 		}
+		display.PutString(" F");
+		display.PutString(sFps[tcnet.GetTimeCodeType()]);
 	}
 
 	print_disabled(tLtcDisabledOutputs.bDisplay, "Display");
 	print_disabled(tLtcDisabledOutputs.bMax7219, "Max7219");
-	print_disabled((source != LTC_READER_SOURCE_LTC) && (tLtcDisabledOutputs.bLtc), "LTC");
-	print_disabled((source != LTC_READER_SOURCE_TCNET) && (tLtcDisabledOutputs.bTCNet), "TCNet");
-	print_disabled((source != LTC_READER_SOURCE_APPLEMIDI) && (tLtcDisabledOutputs.bRtpMidi), "AppleMIDI");
-	print_disabled((source != LTC_READER_SOURCE_MIDI) && (tLtcDisabledOutputs.bMidi), "MIDI");
-	print_disabled((source != LTC_READER_SOURCE_ARTNET) && (tLtcDisabledOutputs.bArtNet), "Art-Net");
+	print_disabled(tLtcDisabledOutputs.bLtc, "LTC");
+	print_disabled(tLtcDisabledOutputs.bTCNet, "TCNet");
+	print_disabled(tLtcDisabledOutputs.bRtpMidi, "AppleMIDI");
+	print_disabled(tLtcDisabledOutputs.bMidi, "MIDI");
+	print_disabled(tLtcDisabledOutputs.bArtNet, "Art-Net");
 	print_disabled(tLtcDisabledOutputs.bNtp, "NTP");
 
 	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());

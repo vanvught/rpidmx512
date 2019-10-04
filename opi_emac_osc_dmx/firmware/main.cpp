@@ -91,6 +91,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	MDNS mDns;

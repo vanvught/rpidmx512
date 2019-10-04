@@ -103,6 +103,8 @@ void notmain(void) {
 
 	display.Write(5, "mDNS enabled");
 
+	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+
 	for (;;) {
 		nw.Run();
 		mDns.Run();

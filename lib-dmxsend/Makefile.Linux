@@ -1,0 +1,7 @@
+# Debug purposes ONLY
+#
+DEFINES = RASPPI #NDEBUG
+#
+EXTRA_INCLUDES = ../lib-lightset/include ../lib-properties/include ../lib-dmx/include
+#
+include ../linux-template/lib/Rules.mk

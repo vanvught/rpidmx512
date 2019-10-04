@@ -63,6 +63,7 @@
 #if defined(ORANGE_PI)
  #include "spiflashinstall.h"
  #include "spiflashstore.h"
+ #include "storee131.h"
 #endif
 
 #include "software_version.h"
@@ -86,10 +87,11 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
 	StoreWS28xxDmx storeWS28xxDmx;
 
-	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
+	E131Params e131params((E131ParamsStore *)&storeE131);
 #else
 	E131Params e131params;
 #endif

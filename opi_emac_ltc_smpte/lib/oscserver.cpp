@@ -1,4 +1,3 @@
-#if 1
 /**
  * @file oscserver.cpp
  *
@@ -24,20 +23,13 @@
  * THE SOFTWARE.
  */
 
-//#define ENABLE_PING_PONG
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
 #include "oscserver.h"
-
 #include "osc.h"
-#if defined(ENABLE_PING_PONG)
-#include "oscmessage.h"
-#include "oscsend.h"
-#endif
 
 #include "network.h"
 
@@ -49,9 +41,8 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-enum TOscServerPorts {
-	OSCSERVER_PORT_DEFAULT_INCOMING = 8000,
-	OSCSERVER_PORT_DEFAULT_OUTGOING = 9000
+enum TOscServerPort {
+	OSCSERVER_PORT_DEFAULT_INCOMING = 8000
 };
 
 #define OSCSERVER_MAX_BUFFER 		4096
@@ -73,7 +64,6 @@ static const char sSet[] ALIGNED = "/set/";
 
 OSCServer::OSCServer(void):
 	m_nPortIncoming(OSCSERVER_PORT_DEFAULT_INCOMING),
-	m_nPortOutgoing(OSCSERVER_PORT_DEFAULT_OUTGOING),
 	m_nHandle(-1),
 	m_nRemoteIp(0),
 	m_nRemotePort(0),
@@ -107,12 +97,6 @@ void OSCServer::Run(void) {
 		return;
 	}
 
-#if defined(ENABLE_PING_PONG)
-	if (OSC::isMatch((const char*) m_pBuffer, "/ping")) {
-		DEBUG_PUTS("ping received");
-		OSCSend MsgSend(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/pong", 0);
-	} else
-#endif
 	if (OSC::isMatch((const char*) m_pBuffer, m_aPath)) {
 		const uint32_t nCommandLength = strlen((const char *)m_pBuffer);
 
@@ -148,14 +132,10 @@ void OSCServer::Run(void) {
 			DEBUG_PUTS("ActionResume");
 		}
 	}
-
-
 }
 
 void OSCServer::Print(void) {
-	printf("OSC Server configuration:\n");
-	printf(" Incoming Port : %d\n", m_nPortIncoming);
-	printf(" Outgoing Port : %d\n", m_nPortOutgoing);
-	printf(" Path          : [%s]\n", m_aPath);
+	printf("OSC\n");
+	printf(" Port : %d\n", m_nPortIncoming);
+	printf(" Path : [%s]\n", m_aPath);
 }
-#endif

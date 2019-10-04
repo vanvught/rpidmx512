@@ -2,7 +2,7 @@
  * @file rdm_device_info.c
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 #include "dmx.h"
 
 #include "rdm.h"
-#include "rdm_device_const.h"
 
 #include "c/hardware.h"
 
@@ -43,50 +42,27 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
+static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi DMX USB Pro";
 static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_LABEL[0]) - 1;
+
+static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "www.orangepi-dmx.org";
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
+static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x50, 0x00 };
 
-static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";					///< Parameters file name
-static const char RDM_DEVICE_MANUFACTURER_NAME[] ALIGNED = "manufacturer_name";			///<
-static const char RDM_DEVICE_MANUFACTURER_ID[] ALIGNED = "manufacturer_id";				///<
-static const char RDM_DEVICE_LABEL[] ALIGNED = "device_label";							///<
-static const char RDM_DEVICE_EXTERNAL_MONITOR[] ALIGNED = "device_external_monitor";	///<
+static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";
+static const char RDM_DEVICE_LABEL[] ALIGNED = "device_label";
+static const char RDM_DEVICE_EXTERNAL_MONITOR[] ALIGNED = "device_external_monitor";
 
-// 0x7F, 0xF0 : RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY
-static uint8_t uid_device[RDM_UID_SIZE] = { 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00 };	///<
-static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH] ALIGNED;					///<
-static uint8_t root_device_label_length = (uint8_t) 0;								///<
+static uint8_t uid_device[RDM_UID_SIZE] = { 0x50, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static char root_device_label[RDM_DEVICE_LABEL_MAX_LENGTH] ALIGNED;
+static uint8_t root_device_label_length = 0;
 
-static char device_manufacturer_name[RDM_MANUFACTURER_LABEL_MAX_LENGTH] ALIGNED;	///<
-static uint8_t device_manufacturer_name_length = (uint8_t) 0;						///<
+static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;
 
-static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH] ALIGNED;			///<
-
-static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;									///<
-
-static uint8_t ext_mon_level = (uint8_t) 0;											///<
+static uint8_t ext_mon_level = 0;
 
 uint8_t rdm_device_info_get_ext_mon_level(void) {
 	return ext_mon_level;
-}
-
-static uint16_t hex_uint16(const char *s) {
-	uint16_t ret = 0;
-	uint8_t nibble;
-
-	while (*s != '\0') {
-		char d = *s;
-
-		if (isxdigit((int) d) == 0) {
-			break;
-		}
-
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
-		ret = (ret << 4) | nibble;
-		s++;
-	}
-
-	return ret;
 }
 
 static void process_line_read_string(const char *line) {
@@ -103,26 +79,9 @@ static void process_line_read_string(const char *line) {
 		return;
 	}
 
-	len = RDM_MANUFACTURER_LABEL_MAX_LENGTH;
-	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_NAME, device_manufacturer_name, &len) == 2) {
-		device_manufacturer_name_length = len;
-		return;
-	}
-
 	len = RDM_DEVICE_LABEL_MAX_LENGTH;
 	if (sscan_char_p(line, RDM_DEVICE_LABEL, root_device_label, &len) == 2) {
 		root_device_label_length = len;
-		return;
-	}
-
-	len = 4;
-	memset(value, 0, sizeof(value) / sizeof(char));
-	if (sscan_char_p(line, RDM_DEVICE_MANUFACTURER_ID, value, &len) == 2) {
-		if (len == 4) {
-			const uint16_t v = hex_uint16(value);
-			uid_device[0] = (uint8_t) (v >> 8);
-			uid_device[1] = (uint8_t) (v & 0xFF);
-		}
 		return;
 	}
 }
@@ -133,15 +92,12 @@ void rdm_device_info_get_label(const uint16_t sub_device, struct _rdm_device_inf
 }
 
 void rdm_device_info_get_manufacturer_name(struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)device_manufacturer_name;
-	info->length = device_manufacturer_name_length;
+	info->data = (uint8_t *)DEVICE_MANUFACTURER_NAME;
+	info->length = DEVICE_MANUFACTURER_NAME_LENGTH;
 }
 
 void rdm_device_info_get_manufacturer_id(struct _rdm_device_info_data *info) {
-	manufacturer_id[0] = uid_device[1];
-	manufacturer_id[1] = uid_device[0];
-
-	info->data = (uint8_t *)manufacturer_id;
+	info->data = (uint8_t *)DEVICE_MANUFACTURER_ID;
 	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
@@ -172,11 +128,8 @@ void rdm_device_info_init(void) {
 	device_sn[2] = uid_device[3];
 	device_sn[3] = uid_device[2];
 
-	(void *)memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
+	memcpy(root_device_label, DEVICE_LABEL, DEVICE_LABEL_LENGTH);
 	root_device_label_length = DEVICE_LABEL_LENGTH;
-
-	(void *)memcpy(device_manufacturer_name, DEVICE_MANUFACTURER_NAME, DEVICE_MANUFACTURER_NAME_LENGTH);
-	device_manufacturer_name_length = DEVICE_MANUFACTURER_NAME_LENGTH;
 
 	read_config_file(RDM_DEVICE_FILE_NAME, &process_line_read_string);
 }

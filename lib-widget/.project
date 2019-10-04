@@ -3,14 +3,6 @@
 	<name>lib-widget</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-bcm2835</project>
-		<project>lib-dmx</project>
-		<project>lib-ff12c</project>
-		<project>lib-monitor</project>
-		<project>lib-properties</project>
-		<project>lib-rdm</project>
-		<project>lib-usb</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -3,12 +3,6 @@
 	<name>rpi_dmx_usb_pro</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-dmx</project>
-		<project>lib-monitor</project>
-		<project>lib-rdm</project>
-		<project>lib-usb</project>
-		<project>lib-widget</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

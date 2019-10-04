@@ -48,16 +48,8 @@ public:
 		return m_nPortIncoming;
 	}
 
-	void SetPortOutgoing(uint16_t nPortOutgoing) {
-		m_nPortOutgoing = nPortOutgoing;
-	}
-	uint16_t GetPortOutgoing(void) {
-		return m_nPortOutgoing;
-	}
-
 private:
 	uint16_t m_nPortIncoming;
-	uint16_t m_nPortOutgoing;
 	int32_t m_nHandle;
 	uint32_t m_nRemoteIp;
 	uint16_t m_nRemotePort;
