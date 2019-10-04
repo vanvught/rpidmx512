@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
- #undef NDEBUG
-#endif
-
 #include <stddef.h>
 #ifndef NDEBUG
  #include <stdio.h>

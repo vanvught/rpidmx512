@@ -2,7 +2,7 @@
  * @file string.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-inline static void *memcpy(/*@only@*/void *dest, const void *src, size_t n) {
+inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
 	char *dp = (char *) dest;
 	const char *sp = (const char *) src;
 
@@ -101,7 +101,7 @@ inline static size_t strlen(const char *s) {
 	return (size_t) (s - p);
 }
 
-inline static char *strcpy(/*@only@*/char *s1, const char *s2) {
+inline static char *strcpy(char * __restrict__ s1, const char * __restrict__ s2) {
 	char *s = s1;
 
 	while ((*s++ = *s2++) != '\0')
@@ -109,7 +109,7 @@ inline static char *strcpy(/*@only@*/char *s1, const char *s2) {
 	return s1;
 }
 
-inline static char *strncpy(/*@only@*/char *s1, const char *s2, size_t n) {
+inline static char *strncpy(char * __restrict__ s1, const char * __restrict__ s2, size_t n) {
 	char *s = s1;
 
 	while (n > 0 && *s2 != '\0') {

@@ -23,6 +23,9 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
 #include <stdint.h>
 #ifndef NDEBUG
  #include <stdio.h>

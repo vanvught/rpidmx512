@@ -152,7 +152,7 @@ int OscClient::Run(void) {
 }
 
 void OscClient::Print(void) {
-	printf("OSC Client configuration\n");
+	printf("OSC Client\n");
 	printf(" Server ip-address :" IPSTR "\n", IP2STR(m_nServerIP));
 	printf(" Outgoing Port     : %d\n", m_nPortOutgoing);
 	printf(" Incoming Port     : %d\n", m_nPortIncoming);

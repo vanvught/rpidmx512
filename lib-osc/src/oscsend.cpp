@@ -2,7 +2,7 @@
  * @file oscsend.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,25 +25,16 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <assert.h>
-
-#ifdef __circle__
-#include <circle/stdarg.h>
-static const char FromOscSend[] = "oscsend";
-#elif defined (__linux__) || defined (__CYGWIN__)
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#else
-#include <stdarg.h>
-#endif
 
 #include "oscsend.h"
 #include "oscstring.h"
 #include "oscmessage.h"
 
 #include "network.h"
+
+#include "debug.h"
 
 /**
  * @brief Send a OSC formatted message to the address specified.
@@ -85,6 +76,7 @@ void OSCSend::AddVarArgs(va_list ap) {
 
 	while (m_Types && *m_Types) {
 		switch (*m_Types++) {
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 		case OSC_INT32: {
 			int32_t i = va_arg(ap, int32_t);
 			m_Result = m_Msg->AddInt32(i);
@@ -95,24 +87,25 @@ void OSCSend::AddVarArgs(va_list ap) {
 			m_Result = m_Msg->AddFloat(f);
 			break;
 		}
+#endif
 		case OSC_STRING: {
 			char *s = va_arg(ap, char *);
 			m_Result = m_Msg->AddString(s);
 			break;
 		}
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 		case OSC_BLOB: {
 			OSCBlob *b = va_arg(ap, OSCBlob *);
 			m_Result = m_Msg->AddBlob(b);
 			break;
 		}
+#endif
 		default:
 			break;
 		}
 
 		if(m_Result != 0) {
-#if defined (__linux__) || defined (__CYGWIN__)
-			fprintf(stderr, "AddVarArgs: %d\n", m_Result);
-#endif
+			DEBUG_PRINTF("AddVarArgs: %d", m_Result);
 		}
 	}
 }

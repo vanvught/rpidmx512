@@ -2,7 +2,7 @@
  * @file oscmessage.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,14 @@
  * THE SOFTWARE.
  */
 
+//#ifndef OSC_MESSAGE_STRING_ONLY
+//#define OSC_MESSAGE_STRING_ONLY
+//#endif
+
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #include "oscmessage.h"
 #include "oscstring.h"
@@ -233,25 +232,7 @@ OSCMessage::~OSCMessage(void) {
 	}
 }
 
-void OSCMessage::Dump(void) {
-	printf("types %s\n", m_Types);
-	printf("typelen %u\n", m_Typelen);
-	printf("typesize %u\n", m_Typesize);
-	printf("datalen %u\n", m_Datalen);
-	printf("datasize %u\n", m_Datasize);
-
-	printf("data : ");
-	if (m_Data != 0) {
-		char *p = (char *) m_Data;
-		for (int i = 0; i < (int) m_Datasize; i++) {
-			printf("%x ", (uint8_t) p[i]);
-		}
-		printf("\n");
-	} else {
-		printf("m_Data = 0\n");
-	}
-}
-
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 int OSCMessage::AddFloat(float a) {
 	osc_pcast32 b;
 	int32_t *nptr = (int32_t *) AddData((unsigned) sizeof(a));
@@ -289,6 +270,7 @@ int OSCMessage::AddInt32(int32_t a) {
 
 	return 0;
 }
+#endif
 
 int OSCMessage::AddString(const char *a) {
 	const unsigned size = OSCString::Size(a);
@@ -307,6 +289,7 @@ int OSCMessage::AddString(const char *a) {
 	return 0;
 }
 
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 int OSCMessage::AddBlob(OSCBlob *pBlob) {
 	const unsigned size = pBlob->GetSize();
 	const unsigned dsize = pBlob->GetDataSize();
@@ -328,7 +311,7 @@ int OSCMessage::AddBlob(OSCBlob *pBlob) {
 
 	return 0;
 }
-
+#endif
 
 int OSCMessage::GetResult(void) const {
 	return m_Result;
@@ -355,6 +338,7 @@ unsigned OSCMessage::getDataLength(void) const {
 	return m_Datalen;
 }
 
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 float OSCMessage::GetFloat(unsigned argc) {
 	if (argc > m_Typelen) {
 		m_Result = OSC_INVALID_ARGUMENT;
@@ -386,6 +370,7 @@ int OSCMessage::GetInt(unsigned argc) {
 
 	return val32.nl;
 }
+#endif
 
 char * OSCMessage::GetString(unsigned argc) {
 	if (argc > m_Typelen) {
@@ -400,6 +385,7 @@ char * OSCMessage::GetString(unsigned argc) {
 	return (char *)m_Argv[argc];
 }
 
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 OSCBlob OSCMessage::GetBlob(unsigned argc) {
 	void *data;
 	unsigned int size = 0;
@@ -422,6 +408,7 @@ OSCBlob OSCMessage::GetBlob(unsigned argc) {
 
 	return OSCBlob(p, size);
 }
+#endif
 
 void *OSCMessage::Serialise(const char *path, void *to, unsigned * size) {
 	int i, argc;
@@ -463,6 +450,7 @@ void *OSCMessage::Serialise(const char *path, void *to, unsigned * size) {
 signed OSCMessage::ArgValidate(osc_type type, void *data, unsigned size) {
 
 	switch (type) {
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 	case OSC_TRUE:
 	case OSC_FALSE:
 	case OSC_NIL:
@@ -477,11 +465,14 @@ signed OSCMessage::ArgValidate(osc_type type, void *data, unsigned size) {
 	case OSC_TIMETAG:
 	case OSC_DOUBLE:
 		return size >= 8 ? 8 : -OSC_INVALID_SIZE;
+#endif
 	case OSC_STRING:
 	case OSC_SYMBOL:
 		return OSCString::Validate(data, size);
+#if !defined(OSC_MESSAGE_STRING_ONLY)
 	case OSC_BLOB:
 		return OSCBlob::Validate(data, size);
+#endif
 	default:
 		return -OSC_INVALID_TYPE;
 	}
@@ -622,6 +613,7 @@ int OSCMessage::AddTypeChar(char t) {
 unsigned OSCMessage::ArgSize(osc_type type, void *data)
 {
     switch (type) {
+#if !defined(OSC_MESSAGE_STRING_ONLY)
     case OSC_TRUE:
     case OSC_FALSE:
     case OSC_NIL:
@@ -638,14 +630,14 @@ unsigned OSCMessage::ArgSize(osc_type type, void *data)
     case OSC_TIMETAG:
     case OSC_DOUBLE:
         return 8;
-
+#endif
     case OSC_STRING:
     case OSC_SYMBOL:
         return OSCString::Size((char *) data);
-
+#if !defined(OSC_MESSAGE_STRING_ONLY)
     case OSC_BLOB:
         return OSCBlob::Size(data);
-
+#endif
     default:
     	// Unknown
         return 0;
