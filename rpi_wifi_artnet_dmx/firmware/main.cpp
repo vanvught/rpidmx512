@@ -140,7 +140,6 @@ void notmain(void) {
 
 #if defined (ORANGE_PI)
 	nw.Init();
-	//nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 #else
 	nw.Init();
 #endif

@@ -75,7 +75,7 @@ const bool wifi(const struct ip_info *info) {
 
 	printf("ESP8266 information\n");
 	printf(" SDK      : %s\n", system_get_sdk_version());
-	printf(" Firmware : %s\n\n", wifi_get_firmware_version());
+	printf(" Firmware : %s\n", wifi_get_firmware_version());
 
 	if (network_params_init()) {
 		(void) console_status(CONSOLE_YELLOW, CHANGING_TO_STATION_MODE);

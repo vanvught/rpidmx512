@@ -47,7 +47,7 @@ static const uint8_t DEVICE_LABEL_LENGTH = sizeof(DEVICE_LABEL) / sizeof(DEVICE_
 
 static const char DEVICE_MANUFACTURER_NAME[] ALIGNED = "www.orangepi-dmx.org";
 static const uint8_t DEVICE_MANUFACTURER_NAME_LENGTH = sizeof(DEVICE_MANUFACTURER_NAME) / sizeof(DEVICE_MANUFACTURER_NAME[0]) - 1;
-static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x50, 0x00 };
+static const uint8_t DEVICE_MANUFACTURER_ID[] ALIGNED = { 0x00, 0x50 };
 
 static const char RDM_DEVICE_FILE_NAME[] ALIGNED = "rdm_device.txt";
 static const char RDM_DEVICE_LABEL[] ALIGNED = "device_label";
@@ -120,8 +120,8 @@ void rdm_device_info_init(void) {
 		uid_device[5] = mac_address[5];
 	}
 
-	uid_device[0] = DEVICE_MANUFACTURER_ID[0];
-	uid_device[1] = DEVICE_MANUFACTURER_ID[1];
+	uid_device[0] = DEVICE_MANUFACTURER_ID[1];
+	uid_device[1] = DEVICE_MANUFACTURER_ID[0];
 
 	device_sn[0] = uid_device[5];
 	device_sn[1] = uid_device[4];

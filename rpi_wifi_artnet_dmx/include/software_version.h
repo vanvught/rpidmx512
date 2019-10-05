@@ -29,7 +29,7 @@
 #if defined(H3)
  static const char SOFTWARE_VERSION[] = "1.3";
 #else
- static const char SOFTWARE_VERSION[] = "3.2";
+ static const char SOFTWARE_VERSION[] = "3.3";
 #endif
 
  #endif /* SOFTWARE_VERSION_H_ */

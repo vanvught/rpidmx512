@@ -1,3 +1,4 @@
+DEFINES = SD_WRITE_SUPPORT
 #
 EXTRA_SRCDIR = arm device/emmc device/fb 
 #

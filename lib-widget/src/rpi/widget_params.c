@@ -1,7 +1,7 @@
 /**
  * @file widget_params.c
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,8 @@
 
 #include "dmx.h"
 
-///<
 static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
 
-///<
 static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 		(uint8_t) WIDGET_DEFAULT_FIRMWARE_LSB, (uint8_t) FIRMWARE_RDM,
 		(uint8_t) WIDGET_DEFAULT_BREAK_TIME, (uint8_t) WIDGET_DEFAULT_MAB_TIME,
@@ -47,10 +45,8 @@ static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 static uint8_t dmx_send_to_host_throttle = 0;										///<
 
 static const TCHAR FILE_NAME_PARAMS[] = "params.txt";								///< Parameters file name
-#ifdef UPDATE_CONFIG_FILE
 static const TCHAR FILE_NAME_PARAMS_BAK[] = "params.bak";							///<
 static const TCHAR FILE_NAME_UPDATES[] = "updates.txt";								///<
-#endif
 
 static const char DMXUSBPRO_PARAMS_BREAK_TIME[] = "dmxusbpro_break_time";			///<
 static const char DMXUSBPRO_PARAMS_MAB_TIME[] = "dmxusbpro_mab_time";				///<
@@ -67,7 +63,6 @@ typedef enum {
 
 static bool needs_update[3] = { false, false, false };
 
-#ifdef UPDATE_CONFIG_FILE
 static char *uint8_toa(uint8_t i) {
 	/* Room for 3 digits and '\0' */
 	static char buffer[4];
@@ -182,18 +177,17 @@ static void update_config_file(void) {
 			needs_update[AI_REFRESH_RATE] = false;
 		}
 
-		(void) f_close(&file_object_wr);
+		f_close(&file_object_wr);
+
 		if (rc_rd == FR_OK) {
 			(void) f_close(&file_object_rd);
 		}
-		(void) f_unlink(FILE_NAME_PARAMS_BAK);
-		(void) f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
-		(void) f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
+
+		f_unlink(FILE_NAME_PARAMS_BAK);
+		f_rename(FILE_NAME_PARAMS, FILE_NAME_PARAMS_BAK);
+		f_rename(FILE_NAME_UPDATES, FILE_NAME_PARAMS);
 	}
 }
-#else
-inline static void update_config_file(void) { }
-#endif
 
 static void process_line_read_uint8_t(const char *line) {
 	uint8_t value;
@@ -218,6 +212,7 @@ static void process_line_read_uint8_t(const char *line) {
 }
 
 static void read_config_file(void) {
+	unsigned i;
 	FRESULT rc = FR_DISK_ERR;
 	FIL file_object;
 
@@ -226,11 +221,25 @@ static void read_config_file(void) {
 	if (rc == FR_OK) {
 		TCHAR buffer[128];
 		for (;;) {
-			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL)
+			if (f_gets(buffer, (int) sizeof(buffer), &file_object) == NULL) {
 				break; // Error or end of file
-			(void) process_line_read_uint8_t((const char *) buffer);
+			}
+
+			if (buffer[0] >= 'a') {
+				char *q = (char*) buffer;
+
+				for (i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
+					if ((*q == '\r') || (*q == '\n')) {
+						*q = '\0';
+					}
+					q++;
+				}
+
+				process_line_read_uint8_t((const char*) buffer);
+			}
 		}
-		(void) f_close(&file_object);
+
+		f_close(&file_object);
 	} else {
 		// nothing to do here
 	}

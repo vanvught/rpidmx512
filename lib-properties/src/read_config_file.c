@@ -1,7 +1,7 @@
 /**
  * @file read_config_file.c
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,16 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <assert.h>
 
 #include "read_config_file.h"
 
-const bool read_config_file(const char *file_name, funcptr pfi) {
+bool read_config_file(const char *file_name, funcptr pfi) {
 	char buffer[128];
+	unsigned i;
 	FILE *fp;
 
 	assert(file_name != NULL);
@@ -43,9 +44,22 @@ const bool read_config_file(const char *file_name, funcptr pfi) {
 			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
 				break; // Error or end of file
 			}
-			(void) pfi((const char *) buffer);
+
+			if (buffer[0] >= 'a') {
+				char *q = (char*) buffer;
+
+				for (i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
+					if ((*q == '\r') || (*q == '\n')) {
+						*q = '\0';
+					}
+					q++;
+				}
+
+				pfi((const char*) buffer);
+			}
 		}
-		(void) fclose(fp);
+
+		fclose(fp);
 	} else {
 		return false;
 	}
