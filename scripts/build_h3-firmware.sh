@@ -29,7 +29,6 @@ done
 cd ..
 
 find . -name "*.uImage" | xargs ls -al
-
 find . -name "*.uImage" | xargs ls -al | wc -l
 
 cd -

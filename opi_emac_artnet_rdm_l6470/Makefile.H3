@@ -1,5 +1,5 @@
 #
-DEFINES = ARTNET_NODE RDM_RESPONDER STEPPER PIXEL DISPLAY_UDF #NDEBUG
+DEFINES = ARTNET_NODE RDM_RESPONDER STEPPER PIXEL DISPLAY_UDF NDEBUG
 #
 LIBS = rdmresponder rdm rdmsensor rdmsubdevice l6470dmx l6470
 #
@@ -8,3 +8,4 @@ SRCDIR = firmware lib
 include ../h3-firmware-template/Rules.mk
 
 prerequisites:
+	./generate_sofware_version_id.sh
