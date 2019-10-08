@@ -63,6 +63,8 @@
 #include "display.h"
 #include "displaymax7219.h"
 
+#include "displayws28xx.h"
+
 #include "sourceselect.h"
 #include "sourceselectconst.h"
 
