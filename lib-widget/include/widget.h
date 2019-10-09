@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ extern "C" {
 
 extern _widget_send_state widget_get_receive_dmx_on_change(void);
 extern _widget_mode widget_get_mode(void);
-extern void widget_set_mode(const _widget_mode);
+extern void widget_set_mode(_widget_mode);
 extern uint32_t widget_get_received_dmx_packet_period(void);
 extern void widget_set_received_dmx_packet_period(uint32_t);
 extern uint32_t widget_get_received_dmx_packet_count(void);

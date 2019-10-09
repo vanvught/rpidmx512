@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file uuid_internal.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef UUID_INTERNAL_H_
+#define UUID_INTERNAL_H_
 
-static const char SOFTWARE_VERSION[] = "2.0";
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+struct uuid {
+	uint32_t time_low;
+	uint16_t time_mid;
+	uint16_t time_hi_and_version;
+	uint16_t clock_seq;
+	uint8_t node[6];
+};
+
+
+#endif /* UUID_INTERNAL_H_ */

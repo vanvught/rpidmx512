@@ -106,29 +106,52 @@ void OSCServer::Run(void) {
 		if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
 				LtcGenerator::Get()->ActionStart();
+
 				DEBUG_PUTS("ActionStart");
+			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + 1 + VALUE_LENGTH))) {
+				if (m_pBuffer[m_nPathLength + START_LENGTH] == '/') {
+					const uint32_t nOffset = m_nPathLength + START_LENGTH + 1;
+					m_pBuffer[nOffset + 2] = ':';
+					m_pBuffer[nOffset + 5] = ':';
+					m_pBuffer[nOffset + 8] = '.';
+
+					LtcGenerator::Get()->ActionSetStart((const char *)&m_pBuffer[nOffset]);
+					LtcGenerator::Get()->ActionStop();
+					LtcGenerator::Get()->ActionStart();
+
+					DEBUG_PUTS(&m_pBuffer[nOffset]);
+				}
 			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				const uint32_t nOffset = m_nPathLength + START_LENGTH + SET_LENGTH;
-				m_pBuffer[nOffset + 2] = ':';
-				m_pBuffer[nOffset + 5] = ':';
-				m_pBuffer[nOffset + 8] = '.';
-				LtcGenerator::Get()->ActionSetStart((const char *)&m_pBuffer[nOffset]);
-				DEBUG_PUTS(&m_pBuffer[nOffset]);
+				if (memcmp(&m_pBuffer[m_nPathLength + START_LENGTH], sSet, SET_LENGTH) == 0) {
+					const uint32_t nOffset = m_nPathLength + START_LENGTH + SET_LENGTH;
+					m_pBuffer[nOffset + 2] = ':';
+					m_pBuffer[nOffset + 5] = ':';
+					m_pBuffer[nOffset + 8] = '.';
+
+					LtcGenerator::Get()->ActionSetStart((const char *)&m_pBuffer[nOffset]);
+
+					DEBUG_PUTS(&m_pBuffer[nOffset]);
+				}
 			}
 		} else if (memcmp(&m_pBuffer[m_nPathLength], sStop, STOP_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + STOP_LENGTH))) {
 				LtcGenerator::Get()->ActionStop();
 				DEBUG_PUTS("ActionStop");
 			} else if ((nCommandLength == (m_nPathLength + STOP_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				const uint32_t nOffset = m_nPathLength + STOP_LENGTH + SET_LENGTH;
-				m_pBuffer[nOffset + 2] = ':';
-				m_pBuffer[nOffset + 5] = ':';
-				m_pBuffer[nOffset + 8] = '.';
-				LtcGenerator::Get()->ActionSetStop((const char *)&m_pBuffer[nOffset]);
-				DEBUG_PUTS(&m_pBuffer[nOffset]);
+				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], sSet, SET_LENGTH) == 0) {
+					const uint32_t nOffset = m_nPathLength + STOP_LENGTH + SET_LENGTH;
+					m_pBuffer[nOffset + 2] = ':';
+					m_pBuffer[nOffset + 5] = ':';
+					m_pBuffer[nOffset + 8] = '.';
+
+					LtcGenerator::Get()->ActionSetStop((const char *)&m_pBuffer[nOffset]);
+
+					DEBUG_PUTS(&m_pBuffer[nOffset]);
+				}
 			}
 		} else if ( (nCommandLength == (m_nPathLength + RESUME_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], sResume, RESUME_LENGTH) == 0)) {
 			LtcGenerator::Get()->ActionResume();
+
 			DEBUG_PUTS("ActionResume");
 		}
 	}

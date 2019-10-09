@@ -115,7 +115,7 @@ static void dmx_set_send_data_length(uint16_t send_data_length) {
 	dmx_set_output_period(dmx_output_period_requested);
 }
 
-const volatile uint32_t dmx_get_updates_per_seconde(void) {
+volatile uint32_t dmx_get_updates_per_seconde(void) {
 	dmb();
 	return dmx_updates_per_seconde;
 }
@@ -202,7 +202,7 @@ const uint8_t *dmx_get_current_data(void) {
 	return dmx_data[dmx_data_buffer_index_tail].data;
 }
 
-const volatile uint8_t dmx_get_receive_state(void) {
+volatile uint8_t dmx_get_receive_state(void) {
 	dmb();
 	return dmx_receive_state;
 }
@@ -258,7 +258,7 @@ uint32_t rdm_get_data_receive_end(void) {
 	return rdm_data_receive_end;
 }
 
-const uint32_t dmx_get_output_break_time(void) {
+uint32_t dmx_get_output_break_time(void) {
 	return dmx_output_break_time;
 }
 

@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file uuid.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
+#include <string.h>
+#include <uuid/uuid.h>
 
-static const char SOFTWARE_VERSION[] = "2.0";
+extern int h3_sid_get_rootkey(uint8_t *out);
 
-#endif /* SOFTWARE_VERSION_H_ */
+typedef union pcast32 {
+	uuid_t uuid;
+	uint8_t u8[16];
+} _pcast32;
+
+void uuid_generate_random(uuid_t out) {
+	_pcast32 cast;
+
+	h3_sid_get_rootkey(&cast.u8[0]);
+
+	cast.uuid[6] = 0x40 | (cast.uuid[6] & 0xf);
+	cast.uuid[8] = 0x80 | (cast.uuid[8] & 0x3f);
+
+	memcpy(out, cast.uuid, sizeof(uuid_t));
+}
