@@ -342,6 +342,10 @@ void LtcGenerator::HandleUdpRequest(void) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
 			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '!')){
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			ActionStop();
+			ActionStart();
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
