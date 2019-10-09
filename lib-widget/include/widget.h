@@ -76,7 +76,7 @@ extern _widget_mode widget_get_mode(void);
 extern void widget_set_mode(const _widget_mode);
 extern uint32_t widget_get_received_dmx_packet_period(void);
 extern void widget_set_received_dmx_packet_period(uint32_t);
-extern const uint32_t widget_get_received_dmx_packet_count(void);
+extern uint32_t widget_get_received_dmx_packet_count(void);
 // poll table
 extern void widget_receive_data_from_host(void);
 extern void widget_received_dmx_packet(void);
