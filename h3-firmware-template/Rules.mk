@@ -146,6 +146,8 @@ clearlibs:
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
+	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
+
 
 clean:
 	rm -rf $(BUILD)
