@@ -1,5 +1,5 @@
 /**
- * @file displaymax7219.h
+ * @file displayws28xx.cpp
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -35,7 +35,7 @@ DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
 DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime) {
     m_bShowSysTime = bShowSysTime;
-	s_pThis = this;
+	s_pThis = this;	
 }
 
 DisplayWS28xx::~DisplayWS28xx(void) {
@@ -44,11 +44,33 @@ DisplayWS28xx::~DisplayWS28xx(void) {
 }
 
 void DisplayWS28xx::Init(uint8_t nIntensity) {
-	//m_pMax7219Set->Init(nIntensity);
+	m_WS28xx = new WS28xx(WS2812,16);
+	m_WS28xx->Initialize();
+	m_WS28xx->SetGlobalBrightness(nIntensity);
+	m_WS28xx->SetLED(0,0,255,0);
+	m_WS28xx->SetLED(1,0,255,0);
+	m_WS28xx->Update();
 }
 
+void DisplayWS28xx::Blackout() {
+	m_WS28xx->Blackout();
+}
+
+
 void DisplayWS28xx::Show(const char* pTimecode) {
-	//m_pMax7219Set->Show(pTimecode);
+	
+	//ws28xx_setDigit(int Digit, pTimecode[0] - '0');
+
+	/* max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (pTimecode[0] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pTimecode[1] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pTimecode[3] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (pTimecode[4] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (pTimecode[6] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (pTimecode[7] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (pTimecode[9] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (pTimecode[10] - '0'));
+    */
+	
 }
 
 void DisplayWS28xx::ShowSysTime(void) {
@@ -56,6 +78,8 @@ void DisplayWS28xx::ShowSysTime(void) {
 		//m_pMax7219Set->ShowSysTime();
 	}
 }
+
+
 
 void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos) {
 	//m_WS28xx->WriteChar(nChar, nPos);
