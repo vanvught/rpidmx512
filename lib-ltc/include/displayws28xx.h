@@ -33,12 +33,15 @@
 
 #include "ws28xx.h"
 
+#define WS28XX_LED_COUNT  ((3 * 7 * 8) + (3 * 2))
+
 class DisplayWS28xx {
 public:
 	DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime = false);
 	~DisplayWS28xx(void);
 
 	void Init(uint8_t nIntensity);
+	void Blackout();
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(void);
