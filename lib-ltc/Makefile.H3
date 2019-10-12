@@ -1,7 +1,7 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-console/include ../lib-display/include ../lib-hal/include ../lib-network/include ../lib-bob/include ../lib-artnet/include ../lib-tcnet/include ../lib-properties/include ../lib-midi/include ../lib-lightset/include ../lib-ledblink/include
+EXTRA_INCLUDES = ../lib-ws28xx/include ../lib-console/include ../lib-display/include ../lib-hal/include ../lib-network/include ../lib-bob/include ../lib-artnet/include ../lib-tcnet/include ../lib-properties/include ../lib-midi/include ../lib-lightset/include ../lib-ledblink/include
 #
 include ../h3-firmware-template/lib/Rules.mk
 

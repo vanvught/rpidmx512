@@ -7,5 +7,4 @@
 #    cd /development/workspace/opi_emac_ltc_smpte/
 #    ../scripts/build_this.sh
 
-make -f Makefile.H3 clean && make -f Makefile.H3 
-# && ../scripts/do-tftp.sh 192.168.1.98
+make --quiet -f Makefile.H3 clean && make --quiet -f Makefile.H3 # && ../scripts/do-tftp.sh 192.168.1.98

@@ -199,12 +199,12 @@ void notmain(void) {
 	}
 
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
-	max7219.Init(ltcParams.GetMax7219Intensity());
+	if (!tLtcDisabledOutputs.bMax7219)
+		max7219.Init(ltcParams.GetMax7219Intensity());
 
 	DisplayWS28xx ws82xx(WS2812, ltcParams.IsShowSysTime());
-	ws82xx.Init(12);
+	ws82xx.Init(64);
 	
-
 
 	display.ClearLine(3);
 	display.Printf(3, IPSTR " /%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
@@ -383,6 +383,10 @@ void notmain(void) {
 
 		if (tLtcDisabledOutputs.bDisplay) {
 			display.Run();
+		}
+
+		if (ws82xx.Run()) {
+			console_puts("tick\n");
 		}
 
 		lb.Run();
