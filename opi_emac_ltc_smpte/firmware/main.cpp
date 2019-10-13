@@ -202,8 +202,8 @@ void notmain(void) {
 	if (!tLtcDisabledOutputs.bMax7219)
 		max7219.Init(ltcParams.GetMax7219Intensity());
 
-	DisplayWS28xx ws82xx(WS2812, ltcParams.IsShowSysTime());
-	ws82xx.Init(64);
+	DisplayWS28xx ws82xx(WS2812B, ltcParams.IsShowSysTime());
+	ws82xx.Init(255, RBG);
 	
 
 	display.ClearLine(3);
@@ -327,6 +327,8 @@ void notmain(void) {
 
 	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
 
+	printf("DisplayWS28xx: %d Digit(s), %d LED(S)\n", NUM_OF_DIGITS, WS28XX_LED_COUNT);
+
 	hw.WatchdogInit();
 
 	for (;;) {
@@ -385,8 +387,7 @@ void notmain(void) {
 			display.Run();
 		}
 
-		if (ws82xx.Run()) {
-			console_puts("tick\n");
+		if (ws82xx.Run()) {			
 		}
 
 		lb.Run();
