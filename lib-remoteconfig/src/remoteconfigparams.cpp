@@ -131,6 +131,8 @@ void RemoteConfigParams::callbackFunction(const char* pLine) {
 bool RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfigParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
+	assert(pBuffer != 0);
+
 	if (pRemoteConfigParams != 0) {
 		memcpy(&m_tRemoteConfigParams, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 	} else {
@@ -139,11 +141,11 @@ bool RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfig
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(RemoteConfigConst::PARAMS_DISABLE, (uint32_t) m_tRemoteConfigParams.bDisabled, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, (uint32_t) m_tRemoteConfigParams.bDisableWrite, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, (uint32_t) m_tRemoteConfigParams.bEnableReboot, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, (uint32_t) m_tRemoteConfigParams.bEnableUptime, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, (char *) m_tRemoteConfigParams.aDisplayName, isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME));
+	bool isAdded = builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisabled, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED));
+	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE));
+	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT));
+	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME));
+	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, (const char *) m_tRemoteConfigParams.aDisplayName, isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME));
 
 	nSize = builder.GetSize();
 
@@ -215,11 +217,11 @@ void RemoteConfigParams::Dump(void) {
 #endif
 }
 
-void RemoteConfigParams::staticCallbackFunction(void* p, const char* s) {
+void RemoteConfigParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((RemoteConfigParams *) p)->callbackFunction(s);
+	((RemoteConfigParams*) p)->callbackFunction(s);
 }
 
 bool RemoteConfigParams::isMaskSet(uint32_t nMask) const {

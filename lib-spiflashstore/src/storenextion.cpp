@@ -1,5 +1,5 @@
 /**
- * @file storemidi.cpp
+ * @file storenextion.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -25,23 +25,23 @@
 
 #include <stdint.h>
 
-#include "storemidi.h"
+#include "storenextion.h"
 
-#include "midiparams.h"
+#include "nextionparams.h"
 
 #include "spiflashstore.h"
 
 #include "debug.h"
 
-StoreMidi *StoreMidi::s_pThis = 0;
+StoreNextion *StoreNextion::s_pThis = 0;
 
-MidiParamsStore::~MidiParamsStore(void) {
+NextionParamsStore::~NextionParamsStore(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-StoreMidi::StoreMidi(void) {
+StoreNextion::StoreNextion(void) {
 	DEBUG_ENTRY
 
 	s_pThis = this;
@@ -51,24 +51,24 @@ StoreMidi::StoreMidi(void) {
 	DEBUG_EXIT
 }
 
-StoreMidi::~StoreMidi(void) {
+StoreNextion::~StoreNextion(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void StoreMidi::Update(const struct TMidiParams* pMidiParams) {
+void StoreNextion::Update(const struct TNextionParams *pNextionParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_MIDI, (void *)pMidiParams, sizeof(struct TMidiParams));
+	SpiFlashStore::Get()->Update(STORE_NEXTION, (void *)pNextionParams, sizeof(struct TNextionParams));
 
 	DEBUG_EXIT
 }
 
-void StoreMidi::Copy(struct TMidiParams* pMidiParams) {
+void StoreNextion::Copy(struct TNextionParams *pNextionParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_MIDI, (void *)pMidiParams, sizeof(struct TMidiParams));
+	SpiFlashStore::Get()->Copy(STORE_NEXTION, (void *)pNextionParams, sizeof(struct TNextionParams));
 
 	DEBUG_EXIT
 }

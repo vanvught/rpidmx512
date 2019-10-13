@@ -115,7 +115,7 @@ public class TFTPClient extends JDialog {
 	
 	private void InitComponents() {
 		setTitle("TFTP Client");
-		setBounds(100, 100, 450, 106);
+		setBounds(100, 100, 450, 120);
 		
 		textField = new JTextField();
 		textField.setEditable(false);
@@ -135,19 +135,19 @@ public class TFTPClient extends JDialog {
 							.addComponent(btnUimage)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnPut))
-						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE))
+						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnUimage)
-						.addComponent(btnPut))
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addComponent(btnPut)
+						.addComponent(btnUimage))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(11, Short.MAX_VALUE))
+					.addContainerGap(52, Short.MAX_VALUE))
 		);
 		getContentPane().setLayout(groupLayout);
 	}

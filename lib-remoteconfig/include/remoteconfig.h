@@ -44,6 +44,8 @@
  #define DMXSEND
 #endif
 
+#include "spiflashstore.h"
+
 #include "tftpfileserver.h"
 
 enum TRemoteConfig {
@@ -65,6 +67,22 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_OSC,
 	REMOTE_CONFIG_MODE_CONFIG,
 	REMOTE_CONFIG_MODE_LAST
+};
+
+enum TTxtFile {
+	TXT_FILE_RCONFIG,
+	TXT_FILE_NETWORK,
+	TXT_FILE_ARTNET,
+	TXT_FILE_E131,
+	TXT_FILE_OSC,
+	TXT_FILE_PARAMS,
+	TXT_FILE_DEVICES,
+	TXT_FILE_LTC,
+	TXT_FILE_TCNET,
+	TXT_FILE_OSC_CLIENT,
+	TXT_FILE_DISPLAY_UDF,
+	TXT_FILE_DISPLAY_NEXTION,
+	TXT_FILE_LAST
 };
 
 enum {
@@ -91,25 +109,40 @@ public:
 	~RemoteConfig(void);
 
 	void SetDisable(bool bDisable = true);
-	void SetDisplayName(const char *pDisplayName);
+	bool GetDisable(void) {
+		return m_bDisable;
+	}
 
 	void SetDisableWrite(bool bDisableWrite) {
 		m_bDisableWrite = bDisableWrite;
+	}
+	bool GetDisableWrite(void) {
+		return m_bDisableWrite;
 	}
 
 	void SetEnableReboot(bool bEnableReboot) {
 		m_bEnableReboot = bEnableReboot;
 	}
+	bool GetEnableReboot(void) {
+		return m_bEnableReboot;
+	}
 
 	void SetEnableUptime(bool bEnableUptime) {
 		m_bEnableUptime = bEnableUptime;
 	}
+	bool GetEnableUptime(void) {
+		return m_bEnableUptime;
+	}
+
+	void SetDisplayName(const char *pDisplayName);
 
 	int Run(void);
 
-private:
-	uint32_t GetIndex(const void *p);
+public:
+	static uint32_t GetIndex(const void *p, uint32_t &nLength);
+	static TStore GetStore(TTxtFile tTxtFile);
 
+private:
 	void HandleReboot(void);
 	void HandleList(void);
 	void HandleUptime(void);
@@ -144,6 +177,9 @@ private:
 #if defined(DISPLAY_UDF)
 	void HandleGetDisplayTxt(uint32_t& nSize);
 #endif
+#if defined(DISPLAY_NEXTION)
+	void HandleGetNextionTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -174,6 +210,9 @@ private:
 #if defined(DISPLAY_UDF)
 	void HandleTxtFileDisplay(void);
 #endif
+#if defined(DISPLAY_NEXTION)
+	void HandleTxtFileNextion(void);
+#endif
 
 	void HandleDisplaySet(void);
 	void HandleDisplayGet(void);
@@ -183,6 +222,14 @@ private:
 
 	void HandleTftpSet(void);
 	void HandleTftpGet(void);
+
+public:
+	static RemoteConfig* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static RemoteConfig *s_pThis;
 
 private:
 	TRemoteConfig m_tRemoteConfig;
@@ -194,16 +241,16 @@ private:
 	bool m_bEnableUptime;
 	bool m_bEnableTFTP;
 	TFTPFileServer* m_pTFTPFileServer;
-	alignas(uint32_t) uint8_t *m_pTFTPBuffer;
+	uint8_t *m_pTFTPBuffer;
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
-	uint8_t m_nIdLength;
+	uint32_t m_nIdLength;
 	struct TRemoteConfigListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle;
-	alignas(uint32_t) uint8_t *m_pUdpBuffer;
+	uint8_t *m_pUdpBuffer;
 	uint32_t m_nIPAddressFrom;
 	uint16_t m_nBytesReceived;
 	TRemoteConfigHandleMode m_tRemoteConfigHandleMode;
-	alignas(uint32_t) uint8_t *m_pStoreBuffer;
+	uint8_t *m_pStoreBuffer;
 };
 
 #endif /* REMOTECONFIG_H_ */

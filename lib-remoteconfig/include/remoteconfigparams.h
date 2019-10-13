@@ -51,13 +51,13 @@ class RemoteConfigParamsStore {
 public:
 	virtual ~RemoteConfigParamsStore(void);
 
-	virtual void Update(const struct TRemoteConfigParams *pTRemoteConfigParams)=0;
-	virtual void Copy(struct TRemoteConfigParams *pTRemoteConfigParams)=0;
+	virtual void Update(const struct TRemoteConfigParams *pRemoteConfigParams)=0;
+	virtual void Copy(struct TRemoteConfigParams *pRemoteConfigParams)=0;
 };
 
 class RemoteConfigParams {
 public:
-	RemoteConfigParams(RemoteConfigParamsStore *pTRemoteConfigParamsStore = 0);
+	RemoteConfigParams(RemoteConfigParamsStore *pRemoteConfigParamsStore = 0);
 	~RemoteConfigParams(void);
 
 	bool Load(void);

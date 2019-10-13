@@ -95,10 +95,15 @@
  #include "displayudfparams.h"
  #include "storedisplayudf.h"
 #endif
+#if defined(DISPLAY_NEXTION)
+ /* nextion.txt */
+ #include "nextionparams.h"
+ #include "storenextion.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
-// #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
-#define FIRMWARE_MAX_SIZE	0x22000
+// #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 26000; bootm 40000000"
+#define FIRMWARE_MAX_SIZE	0x26000
 
 #include "tftpfileserver.h"
 #include "spiflashinstall.h"
@@ -145,28 +150,11 @@ static const char sGetTFTP[] ALIGNED = "?tftp#";
 static const char sSetTFTP[] ALIGNED = "!tftp#";
 #define SET_TFTP_LENGTH (sizeof(sSetTFTP)/sizeof(sSetTFTP[0]) - 1)
 
-enum TTxtFile {
-	TXT_FILE_RCONFIG,
-	TXT_FILE_NETWORK,
-	TXT_FILE_ARTNET,
-	TXT_FILE_E131,
-	TXT_FILE_OSC,
-	TXT_FILE_PARAMS,
-	TXT_FILE_DEVICES,
-	TXT_FILE_LTC,
-	TXT_FILE_TCNET,
-	TXT_FILE_OSC_CLIENT,
-	TXT_FILE_DISPLAY_UDF,
-	TXT_FILE_LAST
-};
-
-static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt"  };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11,            11 };
-static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT, STORE_DISPLAYUDF};
-
 #define UDP_PORT			0x2905
 #define UDP_BUFFER_SIZE		768
 #define UDP_DATA_MIN_SIZE	MIN(MIN(MIN(MIN(REQUEST_REBOOT_LENGTH, REQUEST_LIST_LENGTH),REQUEST_GET_LENGTH),REQUEST_UPTIME_LENGTH),SET_DISPLAY_LENGTH)
+
+RemoteConfig *RemoteConfig::s_pThis = 0;
 
 RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs):
 	m_tRemoteConfig(tRemoteConfig),
@@ -190,6 +178,8 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 {
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
 	assert(tRemoteConfigMode < REMOTE_CONFIG_MODE_LAST);
+
+	s_pThis = this;
 
 	Network::Get()->MacAddressCopyTo(m_tRemoteConfigListBin.aMacAddress);
 	m_tRemoteConfigListBin.nType = tRemoteConfig;
@@ -324,24 +314,6 @@ int RemoteConfig::Run(void) {
 	return m_nBytesReceived;
 }
 
-uint32_t RemoteConfig::GetIndex(const void *p) {
-	uint32_t i;
-
-#ifndef NDEBUG
-	debug_dump((void *)p, 16);
-#endif
-
-	for (i = 0; i < TXT_FILE_LAST; i++) {
-		if (memcmp(p, (const void *) sTxtFile[i], sTxtFileNameLength[i]) == 0) {
-			break;
-		}
-	}
-
-	DEBUG_PRINTF("i=%d", i);
-
-	return i;
-}
-
 void RemoteConfig::HandleReboot(void) {
 	DEBUG_ENTRY
 
@@ -448,11 +420,12 @@ void RemoteConfig::HandleDisplayGet() {
 void RemoteConfig::HandleStoreGet(void) {
 	DEBUG_ENTRY
 
-	uint32_t nLenght = 0;
-	const uint32_t nIndex = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH]);
+	uint32_t nLenght;
+
+	const uint32_t nIndex = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH], nLenght);
 
 	if (nIndex != TXT_FILE_LAST) {
-		SpiFlashStore::Get()->CopyTo(sMap[nIndex], m_pUdpBuffer, nLenght);
+		SpiFlashStore::Get()->CopyTo(GetStore((TTxtFile) nIndex), m_pUdpBuffer, nLenght);
 	} else {
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?store#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -473,7 +446,7 @@ void RemoteConfig::HandleGet(void) {
 
 	uint32_t nSize = 0;
 
-	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_GET_LENGTH]);
+	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_GET_LENGTH], nSize);
 
 	switch (i) {
 	case TXT_FILE_RCONFIG:
@@ -523,6 +496,11 @@ void RemoteConfig::HandleGet(void) {
 #if defined(DISPLAY_UDF)
 	case TXT_FILE_DISPLAY_UDF:
 		HandleGetDisplayTxt(nSize);
+		break;
+#endif
+#if defined(DISPLAY_NEXTION)
+	case TXT_FILE_DISPLAY_NEXTION:
+		HandleGetNextionTxt(nSize);
 		break;
 #endif
 	default:
@@ -683,15 +661,27 @@ void RemoteConfig::HandleGetDisplayTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined(DISPLAY_NEXTION)
+void RemoteConfig::HandleGetNextionTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	NextionParams nextionParams((NextionParamsStore *)  StoreNextion::Get());
+	nextionParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
 	uint32_t i;
+	uint32_t nLength;
 
 	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
-		i = GetIndex((void *) &m_pUdpBuffer[1]);
+		i = GetIndex((void *) &m_pUdpBuffer[1], nLength);
 	} else {
-		i = GetIndex((void *) &m_pUdpBuffer[SET_STORE_LENGTH]);
+		i = GetIndex((void *) &m_pUdpBuffer[SET_STORE_LENGTH], nLength);
 		if (i < TXT_FILE_LAST) {
 			memcpy(m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE);
 		} else {
@@ -747,6 +737,11 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined(DISPLAY_UDF)
 	case TXT_FILE_DISPLAY_UDF:
 		HandleTxtFileDisplay();
+		break;
+#endif
+#if defined(DISPLAY_NEXTION)
+	case TXT_FILE_DISPLAY_NEXTION:
+		HandleTxtFileNextion();
 		break;
 #endif
 	default:
@@ -999,6 +994,27 @@ void RemoteConfig::HandleTxtFileDisplay(void) {
 	displayParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	displayParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined(DISPLAY_NEXTION)
+void RemoteConfig::HandleTxtFileNextion(void) {
+	DEBUG_ENTRY
+
+	NextionParams nextionParams((NextionParamsStore *) StoreNextion::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TNextionParams))){
+		uint32_t nSize;
+		nextionParams.Builder((const struct TNextionParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
+	nextionParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	nextionParams.Dump();
 #endif
 
 	DEBUG_EXIT
