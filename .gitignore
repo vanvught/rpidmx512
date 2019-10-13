@@ -37,8 +37,11 @@ lib*.a
 # H2+/H3 binaries 
 uImage
 *.uImage
+*.uImage.gz
 orangepi*.img
+orangepi*.img.gz
 nanopi_neo.img
+
 
 # Broadcom binaries
 kernel.img
@@ -86,3 +89,6 @@ lib-rdmnet/example/sofware_version_id.h
 lib-rdmnet/example/sofware_version_id.h
 rpi_dmx_usb_pro/include/device_software_version.h
 lib-bob/examples/si5351a
+
+# vscode
+.vscode/settings.json

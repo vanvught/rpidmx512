@@ -98,7 +98,7 @@
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 40000000 180000 22000; bootm 40000000"
-#define FIRMWARE_MAX_SIZE	0x22000
+#define FIRMWARE_MAX_SIZE	0x26000 // https://github.com/vanvught/rpidmx512/issues/68#issuecomment-541406598
 
 #include "tftpfileserver.h"
 #include "spiflashinstall.h"

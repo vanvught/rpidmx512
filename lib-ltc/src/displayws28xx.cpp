@@ -107,28 +107,28 @@ bool DisplayWS28xx::Run(){
 
 			if (onoff == 0)
 			{
-				//printf("Red ");
+				printf("Red ");
 				SetRGB(255, 0, 0);
 			}
 			else if (onoff == 1)
 			{
-				//printf("Green ");
+				printf("Green ");
 				SetRGB(0, 255, 0);
 			}
 			else if (onoff == 2)
 			{
-				//printf("Blue ");
+				printf("Blue ");
 				SetRGB(0, 0, 255);
 			}			
 			else if (onoff == 3)
 			{
-				//printf("White ");
+				printf("White ");
 				SetRGB(255, 255, 255);
 			}
 			onoff++;
 
 		}
-
+       
 		WriteChar(level,0);
 		m_WS28xx->Update();
 		return 1;	

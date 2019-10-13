@@ -387,8 +387,7 @@ void notmain(void) {
 			display.Run();
 		}
 
-		if (ws82xx.Run()) {			
-		}
+		ws82xx.Run();
 
 		lb.Run();
 	}

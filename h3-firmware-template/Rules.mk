@@ -5,6 +5,7 @@ CPP	= $(PREFIX)g++
 AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
+GZIP = gzip
 
 PLATFORM?=ORANGE_PI
 CONSOLE?=
@@ -155,6 +156,10 @@ clean:
 	rm -f $(MAP)
 	rm -f $(LIST)
 	rm -f $(SUFFIX).uImage
+	rm -f $(SUFFIX).img.gz
+	rm -f $(SUFFIX).uImage.gz
+	rm -f build0.txt
+
 	for d in $(LIBDEP); \
 		do                               \
 			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \
@@ -184,6 +189,7 @@ $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
 
 $(TARGET) : $(BUILD)main.elf 
 	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)
-	mkimage -n 'http://www.orangepi-dmx.org' -A arm -O u-boot -T standalone -C none -a 0x40000000 -d $(TARGET) $(SUFFIX).uImage
+	$(GZIP) -n --best -c $(TARGET) > $(TARGET).gz 
+	mkimage -n 'http://www.orangepi-dmx.org' -A arm -O u-boot -T standalone -C gzip -a 0x40000000 -d $(TARGET).gz $(SUFFIX).uImage.gz
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
