@@ -51,7 +51,7 @@
 
 //TODO This could be moved to h3.h
 #define WRREG_BITS(reg,mask,value)			reg = ((reg) & ~(mask)) | (value);
-#define WR_CONTROL(reg,mask,shift,value)	WRREG_BITS(reg,(mask << shift),(value << shift))
+#define WR_CONTROL(reg,mask,shift,value)	WRREG_BITS(reg,((uint32_t)mask << shift),((uint32_t)value << shift))
 
 /*
  * DAC Digital Part Control Register
@@ -107,7 +107,7 @@
 	#define LINEOUTL_SS			(1)
 	#define LINEOUTR_SS			(0)
 
-#define SCLK_1X_GATING		(1 << 31)
+#define SCLK_1X_GATING		(1U << 31)
 
 #define PLL_FACTOR_M_MASK	0x1F
 #define PLL_FACTOR_M_SHIFT	0
@@ -120,7 +120,7 @@
 
 #define PLL_LOCK			(1 << 28)	// Read only, 1 indicates that the PLL has been stable
 #define PLL_SDM_ENABLE		(1 << 24)
-#define PLL_ENABLE			(1 << 31)
+#define PLL_ENABLE			(1U << 31)
 
 #define	CONFIG_BUFSIZE				(8 * 1024)
 #define CONFIG_TX_DESCR_NUM			(1 << 1)		// INFO This cannot be changed without rewriting FIQ handler

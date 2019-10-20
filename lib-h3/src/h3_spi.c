@@ -2,7 +2,7 @@
  * @file h3_spi.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,7 +257,7 @@ void h3_spi_begin(void) {
 	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI1;
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI1;
-	H3_CCU->SPI1_CLK = (1 << 31) | (0x01 << 24); // Clock is ON, P0
+	H3_CCU->SPI1_CLK = (1U << 31) | (0x01 << 24); // Clock is ON, P0
 #else
  #error Unsupported SPI device configured
 #endif
@@ -317,7 +317,7 @@ void h3_spi_end(void) {
 #elif (EXT_SPI_NUMBER == 1)
 	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI1;
 	H3_CCU->BUS_SOFT_RESET0 &= ~CCU_BUS_SOFT_RESET0_SPI1;
-	H3_CCU->SPI1_CLK &= ~(1 << 31); // Clock is OFF
+	H3_CCU->SPI1_CLK &= ~(1U << 31); // Clock is OFF
 #endif
 
 	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_DISABLE);

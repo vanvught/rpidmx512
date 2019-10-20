@@ -50,10 +50,10 @@
 	#define CTL0_SPEED_SHIFT	2
 	#define CTL0_SPEED_MASK		0b11
 
-#define TX_CTL0_TX_EN				(1 << 31)
+#define TX_CTL0_TX_EN				(1U << 31)
 #define TX_CTL1_TX_DMA_EN			(1 << 30)
 
-#define RX_CTL0_RX_EN				(1 << 31)
+#define RX_CTL0_RX_EN				(1U << 31)
 #define RX_CTL1_RX_DMA_EN			(1 << 30)
 
 #define RX_FRM_FLT_RX_ALL_MULTICAST	(1 << 16)
@@ -215,7 +215,7 @@ static void _rx_descs_init(void) {
 		desc_p->buf_addr = (uintptr_t) &rxbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->next = (uintptr_t) &desc_table_p[idx + 1];
 		desc_p->st = CONFIG_ETH_RXSIZE;
-		desc_p->status = (1 << 31);
+		desc_p->status = (1U << 31);
 	}
 
 	/* Correcting the last pointer of the chain */
@@ -235,7 +235,7 @@ static void _tx_descs_init(void) {
 		desc_p = &desc_table_p[idx];
 		desc_p->buf_addr = (uintptr_t) &txbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->next = (uintptr_t) &desc_table_p[idx + 1];
-		desc_p->status = (1 << 31);
+		desc_p->status = (1U << 31);
 		desc_p->st = 0;
 	}
 
@@ -254,7 +254,7 @@ int emac_eth_recv(uint8_t **packetp) {
 	status = desc_p->status;
 
 	/* Check for DMA own bit */
-	if (!(status & (1 << 31))) {
+	if (!(status & (1U << 31))) {
 		length = (desc_p->status >> 16) & 0x3FFF;
 
 		if (length < 0x40) {
@@ -293,11 +293,11 @@ void emac_eth_send(void *packet, int len) {
 
 	/* frame end */
 	desc_p->st |= (1 << 30);
-	desc_p->st |= (1 << 31);
+	desc_p->st |= (1U << 31);
 
 	/*frame begin */
 	desc_p->st |= (1 << 29);
-	desc_p->status = (1 << 31);
+	desc_p->status = (1U << 31);
 
 	/* Move to next Descriptor and wrap around */
 	if (++desc_num >= CONFIG_TX_DESCR_NUM) {
@@ -308,7 +308,7 @@ void emac_eth_send(void *packet, int len) {
 
 	/* Start the DMA */
 	value = H3_EMAC->TX_CTL1;
-	value |= (1 << 31);/* mandatory */
+	value |= (1U << 31);/* mandatory */
 	value |= (1 << 30);/* mandatory */
 	H3_EMAC->TX_CTL1 = value;
 }
@@ -318,7 +318,7 @@ void emac_free_pkt(void) {
 	struct emac_dma_desc *desc_p = &p_coherent_region->rx_chain[desc_num];
 
 	/* Make the current descriptor valid again */
-	desc_p->status |= (1 << 31);
+	desc_p->status |= (1U << 31);
 
 	/* Move to next desc and wrap-around condition. */
 	if (++desc_num >= CONFIG_RX_DESCR_NUM) {

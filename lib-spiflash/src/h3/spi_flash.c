@@ -79,7 +79,7 @@ static void spi0_begin(void) {
 	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI0;
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI0;
-	H3_CCU->SPI0_CLK = (1 << 31) | (0x01 << 24); // Clock is ON, P0
+	H3_CCU->SPI0_CLK = (1U << 31) | (0x01 << 24); // Clock is ON, P0
 
 	uint32_t value;
 

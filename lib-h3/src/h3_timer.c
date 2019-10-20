@@ -27,7 +27,7 @@
 
 #include "h3.h"
 
-#define SCLK_GATING		(1 << 31)
+#define SCLK_GATING		(1U << 31)
 
 #define AVS_CNT0_EN		(1 << 0)
 #define AVS_CNT1_EN		(1 << 1)

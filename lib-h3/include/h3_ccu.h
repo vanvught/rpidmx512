@@ -73,9 +73,8 @@ typedef enum H3_CCU_PLL {
 #define CCU_PLL_CPUX_MIN_CLOCK_HZ	200000000	///< 200MHz
 #define CCU_PLL_CPUX_MAX_CLOCK_HZ 	2600000000	///< 2.6GHz
 
-
 ///< 4.3.5.19 THS Clock Register (THS_CLK_REG)
-#define CCU_THS_CLK_SCLK_GATING		(1 << 31)
+#define CCU_THS_CLK_SCLK_GATING		(1U << 31)
 
 #define CCU_THS_CLK_SRC_OSC24M		0
 	#define CCU_THS_CLK_SRC_SHIFT		(24)

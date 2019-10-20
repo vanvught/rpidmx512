@@ -60,7 +60,7 @@
 #include "debug.h"
 
 // CCU register
-#define SDMMC_CLK_SCLK_GATING		(1 << 31)	///< 1 = Clock is ON. SCLK = Clock source/Divider N/ Divider M
+#define SDMMC_CLK_SCLK_GATING		(1U << 31)	///< 1 = Clock is ON. SCLK = Clock source/Divider N/ Divider M
 
 #define BUS_CLK_GATING0_MMC0_GATE	(1 << 8)
 #define BUS_CLK_GATING0_MMC1_GATE	(1 << 9)
@@ -71,12 +71,12 @@
 #define GCTL_FIFO_RST			(1 << 1)	///< Reset FIFO
 #define GCTL_DMA_RST			(1 << 2)	///< DMA Reset
 	#define GCTL_RESET	(GCTL_SOFT_RST | GCTL_FIFO_RST | GCTL_DMA_RST)
-#define GCTL_FIFO_AC_MODE_AHB	(1 << 31)	///< FIFO Access Mode AHB bus
+#define GCTL_FIFO_AC_MODE_AHB	(1U << 31)	///< FIFO Access Mode AHB bus
 
 	#define CKC_CCLK_DIV_MASK		(0xFF << 0)
 #define CKC_CCLK_ENABLE			(1 << 16)	///< Card Clock on
 #define CKC_CCLK_CTRL			(1 << 17)	///< Turn off card when FSM in IDLE state
-#define CKC_CCLK_MASK_DATA0		(1 << 31)	///< Mask Data0 when update clock
+#define CKC_CCLK_MASK_DATA0		(1U << 31)	///< Mask Data0 when update clock
 
 #define BWD_CARD_WID_1BIT		(0b00)
 #define BWD_CARD_WID_4BIT		(0b01)
@@ -99,7 +99,7 @@
 #define CMD_WAIT_PRE_OVER		(1 << 13)	///< Wait for data transfer completion before sending current command
 #define CMD_SEND_INIT_SEQ		(1 << 15)	///< Send initialization sequence before sending this command
 #define CMD_PRG_CLOCK			(1 << 21)	///< Change Card Clock
-#define CMD_CMD_LOAD			(1 << 31)	///< Start Command
+#define CMD_CMD_LOAD			(1U << 31)	///< Start Command
 
 #define RIS_RESPONSE_ERROR		(1 << 1)	///< Response Error (no response or response CRC error)
 #define RIS_CMD_COMPLETE		(1 << 2)	///< Command Complete

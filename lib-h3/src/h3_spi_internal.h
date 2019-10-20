@@ -2,7 +2,7 @@
  * @file h3_spi_internal.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #define GC_EN			(1 << 0) 	///< ENable
 #define GC_MODE_MASTER	(1 << 1) 	///< Mode Master,  1 = Master, 0 = Slave
 #define GC_TP_EN		(1 << 7) 	///< 1 = Stop transmit when RXFIFO is full
-#define GC_SRST			(1 << 31) 	///< Soft Reset
+#define GC_SRST			(1U << 31) 	///< Soft Reset
 
 #define TC_CPHA			(1 << 0)	///< 1 = Phase 1
 #define TC_CPOL			(1 << 1)	///< 1 = Active Low
@@ -45,7 +45,7 @@
 #define TC_SDC			(1 << 11)	///< Master Sample Data Control
 #define TC_FBS			(1 << 12) 	///< First Transmit Bit Select (1 = LSB)
 #define TC_SDM			(1 << 13) 	///< Master Sample Data Mode
-#define TC_XCH			(1 << 31)	///< Initiate transfer
+#define TC_XCH			(1U << 31)	///< Initiate transfer
 
 #define IE_RX_RDY		(1 << 0)	///< RX FIFO Ready Request Interrupt Enable
 #define IE_RX_EMP		(1 << 1)	///< RX FIFO Empty Interrupt Enable
@@ -81,7 +81,7 @@
 	#define FC_TX_LEVEL_SHIFT	(0xFF << 16)///< TX FIFO Empty Request Trigger Level Shift
 #define FC_TX_DRQEN		(1 << 24)	///< TX FIFO DMA Request Enable
 #define FC_TX_TESTEN	(1 << 30)	///< TX Test Mode Enable
-#define FC_TX_RST		(1 << 31)	///< TX FIFO Reset
+#define FC_TX_RST		(1U << 31)	///< TX FIFO Reset
 
 #define	CC_DRS			(1 << 12)	///< Clock divider select, 1 = Rate 2
 	#define	CC_CDR1_MASK	0x0F00	///< Clock Divide Rate 1 SPI_CLK = AHB_CLK/2^n
@@ -94,7 +94,7 @@
 #define FS_RB_WR		(1 << 15)	///< RX FIFO Read Buffer Write Enable
 #define FS_TX_CNT		(0xFF << 16)///< TX FIFO Counter
 #define FS_TB_CNT		(0x7 << 28)	///< TX FIFO Write Buffer Counter
-#define FS_TB_WR		(1 << 31)	///< TX FIFO Write Buffer Write Enable
+#define FS_TB_WR		(1U << 31)	///< TX FIFO Write Buffer Write Enable
 	#define FS_RXCNT_BIT_POS	0
 	#define FS_TXCNT_BIT_POS	16
 

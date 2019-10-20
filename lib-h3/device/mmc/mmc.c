@@ -540,7 +540,7 @@ int sd_switch(struct mmc *mmc, int mode, int group, uint8_t value, uint8_t *resp
 	/* Switch the frequency */
 	cmd.cmdidx = SD_CMD_SWITCH_FUNC;
 	cmd.resp_type = MMC_RSP_R1;
-	cmd.cmdarg = (mode << 31) | 0xffffff;
+	cmd.cmdarg = ((uint32_t)mode << 31) | 0xffffff;
 	cmd.cmdarg &= ~(0xf << (group * 4));
 	cmd.cmdarg |= value << (group * 4);
 	cmd.flags = 0;
