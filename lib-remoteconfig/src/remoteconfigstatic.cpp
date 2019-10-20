@@ -34,7 +34,16 @@
 
 #include "remoteconfig.h"
 
+#include "hardware.h"
+#include "display.h"
+
+#include "spiflashstore.h"
+
 #include "debug.h"
+
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "nextion.txt"  };
 static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11,            11,             11};
@@ -42,20 +51,23 @@ static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NE
 
 uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
 	uint32_t i;
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("nLength=%d", nLength);
 
 #ifndef NDEBUG
 	debug_dump((void *)p, 16);
 #endif
 
 	for (i = 0; i < TXT_FILE_LAST; i++) {
-		nLength = sTxtFileNameLength[i];
-		if (memcmp(p, (const void *) sTxtFile[i], nLength) == 0) {
+		if (memcmp(p, (const void *) sTxtFile[i], MIN(sTxtFileNameLength[i], nLength)) == 0) {
+			nLength = sTxtFileNameLength[i];
 			break;
 		}
 	}
 
-	DEBUG_PRINTF("i=%d", i);
-
+	DEBUG_PRINTF("nLength=%d, i=%d", nLength, i);
+	DEBUG_EXIT
 	return i;
 }
 
@@ -65,4 +77,22 @@ TStore RemoteConfig::GetStore(TTxtFile tTxtFile) {
 	}
 
 	return sMap[tTxtFile];
+}
+
+void RemoteConfig::HandleReboot(void) {
+	DEBUG_ENTRY
+
+	Display::Get()->SetSleep(false);
+
+	while (SpiFlashStore::Get()->Flash())
+		;
+
+	printf("Rebooting ...\n");
+
+	Display::Get()->Cls();
+	Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+
+	Hardware::Get()->Reboot();
+
+	DEBUG_EXIT
 }

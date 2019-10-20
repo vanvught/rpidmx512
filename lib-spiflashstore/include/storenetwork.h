@@ -39,7 +39,16 @@ public:
 
 	void SaveIp(uint32_t nIp);
 	void SaveNetMask(uint32_t nNetMask);
-	void SaveHostName(const uint8_t *pHostName);
+	void SaveHostName(const uint8_t *pHostName, uint32_t nLength);
+	void SaveDhcp(bool bIsDhcpUsed);
+
+public:
+	static StoreNetwork *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreNetwork *s_pThis;
 };
 
 #endif /* STORENETWORK_H_ */

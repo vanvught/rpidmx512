@@ -42,6 +42,7 @@ struct ip_info {
 };
 
 #define IP_BROADCAST	((uint32_t) 0xFFFFFFFF)
+#define HOST_NAME_MAX 	64	/* including a terminating null byte. */
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,8 +51,11 @@ extern "C" {
 extern void net_init(const uint8_t *, struct ip_info *, const uint8_t *, bool *);
 extern void net_handle(void);
 //
+extern void net_set_hostname(const char *name);
+//
 extern void net_set_ip(uint32_t);
 extern void net_set_default_ip(struct ip_info *);
+extern bool net_set_dhcp(struct ip_info *);
 //
 extern int udp_bind(uint16_t);
 extern int udp_unbind(uint16_t);

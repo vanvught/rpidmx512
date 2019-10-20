@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "net/net.h"
@@ -44,12 +45,17 @@ extern void ip_init(const uint8_t *, const struct ip_info  *);
 extern void ip_set_ip(const struct ip_info  *);
 extern void ip_handle(struct t_ip4 *);
 
-extern int dhcp_client(const uint8_t *, struct ip_info  *, const uint8_t *);
+extern int dhcp_client(const uint8_t *, struct ip_info *, const uint8_t *);
 
 static struct ip_info s_ip_info;
-static uint8_t s_mac_address[ETH_ADDR_LEN];
+static uint8_t s_mac_address[ETH_ADDR_LEN] __attribute__ ((aligned (4)));
+static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* including a terminating null byte. */;
 
 static uint8_t *s_p;
+
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 static void s_get_default_ip(const uint8_t *mac_address, struct ip_info *p_ip_info) {
 	p_ip_info->ip.addr = 2
@@ -61,27 +67,22 @@ static void s_get_default_ip(const uint8_t *mac_address, struct ip_info *p_ip_in
 }
 
 void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp) {
-	uint16_t i;
+	uint32_t i;
 
+	net_set_hostname((char *)hostname);
 	net_timers_init();
-
-	if (*use_dhcp) {
-		s_get_default_ip(mac_address, p_ip_info);
-	} else {
-		arp_init(mac_address, p_ip_info);
-	}
-
 	ip_init(mac_address, p_ip_info);
 
 	if (*use_dhcp) {
-		if (dhcp_client(mac_address, p_ip_info, hostname) < 0) {
+		if (dhcp_client(mac_address, p_ip_info, (const uint8_t *)s_hostname) < 0) {
 			*use_dhcp = false;
+			s_get_default_ip(mac_address, p_ip_info);
 			DEBUG_PUTS("DHCP Client failed");
 		}
-
-		arp_init(mac_address, p_ip_info);
-		ip_set_ip(p_ip_info);
 	}
+
+	arp_init(mac_address, p_ip_info);
+	ip_set_ip(p_ip_info);
 
 	for (i = 0; i < ETH_ADDR_LEN; i++) {
 		s_mac_address[i] = mac_address[i];
@@ -136,4 +137,33 @@ void net_set_default_ip(struct ip_info *p_ip_info) {
 	for (i = 0; i < sizeof(struct ip_info); i++) {
 		*dst++ = *src++;
 	}
+}
+
+bool net_set_dhcp(struct ip_info *p_ip_info) {
+	bool is_dhcp = false;
+
+	if (dhcp_client(s_mac_address, &s_ip_info, (const uint8_t *)s_hostname) < 0) {
+		net_set_default_ip(&s_ip_info);
+		DEBUG_PUTS("DHCP Client failed");
+	} else {
+		is_dhcp = true;
+	}
+
+	arp_init(s_mac_address, &s_ip_info);
+	ip_set_ip(&s_ip_info);
+
+	const uint8_t *src = (const uint8_t*) &s_ip_info;
+	uint8_t *dst = (uint8_t*) p_ip_info;
+	uint32_t i;
+
+	for (i = 0; i < sizeof(struct ip_info); i++) {
+		*dst++ = *src++;
+	}
+
+	return is_dhcp;
+}
+
+void net_set_hostname(const char *name) {
+	strncpy(s_hostname, name, HOST_NAME_MAX);
+	s_hostname[HOST_NAME_MAX- 1] = '\0';
 }

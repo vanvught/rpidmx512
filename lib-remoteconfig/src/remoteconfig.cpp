@@ -314,24 +314,6 @@ int RemoteConfig::Run(void) {
 	return m_nBytesReceived;
 }
 
-void RemoteConfig::HandleReboot(void) {
-	DEBUG_ENTRY
-
-	Display::Get()->SetSleep(false);
-
-	while (SpiFlashStore::Get()->Flash())
-		;
-
-	printf("Rebooting ...\n");
-
-	Display::Get()->Cls();
-	Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
-
-	Hardware::Get()->Reboot();
-
-	DEBUG_EXIT
-}
-
 void RemoteConfig::HandleUptime() {
 	DEBUG_ENTRY
 
@@ -420,7 +402,7 @@ void RemoteConfig::HandleDisplayGet() {
 void RemoteConfig::HandleStoreGet(void) {
 	DEBUG_ENTRY
 
-	uint32_t nLenght;
+	uint32_t nLenght = UDP_BUFFER_SIZE - REQUEST_STORE_LENGTH;
 
 	const uint32_t nIndex = GetIndex((void *)&m_pUdpBuffer[REQUEST_STORE_LENGTH], nLenght);
 
@@ -444,7 +426,7 @@ void RemoteConfig::HandleStoreGet(void) {
 void RemoteConfig::HandleGet(void) {
 	DEBUG_ENTRY
 
-	uint32_t nSize = 0;
+	uint32_t nSize = UDP_BUFFER_SIZE - REQUEST_GET_LENGTH;
 
 	const uint32_t i = GetIndex((void *)&m_pUdpBuffer[REQUEST_GET_LENGTH], nSize);
 
@@ -679,8 +661,10 @@ void RemoteConfig::HandleTxtFile(void) {
 	uint32_t nLength;
 
 	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
+		 nLength = UDP_BUFFER_SIZE - 1;
 		i = GetIndex((void *) &m_pUdpBuffer[1], nLength);
 	} else {
+		nLength = UDP_BUFFER_SIZE - SET_STORE_LENGTH;
 		i = GetIndex((void *) &m_pUdpBuffer[SET_STORE_LENGTH], nLength);
 		if (i < TXT_FILE_LAST) {
 			memcpy(m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE);

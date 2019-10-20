@@ -54,6 +54,9 @@ public:
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);
+	void SetHostName(const char *pHostName);
+
+	bool EnableDhcp(void);
 
 	void Run(void) {
 		net_handle();

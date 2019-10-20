@@ -32,6 +32,12 @@
 
 #include "debug.h"
 
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+StoreNetwork *StoreNetwork::s_pThis = 0;
+
 NetworkStore::~NetworkStore(void) {
 	DEBUG_ENTRY
 
@@ -47,7 +53,9 @@ NetworkParamsStore::~NetworkParamsStore(void) {
 StoreNetwork::StoreNetwork(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
 
 	DEBUG_EXIT
 }
@@ -79,9 +87,6 @@ void StoreNetwork::SaveIp(uint32_t nIp) {
 
 	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, nLocalIp));
 
-	uint32_t bIsDhcp = 0;
-
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), (void *)&bIsDhcp, sizeof(uint32_t), NETWORK_PARAMS_MASK_DHCP);
 	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), (void *)&nIp, sizeof(uint32_t), NETWORK_PARAMS_MASK_IP_ADDRESS);
 
 	DEBUG_EXIT
@@ -97,12 +102,24 @@ void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
 	DEBUG_EXIT
 }
 
-void StoreNetwork::SaveHostName(const uint8_t *pHostName) {
+void StoreNetwork::SaveHostName(const uint8_t *pHostName, uint32_t nLength) {
 	DEBUG_ENTRY
 
 	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, aHostName));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), (void *)pHostName, sizeof(uint32_t), NETWORK_PARAMS_MASK_HOSTNAME);
+	nLength = MIN(nLength, NETWORK_HOSTNAME_SIZE);
+
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), (void *)pHostName, nLength, NETWORK_PARAMS_MASK_HOSTNAME);
+
+	DEBUG_EXIT
+}
+
+void StoreNetwork::SaveDhcp(bool bIsDhcpUsed) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("offsetof=%d", (int) __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed));
+
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), (void *)&bIsDhcpUsed, sizeof(bool), NETWORK_PARAMS_MASK_DHCP);
 
 	DEBUG_EXIT
 }

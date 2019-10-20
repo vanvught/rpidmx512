@@ -141,9 +141,9 @@ public:
 public:
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
+	static void HandleReboot(void);
 
 private:
-	void HandleReboot(void);
 	void HandleList(void);
 	void HandleUptime(void);
 	void HandleVersion(void);

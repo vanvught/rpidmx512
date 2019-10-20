@@ -36,7 +36,7 @@
 enum TNetwork {
 	NETWORK_IP_SIZE = 4,
 	NETWORK_MAC_SIZE = 6,
-	NETWORK_HOSTNAME_SIZE = 48
+	NETWORK_HOSTNAME_SIZE = 64	/* including a terminating null byte. */
 };
 
 #ifndef IP2STR
@@ -77,6 +77,11 @@ public:
 		return m_nLocalIp;
 	}
 
+	virtual void SetHostName(const char *pHostName);
+	const char *GetHostName(void) {
+		return m_aHostName;
+	}
+
 	bool SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask = 0);
 
 	uint32_t GetGatewayIp(void) {
@@ -96,6 +101,8 @@ public:
 		return m_nBroadcastIp;
 	}
 
+	virtual bool EnableDhcp(void);
+
 	bool IsDhcpCapable(void) {
 		return m_IsDhcpCapable;
 	}
@@ -110,10 +117,6 @@ public:
 #else
 		return true;
 #endif
-	}
-
-	const char* GetHostName(void) {
-		return m_aHostName;
 	}
 
 	const char* GetIfName(void) {

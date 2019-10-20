@@ -37,9 +37,9 @@
 #include "networkdisplay.h"
 #include "networkstore.h"
 
-#include "./../lib-h3/include/net/net.h"
-
 #include "hardware.h"
+
+#include "./../lib-h3/include/net/net.h"
 
 #define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
 
@@ -141,7 +141,7 @@ int32_t NetworkH3emac::End(uint16_t nPort) {
 void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {
 	DEBUG_ENTRY
 
-	for (unsigned i =  0; i < NETWORK_MAC_SIZE; i++) {
+	for (uint32_t i =  0; i < NETWORK_MAC_SIZE; i++) {
 		pMacAddress[i] = m_aNetMacaddr[i];
 	}
 
@@ -175,6 +175,10 @@ void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t siz
 void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
+	if (nIp == m_nLocalIp) {
+		return;
+	}
+
 	if (nIp == 0) {
 		struct ip_info tIpInfo;
 		net_set_default_ip(&tIpInfo);
@@ -189,6 +193,7 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 
 		if (m_pNetworkStore != 0) {
 			m_pNetworkStore->SaveIp(nIp);
+			m_pNetworkStore->SaveDhcp(false);
 		}
 	}
 
@@ -202,6 +207,10 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_ENTRY
 
+	if (m_nNetmask == nNetmask) {
+		return;
+	}
+
 	m_nNetmask = nNetmask;
 
 	if (m_pNetworkStore != 0) {
@@ -213,4 +222,30 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 	}
 
 	DEBUG_EXIT
+}
+
+void NetworkH3emac::SetHostName(const char *pHostName) {
+	Network::SetHostName(pHostName);
+
+	net_set_hostname(pHostName);
+
+	if (m_pNetworkStore != 0) {
+		m_pNetworkStore->SaveHostName(reinterpret_cast<const uint8_t *>(pHostName), strlen(pHostName));
+	}
+}
+
+bool NetworkH3emac::EnableDhcp(void) {
+	struct ip_info tIpInfo;
+
+	m_IsDhcpUsed =  net_set_dhcp(&tIpInfo);
+
+	m_nLocalIp = tIpInfo.ip.addr;
+	m_nNetmask = tIpInfo.netmask.addr;
+	m_nGatewayIp = tIpInfo.gw.addr;
+
+	if (m_pNetworkStore != 0) {
+		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
+	}
+
+	return m_IsDhcpUsed;
 }

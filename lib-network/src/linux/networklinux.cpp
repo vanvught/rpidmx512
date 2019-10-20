@@ -103,7 +103,11 @@ int NetworkLinux::Init(const char *s) {
 	}
 #endif
 
-	gethostname(m_aHostName, sizeof(m_aHostName));
+	if (gethostname(m_aHostName, sizeof(m_aHostName)) < 0) {
+		perror("gethostname");
+	}
+
+	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
 
 	return result;
 }
@@ -221,6 +225,10 @@ int32_t NetworkLinux::End(uint16_t nPort) {
 
 void NetworkLinux::SetIp(uint32_t nIp) {
 #if defined(__linux__)
+	if (nIp == m_nLocalIp) {
+		return;
+	}
+
     struct ifreq ifr;
     struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
@@ -442,4 +450,17 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     close(fd);
 
     return 0;
+}
+
+void NetworkLinux::SetHostName(const char *pHostName) {
+	if(sethostname(pHostName, strlen(pHostName)) < 0) {
+		perror("sethostname");
+	}
+
+	if (gethostname(m_aHostName, sizeof(m_aHostName)) < 0) {
+		perror("gethostname");
+	}
+
+	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+
 }

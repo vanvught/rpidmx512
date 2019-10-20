@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "network.h"
@@ -87,4 +88,19 @@ uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
 	}
 
 	return 0;
+}
+
+void Network::SetHostName(const char *pHostName) {
+	DEBUG_ENTRY
+
+	strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE);
+	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+
+	DEBUG_PUTS(m_aHostName);
+	DEBUG_EXIT
+}
+
+bool Network::EnableDhcp(void) {
+	DEBUG_PUTS("false");
+	return false;
 }
