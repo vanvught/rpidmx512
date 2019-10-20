@@ -61,11 +61,12 @@
 
 #define TEST_INTERVAL_MS (250)	// msec
 
-// LED order
+
+// WS28xx LED order
 enum tWS28xxMapping {
 	RGB = 0,  // normal
-  RBG,
-  BGR, 
+ 	RBG,
+  	BGR, 
 };
 
 
@@ -77,35 +78,44 @@ public:
 	void Init(uint8_t nIntensity, tWS28xxMapping lMapping);
 	void Blackout();
 
-  // testing
+    // testing
 	bool Run();
 
+	// display current TC
 	void Show(const char *pTimecode);
+	// display system clock
 	void ShowSysTime(void);
 
-  // set RGB for next character(s)
-  void SetRGB(uint8_t red, uint8_t green, uint8_t blue);
-
-  // write a character
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-	void WriteColon(uint8_t nChar, uint8_t nPos);
+  	// set RGB for next character(s)
+  	void SetRGB(uint8_t red, uint8_t green, uint8_t blue);
+	// set the master brightness
+	void SetMaster(uint8_t value);
 	
+	// write a character from to digits 0..7
+	void WriteChar(const uint8_t nChar, uint8_t nPos = 0);
+	// write a colon if ':' or '.' to a colon at nPos = 0,1,2
+	void WriteColon(uint8_t nChar, uint8_t nPos);
+
+	// return a pointer to this instance
 	static DisplayWS28xx* Get(void) {
 		return s_pThis;
 	}
 
 private:
+	// draw one segment of a digit
 	void RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_t cur_segment);
 
 	WS28xx *m_WS28xx;
-  TWS28XXType m_tLedType = WS2812;
-  tWS28xxMapping l_mapping = RGB;
+	TWS28XXType m_tLedType = WS2812;
+  	tWS28xxMapping l_mapping = RGB;
 
 	bool m_bShowSysTime;
 	uint8_t curR, curG, curB;
   
-  uint8_t level = 0;
-  uint8_t onoff = 0;
+	uint8_t level = 0;
+
+	uint8_t master = 255;
+	uint8_t onoff = 0;
 
 	// timer
 	uint32_t s_wsticker;

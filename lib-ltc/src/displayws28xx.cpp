@@ -55,34 +55,40 @@ void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping) {
 	l_mapping = lMapping;
 }
 
-// set the current RGB values, remapping them to different LED strip mappings
-void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue) {
- switch (l_mapping)
- {
- case RGB:
-	 curR = red;
-	 curG = green;
-	 curB = blue;
-	 break;
- 
-  case RBG:
-	 curR = red;
-	 curG = blue;
-	 curB = green;
-	 break;
+void DisplayWS28xx::SetMaster(uint8_t value){
+	master = value;
+}
 
- case BGR:
-	 curR = blue;
-	 curG = green;
-	 curB = red;
-	 break;
-  
- default:
-	curR = red;
-	curG = green;
-	curB = blue;
-	break;
- }
+// set the current RGB values, remapping them to different LED strip mappings
+void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue)
+{
+
+	switch (l_mapping)
+	{
+	case RGB:
+		curR = red;
+		curG = green;
+		curB = blue;
+		break;
+
+	case RBG:
+		curR = red;
+		curG = blue;
+		curB = green;
+		break;
+
+	case BGR:
+		curR = blue;
+		curG = green;
+		curB = red;
+		break;
+
+	default:
+		curR = red;
+		curG = green;
+		curB = blue;
+		break;
+	}
 }
 
 void DisplayWS28xx::Blackout() {
@@ -97,9 +103,9 @@ bool DisplayWS28xx::Run(){
 		s_wsticker = m_nMillis + TEST_INTERVAL_MS;
 
 		level++;
-		if (level > 90)
+		if (level > 254)
 		{
-			level = 48;
+			level = 0;
 			
 			if (onoff > 3) {
 				onoff = 0;
@@ -128,6 +134,8 @@ bool DisplayWS28xx::Run(){
 			}
 			onoff++;
 		}
+
+		SetMaster(level);
 
 		return 1;	
 	}
@@ -174,10 +182,19 @@ void DisplayWS28xx::ShowSysTime(void) {  // TODO: Adapt
 }
 
 void DisplayWS28xx::RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_t cur_segment) {	
+	uint8_t red = 0;
+	uint8_t green = 0;
+	uint8_t blue = 0;
+	if (master != 0) {	
+		red = (master * curR) / 255;
+		green = (master * curG) / 255;
+		blue = (master * curB) / 255;		
+	}
+
 	uint16_t cur_seg_base = cur_digit_base + (cur_segment * LEDS_PER_SEGMENT);
 	for (uint16_t cnt = cur_seg_base; cnt < (cur_seg_base + LEDS_PER_SEGMENT); cnt++) {
 	  if (OnOff) { 
-		  m_WS28xx->SetLED(cnt,curR,curG,curB); // on		  
+		  m_WS28xx->SetLED(cnt,red,green,blue); // on		  
 	  }
 	  else {
 		  m_WS28xx->SetLED(cnt,0,0,0); // off		 
@@ -188,6 +205,7 @@ void DisplayWS28xx::RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_
 void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos) {
 	if (nChar > sizeof(Seg7Array) || nChar < 0) 
 		return; 
+
 	uint16_t cur_digit_base = (NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
 	
 	bool OnOff = (nChar == ':' || nChar == '.') ? 1 : 0;
@@ -201,11 +219,16 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos) {
 	}  
 }
 
-void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos) {
+void DisplayWS28xx::WriteChar(const uint8_t nChar, uint8_t nPos) {
 	if (nChar > sizeof(Seg7Array) || nChar < 0) 
 		return; 
 	uint16_t cur_digit_base = nPos * SEGMENTS_PER_DIGIT;
-	const uint8_t chr = Seg7Array[nChar];
+
+	uint8_t chr;	
+	if (nChar & (1<<7)) // use custom bitmap
+	  chr = nChar;
+	else chr = Seg7Array[nChar]; // use displayws28xx_font
+
 	RenderSegment(chr & (1<<6), cur_digit_base, 0);
 	RenderSegment(chr & (1<<5), cur_digit_base, 1);
 	RenderSegment(chr & (1<<4), cur_digit_base, 2);
