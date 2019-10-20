@@ -92,6 +92,7 @@ void DisplayWS28xx::Blackout() {
 bool DisplayWS28xx::Run(){		
 	m_nMillis = Hardware::Get()->Millis();
 	
+	// cycle through colours
 	if (m_nMillis >= s_wsticker) {
 		s_wsticker = m_nMillis + TEST_INTERVAL_MS;
 
@@ -126,24 +127,30 @@ bool DisplayWS28xx::Run(){
 				SetRGB(255, 255, 255);
 			}
 			onoff++;
-
 		}
-       
-		WriteChar(level,0);
-		m_WS28xx->Update();
+
 		return 1;	
 	}
 	return 0;
 }
 
 void DisplayWS28xx::Show(const char* pTimecode) {
-	for (uint8_t cnt = 0; cnt < NUM_OF_DIGITS; cnt++)
-	WriteChar(pTimecode[cnt],cnt);
+	WriteChar(pTimecode[0], 0);
+	WriteChar(pTimecode[1], 1);
+   WriteColon(pTimecode[2], 0); // :
+	WriteChar(pTimecode[3], 2);
+	WriteChar(pTimecode[4], 3);
+   WriteColon(pTimecode[5], 1); // :	
+	WriteChar(pTimecode[6], 4);
+	WriteChar(pTimecode[7], 5);
+   WriteColon(pTimecode[8], 2); // :
+	WriteChar(pTimecode[9], 6);
+	WriteChar(pTimecode[10],7);		
+	m_WS28xx->Update();	
 }
 
 void DisplayWS28xx::ShowSysTime(void) {  // TODO: Adapt
 	
-
 	/* time_t ltime;
 	struct tm *local_time;
 
@@ -178,10 +185,25 @@ void DisplayWS28xx::RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_
 	}
 }
 
+void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos) {
+	if (nChar > sizeof(Seg7Array) || nChar < 0) 
+		return; 
+	uint16_t cur_digit_base = (NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
+	
+	bool OnOff = (nChar == ':' || nChar == '.') ? 1 : 0;
+	for (uint16_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++) {
+	if (OnOff) { 
+		  m_WS28xx->SetLED(cnt,curR,curG,curB); // on		  
+	  }
+	  else {
+		  m_WS28xx->SetLED(cnt,0,0,0); // off		 
+	  }	
+	}  
+}
+
 void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos) {
 	if (nChar > sizeof(Seg7Array) || nChar < 0) 
 		return; 
-
 	uint16_t cur_digit_base = nPos * SEGMENTS_PER_DIGIT;
 	const uint8_t chr = Seg7Array[nChar];
 	RenderSegment(chr & (1<<6), cur_digit_base, 0);
@@ -191,6 +213,5 @@ void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos) {
 	RenderSegment(chr & (1<<2), cur_digit_base, 4);
 	RenderSegment(chr & (1<<1), cur_digit_base, 5);
 	RenderSegment(chr & (1<<0), cur_digit_base, 6);
-
-
 }
+

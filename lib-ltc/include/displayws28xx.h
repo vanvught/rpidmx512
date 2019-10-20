@@ -50,8 +50,8 @@
  * 
 */
 
-#define NUM_OF_DIGITS 1
-#define NUM_OF_COLONS 0
+#define NUM_OF_DIGITS 8
+#define NUM_OF_COLONS 3
 
 #define SEGMENTS_PER_DIGIT 7 // number of LEDs that make up one digit
 #define LEDS_PER_SEGMENT 1   // number of LEDs that make up one segment
@@ -88,7 +88,8 @@ public:
 
   // write a character
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
+	void WriteColon(uint8_t nChar, uint8_t nPos);
+	
 	static DisplayWS28xx* Get(void) {
 		return s_pThis;
 	}
