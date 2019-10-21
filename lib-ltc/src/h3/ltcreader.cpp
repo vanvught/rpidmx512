@@ -57,6 +57,7 @@
 #include "artnetnode.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 #include "rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
@@ -321,7 +322,8 @@ void LtcReader::Run(void) {
 		}
 		if (!m_ptLtcDisabledOutputs->bMax7219) {
 			DisplayMax7219::Get()->Show((const char *) aTimeCode);
-		}
+		} else 
+			DisplayWS28xx::Get()->Show((const char *) aTimeCode);
 
 #ifndef NDEBUG
 		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;

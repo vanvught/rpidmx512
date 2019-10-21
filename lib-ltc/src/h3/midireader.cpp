@@ -47,6 +47,7 @@
 #include "rtpmidi.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 #include "ntpserver.h"
 
 #ifndef ALIGNED
@@ -221,7 +222,11 @@ void MidiReader::Update(void) {
 	if (!m_ptLtcDisabledOutputs->bDisplay) {
 		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
 	}
+
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
-	}
+	} else
+		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
+	
+	
 }

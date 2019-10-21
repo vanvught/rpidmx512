@@ -40,6 +40,7 @@
 #include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 #include "artnetnode.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
@@ -219,5 +220,7 @@ void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
 	}
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
-	}
+	} else 
+		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
+		
 }

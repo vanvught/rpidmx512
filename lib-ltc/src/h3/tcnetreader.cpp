@@ -41,6 +41,7 @@
 #include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "midi.h"
@@ -158,7 +159,11 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 		}
 		if (!m_ptLtcDisabledOutputs->bMax7219) {
 			DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		} else
+		{
+			DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
 		}
+		
 	}
 }
 

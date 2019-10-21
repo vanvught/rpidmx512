@@ -103,7 +103,7 @@ bool DisplayWS28xx::Run(){
 		s_wsticker = m_nMillis + TEST_INTERVAL_MS;
 
 		level++;
-		if (level > 254)
+		if (level > 255)
 		{
 			level = 0;
 			
@@ -136,6 +136,7 @@ bool DisplayWS28xx::Run(){
 		}
 
 		SetMaster(level);
+
 
 		return 1;	
 	}
