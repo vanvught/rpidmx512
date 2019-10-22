@@ -62,7 +62,6 @@ void DisplayWS28xx::SetMaster(uint8_t value){
 // set the current RGB values, remapping them to different LED strip mappings
 void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
-
 	switch (l_mapping)
 	{
 	case RGB:

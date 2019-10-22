@@ -184,6 +184,57 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 	return true;
 }
 
+
+bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t *nFPS, struct TLtcTimeCode *ptLtcTimeCode = 0) {
+	assert(*nFPS != 0);
+	
+	int32_t nTenths;
+	int32_t nDigit;
+	uint32_t nValue;
+
+	nTenths = DIGIT(pTimeCodeRate[0]);
+	if ((nTenths < 0) || (nTenths > 3)) {
+		return false;
+	}
+
+	nDigit = DIGIT(pTimeCodeRate[1]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	if (nValue > 30) {
+		return false;
+	}
+
+	if (ptLtcTimeCode != 0)
+		switch (nValue)
+		{
+		case 24:
+			ptLtcTimeCode->nType = TC_TYPE_FILM; // 24fps
+			break;
+		case 25:
+			ptLtcTimeCode->nType = TC_TYPE_EBU; // 25fps
+			break;
+		case 29:
+			ptLtcTimeCode->nType = TC_TYPE_DF; // 29.97fps DF
+			break;
+		case 30:
+			ptLtcTimeCode->nType = TC_TYPE_SMPTE; // 30fps
+			break;
+		default:
+			ptLtcTimeCode->nType = TC_TYPE_UNKNOWN; // wtf?
+			return false;
+			break;
+		}
+
+  	*nFPS = (uint8_t) nValue;
+
+	return true;
+}
+
+
 void Ltc::InitTimeCode(char *pTimeCode) {
 	memset(pTimeCode, ' ', TC_CODE_MAX_LENGTH);
 

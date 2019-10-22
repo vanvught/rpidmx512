@@ -48,6 +48,9 @@ public:
 	void ActionResume(void);
 	void ActionSetStart(const char *pTimeCode);
 	void ActionSetStop(const char *pTimeCode);
+	void ActionSetRate(const char *pTimeCodeRate);
+
+	uint8_t GetRate(void);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;

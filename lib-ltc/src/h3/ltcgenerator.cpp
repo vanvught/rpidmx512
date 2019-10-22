@@ -64,6 +64,8 @@
 #include "ntpserver.h"
 
 #include "debug.h"
+#include "console.h"
+
 
 #define BUTTON(x)			((m_nButtons >> x) & 0x01)
 #define BUTTON_STATE(x)		((m_nButtons & (1 << x)) == (1 << x))
@@ -82,6 +84,10 @@ static const char sStop[] ALIGNED = "stop";
 
 static const char sResume[] ALIGNED = "resume";
 #define RESUME_LENGTH (sizeof(sResume)/sizeof(sResume[0]) - 1)
+
+static const char sRate[] ALIGNED = "rate";
+#define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+
 
 enum tUdpPort {
 	UDP_PORT = 0x5443
@@ -297,6 +303,16 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
+	DEBUG_ENTRY
+
+	Ltc::ParseTimeCodeRate(pTimeCodeRate, &m_nFps, m_pStartLtcTimeCode);
+
+	DEBUG_EXIT
+}
+
+
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -361,9 +377,20 @@ void LtcGenerator::HandleUdpRequest(void) {
 		}
 	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
 		ActionResume();
-	} else {
+	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
+	   if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
+			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);			
+		} else {
+			DEBUG_PUTS("Invalid !rate command");
+		}
+	}
+	else {
 		DEBUG_PUTS("Invalid command");
 	}
+}
+
+uint8_t LtcGenerator::GetRate(void) {
+	return m_nFps;
 }
 
 void LtcGenerator::Increment(void) {

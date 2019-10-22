@@ -203,7 +203,8 @@ void notmain(void) {
 		max7219.Init(ltcParams.GetMax7219Intensity());
 
 	DisplayWS28xx ws82xx(WS2812B, ltcParams.IsShowSysTime());
-	ws82xx.Init(255, RBG);
+	if (tLtcDisabledOutputs.bMax7219)
+		ws82xx.Init(255, RBG);
 	
 
 	display.ClearLine(3);
@@ -388,6 +389,16 @@ void notmain(void) {
 		}
 
 		ws82xx.Run();
+
+		static uint8_t rrate=0;
+		static uint8_t orate=0;
+		
+		rrate = ltcGenerator.GetRate();
+		if (orate != rrate){
+			printf("Rate Change: %d\n",rrate);
+			orate = rrate;
+		}
+		
 
 		lb.Run();
 	}
