@@ -59,7 +59,7 @@ const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void) {
+Hardware::Hardware(void): m_bIsWatchdog(false) {
 	s_pThis = this;
 }
 

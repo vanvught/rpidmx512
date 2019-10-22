@@ -235,9 +235,23 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 }
 
 bool NetworkH3emac::EnableDhcp(void) {
+	DEBUG_ENTRY
+
 	struct ip_info tIpInfo;
 
+	bool bWatchdog = Hardware::Get()->IsWatchdog();
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogStop();
+	}
+
 	m_IsDhcpUsed =  net_set_dhcp(&tIpInfo);
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogInit();
+	}
+
+	DEBUG_PRINTF("m_IsDhcpUsed=%d", m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;
@@ -247,5 +261,14 @@ bool NetworkH3emac::EnableDhcp(void) {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowIp();
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowNetMask();
+	}
+
+	DEBUG_EXIT
 	return m_IsDhcpUsed;
 }

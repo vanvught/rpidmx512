@@ -91,7 +91,7 @@ void DisplayUdf::Show(void) {
 
 void DisplayUdf::ShowIpAddress(void) {
 	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR " /%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
 }
 
 void DisplayUdf::ShowNetmask(void) {

@@ -107,11 +107,11 @@ public:
 	}
 
 	uint32_t Millis(void) {
-		//return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
 		return millis();
 	}
 
 	void WatchdogInit(void) {
+		m_bIsWatchdog = true;
 		h3_watchdog_enable();
 	}
 
@@ -120,7 +120,12 @@ public:
 	}
 
 	void WatchdogStop(void) {
+		m_bIsWatchdog = false;
 		h3_watchdog_disable();
+	}
+
+	bool IsWatchdog(void) {
+		return m_bIsWatchdog;
 	}
 
 	TBootDevice GetBootDevice(void){
@@ -138,6 +143,7 @@ public:
 
 private:
 	 static Hardware *s_pThis;
+	 bool m_bIsWatchdog;
 };
 
 #endif /* H3_HARDWARE_H_ */
