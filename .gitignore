@@ -37,8 +37,9 @@ lib*.a
 # H2+/H3 binaries 
 uImage
 *.uImage
+*.uImage.gz
 orangepi*.img
-nanopi_neo.img
+orangepi*.img.gz
 
 # Broadcom binaries
 kernel.img

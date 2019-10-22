@@ -143,6 +143,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-nextion
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
 
 builddirs:
@@ -158,6 +159,7 @@ clean:
 	rm -f $(LIST)
 	rm -f $(SUFFIX).uImage
 	rm -f $(SUFFIX).uImage.gz
+	rm -f build?.txt
 	for d in $(LIBDEP); \
 		do                               \
 			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \

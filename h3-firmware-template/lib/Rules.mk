@@ -22,12 +22,27 @@ INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
 
 ifneq ($(CONSOLE),)
-	DEFINES+=-D$(CONSOLE)
+	ifeq ($(findstring $(CONSOLE),$(MAKE_FLAGS)), $(CONSOLE))
+	else
+		DEFINES+=-D$(CONSOLE)
+	endif
 endif
 
 ifeq ($(NO_EXT_LED),1)
 	DEFINES+=-DDO_NOT_USE_EXTERNAL_LED
 endif
+
+ifeq ($(findstring ENABLE_SPIFLASH,$(MAKE_FLAGS)), ENABLE_SPIFLASH)
+	DEFINES+=-DREMOTE_CONFIG
+else
+	ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
+	else
+		DEFINES+=-DREMOTE_CONFIG
+	endif
+endif	
+
+$(info $$DEFINES [${DEFINES}])
+$(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mhard-float -mfloat-abi=hard
