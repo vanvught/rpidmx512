@@ -88,3 +88,4 @@ lib-rdmnet/example/sofware_version_id.h
 rpi_dmx_usb_pro/include/device_software_version.h
 lib-bob/examples/si5351a
 *.gz
+linux_rpi_artipprog/linux_rpi_artipprog

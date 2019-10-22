@@ -40,6 +40,7 @@
 
 #if defined (RASPPI)
  #include "spiflashstore.h"
+ #include "storee131.h"
 #endif
 
 #include "firmwareversion.h"
@@ -68,7 +69,9 @@ int main(int argc, char **argv) {
 
 #if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
-	E131Params e131params((E131ParamsStore *)spiFlashStore.GetStoreE131());
+	StoreE131 storeE131;
+
+	E131Params e131params((E131ParamsStore *) &storeE131);
 	spiFlashStore.Dump();
 #else
 	E131Params e131params;
