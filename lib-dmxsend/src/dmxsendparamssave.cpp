@@ -37,6 +37,8 @@
 bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
+	assert(pBuffer != 0);
+
 	if (ptDMXParams != 0) {
 		memcpy(&m_tDMXParams, ptDMXParams, sizeof(struct TDMXParams));
 	} else {
@@ -45,13 +47,13 @@ bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, uint8_t *pBuffer, 
 
 	PropertiesBuilder builder(DMXSendConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(DMXSendConst::PARAMS_BREAK_TIME, (uint32_t) m_tDMXParams.nBreakTime, isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME));
-	isAdded &= builder.Add(DMXSendConst::PARAMS_MAB_TIME, (uint32_t) m_tDMXParams.nMabTime, isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME));
-	isAdded &= builder.Add(DMXSendConst::PARAMS_REFRESH_RATE, (uint32_t) m_tDMXParams.nRefreshRate, isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE));
+	bool isAdded = builder.Add(DMXSendConst::PARAMS_BREAK_TIME, m_tDMXParams.nBreakTime, isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME));
+	isAdded &= builder.Add(DMXSendConst::PARAMS_MAB_TIME, m_tDMXParams.nMabTime, isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME));
+	isAdded &= builder.Add(DMXSendConst::PARAMS_REFRESH_RATE, m_tDMXParams.nRefreshRate, isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
 	return isAdded;

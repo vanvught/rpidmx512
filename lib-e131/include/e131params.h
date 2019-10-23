@@ -94,8 +94,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	bool Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(E131Bridge *);
 

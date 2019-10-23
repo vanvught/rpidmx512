@@ -40,8 +40,10 @@
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "htp" : "ltp"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn"
 
-bool ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
 
 	if (pArtNetParams != 0) {
 		memcpy(&m_tArtNetParams, pArtNetParams, sizeof(struct TArtNetParams));
@@ -51,50 +53,52 @@ bool ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(ArtNetParamsConst::NET, (uint32_t) m_tArtNetParams.nNet, isMaskSet(ARTNET_PARAMS_MASK_NET));
-	isAdded &= builder.Add(ArtNetParamsConst::SUBNET, (uint32_t) m_tArtNetParams.nSubnet, isMaskSet(ARTNET_PARAMS_MASK_SUBNET));
-	isAdded &= builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tArtNetParams.nUniverse, isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE));
+	builder.Add(ArtNetParamsConst::NET, m_tArtNetParams.nNet, isMaskSet(ARTNET_PARAMS_MASK_NET));
+	builder.Add(ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet, isMaskSet(ARTNET_PARAMS_MASK_SUBNET));
+	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tArtNetParams.nUniverse, isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE));
 
-	isAdded &= builder.Add(ArtNetParamsConst::NODE_LONG_NAME, (const char *) m_tArtNetParams.aLongName, isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
-	isAdded &= builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, (const char *) m_tArtNetParams.aShortName, isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
+	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, (const char *) m_tArtNetParams.aLongName, isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
+	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, (const char *) m_tArtNetParams.aShortName, isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
 
-	isAdded &= builder.AddHex16(ArtNetParamsConst::NODE_MANUFACTURER_ID, m_tArtNetParams.aManufacturerId, isMaskSet(ARTNET_PARAMS_MASK_ID));
-	isAdded &= builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE));
+	builder.AddHex16(ArtNetParamsConst::NODE_MANUFACTURER_ID, m_tArtNetParams.aManufacturerId, isMaskSet(ARTNET_PARAMS_MASK_ID));
+	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE));
 
-	isAdded &= builder.Add(ArtNetParamsConst::RDM, (uint32_t) m_tArtNetParams.bEnableRdm, isMaskSet(ARTNET_PARAMS_MASK_RDM));
-	isAdded &= builder.Add(ArtNetParamsConst::TIMECODE, (uint32_t) m_tArtNetParams.bUseTimeCode, isMaskSet(ARTNET_PARAMS_MASK_TIMECODE));
-	isAdded &= builder.Add(ArtNetParamsConst::TIMESYNC, (uint32_t) m_tArtNetParams.bUseTimeSync, isMaskSet(ARTNET_PARAMS_MASK_TIMESYNC));
+	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ARTNET_PARAMS_MASK_RDM));
+	builder.Add(ArtNetParamsConst::TIMECODE, m_tArtNetParams.bUseTimeCode, isMaskSet(ARTNET_PARAMS_MASK_TIMECODE));
+	builder.Add(ArtNetParamsConst::TIMESYNC, m_tArtNetParams.bUseTimeSync, isMaskSet(ARTNET_PARAMS_MASK_TIMESYNC));
 
-	isAdded &= builder.Add(ArtNetParamsConst::MERGE_MODE, (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeMode), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE));
-	isAdded &= builder.Add(ArtNetParamsConst::PROTOCOL, (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocol), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL));
+	builder.Add(ArtNetParamsConst::MERGE_MODE, (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeMode), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE));
+	builder.Add(ArtNetParamsConst::PROTOCOL, (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocol), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL));
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
-		isAdded &= builder.Add(ArtNetParamsConst::UNIVERSE_PORT[i], (uint32_t) m_tArtNetParams.nUniversePort[i], isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << i));
-		isAdded &= builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i));
-		isAdded &= builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i));
+		builder.Add(ArtNetParamsConst::UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i], isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << i));
+		builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i));
+		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i));
 	}
 
-	isAdded &= builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, (uint32_t) m_tArtNetParams.nNetworkTimeout, isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT));
-	isAdded &= builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT));
+	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT));
+	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT));
 
-	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool ArtNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void ArtNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pArtNetParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

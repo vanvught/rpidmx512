@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -176,7 +173,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-bool ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
 	m_aFileName[5] = (char) nMotorIndex + '0';
@@ -189,22 +186,24 @@ bool ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	bool isAdded = builder.Add(ModeParamsConst::DMX_MODE, (uint32_t) m_tModeParams.nDmxMode, isMaskSet(MODE_PARAMS_MASK_DMX_MODE));
-	isAdded &= builder.Add(ModeParamsConst::DMX_START_ADDRESS, (uint32_t) m_tModeParams.nDmxStartAddress, isMaskSet(MODE_PARAMS_MASK_DMX_START_ADDRESS));
+	builder.Add(ModeParamsConst::DMX_MODE, m_tModeParams.nDmxMode, isMaskSet(MODE_PARAMS_MASK_DMX_MODE));
+	builder.Add(ModeParamsConst::DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress, isMaskSet(MODE_PARAMS_MASK_DMX_START_ADDRESS));
 
 	nSize = builder.GetSize();
 
-	return isAdded;
+	return;
 }
 
-bool ModeParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 
 	if (m_pModeParamsStore == 0) {
 		nSize = 0;
-		return false;
+		return;
 	}
 
-	return Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+	Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void ModeParams::Dump(void) {

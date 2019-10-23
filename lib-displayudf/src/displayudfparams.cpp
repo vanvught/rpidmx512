@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -139,8 +136,10 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 
 }
 
-bool DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
 
 	if (ptDisplayUdfParams != 0) {
 		memcpy(&m_tDisplayUdfParams, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
@@ -150,12 +149,12 @@ bool DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 
 	PropertiesBuilder builder(DisplayUdfParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, (uint32_t) m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
+	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
 
 	for (uint32_t j = 1; j <= DISPLAY_LABEL_MAX_ROWS; j++) {
 		for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 			if (j == m_tDisplayUdfParams.nLabelIndex[i]) {
-				isAdded &= builder.Add(pArray[i], (uint32_t) m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
+				builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
 			}
 		}
 	}
@@ -163,19 +162,21 @@ bool DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pDisplayUdfParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
@@ -221,4 +222,3 @@ void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
 bool DisplayUdfParams::isMaskSet(uint32_t nMask) const {
 	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
 }
-

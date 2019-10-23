@@ -35,7 +35,7 @@
 
 #include "debug.h"
 
-bool OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -48,38 +48,40 @@ bool OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 
 	PropertiesBuilder builder(OscClientParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.AddIpAddress(OscClientParamsConst::PARAMS_SERVER_IP, m_tOscClientParams.nServerIp, isMaskSet(OSCCLIENT_PARAMS_MASK_SERVER_IP));
-	isAdded &= builder.Add(OscClientParamsConst::PARAMS_OUTGOING_PORT, (uint32_t) m_tOscClientParams.nOutgoingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT));
-	isAdded &= builder.Add(OscClientParamsConst::PARAMS_INCOMING_PORT, (uint32_t) m_tOscClientParams.nIncomingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT));
-	isAdded &= builder.Add(OscClientParamsConst::PARAMS_PING_DISABLE, (uint32_t) m_tOscClientParams.nPingDisable, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE));
-	isAdded &= builder.Add(OscClientParamsConst::PARAMS_PING_DELAY, (uint32_t) m_tOscClientParams.nPingDelay, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY));
+	builder.AddIpAddress(OscClientParamsConst::PARAMS_SERVER_IP, m_tOscClientParams.nServerIp, isMaskSet(OSCCLIENT_PARAMS_MASK_SERVER_IP));
+	builder.Add(OscClientParamsConst::PARAMS_OUTGOING_PORT, m_tOscClientParams.nOutgoingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT));
+	builder.Add(OscClientParamsConst::PARAMS_INCOMING_PORT, m_tOscClientParams.nIncomingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT));
+	builder.Add(OscClientParamsConst::PARAMS_PING_DISABLE, m_tOscClientParams.nPingDisable, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE));
+	builder.Add(OscClientParamsConst::PARAMS_PING_DELAY, m_tOscClientParams.nPingDelay, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY));
 
 	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
 		m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
 		const char *cmd = (const char *) &m_tOscClientParams.aCmd[i];
-		isAdded &= builder.Add(m_aCmd, cmd, *cmd == '/');
+		builder.Add(m_aCmd, cmd, *cmd == '/');
 	}
 
 	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
 		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
 		const char *led = (const char *) &m_tOscClientParams.aLed[i];
-		isAdded &= builder.Add(m_aLed, led, *led == '/');
+		builder.Add(m_aLed, led, *led == '/');
 	}
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool OscClientParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OscClientParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOscClientParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

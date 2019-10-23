@@ -35,8 +35,10 @@
 
 #include "debug.h"
 
-bool ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
 
 	if (pArtNet4Params != 0) {
 		memcpy(&m_tArtNet4Params, pArtNet4Params, sizeof(struct TArtNet4Params));
@@ -46,24 +48,26 @@ bool ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, (uint32_t) m_tArtNet4Params.bMapUniverse0, isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0));
+	builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool ArtNet4Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void ArtNet4Params::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pArtNet4ParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

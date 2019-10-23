@@ -67,8 +67,8 @@ public:
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	bool Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump(void);
 

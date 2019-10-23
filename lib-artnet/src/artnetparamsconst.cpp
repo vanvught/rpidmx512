@@ -29,18 +29,18 @@
 #include "artnet.h"
 
 alignas(uint32_t) const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
-alignas(uint32_t) const char ArtNetParamsConst::NET[] = "net";												///< 0 {default}
-alignas(uint32_t) const char ArtNetParamsConst::SUBNET[] = "subnet";										///< 0 {default}
+alignas(uint32_t) const char ArtNetParamsConst::NET[] = "net";
+alignas(uint32_t) const char ArtNetParamsConst::SUBNET[] = "subnet";
 alignas(uint32_t) const char ArtNetParamsConst::TIMECODE[] = "use_timecode";
 alignas(uint32_t) const char ArtNetParamsConst::TIMESYNC[] = "use_timesync";
-alignas(uint32_t) const char ArtNetParamsConst::RDM[] = "enable_rdm";										///< Enable RDM, 0 {default}
-alignas(uint32_t) const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";				///< 0 {default}
+alignas(uint32_t) const char ArtNetParamsConst::RDM[] = "enable_rdm";
+alignas(uint32_t) const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";
 alignas(uint32_t) const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
 alignas(uint32_t) const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
 alignas(uint32_t) const char ArtNetParamsConst::NODE_MANUFACTURER_ID[] = "manufacturer_id";
 alignas(uint32_t) const char ArtNetParamsConst::NODE_OEM_VALUE[] = "oem_value";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";	///< 10 {default}
-alignas(uint32_t) const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";			///< 0 {default}
+alignas(uint32_t) const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+alignas(uint32_t) const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
 alignas(uint32_t) const char ArtNetParamsConst::UNIVERSE_PORT[ARTNET_MAX_PORTS][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
 alignas(uint32_t) const char ArtNetParamsConst::MERGE_MODE[] = "merge_mode";
 alignas(uint32_t) const char ArtNetParamsConst::MERGE_MODE_PORT[ARTNET_MAX_PORTS][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };

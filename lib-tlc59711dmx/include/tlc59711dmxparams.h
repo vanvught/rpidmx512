@@ -61,8 +61,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	bool Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(TLC59711Dmx *);
 
@@ -80,7 +80,8 @@ public:
 	bool IsSetLedCount(void) const;
 
 public:
-	static const char *GetLedTypeString(TTLC59711Type tTTLC59711Type);
+	static const char *GetLedTypeString(TTLC59711Type tTLC59711Type);
+	static TTLC59711Type GetLedTypeString(const char *pValue);
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

@@ -73,8 +73,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	bool Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(WS28xxDmx *);
 	void Set(WS28xxDmxMulti *pWS28xxDmxMulti);
@@ -118,8 +118,9 @@ public:
 	}
 
 public:
-	static const char *GetLedTypeString(TWS28XXType);
-    static void staticCallbackFunction(void *p, const char *s);
+	static const char *GetLedTypeString(TWS28XXType tType);
+	static TWS28XXType GetLedTypeString(const char *pVale);
+	static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);

@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -105,7 +102,7 @@ void MotorParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 	m_pMotorParamsStore->Update(nMotorIndex, &m_tMotorParams);
 }
 
-bool MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
 	m_aFileName[5] = (char) nMotorIndex + '0';
@@ -118,24 +115,26 @@ bool MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMoto
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	bool isAdded = builder.Add(MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel, isMaskSet(MOTOR_PARAMS_MASK_STEP_ANGEL));
-	isAdded &= builder.Add(MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage, isMaskSet(MOTOR_PARAMS_MASK_VOLTAGE));
-	isAdded &= builder.Add(MotorParamsConst::CURRENT, m_tMotorParams.fCurrent, isMaskSet(MOTOR_PARAMS_MASK_CURRENT));
-	isAdded &= builder.Add(MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance, isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE));
-	isAdded &= builder.Add(MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance, isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE));
+	builder.Add(MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel, isMaskSet(MOTOR_PARAMS_MASK_STEP_ANGEL));
+	builder.Add(MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage, isMaskSet(MOTOR_PARAMS_MASK_VOLTAGE));
+	builder.Add(MotorParamsConst::CURRENT, m_tMotorParams.fCurrent, isMaskSet(MOTOR_PARAMS_MASK_CURRENT));
+	builder.Add(MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance, isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE));
+	builder.Add(MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance, isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE));
 
 	nSize = builder.GetSize();
 
-	return isAdded;
+	return;
 }
 
-bool MotorParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	if (m_pMotorParamsStore == 0) {
 		nSize = 0;
-		return false;
+		return;
 	}
 
-	return Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+	Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void MotorParams::callbackFunction(const char *pLine) {

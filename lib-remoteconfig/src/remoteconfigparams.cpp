@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -128,7 +125,7 @@ void RemoteConfigParams::callbackFunction(const char* pLine) {
 	}
 }
 
-bool RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfigParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfigParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -141,28 +138,30 @@ bool RemoteConfigParams::Builder(const struct TRemoteConfigParams* pRemoteConfig
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisabled, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME));
-	isAdded &= builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, (const char *) m_tRemoteConfigParams.aDisplayName, isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisabled, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME));
+	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, (const char *) m_tRemoteConfigParams.aDisplayName, isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME));
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool RemoteConfigParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void RemoteConfigParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRemoteConfigParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {

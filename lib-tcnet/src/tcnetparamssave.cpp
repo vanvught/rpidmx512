@@ -1,5 +1,5 @@
 /**
- * @file tcnetparams.h
+ * @file tcnetparamssave.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -34,10 +34,13 @@
 
 #include "debug.h"
 
-bool TCNetParams::Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+const uint8_t s_nFPS[4] = { 24, 25, 29, 30};
+
+void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
+	assert(m_tTTCNetParams.nTimeCodeType < (sizeof(s_nFPS) / sizeof(s_nFPS[0])));
 
 	if (pTTCNetParams != 0) {
 		memcpy(&m_tTTCNetParams, pTTCNetParams, sizeof(struct TTCNetParams));
@@ -49,48 +52,30 @@ bool TCNetParams::Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBu
 	name[0] = TCNet::GetLayerName((TTCNetLayers) m_tTTCNetParams.nLayer);
 	name[1] = '\0';
 
-	uint32_t fps;
-
-	switch (m_tTTCNetParams.nTimeCodeType) { //TODO make switch static method
-		case TCNET_TIMECODE_TYPE_FILM:
-			fps = 24;
-			break;
-		case TCNET_TIMECODE_TYPE_EBU_25FPS:
-			fps = 25;
-			break;
-		case TCNET_TIMECODE_TYPE_DF:
-			fps = 29;
-			break;
-		case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
-			fps = 30;
-			break;
-		default:
-			fps = 30;
-			break;
-	}
-
 	PropertiesBuilder builder(TCNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(TCNetParamsConst::NODE_NAME, (const char *)m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
-	isAdded &= builder.Add(TCNetParamsConst::LAYER, (const char *)name, isMaskSet(TCNET_PARAMS_MASK_LAYER));
-	isAdded &= builder.Add(TCNetParamsConst::TIMECODE_TYPE, fps, isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
+	builder.Add(TCNetParamsConst::NODE_NAME, (const char *)m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
+	builder.Add(TCNetParamsConst::LAYER, (const char *)name, isMaskSet(TCNET_PARAMS_MASK_LAYER));
+	builder.Add(TCNetParamsConst::TIMECODE_TYPE, s_nFPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pTCNetParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

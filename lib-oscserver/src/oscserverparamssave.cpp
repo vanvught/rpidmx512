@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-bool OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -49,29 +49,31 @@ bool OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 
 	PropertiesBuilder builder(OSCServerConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(OSCServerConst::PARAMS_INCOMING_PORT, (uint32_t) m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_OUTGOING_PORT, (uint32_t) m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCSERVER_PARAMS_MASK_PATH));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT));
-	isAdded &= builder.Add(OSCServerConst::PARAMS_TRANSMISSION, (uint32_t) m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION));
+	builder.Add(OSCServerConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
+	builder.Add(OSCServerConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
+	builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCSERVER_PARAMS_MASK_PATH));
+	builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO));
+	builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT));
+	builder.Add(OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION));
 
-	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOSCServerParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

@@ -34,8 +34,10 @@
 
 #include "debug.h"
 
-bool NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
 
 	if (ptNetworkParams != 0) {
 		memcpy(&m_tNetworkParams, ptNetworkParams, sizeof(struct TNetworkParams));
@@ -45,29 +47,30 @@ bool NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 
 	PropertiesBuilder builder(NetworkConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(NetworkConst::PARAMS_USE_DHCP, (uint32_t) m_tNetworkParams.bIsDhcpUsed, isMaskSet(NETWORK_PARAMS_MASK_DHCP));
-	isAdded &= builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS));
-	isAdded &= builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
-	isAdded &= builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
-	isAdded &= builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
-//	isAdded &= builder.Add(NetworkConst::PARAMS_RESET_EMAC, (uint32_t) m_tNetworkParams.bResetEmac, isMaskSet(NETWORK_PARAMS_MASK_EMAC));
+	builder.Add(NetworkConst::PARAMS_USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NETWORK_PARAMS_MASK_DHCP));
+	builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS));
+	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
+	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
+	builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pNetworkParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

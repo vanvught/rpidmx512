@@ -35,8 +35,10 @@
 
 #include "debug.h"
 
-bool TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
+
+	assert(pBuffer != 0);
 
 	if (ptTLC59711Params != 0) {
 		memcpy(&m_tTLC59711Params, ptTLC59711Params, sizeof(struct TTLC59711DmxParams));
@@ -46,27 +48,29 @@ bool TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TTLC59711Type) m_tTLC59711Params.LedType), isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
-	isAdded &= builder.Add(DevicesParamsConst::LED_COUNT, (uint32_t) m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
-	isAdded &= builder.Add(DevicesParamsConst::DMX_START_ADDRESS, (uint32_t) m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
-	isAdded &= builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
+	builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TTLC59711Type) m_tTLC59711Params.LedType), isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
+	builder.Add(DevicesParamsConst::DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
+	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pLC59711ParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

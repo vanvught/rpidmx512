@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -99,7 +96,7 @@ void L6470Params::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 	m_pL6470ParamsStore->Update(nMotorIndex, &m_tL6470Params);
 }
 
-bool L6470Params::Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void L6470Params::Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
 	m_aFileName[5] = (char) nMotorIndex + '0';
@@ -112,28 +109,30 @@ bool L6470Params::Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL647
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	bool isAdded = builder.Add(L6470ParamsConst::MIN_SPEED, m_tL6470Params.fMinSpeed, isMaskSet(L6470_PARAMS_MASK_MIN_SPEED));
-	isAdded &= builder.Add(L6470ParamsConst::MAX_SPEED, m_tL6470Params.fMaxSpeed, isMaskSet(L6470_PARAMS_MASK_MAX_SPEED));
-	isAdded &= builder.Add(L6470ParamsConst::ACC, m_tL6470Params.fAcc, isMaskSet(L6470_PARAMS_MASK_ACC));
-	isAdded &= builder.Add(L6470ParamsConst::DEC, m_tL6470Params.fDec, isMaskSet(L6470_PARAMS_MASK_DEC));
-	isAdded &= builder.Add(L6470ParamsConst::KVAL_HOLD, (uint32_t) m_tL6470Params.nKvalHold, isMaskSet(L6470_PARAMS_MASK_KVAL_HOLD));
-	isAdded &= builder.Add(L6470ParamsConst::KVAL_RUN, (uint32_t) m_tL6470Params.nKvalRun, isMaskSet(L6470_PARAMS_MASK_KVAL_RUN));
-	isAdded &= builder.Add(L6470ParamsConst::KVAL_ACC, (uint32_t) m_tL6470Params.nKvalAcc, isMaskSet(L6470_PARAMS_MASK_KVAL_ACC));
-	isAdded &= builder.Add(L6470ParamsConst::KVAL_DEC, (uint32_t) m_tL6470Params.nKvalDec, isMaskSet(L6470_PARAMS_MASK_KVAL_DEC));
-	isAdded &= builder.Add(L6470ParamsConst::MICRO_STEPS, (uint32_t) m_tL6470Params.nMicroSteps, isMaskSet(L6470_PARAMS_MASK_MICRO_STEPS));
+	builder.Add(L6470ParamsConst::MIN_SPEED, m_tL6470Params.fMinSpeed, isMaskSet(L6470_PARAMS_MASK_MIN_SPEED));
+	builder.Add(L6470ParamsConst::MAX_SPEED, m_tL6470Params.fMaxSpeed, isMaskSet(L6470_PARAMS_MASK_MAX_SPEED));
+	builder.Add(L6470ParamsConst::ACC, m_tL6470Params.fAcc, isMaskSet(L6470_PARAMS_MASK_ACC));
+	builder.Add(L6470ParamsConst::DEC, m_tL6470Params.fDec, isMaskSet(L6470_PARAMS_MASK_DEC));
+	builder.Add(L6470ParamsConst::KVAL_HOLD, m_tL6470Params.nKvalHold, isMaskSet(L6470_PARAMS_MASK_KVAL_HOLD));
+	builder.Add(L6470ParamsConst::KVAL_RUN, m_tL6470Params.nKvalRun, isMaskSet(L6470_PARAMS_MASK_KVAL_RUN));
+	builder.Add(L6470ParamsConst::KVAL_ACC, m_tL6470Params.nKvalAcc, isMaskSet(L6470_PARAMS_MASK_KVAL_ACC));
+	builder.Add(L6470ParamsConst::KVAL_DEC, m_tL6470Params.nKvalDec, isMaskSet(L6470_PARAMS_MASK_KVAL_DEC));
+	builder.Add(L6470ParamsConst::MICRO_STEPS, m_tL6470Params.nMicroSteps, isMaskSet(L6470_PARAMS_MASK_MICRO_STEPS));
 
 	nSize = builder.GetSize();
 
-	return isAdded;
+	return;
 }
 
-bool L6470Params::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void L6470Params::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	if (m_pL6470ParamsStore == 0) {
 		nSize = 0;
-		return false;
+		return;
 	}
 
-	return Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+	Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void L6470Params::callbackFunction(const char *pLine) {

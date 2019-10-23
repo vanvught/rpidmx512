@@ -44,12 +44,11 @@ ReadConfigFile::~ReadConfigFile(void) {
 }
 
 bool ReadConfigFile::Read(const char *pFileName) {
-	char buffer[128];
-	FILE *fp;
-
 	assert(pFileName != 0);
 
-	fp = fopen(pFileName, "r");
+	char buffer[128];
+
+	FILE *fp = fopen(pFileName, "r");
 
 	if (fp != NULL) {
 		for (;;) {
@@ -67,10 +66,11 @@ bool ReadConfigFile::Read(const char *pFileName) {
 					q++;
 				}
 
-				(void) m_cb(m_p, (const char *) buffer);
+				m_cb(m_p, (const char *) buffer);
 			}
 		}
-		(void) fclose(fp);
+
+		fclose(fp);
 	} else {
 		return false;
 	}
@@ -78,29 +78,30 @@ bool ReadConfigFile::Read(const char *pFileName) {
 	return true;
 }
 
-void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
+void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 
-	char *p = new char[nLength + 1];
-	char *pFree = p;
-	memcpy(p, pBuffer, nLength);
-	p[nLength] = '\0';
+	char *pSrc = new char[nLength + 1];
+	char *pFree = pSrc;
+
+	memcpy(pSrc, pBuffer, nLength);
+	pSrc[nLength] = '\0';
 
 #ifndef NDEBUG
-		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, p);
+		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, pSrc);
 #endif
 
 	while (nLength != 0) {
-		char *pLine = (char *) p;
+		char *pLine = (char *) pSrc;
 
-		while ((nLength != 0) && (*p != '\r') && (*p != '\n')) {
-			p++;
+		while ((nLength != 0) && (*pSrc != '\r') && (*pSrc != '\n')) {
+			pSrc++;
 			nLength--;
 		}
 
-		while ((nLength != 0) && ((*p == '\r') || (*p == '\n'))) {
-			*p++ = '\0';
+		while ((nLength != 0) && ((*pSrc == '\r') || (*pSrc == '\n'))) {
+			*pSrc++ = '\0';
 			nLength--;
 		}
 
@@ -109,7 +110,7 @@ void ReadConfigFile::Read(const char* pBuffer, unsigned nLength) {
 #endif
 
 		if (*pLine >= 'a') {
-			(void) m_cb(m_p, (const char *) pLine);
+			m_cb(m_p, (const char *) pLine);
 		}
 	}
 

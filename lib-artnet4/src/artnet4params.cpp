@@ -26,9 +26,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -138,7 +135,7 @@ void ArtNet4Params::Dump(void) {
 #endif
 }
 
-void ArtNet4Params::staticCallbackFunction(void* p, const char* s) {
+void ArtNet4Params::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 

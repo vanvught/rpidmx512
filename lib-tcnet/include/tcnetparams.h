@@ -60,8 +60,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	bool Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	bool Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(TCNet *pTCNet);
 

@@ -314,7 +314,7 @@ bool SpiFlashStore::Flash(void) {
 	}
 
 #ifndef NDEBUG
-	Dump();
+	//Dump();
 #endif
 
 	return false;

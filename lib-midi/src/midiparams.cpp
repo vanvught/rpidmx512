@@ -22,9 +22,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
@@ -158,7 +155,7 @@ void MidiParams::Dump(void) {
 #endif
 }
 
-void MidiParams::staticCallbackFunction(void* p, const char* s) {
+void MidiParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 

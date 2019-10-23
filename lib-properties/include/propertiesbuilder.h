@@ -27,8 +27,8 @@
 #define PROPERTIESBUILDER_H_
 
 #include <stdint.h>
-
-//#define IS_MASK_SET(x, y)	(((x->nSetList) & (y)) == (y))
+#include <stdbool.h>
+#include <time.h>
 
 class PropertiesBuilder {
 public:
@@ -36,12 +36,30 @@ public:
 	~PropertiesBuilder(void);
 
 	bool Add(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
+
+	bool Add(const char *pProperty, uint16_t nValue, bool bDoAdd = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	}
+
+	bool Add(const char *pProperty, uint8_t nValue, bool bDoAdd = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	}
+
+	bool Add(const char *pProperty, time_t nValue, bool bDoAdd = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	}
+
+	bool Add(const char *pProperty, bool bValue, bool bDoAdd = true) {
+		return Add(pProperty, static_cast<uint32_t>(bValue), bDoAdd);
+	}
+
 	bool Add(const char *pProperty, float fValue, bool bDoAdd = true);
+
 	bool Add(const char *pProperty, const char *pValue, bool bDoAdd = true);
 
 	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
 
-	bool AddHex16(const char *pProperty, uint8_t nValue[2], bool bDoAdd = true);
+	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bDoAdd = true);
 
 	unsigned GetSize(void) {
 		return m_nSize;

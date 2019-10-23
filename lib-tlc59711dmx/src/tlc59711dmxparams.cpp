@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -45,9 +42,8 @@
 
 #include "devicesparamsconst.h"
 
-#define TLC59711_TYPES_COUNT 				2
 #define TLC59711_TYPES_MAX_NAME_LENGTH 		10
-static const char sLedTypes[TLC59711_TYPES_COUNT][TLC59711_TYPES_MAX_NAME_LENGTH] ALIGNED = { "TLC59711\0", "TLC59711W" };
+static const char sLedTypes[TTLC59711_TYPE_UNDEFINED][TLC59711_TYPES_MAX_NAME_LENGTH] ALIGNED = { "TLC59711\0", "TLC59711W" };
 
 TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore): m_pLC59711ParamsStore(pTLC59711ParamsStore) {
 	m_tTLC59711Params.nSetList = 0;
@@ -168,12 +164,6 @@ void TLC59711DmxParams::Dump(void) {
 #endif
 }
 
-const char* TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTTLC59711Type) {
-	assert (tTTLC59711Type < TLC59711_TYPES_COUNT);
-
-	return sLedTypes[tTTLC59711Type];
-}
-
 bool TLC59711DmxParams::IsSetLedType(void) const {
 	return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE);
 }
@@ -182,7 +172,7 @@ bool TLC59711DmxParams::IsSetLedCount(void) const {
 	return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT);
 }
 
-void TLC59711DmxParams::staticCallbackFunction(void* p, const char* s) {
+void TLC59711DmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
@@ -191,4 +181,27 @@ void TLC59711DmxParams::staticCallbackFunction(void* p, const char* s) {
 
 bool TLC59711DmxParams::isMaskSet(uint32_t nMask) const {
 	return (m_tTLC59711Params.nSetList & nMask) == nMask;
+}
+
+/*
+ * Static
+ */
+
+const char *TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTLC59711Type) {
+	assert (tTLC59711Type < TTLC59711_TYPE_UNDEFINED);
+
+	return sLedTypes[tTLC59711Type];
+}
+
+
+TTLC59711Type TLC59711DmxParams::GetLedTypeString(const char *pValue) {
+	assert(pValue != 0);
+
+	if (strcasecmp(pValue, sLedTypes[TTLC59711_TYPE_RGB]) == 0) {
+		return TTLC59711_TYPE_RGB;
+	} else if (strcasecmp(pValue, sLedTypes[TTLC59711_TYPE_RGBW]) == 0) {
+		return TTLC59711_TYPE_RGBW;
+	}
+
+	return TTLC59711_TYPE_UNDEFINED;
 }

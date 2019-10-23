@@ -38,7 +38,7 @@
 
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "htp" : "ltp"
 
-bool E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (ptE131Params != 0) {
@@ -49,34 +49,36 @@ bool E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 
 	PropertiesBuilder builder(E131ParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
+	builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
 
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
+	builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		isAdded &= builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
-		isAdded &= builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
+		builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+		builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
 	}
 
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
-	isAdded &= builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
+	builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
+	builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
 
-	isAdded &= builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pE131ParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }

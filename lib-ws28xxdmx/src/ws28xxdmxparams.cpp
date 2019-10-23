@@ -51,9 +51,8 @@
 
 #include "devicesparamsconst.h"
 
-#define WS28XX_TYPES_COUNT 				11
 #define WS28XX_TYPES_MAX_NAME_LENGTH 	8
-static const char sLetTypes[WS28XX_TYPES_COUNT][WS28XX_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0", "SK6812\0", "SK6812W", "APA102\0", "UCS1903", "UCS2903" };
+static const char sLetTypes[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0", "SK6812\0", "SK6812W", "APA102\0", "UCS1903", "UCS2903" };
 
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;
@@ -121,7 +120,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	len = 7;
 	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, buffer, &len) == SSCAN_OK) {
 		buffer[len] = '\0';
-		for (uint32_t i = 0; i < WS28XX_TYPES_COUNT; i++) {
+		for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
 			if (strcasecmp(buffer, sLetTypes[i]) == 0) {
 				m_tWS28xxParams.tLedType = (TWS28XXType) i;
 				m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_TYPE;
@@ -227,12 +226,6 @@ void WS28xxDmxParams::Dump(void) {
 #endif
 }
 
-const char* WS28xxDmxParams::GetLedTypeString(TWS28XXType tType) {
-	assert(tType < WS28XX_TYPES_COUNT);
-
-	return sLetTypes[tType];
-}
-
 void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
@@ -242,4 +235,26 @@ void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 
 bool WS28xxDmxParams::isMaskSet(uint32_t nMask) const {
 	return (m_tWS28xxParams.nSetList & nMask) == nMask;
+}
+
+/*
+ * Static
+ */
+
+const char* WS28xxDmxParams::GetLedTypeString(TWS28XXType tType) {
+	assert(tType < WS28XX_UNDEFINED);
+
+	return sLetTypes[tType];
+}
+
+TWS28XXType WS28xxDmxParams::GetLedTypeString(const char *pVale) {
+	assert(pVale != 0);
+
+	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
+		if (strcasecmp(pVale, sLetTypes[i]) == 0) {
+			return (TWS28XXType) i;
+		}
+	}
+
+	return WS28XX_UNDEFINED;
 }

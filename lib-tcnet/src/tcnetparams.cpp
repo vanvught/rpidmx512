@@ -1,5 +1,5 @@
 /**
- * @file tcnetparams.h
+ * @file tcnetparams.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -22,9 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
 
 #include <stdint.h>
 #include <ctype.h>
@@ -182,7 +179,7 @@ void TCNetParams::Dump(void) {
 #endif
 }
 
-void TCNetParams::staticCallbackFunction(void* p, const char* s) {
+void TCNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 

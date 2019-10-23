@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -154,7 +151,7 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-bool SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
 	if (ptSparkFunDmxParams != 0) {
@@ -165,26 +162,28 @@ bool SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 
 	PropertiesBuilder builder(SparkFunDmxParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(SparkFunDmxParamsConst::RESET_PIN, (uint32_t) m_tSparkFunDmxParams.nResetPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN));
-	isAdded &= builder.Add(SparkFunDmxParamsConst::BUSY_PIN, (uint32_t) m_tSparkFunDmxParams.nBusyPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN));
+	builder.Add(SparkFunDmxParamsConst::RESET_PIN, m_tSparkFunDmxParams.nResetPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN));
+	builder.Add(SparkFunDmxParamsConst::BUSY_PIN, m_tSparkFunDmxParams.nBusyPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN));
 
 #if !defined (H3)
-	isAdded &= builder.Add(SparkFunDmxParamsConst::SPI_CS, (uint32_t) m_tSparkFunDmxParams.nSpiCs, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS));
+	builder.Add(SparkFunDmxParamsConst::SPI_CS, m_tSparkFunDmxParams.nSpiCs, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS));
 #endif
 
 	nSize = builder.GetSize();
 
-	return isAdded;
+	return;
 }
 
-bool SparkFunDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SparkFunDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 
 	if (m_pSparkFunDmxParamsStore == 0) {
 		nSize = 0;
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }
 
 void SparkFunDmxParams::SetGlobal(SparkFunDmx *pSparkFunDmx) {
