@@ -35,6 +35,10 @@ import javax.swing.JDialog;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import java.awt.Component;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
 
 public class LTCGenerator extends JDialog {
 	private static final long serialVersionUID = -8623371832596143765L;
@@ -78,6 +82,13 @@ public class LTCGenerator extends JDialog {
 	private JButton btnSn2;
 	private JButton btnSn3;
 	private JButton btnSn4;
+	
+	private JButton btnSetRate;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
+	private JRadioButton radioButtonFPS24;
+	private JRadioButton radioButtonFPS25;
+	private JRadioButton radioButtonFPS29;
+	private JRadioButton radioButtonFPS30;
 
 	/**
 	 * Launch the application.
@@ -119,7 +130,7 @@ public class LTCGenerator extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 325, 270);
+		setBounds(100, 100, 325, 315);
 		
 		btnStart = new JButton("Start");		
 		btnStop = new JButton("Stop");
@@ -162,11 +173,61 @@ public class LTCGenerator extends JDialog {
 		Sn4Seconds = new JSpinner(new SpinnerNumberModel(0, 0, 59, 1));
 		Sn4Frames = new JSpinner(new SpinnerNumberModel(0, 0, 30, 1));
 		
+		btnSetRate = new JButton("Set Rate");
+		
+		radioButtonFPS24 = new JRadioButton("24");
+		buttonGroup.add(radioButtonFPS24);
+		
+		radioButtonFPS25 = new JRadioButton("25");
+		radioButtonFPS25.setSelected(true);
+		buttonGroup.add(radioButtonFPS25);
+		
+		radioButtonFPS29 = new JRadioButton("24.99");
+		buttonGroup.add(radioButtonFPS29);
+		
+		radioButtonFPS30 = new JRadioButton("30");
+		buttonGroup.add(radioButtonFPS30);
+		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(12)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+								.addComponent(btnSetRate)
+								.addComponent(btnSetStop, GroupLayout.PREFERRED_SIZE, 98, GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnSetStart))
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addGroup(groupLayout.createSequentialGroup()
+											.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+												.addComponent(spinnerStartHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+												.addComponent(spinnerStopHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+												.addComponent(spinnerStartMinutes, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+												.addComponent(spinnerStopMinutes, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+										.addComponent(btnStop))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addComponent(spinnerStopSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(spinnerStartSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnResume, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(radioButtonFPS24)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(radioButtonFPS25)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(radioButtonFPS29)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(radioButtonFPS30))))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(12)
+							.addComponent(btnStart))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addContainerGap()
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
@@ -197,31 +258,12 @@ public class LTCGenerator extends JDialog {
 								.addComponent(Sn4Frames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
 								.addComponent(Sn3Frames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
 								.addComponent(Sn2Frames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-								.addComponent(Sn1Frames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)
-								.addComponent(spinnerStopFrames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(spinnerStartFrames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+								.addComponent(Sn1Frames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 42, GroupLayout.PREFERRED_SIZE)))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(12)
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(btnSetStop, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(btnStart)
-								.addComponent(btnSetStart, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addGap(267)
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addGroup(groupLayout.createSequentialGroup()
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(spinnerStartHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(spinnerStopHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-										.addComponent(spinnerStartMinutes, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(spinnerStopMinutes, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-								.addComponent(btnStop))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(spinnerStopSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(spinnerStartSeconds, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnResume, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE))))
+								.addComponent(spinnerStopFrames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(spinnerStartFrames, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
 					.addContainerGap(16, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
@@ -246,6 +288,13 @@ public class LTCGenerator extends JDialog {
 						.addComponent(spinnerStopMinutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(spinnerStopHours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnSetStop, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnSetRate)
+						.addComponent(radioButtonFPS24)
+						.addComponent(radioButtonFPS25)
+						.addComponent(radioButtonFPS29)
+						.addComponent(radioButtonFPS30))
 					.addGap(24)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(btnSn1)
@@ -274,8 +323,9 @@ public class LTCGenerator extends JDialog {
 						.addComponent(Sn4Minutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(Sn4Hours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnSn4))
-					.addGap(69))
+					.addGap(52))
 		);
+		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {btnSetRate, btnSetStart, btnSetStop});
 		
 		getContentPane().setLayout(groupLayout);
 	}
@@ -374,6 +424,20 @@ public class LTCGenerator extends JDialog {
 						Integer.parseInt(Sn4Frames.getValue().toString()));
 
 				SendUpd(ltcStart);
+			}
+		});
+		
+		btnSetRate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (radioButtonFPS24.isSelected()) {
+					SendUpd("ltc!rate#24");
+				} else if (radioButtonFPS25.isSelected()) {
+					SendUpd("ltc!rate#25");
+				} else if (radioButtonFPS29.isSelected()) {
+					SendUpd("ltc!rate#29");
+				} else if (radioButtonFPS30.isSelected()) {
+					SendUpd("ltc!rate#30");
+				}
 			}
 		});
 	}
