@@ -313,6 +313,14 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 			m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) tType];
 			m_nMidiQuarterFrameUs12 = m_nTimer0Interval / 4;
 			//
+			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
+				m_pStartLtcTimeCode->nFrames = m_nFps - 1;
+			}
+
+			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
+				m_pStopLtcTimeCode->nFrames = m_nFps - 1;
+			}
+			//
 			if (!s_ptLtcDisabledOutputs->bDisplay) {
 				Display::Get()->TextLine(2, (const char *) Ltc::GetType(tType), TC_TYPE_MAX_LENGTH);
 			}

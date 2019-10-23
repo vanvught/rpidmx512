@@ -317,7 +317,9 @@ void LtcParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_WS28XX;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
 			m_tLtcParams.nEnableWS28xx = 0;
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
