@@ -191,3 +191,43 @@ void Ltc::InitTimeCode(char *pTimeCode) {
 	pTimeCode[5] = ':';
 	pTimeCode[8] = '.';
 }
+
+bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType) {
+	int32_t nTenths;
+	int32_t nDigit;
+	uint32_t nValue;
+
+	nTenths = DIGIT(pTimeCodeRate[0]);
+	if ((nTenths < 0) || (nTenths > 3)) {
+		return false;
+	}
+
+	nDigit = DIGIT(pTimeCodeRate[1]);
+	if ((nDigit < 0) || (nDigit > 9)) {
+		return false;
+	}
+
+	nValue = VALUE(nTenths, nDigit);
+
+	switch (nValue) {
+	case 24:
+		tType = TC_TYPE_FILM;
+		break;
+	case 25:
+		tType = TC_TYPE_EBU;
+		break;
+	case 29:
+		tType = TC_TYPE_DF;
+		break;
+	case 30:
+		tType = TC_TYPE_SMPTE;
+		break;
+	default:
+		return false;
+		break;
+	}
+
+	nFPS = nValue;
+
+	return true;
+}

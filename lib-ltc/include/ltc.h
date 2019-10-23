@@ -60,10 +60,12 @@ struct TLtcDisabledOutputs {
 	bool bLtc;
 	bool bNtp;
 	bool bRtpMidi;
+	bool bWS28xx;
 };
 
 #define TC_CODE_MAX_LENGTH	11
 #define TC_TYPE_MAX_LENGTH	11
+#define TC_RATE_MAX_LENGTH  2
 
 class Ltc {
 public:
@@ -72,6 +74,7 @@ public:
 	static void ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode);
 	static void InitTimeCode(char *pTimeCode);
 	static bool ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode);
+	static bool ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType);
 };
 
 #endif /* LTC_H_ */

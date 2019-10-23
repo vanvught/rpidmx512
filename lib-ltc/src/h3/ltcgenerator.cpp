@@ -81,6 +81,9 @@ static const char sStop[] ALIGNED = "stop";
 static const char sResume[] ALIGNED = "resume";
 #define RESUME_LENGTH (sizeof(sResume)/sizeof(sResume[0]) - 1)
 
+static const char sRate[] ALIGNED = "rate";
+#define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+
 enum tUdpPort {
 	UDP_PORT = 0x5443
 };
@@ -295,6 +298,32 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
+	DEBUG_ENTRY
+
+	uint8_t nFps;
+	TTimecodeTypes tType;
+
+	if ((!m_bIsStarted) && (Ltc::ParseTimeCodeRate(pTimeCodeRate, nFps, tType))) {
+		if (nFps != m_nFps) {
+			m_nFps = nFps;
+			//
+			s_tLtcTimeCode.nType = (uint8_t) tType;
+			//
+			m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) tType];
+			m_nMidiQuarterFrameUs12 = m_nTimer0Interval / 4;
+			//
+			if (!s_ptLtcDisabledOutputs->bDisplay) {
+				Display::Get()->TextLine(2, (const char *) Ltc::GetType(tType), TC_TYPE_MAX_LENGTH);
+			}
+
+			LtcLeds::Get()->Show(tType);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -359,6 +388,10 @@ void LtcGenerator::HandleUdpRequest(void) {
 		}
 	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
 		ActionResume();
+	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
+		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
+			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+		}
 	} else {
 		DEBUG_PUTS("Invalid command");
 	}
@@ -451,7 +484,7 @@ void LtcGenerator::Run(void) {
 }
 
 void LtcGenerator::Print(void) {
-	printf("Internal clock\n");
+	printf("Internal\n");
 	printf(" %s\n", Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType));
 	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
 	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);
