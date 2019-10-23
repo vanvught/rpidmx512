@@ -22,8 +22,11 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -311,6 +314,16 @@ void LtcParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nEnableWS28xx = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_WS28XX;
+		} else {
+			m_tLtcParams.nEnableWS28xx = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
+		}
+	}
+
 }
 
 void LtcParams::Dump(void) {
@@ -432,6 +445,10 @@ void LtcParams::Dump(void) {
 			printf(" %s=%d\n", LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort);
 		}
 	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_ENABLE_WS28XX)) {
+		printf(" WS28xx is enabled\n");
+	}
 #endif
 }
 
@@ -497,7 +514,7 @@ void LtcParams::StopTimeCodeCopyTo(TLtcTimeCode* ptStopTimeCode) {
 	ptStopTimeCode->nType = Ltc::GetType(m_tLtcParams.nFps);
 }
 
-void LtcParams::staticCallbackFunction(void* p, const char* s) {
+void LtcParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 

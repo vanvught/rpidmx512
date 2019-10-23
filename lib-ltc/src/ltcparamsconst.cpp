@@ -57,3 +57,4 @@ alignas(uint32_t) const char LtcParamsConst::SET_DATE[] = "set_date";
 #endif
 alignas(uint32_t) const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";
 alignas(uint32_t) const char LtcParamsConst::OSC_PORT[] = "osc_port";
+alignas(uint32_t) const char LtcParamsConst::WS28XX_ENABLE[] = "ws28xx_enable";

@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -47,61 +47,65 @@ bool LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
+	builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
 
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
-	isAdded &= builder.Add(LtcParamsConst::MAX7219_INTENSITY, (uint32_t) m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
+	builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
+	builder.Add(LtcParamsConst::MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
 
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_DISPLAY, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_MAX7219, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_LTC, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_MIDI, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_ARTNET, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_TCNET, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_RTPMIDI, (uint32_t) isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI));
+	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
+	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
+	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
+	builder.Add(LtcParamsConst::DISABLE_MIDI, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI));
+	builder.Add(LtcParamsConst::DISABLE_ARTNET, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET));
+	builder.Add(LtcParamsConst::DISABLE_TCNET, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET));
+	builder.Add(LtcParamsConst::DISABLE_RTPMIDI, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI));
 
-	isAdded &= builder.Add(LtcParamsConst::SHOW_SYSTIME, (uint32_t) m_tLtcParams.nShowSysTime, isMaskSet(LTC_PARAMS_MASK_SHOW_SYSTIME));
-	isAdded &= builder.Add(LtcParamsConst::DISABLE_TIMESYNC, (uint32_t) m_tLtcParams.nDisableTimeSync, isMaskSet(LTC_PARAMS_MASK_DISABLE_TIMESYNC));
+	builder.Add(LtcParamsConst::SHOW_SYSTIME, m_tLtcParams.nShowSysTime, isMaskSet(LTC_PARAMS_MASK_SHOW_SYSTIME));
+	builder.Add(LtcParamsConst::DISABLE_TIMESYNC, m_tLtcParams.nDisableTimeSync, isMaskSet(LTC_PARAMS_MASK_DISABLE_TIMESYNC));
 
-	isAdded &= builder.Add(LtcParamsConst::YEAR, (uint32_t) m_tLtcParams.nYear, isMaskSet(LTC_PARAMS_MASK_YEAR));
-	isAdded &= builder.Add(LtcParamsConst::MONTH, (uint32_t) m_tLtcParams.nMonth, isMaskSet(LTC_PARAMS_MASK_MONTH));
-	isAdded &= builder.Add(LtcParamsConst::DAY, (uint32_t) m_tLtcParams.nDay, isMaskSet(LTC_PARAMS_MASK_DAY));
+	builder.Add(LtcParamsConst::YEAR, m_tLtcParams.nYear, isMaskSet(LTC_PARAMS_MASK_YEAR));
+	builder.Add(LtcParamsConst::MONTH, m_tLtcParams.nMonth, isMaskSet(LTC_PARAMS_MASK_MONTH));
+	builder.Add(LtcParamsConst::DAY, m_tLtcParams.nDay, isMaskSet(LTC_PARAMS_MASK_DAY));
 
-	isAdded &= builder.Add(LtcParamsConst::NTP_ENABLE, (uint32_t) m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
+	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
 
-	isAdded &= builder.Add(LtcParamsConst::FPS, (uint32_t) m_tLtcParams.nFps, isMaskSet(LTC_PARAMS_MASK_FPS));
-	isAdded &= builder.Add(LtcParamsConst::START_HOUR, (uint32_t) m_tLtcParams.nStartHour, isMaskSet(LTC_PARAMS_MASK_START_HOUR));
-	isAdded &= builder.Add(LtcParamsConst::START_MINUTE, (uint32_t) m_tLtcParams.nStartMinute, isMaskSet(LTC_PARAMS_MASK_START_MINUTE));
-	isAdded &= builder.Add(LtcParamsConst::START_SECOND, (uint32_t) m_tLtcParams.nStartSecond, isMaskSet(LTC_PARAMS_MASK_START_SECOND));
-	isAdded &= builder.Add(LtcParamsConst::START_FRAME, (uint32_t) m_tLtcParams.nStartFrame, isMaskSet(LTC_PARAMS_MASK_START_FRAME));
-	isAdded &= builder.Add(LtcParamsConst::STOP_HOUR, (uint32_t) m_tLtcParams.nStopHour, isMaskSet(LTC_PARAMS_MASK_STOP_HOUR));
-	isAdded &= builder.Add(LtcParamsConst::STOP_MINUTE, (uint32_t) m_tLtcParams.nStopMinute, isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE));
-	isAdded &= builder.Add(LtcParamsConst::STOP_SECOND, (uint32_t) m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
-	isAdded &= builder.Add(LtcParamsConst::STOP_FRAME, (uint32_t) m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
+	builder.Add(LtcParamsConst::FPS, m_tLtcParams.nFps, isMaskSet(LTC_PARAMS_MASK_FPS));
+	builder.Add(LtcParamsConst::START_HOUR, m_tLtcParams.nStartHour, isMaskSet(LTC_PARAMS_MASK_START_HOUR));
+	builder.Add(LtcParamsConst::START_MINUTE, m_tLtcParams.nStartMinute, isMaskSet(LTC_PARAMS_MASK_START_MINUTE));
+	builder.Add(LtcParamsConst::START_SECOND, m_tLtcParams.nStartSecond, isMaskSet(LTC_PARAMS_MASK_START_SECOND));
+	builder.Add(LtcParamsConst::START_FRAME, m_tLtcParams.nStartFrame, isMaskSet(LTC_PARAMS_MASK_START_FRAME));
+	builder.Add(LtcParamsConst::STOP_HOUR, m_tLtcParams.nStopHour, isMaskSet(LTC_PARAMS_MASK_STOP_HOUR));
+	builder.Add(LtcParamsConst::STOP_MINUTE,  m_tLtcParams.nStopMinute, isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE));
+	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
+	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
 
 #if 0
-	isAdded &= builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
+	builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
 #endif
 
-	isAdded &= builder.Add(LtcParamsConst::OSC_ENABLE, (uint32_t) m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
-	isAdded &= builder.Add(LtcParamsConst::OSC_PORT, (uint32_t) m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
+	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
+	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
+
+	builder.Add(LtcParamsConst::WS28XX_ENABLE, m_tLtcParams.nEnableWS28xx, isMaskSet(LTC_PARAMS_MASK_ENABLE_WS28XX));
 
 	nSize = builder.GetSize();
 
-	DEBUG_PRINTF("isAdded=%d, nSize=%d", isAdded, nSize);
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return isAdded;
+	return;
 }
 
-bool LtcParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void LtcParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pLTcParamsStore == 0) {
 		nSize = 0;
 		DEBUG_EXIT
-		return false;
+		return;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
+
+	return;
 }
