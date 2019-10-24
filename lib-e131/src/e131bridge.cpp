@@ -49,7 +49,7 @@
 #include "network.h"
 #include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 12 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 13 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 E131Bridge::E131Bridge(void) :
@@ -84,7 +84,7 @@ E131Bridge::E131Bridge(void) :
 
 	char aSourceName[E131_SOURCE_NAME_LENGTH];
 	uint8_t nLength;
-	snprintf(aSourceName, E131_SOURCE_NAME_LENGTH, "%s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
+	snprintf(aSourceName, E131_SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName((const char *)aSourceName);
 
 	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT); 	// This must be here (and not in Start) for Mac OS and Linux
