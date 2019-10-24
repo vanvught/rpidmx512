@@ -108,6 +108,7 @@ private:
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
+	void SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice);
 	void SetZeroconf(bool IsBroadcast, uint16_t nSubDevice);
 	void SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice);
 	void ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice);
