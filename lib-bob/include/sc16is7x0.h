@@ -2,7 +2,7 @@
  * @file sc16is7x0.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@
 
 #define SC16IS7X0_DLL        (0x00)
 #define SC16IS7X0_DLH        (0X01)
+#define SC16IS7X0_EFR        (0X02)
 
 //FIFO size
 #define SC16IS7X0_FIFO_RX    64
@@ -114,6 +115,13 @@
 #define LSR_TEMT 						(0x40) ///< Transmitter empty (FIFO and TSR both empty)
 #define LSR_FFE  						(0x80) ///< At least one PE, FE or BI in FIFO
 
+/**
+ * 8.6 Modem Control Register (MCR)
+ */
+//MCR[2] only accessible when EFR[4] is set
+#define MCR_ENABLE_TCR_TLR            (1 << 2)
+#define MCR_PRESCALE_4                (1 << 7)
+
 /** See datasheet section 7.8 for configuring the
   * "Programmable baud rate generator"
   */
@@ -122,6 +130,38 @@
 #define SC16IS7X0_PRESCALER_4            	4   		///< Selectable by setting MCR[7]
 #define SC16IS7X0_PRESCALER                 SC16IS7X0_PRESCALER_1
 #define SC16IS7X0_BAUDRATE_DIVISOR(baud)	((SC16IS7X0_XTAL_FREQ/SC16IS7X0_PRESCALER)/(baud*16UL))
+
+/** See section 8.8 of the datasheet for definitions
+  * of bits in the Interrupt enable register (IER)
+  */
+#define IER_ERHRI (0x01) /* Enable received data available interrupt            */
+#define IER_ETHRI (0x02) /* Enable transmitter holding register empty interrupt */
+#define IER_ELSI  (0x04) /* Enable receiver line status interrupt               */
+#define IER_EMSI  (0x08) /* Enable modem status interrupt                       */
+//IER[7:5] only accessible when EFR[4] is set
+#define IER_SLEEP (0x10) /* Enable sleep mode                                   */
+#define IER_XOFFI (0x20) /* Enable XOFF interrupt                               */
+#define IER_RTSI  (0x40) /* Enable RTS interrupt                                */
+#define IER_CTSI  (0x80) /* Enable CTS interrupt                                */
+
+/** See section 8.9 of the datasheet for definitions
+  * of bits in the Interrupt identification register (IIR)
+  * Bit 0 is set to 0 if an IRQ is pending.
+  * Bits 1..5 are used to identify the IRQ source.
+  */
+#define IIR_IRQ_NOT_PENDING             (0x01)  /* IRQ Not Pending              */
+#define IIR_TX_EMPTY                    (0x02)  /* THR Interrupt                */
+#define IIR_RX_DATA                     (0x04)  /* RHR Interrupt                */
+#define IIR_RX_ERROR                    (0x06)  /* Line Status Error Interrupt  */
+#define IIR_RX_TIMEOUT                  (0x0B)  /* RX Timeout Interrupt         */
+#define IIR_RX_XOFF                     (0x10)  /* RX XOff Interrupt            */
+#define IIR_DCTS_DRTS                   (0x20)  /* Delta CTS or RTS Interrupt   */
+#define IIR_DIO                         (0x30)  /* Delta GPIO pin Interrupt     */
+
+/**
+ * 8.11 Enhanced Features Register (EFR)
+ */
+#define EFR_ENABLE_ENHANCED_FUNCTIONS   (1 << 4)
 
 // See Chapter 11 of datasheet
 #define SC16IS7X0_SPI_READ_MODE_FLAG	(0x80)
