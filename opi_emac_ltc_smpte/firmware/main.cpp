@@ -125,7 +125,6 @@ void notmain(void) {
 	}
 
 	const bool bEnableNtp = ltcParams.IsNtpEnabled();
-	tLtcDisabledOutputs.bNtp = !bEnableNtp;
 
 	LtcLeds leds;
 
@@ -200,7 +199,7 @@ void notmain(void) {
 	max7219.Init(ltcParams.GetMax7219Intensity());
 
 	display.ClearLine(3);
-	display.Printf(3, IPSTR " /%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 
 	// Select the source
 
