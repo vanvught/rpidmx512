@@ -4,9 +4,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+enum TImageHeaderCompression {
+	IH_COMP_NONE = 0, 	/*  No	 Compression Used	*/
+	IH_COMP_GZIP		/* gzip	 Compression Used	*/
+};
+
 class UBootHeader {
 public:
-	UBootHeader(uint8_t *pHeader);
+	UBootHeader(uint8_t *pHeader, TImageHeaderCompression tImageHeaderCompression = IH_COMP_NONE);
 	~UBootHeader(void);
 
 	bool IsValid(void) {

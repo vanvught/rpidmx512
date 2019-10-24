@@ -5,10 +5,9 @@
 
 #include "ubootheader.h"
 
-#define LZ4F_MAGIC	0x184D2204	/* LZ4 Magic Number		*/
-#define IH_MAGIC	0x27051956	/* Image Magic Number		*/
-#define IH_NMLEN		32		/* Image Name Length		*/
-
+#define LZ4F_MAGIC			0x184D2204	/* LZ4 Magic Number		*/
+#define IH_MAGIC			0x27051956	/* Image Magic Number	*/
+#define IH_NMLEN			32			/* Image Name Length	*/
 #define IH_LOAD				0x40000000
 #define IH_EP				0x40000000
 #define IH_OS_U_BOOT		17
@@ -30,17 +29,19 @@ struct TImageHeader {
 	uint8_t ih_name[IH_NMLEN];	/* Image Name		*/
 };
 
-UBootHeader::UBootHeader(uint8_t* pHeader): m_pHeader(pHeader), m_bIsValid(false) {
+UBootHeader::UBootHeader(uint8_t *pHeader, TImageHeaderCompression tImageHeaderCompression): m_pHeader(pHeader), m_bIsValid(false) {
 	assert(pHeader != 0);
 
 	struct TImageHeader *pImageHeader = (struct TImageHeader *)pHeader;
 
-	m_bIsValid = (pImageHeader->ih_magic ==  __builtin_bswap32(IH_MAGIC));
-	m_bIsValid &= (pImageHeader->ih_load ==  __builtin_bswap32(IH_LOAD));
-	m_bIsValid &= (pImageHeader->ih_ep ==  __builtin_bswap32(IH_EP));
+	m_bIsValid =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
+	m_bIsValid &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
+	m_bIsValid &= (pImageHeader->ih_ep == __builtin_bswap32(IH_EP));
 	m_bIsValid &= (pImageHeader->ih_os == IH_OS_U_BOOT);
 	m_bIsValid &= (pImageHeader->ih_arch == IH_ARCH_ARM);
-	m_bIsValid &= (strncmp((const char *)pImageHeader->ih_name, "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
+	m_bIsValid &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
+	m_bIsValid &= (pImageHeader->ih_comp == static_cast<uint8_t>(tImageHeaderCompression));
+	m_bIsValid &= (strncmp(reinterpret_cast<const char *>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
 }
 
 UBootHeader::~UBootHeader(void) {
@@ -53,7 +54,7 @@ void UBootHeader::Dump(void) {
 		printf("* Not a valid header! *\n");
 	}
 
-	struct TImageHeader *pImageHeader = (struct TImageHeader *)m_pHeader;
+	struct TImageHeader *pImageHeader = reinterpret_cast<struct TImageHeader *>(m_pHeader);
 
 	printf("Magic Number        : %.8x\n", __builtin_bswap32(pImageHeader->ih_magic));
 	printf("CRC Checksum        : %.8x\n", __builtin_bswap32(pImageHeader->ih_hcrc));
@@ -69,6 +70,7 @@ void UBootHeader::Dump(void) {
 	printf("Operating System    : %d - %s\n", pImageHeader->ih_os, pImageHeader->ih_os == IH_OS_U_BOOT ? "Firmware" : "Not supported");
 	printf("CPU architecture    : %d - %s\n", pImageHeader->ih_arch, pImageHeader->ih_arch == IH_ARCH_ARM ? "Arm" : "Not supported");
 	printf("Image type          : %d - %s\n", pImageHeader->ih_type, pImageHeader->ih_type == IH_TYPE_STANDALONE ? "Standalone Program" : "Not supported");
+	printf("Compression         : %d - %s\n", pImageHeader->ih_comp, pImageHeader->ih_comp == IH_COMP_NONE ? "none" : "Not supported");
 	printf("Image Name          : %s\n", pImageHeader->ih_name);
 #endif
 }
