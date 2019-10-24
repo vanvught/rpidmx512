@@ -30,7 +30,6 @@
 
 #include "displaymax7219.h"
 
-
 DisplayMax7219 *DisplayMax7219::s_pThis = 0;
 
 DisplayMax7219::DisplayMax7219(tMax7219Types tType, bool bShowSysTime):

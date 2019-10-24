@@ -314,6 +314,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
+#if 0
 	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
@@ -325,7 +326,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
 		}
 	}
-
+#endif
 }
 
 void LtcParams::Dump(void) {
