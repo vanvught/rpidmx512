@@ -4,7 +4,7 @@
 Supported boards:
 
 - Orange Pi Zero
-- Raspberry Pi boards
+- Orange Pi One (HDMI output)
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

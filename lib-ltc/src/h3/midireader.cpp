@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -42,6 +48,7 @@
 #include "midi.h"
 
 // Output
+#include "h3/ltcsender.h"
 #include "ltcleds.h"
 #include "artnetnode.h"
 #include "rtpmidi.h"
@@ -52,11 +59,6 @@
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
-
-// IRQ Timer0
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
 
 static uint8_t qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
@@ -71,12 +73,6 @@ inline static void itoa_base10(uint32_t arg, char *buf) {
 
 	*n++ = (char) ('0' + (arg / 10));
 	*n = (char) ('0' + (arg % 10));
-}
-
-static void irq_timer0_update_handler(uint32_t clo) {
-	dmb();
-	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
-	nUpdatesPrevious = nUpdates;
 }
 
 MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
@@ -95,19 +91,11 @@ MidiReader::~MidiReader(void) {
 }
 
 void MidiReader::Start(void) {
-	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
-	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
 	midi_active_set_sense(false); //TODO We do nothing with sense data, yet
 	midi_init(MIDI_DIRECTION_INPUT);
 }
 
 void MidiReader::Run(void) {
-	bool isMtc = false;
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
@@ -116,12 +104,10 @@ void MidiReader::Run(void) {
 			switch (Midi::Get()->GetMessageType()) {
 			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
 				HandleMtcQf(); // type = midi_reader_mtc_qf(midi_message);
-				isMtc = true;
 				break;
 			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
 				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
 					HandleMtc(); // type = midi_reader_mtc(midi_message);
-					isMtc = true;
 				}
 				break;
 			default:
@@ -130,12 +116,8 @@ void MidiReader::Run(void) {
 		}
 	}
 
-	if (isMtc) {
-		nUpdates++;
-	}
-
 	dmb();
-	if (nUpdatesPerSecond >= 24)  {
+	if (Midi::Get()->GetUpdatesPerSeconde() >= 24)  {
 		led_set_ticks_per_second(1000000 / 3);
 	} else {
 		led_set_ticks_per_second(1000000 / 1);

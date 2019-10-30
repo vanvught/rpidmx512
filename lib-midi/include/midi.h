@@ -183,6 +183,8 @@ extern void midi_send_tc(const struct _midi_send_tc *);
 extern void midi_send_qf(uint8_t);
 extern void midi_send_raw(const uint8_t *, uint16_t);
 
+extern uint32_t midi_get_updates_per_seconds(void);
+
 #ifdef __cplusplus
 }
 #endif
@@ -217,6 +219,10 @@ public:
 
 	bool GetActiveSense(void) {
 		return midi_active_get_sense();
+	}
+
+	uint32_t GetUpdatesPerSeconde(void) {
+		return midi_get_updates_per_seconds();
 	}
 
 	void SetChannel(uint8_t nChannel) {
