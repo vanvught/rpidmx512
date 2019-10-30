@@ -43,7 +43,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileFilter;
 
 public class TFTPClient extends JDialog {
 	 private InetAddress IPAddressTFTPServer; 
@@ -164,11 +164,29 @@ public class TFTPClient extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser jfc = new JFileChooser(prefs.get(LAST_USED_FOLDER, new File(".").getAbsolutePath()));
 				
+				FileFilter ff = new FileFilter() {
+
+					@Override
+					public String getDescription() {
+						return "uImage files";
+					}
+
+					@Override
+					public boolean accept(File f) {
+						if (f.isDirectory())
+							return true;
+						if (f.getName().endsWith("uImage"))
+							return true;
+						if (f.getName().endsWith("uImage.gz"))
+							return true;
+						return false;
+					}
+				};
+				
 				jfc.setDialogTitle("Select an uImage");
 				jfc.setAcceptAllFileFilterUsed(false);
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("*.uImage", "uImage");
-				jfc.addChoosableFileFilter(filter);
-
+				jfc.setFileFilter(ff);
+				//jfc.addChoosableFileFilter(new FileNameExtensionFilter("*.uImage", "uImage"));
 
 				int returnValue = jfc.showOpenDialog(null);
 
