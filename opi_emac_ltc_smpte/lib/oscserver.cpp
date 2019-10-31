@@ -56,11 +56,15 @@ static const char sStop[] ALIGNED = "stop";
 static const char sResume[] ALIGNED = "resume";
 #define RESUME_LENGTH (sizeof(sResume)/sizeof(sResume[0]) - 1)
 
+static const char sRate[] ALIGNED = "rate";
+#define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+
 static const char sSet[] ALIGNED = "/set/";
 #define SET_LENGTH (sizeof(sSet)/sizeof(sSet[0]) - 1)
 
 // "hh/mm/ss/ff" -> length = 11
-#define VALUE_LENGTH	11
+#define VALUE_LENGTH		11
+#define RATE_VALUE_LENGTH	2
 
 OSCServer::OSCServer(void):
 	m_nPortIncoming(OSCSERVER_PORT_DEFAULT_INCOMING),
@@ -93,7 +97,7 @@ void OSCServer::Stop(void) {
 void OSCServer::Run(void) {
 	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
-	if (__builtin_expect((nBytesReceived <= 0), 1)) {
+	if (__builtin_expect((nBytesReceived <= 4), 1)) {
 		return;
 	}
 
@@ -148,6 +152,14 @@ void OSCServer::Run(void) {
 
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
+			}
+		} else if ((nCommandLength == (m_nPathLength + RATE_LENGTH + SET_LENGTH + RATE_VALUE_LENGTH))) {
+			if (memcmp(&m_pBuffer[m_nPathLength + RATE_LENGTH], sSet, SET_LENGTH) == 0) {
+				const uint32_t nOffset = m_nPathLength + RATE_LENGTH + SET_LENGTH;
+
+				LtcGenerator::Get()->ActionSetRate((const char *)&m_pBuffer[nOffset]);
+
+				DEBUG_PUTS(&m_pBuffer[nOffset]);
 			}
 		} else if ( (nCommandLength == (m_nPathLength + RESUME_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], sResume, RESUME_LENGTH) == 0)) {
 			LtcGenerator::Get()->ActionResume();

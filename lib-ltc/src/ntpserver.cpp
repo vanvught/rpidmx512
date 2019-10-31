@@ -140,23 +140,6 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode) {
 	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
 
-#if 0
-	switch (pLtcTimeCode->nType) {
-	case TC_TYPE_FILM:
-		m_nFraction = (uint32_t) ((double) 178956970.625 * pLtcTimeCode->nFrames);
-		break;
-	case TC_TYPE_EBU:
-		m_nFraction = (uint32_t) ((double) 171798691.8 * pLtcTimeCode->nFrames);
-		break;
-	case TC_TYPE_DF:
-	case TC_TYPE_SMPTE:
-		m_nFraction = (uint32_t) ((double) 143165576.5 * pLtcTimeCode->nFrames);
-		break;
-	default:
-		assert(0);
-		break;
-	}
-#else
 	if (pLtcTimeCode->nType == TC_TYPE_FILM) {
 		m_nFraction = (uint32_t) ((double) 178956970.625 * pLtcTimeCode->nFrames);
 	} else if (pLtcTimeCode->nType == TC_TYPE_EBU) {
@@ -166,7 +149,6 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode) {
 	} else {
 		assert(0);
 	}
-#endif
 
 	DEBUG_PRINTF("m_timeDate=%.8x %ld", (uint32_t)m_tTimeDate, (long int)m_tTimeDate);
 

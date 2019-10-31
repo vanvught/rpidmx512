@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -310,16 +316,33 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 			//
 			s_tLtcTimeCode.nType = (uint8_t) tType;
 			//
-			m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) tType];
-			m_nMidiQuarterFrameUs12 = m_nTimer0Interval / 4;
-			//
+			m_pStartLtcTimeCode->nType = (uint8_t) tType;
 			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 				m_pStartLtcTimeCode->nFrames = m_nFps - 1;
 			}
-
+			m_pStopLtcTimeCode->nType = (uint8_t) tType;
 			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
 				m_pStopLtcTimeCode->nFrames = m_nFps - 1;
 			}
+			//
+			if (!s_ptLtcDisabledOutputs->bLtc) {
+				LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode, false);
+			}
+
+			if (!s_ptLtcDisabledOutputs->bMidi) {
+				Midi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+			}
+
+			if (!s_ptLtcDisabledOutputs->bArtNet) {
+				ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+			}
+
+			if (!s_ptLtcDisabledOutputs->bRtpMidi) {
+				RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+			}
+			//
+			m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) tType];
+			m_nMidiQuarterFrameUs12 = m_nTimer0Interval / 4;
 			//
 			if (!s_ptLtcDisabledOutputs->bDisplay) {
 				Display::Get()->TextLine(2, (const char *) Ltc::GetType(tType), TC_TYPE_MAX_LENGTH);

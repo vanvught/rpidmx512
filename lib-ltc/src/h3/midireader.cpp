@@ -161,10 +161,10 @@ void MidiReader::HandleMtcQf(void) {
 	}
 
 	if ((m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0))) {
-		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char*) &m_aTimeCode[0]);
-		itoa_base10(qf[4] | (qf[5] << 4), (char*) &m_aTimeCode[3]);
-		itoa_base10(qf[2] | (qf[3] << 4), (char*) &m_aTimeCode[6]);
-		itoa_base10(qf[0] | (qf[1] << 4), (char*) &m_aTimeCode[9]);
+		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char *) &m_aTimeCode[0]);
+		itoa_base10(qf[4] | (qf[5] << 4), (char *) &m_aTimeCode[3]);
+		itoa_base10(qf[2] | (qf[3] << 4), (char *) &m_aTimeCode[6]);
+		itoa_base10(qf[0] | (qf[1] << 4), (char *) &m_aTimeCode[9]);
 
 		m_MidiTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
 		m_MidiTimeCode.nMinutes = qf[4] | (qf[5] << 4);
@@ -179,6 +179,10 @@ void MidiReader::HandleMtcQf(void) {
 }
 
 void MidiReader::Update(void) {
+	if (!m_ptLtcDisabledOutputs->bLtc) {
+		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
+	}
+
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
 		ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &m_MidiTimeCode);
 	}
@@ -203,6 +207,7 @@ void MidiReader::Update(void) {
 	if (!m_ptLtcDisabledOutputs->bDisplay) {
 		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
 	}
+
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 	}
