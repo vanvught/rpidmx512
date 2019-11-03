@@ -75,6 +75,7 @@
 #include "h3/tcnetreader.h"
 #include "h3/ltcgenerator.h"
 #include "h3/rtpmidireader.h"
+#include "h3/ltcoutputs.h"
 
 #include "spiflashinstall.h"
 
@@ -93,12 +94,6 @@
 static const char sFps[4][3] = { "24", "25", "29", "30" };
 
 extern "C" {
-
-__attribute__((noinline)) static void print_disabled(bool b, const char *p) {
-	if (b) {
-		printf(" %s output is disabled\n", p);
-	}
-}
 
 void notmain(void) {
 	Hardware hw;
@@ -123,8 +118,6 @@ void notmain(void) {
 		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
 		ltcParams.Dump();
 	}
-
-	const bool bEnableNtp = ltcParams.IsNtpEnabled();
 
 	LtcLeds leds;
 
@@ -216,6 +209,8 @@ void notmain(void) {
 
 	// From here work with source selection
 
+	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source);
+
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
@@ -224,6 +219,7 @@ void notmain(void) {
 		ltcSender.Start();
 	}
 
+	// Start the reader
 	switch (source) {
 	case LTC_READER_SOURCE_ARTNET:
 		node.SetTimeCodeHandler(&artnetReader);
@@ -249,7 +245,9 @@ void notmain(void) {
 		break;
 	}
 
-	if ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi) {
+	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi);
+
+	if (bEnableRtpMidi) {
 		rtpMidi.Start();
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 	}
@@ -267,16 +265,18 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
 	}
 
+	const bool bEnableNtp = ltcParams.IsNtpEnabled();
+
 	if (bEnableNtp) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Print();
 		ntpServer.Start();
 	}
 
+	ltcGenerator.Print();
+	tcnet.Print();
 	midi.Print();
 	rtpMidi.Print();
-	tcnet.Print();
-	ltcGenerator.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
 
@@ -288,6 +288,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
+	// OLED display
 	display.ClearLine(4);
 
 	console_puts("Source : ");
@@ -308,14 +309,7 @@ void notmain(void) {
 		display.PutString(sFps[tcnet.GetTimeCodeType()]);
 	}
 
-	print_disabled(tLtcDisabledOutputs.bDisplay, "Display");
-	print_disabled(tLtcDisabledOutputs.bMax7219, "Max7219");
-	print_disabled(tLtcDisabledOutputs.bLtc, "LTC");
-	print_disabled(tLtcDisabledOutputs.bTCNet, "TCNet");
-	print_disabled(tLtcDisabledOutputs.bRtpMidi, "AppleMIDI");
-	print_disabled(tLtcDisabledOutputs.bMidi, "MIDI");
-	print_disabled(tLtcDisabledOutputs.bArtNet, "Art-Net");
-	print_disabled(tLtcDisabledOutputs.bNtp, "NTP");
+	ltcOutputs.Print();
 
 	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
 
@@ -329,10 +323,7 @@ void notmain(void) {
 			tcnet.Run();
 		}
 
-		if ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi) {
-			rtpMidi.Run();
-		}
-
+		// Run the reader
 		switch (source) {
 		case LTC_READER_SOURCE_LTC:
 			ltcReader.Run();
@@ -357,6 +348,10 @@ void notmain(void) {
 		}
 
 		node.Run();
+
+		if (bEnableRtpMidi) {
+			rtpMidi.Run();
+		}
 
 		if (bRunOSCServer) {
 			oscServer.Run();

@@ -65,14 +65,14 @@ void Max7219Matrix::Init(uint8_t nIntensity) {
 }
 
 void Max7219Matrix::Show(const char *pTimecode) {
-	m_aBuffer[0] = (uint8_t) (pTimecode[0]);
-	m_aBuffer[1] = (uint8_t) (pTimecode[1]);
-	m_aBuffer[2] = (uint8_t) (pTimecode[3]);
-	m_aBuffer[3] = (uint8_t) (pTimecode[4]);
-	m_aBuffer[4] = (uint8_t) (pTimecode[6]);
-	m_aBuffer[5] = (uint8_t) (pTimecode[7]);
-	m_aBuffer[6] = (uint8_t) (pTimecode[9]);
-	m_aBuffer[7] = (uint8_t) (pTimecode[10]);
+	m_aBuffer[0] = (uint8_t) pTimecode[0];
+	m_aBuffer[1] = (uint8_t) pTimecode[1];
+	m_aBuffer[2] = (uint8_t) pTimecode[3];
+	m_aBuffer[3] = (uint8_t) pTimecode[4];
+	m_aBuffer[4] = (uint8_t) pTimecode[6];
+	m_aBuffer[5] = (uint8_t) pTimecode[7];
+	m_aBuffer[6] = (uint8_t) pTimecode[9];
+	m_aBuffer[7] = (uint8_t) pTimecode[10];
 
 	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
 }
@@ -98,4 +98,5 @@ void Max7219Matrix::ShowSysTime(void) {
 }
 
 void Max7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {
+	// TODO Max7219Matrix::WriteChar
 }

@@ -56,7 +56,7 @@ void DisplayMax7219::Init(uint8_t nIntensity) {
 	m_pMax7219Set->Init(nIntensity);
 }
 
-void DisplayMax7219::Show(const char* pTimecode) {
+void DisplayMax7219::Show(const char *pTimecode) {
 	m_pMax7219Set->Show(pTimecode);
 }
 

@@ -49,12 +49,10 @@
 
 // Output
 #include "h3/ltcsender.h"
-#include "ltcleds.h"
 #include "artnetnode.h"
 #include "rtpmidi.h"
-#include "display.h"
-#include "displaymax7219.h"
-#include "ntpserver.h"
+//
+#include "h3/ltcoutputs.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -93,35 +91,6 @@ MidiReader::~MidiReader(void) {
 void MidiReader::Start(void) {
 	midi_active_set_sense(false); //TODO We do nothing with sense data, yet
 	midi_init(MIDI_DIRECTION_INPUT);
-}
-
-void MidiReader::Run(void) {
-	uint8_t nSystemExclusiveLength;
-	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
-
-	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
-		if (Midi::Get()->GetChannel() == 0) {
-			switch (Midi::Get()->GetMessageType()) {
-			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
-				HandleMtcQf(); // type = midi_reader_mtc_qf(midi_message);
-				break;
-			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
-				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
-					HandleMtc(); // type = midi_reader_mtc(midi_message);
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
-	dmb();
-	if (Midi::Get()->GetUpdatesPerSeconde() >= 24)  {
-		led_set_ticks_per_second(1000000 / 3);
-	} else {
-		led_set_ticks_per_second(1000000 / 1);
-	}
 }
 
 void MidiReader::HandleMtc(void) {
@@ -191,24 +160,33 @@ void MidiReader::Update(void) {
 		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
 	}
 
-	if (!m_ptLtcDisabledOutputs->bNtp) {
-		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
-	}
+	LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&m_MidiTimeCode);
+}
 
-	if (m_nTimeCodeType != m_nTimeCodeTypePrevious) {
-		m_nTimeCodeTypePrevious = m_nTimeCodeType;
+void MidiReader::Run(void) {
+	uint8_t nSystemExclusiveLength;
+	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_nTimeCodeType), TC_TYPE_MAX_LENGTH);
+	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
+		if (Midi::Get()->GetChannel() == 0) {
+			switch (Midi::Get()->GetMessageType()) {
+			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
+				HandleMtcQf(); // type = midi_reader_mtc_qf(midi_message);
+				break;
+			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
+				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
+					HandleMtc(); // type = midi_reader_mtc(midi_message);
+				}
+				break;
+			default:
+				break;
+			}
 		}
-		LtcLeds::Get()->Show((TTimecodeTypes) m_nTimeCodeType);
 	}
 
-	if (!m_ptLtcDisabledOutputs->bDisplay) {
-		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	}
-
-	if (!m_ptLtcDisabledOutputs->bMax7219) {
-		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	if (Midi::Get()->GetUpdatesPerSeconde() >= 24)  {
+		led_set_ticks_per_second(LED_TICKS_DATA);
+	} else {
+		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
 }

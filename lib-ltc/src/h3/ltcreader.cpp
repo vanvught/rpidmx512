@@ -53,13 +53,11 @@
 #endif
 
 // Output
-#include "ltcleds.h"
 #include "artnetnode.h"
-#include "display.h"
-#include "displaymax7219.h"
 #include "rtpmidi.h"
 #include "midi.h"
-#include "ntpserver.h"
+//
+#include "h3/ltcoutputs.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -234,7 +232,6 @@ void LtcReader::Start(void) {
 
 void LtcReader::Run(void) {
 	uint8_t TimeCodeType;
-	char *pTimeCodeType;
 #ifndef NDEBUG
 	char aLimitWarning[16] ALIGNED;
 	uint32_t nLimitUs;
@@ -276,7 +273,7 @@ void LtcReader::Run(void) {
 			}
 		}
 
-		s_tMidiTimeCode.nType = (_midi_timecode_type)TimeCodeType;
+		s_tMidiTimeCode.nType = TimeCodeType;
 
 		struct TLtcTimeCode tLtcTimeCode;
 
@@ -284,7 +281,7 @@ void LtcReader::Run(void) {
 		tLtcTimeCode.nSeconds = s_tMidiTimeCode.nSeconds;
 		tLtcTimeCode.nMinutes = s_tMidiTimeCode.nMinutes;
 		tLtcTimeCode.nHours = s_tMidiTimeCode.nHours;
-		tLtcTimeCode.nType = (uint8_t) s_tMidiTimeCode.nType;
+		tLtcTimeCode.nType = s_tMidiTimeCode.nType;
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
 			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
@@ -292,10 +289,6 @@ void LtcReader::Run(void) {
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tMidiTimeCode);
-		}
-
-		if (!m_ptLtcDisabledOutputs->bNtp) {
-			NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *)&tLtcTimeCode);
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
@@ -307,21 +300,9 @@ void LtcReader::Run(void) {
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 			nMidiQuarterFramePiece = 0;
-
-			pTimeCodeType = (char *) Ltc::GetType((TTimecodeTypes) TimeCodeType);
-
-			if (!m_ptLtcDisabledOutputs->bDisplay) {
-				Display::Get()->TextLine(2, pTimeCodeType, TC_TYPE_MAX_LENGTH);
-			}
-			LtcLeds::Get()->Show((TTimecodeTypes) TimeCodeType);
 		}
 
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(1, (const char *) aTimeCode, TC_CODE_MAX_LENGTH);
-		}
-		if (!m_ptLtcDisabledOutputs->bMax7219) {
-			DisplayMax7219::Get()->Show((const char *) aTimeCode);
-		}
+		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&tLtcTimeCode);
 
 #ifndef NDEBUG
 		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;
@@ -342,10 +323,10 @@ void LtcReader::Run(void) {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-			Midi::Get()->SendQf((const struct _midi_send_tc*)&s_tMidiTimeCode, nMidiQuarterFramePiece);
+			Midi::Get()->SendQf((const struct _midi_send_tc *)&s_tMidiTimeCode, nMidiQuarterFramePiece);
 		}
-		led_set_ticks_per_second(1000000 / 3);
+		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
-		led_set_ticks_per_second(1000000 / 1);
+		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
 }

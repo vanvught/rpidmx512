@@ -47,10 +47,7 @@ public:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	TTimecodeTypes m_tTimeCodeTypePrevious;
 	struct _midi_send_tc m_tMidiTimeCode;
-	uint32_t m_nMidiQuarterFramePiece;
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 
 #endif /* H3_ARTNETREADER_H_ */

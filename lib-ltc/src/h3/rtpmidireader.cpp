@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
@@ -37,13 +43,12 @@
 #include "irq_timer.h"
 
 // Output
-#include "ltcleds.h"
-#include "display.h"
-#include "displaymax7219.h"
 #include "artnetnode.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
-#include "ntpserver.h"
+#include "displaymax7219.h"
+//
+#include "h3/ltcoutputs.h"
 
 // IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
@@ -77,7 +82,6 @@ RtpMidiHandler::~RtpMidiHandler(void) {
 RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
@@ -98,7 +102,9 @@ void RtpMidiReader::Start(void) {
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-	led_set_ticks_per_second(1000000 / 1);
+	LtcOutputs::Get()->Init();
+
+	led_set_ticks_per_second(LED_TICKS_NO_DATA);
 }
 
 void RtpMidiReader::Stop(void) {
@@ -122,17 +128,6 @@ void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
 
 	if (isMtc) {
 		nUpdates++;
-	}
-}
-
-void RtpMidiReader::Run(void) {
-	dmb();
-	if (nUpdatesPerSecond >= 24)  {
-		led_set_ticks_per_second(1000000 / 3);
-	} else {
-		m_nTimeCodeTypePrevious = MIDI_TC_TYPE_UNKNOWN;
-		DisplayMax7219::Get()->ShowSysTime();
-		led_set_ticks_per_second(1000000 / 1);
 	}
 }
 
@@ -191,33 +186,26 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 }
 
 void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
+	if (!m_ptLtcDisabledOutputs->bLtc) {
+		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)&m_tLtcTimeCode);
+	}
+
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
 		ArtNetNode::Get()->SendTimeCode((struct TArtNetTimeCode *) &m_tLtcTimeCode);
 	}
 
-	if (!m_ptLtcDisabledOutputs->bMidi) {
-		if (ptMidiMessage->type == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
-			midi_send_raw(ptMidiMessage->system_exclusive, ptMidiMessage->bytes_count);
-		}
-	}
+	LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&m_tLtcTimeCode);
+}
 
-	if (!m_ptLtcDisabledOutputs->bNtp) {
-		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_tLtcTimeCode);
-	}
+void RtpMidiReader::Run(void) {
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tLtcTimeCode);
 
-	if (m_nTimeCodeType != m_nTimeCodeTypePrevious) {
-		m_nTimeCodeTypePrevious = m_nTimeCodeType;
-
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
-			Display::Get()->TextLine(2, (char *) Ltc::GetType((TTimecodeTypes) m_nTimeCodeType), TC_TYPE_MAX_LENGTH);
-		}
-		LtcLeds::Get()->Show((TTimecodeTypes) m_nTimeCodeType);
-	}
-
-	if (!m_ptLtcDisabledOutputs->bDisplay) {
-		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
-	}
-	if (!m_ptLtcDisabledOutputs->bMax7219) {
-		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	dmb();
+	if (nUpdatesPerSecond >= 24) {
+		led_set_ticks_per_second(LED_TICKS_DATA);
+	} else {
+		DisplayMax7219::Get()->ShowSysTime();
+		LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
 }

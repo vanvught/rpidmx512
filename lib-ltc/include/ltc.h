@@ -29,10 +29,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
 #if  ! defined (PACKED)
 #define PACKED __attribute__((packed))
 #endif
+
+enum TLtcReaderSource {
+	LTC_READER_SOURCE_LTC,
+	LTC_READER_SOURCE_ARTNET,
+	LTC_READER_SOURCE_MIDI,
+	LTC_READER_SOURCE_TCNET,
+	LTC_READER_SOURCE_INTERNAL,
+	LTC_READER_SOURCE_APPLEMIDI,
+	LTC_READER_SOURCE_UNDEFINED
+};
 
 struct TLtcTimeCode {
 	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
@@ -51,6 +60,11 @@ enum TTimecodeTypes {
 	TC_TYPE_INVALID = 255
 };
 
+enum TLedTicks {
+	LED_TICKS_NO_DATA = 1000000 / 1,
+	LED_TICKS_DATA = 1000000 / 3
+};
+
 struct TLtcDisabledOutputs {
 	bool bDisplay;
 	bool bMax7219;
@@ -66,6 +80,7 @@ struct TLtcDisabledOutputs {
 #define TC_CODE_MAX_LENGTH	11
 #define TC_TYPE_MAX_LENGTH	11
 #define TC_RATE_MAX_LENGTH  2
+
 
 class Ltc {
 public:

@@ -30,11 +30,11 @@
 void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs) {
 	pLtcDisabledOutputs->bDisplay = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY);
 	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219);
-	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI) | (m_tLtcParams.tSource == LTC_READER_SOURCE_MIDI);
-	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET) | (m_tLtcParams.tSource == LTC_READER_SOURCE_ARTNET);
-	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET | (m_tLtcParams.tSource == LTC_READER_SOURCE_TCNET));
-	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC) | (m_tLtcParams.tSource == LTC_READER_SOURCE_LTC);
+	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI);
+	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET);
+	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET);
+	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC);
 	pLtcDisabledOutputs->bNtp = (m_tLtcParams.nEnableNtp == 0);
-	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI) | (m_tLtcParams.tSource == LTC_READER_SOURCE_APPLEMIDI);
+	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI);
 	pLtcDisabledOutputs->bWS28xx = (m_tLtcParams.nEnableWS28xx == 0);
 }

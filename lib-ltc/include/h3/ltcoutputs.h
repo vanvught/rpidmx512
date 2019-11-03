@@ -1,5 +1,5 @@
 /**
- * @file tcnetreader.h
+ * @file ltcoutputs.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,30 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_TCNETREADER_H_
-#define H3_TCNETREADER_H_
+#ifndef H3_LTCOUTPUTS_H_
+#define H3_LTCOUTPUTS_H_
 
-#include "tcnettimecode.h"
+#include <stdbool.h>
 
-#include "midi.h"
 #include "ltc.h"
 
-class TCNetReader : public TCNetTimeCode {
+class LtcOutputs {
 public:
-	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~TCNetReader(void);
+	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource);
+	~LtcOutputs(void);
 
-	void Start(void);
-	void Stop(void);
+	void Init(void);
+	void Update(const struct TLtcTimeCode *ptLtcTimeCode);
+	void UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode);
 
-	void Run(void);
+	void ResetTimeCodeTypePrevious(void) {
+		m_tTimeCodeTypePrevious = TC_TYPE_INVALID;
+	}
 
-	void Handler(const struct TTCNetTimeCode *pTimeCode);
+	void Print(void);
+
+	static LtcOutputs* Get(void) {
+		return s_pThis;
+	}
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious;
+	void PrintDisabled(bool IsDisabled, const char *p);
+
+private:
+	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
+	TTimecodeTypes m_tTimeCodeTypePrevious;
+	uint32_t m_nMidiQuarterFramePiece;
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+
+	static LtcOutputs *s_pThis;
 };
 
-#endif /* H3_TCNETREADER_H_ */
+#endif /* H3_LTCOUTPUTS_H_ */
