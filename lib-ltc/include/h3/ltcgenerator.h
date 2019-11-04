@@ -49,6 +49,7 @@ public:
 	void ActionSetStart(const char *pTimeCode);
 	void ActionSetStop(const char *pTimeCode);
 	void ActionSetRate(const char *pTimeCodeRate);
+	void ActionSetRGB(const char *hexRGB);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;

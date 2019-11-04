@@ -62,6 +62,7 @@
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
 #include "display.h"
+#include "displayws28xx.h"
 //
 #include "h3/ltcoutputs.h"
 
@@ -87,6 +88,10 @@ static const char sResume[] ALIGNED = "resume";
 
 static const char sRate[] ALIGNED = "rate";
 #define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+
+static const char sRGB[] ALIGNED = "rgb";
+#define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
+#define RGB_SIZE_HEX	(6) // eg FFCC00
 
 enum tUdpPort {
 	UDP_PORT = 0x5443
@@ -263,6 +268,15 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetRGB(const char *hexRGB) {
+	DEBUG_ENTRY
+
+	DisplayWS28xx::Get()->SetRGB(hexRGB);
+
+	DEBUG_EXIT
+}
+
+
 void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
@@ -376,8 +390,16 @@ void LtcGenerator::HandleUdpRequest(void) {
 	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
 			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+		}	
+	} else if (memcmp(&m_Buffer[4], sRGB, RGB_LENGTH) == 0) {
+		if ((m_nBytesReceived == (4 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[4 + RGB_LENGTH] == '#')) {
+			ActionSetRGB((const char *)&m_Buffer[(4 + RGB_LENGTH + 1)]);
+		} else {
+			DEBUG_PUTS("Invalid !stop command");
 		}
-	} else {
+	}
+	
+	 else {
 		DEBUG_PUTS("Invalid command");
 	}
 }
