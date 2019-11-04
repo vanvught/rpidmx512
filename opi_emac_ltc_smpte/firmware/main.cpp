@@ -62,6 +62,7 @@
 
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 
 #include "sourceselect.h"
 #include "sourceselectconst.h"
@@ -189,7 +190,15 @@ void notmain(void) {
 	}
 
 	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
-	max7219.Init(ltcParams.GetMax7219Intensity());
+	if (!tLtcDisabledOutputs.bMax7219){
+		max7219.Init(ltcParams.GetMax7219Intensity()); 
+	}
+
+
+	DisplayWS28xx ws82xx(WS2812B, ltcParams.IsShowSysTime());
+	if (!tLtcDisabledOutputs.bWS28xx){		
+		ws82xx.Init(255, RBG);
+	}
 
 	display.ClearLine(3);
 	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
@@ -312,6 +321,8 @@ void notmain(void) {
 	ltcOutputs.Print();
 
 	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
+	if (!tLtcDisabledOutputs.bWS28xx)
+	printf("Display WS28xx : %d Digit(s), %d Colons, %d LED(S)\n", NUM_OF_DIGITS, NUM_OF_COLONS, WS28XX_LED_COUNT);
 
 	hw.WatchdogInit();
 
@@ -371,6 +382,8 @@ void notmain(void) {
 		if (tLtcDisabledOutputs.bDisplay) {
 			display.Run();
 		}
+
+		ws82xx.Run();
 
 		lb.Run();
 	}

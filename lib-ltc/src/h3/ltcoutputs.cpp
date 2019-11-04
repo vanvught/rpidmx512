@@ -53,6 +53,7 @@
 #include "ltcleds.h"
 #include "display.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
@@ -118,7 +119,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	}
 
 	if(!m_tLtcDisabledOutputs.bWS28xx) {
-		//DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
+		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
 	}
 
 	Ltc::ItoaBase10((const struct TLtcTimeCode *) ptLtcTimeCode, m_aTimeCode);
