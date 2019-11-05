@@ -91,7 +91,11 @@ static const char sRate[] ALIGNED = "rate";
 
 static const char sRGB[] ALIGNED = "rgb";
 #define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
-#define RGB_SIZE_HEX	(6) // eg FFCC00
+#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB 
+
+static const char sDisplayMSG[] ALIGNED = "showmsg";
+#define DMSG_LENGTH (sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
+#define DMSG_SIZE	(11)
 
 enum tUdpPort {
 	UDP_PORT = 0x5443
@@ -277,6 +281,15 @@ void LtcGenerator::ActionSetRGB(const char *hexRGB) {
 }
 
 
+void LtcGenerator::ActionSetMessage(const char *message, int size) {
+	DEBUG_ENTRY
+
+	DisplayWS28xx::Get()->SetMessage(message, size);
+
+	DEBUG_EXIT
+}
+
+
 void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
@@ -369,36 +382,48 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+				ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '!')){
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
-			ActionStop();
-			ActionStart();
-		} else {
-			DEBUG_PUTS("Invalid !start command");
-		}
+				ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+				ActionStop();
+				ActionStart();
+			} else {
+				DEBUG_PUTS("Invalid !start command");
+			}
+
 	} else if (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0) {
-		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
-			ActionStop();
-		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
-		} else {
-			DEBUG_PUTS("Invalid !stop command");
-		}
+			if (m_nBytesReceived == (4 + STOP_LENGTH)) {
+				ActionStop();
+			} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
+				ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
+			} else {
+				DEBUG_PUTS("Invalid !stop command");
+			}
+
 	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
-		ActionResume();
+			ActionResume();
+
 	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
-		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
-		}	
+			if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
+				ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+			}	
+			
+	} else if (memcmp(&m_Buffer[4], sDisplayMSG, DMSG_LENGTH) == 0) {
+			int nMlength = m_nBytesReceived - (4 + DMSG_LENGTH + 1);
+			printf("RX: %d  MsgLen: %d  Msg: %.*s\n",m_nBytesReceived, nMlength, nMlength, &m_Buffer[(4 + DMSG_LENGTH + 1)]);
+			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[4 + DMSG_LENGTH] == '#')) {							
+				ActionSetMessage((const char *)&m_Buffer[(4 + DMSG_LENGTH + 1)],nMlength);
+			}	
+		
 	} else if (memcmp(&m_Buffer[4], sRGB, RGB_LENGTH) == 0) {
-		if ((m_nBytesReceived == (4 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[4 + RGB_LENGTH] == '#')) {
-			ActionSetRGB((const char *)&m_Buffer[(4 + RGB_LENGTH + 1)]);
-		} else {
-			DEBUG_PUTS("Invalid !stop command");
+			if ((m_nBytesReceived == (4 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[4 + RGB_LENGTH] == '#')) {
+				ActionSetRGB((const char *)&m_Buffer[(4 + RGB_LENGTH + 1)]);
+			} else {
+				DEBUG_PUTS("Invalid !rgb command");
+			}
 		}
-	}
-	
+		
 	 else {
 		DEBUG_PUTS("Invalid command");
 	}
