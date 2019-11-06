@@ -78,6 +78,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	tIpInfo.gw.addr = params.GetDefaultGateway();
 
 	m_IsDhcpUsed = params.isDhcpUsed();
+	m_nNtpServerIp = params.GetNtpServer();
 
 	const uint8_t *p = (const uint8_t *) params.GetHostName();
 

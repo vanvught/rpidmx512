@@ -61,14 +61,13 @@ public:
 
 	uint64_t GetUpTime(void);
 
-	 time_t GetTime(void) {
+	time_t GetTime(void) {
 		return time(NULL);
 	}
 
-	bool SetTime(const struct THardwareTime &pTime) {
-		return false;	 // Not implemented
-	}
+	void SetSysTime(time_t nTime);
 
+	bool SetTime(const struct THardwareTime &pTime);
 	void GetTime(struct THardwareTime *pTime);
 
 	uint32_t Micros(void);

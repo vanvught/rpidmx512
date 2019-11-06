@@ -91,6 +91,10 @@ public:
 		return false;
 	}
 
+	void SetSysTime(time_t nTime) {
+		sys_time_set_systime(nTime);
+	}
+
 	bool SetTime(const struct THardwareTime &pTime);
 	void GetTime(struct THardwareTime *pTime);
 

@@ -36,37 +36,9 @@
 #include "ntpserver.h"
 
 #include "network.h"
+#include "ntp.h"
 
 #include "debug.h"
-
-#define NTP_TIMESTAMP_DELTA 2208988800
-
-//#if defined(BARE_METAL)
-// #define LOCAL_TIME_YEAR_OFFSET	2000
-//#else
- #define LOCAL_TIME_YEAR_OFFSET	1900
-//#endif
-
-enum tUdpPort {
-	UDP_PORT = 123
-};
-
-enum tVersion {
-	VERSION = (4 << 3)
-};
-
-enum tMode {
-	MODE_CLIENT = (3 << 0),
-	MODE_SERVER = (4 << 0)
-};
-
-enum tStratum {
-	STRATUM = 2
-};
-
-enum tPoll {
-	MINPOLL = 4
-};
 
 NtpServer *NtpServer::s_pThis = 0;
 
@@ -84,11 +56,7 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
 	struct tm timeDate;
 
 	memset(&timeDate, 0, sizeof(struct tm));
-#if defined(BARE_METAL)
-	timeDate.tm_year = nYear;
-#else
 	timeDate.tm_year = 100 + nYear;
-#endif
 	timeDate.tm_mon = nMonth - 1;
 	timeDate.tm_mday = nDay;
 
@@ -111,13 +79,13 @@ NtpServer::~NtpServer(void) {
 void NtpServer::Start(void) {
 	DEBUG_ENTRY
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	m_Reply.LiVnMode = VERSION | MODE_SERVER;
+	m_Reply.LiVnMode = NTP_VERSION | NTP_MODE_SERVER;
 
-	m_Reply.Stratum = STRATUM;
-	m_Reply.Poll = MINPOLL;
+	m_Reply.Stratum = NTP_STRATUM;
+	m_Reply.Poll = NTP_MINPOLL;
 	m_Reply.Precision = -10;	// -9.9 = LOG2(0.0001) -> milliseconds
 	m_Reply.RootDelay = 0;
 	m_Reply.RootDispersion = 0;
@@ -129,12 +97,12 @@ void NtpServer::Start(void) {
 void NtpServer::Stop(void) {
 	DEBUG_ENTRY
 
-	m_nHandle = Network::Get()->End(UDP_PORT);
+	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
 
 	DEBUG_EXIT
 }
 
-void NtpServer::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode) {
+void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 	m_tTimeDate = m_tDate;
 	m_tTimeDate += pLtcTimeCode->nSeconds;
 	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
@@ -170,7 +138,7 @@ void NtpServer::Run(void) {
 		return;
 	}
 
-	if (__builtin_expect(((m_Request.LiVnMode & MODE_CLIENT) != MODE_CLIENT), 0)) {
+	if (__builtin_expect(((m_Request.LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
 		return;
 	}
 
@@ -181,12 +149,11 @@ void NtpServer::Run(void) {
 }
 
 void NtpServer::Print(void) {
-	printf("NTP v%d Server\n", VERSION >> 3);
-	printf(" Port    : %d\n", UDP_PORT);
-	printf(" Stratum : %d\n", STRATUM);
+	printf("NTP v%d Server\n", NTP_VERSION >> 3);
+	printf(" Port    : %d\n", NTP_UDP_PORT);
+	printf(" Stratum : %d\n", NTP_STRATUM);
 
 	const time_t t = m_tDate - NTP_TIMESTAMP_DELTA;
 
-	const struct tm *lt = localtime(&t);
-	printf(" Date    : %d/%.2d/%.2d\n", LOCAL_TIME_YEAR_OFFSET + lt->tm_year, 1 + lt->tm_mon, lt->tm_mday);
+	printf("%s", asctime(localtime((const time_t *) &t)));
 }

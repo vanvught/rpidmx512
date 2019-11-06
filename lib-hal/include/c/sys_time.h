@@ -2,7 +2,7 @@
  * @file sys_time.h
  *
  */
-/* Copyright (C) 2014-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,13 @@
 #include <stdint.h>
 #include <time.h>
 
-extern volatile uint64_t st_startup_micros;
-extern volatile uint32_t rtc_startup_seconds;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern void sys_time_init(void);
-extern void sys_time_set(/*@out@*/const struct tm *);
+extern void sys_time_set(const struct tm *);
+extern void sys_time_set_systime(time_t);
 
 extern uint32_t millis();
 

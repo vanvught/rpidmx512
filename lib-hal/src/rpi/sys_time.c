@@ -2,7 +2,7 @@
  * @file sys_time.c
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,15 +75,19 @@ void sys_time_set(const struct tm *tmbuf) {
 	rtc_startup_seconds = mktime((struct tm *) tmbuf);
 }
 
-/**
- * @ingroup time
- *
- *  Returns the time as the number of seconds since the Epoch, 1970-01-01 00:00:00 +0000 (UTC).
- *  If \ref __timer is non-NULL, the return value is also stored in the memory pointed to by __timer.
- *
- * @param __timer
- * @return  The value of time in seconds since the Epoch
- */
+void sys_time_set_systime(time_t seconds) {
+	sys_time_init_startup_micros = bcm2835_st_read();
+	rtc_startup_seconds = seconds;
+}
+
+uint32_t millis(void) {
+	dmb();
+	const uint32_t elapsed = ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000);
+	dmb();
+
+	return elapsed;
+}
+
 time_t time(time_t *__timer) {
 	dmb();
 	time_t elapsed = (time_t) ((bcm2835_st_read() - sys_time_init_startup_micros) / (uint64_t) 1000000);
@@ -94,14 +98,6 @@ time_t time(time_t *__timer) {
 	if (__timer != NULL) {
 		*__timer = elapsed;
 	}
-
-	return elapsed;
-}
-
-const uint32_t millis(void) {
-	dmb();
-	const uint32_t elapsed = ((uint32_t) (bcm2835_st_read() - sys_time_init_startup_micros) / (uint32_t) 1000);
-	dmb();
 
 	return elapsed;
 }

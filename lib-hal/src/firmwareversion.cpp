@@ -32,6 +32,8 @@
 
 #include "hardware.h"
 
+#include "debug.h"
+
 FirmwareVersion *FirmwareVersion::s_pThis = 0;
 
 FirmwareVersion::FirmwareVersion(const char* pVersion, const char* pDate, const char* pTime) {
@@ -55,6 +57,9 @@ FirmwareVersion::FirmwareVersion(const char* pVersion, const char* pDate, const 
 }
 
 FirmwareVersion::~FirmwareVersion(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 void FirmwareVersion::Print(void) {

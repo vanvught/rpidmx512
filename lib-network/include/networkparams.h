@@ -39,7 +39,7 @@ struct TNetworkParams {
 	uint32_t nNameServerIp;
 	bool bIsDhcpUsed;
 	uint8_t aHostName[NETWORK_HOSTNAME_SIZE];
-	bool bResetEmac;
+	uint32_t nNtpServerIp;
 };
 
 enum TNetworkParamsMask {
@@ -49,7 +49,7 @@ enum TNetworkParamsMask {
 	NETWORK_PARAMS_MASK_DEFAULT_GATEWAY = (1 << 3),
 	NETWORK_PARAMS_MASK_NAME_SERVER = (1 << 4),
 	NETWORK_PARAMS_MASK_HOSTNAME = (1 << 5),
-	NETWORK_PARAMS_MASK_EMAC = (1 << 6)
+	NETWORK_PARAMS_MASK_NTP_SERVER = (1 << 6)
 };
 
 class NetworkParamsStore {
@@ -97,9 +97,8 @@ public:
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	// Allwinner H2+/H3 Only
-	bool GetResetEmac(void) {
-		return m_tNetworkParams.bResetEmac;
+	uint32_t GetNtpServer(void) {
+		return m_tNetworkParams.nNtpServerIp;
 	}
 
 public:

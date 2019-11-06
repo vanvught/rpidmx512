@@ -1018,7 +1018,7 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice) {
 
 	struct THardwareTime tTime;
 
-	tTime.tm_year = (rdm_command->param_data[0] << 8) + rdm_command->param_data[1];
+	tTime.tm_year = ((rdm_command->param_data[0] << 8) + rdm_command->param_data[1]) - 1900;
 	tTime.tm_mon = rdm_command->param_data[2] - 1;	// 0..11
 	tTime.tm_mday = rdm_command->param_data[3];
 	tTime.tm_hour = rdm_command->param_data[4];

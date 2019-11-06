@@ -31,23 +31,7 @@
 
 #include "ltc.h"
 
-struct TNtpPacket {
-	uint8_t LiVnMode;
-	uint8_t Stratum;
-	uint8_t Poll;
-	uint8_t Precision;
-	uint32_t RootDelay;
-	uint32_t RootDispersion;
-	uint32_t ReferenceID;
-	uint32_t ReferenceTimestamp_s;
-	uint32_t ReferenceTimestamp_f;
-	uint32_t OriginTimestamp_s;
-	uint32_t OriginTimestamp_f;
-	uint32_t ReceiveTimestamp_s;
-	uint32_t ReceiveTimestamp_f;
-	uint32_t TransmitTimestamp_s;
-	uint32_t TransmitTimestamp_f;
-}__attribute__((packed));
+#include "ntp.h"
 
 class NtpServer {
 public:

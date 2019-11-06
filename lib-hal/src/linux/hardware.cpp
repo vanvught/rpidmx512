@@ -44,6 +44,8 @@
 
 #include "hardware.h"
 
+#include "debug.h"
+
 extern "C" {
  char *str_find_replace(char *str, const char *find, const char *replace);
 }
@@ -212,6 +214,15 @@ uint64_t Hardware::GetUpTime(void) {
 #endif
 }
 
+void Hardware::SetSysTime(time_t nTime) {
+	DEBUG_PRINTF("%s", asctime(localtime(&nTime)));
+}
+
+bool Hardware::SetTime(const struct THardwareTime &pTime) {
+	DEBUG_PRINTF("%s", asctime((const tm *)&pTime));
+	return true;
+}
+
 void Hardware::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
@@ -338,18 +349,18 @@ void Hardware::SetLed(THardwareLedStatus tLedStatus) {
 #endif
 }
 
-bool Hardware::ExecCmd(const char* pCmd, char* Result, int nResultSize) {
+bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
 	FILE *fp = popen(pCmd, "r");
 
-	if (fgets(Result, nResultSize-1, fp) == 0) {
+	if (fgets(Result, nResultSize - 1, fp) == 0) {
 		pclose(fp);
 		return false;
 	}
 
 	size_t nLength = strlen(Result);
 
-	if (Result[nLength-1] < ' ') {
-		Result[nLength-1] = '\0';
+	if (Result[nLength - 1] < ' ') {
+		Result[nLength - 1] = '\0';
 	}
 
 	return true;

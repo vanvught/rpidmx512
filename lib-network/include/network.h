@@ -127,6 +127,10 @@ public:
 		return m_nIfIndex;
 	}
 
+	uint32_t GetNtpServerIp(void) {
+		return m_nNtpServerIp;
+	}
+
 	void SetNetworkDisplay(NetworkDisplay *pNetworkDisplay) {
 		m_pNetworkDisplay = pNetworkDisplay;
 	}
@@ -153,6 +157,7 @@ protected:
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
 	uint32_t m_nIfIndex;
+	uint32_t m_nNtpServerIp;
 
 	NetworkDisplay *m_pNetworkDisplay;
 	NetworkStore *m_pNetworkStore;

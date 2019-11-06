@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
@@ -34,7 +40,7 @@
 
 #include "debug.h"
 
-void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -52,6 +58,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
 	builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
+	builder.AddIpAddress(NetworkConst::PARAMS_NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER));
 
 	nSize = builder.GetSize();
 
@@ -61,7 +68,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	return;
 }
 
-void NetworkParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void NetworkParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pNetworkParamsStore == 0) {

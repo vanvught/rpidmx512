@@ -96,7 +96,7 @@ const char* Hardware::GetSocName(uint8_t& nLength) {
 #endif
 }
 
-bool Hardware::SetTime(const struct THardwareTime& pTime) {
+bool Hardware::SetTime(const struct THardwareTime &pTime) {
 	struct hardware_time tm_hw;
 
 	tm_hw.year = pTime.tm_year;
@@ -111,7 +111,7 @@ bool Hardware::SetTime(const struct THardwareTime& pTime) {
 	return true;
 }
 
-void Hardware::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct THardwareTime *pTime) {
 	time_t ltime;
 	struct tm *local_time;
 

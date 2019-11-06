@@ -1,5 +1,5 @@
 /**
- * @file networkconst.cpp
+ * @file ntp.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,16 +23,51 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef NTP_H_
+#define NTP_H_
 
-#include "networkconst.h"
+// TODO FIXME LOCAL_TIME_YEAR_OFFSET	1900
+#define LOCAL_TIME_YEAR_OFFSET	1900
 
-alignas(uint32_t) const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
-alignas(uint32_t) const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
-alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
-alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
-alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
-alignas(uint32_t) const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
+#define NTP_TIMESTAMP_DELTA 2208988800
 
-alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
+enum TNtpUdpPort {
+	NTP_UDP_PORT = 123
+};
+
+enum TNtpVersion {
+	NTP_VERSION = (4 << 3)
+};
+
+enum TNtpMode {
+	NTP_MODE_CLIENT = (3 << 0),
+	NTP_MODE_SERVER = (4 << 0)
+};
+
+enum TNtpStratum {
+	NTP_STRATUM = 2
+};
+
+enum TNtpPoll {
+	NTP_MINPOLL = 4
+};
+
+struct TNtpPacket {
+	uint8_t LiVnMode;
+	uint8_t Stratum;
+	uint8_t Poll;
+	uint8_t Precision;
+	uint32_t RootDelay;
+	uint32_t RootDispersion;
+	uint32_t ReferenceID;
+	uint32_t ReferenceTimestamp_s;
+	uint32_t ReferenceTimestamp_f;
+	uint32_t OriginTimestamp_s;
+	uint32_t OriginTimestamp_f;
+	uint32_t ReceiveTimestamp_s;
+	uint32_t ReceiveTimestamp_f;
+	uint32_t TransmitTimestamp_s;
+	uint32_t TransmitTimestamp_f;
+}__attribute__((packed));
+
+#endif /* NTP_H_ */

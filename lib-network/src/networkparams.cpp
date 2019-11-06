@@ -23,6 +23,12 @@
  * THE SOFTWARE.
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -143,6 +149,12 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 #endif
+
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, &value32) == SSCAN_OK) {
+		m_tNetworkParams.nNtpServerIp = value32;
+		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NTP_SERVER;
+		return;
+	}
 }
 
 void NetworkParams::Dump(void) {
@@ -177,6 +189,10 @@ void NetworkParams::Dump(void) {
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
 		printf(" %s=%s\n", NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
+	}
+
+	if (isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER)) {
+		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NTP_SERVER, IP2STR(m_tNetworkParams.nNtpServerIp));
 	}
 #endif
 }

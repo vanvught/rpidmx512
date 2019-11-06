@@ -74,8 +74,8 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	hw_time.minute = pArtNetTimeSync->tm_min;
 	hw_time.hour = pArtNetTimeSync->tm_hour;
 	hw_time.day = pArtNetTimeSync->tm_mday;
-	hw_time.month = pArtNetTimeSync->tm_mon + (uint8_t) 1;
-	hw_time.year = (uint16_t) 1900 + ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + (uint16_t) pArtNetTimeSync->tm_year_lo;
+	hw_time.month = pArtNetTimeSync->tm_mon;
+	hw_time.year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + (uint16_t) pArtNetTimeSync->tm_year_lo;
 
 	hardware_rtc_set(&hw_time);
 

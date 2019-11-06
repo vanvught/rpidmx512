@@ -1,5 +1,5 @@
 /**
- * @file networkconst.cpp
+ * @file timesync.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,15 +24,33 @@
  */
 
 #include <stdint.h>
+#include <time.h>
 
-#include "networkconst.h"
+#include "timesync.h"
 
-alignas(uint32_t) const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
-alignas(uint32_t) const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
-alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
-alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
-alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
-alignas(uint32_t) const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
+#include "artnettimesync.h"
 
-alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
+#include "hardware.h"
+
+#include "debug.h"
+
+TimeSync::TimeSync(void){
+}
+
+TimeSync::~TimeSync(void) {
+}
+
+void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
+	struct THardwareTime hwTime;
+
+	hwTime.tm_sec = pArtNetTimeSync->tm_sec;
+	hwTime.tm_min = pArtNetTimeSync->tm_min;
+	hwTime.tm_hour = pArtNetTimeSync->tm_hour;
+	hwTime.tm_mday = pArtNetTimeSync->tm_mday;
+	hwTime.tm_mon = pArtNetTimeSync->tm_mon;
+	hwTime.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
+
+	Hardware::Get()->SetTime(hwTime);
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + hwTime.tm_year, 1 + hwTime.tm_mon, hwTime.tm_mday, hwTime.tm_hour, hwTime.tm_min, hwTime.tm_sec);
+}

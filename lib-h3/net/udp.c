@@ -39,6 +39,8 @@
 
 #include "h3.h"
 
+extern int console_error(const char *);
+
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
@@ -51,7 +53,7 @@ extern void emac_eth_send(void *, int);
 extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 extern uint16_t net_chksum(void *, uint32_t);
 
-#define MAX_PORTS_ALLOWED	8
+#define MAX_PORTS_ALLOWED	16
 #define MAX_ENTRIES			(1 << 2) // Must always be a power of 2
 #define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
 
@@ -166,6 +168,7 @@ int udp_bind(uint16_t local_port) {
 
 	if (s_ports_used_index == MAX_PORTS_ALLOWED) {
 		DEBUG_PUTS("s_ports_used_index == MAX_PORTS_ALLOWED");
+		console_error("unbind");
 		return -1;
 	}
 

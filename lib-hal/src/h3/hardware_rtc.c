@@ -30,6 +30,8 @@
 
 #include "mcp7941x.h"
 
+#include "debug.h"
+
 void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	assert(tm_hw != 0);
 
@@ -40,22 +42,24 @@ void hardware_rtc_set(const struct hardware_time *tm_hw) {
 	tm_rtc.tm_min = (int) tm_hw->minute;
 	tm_rtc.tm_sec = (int) tm_hw->second;
 	tm_rtc.tm_mday = (int) tm_hw->day;
-	//tm_rtc.tm_wday = // TODO tm_rtc.tm_wday
-	tm_rtc.tm_mon = (int) tm_hw->month - 1;
-	tm_rtc.tm_year = (int) tm_hw->year - 2000;	// RTC stores 2 digits only
+	tm_rtc.tm_mon = (int) tm_hw->month + 1;
+	tm_rtc.tm_year = (int) tm_hw->year - 100;	// RTC stores 2 digits only
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc.tm_year, tm_rtc.tm_mon, tm_rtc.tm_mday, tm_rtc.tm_hour, tm_rtc.tm_min, tm_rtc.tm_sec);
 
 	if (mcp7941x_start(0x00) != MCP7941X_ERROR) {
 		mcp7941x_set_date_time(&tm_rtc);
 	}
 
-	tmbuf.tm_hour = tm_rtc.tm_hour;
-	tmbuf.tm_min = tm_rtc.tm_min;
-	tmbuf.tm_sec = tm_rtc.tm_sec;
-	tmbuf.tm_mday = tm_rtc.tm_mday;
-	//tmbuf.tm_wday = tm_rtc.tm_wday;
+	tmbuf.tm_hour = (int) tm_hw->hour;
+	tmbuf.tm_min = (int) tm_hw->minute;
+	tmbuf.tm_sec = (int) tm_hw->second;
+	tmbuf.tm_mday = (int) tm_hw->day;
 	tmbuf.tm_mon = (int) tm_hw->month;
-	tmbuf.tm_year = tm_rtc.tm_year;
+	tmbuf.tm_year = (int) tm_hw->year;
 	tmbuf.tm_isdst = 0;
 
 	sys_time_set(&tmbuf);
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
 }

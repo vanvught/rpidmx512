@@ -1,8 +1,8 @@
 /**
- * @file timesync.cpp
+ * @file time.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
 #include <time.h>
 
-#include "timesync.h"
-#include "artnettimesync.h"
+#define MAX_ASC_TIME	50
 
-#include "c/hardware.h"
+static char s_buffer[MAX_ASC_TIME + 1];
+static const char *pMonthName[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+static const char *pDaysOfWeek[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-TimeSync::TimeSync(void){
-}
+char *asctime(const struct tm *pTm) {
+	if (pTm == NULL) {
+		return NULL;
+	}
 
-TimeSync::~TimeSync(void) {
-}
+	snprintf(s_buffer, MAX_ASC_TIME, "%s %s %2u %02u:%02u:%02u %04u\n",
+			(0 <= pTm->tm_wday && pTm->tm_wday <= 6) ? pDaysOfWeek[pTm->tm_wday] : "???",
+			(0 <= pTm->tm_mon && pTm->tm_mon <= 11) ? pMonthName[pTm->tm_mon] : "???",
+			(unsigned) pTm->tm_mday, (unsigned) pTm->tm_hour,
+			(unsigned) pTm->tm_min, (unsigned) pTm->tm_sec,
+			(unsigned) pTm->tm_year + 1900);
 
-void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
-	struct hardware_time hw_time;
-
-	hw_time.second = pArtNetTimeSync->tm_sec;
-	hw_time.minute = pArtNetTimeSync->tm_min;
-	hw_time.hour = pArtNetTimeSync->tm_hour;
-	hw_time.day = pArtNetTimeSync->tm_mday;
-	hw_time.month = pArtNetTimeSync->tm_mon + 1;
-	hw_time.year = 1900 + ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
-
-	hardware_rtc_set(&hw_time);
+	return s_buffer;
 }

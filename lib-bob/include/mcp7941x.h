@@ -2,7 +2,7 @@
  * @file mcp7941x.h
  *
  */
-/* Copyright (C) 2014, 2015, 2016 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2014-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,15 +34,13 @@
 #define MCP7941X_DEFAULT_SLAVE_ADDRESS			0x6F
 
 struct rtc_time {
-	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
+	int tm_sec;		///< Seconds.		[0-59]
 	int tm_min;		///< Minutes.		[0-59]
 	int tm_hour;	///< Hours.			[0-23]
 	int tm_mday;	///< Day.		 	[1-31]
-	int tm_mon;		///< Month.			[0-11]
-	int tm_year;	///< Year - 1900
-	int tm_wday;	///< Day of week.	[0-6]
-	int tm_yday;	///< Days in year.	[0-365]
-	int tm_isdst;	///< DST.			[-1/0/1]
+	int tm_mon;		///< Month.			[1-12]
+	int tm_year;	///< Year - 2000	[0-99]
+	int tm_wday;	///< Day of week.	[1-7]
 };
 
 extern uint8_t mcp7941x_start(uint8_t);

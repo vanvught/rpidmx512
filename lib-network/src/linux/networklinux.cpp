@@ -42,6 +42,8 @@
 /**
  * BEGIN - needed H3 code compatibility
  */
+#include "networkparams.h"
+
 #define MAX_PORTS_ALLOWED	8
 
 static uint16_t sPortsAllowed[MAX_PORTS_ALLOWED];
@@ -70,6 +72,12 @@ int NetworkLinux::Init(const char *s) {
 	}
 
 	snPortsUsed = 0;
+
+	NetworkParams params;
+	params.Load();
+	params.Dump();
+
+	m_nNtpServerIp = params.GetNtpServer();
 /**
  * END
  */

@@ -1,5 +1,5 @@
 /**
- * @file networkconst.cpp
+ * @file ntpclient.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,16 +23,50 @@
  * THE SOFTWARE.
  */
 
+#ifndef NTPCLIENT_H_
+#define NTPCLIENT_H_
+
 #include <stdint.h>
+#include <time.h>
 
-#include "networkconst.h"
+#include "ntp.h"
 
-alignas(uint32_t) const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
-alignas(uint32_t) const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
-alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
-alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
-alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
-alignas(uint32_t) const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
+enum TNtpClientStatus {
+	NTP_CLIENT_STATUS_STOPPED,
+	NTP_CLIENT_STATUS_IDLE,
+	NTP_CLIENT_STATUS_WAITING
+};
 
-alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
+class NtpClient {
+public:
+	NtpClient(uint32_t nServerIp = 0);
+	~NtpClient(void);
+
+	void Init(void);
+	void Run(void);
+
+	void Print(void);
+
+	TNtpClientStatus GetStatus(void) {
+		return m_tStatus;
+	}
+
+	static NtpClient *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static NtpClient *s_pThis;
+
+private:
+	uint32_t m_nServerIp;
+	int32_t m_nHandle;
+	TNtpClientStatus m_tStatus;
+	struct TNtpPacket m_Request;
+	struct TNtpPacket m_Reply;
+	time_t m_InitTime;
+	time_t m_RequestTime;
+	time_t m_LastPoll;
+};
+
+#endif /* NTPCLIENT_H_ */
