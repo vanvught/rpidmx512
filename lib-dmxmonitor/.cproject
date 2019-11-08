@@ -69,7 +69,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -88,7 +88,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1101738863" name="Linux" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1101738863" name="Linux" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1101738863." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1742158898" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.target.gnu.platform.base.246680094" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
@@ -133,6 +133,10 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="src/linux|src/h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -202,7 +206,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="linux|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="linux" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -224,6 +228,9 @@
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1431542031.377307313.1049167921.628898882;cdt.managedbuild.toolchain.gnu.cross.base.1431542031.377307313.1049167921.628898882.;cdt.managedbuild.tool.gnu.cross.c.compiler.2097886374;cdt.managedbuild.tool.gnu.c.compiler.input.1662150196">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.234771258;cdt.managedbuild.toolchain.gnu.cross.base.234771258.1954567076;cdt.managedbuild.tool.gnu.cross.c.compiler.621225614;cdt.managedbuild.tool.gnu.c.compiler.input.530816588">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -231,6 +238,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.234771258;cdt.managedbuild.toolchain.gnu.cross.base.234771258.1954567076;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1149655482;cdt.managedbuild.tool.gnu.cpp.compiler.input.2013966576">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1431542031.377307313.1049167921.628898882;cdt.managedbuild.toolchain.gnu.cross.base.1431542031.377307313.1049167921.628898882.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1992412649;cdt.managedbuild.tool.gnu.cpp.compiler.input.1443277899">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1101738863;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1101738863.;cdt.managedbuild.tool.gnu.cpp.compiler.base.1436701175;cdt.managedbuild.tool.gnu.cpp.compiler.input.951939215">
