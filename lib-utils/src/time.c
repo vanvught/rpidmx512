@@ -2,7 +2,7 @@
  * @file time.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -104,14 +104,10 @@ time_t mktime(struct tm *pTm) {
 		return (time_t) -1;
 	}
 
-//	pTm->tm_year = pTm->tm_year + 2000;	// TODO FIXME tm_year -> The number of years since 1900.
-
-//	if (pTm->tm_year < 1970 || pTm->tm_year > 2099) {
 	if (pTm->tm_year < 70 || pTm->tm_year > 139) {
 		return (time_t) -1;
 	}
 
-//	for (year = 1970; year < pTm->tm_year; year++) {
 	for (year = 1970; year < 1900 + pTm->tm_year; year++) {
 		result += isleapyear(year) ? 366 : 365;
 	}

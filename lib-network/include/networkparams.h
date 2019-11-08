@@ -98,6 +98,9 @@ public:
 	}
 
 	uint32_t GetNtpServer(void) {
+		if (!isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER)) {
+			return 0;
+		}
 		return m_tNetworkParams.nNtpServerIp;
 	}
 
