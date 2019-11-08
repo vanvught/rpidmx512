@@ -33,7 +33,6 @@
 
 #include "ws28xx.h"
 
-
 /*
  *  A 8 x 7 Segment (with 3 colons) TC Display constructed of WS82xx LEDS, 
  *  
@@ -51,18 +50,18 @@
  * 
 */
 
-#define NUM_OF_DIGITS 8
-#define NUM_OF_COLONS 3
+#define WS28XX_NUM_OF_DIGITS	8
+#define WS28XX_NUM_OF_COLONS	3
 
-#define SEGMENTS_PER_DIGIT 7 // number of LEDs that make up one digit
-#define LEDS_PER_SEGMENT 1   // number of LEDs that make up one segment
-#define LEDS_PER_COLON 2     // number of LEDs that make up one colon
+#define SEGMENTS_PER_DIGIT 		7 ///< number of LEDs that make up one digit
+#define LEDS_PER_SEGMENT 		1 ///< number of LEDs that make up one segment
+#define LEDS_PER_COLON 			2 ///< number of LEDs that make up one colon
 
-#define WS28XX_LED_COUNT ((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * NUM_OF_DIGITS) + (LEDS_PER_COLON * NUM_OF_COLONS))
+#define WS28XX_LED_COUNT ((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * WS28XX_NUM_OF_DIGITS) + (LEDS_PER_COLON * WS28XX_NUM_OF_COLONS))
 
 #define WS28XX_UPDATE_MS (15)	// update fades every msec
 
-#define WS28XX_MAX_MSG_SIZE  (NUM_OF_DIGITS + NUM_OF_COLONS + 1)
+#define WS28XX_MAX_MSG_SIZE  (WS28XX_NUM_OF_DIGITS + WS28XX_NUM_OF_COLONS + 1)
 
 #define WS82XX_MSG_TIME_MS	(3000)
 
@@ -72,7 +71,6 @@ enum tWS28xxMapping {
  	RBG,
   	BGR, 
 };
-
 
 class DisplayWS28xx {
 public:
@@ -119,16 +117,17 @@ private:
 	int hexadecimalToDecimal(const char *hexVal, int len = 6);
 	void ShowMessage(const char pMessage[]);
 
+private:
 	WS28xx *m_WS28xx;
-	TWS28XXType m_tLedType = WS2812;
-  	tWS28xxMapping l_mapping = RGB;
-
-	uint8_t m_Buffer[64]; // UDP buffer
-	uint32_t m_nHandle = 0; // UDP handle
+	TWS28XXType m_tLedType;
+  	tWS28xxMapping m_tMapping;
 
 	bool m_bShowSysTime;
 
-	uint8_t master = 255;
+	uint8_t m_Buffer[64]; // UDP buffer
+	uint32_t m_nHandle; // UDP handle
+
+	uint8_t m_nMaster = 255;
 
 	uint8_t curR = 0, curG = 0, curB = 0; // RGB set for character next rendered
 	uint8_t segR = 0, segG = 0, segB = 0; // RGB for segments  	
@@ -143,7 +142,7 @@ private:
 	uint32_t ms_colon_blink = 0; 
 	uint8_t mColonBlinkMode = 1; // 0 = no blink; 1 = blink down; 2 = blink up
 	
-	uint8_t old_SC = 1;   // has seconds changed
+	uint32_t nSecondsPrevious = 1;   // has seconds changed
 
 	// timers
 	uint32_t m_nMillis; // current timer clock in MS

@@ -33,7 +33,7 @@
 // Compliments Dean Reading (deanreading@hotmail.com: http://arduino.cc/playground/Main/SevenSegmentLibrary), 2012
 // This is the combined array that contains all the segment configurations for many different characters and symbols
 
-static const uint8_t Seg7Array[] = {
+static const uint8_t Seg7Array[]  __attribute__ ((aligned (4))) = {
 //dec     ABCDEFG  Segments   7-segment map:
   126,//0b1111110, // 0   "0"         AAA
   48,//0b0110000, // 1   "1"         F   B

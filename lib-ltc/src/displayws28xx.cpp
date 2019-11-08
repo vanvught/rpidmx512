@@ -59,7 +59,11 @@ enum tUdpPort {
 
 DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
-DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime): m_tLedType(tLedType), m_bShowSysTime(bShowSysTime)
+DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime):
+	m_tLedType(tLedType),
+	m_tMapping(RGB),
+	m_bShowSysTime(bShowSysTime),
+	m_nHandle(-1)
 {
 	s_pThis = this;
 	s_wsticker = 0;
@@ -74,10 +78,13 @@ DisplayWS28xx::~DisplayWS28xx(void)
 void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping)
 {
 	m_WS28xx = new WS28xx(m_tLedType, WS28XX_LED_COUNT);
+	assert(m_WS28xx != 0);
+
 	m_WS28xx->Initialize();
 	m_WS28xx->SetGlobalBrightness(nIntensity);
-	l_mapping = lMapping;
-	master = 255;
+
+	m_tMapping = lMapping;
+	m_nMaster = 255;
 	mColonBlinkMode = 1;
 	//	curR = 255;  // default to full red
 	//	curG = 0;
@@ -92,7 +99,6 @@ void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping)
 	// UDP socket
 	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
 	assert(m_nHandle != -1);
-	
 }
 
 void DisplayWS28xx::Stop(){
@@ -101,13 +107,13 @@ void DisplayWS28xx::Stop(){
 
 void DisplayWS28xx::SetMaster(uint8_t value)
 {
-	master = value;
+	m_nMaster = value;
 }
 
 // set the current RGB values, remapping them to different LED strip mappings
 void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t idx)
 {
-	switch (l_mapping)
+	switch (m_tMapping)
 	{
 	case RGB:
 		curR = red;
@@ -300,10 +306,10 @@ void DisplayWS28xx::Show(const char *pTimecode)
 				break;
 			}
 
-			if (old_SC != pTimecode[7]) // seconds have changed
+			if (nSecondsPrevious != pTimecode[7]) // seconds have changed
 			{
 				ms_colon_blink = m_nMillis + 1000;
-				old_SC = pTimecode[7];
+				nSecondsPrevious = pTimecode[7];
 				outR = 0;				outG = 0;				outB = 0;
 			}
 			else if (m_nMillis < ms_colon_blink)
@@ -356,7 +362,7 @@ void DisplayWS28xx::ShowMessage(const char *pMessage)
 		oR = msgR; 		oG = msgG;		oB = msgB;
 	}
 
-	for (int cnt = 0; (cnt < WS28XX_MAX_MSG_SIZE) && (cnt < NUM_OF_DIGITS); cnt++)
+	for (int cnt = 0; (cnt < WS28XX_MAX_MSG_SIZE) && (cnt < WS28XX_NUM_OF_DIGITS); cnt++)
 	{
 		if (pMessage[cnt] != 0)
 			WriteChar(pMessage[cnt], cnt, oR, oG, oB);
@@ -365,7 +371,7 @@ void DisplayWS28xx::ShowMessage(const char *pMessage)
 	}
 
 	// blank colons
-	for (int cnt = 0; cnt < NUM_OF_COLONS; cnt++)
+	for (int cnt = 0; cnt < WS28XX_NUM_OF_COLONS; cnt++)
 		WriteColon(' ', cnt, 0, 0, 0); // 1st :
 	
 	m_WS28xx->Update();
@@ -379,11 +385,11 @@ void DisplayWS28xx::ShowSysTime(void)
 	ltime = time(0);
 	local_time = localtime(&ltime);
 
-	if (__builtin_expect(old_SC == (uint32_t) local_time->tm_sec, 1)) {
+	if (__builtin_expect(nSecondsPrevious == (uint32_t) local_time->tm_sec, 1)) {
 		return;
 	}
 
-	old_SC = local_time->tm_sec;
+	nSecondsPrevious = local_time->tm_sec;
 
 	WriteChar(' ',0,segR, segG, segB);
 	WriteChar(' ',1,segR, segG, segB);
@@ -406,11 +412,11 @@ void DisplayWS28xx::RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_
 	uint8_t red = R;
 	uint8_t green = G;
 	uint8_t blue = B;
-	if (master != 0 || master != 255)
+	if (m_nMaster != 0 || m_nMaster != 255)
 	{
-		red = (master * red) / 255;
-		green = (master * green) / 255;
-		blue = (master * blue) / 255;
+		red = (m_nMaster * red) / 255;
+		green = (m_nMaster * green) / 255;
+		blue = (m_nMaster * blue) / 255;
 	}
 
 	uint16_t cur_seg_base = cur_digit_base + (cur_segment * LEDS_PER_SEGMENT);
@@ -453,17 +459,17 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 	uint8_t red = R;
 	uint8_t green = G;
 	uint8_t blue = B;
-	if (master != 0 || master != 255)
+	if (m_nMaster != 0 || m_nMaster != 255)
 	{
-		red = (master * red) / 255;
-		green = (master * green) / 255;
-		blue = (master * blue) / 255;
+		red = (m_nMaster * red) / 255;
+		green = (m_nMaster * green) / 255;
+		blue = (m_nMaster * blue) / 255;
 	}
 
 	if (nChar > sizeof(Seg7Array) || nChar < 0)
 		return;
 
-	uint16_t cur_digit_base = (NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
+	uint16_t cur_digit_base = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
 
 	bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 	for (uint16_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++)
@@ -477,4 +483,10 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 			m_WS28xx->SetLED(cnt, 0, 0, 0); // off
 		}
 	}
+}
+
+void DisplayWS28xx::Print(void) {
+	printf("Display WS28xx\n");
+	printf(" %d Digit(s), %d Colons, %d LED(S)\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
+	printf(" Type : %d\n", (int) m_tLedType); // TODO String format from lib-ws28xxdmx ?
 }
