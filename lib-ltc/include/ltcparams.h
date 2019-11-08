@@ -46,6 +46,7 @@ enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_RTPMIDI = (1 << 7)
 };
 
+// Note : This struct is almost size 32 bytes
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
@@ -178,7 +179,7 @@ public:
 		return m_tLtcParams.nOscPort;
 	}
 
-	bool IsWS28xxEnable(void) {
+	bool IsWS28xxEnabled(void) {
 		return (m_tLtcParams.nEnableWS28xx == 1);
 	}
 

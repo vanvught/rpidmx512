@@ -62,7 +62,6 @@
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
 #include "display.h"
-#include "displayws28xx.h"
 //
 #include "h3/ltcoutputs.h"
 
@@ -264,7 +263,6 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
-
 void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
@@ -357,35 +355,29 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
-				ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
-			
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '!')){
-				ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
-				ActionStop();
-				ActionStart();
-			} else {
-				DEBUG_PUTS("Invalid !start command");
-			}
-
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			ActionStop();
+			ActionStart();
+		} else {
+			DEBUG_PUTS("Invalid !start command");
+		}
 	} else if (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0) {
-			if (m_nBytesReceived == (4 + STOP_LENGTH)) {
-				ActionStop();
-			} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
-				ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
-			} else {
-				DEBUG_PUTS("Invalid !stop command");
-			}
-
+		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
+			ActionStop();
+		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
+			ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
+		} else {
+			DEBUG_PUTS("Invalid !stop command");
+		}
 	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
-			ActionResume();
-
+		ActionResume();
 	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
-			if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-				ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
-			}	
-			
-	}		
-	 else {
+		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
+			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+		}
+	} else {
 		DEBUG_PUTS("Invalid command");
 	}
 }

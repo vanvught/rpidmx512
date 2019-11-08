@@ -4,7 +4,7 @@ DEFINES = ARTNET_NODE DISPLAY_UDF CONSOLE_FB NDEBUG
 #
 LIBS = dmxmonitor
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

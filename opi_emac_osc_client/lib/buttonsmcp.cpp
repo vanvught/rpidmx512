@@ -29,7 +29,7 @@
 #include "buttonsmcp.h"
 #include "oscclient.h"
 
-#include "h3_board.h"
+#include "board/h3_opi_zero.h"
 #include "h3_gpio.h"
 
 #include "i2c.h"

@@ -37,9 +37,7 @@
 
 #include "i2c.h"
 
-#if !defined(RASPPI)
- #include "hardware.h"
-#endif
+#include "hardware.h"
 
 #define MCP23017_I2C_ADDRESS	0x20
 #define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
@@ -53,9 +51,7 @@ Display::Display(uint8_t nCols, uint8_t nRows):
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
 	m_bHave7Segment(false),
-#if !defined(RASPPI)
 	m_nMillis(Hardware::Get()->Millis()),
-#endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
 	s_pThis = this;
@@ -230,7 +226,7 @@ uint8_t Display::Write(uint8_t nLine, const char *pText) {
 		return 0;
 	}
 
-	while (*p != (char) 0) {
+	while (*p != 0) {
 		++p;
 	}
 
@@ -276,7 +272,6 @@ void Display::ClearLine(uint8_t nLine) {
 	m_LcdDisplay->ClearLine(nLine);
 }
 
-#if !defined(RASPPI)
 void Display::SetSleep(bool bSleep) {
 	if (m_LcdDisplay == 0) {
 		return;
@@ -290,7 +285,6 @@ void Display::SetSleep(bool bSleep) {
 		m_nMillis = Hardware::Get()->Millis();
 	}
 }
-#endif
 
 // Support for 2 digits 7-segment based on MCP23017
 
@@ -311,21 +305,19 @@ void Display::Status(TDisplay7SegmentMessages nStatus) {
 	}
 }
 
-void Display::TextStatus(const char* pText, TDisplay7SegmentMessages nStatus) {
+void Display::TextStatus(const char *pText, TDisplay7SegmentMessages nStatus) {
 	TextStatus(pText);
 	Status(nStatus);
 }
 
-#if !defined(RASPPI)
 void Display::Run(void) {
 	if (m_nSleepTimeout == 0) {
 		return;
 	}
 
 	if (!m_bIsSleep) {
-		if ((Hardware::Get()->Millis() - m_nMillis) > m_nSleepTimeout) {
+		if (__builtin_expect(((Hardware::Get()->Millis() - m_nMillis) > m_nSleepTimeout), 0)) {
 			SetSleep(true);
 		}
 	}
 }
-#endif

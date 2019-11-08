@@ -106,6 +106,8 @@ public:
 	// set a message to appear temporarily 
 	void SetMessage(const char *message, int size);
 
+	void Print(void);
+
 	// return a pointer to this instance
 	static DisplayWS28xx* Get(void) {
 		return s_pThis;

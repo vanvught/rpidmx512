@@ -32,6 +32,9 @@
 #include "ledblink.h"
 
 #include "console.h"
+#include "h3/showsystime.h"
+
+#include "ntpclient.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -43,6 +46,9 @@
 #include "artnet4params.h"
 
 #include "ipprog.h"
+#include "timecode.h"
+#include "timesync.h"
+
 #include "displayudfhandler.h"
 
  // Monitor Output
@@ -60,6 +66,7 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	ShowSystime showSystime;
 
 	fw.Print();
 
@@ -77,6 +84,10 @@ void notmain(void) {
 	nw.Init();
 	nw.Print();
 
+	NtpClient ntpClient;
+	ntpClient.Init();
+	ntpClient.Print();
+
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
@@ -90,6 +101,17 @@ void notmain(void) {
 
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
+
+	TimeCode timecode;
+	if (artnetparams.IsUseTimeCode()) {
+		timecode.Start();
+		node.SetTimeCodeHandler(&timecode);
+	}
+
+	TimeSync timesync;
+	if (artnetparams.IsUseTimeSync()) {
+		node.SetTimeSyncHandler(&timesync);
+	}
 
 	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
@@ -137,7 +159,9 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+		ntpClient.Run();
 		lb.Run();
+		showSystime.Run();
 		display.Run();
 	}
 }

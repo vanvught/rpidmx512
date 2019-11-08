@@ -102,7 +102,7 @@ void WS28xxDmxMulti::Stop(uint8_t nPort) {
 
 void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
 	assert(pData != 0);
-	assert(nLength <= DMX_MAX_CHANNELS);
+	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;

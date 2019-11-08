@@ -32,6 +32,10 @@
 #include "ledblink.h"
 
 #include "console.h"
+#include "h3/showsystime.h"
+
+#include "ntpclient.h"
+
 #include "display.h"
 
 #include "networkconst.h"
@@ -61,6 +65,7 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(DISPLAY_SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	ShowSystime showSystime;
 
 	fw.Print();
 
@@ -77,6 +82,10 @@ void notmain(void) {
 
 	nw.Init();
 	nw.Print();
+
+	NtpClient ntpClient;
+	ntpClient.Init();
+	ntpClient.Print();
 
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
@@ -128,7 +137,9 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		server.Run();
+		ntpClient.Run();
 		lb.Run();
+		showSystime.Run();
 		display.Run();
 	}
 }

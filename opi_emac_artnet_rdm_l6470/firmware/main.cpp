@@ -88,7 +88,7 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-//	SpiFlashInstall spiFlashInstall;
+	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 	StoreTLC59711 storeTLC59711;
 
@@ -216,19 +216,20 @@ void notmain(void) {
 
 	display.Show(&node);
 
-//	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET,  REMOTE_CONFIG_MODE_PIXEL, node.GetActiveOutputPorts());
-//
-//	StoreRemoteConfig storeRemoteConfig;
-//	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-//
-//	if(remoteConfigParams.Load()) {
-//		remoteConfigParams.Set(&remoteConfig);
-//		remoteConfigParams.Dump();
-//	}
-//
-//	while (spiFlashStore.Flash())
-//		;
+#if defined (ORANGE_PI)
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET,  REMOTE_CONFIG_MODE_PIXEL, node.GetActiveOutputPorts());
 
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
+#endif
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
@@ -245,7 +246,9 @@ void notmain(void) {
 		nw.Run();
 		node.Run();
 		identify.Run();
-//		remoteConfig.Run();
+#if defined (ORANGE_PI)
+		remoteConfig.Run();
+#endif
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();

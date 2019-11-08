@@ -36,6 +36,8 @@
 
 #if defined (H3)
  #include "./../lib-h3/include/net/net.h"
+ #include "display.h"
+ #include "display7segment.h"
 #endif
 
 #include "debug.h"
@@ -77,8 +79,17 @@ NtpClient::~NtpClient(void) {
 void NtpClient::Init(void) {
 	DEBUG_ENTRY
 
+	if (m_nServerIp == 0) {
+		DEBUG_EXIT
+		return;
+	}
+
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
+
+#if defined (H3)
+	Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+#endif
 
 	time_t nNow = Hardware::Get()->GetTime();
 	uint32_t nRetries;
@@ -130,6 +141,9 @@ void NtpClient::Init(void) {
 	}
 
 	if (m_tStatus == NTP_CLIENT_STATUS_STOPPED) {
+#if defined (H3)
+		Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+#endif
 		Network::Get()->End(NTP_UDP_PORT);
 	}
 
@@ -143,7 +157,7 @@ void NtpClient::Run(void) {
 	}
 
 	if (m_tStatus == NTP_CLIENT_STATUS_IDLE) {
-		if ((Hardware::Get()->GetTime() - m_LastPoll) > POLL_SECONDS) {
+		if (__builtin_expect(((Hardware::Get()->GetTime() - m_LastPoll) > POLL_SECONDS), 0)) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_RequestTime = Hardware::Get()->GetTime();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
@@ -158,9 +172,12 @@ void NtpClient::Run(void) {
 		uint16_t nFromPort;
 
 		if (Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort) != sizeof m_Reply) {
-			if ((Hardware::Get()->GetTime() - m_RequestTime) > TIMEOUT) {
+			if (__builtin_expect(((Hardware::Get()->GetTime() - m_RequestTime) > TIMEOUT), 0)) {
 				Network::Get()->End(NTP_UDP_PORT);
 				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
+#if defined (H3)
+				Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+#endif
 				DEBUG_PUTS("NTP_CLIENT_STATUS_STOPPED");
 			}
 			return;
@@ -196,6 +213,10 @@ void NtpClient::Run(void) {
 
 void NtpClient::Print(void) {
 	printf("NTP v%d Client\n", NTP_VERSION >> 3);
+	if (m_nServerIp == 0) {
+		printf(" Not enabled\n");
+		return;
+	}
 	printf(" Server : " IPSTR "\n", IP2STR(m_nServerIp));
 	printf(" Port   : %d\n", NTP_UDP_PORT);
 	printf(" Status : %d%c\n", (int) m_tStatus, m_tStatus == NTP_CLIENT_STATUS_STOPPED ? '!' : ' ');

@@ -32,7 +32,7 @@
 #include "buttonsgpio.h"
 #include "oscclient.h"
 
-#include "h3_board.h"
+#include "board/h3_opi_zero.h"
 #include "h3_gpio.h"
 
 #include "debug.h"
@@ -45,7 +45,7 @@
 #define BUTTON2_GPIO		GPIO_EXT_22		// PA2
 #define BUTTON3_GPIO		GPIO_EXT_15		// PA3
 
-#define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO) | (1 << BUTTON3_GPIO))
+#define INT_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO) | (1 << BUTTON3_GPIO))
 
 #define LED0_GPIO			GPIO_EXT_7		// PA6
 #define LED1_GPIO			GPIO_EXT_12		// PA7
@@ -84,8 +84,8 @@ bool ButtonsGpio::Start(void) {
 	value |= (GPIO_INT_CFG_NEG_EDGE << 0) | (GPIO_INT_CFG_NEG_EDGE << 4) | (GPIO_INT_CFG_NEG_EDGE << 8) | (GPIO_INT_CFG_NEG_EDGE << 12);
 	H3_PIO_PA_INT->CFG0 = value;
 
-	H3_PIO_PA_INT->CTL |= BUTTONS_MASK;
-	H3_PIO_PA_INT->STA = BUTTONS_MASK;
+	H3_PIO_PA_INT->CTL |= INT_MASK;
+	H3_PIO_PA_INT->STA = INT_MASK;
 	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
 
 #ifndef NDEBUG
@@ -117,10 +117,10 @@ void ButtonsGpio::Stop(void) {
 }
 
 void ButtonsGpio::Run(void) {
-	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
+	m_nButtons = H3_PIO_PA_INT->STA & INT_MASK;
 
 	if (__builtin_expect((m_nButtons != 0), 0)) {
-		H3_PIO_PA_INT->STA = BUTTONS_MASK;
+		H3_PIO_PA_INT->STA = INT_MASK;
 
 		DEBUG_PRINTF("%d-%d-%d-%d", BUTTON(BUTTON0_GPIO), BUTTON(BUTTON1_GPIO), BUTTON(BUTTON2_GPIO), BUTTON(BUTTON3_GPIO));
 

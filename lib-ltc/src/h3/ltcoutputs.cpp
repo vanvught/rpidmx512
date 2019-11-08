@@ -118,11 +118,11 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 		LtcLeds::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
 	}
 
+	Ltc::ItoaBase10((const struct TLtcTimeCode *) ptLtcTimeCode, m_aTimeCode);
+
 	if(!m_tLtcDisabledOutputs.bWS28xx) {
 		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
 	}
-
-	Ltc::ItoaBase10((const struct TLtcTimeCode *) ptLtcTimeCode, m_aTimeCode);
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
 		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);

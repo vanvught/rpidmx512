@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file showsystime.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef SHOWSYSTIME_H_
+#define SHOWSYSTIME_H_
 
-static const char SOFTWARE_VERSION[] = "1.2";
+class ShowSystime {
+public:
+	ShowSystime(void);
+	~ShowSystime(void);
 
-#endif /* SOFTWARE_VERSION_H_ */
+	void Run(void);
+
+private:
+	int m_nSecondsPrevious;
+};
+
+#endif /* SHOWSYSTIME_H_ */

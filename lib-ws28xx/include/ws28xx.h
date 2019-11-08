@@ -95,7 +95,7 @@ public:
 #if defined (__circle__)
 	bool IsUpdating (void) const; // returns TRUE while DMA operation is active
 #else
-	 	bool IsUpdating (void) const {
+	bool IsUpdating(void) const {
 		return false;
 	}
 #endif
