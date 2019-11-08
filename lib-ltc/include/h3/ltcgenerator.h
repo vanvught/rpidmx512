@@ -50,9 +50,6 @@ public:
 	void ActionSetStop(const char *pTimeCode);
 	void ActionSetRate(const char *pTimeCodeRate);
 
-	void ActionSetRGB(const char *hexRGB);
-	void ActionSetMessage(const char *message, int size);
-
 	static LtcGenerator* Get(void) {
 		return s_pThis;
 	}

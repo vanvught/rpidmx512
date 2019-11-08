@@ -89,14 +89,6 @@ static const char sResume[] ALIGNED = "resume";
 static const char sRate[] ALIGNED = "rate";
 #define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
 
-static const char sRGB[] ALIGNED = "rgb";
-#define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
-#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB 
-
-static const char sDisplayMSG[] ALIGNED = "showmsg";
-#define DMSG_LENGTH (sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
-#define DMSG_SIZE	(11)
-
 enum tUdpPort {
 	UDP_PORT = 0x5443
 };
@@ -272,23 +264,6 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionSetRGB(const char *hexRGB) {
-	DEBUG_ENTRY
-
-	DisplayWS28xx::Get()->SetRGB(hexRGB);
-
-	DEBUG_EXIT
-}
-
-
-void LtcGenerator::ActionSetMessage(const char *message, int size) {
-	DEBUG_ENTRY
-
-	DisplayWS28xx::Get()->SetMessage(message, size);
-
-	DEBUG_EXIT
-}
-
 
 void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
@@ -409,21 +384,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 				ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
 			}	
 			
-	} else if (memcmp(&m_Buffer[4], sDisplayMSG, DMSG_LENGTH) == 0) {
-			int nMlength = m_nBytesReceived - (4 + DMSG_LENGTH + 1);
-			printf("RX: %d  MsgLen: %d  Msg: %.*s\n",m_nBytesReceived, nMlength, nMlength, &m_Buffer[(4 + DMSG_LENGTH + 1)]);
-			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[4 + DMSG_LENGTH] == '#')) {							
-				ActionSetMessage((const char *)&m_Buffer[(4 + DMSG_LENGTH + 1)],nMlength);
-			}	
-		
-	} else if (memcmp(&m_Buffer[4], sRGB, RGB_LENGTH) == 0) {
-			if ((m_nBytesReceived == (4 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[4 + RGB_LENGTH] == '#')) {
-				ActionSetRGB((const char *)&m_Buffer[(4 + RGB_LENGTH + 1)]);
-			} else {
-				DEBUG_PUTS("Invalid !rgb command");
-			}
-		}
-		
+	}		
 	 else {
 		DEBUG_PUTS("Invalid command");
 	}

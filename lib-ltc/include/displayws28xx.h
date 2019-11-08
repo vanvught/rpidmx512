@@ -80,10 +80,10 @@ public:
 	~DisplayWS28xx(void);
 
 	void Init(uint8_t nIntensity, tWS28xxMapping lMapping);
-	void Blackout();
+	void Stop();
 
-    // testing
-	bool Run();
+	void Blackout();
+	void Run();
 
 	// display current TC
 	void Show(const char *pTimecode);
@@ -121,6 +121,9 @@ private:
 	TWS28XXType m_tLedType = WS2812;
   	tWS28xxMapping l_mapping = RGB;
 
+	uint8_t m_Buffer[64]; // UDP buffer
+	uint32_t m_nHandle = 0; // UDP handle
+
 	bool m_bShowSysTime;
 
 	uint8_t master = 255;
@@ -139,9 +142,6 @@ private:
 	uint8_t mColonBlinkMode = 1; // 0 = no blink; 1 = blink down; 2 = blink up
 	
 	uint8_t old_SC = 1;   // has seconds changed
-
-//	uint8_t level = 0;
-//	uint8_t onoff = 0;
 
 	// timers
 	uint32_t m_nMillis; // current timer clock in MS

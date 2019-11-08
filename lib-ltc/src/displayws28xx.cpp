@@ -33,9 +33,29 @@
 #include <assert.h>
 #include <stdint.h>
 #include "hardware.h"
+#include "network.h"
 
 #include "displayws28xx.h"
 #include "displayws28xx_font.h"
+
+#include "debug.h"
+
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
+static const char sRGB[] ALIGNED = "rgb";
+#define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
+#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB 
+
+static const char sDisplayMSG[] ALIGNED = "showmsg";
+#define DMSG_LENGTH (sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
+#define DMSG_SIZE	(11)
+
+enum tUdpPort {
+	WS28XX_UDP_PORT = 0x2812
+};
+
 
 DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
@@ -60,6 +80,7 @@ void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping)
 	m_WS28xx->SetGlobalBrightness(nIntensity);
 	l_mapping = lMapping;
 	master = 255;
+	mColonBlinkMode = 1;
 	//	curR = 255;  // default to full red
 	//	curG = 0;
 	//	curB = 0;
@@ -69,8 +90,15 @@ void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping)
 	colR = 0xff;
 	colG = 0xcc;
 	colB = 0x00;
+	
+	// UDP socket
+	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
+	assert(m_nHandle != -1);
+	
+}
 
-	mColonBlinkMode = 1;
+void DisplayWS28xx::Stop(){
+	m_nHandle = Network::Get()->End(WS28XX_UDP_PORT);
 }
 
 void DisplayWS28xx::SetMaster(uint8_t value)
@@ -152,18 +180,12 @@ void DisplayWS28xx::Blackout()
 	m_WS28xx->Blackout();
 }
 
-void DisplayWS28xx::SetMessage(const char *message_str, int size)
+void DisplayWS28xx::Run()
 {
-	if ((!message_str) || (!size))
-		return;
-	memset(&message, ' ', WS28XX_MAX_MSG_SIZE);
-	memcpy(&message, message_str, size);
-	s_msgTimer = Hardware::Get()->Millis() + 3000; // 3 seconds from now
-	bShowMsg = 1;
-}
+	uint32_t nIPAddressFrom;
+	uint16_t nForeignPort;
+	uint16_t m_nBytesReceived;
 
-bool DisplayWS28xx::Run()
-{
 	m_nMillis = Hardware::Get()->Millis(); // millis now
 
 	if (m_nMillis >= s_wsticker)
@@ -175,11 +197,51 @@ bool DisplayWS28xx::Run()
 			bShowMsg = 0;
 		else if (bShowMsg)
 			ShowMessage(message);
-
-		return 1;
 	}
-	return 0;
+
+	// UDP Socket
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
+		return;
+	}
+
+	if (__builtin_expect((memcmp("7seg", m_Buffer, 4) != 0), 0)) {
+		return;
+	}
+
+	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
+		DEBUG_PUTS("\'\\n\'");
+		m_nBytesReceived--;
+	}
+
+	if (m_Buffer[4] != '!') {
+		DEBUG_PUTS("Invalid command");
+		return;
+	}
+
+	if (memcmp(&m_Buffer[5], sDisplayMSG, DMSG_LENGTH) == 0) {
+			int nMlength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
+			printf("RX: %d  MsgLen: %d  Msg: %.*s\n",m_nBytesReceived, nMlength, nMlength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
+			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {							
+				SetMessage((const char *)&m_Buffer[(5 + DMSG_LENGTH + 1)],nMlength);
+			}	
+		
+	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
+			if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[5 + RGB_LENGTH] == '#')) {
+				SetRGB((const char *)&m_Buffer[(5 + RGB_LENGTH + 1)]);
+			} else {
+				DEBUG_PUTS("Invalid !rgb command");
+			}
+		}
+		
+	 else {
+		DEBUG_PUTS("Invalid command");
+	}
+
+
 }
+
 
 // Convert hexadecimal string to decimal value
 int DisplayWS28xx::hexadecimalToDecimal(const char *hexVal, int len)
@@ -267,6 +329,17 @@ void DisplayWS28xx::Show(const char *pTimecode)
 	}
 }
 
+void DisplayWS28xx::SetMessage(const char *message_str, int size)
+{
+	if ((!message_str) || (!size))
+		return;
+	memset(&message, ' ', WS28XX_MAX_MSG_SIZE);
+	memcpy(&message, message_str, size);
+	s_msgTimer = Hardware::Get()->Millis() + 3000; // 3 seconds from now
+	bShowMsg = 1;
+}
+
+
 void DisplayWS28xx::ShowMessage(const char *pMessage)
 {
 	uint8_t oR = 0, oG = 0, oB = 0;
@@ -285,7 +358,7 @@ void DisplayWS28xx::ShowMessage(const char *pMessage)
 		oR = msgR; 		oG = msgG;		oB = msgB;
 	}
 
-	for (int cnt = 0; cnt < WS28XX_MAX_MSG_SIZE; cnt++)
+	for (int cnt = 0; (cnt < WS28XX_MAX_MSG_SIZE) && (cnt < NUM_OF_DIGITS); cnt++)
 	{
 		if (pMessage[cnt] != 0)
 			WriteChar(pMessage[cnt], cnt, oR, oG, oB);
@@ -294,10 +367,9 @@ void DisplayWS28xx::ShowMessage(const char *pMessage)
 	}
 
 	// blank colons
-	WriteColon(' ', 0, 0, 0, 0); // 1st :
-	WriteColon(' ', 1, 0, 0, 0); // 2nd :
-	WriteColon(' ', 2, 0, 0, 0); // 3rd :
-
+	for (int cnt = 0; cnt < NUM_OF_COLONS; cnt++)
+		WriteColon(' ', cnt, 0, 0, 0); // 1st :
+	
 	m_WS28xx->Update();
 }
 
