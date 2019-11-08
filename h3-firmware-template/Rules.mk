@@ -143,6 +143,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
+#	$(MAKE) -f Makefile.H3 clean --directory=../lib-nextion
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
 
 builddirs:
