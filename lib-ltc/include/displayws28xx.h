@@ -97,7 +97,7 @@ public:
 	void SetMaster(uint8_t value);
 	
 	// write a character from to digits 0..7
-	void WriteChar(const uint8_t nChar, uint8_t nPos = 0, uint8_t R = 255, uint8_t G = 255, uint8_t B = 255);
+	void WriteChar(uint8_t nChar, uint8_t nPos = 0, uint8_t R = 255, uint8_t G = 255, uint8_t B = 255);
 	// write a colon if ':' or '.' to a colon at nPos = 0,1,2
 	void WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R = 128, uint8_t G = 128, uint8_t B = 128);
 
@@ -114,7 +114,7 @@ public:
 private:
 	// draw one segment of a digit
 	void RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_t cur_segment, uint8_t R, uint8_t G, uint8_t B);
-	int hexadecimalToDecimal(const char *hexVal, int len = 6);
+	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
 	void ShowMessage(const char pMessage[]);
 
 private:

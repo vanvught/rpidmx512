@@ -29,14 +29,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 #include <assert.h>
-#include <stdint.h>
-#include "hardware.h"
-#include "network.h"
 
 #include "displayws28xx.h"
 #include "displayws28xx_font.h"
+
+#include "hardware.h"
+#include "network.h"
 
 #include "debug.h"
 
@@ -55,7 +55,6 @@ static const char sDisplayMSG[] ALIGNED = "showmsg";
 enum tUdpPort {
 	WS28XX_UDP_PORT = 0x2812
 };
-
 
 DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
@@ -246,26 +245,25 @@ void DisplayWS28xx::Run()
 
 }
 
-
 // Convert hexadecimal string to decimal value
-int DisplayWS28xx::hexadecimalToDecimal(const char *hexVal, int len)
-{
-	int base = 1;
-	int dec_val = 0;
-	for (int i = len - 1; i >= 0; i--)
-	{
-		if (hexVal[i] >= '0' && hexVal[i] <= '9')
-		{
-			dec_val += (hexVal[i] - 48) * base;
-			base = base * 16;
+uint32_t DisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
+	char *src = (char *) pHexValue;
+	uint32_t ret = 0;
+	uint8_t nibble;
+
+	while (nLength-- > 0) {
+		const char d = *src;
+
+		if (isxdigit((int) d) == 0) {
+			break;
 		}
-		else if (hexVal[i] >= 'A' && hexVal[i] <= 'F')
-		{
-			dec_val += (hexVal[i] - 55) * base;
-			base = base * 16;
-		}
+
+		nibble = d > '9' ? (d | 0x20) - 'a' + 10 : (d - '0');
+		ret = (ret << 4) | nibble;
+		src++;
 	}
-	return dec_val;
+
+	return ret;
 }
 
 void DisplayWS28xx::Show(const char *pTimecode)
@@ -427,13 +425,15 @@ void DisplayWS28xx::RenderSegment(uint8_t OnOff, uint16_t cur_digit_base, uint8_
 	}
 }
 
-void DisplayWS28xx::WriteChar(const uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G, uint8_t B)
+void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G, uint8_t B)
 {
-	if (nChar > sizeof(Seg7Array) || nChar < 0)
+	if (nChar > sizeof(Seg7Array))
 		return;
-	uint16_t cur_digit_base = nPos * SEGMENTS_PER_DIGIT;
+
+	const uint32_t cur_digit_base = nPos * SEGMENTS_PER_DIGIT;
 
 	uint8_t chr;
+
 	if (nChar & (1 << 7)) // use custom bitmap
 		chr = nChar;
 	else
@@ -453,6 +453,10 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 	uint8_t red = R;
 	uint8_t green = G;
 	uint8_t blue = B;
+//
+//	if (nChar > sizeof(Seg7Array)) // Seg7Array is not used here
+//		return;
+
 	if (m_nMaster != 0 || m_nMaster != 255)
 	{
 		red = (m_nMaster * red) / 255;
@@ -460,13 +464,10 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 		blue = (m_nMaster * blue) / 255;
 	}
 
-	if (nChar > sizeof(Seg7Array) || nChar < 0)
-		return;
+	const uint32_t cur_digit_base = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
+	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
-	uint16_t cur_digit_base = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
-
-	bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
-	for (uint16_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++)
+	for (uint32_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++)
 	{
 		if (OnOff)
 		{
