@@ -268,12 +268,6 @@ int DisplayWS28xx::hexadecimalToDecimal(const char *hexVal, int len)
 	return dec_val;
 }
 
-// return absolute number of given integer n
-inline int abs(int n)
-{
-	return n * ((n < 0) * (-1) + (n > 0));
-}
-
 void DisplayWS28xx::Show(const char *pTimecode)
 {	
 	if (!bShowMsg) // if not showing temporary message
