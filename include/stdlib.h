@@ -2,7 +2,7 @@
  * @file stdlib.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,11 @@ extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void *calloc(size_t nmemb, size_t size);
 extern void *realloc(void *ptr, size_t size);
+
+/* Return the absolute value of I.  */
+inline static int abs(int i) {
+	return i < 0 ? -i : i;
+}
 
 #ifdef __cplusplus
 }
