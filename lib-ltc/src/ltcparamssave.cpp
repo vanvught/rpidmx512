@@ -92,9 +92,7 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
 
-#if 0
 	builder.Add(LtcParamsConst::WS28XX_ENABLE, m_tLtcParams.nEnableWS28xx, isMaskSet(LTC_PARAMS_MASK_ENABLE_WS28XX));
-#endif
 
 	nSize = builder.GetSize();
 
