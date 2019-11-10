@@ -82,7 +82,7 @@ NtpClient::~NtpClient(void) {
 	Network::Get()->End(NTP_UDP_PORT);
 }
 
-void NtpClient::SetUtcOffset(bool fUtcOffset) {
+void NtpClient::SetUtcOffset(float fUtcOffset) {
 	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 	int32_t nInt = (int32_t) fUtcOffset;
 

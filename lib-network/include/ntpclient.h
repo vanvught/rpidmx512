@@ -56,7 +56,7 @@ public:
 	}
 
 private:
-	void SetUtcOffset(bool fUtcOffset);
+	void SetUtcOffset(float fUtcOffset);
 
 private:
 	static NtpClient *s_pThis;
