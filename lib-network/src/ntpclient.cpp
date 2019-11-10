@@ -158,7 +158,7 @@ void NtpClient::Init(void) {
 				DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 
 				if(Hardware::Get()->SetTime(hwTime)) {
-					m_MillisLastPoll = Hardware::Get()->GetTime();
+					m_MillisLastPoll = Hardware::Get()->Millis();
 					m_tStatus = NTP_CLIENT_STATUS_IDLE;
 				}
 
@@ -186,7 +186,7 @@ void NtpClient::Run(void) {
 	}
 
 	if (m_tStatus == NTP_CLIENT_STATUS_IDLE) {
-		if (__builtin_expect(((Hardware::Get()->GetTime() - m_MillisLastPoll) > POLL_SECONDS), 0)) {
+		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_MillisRequest = Hardware::Get()->Millis();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
