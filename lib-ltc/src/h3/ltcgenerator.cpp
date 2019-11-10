@@ -360,6 +360,11 @@ void LtcGenerator::HandleUdpRequest(void) {
 			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 			ActionStop();
 			ActionStart();
+		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
+			ActionStop();
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);			
+			ActionStart();
+			ActionStop();			
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
