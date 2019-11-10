@@ -11,9 +11,11 @@ PLATFORM?=ORANGE_PI
 CONSOLE?=
 
 SUFFIX=orangepi_zero
+BUILD_TXT=0
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	SUFFIX=orangepi_one
+	BUILD_TXT=1
 endif
 
 COND=
@@ -159,7 +161,7 @@ clean:
 	rm -f $(LIST)
 	rm -f $(SUFFIX).uImage
 	rm -f $(SUFFIX).uImage.gz
-	rm -f build?.txt
+	rm -f build$(BUILD_TXT).txt
 	for d in $(LIBDEP); \
 		do                               \
 			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \

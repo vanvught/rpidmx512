@@ -27,23 +27,46 @@
 #define H3_SYSTIMEREADER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
 
 #include "ltc.h"
+#include "midi.h"
 
 class SystimeReader {
 public:
-	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, enum TTimecodeTypes tTimecodeType);
+	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps);
 	~SystimeReader(void);
 
 	void Start(void);
 	void Run(void);
 
+	void Print(void);
+
+	// Control
+	void ActionStart(void);
+	void ActionStop(void);
+	void ActionSetRate(const char *pTimeCodeRate);
+
+	static SystimeReader *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	void HandleUdpRequest(void);
+
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	enum TTimecodeTypes m_tTimecodeType;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
-};
+	time_t m_ntimePrevious;
+	struct _midi_send_tc m_tMidiTimeCode;
+	int m_nHandle;
+	uint8_t m_Buffer[64];
+	int m_nBytesReceived;
+	bool m_bIsStarted;
 
+	static SystimeReader *s_pThis;
+};
 
 #endif /* H3_SYSTIMEREADER_H_ */

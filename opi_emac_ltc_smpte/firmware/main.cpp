@@ -76,6 +76,7 @@
 #include "h3/tcnetreader.h"
 #include "h3/ltcgenerator.h"
 #include "h3/rtpmidireader.h"
+#include "h3/systimereader.h"
 #include "h3/ltcoutputs.h"
 
 #include "spiflashinstall.h"
@@ -152,6 +153,7 @@ void notmain(void) {
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&tLtcDisabledOutputs);
 	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
+	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
 
 	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
@@ -250,6 +252,9 @@ void notmain(void) {
 		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidiReader.Start();
 		break;
+	case LTC_READER_SOURCE_SYSTIME:
+		sysTimeReader.Start();
+		break;
 	default:
 		ltcReader.Start();
 		break;
@@ -262,7 +267,7 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 	}
 
-	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL) && ltcParams.IsOscEnabled());
+	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL || source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsOscEnabled());
 
 	if (bRunOSCServer) {
 		bool isSet;
@@ -353,6 +358,9 @@ void notmain(void) {
 			break;
 		case LTC_READER_SOURCE_APPLEMIDI:
 			rtpMidiReader.Run();	// Handles status led
+			break;
+		case LTC_READER_SOURCE_SYSTIME:
+			sysTimeReader.Run();
 			break;
 		default:
 			break;

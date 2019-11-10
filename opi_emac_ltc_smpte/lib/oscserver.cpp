@@ -34,6 +34,7 @@
 #include "network.h"
 
 #include "h3/ltcgenerator.h"
+#include "h3/systimereader.h"
 
 #include "debug.h"
 
@@ -109,8 +110,10 @@ void OSCServer::Run(void) {
 
 		if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
+				//
 				LtcGenerator::Get()->ActionStart();
-
+				SystimeReader::Get()->ActionStart();
+				//
 				DEBUG_PUTS("ActionStart");
 			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + 1 + VALUE_LENGTH))) {
 				if (m_pBuffer[m_nPathLength + START_LENGTH] == '/') {
@@ -139,7 +142,10 @@ void OSCServer::Run(void) {
 			}
 		} else if (memcmp(&m_pBuffer[m_nPathLength], sStop, STOP_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + STOP_LENGTH))) {
+				//
 				LtcGenerator::Get()->ActionStop();
+				SystimeReader::Get()->ActionStop();
+				//
 				DEBUG_PUTS("ActionStop");
 			} else if ((nCommandLength == (m_nPathLength + STOP_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
 				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], sSet, SET_LENGTH) == 0) {
