@@ -1,5 +1,5 @@
 /**
- * @file ltcgenerator.h
+ * @file systimereader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,55 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCGENERATOR_H_
-#define H3_LTCGENERATOR_H_
-
 #include <stdint.h>
+#include <assert.h>
+
+#include "h3/systimereader.h"
 
 #include "ltc.h"
+#include "timecodeconst.h"
 
-class LtcGenerator {
-public:
-	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcGenerator(void);
+#include "c/led.h"
 
-	void Start(void);
-	void Stop(void);
+#include "arm/arm.h"
+#include "arm/synchronize.h"
 
-	void Run(void);
+#include "h3_hs_timer.h"
+#include "h3_timer.h"
+#include "irq_timer.h"
 
-	void Print(void);
+#include "debug.h"
 
-	// Control
-	void ActionStart(void);
-	void ActionStop(void);
-	void ActionResume(void);
-	void ActionSetStart(const char *pTimeCode);
-	void ActionSetStop(const char *pTimeCode);
-	void ActionSetRate(const char *pTimeCodeRate);
+// IRQ Timer0
+static volatile bool bTimeCodeAvailable;
 
-	static LtcGenerator* Get(void) {
-		return s_pThis;
-	}
+static void irq_timer0_handler(uint32_t clo) {
+	bTimeCodeAvailable = true;
+}
 
-private:
-	void HandleButtons(void);
-	void HandleUdpRequest(void);
-	void Update(void);
-	void Increment(void);
+SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, enum TTimecodeTypes tTimecodeType) :
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
+	m_tTimecodeType(tTimecodeType)
+{
+	assert(m_ptLtcDisabledOutputs != 0);
 
-private:
-	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
-	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
-	uint8_t m_nFps;
-	uint32_t m_nTimer0Interval;
-	uint32_t m_nButtons;
-	int m_nHandle;
-	uint8_t m_Buffer[64];
-	int m_nBytesReceived;
-	bool m_bIsStarted;
+	m_nFps = TimeCodeConst::FPS[(int) m_tTimecodeType];
+	m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) m_tTimecodeType];
+}
 
-	static LtcGenerator *s_pThis;
-};
+SystimeReader::~SystimeReader(void) {
+}
 
-#endif /* H3_LTCGENERATOR_H_ */
+void SystimeReader::Start(void) {
+	irq_timer_init();
+	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_handler);
+
+	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
+	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+
+	led_set_ticks_per_second(LED_TICKS_DATA);
+}
+
+void SystimeReader::Run(void) {
+}

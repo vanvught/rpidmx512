@@ -1,5 +1,5 @@
 /**
- * @file ltcgenerator.h
+ * @file systimereader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,55 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCGENERATOR_H_
-#define H3_LTCGENERATOR_H_
+#ifndef H3_SYSTIMEREADER_H_
+#define H3_SYSTIMEREADER_H_
 
 #include <stdint.h>
 
 #include "ltc.h"
 
-class LtcGenerator {
+class SystimeReader {
 public:
-	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcGenerator(void);
+	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, enum TTimecodeTypes tTimecodeType);
+	~SystimeReader(void);
 
 	void Start(void);
-	void Stop(void);
-
 	void Run(void);
 
-	void Print(void);
-
-	// Control
-	void ActionStart(void);
-	void ActionStop(void);
-	void ActionResume(void);
-	void ActionSetStart(const char *pTimeCode);
-	void ActionSetStop(const char *pTimeCode);
-	void ActionSetRate(const char *pTimeCodeRate);
-
-	static LtcGenerator* Get(void) {
-		return s_pThis;
-	}
-
 private:
-	void HandleButtons(void);
-	void HandleUdpRequest(void);
-	void Update(void);
-	void Increment(void);
-
-private:
-	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
-	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	enum TTimecodeTypes m_tTimecodeType;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
-	uint32_t m_nButtons;
-	int m_nHandle;
-	uint8_t m_Buffer[64];
-	int m_nBytesReceived;
-	bool m_bIsStarted;
-
-	static LtcGenerator *s_pThis;
 };
 
-#endif /* H3_LTCGENERATOR_H_ */
+
+#endif /* H3_SYSTIMEREADER_H_ */
