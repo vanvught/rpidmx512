@@ -85,7 +85,6 @@ NtpClient::NtpClient(uint32_t nServerIp):
 }
 
 NtpClient::~NtpClient(void) {
-	Network::Get()->End(NTP_UDP_PORT);
 }
 
 void NtpClient::SetUtcOffset(float fUtcOffset) {
@@ -116,13 +115,15 @@ void NtpClient::Init(void) {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
+	DEBUG_PRINTF("m_nHandle=%d", m_nHandle);
+
 #if defined (H3)
 	Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
 #endif
 
 	const uint32_t nNow = Hardware::Get()->Millis();
 	uint32_t nRetries;
-	uint32_t nBytesReceived;
+	uint16_t nBytesReceived;
 
 	for (nRetries = 0; nRetries < RETRIES; nRetries++) {
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
@@ -145,7 +146,7 @@ void NtpClient::Init(void) {
 				continue;
 			}
 
-			debug_dump((void *)&m_Reply, sizeof m_Reply);
+			debug_dump((void *)&m_Reply, nBytesReceived);
 
 			if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
 				m_InitTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
@@ -173,7 +174,6 @@ void NtpClient::Init(void) {
 #if defined (H3)
 		Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
 #endif
-		Network::Get()->End(NTP_UDP_PORT);
 	}
 
 	DEBUG_PRINTF("nBytesReceived=%d, nRetries=%d, m_tStatus=%d", nBytesReceived, nRetries, (int) m_tStatus);
@@ -190,7 +190,7 @@ void NtpClient::Run(void) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_MillisRequest = Hardware::Get()->Millis();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
-			DEBUG_PUTS("NTP_CLIENT_STATUS_WAITING");
+			DEBUG_PRINTF("NTP_CLIENT_STATUS_WAITING - %d", m_MillisRequest);
 		}
 
 		return;
@@ -200,24 +200,28 @@ void NtpClient::Run(void) {
 		uint32_t nFromIp;
 		uint16_t nFromPort;
 
-		if (Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort) != sizeof m_Reply) {
-			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
-				Network::Get()->End(NTP_UDP_PORT);
+		const uint32_t nNow = Hardware::Get()->Millis();
+		const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort);
+
+		if (nBytesReceived != sizeof m_Reply) {
+			if (__builtin_expect(((nNow - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
+				DEBUG_PRINTF("NTP_CLIENT_STATUS_STOPPED - %d", nNow);
 #if defined (H3)
 				Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
 #endif
-				DEBUG_PUTS("NTP_CLIENT_STATUS_STOPPED");
 			}
 			return;
 		}
+
+		DEBUG_PRINTF("nBytesReceived=%d", nBytesReceived);
 
 		if (__builtin_expect((nFromIp != m_nServerIp), 0)) {
 			DEBUG_PUTS("nFromIp != m_nServerIp");
 			return;
 		}
 
-		debug_dump((void *)&m_Reply, sizeof m_Reply);
+		debug_dump((void *)&m_Reply, nBytesReceived);
 
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
 			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);

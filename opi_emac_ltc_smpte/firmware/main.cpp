@@ -280,7 +280,7 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
 	}
 
-	const bool bEnableNtp = ltcParams.IsNtpEnabled();
+	const bool bEnableNtp = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NTP_CLIENT_STATUS_STOPPED);
 
 	if (bEnableNtp) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
