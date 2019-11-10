@@ -69,8 +69,8 @@ private:
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
 	time_t m_InitTime;
-	time_t m_RequestTime;
-	time_t m_LastPoll;
+	uint32_t m_MillisRequest;
+	uint32_t m_MillisLastPoll;
 };
 
 #endif /* NTPCLIENT_H_ */

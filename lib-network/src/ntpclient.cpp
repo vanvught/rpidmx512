@@ -27,6 +27,12 @@
 #undef NDEBUG
 #endif
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -47,7 +53,7 @@
 #include "debug.h"
 
 #define RETRIES			3
-#define TIMEOUT			3 		// seconds
+#define TIMEOUT_MILLIS	3000 	// 3 seconds
 #define POLL_SECONDS	1024	// 2ˆ10
 
 NtpClient *NtpClient::s_pThis = 0;
@@ -57,8 +63,8 @@ NtpClient::NtpClient(uint32_t nServerIp):
 	m_nHandle(-1),
 	m_tStatus(NTP_CLIENT_STATUS_STOPPED),
 	m_InitTime(0),
-	m_RequestTime(0),
-	m_LastPoll(0)
+	m_MillisRequest(0),
+	m_MillisLastPoll(0)
 {
 	DEBUG_ENTRY
 
@@ -114,7 +120,7 @@ void NtpClient::Init(void) {
 	Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
 #endif
 
-	time_t nNow = Hardware::Get()->GetTime();
+	const uint32_t nNow = Hardware::Get()->Millis();
 	uint32_t nRetries;
 	uint32_t nBytesReceived;
 
@@ -128,7 +134,7 @@ void NtpClient::Init(void) {
 #if defined (H3)
 			net_handle();
 #endif
-			if ((Hardware::Get()->GetTime() - nNow) > TIMEOUT) {
+			if ((Hardware::Get()->Millis() - nNow) > TIMEOUT_MILLIS) {
 				break;
 			}
 		}
@@ -152,7 +158,7 @@ void NtpClient::Init(void) {
 				DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 
 				if(Hardware::Get()->SetTime(hwTime)) {
-					m_LastPoll = Hardware::Get()->GetTime();
+					m_MillisLastPoll = Hardware::Get()->GetTime();
 					m_tStatus = NTP_CLIENT_STATUS_IDLE;
 				}
 
@@ -180,9 +186,9 @@ void NtpClient::Run(void) {
 	}
 
 	if (m_tStatus == NTP_CLIENT_STATUS_IDLE) {
-		if (__builtin_expect(((Hardware::Get()->GetTime() - m_LastPoll) > POLL_SECONDS), 0)) {
+		if (__builtin_expect(((Hardware::Get()->GetTime() - m_MillisLastPoll) > POLL_SECONDS), 0)) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
-			m_RequestTime = Hardware::Get()->GetTime();
+			m_MillisRequest = Hardware::Get()->Millis();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
 			DEBUG_PUTS("NTP_CLIENT_STATUS_WAITING");
 		}
@@ -195,7 +201,7 @@ void NtpClient::Run(void) {
 		uint16_t nFromPort;
 
 		if (Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort) != sizeof m_Reply) {
-			if (__builtin_expect(((Hardware::Get()->GetTime() - m_RequestTime) > TIMEOUT), 0)) {
+			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				Network::Get()->End(NTP_UDP_PORT);
 				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
 #if defined (H3)
@@ -216,7 +222,7 @@ void NtpClient::Run(void) {
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
 			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
 			Hardware::Get()->SetSysTime(nTime);
-			m_LastPoll = Hardware::Get()->GetTime();
+			m_MillisLastPoll = Hardware::Get()->Millis();
 
 #ifndef NDEBUG
 			DEBUG_PRINTF("nTime=%u", (unsigned) nTime);
