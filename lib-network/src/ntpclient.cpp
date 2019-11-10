@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,6 +66,8 @@ NtpClient::NtpClient(uint32_t nServerIp):
 		m_nServerIp = Network::Get()->GetNtpServerIp();
 	}
 
+	SetUtcOffset(Network::Get()->GetNtpUtcOffset());
+
 	memset(&m_Request, 0, sizeof m_Request);
 
 	m_Request.LiVnMode = NTP_VERSION | NTP_MODE_CLIENT;
@@ -74,6 +80,23 @@ NtpClient::NtpClient(uint32_t nServerIp):
 
 NtpClient::~NtpClient(void) {
 	Network::Get()->End(NTP_UDP_PORT);
+}
+
+void NtpClient::SetUtcOffset(bool fUtcOffset) {
+	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+	int32_t nInt = (int32_t) fUtcOffset;
+
+	DEBUG_PRINTF("fUtcOffset=%f, nInt=%d", fUtcOffset, nInt);
+
+	if ((nInt >= -12) && (nInt <= 14)) {
+		DEBUG_PUTS("");
+		if (fUtcOffset == (float) nInt) {
+			m_nUtcOffset = nInt * 3600;
+			DEBUG_PRINTF("m_nUtcOffset=%d", m_nUtcOffset);
+		} else {
+			// TODO
+		}
+	}
 }
 
 void NtpClient::Init(void) {
@@ -119,7 +142,7 @@ void NtpClient::Init(void) {
 			debug_dump((void *)&m_Reply, sizeof m_Reply);
 
 			if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
-				m_InitTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA);
+				m_InitTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
 				DEBUG_PRINTF("m_InitTime=%u", (unsigned) m_InitTime);
 
 				struct tm *pLocalTime = localtime(&m_InitTime);
@@ -191,7 +214,7 @@ void NtpClient::Run(void) {
 		debug_dump((void *)&m_Reply, sizeof m_Reply);
 
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
-			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA);
+			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
 			Hardware::Get()->SetSysTime(nTime);
 			m_LastPoll = Hardware::Get()->GetTime();
 
@@ -218,7 +241,8 @@ void NtpClient::Print(void) {
 		return;
 	}
 	printf(" Server : " IPSTR "\n", IP2STR(m_nServerIp));
-	printf(" Port   : %d\n", NTP_UDP_PORT);
+	printf(" Port : %d\n", NTP_UDP_PORT);
 	printf(" Status : %d%c\n", (int) m_tStatus, m_tStatus == NTP_CLIENT_STATUS_STOPPED ? '!' : ' ');
-	printf(" Time   : %s", asctime(localtime((const time_t *) &m_InitTime)));
+	printf(" Time : %s", asctime(localtime((const time_t *) &m_InitTime)));
+	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 }

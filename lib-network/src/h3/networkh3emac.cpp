@@ -79,6 +79,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	m_IsDhcpUsed = params.isDhcpUsed();
 	m_nNtpServerIp = params.GetNtpServer();
+	m_fNtpUtcOffset = params.GetNtpUtcOffset();
 
 	const uint8_t *p = (const uint8_t *) params.GetHostName();
 

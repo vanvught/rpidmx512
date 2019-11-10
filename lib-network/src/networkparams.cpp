@@ -110,6 +110,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	uint8_t value8;
 	uint32_t value32;
 	uint8_t len;
+	float f;
 
 	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
 		m_tNetworkParams.bIsDhcpUsed = !(value8 == 0);
@@ -154,6 +155,15 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		m_tNetworkParams.nNtpServerIp = value32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NTP_SERVER;
 		return;
+	}
+
+	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, &f) == SSCAN_OK) {
+		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+		if (((int32_t) f >= -12) && ((int32_t) f <= 14)) {
+			m_tNetworkParams.fNtpUtcOffset = f;
+			m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NTP_UTC_OFFSET;
+			return;
+		}
 	}
 }
 

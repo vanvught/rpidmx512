@@ -97,6 +97,7 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmTftpClient;
 	private JMenuItem mntmVersion;
 	private JMenuItem mntmLtcGenerator;
+	private JMenuItem mntmWsxxDisplay;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -381,6 +382,30 @@ public class RemoteConfig extends JFrame {
 				}	
 			}
 		});
+		
+		mntmWsxxDisplay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							WS28xxDisplay client = new WS28xxDisplay(pi.getAddress());
+							client.Show();
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for WS28xx Display to run.");
+				}
+			}
+		});
 	}
 
 	private void InitComponents() {
@@ -441,6 +466,10 @@ public class RemoteConfig extends JFrame {
 		mntmTftpClient = new JMenuItem("TFTP Client");
 		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
 		mnRun.add(mntmTftpClient);
+		
+		mntmWsxxDisplay = new JMenuItem("WS28xx Display");
+		mntmWsxxDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.ALT_MASK));
+		mnRun.add(mntmWsxxDisplay);
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);

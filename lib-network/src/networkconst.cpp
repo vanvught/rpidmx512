@@ -34,5 +34,6 @@ alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
 alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
 alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
 alignas(uint32_t) const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
+alignas(uint32_t) const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
 
 alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
