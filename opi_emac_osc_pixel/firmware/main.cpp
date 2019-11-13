@@ -47,6 +47,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#include "ws28xx.h"
 #include "handler.h"
 #include "storews28xxdmx.h"
 // PWM Led
@@ -144,7 +145,7 @@ void notmain(void) {
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
 
 		if (ws28xxparms.IsLedGrouping()) {
 			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
@@ -152,7 +153,7 @@ void notmain(void) {
 			ws28xxparms.Set(pWS28xxDmxGrouping);
 			pSpi = pWS28xxDmxGrouping;
 
-			display.Printf(7, "%s:%d G", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+			display.Printf(7, "%s:%d G", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 			pHandler = new Handler(pWS28xxDmxGrouping);
 			assert(pHandler != 0);
@@ -175,7 +176,7 @@ void notmain(void) {
 				}
 			}
 
-			display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
+			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
 
 			pHandler = new Handler(pWS28xxDmx);
 			assert(pHandler != 0);

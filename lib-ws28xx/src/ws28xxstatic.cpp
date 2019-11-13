@@ -1,5 +1,5 @@
 /**
- * @file handler.cpp
+ * @file ws28xxstatic.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,55 +24,26 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
-#include "handler.h"
-
-#include "ws28xxdmx.h"
-#include "ws28xxdmxparams.h"
 #include "ws28xx.h"
+#include "ws28xxconst.h"
 
-#include "oscsend.h"
+const char* WS28xx::GetLedTypeString(TWS28XXType tType) {
+	assert(tType < WS28XX_UNDEFINED);
 
-#include "debug.h"
-
-Handler::Handler(WS28xxDmx *pWS28xxDmx):
-	m_pWS28xxDmx(pWS28xxDmx),
-	m_nLedCount(pWS28xxDmx->GetLEDCount()),
-	m_pLedTypeString((char *)WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()))
-{
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
+	return WS28xxConst::TYPES[tType];
 }
 
-Handler::~Handler(void) {
-	DEBUG_ENTRY
+TWS28XXType WS28xx::GetLedTypeString(const char *pVale) {
+	assert(pVale != 0);
 
-	DEBUG_EXIT
-}
+	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
+		if (strcasecmp(pVale, WS28xxConst::TYPES[i]) == 0) {
+			return (TWS28XXType) i;
+		}
+	}
 
-void Handler::Blackout(void) {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(true);
-
-	DEBUG_EXIT
-}
-
-void Handler::Update(void) {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(false);
-
-	DEBUG_EXIT
-}
-
-void Handler::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
-	DEBUG_ENTRY
-
-	OSCSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
-	OSCSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
-
-	DEBUG_EXIT
+	return WS28XX_UNDEFINED;
 }

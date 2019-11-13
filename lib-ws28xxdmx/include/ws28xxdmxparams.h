@@ -118,8 +118,6 @@ public:
 	}
 
 public:
-	static const char *GetLedTypeString(TWS28XXType tType);
-	static TWS28XXType GetLedTypeString(const char *pVale);
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

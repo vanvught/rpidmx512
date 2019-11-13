@@ -60,6 +60,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#include "ws28xx.h"
 #if defined(ORANGE_PI)
  #include "storews28xxdmx.h"
 #endif
@@ -186,7 +187,7 @@ void notmain(void) {
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
 
 		if (ws28xxparms.IsLedGrouping()) {
 			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;

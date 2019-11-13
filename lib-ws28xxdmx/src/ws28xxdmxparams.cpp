@@ -23,8 +23,10 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -42,6 +44,7 @@
 #include "ws28xxdmxparams.h"
 
 #include "ws28xx.h"
+#include "ws28xxconst.h"
 #include "ws28xxdmx.h"
 
 #include "lightset.h"
@@ -50,9 +53,6 @@
 #include "sscan.h"
 
 #include "devicesparamsconst.h"
-
-#define WS28XX_TYPES_MAX_NAME_LENGTH 	8
-static const char sLetTypes[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH] ALIGNED = { "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0", "SK6812\0", "SK6812W", "APA102\0", "UCS1903", "UCS2903" };
 
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;
@@ -121,7 +121,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, buffer, &len) == SSCAN_OK) {
 		buffer[len] = '\0';
 		for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
-			if (strcasecmp(buffer, sLetTypes[i]) == 0) {
+			if (strcasecmp(buffer, WS28xxConst::TYPES[i]) == 0) {
 				m_tWS28xxParams.tLedType = (TWS28XXType) i;
 				m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_TYPE;
 				return;
@@ -237,24 +237,3 @@ bool WS28xxDmxParams::isMaskSet(uint32_t nMask) const {
 	return (m_tWS28xxParams.nSetList & nMask) == nMask;
 }
 
-/*
- * Static
- */
-
-const char* WS28xxDmxParams::GetLedTypeString(TWS28XXType tType) {
-	assert(tType < WS28XX_UNDEFINED);
-
-	return sLetTypes[tType];
-}
-
-TWS28XXType WS28xxDmxParams::GetLedTypeString(const char *pVale) {
-	assert(pVale != 0);
-
-	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
-		if (strcasecmp(pVale, sLetTypes[i]) == 0) {
-			return (TWS28XXType) i;
-		}
-	}
-
-	return WS28XX_UNDEFINED;
-}

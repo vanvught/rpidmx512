@@ -47,6 +47,7 @@
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
+#include "ws28xx.h"
 
 #include "software_version.h"
 
@@ -96,7 +97,7 @@ void notmain(void) {
 		WS28xxDmx *pSPISend = new WS28xxDmx;
 		deviceparams.Dump();
 		deviceparams.Set(pSPISend);
-		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xxDmxParams::GetLedTypeString(pSPISend->GetLEDType()));
+		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xx::GetLedTypeString(pSPISend->GetLEDType()));
 		pLightSet = pSPISend;
 	}
 

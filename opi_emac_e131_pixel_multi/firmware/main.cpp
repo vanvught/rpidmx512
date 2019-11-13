@@ -47,6 +47,7 @@
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
+#include "ws28xx.h"
 #include "storews28xxdmx.h"
 
 #include "spiflashinstall.h"
@@ -161,7 +162,7 @@ void notmain(void) {
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
 	display.Set(6, DISPLAY_UDF_LABEL_BOARDNAME);
-	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(),  ws28xxparms.GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -172,7 +173,6 @@ void notmain(void) {
 	}
 
 	display.Show(&bridge);
-
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_PIXEL, bridge.GetActiveOutputPorts());
 

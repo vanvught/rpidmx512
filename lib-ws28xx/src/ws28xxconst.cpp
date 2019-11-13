@@ -1,5 +1,5 @@
 /**
- * @file handler.cpp
+ * @file ws28xxconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,55 +24,13 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
 
-#include "handler.h"
+#include "ws28xxconst.h"
 
-#include "ws28xxdmx.h"
-#include "ws28xxdmxparams.h"
 #include "ws28xx.h"
 
-#include "oscsend.h"
-
-#include "debug.h"
-
-Handler::Handler(WS28xxDmx *pWS28xxDmx):
-	m_pWS28xxDmx(pWS28xxDmx),
-	m_nLedCount(pWS28xxDmx->GetLEDCount()),
-	m_pLedTypeString((char *)WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()))
-{
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-Handler::~Handler(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void Handler::Blackout(void) {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(true);
-
-	DEBUG_EXIT
-}
-
-void Handler::Update(void) {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(false);
-
-	DEBUG_EXIT
-}
-
-void Handler::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
-	DEBUG_ENTRY
-
-	OSCSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
-	OSCSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
-
-	DEBUG_EXIT
-}
+alignas(uint32_t) const char WS28xxConst::TYPES[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH] =
+		{ "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",		// 6
+		  "SK6812\0", "SK6812W",														// 2
+		  "APA102\0",																	// 1
+		  "UCS1903", "UCS2903" };														// 2 = 11

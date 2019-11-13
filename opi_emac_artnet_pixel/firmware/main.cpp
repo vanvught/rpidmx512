@@ -51,6 +51,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#include "ws28xx.h"
 #include "storews28xxdmx.h"
 // PWM Led
 #include "tlc59711dmxparams.h"
@@ -151,13 +152,13 @@ void notmain(void) {
 			ws28xxparms.Set(pWS28xxDmxGrouping);
 			pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
 			pSpi = pWS28xxDmxGrouping;
-			display.Printf(7, "%s:%d G%d", ws28xxparms.GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
+			display.Printf(7, "%s:%d G%d", WS28xx::GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
 		} else  {
 			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
 			assert(pWS28xxDmx != 0);
 			ws28xxparms.Set(pWS28xxDmx);
 			pSpi = pWS28xxDmx;
-			display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
+			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
 
 			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 

@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "ws28xxdmxparams.h"
+#include "ws28xx.h"
 
 #include "propertiesbuilder.h"
 
@@ -48,7 +49,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TWS28XXType) m_tWS28xxParams.tLedType), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tWS28xxParams.tLedType), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT));
 
 	builder.Add(DevicesParamsConst::LED_GROUPING, m_tWS28xxParams.bLedGrouping, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING));

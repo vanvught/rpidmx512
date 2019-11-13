@@ -448,30 +448,20 @@ void DisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G,
 	RenderSegment(chr & (1 << 0), cur_digit_base, 6, R, G, B);
 }
 
-void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G, uint8_t B)
-{
-	uint8_t red = R;
-	uint8_t green = G;
-	uint8_t blue = B;
-
-	if (m_nMaster != 0 || m_nMaster != 255)
-	{
-		red = (m_nMaster * red) / 255;
-		green = (m_nMaster * green) / 255;
-		blue = (m_nMaster * blue) / 255;
+void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	if (m_nMaster != 0 || m_nMaster != 255) {
+		nRed = (m_nMaster * nRed) / 255;
+		nGreen = (m_nMaster * nGreen) / 255;
+		nBlue = (m_nMaster * nBlue) / 255;
 	}
 
 	const uint32_t cur_digit_base = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
-	for (uint32_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++)
-	{
-		if (OnOff)
-		{
-			m_WS28xx->SetLED(cnt, red, green, blue); // on
-		}
-		else
-		{
+	for (uint32_t cnt = cur_digit_base; cnt < (cur_digit_base + LEDS_PER_COLON); cnt++) {
+		if (OnOff) {
+			m_WS28xx->SetLED(cnt, nRed, nGreen, nBlue); // on
+		} else {
 			m_WS28xx->SetLED(cnt, 0, 0, 0); // off
 		}
 	}
@@ -480,5 +470,5 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 void DisplayWS28xx::Print(void) {
 	printf("Display WS28xx\n");
 	printf(" %d Digit(s), %d Colons, %d LED(S)\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
-	printf(" Type : %d\n", (int) m_tLedType); // TODO String format from lib-ws28xxdmx ?
+	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 }

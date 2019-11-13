@@ -29,8 +29,8 @@
 
 #include "ws28xxdmxmulti.h"
 #include "ws28xxmulti.h"
-
 #include "ws28xxdmxparams.h"
+#include "ws28xx.h"
 
 #include "debug.h"
 
@@ -229,7 +229,7 @@ void WS28xxDmxMulti::UpdateMembers(void) {
 
 void WS28xxDmxMulti::Print(void) {
 	printf("Led parameters\n");
-	printf(" Type    : %s [%d]\n", WS28xxDmxParams::GetLedTypeString((TWS28XXType)m_tLedType), m_tLedType);
+	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString((TWS28XXType)m_tLedType), m_tLedType);
 	printf(" Count   : %d\n", (int) m_nLedCount);
 	printf(" Outputs : %d\n", (int) m_nActiveOutputs);
 	printf(" SI5351A : %c\n", m_bUseSI5351A ? 'Y' : 'N');
