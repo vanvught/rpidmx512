@@ -1,11 +1,11 @@
 /**
  * @file displayws28xx.cpp
  */
-/* 
+/*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
  * Based on: displaymax7219.cpp
  * Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -46,7 +46,7 @@
 
 static const char sRGB[] ALIGNED = "rgb";
 #define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
-#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB 
+#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB
 
 static const char sDisplayMSG[] ALIGNED = "showmsg";
 #define DMSG_LENGTH (sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
@@ -94,7 +94,7 @@ void DisplayWS28xx::Init(uint8_t nIntensity, tWS28xxMapping lMapping)
 	colR = 0xff;
 	colG = 0xcc;
 	colB = 0x00;
-	
+
 	// UDP socket
 	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
 	assert(m_nHandle != -1);
@@ -226,10 +226,10 @@ void DisplayWS28xx::Run()
 	if (memcmp(&m_Buffer[5], sDisplayMSG, DMSG_LENGTH) == 0) {
 			int nMlength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
 			printf("RX: %d  MsgLen: %d  Msg: %.*s\n",m_nBytesReceived, nMlength, nMlength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
-			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {							
+			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {
 				SetMessage((const char *)&m_Buffer[(5 + DMSG_LENGTH + 1)],nMlength);
-			}	
-		
+			}
+
 	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
 			if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[5 + RGB_LENGTH] == '#')) {
 				SetRGB((const char *)&m_Buffer[(5 + RGB_LENGTH + 1)]);
@@ -237,7 +237,7 @@ void DisplayWS28xx::Run()
 				DEBUG_PUTS("Invalid !rgb command");
 			}
 		}
-		
+
 	 else {
 		DEBUG_PUTS("Invalid command");
 	}
@@ -267,7 +267,7 @@ uint32_t DisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLe
 }
 
 void DisplayWS28xx::Show(const char *pTimecode)
-{	
+{
 	if (!bShowMsg) // if not showing temporary message
 	{
 		uint8_t outR = 0, outG = 0, outB = 0;
@@ -359,18 +359,18 @@ void DisplayWS28xx::ShowMessage(const char *pMessage)
 		if (pMessage[cnt] != 0)
 			WriteChar(pMessage[cnt], cnt, oR, oG, oB);
 		else
-			WriteChar(' ', cnt);		
+			WriteChar(' ', cnt);
 	}
 
 	// blank colons
 	for (int cnt = 0; cnt < WS28XX_NUM_OF_COLONS; cnt++)
 		WriteColon(' ', cnt, 0, 0, 0); // 1st :
-	
+
 	m_WS28xx->Update();
 }
 
 void DisplayWS28xx::ShowSysTime(void)
-{ 
+{
 	time_t ltime;
 	struct tm *local_time;
 
@@ -387,11 +387,11 @@ void DisplayWS28xx::ShowSysTime(void)
 	WriteChar(' ',1,segR, segG, segB);
 	WriteChar((local_time->tm_hour / 10), 2, segR, segG, segB);
 	WriteChar((local_time->tm_hour % 10) | 0x80, 3, segR, segG, segB);
-	WriteChar((local_time->tm_min  / 10), 4, segR, segG, segB);	
-	WriteChar((local_time->tm_min % 10) | 0x80, 5, segR, segG, segB);		
-	WriteChar((local_time->tm_sec  / 10), 6, segR, segG, segB);	
-	WriteChar((local_time->tm_sec % 10) | 0x80, 7, segR, segG, segB);		
-	
+	WriteChar((local_time->tm_min  / 10), 4, segR, segG, segB);
+	WriteChar((local_time->tm_min % 10) | 0x80, 5, segR, segG, segB);
+	WriteChar((local_time->tm_sec  / 10), 6, segR, segG, segB);
+	WriteChar((local_time->tm_sec % 10) | 0x80, 7, segR, segG, segB);
+
 	WriteColon(' ', 0, colR, colG, colB);
 	WriteColon(':', 0, colR, colG, colB);
 	WriteColon(':', 0, colR, colG, colB);
@@ -453,9 +453,6 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R, uint8_t G
 	uint8_t red = R;
 	uint8_t green = G;
 	uint8_t blue = B;
-//
-//	if (nChar > sizeof(Seg7Array)) // Seg7Array is not used here
-//		return;
 
 	if (m_nMaster != 0 || m_nMaster != 255)
 	{
