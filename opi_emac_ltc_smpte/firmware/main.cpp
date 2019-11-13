@@ -284,8 +284,9 @@ void notmain(void) {
 
 	if (bEnableNtp) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
-		ntpServer.Print();
 		ntpServer.Start();
+		ntpServer.Print();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
 	}
 
 	ltcGenerator.Print();
@@ -380,9 +381,6 @@ void notmain(void) {
 			ntpServer.Run();
 		}
 
-		remoteConfig.Run();
-		spiFlashStore.Flash();
-
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
@@ -397,6 +395,8 @@ void notmain(void) {
 
 		ntpClient.Run();
 
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 		lb.Run();
 	}
 }
