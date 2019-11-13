@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
+//#ifdef NDEBUG
+//#undef NDEBUG
+//#endif
 
 // TODO Remove when using compressed firmware
 #if !defined(__clang__)	// Needed for compiling on MacOS
@@ -40,6 +40,8 @@
 
 #include "ntpclient.h"
 #include "ntp.h"
+
+#include "utc.h"
 
 #include "network.h"
 #include "hardware.h"
@@ -89,19 +91,7 @@ NtpClient::~NtpClient(void) {
 
 void NtpClient::SetUtcOffset(float fUtcOffset) {
 	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-	int32_t nInt = (int32_t) fUtcOffset;
-
-	DEBUG_PRINTF("fUtcOffset=%f, nInt=%d", fUtcOffset, nInt);
-
-	if ((nInt >= -12) && (nInt <= 14)) {
-		DEBUG_PUTS("");
-		if (fUtcOffset == (float) nInt) {
-			m_nUtcOffset = nInt * 3600;
-			DEBUG_PRINTF("m_nUtcOffset=%d", m_nUtcOffset);
-		} else {
-			// TODO
-		}
-	}
+	m_nUtcOffset = Utc::Validate(fUtcOffset);
 }
 
 void NtpClient::Init(void) {
@@ -114,8 +104,6 @@ void NtpClient::Init(void) {
 
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
-
-	DEBUG_PRINTF("m_nHandle=%d", m_nHandle);
 
 #if defined (H3)
 	Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
@@ -146,7 +134,7 @@ void NtpClient::Init(void) {
 				continue;
 			}
 
-			debug_dump((void *)&m_Reply, nBytesReceived);
+			debug_dump((void *)&m_Reply, sizeof m_Reply);
 
 			if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
 				m_InitTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
@@ -190,7 +178,7 @@ void NtpClient::Run(void) {
 			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_MillisRequest = Hardware::Get()->Millis();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
-			DEBUG_PRINTF("NTP_CLIENT_STATUS_WAITING - %d", m_MillisRequest);
+			DEBUG_PUTS("NTP_CLIENT_STATUS_WAITING");
 		}
 
 		return;
@@ -200,13 +188,10 @@ void NtpClient::Run(void) {
 		uint32_t nFromIp;
 		uint16_t nFromPort;
 
-		const uint32_t nNow = Hardware::Get()->Millis();
-		const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort);
-
-		if (nBytesReceived != sizeof m_Reply) {
-			if (__builtin_expect(((nNow - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
+		if ((Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) != sizeof m_Reply) {
+			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
-				DEBUG_PRINTF("NTP_CLIENT_STATUS_STOPPED - %d", nNow);
+				DEBUG_PUTS("NTP_CLIENT_STATUS_STOPPED");
 #if defined (H3)
 				Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
 #endif
@@ -214,14 +199,12 @@ void NtpClient::Run(void) {
 			return;
 		}
 
-		DEBUG_PRINTF("nBytesReceived=%d", nBytesReceived);
-
 		if (__builtin_expect((nFromIp != m_nServerIp), 0)) {
 			DEBUG_PUTS("nFromIp != m_nServerIp");
 			return;
 		}
 
-		debug_dump((void *)&m_Reply, nBytesReceived);
+		debug_dump((void *)&m_Reply, sizeof m_Reply);
 
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
 			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
