@@ -182,7 +182,7 @@ public class LTCGenerator extends JDialog {
 		radioButtonFPS25.setSelected(true);
 		buttonGroup.add(radioButtonFPS25);
 		
-		radioButtonFPS29 = new JRadioButton("24.97");
+		radioButtonFPS29 = new JRadioButton("29.97");
 		buttonGroup.add(radioButtonFPS29);
 		
 		radioButtonFPS30 = new JRadioButton("30");

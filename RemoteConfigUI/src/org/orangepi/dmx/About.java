@@ -64,7 +64,7 @@ public class About extends JDialog {
 		setModal(true);
 		setResizable(false);
 		setTitle("About");
-		setBounds(100, 100, 328, 148);
+		setBounds(100, 100, 310, 147);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPanel.setLayout(null);
 		
@@ -77,6 +77,12 @@ public class About extends JDialog {
 		htmlGitHub.setEditable(false);
 		htmlGitHub.setContentType("text/html");
 		htmlGitHub.setText("<html>Source <a href=\"https://github.com/vanvught/rpidmx512\">https://github.com/vanvught/rpidmx512</a></html>\"");
+				
+		JTextPane htmlDonate = new JTextPane();
+		htmlDonate.setEditable(false);
+		htmlDonate.setContentType("text/html");
+		htmlDonate.setText("<html>PayPal.Me <b>Donate</b> <a href=\"https://paypal.me/AvanVught\">https://paypal.me/AvanVught</a></html>\"");
+
 		
 		JButton btnClose = new JButton("Close");
 		btnClose.addActionListener(new ActionListener() {
@@ -101,6 +107,7 @@ public class About extends JDialog {
 		txtExample.setText("Example");
 		txtExample.setColumns(10);
 		
+		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -111,13 +118,15 @@ public class About extends JDialog {
 							.addComponent(htmlURL, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addComponent(htmlGitHub, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(txtcArjan, GroupLayout.PREFERRED_SIZE, 312, GroupLayout.PREFERRED_SIZE)
-							.addGap(29)
-							.addComponent(contentPanel, GroupLayout.PREFERRED_SIZE, 457, GroupLayout.PREFERRED_SIZE))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
-							.addGap(50)
-							.addComponent(btnClose))))
+							.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, 388, GroupLayout.PREFERRED_SIZE)
+							.addGap(37)
+							.addComponent(contentPanel, GroupLayout.PREFERRED_SIZE, 457, GroupLayout.PREFERRED_SIZE))))
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
+					.addGap(39)
+					.addComponent(btnClose))
+				.addComponent(txtcArjan, GroupLayout.PREFERRED_SIZE, 312, GroupLayout.PREFERRED_SIZE)
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -129,15 +138,14 @@ public class About extends JDialog {
 					.addGap(8)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(contentPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(txtcArjan, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(23)
-							.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(18)
-							.addComponent(btnClose)))
-					.addGap(12))
+						.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(txtcArjan, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnClose))
+					.addGap(117))
 		);
 		getContentPane().setLayout(groupLayout);
 		
