@@ -1,5 +1,5 @@
 /**
- * @file ubootheader.h
+ * @file compressed.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,26 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef UBOOTHEADER_H_
-#define UBOOTHEADER_H_
+#ifndef COMPRESSED_H_
+#define COMPRESSED_H_
+
+/**
+ * This is a temporarily class until everyone is using compressed firmware
+ */
 
 #include <stdint.h>
 #include <stdbool.h>
 
-class UBootHeader {
-public:
-	UBootHeader(uint8_t *pHeader);
-	~UBootHeader(void);
-
-	bool IsValid(void) {
-		return m_bIsValid;
-	}
-
-	void Dump(void);
-
-private:
-	uint8_t *m_pHeader;
-	bool m_bIsValid;
+enum TCheckCodes {
+	CHECK_CODE_OK = 0,
+	CHECK_CODE_CHECK_ERROR = (1 << 0),
+	CHECK_CODE_UIMAGE_TOO_BIG = (1 << 1),
+	CHECK_CODE_INVALID_HEADER = (1 << 2),
+	CHECK_CODE_SPI_UPDATE_NEEDED = (1 << 3),
+	CHECK_CODE_UIMAGE_COMPRESSED = (1 << 4)
 };
 
-#endif
+class Compressed {
+public:
+	static uint32_t Check(const char *pFilename);
+	static bool IsSupported(void);
+
+private:
+	static int32_t GetFileSize(const char *pFilename);
+	static char *Find(const char *pBuffer, uint32_t nBufferLength, const char *pFind, uint32_t nFindLength);
+};
+
+#endif /* COMPRESSED_H_ */

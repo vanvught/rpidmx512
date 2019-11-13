@@ -60,6 +60,8 @@ extern int fputs(const char *s, FILE *stream);
 extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 extern int fseek(FILE *stream, long offset, int whence);
 
+extern long ftell(FILE *stream);
+
 extern void clearerr(FILE *stream);
 extern int ferror(FILE *stream);
 

@@ -70,8 +70,9 @@ UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false
 	m_bIsValid &= (pImageHeader->ih_os == IH_OS_U_BOOT);
 	m_bIsValid &= (pImageHeader->ih_arch == IH_ARCH_ARM);
 	m_bIsValid &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
-//	m_bIsValid &= (pImageHeader->ih_comp == static_cast<uint8_t>(tImageHeaderCompression));
 	m_bIsValid &= (strncmp(reinterpret_cast<const char *>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
+
+	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
 }
 
 UBootHeader::~UBootHeader(void) {
@@ -85,18 +86,15 @@ void UBootHeader::Dump(void) {
 	}
 
 	struct TImageHeader *pImageHeader = reinterpret_cast<struct TImageHeader *>(m_pHeader);
+	const time_t rawtime = (time_t)__builtin_bswap32(pImageHeader->ih_time);
+	struct tm *info = localtime(&rawtime);
 
 	printf("Magic Number        : %.8x\n", __builtin_bswap32(pImageHeader->ih_magic));
 	printf("CRC Checksum        : %.8x\n", __builtin_bswap32(pImageHeader->ih_hcrc));
-#if !defined(BARE_METAL)
-	time_t rawtime = (time_t)__builtin_bswap32(pImageHeader->ih_time);
-	struct tm *info = localtime( &rawtime );
 	printf("Creation Timestamp  : %.8x - %s", __builtin_bswap32(pImageHeader->ih_time), asctime(info));
-#endif
 	printf("Data Size           : %.8x - %d kBytes\n", __builtin_bswap32(pImageHeader->ih_size), __builtin_bswap32(pImageHeader->ih_size) / 1024);
 	printf("Data Load Address   : %.8x\n", __builtin_bswap32(pImageHeader->ih_load));
 	printf("Entry Point Address : %.8x\n", __builtin_bswap32(pImageHeader->ih_ep));
-
 	printf("Operating System    : %d - %s\n", pImageHeader->ih_os, pImageHeader->ih_os == IH_OS_U_BOOT ? "Firmware" : "Not supported");
 	printf("CPU architecture    : %d - %s\n", pImageHeader->ih_arch, pImageHeader->ih_arch == IH_ARCH_ARM ? "Arm" : "Not supported");
 	printf("Image type          : %d - %s\n", pImageHeader->ih_type, pImageHeader->ih_type == IH_TYPE_STANDALONE ? "Standalone Program" : "Not supported");

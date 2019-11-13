@@ -115,9 +115,16 @@ int fseek(FILE *stream, long offset, int whence) {
 	if (whence == SEEK_SET) {
 		const FRESULT fresult = f_lseek(&file_object, (FSIZE_t) offset);
 		return -(int) fresult;
+	} else if (whence == SEEK_END) {
+		const FRESULT fresult = f_lseek(&file_object, (FSIZE_t) f_size(&file_object));
+		return -(int) fresult;
 	}
 
 	return -1;
+}
+
+long ftell(FILE *stream) {
+	return (long) f_tell(&file_object);
 }
 
 void clearerr(FILE *stream) {
