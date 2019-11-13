@@ -30,6 +30,10 @@
 
 void MDNS::Print(void) {
 	printf("mDNS\n");
+	if (m_nHandle == -1) {
+		printf(" Not running\n");
+		return;
+	}
 	printf(" Name : %s\n", m_pName);
 	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
 		if (m_aServiceRecords[i].pName != 0) {
