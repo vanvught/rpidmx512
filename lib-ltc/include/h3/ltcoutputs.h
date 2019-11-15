@@ -32,12 +32,14 @@
 
 class LtcOutputs {
 public:
-	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource);
+	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime);
 	~LtcOutputs(void);
 
 	void Init(void);
 	void Update(const struct TLtcTimeCode *ptLtcTimeCode);
 	void UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode);
+
+	void ShowSysTime(void);
 
 	void ResetTimeCodeTypePrevious(void) {
 		m_tTimeCodeTypePrevious = TC_TYPE_INVALID;
@@ -54,6 +56,7 @@ private:
 
 private:
 	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
+	bool m_bShowSysTime;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	uint32_t m_nMidiQuarterFramePiece;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];

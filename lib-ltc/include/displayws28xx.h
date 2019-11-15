@@ -74,7 +74,7 @@ enum tWS28xxMapping {
 
 class DisplayWS28xx {
 public:
-	DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime = false);
+	DisplayWS28xx(TWS28XXType tLedType);
 	~DisplayWS28xx(void);
 
 	void Init(uint8_t nIntensity, tWS28xxMapping lMapping);
@@ -117,7 +117,6 @@ private:
 	WS28xx *m_WS28xx;
 	TWS28XXType m_tLedType;
   	tWS28xxMapping m_tMapping;
-	bool m_bShowSysTime;
 	uint8_t m_Buffer[64]; // UDP buffer
 	int32_t m_nHandle; // UDP handle
 	uint8_t m_nMaster = 255;

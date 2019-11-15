@@ -22,10 +22,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")

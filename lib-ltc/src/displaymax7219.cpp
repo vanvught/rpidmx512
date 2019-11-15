@@ -23,6 +23,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "max72197segment.h"
@@ -32,9 +33,10 @@
 
 DisplayMax7219 *DisplayMax7219::s_pThis = 0;
 
-DisplayMax7219::DisplayMax7219(TMax7219Types tType, bool bShowSysTime):
-	m_pMax7219Set(0),
-	m_bShowSysTime(bShowSysTime)
+DisplayMax7219::DisplayMax7219(TMax7219Types tType):
+	m_tMax7219Types(tType),
+	m_nIntensity(0),
+	m_pMax7219Set(0)
 {
 	s_pThis = this;
 
@@ -53,6 +55,7 @@ DisplayMax7219::~DisplayMax7219(void) {
 }
 
 void DisplayMax7219::Init(uint8_t nIntensity) {
+	m_nIntensity = nIntensity;
 	m_pMax7219Set->Init(nIntensity);
 }
 
@@ -61,11 +64,14 @@ void DisplayMax7219::Show(const char *pTimecode) {
 }
 
 void DisplayMax7219::ShowSysTime(void) {
-	if (m_bShowSysTime) {
-		m_pMax7219Set->ShowSysTime();
-	}
+	m_pMax7219Set->ShowSysTime();
 }
 
 void DisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
 	m_pMax7219Set->WriteChar(nChar, nPos);
+}
+
+void DisplayMax7219::Print(void) {
+	printf("MAX7219\n");
+	printf(" %s [%d]\n", m_tMax7219Types == MAX7219_TYPE_7SEGMENT ? "7-segment" : "matrix", m_nIntensity);
 }

@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")
@@ -51,7 +47,6 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
-#include "propertiesbuilder.h"
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nLedType = WS2812B;
@@ -144,35 +139,6 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
 		return;
 	}
-}
-
-void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	assert(pBuffer != 0);
-
-	if (ptLtcDisplayParams != 0) {
-		memcpy(&m_tLtcDisplayParams, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
-	} else {
-		m_pLtcDisplayParamsStore->Copy(&m_tLtcDisplayParams);
-	}
-
-	PropertiesBuilder builder(LtcDisplayParamsConst::FILE_NAME, pBuffer, nLength);
-
-	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE));
-	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tLtcDisplayParams.nGlobalBrightness, isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS));
-
-	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE));
-	builder.Add(LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY));
-
-	nSize = builder.GetSize();
-}
-
-void LtcDisplayParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	if (m_pLtcDisplayParamsStore == 0) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(0, pBuffer, nLength, nSize);
 }
 
 void LtcDisplayParams::Dump(void) {

@@ -108,8 +108,7 @@ void ArtNetReader::Run(void) {
 	if (nUpdatesPerSecond >= 24) {
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
-		DisplayMax7219::Get()->ShowSysTime();
-		LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+		LtcOutputs::Get()->ShowSysTime();
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
 }

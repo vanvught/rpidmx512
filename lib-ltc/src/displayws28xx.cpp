@@ -58,10 +58,9 @@ enum tUdpPort {
 
 DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
-DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType, bool bShowSysTime):
+DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType):
 	m_tLedType(tLedType),
 	m_tMapping(RGB),
-	m_bShowSysTime(bShowSysTime),
 	m_nHandle(-1)
 {
 	s_pThis = this;

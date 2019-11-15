@@ -37,23 +37,26 @@ enum TMax7219Types {
 
 class DisplayMax7219 {
 public:
-	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX, bool bShowSysTime = false);
+	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX);
 	~DisplayMax7219(void);
 
 	void Init(uint8_t nIntensity);
+
+	void Print(void);
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(void);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	static DisplayMax7219* Get(void) {
+	static DisplayMax7219 *Get(void) {
 		return s_pThis;
 	}
 
 private:
+	TMax7219Types m_tMax7219Types;
+	uint8_t m_nIntensity;
 	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
 
 	static DisplayMax7219 *s_pThis;
 };

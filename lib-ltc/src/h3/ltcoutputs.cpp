@@ -58,7 +58,8 @@ static void irq_timer1_midi_handler(uint32_t clo) {
 
 LtcOutputs *LtcOutputs::s_pThis = 0;
 
-LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource):
+LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime):
+	m_bShowSysTime(bShowSysTime),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID),
 	m_nMidiQuarterFramePiece(0)
 {
@@ -135,6 +136,26 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 	}
 }
 
+void LtcOutputs::ShowSysTime(void) {
+	if (m_bShowSysTime) {
+		if (!m_tLtcDisabledOutputs.bMax7219) {
+			DisplayMax7219::Get()->ShowSysTime();
+		}
+
+		if(!m_tLtcDisabledOutputs.bWS28xx) {
+			DisplayWS28xx::Get()->ShowSysTime();
+		}
+
+		ResetTimeCodeTypePrevious();
+	}
+}
+
+void LtcOutputs::PrintDisabled(bool IsDisabled, const char *p) {
+	if (IsDisabled) {
+		printf(" %s output is disabled\n", p);
+	}
+}
+
 void LtcOutputs::Print(void) {
 	PrintDisabled(m_tLtcDisabledOutputs.bLtc, "LTC");
 	PrintDisabled(m_tLtcDisabledOutputs.bTCNet, "TCNet");
@@ -145,10 +166,4 @@ void LtcOutputs::Print(void) {
 	PrintDisabled(m_tLtcDisabledOutputs.bDisplay, "OLED");
 	PrintDisabled(m_tLtcDisabledOutputs.bMax7219, "Max7219");
 	PrintDisabled(m_tLtcDisabledOutputs.bWS28xx, "WS28xx");
-}
-
-void LtcOutputs::PrintDisabled(bool IsDisabled, const char *p) {
-	if (IsDisabled) {
-		printf(" %s output is disabled\n", p);
-	}
 }

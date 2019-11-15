@@ -171,7 +171,7 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
-	node.SetShortName("LTC Node");
+	node.SetShortName("LTC SMPTE Node");
 
 	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
 
@@ -205,10 +205,12 @@ void notmain(void) {
 		tcnetparams.Dump();
 	}
 
-	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type(), ltcParams.IsShowSysTime());
-	displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type());
+	if(!tLtcDisabledOutputs.bMax7219) {
+		displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+	}
 
-	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType(), ltcParams.IsShowSysTime());
+	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
 	if (!tLtcDisabledOutputs.bWS28xx){
 		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness(), ltcDisplayParams.GetLedMapping());
 	}
@@ -231,7 +233,7 @@ void notmain(void) {
 
 	// From here work with source selection
 
-	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source);
+	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
 
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
@@ -303,7 +305,12 @@ void notmain(void) {
 	tcnet.Print();
 	midi.Print();
 	rtpMidi.Print();
-	displayWS28xx.Print();
+	if(!tLtcDisabledOutputs.bMax7219) {
+		displayMax7219.Print();
+	}
+	if (!tLtcDisabledOutputs.bWS28xx){
+		displayWS28xx.Print();
+	}
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
 
