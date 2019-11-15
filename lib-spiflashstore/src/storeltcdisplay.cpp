@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file storeltcdisplay.cpp
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,40 +23,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
-
 #include <stdint.h>
-#include <stdbool.h>
+#include <assert.h>
 
-#include "max7219set.h"
+#include "storeltcdisplay.h"
 
-enum TMax7219Types {
-	MAX7219_TYPE_MATRIX,
-	MAX7219_TYPE_7SEGMENT
-};
+#include "ltcdisplayparams.h"
 
-class DisplayMax7219 {
-public:
-	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
+#include "spiflashstore.h"
 
-	void Init(uint8_t nIntensity);
+#include "debug.h"
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
+StoreLtcDisplay *StoreLtcDisplay::s_pThis = 0;
 
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
+LtcDisplayParamsStore::~LtcDisplayParamsStore(void) {
+	DEBUG_ENTRY
 
-	static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
+	DEBUG_EXIT
+}
 
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
+StoreLtcDisplay::StoreLtcDisplay(void) {
+	DEBUG_ENTRY
 
-	static DisplayMax7219 *s_pThis;
-};
+	s_pThis = this;
 
-#endif /* DISPLAYMAX7219_H_ */
+	DEBUG_PRINTF("%p", s_pThis);
+
+	DEBUG_EXIT
+}
+
+StoreLtcDisplay::~StoreLtcDisplay(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreLtcDisplay::Update(const struct TLtcDisplayParams *ptLtcDisplayParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+
+	DEBUG_EXIT
+}
+
+void StoreLtcDisplay::Copy(struct TLtcDisplayParams *ptLtcDisplayParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+
+	DEBUG_EXIT
+}

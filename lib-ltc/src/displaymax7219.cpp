@@ -32,13 +32,13 @@
 
 DisplayMax7219 *DisplayMax7219::s_pThis = 0;
 
-DisplayMax7219::DisplayMax7219(tMax7219Types tType, bool bShowSysTime):
+DisplayMax7219::DisplayMax7219(TMax7219Types tType, bool bShowSysTime):
 	m_pMax7219Set(0),
 	m_bShowSysTime(bShowSysTime)
 {
 	s_pThis = this;
 
-	if (tType == MAX7219_7SEGMENT) {
+	if (tType == MAX7219_TYPE_7SEGMENT) {
 		m_pMax7219Set = new Max72197Segment;
 	} else {
 		m_pMax7219Set = new Max7219Matrix;

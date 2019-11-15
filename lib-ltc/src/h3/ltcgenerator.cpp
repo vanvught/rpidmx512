@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -362,9 +356,9 @@ void LtcGenerator::HandleUdpRequest(void) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
 			ActionStop();
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);			
+			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 			ActionStart();
-			ActionStop();			
+			ActionStop();
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}

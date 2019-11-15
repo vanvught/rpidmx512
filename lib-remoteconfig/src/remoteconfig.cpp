@@ -81,6 +81,9 @@
  /* ltc.txt */
  #include "ltcparams.h"
  #include "storeltc.h"
+ /* ldisplay.txt */
+ #include "ltcdisplayparams.h"
+ #include "storeltcdisplay.h"
  /* tcnet.txt */
  #include "tcnetparams.h"
  #include "storetcnet.h"
@@ -466,6 +469,9 @@ void RemoteConfig::HandleGet(void) {
 	case TXT_FILE_LTC:
 		HandleGetLtcTxt(nSize);
 		break;
+	case TXT_FILE_LTCDISPLAY:
+		HandleGetLtcDisplayTxt(nSize);
+		break;
 	case TXT_FILE_TCNET:
 		HandleGetTCNetTxt(nSize);
 		break;
@@ -622,6 +628,15 @@ void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
+void RemoteConfig::HandleGetLtcDisplayTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)  StoreLtcDisplay::Get());
+	ltcDisplayParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+
 void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -708,6 +723,9 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined (LTC_READER)
 	case TXT_FILE_LTC:
 		HandleTxtFileLtc();
+		break;
+	case TXT_FILE_LTCDISPLAY:
+		HandleTxtFileLtcDisplay();
 		break;
 	case TXT_FILE_TCNET:
 		HandleTxtFileTCNet();
@@ -938,6 +956,25 @@ void RemoteConfig::HandleTxtFileLtc(void) {
 	ltcParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	ltcParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleTxtFileLtcDisplay(void) {
+	DEBUG_ENTRY
+
+	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *) StoreLtcDisplay::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)  && (m_nBytesReceived == sizeof(struct TLtcDisplayParams))){
+		uint32_t nSize;
+		ltcDisplayParams.Builder((const struct TLtcDisplayParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
+	ltcDisplayParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	ltcDisplayParams.Dump();
 #endif
 
 	DEBUG_EXIT

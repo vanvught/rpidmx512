@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file ltcdisplayparamsconst.cpp
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,40 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
-
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
+#include "ltcdisplayparamsconst.h"
 
-enum TMax7219Types {
-	MAX7219_TYPE_MATRIX,
-	MAX7219_TYPE_7SEGMENT
-};
-
-class DisplayMax7219 {
-public:
-	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
-
-	void Init(uint8_t nIntensity);
-
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	static DisplayMax7219* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
-};
-
-#endif /* DISPLAYMAX7219_H_ */
+alignas(uint32_t) const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
+alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
+alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";

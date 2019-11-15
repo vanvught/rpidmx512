@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "ws28xx.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxmulti.h"
 

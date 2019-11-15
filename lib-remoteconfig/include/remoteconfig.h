@@ -81,6 +81,7 @@ enum TTxtFile {
 	TXT_FILE_TCNET,
 	TXT_FILE_OSC_CLIENT,
 	TXT_FILE_DISPLAY_UDF,
+	TXT_FILE_LTCDISPLAY,
 	TXT_FILE_DISPLAY_NEXTION,
 	TXT_FILE_LAST
 };
@@ -169,6 +170,7 @@ private:
 #endif
 #if defined (LTC_READER)
 	void HandleGetLtcTxt(uint32_t& nSize);
+	void HandleGetLtcDisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 #endif
 #if defined (OSC_CLIENT)
@@ -202,6 +204,7 @@ private:
 #endif
 #if defined (LTC_READER)
 	void HandleTxtFileLtc(void);
+	void HandleTxtFileLtcDisplay(void);
 	void HandleTxtFileTCNet(void);
 #endif
 #if defined (OSC_CLIENT)

@@ -1,5 +1,6 @@
 /**
- * @file displaymax7219.h
+ * @file storeltcdisplay.h
+ *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
@@ -22,40 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
+#ifndef STORELTCDISPLAY_H_
+#define STORELTCDISPLAY_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "ltcdisplayparams.h"
 
-#include "max7219set.h"
-
-enum TMax7219Types {
-	MAX7219_TYPE_MATRIX,
-	MAX7219_TYPE_7SEGMENT
-};
-
-class DisplayMax7219 {
+class StoreLtcDisplay: public LtcDisplayParamsStore {
 public:
-	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX, bool bShowSysTime = false);
-	~DisplayMax7219(void);
+	StoreLtcDisplay(void);
+	~StoreLtcDisplay(void);
 
-	void Init(uint8_t nIntensity);
+	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams);
+	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams);
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(void);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	static DisplayMax7219* Get(void) {
+public:
+	static StoreLtcDisplay *Get(void) {
 		return s_pThis;
 	}
 
 private:
-	Max7219Set *m_pMax7219Set;
-	bool m_bShowSysTime;
-
-	static DisplayMax7219 *s_pThis;
+	static StoreLtcDisplay *s_pThis;
 };
 
-#endif /* DISPLAYMAX7219_H_ */
+#endif /* STORELTCDISPLAY_H_ */

@@ -55,9 +55,6 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 
 	builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
 
-	builder.Add(LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE));
-	builder.Add(LtcParamsConst::MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity, isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY));
-
 	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
 	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
 	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
@@ -84,10 +81,8 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	builder.Add(LtcParamsConst::STOP_MINUTE,  m_tLtcParams.nStopMinute, isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE));
 	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
+	//builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
 
-#if 0
-	builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
-#endif
 
 	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));

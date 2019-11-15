@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>

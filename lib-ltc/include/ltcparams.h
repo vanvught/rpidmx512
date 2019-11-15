@@ -30,11 +30,6 @@
 #include "ltc.h"
 #include "displaymax7219.h"
 
-enum TLtcParamsMax7219Type {
-	LTC_PARAMS_MAX7219_TYPE_MATRIX,
-	LTC_PARAMS_MAX7219_TYPE_7SEGMENT
-};
-
 enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_DISPLAY = (1 << 0),
 	LTC_PARAMS_DISABLE_MAX7219 = (1 << 1),
@@ -50,8 +45,8 @@ enum TLtcParamsMaskDisabledOutputs {
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
-	uint8_t tMax7219Type;
-	uint8_t nMax7219Intensity;
+	uint8_t nReserved1;
+	uint8_t nReserved2;
 	uint8_t nDisabledOutputs;
 	uint8_t nShowSysTime;
 	uint8_t nDisableTimeSync;
@@ -76,8 +71,8 @@ struct TLtcParams {
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),
-	LTC_PARAMS_MASK_MAX7219_TYPE = (1 << 1),
-	LTC_PARAMS_MASK_MAX7219_INTENSITY = (1 << 2),
+	LTC_PARAMS_MASK_RESERVED1 = (1 << 1),
+	LTC_PARAMS_MASK_RESERVED2 = (1 << 2),
 	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3),
 	LTC_PARAMS_MASK_SHOW_SYSTIME = (1 << 4),
 	LTC_PARAMS_MASK_DISABLE_TIMESYNC = (1 << 5),
@@ -127,14 +122,6 @@ public:
 
 	const char *GetSourceType(enum TLtcReaderSource tSource);
 	enum TLtcReaderSource GetSourceType(const char *pType);
-
-	uint8_t GetMax7219Intensity(void) {
-		return m_tLtcParams.nMax7219Intensity;
-	}
-
-	tMax7219Types GetMax7219Type(void) {
-		return (tMax7219Types) m_tLtcParams.tMax7219Type;
-	}
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 

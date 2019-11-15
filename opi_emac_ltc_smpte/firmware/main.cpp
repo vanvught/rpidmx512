@@ -35,6 +35,7 @@
 #include "console.h"
 
 #include "ltcparams.h"
+#include "ltcdisplayparams.h"
 #include "ltcleds.h"
 
 #include "artnetnode.h"
@@ -83,6 +84,7 @@
 
 #include "spiflashstore.h"
 #include "storeltc.h"
+#include "storeltcdisplay.h"
 #include "storetcnet.h"
 #include "storeremoteconfig.h"
 
@@ -108,6 +110,8 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreLtc storeLtc;
+	StoreLtcDisplay storeLtcDisplay;
+
 	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
 
 	struct TLtcDisabledOutputs tLtcDisabledOutputs;
@@ -119,6 +123,12 @@ void notmain(void) {
 		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
 		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
 		ltcParams.Dump();
+	}
+
+	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
+
+	if (ltcDisplayParams.Load()) {
+		ltcDisplayParams.Dump();
 	}
 
 	LtcLeds leds;
@@ -195,12 +205,12 @@ void notmain(void) {
 		tcnetparams.Dump();
 	}
 
-	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
-	max7219.Init(ltcParams.GetMax7219Intensity());
+	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type(), ltcParams.IsShowSysTime());
+	displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 
-	DisplayWS28xx ws82xx(WS2812B, ltcParams.IsShowSysTime());	// TODO Use devices.txt for tLedType ?
+	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType(), ltcParams.IsShowSysTime());
 	if (!tLtcDisabledOutputs.bWS28xx){
-		ws82xx.Init(255, RBG);	// TODO Use devices.txt for the parameters?
+		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness(), ltcDisplayParams.GetLedMapping());
 	}
 
 	display.ClearLine(3);
@@ -293,7 +303,7 @@ void notmain(void) {
 	tcnet.Print();
 	midi.Print();
 	rtpMidi.Print();
-	ws82xx.Print();
+	displayWS28xx.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
 
@@ -390,7 +400,7 @@ void notmain(void) {
 		}
 
 		if (!tLtcDisabledOutputs.bWS28xx){
-			ws82xx.Run();
+			displayWS28xx.Run();
 		}
 
 		ntpClient.Run();

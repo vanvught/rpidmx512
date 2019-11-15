@@ -39,7 +39,8 @@ public class OrangePi {
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", ""};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only"};
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt" };
-	private static final String[] EXTRAS_TXT = {"tcnet.txt" };
+	private static final String LDISPLAY_TXT = "ldisplay.txt";
+	private static final String TCNET_TXT = "tcnet.txt";
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -57,7 +58,8 @@ public class OrangePi {
 	private String nodeNetwork = null;
 	private String nodeType = null;
 	private String nodeMode = null;
-	private String nodeExtras = null;
+	private String nodeLtcDisplay = null;
+	private String nodeTCNet = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbDisplay = null;
@@ -65,7 +67,8 @@ public class OrangePi {
 	private String sbNetwork = null;
 	private String sbType = null;
 	private String sbMode = null;
-	private String sbExtras = null;
+	private String sbLtcDisplay = null;
+	private String sbTCNet = null;
 	
 	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
 		super();
@@ -91,7 +94,8 @@ public class OrangePi {
 					nodeMode = MODES_TXT[2];
 				} else if (Mode[0].equals("TimeCode")) {
 					nodeMode = MODES_TXT[3];
-					nodeExtras = EXTRAS_TXT[0];
+					nodeLtcDisplay = LDISPLAY_TXT;
+					nodeTCNet = TCNET_TXT;
 				} else if (Mode[0].equals("OSC")) {
 				} else if (Mode[0].equals("Config")) {
 				}  
@@ -138,7 +142,6 @@ public class OrangePi {
 				sbDisplay = doGet(txt);
 			}
 			return sbDisplay.toString();
-
 		} else if (isNextionTxt(txt)) {
 			if (sbNextion == null) {
 				sbNextion = doGet(txt);
@@ -159,11 +162,16 @@ public class OrangePi {
 				sbMode = doGet(txt);
 			}
 			return sbMode.toString();
-		} else if (isExtrasTxt(txt)) {
-			if (sbExtras == null) {
-				sbExtras = doGet(txt);
+		} else if (isLtcDisplayTxt(txt)) {
+			if (sbLtcDisplay == null) {
+				sbLtcDisplay = doGet(txt);
 			}
-			return sbExtras.toString();
+			return sbLtcDisplay.toString();
+		} else if (isExtrasTxt(txt)) {
+			if (sbTCNet == null) {
+				sbTCNet = doGet(txt);
+			}
+			return sbTCNet.toString();
 		}
 
 		return null;
@@ -244,8 +252,11 @@ public class OrangePi {
 		} else if (isTypeTxt(txt)) {
 			sbType = null;
 			bDoSave = true;
+		} else if (isLtcDisplayTxt(txt)) {
+			sbLtcDisplay = null;
+			bDoSave = true;
 		} else if (isExtrasTxt(txt)) {
-			sbExtras = null;
+			sbTCNet = null;
 			bDoSave = true;
 		}
 		
@@ -398,11 +409,16 @@ public class OrangePi {
 		return false;
 	}
 	
+	private Boolean isLtcDisplayTxt(String ldisplay) {
+		if (ldisplay.equals(LDISPLAY_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
 	private Boolean isExtrasTxt(String mode) {
-		for (int i = 0; i < EXTRAS_TXT.length; i++) {
-			if (mode.equals(EXTRAS_TXT[i])) {
-				return true;
-			}
+		if (mode.equals(TCNET_TXT)) {
+			return true;
 		}
 		return false;
 	}
@@ -446,8 +462,12 @@ public class OrangePi {
 		return nodeMode;
 	}
 	
-	public String getNodeExtras() {
-		return nodeExtras;
+	public String getNodeLtcDisplay() {
+		return nodeLtcDisplay;
+	}
+	
+	public String getNodeTCNet() {
+		return nodeTCNet;
 	}
 	
 	public InetAddress getAddress() {
