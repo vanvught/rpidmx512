@@ -48,17 +48,17 @@ public:
 	void Start(uint8_t nPort = 0);
 	void Stop(uint8_t nPort = 0);
 
-	virtual void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	virtual void SetData(uint8_t nPort, const uint8_t*, uint16_t);
 
 	void Blackout(bool bBlackout);
 
 	virtual void SetLEDType(TWS28XXType);
-	 TWS28XXType GetLEDType(void) {
+	TWS28XXType GetLEDType(void) {
 		return m_tLedType;
 	}
 
 	virtual void SetLEDCount(uint16_t);
-	 uint16_t GetLEDCount(void) {
+	uint16_t GetLEDCount(void) {
 		return m_nLedCount;
 	}
 

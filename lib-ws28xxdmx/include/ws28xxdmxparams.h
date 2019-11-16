@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "ws28xx.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxmulti.h"
 
@@ -118,8 +119,6 @@ public:
 	}
 
 public:
-	static const char *GetLedTypeString(TWS28XXType tType);
-	static TWS28XXType GetLedTypeString(const char *pVale);
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

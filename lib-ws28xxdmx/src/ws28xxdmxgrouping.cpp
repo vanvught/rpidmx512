@@ -30,6 +30,7 @@
 
 #include "ws28xxdmxgrouping.h"
 #include "ws28xxdmxparams.h"
+#include "ws28xx.h"
 
 #include "lightset.h"
 
@@ -181,7 +182,7 @@ void WS28xxDmxGrouping::UpdateMembers(void) {
 
 void WS28xxDmxGrouping::Print(void) {
 	printf("Led (grouping) parameters\n");
-	printf(" Type  : %s [%d]\n", WS28xxDmxParams::GetLedTypeString(m_tLedType), m_tLedType);
+	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", (int) m_nLedCount);
 	printf(" Group : %d\n", (int) m_nLEDGroupCount);
 }

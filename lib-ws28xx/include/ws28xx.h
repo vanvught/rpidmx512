@@ -44,7 +44,8 @@ enum TWS28XXType {
 	SK6812W,
 	APA102,
 	UCS1903,
-	UCS2903
+	UCS2903,
+	WS28XX_UNDEFINED
 };
 
 #define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
@@ -94,10 +95,14 @@ public:
 #if defined (__circle__)
 	bool IsUpdating (void) const; // returns TRUE while DMA operation is active
 #else
-	 	bool IsUpdating (void) const {
+	bool IsUpdating(void) const {
 		return false;
 	}
 #endif
+
+public:
+	static const char *GetLedTypeString(TWS28XXType tType);
+	static TWS28XXType GetLedTypeString(const char *pVale);
 
 private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);

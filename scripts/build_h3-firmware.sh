@@ -20,15 +20,32 @@ do_build()
 	./makeall_firmware_h3.sh $1 $2
 }
 
+do_check()
+{
+	maxsize=139264
+	filesize=$(stat -c%s "$1")
+    if (( filesize > maxsize )); then
+    	echo -e "\e[31m[$1 is too big for SPI Flash -> $filesize]\e[0m"
+        rm -rf $1
+        ls -al "$1.gz"
+	else
+		ls -al "$1"
+	fi	
+}
+
+export -f do_check
+
 for i in "${array[@]}"
 do
 	echo $i
-	do_build $i
+		do_build $i
 done
 
 cd ..
 
-find . -name "*.uImage" | xargs ls -al
+#find . -name "*.uImage" | xargs ls -al
+find . -name "*.uImage" | xargs ls -al | wc -l
+find . -name "*.uImage" | sort | xargs -I{} bash -c "do_check {}"
 find . -name "*.uImage" | xargs ls -al | wc -l
 
 cd -

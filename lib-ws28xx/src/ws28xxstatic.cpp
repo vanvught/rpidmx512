@@ -1,8 +1,8 @@
 /**
- * @file ws28xxdmxprint.cpp
+ * @file ws28xxstatic.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,27 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include "ws28xxdmx.h"
-#include "ws28xxdmxparams.h"
+#include <stdint.h>
+#include <string.h>
+#include <assert.h>
 
 #include "ws28xx.h"
+#include "ws28xxconst.h"
 
-void WS28xxDmx::Print(void) {
-	printf("Led parameters\n");
-	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-	if ((m_tLedType == WS2801) || (m_tLedType == APA102)) {
-		printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
+const char* WS28xx::GetLedTypeString(TWS28XXType tType) {
+	assert(tType < WS28XX_UNDEFINED);
+
+	return WS28xxConst::TYPES[tType];
+}
+
+TWS28XXType WS28xx::GetLedTypeString(const char *pVale) {
+	assert(pVale != 0);
+
+	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
+		if (strcasecmp(pVale, WS28xxConst::TYPES[i]) == 0) {
+			return (TWS28XXType) i;
+		}
 	}
-	if (m_tLedType == APA102) {
-		printf(" GlbBr : %d\n", (int) m_nGlobalBrightness);
-	}
+
+	return WS28XX_UNDEFINED;
 }

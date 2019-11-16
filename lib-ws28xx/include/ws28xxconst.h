@@ -1,8 +1,8 @@
 /**
- * @file ws28xxdmxprint.cpp
+ * @file ws28xxconst.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include "ws28xxdmx.h"
-#include "ws28xxdmxparams.h"
+#ifndef WS28XXCONST_H_
+#define WS28XXCONST_H_
 
 #include "ws28xx.h"
 
-void WS28xxDmx::Print(void) {
-	printf("Led parameters\n");
-	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-	if ((m_tLedType == WS2801) || (m_tLedType == APA102)) {
-		printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
-	}
-	if (m_tLedType == APA102) {
-		printf(" GlbBr : %d\n", (int) m_nGlobalBrightness);
-	}
-}
+#define WS28XX_TYPES_MAX_NAME_LENGTH 	8
+
+class WS28xxConst {
+public:
+	alignas(uint32_t) static const char TYPES[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH];
+};
+
+#endif /* WS28XXCONST_H_ */

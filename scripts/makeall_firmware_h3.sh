@@ -29,6 +29,8 @@ do
 			do_build=1
 		elif [[ $f = '../opi_rdm_responder' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
+		elif [[ $f = '../opi_emac_llrp_tftpd' ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
+			do_build=1
 		elif [[ $f = "../opi_"*"monitor" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
 			do_build=1
 		elif [[ $f = "../opi_emac_"*"dmx_multi" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
