@@ -97,6 +97,9 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmTftpClient;
 	private JMenuItem mntmVersion;
 	private JMenuItem mntmLtcGenerator;
+	private JMenuItem mntmWsxxDisplay;
+	private JMenu mnNewMenu;
+	private JMenuItem mntmSytemTime;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -381,6 +384,54 @@ public class RemoteConfig extends JFrame {
 				}	
 			}
 		});
+		
+		mntmWsxxDisplay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							WS28xxDisplay client = new WS28xxDisplay(pi.getAddress());
+							client.Show();
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for WS28xx Display to run.");
+				}
+			}
+		});
+		
+		mntmSytemTime.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							SystemTime client = new SystemTime(pi.getAddress());
+							client.Show();
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for System Time to run.");
+				}
+			}
+		});
 	}
 
 	private void InitComponents() {
@@ -433,14 +484,26 @@ public class RemoteConfig extends JFrame {
 		mnRun = new JMenu("Run");
 		menuBar.add(mnRun);
 		
-		mntmLtcGenerator = new JMenuItem("LTC Generator");
-
-		mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_MASK));
-		mnRun.add(mntmLtcGenerator);
-		
 		mntmTftpClient = new JMenuItem("TFTP Client");
 		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
 		mnRun.add(mntmTftpClient);
+		
+		mnNewMenu = new JMenu("LTC");
+		mnRun.add(mnNewMenu);
+		
+		mntmLtcGenerator = new JMenuItem("Generator");
+		mnNewMenu.add(mntmLtcGenerator);
+		
+				mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
+		
+		mntmSytemTime = new JMenuItem("System time");
+
+		mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
+		mnNewMenu.add(mntmSytemTime);
+		
+		mntmWsxxDisplay = new JMenuItem("WS28xx Display");
+		mnNewMenu.add(mntmWsxxDisplay);
+		mntmWsxxDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.ALT_MASK));
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
@@ -688,13 +751,19 @@ public class RemoteConfig extends JFrame {
 				child.add(new DefaultMutableTreeNode(nodeType));
 			}
 			
+			String nodeLtcDisplay = ((OrangePi) child.getUserObject()).getNodeLtcDisplay();
+			
+			if (nodeLtcDisplay != null) {
+				child.add(new DefaultMutableTreeNode(nodeLtcDisplay));
+			}
+			
 			String nodeMode = ((OrangePi) child.getUserObject()).getNodeMode();
 			
 			if (nodeMode != null) {
 				child.add(new DefaultMutableTreeNode(nodeMode));
 			}
 			
-			String nodeExtras =  ((OrangePi) child.getUserObject()).getNodeExtras();
+			String nodeExtras =  ((OrangePi) child.getUserObject()).getNodeTCNet();
 			
 			if (nodeExtras != null) {
 				child.add(new DefaultMutableTreeNode(nodeExtras));
