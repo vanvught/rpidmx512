@@ -82,7 +82,6 @@ struct TLtcDisabledOutputs {
 #define TC_TYPE_MAX_LENGTH	11
 #define TC_RATE_MAX_LENGTH  2
 
-
 class Ltc {
 public:
 	static const char *GetType(TTimecodeTypes tTimeCodeType);

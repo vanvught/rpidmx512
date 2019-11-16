@@ -41,7 +41,7 @@
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
-#include "h3_hs_timer.h"
+#include "h3.h"
 #include "h3_timer.h"
 #include "irq_timer.h"
 

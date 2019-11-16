@@ -55,11 +55,11 @@ private:
 	void PrintDisabled(bool IsDisabled, const char *p);
 
 private:
-	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
+	alignas(uint32_t) struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
 	bool m_bShowSysTime;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	uint32_t m_nMidiQuarterFramePiece;
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
 
 	static LtcOutputs *s_pThis;
 };

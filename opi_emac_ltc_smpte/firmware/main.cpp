@@ -70,15 +70,7 @@
 
 #include "ntpserver.h"
 
-#include "h3/artnetreader.h"
-#include "h3/ltcreader.h"
-#include "h3/ltcsender.h"
-#include "h3/midireader.h"
-#include "h3/tcnetreader.h"
-#include "h3/ltcgenerator.h"
-#include "h3/rtpmidireader.h"
-#include "h3/systimereader.h"
-#include "h3/ltcoutputs.h"
+#include "h3/ltc.h"
 
 #include "spiflashinstall.h"
 
@@ -110,8 +102,6 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreLtc storeLtc;
-	StoreLtcDisplay storeLtcDisplay;
-
 	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
 
 	struct TLtcDisabledOutputs tLtcDisabledOutputs;
@@ -125,6 +115,7 @@ void notmain(void) {
 		ltcParams.Dump();
 	}
 
+	StoreLtcDisplay storeLtcDisplay;
 	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
 
 	if (ltcDisplayParams.Load()) {
@@ -168,35 +159,6 @@ void notmain(void) {
 	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
-
-	node.SetShortName("LTC SMPTE Node");
-
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
-
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
-	}
-
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	TimeSync timeSync;
-	if (!ltcParams.IsTimeSyncDisabled()) {
-		node.SetTimeSyncHandler(&timeSync);
-	}
-
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
-
-	node.Print();
-	node.Start();
-
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
-
 	StoreTCNet storetcnet;
 	TCNetParams tcnetparams((TCNetParamsStore *) &storetcnet);
 
@@ -232,6 +194,41 @@ void notmain(void) {
 	}
 
 	// From here work with source selection
+
+	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+
+	const bool bRunArtNet = ((source == LTC_READER_SOURCE_ARTNET) || (!tLtcDisabledOutputs.bArtNet));
+
+	if (bRunArtNet) {
+		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
+		display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+
+		ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+
+		if (artnetparams.Load()) {
+			artnetparams.Set(&node);
+			artnetparams.Dump();
+		}
+
+		node.SetShortName("LTC SMPTE Node");
+
+		IpProg ipprog;
+		node.SetIpProgHandler(&ipprog);
+
+		TimeSync timeSync;
+		if (!ltcParams.IsTimeSyncDisabled()) {
+			node.SetTimeSyncHandler(&timeSync);
+		}
+
+		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
+		display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+
+		node.Print();
+		node.Start();
+
+		console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
+		display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	}
 
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
 
@@ -272,7 +269,7 @@ void notmain(void) {
 		break;
 	}
 
-	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi);
+	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
 
 	if (bEnableRtpMidi) {
 		rtpMidi.Start();
@@ -384,7 +381,9 @@ void notmain(void) {
 			break;
 		}
 
-		node.Run();
+		if (bRunArtNet) {
+			node.Run();
+		}
 
 		if (bEnableRtpMidi) {
 			rtpMidi.Run();

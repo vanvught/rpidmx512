@@ -75,8 +75,8 @@ public:
 		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
 	}
 
-	tWS28xxMapping GetLedMapping(void) {
-		return (tWS28xxMapping) m_tLtcDisplayParams.nRgbMapping;
+	TWS28xxMapping GetLedMapping(void) {
+		return (TWS28xxMapping) m_tLtcDisplayParams.nRgbMapping;
 	}
 
 	uint8_t GetGlobalBrightness(void) {

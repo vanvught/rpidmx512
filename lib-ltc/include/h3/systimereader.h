@@ -56,13 +56,13 @@ private:
 	void HandleUdpRequest(void);
 
 private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
 	time_t m_ntimePrevious;
 	struct _midi_send_tc m_tMidiTimeCode;
 	int m_nHandle;
-	uint8_t m_Buffer[64];
+	alignas(uint32_t) uint8_t m_Buffer[64];
 	int m_nBytesReceived;
 	bool m_bIsStarted;
 

@@ -67,11 +67,8 @@ void Max72197Segment::Show(const char* pTimecode) {
 }
 
 void Max72197Segment::ShowSysTime(void) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(0);
-	local_time = localtime(&ltime);
+	const time_t ltime = time(0);
+	const struct tm *local_time = localtime(&ltime);
 
 	if (__builtin_expect((m_nSecondsPrevious == (uint32_t) local_time->tm_sec), 1)) {
 		return;
