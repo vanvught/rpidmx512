@@ -37,6 +37,7 @@ public:
 	alignas(uint32_t) static const char PARAMS_DEFAULT_GATEWAY[];
 	alignas(uint32_t) static const char PARAMS_HOSTNAME[];
 	alignas(uint32_t) static const char PARAMS_NTP_SERVER[];
+	alignas(uint32_t) static const char PARAMS_NTP_UTC_OFFSET[];
 
 	alignas(uint32_t) static const char MSG_NETWORK_INIT[];
 };

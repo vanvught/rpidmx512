@@ -30,5 +30,6 @@
 #define MDNS_SERVICE_OSC		"._osc"
 #define MDNS_SERVICE_CONFIG		"._config"
 #define MDNS_SERVICE_TFTP		"._tftp"
+#define MDNS_SERVICE_NTP		"._ntp"
 
 #endif /* INCLUDE_MDNSSERVICES_H_ */

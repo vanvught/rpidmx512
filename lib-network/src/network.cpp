@@ -41,6 +41,7 @@ Network::Network(void) :
 	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false),
 	m_nIfIndex(1),
+	m_fNtpUtcOffset(0),
 	m_pNetworkDisplay(0),
 	m_pNetworkStore(0),
 	m_nQueuedLocalIp(0),

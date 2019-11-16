@@ -40,6 +40,7 @@ struct TNetworkParams {
 	bool bIsDhcpUsed;
 	uint8_t aHostName[NETWORK_HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
+	float	fNtpUtcOffset;
 };
 
 enum TNetworkParamsMask {
@@ -49,7 +50,8 @@ enum TNetworkParamsMask {
 	NETWORK_PARAMS_MASK_DEFAULT_GATEWAY = (1 << 3),
 	NETWORK_PARAMS_MASK_NAME_SERVER = (1 << 4),
 	NETWORK_PARAMS_MASK_HOSTNAME = (1 << 5),
-	NETWORK_PARAMS_MASK_NTP_SERVER = (1 << 6)
+	NETWORK_PARAMS_MASK_NTP_SERVER = (1 << 6),
+	NETWORK_PARAMS_MASK_NTP_UTC_OFFSET = (1 << 7)
 };
 
 class NetworkParamsStore {
@@ -68,8 +70,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TNetworkParams *ptNetworkParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TNetworkParams *ptNetworkParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t* pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Dump(void);
 
@@ -102,6 +104,13 @@ public:
 			return 0;
 		}
 		return m_tNetworkParams.nNtpServerIp;
+	}
+
+	float GetNtpUtcOffset(void) {
+		if (!isMaskSet(NETWORK_PARAMS_MASK_NTP_UTC_OFFSET)) {
+			return 0;
+		}
+		return m_tNetworkParams.fNtpUtcOffset;
 	}
 
 public:

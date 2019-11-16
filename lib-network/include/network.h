@@ -131,6 +131,10 @@ public:
 		return m_nNtpServerIp;
 	}
 
+	float GetNtpUtcOffset(void) {
+		return m_fNtpUtcOffset;
+	}
+
 	void SetNetworkDisplay(NetworkDisplay *pNetworkDisplay) {
 		m_pNetworkDisplay = pNetworkDisplay;
 	}
@@ -158,6 +162,7 @@ protected:
 	char m_aIfName[IFNAMSIZ];
 	uint32_t m_nIfIndex;
 	uint32_t m_nNtpServerIp;
+	float m_fNtpUtcOffset;
 
 	NetworkDisplay *m_pNetworkDisplay;
 	NetworkStore *m_pNetworkStore;

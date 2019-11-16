@@ -56,17 +56,21 @@ public:
 	}
 
 private:
+	void SetUtcOffset(float fUtcOffset);
+
+private:
 	static NtpClient *s_pThis;
 
 private:
 	uint32_t m_nServerIp;
+	int32_t m_nUtcOffset;
 	int32_t m_nHandle;
 	TNtpClientStatus m_tStatus;
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
 	time_t m_InitTime;
-	time_t m_RequestTime;
-	time_t m_LastPoll;
+	uint32_t m_MillisRequest;
+	uint32_t m_MillisLastPoll;
 };
 
 #endif /* NTPCLIENT_H_ */

@@ -58,7 +58,9 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
 	builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
+
 	builder.AddIpAddress(NetworkConst::PARAMS_NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER));
+	builder.Add(NetworkConst::PARAMS_NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NETWORK_PARAMS_MASK_NTP_UTC_OFFSET));
 
 	nSize = builder.GetSize();
 

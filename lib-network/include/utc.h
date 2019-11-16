@@ -1,5 +1,5 @@
 /**
- * @file mdnsprint.cpp
+ * @file utc.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,21 +21,19 @@
  * THE SOFTWARE.
  */
 
+#ifndef UTC_H_
+#define UTC_H_
+
 #include <stdint.h>
-#include <stdio.h>
 
-#include "mdns.h"
+enum TUtcOffset {
+	UTC_OFFSET_MIN = -12,
+	UTC_OFFSET_MAX = 14
+};
 
-void MDNS::Print(void) {
-	printf("mDNS\n");
-	if (m_nHandle == -1) {
-		printf(" Not running\n");
-		return;
-	}
-	printf(" Name : %s\n", m_pName);
-	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
-		if (m_aServiceRecords[i].pName != 0) {
-			printf(" %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == 0 ? "" : (char *)m_aServiceRecords[i].pTextContent);
-		}
-	}
-}
+class Utc {
+public:
+	static int32_t Validate(float fOffset);
+};
+
+#endif /* UTC_H_ */

@@ -1,5 +1,5 @@
 /**
- * @file mdnsprint.cpp
+ * @file utc.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,20 +22,27 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 
-#include "mdns.h"
+#include "utc.h"
 
-void MDNS::Print(void) {
-	printf("mDNS\n");
-	if (m_nHandle == -1) {
-		printf(" Not running\n");
-		return;
-	}
-	printf(" Name : %s\n", m_pName);
-	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
-		if (m_aServiceRecords[i].pName != 0) {
-			printf(" %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == 0 ? "" : (char *)m_aServiceRecords[i].pTextContent);
+// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+
+static const float s_ValidOffets[] = { -9.5, -3.5, 3.5, 4.5, 5.5, 5.75, 6.5, 8.75, 9.5, 10.5, 12.75 };
+
+int32_t Utc::Validate(float fOffset) {
+	int32_t nInt = (int32_t) fOffset;
+
+	if ((nInt >= -12) && (nInt <= 14)) {
+		if (fOffset == (float) nInt) {
+			return (nInt * 3600);
+		} else {
+			for (uint32_t i = 0; i < sizeof(s_ValidOffets) / sizeof(s_ValidOffets[0]); i++) {
+				if (fOffset == s_ValidOffets[i]) {
+					return (int32_t)(fOffset * 3600);
+				}
+			}
 		}
 	}
+
+	return 0;
 }
