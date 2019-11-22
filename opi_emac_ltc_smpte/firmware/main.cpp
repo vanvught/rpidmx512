@@ -199,6 +199,9 @@ void notmain(void) {
 
 	const bool bRunArtNet = ((source == LTC_READER_SOURCE_ARTNET) || (!tLtcDisabledOutputs.bArtNet));
 
+	IpProg ipprog;
+	TimeSync timeSync;
+
 	if (bRunArtNet) {
 		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 		display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
@@ -211,11 +214,8 @@ void notmain(void) {
 		}
 
 		node.SetShortName("LTC SMPTE Node");
-
-		IpProg ipprog;
 		node.SetIpProgHandler(&ipprog);
 
-		TimeSync timeSync;
 		if (!ltcParams.IsTimeSyncDisabled()) {
 			node.SetTimeSyncHandler(&timeSync);
 		}
