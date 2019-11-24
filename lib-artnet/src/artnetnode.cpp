@@ -70,7 +70,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 39 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 40 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -187,12 +187,28 @@ void ArtNetNode::Start(void) {
 		m_nDestinationIp = m_Node.IPAddressBroadcast;
 	}
 
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
+	if (m_pArtNetDmx != 0) {
+		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+			m_pArtNetDmx->Start(i);
+		}
+	}
+#endif
+
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 
 	SendPollRelply(false);	// send a reply on startup
 }
 
 void ArtNetNode::Stop(void) {
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
+	if (m_pArtNetDmx != 0) {
+		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+			m_pArtNetDmx->Stop(i);
+		}
+	}
+#endif
+
 	if (m_pLightSet != 0) {
 		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) && (m_IsLightSetRunning[i])) {
@@ -1129,11 +1145,14 @@ void ArtNetNode::Run(void) {
 			HandleIpProg();
 		}
 		break;
+	case OP_TRIGGER:
+		if (m_pArtNetTrigger != 0) {
+			HandleTrigger();
+		}
+		break;
 	default:
 		// ArtNet but OpCode is not implemented
 		// Just skip ... no error
-		//return 0;
-		//__builtin_unreachable ();
 		break;
 	}
 

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,7 @@
 #define ARTNETIPPROG_H_
 
 #include <stdint.h>
-
-#if defined (__circle__)
-#else
 #include <stdbool.h>
-#endif
 
 #if  !defined (PACKED)
 #define PACKED __attribute__((packed))
