@@ -2,7 +2,7 @@
  * @file lightsetchain.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,12 @@ void LightSetChain::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nSize)
 
 	for (unsigned i = 0; i < m_nSize; i++) {
 		m_pTable[i].pLightSet->SetData(nPort, pData, nSize);
+	}
+}
+
+void LightSetChain::Print(void) {
+	for (unsigned i = 0; i < m_nSize; i++) {
+		m_pTable[i].pLightSet->Print();
 	}
 }
 

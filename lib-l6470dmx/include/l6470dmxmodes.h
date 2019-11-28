@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,20 +53,22 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	inline TL6470DmxModes GetMode(void) {
+	void Print(void);
+
+	TL6470DmxModes GetMode(void) {
 		return m_nMode;
 	}
 
 public: // RDM
-	inline const uint8_t GetDmxStartAddress(void) const {
+	uint8_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
-	inline void SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
 
-	inline uint8_t GetDmxFootPrint(void) const {
+	uint8_t GetDmxFootPrint(void) {
 		return m_DmxFootPrint;
 	}
 

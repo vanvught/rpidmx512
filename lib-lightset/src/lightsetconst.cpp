@@ -29,4 +29,8 @@
 
 alignas(uint32_t) const char LightSetConst::PARAMS_OUTPUT[] = "output";
 alignas(uint32_t) const char LightSetConst::PARAMS_UNIVERSE[] = "universe";
+
 alignas(uint32_t) const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_update";
+
+alignas(uint32_t) const char LightSetConst::PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
+alignas(uint32_t) const char LightSetConst::PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";

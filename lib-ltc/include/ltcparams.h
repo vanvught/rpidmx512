@@ -67,7 +67,7 @@ struct TLtcParams {
 	uint8_t nEnableOsc;
 	uint16_t nOscPort;
 	uint8_t nEnableWS28xx;
-};
+}__attribute__((packed));
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),

@@ -35,6 +35,7 @@
 #include "lightset.h"
 
 #include "ws28xx.h"
+#include "ws28xxdmxstore.h"
 
 class WS28xxDmx: public LightSet {
 public:
@@ -78,6 +79,10 @@ public:
 		return m_nGlobalBrightness;
 	}
 
+	void SetWS28xxDmxStore(WS28xxDmxStore *pWS28xxDmxStore) {
+		m_pWS28xxDmxStore = pWS28xxDmxStore;
+	}
+
 	virtual void Print(void);
 
 public: // RDM
@@ -110,6 +115,8 @@ protected:
 	WS28xx* m_pLEDStripe;
 	bool m_bIsStarted;
 	bool m_bBlackout;
+
+	WS28xxDmxStore *m_pWS28xxDmxStore;
 
 private:
 	uint32_t m_nClockSpeedHz;

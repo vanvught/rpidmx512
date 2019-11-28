@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-
 #include <stdio.h>
 
 #include "tlc59711dmx.h"
@@ -32,7 +31,7 @@
 void TLC59711Dmx::Print(void) {
 	printf("PWM parameters\n");
 	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetLedTypeString(m_LEDType), m_LEDType);
-	printf(" Count : %d\n", (int) m_nLEDCount);
+	printf(" Count : %d %s\n", (int) m_nLEDCount, m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");
 	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nSpiSpeedHz, (m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711_SPI_SPEED_DEFAULT, TLC59711_SPI_SPEED_MAX);
+	printf(" DMX   : StartAddress=%d, FootPrint=%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
 }
-

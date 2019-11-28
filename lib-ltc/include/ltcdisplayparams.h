@@ -40,7 +40,7 @@ struct TLtcDisplayParams {
 	uint8_t nLedType;
 	uint8_t nGlobalBrightness;
 	uint8_t nRgbMapping;
-};
+} __attribute__((packed));
 
 enum TLtcDisplayParamsMask {
 	LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE = (1 << 0),

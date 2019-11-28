@@ -42,6 +42,8 @@ public:
 
 	int busyCheck(void);
 
+	void Print(void);
+
 private:
 	uint8_t SPIXfer(uint8_t);
 
@@ -51,7 +53,7 @@ private:
 public:
 	bool IsConnected(void);
 
-	inline int getMotorNumber(void) {
+	int getMotorNumber(void) {
 		return m_nMotorNumber;
 	}
 

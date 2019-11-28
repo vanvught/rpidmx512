@@ -31,7 +31,6 @@
 class ModeParamsConst {
 public:
 	alignas(uint32_t) static const char DMX_MODE[];
-	alignas(uint32_t) static const char DMX_START_ADDRESS[];
 
 	alignas(uint32_t) static const char MAX_STEPS[];
 	alignas(uint32_t) static const char SWITCH_ACT[];

@@ -32,11 +32,12 @@
 
 struct TSparkFunDmxParams {
     uint32_t nSetList;
+    //
     uint8_t nPosition;
 	uint8_t nSpiCs;
 	uint8_t nResetPin;
 	uint8_t nBusyPin;
-}__attribute__((packed));
+} __attribute__((packed));
 
 enum TSparkFunDmxParamsMask {
 	SPARKFUN_DMX_PARAMS_MASK_POSITION = (1 << 0),
@@ -58,21 +59,21 @@ public:
 
 class SparkFunDmxParams {
 public:
-	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore=0);
+	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore = 0);
 	~SparkFunDmxParams(void);
 
 	bool Load(void);
-	void Load(const char *pBuffer, uint32_t nLength);
-
-	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-
 	bool Load(uint8_t nMotorIndex);
+	void Load(const char *pBuffer, uint32_t nLength);
+	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+
+	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
 
 	void SetGlobal(SparkFunDmx *pSparkFunDmx);
 	void SetLocal(SparkFunDmx *pSparkFunDmx);
 
-	void Dump(uint8_t nMotorIndex = (1 + SPARKFUN_DMX_MAX_MOTORS));
+	void Dump(uint8_t nMotorIndex = 0xFF);
 public:
     static void staticCallbackFunction(void *p, const char *s);
 

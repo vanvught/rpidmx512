@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -121,14 +126,17 @@ void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
 
 void DisplayUdfParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
+	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &m_tDisplayUdfParams.nSleepTimeout) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &value8) == SSCAN_OK) {
+		m_tDisplayUdfParams.nSleepTimeout = value8;
 		m_tDisplayUdfParams.nSetList |= DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT;
 		return;
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (Sscan::Uint8(pLine, pArray[i], &m_tDisplayUdfParams.nLabelIndex[i]) == SSCAN_OK) {
+		if (Sscan::Uint8(pLine, pArray[i], &value8) == SSCAN_OK) {
+			m_tDisplayUdfParams.nLabelIndex[i] = value8;
 			m_tDisplayUdfParams.nSetList |= (1 << i);
 			return;
 		}

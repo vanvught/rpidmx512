@@ -2,9 +2,6 @@
  * @file networkstore.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

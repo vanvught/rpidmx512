@@ -33,11 +33,10 @@
 
 #include "debug.h"
 
-L6470DmxMode1::L6470DmxMode1(L6470 *pL6470, MotorParams *pMotorParams) {
+L6470DmxMode1::L6470DmxMode1(L6470 *pL6470) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
 
 	m_pL6470 = pL6470;
 

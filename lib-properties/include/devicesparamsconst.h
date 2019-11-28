@@ -37,7 +37,6 @@ public:
 	alignas(uint32_t) static const char ACTIVE_OUT[];
 	alignas(uint32_t) static const char USE_SI5351A[];
 
-	alignas(uint32_t) static const char DMX_START_ADDRESS[];
 	alignas(uint32_t) static const char SPI_SPEED_HZ[];
 
 	alignas(uint32_t) static const char LED_GROUPING[];

@@ -43,7 +43,7 @@ public:
 	~ArtNetRdmResponder(void);
 
 	void Full(uint8_t nPort);
-	const uint8_t GetUidCount(uint8_t nPort);
+	uint8_t GetUidCount(uint8_t nPort);
 	void Copy(uint8_t nPort, uint8_t *);
 	const uint8_t *Handler(uint8_t nPort, const uint8_t *);
 

@@ -29,7 +29,7 @@
 
 #include "parse.h"
 
-char* Parse::DmxSlotInfo(char* s, bool& isValid, uint8_t& nType, uint16_t& nCategory) {
+char* Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCategory) {
 	assert(s != 0);
 
 	char *b = s;

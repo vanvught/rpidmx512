@@ -27,7 +27,9 @@
 #include <assert.h>
 
 #include "storews28xxdmx.h"
+
 #include "ws28xxdmxparams.h"
+#include "ws28xxdmxstore.h"
 
 #include "spiflashstore.h"
 
@@ -36,6 +38,12 @@
 StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = 0;
 
 WS28xxDmxParamsStore::~WS28xxDmxParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+WS28xxDmxStore::~WS28xxDmxStore(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -69,6 +77,14 @@ void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
 	DEBUG_ENTRY
 
 	SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, (void *)pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+
+	DEBUG_EXIT
+}
+
+void StoreWS28xxDmx::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), (void *)&nDmxStartAddress, sizeof(uint32_t), WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS);
 
 	DEBUG_EXIT
 }

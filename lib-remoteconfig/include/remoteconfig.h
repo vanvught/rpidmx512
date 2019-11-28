@@ -66,6 +66,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_TIMECODE,
 	REMOTE_CONFIG_MODE_OSC,
 	REMOTE_CONFIG_MODE_CONFIG,
+	REMOTE_CONFIG_MODE_STEPPER,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -83,6 +84,18 @@ enum TTxtFile {
 	TXT_FILE_DISPLAY_UDF,
 	TXT_FILE_LTCDISPLAY,
 	TXT_FILE_DISPLAY_NEXTION,
+#if defined(STEPPER)
+	TXT_FILE_SPARKFUN,
+	TXT_FILE_MOTOR0,
+	TXT_FILE_MOTOR1,
+	TXT_FILE_MOTOR2,
+	TXT_FILE_MOTOR3,
+	TXT_FILE_MOTOR4,
+	TXT_FILE_MOTOR5,
+	TXT_FILE_MOTOR6,
+	TXT_FILE_MOTOR7,
+#endif
+	TXT_FILE_RDM,
 	TXT_FILE_LAST
 };
 
@@ -182,6 +195,13 @@ private:
 #if defined(DISPLAY_NEXTION)
 	void HandleGetNextionTxt(uint32_t& nSize);
 #endif
+#if defined(STEPPER)
+	void HandleGetSparkFunTxt(uint32_t& nSize);
+	void HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize);
+#endif
+#if defined(RDM_RESPONDER)
+	void HandleGetRdmTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -215,6 +235,13 @@ private:
 #endif
 #if defined(DISPLAY_NEXTION)
 	void HandleTxtFileNextion(void);
+#endif
+#if defined(STEPPER)
+	void HandleTxtFileSparkFun(void);
+	void HandleTxtFileMotor(uint32_t nMotorIndex);
+#endif
+#if defined(RDM_RESPONDER)
+	void HandleTxtFileRdm(void);
 #endif
 
 	void HandleDisplaySet(void);

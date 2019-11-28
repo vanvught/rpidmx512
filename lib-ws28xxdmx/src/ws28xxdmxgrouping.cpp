@@ -152,6 +152,11 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
+
+		if (m_pWS28xxDmxStore != 0) {
+			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
 		return true;
 	}
 

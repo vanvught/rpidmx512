@@ -42,6 +42,12 @@ RDMDeviceParamsStore::~RDMDeviceParamsStore(void) {
 	DEBUG_EXIT
 }
 
+RDMDeviceStore::~RDMDeviceStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 StoreRDMDevice::StoreRDMDevice(void) {
 	DEBUG_ENTRY
 
@@ -61,7 +67,7 @@ StoreRDMDevice::~StoreRDMDevice(void) {
 void StoreRDMDevice::Update(const struct TRDMDeviceParams *pRDMDeviceParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, (void *)pRDMDeviceParams, sizeof(struct TRDMDevice));
+	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, (void *)pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
 
 	DEBUG_EXIT
 }
@@ -69,12 +75,12 @@ void StoreRDMDevice::Update(const struct TRDMDeviceParams *pRDMDeviceParams) {
 void StoreRDMDevice::Copy(struct TRDMDeviceParams *pRDMDeviceParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_RDMDEVICE, (void *)pRDMDeviceParams, sizeof(struct TRDMDevice));
+	SpiFlashStore::Get()->Copy(STORE_RDMDEVICE, (void *)pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
 
 	DEBUG_EXIT
 }
 
-void StoreRDMDevice::SaveLabel(const uint8_t* pLabel, uint8_t nLength) {
+void StoreRDMDevice::SaveLabel(const uint8_t *pLabel, uint8_t nLength) {
 	DEBUG_ENTRY
 
 	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), (void *)pLabel, nLength, RDMDEVICE_PARAMS_MASK_LABEL);

@@ -137,6 +137,7 @@ void L6470Params::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, 
 
 void L6470Params::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
+	uint8_t value8;
 
 	if (Sscan::Float(pLine, L6470ParamsConst::MIN_SPEED, &m_tL6470Params.fMinSpeed) == SSCAN_OK) {
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_MIN_SPEED;
@@ -158,27 +159,32 @@ void L6470Params::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_HOLD, &m_tL6470Params.nKvalHold) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_HOLD, &value8) == SSCAN_OK) {
+		m_tL6470Params.nKvalHold = value8;
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_KVAL_HOLD;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_RUN, &m_tL6470Params.nKvalRun) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_RUN, &value8) == SSCAN_OK) {
+		m_tL6470Params.nKvalRun = value8;
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_KVAL_RUN;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_ACC, &m_tL6470Params.nKvalAcc) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_ACC, &value8) == SSCAN_OK) {
+		m_tL6470Params.nKvalAcc = value8;
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_KVAL_ACC;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_DEC, &m_tL6470Params.nKvalDec) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, L6470ParamsConst::KVAL_DEC, &value8) == SSCAN_OK) {
+		m_tL6470Params.nKvalDec = value8;
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_KVAL_DEC;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, L6470ParamsConst::MICRO_STEPS, &m_tL6470Params.nMicroSteps) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, L6470ParamsConst::MICRO_STEPS, &value8) == SSCAN_OK) {
+		m_tL6470Params.nMicroSteps = value8;
 		m_tL6470Params.nSetList |= L6470_PARAMS_MASK_MICRO_STEPS;
 		return;
 	}

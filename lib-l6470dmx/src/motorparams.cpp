@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -53,6 +58,8 @@ MotorParams::MotorParams(MotorParamsStore *pMotorParamsStore): m_pMotorParamsSto
 	for (uint32_t i = 0; i < sizeof(struct TMotorParams); i++) {
 		*p++ = 0;
 	}
+
+	m_tMotorParams.fStepAngel = 1.8;	// 200 steps per revolution.
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
 	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
@@ -141,8 +148,10 @@ void MotorParams::callbackFunction(const char *pLine) {
 	float f;
 
 	if (Sscan::Float(pLine, MotorParamsConst::STEP_ANGEL, &f) == SSCAN_OK) {
-		m_tMotorParams.fStepAngel = f;
-		m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_STEP_ANGEL;
+		if (f != 0) {
+			m_tMotorParams.fStepAngel = f;
+			m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_STEP_ANGEL;
+		}
 		return;
 	}
 

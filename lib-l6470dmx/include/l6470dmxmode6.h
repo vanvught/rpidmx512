@@ -2,7 +2,7 @@
  * @file l6470dmxmode6.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,24 +34,24 @@
 
 class L6470DmxMode6: public L6470DmxMode {
 public:
-	L6470DmxMode6(L6470 *, MotorParams *, ModeParams *);
+	L6470DmxMode6(L6470*, MotorParams*, ModeParams*);
 	~L6470DmxMode6(void);
 
 	void Start(void);
 	void Stop(void);
 
-	void Data(const uint8_t *);
+	void Data(const uint8_t*);
 
-	inline static TL6470DmxModes GetMode(void) {
+	static TL6470DmxModes GetMode(void) {
 		return L6470DMXMODE6;
 	}
 
-	inline static uint8_t GetDmxFootPrint(void) {
+	static uint8_t GetDmxFootPrint(void) {
 		return 0;
 	}
 
 private:
-	L6470	*m_pL6470;
+	L6470 *m_pL6470;
 };
 
 #endif /* L6470DMXMODE3_H_ */

@@ -37,9 +37,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,    64,     32,         480,           64,         32,        96,           48,        32,      944,          48,        32,            32,        32};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Nextion", "SparkFun"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Nextion", "SparkFun", "Slush", "Motors"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -65,6 +65,8 @@ SpiFlashStore::SpiFlashStore(void): m_bHaveFlashChip(false), m_bIsNew(false), m_
 
 		DEBUG_PRINTF("OFFSET_STORES=%d", (int) OFFSET_STORES);
 		DEBUG_PRINTF("m_nSpiFlashStoreSize=%d", m_nSpiFlashStoreSize);
+
+		assert(m_nSpiFlashStoreSize <= SPI_FLASH_STORE_SIZE);
 
 		Dump();
 	}
@@ -163,14 +165,14 @@ uint32_t SpiFlashStore::GetStoreOffset(enum TStore tStore) {
 	return nOffset;
 }
 
-void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void* pData, uint32_t nDataLength, uint32_t bSetList) {
+void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
 	DEBUG1_ENTRY
 
 	if (__builtin_expect((!m_bHaveFlashChip),0)) {
 		return;
 	}
 
-	DEBUG_PRINTF("[%s]:%d:%p[%d]:%d-%d", s_aStoreName[tStore], tStore, pData, nOffset, nDataLength, m_tState);
+	DEBUG_PRINTF("[%s]:%d:%p, nOffset=%d, nDataLength=%d-%d, bSetList=0x%x, nOffsetSetList=%d", s_aStoreName[tStore], tStore, pData, nOffset, nDataLength, m_tState, nSetList, nOffsetSetList);
 
 	assert(tStore < STORE_LAST);
 	assert(pData != 0);
@@ -182,27 +184,26 @@ void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void* pData, ui
 
 	const uint32_t nBase = nOffset + GetStoreOffset(tStore);
 
-	const uint8_t *src = (uint8_t *) pData;
-	uint8_t *dst = (uint8_t *) &m_aSpiFlashData[nBase];
+	const uint8_t *pSrc = (const uint8_t *) pData;
+	uint8_t *pDst = (uint8_t *) &m_aSpiFlashData[nBase];
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
-		if (*src != *dst) {
+		if (*pSrc != *pDst) {
 			bIsChanged = true;
-			*dst = *src;
+			*pDst = *pSrc;
 		}
-		dst++;
-		src++;
+		pDst++;
+		pSrc++;
 	}
 
 	if (bIsChanged && (m_tState != STORE_STATE_ERASED)) {
 		m_tState = STORE_STATE_CHANGED;
 	}
 
-	if ((0 != nOffset) && (bIsChanged)) {
-		assert(bSetList != 0);
+	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
+		uint32_t *pSet = (uint32_t *) (&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffsetSetList);
 
-		uint32_t *p = (uint32_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
-		*p |= bSetList;
+		*pSet |= nSetList;
 	}
 
 	DEBUG_PRINTF("m_tState=%d", m_tState);
@@ -210,7 +211,7 @@ void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void* pData, ui
 	DEBUG1_EXIT
 }
 
-void SpiFlashStore::Copy(enum TStore tStore, void* pData, uint32_t nDataLength) {
+void SpiFlashStore::Copy(enum TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset) {
 	DEBUG1_ENTRY
 
 	if (__builtin_expect((!m_bHaveFlashChip), 0)) {
@@ -220,23 +221,23 @@ void SpiFlashStore::Copy(enum TStore tStore, void* pData, uint32_t nDataLength) 
 
 	assert(tStore < STORE_LAST);
 	assert(pData != 0);
-	assert(nDataLength <= s_aStorSize[tStore]);
+	assert((nDataLength + nOffset) <= s_aStorSize[tStore]);
 
-	const uint32_t *pSet = (uint32_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
+	const uint32_t *pSet = (uint32_t *) ((uint8_t *)&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset);
 
-	DEBUG_PRINTF("*pSet=%d", (int) *pSet);
+	DEBUG_PRINTF("*pSet=0x%x", (uint32_t) *pSet);
 
 	if ((__builtin_expect((m_bIsNew), 0)) || (__builtin_expect((*pSet == 0), 0))) {
-		Update(tStore, pData, nDataLength);
+		Update(tStore, nOffset, pData, nDataLength);
 		DEBUG1_EXIT
 		return;
 	}
 
-	const uint8_t *src = (uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
-	uint8_t *dst = (uint8_t *) pData;
+	const uint8_t *pSrc = (const uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset;
+	uint8_t *pDst = (uint8_t *) pData;
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
-		*dst++ = *src++;
+		*pDst++ = *pSrc++;
 	}
 
 	DEBUG1_EXIT
@@ -252,14 +253,49 @@ void SpiFlashStore::CopyTo(enum TStore tStore, void* pData, uint32_t& nDataLengt
 
 	nDataLength = s_aStorSize[tStore];
 
-	const uint8_t *src = (uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
-	uint8_t *dst = (uint8_t *) pData;
+	const uint8_t *pSrc = (const uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
+	uint8_t *pDst = (uint8_t *) pData;
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
-		*dst++ = *src++;
+		*pDst++ = *pSrc++;
 	}
 
 	DEBUG1_EXIT
+}
+
+bool SpiFlashStore::Flash(void) {
+	if (__builtin_expect((m_tState == STORE_STATE_IDLE), 1)) {
+		return false;
+	}
+
+	DEBUG_PRINTF("m_tState=%d", m_tState);
+
+	assert(m_nStartAddress != 0);
+
+	if (m_nStartAddress == 0) {
+		printf("!*! m_nStartAddress == 0 !*!\n");
+		return false;
+	}
+
+	switch (m_tState) {
+		case STORE_STATE_CHANGED:
+			spi_flash_cmd_erase(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE);
+			m_tState = STORE_STATE_ERASED;
+			return true;
+			break;
+		case STORE_STATE_ERASED:
+			spi_flash_cmd_write_multi(m_nStartAddress, (size_t) m_nSpiFlashStoreSize, (const void *)&m_aSpiFlashData);
+			m_tState = STORE_STATE_IDLE;
+			break;
+		default:
+			break;
+	}
+
+#ifndef NDEBUG
+	Dump();
+#endif
+
+	return false;
 }
 
 void SpiFlashStore::Dump(void) {
@@ -282,42 +318,6 @@ void SpiFlashStore::Dump(void) {
 
 	printf("m_tState=%d\n", m_tState);
 #endif
-}
-
-bool SpiFlashStore::Flash(void) {
-	if (__builtin_expect((m_tState == STORE_STATE_IDLE), 1)) {
-		return false;
-	}
-
-	DEBUG_PRINTF("m_tState=%d", m_tState);
-
-	assert(m_nStartAddress != 0);
-
-	if (m_nStartAddress == 0) {
-		printf("!*! m_nStartAddress == 0 !*!\n");
-
-		return false;
-	}
-
-	switch (m_tState) {
-		case STORE_STATE_CHANGED:
-			spi_flash_cmd_erase(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE);
-			m_tState = STORE_STATE_ERASED;
-			return true;
-			break;
-		case STORE_STATE_ERASED:
-			spi_flash_cmd_write_multi(m_nStartAddress, (size_t) m_nSpiFlashStoreSize, (const void *)&m_aSpiFlashData);
-			m_tState = STORE_STATE_IDLE;
-			break;
-		default:
-			break;
-	}
-
-#ifndef NDEBUG
-	//Dump();
-#endif
-
-	return false;
 }
 
 StoreNetwork *SpiFlashStore::GetStoreNetwork(void) {

@@ -32,6 +32,7 @@
 #include "lightset.h"
 
 #include "tlc59711.h"
+#include "tlc59711dmxstore.h"
 
 enum TTLC59711Type {
 	TTLC59711_TYPE_RGB,
@@ -64,6 +65,10 @@ public:
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
 	uint32_t GetSpiSpeedHz(void) {
 		return m_nSpiSpeedHz;
+	}
+
+	void SetTLC59711DmxStore(TLC59711DmxStore *pTLC59711Store) {
+		m_pTLC59711DmxStore = pTLC59711Store;
 	}
 
 	void Print(void);
@@ -100,6 +105,8 @@ private:
 	uint32_t m_nSpiSpeedHz;
 	TTLC59711Type m_LEDType;
 	uint8_t m_nLEDCount;
+
+	TLC59711DmxStore *m_pTLC59711DmxStore;
 };
 
 #endif /* TLC59711DMX_H_ */

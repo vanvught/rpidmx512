@@ -157,7 +157,7 @@
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1274561838" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.1226553393" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1765350496" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder arguments="-f Makefile.H3" command="make" id="cdt.managedbuild.builder.gnu.cross.1555096230" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder arguments="-f Makefile.H3" command="make" id="cdt.managedbuild.builder.gnu.cross.1555096230" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="false" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1188896631" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.448005941" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-pca9685dmx/include}&quot;"/>
@@ -222,9 +222,11 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Linux"/>
 		<configuration configurationName="rpi">
 			<resource resourceType="PROJECT" workspacePath="/lib-pca9685dmx"/>
 		</configuration>
+		<configuration configurationName="H3"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/lib-pca9685dmx"/>
 		</configuration>

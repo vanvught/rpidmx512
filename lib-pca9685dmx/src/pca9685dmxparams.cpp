@@ -35,6 +35,9 @@
 
 #include "pca9685.h"
 
+#include "lightset.h"
+#include "lightsetconst.h"
+
 #include "readconfigfile.h"
 #include "sscan.h"
 
@@ -44,9 +47,7 @@
 #define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
 #define BOARD_INSTANCES_MASK	(1 << 4)
 
-static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
 static const char PARAMS_DMX_FOOTPRINT[] ALIGNED = "dmx_footprint";
-static const char PARAMS_DMX_SLOT_INFO[] ALIGNED = "dmx_slot_info";
 static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
 static const char PARAMS_BOARD_INSTANCES[] ALIGNED = "board_instances";
 
@@ -96,8 +97,8 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint16_t value16;
 	uint8_t len;
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if ((value16 != 0) && (value16 <= 512)) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
 		}
@@ -129,7 +130,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	}
 
 	len = DMX_SLOT_INFO_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, &len) == SSCAN_OK) {
 		if (len >= 7) { // 00:0000 at least one value set
 			m_bSetList |= DMX_SLOT_INFO_MASK;
 		}
@@ -168,7 +169,7 @@ void PCA9685DmxParams::Dump(void) {
 	}
 
 	if(isMaskSet(DMX_START_ADDRESS_MASK)) {
-		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
 	}
 
 	if(isMaskSet(DMX_FOOTPRINT_MASK)) {
@@ -184,7 +185,7 @@ void PCA9685DmxParams::Dump(void) {
 	}
 
 	if(isMaskSet(DMX_SLOT_INFO_MASK)) {
-		printf(" %s=%s\n", PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
+		printf(" %s=%s\n", LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
 	}
 #endif
 }

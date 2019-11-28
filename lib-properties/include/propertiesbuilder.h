@@ -61,6 +61,11 @@ public:
 
 	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bDoAdd = true);
 
+	bool AddHex16(const char *pProperty, const uint16_t nValue16, bool bDoAdd = true) {
+		const uint8_t nValue[2] = { static_cast<uint8_t>((nValue16 & 0xFF00) >> 8), static_cast<uint8_t>(nValue16 & 0xFF) };
+		return AddHex16(pProperty, nValue, bDoAdd);
+	}
+
 	unsigned GetSize(void) {
 		return m_nSize;
 	}

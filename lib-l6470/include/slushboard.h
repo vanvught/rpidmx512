@@ -1,4 +1,3 @@
-#if !defined(ORANGE_PI)
 /**
  * @file slushengineboard.h
  *
@@ -107,4 +106,3 @@ private:
 };
 
 #endif /* SLUSHBOARD_H_ */
-#endif /* !defined(ORANGE_PI) */

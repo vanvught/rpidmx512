@@ -43,12 +43,14 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
+#include "lightset.h"
+
 #include "debug.h"
 
 L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_bIsStarted(false), m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(0), m_DmxFootPrint(0) {
 	DEBUG1_ENTRY;
 
-	assert(nDmxStartAddress <= 512);
+	assert(nDmxStartAddress <= DMX_UNIVERSE_SIZE);
 	assert(pL6470 != 0);
 	assert(pMotorParams != 0);
 	assert(pModeParams != 0);
@@ -57,15 +59,15 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 
 	switch (tMode) {
 		case L6470DMXMODE0:
-			m_pDmxMode = new L6470DmxMode0(pL6470, pMotorParams);
+			m_pDmxMode = new L6470DmxMode0(pL6470);
 			m_DmxFootPrint = L6470DmxMode0::GetDmxFootPrint();
 			break;
 		case L6470DMXMODE1:
-			m_pDmxMode = new L6470DmxMode1(pL6470, pMotorParams);
+			m_pDmxMode = new L6470DmxMode1(pL6470);
 			m_DmxFootPrint = L6470DmxMode1::GetDmxFootPrint();
 			break;
 		case L6470DMXMODE2:
-			m_pDmxMode = new L6470DmxMode2(pL6470, pMotorParams);
+			m_pDmxMode = new L6470DmxMode2(pL6470);
 			m_DmxFootPrint = L6470DmxMode2::GetDmxFootPrint();
 			break;
 		case L6470DMXMODE3:
@@ -260,7 +262,7 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 		return;
 	}
 
-	uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+	const uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
 
 #ifndef NDEBUG
 	printf("\tMotor : %d\n", m_nMotorNumber);

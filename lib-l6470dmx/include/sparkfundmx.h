@@ -2,7 +2,7 @@
  * @file sparkfundmx.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,15 +32,18 @@
 #include "lightset.h"
 #include "l6470dmxmodes.h"
 
-#include "motorparams.h"
 #include "modeparams.h"
+#include "motorparams.h"
+#include "l6470params.h"
 
 #include "autodriver.h"
 
 #include "hal_spi.h"
 #include "hal_gpio.h"
 
-#define SPARKFUN_DMX_MAX_MOTORS	4
+#include "modestore.h"
+
+#define SPARKFUN_DMX_MAX_MOTORS		8
 
 #if !defined (H3)
  #define GPIO_BUSY_IN		GPIO_EXT_35
@@ -50,25 +53,42 @@
  #define GPIO_RESET_OUT 	GPIO_EXT_13
 #endif
 
+struct TSparkFunStores {
+	void *pSparkFunDmxParamsStore;
+	ModeParamsStore *pModeParamsStore;
+	MotorParamsStore *pMotorParamsStore;
+	L6470ParamsStore *pL6470ParamsStore;
+};
+
 class SparkFunDmx: public LightSet {
 public:
 	SparkFunDmx(void);
 	~SparkFunDmx(void);
-
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	inline uint16_t GetDmxStartAddress(void) {
-		return m_nDmxStartAddress;
-	}
-
-	inline uint16_t GetDmxFootprint(void) {
-		return m_nDmxFootprint;
-	}
 
 	void Start(uint8_t nPort);
 	void Stop(uint8_t nPort);
 
 	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
+	void Print(void);
+
+	void SetModeStore(ModeStore *pModeStore) {
+		m_pModeStore = pModeStore;
+	}
+
+// RDM
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	uint16_t GetDmxStartAddress(void) {
+		return m_nDmxStartAddress;
+	}
+
+	uint16_t GetDmxFootprint(void) {
+		return m_nDmxFootprint;
+	}
+
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+
+//
 	void SetGlobalSpiCs(uint8_t nSpiCs) {
 		m_nGlobalSpiCs = nSpiCs;
 		m_bIsGlobalSpiCsSet = true;
@@ -105,13 +125,14 @@ public:
 	}
 
 public:
-	void ReadConfigFiles(void);
+	void ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores=0);
 
 private:
 	AutoDriver *m_pAutoDriver[SPARKFUN_DMX_MAX_MOTORS];
 	MotorParams *m_pMotorParams[SPARKFUN_DMX_MAX_MOTORS];
 	ModeParams *m_pModeParams[SPARKFUN_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SPARKFUN_DMX_MAX_MOTORS];
+	struct TLightSetSlotInfo *m_pSlotInfo[SPARKFUN_DMX_MAX_MOTORS];
 
 	uint8_t m_nGlobalSpiCs;
 	uint8_t m_nGlobalResetPin;
@@ -136,6 +157,8 @@ private:
 
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nDmxFootprint;
+
+	ModeStore *m_pModeStore;
 };
 
 #endif /* SPARKFUNDMX_H_ */

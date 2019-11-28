@@ -32,6 +32,7 @@
 #include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
+#include "lightsetconst.h"
 
 #include "debug.h"
 
@@ -50,7 +51,7 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TTLC59711Type) m_tTLC59711Params.LedType), isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
-	builder.Add(DevicesParamsConst::DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
 
 	nSize = builder.GetSize();

@@ -103,6 +103,21 @@
  #include "nextionparams.h"
  #include "storenextion.h"
 #endif
+#if defined(STEPPER)
+ /* sparkfun.txt */
+ #include "sparkfundmxparams.h"
+ #include "storesparkfundmx.h"
+ /* motor%.txt */
+ #include "modeparams.h"
+ #include "motorparams.h"
+ #include "l6470params.h"
+ #include "storemotors.h"
+#endif
+#if defined(RDM_RESPONDER)
+ /* rdm_device.txt */
+ #include "rdmdeviceparams.h"
+ #include "storerdmdevice.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
@@ -118,7 +133,7 @@
 #endif
 
 static const char sRemoteConfigs[REMOTE_CONFIG_LAST][18] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only" };
-static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config" };
+static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper" };
 
 static const char sRequestReboot[] ALIGNED = "?reboot##";
 #define REQUEST_REBOOT_LENGTH (sizeof(sRequestReboot)/sizeof(sRequestReboot[0]) - 1)
@@ -191,6 +206,7 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_tRemoteConfigListBin.aDisplayName[0] = '\0';
 
 #ifndef NDEBUG
+	DEBUG_PUTS("m_tRemoteConfigListBin");
 	debug_dump((void *)&m_tRemoteConfigListBin, sizeof m_tRemoteConfigListBin);
 #endif
 
@@ -214,12 +230,12 @@ RemoteConfig::~RemoteConfig(void) {
 
 void RemoteConfig::SetDisable(bool bDisable) {
 	if (bDisable && !m_bDisable) {
-		Network::Get()->End(UDP_PORT);
-		m_nHandle = -1;
+//		Network::Get()->End(UDP_PORT);
+//		m_nHandle = -1;
 		m_bDisable = true;
 	} else if (!bDisable && m_bDisable) {
-		m_nHandle = Network::Get()->Begin(UDP_PORT);
-		assert(m_nHandle != -1);
+//		m_nHandle = Network::Get()->Begin(UDP_PORT);
+//		assert(m_nHandle != -1);
 		m_bDisable = false;
 	}
 
@@ -491,6 +507,22 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetNextionTxt(nSize);
 		break;
 #endif
+#if defined(STEPPER)
+	case TXT_FILE_SPARKFUN:
+		HandleGetSparkFunTxt(nSize);
+		break;
+	case TXT_FILE_MOTOR0:
+	case TXT_FILE_MOTOR1:
+	case TXT_FILE_MOTOR2:
+	case TXT_FILE_MOTOR3:
+		HandleGetMotorTxt((i - TXT_FILE_MOTOR0), nSize);
+		break;
+#endif
+#if defined(RDM_RESPONDER)
+	case TXT_FILE_RDM:
+		HandleGetRdmTxt(nSize);
+		break;
+#endif
 	default:
 #ifndef NDEBUG
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
@@ -669,6 +701,69 @@ void RemoteConfig::HandleGetNextionTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined(STEPPER)
+void RemoteConfig::HandleGetSparkFunTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	SparkFunDmxParams sparkFunParams((SparkFunDmxParamsStore *) StoreSparkFunDmx::Get());
+	sparkFunParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nMotorIndex=%d", (int) nMotorIndex);
+
+	uint32_t nSizeSparkFun = 0;
+
+	SparkFunDmxParams sparkFunParams((SparkFunDmxParamsStore *) StoreSparkFunDmx::Get());
+	sparkFunParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSizeSparkFun, nMotorIndex);
+
+	DEBUG_PRINTF("nSizeSparkFun=%d", nSizeSparkFun);
+
+	uint32_t nSizeMode = 0;
+
+	ModeParams modeParams((ModeParamsStore *) StoreMotors::Get());
+	modeParams.Save((uint8_t) nMotorIndex, m_pUdpBuffer + nSizeSparkFun, UDP_BUFFER_SIZE - nSizeSparkFun, nSizeMode);
+
+	DEBUG_PRINTF("nSizeMode=%d", nSizeMode);
+
+	uint32_t nSizeMotor = 0;
+
+	MotorParams motorParams((MotorParamsStore *) StoreMotors::Get());
+	motorParams.Save((uint8_t) nMotorIndex, m_pUdpBuffer + nSizeSparkFun + nSizeMode, UDP_BUFFER_SIZE - nSizeSparkFun - nSizeMode, nSizeMotor);
+
+	DEBUG_PRINTF("nSizeMotor=%d", nSizeMotor);
+
+	uint32_t nSizeL6470 = 0;
+
+	L6470Params l6470Params((L6470ParamsStore *) StoreMotors::Get());
+	l6470Params.Save((uint8_t) nMotorIndex, m_pUdpBuffer + nSizeSparkFun + nSizeMode + nSizeMotor, UDP_BUFFER_SIZE - nSizeSparkFun - nSizeMode - nSizeMotor, nSizeL6470);
+
+	DEBUG_PRINTF("nSizeL6470=%d", nSizeL6470);
+
+	nSize = nSizeSparkFun + nSizeMode + nSizeMotor + nSizeL6470;
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined(RDM_RESPONDER)
+void RemoteConfig::HandleGetRdmTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *) StoreRDMDevice::Get());
+	rdmDeviceParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
+/*
+ *
+ */
+
 void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_ENTRY
 
@@ -744,6 +839,22 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined(DISPLAY_NEXTION)
 	case TXT_FILE_DISPLAY_NEXTION:
 		HandleTxtFileNextion();
+		break;
+#endif
+#if defined(STEPPER)
+	case TXT_FILE_SPARKFUN:
+		HandleTxtFileSparkFun();
+		break;
+	case TXT_FILE_MOTOR0:
+	case TXT_FILE_MOTOR1:
+	case TXT_FILE_MOTOR2:
+	case TXT_FILE_MOTOR3:
+		HandleTxtFileMotor(i - TXT_FILE_MOTOR0);
+		break;
+#endif
+#if defined(RDM_RESPONDER)
+	case TXT_FILE_RDM:
+		HandleTxtFileRdm();
 		break;
 #endif
 	default:
@@ -1036,6 +1147,77 @@ void RemoteConfig::HandleTxtFileNextion(void) {
 	nextionParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	nextionParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined(STEPPER)
+void RemoteConfig::HandleTxtFileSparkFun(void) {
+	DEBUG_ENTRY
+
+	SparkFunDmxParams sparkFunDmxParams((SparkFunDmxParamsStore *) StoreSparkFunDmx::Get());
+
+	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TSparkFunDmxParams))){
+		uint32_t nSize;
+		sparkFunDmxParams.Builder((const struct TSparkFunDmxParams *)m_pStoreBuffer, m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+		m_nBytesReceived = nSize;
+	}
+
+	sparkFunDmxParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	sparkFunDmxParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleTxtFileMotor(uint32_t nMotorIndex) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nMotorIndex=%d", (int) nMotorIndex);
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+		// TODO HandleTxtFileMotor REMOTE_CONFIG_HANDLE_MODE_BIN
+		return;
+	}
+
+	SparkFunDmxParams sparkFunDmxParams((SparkFunDmxParamsStore *) StoreSparkFunDmx::Get());
+	sparkFunDmxParams.Load(nMotorIndex, (const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	sparkFunDmxParams.Dump();
+#endif
+
+	ModeParams modeParams((ModeParamsStore *) StoreMotors::Get());
+	modeParams.Load(nMotorIndex, (const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	modeParams.Dump();
+#endif
+
+	MotorParams motorParams((MotorParamsStore *) StoreMotors::Get());
+	motorParams.Load(nMotorIndex, (const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	motorParams.Dump();
+#endif
+
+	L6470Params l6470Params((L6470ParamsStore *) StoreMotors::Get());
+	l6470Params.Load(nMotorIndex, (const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	l6470Params.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined(RDM_RESPONDER)
+void RemoteConfig::HandleTxtFileRdm(void) {
+	DEBUG_ENTRY
+
+	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *) StoreRDMDevice::Get());
+	rdmDeviceParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	rdmDeviceParams.Dump();
 #endif
 
 	DEBUG_EXIT

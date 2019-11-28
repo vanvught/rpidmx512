@@ -751,6 +751,12 @@ public class RemoteConfig extends JFrame {
 				child.add(new DefaultMutableTreeNode(nodeType));
 			}
 			
+			String nodeRdm =  ((OrangePi) child.getUserObject()).getNodeRDM();
+			
+			if (nodeRdm != null) {
+				child.add(new DefaultMutableTreeNode(nodeRdm));
+			}
+			
 			String nodeLtcDisplay = ((OrangePi) child.getUserObject()).getNodeLtcDisplay();
 			
 			if (nodeLtcDisplay != null) {
@@ -762,11 +768,19 @@ public class RemoteConfig extends JFrame {
 			if (nodeMode != null) {
 				child.add(new DefaultMutableTreeNode(nodeMode));
 			}
+						
+			String nodeTCNet =  ((OrangePi) child.getUserObject()).getNodeTCNet();
 			
-			String nodeExtras =  ((OrangePi) child.getUserObject()).getNodeTCNet();
+			if (nodeTCNet != null) {
+				child.add(new DefaultMutableTreeNode(nodeTCNet));
+			}
 			
-			if (nodeExtras != null) {
-				child.add(new DefaultMutableTreeNode(nodeExtras));
+			int nMotorIndex = 0;
+			String nodeMotor = null;
+			
+			while (( nodeMotor = ((OrangePi) child.getUserObject()).getNodeMotor(nMotorIndex)) != null) {
+				child.add(new DefaultMutableTreeNode(nodeMotor));
+				nMotorIndex++;
 			}
 			
 			root.add(child);
