@@ -65,20 +65,24 @@ DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType):
 	m_nMaster(255),
 	m_bShowMsg(false),
 	m_nSecondsPrevious(60), // Force update
-	m_nColonBlinkMode(COLON_BLINK_MODE_DOWN)
+	m_nColonBlinkMode(COLON_BLINK_MODE_DOWN),
+	m_nMillis(0),
+	m_nWsTicker(0),
+	m_nMsgTimer(0),
+	m_ColonBlinkMillis(0)
+
 {
 	s_pThis = this;
-	s_wsticker = 0;
 }
 
-DisplayWS28xx::~DisplayWS28xx(void)
-{
-	delete m_pWS28xx;
-	m_pWS28xx = 0;
+DisplayWS28xx::~DisplayWS28xx(void) {
+	if (m_pWS28xx != 0) {
+		delete m_pWS28xx;
+		m_pWS28xx = 0;
+	}
 }
 
-void DisplayWS28xx::Init(uint8_t nIntensity, TWS28xxMapping lMapping)
-{
+void DisplayWS28xx::Init(uint8_t nIntensity, TWS28xxMapping lMapping) {
 	m_pWS28xx = new WS28xx(m_tLedType, WS28XX_LED_COUNT);
 	assert(m_pWS28xx != 0);
 
@@ -86,9 +90,6 @@ void DisplayWS28xx::Init(uint8_t nIntensity, TWS28xxMapping lMapping)
 	m_pWS28xx->SetGlobalBrightness(nIntensity);
 
 	m_tMapping = lMapping;
-
-	//m_nMaster = 255;								// Already done in constructor
-	//m_nColonBlinkMode = COLON_BLINK_MODE_DOWN;	// Already done in constructor
 
 	//	curR = 255;  // default to full red
 	//	curG = 0;
@@ -100,53 +101,44 @@ void DisplayWS28xx::Init(uint8_t nIntensity, TWS28xxMapping lMapping)
 	colG = 0xcc;
 	colB = 0x00;
 
-	// UDP socket
 	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
 	assert(m_nHandle != -1);
 }
 
-void DisplayWS28xx::Stop(){
-	m_nHandle = Network::Get()->End(WS28XX_UDP_PORT);
-}
-
-void DisplayWS28xx::SetMaster(uint8_t value)
-{
+void DisplayWS28xx::SetMaster(uint8_t value) {
 	m_nMaster = value;
 }
 
 // set the current RGB values, remapping them to different LED strip mappings
 // TODO move remapping functionality to lib-ws28xx
-void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t idx)
-{
-	switch (m_tMapping)
-	{
+void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex) {
+	switch (m_tMapping) {
 	case RGB:
-		curR = red;
-		curG = green;
-		curB = blue;
+		curR = nRed;
+		curG = nGreen;
+		curB = nBlue;
 		break;
 
 	case RBG:
-		curR = red;
-		curG = blue;
-		curB = green;
+		curR = nRed;
+		curG = nBlue;
+		curB = nGreen;
 		break;
 
 	case BGR:
-		curR = blue;
-		curG = green;
-		curB = red;
+		curR = nBlue;
+		curG = nGreen;
+		curB = nRed;
 		break;
 
 	default:
-		curR = red;
-		curG = green;
-		curB = blue;
+		curR = nRed;
+		curG = nGreen;
+		curB = nBlue;
 		break;
 	}
 
-	switch (idx)
-	{
+	switch (nIndex) {
 	case 0: // segment colour
 		segR = curR;
 		segG = curG;
@@ -174,14 +166,16 @@ void DisplayWS28xx::SetRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t idx
 }
 
 // set the current RGB values from a hex string, FFCC00
-void DisplayWS28xx::SetRGB(const char *hexstr, uint8_t idx)
-{
-	uint8_t type = hexstr[0] - '0';
-	uint32_t rgb = hexadecimalToDecimal(hexstr + 1);
-	uint8_t r = (uint8_t)(rgb >> 16);
-	uint8_t g = (uint8_t)(rgb >> 8);
-	uint8_t b = (uint8_t)rgb & 0xff;
-	SetRGB(r, g, b, type);
+void DisplayWS28xx::SetRGB(const char *pHexString) {
+	const uint8_t nIndex = pHexString[0] - '0';
+
+	const uint32_t nRGB = hexadecimalToDecimal(pHexString + 1);
+
+	const uint8_t nRed = (uint8_t) (nRGB >> 16);
+	const uint8_t nGreen = (uint8_t) (nRGB >> 8);
+	const uint8_t nBlue = (uint8_t) nRGB & 0xff;
+
+	SetRGB(nRed, nGreen, nBlue, nIndex);
 }
 
 void DisplayWS28xx::Run() {
@@ -191,11 +185,11 @@ void DisplayWS28xx::Run() {
 
 	m_nMillis = Hardware::Get()->Millis(); // millis now
 
-	if (m_nMillis >= s_wsticker) {
-		s_wsticker = m_nMillis + WS28XX_UPDATE_MS;
+	if (m_nMillis >= m_nWsTicker) {
+		m_nWsTicker = m_nMillis + WS28XX_UPDATE_MS;
 
 		// temporary messages.
-		if (m_nMillis > s_msgTimer)
+		if (m_nMillis > m_nMsgTimer)
 			m_bShowMsg = 0;
 		else if (m_bShowMsg)
 			ShowMessage(m_aMessage);
@@ -298,15 +292,15 @@ void DisplayWS28xx::Show(const char *pTimecode)
 
 			if (m_nSecondsPrevious != pTimecode[7]) // seconds have changed
 			{
-				ms_colon_blink = m_nMillis + 1000;
+				m_ColonBlinkMillis = m_nMillis + 1000;
 				m_nSecondsPrevious = pTimecode[7];
 				outR = 0;				outG = 0;				outB = 0;
 			}
-			else if (m_nMillis < ms_colon_blink)
+			else if (m_nMillis < m_ColonBlinkMillis)
 			{
-				outR = (((float)(ms_colon_blink - m_nMillis) / 1000) * abs(mColonBlinkOffset - colR));
-				outG = (((float)(ms_colon_blink - m_nMillis) / 1000) * abs(mColonBlinkOffset - colG));
-				outB = (((float)(ms_colon_blink - m_nMillis) / 1000) * abs(mColonBlinkOffset - colB));
+				outR = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colR));
+				outG = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colG));
+				outB = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colB));
 			}
 		}
 		else
@@ -330,7 +324,7 @@ void DisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
 	memset(&m_aMessage, ' ', WS28XX_MAX_MSG_SIZE);
 	memcpy(&m_aMessage, pMessage, nSize);
 
-	s_msgTimer = Hardware::Get()->Millis() + 3000; // 3 seconds from now
+	m_nMsgTimer = Hardware::Get()->Millis() + 3000; // 3 seconds from now
 	m_bShowMsg = true;
 }
 
@@ -340,12 +334,12 @@ void DisplayWS28xx::ShowMessage(const char *pMessage) {
 
 	uint8_t oR = 0, oG = 0, oB = 0;
 
-	if (m_nMillis <= s_msgTimer)
+	if (m_nMillis <= m_nMsgTimer)
 	{
 		{
-			oR = (((float)(s_msgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgR);
-			oG = (((float)(s_msgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgG);
-			oB = (((float)(s_msgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgB);
+			oR = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgR);
+			oG = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgG);
+			oB = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgB);
 		}
 	}
 	else

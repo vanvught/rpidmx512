@@ -85,27 +85,22 @@ public:
 	~DisplayWS28xx(void);
 
 	void Init(uint8_t nIntensity, TWS28xxMapping lMapping);
-	void Stop();
-
 	void Run();
 
 	void Print(void);
 
-	// display current TC
 	void Show(const char *pTimecode);
-	// display system clock
 	void ShowSysTime(void);
 
-	// return a pointer to this instance
-	static DisplayWS28xx* Get(void) {
+	static DisplayWS28xx *Get(void) {
 		return s_pThis;
 	}
 
 private:
   	// set RGB for next character(s)
-  	void SetRGB(uint8_t red, uint8_t green, uint8_t blue, uint8_t idx = 0);
+  	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex);
 	// set RGB from a hex string  
-	void SetRGB(const char *hexstr, uint8_t idx = 0);
+	void SetRGB(const char *pHexString);
 	// set the master brightness
 	void SetMaster(uint8_t value);
 	// write a character from to digits 0..7
@@ -123,27 +118,23 @@ private:
 	WS28xx *m_pWS28xx;
 	TWS28XXType m_tLedType;
   	TWS28xxMapping m_tMapping;
-	uint8_t m_Buffer[64]; // UDP buffer
-	int32_t m_nHandle; // UDP handle
+	uint8_t m_Buffer[64];					// UDP buffer
+	int32_t m_nHandle;						// UDP handle
 	uint8_t m_nMaster;
-	bool m_bShowMsg;  // if true, showing message
-	char m_aMessage[WS28XX_MAX_MSG_SIZE]; // 11 + chr(0)
-	uint32_t m_nSecondsPrevious;   // has seconds changed
+	bool m_bShowMsg;  						// if true, showing message
+	char m_aMessage[WS28XX_MAX_MSG_SIZE]; 	// 11 + chr(0)
+	uint32_t m_nSecondsPrevious;   			// has seconds changed
 	enum TColonBlinkMode m_nColonBlinkMode; // 0 = no blink; 1 = blink down; 2 = blink up
+	uint32_t m_nMillis; 					// current timer clock in MS
+	uint32_t m_nWsTicker;
+	uint32_t m_nMsgTimer;
+	uint32_t m_ColonBlinkMillis;
 
-	uint8_t curR = 0, curG = 0, curB = 0; // RGB set for character next rendered
-	uint8_t segR = 0, segG = 0, segB = 0; // RGB for segments  	
-	uint8_t colR = 0, colG = 0, colB = 0; // RGB for colons  : 
+	uint8_t curR = 0, curG = 0, curB = 0;	// RGB set for character next rendered
+	uint8_t segR = 0, segG = 0, segB = 0; 	// RGB for segments
+	uint8_t colR = 0, colG = 0, colB = 0;	// RGB for colons  :
 	uint8_t msgR = 255, msgG = 255, msgB = 255; // RGB for messages  
-	uint8_t tmpR = 0, tmpG = 0, tmpB = 0; // temporary hold previous colour for messages  
-
-	uint32_t s_msgTimer = 0;
-			
-	uint32_t ms_colon_blink = 0; 
-	
-	// timers
-	uint32_t m_nMillis; // current timer clock in MS
-	uint32_t s_wsticker;
+	uint8_t tmpR = 0, tmpG = 0, tmpB = 0;	// temporary hold previous colour for messages
 	
 	static DisplayWS28xx *s_pThis;
 };
