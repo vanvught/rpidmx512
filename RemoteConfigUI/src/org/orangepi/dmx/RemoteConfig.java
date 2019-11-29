@@ -775,6 +775,12 @@ public class RemoteConfig extends JFrame {
 				child.add(new DefaultMutableTreeNode(nodeTCNet));
 			}
 			
+			String nodeSparkFun =  ((OrangePi) child.getUserObject()).getNodeSparkFun();
+			
+			if (nodeSparkFun != null) {
+				child.add(new DefaultMutableTreeNode(nodeSparkFun));
+			}
+			
 			int nMotorIndex = 0;
 			String nodeMotor = null;
 			

@@ -38,11 +38,12 @@ public class OrangePi {
 	private static final String NETWORK_TXT = "network.txt";
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", ""};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only"};
-	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt", "sparkfun.txt" };
+	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt"};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
 	private static final String RDM_TXT = "rdm_device.txt";
+	private static final String SPARKFUN_TXT = "sparkfun.txt";
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -64,6 +65,7 @@ public class OrangePi {
 	private String nodeTCNet = null;
 	private String nodeMotors[] = {null, null, null, null, null, null, null, null};
 	private String nodeRDM = null;
+	private String nodeSparkFun = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbDisplay = null;
@@ -75,6 +77,7 @@ public class OrangePi {
 	private String sbTCNet = null;
 	private String sbMotors[] = {null, null, null, null, null, null, null, null};
 	private String sbRDM = null;
+	private String sbSparkFun = null;
 	
 	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
 		super();
@@ -109,7 +112,8 @@ public class OrangePi {
 				} else if (Mode[0].equals("Config")) {
 					nodeRDM = RDM_TXT;
 				} else if (Mode[0].equals("Stepper")) {
-					nodeMode = MODES_TXT[4];
+					nodeMode = MODES_TXT[1];
+					nodeSparkFun = SPARKFUN_TXT;
 					for (int i = 0; i < nodeMotors.length; i++) {
 						nodeMotors[i] = MOTORS_TXT[i];
 					}
@@ -199,6 +203,11 @@ public class OrangePi {
 				sbRDM = doGet(txt);
 			}
 			return sbRDM.toString();
+		} else if (isSparkFunTxt(txt)) {
+			if (sbSparkFun == null) {
+				sbSparkFun = doGet(txt);
+			}
+			return sbSparkFun.toString();
 		}
 
 		return null;
@@ -291,6 +300,9 @@ public class OrangePi {
 			bDoSave = true;
 		} else if (isRdmTxt(txt)) {
 			sbRDM = null;
+			bDoSave = true;
+		} else if (isSparkFunTxt(txt)) {
+			sbSparkFun = null;
 			bDoSave = true;
 		}
 		
@@ -472,6 +484,13 @@ public class OrangePi {
 		}
 		return false;
 	}
+	
+	private Boolean isSparkFunTxt(String sparkFun) {
+		if (sparkFun.equals(SPARKFUN_TXT)) {
+			return true;
+		}
+		return false;
+	}
 		
 	public Boolean getIsValid() {
 		return isValid;
@@ -530,6 +549,11 @@ public class OrangePi {
 	public String getNodeRDM() {
 		return nodeRDM;
 	}
+	
+	public String getNodeSparkFun() {
+		return nodeSparkFun;
+	}
+	
 	
 	public InetAddress getAddress() {
 		return address;
