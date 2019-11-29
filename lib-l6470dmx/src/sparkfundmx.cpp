@@ -46,6 +46,8 @@
 #include "hal_spi.h"
 #include "hal_gpio.h"
 
+#include "hardware.h"
+
 #include "debug.h"
 
 #ifndef MAX
@@ -293,10 +295,12 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 					} else {
 						delete m_pAutoDriver[i];
 						m_pAutoDriver[i] = 0;
-						printf("Communication issues; check SPI configuration and cables\n");
+						printf("Motor %d - Communication issues! Check SPI configuration and cables\n", i);
 					}
 				} else {
-					printf("Configuration error!\n");
+					delete m_pAutoDriver[i];
+					m_pAutoDriver[i] = 0;
+					printf("Motor %d - Configuration error! Check Mode parameters\n", i);
 				}
 #ifndef NDEBUG
 				printf("Motor %d --------- end ---------\n", i);
@@ -306,21 +310,32 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 			}
 	}
 
+	printf("InitSwitch()\n");
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
+			printf(" Motor %d\n", i);
 			m_pL6470DmxModes[i]->InitSwitch();
 		}
 	}
 
+	printf("busyCheck()\n");
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pAutoDriver[i] != 0) {
-			while (m_pAutoDriver[i]->busyCheck())
-				;
+			printf(" Motor %d\n", i);
+			const uint32_t nMillis = Hardware::Get()->Millis();
+			while (m_pAutoDriver[i]->busyCheck()) {
+				if ((Hardware::Get()->Millis() - nMillis) > 1000) {
+					printf("  Time-out!\n");
+					break;
+				}
+			}
 		}
 	}
 
+	printf("InitPos()\n");
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
+			printf(" Motor %d\n", i);
 			m_pL6470DmxModes[i]->InitPos();
 		}
 	}

@@ -31,8 +31,9 @@
 #include "modeparams.h"
 #include "motorparams.h"
 #include "l6470params.h"
+#include "modestore.h"
 
-class StoreMotors: public ModeParamsStore, MotorParamsStore, L6470ParamsStore {
+class StoreMotors: public ModeParamsStore, MotorParamsStore, L6470ParamsStore, ModeStore {
 public:
 	StoreMotors(void);
 	~StoreMotors(void);

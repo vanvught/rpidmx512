@@ -72,6 +72,12 @@ L6470ParamsStore::~L6470ParamsStore(void) {
 	DEBUG_EXIT
 }
 
+ModeStore::~ModeStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 StoreMotors::StoreMotors(void) {
 	DEBUG_ENTRY
 

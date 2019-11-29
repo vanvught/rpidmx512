@@ -123,9 +123,15 @@ void notmain(void) {
 	sparkFunStores.pMotorParamsStore = (MotorParamsStore *) &storeMotors;
 	sparkFunStores.pL6470ParamsStore = (L6470ParamsStore *) &storeMotors;
 
+	console_status(CONSOLE_YELLOW, "SparkFun boards init");
+	//display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
+
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
+	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+
 	pBoard = pSparkFunDmx;
 #endif
 
