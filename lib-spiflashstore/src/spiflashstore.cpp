@@ -31,6 +31,10 @@
 
 #include "spi_flash.h"
 
+#ifndef NDEBUG
+ #include "hardware.h"
+#endif
+
 #include "debug.h"
 
 static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
@@ -304,6 +308,12 @@ void SpiFlashStore::Dump(void) {
 		return;
 	}
 
+	const bool IsWatchDog = Hardware::Get()->IsWatchdog();
+
+	if (IsWatchDog) {
+		Hardware::Get()->WatchdogStop();
+	}
+
 	debug_dump(m_aSpiFlashData, OFFSET_STORES);
 	printf("\n");
 
@@ -314,6 +324,10 @@ void SpiFlashStore::Dump(void) {
 		debug_dump(p, s_aStorSize[j]);
 
 		printf("\n");
+	}
+
+	if (IsWatchDog) {
+		Hardware::Get()->WatchdogInit();
 	}
 
 	printf("m_tState=%d\n", m_tState);
