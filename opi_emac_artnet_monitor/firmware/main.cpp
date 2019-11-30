@@ -65,6 +65,7 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlink lb;
 	DisplayUdf display;
+	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
@@ -82,6 +83,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init();
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -113,10 +115,7 @@ void notmain(void) {
 		node.SetTimeSyncHandler(&timesync);
 	}
 
-	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
-
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
 	DMXMonitor monitor;

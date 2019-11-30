@@ -28,43 +28,47 @@
 
 #include <stdint.h>
 
-#include "artnetdisplay.h"
+#include "displayudf.h"
 
 #include "artnetnode.h"
 
-#include "displayudf.h"
-
+#include "artnetdisplay.h"
+#include "lightsetdisplay.h"
 #include "networkdisplay.h"
 
-class DisplayUdfHandler: public ArtNetDisplay, NetworkDisplay {
+class DisplayUdfHandler: public ArtNetDisplay, LightSetDisplay, NetworkDisplay {
 public:
-	DisplayUdfHandler(ArtNetNode *pArtNetNode);
+	DisplayUdfHandler(void);
 	~DisplayUdfHandler(void);
 
 	void ShowShortName(const char *pShortName) {
-		DisplayUdf::Get()->ShowNodeName(m_pArtNetNode);
+		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
 	}
 
 	void ShowLongName(const char *pLongName) {}
 
 	void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
-		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
 	void ShowNetSwitch(uint8_t nAddress) {
-		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
 	void ShowSubnetSwitch(uint8_t nAddress) {
-		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
 	void ShowMergeMode(uint8_t nPortIndex, TMerge tMerge) {
-		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
 	void ShowPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
-		DisplayUdf::Get()->ShowUniverse(m_pArtNetNode);
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowDmxStartAddress(void) {
+		DisplayUdf::Get()->ShowDmxStartAddress();
 	}
 
 	void ShowIp(void) {
@@ -78,9 +82,6 @@ public:
 	void ShowHostName(void) {
 		DisplayUdf::Get()->ShowHostName();
 	}
-
-private:
-	ArtNetNode *m_pArtNetNode;
 };
 
 #endif /* DISPLAYUDFHANDLER_H_ */

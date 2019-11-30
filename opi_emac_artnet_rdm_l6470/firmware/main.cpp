@@ -35,6 +35,7 @@
 
 #include "displayudf.h"
 #include "displayudfparams.h"
+#include "display7segment.h"
 
 #include "networkconst.h"
 #include "artnetconst.h"
@@ -77,6 +78,7 @@
  #define BOARD_NAME	"Slushengine"
 #else
  #include "sparkfundmx.h"
+ #include "sparkfundmxconst.h"
  #define BOARD_NAME "Sparkfun"
  #include "storesparkfundmx.h"
  #include "storemotors.h"
@@ -89,6 +91,7 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlink lb;
 	DisplayUdf display;
+	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
@@ -107,11 +110,16 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 
 	LightSet *pBoard;
+	uint32_t nMotorsConnected = 0;
 
 #if defined (ORANGE_PI_ONE)
 	SlushDmx *pSlushDmx = new SlushDmx(false);	// Do not use SPI busy check
 	assert(pSlushDmx != 0);
+
 	pSlushDmx->ReadConfigFiles();
+
+	nMotorsConnected = pSlushDmx->GetMotorsConnected();
+
 	pBoard = pSlushDmx;
 #else
 	StoreSparkFunDmx storeSparkFunDmx;
@@ -123,14 +131,16 @@ void notmain(void) {
 	sparkFunStores.pMotorParamsStore = (MotorParamsStore *) &storeMotors;
 	sparkFunStores.pL6470ParamsStore = (L6470ParamsStore *) &storeMotors;
 
-	console_status(CONSOLE_YELLOW, "SparkFun boards init");
-	//display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	console_status(CONSOLE_YELLOW, SparkFunDmxConst::MSG_INIT);
+	display.TextStatus(SparkFunDmxConst::MSG_INIT, DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN);
 
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
 
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
 	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+
+	nMotorsConnected = pSparkFunDmx->GetMotorsConnected();
 
 	pBoard = pSparkFunDmx;
 #endif
@@ -167,8 +177,14 @@ void notmain(void) {
 		}
 	}
 
+	pBoard->SetLightSetDisplay((LightSetDisplay *) &displayUdfHandler);
+
 	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "%s%s", BOARD_NAME, isLedTypeSet ? " with TLC59711" : "");
+	if (isLedTypeSet) {
+		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), (int) pwmledparms.GetLedCount());
+	} else {
+		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d]", BOARD_NAME, nMotorsConnected);
+	}
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
@@ -179,6 +195,7 @@ void notmain(void) {
 #else
 	nw.Init();
 #endif
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -191,6 +208,8 @@ void notmain(void) {
 	ArtNet4Params artnetparams;
 #endif
 
+	node.SetLongName((const char *)aDescription);
+
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
 		artnetparams.Dump();
@@ -201,10 +220,7 @@ void notmain(void) {
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
-	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
-
 	node.SetDirectUpdate(false);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
@@ -241,7 +257,7 @@ void notmain(void) {
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.Set(6, DISPLAY_UDF_LABEL_DMX_START_ADDRESS);
 
 #if defined (ORANGE_PI)
 	StoreDisplayUdf storeDisplayUdf;

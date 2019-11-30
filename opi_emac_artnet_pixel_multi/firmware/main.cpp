@@ -68,9 +68,12 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlink lb;
 	DisplayUdf display;
+	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreWS28xxDmx storeWS28xxDmx;
 
 	fw.Print();
@@ -88,6 +91,7 @@ void notmain(void) {
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -116,12 +120,7 @@ void notmain(void) {
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
-	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
-
-	node.SetArtNetDisplay(&displayUdfHandler);
-
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();

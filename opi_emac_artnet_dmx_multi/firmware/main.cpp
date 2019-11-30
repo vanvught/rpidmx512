@@ -71,9 +71,12 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlink lb;
 	DisplayUdf display;
+	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreDmxSend storeDmxSend;
 	StoreRDMDevice storeRdmDevice;
 
@@ -106,6 +109,7 @@ void notmain(void) {
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	ArtNet4Node node;
@@ -171,10 +175,7 @@ void notmain(void) {
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
-	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
-
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	node.Print();

@@ -23,26 +23,24 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
-
 #include "displayudfhandler.h"
 
-#include "artnetnode.h"
-
 #include "artnetdisplay.h"
+#include "lightsetdisplay.h"
 #include "networkdisplay.h"
 
-ArtNetDisplay::~ArtNetDisplay(void) {
+DisplayUdfHandler::~DisplayUdfHandler(void) {
+}
 
+ArtNetDisplay::~ArtNetDisplay(void) {
+}
+
+
+LightSetDisplay::~LightSetDisplay(void) {
 }
 
 NetworkDisplay::~NetworkDisplay(void) {
-
 }
 
-DisplayUdfHandler::DisplayUdfHandler(ArtNetNode *pArtNetNode): m_pArtNetNode(pArtNetNode) {
-	assert(m_pArtNetNode != 0);
-}
-
-DisplayUdfHandler::~DisplayUdfHandler(void) {
+DisplayUdfHandler::DisplayUdfHandler(void) {
 }
