@@ -151,10 +151,15 @@ void SlushDmx::callbackFunction(const char *pLine) {
 	}
 }
 
-SlushDmx::SlushDmx(bool bUseSPI): m_bSetPortA(false), m_bSetPortB(false), m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxFootprint(0) { // Invalidate DMX Start Address and DMX Footprint
+SlushDmx::SlushDmx(bool bUseSPI):
+	m_bUseSpiBusy(bUseSPI),
+	m_nMotorsConnected(0),
+	m_bSetPortA(false),
+	m_bSetPortB(false),
+	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
+	m_nDmxFootprint(0)  // Invalidate DMX Start Address and DMX Footprint
+{
 	DEBUG_ENTRY;
-
-	m_bUseSpiBusy = bUseSPI;
 
 	m_pBoard = new SlushBoard;
 	assert(m_pBoard != 0);
@@ -282,8 +287,6 @@ void SlushDmx::Stop(uint8_t nPort) {
 void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 
-	uint8_t nMotorsConnected = 0;
-
 	ReadConfigFile configfile(SlushDmx::staticCallbackFunction, this);
 
 	m_nDmxStartAddressPortA = 0;
@@ -389,7 +392,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 				if (m_pSlushMotor[i] != 0) {
 					if (m_pSlushMotor[i]->IsConnected()) {
-						nMotorsConnected++;
+						m_nMotorsConnected++;
 						m_pSlushMotor[i]->Dump();
 
 						m_pMotorParams[i] = new MotorParams;
@@ -487,7 +490,7 @@ void SlushDmx::ReadConfigFiles(void) {
 	}
 
 #ifndef NDEBUG
-	printf("Motors connected : %d\n", (int) nMotorsConnected);
+	printf("Motors connected : %d\n", (int) m_nMotorsConnected);
 #endif
 	DEBUG_EXIT;
 }

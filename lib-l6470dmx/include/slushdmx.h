@@ -49,6 +49,10 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
+	uint32_t GetMotorsConnected(void) {
+		return m_nMotorsConnected;
+	}
+
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 	uint16_t GetDmxStartAddress(void) {
@@ -118,6 +122,7 @@ private: // MCP23017 Port A , Port B
 private:
 	SlushBoard *m_pBoard;
 	bool m_bUseSpiBusy;
+	uint32_t m_nMotorsConnected;
 
 	SlushMotor	*m_pSlushMotor[SLUSH_DMX_MAX_MOTORS];
 	MotorParams *m_pMotorParams[SLUSH_DMX_MAX_MOTORS];

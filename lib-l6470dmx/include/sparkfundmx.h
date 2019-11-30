@@ -72,6 +72,10 @@ public:
 
 	void Print(void);
 
+	uint32_t GetMotorsConnected(void) {
+		return AutoDriver::getNumBoards();
+	}
+
 	void SetModeStore(ModeStore *pModeStore) {
 		m_pModeStore = pModeStore;
 	}
