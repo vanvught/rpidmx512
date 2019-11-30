@@ -73,6 +73,7 @@ public:
 	uint32_t Micros(void);
 	uint32_t Millis(void);
 
+	bool IsWatchdog(void) { return false;}
 	void WatchdogInit(void) { } // Not implemented
 	void WatchdogFeed(void) { } // Not implemented
 	void WatchdogStop(void) { } // Not implemented
@@ -82,7 +83,11 @@ public:
 	}
 
 	TBootDevice GetBootDevice(void) {
+#if defined (RASPPI)
+		return BOOT_DEVICE_MMC0;
+#else
 		return BOOT_DEVICE_HDD;
+#endif
 	}
 
 public:
