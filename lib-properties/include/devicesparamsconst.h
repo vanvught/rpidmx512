@@ -31,18 +31,21 @@
 class DevicesParamsConst {
 public:
 	alignas(uint32_t) static const char FILE_NAME[];
+
 	alignas(uint32_t) static const char LED_TYPE[];
 	alignas(uint32_t) static const char LED_COUNT[];
-
-	alignas(uint32_t) static const char ACTIVE_OUT[];
-	alignas(uint32_t) static const char USE_SI5351A[];
-
-	alignas(uint32_t) static const char SPI_SPEED_HZ[];
 
 	alignas(uint32_t) static const char LED_GROUPING[];
 	alignas(uint32_t) static const char LED_GROUP_COUNT[];
 
+	alignas(uint32_t) static const char LED_RGB_MAPPING[];
+
+	alignas(uint32_t) static const char SPI_SPEED_HZ[];
+
 	alignas(uint32_t) static const char GLOBAL_BRIGHTNESS[];
+
+	alignas(uint32_t) static const char ACTIVE_OUT[];
+	alignas(uint32_t) static const char USE_SI5351A[];
 };
 
 #endif /* DEVICESPARAMSCONST_H_ */

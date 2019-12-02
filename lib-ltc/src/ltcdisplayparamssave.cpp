@@ -38,9 +38,9 @@
 #include "devicesparamsconst.h"
 // Displays
 #include "displaymax7219.h"
-#include "displayws28xx.h"
 #include "ws28xx.h"
 #include "ws28xxconst.h"
+#include "rgbmapping.h"
 
 #include "propertiesbuilder.h"
 
@@ -56,10 +56,12 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 	PropertiesBuilder builder(LtcDisplayParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE));
-	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tLtcDisplayParams.nGlobalBrightness, isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS));
+	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING));
 
 	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE));
 	builder.Add(LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY));
+
+	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tLtcDisplayParams.nGlobalBrightness, isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS));
 
 	nSize = builder.GetSize();
 }

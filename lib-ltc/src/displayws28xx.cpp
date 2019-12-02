@@ -35,6 +35,8 @@
 #include "displayws28xx.h"
 #include "displayws28xx_font.h"
 
+#include "rgbmapping.h"
+
 #include "hardware.h"
 #include "network.h"
 
@@ -45,12 +47,16 @@
 #endif
 
 static const char sRGB[] ALIGNED = "rgb";
-#define RGB_LENGTH (sizeof(sRGB)/sizeof(sRGB[0]) - 1)
-#define RGB_SIZE_HEX	(7) // 1 byte index followed by 6 bytes hex RGB
+#define RGB_LENGTH			(sizeof(sRGB)/sizeof(sRGB[0]) - 1)
+#define RGB_SIZE_HEX		(7) // 1 byte index followed by 6 bytes hex RGB
+
+static const char sMaster[] ALIGNED = "master";
+#define MASTER_LENGTH 		(sizeof(sMaster)/sizeof(sMaster[0]) - 1)
+#define MASTER_SIZE_HEX		(2)
 
 static const char sDisplayMSG[] ALIGNED = "showmsg";
-#define DMSG_LENGTH (sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
-#define DMSG_SIZE	(11)
+#define DMSG_LENGTH 		(sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
+#define DMSG_SIZE			(11)
 
 enum tUdpPort {
 	WS28XX_UDP_PORT = 0x2812
@@ -60,7 +66,7 @@ DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
 
 DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType):
 	m_tLedType(tLedType),
-	m_tMapping(RGB),
+	m_tMapping(RGB_MAPPING_RGB),
 	m_nHandle(-1),
 	m_nMaster(255),
 	m_bShowMsg(false),
@@ -82,56 +88,64 @@ DisplayWS28xx::~DisplayWS28xx(void) {
 	}
 }
 
-void DisplayWS28xx::Init(uint8_t nIntensity, TWS28xxMapping lMapping) {
+void DisplayWS28xx::Init(uint8_t nIntensity, TRGBMapping tMapping) {
 	m_pWS28xx = new WS28xx(m_tLedType, WS28XX_LED_COUNT);
 	assert(m_pWS28xx != 0);
 
 	m_pWS28xx->Initialize();
 	m_pWS28xx->SetGlobalBrightness(nIntensity);
 
-	m_tMapping = lMapping;
+	m_tMapping = tMapping;
 
-	//	curR = 255;  // default to full red
-	//	curG = 0;
-	//	curB = 0;
-	segR = 255;
-	segG = 0;
-	segB = 0;
-	colR = 0xff;
-	colG = 0xcc;
-	colB = 0x00;
+	SetRGB(0xFF, 0, 0, 0);
+	SetRGB(0xFF, 0xCC, 0, 1);
+	SetRGB(0xFF, 0xFF, 0xFF, 2);
 
 	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
 	assert(m_nHandle != -1);
 }
 
-void DisplayWS28xx::SetMaster(uint8_t value) {
-	m_nMaster = value;
-}
-
 // set the current RGB values, remapping them to different LED strip mappings
-// TODO move remapping functionality to lib-ws28xx
+// TODO Move to lib-ws28xx
 void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex) {
 	switch (m_tMapping) {
-	case RGB:
+	case RGB_MAPPING_RGB:
 		curR = nRed;
 		curG = nGreen;
 		curB = nBlue;
 		break;
 
-	case RBG:
+	case RGB_MAPPING_RBG:
 		curR = nRed;
 		curG = nBlue;
 		curB = nGreen;
 		break;
 
-	case BGR:
+	case RGB_MAPPING_GRB:
+		curR = nGreen;
+		curG = nRed;
+		curB = nBlue;
+		break;
+
+	case RGB_MAPPING_GBR:
+		curR = nGreen;
+		curG = nBlue;
+		curB = nRed;
+		break;
+
+	case RGB_MAPPING_BRG:
+		curR = nBlue;
+		curG = nRed;
+		curB = nGreen;
+		break;
+
+	case RGB_MAPPING_BGR:
 		curR = nBlue;
 		curG = nGreen;
 		curB = nRed;
 		break;
 
-	default:
+	default: // RGB
 		curR = nRed;
 		curG = nGreen;
 		curB = nBlue;
@@ -181,22 +195,19 @@ void DisplayWS28xx::SetRGB(const char *pHexString) {
 void DisplayWS28xx::Run() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
-	uint16_t m_nBytesReceived;
 
 	m_nMillis = Hardware::Get()->Millis(); // millis now
 
-	if (m_nMillis >= m_nWsTicker) {
-		m_nWsTicker = m_nMillis + WS28XX_UPDATE_MS;
-
-		// temporary messages.
-		if (m_nMillis > m_nMsgTimer)
-			m_bShowMsg = 0;
-		else if (m_bShowMsg)
+	if (m_bShowMsg) {
+		if (m_nMillis - m_nMsgTimer >= WS82XX_MSG_TIME_MS) {
+			m_bShowMsg = false;
+		} else if (m_nMillis - m_nWsTicker >= WS28XX_UPDATE_MS) {
+			m_nWsTicker = m_nMillis;
 			ShowMessage(m_aMessage);
+		}
 	}
 
-	// UDP Socket
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	uint16_t m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
 		return;
@@ -217,25 +228,29 @@ void DisplayWS28xx::Run() {
 	}
 
 	if (memcmp(&m_Buffer[5], sDisplayMSG, DMSG_LENGTH) == 0) {
-			int nMlength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
-			printf("RX: %d  MsgLen: %d  Msg: %.*s\n",m_nBytesReceived, nMlength, nMlength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
-			if ( ((nMlength > 0) && (nMlength <= DMSG_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {
-				SetMessage((const char *)&m_Buffer[(5 + DMSG_LENGTH + 1)],nMlength);
-			}
+		const uint32_t nMsgLength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
+		DEBUG_PRINTF("RX: %d  MsgLen: %d  Msg: %.*s", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
 
-	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
-			if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX))  && (m_Buffer[5 + RGB_LENGTH] == '#')) {
-				SetRGB((const char *)&m_Buffer[(5 + RGB_LENGTH + 1)]);
-			} else {
-				DEBUG_PUTS("Invalid !rgb command");
-			}
+		if (((nMsgLength > 0) && (nMsgLength <= DMSG_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {
+			SetMessage((const char *) &m_Buffer[(5 + DMSG_LENGTH + 1)], nMsgLength);
+		} else {
+			DEBUG_PUTS("Invalid !showmsg command");
 		}
-
-	 else {
+	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
+		if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX)) && (m_Buffer[5 + RGB_LENGTH] == '#')) {
+			SetRGB((const char *) &m_Buffer[(5 + RGB_LENGTH + 1)]);
+		} else {
+			DEBUG_PUTS("Invalid !rgb command");
+		}
+	} else if (memcmp(&m_Buffer[5], sMaster, MASTER_LENGTH) == 0) {
+		if ((m_nBytesReceived == (5 + MASTER_LENGTH + 1 + MASTER_SIZE_HEX)) && (m_Buffer[5 + MASTER_LENGTH] == '#')) {
+			m_nMaster = hexadecimalToDecimal((const char *) &m_Buffer[(5 + MASTER_LENGTH + 1)], MASTER_SIZE_HEX);
+		} else {
+			DEBUG_PUTS("Invalid !master command");
+		}
+	} else {
 		DEBUG_PUTS("Invalid command");
 	}
-
-
 }
 
 uint32_t DisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
@@ -290,23 +305,22 @@ void DisplayWS28xx::Show(const char *pTimecode)
 				break;
 			}
 
-			if (m_nSecondsPrevious != pTimecode[7]) // seconds have changed
-			{
-				m_ColonBlinkMillis = m_nMillis + 1000;
+			if (m_nSecondsPrevious != pTimecode[7]) { // seconds have changed
+				m_ColonBlinkMillis = m_nMillis;
 				m_nSecondsPrevious = pTimecode[7];
-				outR = 0;				outG = 0;				outB = 0;
+				outR = 0;
+				outG = 0;
+				outB = 0;
+			} else if (m_nMillis - m_ColonBlinkMillis < 1000) {
+				outR = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - colR)) / 1000);
+				outG = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - colG)) / 1000);
+				outB = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - colB)) / 1000);
 			}
-			else if (m_nMillis < m_ColonBlinkMillis)
-			{
-				outR = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colR));
-				outG = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colG));
-				outB = (((float)(m_ColonBlinkMillis - m_nMillis) / 1000) * abs(mColonBlinkOffset - colB));
-			}
-		}
-		else
-		{
+		} else {
 			// straight thru
-			outR = colR; 			outG = colG;			outB = colB;
+			outR = colR;
+			outG = colG;
+			outB = colB;
 		}
 
 		WriteColon(pTimecode[2], 0, outR, outG, outB); // 1st :
@@ -324,7 +338,7 @@ void DisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
 	memset(&m_aMessage, ' ', WS28XX_MAX_MSG_SIZE);
 	memcpy(&m_aMessage, pMessage, nSize);
 
-	m_nMsgTimer = Hardware::Get()->Millis() + 3000; // 3 seconds from now
+	m_nMsgTimer = Hardware::Get()->Millis();
 	m_bShowMsg = true;
 }
 
@@ -332,33 +346,31 @@ void DisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
 void DisplayWS28xx::ShowMessage(const char *pMessage) {
 	assert(pMessage != 0);
 
-	uint8_t oR = 0, oG = 0, oB = 0;
+	uint8_t nRed = 0, nGreen = 0, nBlue = 0;
 
-	if (m_nMillis <= m_nMsgTimer)
-	{
-		{
-			oR = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgR);
-			oG = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgG);
-			oB = (((float)(m_nMsgTimer - m_nMillis) / WS82XX_MSG_TIME_MS) * msgB);
-		}
-	}
-	else
-	{
+	if (m_nMillis - m_nMsgTimer <= WS82XX_MSG_TIME_MS) {
+		nRed =   ((m_nMillis - m_nMsgTimer) * msgR) / WS82XX_MSG_TIME_MS;
+		nGreen = ((m_nMillis - m_nMsgTimer) * msgG) / WS82XX_MSG_TIME_MS;
+		nBlue =  ((m_nMillis - m_nMsgTimer) * msgB) / WS82XX_MSG_TIME_MS;
+	} else {
 		// straight thru
-		oR = msgR; 		oG = msgG;		oB = msgB;
+		nRed = msgR;
+		nGreen = msgG;
+		nBlue = msgB;
 	}
 
-	for (int cnt = 0; (cnt < WS28XX_MAX_MSG_SIZE) && (cnt < WS28XX_NUM_OF_DIGITS); cnt++)
-	{
-		if (pMessage[cnt] != 0)
-			WriteChar(pMessage[cnt], cnt, oR, oG, oB);
-		else
-			WriteChar(' ', cnt);
+	for (uint32_t nCount = 0; (nCount < WS28XX_MAX_MSG_SIZE) && (nCount < WS28XX_NUM_OF_DIGITS); nCount++) {
+		if (pMessage[nCount] != 0) {
+			WriteChar(pMessage[nCount], nCount, nRed, nGreen, nBlue);
+		} else {
+			WriteChar(' ', nCount);
+		}
 	}
 
 	// blank colons
-	for (int cnt = 0; cnt < WS28XX_NUM_OF_COLONS; cnt++)
-		WriteColon(' ', cnt, 0, 0, 0); // 1st :
+	for (uint32_t nCount = 0; nCount < WS28XX_NUM_OF_COLONS; nCount++) {
+		WriteColon(' ', nCount, 0, 0, 0); // 1st :
+	}
 
 	m_pWS28xx->Update();
 }
@@ -452,5 +464,7 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_
 void DisplayWS28xx::Print(void) {
 	printf("Display WS28xx\n");
 	printf(" %d Digit(s), %d Colons, %d LED(S)\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
-	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
+	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
+	printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_tMapping), m_tMapping);
+	printf(" Master  : %d\n", m_nMaster);
 }

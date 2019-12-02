@@ -41,9 +41,9 @@
 #include "devicesparamsconst.h"
 // Displays
 #include "displaymax7219.h"
-#include "displayws28xx.h"
 #include "ws28xx.h"
 #include "ws28xxconst.h"
+#include "rgbmapping.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -51,9 +51,9 @@
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nLedType = WS2812B;
 	m_tLtcDisplayParams.nGlobalBrightness = 0xFF;
-	m_tLtcDisplayParams.nRgbMapping = RGB;
 	m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
+	m_tLtcDisplayParams.nRgbMapping = RGB_MAPPING_RGB;
 }
 
 LtcDisplayParams::~LtcDisplayParams(void) {
@@ -134,6 +134,17 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	len = 3;
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, buffer, &len) == SSCAN_OK) {
+		buffer[len] = '\0';
+		enum TRGBMapping tMapping;
+		if ((tMapping = RGBMapping::FromString(buffer)) != RGB_MAPPING_UNDEFINED) {
+			m_tLtcDisplayParams.nRgbMapping = (uint8_t) tMapping;
+			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_RGB_MAPPING;
+		}
+		return;
+	}
+
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &value8) == SSCAN_OK) {
 		m_tLtcDisplayParams.nGlobalBrightness = value8;
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
@@ -151,6 +162,10 @@ void LtcDisplayParams::Dump(void) {
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), (int) m_tLtcDisplayParams.nLedType);
+	}
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), (int) m_tLtcDisplayParams.nRgbMapping);
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {

@@ -1,5 +1,5 @@
 /**
- * @file devicesparamsconst.cpp
+ * @file rgbmapping.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,22 +22,27 @@
  */
 
 #include <stdint.h>
+#include <string.h>
+#include <assert.h>
 
-#include "devicesparamsconst.h"
+#include "rgbmapping.h"
 
-alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
+static const char aMapping[RGB_MAPPING_UNDEFINED][4] __attribute__ ((aligned (4))) = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
-alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
-alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
+TRGBMapping RGBMapping::FromString(const char *pString) {
+	assert(pString != 0);
 
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
+	for (uint32_t nIndex = 0; nIndex < RGB_MAPPING_UNDEFINED; nIndex++) {
+		if (strncasecmp(aMapping[nIndex], pString, 3) == 0) {
+			return (TRGBMapping) nIndex;
+		}
+	}
 
-alignas(uint32_t) const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
+	return RGB_MAPPING_UNDEFINED;
+}
 
-alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
+const char *RGBMapping::ToString(TRGBMapping tRGBMapping) {
+	assert(tRGBMapping < RGB_MAPPING_UNDEFINED);
 
-alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
-
-alignas(uint32_t) const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
-alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
+	return aMapping[(uint32_t) tRGBMapping];
+}

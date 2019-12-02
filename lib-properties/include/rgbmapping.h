@@ -1,5 +1,5 @@
 /**
- * @file devicesparamsconst.cpp
+ * @file rgbmapping.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,23 +21,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef RGBMAPPING_H_
+#define RGBMAPPING_H_
 
-#include "devicesparamsconst.h"
+enum TRGBMapping {
+	RGB_MAPPING_RGB,	// Default
+	RGB_MAPPING_RBG,
+	RGB_MAPPING_GRB,
+	RGB_MAPPING_GBR,
+	RGB_MAPPING_BRG,
+	RGB_MAPPING_BGR,
+	RGB_MAPPING_UNDEFINED
+};
 
-alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
+class RGBMapping {
+public:
+	static TRGBMapping FromString(const char *pString);
+	static const char *ToString(TRGBMapping tRGBMapping);
+};
 
-alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
-alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
-
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
-
-alignas(uint32_t) const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
-
-alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
-
-alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
-
-alignas(uint32_t) const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
-alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
+#endif /* RGBMAPPING_H_ */
