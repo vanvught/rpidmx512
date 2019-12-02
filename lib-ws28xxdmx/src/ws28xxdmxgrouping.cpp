@@ -33,6 +33,7 @@
 #include "ws28xx.h"
 
 #include "lightset.h"
+#include "lightsetdisplay.h"
 
 #include "debug.h"
 
@@ -155,6 +156,10 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 		if (m_pWS28xxDmxStore != 0) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
+		if (m_pLightSetDisplay != 0) {
+			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
 		return true;

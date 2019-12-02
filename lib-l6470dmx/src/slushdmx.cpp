@@ -40,6 +40,9 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
+#include "lightset.h"
+#include "lightsetdisplay.h"
+
 #include "parse.h"
 
 #include "debug.h"
@@ -152,10 +155,10 @@ void SlushDmx::callbackFunction(const char *pLine) {
 }
 
 SlushDmx::SlushDmx(bool bUseSPI):
-	m_bUseSpiBusy(bUseSPI),
-	m_nMotorsConnected(0),
 	m_bSetPortA(false),
 	m_bSetPortB(false),
+	m_bUseSpiBusy(bUseSPI),
+	m_nMotorsConnected(0),
 	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
 	m_nDmxFootprint(0)  // Invalidate DMX Start Address and DMX Footprint
 {
@@ -637,6 +640,10 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 #endif
 
 	m_nDmxStartAddress = nDmxStartAddress;
+
+	if (m_pLightSetDisplay != 0) {
+		m_pLightSetDisplay->ShowDmxStartAddress();
+	}
 
 	DEBUG_EXIT
 	return true;

@@ -30,6 +30,7 @@
 #include "tlc59711.h"
 
 #include "lightset.h"
+#include "lightsetdisplay.h"
 
 static unsigned long ceil(float f) {
 	int i = (int) f;
@@ -166,6 +167,10 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 		if (m_pTLC59711DmxStore != 0) {
 			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
+		if (m_pLightSetDisplay != 0) {
+			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
 		return true;

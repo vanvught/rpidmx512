@@ -41,6 +41,7 @@
 #include "ws28xx.h"
 
 #include "lightset.h"
+#include "lightsetdisplay.h"
 
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -240,6 +241,10 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 		if (m_pWS28xxDmxStore != 0) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
+		if (m_pLightSetDisplay != 0) {
+			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
 		return true;
