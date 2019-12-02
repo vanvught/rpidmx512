@@ -32,6 +32,7 @@
 #include <stdbool.h>
 
 #include "ws28xx.h"
+#include "rgbmapping.h"
 
 /*
  *  A 8 x 7 Segment (with 3 colons) TC Display constructed of WS82xx LEDS, 
@@ -71,26 +72,23 @@ enum TColonBlinkMode {
 	COLON_BLINK_MODE_UP
 };
 
-// WS28xx LED order
-// TODO Move to lib-ws28xxx
-enum TWS28xxMapping {
-	RGB = 0,  // normal
- 	RBG,
-  	BGR, 
-};
-
 class DisplayWS28xx {
 public:
 	DisplayWS28xx(TWS28XXType tLedType);
 	~DisplayWS28xx(void);
 
-	void Init(uint8_t nIntensity, TWS28xxMapping lMapping);
+	void Init(uint8_t nIntensity, TRGBMapping tMapping);
 	void Run();
 
 	void Print(void);
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(void);
+
+	// set the master brightness
+	void SetMaster(uint8_t nValue) {
+		m_nMaster = nValue;
+	}
 
 	static DisplayWS28xx *Get(void) {
 		return s_pThis;
@@ -101,12 +99,10 @@ private:
   	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex);
 	// set RGB from a hex string  
 	void SetRGB(const char *pHexString);
-	// set the master brightness
-	void SetMaster(uint8_t value);
 	// write a character from to digits 0..7
 	void WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed = 255, uint8_t nGreen = 255, uint8_t nBlue = 255);
 	// write a colon if ':' or '.' to a colon at nPos = 0,1,2
-	void WriteColon(uint8_t nChar, uint8_t nPos, uint8_t R = 128, uint8_t G = 128, uint8_t B = 128);
+	void WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed = 128, uint8_t nGreen = 128, uint8_t nBlue = 128);
 	// set a message to appear temporarily 
 	void SetMessage(const char *pMessage, uint32_t nSize);
 	// draw one segment of a digit
@@ -117,7 +113,7 @@ private:
 private:
 	WS28xx *m_pWS28xx;
 	TWS28XXType m_tLedType;
-  	TWS28xxMapping m_tMapping;
+  	TRGBMapping m_tMapping;
 	uint8_t m_Buffer[64];					// UDP buffer
 	int32_t m_nHandle;						// UDP handle
 	uint8_t m_nMaster;
