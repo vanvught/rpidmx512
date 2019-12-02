@@ -1,8 +1,8 @@
 /**
- * @file lightset.cpp
+ * @file lightsetdisplay.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include "lightset.h"
+#ifndef LIGHTSETDISPLAY_H_
+#define LIGHTSETDISPLAY_H_
 
-LightSet *LightSet::s_pThis = 0;
+class LightSetDisplay {
+public:
+	virtual ~LightSetDisplay(void);
 
-LightSet::LightSet(void): m_pLightSetDisplay(0) {
-	s_pThis = this;
-}
+	virtual void ShowDmxStartAddress(void)=0;
+};
 
-LightSet::~LightSet(void) {
-}
-
-void LightSet::Print(void) {
-	// override
-}
+#endif /* LIGHTSETDISPLAY_H_ */

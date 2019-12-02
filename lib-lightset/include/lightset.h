@@ -28,6 +28,10 @@
 
 #include <stdint.h>
 
+#include "lightsetdisplay.h"
+
+#include "debug.h"
+
 struct TLightSetSlotInfo {
 	uint8_t nType;
 	uint16_t nCategory;
@@ -58,6 +62,12 @@ public:
 
 	virtual void Print(void);
 
+	void SetLightSetDisplay(LightSetDisplay *pLightSetDisplay) {
+		DEBUG_ENTRY
+		m_pLightSetDisplay = pLightSetDisplay;
+		DEBUG_EXIT
+	}
+
 public: // RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 	virtual uint16_t GetDmxStartAddress(void);
@@ -67,11 +77,14 @@ public: // RDM Optional
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 public: // WiFi solutions only
-	static const char* GetOutputType(TLightSetOutputType type);
-	static TLightSetOutputType GetOutputType(const char* sType);
+	static const char *GetOutputType(TLightSetOutputType type);
+	static TLightSetOutputType GetOutputType(const char *sType);
+
+protected:
+	LightSetDisplay *m_pLightSetDisplay;
 
 public:
-	static LightSet* Get(void) {
+	static LightSet *Get(void) {
 		return s_pThis;
 	}
 

@@ -29,6 +29,8 @@
 #include "lightsetchain.h"
 #include "lightset.h"
 
+#include "lightsetdisplay.h"
+
 #include "debug.h"
 
 #ifndef MAX
@@ -96,6 +98,12 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	}
 
 	m_nDmxStartAddress = nDmxStartAddress;
+
+	DEBUG_PRINTF("m_pLightSetDisplay=%p", m_pLightSetDisplay);
+
+	if (m_pLightSetDisplay != 0) {
+		m_pLightSetDisplay->ShowDmxStartAddress();
+	}
 
 	DEBUG1_EXIT
 	return true;;
