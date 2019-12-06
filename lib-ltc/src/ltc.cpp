@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
 #include <assert.h>
 
 #include "ltc.h"
@@ -67,7 +68,7 @@ TTimecodeTypes Ltc::GetType(uint8_t nFps) {
 	return TC_TYPE_UNKNOWN;
 }
 
-inline static void itoa_base10(uint32_t arg, char *buf) {
+static void itoa_base10(uint32_t arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -85,6 +86,12 @@ void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode) 
 	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &pTimeCode[3]);
 	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &pTimeCode[6]);
 	itoa_base10(ptLtcTimeCode->nFrames, (char *) &pTimeCode[9]);
+}
+
+void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
+	itoa_base10(pLocalTime->tm_hour, (char *) &pSystemTime[0]);
+	itoa_base10(pLocalTime->tm_min, (char *) &pSystemTime[3]);
+	itoa_base10(pLocalTime->tm_sec, (char *) &pSystemTime[6]);
 }
 
 #define DIGIT(x)	((int32_t) (x) - '0')
@@ -190,6 +197,13 @@ void Ltc::InitTimeCode(char *pTimeCode) {
 	pTimeCode[2] = ':';
 	pTimeCode[5] = ':';
 	pTimeCode[8] = '.';
+}
+
+void Ltc::InitSystemTime(char *pSystemTime) {
+	memset(pSystemTime, ' ', TC_SYSTIME_MAX_LENGTH);
+
+	pSystemTime[2] = ':';
+	pSystemTime[5] = ':';
 }
 
 bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType) {

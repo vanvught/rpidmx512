@@ -303,6 +303,17 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionGoto(const char *pTimeCode) {
+	DEBUG_ENTRY
+
+	ActionStop();
+	ActionSetStart(pTimeCode);
+	ActionStart();
+	ActionStop();
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -355,10 +366,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 			ActionStop();
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
-			ActionStop();
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
-			ActionStart();
-			ActionStop();
+			ActionGoto((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}

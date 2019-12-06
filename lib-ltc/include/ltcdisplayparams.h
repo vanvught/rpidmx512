@@ -31,7 +31,7 @@
 
 #include "ws28xx.h"
 #include "displaymax7219.h"
-#include "displayws28xx.h"
+#include "rgbmapping.h"
 
 struct TLtcDisplayParams {
 	uint32_t nSetList;
@@ -40,6 +40,7 @@ struct TLtcDisplayParams {
 	uint8_t nLedType;
 	uint8_t nGlobalBrightness;
 	uint8_t nRgbMapping;
+	uint8_t nWS28xxIntensity;
 } __attribute__((packed));
 
 enum TLtcDisplayParamsMask {
@@ -47,7 +48,8 @@ enum TLtcDisplayParamsMask {
 	LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY = (1 << 1),
 	LTCDISPLAY_PARAMS_MASK_LED_TYPE = (1 << 2),
 	LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 3),
-	LTCDISPLAY_PARAMS_MASK_RGB_ORDER = (1 << 4)
+	LTCDISPLAY_PARAMS_MASK_RGB_MAPPING = (1 << 4),
+	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5)
 };
 
 class LtcDisplayParamsStore {
@@ -75,8 +77,8 @@ public:
 		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
 	}
 
-	TWS28xxMapping GetLedMapping(void) {
-		return (TWS28xxMapping) m_tLtcDisplayParams.nRgbMapping;
+	TRGBMapping GetLedMapping(void) {
+		return (TRGBMapping) m_tLtcDisplayParams.nRgbMapping;
 	}
 
 	uint8_t GetGlobalBrightness(void) {
@@ -89,6 +91,10 @@ public:
 
 	uint8_t GetMax7219Intensity(void) {
 		return m_tLtcDisplayParams.nMax7219Intensity;
+	}
+
+	uint8_t GetWS28xxIntensity(void) {
+		return m_tLtcDisplayParams.nWS28xxIntensity;
 	}
 
 public:

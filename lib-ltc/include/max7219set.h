@@ -34,7 +34,7 @@ public:
 	virtual void Init(uint8_t nIntensity)=0;
 
 	virtual void Show(const char *pTimecode)=0;
-	virtual void ShowSysTime(void)=0;
+	virtual void ShowSysTime(const char *pSystemTime)=0;
 
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos)=0;
 };

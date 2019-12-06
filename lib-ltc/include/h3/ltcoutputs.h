@@ -60,6 +60,8 @@ private:
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	uint32_t m_nMidiQuarterFramePiece;
 	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	alignas(uint32_t) char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
+	uint32_t m_nSecondsPrevious;
 
 	static LtcOutputs *s_pThis;
 };

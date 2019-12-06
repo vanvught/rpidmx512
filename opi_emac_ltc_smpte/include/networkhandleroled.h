@@ -1,5 +1,5 @@
 /**
- * @file displaymatrix.h
+ * @file networkhandleroled.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMATRIX_H_
-#define DISPLAYMATRIX_H_
+#ifndef NETWORKHANDLEROLED_H_
+#define NETWORKHANDLEROLED_H_
 
-#include <stdint.h>
+#include "networkdisplay.h"
 
-#include "max7219set.h"
-
-#include "device_info.h"
-
-#define SEGMENTS	8
-
-class Max7219Matrix: public Max7219Set {
+class NetworkHandlerOled: public NetworkDisplay {
 public:
-	Max7219Matrix(void);
-	~Max7219Matrix(void);
+	NetworkHandlerOled(void);
+	~NetworkHandlerOled(void);
 
-	void Init(uint8_t nIntensity);
-
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
-
-	static Max7219Matrix* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	device_info_t m_DeviceInfo;
-	uint8_t m_aBuffer[SEGMENTS];
-
-	static Max7219Matrix *s_pThis;
+	void ShowIp(void);
+	void ShowNetMask(void);
+	void ShowHostName(void) {};
 };
 
-#endif /* DISPLAYMATRIX_H_ */
+#endif /* NETWORKHANDLEROLED_H_ */

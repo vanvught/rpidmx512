@@ -63,8 +63,8 @@ void DisplayMax7219::Show(const char *pTimecode) {
 	m_pMax7219Set->Show(pTimecode);
 }
 
-void DisplayMax7219::ShowSysTime(void) {
-	m_pMax7219Set->ShowSysTime();
+void DisplayMax7219::ShowSysTime(const char *pSystemTime) {
+	m_pMax7219Set->ShowSysTime(pSystemTime);
 }
 
 void DisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {

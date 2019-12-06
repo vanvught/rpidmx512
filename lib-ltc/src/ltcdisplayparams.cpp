@@ -54,6 +54,7 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 	m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
 	m_tLtcDisplayParams.nRgbMapping = RGB_MAPPING_RGB;
+	m_tLtcDisplayParams.nWS28xxIntensity = 0xFF;
 }
 
 LtcDisplayParams::~LtcDisplayParams(void) {
@@ -145,6 +146,14 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::WS28XX_INTENSITY, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcDisplayParams.nWS28xxIntensity = value8;
+			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY;
+		}
+		return;
+	}
+
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &value8) == SSCAN_OK) {
 		m_tLtcDisplayParams.nGlobalBrightness = value8;
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
@@ -166,6 +175,10 @@ void LtcDisplayParams::Dump(void) {
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), (int) m_tLtcDisplayParams.nRgbMapping);
+	}
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY)) {
+		printf(" %s=%d\n", LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity);
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {

@@ -31,8 +31,11 @@
 class LtcDisplayParamsConst {
 public:
 	alignas(uint32_t) static const char FILE_NAME[];
+
 	alignas(uint32_t) static const char MAX7219_TYPE[];
 	alignas(uint32_t) static const char MAX7219_INTENSITY[];
+
+	alignas(uint32_t) static const char WS28XX_INTENSITY[];
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

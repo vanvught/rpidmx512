@@ -36,7 +36,7 @@
 
 #include "ltcparams.h"
 #include "ltcdisplayparams.h"
-#include "ltcleds.h"
+#include "ltc7segment.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -64,6 +64,8 @@
 #include "display.h"
 #include "displaymax7219.h"
 #include "displayws28xx.h"
+
+#include "networkhandleroled.h"
 
 #include "sourceselect.h"
 #include "sourceselectconst.h"
@@ -122,7 +124,7 @@ void notmain(void) {
 		ltcDisplayParams.Dump();
 	}
 
-	LtcLeds leds;
+	Ltc7segment leds;
 
 	fw.Print();
 
@@ -133,6 +135,9 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+
+	NetworkHandlerOled nwHandlerDisplay;
+	nw.SetNetworkDisplay((NetworkDisplay *) &nwHandlerDisplay);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
@@ -174,6 +179,7 @@ void notmain(void) {
 
 	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
 	if (!tLtcDisabledOutputs.bWS28xx){
+		displayWS28xx.SetMaster(ltcDisplayParams.GetWS28xxIntensity());
 		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness(), ltcDisplayParams.GetLedMapping());
 	}
 
@@ -213,6 +219,7 @@ void notmain(void) {
 			artnetparams.Dump();
 		}
 
+		node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 		node.SetShortName("LTC SMPTE Node");
 		node.SetIpProgHandler(&ipprog);
 

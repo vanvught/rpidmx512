@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include <assert.h>
 
 #include "h3/ltcoutputs.h"
@@ -44,7 +45,7 @@
 #include "rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
-#include "ltcleds.h"
+#include "ltc7segment.h"
 #include "display.h"
 #include "displaymax7219.h"
 #include "displayws28xx.h"
@@ -61,7 +62,8 @@ LtcOutputs *LtcOutputs::s_pThis = 0;
 LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime):
 	m_bShowSysTime(bShowSysTime),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID),
-	m_nMidiQuarterFramePiece(0)
+	m_nMidiQuarterFramePiece(0),
+	m_nSecondsPrevious(60)
 {
 	assert(pLtcDisabledOutputs != 0);
 
@@ -76,6 +78,7 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TL
 	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == LTC_READER_SOURCE_APPLEMIDI);
 
 	Ltc::InitTimeCode(m_aTimeCode);
+	Ltc::InitSystemTime(m_aSystemTime);
 }
 
 LtcOutputs::~LtcOutputs(void) {
@@ -84,6 +87,10 @@ LtcOutputs::~LtcOutputs(void) {
 void LtcOutputs::Init(void) {
 	if (!m_tLtcDisabledOutputs.bMidi) {
 		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
+	}
+
+	if (!m_tLtcDisabledOutputs.bDisplay) {
+		Display::Get()->TextLine(2, Ltc::GetType(TC_TYPE_UNKNOWN), TC_TYPE_MAX_LENGTH);
 	}
 }
 
@@ -110,14 +117,10 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 			Display::Get()->TextLine(2, Ltc::GetType((TTimecodeTypes) ptLtcTimeCode->nType), TC_TYPE_MAX_LENGTH);
 		}
 
-		LtcLeds::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
+		Ltc7segment::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
 	}
 
 	Ltc::ItoaBase10((const struct TLtcTimeCode *) ptLtcTimeCode, m_aTimeCode);
-
-	if(!m_tLtcDisabledOutputs.bWS28xx) {
-		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
-	}
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
 		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
@@ -125,6 +128,10 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 	if (!m_tLtcDisabledOutputs.bMax7219) {
 		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+	}
+
+	if(!m_tLtcDisabledOutputs.bWS28xx) {
+		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
 	}
 }
 
@@ -138,21 +145,39 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 
 void LtcOutputs::ShowSysTime(void) {
 	if (m_bShowSysTime) {
+		const time_t tTime = time(0);
+		const struct tm *pLocalTime = localtime(&tTime);
+
+		if (__builtin_expect((m_nSecondsPrevious == (uint32_t) pLocalTime->tm_sec), 1)) {
+			return;
+		}
+
+		m_nSecondsPrevious = pLocalTime->tm_sec;
+
+		Ltc::ItoaBase10((const struct tm *) pLocalTime, m_aSystemTime);
+
+		if (!m_tLtcDisabledOutputs.bDisplay) {
+			Display::Get()->TextLine(1, (const char *) m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
+			Display::Get()->ClearLine(2);
+		}
+
+		Ltc7segment::Get()->Show(TC_TYPE_UNKNOWN);
+
 		if (!m_tLtcDisabledOutputs.bMax7219) {
-			DisplayMax7219::Get()->ShowSysTime();
+			DisplayMax7219::Get()->ShowSysTime((const char *) m_aSystemTime);
 		}
 
 		if(!m_tLtcDisabledOutputs.bWS28xx) {
-			DisplayWS28xx::Get()->ShowSysTime();
+			DisplayWS28xx::Get()->ShowSysTime((const char *) m_aSystemTime);
 		}
 
 		ResetTimeCodeTypePrevious();
 	}
 }
 
-void LtcOutputs::PrintDisabled(bool IsDisabled, const char *p) {
+void LtcOutputs::PrintDisabled(bool IsDisabled, const char *pString) {
 	if (IsDisabled) {
-		printf(" %s output is disabled\n", p);
+		printf(" %s output is disabled\n", pString);
 	}
 }
 

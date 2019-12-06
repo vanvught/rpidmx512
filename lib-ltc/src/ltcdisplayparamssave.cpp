@@ -57,6 +57,7 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 
 	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING));
+	builder.Add(LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY));
 
 	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE));
 	builder.Add(LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY));

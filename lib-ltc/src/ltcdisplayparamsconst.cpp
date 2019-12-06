@@ -28,5 +28,8 @@
 #include "ltcdisplayparamsconst.h"
 
 alignas(uint32_t) const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
+
 alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
 alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
+
+alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_INTENSITY[] = "ws28xx_intensity";

@@ -26,6 +26,8 @@
 #ifndef DISPLAY7SEGMENT_H_
 #define DISPLAY7SEGMENT_H_
 
+#include <time.h>
+
 #include "max7219set.h"
 
 #include "device_info.h"
@@ -38,7 +40,7 @@ public:
 	void Init(uint8_t nIntensity);
 
 	void Show(const char *pTimecode);
-	void ShowSysTime(void);
+	void ShowSysTime(const char *pSystemTime);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos=0);
 
@@ -48,7 +50,6 @@ public:
 
 private:
 	device_info_t m_DeviceInfo;
-	uint32_t m_nSecondsPrevious;
 
 	static Max72197Segment *s_pThis;
 };

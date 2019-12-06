@@ -54,17 +54,17 @@
 #define WS28XX_NUM_OF_DIGITS	8
 #define WS28XX_NUM_OF_COLONS	3
 
-#define SEGMENTS_PER_DIGIT 		7 ///< number of LEDs that make up one digit
-#define LEDS_PER_SEGMENT 		1 ///< number of LEDs that make up one segment
-#define LEDS_PER_COLON 			2 ///< number of LEDs that make up one colon
+#define SEGMENTS_PER_DIGIT 		7		///< number of LEDs that make up one digit
+#define LEDS_PER_SEGMENT 		1		///< number of LEDs that make up one segment
+#define LEDS_PER_COLON 			2		///< number of LEDs that make up one colon
 
 #define WS28XX_LED_COUNT ((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * WS28XX_NUM_OF_DIGITS) + (LEDS_PER_COLON * WS28XX_NUM_OF_COLONS))
 
-#define WS28XX_UPDATE_MS (15)	// update fades every msec
+#define WS28XX_UPDATE_MS		(15)	///< update fades every msec
 
-#define WS28XX_MAX_MSG_SIZE  (WS28XX_NUM_OF_DIGITS + WS28XX_NUM_OF_COLONS + 1)
+#define WS28XX_MAX_MSG_SIZE		(WS28XX_NUM_OF_DIGITS + WS28XX_NUM_OF_COLONS + 1)
 
-#define WS82XX_MSG_TIME_MS	(3000)
+#define WS82XX_MSG_TIME_MS		(3000)
 
 enum TColonBlinkMode {
 	COLON_BLINK_MODE_OFF,
@@ -83,9 +83,8 @@ public:
 	void Print(void);
 
 	void Show(const char *pTimecode);
-	void ShowSysTime(void);
+	void ShowSysTime(const char *pSystemTime);
 
-	// set the master brightness
 	void SetMaster(uint8_t nValue) {
 		m_nMaster = nValue;
 	}
@@ -108,7 +107,7 @@ private:
 	// draw one segment of a digit
 	void RenderSegment(bool bOnOff, uint16_t cur_digit_base, uint8_t cur_segment, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
-	void ShowMessage(const char pMessage[]);
+	void ShowMessage(void);
 
 private:
 	WS28xx *m_pWS28xx;
@@ -116,7 +115,7 @@ private:
   	TRGBMapping m_tMapping;
 	uint8_t m_Buffer[64];					// UDP buffer
 	int32_t m_nHandle;						// UDP handle
-	uint8_t m_nMaster;
+	uint32_t m_nMaster;						// Master brightness
 	bool m_bShowMsg;  						// if true, showing message
 	char m_aMessage[WS28XX_MAX_MSG_SIZE]; 	// 11 + chr(0)
 	uint32_t m_nSecondsPrevious;   			// has seconds changed
@@ -125,13 +124,10 @@ private:
 	uint32_t m_nWsTicker;
 	uint32_t m_nMsgTimer;
 	uint32_t m_ColonBlinkMillis;
+	uint8_t nRedSegment, nGreenSegment, nBlueSegment;	// RGB for segments
+	uint8_t nRedColon, nGreenColon, nBlueColon;			// RGB for colons  :
+	uint8_t nRedMsg, nGreenMsg, nBlueMsg;				// RGB for messages
 
-	uint8_t curR = 0, curG = 0, curB = 0;	// RGB set for character next rendered
-	uint8_t segR = 0, segG = 0, segB = 0; 	// RGB for segments
-	uint8_t colR = 0, colG = 0, colB = 0;	// RGB for colons  :
-	uint8_t msgR = 255, msgG = 255, msgB = 255; // RGB for messages  
-	uint8_t tmpR = 0, tmpG = 0, tmpB = 0;	// temporary hold previous colour for messages
-	
 	static DisplayWS28xx *s_pThis;
 };
 

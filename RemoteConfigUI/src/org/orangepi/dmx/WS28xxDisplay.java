@@ -116,6 +116,7 @@ public class WS28xxDisplay extends JDialog {
 		textMessageColour.setColumns(10);
 		
 		sliderMaster = new JSlider();
+		sliderMaster.setMinimum(1);
 		sliderMaster.setToolTipText("Master brightness");
 		sliderMaster.setValue(255);
 		sliderMaster.setMaximum(255);
@@ -209,7 +210,14 @@ public class WS28xxDisplay extends JDialog {
 		
 		btnMasterBrightness.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SendUpd("7seg!master#".concat(Integer.toHexString(sliderMaster.getValue())));
+				int value = sliderMaster.getValue();
+				// System.out.println("" + value);
+				String hex = Integer.toHexString(value);
+				if (hex.length() == 1) {
+					SendUpd("7seg!master#0".concat(hex));
+				} else {
+					SendUpd("7seg!master#".concat(hex));
+				}
 			}
 		});
 		

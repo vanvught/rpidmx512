@@ -45,7 +45,7 @@ public:
 	void Print(void);
 
 	void Show(const char *pTimecode);
-	void ShowSysTime(void);
+	void ShowSysTime(const char *pSystemTime);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 

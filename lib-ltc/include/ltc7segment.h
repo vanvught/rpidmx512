@@ -1,5 +1,5 @@
 /**
- * @file ltcleds.cpp
+ * @file ltc7segment.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,37 +23,24 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef LTCLEDS_H_
+#define LTCLEDS_H_
 
-#include "ltcleds.h"
 #include "ltc.h"
 
-#include "display.h"
+class Ltc7segment {
+public:
+	Ltc7segment(void);
+	~Ltc7segment(void);
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+	void Show(TTimecodeTypes tTimecodeType);
 
-LtcLeds *LtcLeds::s_pThis = 0;
-
-const TDisplay7SegmentMessages msg[4] ALIGNED = {
-		DISPLAY_7SEGMENT_MSG_LTC_FILM,
-		DISPLAY_7SEGMENT_MSG_LTC_EBU,
-		DISPLAY_7SEGMENT_MSG_LTC_DF,
-		DISPLAY_7SEGMENT_MSG_LTC_SMPTE };
-
-LtcLeds::LtcLeds(void) {
-	s_pThis = this;
-}
-
-LtcLeds::~LtcLeds(void) {
-}
-
-void LtcLeds::Show(TTimecodeTypes tTimecodeType) {
-	if (tTimecodeType < TC_TYPE_UNKNOWN) {
-		Display::Get()->Status(msg[tTimecodeType]);
-	} else {
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
+	static Ltc7segment* Get(void) {
+		return s_pThis;
 	}
-}
 
+private:
+	static Ltc7segment *s_pThis;
+};
+
+#endif /* LTCLEDS_H_ */
