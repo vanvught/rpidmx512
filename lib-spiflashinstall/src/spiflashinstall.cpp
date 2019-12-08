@@ -114,6 +114,8 @@ SpiFlashInstall::SpiFlashInstall(void):
 					// Temporarily code BEGIN
 					const uint32_t code = Compressed::Check(sFileuImage);
 
+					DEBUG_PRINTF("code = %x", code);
+
 					Display::Get()->ClearLine(3);
 					Display::Get()->ClearLine(4);
 
@@ -121,6 +123,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 						puts("Update UBoot SPI");
 						Display::Get()->Write(3, "Update UBoot SPI");
 					}
+
 					if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
 						puts("uImage is compressed");
 						Display::Get()->Write(4, "uImage is compressed");
@@ -142,11 +145,13 @@ SpiFlashInstall::SpiFlashInstall(void):
 						Display::Get()->TextStatus("Update UBoot SPI", DISPLAY_7SEGMENT_MSG_INFO_SPI_UPDATE);
 						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 						const uint32_t now = Hardware::Get()->Millis();
+
 						while ((Hardware::Get()->Millis() - now) < 3000) {
 #if defined (BARE_METAL)
 							led_blink();
 #endif
 						}
+
 						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
 							Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
 							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
