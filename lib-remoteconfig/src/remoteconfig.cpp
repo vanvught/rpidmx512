@@ -169,7 +169,7 @@ static const char sSetTFTP[] ALIGNED = "!tftp#";
 #define SET_TFTP_LENGTH (sizeof(sSetTFTP)/sizeof(sSetTFTP[0]) - 1)
 
 #define UDP_PORT			0x2905
-#define UDP_BUFFER_SIZE		1024
+#define UDP_BUFFER_SIZE		768
 #define UDP_DATA_MIN_SIZE	MIN(MIN(MIN(MIN(REQUEST_REBOOT_LENGTH, REQUEST_LIST_LENGTH),REQUEST_GET_LENGTH),REQUEST_UPTIME_LENGTH),SET_DISPLAY_LENGTH)
 
 RemoteConfig *RemoteConfig::s_pThis = 0;

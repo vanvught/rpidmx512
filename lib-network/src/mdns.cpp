@@ -26,7 +26,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#if !defined(BARE_METAL)
+ #include <arpa/inet.h>
+#endif
 #include <assert.h>
 
 #include "mdns.h"
@@ -43,7 +45,7 @@
 #define MDNS_RESPONSE_TTL     	(120)    ///< (in seconds)
 #define ANNOUNCE_TIMEOUT 		((MDNS_RESPONSE_TTL / 2) + (MDNS_RESPONSE_TTL / 4))
 
-#define BUFFER_SIZE				1024
+#define BUFFER_SIZE				512
 
 enum TDNSClasses {
 	DNSClassInternet = 1
@@ -183,15 +185,14 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 
 	while (*pSrc != 0) {
 		nLenght = (uint8_t )*pSrc++;
-//		DEBUG_PRINTF("nLenght=%.2x", (int) nLenght);
+		DEBUG_PRINTF("nLenght=%.2x", (int) nLenght);
 
 		if (nLenght > 63) {
 			if (!isCompressed) {
 				nSize += 1;
 			}
-
 			isCompressed = true;
-			const uint32_t nCompressedOffset = (((uint8_t)nLenght & ~(0xC0)) << 8) | ((*pSrc & 0xFF));
+			uint32_t nCompressedOffset = (((uint8_t)nLenght & ~(0xC0)) << 8) | ((*pSrc & 0xFF));
 			nLenght =  m_pBuffer[nCompressedOffset];
 
 //			DEBUG_PRINTF("--> nCompressedOffset=%.4x", (int) nCompressedOffset);
@@ -464,6 +465,7 @@ uint32_t MDNS::CreateAnswerServiceDnsSd(uint32_t nIndex, uint8_t *pDestination) 
 
 void MDNS::HandleRequest(uint16_t nQuestions) {
 	DEBUG_ENTRY
+	debug_dump((void*) m_pBuffer, m_nBytesReceived);
 
 	char DnsName[255];
 
@@ -471,14 +473,14 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 
 	for (uint32_t i = 0; i < nQuestions; i++) {
 		nOffset += DecodeDNSNameNotation((const char *)&m_pBuffer[nOffset], DnsName);
+		DEBUG_PUTS(DnsName);
 
 		const uint16_t nType = __builtin_bswap16(*(uint16_t *)&m_pBuffer[nOffset]);
 		nOffset += 2;
-
 		const uint16_t nClass = __builtin_bswap16(*(uint16_t *)&m_pBuffer[nOffset]) & 0x7F;
 		nOffset += 2;
 
-		DEBUG_PRINTF("%s ==> Type : %d, Class: %d", DnsName, (int) nType, (int) nClass);
+		DEBUG_PRINTF("==> Type : %d, Class: %d", (int) nType, (int) nClass);
 
 		if (nClass == DNSClassInternet) {
 			if ((strcmp((const char *)m_pName, DnsName) == 0) && (nType == DNSRecordTypeA)) {
@@ -528,14 +530,7 @@ void MDNS::Run(void) {
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
 	if ((m_nRemotePort == MDNS_PORT) && (m_nBytesReceived > sizeof(struct TmDNSHeader))) {
-		debug_dump((void*) m_pBuffer, m_nBytesReceived);
-
-		if (m_nBytesReceived < BUFFER_SIZE) {
-			Parse();
-		} else {
-			DEBUG_PUTS("!>>> m_nBytesReceived == BUFFER_SIZE <<<!");
-		}
-
+		Parse();
 	}
 
 #if 0
@@ -588,6 +583,5 @@ void MDNS::Dump(const struct TmDNSHeader *pmDNSHeader, uint16_t nFlags) {
 	printf("Answers   : %u\n", nAnswers);
 	printf("Authority : %u\n", nAuthority);
 	printf("Additional: %u\n", nAdditional);
-
 }
 #endif
