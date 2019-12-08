@@ -255,6 +255,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
 			assert(m_State.nActiveInputPorts <= ARTNET_MAX_PORTS);
 		}
+
 		m_InputPorts[nPortIndex].bIsEnabled = true;
 		m_InputPorts[nPortIndex].port.nDefaultAddress = nAddress & (uint16_t) 0x0F;// Universe : Bits 3-0
 		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress((uint16_t) nAddress, (nPortIndex / ARTNET_MAX_PORTS));
@@ -1172,34 +1173,3 @@ void ArtNetNode::Run(void) {
 	}
 
 }
-
-#if defined ( ENABLE_SENDDIAG )
-void ArtNetNode::FillDiagData(void) {
-	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
-
-	strncpy((char *)m_DiagData.Id, (const char *)NODE_ID, sizeof m_DiagData.Id);
-	m_DiagData.OpCode = OP_DIAGDATA;
-	m_DiagData.ProtVerHi = 0;
-	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;
-}
-
-void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
-	if (!m_State.SendArtDiagData) {
-		return;
-	}
-
-	if (nPriority < m_State.Priority) {
-		return;
-	}
-
-	m_DiagData.Priority = nPriority;
-
-	strncpy((char *) m_DiagData.Data, text, sizeof m_DiagData.Data);
-	m_DiagData.Data[sizeof(m_DiagData.Data) - 1] = '\0';// Just be sure we have a last '\0'
-	m_DiagData.LengthLo = strlen((const char *) m_DiagData.Data) + 1;// Text length including the '\0'
-
-	const uint16_t nSize = sizeof(struct TArtDiagData) - sizeof(m_DiagData.Data) + m_DiagData.LengthLo;
-
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(m_DiagData), nSize, m_State.IPAddressDiagSend, (uint16_t) ARTNET_UDP_PORT);
-}
-#endif
