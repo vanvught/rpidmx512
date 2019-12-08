@@ -42,7 +42,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
+LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tLtcParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TLtcParams); i++) {
@@ -58,10 +58,10 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nStopSecond = 59;
 	m_tLtcParams.nStopMinute = 29;
 	m_tLtcParams.nStopHour = 23;
+	m_tLtcParams.nOscPort = 8000;
 }
 
 LtcParams::~LtcParams(void) {
-	m_tLtcParams.nSetList = 0;
 }
 
 bool LtcParams::Load(void) {
@@ -296,11 +296,17 @@ void LtcParams::callbackFunction(const char* pLine) {
 		if (value8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_LTC;		// TODO Temporarily code until SPI DMA has been implemented
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_WS28XX;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
 			m_tLtcParams.nEnableWS28xx = 0;
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MAX7219;
+			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219)) {
+				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MAX7219;
+			}
+			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC)) {			// TODO Temporarily code until SPI DMA has been implemented
+				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_LTC;	// TODO Temporarily code until SPI DMA has been implemented
+			}																// TODO Temporarily code until SPI DMA has been implemented
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
 		}
 	}
@@ -319,8 +325,6 @@ void LtcParams::Dump(void) {
 	}
 
 	if (isMaskSet(LTC_PARAMS_MASK_DISABLED_OUTPUTS)) {
-		assert(m_tLtcParams.nDisabledOutputs != 0);
-
 		printf(" Disabled outputs %.2x:\n", m_tLtcParams.nDisabledOutputs);
 
 		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY)) {
