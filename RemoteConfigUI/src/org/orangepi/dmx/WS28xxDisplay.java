@@ -15,8 +15,11 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.MaskFormatter;
 
 public class WS28xxDisplay extends JDialog {
@@ -35,6 +38,9 @@ public class WS28xxDisplay extends JDialog {
     private JFormattedTextField textDigitColour;
     private JFormattedTextField textColonColour;
     private JFormattedTextField textMessageColour;
+    private JSlider sliderMaster;
+    private JTextField textFieldMaster;
+    private JButton btnMasterBrightness;
 
 	/**
 	 * Launch the application.
@@ -76,7 +82,7 @@ public class WS28xxDisplay extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 260, 168);
+		setBounds(100, 100, 260, 236);
 		
 		btnShowMessage = new JButton("Show message");	
 		
@@ -108,27 +114,47 @@ public class WS28xxDisplay extends JDialog {
 		textMessageColour = new JFormattedTextField(mask);
 		textMessageColour.setToolTipText("RRGGBB");
 		textMessageColour.setColumns(10);
+		
+		sliderMaster = new JSlider();
+		sliderMaster.setMinimum(1);
+		sliderMaster.setToolTipText("Master brightness");
+		sliderMaster.setValue(255);
+		sliderMaster.setMaximum(255);
+		
+		textFieldMaster = new JTextField();
+		textFieldMaster.setToolTipText("Master value");
+		textFieldMaster.setText("100 %");
+		textFieldMaster.setEditable(false);
+		textFieldMaster.setColumns(10);
+		
+		btnMasterBrightness = new JButton("Master brightness");
 
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnDigitColour)
-						.addComponent(btnColonColour)
-						.addComponent(btnShowMessage)
-						.addComponent(btnMessageColour))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-						.addGroup(Alignment.LEADING, groupLayout.createParallelGroup(Alignment.TRAILING, false)
-							.addComponent(textMessageColour, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-							.addComponent(textColonColour, Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-							.addComponent(textDigitColour, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE))
-						.addComponent(textMessage, GroupLayout.PREFERRED_SIZE, 76, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(18, Short.MAX_VALUE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(btnShowMessage)
+								.addComponent(btnMessageColour)
+								.addComponent(btnColonColour)
+								.addComponent(btnDigitColour)
+								.addComponent(btnMasterBrightness))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(textFieldMaster, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+								.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+									.addComponent(textMessageColour, 0, 0, Short.MAX_VALUE)
+									.addComponent(textColonColour, 0, 0, Short.MAX_VALUE)
+									.addComponent(textDigitColour, GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
+									.addComponent(textMessage, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE))))
+						.addComponent(sliderMaster, GroupLayout.PREFERRED_SIZE, 234, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(12, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.TRAILING)
+			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
@@ -146,7 +172,13 @@ public class WS28xxDisplay extends JDialog {
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnShowMessage)
 						.addComponent(textMessage, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(6, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+						.addComponent(textFieldMaster, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnMasterBrightness))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(sliderMaster, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap())
 		);
 		getContentPane().setLayout(groupLayout);
 	}
@@ -173,6 +205,26 @@ public class WS28xxDisplay extends JDialog {
 		btnMessageColour.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SendUpd("7seg!rgb#2".concat(textMessageColour.getText().trim()));
+			}
+		});
+		
+		btnMasterBrightness.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int value = sliderMaster.getValue();
+				// System.out.println("" + value);
+				String hex = Integer.toHexString(value);
+				if (hex.length() == 1) {
+					SendUpd("7seg!master#0".concat(hex));
+				} else {
+					SendUpd("7seg!master#".concat(hex));
+				}
+			}
+		});
+		
+		sliderMaster.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				int prc = (int) ((float) (sliderMaster.getValue() * 100) / 255);
+				textFieldMaster.setText(Integer.toString(prc) + "%");
 			}
 		});
 	}

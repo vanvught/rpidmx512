@@ -29,7 +29,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class OrangePi {
-	private static final int BUFFERSIZE = 512;
+	private static final int BUFFERSIZE = 1024;
 	private static final int PORT = 0x2905;
 	
 	private static final String RCONFIG_TXT = "rconfig.txt";
@@ -38,9 +38,12 @@ public class OrangePi {
 	private static final String NETWORK_TXT = "network.txt";
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", ""};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only"};
-	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt" };
+	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt"};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
+	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
+	private static final String RDM_TXT = "rdm_device.txt";
+	private static final String SPARKFUN_TXT = "sparkfun.txt";
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -60,6 +63,9 @@ public class OrangePi {
 	private String nodeMode = null;
 	private String nodeLtcDisplay = null;
 	private String nodeTCNet = null;
+	private String nodeMotors[] = {null, null, null, null, null, null, null, null};
+	private String nodeRDM = null;
+	private String nodeSparkFun = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbDisplay = null;
@@ -69,6 +75,9 @@ public class OrangePi {
 	private String sbMode = null;
 	private String sbLtcDisplay = null;
 	private String sbTCNet = null;
+	private String sbMotors[] = {null, null, null, null, null, null, null, null};
+	private String sbRDM = null;
+	private String sbSparkFun = null;
 	
 	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
 		super();
@@ -87,6 +96,9 @@ public class OrangePi {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
 					nodeMode = MODES_TXT[0];
 					nodeNextion = NEXTION_TXT;
+					if (Mode[0].equals("RDM")) {
+						nodeRDM = RDM_TXT;
+					}
 				} else if (Mode[0].equals("Pixel")) {
 					nodeMode = MODES_TXT[1];
 					nodeNextion = NEXTION_TXT;
@@ -98,6 +110,14 @@ public class OrangePi {
 					nodeTCNet = TCNET_TXT;
 				} else if (Mode[0].equals("OSC")) {
 				} else if (Mode[0].equals("Config")) {
+					nodeRDM = RDM_TXT;
+				} else if (Mode[0].equals("Stepper")) {
+					nodeMode = MODES_TXT[1];
+					nodeSparkFun = SPARKFUN_TXT;
+					for (int i = 0; i < nodeMotors.length; i++) {
+						nodeMotors[i] = MOTORS_TXT[i];
+					}
+					nodeRDM = RDM_TXT;
 				}  
 				else {
 					isValid = false;
@@ -167,11 +187,27 @@ public class OrangePi {
 				sbLtcDisplay = doGet(txt);
 			}
 			return sbLtcDisplay.toString();
-		} else if (isExtrasTxt(txt)) {
+		} else if (isTCNetTxt(txt)) {
 			if (sbTCNet == null) {
 				sbTCNet = doGet(txt);
 			}
 			return sbTCNet.toString();
+		} else if (isMotorTxt(txt)) {
+			int nIndex = txt.charAt(5) - '0';
+			if (sbMotors[nIndex] == null) {
+				sbMotors[nIndex] = doGet(txt);
+			}
+			return sbMotors[nIndex].toString();
+		} else if (isRdmTxt(txt)) {
+			if (sbRDM == null) {
+				sbRDM = doGet(txt);
+			}
+			return sbRDM.toString();
+		} else if (isSparkFunTxt(txt)) {
+			if (sbSparkFun == null) {
+				sbSparkFun = doGet(txt);
+			}
+			return sbSparkFun.toString();
 		}
 
 		return null;
@@ -255,8 +291,18 @@ public class OrangePi {
 		} else if (isLtcDisplayTxt(txt)) {
 			sbLtcDisplay = null;
 			bDoSave = true;
-		} else if (isExtrasTxt(txt)) {
+		} else if (isTCNetTxt(txt)) {
 			sbTCNet = null;
+			bDoSave = true;
+		} else if (isMotorTxt(txt)) {
+			int nMotorIndex = txt.charAt(5) - '0';
+			sbMotors[nMotorIndex] = null;
+			bDoSave = true;
+		} else if (isRdmTxt(txt)) {
+			sbRDM = null;
+			bDoSave = true;
+		} else if (isSparkFunTxt(txt)) {
+			sbSparkFun = null;
 			bDoSave = true;
 		}
 		
@@ -416,8 +462,31 @@ public class OrangePi {
 		return false;
 	}
 	
-	private Boolean isExtrasTxt(String mode) {
-		if (mode.equals(TCNET_TXT)) {
+	private Boolean isTCNetTxt(String tcnet) {
+		if (tcnet.equals(TCNET_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
+	private Boolean isMotorTxt(String motor) {
+		for (int i = 0; i < MOTORS_TXT.length; i++) {
+			if (motor.equals(MOTORS_TXT[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private Boolean isRdmTxt(String rdm) {
+		if (rdm.equals(RDM_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
+	private Boolean isSparkFunTxt(String sparkFun) {
+		if (sparkFun.equals(SPARKFUN_TXT)) {
 			return true;
 		}
 		return false;
@@ -469,6 +538,22 @@ public class OrangePi {
 	public String getNodeTCNet() {
 		return nodeTCNet;
 	}
+	
+	public String getNodeMotor(int MotorIndex) {
+		if (MotorIndex >= nodeMotors.length) {
+			return null;
+		}
+		return nodeMotors[MotorIndex];
+	}
+	
+	public String getNodeRDM() {
+		return nodeRDM;
+	}
+	
+	public String getNodeSparkFun() {
+		return nodeSparkFun;
+	}
+	
 	
 	public InetAddress getAddress() {
 		return address;
