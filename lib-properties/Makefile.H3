@@ -1,5 +1,5 @@
 #
-DEFINES = BUILDER_NOT_SET NDEBUG
+DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-network/include
 #

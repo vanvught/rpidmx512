@@ -66,7 +66,7 @@ import javax.swing.tree.TreePath;
 public class RemoteConfig extends JFrame {
 	private static final long serialVersionUID = 8836780363465781413L;
 
-	private final int BUFFERSIZE = 1024;
+	private final int BUFFERSIZE = 512;
 	private final int PORT = 0x2905;
 	private DatagramSocket socketReceive = null;
 

@@ -29,7 +29,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class OrangePi {
-	private static final int BUFFERSIZE = 1024;
+	private static final int BUFFERSIZE = 512;
 	private static final int PORT = 0x2905;
 	
 	private static final String RCONFIG_TXT = "rconfig.txt";
