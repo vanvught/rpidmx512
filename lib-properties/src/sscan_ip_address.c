@@ -73,8 +73,8 @@ int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 
 	}
 
-	j = 0;
-	k = 0;
+	j= 0;
+	k= 0;
 
 	while ((*b != ' ') && (*b != (char) 0)) {
 		if (j == 3) {

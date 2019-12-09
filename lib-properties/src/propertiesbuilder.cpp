@@ -31,11 +31,7 @@
 
 #include "network.h"
 
-PropertiesBuilder::PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength):
-	m_pBuffer(pBuffer),
-	m_nLength(nLength),
-	m_nSize(0)
-{
+PropertiesBuilder::PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength): m_pBuffer(pBuffer), m_nLength(nLength), m_nSize(0) {
 	assert(pFileName != 0);
 	assert(pBuffer != 0);
 
@@ -52,12 +48,10 @@ PropertiesBuilder::PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, ui
 PropertiesBuilder::~PropertiesBuilder(void) {
 }
 
-bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
+bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bDoAdd) {
+	if (!bDoAdd) {
 		return false;
 	}
-#endif
 
 	if (m_nSize >= m_nLength) {
 		return false;
@@ -66,13 +60,7 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
 	const uint32_t nSize = m_nLength - m_nSize;
 
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%d\n", pProperty, nValue);
-	} else {
-		i = snprintf(p, nSize, "#%s=%d\n", pProperty, nValue);
-	}
+	const int i = snprintf(p, nSize, "%s=%d\n", pProperty, nValue);
 
 	if (i > static_cast<int>(nSize)) {
 		return false;
@@ -87,12 +75,10 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 	return true;
 }
 
-bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
+bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bDoAdd) {
+	if (!bDoAdd) {
 		return false;
 	}
-#endif
 
 	if (m_nSize >= m_nLength) {
 		return false;
@@ -101,13 +87,7 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet) {
 	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
 	const uint32_t nSize = m_nLength - m_nSize;
 
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.1f\n", pProperty, fValue);
-	} else {
-		i = snprintf(p, nSize, "#%s=%.1f\n", pProperty, fValue);
-	}
+	const int i = snprintf(p, nSize, "%s=%.1f\n", pProperty, fValue);
 
 	if (i > static_cast<int>(nSize)) {
 		return false;
@@ -122,12 +102,10 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet) {
 	return true;
 }
 
-bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
+bool PropertiesBuilder::Add(const char* pProperty, const char* pValue, bool bDoAdd) {
+	if (!bDoAdd) {
 		return false;
 	}
-#endif
 
 	if (m_nSize >= m_nLength) {
 		return false;
@@ -136,13 +114,7 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
 	const uint32_t nSize = m_nLength - m_nSize;
 
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%s\n", pProperty, pValue);
-	} else {
-		i = snprintf(p, nSize, "#%s=%s\n", pProperty, pValue);
-	}
+	const int i = snprintf(p, nSize, "%s=%s\n", pProperty, pValue);
 
 	if (i > static_cast<int>(nSize)) {
 		return false;
@@ -157,12 +129,10 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 	return true;
 }
 
-bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
+bool PropertiesBuilder::AddIpAddress(const char* pProperty, uint32_t nValue, bool bDoAdd) {
+	if (!bDoAdd) {
 		return false;
 	}
-#endif
 
 	if (m_nSize >= m_nLength) {
 		return false;
@@ -171,13 +141,7 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
 	const uint32_t nSize = m_nLength - m_nSize;
 
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
-	} else {
-		i = snprintf(p, nSize, "#%s=" IPSTR "\n", pProperty, IP2STR(nValue));
-	}
+	const int i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
 
 	if (i > static_cast<int>(nSize)) {
 		return false;
@@ -192,12 +156,10 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 	return true;
 }
 
-bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
+bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2], bool bDoAdd) {
+	if (!bDoAdd) {
 		return false;
 	}
-#endif
 
 	if (m_nSize >= m_nLength) {
 		return false;
@@ -206,13 +168,7 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
 	const uint32_t nSize = m_nLength - m_nSize;
 
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
-	} else {
-		i = snprintf(p, nSize, "#%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
-	}
+	const int i = snprintf(p, nSize, "%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
 
 	if (i > static_cast<int>(nSize)) {
 		return false;
