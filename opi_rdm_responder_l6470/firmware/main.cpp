@@ -109,7 +109,10 @@ void notmain(void) {
 
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
+
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
+	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+
 	pBoard = pSparkFunDmx;
 #endif
 
@@ -159,7 +162,7 @@ void notmain(void) {
 
 #if defined (ORANGE_PI_ONE)
 	if (!isSet) {
-		nGpioDataDirection = GPIO_EXT_24;  // RPI_V2_GPIO_P1_24	8 SPI0 CE0
+		nGpioDataDirection = GPIO_EXT_24;
 	}
 #endif
 
