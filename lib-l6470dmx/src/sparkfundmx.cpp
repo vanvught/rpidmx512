@@ -407,7 +407,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	DEBUG_PRINTF("m_pLightSetDisplay=%x", m_pLightSetDisplay);
+	DEBUG_PRINTF("m_pLightSetDisplay=%x", (int) m_pLightSetDisplay);
 
 	if (m_pLightSetDisplay != 0) {
 		m_pLightSetDisplay->ShowDmxStartAddress();
