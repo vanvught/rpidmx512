@@ -74,15 +74,19 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	DEBUG_ENTRY
 
-	m_tDisplayUdfParams.nSetList = 0;
+	uint8_t *p = (uint8_t *) &m_tDisplayUdfParams;
+
+	for (uint32_t i = 0; i < sizeof(struct TDisplayUdfParams); i++) {
+		*p++ = 0;
+	}
+
+	m_tDisplayUdfParams.nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT;
 
 	DEBUG_EXIT
 }
 
 DisplayUdfParams::~DisplayUdfParams(void) {
 	DEBUG_ENTRY
-
-	m_tDisplayUdfParams.nSetList = 0;
 
 	DEBUG_EXIT
 }
@@ -160,12 +164,8 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 
 	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
 
-	for (uint32_t j = 1; j <= DISPLAY_LABEL_MAX_ROWS; j++) {
-		for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-			if (j == m_tDisplayUdfParams.nLabelIndex[i]) {
-				builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
-			}
-		}
+	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
 	}
 
 	nSize = builder.GetSize();
