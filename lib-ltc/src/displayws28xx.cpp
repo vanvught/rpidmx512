@@ -278,20 +278,6 @@ void DisplayWS28xx::Show(const char *pTimecode) {
 
 		// option - blink colon
 		if (m_nColonBlinkMode != COLON_BLINK_MODE_OFF) {
-			uint8_t mColonBlinkOffset = 0;
-
-			switch (m_nColonBlinkMode) {
-			case COLON_BLINK_MODE_DOWN:
-				mColonBlinkOffset = 0;
-				break;
-			case COLON_BLINK_MODE_UP:
-				mColonBlinkOffset = 255;
-				break;
-			default:
-				mColonBlinkOffset = 0;
-				break;
-			}
-
 			if (m_nSecondsPrevious != pTimecode[7]) { // seconds have changed
 				m_ColonBlinkMillis = m_nMillis;
 				m_nSecondsPrevious = pTimecode[7];
@@ -299,9 +285,17 @@ void DisplayWS28xx::Show(const char *pTimecode) {
 				outG = 0;
 				outB = 0;
 			} else if (m_nMillis - m_ColonBlinkMillis < 1000) {
-				outR = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - nRedColon)) / 1000);
-				outG = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - nGreenColon)) / 1000);
-				outB = (((m_nMillis - m_ColonBlinkMillis) * abs(mColonBlinkOffset - nBlueColon)) / 1000);
+				uint32_t nMaster;
+
+				if (m_nColonBlinkMode == COLON_BLINK_MODE_DOWN) {
+					nMaster = 255 - ((m_nMillis - m_ColonBlinkMillis) * 255 / 1000);
+				} else {
+					nMaster = ((m_nMillis - m_ColonBlinkMillis) * 255 / 1000);
+				}
+
+				outR = (nMaster * nRedColon) / 255;
+				outG = (nMaster *  nGreenColon) / 255;
+				outB = (nMaster * nBlueColon) / 255;
 			}
 		} else {
 			// straight thru
@@ -393,6 +387,10 @@ void DisplayWS28xx::RenderSegment(bool bOnOff, uint16_t cur_digit_base, uint8_t 
 
 	const uint32_t cur_seg_base = cur_digit_base + (cur_segment * LEDS_PER_SEGMENT);
 
+	while (m_pWS28xx->IsUpdating()) {
+		// wait for completion
+	}
+
 	for (uint32_t nIndex = cur_seg_base; nIndex < (cur_seg_base + LEDS_PER_SEGMENT); nIndex++) {
 		if (bOnOff) {
 			m_pWS28xx->SetLED(nIndex, nRed, nGreen, nBlue); // on
@@ -435,6 +433,10 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_
 
 	const uint32_t cur_digit_base = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
+
+	while (m_pWS28xx->IsUpdating()) {
+		// wait for completion
+	}
 
 	for (uint32_t nIndex = cur_digit_base; nIndex < (cur_digit_base + LEDS_PER_COLON); nIndex++) {
 		if (OnOff) {

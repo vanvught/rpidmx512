@@ -36,6 +36,7 @@ public:
 	alignas(uint32_t) static const char MAX7219_INTENSITY[];
 
 	alignas(uint32_t) static const char WS28XX_INTENSITY[];
+	alignas(uint32_t) static const char WS28XX_COLON_BLINK_MODE[];
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

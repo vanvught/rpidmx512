@@ -180,6 +180,7 @@ void notmain(void) {
 	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
 	if (!tLtcDisabledOutputs.bWS28xx){
 		displayWS28xx.SetMaster(ltcDisplayParams.GetWS28xxIntensity());
+		displayWS28xx.SetColonBlinkMode(ltcDisplayParams.GetWS28xxColonBlinkMode());
 		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness(), ltcDisplayParams.GetLedMapping());
 	}
 

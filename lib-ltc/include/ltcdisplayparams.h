@@ -29,8 +29,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "ws28xx.h"
 #include "displaymax7219.h"
+#include "displayws28xx.h"
+#include "ws28xx.h"
 #include "rgbmapping.h"
 
 struct TLtcDisplayParams {
@@ -41,6 +42,7 @@ struct TLtcDisplayParams {
 	uint8_t nGlobalBrightness;
 	uint8_t nRgbMapping;
 	uint8_t nWS28xxIntensity;
+	uint8_t nWS28xxColonBlinkMode;
 } __attribute__((packed));
 
 enum TLtcDisplayParamsMask {
@@ -49,7 +51,8 @@ enum TLtcDisplayParamsMask {
 	LTCDISPLAY_PARAMS_MASK_LED_TYPE = (1 << 2),
 	LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 3),
 	LTCDISPLAY_PARAMS_MASK_RGB_MAPPING = (1 << 4),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5)
+	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5),
+	LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE = (1 << 6)
 };
 
 class LtcDisplayParamsStore {
@@ -95,6 +98,10 @@ public:
 
 	uint8_t GetWS28xxIntensity(void) {
 		return m_tLtcDisplayParams.nWS28xxIntensity;
+	}
+
+	TColonBlinkMode GetWS28xxColonBlinkMode(void) {
+		return (TColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode;
 	}
 
 public:

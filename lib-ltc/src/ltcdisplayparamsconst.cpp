@@ -33,3 +33,4 @@ alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_ty
 alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
 
 alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_INTENSITY[] = "ws28xx_intensity";
+alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";

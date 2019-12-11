@@ -89,6 +89,10 @@ public:
 		m_nMaster = nValue;
 	}
 
+	void SetColonBlinkMode(TColonBlinkMode tColonBlinkMode) {
+		m_nColonBlinkMode = tColonBlinkMode;
+	}
+
 	static DisplayWS28xx *Get(void) {
 		return s_pThis;
 	}
@@ -119,7 +123,7 @@ private:
 	bool m_bShowMsg;  						// if true, showing message
 	char m_aMessage[WS28XX_MAX_MSG_SIZE]; 	// 11 + chr(0)
 	uint32_t m_nSecondsPrevious;   			// has seconds changed
-	enum TColonBlinkMode m_nColonBlinkMode; // 0 = no blink; 1 = blink down; 2 = blink up
+	TColonBlinkMode m_nColonBlinkMode; 		// 0 = no blink; 1 = blink down; 2 = blink up
 	uint32_t m_nMillis; 					// current timer clock in MS
 	uint32_t m_nWsTicker;
 	uint32_t m_nMsgTimer;

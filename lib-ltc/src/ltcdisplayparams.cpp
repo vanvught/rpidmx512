@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")
@@ -41,12 +45,15 @@
 #include "devicesparamsconst.h"
 // Displays
 #include "displaymax7219.h"
+#include "displayws28xx.h"
 #include "ws28xx.h"
 #include "ws28xxconst.h"
 #include "rgbmapping.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
+
+static const char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nLedType = WS2812B;
@@ -55,6 +62,7 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
 	m_tLtcDisplayParams.nRgbMapping = RGB_MAPPING_RGB;
 	m_tLtcDisplayParams.nWS28xxIntensity = 0xFF;
+	m_tLtcDisplayParams.nWS28xxColonBlinkMode = COLON_BLINK_MODE_UP;
 }
 
 LtcDisplayParams::~LtcDisplayParams(void) {
@@ -154,6 +162,19 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	len = 4;
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, buffer, &len) == SSCAN_OK) {
+		buffer[len] = '\0';
+		for (uint32_t i = 0; i < (sizeof(aColonBlinkMode) / sizeof(aColonBlinkMode[0])); i++) {
+			if (strcasecmp(buffer, aColonBlinkMode[i]) == 0) {
+				m_tLtcDisplayParams.nWS28xxColonBlinkMode = (TColonBlinkMode) i;
+				m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE;
+				return;
+			}
+		}
+		return;
+	}
+
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &value8) == SSCAN_OK) {
 		m_tLtcDisplayParams.nGlobalBrightness = value8;
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
@@ -181,6 +202,10 @@ void LtcDisplayParams::Dump(void) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity);
 	}
 
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE)) {
+		printf(" %s=%d\n", LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode);
+	}
+
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
 		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, (int) m_tLtcDisplayParams.nGlobalBrightness);
 	}
@@ -192,7 +217,6 @@ void LtcDisplayParams::Dump(void) {
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity);
 	}
-
 #endif
 }
 
