@@ -296,7 +296,9 @@ void LtcParams::callbackFunction(const char* pLine) {
 		if (value8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
+#if !defined(USE_SPI_DMA)
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_LTC;		// TODO Temporarily code until SPI DMA has been implemented
+#endif
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_WS28XX;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
@@ -304,9 +306,11 @@ void LtcParams::callbackFunction(const char* pLine) {
 			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219)) {
 				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MAX7219;
 			}
+#if !defined(USE_SPI_DMA)
 			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC)) {			// TODO Temporarily code until SPI DMA has been implemented
 				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_LTC;	// TODO Temporarily code until SPI DMA has been implemented
 			}																// TODO Temporarily code until SPI DMA has been implemented
+#endif
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
 		}
 	}

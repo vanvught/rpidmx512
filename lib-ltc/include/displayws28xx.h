@@ -31,8 +31,35 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "ws28xx.h"
+#if defined(USE_SPI_DMA)
+ #include "h3/ws28xxdma.h"
+#else
+ #include "ws28xx.h"
+#endif
 #include "rgbmapping.h"
+
+enum TColonBlinkMode {
+	COLON_BLINK_MODE_OFF,
+	COLON_BLINK_MODE_DOWN,
+	COLON_BLINK_MODE_UP
+};
+
+enum TWS28xxColourIndex {
+	WS28XX_COLOUR_INDEX_SEGMENT,
+	WS28XX_COLOUR_INDEX_COLON,
+	WS28XX_COLOUR_INDEX_MESSAGE,
+	WS28XX_COLOUR_INDEX_LAST
+};
+
+enum TWS28xxDisplayDefaults {
+	WS28XXDISPLAY_DEFAULT_LED_TYPE = WS2812B,
+	WS28XXDISPLAY_DEFAULT_COLOUR_SEGMENT = (uint32_t) 0x00FF0000,
+	WS28XXDISPLAY_DEFAULT_COLOUR_COLON = (uint32_t) 0x00FFFC00,
+	WS28XXDISPLAY_DEFAULT_COLOUR_MESSAGE = (uint32_t) 0x00FFFFFF,
+	WS28XXDISPLAY_DEFAULT_COLON_BLINK_MODE = COLON_BLINK_MODE_UP,
+	WS28XXDISPLAY_DEFAULT_MASTER = 0xFF,
+	WS28XXDISPLAY_DEFAULT_GLOBAL_BRIGHTNESS = 0xFF,
+};
 
 /*
  *  A 8 x 7 Segment (with 3 colons) TC Display constructed of WS82xx LEDS, 
@@ -58,7 +85,7 @@
 #define LEDS_PER_SEGMENT 		1		///< number of LEDs that make up one segment
 #define LEDS_PER_COLON 			2		///< number of LEDs that make up one colon
 
-#define WS28XX_LED_COUNT ((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * WS28XX_NUM_OF_DIGITS) + (LEDS_PER_COLON * WS28XX_NUM_OF_COLONS))
+#define WS28XX_LED_COUNT 		((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * WS28XX_NUM_OF_DIGITS) + (LEDS_PER_COLON * WS28XX_NUM_OF_COLONS))
 
 #define WS28XX_UPDATE_MS		(15)	///< update fades every msec
 
@@ -66,24 +93,22 @@
 
 #define WS82XX_MSG_TIME_MS		(3000)
 
-enum TColonBlinkMode {
-	COLON_BLINK_MODE_OFF,
-	COLON_BLINK_MODE_DOWN,
-	COLON_BLINK_MODE_UP
-};
-
 class DisplayWS28xx {
 public:
 	DisplayWS28xx(TWS28XXType tLedType);
 	~DisplayWS28xx(void);
 
-	void Init(uint8_t nIntensity, TRGBMapping tMapping);
+	void Init(uint8_t nIntensity);
 	void Run();
 
 	void Print(void);
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
+
+	void SetMapping(TRGBMapping tMapping) {
+		m_tMapping = tMapping;
+	}
 
 	void SetMaster(uint8_t nValue) {
 		m_nMaster = nValue;
@@ -93,13 +118,21 @@ public:
 		m_nColonBlinkMode = tColonBlinkMode;
 	}
 
+	void SetColour(uint32_t nRGB, TWS28xxColourIndex tIndex) {
+		if (tIndex >= WS28XX_COLOUR_INDEX_LAST) {
+			return;
+		}
+		m_aColour[(uint32_t) tIndex] = nRGB;
+	}
+
 	static DisplayWS28xx *Get(void) {
 		return s_pThis;
 	}
 
 private:
   	// set RGB for next character(s)
-  	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex);
+	void SetRGB(uint32_t nRGB, TWS28xxColourIndex tIndex);
+  	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TWS28xxColourIndex tIndex);
 	// set RGB from a hex string  
 	void SetRGB(const char *pHexString);
 	// write a character from to digits 0..7
@@ -114,9 +147,14 @@ private:
 	void ShowMessage(void);
 
 private:
+#if defined(USE_SPI_DMA)
+	WS28xxDMA *m_pWS28xx;
+#else
 	WS28xx *m_pWS28xx;
+#endif
 	TWS28XXType m_tLedType;
   	TRGBMapping m_tMapping;
+	uint32_t m_aColour[WS28XX_COLOUR_INDEX_LAST];
 	uint8_t m_Buffer[64];					// UDP buffer
 	int32_t m_nHandle;						// UDP handle
 	uint32_t m_nMaster;						// Master brightness

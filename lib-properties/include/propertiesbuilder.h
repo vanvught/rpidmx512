@@ -66,6 +66,8 @@ public:
 		return AddHex16(pProperty, nValue, bIsSet);
 	}
 
+	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true);
+
 	unsigned GetSize(void) {
 		return m_nSize;
 	}

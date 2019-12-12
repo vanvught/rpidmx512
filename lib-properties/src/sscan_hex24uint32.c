@@ -1,5 +1,5 @@
 /**
- * @file ltcdisplayparamsconst.cpp
+ * @file sscan_hex24uint32.c
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,15 +24,50 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
+#include <ctype.h>
+#include <assert.h>
 
-#include "ltcdisplayparamsconst.h"
-#include "displayws28xx.h"
+#include "sscan.h"
 
-alignas(uint32_t) const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
+extern char *get_name(const char *buf, const char *name);
 
-alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
-alignas(uint32_t) const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
+int sscan_hex24uint32(const char *buf, const char *name, uint32_t *uint32) {
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(uint32 != NULL);
 
-alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_INTENSITY[] = "ws28xx_intensity";
-alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";
-alignas(uint32_t) const char LtcDisplayParamsConst::WS28XX_COLOUR[WS28XX_COLOUR_INDEX_LAST][24] = { "ws28xx_colour_segment", "ws28xx_colour_colon", "ws28xx_colour_message" };
+	char *b;
+	int k = 0;
+	uint8_t nibble;
+	uint16_t tmp;
+
+	if ((b = get_name(buf, name)) == NULL) {
+		return SSCAN_NAME_ERROR;
+	}
+
+	k = 0;
+	tmp = 0;
+
+	while ((*b != (char) '\0') && (k < 6)) {
+		if (isxdigit((int) *b) == 0) {
+			return SSCAN_NAME_ERROR;
+		}
+		nibble = *b > '9' ? ((uint8_t) *b | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (*b - '0');
+		tmp = (tmp << 4) | nibble;
+		k++;
+		b++;
+	}
+
+	if ((*b != (char) '\0') && (*b != (char) ' ')) {
+		return SSCAN_NAME_ERROR;
+	}
+
+	if (k != 6) {
+		return SSCAN_VALUE_ERROR;
+	}
+
+	*uint32 = tmp;
+
+	return SSCAN_OK;
+}

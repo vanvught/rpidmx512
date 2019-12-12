@@ -226,3 +226,38 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 
 	return true;
 }
+
+bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, bool bIsSet) {
+#if !defined(BUILDER_NOT_SET)
+	if (!bIsSet) {
+		return false;
+	}
+#endif
+
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	int i;
+
+	if (bIsSet) {
+		i = snprintf(p, nSize, "%s=%.6x\n", pProperty, nValue);
+	} else {
+		i = snprintf(p, nSize, "#%s=%.6x\n", pProperty, nValue);
+	}
+
+	if (i > static_cast<int>(nSize)) {
+		return false;
+	}
+
+	m_nSize += i;
+
+#ifndef NDEBUG
+	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
+#endif
+
+	return true;
+}

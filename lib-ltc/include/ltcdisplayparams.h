@@ -43,6 +43,7 @@ struct TLtcDisplayParams {
 	uint8_t nRgbMapping;
 	uint8_t nWS28xxIntensity;
 	uint8_t nWS28xxColonBlinkMode;
+	uint32_t aWS28xxColour[WS28XX_COLOUR_INDEX_LAST];
 } __attribute__((packed));
 
 enum TLtcDisplayParamsMask {
@@ -52,7 +53,8 @@ enum TLtcDisplayParamsMask {
 	LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 3),
 	LTCDISPLAY_PARAMS_MASK_RGB_MAPPING = (1 << 4),
 	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE = (1 << 6)
+	LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE = (1 << 6),
+	LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX = (1 << 7)
 };
 
 class LtcDisplayParamsStore {
@@ -74,14 +76,12 @@ public:
 	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
+	void Set(DisplayWS28xx *pDisplayWS28xx);
+
 	void Dump(void);
 
 	TWS28XXType GetLedType(void) {
 		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
-	}
-
-	TRGBMapping GetLedMapping(void) {
-		return (TRGBMapping) m_tLtcDisplayParams.nRgbMapping;
 	}
 
 	uint8_t GetGlobalBrightness(void) {
@@ -95,15 +95,6 @@ public:
 	uint8_t GetMax7219Intensity(void) {
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
-
-	uint8_t GetWS28xxIntensity(void) {
-		return m_tLtcDisplayParams.nWS28xxIntensity;
-	}
-
-	TColonBlinkMode GetWS28xxColonBlinkMode(void) {
-		return (TColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode;
-	}
-
 public:
     static void staticCallbackFunction(void *p, const char *s);
 

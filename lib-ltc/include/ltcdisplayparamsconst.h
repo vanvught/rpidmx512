@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "displayws28xx.h"
+
 class LtcDisplayParamsConst {
 public:
 	alignas(uint32_t) static const char FILE_NAME[];
@@ -37,6 +39,7 @@ public:
 
 	alignas(uint32_t) static const char WS28XX_INTENSITY[];
 	alignas(uint32_t) static const char WS28XX_COLON_BLINK_MODE[];
+	alignas(uint32_t) static const char WS28XX_COLOUR[WS28XX_COLOUR_INDEX_LAST][24];
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

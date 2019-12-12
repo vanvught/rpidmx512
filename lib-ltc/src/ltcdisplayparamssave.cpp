@@ -60,6 +60,10 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 	builder.Add(LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY));
 	builder.Add(LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode == COLON_BLINK_MODE_OFF ? "off" : (m_tLtcDisplayParams.nWS28xxColonBlinkMode == COLON_BLINK_MODE_DOWN ? "down" : "up") , isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE));
 
+	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+		builder.AddHex24(LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], m_tLtcDisplayParams.aWS28xxColour[nIndex],isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex));
+	}
+
 	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE));
 	builder.Add(LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY));
 

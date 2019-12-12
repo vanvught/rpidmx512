@@ -117,13 +117,6 @@ void notmain(void) {
 		ltcParams.Dump();
 	}
 
-	StoreLtcDisplay storeLtcDisplay;
-	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
-
-	if (ltcDisplayParams.Load()) {
-		ltcDisplayParams.Dump();
-	}
-
 	Ltc7segment leds;
 
 	fw.Print();
@@ -172,6 +165,13 @@ void notmain(void) {
 		tcnetparams.Dump();
 	}
 
+	StoreLtcDisplay storeLtcDisplay;
+	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
+
+	if (ltcDisplayParams.Load()) {
+		ltcDisplayParams.Dump();
+	}
+
 	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type());
 	if(!tLtcDisabledOutputs.bMax7219) {
 		displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
@@ -179,9 +179,8 @@ void notmain(void) {
 
 	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
 	if (!tLtcDisabledOutputs.bWS28xx){
-		displayWS28xx.SetMaster(ltcDisplayParams.GetWS28xxIntensity());
-		displayWS28xx.SetColonBlinkMode(ltcDisplayParams.GetWS28xxColonBlinkMode());
-		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness(), ltcDisplayParams.GetLedMapping());
+		ltcDisplayParams.Set(&displayWS28xx);
+		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness());
 	}
 
 	display.ClearLine(3);

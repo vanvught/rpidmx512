@@ -35,6 +35,11 @@
 #include "displayws28xx.h"
 #include "displayws28xx_font.h"
 
+#if defined(USE_SPI_DMA)
+ #include "h3/ws28xxdma.h"
+#else
+ #include "ws28xx.h"
+#endif
 #include "rgbmapping.h"
 
 #include "hardware.h"
@@ -79,6 +84,10 @@ DisplayWS28xx::DisplayWS28xx(TWS28XXType tLedType):
 
 {
 	s_pThis = this;
+
+	m_aColour[WS28XX_COLOUR_INDEX_SEGMENT] = WS28XXDISPLAY_DEFAULT_COLOUR_SEGMENT;
+	m_aColour[WS28XX_COLOUR_INDEX_COLON] = WS28XXDISPLAY_DEFAULT_COLOUR_COLON;
+	m_aColour[WS28XX_COLOUR_INDEX_MESSAGE] = WS28XXDISPLAY_DEFAULT_COLOUR_MESSAGE;
 }
 
 DisplayWS28xx::~DisplayWS28xx(void) {
@@ -88,18 +97,21 @@ DisplayWS28xx::~DisplayWS28xx(void) {
 	}
 }
 
-void DisplayWS28xx::Init(uint8_t nIntensity, TRGBMapping tMapping) {
+void DisplayWS28xx::Init(uint8_t nIntensity) {
+	assert(m_pWS28xx == 0);
+#if defined(USE_SPI_DMA)
+	m_pWS28xx = new WS28xxDMA(m_tLedType, WS28XX_LED_COUNT);
+#else
 	m_pWS28xx = new WS28xx(m_tLedType, WS28XX_LED_COUNT);
+#endif
 	assert(m_pWS28xx != 0);
 
 	m_pWS28xx->Initialize();
 	m_pWS28xx->SetGlobalBrightness(nIntensity);
 
-	m_tMapping = tMapping;
-
-	SetRGB(0xFF, 0, 0, 0);
-	SetRGB(0xFF, 0xCC, 0, 1);
-	SetRGB(0xFF, 0xFF, 0xFF, 2);
+	SetRGB(m_aColour[WS28XX_COLOUR_INDEX_SEGMENT], WS28XX_COLOUR_INDEX_SEGMENT);
+	SetRGB(m_aColour[WS28XX_COLOUR_INDEX_COLON], WS28XX_COLOUR_INDEX_COLON);
+	SetRGB(m_aColour[WS28XX_COLOUR_INDEX_MESSAGE], WS28XX_COLOUR_INDEX_MESSAGE);
 
 	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
 	assert(m_nHandle != -1);
@@ -107,7 +119,7 @@ void DisplayWS28xx::Init(uint8_t nIntensity, TRGBMapping tMapping) {
 
 // set the current RGB values, remapping them to different LED strip mappings
 // ToDo Move RGB mapping to lib-???
-void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nIndex) {
+void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TWS28xxColourIndex tIndex) {
 	uint8_t nRedCurrent, nGreenCurrent, nBlueCurrent;
 
 	switch (m_tMapping) {
@@ -148,18 +160,18 @@ void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t 
 		break;
 	}
 
-	switch (nIndex) {
-	case 0: // segment colour
+	switch (tIndex) {
+	case WS28XX_COLOUR_INDEX_SEGMENT:
 		nRedSegment = nRedCurrent;
 		nGreenSegment = nGreenCurrent;
 		nBlueSegment = nBlueCurrent;
 		break;
-	case 1: // colon colour
+	case WS28XX_COLOUR_INDEX_COLON:
 		nRedColon = nRedCurrent;
 		nGreenColon = nGreenCurrent;
 		nBlueColon = nBlueCurrent;
 		break;
-	case 2: // message colour
+	case WS28XX_COLOUR_INDEX_MESSAGE:
 		nRedMsg = nRedCurrent;
 		nGreenMsg = nGreenCurrent;
 		nBlueMsg = nBlueCurrent;
@@ -172,17 +184,28 @@ void DisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t 
 	}
 }
 
-// set the current RGB values from a hex string, FFCC00
+void DisplayWS28xx::SetRGB(uint32_t nRGB, TWS28xxColourIndex tIndex) {
+	const uint8_t nRed = (uint8_t) ((nRGB & 0xFF0000) >> 16);
+	const uint8_t nGreen = (uint8_t) ((nRGB & 0xFF00) >> 8);
+	const uint8_t nBlue = (uint8_t) (nRGB & 0xFF);
+
+	SetRGB(nRed, nGreen, nBlue, tIndex);
+}
+
 void DisplayWS28xx::SetRGB(const char *pHexString) {
-	const uint8_t nIndex = pHexString[0] - '0';
+	if (!isdigit((int) pHexString[0])) {
+		return;
+	}
+
+	const TWS28xxColourIndex tIndex = (TWS28xxColourIndex) (pHexString[0]  - '0');
+
+	if (tIndex >= WS28XX_COLOUR_INDEX_LAST) {
+		return;
+	}
 
 	const uint32_t nRGB = hexadecimalToDecimal(pHexString + 1);
 
-	const uint8_t nRed = (uint8_t) (nRGB >> 16);
-	const uint8_t nGreen = (uint8_t) (nRGB >> 8);
-	const uint8_t nBlue = (uint8_t) nRGB & 0xff;
-
-	SetRGB(nRed, nGreen, nBlue, nIndex);
+	SetRGB(nRGB, tIndex);
 }
 
 void DisplayWS28xx::Run() {
@@ -281,6 +304,7 @@ void DisplayWS28xx::Show(const char *pTimecode) {
 			if (m_nSecondsPrevious != pTimecode[7]) { // seconds have changed
 				m_ColonBlinkMillis = m_nMillis;
 				m_nSecondsPrevious = pTimecode[7];
+
 				outR = 0;
 				outG = 0;
 				outB = 0;
@@ -449,8 +473,9 @@ void DisplayWS28xx::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_
 
 void DisplayWS28xx::Print(void) {
 	printf("Display WS28xx\n");
-	printf(" %d Digit(s), %d Colons, %d LED(S)\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
+	printf(" %d Digit(s), %d Colons, %d LEDs\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
 	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_tMapping), m_tMapping);
 	printf(" Master  : %d\n", m_nMaster);
+	printf(" RGB     : Segment 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[WS28XX_COLOUR_INDEX_SEGMENT], m_aColour[WS28XX_COLOUR_INDEX_COLON], m_aColour[WS28XX_COLOUR_INDEX_MESSAGE]);
 }

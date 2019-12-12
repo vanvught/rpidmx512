@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")
@@ -56,13 +52,16 @@
 static const char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
-	m_tLtcDisplayParams.nLedType = WS2812B;
-	m_tLtcDisplayParams.nGlobalBrightness = 0xFF;
+	m_tLtcDisplayParams.nLedType = WS28XXDISPLAY_DEFAULT_LED_TYPE;
+	m_tLtcDisplayParams.nGlobalBrightness = WS28XXDISPLAY_DEFAULT_GLOBAL_BRIGHTNESS;
 	m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
 	m_tLtcDisplayParams.nRgbMapping = RGB_MAPPING_RGB;
-	m_tLtcDisplayParams.nWS28xxIntensity = 0xFF;
-	m_tLtcDisplayParams.nWS28xxColonBlinkMode = COLON_BLINK_MODE_UP;
+	m_tLtcDisplayParams.nWS28xxIntensity = WS28XXDISPLAY_DEFAULT_MASTER;
+	m_tLtcDisplayParams.nWS28xxColonBlinkMode = WS28XXDISPLAY_DEFAULT_COLON_BLINK_MODE;
+	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_SEGMENT] = WS28XXDISPLAY_DEFAULT_COLOUR_SEGMENT;
+	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_COLON] = WS28XXDISPLAY_DEFAULT_COLOUR_COLON;
+	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_MESSAGE] = WS28XXDISPLAY_DEFAULT_COLOUR_MESSAGE;
 }
 
 LtcDisplayParams::~LtcDisplayParams(void) {
@@ -108,6 +107,7 @@ void LtcDisplayParams::Load(const char *pBuffer, uint32_t nLength) {
 void LtcDisplayParams::callbackFunction(const char *pLine) {
 	char buffer[16];
 	uint8_t value8;
+	uint32_t value32;
 	uint8_t len;
 
 	len = sizeof(buffer);
@@ -175,10 +175,40 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], &value32) == SSCAN_OK) {
+			m_tLtcDisplayParams.aWS28xxColour[nIndex] = value32;
+			m_tLtcDisplayParams.nSetList |= (LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex);
+			return;
+		}
+	}
+
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &value8) == SSCAN_OK) {
 		m_tLtcDisplayParams.nGlobalBrightness = value8;
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
 		return;
+	}
+}
+
+void LtcDisplayParams::Set(DisplayWS28xx *pDisplayWS28xx) {
+	assert(pDisplayWS28xx != 0);
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
+		pDisplayWS28xx->SetMapping((TRGBMapping) m_tLtcDisplayParams.nRgbMapping);
+	}
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY)) {
+		pDisplayWS28xx->SetMaster(m_tLtcDisplayParams.nWS28xxIntensity);
+	}
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE)) {
+		pDisplayWS28xx->SetColonBlinkMode((TColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode);
+	}
+
+	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+		if (isMaskSet((LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex))) {
+			pDisplayWS28xx->SetColour(m_tLtcDisplayParams.aWS28xxColour[nIndex], (TWS28xxColourIndex) nIndex);
+		}
 	}
 }
 
@@ -204,6 +234,12 @@ void LtcDisplayParams::Dump(void) {
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode);
+	}
+
+	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+		if (isMaskSet((LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex))) {
+			printf(" %s=%.6x\n", LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], m_tLtcDisplayParams.aWS28xxColour[nIndex]);
+		}
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
