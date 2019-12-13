@@ -32,12 +32,13 @@
 
 struct TMotorParams {
     uint32_t nSetList;
+    //
 	float fStepAngel;
 	float fVoltage;
 	float fCurrent;
 	float fResistance;
 	float fInductance;
-}__attribute__((packed));
+} __attribute__((packed));
 
 enum TMotorParamsMask {
 	MOTOR_PARAMS_MASK_STEP_ANGEL = (1 << 0),

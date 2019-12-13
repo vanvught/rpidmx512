@@ -2,7 +2,7 @@
  * @file l6470dmxmode0.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,10 @@
 
 #include "debug.h"
 
-L6470DmxMode0::L6470DmxMode0(L6470 *pL6470, MotorParams *pMotorParams) {
+L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
 
 	m_pL6470 = pL6470;
 

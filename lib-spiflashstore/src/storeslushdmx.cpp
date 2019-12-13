@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file storeslushdmx.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,65 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "storeslushdmx.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
+#include "slushdmxparams.h"
 
-#endif /* MODEPARAMSCONST_H_ */
+#include "spiflashstore.h"
+
+#include "debug.h"
+
+StoreSlushDmx *StoreSlushDmx::s_pThis = 0;
+
+SlushDmxParamsStore::~SlushDmxParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+StoreSlushDmx::StoreSlushDmx(void) {
+	DEBUG_ENTRY
+
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
+
+	DEBUG_EXIT
+}
+
+StoreSlushDmx::~StoreSlushDmx(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreSlushDmx::Update(const struct TSlushDmxParams *pSlushDmxParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_SLUSH, (void *)pSlushDmxParams, sizeof(struct TSlushDmxParams));
+
+	DEBUG_EXIT
+}
+
+void StoreSlushDmx::Copy(struct TSlushDmxParams *pSlushDmxParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_SLUSH, (void *)pSlushDmxParams, sizeof(struct TSlushDmxParams));
+
+	DEBUG_EXIT
+}
+
+void StoreSlushDmx::Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreSlushDmx::Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

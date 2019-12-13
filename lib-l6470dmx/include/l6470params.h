@@ -32,6 +32,7 @@
 
 struct TL6470Params {
     uint32_t nSetList;
+    //
     float fMinSpeed;
     float fMaxSpeed;
     float fAcc;
@@ -41,7 +42,7 @@ struct TL6470Params {
     uint8_t nKvalAcc;
     uint8_t nKvalDec;
     uint8_t nMicroSteps;
-}__attribute__((packed));
+} __attribute__((packed));
 
 enum TL6470ParamsMask {
 	L6470_PARAMS_MASK_MIN_SPEED   = (1 << 0),

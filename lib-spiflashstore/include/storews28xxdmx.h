@@ -26,15 +26,20 @@
 #ifndef STOREWS28XXDMX_H_
 #define STOREWS28XXDMX_H_
 
-#include "ws28xxdmxparams.h"
+#include <stdint.h>
 
-class StoreWS28xxDmx: public WS28xxDmxParamsStore {
+#include "ws28xxdmxparams.h"
+#include "ws28xxdmxstore.h"
+
+class StoreWS28xxDmx: public WS28xxDmxParamsStore, WS28xxDmxStore {
 public:
 	StoreWS28xxDmx(void);
 	~StoreWS28xxDmx(void);
 
 	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
 	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
 
 public:
 	static StoreWS28xxDmx* Get(void) {

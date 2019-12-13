@@ -2,7 +2,7 @@
  * @file l6470dmxmode3.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 
 class L6470DmxMode3: public L6470DmxMode {
 public:
-	L6470DmxMode3(L6470 *, MotorParams *);
+	L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams);
 	~L6470DmxMode3(void);
 
 	void Start(void);
@@ -42,18 +42,18 @@ public:
 	void HandleBusy(void);
 	bool BusyCheck(void);
 
-	void Data(const uint8_t *);
+	void Data(const uint8_t*);
 
-	inline static TL6470DmxModes GetMode(void) {
+	static TL6470DmxModes GetMode(void) {
 		return L6470DMXMODE3;
 	}
 
-	inline static uint8_t GetDmxFootPrint(void) {
+	static uint8_t GetDmxFootPrint(void) {
 		return 1;
 	}
 
 private:
-	L6470	*m_pL6470;
+	L6470 *m_pL6470;
 	float m_fSteps;
 	uint8_t m_nPreviousData;
 	bool m_bWasBusy;

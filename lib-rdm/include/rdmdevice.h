@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "rdmdevicestore.h"
+
 struct TRDMDeviceInfoData {
 	uint8_t *data;
 	uint8_t length;
@@ -72,6 +74,10 @@ public:
 	void Init(void);
 	void Print(void);
 
+	void SetRDMDeviceStore(RDMDeviceStore *pRDMDeviceStore) {
+		m_pRDMDeviceStore = pRDMDeviceStore;
+	}
+
 	void SetFactoryDefaults(void);
 	bool GetFactoryDefaults(void);
 
@@ -106,10 +112,6 @@ public:
 		return m_tRDMDevice.nProductDetail;
 	}
 
-	uint8_t GetExtMonLevel(void) { //TODO remove
-		return 0;
-	}
-
 private:
 	uint16_t CalculateChecksum(void);
 
@@ -119,6 +121,8 @@ private:
 	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t m_nDeviceRootLabelLength;
 	uint16_t m_nCheckSum;
+
+	RDMDeviceStore *m_pRDMDeviceStore;
 };
 
 #endif /* RDMDEVICE_H_ */

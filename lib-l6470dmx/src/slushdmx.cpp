@@ -40,6 +40,9 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
+#include "lightset.h"
+#include "lightsetdisplay.h"
+
 #include "parse.h"
 
 #include "debug.h"
@@ -151,10 +154,15 @@ void SlushDmx::callbackFunction(const char *pLine) {
 	}
 }
 
-SlushDmx::SlushDmx(bool bUseSPI): m_bSetPortA(false), m_bSetPortB(false), m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxFootprint(0) { // Invalidate DMX Start Address and DMX Footprint
+SlushDmx::SlushDmx(bool bUseSPI):
+	m_bSetPortA(false),
+	m_bSetPortB(false),
+	m_bUseSpiBusy(bUseSPI),
+	m_nMotorsConnected(0),
+	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
+	m_nDmxFootprint(0)  // Invalidate DMX Start Address and DMX Footprint
+{
 	DEBUG_ENTRY;
-
-	m_bUseSpiBusy = bUseSPI;
 
 	m_pBoard = new SlushBoard;
 	assert(m_pBoard != 0);
@@ -174,7 +182,7 @@ SlushDmx::SlushDmx(bool bUseSPI): m_bSetPortA(false), m_bSetPortB(false), m_nDmx
 	m_pSlotInfoPortB = 0;
 	m_nDataPortB = 0;
 
-	for (unsigned i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		m_pSlushMotor[i] = 0;
 		m_pMotorParams[i] = 0;
 		m_pModeParams[i] = 0;
@@ -184,7 +192,7 @@ SlushDmx::SlushDmx(bool bUseSPI): m_bSetPortA(false), m_bSetPortB(false), m_nDmx
 
 	m_pSlotInfoRaw = new char[DMX_SLOT_INFO_RAW_LENGTH];
 
-	for (unsigned i = 0; i < DMX_SLOT_INFO_RAW_LENGTH; i++) {
+	for (uint32_t i = 0; i < DMX_SLOT_INFO_RAW_LENGTH; i++) {
 		m_pSlotInfoRawPortA[i] = 0;
 		m_pSlotInfoRawPortB[i] = 0;
 		m_pSlotInfoRaw[i] = 0;
@@ -258,7 +266,7 @@ SlushDmx::~SlushDmx(void) {
 void SlushDmx::Start(uint8_t nPort) {
 	DEBUG_ENTRY;
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->Start();
 		}
@@ -270,7 +278,7 @@ void SlushDmx::Start(uint8_t nPort) {
 void SlushDmx::Stop(uint8_t nPort) {
 	DEBUG_ENTRY;
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->Stop();
 		}
@@ -282,8 +290,6 @@ void SlushDmx::Stop(uint8_t nPort) {
 void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 
-	uint8_t nMotorsConnected = 0;
-
 	ReadConfigFile configfile(SlushDmx::staticCallbackFunction, this);
 
 	m_nDmxStartAddressPortA = 0;
@@ -293,7 +299,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 		// MCP23017 Port A
 		if (m_nDmxStartAddressPortA > 0) {
-			for (int pin = 0; pin < m_nDmxFootprintPortA; pin++) {
+			for (uint32_t pin = 0; pin < m_nDmxFootprintPortA; pin++) {
 				m_pBoard->IOFSel(SLUSH_IO_PORTA, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
 			}
 			m_bSetPortA = true;
@@ -306,7 +312,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortA;
 
-			for (unsigned i = 0; i < m_nDmxFootprintPortA; i++) {
+			for (uint32_t i = 0; i < m_nDmxFootprintPortA; i++) {
 				bool isSet = false;
 
 				if (pSlotInfoRaw != 0) {
@@ -327,7 +333,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 		// MCP23017 Port B
 		if (m_nDmxStartAddressPortB > 0) {
-			for (int pin = 0; pin < m_nDmxFootprintPortB; pin++) {
+			for (uint32_t pin = 0; pin < m_nDmxFootprintPortB; pin++) {
 				m_pBoard->IOFSel(SLUSH_IO_PORTB, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
 			}
 			m_bSetPortB = true;
@@ -348,7 +354,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortB;
 
-			for (unsigned i = 0; i < m_nDmxFootprintPortB; i++) {
+			for (uint32_t i = 0; i < m_nDmxFootprintPortB; i++) {
 				bool isSet = false;
 
 				if (pSlotInfoRaw != 0) {
@@ -370,7 +376,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 	char fileName[] = "motor%.txt";
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 
 		fileName[5] = (char) i + '0';
 
@@ -389,7 +395,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 				if (m_pSlushMotor[i] != 0) {
 					if (m_pSlushMotor[i]->IsConnected()) {
-						nMotorsConnected++;
+						m_nMotorsConnected++;
 						m_pSlushMotor[i]->Dump();
 
 						m_pMotorParams[i] = new MotorParams;
@@ -428,7 +434,7 @@ void SlushDmx::ReadConfigFiles(void) {
 							m_pSlotInfo[i] = new struct TLightSetSlotInfo[m_pL6470DmxModes[i]->GetDmxFootPrint()];
 							char *pSlotInfoRaw = m_pSlotInfoRaw;
 
-							for (unsigned j = 0; j < m_pL6470DmxModes[i]->GetDmxFootPrint(); j++) {
+							for (uint32_t j = 0; j < m_pL6470DmxModes[i]->GetDmxFootPrint(); j++) {
 								bool isSet = false;
 
 								if (pSlotInfoRaw != 0) {
@@ -467,27 +473,27 @@ void SlushDmx::ReadConfigFiles(void) {
 		}
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->InitSwitch();
 		}
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pSlushMotor[i] != 0) {
 			while (m_pL6470DmxModes[i]->BusyCheck())
 				;
 		}
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->InitPos();
 		}
 	}
 
 #ifndef NDEBUG
-	printf("Motors connected : %d\n", (int) nMotorsConnected);
+	printf("Motors connected : %d\n", (int) m_nMotorsConnected);
 #endif
 	DEBUG_EXIT;
 }
@@ -500,7 +506,7 @@ void SlushDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) 
 
 	bool bIsDmxDataChanged[SLUSH_DMX_MAX_MOTORS];
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			bIsDmxDataChanged[i] = m_pL6470DmxModes[i]->IsDmxDataChanged(pData, nLength);
 
@@ -515,14 +521,14 @@ void SlushDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) 
 #endif
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (bIsDmxDataChanged[i]) {
 			while (m_pL6470DmxModes[i]->BusyCheck())
 				;
 		}
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (bIsDmxDataChanged[i]) {
 			m_pL6470DmxModes[i]->DmxData(pData, nLength);
 		}
@@ -549,7 +555,7 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 		nPortData = 0;
 		p = (uint8_t *) pData + nDmxAddress - 1;
 
-		for (uint8_t i = 0; i < m_nDmxFootprintPortA; i++) {
+		for (uint32_t i = 0; i < m_nDmxFootprintPortA; i++) {
 			if (nDmxAddress++ > nLength) {
 				break;
 			}
@@ -578,7 +584,7 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 		nPortData = 0;
 		p = (uint8_t *) pData + nDmxAddress - 1;
 
-		for (uint8_t i = 0; i < m_nDmxFootprintPortB; i++) {
+		for (uint32_t i = 0; i < m_nDmxFootprintPortB; i++) {
 			if (nDmxAddress++ > nLength) {
 				break;
 			}
@@ -604,14 +610,6 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 	DEBUG_EXIT;
 }
 
-bool SlushDmx::GetUseSpiBusy(void) const {
-	return m_bUseSpiBusy;
-}
-
-void SlushDmx::SetUseSpiBusy(bool bUseSpiBusy) {
-	m_bUseSpiBusy = bUseSpiBusy;
-}
-
 bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG_ENTRY;
 
@@ -619,7 +617,7 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 		return true;
 	}
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
 			const uint16_t nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 			const uint16_t nNewDmxStartAddress =  (nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress;
@@ -643,6 +641,10 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
+	if (m_pLightSetDisplay != 0) {
+		m_pLightSetDisplay->ShowDmxStartAddress();
+	}
+
 	DEBUG_EXIT
 	return true;
 }
@@ -657,7 +659,7 @@ bool SlushDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlot
 
 	const uint16_t nDmxAddress = m_nDmxStartAddress + nSlotOffset;
 
-	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
+	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 		if ((m_pL6470DmxModes[i] != 0) && (m_pSlotInfo[i] != 0)) {
 			const int16_t nOffset = nDmxAddress - m_pL6470DmxModes[i]->GetDmxStartAddress();
 

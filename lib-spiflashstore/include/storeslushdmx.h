@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file storeslushdmx.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
+#ifndef STORESLUSHDMX_H_
+#define STORESLUSHDMX_H_
 
-#include <stdint.h>
+#include "slushdmxparams.h"
 
-class ModeParamsConst {
+class StoreSlushDmx: public SlushDmxParamsStore {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	StoreSlushDmx(void);
+	~StoreSlushDmx(void);
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	void Update(const struct TSlushDmxParams *pSlushDmxParams);
+	void Copy(struct TSlushDmxParams *pSlushDmxParams);
+
+	void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams);
+	void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams);
+
+public:
+	static StoreSlushDmx* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreSlushDmx *s_pThis;
 };
 
-#endif /* MODEPARAMSCONST_H_ */
+#endif /* STORESLUSHDMX_H_ */

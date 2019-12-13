@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file storeltcdisplay.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
+#ifndef STORELTCDISPLAY_H_
+#define STORELTCDISPLAY_H_
 
-#include <stdint.h>
+#include "ltcdisplayparams.h"
 
-class ModeParamsConst {
+class StoreLtcDisplay: public LtcDisplayParamsStore {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	StoreLtcDisplay(void);
+	~StoreLtcDisplay(void);
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams);
+	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams);
+
+public:
+	static StoreLtcDisplay *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreLtcDisplay *s_pThis;
 };
 
-#endif /* MODEPARAMSCONST_H_ */
+#endif /* STORELTCDISPLAY_H_ */

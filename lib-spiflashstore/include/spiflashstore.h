@@ -27,6 +27,7 @@
 #define SPIFLASHSTORE_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <uuid/uuid.h>
 
 #include "storenetwork.h"
@@ -52,8 +53,11 @@ enum TStore {
 	STORE_TCNET,
 	STORE_OSC_CLIENT,
 	STORE_DISPLAYUDF,
+	STORE_LTCDISPLAY,
 	STORE_NEXTION,
 	STORE_SPARKFUN,
+	STORE_SLUSH,
+	STORE_MOTORS,
 	STORE_LAST
 };
 
@@ -72,12 +76,12 @@ public:
 		return m_bHaveFlashChip;
 	}
 
-	void Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t bSetList = 0);
+	void Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
 	void Update(enum TStore tStore, void *pData, uint32_t nDataLength) {
 		Update(tStore, 0, pData, nDataLength);
 	}
-	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength);
-	void CopyTo(enum TStore tStore, void *pData, uint32_t& nDataLength);
+	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
+	void CopyTo(enum TStore tStore, void *pData, uint32_t &nDataLength);
 
 	void UuidUpdate(const uuid_t uuid);
 	void UuidCopyTo(uuid_t uuid);

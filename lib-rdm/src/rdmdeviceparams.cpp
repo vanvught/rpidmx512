@@ -41,7 +41,11 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "debug.h"
+
 RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(pRDMDeviceParamsStore) {
+	DEBUG_ENTRY
+
 	m_tRDMDeviceParams.nSetList = 0;
 
 	memset(m_tRDMDeviceParams.aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
@@ -49,13 +53,21 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 
 	m_tRDMDeviceParams.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
 	m_tRDMDeviceParams.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
+
+	DEBUG_EXIT
 }
 
 RDMDeviceParams::~RDMDeviceParams(void) {
+	DEBUG_ENTRY
+
 	m_tRDMDeviceParams.nSetList = 0;
+
+	DEBUG_EXIT
 }
 
 bool RDMDeviceParams::Load(void) {
+	DEBUG_ENTRY
+
 	m_tRDMDeviceParams.nSetList = 0;
 
 	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
@@ -68,18 +80,23 @@ bool RDMDeviceParams::Load(void) {
 	} else if (m_pRDMDeviceParamsStore != 0) {
 		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
 	} else {
+		DEBUG_EXIT
 		return false;
 	}
 
+	DEBUG_EXIT
 	return true;
 }
 
 void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 	assert(m_pRDMDeviceParamsStore != 0);
 
 	if (m_pRDMDeviceParamsStore == 0) {
+		DEBUG_EXIT
 		return;
 	}
 
@@ -90,6 +107,8 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 	config.Read(pBuffer, nLength);
 
 	m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
+
+	DEBUG_EXIT
 }
 
 void RDMDeviceParams::callbackFunction(const char *pLine) {

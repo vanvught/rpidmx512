@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file modestore.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
+#ifndef MODESTORE_H_
+#define MODESTORE_H_
 
 #include <stdint.h>
 
-class ModeParamsConst {
+class ModeStore {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	virtual ~ModeStore(void);
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	virtual void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress)=0;
 };
 
-#endif /* MODEPARAMSCONST_H_ */
+#endif /* MODESTORE_H_ */

@@ -1,4 +1,3 @@
-#if !defined(ORANGE_PI)
 /**
  * @file slushdmx.h
  *
@@ -38,6 +37,7 @@
 
 #define SLUSH_DMX_MAX_MOTORS			4
 #define SLUSH_GPIO_DMX_DATA_DIRECTION	8	// RPI_V2_GPIO_P1_24 , UEXT SPI0 CE0
+#define IO_PINS_IOPORT					8
 
 class SlushDmx: public LightSet {
 public:
@@ -49,21 +49,46 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
 
+	uint32_t GetMotorsConnected(void) {
+		return m_nMotorsConnected;
+	}
+
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	inline uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void)  {
+	uint16_t GetDmxFootprint(void) {
 		return m_nDmxFootprint;
 	}
 
 	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 public:
-	bool GetUseSpiBusy(void) const;
-	void SetUseSpiBusy(bool);
+	void SetUseSpiBusy(bool bUseSpiBusy) {
+		m_bUseSpiBusy = bUseSpiBusy;
+	}
+	bool GetUseSpiBusy(void)  {
+		return m_bUseSpiBusy;
+	}
+
+public:	// MCP23017 Port A , Port B
+	void SetDmxStartAddressPortA(uint16_t nDmxStartAddress) {
+		m_nDmxStartAddressPortA = nDmxStartAddress;
+	}
+
+	void SetDmxFootprintPortA(uint16_t nDmxFootprint) {
+		m_nDmxFootprintPortA = nDmxFootprint;
+	}
+
+	void SetDmxStartAddressPortB(uint16_t nDmxStartAddress) {
+		m_nDmxStartAddressPortB = nDmxStartAddress;
+	}
+
+	void SetDmxFootprintPortB(uint16_t nDmxFootprint) {
+		m_nDmxFootprintPortB = nDmxFootprint;
+	}
 
 public:
 	void ReadConfigFiles(void);
@@ -97,6 +122,7 @@ private: // MCP23017 Port A , Port B
 private:
 	SlushBoard *m_pBoard;
 	bool m_bUseSpiBusy;
+	uint32_t m_nMotorsConnected;
 
 	SlushMotor	*m_pSlushMotor[SLUSH_DMX_MAX_MOTORS];
 	MotorParams *m_pMotorParams[SLUSH_DMX_MAX_MOTORS];
@@ -114,4 +140,3 @@ private:
 };
 
 #endif /* SLUSHDMX_H_ */
-#endif /* !defined(ORANGE_PI) */

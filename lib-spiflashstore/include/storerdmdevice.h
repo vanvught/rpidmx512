@@ -26,9 +26,13 @@
 #ifndef STORERDMDEVICE_H_
 #define STORERDMDEVICE_H_
 
+#include <stdint.h>
+
 #include "rdmdeviceparams.h"
 
-class StoreRDMDevice: public RDMDeviceParamsStore {
+#include "rdmdevicestore.h"
+
+class StoreRDMDevice: public RDMDeviceParamsStore, RDMDeviceStore {
 public:
 	StoreRDMDevice(void);
 	~StoreRDMDevice(void);
@@ -39,7 +43,7 @@ public:
 	void SaveLabel(const uint8_t *pLabel, uint8_t nLength);
 
 public:
-	static StoreRDMDevice* Get(void) {
+	static StoreRDMDevice *Get(void) {
 		return s_pThis;
 	}
 

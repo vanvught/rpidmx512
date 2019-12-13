@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file sparkfundmxprint.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <assert.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "sparkfundmx.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
+void SparkFunDmx::Print(void) {
+	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
+		if (m_pAutoDriver[i] != 0) {
+			m_pAutoDriver[i]->Print();
 
-#endif /* MODEPARAMSCONST_H_ */
+			if (m_pL6470DmxModes[i] != 0) {
+				m_pL6470DmxModes[i]->Print();
+
+				printf(" SlotInfo: ");
+				for (uint32_t j = 0; j < m_pL6470DmxModes[i]->GetDmxFootPrint(); j++) {
+					printf("%.2x:%.4x ", m_pSlotInfo[i][j].nType, m_pSlotInfo[i][j].nCategory);
+				}
+				puts("");
+			}
+		}
+
+	}
+}

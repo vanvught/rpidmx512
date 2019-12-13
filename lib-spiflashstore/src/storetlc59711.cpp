@@ -29,6 +29,8 @@
 #include "storetlc59711.h"
 
 #include "tlc59711dmxparams.h"
+#include "tlc59711dmxstore.h"
+
 #include "spiflashstore.h"
 
 #include "debug.h"
@@ -36,6 +38,12 @@
 StoreTLC59711 *StoreTLC59711::s_pThis = 0;
 
 TLC59711DmxParamsStore::~TLC59711DmxParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+TLC59711DmxStore::~TLC59711DmxStore(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -69,6 +77,14 @@ void StoreTLC59711::Copy(struct TTLC59711DmxParams* pTLC59711DmxParams) {
 	DEBUG_ENTRY
 
 	SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, (void *)pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+
+	DEBUG_EXIT
+}
+
+void StoreTLC59711::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), (void *)&nDmxStartAddress, sizeof(uint32_t), TLC59711DMX_PARAMS_MASK_START_ADDRESS);
 
 	DEBUG_EXIT
 }

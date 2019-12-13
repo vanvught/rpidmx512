@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file rdmdevicestore.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
+#ifndef RDMDEVICESTORE_H_
+#define RDMDEVICESTORE_H_
 
 #include <stdint.h>
 
-class ModeParamsConst {
+class RDMDeviceStore {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	virtual ~RDMDeviceStore(void);
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	virtual void SaveLabel(const uint8_t *pLabel, uint8_t nLength)=0;
 };
 
-#endif /* MODEPARAMSCONST_H_ */
+#endif /* RDMDEVICESTORE_H_ */

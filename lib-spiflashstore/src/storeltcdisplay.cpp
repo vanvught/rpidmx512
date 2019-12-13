@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file storeltcdisplay.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "storeltcdisplay.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
+#include "ltcdisplayparams.h"
 
-#endif /* MODEPARAMSCONST_H_ */
+#include "spiflashstore.h"
+
+#include "debug.h"
+
+StoreLtcDisplay *StoreLtcDisplay::s_pThis = 0;
+
+LtcDisplayParamsStore::~LtcDisplayParamsStore(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+StoreLtcDisplay::StoreLtcDisplay(void) {
+	DEBUG_ENTRY
+
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
+
+	DEBUG_EXIT
+}
+
+StoreLtcDisplay::~StoreLtcDisplay(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreLtcDisplay::Update(const struct TLtcDisplayParams *ptLtcDisplayParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+
+	DEBUG_EXIT
+}
+
+void StoreLtcDisplay::Copy(struct TLtcDisplayParams *ptLtcDisplayParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+
+	DEBUG_EXIT
+}

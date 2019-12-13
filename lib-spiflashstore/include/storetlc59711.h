@@ -26,15 +26,20 @@
 #ifndef STORETLC59711_H_
 #define STORETLC59711_H_
 
-#include "tlc59711dmxparams.h"
+#include <stdint.h>
 
-class StoreTLC59711: public TLC59711DmxParamsStore {
+#include "tlc59711dmxparams.h"
+#include "tlc59711dmxstore.h"
+
+class StoreTLC59711: public TLC59711DmxParamsStore, TLC59711DmxStore {
 public:
 	StoreTLC59711(void);
 	~StoreTLC59711(void);
 
 	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
 	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
 
 public:
 	static StoreTLC59711* Get(void) {

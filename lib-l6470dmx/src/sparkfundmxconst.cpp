@@ -1,5 +1,5 @@
 /**
- * @file modeparamsconst.h
+ * @file sparkfundmxconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "sparkfundmxconst.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
-
-#endif /* MODEPARAMSCONST_H_ */
+alignas(uint32_t) const char SparkFunDmxConst::MSG_INIT[] = "SparkFun init";

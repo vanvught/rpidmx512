@@ -28,7 +28,6 @@
 #include "modeparamsconst.h"
 
 alignas(uint32_t) const char ModeParamsConst::DMX_MODE[] = "dmx_mode";
-alignas(uint32_t) const char ModeParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
 //
 alignas(uint32_t) const char ModeParamsConst::MAX_STEPS[] = "mode_max_steps";
 alignas(uint32_t) const char ModeParamsConst::SWITCH_ACT[] = "mode_switch_act";

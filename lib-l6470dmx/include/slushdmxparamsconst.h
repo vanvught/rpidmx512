@@ -1,5 +1,6 @@
+#if !defined(ORANGE_PI)
 /**
- * @file modeparamsconst.h
+ * @file slushdmxparamsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
+#ifndef SLUSHDMXPARAMSCONST_H_
+#define SLUSHDMXPARAMSCONST_H_
 
 #include <stdint.h>
 
-class ModeParamsConst {
+class SlushDmxParamsConst {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	alignas(uint32_t) static const char FILE_NAME[];
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	alignas(uint32_t) static const char USE_SPI[];
+
+	alignas(uint32_t) static const char DMX_START_ADDRESS_PORT_A[];
+	alignas(uint32_t) static const char DMX_FOOTPRINT_PORT_A[];
+	alignas(uint32_t) static const char DMX_SLOT_INFO_PORT_A[];
+
+	alignas(uint32_t) static const char DMX_START_ADDRESS_PORT_B[];
+	alignas(uint32_t) static const char DMX_FOOTPRINT_PORT_B[];
+	alignas(uint32_t) static const char DMX_SLOT_INFO_PORT_B[];
 };
 
-#endif /* MODEPARAMSCONST_H_ */
+#endif /* SLUSHDMXPARAMSCONST_H_ */
+#endif /* #if !defined(ORANGE_PI) */

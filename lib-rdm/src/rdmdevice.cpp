@@ -65,7 +65,8 @@
 RDMDevice::RDMDevice(void):
 	m_IsInit(false),
 	m_nDeviceRootLabelLength(0),
-	m_nCheckSum(0)
+	m_nCheckSum(0),
+	m_pRDMDeviceStore(0)
 {
 	DEBUG_ENTRY
 
@@ -156,6 +157,10 @@ void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
 	if (m_IsInit) {
 		memcpy(m_tRDMDevice.aDeviceRootLabel, info->data, nLength);
 		m_tRDMDevice.nDeviceRootLabelLength = nLength;
+
+		if (m_pRDMDeviceStore != 0) {
+			m_pRDMDeviceStore->SaveLabel((const uint8_t *)m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
+		}
 	} else {
 		memcpy(m_aDeviceRootLabel, info->data, nLength);
 		m_nDeviceRootLabelLength = nLength;
@@ -163,17 +168,17 @@ void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
 }
 
 void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t*) m_tRDMDevice.aDeviceRootLabel;
+	info->data = (uint8_t *) m_tRDMDevice.aDeviceRootLabel;
 	info->length = m_tRDMDevice.nDeviceRootLabelLength;
 }
 
 void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
-	info->data[0] = m_tRDMDevice.aDeviceUID[1];
-	info->data[1] = m_tRDMDevice.aDeviceUID[0];
+	info->data[0] = RDMConst::MANUFACTURER_ID[1];
+	info->data[1] = RDMConst::MANUFACTURER_ID[0];
 	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
 void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t*) m_tRDMDevice.aDeviceManufacturerName;
+	info->data = (uint8_t *) m_tRDMDevice.aDeviceManufacturerName;
 	info->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
 }

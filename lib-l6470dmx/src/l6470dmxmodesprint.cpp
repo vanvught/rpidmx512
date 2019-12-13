@@ -1,8 +1,8 @@
 /**
- * @file modeparamsconst.h
+ * @file l6470dmxmodesprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
+#include <stdio.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "l6470dmxmodes.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
-
-#endif /* MODEPARAMSCONST_H_ */
+void L6470DmxModes::Print(void) {
+	printf(" DMX: Mode=%d, StartAddress=%d, FootPrint=%d\n", (int) m_nMode, (int) m_nDmxStartAddress, (int) m_DmxFootPrint);
+}

@@ -29,26 +29,44 @@
 #include <stdint.h>
 
 #include "l6470.h"
+#include "lightset.h"
+#include "dmxslotinfo.h"
+
+#define MODE_PARAMS_MAX_DMX_FOOTPRINT		4
+#define MODE_PARAMS_MASK_SLOT_INFO_SHIFT	28
+#define MODE_PARAMS_MASK_SLOT_INFO_MASK		(0xF << MODE_PARAMS_MASK_SLOT_INFO_SHIFT)
 
 struct TModeParams {
     uint32_t nSetList;
+    //
     uint8_t nDmxMode;
     uint16_t nDmxStartAddress;
+    //
     uint32_t nMaxSteps;
+    //
     TL6470Action tSwitchAction;
     TL6470Direction tSwitchDir;
     float fSwitchStepsPerSec;
     bool bSwitch;
-}__attribute__((packed));
+    //
+    struct TLightSetSlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
+} __attribute__((packed));
 
 enum TModeParamsMask {
 	MODE_PARAMS_MASK_DMX_MODE = (1 << 0),
 	MODE_PARAMS_MASK_DMX_START_ADDRESS = (1 << 1),
+	//
 	MODE_PARAMS_MASK_MAX_STEPS = (1 << 2),
+	//
 	MODE_PARAMS_MASK_SWITCH_ACT = (1 << 3),
 	MODE_PARAMS_MASK_SWITCH_DIR = (1 << 4),
 	MODE_PARAMS_MASK_SWITCH_SPS = (1 << 5),
-	MODE_PARAMS_MASK_SWITCH = (1 << 6)
+	MODE_PARAMS_MASK_SWITCH = (1 << 6),
+	//
+	MODE_PARAMS_MASK_SLOT_INFO_0 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 0)),
+	MODE_PARAMS_MASK_SLOT_INFO_1 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 1)),
+	MODE_PARAMS_MASK_SLOT_INFO_2 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 2)),
+	MODE_PARAMS_MASK_SLOT_INFO_3 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 3))
 };
 
 class ModeParamsStore {
@@ -100,6 +118,8 @@ public:
 		return m_tModeParams.bSwitch;
 	}
 
+	void GetSlotInfo(uint32_t nOffset, struct TLightSetSlotInfo &tLightSetSlotInfo);
+
 private:
     void callbackFunction(const char *s);
 	bool isMaskSet(uint32_t nMask) const;
@@ -111,6 +131,7 @@ private:
     ModeParamsStore *m_pModeParamsStore;
     struct TModeParams m_tModeParams;
     char m_aFileName[16];
+    DmxSlotInfo *m_pDmxSlotInfo;
 };
 
 #endif /* MODEPARAMS_H_ */

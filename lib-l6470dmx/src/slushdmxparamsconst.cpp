@@ -1,5 +1,6 @@
+#if !defined(ORANGE_PI)
 /**
- * @file modeparamsconst.h
+ * @file slushdmxparamsconst.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,20 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODEPARAMSCONST_H_
-#define MODEPARAMSCONST_H_
-
 #include <stdint.h>
 
-class ModeParamsConst {
-public:
-	alignas(uint32_t) static const char DMX_MODE[];
+#include "slushdmxparamsconst.h"
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
-};
+alignas(uint32_t) const char SlushDmxParamsConst::FILE_NAME[] = "slush.txt";
 
-#endif /* MODEPARAMSCONST_H_ */
+alignas(uint32_t) const char SlushDmxParamsConst::USE_SPI[] = "use_spi_busy";
+
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A[] = "dmx_start_address_port_a";
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A[] = "dmx_footprint_port_a";
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_A[] = "dmx_slot_info_port_a";
+
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B[] = "dmx_start_address_port_b";
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B[] = "dmx_footprint_port_b";
+alignas(uint32_t) const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_B[] = "dmx_slot_info_port_b";
+
+#endif /* #if !defined(ORANGE_PI) */
