@@ -34,6 +34,7 @@
 #include "h3_gpio.h"
 #include "h3_spi.h"
 #include "h3_ccu.h"
+#include "h3_dma.h"
 
 #include "h3_board.h"
 
@@ -525,4 +526,92 @@ uint8_t h3_spi_transfer(uint8_t data) {
 	EXT_SPI->IE = 0;
 
 	return ret;
+}
+
+/*
+ * DMA support
+ */
+
+#define SPI_DMA_COHERENT_REGION_SIZE	(MEGABYTE/8)
+#define SPI_DMA_COHERENT_REGION			(H3_MEM_COHERENT_REGION + MEGABYTE/2 + MEGABYTE/4)
+#define SPI_DMA_TX_BUFFER_SIZE			(SPI_DMA_COHERENT_REGION_SIZE - sizeof(struct sunxi_dma_lli))
+
+struct dma_spi {
+	struct sunxi_dma_lli lli;
+	uint8_t tx_buffer[SPI_DMA_TX_BUFFER_SIZE] __attribute__ ((aligned (4)));
+};
+
+volatile static struct dma_spi *p_dma_tx = (struct dma_spi *) SPI_DMA_COHERENT_REGION;
+static bool is_running = false;
+
+bool h3_spi_dma_tx_is_active(void) {
+	if (!is_running) {
+		return false;
+	}
+
+	const uint32_t intr = EXT_SPI->IS;
+
+	if (intr & IS_TC) {
+		EXT_SPI->IS = intr;
+		is_running = false;
+		return false;
+	}
+
+	return true;
+}
+
+const uint8_t *h3_spi_dma_tx_prepare(uint32_t *size) {
+	assert(size != 0);
+
+	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
+	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
+
+	p_dma_tx->lli.cfg = DMA_CHAN_CFG_SRC_LINEAR_MODE | DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM) | DMA_CHAN_CFG_SRC_WIDTH(0) | DMA_CHAN_CFG_SRC_BURST(0)
+						  | DMA_CHAN_CFG_DST_IO_MODE  | DMA_CHAN_CFG_DST_DRQ(DRQDST_SPIO1) | DMA_CHAN_CFG_DST_WIDTH(0) | DMA_CHAN_CFG_DST_BURST(0);
+	p_dma_tx->lli.src = (uint32_t) &p_dma_tx->tx_buffer;
+	p_dma_tx->lli.dst = (uint32_t) &EXT_SPI->TX.byte;
+	p_dma_tx->lli.para = DMA_NORMAL_WAIT;
+	p_dma_tx->lli.p_lli_next = DMA_LLI_LAST_ITEM;
+
+	h3_dma_dump_lli((const struct sunxi_dma_lli *)&p_dma_tx->lli);
+
+	*size = (uint32_t) sizeof(p_dma_tx->tx_buffer);
+
+	return (const uint8_t *)&p_dma_tx->tx_buffer;
+}
+
+void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
+	assert(!is_running);
+	assert(tx_buffer != 0);	// TODO Not valid when SRAM is used
+	assert(data_length <= (uint32_t) sizeof(p_dma_tx->tx_buffer) - ((uint32_t) tx_buffer) - (uint32_t) &p_dma_tx->tx_buffer);
+	assert(((uint32_t) tx_buffer & H3_MEM_COHERENT_REGION) == H3_MEM_COHERENT_REGION);
+
+	p_dma_tx->lli.src = (uint32_t) tx_buffer;
+	p_dma_tx->lli.len = data_length;
+
+	EXT_SPI->GC &= ~(1 << 7);
+	EXT_SPI->FC = ((1U << 31) | (1 << 15) );
+
+	EXT_SPI->IS = IE_TC;
+	EXT_SPI->IE = IE_TC;
+
+	if (s_ws28xx_mode) {
+		EXT_SPI->MBC = data_length + 1;
+		EXT_SPI->MTC = data_length + 1;
+		EXT_SPI->BCC = data_length + 1;
+
+		EXT_SPI->TX.byte = 0x00;
+	} else {
+		EXT_SPI->MBC = data_length;
+		EXT_SPI->MTC = data_length;
+		EXT_SPI->BCC = data_length;
+	}
+
+	EXT_SPI->TC |= (1U << 31);
+	EXT_SPI->FC |= (1 << 24);
+
+	H3_DMA_CHL2->DESC_ADDR = (uint32_t)&p_dma_tx->lli;
+	H3_DMA_CHL2->EN = DMA_CHAN_ENABLE_START;
+
+	is_running = true;
 }

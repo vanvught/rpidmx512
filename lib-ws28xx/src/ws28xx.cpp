@@ -39,10 +39,10 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	m_nLEDCount(nLEDCount),
 	m_nClockSpeedHz(nClockSpeed),
 	m_nGlobalBrightness(0xFF),
-	m_bUpdating(false),
-	m_nHighCode(Type == WS2812B ? 0xF8 : (((Type == UCS1903) || (Type == UCS2903)) ? 0xFC : 0xF0))
+	m_nHighCode(Type == WS2812B ? 0xF8 : (((Type == UCS1903) || (Type == UCS2903)) ? 0xFC : 0xF0)),
+	m_bUpdating(false)
 {
-	assert(m_tLEDType <= UCS2903);
+	assert(m_tLEDType < WS28XX_UNDEFINED);
 	assert(m_nLEDCount > 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
@@ -58,23 +58,6 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 	if (m_tLEDType == APA102) {
 		m_nBufSize += 8;
 	}
-
-	m_pBuffer = new uint8_t[m_nBufSize];
-	assert(m_pBuffer != 0);
-
-	if (m_tLEDType == APA102) {
-		memset(m_pBuffer, 0, 4);
-		for (uint32_t i = 0; i < m_nLEDCount; i++) {
-			SetLED(i, 0, 0, 0);
-		}
-		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
-	} else {
-		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : 0xC0, m_nBufSize);
-	}
-
-	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
-	assert(m_pBlackoutBuffer != 0);
-	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 
 #ifdef H3
 	if (!((m_tLEDType == WS2801) || (m_tLEDType == APA102))) {
@@ -96,19 +79,47 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed) :
 
 	FUNC_PREFIX(spi_set_speed_hz(m_nClockSpeedHz));
 
-	Blackout();
-
 #ifndef NDEBUG
 	printf("m_tLEDType=%d, m_nLEDCount=%d, m_nClockSpeedHz=%d, m_nHighCode=%X\n", m_tLEDType, m_nLEDCount, m_nClockSpeedHz, m_nHighCode);
 #endif
 }
 
 WS28xx::~WS28xx(void) {
-	delete [] m_pBlackoutBuffer;
-	m_pBlackoutBuffer = 0;
+	if (m_pBlackoutBuffer != 0) {
+		delete [] m_pBlackoutBuffer;
+		m_pBlackoutBuffer = 0;
+	}
 
-	delete [] m_pBuffer;
-	m_pBuffer = 0;
+	if (m_pBuffer != 0) {
+		delete [] m_pBuffer;
+		m_pBuffer = 0;
+	}
+}
+
+bool WS28xx::Initialize(void) {
+	assert(m_pBuffer == 0);
+	m_pBuffer = new uint8_t[m_nBufSize];
+	assert(m_pBuffer != 0);
+
+	if (m_tLEDType == APA102) {
+		memset(m_pBuffer, 0, 4);
+		for (uint32_t i = 0; i < m_nLEDCount; i++) {
+			SetLED(i, 0, 0, 0);
+		}
+		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+	} else {
+		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : 0xC0, m_nBufSize);
+	}
+
+	assert(m_pBlackoutBuffer == 0);
+	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
+	assert(m_pBlackoutBuffer != 0);
+
+	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
+
+	Blackout();
+
+	return true;
 }
 
 void WS28xx::Update(void) {
