@@ -33,6 +33,7 @@
 #include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
+#include "lightsetconst.h"
 
 #include "debug.h"
 
@@ -55,7 +56,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	builder.Add(DevicesParamsConst::LED_GROUPING, m_tWS28xxParams.bLedGrouping, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING));
 	builder.Add(DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT));
 
-	builder.Add(DevicesParamsConst::DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS));
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS));
 
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz, isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED));
 	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS));
@@ -68,7 +69,6 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
 void WS28xxDmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
@@ -81,6 +81,4 @@ void WS28xxDmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) 
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }

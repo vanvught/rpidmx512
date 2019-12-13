@@ -2,7 +2,7 @@
  * @file lightsetchain.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,8 @@ public:
 	void Stop(uint8_t nPort);
 
 	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+
+	void Print(void);
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress);

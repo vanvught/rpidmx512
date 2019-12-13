@@ -48,6 +48,7 @@
 #include "ws28xxdmx.h"
 
 #include "lightset.h"
+#include "lightsetconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -176,8 +177,8 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, DevicesParamsConst::DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if (value16 != 0 && value16 <= 512) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if (value16 != 0 && value16 <= DMX_UNIVERSE_SIZE) {
 			m_tWS28xxParams.nDmxStartAddress = value16;
 			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS;
 		}
@@ -193,7 +194,7 @@ void WS28xxDmxParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, DevicesParamsConst::FILE_NAME);
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, sLetTypes[m_tWS28xxParams.tLedType], (int) m_tWS28xxParams.tLedType);
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(m_tWS28xxParams.tLedType), (int) m_tWS28xxParams.tLedType);
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
@@ -221,7 +222,7 @@ void WS28xxDmxParams::Dump(void) {
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", DevicesParamsConst::DMX_START_ADDRESS, (int) m_tWS28xxParams.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, (int) m_tWS28xxParams.nDmxStartAddress);
 	}
 #endif
 }

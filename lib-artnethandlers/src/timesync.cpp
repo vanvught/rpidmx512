@@ -35,12 +35,20 @@
 #include "debug.h"
 
 TimeSync::TimeSync(void){
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 TimeSync::~TimeSync(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
+	DEBUG_ENTRY
+
 	struct THardwareTime hwTime;
 
 	hwTime.tm_sec = pArtNetTimeSync->tm_sec;
@@ -53,4 +61,5 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	Hardware::Get()->SetTime(hwTime);
 
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + hwTime.tm_year, 1 + hwTime.tm_mon, hwTime.tm_mday, hwTime.tm_hour, hwTime.tm_min, hwTime.tm_sec);
+	DEBUG_EXIT
 }

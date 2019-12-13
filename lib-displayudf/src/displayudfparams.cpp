@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -61,22 +66,27 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		ArtNetParamsConst::UNIVERSE_PORT[1],
 		ArtNetParamsConst::UNIVERSE_PORT[2],
 		ArtNetParamsConst::UNIVERSE_PORT[3],
-		NetworkConst::PARAMS_NET_MASK
+		NetworkConst::PARAMS_NET_MASK,
+		LightSetConst::PARAMS_DMX_START_ADDRESS
 };
 
 
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	DEBUG_ENTRY
 
-	m_tDisplayUdfParams.nSetList = 0;
+	uint8_t *p = (uint8_t *) &m_tDisplayUdfParams;
+
+	for (uint32_t i = 0; i < sizeof(struct TDisplayUdfParams); i++) {
+		*p++ = 0;
+	}
+
+	m_tDisplayUdfParams.nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT;
 
 	DEBUG_EXIT
 }
 
 DisplayUdfParams::~DisplayUdfParams(void) {
 	DEBUG_ENTRY
-
-	m_tDisplayUdfParams.nSetList = 0;
 
 	DEBUG_EXIT
 }
@@ -121,14 +131,17 @@ void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
 
 void DisplayUdfParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
+	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &m_tDisplayUdfParams.nSleepTimeout) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &value8) == SSCAN_OK) {
+		m_tDisplayUdfParams.nSleepTimeout = value8;
 		m_tDisplayUdfParams.nSetList |= DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT;
 		return;
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (Sscan::Uint8(pLine, pArray[i], &m_tDisplayUdfParams.nLabelIndex[i]) == SSCAN_OK) {
+		if (Sscan::Uint8(pLine, pArray[i], &value8) == SSCAN_OK) {
+			m_tDisplayUdfParams.nLabelIndex[i] = value8;
 			m_tDisplayUdfParams.nSetList |= (1 << i);
 			return;
 		}
@@ -151,12 +164,8 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 
 	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
 
-	for (uint32_t j = 1; j <= DISPLAY_LABEL_MAX_ROWS; j++) {
-		for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-			if (j == m_tDisplayUdfParams.nLabelIndex[i]) {
-				builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
-			}
-		}
+	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
 	}
 
 	nSize = builder.GetSize();

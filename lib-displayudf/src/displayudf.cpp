@@ -39,11 +39,15 @@
 DisplayUdf *DisplayUdf::s_pThis = 0;
 
 DisplayUdf::DisplayUdf(void): Display(DISPLAY_SSD1306) {
+	DEBUG_ENTRY
+
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 		m_aLabels[i] = i + 1;
 	}
+
+	DEBUG_EXIT
 }
 
 DisplayUdf::~DisplayUdf(void) {
@@ -82,11 +86,24 @@ void DisplayUdf::Show(void) {
 	Write(m_aLabels[DISPLAY_UDF_LABEL_TITLE], (const char *)m_aTitle);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_BOARDNAME], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_VERSION], "Firmware V%.*s", SOFTWARE_VERSION_LENGTH, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
+
+	// LightSet
+	ShowDmxStartAddress();
+
+	// Network
 	ShowIpAddress();
 	ShowNetmask();
 	ShowHostName();
 
 	DEBUG1_EXIT
+}
+
+void DisplayUdf::ShowDmxStartAddress(void) {
+	DEBUG_ENTRY
+
+	Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS], "DMX S:%3d F:%3d", (int) LightSet::Get()->GetDmxStartAddress(), (int) LightSet::Get()->GetDmxFootprint());
+
+	DEBUG_EXIT
 }
 
 void DisplayUdf::ShowIpAddress(void) {

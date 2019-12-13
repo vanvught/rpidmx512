@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -41,6 +46,7 @@
 #include "sscan.h"
 
 #include "devicesparamsconst.h"
+#include "lightsetconst.h"
 
 #define TLC59711_TYPES_MAX_NAME_LENGTH 		10
 static const char sLedTypes[TTLC59711_TYPE_UNDEFINED][TLC59711_TYPES_MAX_NAME_LENGTH] ALIGNED = { "TLC59711\0", "TLC59711W" };
@@ -124,8 +130,8 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, DevicesParamsConst::DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if ((value16 != 0) && (value16 <= 512)) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
 			m_tTLC59711Params.nDmxStartAddress = value16;
 			m_tTLC59711Params.nSetList |= TLC59711DMX_PARAMS_MASK_START_ADDRESS;
 		}
@@ -155,7 +161,7 @@ void TLC59711DmxParams::Dump(void) {
 	}
 
 	if(isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS)) {
-		printf(" %s=%d\n", DevicesParamsConst::DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress);
 	}
 
 	if(isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED)) {

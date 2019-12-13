@@ -30,6 +30,7 @@
 #include "tlc59711.h"
 
 #include "lightset.h"
+#include "lightsetdisplay.h"
 
 static unsigned long ceil(float f) {
 	int i = (int) f;
@@ -48,7 +49,8 @@ TLC59711Dmx::TLC59711Dmx(void):
 	m_pTLC59711(0),
 	m_nSpiSpeedHz(0),
 	m_LEDType(TTLC59711_TYPE_RGB),
-	m_nLEDCount(TLC59711_RGB_CHANNELS)
+	m_nLEDCount(TLC59711_RGB_CHANNELS),
+	m_pTLC59711DmxStore(0)
 {
 	UpdateMembers();
 }
@@ -162,6 +164,15 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
+
+		if (m_pTLC59711DmxStore != 0) {
+			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
+		if (m_pLightSetDisplay != 0) {
+			m_pLightSetDisplay->ShowDmxStartAddress();
+		}
+
 		return true;
 	}
 

@@ -1,5 +1,5 @@
 /**
- * @file tlc59711dmxprint.cpp
+ * @file tlc59711dmxstore.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,15 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef TLC59711DMXSTORE_H_
+#define TLC59711DMXSTORE_H_
 
-#include "tlc59711dmx.h"
-#include "tlc59711dmxparams.h"
+#include <stdint.h>
 
-void TLC59711Dmx::Print(void) {
-	printf("PWM parameters\n");
-	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetLedTypeString(m_LEDType), m_LEDType);
-	printf(" Count : %d %s\n", (int) m_nLEDCount, m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");
-	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nSpiSpeedHz, (m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711_SPI_SPEED_DEFAULT, TLC59711_SPI_SPEED_MAX);
-	printf(" DMX   : StartAddress=%d, FootPrint=%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
-}
+class TLC59711DmxStore {
+public:
+	virtual ~TLC59711DmxStore(void);
+
+	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
+};
+
+#endif /* TLC59711DMXSTORE_H_ */

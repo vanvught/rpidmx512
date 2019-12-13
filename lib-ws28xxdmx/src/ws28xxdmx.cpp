@@ -41,6 +41,7 @@
 #include "ws28xx.h"
 
 #include "lightset.h"
+#include "lightsetdisplay.h"
 
 #ifndef MIN
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -59,6 +60,7 @@ WS28xxDmx::WS28xxDmx(void) :
 	m_pLEDStripe(0),
 	m_bIsStarted(false),
 	m_bBlackout(false),
+	m_pWS28xxDmxStore(0),
 	m_nClockSpeedHz(0),
 	m_nGlobalBrightness(0xFF),
 	m_nBeginIndexPortId1(170),
@@ -236,6 +238,15 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
+
+		if (m_pWS28xxDmxStore != 0) {
+			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
+		}
+
+		if (m_pLightSetDisplay != 0) {
+			m_pLightSetDisplay->ShowDmxStartAddress();
+		}
+
 		return true;
 	}
 

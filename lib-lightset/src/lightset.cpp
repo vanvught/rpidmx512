@@ -27,7 +27,7 @@
 
 LightSet *LightSet::s_pThis = 0;
 
-LightSet::LightSet(void) {
+LightSet::LightSet(void): m_pLightSetDisplay(0) {
 	s_pThis = this;
 }
 

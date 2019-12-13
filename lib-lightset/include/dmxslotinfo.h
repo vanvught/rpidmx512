@@ -1,5 +1,5 @@
 /**
- * @file tlc59711dmxprint.cpp
+ * @file dmxslotinfo.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,15 +23,30 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef DMXSLOTINFO_H_
+#define DMXSLOTINFO_H_
 
-#include "tlc59711dmx.h"
-#include "tlc59711dmxparams.h"
+#include <stdint.h>
 
-void TLC59711Dmx::Print(void) {
-	printf("PWM parameters\n");
-	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetLedTypeString(m_LEDType), m_LEDType);
-	printf(" Count : %d %s\n", (int) m_nLEDCount, m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");
-	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nSpiSpeedHz, (m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711_SPI_SPEED_DEFAULT, TLC59711_SPI_SPEED_MAX);
-	printf(" DMX   : StartAddress=%d, FootPrint=%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
-}
+#include "lightset.h"
+
+class DmxSlotInfo {
+public:
+	DmxSlotInfo(struct TLightSetSlotInfo *ptLightSetSlotInfo, uint32_t nSize);
+	~DmxSlotInfo(void);
+
+	void FromString(const char *pString, uint32_t &nMask);
+	const char *ToString(uint32_t nMask);
+
+	void Dump(void);
+
+private:
+	char *Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLightSetSlotInfo);
+
+private:
+	struct TLightSetSlotInfo *m_ptLightSetSlotInfo;
+	uint32_t m_nSize;
+	char *m_pToString;
+};
+
+#endif /* DMXSLOTINFO_H_ */

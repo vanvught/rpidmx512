@@ -2,7 +2,7 @@
  * @file lightsetchain.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,8 @@
 
 #include "lightsetchain.h"
 #include "lightset.h"
+
+#include "lightsetdisplay.h"
 
 #include "debug.h"
 
@@ -74,6 +76,12 @@ void LightSetChain::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nSize)
 	}
 }
 
+void LightSetChain::Print(void) {
+	for (unsigned i = 0; i < m_nSize; i++) {
+		m_pTable[i].pLightSet->Print();
+	}
+}
+
 bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG1_ENTRY
 
@@ -90,6 +98,12 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	}
 
 	m_nDmxStartAddress = nDmxStartAddress;
+
+	DEBUG_PRINTF("m_pLightSetDisplay=%p", m_pLightSetDisplay);
+
+	if (m_pLightSetDisplay != 0) {
+		m_pLightSetDisplay->ShowDmxStartAddress();
+	}
 
 	DEBUG1_EXIT
 	return true;;

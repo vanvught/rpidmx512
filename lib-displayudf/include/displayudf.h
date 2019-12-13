@@ -48,6 +48,7 @@ enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_UNIVERSE_PORT_C,
 	DISPLAY_UDF_LABEL_UNIVERSE_PORT_D,
 	DISPLAY_UDF_LABEL_NETMASK,
+	DISPLAY_UDF_LABEL_DMX_START_ADDRESS,
 	DISPLAY_UDF_LABEL_UNKNOWN
 };
 
@@ -66,6 +67,10 @@ public:
 
 	void Show(E131Bridge *pE131Bridge);
 
+	// LightSet
+	void ShowDmxStartAddress(void);
+
+	// Network
 	void ShowIpAddress(void);
 	void ShowNetmask(void);
 	void ShowHostName(void);
