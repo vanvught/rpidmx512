@@ -75,7 +75,7 @@ void ArtNetRdmResponder::Full(uint8_t nPort) {
 	// We are a Responder - no code needed
 }
 
-const uint8_t ArtNetRdmResponder::GetUidCount(uint8_t nPort) {
+uint8_t ArtNetRdmResponder::GetUidCount(uint8_t nPort) {
 	return 1; // We are a Responder
 }
 

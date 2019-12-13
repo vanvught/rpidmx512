@@ -20,7 +20,7 @@ public:
 	void Print(void);
 
 	void Full(uint8_t nPort = 0);
-	const uint8_t GetUidCount(uint8_t nPort = 0);
+	uint8_t GetUidCount(uint8_t nPort = 0);
 	void Copy(uint8_t nPort, uint8_t *pTod);
 	const uint8_t *Handler(uint8_t nPort, const uint8_t *pRdmData);
 

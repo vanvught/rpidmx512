@@ -80,7 +80,7 @@ void ArtNetRdmController::Full(uint8_t nPort) {
 	m_Discovery[nPort]->Full();
 }
 
-const uint8_t ArtNetRdmController::GetUidCount(uint8_t nPort) {
+uint8_t ArtNetRdmController::GetUidCount(uint8_t nPort) {
 	assert(nPort < DMX_MAX_UARTS);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
