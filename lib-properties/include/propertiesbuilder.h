@@ -35,31 +35,38 @@ public:
 	PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength);
 	~PropertiesBuilder(void);
 
-	bool Add(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
+	bool Add(const char *pProperty, uint32_t nValue, bool bIsSet = true);
 
-	bool Add(const char *pProperty, uint16_t nValue, bool bDoAdd = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	bool Add(const char *pProperty, uint16_t nValue, bool bIsSet = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
 	}
 
-	bool Add(const char *pProperty, uint8_t nValue, bool bDoAdd = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	bool Add(const char *pProperty, uint8_t nValue, bool bIsSet = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
 	}
 
-	bool Add(const char *pProperty, time_t nValue, bool bDoAdd = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bDoAdd);
+	bool Add(const char *pProperty, time_t nValue, bool bIsSet = true) {
+		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
 	}
 
-	bool Add(const char *pProperty, bool bValue, bool bDoAdd = true) {
-		return Add(pProperty, static_cast<uint32_t>(bValue), bDoAdd);
+	bool Add(const char *pProperty, bool bValue, bool bIsSet = true) {
+		return Add(pProperty, static_cast<uint32_t>(bValue), bIsSet);
 	}
 
-	bool Add(const char *pProperty, float fValue, bool bDoAdd = true);
+	bool Add(const char *pProperty, float fValue, bool bIsSet = true);
 
-	bool Add(const char *pProperty, const char *pValue, bool bDoAdd = true);
+	bool Add(const char *pProperty, const char *pValue, bool bIsSet = true);
 
-	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bDoAdd = true);
+	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet = true);
 
-	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bDoAdd = true);
+	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet = true);
+
+	bool AddHex16(const char *pProperty, const uint16_t nValue16, bool bIsSet = true) {
+		const uint8_t nValue[2] = { static_cast<uint8_t>((nValue16 & 0xFF00) >> 8), static_cast<uint8_t>(nValue16 & 0xFF) };
+		return AddHex16(pProperty, nValue, bIsSet);
+	}
+
+	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true);
 
 	unsigned GetSize(void) {
 		return m_nSize;

@@ -1,5 +1,5 @@
 /**
- * @file devicesparamsconst.cpp
+ * @file sscan_hex24uint32.c
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -24,22 +24,50 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
+#include <ctype.h>
+#include <assert.h>
 
-#include "devicesparamsconst.h"
+#include "sscan.h"
 
-alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
+extern char *get_name(const char *buf, const char *name);
 
-alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
-alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
+int sscan_hex24uint32(const char *buf, const char *name, uint32_t *uint32) {
+	assert(buf != NULL);
+	assert(name != NULL);
+	assert(uint32 != NULL);
 
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
+	char *b;
+	int k = 0;
+	uint8_t nibble;
+	uint16_t tmp;
 
-alignas(uint32_t) const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
+	if ((b = get_name(buf, name)) == NULL) {
+		return SSCAN_NAME_ERROR;
+	}
 
-alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
+	k = 0;
+	tmp = 0;
 
-alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
+	while ((*b != (char) '\0') && (k < 6)) {
+		if (isxdigit((int) *b) == 0) {
+			return SSCAN_NAME_ERROR;
+		}
+		nibble = *b > '9' ? ((uint8_t) *b | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (*b - '0');
+		tmp = (tmp << 4) | nibble;
+		k++;
+		b++;
+	}
 
-alignas(uint32_t) const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
-alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
+	if ((*b != (char) '\0') && (*b != (char) ' ')) {
+		return SSCAN_NAME_ERROR;
+	}
+
+	if (k != 6) {
+		return SSCAN_VALUE_ERROR;
+	}
+
+	*uint32 = tmp;
+
+	return SSCAN_OK;
+}
