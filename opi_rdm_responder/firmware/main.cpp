@@ -47,7 +47,16 @@
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
+#include "ws28xx.h"
 
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storerdmdevice.h"
+#include "storews28xxdmx.h"
+#include "storetlc59711.h"
+#include "storerdmdevice.h"
+
+#include "firmwareversion.h"
 #include "software_version.h"
 
 extern "C" {
@@ -56,14 +65,17 @@ void notmain(void) {
 	Hardware hw;
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
 
 	Identify identify;
 	LightSet *pLightSet;
 
 	char aDescription[32];
 
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
+	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -78,11 +90,15 @@ void notmain(void) {
 
 	bool isLedTypeSet = false;
 
-	TLC59711DmxParams pwmledparms;
+	StoreTLC59711 storeTLC59711;
+	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != 0);
+			pTLC59711Dmx->SetTLC59711DmxStore((TLC59711DmxStore *) &storeTLC59711);
+
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 			snprintf(aDescription, sizeof(aDescription) -1, "%s", TLC59711DmxParams::GetLedTypeString(pTLC59711Dmx->GetLEDType()));
@@ -90,13 +106,21 @@ void notmain(void) {
 		}
 	}
 
+	StoreWS28xxDmx storeWS28xxDmx;
+
 	if (!isLedTypeSet) {
-		WS28xxDmxParams deviceparams;
-		deviceparams.Load();
 		WS28xxDmx *pSPISend = new WS28xxDmx;
-		deviceparams.Dump();
-		deviceparams.Set(pSPISend);
-		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xxDmxParams::GetLedTypeString(pSPISend->GetLEDType()));
+		assert(pSPISend != 0);
+		pSPISend->SetWS28xxDmxStore((WS28xxDmxStore *) &storeWS28xxDmx);
+
+		WS28xxDmxParams deviceparams((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+
+		if (deviceparams.Load()) {
+			deviceparams.Dump();
+			deviceparams.Set(pSPISend);
+		}
+
+		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xx::GetLedTypeString(pSPISend->GetLEDType()));
 		pLightSet = pSPISend;
 	}
 
@@ -104,7 +128,11 @@ void notmain(void) {
 
 	RDMResponder dmxrdm(&personality, pLightSet, nGpioDataDirection);
 
-	RDMDeviceParams rdmDeviceParams;
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+	RDMDevice *pRDMDevice = (RDMDevice *)&dmxrdm;
+	pRDMDevice->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
 		rdmDeviceParams.Dump();
@@ -112,8 +140,6 @@ void notmain(void) {
 
 	dmxrdm.Init();
 	dmxrdm.Print();
-
-	console_set_top_row(12);
 
 	hw.WatchdogInit();
 
@@ -123,6 +149,8 @@ void notmain(void) {
 	for(;;) {
 		hw.WatchdogFeed();
 		dmxrdm.Run();
+		spiFlashStore.Flash();
+		identify.Run();
 		lb.Run();
 	}
 }
