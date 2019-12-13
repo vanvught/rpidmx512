@@ -30,6 +30,7 @@
 
 #include "ws28xxdmx.h"
 #include "ws28xxdmxparams.h"
+#include "ws28xx.h"
 
 #include "oscsend.h"
 
@@ -38,7 +39,7 @@
 Handler::Handler(WS28xxDmx *pWS28xxDmx):
 	m_pWS28xxDmx(pWS28xxDmx),
 	m_nLedCount(pWS28xxDmx->GetLEDCount()),
-	m_pLedTypeString((char *)WS28xxDmxParams::GetLedTypeString(pWS28xxDmx->GetLEDType()))
+	m_pLedTypeString((char *)WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()))
 {
 	DEBUG_ENTRY
 
