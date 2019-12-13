@@ -1,6 +1,0 @@
-#
-DEFINES = RASPPI CONSOLE_ILI9340 NDEBUG
-#
-EXTRA_INCLUDES = ../lib-fonts/include
-#
-include ../linux-template/lib/Rules.mk

@@ -83,7 +83,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset ledblink properties display c++ hal bob i2c utils console ff12c h3 debug arm
+LIBS+=lightset ledblink properties display c++ hal bob i2c utils ff12c h3 debug arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -141,7 +141,6 @@ all : clearlibs builddirs prerequisites $(TARGET)
 .PHONY: clean builddirs
 
 clearlibs:
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-console
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal

@@ -1,6 +1,0 @@
-#
-DEFINES = NDEBUG #CONSOLE_ILI9340 
-#
-EXTRA_INCLUDES = ../lib-fonts/include
-#
-include ../h3-firmware-template/lib/Rules.mk
