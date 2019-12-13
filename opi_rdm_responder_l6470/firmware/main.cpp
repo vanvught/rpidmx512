@@ -44,20 +44,30 @@
 
 #include "rdmdeviceparams.h"
 
-#include "slushdmx.h"
-#include "sparkfundmx.h"
-
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
 #include "lightsetchain.h"
 
+#if defined (ORANGE_PI)
+ #include "spiflashinstall.h"
+ #include "spiflashstore.h"
+ #include "storerdmdevice.h"
+ #include "storetlc59711.h"
+ #include "storerdmdevice.h"
+#endif
+
+#include "firmwareversion.h"
 #include "software_version.h"
 
 #if defined (ORANGE_PI_ONE)
+ #include "slushdmx.h"
  #define BOARD_NAME	"Slushengine"
 #else
+ #include "sparkfundmx.h"
  #define BOARD_NAME "Sparkfun"
+ #include "storesparkfundmx.h"
+ #include "storemotors.h"
 #endif
 
 extern "C" {
@@ -67,12 +77,17 @@ void notmain(void) {
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
 	Display display(DISPLAY_SSD1306);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
+#if defined (ORANGE_PI)
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+#endif
+
+	fw.Print();
 
 	Identify identify;
 	LightSet *pBoard;
-
-	uint8_t nHwTextLength;
-	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -83,13 +98,30 @@ void notmain(void) {
 	pBoard = pSlushDmx;
 
 #else
+	StoreSparkFunDmx storeSparkFunDmx;
+	StoreMotors storeMotors;
+
+	struct TSparkFunStores sparkFunStores;
+	sparkFunStores.pSparkFunDmxParamsStore = &storeSparkFunDmx;
+	sparkFunStores.pModeParamsStore = (ModeParamsStore *) &storeMotors;
+	sparkFunStores.pMotorParamsStore = (MotorParamsStore *) &storeMotors;
+	sparkFunStores.pL6470ParamsStore = (L6470ParamsStore *) &storeMotors;
+
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
-	pSparkFunDmx->ReadConfigFiles();
+
+	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
+	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+
 	pBoard = pSparkFunDmx;
 #endif
 
+#if defined (ORANGE_PI)
+	StoreTLC59711 storeTLC59711;
+	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+#else
 	TLC59711DmxParams pwmledparms;
+#endif
 
 	bool isLedTypeSet = false;
 
@@ -97,6 +129,9 @@ void notmain(void) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != 0);
+#if defined (ORANGE_PI)
+			pTLC59711Dmx->SetTLC59711DmxStore((TLC59711DmxStore *) &storeTLC59711);
+#endif
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 
@@ -127,14 +162,22 @@ void notmain(void) {
 
 #if defined (ORANGE_PI_ONE)
 	if (!isSet) {
-		nGpioDataDirection = GPIO_EXT_24;  // RPI_V2_GPIO_P1_24	8 SPI0 CE0
+		nGpioDataDirection = GPIO_EXT_24;
 	}
 #endif
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	RDMResponder dmxrdm(&personality, pBoard, nGpioDataDirection, false);
 
+#if defined (ORANGE_PI)
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+	RDMDevice *pRDMDevice = (RDMDevice *)&dmxrdm;
+	pRDMDevice->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+#else
 	RDMDeviceParams rdmDeviceParams;
+#endif
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
 		rdmDeviceParams.Dump();
@@ -151,6 +194,10 @@ void notmain(void) {
 	for(;;) {
 		hw.WatchdogFeed();
 		dmxrdm.Run();
+		identify.Run();
+#if defined (ORANGE_PI)
+		spiFlashStore.Flash();
+#endif
 		lb.Run();
 	}
 }

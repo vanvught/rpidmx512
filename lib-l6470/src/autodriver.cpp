@@ -109,6 +109,8 @@ int AutoDriver::busyCheck(void) {
 }
 
 uint8_t AutoDriver::SPIXfer(uint8_t data) {
+	DEBUG_ENTRY
+
 	uint8_t dataPacket[m_nNumBoards[m_nSpiChipSelect]];
 
 	for (int i = 0; i < m_nNumBoards[m_nSpiChipSelect]; i++) {
@@ -122,6 +124,8 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 	FUNC_PREFIX(spi_transfern((char *) dataPacket, m_nNumBoards[m_nSpiChipSelect]));
 
+	DEBUG_PRINTF("data=%x, dataPacket[m_nPosition]=%x", data, m_nPosition, dataPacket[m_nPosition]);
+	DEBUG_EXIT
 	return dataPacket[m_nPosition];
 }
 
@@ -142,9 +146,14 @@ uint8_t AutoDriver::getNumBoards(int cs) {
 }
 
 bool AutoDriver::IsConnected(void) {
+	DEBUG_ENTRY
+
 	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {
+		DEBUG_EXIT
 		return true;
 	}
 
+	DEBUG_EXIT
 	return false;
 }
+

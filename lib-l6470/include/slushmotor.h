@@ -1,4 +1,3 @@
-#if !defined(ORANGE_PI)
 /**
  * @file slushmotor.h
  *
@@ -72,4 +71,3 @@ private:
 };
 
 #endif /* SLUSHMOTOR_H_ */
-#endif /* !defined(ORANGE_PI) */

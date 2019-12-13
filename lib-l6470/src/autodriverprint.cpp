@@ -1,11 +1,8 @@
 /**
- * @file autodriver.h
+ * @file autodriverprint.cpp
  *
  */
-/*
- * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
- */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,52 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef AUTODRIVER_H_
-#define AUTODRIVER_H_
-
 #include <stdint.h>
+#include <stdio.h>
 
-#include "l6470.h"
+#include "autodriver.h"
 
-class AutoDriver: public L6470 {
-public:
-	AutoDriver(uint8_t, uint8_t, uint8_t, uint8_t);
-	AutoDriver(uint8_t, uint8_t, uint8_t);
-
-	~AutoDriver(void);
-
-	int busyCheck(void);
-
-	void Print(void);
-
-private:
-	uint8_t SPIXfer(uint8_t);
-
-	/*
-	 * Additional methods
-	 */
-public:
-	bool IsConnected(void);
-
-	int getMotorNumber(void) {
-		return m_nMotorNumber;
-	}
-
-	void setMotorNumber(int nMotorNumber) {
-		m_nMotorNumber = nMotorNumber;
-	}
-
-	static uint16_t getNumBoards(void);
-	static uint8_t getNumBoards(int cs);
-
-private:
-	uint8_t m_nSpiChipSelect;
-	uint8_t m_nResetPin;
-	uint8_t m_nBusyPin;
-	uint8_t m_nPosition;
-	bool m_bIsBusy;
-
-	static uint8_t m_nNumBoards[2];
-};
-
-#endif /* AUTODRIVER_H_ */
+void AutoDriver::Print(void) {
+	printf("SparkFun AutoDriver [%d]\n", m_nMotorNumber);
+	printf(" Position=%d, ChipSelect=%d, ResetPin=%d, BusyPin=%d [%s]\n", m_nPosition, m_nSpiChipSelect, m_nResetPin, m_nBusyPin, m_nBusyPin == 0xFF ? "SPI" : "GPIO");
+	printf(" MinSpeed=%3.0f, MaxSpeed=%3.0f, Acc=%4.0f, Dec=%4.0f\n", getMinSpeed(), getMaxSpeed(), getAcc(), getDec());
+	printf(" AccKVAL=%d, DecKVAL=%d, RunKVAL=%d, HoldKVAL=%d\n", (int) getAccKVAL(), (int) getDecKVAL(), (int) getRunKVAL(), (int) getHoldKVAL());
+	printf(" MicroSteps=%u, SwitchMode=%d\n", (unsigned) 1 << getStepMode(), (int) getSwitchMode());
+}

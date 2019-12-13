@@ -121,7 +121,7 @@ public:
 	void setRunKVAL(uint8_t);
 	void setHoldKVAL(uint8_t);
 
-	inline void setCurrent(uint8_t hold, uint8_t run, uint8_t acc, uint8_t dec) {
+	void setCurrent(uint8_t hold, uint8_t run, uint8_t acc, uint8_t dec) {
 		setHoldKVAL(hold);
 		setRunKVAL(run);
 		setAccKVAL(acc);
@@ -170,7 +170,7 @@ public:
 	void softHiZ(void);
 	void hardHiZ(void);
 
-	inline void move(long nStep) {
+	void move(long nStep) {
 		if (nStep >= 0) {
 			move(L6470_DIR_FWD, nStep);
 		} else {
@@ -178,18 +178,18 @@ public:
 		}
 	}
 
-	inline void run(int dir, float stepsPerSec) {
+	void run(int dir, float stepsPerSec) {
 		run((TL6470Direction) dir, stepsPerSec);
 	}
 
-	inline void goUntilPress(int action, int dir, float stepsPerSec) {
+	void goUntilPress(int action, int dir, float stepsPerSec) {
 		goUntil((TL6470Action) action, (TL6470Direction) dir, stepsPerSec);
 	}
 
 	/**
 	 * Just for administration purposes
 	 */
-	inline const int GetMotorNumber(void) {
+	int GetMotorNumber(void) {
 		return m_nMotorNumber;
 	}
 
