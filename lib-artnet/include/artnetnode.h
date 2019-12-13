@@ -51,6 +51,7 @@
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnetdmx.h"
+#include "artnettrigger.h"
 
 #include "artnet4handler.h"
 
@@ -258,6 +259,13 @@ public:
 		return m_pArtNetDmx;
 	}
 
+	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
+		m_pArtNetTrigger = pArtNetTrigger;
+	}
+	ArtNetTrigger *GetArtNetTrigger(void) {
+		return m_pArtNetTrigger;
+	}
+
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
 	void Print(void);
@@ -280,8 +288,8 @@ private:
 	void HandleTodControl(void);
 	void HandleRdm(void);
 	void HandleIpProg(void);
-	//void HandleDirectory(void);
 	void HandleDmxIn(void);
+	void HandleTrigger(void);
 
 	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
 
@@ -307,12 +315,13 @@ private:
 	ArtNetStore *m_pArtNetStore;
 	ArtNetDisplay *m_pArtNetDisplay;
 	ArtNetDmx *m_pArtNetDmx;
+	ArtNetTrigger *m_pArtNetTrigger;
 	ArtNet4Handler *m_pArtNet4Handler;
 
-	struct TArtNetNode m_Node;				///< Struct describing the node
-	struct TArtNetNodeState m_State;		///< The current state of the node
+	struct TArtNetNode m_Node;
+	struct TArtNetNodeState m_State;
 
-	struct TArtNetPacket m_ArtNetPacket;	///< The received Art-Net package
+	struct TArtNetPacket m_ArtNetPacket;
 	struct TArtPollReply m_PollReply;
 #if defined ( ENABLE_SENDDIAG )
 	struct TArtDiagData m_DiagData;

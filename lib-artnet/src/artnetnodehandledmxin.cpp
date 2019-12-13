@@ -57,7 +57,7 @@ void ArtNetNode::HandleDmxIn(void) {
 				artDmx.LengthHi = (nLength & 0xFF00) >> 8;
 				artDmx.Length = (nLength & 0xFF);
 
-				memcpy(artDmx.Data, &pDmxData[1], nLength-1);
+				memcpy(artDmx.Data, pDmxData, nLength);
 
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 

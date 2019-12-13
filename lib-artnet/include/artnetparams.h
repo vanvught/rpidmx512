@@ -167,7 +167,7 @@ public:
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
-	uint8_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate(void) {
 		return m_tArtNetParams.bEnableNoChangeUpdate;

@@ -70,7 +70,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 39 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 40 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -187,12 +187,28 @@ void ArtNetNode::Start(void) {
 		m_nDestinationIp = m_Node.IPAddressBroadcast;
 	}
 
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
+	if (m_pArtNetDmx != 0) {
+		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+			m_pArtNetDmx->Start(i);
+		}
+	}
+#endif
+
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 
 	SendPollRelply(false);	// send a reply on startup
 }
 
 void ArtNetNode::Stop(void) {
+#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
+	if (m_pArtNetDmx != 0) {
+		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+			m_pArtNetDmx->Stop(i);
+		}
+	}
+#endif
+
 	if (m_pLightSet != 0) {
 		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) && (m_IsLightSetRunning[i])) {
@@ -239,6 +255,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
 			assert(m_State.nActiveInputPorts <= ARTNET_MAX_PORTS);
 		}
+
 		m_InputPorts[nPortIndex].bIsEnabled = true;
 		m_InputPorts[nPortIndex].port.nDefaultAddress = nAddress & (uint16_t) 0x0F;// Universe : Bits 3-0
 		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress((uint16_t) nAddress, (nPortIndex / ARTNET_MAX_PORTS));
@@ -1129,11 +1146,14 @@ void ArtNetNode::Run(void) {
 			HandleIpProg();
 		}
 		break;
+	case OP_TRIGGER:
+		if (m_pArtNetTrigger != 0) {
+			HandleTrigger();
+		}
+		break;
 	default:
 		// ArtNet but OpCode is not implemented
 		// Just skip ... no error
-		//return 0;
-		//__builtin_unreachable ();
 		break;
 	}
 
@@ -1153,34 +1173,3 @@ void ArtNetNode::Run(void) {
 	}
 
 }
-
-#if defined ( ENABLE_SENDDIAG )
-void ArtNetNode::FillDiagData(void) {
-	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
-
-	strncpy((char *)m_DiagData.Id, (const char *)NODE_ID, sizeof m_DiagData.Id);
-	m_DiagData.OpCode = OP_DIAGDATA;
-	m_DiagData.ProtVerHi = 0;
-	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;
-}
-
-void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
-	if (!m_State.SendArtDiagData) {
-		return;
-	}
-
-	if (nPriority < m_State.Priority) {
-		return;
-	}
-
-	m_DiagData.Priority = nPriority;
-
-	strncpy((char *) m_DiagData.Data, text, sizeof m_DiagData.Data);
-	m_DiagData.Data[sizeof(m_DiagData.Data) - 1] = '\0';// Just be sure we have a last '\0'
-	m_DiagData.LengthLo = strlen((const char *) m_DiagData.Data) + 1;// Text length including the '\0'
-
-	const uint16_t nSize = sizeof(struct TArtDiagData) - sizeof(m_DiagData.Data) + m_DiagData.LengthLo;
-
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(m_DiagData), nSize, m_State.IPAddressDiagSend, (uint16_t) ARTNET_UDP_PORT);
-}
-#endif

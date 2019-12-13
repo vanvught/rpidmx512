@@ -1,11 +1,11 @@
 /**
- * @file artnettimesync.cpp
+ * @file artnettrigger.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,23 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <stdint.h>
 
-#include "artnettimesync.h"
+#include "artnettrigger.h"
 
 #include "artnetnode.h"
-#include "network.h"
 
 #include "debug.h"
 
-ArtNetTimeSync::~ArtNetTimeSync(void) {
+void ArtNetNode::HandleTrigger(void) {
 	DEBUG_ENTRY
+	const struct TArtTrigger *packet = (struct TArtTrigger *) &(m_ArtNetPacket.ArtPacket.ArtTrigger);
 
-	DEBUG_EXIT
-}
+	if ((packet->OemCodeHi == 0xFF && packet->OemCodeLo == 0xFF) || (packet->OemCodeHi == m_Node.Oem[0] && packet->OemCodeLo == m_Node.Oem[1])) {
+		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", packet->Key, packet->SubKey, packet->Data[0]);
 
-void ArtNetNode::HandleTimeSync(void) {
-	DEBUG_ENTRY
-
-	struct TArtTimeSync *packet = (struct TArtTimeSync *) &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
-
-	m_pArtNetTimeSync->Handler((struct TArtNetTimeSync *)&packet->tm_sec);
-
-	packet->Prog = 0;
-
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) packet, (const uint16_t) sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
+		m_pArtNetTrigger->Handler((const struct TArtNetTrigger *)&packet->Key);
+	}
 
 	DEBUG_EXIT
 }

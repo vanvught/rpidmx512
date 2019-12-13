@@ -26,6 +26,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
@@ -345,7 +350,7 @@ void ArtNetParams::Dump(void) {
 #endif
 }
 
-uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) const {
+uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) {
 	assert(nPort < ARTNET_MAX_PORTS);
 
 	IsSet = isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << nPort);

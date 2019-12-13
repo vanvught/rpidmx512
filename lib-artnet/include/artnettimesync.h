@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,6 @@
 
 #include <stdint.h>
 
-#if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
-
 struct TArtNetTimeSync {
 	uint8_t tm_sec;
 	uint8_t tm_min;
@@ -45,7 +41,7 @@ struct TArtNetTimeSync {
 	uint8_t tm_year_lo;
 	uint8_t tm_wday;
 	uint8_t tm_isdst;
-}PACKED;
+}__attribute__((packed));
 
 class ArtNetTimeSync {
 public:
