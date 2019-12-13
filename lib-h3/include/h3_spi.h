@@ -69,8 +69,20 @@ extern void h3_spi_transfern(char *tx_buffer, uint32_t data_length);
 extern void h3_spi_write(uint16_t data);
 extern void h3_spi_writenb(const char *tx_buffer, uint32_t data_length);
 
+/*
+ * WS28xx support
+ */
+
 extern void h3_spi_set_ws28xx_mode(bool off_on);
 extern bool h3_spi_get_ws28xx_mode(void);
+
+/*
+ * DMA support
+ */
+
+extern const uint8_t *h3_spi_dma_tx_prepare(uint32_t *data_length);
+extern void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t length);
+extern bool h3_spi_dma_tx_is_active(void);
 
 #ifdef __cplusplus
 }

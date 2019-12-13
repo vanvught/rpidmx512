@@ -27,6 +27,7 @@
 #define WS28XX_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #if defined (__circle__)
  #include <circle/interrupt.h>
@@ -60,13 +61,7 @@ public:
 #endif
 	~WS28xx(void);
 
-#if defined (__circle__)
 	bool Initialize (void);
-#else
-	bool Initialize (void) {
-		return true;
-	}
-#endif
 
 	uint16_t GetLEDCount(void) {
 		return m_nLEDCount;
@@ -113,16 +108,18 @@ private:
 	static void SPICompletionStub (boolean bStatus, void *pParam);
 #endif
 
-private:
+protected:
 	TWS28XXType m_tLEDType;
 	uint16_t m_nLEDCount;
 	uint32_t m_nClockSpeedHz;
-	uint8_t m_nGlobalBrightness;
 	uint32_t m_nBufSize;
-	uint8_t *m_pBuffer;
-	uint8_t *m_pBlackoutBuffer;
-	volatile bool m_bUpdating;
+	uint8_t m_nGlobalBrightness;
 	uint8_t m_nHighCode;
+	volatile bool m_bUpdating;	// TODO Why is this volatile?
+	alignas(uint32_t) uint8_t *m_pBuffer;
+	alignas(uint32_t) uint8_t *m_pBlackoutBuffer;
+
+private:
 #if defined (__circle__)
 	uint8_t *m_pReadBuffer;
 	CSPIMasterDMA m_SPIMaster;
