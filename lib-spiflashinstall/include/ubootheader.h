@@ -1,5 +1,5 @@
 /**
- * @file tftpfileserver.h
+ * @file ubootheader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTPFILESERVER_H_
-#define TFTPFILESERVER_H_
+#ifndef UBOOTHEADER_H_
+#define UBOOTHEADER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "tftpdaemon.h"
-
-class TFTPFileServer: public TFTPDaemon {
+class UBootHeader {
 public:
-	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer (void);
+	UBootHeader(uint8_t *pHeader);
+	~UBootHeader(void);
 
-	bool FileOpen (const char *pFileName, TTFTPMode tMode);
-	bool FileCreate (const char *pFileName, TTFTPMode tMode);
-	bool FileClose (void);
-	int FileRead (void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-	int FileWrite (const void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-
-	uint32_t GetFileSize(void) {
-		return m_nFileSize;
+	bool IsValid(void) {
+		return m_bIsValid;
 	}
 
-	bool isDone(void)  {
-		return m_bDone;
+	bool IsCompressed(void) {
+		return m_bIsCompressed;
 	}
+
+	void Dump(void);
 
 private:
-	uint8_t* m_pBuffer;
-	uint32_t m_nSize;
-	uint32_t m_nFileSize;
-	bool m_bIsCompressedSupported;
-	bool m_bDone;
+	uint8_t *m_pHeader;
+	bool m_bIsValid;
+	bool m_bIsCompressed;
 };
 
-#endif /* TFTPFILESERVER_H_ */
+#endif

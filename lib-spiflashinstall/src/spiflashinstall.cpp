@@ -36,6 +36,10 @@
 
 #include "hardware.h"
 
+// Temporarily classes. Only needed for the migration to compressed firmware
+#include "compressed.h"
+#include "ledblink.h"
+
 #include "debug.h"
 
 #ifndef ALIGNED
@@ -107,6 +111,61 @@ SpiFlashInstall::SpiFlashInstall(void):
 				}
 
 				if (params.GetInstalluImage()) {
+					// Temporarily code BEGIN
+					const uint32_t code = Compressed::Check(sFileuImage);
+
+					DEBUG_PRINTF("code = %x", code);
+
+					Display::Get()->ClearLine(3);
+					Display::Get()->ClearLine(4);
+
+					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
+						puts("Update UBoot SPI");
+						Display::Get()->Write(3, "Update UBoot SPI");
+					}
+
+					if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
+						puts("uImage is compressed");
+						Display::Get()->Write(4, "uImage is compressed");
+					}
+
+					if ((code & CHECK_CODE_UIMAGE_TOO_BIG) == CHECK_CODE_UIMAGE_TOO_BIG) {
+						puts("uImage too big");
+						Display::Get()->Write(2, "uImage too big");
+						Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
+						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+						for (;;) {
+#if defined (BARE_METAL)
+							led_blink();
+#endif
+						}
+					}
+
+					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
+						Display::Get()->TextStatus("Update UBoot SPI", DISPLAY_7SEGMENT_MSG_INFO_SPI_UPDATE);
+						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+						const uint32_t now = Hardware::Get()->Millis();
+
+						while ((Hardware::Get()->Millis() - now) < 3000) {
+#if defined (BARE_METAL)
+							led_blink();
+#endif
+						}
+
+						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
+							Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
+							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+							for (;;) {
+	#if defined (BARE_METAL)
+								led_blink();
+	#endif
+							}
+						}
+
+					}
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					// Temporarily code END
+
 					Process(sFileuImage, OFFSET_UIMAGE);
 				}
 			}
@@ -265,7 +324,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 		nTotalBytes += nBytes;
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {
-			printf("error: flash erase\n");
+			puts("error: flash erase");
 			break;
 		}
 
@@ -276,17 +335,17 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 		}
 
 		if (spi_flash_cmd_write_multi(n_Address, m_nEraseSize, m_pFileBuffer) < 0) {
-			printf("error: flash write\n");
+			puts("error: flash write");
 			break;
 		}
 
 		if (spi_flash_cmd_read_fast(n_Address, nBytes, m_pFlashBuffer) < 0) {
-			printf("error: flash read\n");
+			puts("error: flash read");
 			break;
 		}
 
 		if (!BuffersCompare(nBytes)) {
-			printf("error: flash verify\n");
+			puts("error: flash verify");
 			break;
 		}
 
@@ -321,30 +380,36 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		return false;
 	}
 
-	printf("Write firmware\n");
+	puts("Write firmware");
 
 	const uint32_t nSectorSize = spi_flash_get_sector_size();
 	const uint32_t nEraseSize = (nSize + nSectorSize - 1) & ~(nSectorSize - 1);
 
 	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
 
-	Hardware::Get()->WatchdogStop();
+	const bool bWatchdog = Hardware::Get()->IsWatchdog();
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogStop();
+	}
 
 	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_ERASE);
 
 	if (spi_flash_cmd_erase(OFFSET_UIMAGE, nEraseSize) < 0) {
-		printf("error: flash erase\n");
+		puts("error: flash erase");
 		return false;
 	}
 
 	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
 
 	if (spi_flash_cmd_write_multi(OFFSET_UIMAGE, nSize, pBuffer) < 0) {
-		printf("error: flash write\n");
+		puts("error: flash write");
 		return false;
 	}
 
-	Hardware::Get()->WatchdogInit();
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogInit();
+	}
 
 	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
 

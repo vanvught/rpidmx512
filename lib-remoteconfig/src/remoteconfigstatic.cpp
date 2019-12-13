@@ -45,9 +45,38 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sTxtFile[TXT_FILE_LAST][12] ALIGNED =          { "rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt", "ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "nextion.txt"  };
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {  11,            11,            10,           8,          7,         10,           11,           7,         9,           11,            11,             11};
-static const TStore sMap[TXT_FILE_LAST] ALIGNED = 				 { STORE_RCONFIG, STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT, STORE_DISPLAYUDF, STORE_NEXTION};
+static const char sTxtFile[TXT_FILE_LAST][15] ALIGNED = {
+		"rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt",
+		"ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "ldisplay.txt", "nextion.txt",
+#if defined(STEPPER)
+		"sparkfun.txt",
+		"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt",
+		"motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt",
+#endif
+		"rdm_device.txt"
+};
+
+static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
+		11, 11, 10,8, 7, 10, 11, 7, 9, 11, 11, 12, 11,
+#if defined(STEPPER)
+		12,
+		10, 10, 10, 10,
+		10, 10, 10, 10,
+#endif
+		14
+};
+
+static const TStore sMap[TXT_FILE_LAST] ALIGNED = { STORE_RCONFIG,
+		STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND,
+		STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT,
+		STORE_DISPLAYUDF, STORE_LTCDISPLAY, STORE_NEXTION,
+#if defined(STEPPER)
+		STORE_SPARKFUN,
+		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
+		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
+#endif
+		STORE_RDMDEVICE
+};
 
 uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
 	uint32_t i;

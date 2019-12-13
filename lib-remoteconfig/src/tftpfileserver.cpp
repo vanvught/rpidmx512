@@ -33,6 +33,9 @@
 
 #include "display.h"
 
+// Temporarily class. Only needed for the migration to compressed firmware
+#include "compressed.h"
+
 #include "debug.h"
 
 #if defined(ORANGE_PI)
@@ -52,6 +55,9 @@ TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 	DEBUG_ENTRY
 
 	assert(m_pBuffer != 0);
+
+	m_bIsCompressedSupported = Compressed::IsSupported();
+	DEBUG_PRINTF("m_bIsCompressedSupported=%d", (int) m_bIsCompressedSupported);
 
 	DEBUG_EXIT
 }
@@ -126,6 +132,12 @@ int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBl
 			DEBUG_PUTS("uImage is not valid");
 			return -1;
 		}
+		// Temporarily code BEGIN
+		if (!m_bIsCompressedSupported && uImage.IsCompressed()) {
+			printf("Compressed uImage is not supported -> upgrade UBoot SPI");
+			return -1;
+		}
+		// Temporarily code END
 	}
 
 	uint32_t nOffset = (nBlockNumber - 1) * 512;
