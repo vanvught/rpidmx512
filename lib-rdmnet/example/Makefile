@@ -10,7 +10,7 @@ ROOT= ./../..
 SOURCE= .
 BUILD=build_linux/
 
-LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 properties lightset ledblink network debug hal
+LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 lightset network properties ledblink debug hal
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I$(ROOT)/lib-,$(LIBS))
