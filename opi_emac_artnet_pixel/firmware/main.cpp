@@ -51,6 +51,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#include "ws28xx.h"
 #include "storews28xxdmx.h"
 // PWM Led
 #include "tlc59711dmxparams.h"
@@ -74,9 +75,12 @@ void notmain(void) {
 	NetworkH3emac nw;
 	LedBlink lb;
 	DisplayUdf display;
+	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;
 
@@ -97,6 +101,7 @@ void notmain(void) {
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -108,10 +113,7 @@ void notmain(void) {
 	IpProg ipprog;
 	node.SetIpProgHandler(&ipprog);
 
-	DisplayUdfHandler displayUdfHandler(&node);
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
-
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
 	const uint8_t nUniverse = artnetparams.GetUniverse();
@@ -151,13 +153,13 @@ void notmain(void) {
 			ws28xxparms.Set(pWS28xxDmxGrouping);
 			pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
 			pSpi = pWS28xxDmxGrouping;
-			display.Printf(7, "%s:%d G%d", ws28xxparms.GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
+			display.Printf(7, "%s:%d G%d", WS28xx::GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
 		} else  {
 			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
 			assert(pWS28xxDmx != 0);
 			ws28xxparms.Set(pWS28xxDmx);
 			pSpi = pWS28xxDmx;
-			display.Printf(7, "%s:%d", ws28xxparms.GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
+			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
 
 			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 
