@@ -29,6 +29,6 @@
 
 #include "ltcparams.h"
 
-alignas(uint32_t) const char SourceSelectConst::SOURCE[LTC_READER_SOURCE_UNDEFINED][12] = {"LTC" , "Art-Net", "MIDI", "TCNet", "Internal", "rtpMIDI"};
+alignas(uint32_t) const char SourceSelectConst::SOURCE[LTC_READER_SOURCE_UNDEFINED][12] = {"LTC" , "Art-Net", "MIDI", "TCNet", "Internal", "rtpMIDI", "System-Time"};
 
 

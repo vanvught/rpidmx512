@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file networkhandleroled.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <stdint.h>
 
-static const char SOFTWARE_VERSION[] = "2.2";
+#include "networkhandleroled.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "display.h"
+
+#include "networkdisplay.h"
+#include "network.h"
+
+NetworkDisplay::~NetworkDisplay(void) {
+
+}
+
+NetworkHandlerOled::NetworkHandlerOled(void) {
+}
+
+NetworkHandlerOled::~NetworkHandlerOled(void) {
+}
+
+void NetworkHandlerOled::ShowIp(void) {
+	Display::Get()->ClearLine(3);
+	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), (int) Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+}
+
+void NetworkHandlerOled::ShowNetMask(void) {
+	ShowIp();
+}

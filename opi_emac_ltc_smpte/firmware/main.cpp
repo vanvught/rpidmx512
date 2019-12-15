@@ -35,7 +35,8 @@
 #include "console.h"
 
 #include "ltcparams.h"
-#include "ltcleds.h"
+#include "ltcdisplayparams.h"
+#include "ltc7segment.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -62,26 +63,22 @@
 
 #include "display.h"
 #include "displaymax7219.h"
-//#include "displayws28xx.h"
+#include "displayws28xx.h"
+
+#include "networkhandleroled.h"
 
 #include "sourceselect.h"
 #include "sourceselectconst.h"
 
 #include "ntpserver.h"
 
-#include "h3/artnetreader.h"
-#include "h3/ltcreader.h"
-#include "h3/ltcsender.h"
-#include "h3/midireader.h"
-#include "h3/tcnetreader.h"
-#include "h3/ltcgenerator.h"
-#include "h3/rtpmidireader.h"
-#include "h3/ltcoutputs.h"
+#include "h3/ltc.h"
 
 #include "spiflashinstall.h"
 
 #include "spiflashstore.h"
 #include "storeltc.h"
+#include "storeltcdisplay.h"
 #include "storetcnet.h"
 #include "storeremoteconfig.h"
 
@@ -120,7 +117,7 @@ void notmain(void) {
 		ltcParams.Dump();
 	}
 
-	LtcLeds leds;
+	Ltc7segment leds;
 
 	fw.Print();
 
@@ -131,6 +128,9 @@ void notmain(void) {
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+
+	NetworkHandlerOled nwHandlerDisplay;
+	nw.SetNetworkDisplay((NetworkDisplay *) &nwHandlerDisplay);
 
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
@@ -152,38 +152,10 @@ void notmain(void) {
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&tLtcDisabledOutputs);
 	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
+	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
 
 	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
-
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
-
-	node.SetShortName("LTC Node");
-
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
-
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
-	}
-
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	TimeSync timeSync;
-	if (!ltcParams.IsTimeSyncDisabled()) {
-		node.SetTimeSyncHandler(&timeSync);
-	}
-
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
-
-	node.Print();
-	node.Start();
-
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
 
 	StoreTCNet storetcnet;
 	TCNetParams tcnetparams((TCNetParamsStore *) &storetcnet);
@@ -193,13 +165,23 @@ void notmain(void) {
 		tcnetparams.Dump();
 	}
 
-	DisplayMax7219 max7219(ltcParams.GetMax7219Type(), ltcParams.IsShowSysTime());
-	max7219.Init(ltcParams.GetMax7219Intensity());
+	StoreLtcDisplay storeLtcDisplay;
+	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
 
-//	DisplayWS28xx ws82xx(WS2812B, ltcParams.IsShowSysTime());	// TODO Use devices.txt for tLedType ?
-//	if (!tLtcDisabledOutputs.bWS28xx){
-//		ws82xx.Init(255, RBG);	// TODO Use devices.txt for the parameters?
-//	}
+	if (ltcDisplayParams.Load()) {
+		ltcDisplayParams.Dump();
+	}
+
+	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type());
+	if(!tLtcDisabledOutputs.bMax7219) {
+		displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+	}
+
+	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
+	if (!tLtcDisabledOutputs.bWS28xx){
+		ltcDisplayParams.Set(&displayWS28xx);
+		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness());
+	}
 
 	display.ClearLine(3);
 	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
@@ -219,7 +201,43 @@ void notmain(void) {
 
 	// From here work with source selection
 
-	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source);
+	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+
+	const bool bRunArtNet = ((source == LTC_READER_SOURCE_ARTNET) || (!tLtcDisabledOutputs.bArtNet));
+
+	IpProg ipprog;
+	TimeSync timeSync;
+
+	if (bRunArtNet) {
+		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
+		display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+
+		ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+
+		if (artnetparams.Load()) {
+			artnetparams.Set(&node);
+			artnetparams.Dump();
+		}
+
+		node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+		node.SetShortName("LTC SMPTE Node");
+		node.SetIpProgHandler(&ipprog);
+
+		if (!ltcParams.IsTimeSyncDisabled()) {
+			node.SetTimeSyncHandler(&timeSync);
+		}
+
+		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
+		display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+
+		node.Print();
+		node.Start();
+
+		console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
+		display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	}
+
+	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
 
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
@@ -250,19 +268,22 @@ void notmain(void) {
 		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidiReader.Start();
 		break;
+	case LTC_READER_SOURCE_SYSTIME:
+		sysTimeReader.Start();
+		break;
 	default:
 		ltcReader.Start();
 		break;
 	}
 
-	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || !tLtcDisabledOutputs.bRtpMidi);
+	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
 
 	if (bEnableRtpMidi) {
 		rtpMidi.Start();
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
 	}
 
-	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL) && ltcParams.IsOscEnabled());
+	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_INTERNAL || source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsOscEnabled());
 
 	if (bRunOSCServer) {
 		bool isSet;
@@ -275,19 +296,25 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
 	}
 
-	const bool bEnableNtp = ltcParams.IsNtpEnabled();
+	const bool bEnableNtp = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NTP_CLIENT_STATUS_STOPPED);
 
 	if (bEnableNtp) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
-		ntpServer.Print();
 		ntpServer.Start();
+		ntpServer.Print();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
 	}
 
 	ltcGenerator.Print();
 	tcnet.Print();
 	midi.Print();
 	rtpMidi.Print();
-//	ws82xx.Print();
+	if(!tLtcDisabledOutputs.bMax7219) {
+		displayMax7219.Print();
+	}
+	if (!tLtcDisabledOutputs.bWS28xx){
+		displayWS28xx.Print();
+	}
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
 
@@ -354,11 +381,16 @@ void notmain(void) {
 		case LTC_READER_SOURCE_APPLEMIDI:
 			rtpMidiReader.Run();	// Handles status led
 			break;
+		case LTC_READER_SOURCE_SYSTIME:
+			sysTimeReader.Run();
+			break;
 		default:
 			break;
 		}
 
-		node.Run();
+		if (bRunArtNet) {
+			node.Run();
+		}
 
 		if (bEnableRtpMidi) {
 			rtpMidi.Run();
@@ -372,9 +404,6 @@ void notmain(void) {
 			ntpServer.Run();
 		}
 
-		remoteConfig.Run();
-		spiFlashStore.Flash();
-
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
@@ -383,12 +412,14 @@ void notmain(void) {
 			display.Run();
 		}
 
-//		if (!tLtcDisabledOutputs.bWS28xx){
-//			ws82xx.Run();
-//		}
+		if (!tLtcDisabledOutputs.bWS28xx){
+			displayWS28xx.Run();
+		}
 
 		ntpClient.Run();
 
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 		lb.Run();
 	}
 }

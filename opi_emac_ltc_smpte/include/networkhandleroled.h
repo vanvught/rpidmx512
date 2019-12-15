@@ -1,5 +1,5 @@
 /**
- * @file software_version.h
+ * @file networkhandleroled.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,9 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef NETWORKHANDLEROLED_H_
+#define NETWORKHANDLEROLED_H_
 
-static const char SOFTWARE_VERSION[] = "2.2";
+#include "networkdisplay.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+class NetworkHandlerOled: public NetworkDisplay {
+public:
+	NetworkHandlerOled(void);
+	~NetworkHandlerOled(void);
+
+	void ShowIp(void);
+	void ShowNetMask(void);
+	void ShowHostName(void) {};
+};
+
+#endif /* NETWORKHANDLEROLED_H_ */

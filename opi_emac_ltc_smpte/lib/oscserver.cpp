@@ -34,6 +34,7 @@
 #include "network.h"
 
 #include "h3/ltcgenerator.h"
+#include "h3/systimereader.h"
 
 #include "debug.h"
 
@@ -61,6 +62,9 @@ static const char sRate[] ALIGNED = "rate";
 
 static const char sSet[] ALIGNED = "/set/";
 #define SET_LENGTH (sizeof(sSet)/sizeof(sSet[0]) - 1)
+
+static const char sGoto[] ALIGNED = "goto";
+#define GOTO_LENGTH (sizeof(sGoto)/sizeof(sGoto[0]) - 1)
 
 // "hh/mm/ss/ff" -> length = 11
 #define VALUE_LENGTH		11
@@ -109,7 +113,9 @@ void OSCServer::Run(void) {
 
 		if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
+
 				LtcGenerator::Get()->ActionStart();
+				SystimeReader::Get()->ActionStart();
 
 				DEBUG_PUTS("ActionStart");
 			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + 1 + VALUE_LENGTH))) {
@@ -139,7 +145,10 @@ void OSCServer::Run(void) {
 			}
 		} else if (memcmp(&m_pBuffer[m_nPathLength], sStop, STOP_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + STOP_LENGTH))) {
+
 				LtcGenerator::Get()->ActionStop();
+				SystimeReader::Get()->ActionStop();
+
 				DEBUG_PUTS("ActionStop");
 			} else if ((nCommandLength == (m_nPathLength + STOP_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
 				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], sSet, SET_LENGTH) == 0) {
@@ -165,12 +174,23 @@ void OSCServer::Run(void) {
 			LtcGenerator::Get()->ActionResume();
 
 			DEBUG_PUTS("ActionResume");
+		} else if ((nCommandLength == (m_nPathLength + GOTO_LENGTH + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], sGoto, GOTO_LENGTH) == 0)) {
+			if (m_pBuffer[m_nPathLength + GOTO_LENGTH] == '/') {
+				const uint32_t nOffset = m_nPathLength + GOTO_LENGTH + 1;
+				m_pBuffer[nOffset + 2] = ':';
+				m_pBuffer[nOffset + 5] = ':';
+				m_pBuffer[nOffset + 8] = '.';
+
+				LtcGenerator::Get()->ActionGoto((const char *)&m_pBuffer[nOffset]);
+
+				DEBUG_PUTS(&m_pBuffer[nOffset]);
+			}
 		}
 	}
 }
 
 void OSCServer::Print(void) {
-	printf("OSC\n");
+	printf("OSC Server\n");
 	printf(" Port : %d\n", m_nPortIncoming);
 	printf(" Path : [%s]\n", m_aPath);
 }
