@@ -1,5 +1,5 @@
 /**
- * @file displaymatrix.h
+ * @file ltc7segment.cpp.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMATRIX_H_
-#define DISPLAYMATRIX_H_
-
 #include <stdint.h>
 
-#include "max7219set.h"
+#include "ltc7segment.h"
+#include "ltc.h"
 
-#include "device_info.h"
+#include "display.h"
 
-#define SEGMENTS	8
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
-class Max7219Matrix: public Max7219Set {
-public:
-	Max7219Matrix(void);
-	~Max7219Matrix(void);
+Ltc7segment *Ltc7segment::s_pThis = 0;
 
-	void Init(uint8_t nIntensity);
+const TDisplay7SegmentMessages msg[4] ALIGNED = {
+		DISPLAY_7SEGMENT_MSG_LTC_FILM,
+		DISPLAY_7SEGMENT_MSG_LTC_EBU,
+		DISPLAY_7SEGMENT_MSG_LTC_DF,
+		DISPLAY_7SEGMENT_MSG_LTC_SMPTE };
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+Ltc7segment::Ltc7segment(void) {
+	s_pThis = this;
+}
 
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+Ltc7segment::~Ltc7segment(void) {
+}
 
-	static Max7219Matrix* Get(void) {
-		return s_pThis;
+void Ltc7segment::Show(TTimecodeTypes tTimecodeType) {
+	if (tTimecodeType < TC_TYPE_UNKNOWN) {
+		Display::Get()->Status(msg[tTimecodeType]);
+	} else {
+		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
 	}
+}
 
-private:
-	device_info_t m_DeviceInfo;
-	uint8_t m_aBuffer[SEGMENTS];
-
-	static Max7219Matrix *s_pThis;
-};
-
-#endif /* DISPLAYMATRIX_H_ */

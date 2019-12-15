@@ -27,6 +27,12 @@
  * https://tools.ietf.org/html/rfc5905
  */
 
+// TODO Remove when using compressed firmware
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -150,10 +156,10 @@ void NtpServer::Run(void) {
 
 void NtpServer::Print(void) {
 	printf("NTP v%d Server\n", NTP_VERSION >> 3);
-	printf(" Port    : %d\n", NTP_UDP_PORT);
+	printf(" Port : %d\n", NTP_UDP_PORT);
 	printf(" Stratum : %d\n", NTP_STRATUM);
 
 	const time_t t = m_tDate - NTP_TIMESTAMP_DELTA;
 
-	printf("%s", asctime(localtime((const time_t *) &t)));
+	printf(" %s", asctime(localtime((const time_t *) &t)));
 }

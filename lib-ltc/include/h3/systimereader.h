@@ -1,5 +1,5 @@
 /**
- * @file displaymatrix.h
+ * @file systimereader.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMATRIX_H_
-#define DISPLAYMATRIX_H_
+#ifndef H3_SYSTIMEREADER_H_
+#define H3_SYSTIMEREADER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <time.h>
 
-#include "max7219set.h"
+#include "ltc.h"
+#include "midi.h"
 
-#include "device_info.h"
-
-#define SEGMENTS	8
-
-class Max7219Matrix: public Max7219Set {
+class SystimeReader {
 public:
-	Max7219Matrix(void);
-	~Max7219Matrix(void);
+	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps);
+	~SystimeReader(void);
 
-	void Init(uint8_t nIntensity);
+	void Start(void);
+	void Run(void);
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+	void Print(void);
 
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+	// Control
+	void ActionStart(void);
+	void ActionStop(void);
+	void ActionSetRate(const char *pTimeCodeRate);
 
-	static Max7219Matrix* Get(void) {
+	static SystimeReader *Get(void) {
 		return s_pThis;
 	}
 
 private:
-	device_info_t m_DeviceInfo;
-	uint8_t m_aBuffer[SEGMENTS];
+	void HandleUdpRequest(void);
 
-	static Max7219Matrix *s_pThis;
+private:
+	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	uint8_t m_nFps;
+	uint32_t m_nTimer0Interval;
+	time_t m_ntimePrevious;
+	struct _midi_send_tc m_tMidiTimeCode;
+	int m_nHandle;
+	alignas(uint32_t) uint8_t m_Buffer[64];
+	int m_nBytesReceived;
+	bool m_bIsStarted;
+
+	static SystimeReader *s_pThis;
 };
 
-#endif /* DISPLAYMATRIX_H_ */
+#endif /* H3_SYSTIMEREADER_H_ */

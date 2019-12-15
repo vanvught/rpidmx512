@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")
@@ -43,7 +42,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
+LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tLtcParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TLtcParams); i++) {
@@ -51,7 +50,6 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	}
 
 	m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
-	m_tLtcParams.nMax7219Intensity = 4;
 	m_tLtcParams.nYear = 19;
 	m_tLtcParams.nMonth = 1;
 	m_tLtcParams.nDay = 1;
@@ -60,10 +58,10 @@ LtcParams::LtcParams(LtcParamsStore* pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nStopSecond = 59;
 	m_tLtcParams.nStopMinute = 29;
 	m_tLtcParams.nStopHour = 23;
+	m_tLtcParams.nOscPort = 8000;
 }
 
 LtcParams::~LtcParams(void) {
-	m_tLtcParams.nSetList = 0;
 }
 
 bool LtcParams::Load(void) {
@@ -128,26 +126,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 		source[len] = '\0';
 		m_tLtcParams.tSource = GetSourceType((const char *) source);
 		m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SOURCE;
-	}
-
-	len = sizeof(source);
-
-	if (Sscan::Char(pLine, LtcParamsConst::MAX7219_TYPE, source, &len) == SSCAN_OK) {
-		if (strncasecmp(source, "7segment", len) == 0) {
-			m_tLtcParams.tMax7219Type = LTC_PARAMS_MAX7219_TYPE_7SEGMENT;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_TYPE;
-		} else if (strncasecmp(source, "matrix", len) == 0) {
-			m_tLtcParams.tMax7219Type = LTC_PARAMS_MAX7219_TYPE_MATRIX;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_TYPE;
-		}
-	}
-
-	if (Sscan::Uint8(pLine, LtcParamsConst::MAX7219_INTENSITY, &value8) == SSCAN_OK) {
-		if (value8 <= 0x0F) {
-			m_tLtcParams.nMax7219Intensity = value8;
-			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_MAX7219_INTENSITY;
-		}
-		return;
 	}
 
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LTC_PARAMS_DISABLE_DISPLAY);
@@ -318,11 +296,21 @@ void LtcParams::callbackFunction(const char* pLine) {
 		if (value8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
 			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_MAX7219;
+#if !defined(USE_SPI_DMA)
+			m_tLtcParams.nDisabledOutputs |= LTC_PARAMS_DISABLE_LTC;		// TODO Temporarily code until SPI DMA has been implemented
+#endif
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_ENABLE_WS28XX;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
 			m_tLtcParams.nEnableWS28xx = 0;
-			m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MAX7219;
+			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219)) {
+				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_MAX7219;
+			}
+#if !defined(USE_SPI_DMA)
+			if (!isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC)) {			// TODO Temporarily code until SPI DMA has been implemented
+				m_tLtcParams.nDisabledOutputs &= ~LTC_PARAMS_DISABLE_LTC;	// TODO Temporarily code until SPI DMA has been implemented
+			}																// TODO Temporarily code until SPI DMA has been implemented
+#endif
 			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_ENABLE_WS28XX;
 		}
 	}
@@ -340,17 +328,7 @@ void LtcParams::Dump(void) {
 		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
 	}
 
-	if (isMaskSet(LTC_PARAMS_MASK_MAX7219_TYPE)) {
-		printf(" %s=%d [%s]\n", LtcParamsConst::MAX7219_TYPE, m_tLtcParams.tMax7219Type, m_tLtcParams.tMax7219Type == LTC_PARAMS_MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix");
-	}
-
-	if (isMaskSet(LTC_PARAMS_MASK_MAX7219_INTENSITY)) {
-		printf(" %s=%d\n", LtcParamsConst::MAX7219_INTENSITY, m_tLtcParams.nMax7219Intensity);
-	}
-
 	if (isMaskSet(LTC_PARAMS_MASK_DISABLED_OUTPUTS)) {
-		assert(m_tLtcParams.nDisabledOutputs != 0);
-
 		printf(" Disabled outputs %.2x:\n", m_tLtcParams.nDisabledOutputs);
 
 		if (isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY)) {

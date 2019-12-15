@@ -31,8 +31,6 @@ class LtcParamsConst {
 public:
 	alignas(uint32_t) static const char FILE_NAME[];
 	alignas(uint32_t) static const char SOURCE[];
-	alignas(uint32_t) static const char MAX7219_TYPE[];
-	alignas(uint32_t) static const char MAX7219_INTENSITY[];
 	alignas(uint32_t) static const char DISABLE_DISPLAY[];
 	alignas(uint32_t) static const char DISABLE_MAX7219[];
 	alignas(uint32_t) static const char DISABLE_MIDI[];

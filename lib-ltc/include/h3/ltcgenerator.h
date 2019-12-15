@@ -49,6 +49,7 @@ public:
 	void ActionSetStart(const char *pTimeCode);
 	void ActionSetStop(const char *pTimeCode);
 	void ActionSetRate(const char *pTimeCodeRate);
+	void ActionGoto(const char *pTimeCode);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;
@@ -64,13 +65,10 @@ private:
 	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
 	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
 	uint8_t m_nFps;
-//	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	uint32_t m_nTimer0Interval;
-//	uint32_t m_nMidiQuarterFrameUs12;
-//	uint32_t nMidiQuarterFramePiece;
 	uint32_t m_nButtons;
 	int m_nHandle;
-	uint8_t m_Buffer[64];
+	alignas(uint32_t) uint8_t m_Buffer[64];
 	int m_nBytesReceived;
 	bool m_bIsStarted;
 

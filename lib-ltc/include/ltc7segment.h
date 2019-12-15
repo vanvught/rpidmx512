@@ -1,5 +1,5 @@
 /**
- * @file ltcleds.h
+ * @file ltc7segment.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -28,19 +28,19 @@
 
 #include "ltc.h"
 
-class LtcLeds {
+class Ltc7segment {
 public:
-	LtcLeds(void);
-	~LtcLeds(void);
+	Ltc7segment(void);
+	~Ltc7segment(void);
 
 	void Show(TTimecodeTypes tTimecodeType);
 
-	static LtcLeds* Get(void) {
+	static Ltc7segment* Get(void) {
 		return s_pThis;
 	}
 
 private:
-	static LtcLeds *s_pThis;
+	static Ltc7segment *s_pThis;
 };
 
 #endif /* LTCLEDS_H_ */

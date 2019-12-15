@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
@@ -39,7 +33,7 @@
 #include "c/led.h"
 
 #include "arm/synchronize.h"
-#include "h3_hs_timer.h"
+#include "h3.h"
 #include "h3_timer.h"
 #include "irq_timer.h"
 
@@ -123,8 +117,7 @@ void TCNetReader::Run(void) {
 	if (nUpdatesPerSecond >= 24) {
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
-		DisplayMax7219::Get()->ShowSysTime();
-		LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+		LtcOutputs::Get()->ShowSysTime();
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
 }

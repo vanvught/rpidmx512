@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -40,7 +34,7 @@
 #include "c/led.h"
 
 #include "arm/synchronize.h"
-#include "h3_hs_timer.h"
+#include "h3.h"
 #include "h3_timer.h"
 #include "irq_timer.h"
 
@@ -76,7 +70,6 @@ inline static void itoa_base10(uint32_t arg, char *buf) {
 MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_nTimeCodeTypePrevious(MIDI_TC_TYPE_UNKNOWN),
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {

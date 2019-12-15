@@ -23,12 +23,6 @@
  * THE SOFTWARE.
  */
 
-// TODO Remove when using compressed firmware
-#if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -49,7 +43,7 @@
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
-#include "h3_hs_timer.h"
+#include "h3.h"
 #include "h3_timer.h"
 #include "irq_timer.h"
 
@@ -309,6 +303,17 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionGoto(const char *pTimeCode) {
+	DEBUG_ENTRY
+
+	ActionStop();
+	ActionSetStart(pTimeCode);
+	ActionStart();
+	ActionStop();
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -360,6 +365,8 @@ void LtcGenerator::HandleUdpRequest(void) {
 			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 			ActionStop();
 			ActionStart();
+		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
+			ActionGoto((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}

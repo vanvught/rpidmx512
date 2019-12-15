@@ -28,8 +28,6 @@
 
 alignas(uint32_t) const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
 alignas(uint32_t) const char LtcParamsConst::SOURCE[] = "source";
-alignas(uint32_t) const char LtcParamsConst::MAX7219_TYPE[] = "max7219_type";
-alignas(uint32_t) const char LtcParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";

@@ -46,8 +46,7 @@ private:
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	alignas(uint32_t) struct _midi_send_tc m_MidiTimeCode;
 	_midi_timecode_type m_nTimeCodeType;
-	_midi_timecode_type m_nTimeCodeTypePrevious;
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	uint8_t m_nPartPrevious;
 	bool m_bDirection;
 };

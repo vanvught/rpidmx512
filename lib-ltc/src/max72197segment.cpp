@@ -36,7 +36,7 @@
 
 Max72197Segment *Max72197Segment::s_pThis = 0;
 
-Max72197Segment::Max72197Segment(void): m_nSecondsPrevious(60)  {
+Max72197Segment::Max72197Segment(void) {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
@@ -55,7 +55,7 @@ void Max72197Segment::Init(uint8_t nIntensity) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, 0x80);
 }
 
-void Max72197Segment::Show(const char* pTimecode) {
+void Max72197Segment::Show(const char *pTimecode) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (pTimecode[0] - '0'));
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pTimecode[1] - '0') | 0x80);
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pTimecode[3] - '0'));
@@ -66,27 +66,15 @@ void Max72197Segment::Show(const char* pTimecode) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (pTimecode[10] - '0'));
 }
 
-void Max72197Segment::ShowSysTime(void) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(0);
-	local_time = localtime(&ltime);
-
-	if (__builtin_expect((m_nSecondsPrevious == (uint32_t) local_time->tm_sec), 1)) {
-		return;
-	}
-
-	m_nSecondsPrevious = local_time->tm_sec;
-
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7,  MAX7219_CHAR_BLANK);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (local_time->tm_hour / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (local_time->tm_hour % 10) | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (local_time->tm_min  / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (local_time->tm_min  % 10) | 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (local_time->tm_sec  / 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (local_time->tm_sec  % 10));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0,  MAX7219_CHAR_BLANK);
+void Max72197Segment::ShowSysTime(const char *pSystemTime) {
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, MAX7219_CHAR_BLANK);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pSystemTime[0] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pSystemTime[1] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, (pSystemTime[3] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, (pSystemTime[4] - '0') | 0x80);
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, (pSystemTime[6] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, (pSystemTime[7] - '0'));
+	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, MAX7219_CHAR_BLANK);
 }
 
 void Max72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {

@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 #if  ! defined (PACKED)
 #define PACKED __attribute__((packed))
@@ -40,6 +41,7 @@ enum TLtcReaderSource {
 	LTC_READER_SOURCE_TCNET,
 	LTC_READER_SOURCE_INTERNAL,
 	LTC_READER_SOURCE_APPLEMIDI,
+	LTC_READER_SOURCE_SYSTIME,
 	LTC_READER_SOURCE_UNDEFINED
 };
 
@@ -77,17 +79,22 @@ struct TLtcDisabledOutputs {
 	bool bWS28xx;
 };
 
-#define TC_CODE_MAX_LENGTH	11
-#define TC_TYPE_MAX_LENGTH	11
-#define TC_RATE_MAX_LENGTH  2
-
+#define TC_CODE_MAX_LENGTH		11
+#define TC_TYPE_MAX_LENGTH		11
+#define TC_RATE_MAX_LENGTH  	2
+#define TC_SYSTIME_MAX_LENGTH	TC_CODE_MAX_LENGTH
 
 class Ltc {
 public:
 	static const char *GetType(TTimecodeTypes tTimeCodeType);
 	static TTimecodeTypes GetType(uint8_t nFps);
-	static void ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode);
+
 	static void InitTimeCode(char *pTimeCode);
+	static void InitSystemTime(char *pSystemTime);
+
+	static void ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode);
+	static void ItoaBase10(const struct tm *ptLocalTime, char *pSystemTime);
+
 	static bool ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode);
 	static bool ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType);
 };

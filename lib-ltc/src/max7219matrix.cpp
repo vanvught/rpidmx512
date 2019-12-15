@@ -33,22 +33,7 @@
 
 Max7219Matrix *Max7219Matrix::s_pThis = 0;
 
-static char systime[] __attribute__ ((aligned (4))) = "--:--:--";
-
-static void itoa_base10(uint32_t arg, char *buf) {
-	char *n = buf;
-
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
-		return;
-	}
-
-	*n++ = (char) ('0' + (arg / 10));
-	*n = (char) ('0' + (arg % 10));
-}
-
-Max7219Matrix::Max7219Matrix(void): m_nSecondsPrevious(60) {
+Max7219Matrix::Max7219Matrix(void) {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
@@ -77,24 +62,15 @@ void Max7219Matrix::Show(const char *pTimecode) {
 	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
 }
 
-void Max7219Matrix::ShowSysTime(void) {
-	time_t ltime;
-	struct tm *local_time;
+void Max7219Matrix::ShowSysTime(const char *pSystemTime) {
+	m_aBuffer[0] = (uint8_t) pSystemTime[0];
+	m_aBuffer[1] = (uint8_t) pSystemTime[1];
+	m_aBuffer[2] = (uint8_t) pSystemTime[3];
+	m_aBuffer[3] = (uint8_t) pSystemTime[4];
+	m_aBuffer[4] = (uint8_t) pSystemTime[6];
+	m_aBuffer[5] = (uint8_t) pSystemTime[7];
 
-	ltime = time(0);
-	local_time = localtime(&ltime);
-
-	if (__builtin_expect((m_nSecondsPrevious == (uint32_t) local_time->tm_sec), 1)) {
-		return;
-	}
-
-	m_nSecondsPrevious = local_time->tm_sec;
-
-	itoa_base10(local_time->tm_hour, (char *) &systime[0]);
-	itoa_base10(local_time->tm_min, (char *) &systime[3]);
-	itoa_base10(local_time->tm_sec, (char *) &systime[6]);
-
-	d8x8matrix_write(&m_DeviceInfo, (const char *)systime, SEGMENTS);
+	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
 }
 
 void Max7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {

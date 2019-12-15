@@ -1,5 +1,5 @@
 /**
- * @file displaymatrix.h
+ * @file ltcdisplayparamsconst.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,38 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMATRIX_H_
-#define DISPLAYMATRIX_H_
+#ifndef LTCDISPLAYPARAMSCONST_H_
+#define LTCDISPLAYPARAMSCONST_H_
 
 #include <stdint.h>
 
-#include "max7219set.h"
+#include "displayws28xx.h"
 
-#include "device_info.h"
-
-#define SEGMENTS	8
-
-class Max7219Matrix: public Max7219Set {
+class LtcDisplayParamsConst {
 public:
-	Max7219Matrix(void);
-	~Max7219Matrix(void);
+	alignas(uint32_t) static const char FILE_NAME[];
 
-	void Init(uint8_t nIntensity);
+	alignas(uint32_t) static const char MAX7219_TYPE[];
+	alignas(uint32_t) static const char MAX7219_INTENSITY[];
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
-
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
-
-	static Max7219Matrix* Get(void) {
-		return s_pThis;
-	}
-
-private:
-	device_info_t m_DeviceInfo;
-	uint8_t m_aBuffer[SEGMENTS];
-
-	static Max7219Matrix *s_pThis;
+	alignas(uint32_t) static const char WS28XX_INTENSITY[];
+	alignas(uint32_t) static const char WS28XX_COLON_BLINK_MODE[];
+	alignas(uint32_t) static const char WS28XX_COLOUR[WS28XX_COLOUR_INDEX_LAST][24];
 };
 
-#endif /* DISPLAYMATRIX_H_ */
+#endif /* LTCDISPLAYPARAMSCONST_H_ */
