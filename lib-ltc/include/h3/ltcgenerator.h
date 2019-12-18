@@ -30,6 +30,11 @@
 
 #include "ltc.h"
 
+enum LtcGeneratorDirection {
+	LTC_GENERATOR_FORWARD = 0,
+	LTC_GENERATOR_BACKWARD
+};
+
 class LtcGenerator {
 public:
 	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
@@ -50,6 +55,7 @@ public:
 	void ActionSetStop(const char *pTimeCode);
 	void ActionSetRate(const char *pTimeCodeRate);
 	void ActionGoto(const char *pTimeCode);
+	void ActionSetDirection(const char *pTimeCodeDirection);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;
@@ -60,11 +66,13 @@ private:
 	void HandleUdpRequest(void);
 	void Update(void);
 	void Increment(void);
+	void Decrement(void);
 
 private:
 	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
 	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
 	uint8_t m_nFps;
+	LtcGeneratorDirection m_tDirection;
 	uint32_t m_nTimer0Interval;
 	uint32_t m_nButtons;
 	int m_nHandle;

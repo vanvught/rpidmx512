@@ -66,6 +66,9 @@ static const char sSet[] ALIGNED = "/set/";
 static const char sGoto[] ALIGNED = "goto";
 #define GOTO_LENGTH (sizeof(sGoto)/sizeof(sGoto[0]) - 1)
 
+static const char sDirection[] ALIGNED = "direction";
+#define DIRECTION_LENGTH (sizeof(sDirection)/sizeof(sDirection[0]) - 1)
+
 // "hh/mm/ss/ff" -> length = 11
 #define VALUE_LENGTH		11
 #define RATE_VALUE_LENGTH	2
@@ -182,6 +185,13 @@ void OSCServer::Run(void) {
 				m_pBuffer[nOffset + 8] = '.';
 
 				LtcGenerator::Get()->ActionGoto((const char *)&m_pBuffer[nOffset]);
+
+				DEBUG_PUTS(&m_pBuffer[nOffset]);
+			}
+		} else if ((nCommandLength <= (m_nPathLength + DIRECTION_LENGTH + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], sDirection, DIRECTION_LENGTH) == 0)) {
+			if (m_pBuffer[m_nPathLength + DIRECTION_LENGTH] == '/') {
+				const uint32_t nOffset = m_nPathLength + DIRECTION_LENGTH + 1;
+				LtcGenerator::Get()->ActionSetDirection((const char *)&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 			}

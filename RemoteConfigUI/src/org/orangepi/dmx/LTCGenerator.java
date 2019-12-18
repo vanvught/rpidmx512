@@ -89,6 +89,10 @@ public class LTCGenerator extends JDialog {
 	private JRadioButton radioButtonFPS25;
 	private JRadioButton radioButtonFPS29;
 	private JRadioButton radioButtonFPS30;
+	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
+	private JButton btnSetDirection;
+	private JRadioButton radioButtonForward;
+	private JRadioButton radioButtonBackward;
 
 	/**
 	 * Launch the application.
@@ -130,7 +134,7 @@ public class LTCGenerator extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 360, 322);
+		setBounds(100, 100, 360, 379);
 		
 		btnStart = new JButton("Start");		
 		btnStop = new JButton("Stop");
@@ -187,6 +191,15 @@ public class LTCGenerator extends JDialog {
 		
 		radioButtonFPS30 = new JRadioButton("30");
 		buttonGroup.add(radioButtonFPS30);
+		
+		btnSetDirection = new JButton("Set direction");
+		
+		radioButtonForward = new JRadioButton("Forward");
+		radioButtonForward.setSelected(true);
+		buttonGroup_1.add(radioButtonForward);
+		
+		radioButtonBackward = new JRadioButton("Backward");
+		buttonGroup_1.add(radioButtonBackward);
 		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -258,8 +271,16 @@ public class LTCGenerator extends JDialog {
 									.addComponent(btnResume))))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(173)
-							.addComponent(radioButtonFPS25)))
-					.addContainerGap(28, Short.MAX_VALUE))
+							.addComponent(radioButtonFPS25))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(btnSetDirection, GroupLayout.PREFERRED_SIZE, 147, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(radioButtonForward)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(radioButtonBackward)
+							.addGap(10)))
+					.addGap(20))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -320,7 +341,12 @@ public class LTCGenerator extends JDialog {
 						.addComponent(Sn4Minutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(Sn4Hours, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnSn4))
-					.addGap(52))
+					.addGap(18)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnSetDirection)
+						.addComponent(radioButtonForward)
+						.addComponent(radioButtonBackward))
+					.addGap(16))
 		);
 		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartFrames, spinnerStopFrames, Sn1Frames, Sn2Frames, Sn3Frames, Sn4Frames});
 		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartSeconds, spinnerStopSeconds, Sn1Seconds, Sn2Seconds, Sn3Seconds, Sn4Seconds});
@@ -438,6 +464,16 @@ public class LTCGenerator extends JDialog {
 					SendUpd("ltc!rate#29");
 				} else if (radioButtonFPS30.isSelected()) {
 					SendUpd("ltc!rate#30");
+				}
+			}
+		});
+		
+		btnSetDirection.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (radioButtonForward.isSelected()) {
+					SendUpd("ltc!direction#forward");
+				} else if (radioButtonBackward.isSelected()) {
+					SendUpd("ltc!direction#backward");
 				}
 			}
 		});

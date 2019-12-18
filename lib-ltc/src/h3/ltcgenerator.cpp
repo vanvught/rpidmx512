@@ -82,6 +82,9 @@ static const char sResume[] ALIGNED = "resume";
 static const char sRate[] ALIGNED = "rate";
 #define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
 
+static const char sDirection[] ALIGNED = "direction";
+#define DIRECTION_LENGTH (sizeof(sDirection)/sizeof(sDirection[0]) - 1)
+
 enum tUdpPort {
 	UDP_PORT = 0x5443
 };
@@ -106,6 +109,7 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 	m_pStartLtcTimeCode((struct TLtcTimeCode *)pStartLtcTimeCode),
 	m_pStopLtcTimeCode((struct TLtcTimeCode *)pStopLtcTimeCode),
 	m_nFps(0),
+	m_tDirection(LTC_GENERATOR_FORWARD),
 	m_nTimer0Interval(0),
 	m_nButtons(0),
 	m_nHandle(-1),
@@ -314,6 +318,20 @@ void LtcGenerator::ActionGoto(const char *pTimeCode) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
+	DEBUG_ENTRY
+
+	if (memcmp("forward", pTimeCodeDirection, 7) == 0) {
+		m_tDirection = LTC_GENERATOR_FORWARD;
+	} else if (memcmp("backward", pTimeCodeDirection, 8) == 0) {
+		m_tDirection = LTC_GENERATOR_BACKWARD;
+	}
+
+	DEBUG_PRINTF("m_tDirection=%d", (int) m_tDirection);
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -384,6 +402,10 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
 			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
 		}
+	} else if (memcmp(&m_Buffer[4], sDirection, DIRECTION_LENGTH) == 0) {
+		if (((uint32_t) m_nBytesReceived <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
+			ActionSetDirection((const char *)&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
+		}
 	} else {
 		DEBUG_PUTS("Invalid command");
 	}
@@ -422,6 +444,49 @@ void LtcGenerator::Increment(void) {
 	//FIXME Add support for DF
 }
 
+void LtcGenerator::Decrement(void) {
+
+	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
+		return;
+	}
+
+	if (__builtin_expect((!m_bIsStarted), 0)) {
+		return;
+	}
+
+	if (s_tLtcTimeCode.nFrames > 0) {
+		s_tLtcTimeCode.nFrames--;
+	} else {
+		s_tLtcTimeCode.nFrames = m_nFps - 1;
+	}
+
+	if (s_tLtcTimeCode.nFrames == m_nFps - 1) {
+		if (s_tLtcTimeCode.nSeconds > 0) {
+			s_tLtcTimeCode.nSeconds--;
+		} else {
+			s_tLtcTimeCode.nSeconds = 59;
+		}
+
+		if (s_tLtcTimeCode.nSeconds == 59) {
+			if (s_tLtcTimeCode.nMinutes > 0) {
+				s_tLtcTimeCode.nMinutes--;
+			} else {
+				s_tLtcTimeCode.nMinutes = 59;
+			}
+
+			if (s_tLtcTimeCode.nMinutes == 59) {
+				if (s_tLtcTimeCode.nHours > 0) {
+					s_tLtcTimeCode.nHours--;
+				} else {
+					s_tLtcTimeCode.nHours = 23;
+				}
+			}
+		}
+	}
+
+	//FIXME Add support for DF
+}
+
 void LtcGenerator::Update(void) {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&s_tLtcTimeCode);
@@ -441,7 +506,11 @@ void LtcGenerator::Update(void) {
 
 		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&s_tLtcTimeCode);
 
-		Increment();
+		if (__builtin_expect((m_tDirection == LTC_GENERATOR_FORWARD), 1)) {
+			Increment();
+		} else {
+			Decrement();
+		}
 	}
 }
 
