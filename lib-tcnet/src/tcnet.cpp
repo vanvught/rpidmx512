@@ -49,6 +49,8 @@ enum TNodeUnicastPort {
 	NODE_UNICAST_PORT = 65023
 };
 
+TCNet *TCNet::s_pThis = 0;
+
 TCNet::TCNet(TTCNetNodeType tNodeType) :
 	m_tLayer(TCNET_LAYER_UNDEFINED),
 	m_pLTime((uint32_t *)&m_TTCNet.TCNetPacket.Time.LMTime),
@@ -56,6 +58,8 @@ TCNet::TCNet(TTCNetNodeType tNodeType) :
 	m_tTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS),
 	m_fTypeDivider((float) 1000 / 30)
 {
+	s_pThis = this;
+
 	// Fill the static fields for Opt-IN
 	m_tOptIn.ManagementHeader.ProtocolVersionMajor = 3;
 	m_tOptIn.ManagementHeader.ProtocolVersionMinor = 3;
@@ -103,7 +107,6 @@ void TCNet::Stop(void) {
 #endif
 	Network::Get()->End(NODE_BROADCAST_PORT_1);
 	Network::Get()->End(NODE_BROADCAST_PORT_0);
-
 }
 
 void TCNet::HandlePort60000Incoming(void) {
@@ -264,7 +267,7 @@ char TCNet::GetLayerName(TTCNetLayers tLayer) {
 	case TCNET_LAYER_2:
 	case TCNET_LAYER_3:
 	case TCNET_LAYER_4:
-		return (char) TCNET_LAYER_1 +  '1';
+		return (char) tLayer +  '1';
 		break;
 	case TCNET_LAYER_A:
 		return 'A';
@@ -286,27 +289,60 @@ char TCNet::GetLayerName(TTCNetLayers tLayer) {
 	return ' ';
 }
 
-void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
-	m_tTimeCodeType = tType;
-	m_bIsSetTimeCodeType = true;
+TTCNetLayers TCNet::GetLayer(uint8_t nChar) {
+	switch (toupper((int) nChar)) {
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+		return (TTCNetLayers) (nChar - '1');
+		break;
+	case 'A':
+		return TCNET_LAYER_A;
+		break;
+	case 'B':
+		return TCNET_LAYER_B;
+		break;
+	case 'M':
+		return TCNET_LAYER_M;
+		break;
+	case 'C':
+		return TCNET_LAYER_C;
+		break;
+	default:
+		break;
+	}
 
-	switch (m_tTimeCodeType) {
+	return TCNET_LAYER_UNDEFINED;
+}
+
+void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
+
+	switch (tType) {
 	case TCNET_TIMECODE_TYPE_FILM:
 		m_fTypeDivider = (float) 1000 / 24;
+		m_bIsSetTimeCodeType = true;
 		break;
 	case TCNET_TIMECODE_TYPE_EBU_25FPS:
 		m_fTypeDivider = 1000 / 25;
+		m_bIsSetTimeCodeType = true;
 		break;
 	case TCNET_TIMECODE_TYPE_DF:
 		m_fTypeDivider = (float) 1000 / (float) 29.97;
+		m_bIsSetTimeCodeType = true;
 		break;
 	case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
 		m_fTypeDivider = (float) 1000 / 30;
+		m_bIsSetTimeCodeType = true;
 		break;
 	default:
 		m_fTypeDivider = (float) 1000 / 30;
 		m_tTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
 		m_bIsSetTimeCodeType = false;
 		break;
+	}
+
+	if (m_bIsSetTimeCodeType) {
+		m_tTimeCodeType = tType;
 	}
 }

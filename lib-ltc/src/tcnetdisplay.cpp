@@ -1,5 +1,5 @@
 /**
- * @file tcnetreader.h
+ * @file tcnetdisplay.cpp
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,36 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_TCNETREADER_H_
-#define H3_TCNETREADER_H_
+#include "tcnetdisplay.h"
 
-#include "tcnettimecode.h"
+#include "tcnet.h"
+#include "display.h"
 
-#include "midi.h"
-#include "ltc.h"
+static const char sFps[4][3] = { "24", "25", "29", "30" };
 
-class TCNetReader : public TCNetTimeCode {
-public:
-	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~TCNetReader(void);
+void TCNetDisplay::Show(void) {
+	Display::Get()->SetCursorPos(6,3);
 
-	void Start(void);
-	void Stop(void);
+	if (TCNet::Get()->GetLayer() != TCNET_LAYER_UNDEFINED) {
+		Display::Get()->PutChar('L');
+		Display::Get()->PutChar(TCNet::GetLayerName(TCNet::Get()->GetLayer()));
+		Display::Get()->PutString("   ");
+	} else {
+		Display::Get()->PutString("SMPTE");
+	}
 
-	void Run(void);
-
-	void Handler(const struct TTCNetTimeCode *pTimeCode);
-
-private:
-	void HandleUdpRequest(void);
-
-private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious;
-	int m_nHandle;
-	alignas(uint32_t) uint8_t m_Buffer[64];
-	int m_nBytesReceived;
-};
-
-#endif /* H3_TCNETREADER_H_ */
+	Display::Get()->PutString(" F");
+	Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
+}

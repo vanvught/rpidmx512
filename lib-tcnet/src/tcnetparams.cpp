@@ -68,7 +68,7 @@ bool TCNetParams::Load(void) {
 	return true;
 }
 
-void TCNetParams::Load(const char* pBuffer, uint32_t nLength) {
+void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 	assert(m_pTCNetParamsStore != 0);
@@ -86,7 +86,7 @@ void TCNetParams::Load(const char* pBuffer, uint32_t nLength) {
 	m_pTCNetParamsStore->Update(&m_tTTCNetParams);
 }
 
-void TCNetParams::callbackFunction(const char* pLine) {
+void TCNetParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
 	uint8_t len;
@@ -102,7 +102,7 @@ void TCNetParams::callbackFunction(const char* pLine) {
 	len = 1;
 	ch = ' ';
 	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &len) == SSCAN_OK) {
-		m_tTTCNetParams.nLayer = (uint8_t) GetLayer((uint8_t) ch);
+		m_tTTCNetParams.nLayer = (uint8_t) TCNet::GetLayer((uint8_t) ch);
 		if (m_tTTCNetParams.nLayer != TCNET_LAYER_UNDEFINED) {
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_LAYER;
 		} else {
@@ -188,31 +188,4 @@ void TCNetParams::staticCallbackFunction(void *p, const char *s) {
 
 bool TCNetParams::isMaskSet(uint32_t nMask) const {
 	return (m_tTTCNetParams.nSetList & nMask) == nMask;
-}
-
-TTCNetLayers TCNetParams::GetLayer(uint8_t nChar) {
-	switch (toupper((int) nChar)) {
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-		return (TTCNetLayers) (nChar - (uint8_t) '1');
-		break;
-	case 'A':
-		return TCNET_LAYER_A;
-		break;
-	case 'B':
-		return TCNET_LAYER_B;
-		break;
-	case 'M':
-		return TCNET_LAYER_M;
-		break;
-	case 'C':
-		return TCNET_LAYER_C;
-		break;
-	default:
-		break;
-	}
-
-	return TCNET_LAYER_UNDEFINED;
 }

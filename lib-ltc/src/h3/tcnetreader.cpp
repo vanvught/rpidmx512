@@ -27,8 +27,14 @@
 #include <string.h>
 #include <assert.h>
 
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
 #include "h3/tcnetreader.h"
+#include "tcnet.h"
 #include "timecodeconst.h"
+#include "tcnetdisplay.h"
 
 #include "c/led.h"
 
@@ -45,6 +51,18 @@
 //
 #include "h3/ltcoutputs.h"
 
+#include "network.h"
+
+static const char sLayer[] ALIGNED = "layer#";
+#define LAYER_LENGTH (sizeof(sLayer)/sizeof(sLayer[0]) - 1)
+
+static const char sType[] ALIGNED = "type#";
+#define TYPE_LENGTH (sizeof(sType)/sizeof(sType[0]) - 1)
+
+enum TUdpPort {
+	UDP_PORT = 0x0ACA
+};
+
 // IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
@@ -57,7 +75,9 @@ static void irq_timer0_update_handler(uint32_t clo) {
 
 TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nTimeCodePrevious(0xFF)
+	m_nTimeCodePrevious(0xFF),
+	m_nHandle(-1),
+	m_nBytesReceived(0)
 {
 	assert(m_ptLtcDisabledOutputs != 0);
 }
@@ -77,6 +97,10 @@ void TCNetReader::Start(void) {
 	LtcOutputs::Get()->Init();
 
 	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+
+	// UDP Request
+	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	assert(m_nHandle != -1);
 }
 
 void TCNetReader::Stop(void) {
@@ -110,6 +134,76 @@ void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
 	}
 }
 
+void TCNetReader::HandleUdpRequest(void) {
+	uint32_t nIPAddressFrom;
+	uint16_t nForeignPort;
+
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((m_nBytesReceived < (int) 13), 1)) {
+		return;
+	}
+
+	if (__builtin_expect((memcmp("tcnet!", m_Buffer, 6) != 0), 0)) {
+		return;
+	}
+
+	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
+		DEBUG_PUTS("\'\\n\'");
+		m_nBytesReceived--;
+	}
+
+	debug_dump((void *)m_Buffer, m_nBytesReceived);
+
+	if ((m_nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&m_Buffer[6], sLayer, LAYER_LENGTH) == 0)) {
+		const TTCNetLayers tLayer = TCNet::GetLayer(m_Buffer[6 + LAYER_LENGTH]);
+
+		TCNet::Get()->SetLayer(tLayer);
+		TCNetDisplay::Show();
+
+		DEBUG_PRINTF("tcnet!layer#%c -> %d", m_pBuffer[6 + LAYER_LENGTH + 1], (int) tLayer);
+
+		return;
+	}
+
+	if ((m_nBytesReceived == (6 + TYPE_LENGTH + 2)) && (memcmp(&m_Buffer[6], sType, TYPE_LENGTH) == 0)) {
+		if (m_Buffer[6 + TYPE_LENGTH] == '2') {
+
+			const uint32_t nValue = 20 + m_Buffer[6 + TYPE_LENGTH + 1] - '0';
+
+			switch (nValue) {
+			case 24:
+				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_FILM);
+				TCNetDisplay::Show();
+				break;
+			case 25:
+				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_EBU_25FPS);
+				TCNetDisplay::Show();
+				break;
+			case 29:
+				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_DF);
+				TCNetDisplay::Show();
+				break;;
+			default:
+				break;
+			}
+
+			DEBUG_PRINTF("tcnet!type#%d", nValue);
+
+			return;
+		}
+
+		if ((m_Buffer[6 + TYPE_LENGTH] == '3') && (m_Buffer[6 + TYPE_LENGTH + 1] == '0')) {
+			TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
+			TCNetDisplay::Show();
+
+			DEBUG_PUTS("tcnet!type#30");
+
+			return;
+		}
+	}
+}
+
 void TCNetReader::Run(void) {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
 
@@ -120,4 +214,6 @@ void TCNetReader::Run(void) {
 		LtcOutputs::Get()->ShowSysTime();
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);
 	}
+
+	HandleUdpRequest();
 }

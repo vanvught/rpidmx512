@@ -67,9 +67,6 @@ public:
 
 	void Dump(void);
 
-private:
-	TTCNetLayers GetLayer(uint8_t nChar);
-
 public:
     static void staticCallbackFunction(void *p, const char *s);
 

@@ -1,5 +1,5 @@
 /**
- * @file tcnetreader.h
+ * @file tcnetdisplay.h
  *
  */
 /* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,36 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_TCNETREADER_H_
-#define H3_TCNETREADER_H_
+#ifndef TCNETDISPLAY_H_
+#define TCNETDISPLAY_H_
 
-#include "tcnettimecode.h"
-
-#include "midi.h"
-#include "ltc.h"
-
-class TCNetReader : public TCNetTimeCode {
+class TCNetDisplay {
 public:
-	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~TCNetReader(void);
-
-	void Start(void);
-	void Stop(void);
-
-	void Run(void);
-
-	void Handler(const struct TTCNetTimeCode *pTimeCode);
-
-private:
-	void HandleUdpRequest(void);
-
-private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious;
-	int m_nHandle;
-	alignas(uint32_t) uint8_t m_Buffer[64];
-	int m_nBytesReceived;
+	static void Show(void);
 };
 
-#endif /* H3_TCNETREADER_H_ */
+#endif /* TCNETDISPLAY_H_ */

@@ -27,15 +27,18 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <tcnetdisplay.h>
 
 #include "oscserver.h"
 #include "osc.h"
+#include "oscmessage.h"
 
 #include "network.h"
 
 #include "h3/ltcgenerator.h"
 #include "h3/systimereader.h"
 
+#include "tcnet.h"
 #include "debug.h"
 
 #ifndef ALIGNED
@@ -46,7 +49,7 @@ enum TOscServerPort {
 	OSCSERVER_PORT_DEFAULT_INCOMING = 8000
 };
 
-#define OSCSERVER_MAX_BUFFER 		4096
+#define OSCSERVER_MAX_BUFFER 		1024
 
 static const char sStart[] ALIGNED = "start";
 #define START_LENGTH (sizeof(sStart)/sizeof(sStart[0]) - 1)
@@ -68,6 +71,18 @@ static const char sGoto[] ALIGNED = "goto";
 
 static const char sDirection[] ALIGNED = "direction";
 #define DIRECTION_LENGTH (sizeof(sDirection)/sizeof(sDirection[0]) - 1)
+
+static const char sPitch[] ALIGNED = "pitch";
+#define PITCH_LENGTH (sizeof(sPitch)/sizeof(sPitch[0]) - 1)
+
+static const char sTCNet[] ALIGNED = "tcnet/";
+#define TCNET_LENGTH (sizeof(sTCNet)/sizeof(sTCNet[0]) - 1)
+
+static const char sTCNetLayer[] ALIGNED = "layer/";
+#define TCNETLAYER_LENGTH (sizeof(sTCNetLayer)/sizeof(sTCNetLayer[0]) - 1)
+
+static const char sTCNetType[] ALIGNED = "type";
+#define TCNETTYPE_LENGTH (sizeof(sTCNetType)/sizeof(sTCNetType[0]) - 1)
 
 // "hh/mm/ss/ff" -> length = 11
 #define VALUE_LENGTH		11
@@ -114,7 +129,17 @@ void OSCServer::Run(void) {
 		DEBUG_PUTS(m_pBuffer);
 		DEBUG_PRINTF("%d,%d %s", (int) nCommandLength, m_nPathLength, &m_pBuffer[m_nPathLength]);
 
-		if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], sPitch, PITCH_LENGTH) == 0) {
+			OSCMessage Msg(m_pBuffer, nBytesReceived);
+
+			const float fValue = Msg.GetFloat(0);
+
+			DEBUG_PRINTF("fValue=%f", fValue);
+
+			LtcGenerator::Get()->ActionSetPitch(fValue);
+
+			DEBUG_PUTS("ActionSetPitch");
+		} else if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
 
 				LtcGenerator::Get()->ActionStart();
@@ -194,6 +219,53 @@ void OSCServer::Run(void) {
 				LtcGenerator::Get()->ActionSetDirection((const char *)&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
+			}
+		} else if (memcmp(&m_pBuffer[m_nPathLength], sTCNet, TCNET_LENGTH) == 0) {
+			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH + 1)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], sTCNetLayer, TCNETLAYER_LENGTH) == 0) {
+					const uint32_t nOffset = m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH;
+					const TTCNetLayers tLayer = TCNet::GetLayer(m_pBuffer[nOffset]);
+
+					TCNet::Get()->SetLayer(tLayer);
+					TCNetDisplay::Show();
+
+					DEBUG_PRINTF("*/tcnet/layer/%c -> %d", m_pBuffer[nOffset], (int) tLayer);
+
+					return;
+				}
+			}
+
+			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETTYPE_LENGTH)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], sTCNetType, TCNETTYPE_LENGTH) == 0) {
+					OSCMessage Msg(m_pBuffer, nBytesReceived);
+
+					const int nValue = Msg.GetInt(0);
+
+					switch (nValue) {
+					case 24:
+						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_FILM);
+						TCNetDisplay::Show();
+						break;
+					case 25:
+						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_EBU_25FPS);
+						TCNetDisplay::Show();
+						break;
+					case 29:
+						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_DF);
+						TCNetDisplay::Show();
+						break;
+					case 30:
+						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
+						TCNetDisplay::Show();
+						break;
+					default:
+						break;
+					}
+
+					DEBUG_PRINTF("*/tcnet/type -> %d", nValue);
+
+					return;
+				}
 			}
 		}
 	}

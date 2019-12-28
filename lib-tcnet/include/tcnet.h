@@ -93,6 +93,11 @@ public:
 
 public:
 	static char GetLayerName(TTCNetLayers tLayer);
+	static TTCNetLayers GetLayer(uint8_t nChar);
+
+	static TCNet *Get(void) {
+		return s_pThis;
+	}
 
 private:
 	void HandlePort60000Incoming(void);
@@ -113,13 +118,14 @@ private:
 	uint32_t m_nPreviousMillis;
 
 	TTCNetLayers m_tLayer;
-	uint32_t* m_pLTime;
+	uint32_t *m_pLTime;
 
 	TCNetTimeCode *m_pTCNetTimeCode;
 	TTCNetTimeCodeType m_tTimeCodeType;
 	bool m_bIsSetTimeCodeType;
 	float m_fTypeDivider;
 
+	static TCNet *s_pThis;
 };
 
 #endif /* TCNET_H_ */
