@@ -19,7 +19,9 @@
 
 package org.orangepi.dmx;
 
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -28,17 +30,20 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JRadioButton;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import java.awt.Component;
-import javax.swing.JRadioButton;
-import javax.swing.ButtonGroup;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class LTCGenerator extends JDialog {
 	private static final long serialVersionUID = -8623371832596143765L;
@@ -93,6 +98,9 @@ public class LTCGenerator extends JDialog {
 	private JButton btnSetDirection;
 	private JRadioButton radioButtonForward;
 	private JRadioButton radioButtonBackward;
+	private JSlider sliderPitch;
+	private JTextField textFieldPitchValue;
+	private JButton btnSetPitch;
 
 	/**
 	 * Launch the application.
@@ -134,7 +142,7 @@ public class LTCGenerator extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 360, 379);
+		setBounds(100, 100, 359, 468);
 		
 		btnStart = new JButton("Start");		
 		btnStop = new JButton("Stop");
@@ -200,6 +208,24 @@ public class LTCGenerator extends JDialog {
 		
 		radioButtonBackward = new JRadioButton("Backward");
 		buttonGroup_1.add(radioButtonBackward);
+		
+		sliderPitch = new JSlider();
+		sliderPitch.setPaintLabels(true);
+		sliderPitch.setToolTipText("Pitch control");
+		sliderPitch.setMinorTickSpacing(1);
+		sliderPitch.setPaintTicks(true);
+		sliderPitch.setSnapToTicks(true);
+		sliderPitch.setMinimum(-100);
+		sliderPitch.setValue(0);
+		
+		btnSetPitch = new JButton("Set Pitch");
+		
+		textFieldPitchValue = new JTextField();
+		textFieldPitchValue.setBackground(SystemColor.window);
+		textFieldPitchValue.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldPitchValue.setEditable(false);
+		textFieldPitchValue.setText("0%");
+		textFieldPitchValue.setColumns(5);
 		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -272,15 +298,24 @@ public class LTCGenerator extends JDialog {
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(173)
 							.addComponent(radioButtonFPS25))
-						.addGroup(groupLayout.createSequentialGroup()
+						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
 							.addContainerGap()
-							.addComponent(btnSetDirection, GroupLayout.PREFERRED_SIZE, 147, Short.MAX_VALUE)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(radioButtonForward)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(radioButtonBackward)
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addComponent(sliderPitch, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+								.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+									.addComponent(btnSetDirection, GroupLayout.PREFERRED_SIZE, 147, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(radioButtonForward)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(radioButtonBackward)))
 							.addGap(10)))
 					.addGap(20))
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(btnSetPitch)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(textFieldPitchValue, GroupLayout.PREFERRED_SIZE, 92, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(157, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -346,13 +381,19 @@ public class LTCGenerator extends JDialog {
 						.addComponent(btnSetDirection)
 						.addComponent(radioButtonForward)
 						.addComponent(radioButtonBackward))
-					.addGap(16))
+					.addGap(18)
+					.addComponent(sliderPitch, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnSetPitch)
+						.addComponent(textFieldPitchValue, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(19))
 		);
-		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartFrames, spinnerStopFrames, Sn1Frames, Sn2Frames, Sn3Frames, Sn4Frames});
-		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartSeconds, spinnerStopSeconds, Sn1Seconds, Sn2Seconds, Sn3Seconds, Sn4Seconds});
-		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartMinutes, spinnerStopMinutes, Sn1Minutes, Sn2Minutes, Sn3Minutes, Sn4Minutes});
+		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {btnSn1, btnSn2, btnSn3, btnSn4, btnSetRate, btnSetStart, btnSetStop});
 		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartHours, spinnerStopHours, Sn1Hours, Sn2Hours, Sn3Hours, Sn4Hours});
-		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {btnSetStart, btnSetStop, btnSn1, btnSn2, btnSn3, btnSn4, btnSetRate});
+		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartMinutes, spinnerStopMinutes, Sn1Minutes, Sn2Minutes, Sn3Minutes, Sn4Minutes});
+		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartSeconds, spinnerStopSeconds, Sn1Seconds, Sn2Seconds, Sn3Seconds, Sn4Seconds});
+		groupLayout.linkSize(SwingConstants.HORIZONTAL, new Component[] {spinnerStartFrames, spinnerStopFrames, Sn1Frames, Sn2Frames, Sn3Frames, Sn4Frames});
 		
 		getContentPane().setLayout(groupLayout);
 	}
@@ -475,6 +516,20 @@ public class LTCGenerator extends JDialog {
 				} else if (radioButtonBackward.isSelected()) {
 					SendUpd("ltc!direction#backward");
 				}
+			}
+		});
+		
+		sliderPitch.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				int prc = sliderPitch.getValue();
+				textFieldPitchValue.setText(Integer.toString(prc) + "%");
+			}
+		});
+		
+		btnSetPitch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int prc = sliderPitch.getValue();
+				SendUpd("ltc!pitch#" + Integer.toString(prc));
 			}
 		});
 	}

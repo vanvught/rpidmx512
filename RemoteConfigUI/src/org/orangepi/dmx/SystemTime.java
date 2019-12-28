@@ -53,7 +53,7 @@ public class SystemTime extends JDialog {
 		
 		 try {
 			socket = new DatagramSocket();
-			setTitle("LTC Node " + IPAddressLtcNode.getHostAddress());
+			setTitle("System-Time: LTC Node " + IPAddressLtcNode.getHostAddress());
 		} catch (SocketException e) {
 			setTitle("Error: LTC Node " + IPAddressLtcNode.getHostAddress());
 			e.printStackTrace();

@@ -116,6 +116,7 @@ public class WS28xxDisplay extends JDialog {
 		textMessageColour.setColumns(10);
 		
 		sliderMaster = new JSlider();
+		sliderMaster.setPaintTicks(true);
 		sliderMaster.setMinimum(1);
 		sliderMaster.setToolTipText("Master brightness");
 		sliderMaster.setValue(255);

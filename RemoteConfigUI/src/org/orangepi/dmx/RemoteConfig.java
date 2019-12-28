@@ -100,6 +100,7 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmWsxxDisplay;
 	private JMenu mnNewMenu;
 	private JMenuItem mntmSytemTime;
+	private JMenuItem mntmNewMenuItem;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -409,6 +410,7 @@ public class RemoteConfig extends JFrame {
 			}
 		});
 		
+		
 		mntmSytemTime.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -429,6 +431,30 @@ public class RemoteConfig extends JFrame {
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "No node selected for System Time to run.");
+				}
+			}
+		});
+		
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {	
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							TCNet client = new TCNet(pi.getAddress());
+							client.Show();
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for TCNet to run.");
 				}
 			}
 		});
@@ -493,17 +519,19 @@ public class RemoteConfig extends JFrame {
 		
 		mntmLtcGenerator = new JMenuItem("Generator");
 		mnNewMenu.add(mntmLtcGenerator);
-		
-				mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
+		mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
 		
 		mntmSytemTime = new JMenuItem("System time");
-
 		mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
 		mnNewMenu.add(mntmSytemTime);
 		
+		mntmNewMenuItem = new JMenuItem("TCNet");
+		mntmNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
+		mnNewMenu.add(mntmNewMenuItem);
+		
 		mntmWsxxDisplay = new JMenuItem("WS28xx Display");
-		mnNewMenu.add(mntmWsxxDisplay);
 		mntmWsxxDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.ALT_MASK));
+		mnNewMenu.add(mntmWsxxDisplay);
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
