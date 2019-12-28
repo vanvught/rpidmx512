@@ -31,6 +31,7 @@ class LtcParamsConst {
 public:
 	alignas(uint32_t) static const char FILE_NAME[];
 	alignas(uint32_t) static const char SOURCE[];
+	alignas(uint32_t) static const char AUTO_START[];
 	alignas(uint32_t) static const char DISABLE_DISPLAY[];
 	alignas(uint32_t) static const char DISABLE_MAX7219[];
 	alignas(uint32_t) static const char DISABLE_MIDI[];
@@ -53,9 +54,6 @@ public:
 	alignas(uint32_t) static const char STOP_SECOND[];
 	alignas(uint32_t) static const char STOP_MINUTE[];
 	alignas(uint32_t) static const char STOP_HOUR[];
-#if 0
-	alignas(uint32_t) static const char SET_DATE[];
-#endif
 	alignas(uint32_t) static const char OSC_ENABLE[];
 	alignas(uint32_t) static const char OSC_PORT[];
 	alignas(uint32_t) static const char WS28XX_ENABLE[];

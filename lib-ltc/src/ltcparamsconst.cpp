@@ -28,6 +28,7 @@
 
 alignas(uint32_t) const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
 alignas(uint32_t) const char LtcParamsConst::SOURCE[] = "source";
+alignas(uint32_t) const char LtcParamsConst::AUTO_START[] = "auto_start";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
 alignas(uint32_t) const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
@@ -50,9 +51,6 @@ alignas(uint32_t) const char LtcParamsConst::STOP_FRAME[] = "stop_frame";
 alignas(uint32_t) const char LtcParamsConst::STOP_SECOND[] = "stop_second";
 alignas(uint32_t) const char LtcParamsConst::STOP_MINUTE[] = "stop_minute";
 alignas(uint32_t) const char LtcParamsConst::STOP_HOUR[] = "stop_hour";
-#if 0
-alignas(uint32_t) const char LtcParamsConst::SET_DATE[] = "set_date";
-#endif
 alignas(uint32_t) const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";
 alignas(uint32_t) const char LtcParamsConst::OSC_PORT[] = "osc_port";
 alignas(uint32_t) const char LtcParamsConst::WS28XX_ENABLE[] = "ws28xx_enable";

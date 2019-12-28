@@ -30,9 +30,15 @@
 
 #include "ltc.h"
 
-enum LtcGeneratorDirection {
+enum TLtcGeneratorDirection {
 	LTC_GENERATOR_FORWARD = 0,
 	LTC_GENERATOR_BACKWARD
+};
+
+enum TLtcGeneratorPitch {
+	LTC_GENERATOR_NORMAL = 0,
+	LTC_GENERATOR_FASTER,
+	LTC_GENERATOR_SLOWER
 };
 
 class LtcGenerator {
@@ -56,6 +62,8 @@ public:
 	void ActionSetRate(const char *pTimeCodeRate);
 	void ActionGoto(const char *pTimeCode);
 	void ActionSetDirection(const char *pTimeCodeDirection);
+	void ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize);
+	void ActionSetPitch(float fTimeCodePitch);
 
 	static LtcGenerator* Get(void) {
 		return s_pThis;
@@ -67,12 +75,17 @@ private:
 	void Update(void);
 	void Increment(void);
 	void Decrement(void);
+	bool PitchControl(void);
 
 private:
 	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
 	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
 	uint8_t m_nFps;
-	LtcGeneratorDirection m_tDirection;
+	TLtcGeneratorDirection m_tDirection;
+	float m_fPitchControl;
+	uint32_t m_nPitchTicker;
+	uint32_t m_nPitchPrevious;
+	TLtcGeneratorPitch m_tPitch;
 	uint32_t m_nTimer0Interval;
 	uint32_t m_nButtons;
 	int m_nHandle;

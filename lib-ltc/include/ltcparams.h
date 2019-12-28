@@ -45,7 +45,7 @@ enum TLtcParamsMaskDisabledOutputs {
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
-	uint8_t nReserved1;
+	uint8_t nAutoStart;
 	uint8_t nReserved2;
 	uint8_t nDisabledOutputs;
 	uint8_t nShowSysTime;
@@ -71,7 +71,7 @@ struct TLtcParams {
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),
-	LTC_PARAMS_MASK_RESERVED1 = (1 << 1),
+	LTC_PARAMS_MASK_AUTO_START = (1 << 1),
 	LTC_PARAMS_MASK_RESERVED2 = (1 << 2),
 	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3),
 	LTC_PARAMS_MASK_SHOW_SYSTIME = (1 << 4),
@@ -122,6 +122,10 @@ public:
 
 	const char *GetSourceType(enum TLtcReaderSource tSource);
 	enum TLtcReaderSource GetSourceType(const char *pType);
+
+	bool IsAutoStart(void) {
+		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LTC_PARAMS_MASK_AUTO_START));
+	}
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 

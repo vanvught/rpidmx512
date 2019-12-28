@@ -99,7 +99,7 @@ SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ui
 SystimeReader::~SystimeReader(void) {
 }
 
-void SystimeReader::Start(void) {
+void SystimeReader::Start(bool bAutoStart) {
 	// UDP Request
 	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
@@ -114,6 +114,10 @@ void SystimeReader::Start(void) {
 	LtcOutputs::Get()->Init();
 
 	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+
+	if (bAutoStart) {
+		ActionStart();
+	}
 }
 
 void SystimeReader::Print(void) {

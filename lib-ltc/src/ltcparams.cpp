@@ -128,6 +128,16 @@ void LtcParams::callbackFunction(const char* pLine) {
 		m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SOURCE;
 	}
 
+	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, &value8) == SSCAN_OK) {
+		if (value8 != 0) {
+			m_tLtcParams.nAutoStart = 1;
+			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_AUTO_START;
+		} else {
+			m_tLtcParams.nAutoStart = 0;
+			m_tLtcParams.nSetList &= ~LTC_PARAMS_MASK_AUTO_START;
+		}
+	}
+
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LTC_PARAMS_DISABLE_DISPLAY);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_MAX7219, LTC_PARAMS_DISABLE_MAX7219);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_LTC, LTC_PARAMS_DISABLE_LTC);
@@ -326,6 +336,10 @@ void LtcParams::Dump(void) {
 
 	if (isMaskSet(LTC_PARAMS_MASK_SOURCE)) {
 		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
+	}
+
+	if (isMaskSet(LTC_PARAMS_MASK_AUTO_START)) {
+		printf(" %s=%d\n", LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart);
 	}
 
 	if (isMaskSet(LTC_PARAMS_MASK_DISABLED_OUTPUTS)) {

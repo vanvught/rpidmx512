@@ -85,7 +85,10 @@ static const char sRate[] ALIGNED = "rate";
 static const char sDirection[] ALIGNED = "direction";
 #define DIRECTION_LENGTH (sizeof(sDirection)/sizeof(sDirection[0]) - 1)
 
-enum tUdpPort {
+static const char sPitch[] ALIGNED = "pitch";
+#define PITCH_LENGTH (sizeof(sPitch)/sizeof(sPitch[0]) - 1)
+
+enum TUdpPort {
 	UDP_PORT = 0x5443
 };
 
@@ -103,6 +106,30 @@ static void irq_timer0_handler(uint32_t clo) {
 	bTimeCodeAvailable = true;
 }
 
+static int32_t atoi(const char *buffer, uint32_t size) {
+	assert(buffer != 0);
+	assert(size <= 4); // -100
+
+	char *p = (char *) buffer;
+	int32_t sign = 1;
+	int32_t res = 0;
+
+	if (*p == '-') {
+		sign = -1;
+		size--;
+		p++;
+	}
+
+	for (; (size > 0) && (*p >= '0' && *p <= '9'); size--) {
+		res = res * 10 + *p - '0';
+		p++;
+	}
+
+	DEBUG_PRINTF("sign * res = %d", sign * res);
+
+	return sign * res;
+}
+
 LtcGenerator *LtcGenerator::s_pThis = 0;
 
 LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
@@ -110,6 +137,10 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 	m_pStopLtcTimeCode((struct TLtcTimeCode *)pStopLtcTimeCode),
 	m_nFps(0),
 	m_tDirection(LTC_GENERATOR_FORWARD),
+	m_fPitchControl(0),
+	m_nPitchTicker(1),
+	m_nPitchPrevious(0),
+	m_tPitch(LTC_GENERATOR_FASTER),
 	m_nTimer0Interval(0),
 	m_nButtons(0),
 	m_nHandle(-1),
@@ -332,6 +363,46 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize) {
+	DEBUG_ENTRY
+
+	debug_dump((void *)pTimeCodePitch, nSize);
+
+	const float f = (float) atoi(pTimeCodePitch, nSize) / 100;
+
+	DEBUG_PRINTF("f=%f", f);
+
+	ActionSetPitch(f);
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
+	DEBUG_ENTRY
+
+	if ((fTimeCodePitch < -1) || (fTimeCodePitch > 1)) {
+		return;
+	}
+
+	if (fTimeCodePitch < 0) {
+		m_tPitch = LTC_GENERATOR_SLOWER;
+		m_fPitchControl = -fTimeCodePitch;
+	} else if (fTimeCodePitch == 0) {
+		m_tPitch = LTC_GENERATOR_NORMAL;
+		return;
+	} else {
+		m_tPitch = LTC_GENERATOR_FASTER;
+		m_fPitchControl = fTimeCodePitch;
+	}
+
+	m_nPitchPrevious = 0;
+	m_nPitchTicker = 1;
+
+	DEBUG_PRINTF("m_fPitchControl=%f, m_tPitch=%d", m_fPitchControl, (int) m_tPitch);
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::HandleButtons(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
@@ -360,18 +431,13 @@ void LtcGenerator::HandleUdpRequest(void) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("ltc", m_Buffer, 3) != 0), 0)) {
+	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
 		return;
 	}
 
 	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
-	}
-
-	if (m_Buffer[3] != '!') {
-		DEBUG_PUTS("Invalid command");
-		return;
 	}
 
 	if (memcmp(&m_Buffer[4], sStart, START_LENGTH) == 0) {
@@ -405,6 +471,10 @@ void LtcGenerator::HandleUdpRequest(void) {
 	} else if (memcmp(&m_Buffer[4], sDirection, DIRECTION_LENGTH) == 0) {
 		if (((uint32_t) m_nBytesReceived <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
 			ActionSetDirection((const char *)&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
+		}
+	} else if (memcmp(&m_Buffer[4], sPitch, PITCH_LENGTH) == 0) {
+		if (((uint32_t) m_nBytesReceived <= (4 + PITCH_LENGTH + 1 + 4)) && (m_Buffer[4 + PITCH_LENGTH] == '#')) {
+			ActionSetPitch((const char *)&m_Buffer[(4 + PITCH_LENGTH + 1)], m_nBytesReceived - (4 + PITCH_LENGTH + 1));
 		}
 	} else {
 		DEBUG_PUTS("Invalid command");
@@ -487,6 +557,18 @@ void LtcGenerator::Decrement(void) {
 	//FIXME Add support for DF
 }
 
+bool LtcGenerator::PitchControl(void) {
+	const uint32_t p = (m_fPitchControl * m_nPitchTicker); // / 100;
+
+	const uint32_t r = (p - m_nPitchPrevious);
+
+	m_nPitchPrevious = p;
+
+	m_nPitchTicker++;
+
+	return (r != 0);
+}
+
 void LtcGenerator::Update(void) {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&s_tLtcTimeCode);
@@ -507,9 +589,35 @@ void LtcGenerator::Update(void) {
 		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&s_tLtcTimeCode);
 
 		if (__builtin_expect((m_tDirection == LTC_GENERATOR_FORWARD), 1)) {
-			Increment();
-		} else {
-			Decrement();
+			if (__builtin_expect((m_tPitch == LTC_GENERATOR_NORMAL), 1)) {
+				Increment();
+			} else {
+				if (m_tPitch == LTC_GENERATOR_FASTER) {
+					Increment();
+					if (PitchControl()) {
+						Increment();
+					}
+				} else {
+					if (!PitchControl()) {
+						Increment();
+					}
+				}
+			}
+		} else { // LTC_GENERATOR_BACKWARD
+			if (__builtin_expect((m_tPitch == LTC_GENERATOR_NORMAL), 1)) {
+				Decrement();
+			} else {
+				if (m_tPitch == LTC_GENERATOR_FASTER) {
+					Decrement();
+					if (PitchControl()) {
+						Decrement();
+					}
+				} else {
+					if (!PitchControl()) {
+						Decrement();
+					}
+				}
+			}
 		}
 	}
 }

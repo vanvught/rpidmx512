@@ -63,8 +63,8 @@ static const char sDisplayMSG[] ALIGNED = "showmsg";
 #define DMSG_LENGTH 		(sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
 #define DMSG_SIZE			(11)
 
-enum tUdpPort {
-	WS28XX_UDP_PORT = 0x2812
+enum TUdpPort {
+	UDP_PORT = 0x2812
 };
 
 DisplayWS28xx *DisplayWS28xx::s_pThis = 0;
@@ -113,7 +113,7 @@ void DisplayWS28xx::Init(uint8_t nIntensity) {
 	SetRGB(m_aColour[WS28XX_COLOUR_INDEX_COLON], WS28XX_COLOUR_INDEX_COLON);
 	SetRGB(m_aColour[WS28XX_COLOUR_INDEX_MESSAGE], WS28XX_COLOUR_INDEX_MESSAGE);
 
-	m_nHandle = Network::Get()->Begin(WS28XX_UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP_PORT);
 	assert(m_nHandle != -1);
 }
 
@@ -226,18 +226,13 @@ void DisplayWS28xx::Run() {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("7seg", m_Buffer, 4) != 0), 0)) {
+	if (__builtin_expect((memcmp("7seg!", m_Buffer, 5) != 0), 0)) {
 		return;
 	}
 
 	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
-	}
-
-	if (m_Buffer[4] != '!') {
-		DEBUG_PUTS("Invalid command");
-		return;
 	}
 
 	if (memcmp(&m_Buffer[5], sDisplayMSG, DMSG_LENGTH) == 0) {

@@ -53,6 +53,7 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
+	builder.Add(LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart, isMaskSet(LTC_PARAMS_MASK_AUTO_START));
 
 	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
 	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
@@ -80,8 +81,6 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	builder.Add(LtcParamsConst::STOP_MINUTE,  m_tLtcParams.nStopMinute, isMaskSet(LTC_PARAMS_MASK_STOP_MINUTE));
 	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
-	//builder.Add(LtcParamsConst::SET_DATE, (uint32_t) m_tLtcParams.nSetDate, isMaskSet(LTC_PARAMS_MASK_SET_DATE));
-
 
 	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
@@ -93,7 +92,6 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
 void LtcParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -106,6 +104,4 @@ void LtcParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }
