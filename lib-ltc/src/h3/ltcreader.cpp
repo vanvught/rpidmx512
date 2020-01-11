@@ -54,6 +54,7 @@
 
 // Output
 #include "artnetnode.h"
+#include "tcnet.h"
 #include "rtpmidi.h"
 #include "midi.h"
 //
@@ -288,7 +289,7 @@ void LtcReader::Run(void) {
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tMidiTimeCode);
+			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *) &s_tMidiTimeCode);
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {

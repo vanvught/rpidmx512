@@ -2,7 +2,7 @@
  * @file ltc.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,7 @@
 
 #include "ltc.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char aTypes[5][TC_TYPE_MAX_LENGTH + 1] ALIGNED =
+static const char aTypes[5][TC_TYPE_MAX_LENGTH + 1] __attribute__ ((aligned (4))) =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
 
@@ -82,16 +78,16 @@ static void itoa_base10(uint32_t arg, char *buf) {
 }
 
 void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode) {
-	itoa_base10(ptLtcTimeCode->nHours, (char *) &pTimeCode[0]);
-	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &pTimeCode[3]);
-	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &pTimeCode[6]);
-	itoa_base10(ptLtcTimeCode->nFrames, (char *) &pTimeCode[9]);
+	itoa_base10(ptLtcTimeCode->nHours, (char *) &pTimeCode[LTC_TC_INDEX_HOURS]);
+	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &pTimeCode[LTC_TC_INDEX_MINUTES]);
+	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &pTimeCode[LTC_TC_INDEX_SECONDS]);
+	itoa_base10(ptLtcTimeCode->nFrames, (char *) &pTimeCode[LTC_TC_INDEX_FRAMES]);
 }
 
 void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
-	itoa_base10(pLocalTime->tm_hour, (char *) &pSystemTime[0]);
-	itoa_base10(pLocalTime->tm_min, (char *) &pSystemTime[3]);
-	itoa_base10(pLocalTime->tm_sec, (char *) &pSystemTime[6]);
+	itoa_base10(pLocalTime->tm_hour, (char *) &pSystemTime[LTC_ST_INDEX_HOURS]);
+	itoa_base10(pLocalTime->tm_min, (char *) &pSystemTime[LTC_ST_INDEX_MINUTES]);
+	itoa_base10(pLocalTime->tm_sec, (char *) &pSystemTime[LTC_ST_INDEX_SECONDS]);
 }
 
 #define DIGIT(x)	((int32_t) (x) - '0')
@@ -104,18 +100,18 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 	int32_t nDigit;
 	uint32_t nValue;
 
-	if ((pTimeCode[2] != ':') || (pTimeCode[5] != ':') || (pTimeCode[8] != '.')) {
+	if ((pTimeCode[LTC_TC_INDEX_COLON_1] != ':') || (pTimeCode[LTC_TC_INDEX_COLON_2] != ':') || (pTimeCode[LTC_TC_INDEX_COLON_3] != '.')) {
 		return false;
 	}
 
 	// Frames first
 
-	nTenths = DIGIT(pTimeCode[9]);
+	nTenths = DIGIT(pTimeCode[LTC_TC_INDEX_FRAMES_TENS]);
 	if ((nTenths < 0) || (nTenths > 3)) {
 		return false;
 	}
 
-	nDigit = DIGIT(pTimeCode[10]);
+	nDigit = DIGIT(pTimeCode[LTC_TC_INDEX_FRAMES_UNITS]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -130,12 +126,12 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 
 	// Seconds
 
-	nTenths = DIGIT(pTimeCode[6]);
+	nTenths = DIGIT(pTimeCode[LTC_TC_INDEX_SECONDS_TENS]);
 	if ((nTenths < 0) || (nTenths > 5)) {
 		return false;
 	}
 
-	nDigit = DIGIT(pTimeCode[7]);
+	nDigit = DIGIT(pTimeCode[LTC_TC_INDEX_SECONDS_UNITS]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -150,12 +146,12 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 
 	// Minutes
 
-	nTenths = DIGIT(pTimeCode[3]);
+	nTenths = DIGIT(pTimeCode[LTC_TC_INDEX_MINUTES_TENS]);
 	if ((nTenths < 0) || (nTenths > 5)) {
 		return false;
 	}
 
-	nDigit = DIGIT(pTimeCode[4]);
+	nDigit = DIGIT(pTimeCode[LTC_TC_INDEX_MINUTES_UNITS]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -170,12 +166,12 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 
 	// Hours
 
-	nTenths = DIGIT(pTimeCode[0]);
+	nTenths = DIGIT(pTimeCode[LTC_TC_INDEX_HOURS_TENS]);
 	if ((nTenths < 0) || (nTenths > 2)) {
 		return false;
 	}
 
-	nDigit = DIGIT(pTimeCode[1]);
+	nDigit = DIGIT(pTimeCode[LTC_TC_INDEX_HOURS_UNITS]);
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
@@ -194,16 +190,16 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 void Ltc::InitTimeCode(char *pTimeCode) {
 	memset(pTimeCode, ' ', TC_CODE_MAX_LENGTH);
 
-	pTimeCode[2] = ':';
-	pTimeCode[5] = ':';
-	pTimeCode[8] = '.';
+	pTimeCode[LTC_TC_INDEX_COLON_1] = ':';
+	pTimeCode[LTC_TC_INDEX_COLON_2] = ':';
+	pTimeCode[LTC_TC_INDEX_COLON_3] = '.';
 }
 
 void Ltc::InitSystemTime(char *pSystemTime) {
 	memset(pSystemTime, ' ', TC_SYSTIME_MAX_LENGTH);
 
-	pSystemTime[2] = ':';
-	pSystemTime[5] = ':';
+	pSystemTime[LTC_ST_INDEX_COLON_1] = ':';
+	pSystemTime[LTC_ST_INDEX_COLON_2] = ':';
 }
 
 bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType) {

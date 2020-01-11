@@ -1,8 +1,8 @@
 /**
- * @file displaymatrix.h
+ * @file ltcdisplaymax7219matrix.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,29 +27,29 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "max7219matrix.h"
+#include "ltcdisplaymax7219matrix.h"
 
 #include "d8x8matrix.h"
 
-Max7219Matrix *Max7219Matrix::s_pThis = 0;
+LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = 0;
 
-Max7219Matrix::Max7219Matrix(void) {
+LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
 	m_DeviceInfo.speed_hz = 0;
 }
 
-Max7219Matrix::~Max7219Matrix(void) {
+LtcDisplayMax7219Matrix::~LtcDisplayMax7219Matrix(void) {
 }
 
-void Max7219Matrix::Init(uint8_t nIntensity) {
+void LtcDisplayMax7219Matrix::Init(uint8_t nIntensity) {
 	d8x8matrix_init(&m_DeviceInfo, SEGMENTS, nIntensity);
 	d8x8matrix_cls(&m_DeviceInfo);
 	d8x8matrix_write(&m_DeviceInfo, (const char *)"Waiting", 7);
 }
 
-void Max7219Matrix::Show(const char *pTimecode) {
+void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
 	m_aBuffer[0] = (uint8_t) pTimecode[0];
 	m_aBuffer[1] = (uint8_t) pTimecode[1];
 	m_aBuffer[2] = (uint8_t) pTimecode[3];
@@ -62,7 +62,7 @@ void Max7219Matrix::Show(const char *pTimecode) {
 	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
 }
 
-void Max7219Matrix::ShowSysTime(const char *pSystemTime) {
+void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	m_aBuffer[0] = (uint8_t) pSystemTime[0];
 	m_aBuffer[1] = (uint8_t) pSystemTime[1];
 	m_aBuffer[2] = (uint8_t) pSystemTime[3];
@@ -73,6 +73,7 @@ void Max7219Matrix::ShowSysTime(const char *pSystemTime) {
 	d8x8matrix_write(&m_DeviceInfo, (const char *)m_aBuffer, SEGMENTS);
 }
 
-void Max7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {
+void LtcDisplayMax7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {
 	// TODO Max7219Matrix::WriteChar
 }
+

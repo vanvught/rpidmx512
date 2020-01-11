@@ -1,7 +1,8 @@
 /**
- * @file max7219set.h
+ * @file ltcdisplaymax7219set.h
+ *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MAX7219SET_H_
-#define MAX7219SET_H_
+#ifndef LTCDISPLAYMAX7219SET_H_
+#define LTCDISPLAYMAX7219SET_H_
 
 #include <stdint.h>
 
-class Max7219Set {
+class LtcDisplayMax7219Set {
 public:
-	virtual ~Max7219Set(void);
+	virtual ~LtcDisplayMax7219Set(void) {}
 
 	virtual void Init(uint8_t nIntensity)=0;
 
@@ -39,4 +40,4 @@ public:
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos)=0;
 };
 
-#endif /* MAX7219SET_H_ */
+#endif /* LTCDISPLAYMAX7219SET_H_ */

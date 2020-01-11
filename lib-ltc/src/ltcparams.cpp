@@ -32,6 +32,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
+#include <time.h>
 #include <assert.h>
 
 #include "ltcparams.h"
@@ -49,10 +50,13 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 		*p++ = 0;
 	}
 
+	time_t ltime = time(0);
+	struct tm *tm = localtime(&ltime);
+
 	m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
-	m_tLtcParams.nYear = 19;
-	m_tLtcParams.nMonth = 1;
-	m_tLtcParams.nDay = 1;
+	m_tLtcParams.nYear = tm->tm_year - 100;
+	m_tLtcParams.nMonth = tm->tm_mon + 1;
+	m_tLtcParams.nDay = tm->tm_mday;
 	m_tLtcParams.nFps = 25;
 	m_tLtcParams.nStopFrame = m_tLtcParams.nFps - 1;
 	m_tLtcParams.nStopSecond = 59;
@@ -513,12 +517,4 @@ void LtcParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != 0);
 
 	((LtcParams *) p)->callbackFunction(s);
-}
-
-bool LtcParams::isMaskSet(uint32_t nMask) const {
-	return (m_tLtcParams.nSetList & nMask) == nMask;
-}
-
-bool LtcParams::isDisabledOutputMaskSet(uint8_t nMask) const {
-	return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
 }

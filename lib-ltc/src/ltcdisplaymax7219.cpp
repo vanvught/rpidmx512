@@ -1,7 +1,7 @@
 /**
- * @file displaymax7219.h
+ * @file ltcdisplaymax7219.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,52 +26,52 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "max72197segment.h"
-#include "max7219matrix.h"
+#include "ltcdisplaymax7219.h"
 
-#include "displaymax7219.h"
+#include "ltcdisplaymax72197segment.h"
+#include "ltcdisplaymax7219matrix.h"
 
-DisplayMax7219 *DisplayMax7219::s_pThis = 0;
+LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis = 0;
 
-DisplayMax7219::DisplayMax7219(TMax7219Types tType):
+LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType):
 	m_tMax7219Types(tType),
 	m_nIntensity(0),
 	m_pMax7219Set(0)
 {
 	s_pThis = this;
 
-	if (tType == MAX7219_TYPE_7SEGMENT) {
-		m_pMax7219Set = new Max72197Segment;
+	if (tType == LTCDISPLAYMAX7219_TYPE_7SEGMENT) {
+		m_pMax7219Set = new LtcDisplayMax72197Segment;
 	} else {
-		m_pMax7219Set = new Max7219Matrix;
+		m_pMax7219Set = new LtcDisplayMax7219Matrix;
 	}
 
 	assert(m_pMax7219Set != 0);
 }
 
-DisplayMax7219::~DisplayMax7219(void) {
+LtcDisplayMax7219::~LtcDisplayMax7219(void) {
 	delete m_pMax7219Set;
 	m_pMax7219Set = 0;
 }
 
-void DisplayMax7219::Init(uint8_t nIntensity) {
+void LtcDisplayMax7219::Init(uint8_t nIntensity) {
 	m_nIntensity = nIntensity;
 	m_pMax7219Set->Init(nIntensity);
 }
 
-void DisplayMax7219::Show(const char *pTimecode) {
+void LtcDisplayMax7219::Show(const char *pTimecode) {
 	m_pMax7219Set->Show(pTimecode);
 }
 
-void DisplayMax7219::ShowSysTime(const char *pSystemTime) {
+void LtcDisplayMax7219::ShowSysTime(const char *pSystemTime) {
 	m_pMax7219Set->ShowSysTime(pSystemTime);
 }
 
-void DisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
+void LtcDisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
 	m_pMax7219Set->WriteChar(nChar, nPos);
 }
 
-void DisplayMax7219::Print(void) {
+void LtcDisplayMax7219::Print(void) {
 	printf("MAX7219\n");
-	printf(" %s [%d]\n", m_tMax7219Types == MAX7219_TYPE_7SEGMENT ? "7-segment" : "matrix", m_nIntensity);
+	printf(" %s [%d]\n", m_tMax7219Types == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7-segment" : "matrix", m_nIntensity);
 }

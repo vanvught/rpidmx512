@@ -1,7 +1,7 @@
 /**
- * @file displaymax7219.h
+ * @file ltcdisplayws28xxmatrix.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYMAX7219_H_
-#define DISPLAYMAX7219_H_
+#ifndef LTCDISPLAYWS28XXMATRIX_H_
+#define LTCDISPLAYWS28XXMATRIX_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "max7219set.h"
+#include "ltcdisplayws28xxset.h"
 
-enum TMax7219Types {
-	MAX7219_TYPE_MATRIX,
-	MAX7219_TYPE_7SEGMENT
-};
+#include "ws28xxdisplaymatrix.h"
 
-class DisplayMax7219 {
+class LtcDisplayWS28xxMatrix: public LtcDisplayWS28xxSet {
 public:
-	DisplayMax7219(TMax7219Types tType = MAX7219_TYPE_MATRIX);
-	~DisplayMax7219(void);
+	LtcDisplayWS28xxMatrix(void);
+	~LtcDisplayWS28xxMatrix(void);
 
-	void Init(uint8_t nIntensity);
-
+	void Init(TWS28XXType tLedType = WS2812B);
 	void Print(void);
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
+	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
+	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours);
 
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
-
-	static DisplayMax7219 *Get(void) {
-		return s_pThis;
-	}
+	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours);
 
 private:
-	TMax7219Types m_tMax7219Types;
-	uint8_t m_nIntensity;
-	Max7219Set *m_pMax7219Set;
-
-	static DisplayMax7219 *s_pThis;
+	WS28xxDisplayMatrix *m_pWS28xxDisplayMatrix;
 };
 
-#endif /* DISPLAYMAX7219_H_ */
+#endif /* LTCDISPLAYWS28XXMATRIX_H_ */

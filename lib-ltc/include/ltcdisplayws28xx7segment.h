@@ -1,8 +1,9 @@
 /**
- * @file ltc7segment.h
- *
+ * @file ltcdisplayws28xx7segment.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/*
+ * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +24,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC7SEGMENT_H_
-#define LTC7SEGMENT_H_
+#ifndef LTCDISPLAYWS28XX7SEGMENT_H_
+#define LTCDISPLAYWS28XX7SEGMENT_H_
 
-#include "ltc.h"
+#include <stdint.h>
 
-class Ltc7segment {
+#include "ltcdisplayws28xxset.h"
+
+#include "ws28xxdisplay7segment.h"
+
+class LtcDisplayWS28xx7Segment: public LtcDisplayWS28xxSet {
 public:
-	Ltc7segment(void);
-	~Ltc7segment(void);
+	LtcDisplayWS28xx7Segment(void);
+	~LtcDisplayWS28xx7Segment(void);
 
-	void Show(TTimecodeTypes tTimecodeType);
+	void Init(TWS28XXType tLedType = WS2812B);
+	void Print(void);
 
-	static Ltc7segment* Get(void) {
-		return s_pThis;
-	}
+	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
+	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
+	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours);
+
+	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours);
 
 private:
-	static Ltc7segment *s_pThis;
+	WS28xxDisplay7Segment *m_pWS28xxDisplay7Segment;
 };
 
-#endif /* LTC7SEGMENT_H_ */
+#endif /* INCLUDE_LTCDISPLAYWS28XX7SEGMENT_H_ */

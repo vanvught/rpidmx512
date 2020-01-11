@@ -1,8 +1,7 @@
 /**
- * @file display7segment.h
- *
+ * @file ltcdisplaymax7219.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +22,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAY7SEGMENT_H_
-#define DISPLAY7SEGMENT_H_
+#ifndef LTCDISPLAYMAX7219_H_
+#define LTCDISPLAYMAX7219_H_
 
-#include <time.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "max7219set.h"
+#include "ltcdisplaymax7219set.h"
 
-#include "device_info.h"
+enum TLtcDisplayMax7219Types {
+	LTCDISPLAYMAX7219_TYPE_MATRIX,
+	LTCDISPLAYMAX7219_TYPE_7SEGMENT
+};
 
-class Max72197Segment: public Max7219Set {
+class LtcDisplayMax7219 {
 public:
-	Max72197Segment(void);
-	~Max72197Segment(void);
+	LtcDisplayMax7219(TLtcDisplayMax7219Types tType = LTCDISPLAYMAX7219_TYPE_MATRIX);
+	~LtcDisplayMax7219(void);
 
 	void Init(uint8_t nIntensity);
+
+	void Print(void);
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
 
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	 static Max72197Segment* Get(void) {
+	static LtcDisplayMax7219 *Get(void) {
 		return s_pThis;
 	}
 
 private:
-	device_info_t m_DeviceInfo;
+	TLtcDisplayMax7219Types m_tMax7219Types;
+	uint8_t m_nIntensity;
+	LtcDisplayMax7219Set *m_pMax7219Set;
 
-	static Max72197Segment *s_pThis;
+	static LtcDisplayMax7219 *s_pThis;
 };
 
-#endif /* DISPLAY7SEGMENT_H_ */
+#endif /* LTCDISPLAYMAX7219_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file display7segment.cpp
+ * @file ltcdisplaymax72197segment.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,26 +27,26 @@
 #include <time.h>
 #include <assert.h>
 
-#include "max72197segment.h"
+#include "ltcdisplaymax72197segment.h"
 
 #include "d8x7segment.h"
 
 #include "max7219.h"
 #include "max7219_spi.h"
 
-Max72197Segment *Max72197Segment::s_pThis = 0;
+LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = 0;
 
-Max72197Segment::Max72197Segment(void) {
+LtcDisplayMax72197Segment::LtcDisplayMax72197Segment(void) {
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
 	m_DeviceInfo.speed_hz = 0;
 }
 
-Max72197Segment::~Max72197Segment(void) {
+LtcDisplayMax72197Segment::~LtcDisplayMax72197Segment(void) {
 }
 
-void Max72197Segment::Init(uint8_t nIntensity) {
+void LtcDisplayMax72197Segment::Init(uint8_t nIntensity) {
 	d8x7segment_init(&m_DeviceInfo, nIntensity);
 	d8x7segment_cls(&m_DeviceInfo);
 
@@ -55,7 +55,7 @@ void Max72197Segment::Init(uint8_t nIntensity) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, 0x80);
 }
 
-void Max72197Segment::Show(const char *pTimecode) {
+void LtcDisplayMax72197Segment::Show(const char *pTimecode) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, (pTimecode[0] - '0'));
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pTimecode[1] - '0') | 0x80);
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pTimecode[3] - '0'));
@@ -66,7 +66,7 @@ void Max72197Segment::Show(const char *pTimecode) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, (pTimecode[10] - '0'));
 }
 
-void Max72197Segment::ShowSysTime(const char *pSystemTime) {
+void LtcDisplayMax72197Segment::ShowSysTime(const char *pSystemTime) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, MAX7219_CHAR_BLANK);
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, (pSystemTime[0] - '0'));
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, (pSystemTime[1] - '0') | 0x80);
@@ -77,7 +77,7 @@ void Max72197Segment::ShowSysTime(const char *pSystemTime) {
 	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, MAX7219_CHAR_BLANK);
 }
 
-void Max72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {
+void LtcDisplayMax72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {
 	if (nPos < 8) {
 		max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0 + nPos, nChar);
 	}

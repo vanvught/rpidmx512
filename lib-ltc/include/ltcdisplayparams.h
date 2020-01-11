@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "displaymax7219.h"
-#include "displayws28xx.h"
+#include "ltcdisplaymax7219.h"
+#include "ltcdisplayws28xx.h"
+
 #include "ws28xx.h"
 #include "rgbmapping.h"
 
@@ -43,7 +44,8 @@ struct TLtcDisplayParams {
 	uint8_t nRgbMapping;
 	uint8_t nWS28xxIntensity;
 	uint8_t nWS28xxColonBlinkMode;
-	uint32_t aWS28xxColour[WS28XX_COLOUR_INDEX_LAST];
+	uint32_t aWS28xxColour[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST];
+	uint8_t nWS28xxType;
 } __attribute__((packed));
 
 enum TLtcDisplayParamsMask {
@@ -54,12 +56,13 @@ enum TLtcDisplayParamsMask {
 	LTCDISPLAY_PARAMS_MASK_RGB_MAPPING = (1 << 4),
 	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5),
 	LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE = (1 << 6),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX = (1 << 7)
+	LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX = (1 << 7),
+	LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE = (1 << 8)
 };
 
 class LtcDisplayParamsStore {
 public:
-	virtual ~LtcDisplayParamsStore(void);
+	virtual ~LtcDisplayParamsStore(void) {}
 
 	virtual void Update(const struct TLtcDisplayParams *ptLtcDisplayParams)=0;
 	virtual void Copy(struct TLtcDisplayParams *ptLtcDisplayParams)=0;
@@ -76,35 +79,42 @@ public:
 	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Set(DisplayWS28xx *pDisplayWS28xx);
+	void Set(LtcDisplayWS28xx *pLtcDisplayWS28xx);
 
 	void Dump(void);
-
-	TWS28XXType GetLedType(void) {
-		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
-	}
 
 	uint8_t GetGlobalBrightness(void) {
 		return m_tLtcDisplayParams.nGlobalBrightness;
 	}
 
-	TMax7219Types GetMax7219Type(void) {
-		return (TMax7219Types) m_tLtcDisplayParams.nMax7219Type;
+	TLtcDisplayMax7219Types GetMax7219Type(void) {
+		return (TLtcDisplayMax7219Types) m_tLtcDisplayParams.nMax7219Type;
 	}
 
 	uint8_t GetMax7219Intensity(void) {
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
+
+	TWS28XXType GetLedType(void) {
+		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
+	}
+
+	TLtcDisplayWS28xxTypes GetWS28xxType(void) {
+		return (TLtcDisplayWS28xxTypes) m_tLtcDisplayParams.nWS28xxType;
+	}
+
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask)  {
+    	return (m_tLtcDisplayParams.nSetList & nMask) == nMask;
+    }
 
 private:
-	LtcDisplayParamsStore 	*m_pLtcDisplayParamsStore;
-    struct TLtcDisplayParams m_tLtcDisplayParams;
+	LtcDisplayParamsStore *m_pLtcDisplayParamsStore;
+	struct TLtcDisplayParams m_tLtcDisplayParams;
 };
 
 #endif /* LTCDISPLAYPARAMS_H_ */

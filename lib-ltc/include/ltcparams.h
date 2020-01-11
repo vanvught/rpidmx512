@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,9 @@
 
 #include <stdint.h>
 
+#include "ltcdisplaymax7219.h"
+
 #include "ltc.h"
-#include "displaymax7219.h"
 
 enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_DISPLAY = (1 << 0),
@@ -97,7 +98,7 @@ enum TLtcParamsMask {
 
 class LtcParamsStore {
 public:
-	virtual ~LtcParamsStore(void);
+	virtual ~LtcParamsStore(void) {}
 
 	virtual void Update(const struct TLtcParams *pTLtcParams)=0;
 	virtual void Copy(struct TLtcParams *pTLtcParams)=0;
@@ -182,8 +183,12 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
-	bool isDisabledOutputMaskSet(uint8_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tLtcParams.nSetList & nMask) == nMask;
+    }
+    bool isDisabledOutputMaskSet(uint8_t nMask) {
+    	return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
+    }
 	void HandleDisabledOutput(const char *pLine, const char *pKeyword, TLtcParamsMaskDisabledOutputs tLtcParamsMaskDisabledOutputs);
 
 private:

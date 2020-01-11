@@ -53,6 +53,7 @@
 
 // Output
 #include "artnetnode.h"
+#include "tcnet.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
 #include "display.h"

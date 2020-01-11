@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@
 #include "ltcdisplayparamsconst.h"
 #include "devicesparamsconst.h"
 // Displays
-#include "displaymax7219.h"
-#include "displayws28xx.h"
+#include "ltcdisplaymax7219.h"
+#include "ltcdisplayws28xx.h"
 #include "ws28xx.h"
 #include "ws28xxconst.h"
 #include "rgbmapping.h"
@@ -52,16 +52,17 @@
 static const char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
-	m_tLtcDisplayParams.nLedType = WS28XXDISPLAY_DEFAULT_LED_TYPE;
-	m_tLtcDisplayParams.nGlobalBrightness = WS28XXDISPLAY_DEFAULT_GLOBAL_BRIGHTNESS;
-	m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_MATRIX;
+	m_tLtcDisplayParams.nLedType = LTCDISPLAYWS28XX_DEFAULT_LED_TYPE;
+	m_tLtcDisplayParams.nGlobalBrightness = LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS;
+	m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
 	m_tLtcDisplayParams.nRgbMapping = RGB_MAPPING_RGB;
-	m_tLtcDisplayParams.nWS28xxIntensity = WS28XXDISPLAY_DEFAULT_MASTER;
-	m_tLtcDisplayParams.nWS28xxColonBlinkMode = WS28XXDISPLAY_DEFAULT_COLON_BLINK_MODE;
-	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_SEGMENT] = WS28XXDISPLAY_DEFAULT_COLOUR_SEGMENT;
-	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_COLON] = WS28XXDISPLAY_DEFAULT_COLOUR_COLON;
-	m_tLtcDisplayParams.aWS28xxColour[WS28XX_COLOUR_INDEX_MESSAGE] = WS28XXDISPLAY_DEFAULT_COLOUR_MESSAGE;
+	m_tLtcDisplayParams.nWS28xxIntensity = LTCDISPLAYWS28XX_DEFAULT_MASTER;
+	m_tLtcDisplayParams.nWS28xxColonBlinkMode = LTCDISPLAYWS28XX_DEFAULT_COLON_BLINK_MODE;
+	m_tLtcDisplayParams.aWS28xxColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT;
+	m_tLtcDisplayParams.aWS28xxColour[LTCDISPLAYWS28XX_COLOUR_INDEX_COLON] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_COLON;
+	m_tLtcDisplayParams.aWS28xxColour[LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_MESSAGE;
+	m_tLtcDisplayParams.nWS28xxType = LTCDISPLAYWS28XX_TYPE_7SEGMENT;
 }
 
 LtcDisplayParams::~LtcDisplayParams(void) {
@@ -114,18 +115,30 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, LtcDisplayParamsConst::MAX7219_TYPE, buffer, &len) == SSCAN_OK) {
 		if (strncasecmp(buffer, "7segment", len) == 0) {
-			m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_7SEGMENT;
+			m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_7SEGMENT;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE;
 		} else if (strncasecmp(buffer, "matrix", len) == 0) {
-			m_tLtcDisplayParams.nMax7219Type = MAX7219_TYPE_MATRIX;
+			m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE;
 		}
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::MAX7219_INTENSITY, &value8) == SSCAN_OK) {
 		if (value8 <= 0x0F) {
 			m_tLtcDisplayParams.nMax7219Intensity = value8;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY;
+		}
+		return;
+	}
+
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_TYPE, buffer, &len) == SSCAN_OK) {
+		if (strncasecmp(buffer, "7segment", len) == 0) {
+			m_tLtcDisplayParams.nWS28xxType = LTCDISPLAYWS28XX_TYPE_7SEGMENT;
+			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE;
+		} else if (strncasecmp(buffer, "matrix", len) == 0) {
+			m_tLtcDisplayParams.nWS28xxType = LTCDISPLAYWS28XX_TYPE_MATRIX;
+			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE;
 		}
 		return;
 	}
@@ -167,7 +180,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		buffer[len] = '\0';
 		for (uint32_t i = 0; i < (sizeof(aColonBlinkMode) / sizeof(aColonBlinkMode[0])); i++) {
 			if (strcasecmp(buffer, aColonBlinkMode[i]) == 0) {
-				m_tLtcDisplayParams.nWS28xxColonBlinkMode = (TColonBlinkMode) i;
+				m_tLtcDisplayParams.nWS28xxColonBlinkMode = (TLtcDisplayWS28xxColonBlinkMode) i;
 				m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE;
 				return;
 			}
@@ -175,7 +188,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
 		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], &value32) == SSCAN_OK) {
 			m_tLtcDisplayParams.aWS28xxColour[nIndex] = value32;
 			m_tLtcDisplayParams.nSetList |= (LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex);
@@ -190,24 +203,24 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void LtcDisplayParams::Set(DisplayWS28xx *pDisplayWS28xx) {
-	assert(pDisplayWS28xx != 0);
+void LtcDisplayParams::Set(LtcDisplayWS28xx *pLtcDisplayWS28xx) {
+	assert(pLtcDisplayWS28xx != 0);
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
-		pDisplayWS28xx->SetMapping((TRGBMapping) m_tLtcDisplayParams.nRgbMapping);
+		pLtcDisplayWS28xx->SetMapping((TRGBMapping) m_tLtcDisplayParams.nRgbMapping);
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY)) {
-		pDisplayWS28xx->SetMaster(m_tLtcDisplayParams.nWS28xxIntensity);
+		pLtcDisplayWS28xx->SetMaster(m_tLtcDisplayParams.nWS28xxIntensity);
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE)) {
-		pDisplayWS28xx->SetColonBlinkMode((TColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode);
+		pLtcDisplayWS28xx->SetColonBlinkMode((TLtcDisplayWS28xxColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode);
 	}
 
-	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
 		if (isMaskSet((LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex))) {
-			pDisplayWS28xx->SetColour(m_tLtcDisplayParams.aWS28xxColour[nIndex], (TWS28xxColourIndex) nIndex);
+			pLtcDisplayWS28xx->SetColour(m_tLtcDisplayParams.aWS28xxColour[nIndex], (TLtcDisplayWS28xxColourIndex) nIndex);
 		}
 	}
 }
@@ -219,6 +232,10 @@ void LtcDisplayParams::Dump(void) {
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcDisplayParamsConst::FILE_NAME);
+
+	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE)) {
+		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxType, m_tLtcDisplayParams.nWS28xxType == WS28XX_TYPE_7SEGMENT ? "7segment" : "matrix");
+	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), (int) m_tLtcDisplayParams.nLedType);
@@ -236,7 +253,7 @@ void LtcDisplayParams::Dump(void) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode);
 	}
 
-	for (uint32_t nIndex = 0; nIndex < WS28XX_COLOUR_INDEX_LAST; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
 		if (isMaskSet((LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex))) {
 			printf(" %s=%.6x\n", LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], m_tLtcDisplayParams.aWS28xxColour[nIndex]);
 		}
@@ -261,8 +278,4 @@ void LtcDisplayParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != 0);
 
 	((LtcDisplayParams *) p)->callbackFunction(s);
-}
-
-bool LtcDisplayParams::isMaskSet(uint32_t nMask) const {
-	return (m_tLtcDisplayParams.nSetList & nMask) == nMask;
 }

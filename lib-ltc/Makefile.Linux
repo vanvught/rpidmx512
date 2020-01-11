@@ -2,6 +2,6 @@
 #
 DEFINES = #RASPPI #NDEBUG
 #
-EXTRA_INCLUDES = ../lib-bob/include ../lib-network/include ../lib-display/include ../lib-ws28xx/include ../lib-artnet/include ../lib-lightset/include ../lib-ledblink/include ../lib-properties/include
+EXTRA_INCLUDES = ../lib-bob/include ../lib-network/include ../lib-display/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-artnet/include ../lib-lightset/include ../lib-ledblink/include ../lib-properties/include
 #
 include ../linux-template/lib/Rules.mk

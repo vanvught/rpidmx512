@@ -1,5 +1,5 @@
 /**
- * @file ltc7segment.h
+ * @file ltcdisplaymax7219matrix.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,24 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTC7SEGMENT_H_
-#define LTC7SEGMENT_H_
+#ifndef LTCDISPLAYMAX7219MATRIX_H_
+#define LTCDISPLAYMAX7219MATRIX_H_
 
-#include "ltc.h"
+#include <stdint.h>
 
-class Ltc7segment {
+#include "ltcdisplaymax7219set.h"
+
+#include "device_info.h"
+
+#define SEGMENTS	8
+
+class LtcDisplayMax7219Matrix: public LtcDisplayMax7219Set {
 public:
-	Ltc7segment(void);
-	~Ltc7segment(void);
+	LtcDisplayMax7219Matrix(void);
+	~LtcDisplayMax7219Matrix(void);
 
-	void Show(TTimecodeTypes tTimecodeType);
+	void Init(uint8_t nIntensity);
 
-	static Ltc7segment* Get(void) {
+	void Show(const char *pTimecode);
+	void ShowSysTime(const char *pSystemTime);
+
+	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+
+	static LtcDisplayMax7219Matrix* Get(void) {
 		return s_pThis;
 	}
 
 private:
-	static Ltc7segment *s_pThis;
+	device_info_t m_DeviceInfo;
+	uint8_t m_aBuffer[SEGMENTS];
+
+	static LtcDisplayMax7219Matrix *s_pThis;
 };
 
-#endif /* LTC7SEGMENT_H_ */
+#endif /* LTCDISPLAYMAX7219MATRIX_H_ */

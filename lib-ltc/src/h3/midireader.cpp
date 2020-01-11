@@ -44,6 +44,7 @@
 // Output
 #include "h3/ltcsender.h"
 #include "artnetnode.h"
+#include "tcnet.h"
 #include "rtpmidi.h"
 //
 #include "h3/ltcoutputs.h"
@@ -177,7 +178,7 @@ void MidiReader::Run(void) {
 		}
 	}
 
-	if (Midi::Get()->GetUpdatesPerSeconde() >= 24)  {
+	if (Midi::Get()->GetUpdatesPerSeconde() != 0)  {
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);

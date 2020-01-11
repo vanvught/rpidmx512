@@ -1,7 +1,8 @@
 /**
- * @file max7219set.cpp
+ * @file ltcdisplaymax72197segment.h
+ *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include "max7219set.h"
+#ifndef LTCDISPLAYMAX72197SEGMENT_H_
+#define LTCDISPLAYMAX72197SEGMENT_H_
 
-Max7219Set::~Max7219Set(void) {
-}
+#include <time.h>
+
+#include "ltcdisplaymax7219set.h"
+
+#include "device_info.h"
+
+class LtcDisplayMax72197Segment: public LtcDisplayMax7219Set {
+public:
+	LtcDisplayMax72197Segment(void);
+	~LtcDisplayMax72197Segment(void);
+
+	void Init(uint8_t nIntensity);
+
+	void Show(const char *pTimecode);
+	void ShowSysTime(const char *pSystemTime);
+
+	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+
+	static LtcDisplayMax72197Segment *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	device_info_t m_DeviceInfo;
+
+	static LtcDisplayMax72197Segment *s_pThis;
+};
+
+#endif /* LTCDISPLAYMAX72197SEGMENT_H_ */

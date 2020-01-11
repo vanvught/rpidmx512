@@ -2,7 +2,7 @@
  * @file ltcoutputs.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,14 +41,13 @@
 
 // Outputs
 #include "h3/ltcsender.h"
-#include "artnetnode.h"
 #include "rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
 #include "ltc7segment.h"
 #include "display.h"
-#include "displaymax7219.h"
-#include "displayws28xx.h"
+#include "ltcdisplaymax7219.h"
+#include "ltcdisplayws28xx.h"
 
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
@@ -73,7 +72,7 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TL
 
 	m_tLtcDisabledOutputs.bMidi |= (tSource == LTC_READER_SOURCE_MIDI);
 	m_tLtcDisabledOutputs.bArtNet |= (tSource == LTC_READER_SOURCE_ARTNET);
-	m_tLtcDisabledOutputs.bTCNet |= (tSource == LTC_READER_SOURCE_TCNET);
+	m_tLtcDisabledOutputs.bTCNet = true;
 	m_tLtcDisabledOutputs.bLtc |= (tSource == LTC_READER_SOURCE_LTC);
 	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == LTC_READER_SOURCE_APPLEMIDI);
 
@@ -127,11 +126,11 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	}
 
 	if (!m_tLtcDisabledOutputs.bMax7219) {
-		DisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		LtcDisplayMax7219::Get()->Show((const char *) m_aTimeCode);
 	}
 
 	if(!m_tLtcDisabledOutputs.bWS28xx) {
-		DisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
+		LtcDisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
 	}
 }
 
@@ -164,11 +163,11 @@ void LtcOutputs::ShowSysTime(void) {
 		Ltc7segment::Get()->Show(TC_TYPE_UNKNOWN);
 
 		if (!m_tLtcDisabledOutputs.bMax7219) {
-			DisplayMax7219::Get()->ShowSysTime((const char *) m_aSystemTime);
+			LtcDisplayMax7219::Get()->ShowSysTime((const char *) m_aSystemTime);
 		}
 
 		if(!m_tLtcDisabledOutputs.bWS28xx) {
-			DisplayWS28xx::Get()->ShowSysTime((const char *) m_aSystemTime);
+			LtcDisplayWS28xx::Get()->ShowSysTime((const char *) m_aSystemTime);
 		}
 
 		ResetTimeCodeTypePrevious();
@@ -184,9 +183,9 @@ void LtcOutputs::PrintDisabled(bool IsDisabled, const char *pString) {
 void LtcOutputs::Print(void) {
 	PrintDisabled(m_tLtcDisabledOutputs.bLtc, "LTC");
 	PrintDisabled(m_tLtcDisabledOutputs.bTCNet, "TCNet");
+	PrintDisabled(m_tLtcDisabledOutputs.bArtNet, "Art-Net");
 	PrintDisabled(m_tLtcDisabledOutputs.bRtpMidi, "AppleMIDI");
 	PrintDisabled(m_tLtcDisabledOutputs.bMidi, "MIDI");
-	PrintDisabled(m_tLtcDisabledOutputs.bArtNet, "Art-Net");
 	PrintDisabled(m_tLtcDisabledOutputs.bNtp, "NTP");
 	PrintDisabled(m_tLtcDisabledOutputs.bDisplay, "OLED");
 	PrintDisabled(m_tLtcDisabledOutputs.bMax7219, "Max7219");

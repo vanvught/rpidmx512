@@ -2,7 +2,7 @@
  * @file tcnetreader.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "h3/tcnetreader.h"
 #include "tcnet.h"
 #include "timecodeconst.h"
-#include "tcnetdisplay.h"
 
 #include "c/led.h"
 
@@ -47,7 +46,7 @@
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
-#include "displaymax7219.h"
+#include "tcnetdisplay.h"
 //
 #include "h3/ltcoutputs.h"
 
@@ -58,6 +57,9 @@ static const char sLayer[] ALIGNED = "layer#";
 
 static const char sType[] ALIGNED = "type#";
 #define TYPE_LENGTH (sizeof(sType)/sizeof(sType[0]) - 1)
+
+static const char sTimeCode[] ALIGNED = "timecode#";
+#define TIMECODE_LENGTH (sizeof(sTimeCode)/sizeof(sTimeCode[0]) - 1)
 
 enum TUdpPort {
 	UDP_PORT = 0x0ACA
@@ -107,7 +109,7 @@ void TCNetReader::Stop(void) {
 	irq_timer_set(IRQ_TIMER_0, 0);
 }
 
-void TCNetReader::Handler(const struct TTCNetTimeCode* pTimeCode) {
+void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	nUpdates++;
 
 	assert(((uint32_t )pTimeCode & 0x3) == 0); // Check if we can do 4-byte compare
@@ -201,6 +203,20 @@ void TCNetReader::HandleUdpRequest(void) {
 
 			return;
 		}
+
+		return;
+	}
+
+	if ((m_nBytesReceived == (6 + TIMECODE_LENGTH + 1)) && (memcmp(&m_Buffer[6], sTimeCode, TIMECODE_LENGTH) == 0)) {
+		const char nChar = m_Buffer[6 + TIMECODE_LENGTH];
+		const bool bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
+
+		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
+		TCNetDisplay::Show();
+
+		DEBUG_PRINTF("tcnet!timecode#%c -> %d", nChar, (int) bUseTimeCode);
+
+		return;
 	}
 }
 
@@ -208,11 +224,12 @@ void TCNetReader::Run(void) {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
 
 	dmb();
-	if (nUpdatesPerSecond >= 24) {
+	if (nUpdatesPerSecond != 0) {
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		m_nTimeCodePrevious = ~0;
 	}
 
 	HandleUdpRequest();

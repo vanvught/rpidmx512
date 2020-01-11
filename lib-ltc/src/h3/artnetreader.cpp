@@ -2,7 +2,7 @@
  * @file artnetreader.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,9 @@
 #include "artnettimecode.h"
 
 // Output
+#include "tcnet.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
-#include "displaymax7219.h"
-//
 #include "h3/ltcoutputs.h"
 
 // IRQ Timer0
@@ -89,23 +88,23 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	nUpdates++;
 
 	if (!m_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *)ArtNetTimeCode);
+		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) ArtNetTimeCode);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)ArtNetTimeCode);
+		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *) ArtNetTimeCode);
 	}
 
 	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof (struct _midi_send_tc ));
 
-	LtcOutputs::Get()->Update((const struct TLtcTimeCode *)ArtNetTimeCode);
+	LtcOutputs::Get()->Update((const struct TLtcTimeCode *) ArtNetTimeCode);
 }
 
 void ArtNetReader::Run(void) {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
 
 	dmb();
-	if (nUpdatesPerSecond >= 24) {
+	if (nUpdatesPerSecond != 0) {
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();

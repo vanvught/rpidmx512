@@ -2,7 +2,7 @@
  * @file tcnetdisplay.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,17 @@
 #include "tcnet.h"
 #include "display.h"
 
-static const char sFps[4][3] = { "24", "25", "29", "30" };
+static const char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
 void TCNetDisplay::Show(void) {
 	Display::Get()->SetCursorPos(6,3);
 
-	if (TCNet::Get()->GetLayer() != TCNET_LAYER_UNDEFINED) {
-		Display::Get()->PutChar('L');
-		Display::Get()->PutChar(TCNet::GetLayerName(TCNet::Get()->GetLayer()));
-		Display::Get()->PutString("   ");
-	} else {
-		Display::Get()->PutString("SMPTE");
-	}
+	Display::Get()->PutChar('L');
+	Display::Get()->PutChar(TCNet::GetLayerName(TCNet::Get()->GetLayer()));
 
-	Display::Get()->PutString(" F");
-	Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
+	if (TCNet::Get()->GetUseTimeCode()) {
+		Display::Get()->PutString(" TC ");
+	} else {
+		Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
+	}
 }
