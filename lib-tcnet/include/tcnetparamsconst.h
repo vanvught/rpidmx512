@@ -2,7 +2,7 @@
  * @file tcnetparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ public:
 	alignas(uint32_t) static const char NODE_NAME[];
 	alignas(uint32_t) static const char LAYER[];
 	alignas(uint32_t) static const char TIMECODE_TYPE[];
+	alignas(uint32_t) static const char USE_TIMECODE[];
 };
 
 #endif /* TCNETPARAMSCONST_H_ */

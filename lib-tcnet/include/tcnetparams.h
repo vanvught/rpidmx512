@@ -2,7 +2,7 @@
  * @file tcnetparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,17 +36,19 @@ struct TTCNetParams {
 	uint8_t aNodeName[TCNET_NODE_NAME_LENGTH];
 	uint8_t nLayer;
 	uint8_t nTimeCodeType;
+	uint8_t nUseTimeCode;
 };
 
 enum TTCNetParamsMask {
 	TCNET_PARAMS_MASK_NODE_NAME = (1 << 0),
 	TCNET_PARAMS_MASK_LAYER = (1 << 1),
-	TCNET_PARAMS_MASK_TIMECODE_TYPE = (1 << 2)
+	TCNET_PARAMS_MASK_TIMECODE_TYPE = (1 << 2),
+	TCNET_PARAMS_MASK_USE_TIMECODE = (1 << 3)
 };
 
 class TCNetParamsStore {
 public:
-	virtual ~TCNetParamsStore(void);
+	virtual ~TCNetParamsStore(void) {}
 
 	virtual void Update(const struct TTCNetParams *pTCNetParams)=0;
 	virtual void Copy(struct TTCNetParams *pTCNetParams)=0;
@@ -60,8 +62,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TTCNetParams	*pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(TCNet *pTCNet);
 
@@ -72,7 +74,9 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+	bool isMaskSet(uint32_t nMask) {
+		return (m_tTTCNetParams.nSetList & nMask) == nMask;
+	}
 
 private:
 	TCNetParamsStore *m_pTCNetParamsStore;

@@ -2,7 +2,7 @@
  * @file tcnetparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
@@ -40,9 +45,11 @@
 
 TCNetParams::TCNetParams(TCNetParamsStore* pTCNetParamsStore): m_pTCNetParamsStore(pTCNetParamsStore) {
 	m_tTTCNetParams.nSetList = 0;
+
 	memset(m_tTTCNetParams.aNodeName, '\0', TCNET_NODE_NAME_LENGTH);
 	m_tTTCNetParams.nLayer = TCNET_LAYER_M;
 	m_tTTCNetParams.nTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
+	m_tTTCNetParams.nUseTimeCode = 0;
 }
 
 TCNetParams::~TCNetParams(void) {
@@ -103,9 +110,11 @@ void TCNetParams::callbackFunction(const char *pLine) {
 	ch = ' ';
 	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &len) == SSCAN_OK) {
 		m_tTTCNetParams.nLayer = (uint8_t) TCNet::GetLayer((uint8_t) ch);
+
 		if (m_tTTCNetParams.nLayer != TCNET_LAYER_UNDEFINED) {
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_LAYER;
 		} else {
+			m_tTTCNetParams.nLayer = TCNET_LAYER_M;
 			m_tTTCNetParams.nSetList &= ~TCNET_PARAMS_MASK_LAYER;
 		}
 		return;
@@ -130,7 +139,20 @@ void TCNetParams::callbackFunction(const char *pLine) {
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_TIMECODE_TYPE;
 			break;
 		default:
+			m_tTTCNetParams.nSetList &= ~TCNET_PARAMS_MASK_TIMECODE_TYPE;
 			break;
+		}
+
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, TCNetParamsConst::USE_TIMECODE, &uint8) == SSCAN_OK) {
+		if (uint8 != 0) {
+			m_tTTCNetParams.nUseTimeCode = 1;
+			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_USE_TIMECODE;
+		} else {
+			m_tTTCNetParams.nUseTimeCode = 0;
+			m_tTTCNetParams.nSetList &= ~TCNET_PARAMS_MASK_USE_TIMECODE;
 		}
 
 		return;
@@ -154,6 +176,10 @@ void TCNetParams::Set(TCNet* pTCNet) {
 
 	if(isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE)) {
 		pTCNet->SetTimeCodeType((TTCNetTimeCodeType) m_tTTCNetParams.nTimeCodeType);
+	}
+
+	if(isMaskSet(TCNET_PARAMS_MASK_USE_TIMECODE)) {
+		pTCNet->SetUseTimeCode(m_tTTCNetParams.nUseTimeCode != 0);
 	}
 }
 
@@ -184,8 +210,4 @@ void TCNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != 0);
 
 	((TCNetParams *) p)->callbackFunction(s);
-}
-
-bool TCNetParams::isMaskSet(uint32_t nMask) const {
-	return (m_tTTCNetParams.nSetList & nMask) == nMask;
 }

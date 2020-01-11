@@ -2,7 +2,7 @@
  * @file tcnettimecode.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,10 @@
  * THE SOFTWARE.
  */
 
-
 #ifndef TCNETTIMECODE_H_
 #define TCNETTIMECODE_H_
 
 #include <stdint.h>
-
-#if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
 
 enum TTCNetTimeCodeType {
 	TCNET_TIMECODE_TYPE_FILM,
@@ -47,11 +42,11 @@ struct TTCNetTimeCode {
 	uint8_t nMinutes;		///< Minutes. 0 - 59.
 	uint8_t nHours;			///< Hours. 0 - 59.
 	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
-} PACKED;
+} __attribute__((packed));
 
 class TCNetTimeCode {
 public:
-	virtual ~TCNetTimeCode(void);
+	virtual ~TCNetTimeCode(void) {}
 
 	virtual void Handler(const struct TTCNetTimeCode *)= 0;
 };

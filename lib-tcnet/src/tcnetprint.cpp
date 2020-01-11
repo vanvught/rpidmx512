@@ -2,7 +2,7 @@
  * @file tcnetprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,8 @@ void TCNet::Print(void) {
 	printf("TCNet\n");
 	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
 	if (m_tLayer != TCNET_LAYER_UNDEFINED) {
-		printf(" L%c\n", GetLayerName((TTCNetLayers) m_tLayer));
+		printf(" L%c T%d\n", GetLayerName((TTCNetLayers) m_tLayer), s_nFps[m_tTimeCodeType]);
 	} else {
-		printf(" Using SMTPE fields\n");
+		printf(" LM TimeCode\n");
 	}
-	printf(" %d FPS\n", s_nFps[m_tTimeCodeType]);
 }

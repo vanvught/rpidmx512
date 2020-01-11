@@ -2,7 +2,7 @@
  * @file tcnet.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,17 @@
 
 #include "tcnettimecode.h"
 
-enum TTCNetNodeType {
-	TCNET_TYPE_AUTO = 1,
-	TCNET_TYPE_MASTER = 2,
-	TCNET_TYPE_SLAVE = 4,
-	TCNET_TYPE_REPEATER = 8
+enum TTCNetBroadcastPorts {
+	TCNET_BROADCAST_PORT_0 = 60000,
+	TCNET_BROADCAST_PORT_1 = 60001,
+	TCNET_BROADCAST_PORT_2 = 60002
 };
+
+enum TTCNETUnicastPort {
+	TCNET_UNICAST_PORT = 65023
+};
+
+//#define USE_PORT_UNICAST
 
 enum TTCNetLayers {
 	TCNET_LAYER_1 = 0,
@@ -52,8 +57,8 @@ enum TTCNetLayers {
 };
 
 struct TTCNetNodeIP {
-	uint32_t IPAddressLocal;
-	uint32_t IPAddressBroadcast;
+	uint32_t nIPAddressLocal;
+	uint32_t nIPAddressBroadcast;
 };
 
 class TCNet {
@@ -64,7 +69,7 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	int Run(void);
+	void Run(void);
 
 	void Print(void);
 
@@ -72,7 +77,7 @@ public:
 		return (TTCNetNodeType) m_tOptIn.ManagementHeader.NodeType;
 	}
 
-	void SetNodeName(uint8_t* pNodeName);
+	void SetNodeName(const uint8_t *pNodeName);
 	const uint8_t* GetNodeName(void) {
 		return m_tOptIn.ManagementHeader.NodeName;
 	}
@@ -80,6 +85,13 @@ public:
 	void SetLayer(TTCNetLayers tLayer);
 	TTCNetLayers GetLayer(void) {
 		return m_tLayer;
+	}
+
+	void SetUseTimeCode(bool bUseTimeCode) {
+		m_bUseTimeCode = bUseTimeCode;
+	}
+	bool GetUseTimeCode(void) {
+		return m_bUseTimeCode;
 	}
 
 	void SetTimeCodeType(TTCNetTimeCodeType tType);
@@ -106,11 +118,14 @@ private:
 	void HandlePortUnicastIncoming(void);
 	void HandleOptInOutgoing(void);
 
+	void DumpManagementHeader(void);
+	void DumpOptIn(void);
+
 private:
 	struct TTCNetNodeIP m_tNode;
 	uint32_t m_aHandles[4];
 
-	struct TOptIn m_tOptIn;
+	struct TTCNetPacketOptIn m_tOptIn;
 
 	struct TTCNet m_TTCNet;
 
@@ -119,11 +134,15 @@ private:
 
 	TTCNetLayers m_tLayer;
 	uint32_t *m_pLTime;
+	struct TTCNetPacketTimeTimeCode *m_pLTimeCode;
+	bool m_bUseTimeCode;
 
 	TCNetTimeCode *m_pTCNetTimeCode;
-	TTCNetTimeCodeType m_tTimeCodeType;
-	bool m_bIsSetTimeCodeType;
+
 	float m_fTypeDivider;
+	TTCNetTimeCodeType m_tTimeCodeType;
+
+	uint8_t m_nSeqTimeMessage;
 
 	static TCNet *s_pThis;
 };

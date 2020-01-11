@@ -1,3 +1,22 @@
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.orangepi.dmx;
 
 import java.awt.Color;
@@ -17,6 +36,7 @@ import javax.swing.JDialog;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JCheckBox;
 
 public class TCNet extends JDialog {
 	private static final long serialVersionUID = -7775636436383674851L;
@@ -28,7 +48,6 @@ public class TCNet extends JDialog {
     private JTextField txtType;
     private JRadioButton rdbtnLayer1;
     private JRadioButton rdbtnLayerA;
-    private JRadioButton rdbtnSMPTE;
     private JRadioButton rdbtnLayerB;
     private JRadioButton rdbtnLayerM;
     private JRadioButton rdbtnLayerC;
@@ -41,6 +60,7 @@ public class TCNet extends JDialog {
     private JRadioButton rdbtn24FPS;
     private final ButtonGroup buttonGroupLayer = new ButtonGroup();
     private final ButtonGroup buttonGroupType = new ButtonGroup();
+    private JCheckBox chckbxUseTimecode;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -76,7 +96,7 @@ public class TCNet extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 323, 210);
+		setBounds(100, 100, 299, 187);
 		
 		txtLayer = new JTextField();
 		txtLayer.setBorder(null);
@@ -110,9 +130,6 @@ public class TCNet extends JDialog {
 		rdbtnLayerC = new JRadioButton("C");
 		buttonGroupLayer.add(rdbtnLayerC);
 		
-		rdbtnSMPTE = new JRadioButton("SMPTE");
-		buttonGroupLayer.add(rdbtnSMPTE);
-		
 		txtType = new JTextField();
 		txtType.setText("Type");
 		txtType.setEditable(false);
@@ -133,33 +150,15 @@ public class TCNet extends JDialog {
 		rdbtn30FPS = new JRadioButton("30");
 		buttonGroupType.add(rdbtn30FPS);
 		
+		chckbxUseTimecode = new JCheckBox("Use TimeCode");
+		
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(18)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(txtLayer, GroupLayout.PREFERRED_SIZE, 48, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(rdbtnSMPTE)
-								.addGroup(groupLayout.createSequentialGroup()
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(rdbtnLayer1)
-										.addComponent(rdbtnLayerA, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE))
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(rdbtnLayer2, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
-										.addComponent(rdbtnLayerB, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(rdbtnLayer3, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
-										.addComponent(rdbtnLayerM))
-									.addGap(9)
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(rdbtnLayerC)
-										.addComponent(rdbtnLayer4, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)))))
+						.addComponent(chckbxUseTimecode)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(txtType, GroupLayout.PREFERRED_SIZE, 48, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -169,33 +168,49 @@ public class TCNet extends JDialog {
 							.addGap(2)
 							.addComponent(rdbtn29FPS)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(rdbtn30FPS)))
-					.addGap(25))
+							.addComponent(rdbtn30FPS))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(txtLayer, GroupLayout.PREFERRED_SIZE, 48, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(rdbtnLayer1)
+								.addComponent(rdbtnLayerA, GroupLayout.PREFERRED_SIZE, 46, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addComponent(rdbtnLayer2, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+								.addComponent(rdbtnLayerB, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(rdbtnLayer3, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+								.addComponent(rdbtnLayerM))
+							.addGap(9)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(rdbtnLayerC)
+								.addComponent(rdbtnLayer4, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))))
+					.addGap(68))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addGap(16)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(rdbtnLayer1)
+							.addGap(16)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(rdbtnLayer1)
+								.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+									.addComponent(rdbtnLayer2)
+									.addComponent(rdbtnLayer3)
+									.addComponent(rdbtnLayer4)))
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(txtLayer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-									.addComponent(rdbtnLayerA)
-									.addComponent(rdbtnLayerB)
-									.addComponent(rdbtnLayerM))))
+								.addComponent(rdbtnLayerC)
+								.addComponent(rdbtnLayerM)
+								.addComponent(rdbtnLayerB)
+								.addComponent(rdbtnLayerA)))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(rdbtnLayer2)
-								.addComponent(rdbtnLayer3)
-								.addComponent(rdbtnLayer4))
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(rdbtnLayerC)))
-					.addGap(18)
-					.addComponent(rdbtnSMPTE)
-					.addGap(36)
+							.addGap(34)
+							.addComponent(txtLayer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(txtType, GroupLayout.PREFERRED_SIZE, 16, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
@@ -203,7 +218,9 @@ public class TCNet extends JDialog {
 							.addComponent(rdbtn25FPS)
 							.addComponent(rdbtn29FPS)
 							.addComponent(rdbtn30FPS)))
-					.addContainerGap(14, Short.MAX_VALUE))
+					.addGap(18)
+					.addComponent(chckbxUseTimecode)
+					.addContainerGap(62, Short.MAX_VALUE))
 		);
 		getContentPane().setLayout(groupLayout);
 	}
@@ -257,12 +274,6 @@ public class TCNet extends JDialog {
 			}
 		});
 		
-		rdbtnSMPTE.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				SendUpd("tcnet!layer#S");
-			}
-		});
-		
 		rdbtn24FPS.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SendUpd("tcnet!type#24");
@@ -286,8 +297,34 @@ public class TCNet extends JDialog {
 				SendUpd("tcnet!type#30");
 			}
 		});
+		
+		chckbxUseTimecode.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (chckbxUseTimecode.isSelected()) {
+					SendUpd("tcnet!timecode#y");
+					DisablerdbtnFPS();
+				} else {
+					SendUpd("tcnet!timecode#n");
+					EnablerdbtnFPS();
+				}
+			}
+		});
 	}
 	
+	private void DisablerdbtnFPS() {
+		rdbtn24FPS.setEnabled(false);
+		rdbtn25FPS.setEnabled(false);
+		rdbtn29FPS.setEnabled(false);
+		rdbtn30FPS.setEnabled(false);
+	}
+
+	private void EnablerdbtnFPS() {
+		rdbtn24FPS.setEnabled(true);
+		rdbtn25FPS.setEnabled(true);
+		rdbtn29FPS.setEnabled(true);
+		rdbtn30FPS.setEnabled(true);
+	}
+
 	private void SendUpd(String message) {
 		byte[] buffer = message.getBytes();
 		

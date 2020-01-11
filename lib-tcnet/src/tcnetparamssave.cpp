@@ -2,7 +2,7 @@
  * @file tcnetparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -57,16 +62,16 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBu
 	builder.Add(TCNetParamsConst::NODE_NAME, (const char *)m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
 	builder.Add(TCNetParamsConst::LAYER, (const char *)name, isMaskSet(TCNET_PARAMS_MASK_LAYER));
 	builder.Add(TCNetParamsConst::TIMECODE_TYPE, s_nFPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
+	builder.Add(TCNetParamsConst::USE_TIMECODE, m_tTTCNetParams.nUseTimeCode, isMaskSet(TCNET_PARAMS_MASK_USE_TIMECODE));
 
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
-void TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void TCNetParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pTCNetParamsStore == 0) {
@@ -76,6 +81,4 @@ void TCNetParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }

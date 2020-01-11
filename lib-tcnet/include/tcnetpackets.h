@@ -2,7 +2,7 @@
  * @file tcnetpackets.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+/**
+ * Specification V3.3.3 11/11/2019
+ */
+
 #ifndef TCNETPACKETS_H_
 #define TCNETPACKETS_H_
 
@@ -41,6 +45,13 @@ enum TTCNetMessageType {
 	TCNET_MESSAGE_TYPE_TIME = 254
 };
 
+enum TTCNetNodeType {
+	TCNET_TYPE_AUTO = 1,
+	TCNET_TYPE_MASTER = 2,
+	TCNET_TYPE_SLAVE = 4,
+	TCNET_TYPE_REPEATER = 8
+};
+
 enum TTCNetNodeName {
 	TCNET_NODE_NAME_LENGTH = 8
 };
@@ -57,21 +68,21 @@ enum TTCNetDeviceName {
 #define PACKED __attribute__((packed))
 #endif
 
-struct TManagementHeader {
-	uint16_t NodeID;
-	uint8_t ProtocolVersionMajor;
-	uint8_t ProtocolVersionMinor;
-	uint8_t Header[3];
-	uint8_t MessageType;
-	uint8_t NodeName[TCNET_NODE_NAME_LENGTH];
-	uint8_t SEQ;
-	uint8_t NodeType;
-	uint16_t NodeOptions;
-	uint32_t TimeStamp;
+struct TTCNetPacketManagementHeader {
+	uint16_t NodeID;							//  0:2
+	uint8_t ProtocolVersionMajor;				//  2:1
+	uint8_t ProtocolVersionMinor;				//  3:1
+	uint8_t Header[3];							//  4:3
+	uint8_t MessageType;						//  7:1
+	uint8_t NodeName[TCNET_NODE_NAME_LENGTH];	//  8:8
+	uint8_t SEQ;								// 16:1
+	uint8_t NodeType;							// 17:1
+	uint16_t NodeOptions;						// 18:2
+	uint32_t TimeStamp;							// 20:4
 }PACKED;
 
-struct TOptIn {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketOptIn {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint16_t NodeCount;
 	uint16_t NodeListenerPort;
 	uint16_t Uptime;
@@ -84,14 +95,17 @@ struct TOptIn {
 	uint8_t Reserved2;
 }PACKED;
 
-struct TOptOut {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketOptOut {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint16_t NodeCount;
 	uint16_t NodeListenerPort;
 }PACKED;
 
-struct TStatus {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketStatus {
+	struct TTCNetPacketManagementHeader ManagementHeader;
+	uint8_t NodeCount[2];			// 24:2
+	uint8_t NodeListenerPort[2];	// 26:2
+	uint8_t Reserved1[6];			// 28:6
 	uint8_t Layer1Source;
 	uint8_t Layer2Source;
 	uint8_t Layer3Source;
@@ -116,116 +130,129 @@ struct TStatus {
 	uint32_t LayerBTrackID;
 	uint32_t LayerMTrackID;
 	uint32_t LayerCTrackID;
-	uint8_t Reserved1;
+	uint8_t Reserved2;
 	uint8_t SMPTEMode;
 	uint8_t AutoMasterMode;
-	uint8_t Reserved2;
-	uint8_t AppSpecific;
+	uint8_t Reserved3[15];
+	uint8_t AppSpecific[72];
 }PACKED;
 
-struct TTimeSync {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketTimeSync {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t STEP;
 	uint8_t Reserved1;
 	uint16_t NodeListenerPort;
 	uint32_t RemoteTimestamp;
 }PACKED;
 
-struct TErrorNotification {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketErrorNotification {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t Datatype;
 	uint8_t LayerID;
 	uint16_t Code;
 	uint16_t MessageType;
 }PACKED;
 
-struct TRequest {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketRequest {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t Datatype;
 	uint8_t Layer;
 }PACKED;
 
-struct TApplication {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketApplication {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t Data;
 }PACKED;
 
-#define APPLICATION_DATA_DATA_SIZE(x)	((x) - sizeof(struct TManagementHeader ManagementHeader))
+#define APPLICATION_DATA_DATA_SIZE(x)	((x) - sizeof(struct TTCNetPacketManagementHeader ManagementHeader))
 
-struct TControl {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketControl {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t ControlPath;
 }PACKED;
 
-struct TTextData {
-	struct TManagementHeader ManagementHeader;
+struct TTCNetPacketTextData {
+	struct TTCNetPacketManagementHeader ManagementHeader;
 	uint8_t TextData;
 }PACKED;
 
-struct TTime {
-	struct TManagementHeader ManagementHeader;
-	uint32_t L1Time;
-	uint32_t L2Time;
-	uint32_t L3Time;
-	uint32_t L4Time;
-	uint32_t LATime;
-	uint32_t LBTime;
-	uint32_t LMTime;
-	uint32_t LCTime;
-	uint32_t L1TotalTime;
-	uint32_t L2TotalTime;
-	uint32_t L3TotalTime;
-	uint32_t L4TotalTime;
-	uint32_t LATotalTime;
-	uint32_t LBTotalTime;
-	uint32_t LMTotalTime;
-	uint32_t LCTotalTime;
-	uint8_t L1BeatMarker;
-	uint8_t L2BeatMarker;
-	uint8_t L3BeatMarker;
-	uint8_t L4BeatMarker;
-	uint8_t LABeatMarker;
-	uint8_t LBBeatMarker;
-	uint8_t LMBeatMarker;
-	uint8_t LCBeatMarker;
-	uint8_t L1LayerState;
-	uint8_t L2LayerState;
-	uint8_t L3LayerState;
-	uint8_t L4LayerState;
-	uint8_t LALayerState;
-	uint8_t LBLayerState;
-	uint8_t LMLayerState;
-	uint8_t LCLayerState;
-	uint8_t L1LayerOnAir;
-	uint8_t L2LayerOnAir;
-	uint8_t L3LayerOnAir;
-	uint8_t L4LayerOnAir;
-	uint8_t LALayerOnAir;
-	uint8_t LBLayerOnAir;
-	uint8_t LMLayerOnAir;
-	uint8_t LCLayerOnAir;
-	uint8_t Reserved1[32];
-	uint8_t TimeCodeHours;
-	uint8_t TimeCodeMinutes;
-	uint8_t TimeCodeSeconds;
-	uint8_t TimeCodeFrames;
-	uint8_t TimeCodeType;
-	uint8_t Reserved2[5];
+struct TTCNetPacketTimeTimeCode {
+	uint8_t SMPTEMode;
+	uint8_t State;
+	uint8_t Hours;
+	uint8_t Minutes;
+	uint8_t Seconds;
+	uint8_t Frames;
+}PACKED;
+
+struct TTCNetPacketTime {
+	struct TTCNetPacketManagementHeader ManagementHeader;
+	uint32_t L1Time;							//  24:4
+	uint32_t L2Time;							//  28:4
+	uint32_t L3Time;							//  32:4
+	uint32_t L4Time;							//  36:4
+	uint32_t LATime;							//  40:4
+	uint32_t LBTime;							//  44:4
+	uint32_t LMTime;							//  48:4
+	uint32_t LCTime;							//  52:4
+	uint32_t L1TotalTime;						//  56:4
+	uint32_t L2TotalTime;						//  60:4
+	uint32_t L3TotalTime;						//  64:4
+	uint32_t L4TotalTime;						//  68:4
+	uint32_t LATotalTime;						//  72:4
+	uint32_t LBTotalTime;						//  76:4
+	uint32_t LMTotalTime;						//  80:4
+	uint32_t LCTotalTime;						//  84:4
+	uint8_t L1BeatMarker;						//  88:1
+	uint8_t L2BeatMarker;						//  89:1
+	uint8_t L3BeatMarker;						//  90:1
+	uint8_t L4BeatMarker;						//  91:1
+	uint8_t LABeatMarker;						//  92:1
+	uint8_t LBBeatMarker;						//  93:1
+	uint8_t LMBeatMarker;						//  94:1
+	uint8_t LCBeatMarker;						//  95:1
+	uint8_t L1LayerState;						//  96:1
+	uint8_t L2LayerState;						//  97:1
+	uint8_t L3LayerState;						//  98:1
+	uint8_t L4LayerState;						//  99:1
+	uint8_t LALayerState;						// 100:1
+	uint8_t LBLayerState;						// 101:1
+	uint8_t LMLayerState;						// 102:1
+	uint8_t LCLayerState;						// 103:1
+	uint8_t Reserved1;							// 104:1
+	uint8_t SMPTEMode;							// 105:1
+	struct TTCNetPacketTimeTimeCode L1TimeCode;	// 106:6
+	struct TTCNetPacketTimeTimeCode L2TimeCode;	// 112:6
+	struct TTCNetPacketTimeTimeCode L3TimeCode;	// 118:6
+	struct TTCNetPacketTimeTimeCode L4TimeCode;	// 124:6
+	struct TTCNetPacketTimeTimeCode LATimeCode;	// 130:6
+	struct TTCNetPacketTimeTimeCode LBTimeCode;	// 136:6
+	struct TTCNetPacketTimeTimeCode LMTimeCode;	// 142:6
+	struct TTCNetPacketTimeTimeCode LCTimeCode;	// 148:6
+	uint8_t L1LayerOnAir;						// 154:1
+	uint8_t L2LayerOnAir;						// 155:1
+	uint8_t L3LayerOnAir;						// 156:1
+	uint8_t L4LayerOnAir;						// 157:1
+	uint8_t LALayerOnAir;						// 158:1
+	uint8_t LBLayerOnAir;						// 159:1
+	uint8_t LMLayerOnAir;						// 160:1
+	uint8_t LCLayerOnAir;						// 161:1
+	uint8_t Reserved2;							// 162:1
 }PACKED;
 
 struct TTCNetPacket {
 	union {
-		struct TManagementHeader ManagementHeader;
-		struct TOptIn OptIn;
-		struct TOptOut OptOut;
-		struct TStatus Status;
-		struct TTimeSync Timesync;
-		struct TErrorNotification ErrorNotification;
-		struct TRequest Request;
-		struct TApplication Application;
-		struct TControl Control;
-		struct TTextData TextData;
-		struct TTime Time;
+		struct TTCNetPacketManagementHeader ManagementHeader;
+		struct TTCNetPacketOptIn OptIn;
+		struct TTCNetPacketOptOut OptOut;
+		struct TTCNetPacketStatus Status;
+		struct TTCNetPacketTimeSync Timesync;
+		struct TTCNetPacketErrorNotification ErrorNotification;
+		struct TTCNetPacketRequest Request;
+		struct TTCNetPacketApplication Application;
+		struct TTCNetPacketControl Control;
+		struct TTCNetPacketTextData TextData;
+		struct TTCNetPacketTime Time;
 	};
 	uint8_t filler[512];
 }PACKED;

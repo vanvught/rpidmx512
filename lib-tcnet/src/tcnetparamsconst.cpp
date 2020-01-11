@@ -2,7 +2,7 @@
  * @file tcnetparamsconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,3 +31,4 @@ alignas(uint32_t) const char TCNetParamsConst::FILE_NAME[]  = "tcnet.txt";
 alignas(uint32_t) const char TCNetParamsConst::NODE_NAME[]  = "node_name";
 alignas(uint32_t) const char TCNetParamsConst::LAYER[]  = "layer";
 alignas(uint32_t) const char TCNetParamsConst::TIMECODE_TYPE[]  = "timecode_type";
+alignas(uint32_t) const char TCNetParamsConst::USE_TIMECODE[]  = "use_timecode";
