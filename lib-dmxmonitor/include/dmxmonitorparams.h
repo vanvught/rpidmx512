@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ struct TDMXMonitorParams {
 
 class DMXMonitorParamsStore {
 public:
-	virtual ~DMXMonitorParamsStore(void);
+	virtual ~DMXMonitorParamsStore(void) {}
 
 	virtual void Update(const struct TDMXMonitorParams *pDMXMonitorParams)=0;
 	virtual void Copy(struct TDMXMonitorParams *pDMXMonitorParams)=0;
@@ -61,7 +61,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tDMXMonitorParams.nSetList & nMask) == nMask;
+    }
 
 private:
     DMXMonitorParamsStore *m_pDMXMonitorParamsStore;

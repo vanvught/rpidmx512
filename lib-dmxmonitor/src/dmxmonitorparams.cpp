@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,11 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "dmxmonitorparams.h"
+#include "dmxmonitorparamsconst.h"
+
+#include "lightset.h"
+#include "lightsetconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -48,15 +48,10 @@
 #define SET_DMX_MAX_CHANNELS		(1 << 1)
 #define SET_FORMAT					(1 << 2)
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "mon.txt";
-static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
-static const char PARAMS_DMX_MAX_CHANNELS[] ALIGNED = "dmx_max_channels";
-static const char PARAMS_FORMAT[] ALIGNED = "format";
-
 DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore* pDMXMonitorParamsStore): m_pDMXMonitorParamsStore(pDMXMonitorParamsStore) {
 	m_tDMXMonitorParams.nSetList = 0;
-	m_tDMXMonitorParams.nDmxStartAddress = 1;
-	m_tDMXMonitorParams.nDmxMaxChannels = 512;
+	m_tDMXMonitorParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
+	m_tDMXMonitorParams.nDmxMaxChannels = DMX_UNIVERSE_SIZE;
 	m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_HEX;
 }
 
@@ -68,7 +63,7 @@ bool DMXMonitorParams::Load(void) {
 
 	ReadConfigFile configfile(DMXMonitorParams::staticCallbackFunction, this);
 
-	if (configfile.Read(PARAMS_FILE_NAME)) {
+	if (configfile.Read(DMXMonitorParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pDMXMonitorParamsStore != 0) {
 			m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
@@ -100,35 +95,6 @@ void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
 	}
 }
 
-void DMXMonitorParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_tDMXMonitorParams.nSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
-
-	if (isMaskSet(SET_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", PARAMS_DMX_START_ADDRESS, (int) m_tDMXMonitorParams.nDmxStartAddress);
-	}
-
-	if (isMaskSet(SET_DMX_MAX_CHANNELS)) {
-		printf(" %s=%d\n", PARAMS_DMX_MAX_CHANNELS, (int) m_tDMXMonitorParams.nDmxMaxChannels);
-	}
-
-	if (isMaskSet(SET_FORMAT)) {
-		printf(" %s=%d [%s]\n", PARAMS_FORMAT, (int) m_tDMXMonitorParams.tFormat, m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
-	}
-#endif
-}
-
-void DMXMonitorParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	((DMXMonitorParams *) p)->callbackFunction(s);
-}
-
 void DMXMonitorParams::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
 
@@ -136,7 +102,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	char value[8];
 	uint8_t len;
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxStartAddress = value16;
 			m_tDMXMonitorParams.nSetList |= SET_DMX_START_ADDRESS;
@@ -144,7 +110,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_MAX_CHANNELS, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, DMXMonitorParamsConst::DMX_MAX_CHANNELS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxMaxChannels = value16;
 			m_tDMXMonitorParams.nSetList |= SET_DMX_MAX_CHANNELS;
@@ -153,7 +119,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	}
 
 	len = 3;
-	if (Sscan::Char(pLine, PARAMS_FORMAT, value, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, DMXMonitorParamsConst::FORMAT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "pct", 3) == 0) {
 			m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_PCT;
 		} else if (memcmp(value, "dec", 3) == 0) {
@@ -166,6 +132,32 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	}
 }
 
-bool DMXMonitorParams::isMaskSet(uint32_t nMask) const {
-	return (m_tDMXMonitorParams.nSetList & nMask) == nMask;
+void DMXMonitorParams::Dump(void) {
+#ifndef NDEBUG
+	if (m_tDMXMonitorParams.nSetList == 0) {
+		return;
+	}
+
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXMonitorParamsConst::FILE_NAME);
+
+	if (isMaskSet(SET_DMX_START_ADDRESS)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, (int) m_tDMXMonitorParams.nDmxStartAddress);
+	}
+
+	if (isMaskSet(SET_DMX_MAX_CHANNELS)) {
+		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, (int) m_tDMXMonitorParams.nDmxMaxChannels);
+	}
+
+	if (isMaskSet(SET_FORMAT)) {
+		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, (int) m_tDMXMonitorParams.tFormat, m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
+	}
+#endif
 }
+
+void DMXMonitorParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	((DMXMonitorParams *) p)->callbackFunction(s);
+}
+
