@@ -28,6 +28,7 @@
 #include "ili9340.h"
 
 #include "bob.h"
+
 #include "font_cp437.h"
 
 #if !defined(H3)

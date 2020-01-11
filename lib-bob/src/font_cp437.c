@@ -2,7 +2,7 @@
  * @file font_cp437.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef FONT_CP437_H_
-#define FONT_CP437_H_
+#ifndef FONT_CP437_C_
+#define FONT_CP437_C_
 
 #include <stdint.h>
-
-#define FONT_CP437_CHAR_W	8
-#define FONT_CP437_CHAR_H	8
 
 // bit patterns for the CP437 font
 // https://en.wikipedia.org/wiki/Code_page_437
@@ -295,4 +292,8 @@ uint8_t cp437_font [][8] = {
 #endif
 };
 
-#endif /* FONT_CP437_H_ */
+uint32_t cp437_font_size(void) {
+	return sizeof(cp437_font)/sizeof(cp437_font[0]);
+}
+
+#endif /* FONT_CP437_C_ */

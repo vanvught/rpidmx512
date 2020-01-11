@@ -105,7 +105,7 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 
 		while (--k >= 0) {
 			c = buf[k];
-			if (c >= (sizeof(cp437_font)/sizeof(cp437_font[0]))) {
+			if (c >= cp437_font_size()) {
 				c = ' ';
 			}
 			spi_data[j++] = i;

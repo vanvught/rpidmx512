@@ -234,7 +234,4 @@ void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 	((WS28xxDmxParams *) p)->callbackFunction(s);
 }
 
-bool WS28xxDmxParams::isMaskSet(uint32_t nMask) const {
-	return (m_tWS28xxParams.nSetList & nMask) == nMask;
-}
 
