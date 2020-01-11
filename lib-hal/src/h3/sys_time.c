@@ -2,7 +2,7 @@
  * @file sys_time.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,16 @@ void sys_time_init(void) {
 		tmbuf.tm_hour = 0;
 		tmbuf.tm_min = 0;
 		tmbuf.tm_sec = 0;
-		tmbuf.tm_mday = 1;
-		tmbuf.tm_mon = 0;
-		tmbuf.tm_year = 20;
+		tmbuf.tm_mday = _TIME_STAMP_DAY_;
+		tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;
+		tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
 		rtc_startup_seconds = mktime(&tmbuf);
+
+		DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
+		DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_startup_seconds)));
+
 		return;
 	}
 

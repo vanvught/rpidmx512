@@ -20,6 +20,7 @@ INCLUDES:= -I./include -I../include -I../lib-ledblink/include -I../lib-hal/inclu
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
+DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 
 ifneq ($(CONSOLE),)
 	ifeq ($(findstring $(CONSOLE),$(MAKE_FLAGS)), $(CONSOLE))

@@ -7,6 +7,7 @@ LD	=$(PREFIX)ld
 AR	=$(PREFIX)ar
 
 DEFINES:=$(addprefix -D,$(DEFINES))
+DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 
 INCLUDES:=-I./include -I../lib-hal/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
