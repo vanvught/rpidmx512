@@ -113,6 +113,8 @@ public:
 		return BOOT_DEVICE_MMC0;
 	}
 
+	void SoftReset(void) {}
+
 public:
 	 static Hardware* Get(void) {
 		return s_pThis;

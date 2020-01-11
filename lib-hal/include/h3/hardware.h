@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,14 +47,14 @@ public:
 	Hardware(void);
 	~Hardware(void);
 
-	const char* GetMachine(uint8_t &nLength);
-	const char* GetSysName(uint8_t &nLength);
+	const char *GetMachine(uint8_t &nLength);
+	const char *GetSysName(uint8_t &nLength);
 
 	uint32_t GetReleaseId(void) {
 		return 0;	// TODO U-Boot version
 	}
 
-	const char* GetBoardName(uint8_t &nLength);
+	const char *GetBoardName(uint8_t &nLength);
 
 	uint32_t GetBoardId(void) {
 	#if defined(ORANGE_PI)
@@ -66,8 +66,8 @@ public:
 	#endif
 	}
 
-	const char* GetCpuName(uint8_t &nLength);
-	const char* GetSocName(uint8_t &nLength);
+	const char *GetCpuName(uint8_t &nLength);
+	const char *GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void) {
 		return (float) h3_thermal_gettemp();
@@ -111,7 +111,8 @@ public:
 	}
 
 	uint32_t Millis(void) {
-		return millis();
+		return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
+		// return millis();
 	}
 
 	void WatchdogInit(void) {
@@ -140,8 +141,10 @@ public:
 		return "www.orangepi-dmx.org";
 	}
 
+	void SoftReset(void);
+
 public:
-	 static Hardware* Get(void) {
+	 static Hardware *Get(void) {
 		return s_pThis;
 	}
 

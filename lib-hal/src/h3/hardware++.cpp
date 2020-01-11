@@ -39,6 +39,10 @@
 
 #include "arm/synchronize.h"
 
+extern "C" {
+void _start(void);
+}
+
 #if defined(ORANGE_PI)
 #elif defined(ORANGE_PI_ONE)
 #else
@@ -144,4 +148,16 @@ bool Hardware::Reboot(void) {
 	__builtin_unreachable ();
 
 	return true;
+}
+
+void Hardware::SoftReset(void) {
+	invalidate_instruction_cache();
+	flush_branch_target_cache();
+	flush_prefetch_buffer();
+	clean_data_cache();
+	invalidate_data_cache();
+
+	_start();
+
+	__builtin_unreachable();
 }
