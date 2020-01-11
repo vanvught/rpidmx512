@@ -77,11 +77,7 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
 
-# Raspberry Pi Zero Raspbian Open Source
-## Art-Net
-- ArtIpProg Widget Raspberry Pi Zero
-
-# Linux / Cygwin / Mac OS X
+#  Mac OS X / Linux / Cygwin
 ## Art-Net 4 / sACN E1.31 / OSC
 - **Art-Net 4** Real-time DMX Monitor
 - sACN **E.131** Real-time DMX Monitor
