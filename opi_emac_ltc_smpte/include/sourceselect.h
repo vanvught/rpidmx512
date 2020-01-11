@@ -40,7 +40,7 @@ enum TRunStatus {
 
 class SourceSelect {
 public:
-	SourceSelect(TLtcReaderSource tLtcReaderSource);
+	SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutputs);
 	~SourceSelect(void);
 
 	bool Check(void);
@@ -63,6 +63,7 @@ private:
 
 private:
 	TLtcReaderSource m_tLtcReaderSource;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bIsConnected;
 	uint8_t m_nPortA;
 	uint8_t m_nPortAPrevious;

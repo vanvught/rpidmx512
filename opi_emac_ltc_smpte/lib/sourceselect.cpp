@@ -2,7 +2,7 @@
  * @file sourceselect.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,8 @@
 
 #include "display.h"
 #include "display7segment.h"
-#include "displaymax7219.h"
+#include "ltcdisplaymax7219.h"
+#include "ltcdisplayws28xx.h"
 
 #include "rotaryencoder.h"
 
@@ -87,8 +88,9 @@ enum TButtons {
 	BUTTON_RESUME = 7
 };
 
-SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource):
+SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutput):
 	m_tLtcReaderSource(tLtcReaderSource),
+	m_ptLtcDisabledOutputs(ptLtcDisabledOutput),
 	m_bIsConnected(false),
 	m_nPortA(0),
 	m_nPortAPrevious(0),
@@ -148,7 +150,14 @@ void SourceSelect::HandleRotary(uint8_t nInputAB, TLtcReaderSource &tLtcReaderSo
 
 void SourceSelect::UpdateDisaplays(TLtcReaderSource tLtcReaderSource) {
 	Display::Get()->TextStatus(SourceSelectConst::SOURCE[tLtcReaderSource], s_7Segment[tLtcReaderSource]);
-	DisplayMax7219::Get()->WriteChar((uint8_t) tLtcReaderSource);
+
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
+		LtcDisplayMax7219::Get()->WriteChar((uint8_t) tLtcReaderSource);
+	}
+
+	if(!m_ptLtcDisabledOutputs->bWS28xx) {
+		LtcDisplayWS28xx::Get()->WriteChar((uint8_t) tLtcReaderSource);
+	}
 }
 
 bool SourceSelect::Check(void) {
@@ -274,15 +283,15 @@ void SourceSelect::HandleActionSelect(void) {
 		while (SpiFlashStore::Get()->Flash())
 			;
 
-		printf("Rebooting ...\n");
+		printf("SoftReset ...\n");
 
 		i2c_set_address(MCP23017_I2C_ADDRESS);
 		i2c_write_reg_uint8(MCP23X17_GPIOB, 0xFF);
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		Display::Get()->TextStatus("SoftReset ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 
-		Hardware::Get()->Reboot();
+		Hardware::Get()->SoftReset();
 	}
 }
 

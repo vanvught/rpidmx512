@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "ltcdisplayws28xx.h"
+
 #define OSCSERVER_PATH_LENGTH_MAX	128
 
 class OSCServer {
@@ -47,6 +49,9 @@ public:
 	uint16_t GetPortIncoming(void) {
 		return m_nPortIncoming;
 	}
+
+private:
+	void SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex);
 
 private:
 	uint16_t m_nPortIncoming;

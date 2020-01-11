@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,8 +63,8 @@
 #include "oscserver.h"
 
 #include "display.h"
-#include "displaymax7219.h"
-#include "displayws28xx.h"
+#include "ltcdisplaymax7219.h"
+#include "ltcdisplayws28xx.h"
 
 #include "networkhandleroled.h"
 
@@ -139,30 +139,12 @@ void notmain(void) {
 	ntpClient.Init();
 	ntpClient.Print();
 
-	Midi midi;
-	ArtNetNode node;
-	TCNet tcnet;
-	LtcSender ltcSender;
-	RtpMidi rtpMidi;
-	OSCServer oscServer;
-
 	LtcReader ltcReader(&tLtcDisabledOutputs);
 	MidiReader midiReader(&tLtcDisabledOutputs);
 	ArtNetReader artnetReader(&tLtcDisabledOutputs);
 	TCNetReader tcnetReader(&tLtcDisabledOutputs);
 	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
 	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
-
-	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
-	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
-
-	StoreTCNet storetcnet;
-	TCNetParams tcnetparams((TCNetParamsStore *) &storetcnet);
-
-	if (tcnetparams.Load()) {
-		tcnetparams.Set(&tcnet);
-		tcnetparams.Dump();
-	}
 
 	StoreLtcDisplay storeLtcDisplay;
 	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
@@ -171,17 +153,19 @@ void notmain(void) {
 		ltcDisplayParams.Dump();
 	}
 
-	DisplayMax7219 displayMax7219(ltcDisplayParams.GetMax7219Type());
+	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
 
 	if(!tLtcDisabledOutputs.bMax7219) {
-		displayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+		ltcDdisplayMax7219.Print();
 	}
 
-	DisplayWS28xx displayWS28xx(ltcDisplayParams.GetLedType());
+	LtcDisplayWS28xx ltcDisplayWS28xx(ltcDisplayParams.GetWS28xxType());
 
 	if (!tLtcDisabledOutputs.bWS28xx){
-		ltcDisplayParams.Set(&displayWS28xx);
-		displayWS28xx.Init(ltcDisplayParams.GetGlobalBrightness());
+		ltcDisplayParams.Set(&ltcDisplayWS28xx);
+		ltcDisplayWS28xx.Init(ltcDisplayParams.GetLedType());
+		ltcDisplayWS28xx.Print();
 	}
 
 	display.ClearLine(3);
@@ -195,7 +179,7 @@ void notmain(void) {
 
 	const bool IsAutoStart = ((source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsAutoStart());
 
-	SourceSelect sourceSelect(source);
+	SourceSelect sourceSelect(source, &tLtcDisabledOutputs);
 
 	if (sourceSelect.Check() && !IsAutoStart) {
 		while (sourceSelect.Wait(source)) {
@@ -210,8 +194,15 @@ void notmain(void) {
 
 	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
 
+	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
+
+	/**
+	 * Art-Net
+	 */
+
 	const bool bRunArtNet = ((source == LTC_READER_SOURCE_ARTNET) || (!tLtcDisabledOutputs.bArtNet));
 
+	ArtNetNode node;
 	IpProg ipprog;
 	TimeSync timeSync;
 
@@ -237,59 +228,68 @@ void notmain(void) {
 		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
 		display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
 
-		node.Print();
 		node.Start();
+		node.Print();
 
 		console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
 		display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
 	}
 
-	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
+	/**
+	 * TCNet
+	 */
+
+	const bool bRunTCNet = (source == LTC_READER_SOURCE_TCNET);
+
+	TCNet tcnet(TCNET_TYPE_SLAVE);
+	StoreTCNet storetcnet;
+
+	if (bRunTCNet) {
+		TCNetParams tcnetparams((TCNetParamsStore*) &storetcnet);
+
+		if (tcnetparams.Load()) {
+			tcnetparams.Set(&tcnet);
+			tcnetparams.Dump();
+		}
+
+		tcnet.Start();
+		tcnet.Print();
+	}
+
+	/**
+	 * MIDI
+	 */
+
+	Midi midi;
 
 	if (source != LTC_READER_SOURCE_MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
 
-	if ((source != LTC_READER_SOURCE_LTC) && (!tLtcDisabledOutputs.bLtc)) {
-		ltcSender.Start();
+	midi.Print();
+
+	/**
+	 * RTP-MIDI
+	 */
+
+	const bool bRunRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
+
+	RtpMidi rtpMidi;
+
+	if (bRunRtpMidi) {
+		rtpMidi.Start();
+		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+		rtpMidi.Print();
 	}
 
 	/**
-	 * Start the reader
+	 * LTC Sender
 	 */
-	switch (source) {
-	case LTC_READER_SOURCE_ARTNET:
-		node.SetTimeCodeHandler(&artnetReader);
-		artnetReader.Start();
-		break;
-	case LTC_READER_SOURCE_MIDI:
-		midiReader.Start();
-		break;
-	case LTC_READER_SOURCE_TCNET:
-		tcnet.SetTimeCodeHandler(&tcnetReader);
-		tcnet.Start();
-		tcnetReader.Start();
-		break;
-	case LTC_READER_SOURCE_INTERNAL:
-		ltcGenerator.Start();
-		break;
-	case LTC_READER_SOURCE_APPLEMIDI:
-		rtpMidi.SetHandler(&rtpMidiReader);
-		rtpMidiReader.Start();
-		break;
-	case LTC_READER_SOURCE_SYSTIME:
-		sysTimeReader.Start(ltcParams.IsAutoStart());
-		break;
-	default:
-		ltcReader.Start();
-		break;
-	}
 
-	const bool bEnableRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
+	LtcSender ltcSender;
 
-	if (bEnableRtpMidi) {
-		rtpMidi.Start();
-		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+	if ((source != LTC_READER_SOURCE_LTC) && (!tLtcDisabledOutputs.bLtc)) {
+		ltcSender.Start();
 	}
 
 	/**
@@ -297,6 +297,8 @@ void notmain(void) {
 	 */
 
 	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_TCNET || source == LTC_READER_SOURCE_INTERNAL || source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsOscEnabled());
+
+	OSCServer oscServer;
 
 	if (bRunOSCServer) {
 		bool isSet;
@@ -311,26 +313,57 @@ void notmain(void) {
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
 	}
 
-	const bool bEnableNtp = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NTP_CLIENT_STATUS_STOPPED);
+	/**
+	 * NTP Server is running when the NTP Client is not running (stopped)
+	 */
 
-	if (bEnableNtp) {
+	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NTP_CLIENT_STATUS_STOPPED);
+
+	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
+
+	if (bRunNtpServer) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
 		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
 	}
 
-	ltcGenerator.Print();
-	tcnet.Print();
-	midi.Print();
-	rtpMidi.Print();
+	/**
+	 * LTC Generator
+	 */
 
-	if(!tLtcDisabledOutputs.bMax7219) {
-		displayMax7219.Print();
-	}
+	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
 
-	if (!tLtcDisabledOutputs.bWS28xx){
-		displayWS28xx.Print();
+	/**
+	 * Start the reader
+	 */
+
+	switch (source) {
+	case LTC_READER_SOURCE_ARTNET:
+		node.SetTimeCodeHandler(&artnetReader);
+		artnetReader.Start();
+		break;
+	case LTC_READER_SOURCE_MIDI:
+		midiReader.Start();
+		break;
+	case LTC_READER_SOURCE_TCNET:
+		tcnet.SetTimeCodeHandler(&tcnetReader);
+		tcnetReader.Start();
+		break;
+	case LTC_READER_SOURCE_INTERNAL:
+		ltcGenerator.Start();
+		ltcGenerator.Print();
+		break;
+	case LTC_READER_SOURCE_APPLEMIDI:
+		rtpMidi.SetHandler(&rtpMidiReader);
+		rtpMidiReader.Start();
+		break;
+	case LTC_READER_SOURCE_SYSTIME:
+		sysTimeReader.Start(ltcParams.IsAutoStart());
+		break;
+	default:
+		ltcReader.Start();
+		break;
 	}
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
@@ -343,13 +376,11 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
+	printf("Source : %s\n", SourceSelectConst::SOURCE[source]);
+
 	// OLED display
+
 	display.ClearLine(4);
-
-	console_puts("Source : ");
-	display.SetCursorPos(0,3);
-
-	puts(SourceSelectConst::SOURCE[source]);
 	display.PutString(SourceSelectConst::SOURCE[source]);
 
 	if (source == LTC_READER_SOURCE_TCNET) {
@@ -365,10 +396,6 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-
-		if (source == LTC_READER_SOURCE_TCNET) {		//FIXME Remove when MASTER is implemented
-			tcnet.Run();
-		}
 
 		// Run the reader
 		switch (source) {
@@ -401,7 +428,11 @@ void notmain(void) {
 			node.Run();
 		}
 
-		if (bEnableRtpMidi) {
+		if (bRunTCNet) {
+			tcnet.Run();
+		}
+
+		if (bRunRtpMidi) {
 			rtpMidi.Run();
 		}
 
@@ -409,8 +440,10 @@ void notmain(void) {
 			oscServer.Run();
 		}
 
-		if (bEnableNtp) {
+		if (bRunNtpServer) {
 			ntpServer.Run();
+		} else {
+			ntpClient.Run();
 		}
 
 		if (tLtcDisabledOutputs.bDisplay) {
@@ -418,14 +451,12 @@ void notmain(void) {
 		}
 
 		if (!tLtcDisabledOutputs.bWS28xx){
-			displayWS28xx.Run();
+			ltcDisplayWS28xx.Run();
 		}
 
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
-
-		ntpClient.Run();
 
 		remoteConfig.Run();
 		spiFlashStore.Flash();
