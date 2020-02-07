@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 
 #include "ws28xxmulti.h"
 
+#include "rgbmapping.h"
+
 enum TWS28xxDmxMultiSrc {
 	WS28XXDMXMULTI_SRC_ARTNET,
 	WS28XXDMXMULTI_SRC_E131
@@ -49,9 +51,24 @@ public:
 
 	void Blackout(bool bBlackout);
 
-	virtual void SetLEDType(TWS28xxMultiType tWS28xxMultiType);
-	TWS28xxMultiType GetLEDType(void) {
+	virtual void SetLEDType(TWS28XXType tWS28xxMultiType);
+	TWS28XXType GetLEDType(void) {
+		if (m_pLEDStripe != 0) {
+			return m_pLEDStripe->GetLEDType();
+		}
 		return m_tLedType;
+	}
+
+	void SetRgbMapping(TRGBMapping tRGBMapping) {
+		m_tRGBMapping = tRGBMapping;
+	}
+
+	void SetLowCode(uint8_t nLowCode) {
+		m_nLowCode = nLowCode;
+	}
+
+	void SetHighCode(uint8_t nHighCode) {
+		m_nHighCode = nHighCode;
 	}
 
 	void SetLEDCount(uint16_t nLedCount);
@@ -75,6 +92,13 @@ public:
 		return m_bUseSI5351A;
 	}
 
+	WS28xxMultiBoard GetBoard(void) {
+		if (m_pLEDStripe != 0) {
+			return m_pLEDStripe->GetBoard();
+		}
+		return WS28XXMULTI_BOARD_UNKNOWN;
+	}
+
 	void Print(void);
 
 private:
@@ -82,11 +106,16 @@ private:
 
 private:
 	TWS28xxDmxMultiSrc m_tSrc;
-	TWS28xxMultiType m_tLedType;
+	TWS28XXType m_tLedType;
+
+	TRGBMapping m_tRGBMapping;
+	uint8_t m_nLowCode;
+	uint8_t m_nHighCode;
+
 	uint32_t m_nLedCount;
 	uint32_t m_nActiveOutputs;
 
-	WS28xxMulti* m_pLEDStripe;
+	WS28xxMulti *m_pLEDStripe;
 
 	bool m_bIsStarted;
 	bool m_bBlackout;

@@ -2,7 +2,7 @@
  * @file ws28xxmatrix.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,14 +83,14 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix(void) {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplayMatrix::Init(TWS28XXType tLedType) {
+void WS28xxDisplayMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == 0);
 #if defined(USE_SPI_DMA)
-	m_pWS28xx = new WS28xxDMA(tLedType, m_nMaxLeds);
+	m_pWS28xx = new WS28xxDMA(tLedType, m_nMaxLeds, tRGBMapping);
 #else
-	m_pWS28xx = new WS28xx(tLedType, m_nMaxLeds);
+	m_pWS28xx = new WS28xx(tLedType, m_nMaxLeds, tRGBMapping);
 #endif
 	assert(m_pWS28xx != 0);
 

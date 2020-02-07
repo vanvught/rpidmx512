@@ -2,7 +2,7 @@
  * @file ws28xx.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined (__circle__)
- #include <circle/interrupt.h>
- #include <circle/spimasterdma.h>
-#endif
+#include "rgbmapping.h"
 
 enum TWS28XXType {
 	WS2801 = 0,
@@ -46,29 +43,49 @@ enum TWS28XXType {
 	APA102,
 	UCS1903,
 	UCS2903,
+	P9813,
 	WS28XX_UNDEFINED
+};
+
+enum {
+	LEDCOUNT_RGB_MAX = (4 * 170), LEDCOUNT_RGBW_MAX = (4 * 128)
+};
+
+enum {
+	SINGLE_RGB = 24, SINGLE_RGBW = 32
 };
 
 #define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
 #define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
 
+#define P9813_SPI_SPEED_MAX_HZ		15000000	///< 15 MHz
+#define P9813_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
+
 class WS28xx {
 public:
-#if defined (__circle__)
-	WS28xx (CInterruptSystem *pInterruptSystem, TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
-#else
-	WS28xx(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
-#endif
+	WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
 	~WS28xx(void);
 
 	bool Initialize (void);
 
-	uint16_t GetLEDCount(void) {
-		return m_nLEDCount;
-	}
-
 	TWS28XXType GetLEDType(void) {
 		return m_tLEDType;
+	}
+
+	TRGBMapping GetRgbMapping(void) {
+		return m_tRGBMapping;
+	}
+
+	uint8_t GetLowCode(void) {
+		return m_nLowCode;
+	}
+
+	uint8_t GetHighCode(void) {
+		return m_nHighCode;
+	}
+
+	uint16_t GetLEDCount(void) {
+		return m_nLedCount;
 	}
 
 	uint32_t GetClockSpeedHz(void) {
@@ -87,43 +104,33 @@ public:
 	void Update(void);
 	void Blackout(void);
 
-#if defined (__circle__)
-	bool IsUpdating (void) const; // returns TRUE while DMA operation is active
-#else
-	bool IsUpdating(void) const {
+	bool IsUpdating(void) {
 		return false;
 	}
-#endif
 
 public:
 	static const char *GetLedTypeString(TWS28XXType tType);
-	static TWS28XXType GetLedTypeString(const char *pVale);
+	static TWS28XXType GetLedTypeString(const char *pValue);
+	static void GetTxH(TWS28XXType tType, uint8_t &nLowCode, uint8_t &nHighCode);
+	static TRGBMapping GetRgbMapping(TWS28XXType tType);
+	static float ConvertTxH(uint8_t nCode);
+	static uint8_t ConvertTxH(float fTxH);
 
 private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
-#if defined (__circle__)
-private:
-	void SPICompletionRoutine (boolean bStatus);
-	static void SPICompletionStub (boolean bStatus, void *pParam);
-#endif
-
 protected:
 	TWS28XXType m_tLEDType;
-	uint16_t m_nLEDCount;
+	uint16_t m_nLedCount;
+	TRGBMapping m_tRGBMapping;
+	bool m_bIsRTZProtocol;
 	uint32_t m_nClockSpeedHz;
 	uint32_t m_nBufSize;
 	uint8_t m_nGlobalBrightness;
+	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;
-	volatile bool m_bUpdating;	// TODO Why is this volatile?
 	alignas(uint32_t) uint8_t *m_pBuffer;
 	alignas(uint32_t) uint8_t *m_pBlackoutBuffer;
-
-private:
-#if defined (__circle__)
-	uint8_t *m_pReadBuffer;
-	CSPIMasterDMA m_SPIMaster;
-#endif
 };
 
 #endif /* WS28XX_H_ */

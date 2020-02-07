@@ -87,7 +87,7 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 	return true;
 }
 
-bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet) {
+bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, uint32_t nPrecision) {
 #if !defined(BUILDER_NOT_SET)
 	if (!bIsSet) {
 		return false;
@@ -104,9 +104,9 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet) {
 	int i;
 
 	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.1f\n", pProperty, fValue);
+		i = snprintf(p, nSize, "%s=%.*f\n", pProperty, nPrecision, fValue);
 	} else {
-		i = snprintf(p, nSize, "#%s=%.1f\n", pProperty, fValue);
+		i = snprintf(p, nSize, "#%s=%.*f\n", pProperty, nPrecision, fValue);
 	}
 
 	if (i > static_cast<int>(nSize)) {

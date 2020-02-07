@@ -2,7 +2,7 @@
  * @file ws28xxmulti.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,19 +28,18 @@
 
 #include <stdint.h>
 
-enum TWS28xxMultiType {
-	WS28XXMULTI_WS2801_NOT_SUPPORTED = 0,
-	WS28XXMULTI_WS2811,
-	WS28XXMULTI_WS2812,
-	WS28XXMULTI_WS2812B,
-	WS28XXMULTI_WS2813,
-	WS28XXMULTI_WS2815,
-	WS28XXMULTI_SK6812,
-	WS28XXMULTI_SK6812W,
-	WS28XXMULTI_APA102_NOT_SUPPORTED,
-	WS28XXMULTI_UCS1903,
-	WS28XXMULTI_UCS2903,
-	WS28XXMULTI_UNDEFINED
+#include "ws28xx.h"
+
+#include "rgbmapping.h"
+
+#if defined (H3)
+ #include "h3/ws28xxdma.h"
+#endif
+
+enum WS28xxMultiBoard {
+	WS28XXMULTI_BOARD_4X,
+	WS28XXMULTI_BOARD_8X,
+	WS28XXMULTI_BOARD_UNKNOWN
 };
 
 enum WS28xxMultiActivePorts {
@@ -49,19 +48,15 @@ enum WS28xxMultiActivePorts {
 
 class WS28xxMulti {
 public:
-	WS28xxMulti(TWS28xxMultiType tWS28xxMultiType, uint16_t nLedCount, uint8_t nActiveOutputs, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
+	WS28xxMulti(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 	~WS28xxMulti(void);
 
-	TWS28xxMultiType GetLEDType(void) {
-		return m_tWS28xxMultiType;
+	TWS28XXType GetLEDType(void) {
+		return m_tWS28xxType;
 	}
 
-	uint16_t GetLEDCount(void) {
-		return m_nLedCount;
-	}
-
-	uint8_t GetActiveOutputs(void) {
-		return m_nActiveOutputs;
+	TRGBMapping GetRgbMapping(void) {
+		return m_tRGBMapping;
 	}
 
 	uint8_t GetLowCode(void) {
@@ -72,28 +67,76 @@ public:
 		return m_nHighCode;
 	}
 
-	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	uint16_t GetLEDCount(void) {
+		return m_nLedCount;
+	}
+
+	WS28xxMultiBoard GetBoard(void) {
+		return m_tBoard;
+	}
+
+	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+		if (m_tBoard == WS28XXMULTI_BOARD_8X) {
+			SetLED8x(nPort, nLedIndex, nRed, nGreen, nBlue);
+		} else {
+			SetLED4x(nPort, nLedIndex, nRed, nGreen, nBlue);
+		}
+	}
+	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+		if (m_tBoard == WS28XXMULTI_BOARD_8X) {
+			SetLED8x(nPort, nLedIndex, nRed, nGreen, nBlue, nWhite);
+		} else {
+			SetLED4x(nPort, nLedIndex, nRed, nGreen, nBlue, nWhite);
+		}
+	}
+
+#if defined (H3)
+	bool IsUpdating(void) {
+		if (m_tBoard == WS28XXMULTI_BOARD_8X) {
+			return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
+		} else {
+			return false;
+		}
+	}
+#else
+	bool IsUpdating(void) {
+		return false;
+	}
+#endif
 
 	void Update(void);
 	void Blackout(void);
 
 private:
-	uint8_t CalculateBits(uint8_t nNanoSeconds);
 	uint8_t ReverseBits(uint8_t nBits);
-	bool SetupSI5351A(void);
+
+// 4x
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
+	bool SetupSI5351A(void);
+	void SetupGPIO(void);
+	void SetupBuffers4x(void);
 	void Generate800kHz(const uint32_t *pBuffer);
+	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+// 8x
+	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
+	void SetupSPI(void);
+	void SetupBuffers8x(void);
+	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 private:
-	TWS28xxMultiType m_tWS28xxMultiType;
+	WS28xxMultiBoard m_tBoard;
+	TWS28XXType m_tWS28xxType;
 	uint16_t m_nLedCount;
-	uint8_t m_nActiveOutputs;
+	TRGBMapping m_tRGBMapping;
 	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;
 	uint32_t m_nBufSize;
-	uint32_t *m_pBuffer;
-	uint32_t *m_pBlackoutBuffer;
+	uint32_t *m_pBuffer4x;
+	uint32_t *m_pBlackoutBuffer4x;
+	alignas(uint32_t) uint8_t *m_pBuffer8x;
+	alignas(uint32_t) uint8_t *m_pBlackoutBuffer8x;
 };
 
 #endif /* WS28XXMULTI_H_ */

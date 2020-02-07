@@ -58,7 +58,12 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 
 	builder.Add(LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxType == LTCDISPLAYWS28XX_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE));
 	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE));
+
+	if (!isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
+		m_tLtcDisplayParams.nRgbMapping = (uint8_t) WS28xx::GetRgbMapping((TWS28XXType) m_tLtcDisplayParams.nWS28xxType);
+	}
 	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING));
+
 	builder.Add(LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY));
 	builder.Add(LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode == LTCDISPLAYWS28XX_COLON_BLINK_MODE_OFF ? "off" : (m_tLtcDisplayParams.nWS28xxColonBlinkMode == LTCDISPLAYWS28XX_COLON_BLINK_MODE_DOWN ? "down" : "up") , isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE));
 

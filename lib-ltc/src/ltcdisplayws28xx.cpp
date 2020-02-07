@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 	m_tDisplayWS28xxTypes(tType),
 	m_nIntensity(LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS),
 	m_nHandle(-1),
-	m_tMapping(RGB_MAPPING_RGB),
+	m_tMapping(RGB_MAPPING_UNDEFINED),
 	m_nMaster(LTCDISPLAYWS28XX_DEFAULT_MASTER),
 	m_bShowMsg(false),
 	m_nMsgTimer(0),
@@ -113,7 +113,7 @@ void LtcDisplayWS28xx::Init(TWS28XXType tLedType, uint8_t nIntensity) {
 	}
 
 	assert(m_pLtcDisplayWS28xxSet != 0);
-	m_pLtcDisplayWS28xxSet->Init(tLedType);
+	m_pLtcDisplayWS28xxSet->Init(tLedType, m_tMapping);
 
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT], LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT);
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_COLON], LTCDISPLAYWS28XX_COLOUR_INDEX_COLON);

@@ -2,7 +2,7 @@
  * @file devicesparams.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 #include "ws28xxdmx.h"
 #include "ws28xxdmxmulti.h"
 
+#include "rgbmapping.h"
+
 struct TWS28xxDmxParams {
     uint32_t nSetList;
 	TWS28XXType tLedType;
@@ -44,6 +46,9 @@ struct TWS28xxDmxParams {
 	uint8_t nActiveOutputs;
 	bool bUseSI5351A;
 	uint16_t nLedGroupCount;
+	uint8_t nRgbMapping;
+	uint8_t nLowCode;
+	uint8_t nHighCode;
 };
 
 enum TWS28xxDmxParamsMask {
@@ -55,12 +60,15 @@ enum TWS28xxDmxParamsMask {
 	WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 5),
 	WS28XXDMX_PARAMS_MASK_ACTIVE_OUT = (1 << 6),
 	WS28XXDMX_PARAMS_MASK_USE_SI5351A = (1 << 7),
-	WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT = (1 << 8)
+	WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT = (1 << 8),
+	WS28XXDMX_PARAMS_MASK_RGB_MAPPING = (1 << 9),
+	WS28XXDMX_PARAMS_MASK_LOW_CODE = (1 << 10),
+	WS28XXDMX_PARAMS_MASK_HIGH_CODE = (1 << 11)
 };
 
 class WS28xxDmxParamsStore {
 public:
-	virtual ~WS28xxDmxParamsStore(void);
+	virtual ~WS28xxDmxParamsStore(void) {}
 
 	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
 	virtual void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
@@ -74,10 +82,10 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Set(WS28xxDmx *);
+	void Set(WS28xxDmx *pWS28xxDmx);
 	void Set(WS28xxDmxMulti *pWS28xxDmxMulti);
 
 	void Dump(void);
@@ -118,12 +126,26 @@ public:
 		return m_tWS28xxParams.nLedGroupCount;
 	}
 
+	TRGBMapping GetRgbMapping(void) {
+		return (TRGBMapping) m_tWS28xxParams.nRgbMapping;
+	}
+
+	float GetLowCode(void) {
+		return WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode);
+	}
+
+	float GetHighCode(void) {
+		return WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode);
+	}
+
 public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tWS28xxParams.nSetList & nMask) == nMask;
+    }
 
 private:
     WS28xxDmxParamsStore *m_pWS28xxParamsStore;

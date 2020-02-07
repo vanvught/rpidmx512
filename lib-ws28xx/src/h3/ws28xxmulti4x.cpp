@@ -1,9 +1,6 @@
 /**
- * @file ws28xxmulti.cpp
+ * @file ws28xxmulti4x.cpp
  *
- */
-/**
- * Stub for testing purpose only
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
@@ -31,13 +28,40 @@
 
 #include "ws28xxmulti.h"
 
+#include "h3_gpio.h"
+
 #include "debug.h"
 
+#define PULSE 	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 6)	// Pin 7
+#define ENABLE	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 18)	// Pin 18
+
+#define OUT0	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 0)	// Pin 13
+#define OUT1	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 1)	// Pin 11
+#define OUT2	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 2)	// Pin 22
+#define OUT3	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 3)	// Pin 15
+
+#define DATA_MASK	((1 << PULSE) | (1 << ENABLE) | (1 << OUT3) | (1 << OUT2) | (1 << OUT1) | (1 << OUT0))
+
 void WS28xxMulti::SetupGPIO(void) {
-	// Nothing todo
+	h3_gpio_fsel(OUT0, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(OUT0);
+	h3_gpio_fsel(OUT1, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(OUT1);
+	h3_gpio_fsel(OUT2, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(OUT2);
+	h3_gpio_fsel(OUT3, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(OUT3);
+
+	h3_gpio_fsel(PULSE, GPIO_FSEL_OUTPUT);
+	h3_gpio_set(PULSE);
+
+	h3_gpio_fsel(ENABLE, GPIO_FSEL_OUTPUT);
+	h3_gpio_set(ENABLE);
 }
 
 void WS28xxMulti::SetupBuffers4x(void) {
+	DEBUG_ENTRY
+
 	m_pBuffer4x = new uint32_t[m_nBufSize];
 	assert(m_pBuffer4x != 0);
 
@@ -49,34 +73,37 @@ void WS28xxMulti::SetupBuffers4x(void) {
 		m_pBuffer4x[i] = d;
 		m_pBlackoutBuffer4x[i] = d;
 	}
-}
 
-void WS28xxMulti::Update(void) {
-	Generate800kHz(m_pBuffer4x);
-}
-
-void WS28xxMulti::Blackout(void) {
-	Generate800kHz(m_pBlackoutBuffer4x);
+	DEBUG_EXIT
 }
 
 void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
-	for (uint32_t k = 0; k < m_nBufSize; k = k + SINGLE_RGB) {
-		printf("%.2d ", k / SINGLE_RGB);
+	uint32_t i = 0;
+	const uint32_t d = (125 * 24) / 100;
+	uint32_t dat;
 
-		for (uint32_t j = 0; j < 4; j++) {
+	do {
+		uint64_t cval;
+		asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (cval));
 
-			for (uint32_t i = 0; i < 24; i++) {
-				bool b = (pBuffer[k + i] & (1 << j)) == 0;
-				printf("%c", '0' + (b ? 0 : 1));
+		dat = H3_PIO_PORTA->DAT;
+		dat &= (~(DATA_MASK));
+		dat |= pBuffer[i];
+		H3_PIO_PORTA->DAT = dat;
 
-				if ((i != 0) && ((i + 1) % 8 == 0)) {
-					printf("|");
-				}
-			}
-			printf(" ");
-		}
-		printf("\n");
-	}
+		uint32_t t1 = (uint32_t) (cval & 0xFFFFFFFF);
+		const uint32_t t2 = t1 + d;
+		i++;
 
-	printf("\n");
+		__builtin_prefetch(&pBuffer[i]);
+
+		do {
+			asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (cval));
+			t1 = (uint32_t) (cval & 0xFFFFFFFF);
+		} while (t1 < t2);
+
+	} while (i < m_nBufSize);
+
+	dat |= (1 << ENABLE);
+	H3_PIO_PORTA->DAT = dat;
 }

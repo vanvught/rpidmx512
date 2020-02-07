@@ -53,7 +53,7 @@ public:
 		return Add(pProperty, static_cast<uint32_t>(bValue), bIsSet);
 	}
 
-	bool Add(const char *pProperty, float fValue, bool bIsSet = true);
+	bool Add(const char *pProperty, float fValue, bool bIsSet = true, uint32_t nPrecision = 1);
 
 	bool Add(const char *pProperty, const char *pValue, bool bIsSet = true);
 

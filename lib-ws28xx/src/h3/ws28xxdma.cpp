@@ -35,7 +35,12 @@
 
 #include "debug.h"
 
-WS28xxDMA::WS28xxDMA(TWS28XXType Type, uint16_t nLEDCount, uint32_t nClockSpeed): WS28xx(Type, nLEDCount, nClockSpeed) {
+WS28xxDMA::WS28xxDMA(TWS28XXType Type, uint16_t nLEDCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed):
+	WS28xx(Type, nLEDCount, tRGBMapping, nT0H, nT1H, nClockSpeed)
+{
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 WS28xxDMA::~WS28xxDMA(void) {
@@ -60,7 +65,7 @@ bool WS28xxDMA::Initialize(void) {
 
 	if (m_tLEDType == APA102) {
 		memset(m_pBuffer, 0, 4);
-		for (uint32_t i = 0; i < m_nLEDCount; i++) {
+		for (uint32_t i = 0; i < m_nLedCount; i++) {
 			SetLED(i, 0, 0, 0);
 		}
 		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);

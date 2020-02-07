@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@
 #endif
 #include "ws28xx.h"
 
+#include "rgbmapping.h"
+
 #define WS28XX_NUM_OF_DIGITS	8
 #define WS28XX_NUM_OF_COLONS	3
 
@@ -49,7 +51,7 @@ public:
 	WS28xxDisplay7Segment(void);
 	~WS28xxDisplay7Segment(void);
 
-	void Init(TWS28XXType tLedType = WS2812B);
+	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);

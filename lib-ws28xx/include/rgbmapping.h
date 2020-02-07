@@ -1,5 +1,5 @@
 /**
- * @file ws28xxdmxstore.h
+ * @file rgbmapping.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,16 +21,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMXSTORE_H_
-#define WS28XXDMXSTORE_H_
+#ifndef RGBMAPPING_H_
+#define RGBMAPPING_H_
 
-#include <stdint.h>
-
-class WS28xxDmxStore {
-public:
-	virtual ~WS28xxDmxStore(void) {}
-
-	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
+enum TRGBMapping {
+	RGB_MAPPING_RGB,
+	RGB_MAPPING_RBG,
+	RGB_MAPPING_GRB,
+	RGB_MAPPING_GBR,
+	RGB_MAPPING_BRG,
+	RGB_MAPPING_BGR,
+	RGB_MAPPING_UNDEFINED
 };
 
-#endif /* WS28XXDMXSTORE_H_ */
+class RGBMapping {
+public:
+	static TRGBMapping FromString(const char *pString);
+	static const char *ToString(TRGBMapping tRGBMapping);
+};
+
+#endif /* RGBMAPPING_H_ */

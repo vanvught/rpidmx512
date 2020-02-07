@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayws28xxmatrix.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 
 #include "ws28xxdisplaymatrix.h"
 
+#include "rgbmapping.h"
+
 #include "debug.h"
 
 LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(void) {
@@ -50,10 +52,10 @@ LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix(void) {
 	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xxMatrix::Init(TWS28XXType tLedType) {
+void LtcDisplayWS28xxMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG1_ENTRY
 
-	m_pWS28xxDisplayMatrix->Init(tLedType);
+	m_pWS28xxDisplayMatrix->Init(tLedType, tRGBMapping);
 
 	DEBUG1_EXIT
 }

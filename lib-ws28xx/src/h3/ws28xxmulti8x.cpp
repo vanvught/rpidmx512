@@ -1,8 +1,8 @@
 /**
- * @file rgbmapping.h
+ * @file ws28xxmulti8x.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
+
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,23 +23,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef RGBMAPPING_H_
-#define RGBMAPPING_H_
+#ifdef NDEBUG
+//#undef NDEBUG
+#endif
 
-enum TRGBMapping {
-	RGB_MAPPING_RGB,	// Default
-	RGB_MAPPING_RBG,
-	RGB_MAPPING_GRB,
-	RGB_MAPPING_GBR,
-	RGB_MAPPING_BRG,
-	RGB_MAPPING_BGR,
-	RGB_MAPPING_UNDEFINED
-};
+#include <stdint.h>
+#include <string.h>
+#include <assert.h>
 
-class RGBMapping {
-public:
-	static TRGBMapping FromString(const char *pString);
-	static const char *ToString(TRGBMapping tRGBMapping);
-};
+#include "ws28xxmulti.h"
 
-#endif /* RGBMAPPING_H_ */
+#include "h3/ws28xxdma.h"
+#include "h3_spi.h"
+
+#include "debug.h"
+
+void WS28xxMulti::SetupBuffers8x(void) {
+	DEBUG_ENTRY
+
+	uint32_t nSize;
+
+	m_pBuffer8x = (uint8_t *)h3_spi_dma_tx_prepare(&nSize);
+	assert(m_pBuffer8x != 0);
+
+	const uint32_t nSizeHalf = nSize / 2;
+	assert(m_nBufSize <= nSizeHalf);
+
+	if (m_nBufSize > nSizeHalf) {
+		// FIXME Handle internal error
+		return;
+	}
+
+	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & ~3);
+
+	memset(m_pBuffer8x, 0, m_nBufSize);
+	memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);
+
+	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer8x, m_pBlackoutBuffer8x);
+	DEBUG_EXIT
+}

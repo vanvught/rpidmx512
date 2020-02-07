@@ -2,7 +2,7 @@
  * @file ws28xxparamsset.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,18 @@ void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
 		pWS28xxDmx->SetLEDType(m_tWS28xxParams.tLedType);
+	}
+
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
+		pWS28xxDmx->SetRgbMapping((TRGBMapping) m_tWS28xxParams.nRgbMapping);
+	}
+
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
+		pWS28xxDmx->SetLowCode(m_tWS28xxParams.nLowCode);
+	}
+
+	if (isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
+		pWS28xxDmx->SetHighCode(m_tWS28xxParams.nHighCode);
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {

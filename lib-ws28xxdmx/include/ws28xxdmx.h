@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,18 @@ public:
 		return m_tLedType;
 	}
 
+	void SetRgbMapping(TRGBMapping tRGBMapping) {
+		m_tRGBMapping = tRGBMapping;
+	}
+
+	void SetLowCode(uint8_t nLowCode) {
+		m_nLowCode = nLowCode;
+	}
+
+	void SetHighCode(uint8_t nHighCode) {
+		m_nHighCode = nHighCode;
+	}
+
 	virtual void SetLEDCount(uint16_t);
 	uint16_t GetLEDCount(void) {
 		return m_nLedCount;
@@ -108,6 +120,11 @@ private:
 
 protected:
 	TWS28XXType m_tLedType;
+
+	TRGBMapping m_tRGBMapping;
+	uint8_t m_nLowCode;
+	uint8_t m_nHighCode;
+
 	uint16_t m_nLedCount;
 	uint16_t m_nDmxStartAddress;
 	uint16_t m_nDmxFootprint;

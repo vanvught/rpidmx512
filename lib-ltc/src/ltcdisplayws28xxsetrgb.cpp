@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,64 +32,22 @@
 
 #include "rgbmapping.h"
 
-// set the current RGB values, remapping them to different LED strip mappings
-// ToDo Move RGB mapping to lib-???
 void LtcDisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex) {
-	uint8_t nRedCurrent, nGreenCurrent, nBlueCurrent;
-
-	switch (m_tMapping) {
-	case RGB_MAPPING_RGB:
-		nRedCurrent = nRed;
-		nGreenCurrent = nGreen;
-		nBlueCurrent = nBlue;
-		break;
-	case RGB_MAPPING_RBG:
-		nRedCurrent = nRed;
-		nGreenCurrent = nBlue;
-		nBlueCurrent = nGreen;
-		break;
-	case RGB_MAPPING_GRB:
-		nRedCurrent = nGreen;
-		nGreenCurrent = nRed;
-		nBlueCurrent = nBlue;
-		break;
-	case RGB_MAPPING_GBR:
-		nRedCurrent = nGreen;
-		nGreenCurrent = nBlue;
-		nBlueCurrent = nRed;
-		break;
-	case RGB_MAPPING_BRG:
-		nRedCurrent = nBlue;
-		nGreenCurrent = nRed;
-		nBlueCurrent = nGreen;
-		break;
-	case RGB_MAPPING_BGR:
-		nRedCurrent = nBlue;
-		nGreenCurrent = nGreen;
-		nBlueCurrent = nRed;
-		break;
-	default: // RGB
-		nRedCurrent = nRed;
-		nGreenCurrent = nGreen;
-		nBlueCurrent = nBlue;
-		break;
-	}
-
 	switch (tIndex) {
 	case LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT:
-		m_tColours.nRed = nRedCurrent;
-		m_tColours.nGreen = nGreenCurrent;
-		m_tColours.nBlue = nBlueCurrent;
+		m_tColours.nRed = nRed;
+		m_tColours.nGreen = nGreen;
+		m_tColours.nBlue = nBlue;
 		break;
 	case LTCDISPLAYWS28XX_COLOUR_INDEX_COLON:
-		m_tColoursColons.nRed = nRedCurrent;
-		m_tColoursColons.nGreen = nGreenCurrent;
-		m_tColoursColons.nBlue = nBlueCurrent;
+		m_tColoursColons.nRed = nRed;
+		m_tColoursColons.nGreen = nGreen;
+		m_tColoursColons.nBlue = nBlue;
 		break;
 	case LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE:
-		m_tColoursMessage.nRed = nRedCurrent;
-		m_tColoursMessage.nGreen = nGreenCurrent;
-		m_tColoursMessage.nBlue = nBlueCurrent;
+		m_tColoursMessage.nRed = nRed;
+		m_tColoursMessage.nGreen = nGreen;
+		m_tColoursMessage.nBlue = nBlue;
 		break;
 	default:
 		break;

@@ -2,7 +2,7 @@
  * @file ws28xxparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,29 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tWS28xxParams.tLedType), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT));
 
+	if (!isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
+		m_tWS28xxParams.nRgbMapping = (uint8_t) WS28xx::GetRgbMapping((TWS28XXType) m_tWS28xxParams.tLedType);
+	}
+	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tWS28xxParams.nRgbMapping), isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING));
+
+	if (!isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE) || !isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
+		uint8_t nLowCode;
+		uint8_t nHighCode;
+
+		WS28xx::GetTxH((TWS28XXType) m_tWS28xxParams.tLedType, nLowCode, nHighCode);
+
+		if (!isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
+			m_tWS28xxParams.nLowCode = nLowCode;
+		}
+
+
+		if (!isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
+			m_tWS28xxParams.nHighCode = nHighCode;
+		}
+	}
+	builder.Add(DevicesParamsConst::LED_T0H, WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T1H, WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE), 2);
+
 	builder.Add(DevicesParamsConst::LED_GROUPING, m_tWS28xxParams.bLedGrouping, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING));
 	builder.Add(DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT));
 
@@ -71,7 +94,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	DEBUG_EXIT
 }
 
-void WS28xxDmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void WS28xxDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pWS28xxParamsStore == 0) {

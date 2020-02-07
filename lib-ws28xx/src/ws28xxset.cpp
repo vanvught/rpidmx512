@@ -1,8 +1,8 @@
 /**
- * @file ws28xxcommon.cpp
+ * @file ws28xxset.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,47 +27,94 @@
 #include <assert.h>
 
 #include "ws28xx.h"
+#include "rgbmapping.h"
 
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
-	assert(nLEDIndex < m_nLEDCount);
+	assert(nLEDIndex < m_nLedCount);
+
+	if (__builtin_expect((m_bIsRTZProtocol), 1)) {
+		uint32_t nOffset = nLEDIndex * 3;
+		nOffset *= 8;
+
+		switch (m_tRGBMapping) {
+		case RGB_MAPPING_RGB:
+			SetColorWS28xx(nOffset, nRed);
+			SetColorWS28xx(nOffset + 8, nGreen);
+			SetColorWS28xx(nOffset + 16, nBlue);
+			break;
+		case RGB_MAPPING_RBG:
+			SetColorWS28xx(nOffset, nRed);
+			SetColorWS28xx(nOffset + 8, nBlue);
+			SetColorWS28xx(nOffset + 16, nGreen);
+			break;
+		case RGB_MAPPING_GRB:
+			SetColorWS28xx(nOffset, nGreen);
+			SetColorWS28xx(nOffset + 8, nRed);
+			SetColorWS28xx(nOffset + 16, nBlue);
+			break;
+		case RGB_MAPPING_GBR:
+			SetColorWS28xx(nOffset, nGreen);
+			SetColorWS28xx(nOffset + 8, nBlue);
+			SetColorWS28xx(nOffset + 16, nRed);
+			break;
+		case RGB_MAPPING_BRG:
+			SetColorWS28xx(nOffset, nBlue);
+			SetColorWS28xx(nOffset + 8, nRed);
+			SetColorWS28xx(nOffset + 16, nGreen);
+			break;
+		case RGB_MAPPING_BGR:
+			SetColorWS28xx(nOffset, nBlue);
+			SetColorWS28xx(nOffset + 8, nGreen);
+			SetColorWS28xx(nOffset + 16, nRed);
+			break;
+		default:  // RGB
+			SetColorWS28xx(nOffset, nRed);
+			SetColorWS28xx(nOffset + 8, nGreen);
+			SetColorWS28xx(nOffset + 16, nBlue);
+			break;
+		}
+
+		return;
+	}
 
 	if (m_tLEDType == APA102) {
 		uint32_t nOffset = 4 + (nLEDIndex * 4);
 		assert(nOffset + 3 < m_nBufSize);
+
 		m_pBuffer[nOffset] = m_nGlobalBrightness;
 		m_pBuffer[nOffset + 1] = nRed;
 		m_pBuffer[nOffset + 2] = nGreen;
 		m_pBuffer[nOffset + 3] = nBlue;
-	} else if (m_tLEDType == WS2801) {
+
+		return;
+	}
+
+	if (m_tLEDType == WS2801) {
 		uint32_t nOffset = nLEDIndex * 3;
 		assert(nOffset + 2 < m_nBufSize);
+
 		m_pBuffer[nOffset] = nRed;
 		m_pBuffer[nOffset + 1] = nGreen;
 		m_pBuffer[nOffset + 2] = nBlue;
-	} else if ((m_tLEDType == WS2811) || (m_tLEDType == UCS2903)) {
-		uint32_t nOffset = nLEDIndex * 3;
-		nOffset *= 8;
 
-		SetColorWS28xx(nOffset, nRed);
-		SetColorWS28xx(nOffset + 8, nGreen);
-		SetColorWS28xx(nOffset + 16, nBlue);
-	} else if (m_tLEDType == UCS1903) {
-		uint32_t nOffset = nLEDIndex * 3;
-		nOffset *= 8;
+		return;
+	}
 
-		SetColorWS28xx(nOffset, nBlue);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nGreen);
-	} else {
-		uint32_t nOffset = nLEDIndex * 3;
-		nOffset *= 8;
+	if (m_tLEDType == P9813) {
+		uint32_t nOffset = 4 + (nLEDIndex * 4);
+		assert(nOffset + 3 < m_nBufSize);
 
-		SetColorWS28xx(nOffset, nGreen);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nBlue);
+		const uint8_t nFlag = 0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6);
+
+		m_pBuffer[nOffset] = nFlag;
+		m_pBuffer[nOffset + 1] = nBlue;
+		m_pBuffer[nOffset + 2] = nGreen;
+		m_pBuffer[nOffset + 3] = nRed;
+
+		return;
 	}
 }
 
@@ -75,7 +122,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 	assert(!m_bUpdating);
 
 	assert(m_pBuffer != 0);
-	assert(nLEDIndex < m_nLEDCount);
+	assert(nLEDIndex < m_nLedCount);
 	assert(m_tLEDType == SK6812W);
 
 	uint32_t nOffset = nLEDIndex * 4;
@@ -92,17 +139,14 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 
 void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
 	assert(m_tLEDType != WS2801);
-	uint8_t mask;
-
 	assert(nOffset + 7 < m_nBufSize);
 
-	for (mask = 0x80; mask != 0; mask >>= 1) {
+	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (nValue & mask) {
 			m_pBuffer[nOffset] = m_nHighCode;
 		} else {
-			m_pBuffer[nOffset] = 0xC0;	// Same for all
+			m_pBuffer[nOffset] = m_nLowCode;
 		}
-
 		nOffset++;
 	}
 }

@@ -2,7 +2,7 @@
  * @file ws28xxdisplaymatrix.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #endif
 #include "ws28xx.h"
 
+#include "rgbmapping.h"
+
 struct TWS28xxDisplayMatrixColon {
 	uint8_t nBits;
 	uint8_t nRed;
@@ -44,7 +46,7 @@ public:
 	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows);
 	~WS28xxDisplayMatrix(void);
 
-	void Init(TWS28XXType tLedType = WS2812B);
+	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
 	void PutChar(uint8_t nChar, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void PutString(const char *pString, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);

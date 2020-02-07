@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@
 #else
  #include "ws28xx.h"
 #endif
+
+#include "rgbmapping.h"
 
 #include "debug.h"
 
@@ -76,14 +78,14 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment(void) {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplay7Segment::Init(TWS28XXType tLedType) {
+void WS28xxDisplay7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == 0);
 #if defined(USE_SPI_DMA)
-	m_pWS28xx = new WS28xxDMA(tLedType, WS28XX_LED_COUNT);
+	m_pWS28xx = new WS28xxDMA(tLedType, WS28XX_LED_COUNT, tRGBMapping);
 #else
-	m_pWS28xx = new WS28xx(tLedType, WS28XX_LED_COUNT);
+	m_pWS28xx = new WS28xx(tLedType, WS28XX_LED_COUNT, tRGBMapping);
 #endif
 	assert(m_pWS28xx != 0);
 

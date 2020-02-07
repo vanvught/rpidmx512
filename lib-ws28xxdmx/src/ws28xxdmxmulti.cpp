@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xx.h"
 
+#include "rgbmapping.h"
+
 #include "debug.h"
 
 #ifndef MIN
@@ -40,7 +42,10 @@
 
 WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 	m_tSrc(tSrc),
-	m_tLedType(WS28XXMULTI_WS2812B),
+	m_tLedType(WS2812B),
+	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
+	m_nLowCode(0),
+	m_nHighCode(0),
 	m_nLedCount(170),
 	m_nActiveOutputs(WS28XXMULTI_ACTIVE_PORTS_MAX),
 	m_pLEDStripe(0),
@@ -78,10 +83,16 @@ void WS28xxDmxMulti::Start(uint8_t nPort) {
 	m_bIsStarted = true;
 
 	if (m_pLEDStripe == 0) {
-		m_pLEDStripe = new WS28xxMulti(m_tLedType, m_nLedCount, m_nActiveOutputs, m_bUseSI5351A);
+		m_pLEDStripe = new WS28xxMulti(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
 		assert(m_pLEDStripe != 0);
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
 		m_pLEDStripe->Blackout();
 	} else {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
 		m_pLEDStripe->Update();
 	}
 }
@@ -96,6 +107,9 @@ void WS28xxDmxMulti::Stop(uint8_t nPort) {
 	m_bIsStarted = false;
 
 	if (m_pLEDStripe != 0) {
+		while (m_pLEDStripe->IsUpdating()) {
+			// wait for completion
+		}
 		m_pLEDStripe->Blackout();
 	}
 }
@@ -145,9 +159,13 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 			(int ) nPortId, (int ) nLength, (int ) nOutIndex,
 			(int )nPortId & ~m_nUniverses & 0x03, (int)beginIndex, (int)endIndex);
 
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
+	}
+
 	for (uint32_t j = beginIndex; j < endIndex; j++) {
 		__builtin_prefetch(&pData[i]);
-		if (m_tLedType == WS28XXMULTI_SK6812W) {
+		if (m_tLedType == SK6812W) {
 			if (i + 3 > nLength) {
 				break;
 			}
@@ -177,12 +195,12 @@ void WS28xxDmxMulti::Blackout(bool bBlackout) {
 	}
 }
 
-void WS28xxDmxMulti::SetLEDType(TWS28xxMultiType tWS28xxMultiType) {
+void WS28xxDmxMulti::SetLEDType(TWS28XXType tWS28xxMultiType) {
 	DEBUG_ENTRY
 
 	m_tLedType = tWS28xxMultiType;
 
-	if (tWS28xxMultiType == WS28XXMULTI_SK6812W) {
+	if (tWS28xxMultiType == SK6812W) {
 		m_nBeginIndexPortId1 = 128;
 		m_nBeginIndexPortId2 = 256;
 		m_nBeginIndexPortId3 = 384;
@@ -228,8 +246,13 @@ void WS28xxDmxMulti::UpdateMembers(void) {
 }
 
 void WS28xxDmxMulti::Print(void) {
+	assert(m_pLEDStripe != 0);
+
 	printf("Led parameters\n");
-	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString((TWS28XXType)m_tLedType), m_tLedType);
+	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_pLEDStripe->GetLEDType()), (int) m_pLEDStripe->GetLEDType());
+	printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_pLEDStripe->GetRgbMapping()), (int) m_pLEDStripe->GetRgbMapping());
+	printf(" T0H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(m_pLEDStripe->GetLowCode()), (int) m_pLEDStripe->GetLowCode());
+	printf(" T1H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(m_pLEDStripe->GetHighCode()), (int) m_pLEDStripe->GetHighCode());
 	printf(" Count   : %d\n", (int) m_nLedCount);
 	printf(" Outputs : %d\n", (int) m_nActiveOutputs);
 	printf(" SI5351A : %c\n", m_bUseSI5351A ? 'Y' : 'N');

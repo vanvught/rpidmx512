@@ -1,8 +1,8 @@
 /**
- * @file spisend.cpp
+ * @file ws28xxdmx.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,6 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#if defined (__circle__)
- #include <circle/interrupt.h>
-#endif
-
 #ifndef NDEBUG
 #if (__linux__)
  #include <stdio.h>
@@ -47,13 +43,11 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#if defined (__circle__)
-WS28xxDmx::WS28xxDmx(CInterruptSystem *pInterruptSystem) :
-	m_pInterrupt (pInterruptSystem),
-#else
 WS28xxDmx::WS28xxDmx(void) :
-#endif
-	m_tLedType(WS2801),
+	m_tLedType(WS2812B),
+	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
+	m_nLowCode(0),
+	m_nHighCode(0),
 	m_nLedCount(170),
 	m_nDmxStartAddress(DMX_START_ADDRESS_DEFAULT),
 	m_nDmxFootprint(170 * 3),
@@ -86,11 +80,7 @@ void WS28xxDmx::Start(uint8_t nPort) {
 	m_bIsStarted = true;
 
 	if (m_pLEDStripe == 0) {
-#if defined (__circle__)
-		m_pLEDStripe = new WS28xx(m_pInterrupt, m_tLedType, m_nLedCount, m_nClockSpeedHz);
-#else
-		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_nClockSpeedHz);
-#endif
+		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
 		assert(m_pLEDStripe != 0);
 		m_pLEDStripe->SetGlobalBrightness(m_nGlobalBrightness);
 		m_pLEDStripe->Initialize();
