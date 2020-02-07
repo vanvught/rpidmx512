@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include <firmwareversion.h>
+#include "firmwareversion.h"
 
 #include "hardware.h"
 
@@ -36,7 +36,7 @@
 
 FirmwareVersion *FirmwareVersion::s_pThis = 0;
 
-FirmwareVersion::FirmwareVersion(const char* pVersion, const char* pDate, const char* pTime) {
+FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime) {
 	assert(pVersion != 0);
 	assert(pDate != 0);
 	assert(pTime != 0);

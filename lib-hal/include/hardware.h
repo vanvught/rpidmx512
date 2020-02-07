@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,9 +55,7 @@ struct THardwareTime {
 	int tm_isdst;	///< DST.			[-1/0/1]
 };
 
-#if defined (__circle__)
- #include "circle/hardware.h"
-#elif defined (BARE_METAL)
+#if defined (BARE_METAL)
  #if defined (H3)
   #include "h3/hardware.h"
  #else

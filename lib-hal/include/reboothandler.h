@@ -1,8 +1,8 @@
 /**
- * @file ledblink.cpp
+ * @file reboothandler.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef REBOOTHANDLER_H_
+#define REBOOTHANDLER_H_
 
-#include "ledblink.h"
+class RebootHandler {
+public:
+	virtual ~RebootHandler(void) {}
 
-#include "circle/actled.h"
-#include "circle/sched/scheduler.h"
+	virtual void Run(void)=0;
+};
 
-void LedBlink::SetFrequency(uint32_t nFreqHz) {
-	m_nFreqHz = nFreqHz;
-
-	if (nFreqHz == 0) {
-		m_bStop = true;
-		CActLED::Get()->Off();
-	} else {
-		m_bStop = false;
-		m_nusPeriod = 1000000 / nFreqHz;
-	}
-}
-
-void LedBlink::Run(void) {
-	while (1) {
-		if (m_bStop) {
-			CScheduler::Get()->Sleep(1);
-		} else {
-			CActLED::Get()->On();
-			CScheduler::Get()->usSleep(m_nusPeriod);
-
-			CActLED::Get()->Off();
-			CScheduler::Get()->usSleep(m_nusPeriod);
-		}
-	}
-}
+#endif /* REBOOTHANDLER_H_ */

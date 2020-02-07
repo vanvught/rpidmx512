@@ -1,4 +1,0 @@
-#
-EXTRA_INCLUDES = ../lib-hal/include
-#
-include ../linux-template/lib/Rules.mk

@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,8 @@
 
 #include "hardware.h"
 
+#include "reboothandler.h"
+
 #include "debug.h"
 
 extern "C" {
@@ -63,6 +65,7 @@ static const char UNKNOWN[] = "Unknown";
 Hardware *Hardware::s_pThis = 0;
 
 Hardware::Hardware(void):
+	m_pRebootHandler(0),
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
@@ -244,6 +247,10 @@ bool Hardware::Reboot(void) {
 	return false;
 #else
 	if(geteuid() == 0) {
+		if (m_pRebootHandler != 0) {
+			m_pRebootHandler->Run();
+		}
+
 		sync();
 
 		if (reboot(RB_AUTOBOOT) == 0) {

@@ -43,6 +43,8 @@ public:
 		return m_tMode;
 	}
 
+	void Run(void) {} // Not needed
+
 public:
 	static LedBlink* Get(void) {
 		return s_pThis;

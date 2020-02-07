@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@
 #include "h3_watchdog.h"
 #include "h3_hs_timer.h"
 #include "h3_thermal.h"
+
+#include "reboothandler.h"
 
 enum TSocType {
 	SOC_TYPE_H2_PLUS, SOC_TYPE_H3, SOC_TYPE_UNKNOWN
@@ -143,12 +145,17 @@ public:
 
 	void SoftReset(void);
 
+	void SetRebootHandler(RebootHandler *pRebootHandler) {
+		m_pRebootHandler = pRebootHandler;
+	}
+
 public:
 	 static Hardware *Get(void) {
 		return s_pThis;
 	}
 
 private:
+	 RebootHandler *m_pRebootHandler;
 	 static Hardware *s_pThis;
 	 bool m_bIsWatchdog;
 };

@@ -1,8 +1,8 @@
 /**
- * @file hardware++.h
+ * @file hardware.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,27 +33,14 @@
 #include "c/hardware.h"
 #include "c/sys_time.h"
 
-#include "h3.h"
-#include "h3_watchdog.h"
-#include "h3_board.h"
+#include "bcm2835_vc.h"
+#include "bcm2835_wdog.h"
 
 #include "arm/synchronize.h"
 
-extern "C" {
-void _start(void);
-}
-
-#if defined(ORANGE_PI)
-#elif defined(ORANGE_PI_ONE)
-#else
- #error Platform not supported
-#endif
-
-static const char s_SocName[2][4] __attribute__((aligned(4))) = { "H2+", "H3\0" };
-static const uint8_t s_SocNameLenghth[2] = { 3, 2 };
-
-static const char s_CpuName[] __attribute__((aligned(4))) = "Cortex-A7";
-#define CPU_NAME_LENGHTH (sizeof(s_CpuName) / sizeof(s_CpuName[0]) - 1)
+static const char s_SocName[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
+static const char s_CpuName[4][24] __attribute__((aligned(4))) = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
+static const uint8_t s_nCpuNameLength[4] __attribute__((aligned(4))) = {(uint8_t) 12, (uint8_t) 9, (uint8_t) 18, (uint8_t) 8};
 
 const char s_Machine[] __attribute__((aligned(4))) = "arm";
 #define MACHINE_LENGTH (sizeof(s_Machine)/sizeof(s_Machine[0]) - 1)
@@ -61,10 +48,27 @@ const char s_Machine[] __attribute__((aligned(4))) = "arm";
 const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 #define SYSNAME_LENGTH (sizeof(s_SysName)/sizeof(s_SysName[0]) - 1)
 
+const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
+#define VERSION_LENGTH (sizeof(s_Version)/sizeof(s_Version[0]) - 1)
+
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void): m_bIsWatchdog(false) {
+Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
 	s_pThis = this;
+
+	m_nBoardRevision = bcm2835_vc_get_get_board_revision();
+
+	if ((m_nBoardRevision & ((int32_t) 1 << 23)) == ((int32_t) 1 << 23)) {
+		TSocType type = (TSocType) (((uint32_t) m_nBoardRevision >> 12) & 0xF);
+		if (type > SOC_TYPE_UNKNOWN) {
+		} else {
+			m_tSocType = type;
+		}
+	} else {
+		m_tSocType = SOC_TYPE_BCM2835;
+	}
+
+	m_nBoardId = bcm2835_vc_get_get_board_revision();
 }
 
 Hardware::~Hardware(void) {
@@ -81,26 +85,21 @@ const char* Hardware::GetSysName(uint8_t& nLength) {
 }
 
 const char* Hardware::GetBoardName(uint8_t& nLength) {
-	nLength = sizeof(H3_BOARD_NAME)  - 1;
-	return H3_BOARD_NAME;
+	nLength = hardware_board_get_model_length();
+	return hardware_board_get_model();
 }
 
 const char* Hardware::GetCpuName(uint8_t& nLength) {
-	nLength = CPU_NAME_LENGHTH;
-	return s_CpuName;
+	nLength = s_nCpuNameLength[m_tSocType];
+	return s_CpuName[m_tSocType];
 }
 
 const char* Hardware::GetSocName(uint8_t& nLength) {
-#if defined(ORANGE_PI)
-	nLength = s_SocNameLenghth[0];
-	return s_SocName[0];
-#else
-	nLength = s_SocNameLenghth[1];
-	return s_SocName[1];
-#endif
+	nLength = sizeof s_SocName[0]; // Same length for all
+	return s_SocName[m_tSocType];
 }
 
-bool Hardware::SetTime(const struct THardwareTime &pTime) {
+bool Hardware::SetTime(const struct THardwareTime& pTime) {
 	struct hardware_time tm_hw;
 
 	tm_hw.year = pTime.tm_year;
@@ -115,11 +114,11 @@ bool Hardware::SetTime(const struct THardwareTime &pTime) {
 	return true;
 }
 
-void Hardware::GetTime(struct THardwareTime *pTime) {
+void Hardware::GetTime(struct THardwareTime* pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
-	ltime = time(0);
+	ltime = time(NULL);
     local_time = localtime(&ltime);
 
     pTime->tm_year = local_time->tm_year;
@@ -134,11 +133,9 @@ void Hardware::GetTime(struct THardwareTime *pTime) {
 bool Hardware::Reboot(void) {
 	hardware_led_set(1);
 
-	h3_watchdog_enable();
+	bcm2835_watchdog_init();
 
 	invalidate_instruction_cache();
-	flush_branch_target_cache();
-	flush_prefetch_buffer();
 	clean_data_cache();
 	invalidate_data_cache();
 
@@ -150,14 +147,3 @@ bool Hardware::Reboot(void) {
 	return true;
 }
 
-void Hardware::SoftReset(void) {
-	invalidate_instruction_cache();
-	flush_branch_target_cache();
-	flush_prefetch_buffer();
-	clean_data_cache();
-	invalidate_data_cache();
-
-	_start();
-
-	__builtin_unreachable();
-}

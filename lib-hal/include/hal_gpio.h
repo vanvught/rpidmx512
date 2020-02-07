@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@
  #define GPIO_EXT_18	RPI_V2_GPIO_P1_18
  #define GPIO_EXT_22	RPI_V2_GPIO_P1_22
  #define GPIO_EXT_24	RPI_V2_GPIO_P1_24
+ #define GPIO_EXT_26	RPI_V2_GPIO_P1_26
  #define GPIO_EXT_29	RPI_V2_GPIO_P1_29
  #define GPIO_EXT_31	RPI_V2_GPIO_P1_31
  #define GPIO_EXT_32	RPI_V2_GPIO_P1_32

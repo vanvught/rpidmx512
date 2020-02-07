@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #include <sys/utsname.h>
 
 #include "hardware.h"
+
+#include "reboothandler.h"
 
 class Hardware {
 public:
@@ -92,6 +94,10 @@ public:
 
 	void SoftReset(void) {}
 
+	void SetRebootHandler(RebootHandler *pRebootHandler) {
+		m_pRebootHandler = pRebootHandler;
+	}
+
 public:
 	 static Hardware* Get(void) {
 		return s_pThis;
@@ -101,6 +107,7 @@ private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 
 private:
+	RebootHandler *m_pRebootHandler;
 	enum TBoardType {
 		BOARD_TYPE_LINUX,
 		BOARD_TYPE_CYGWIN,
