@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,8 @@
 #define ARTNETNODE_H_
 
 #include <stdint.h>
-
-#if defined (__circle__)
-#include <circle/time.h>
-#else
 #include <stdbool.h>
 #include <time.h>
-#endif
 
 #include "artnet.h"
 #include "packets.h"
@@ -54,6 +49,12 @@
 #include "artnettrigger.h"
 
 #include "artnet4handler.h"
+
+enum TArtNetNodeMaxPorts {
+	ARTNET_NODE_MAX_PORTS_OUTPUT = ARTNET_MAX_PORTS * ARTNET_MAX_PAGES,
+	ARTNET_NODE_MAX_PORTS_INPUT = ARTNET_MAX_PORTS
+};
+
 
 /**
  * Table 3 – NodeReport Codes
@@ -330,8 +331,8 @@ private:
 	struct TArtTodData *m_pTodData;
 	struct TArtIpProgReply *m_pIpProgReply;
 
-	struct TOutputPort m_OutputPorts[ARTNET_MAX_PORTS * ARTNET_MAX_PAGES];
-	struct TInputPort m_InputPorts[ARTNET_MAX_PORTS];
+	struct TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
+	struct TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
 	bool m_bDirectUpdate;
 
@@ -339,7 +340,7 @@ private:
 	time_t m_nPreviousPacketTime;
 	TOpCodes m_tOpCodePrevious;
 
-	bool m_IsLightSetRunning[ARTNET_MAX_PORTS * ARTNET_MAX_PAGES];
+	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
 	bool m_IsRdmResponder;
 
 	alignas(uint32_t) char m_aSysName[16];

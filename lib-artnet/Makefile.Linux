@@ -1,6 +1,6 @@
 #
-DEFINES = #NDEBUG
+DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-lightset/include ../lib-ledblink/include ../lib-properties/include ../lib-hal/include ../lib-network/include
+EXTRA_INCLUDES = ../lib-lightset/include ../lib-properties/include ../lib-hal/include ../lib-network/include
 #
 include ../linux-template/lib/Rules.mk

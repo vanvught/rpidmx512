@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void ArtNetNode::Print(void) {
 				const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
 				const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
 
-				printf("  Port %c %d:%d:%d [%s]", (char) ('A' + i), nNet, nSubSwitch, nAddress, MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+				printf("  Port %2d %d:%-3d[%2x] [%s]", (int) i, nNet, (nSubSwitch * 16 + nAddress), (nSubSwitch * 16 + nAddress), MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
 				if (m_nVersion == 4) {
 					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
 				} else {
@@ -69,7 +69,7 @@ void ArtNetNode::Print(void) {
 				const uint8_t nNet = m_Node.NetSwitch[i];
 				const uint8_t nSubSwitch = m_Node.SubSwitch[i];
 
-				printf("  Port %c %d:%d:%d\n", (char) ('A' + i), nNet, nSubSwitch, nAddress);
+				printf("  Port %2d %d:%-3d[%2x]\n", (int) i, nNet, (nSubSwitch * 16 + nAddress), (nSubSwitch * 16 + nAddress));
 			}
 		}
 	}

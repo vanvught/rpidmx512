@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 
 class ArtNetStore {
 public:
-	virtual ~ArtNetStore(void);
+	virtual ~ArtNetStore(void) {}
 
 	virtual void SaveShortName(const char *pShortName)=0;
 	virtual void SaveLongName(const char *pLongName)=0;

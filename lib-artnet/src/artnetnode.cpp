@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ union uip {
 #define NODE_DEFAULT_UNIVERSE		0
 
 static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 40 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 41 };
 static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
@@ -119,7 +119,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_State.status = ARTNET_STANDBY;
 	m_State.nNetworkDataLossTimeout = NETWORK_DATA_LOSS_TIMEOUT;
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
+	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
 		m_IsLightSetRunning[i] = false;
 		memset(&m_OutputPorts[i], 0 , sizeof(struct TOutputPort));
 	}
@@ -210,7 +210,7 @@ void ArtNetNode::Stop(void) {
 #endif
 
 	if (m_pLightSet != 0) {
-		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
+		for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) && (m_IsLightSetRunning[i])) {
 				m_pLightSet->Stop(i);
 				m_IsLightSetRunning[i] = false;
@@ -239,18 +239,25 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 	assert(dir <= ARTNET_DISABLE_PORT);
 
 	if (dir == ARTNET_DISABLE_PORT) {
-		if (m_OutputPorts[nPortIndex].bIsEnabled) {
-			m_OutputPorts[nPortIndex].bIsEnabled = false;
-			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT) {
+			if (m_OutputPorts[nPortIndex].bIsEnabled) {
+				m_OutputPorts[nPortIndex].bIsEnabled = false;
+				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+			}
 		}
-		if (m_InputPorts[nPortIndex].bIsEnabled) {
-			m_InputPorts[nPortIndex].bIsEnabled = false;
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			if (m_InputPorts[nPortIndex].bIsEnabled) {
+				m_InputPorts[nPortIndex].bIsEnabled = false;
+				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+			}
 		}
+
 		return ARTNET_EOK;
 	}
 
-	if (dir == ARTNET_INPUT_PORT) {
+	if ((dir == ARTNET_INPUT_PORT) && (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT)) {
 		if (!m_InputPorts[nPortIndex].bIsEnabled) {
 			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
 			assert(m_State.nActiveInputPorts <= ARTNET_MAX_PORTS);
@@ -260,24 +267,29 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 		m_InputPorts[nPortIndex].port.nDefaultAddress = nAddress & (uint16_t) 0x0F;// Universe : Bits 3-0
 		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress((uint16_t) nAddress, (nPortIndex / ARTNET_MAX_PORTS));
 
-		if (m_OutputPorts[nPortIndex].bIsEnabled) {
-			m_OutputPorts[nPortIndex].bIsEnabled = false;
-			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT) {
+			if (m_OutputPorts[nPortIndex].bIsEnabled) {
+				m_OutputPorts[nPortIndex].bIsEnabled = false;
+				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+			}
 		}
 	}
 
-	if (dir == ARTNET_OUTPUT_PORT) {
+	if ((dir == ARTNET_OUTPUT_PORT) && (nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT)) {
 		if (!m_OutputPorts[nPortIndex].bIsEnabled) {
 			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
 			assert(m_State.nActiveOutputPorts <= (ARTNET_MAX_PORTS * m_nPages));
 		}
+
 		m_OutputPorts[nPortIndex].bIsEnabled = true;
 		m_OutputPorts[nPortIndex].port.nDefaultAddress = nAddress & (uint16_t) 0x0F;// Universe : Bits 3-0
 		m_OutputPorts[nPortIndex].port.nPortAddress = MakePortAddress((uint16_t) nAddress, (nPortIndex / ARTNET_MAX_PORTS));
 
-		if (m_InputPorts[nPortIndex].bIsEnabled) {
-			m_InputPorts[nPortIndex].bIsEnabled = false;
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			if (m_InputPorts[nPortIndex].bIsEnabled) {
+				m_InputPorts[nPortIndex].bIsEnabled = false;
+				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+			}
 		}
 	}
 
@@ -301,13 +313,17 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 
 bool ArtNetNode::GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress, TArtNetPortDir dir) const {
 	if (dir == ARTNET_INPUT_PORT) {
-		assert(nPortIndex < ARTNET_MAX_PORTS);
+		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT);
 
-		nAddress = m_InputPorts[nPortIndex].port.nDefaultAddress;
-		return m_InputPorts[nPortIndex].bIsEnabled;
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			nAddress = m_InputPorts[nPortIndex].port.nDefaultAddress;
+			return m_InputPorts[nPortIndex].bIsEnabled;
+		}
+
+		return false;
 	}
 
-	assert(nPortIndex < ARTNET_MAX_PORTS * ARTNET_MAX_PAGES);
+	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
 
 	nAddress = m_OutputPorts[nPortIndex].port.nDefaultAddress;
 	return m_OutputPorts[nPortIndex].bIsEnabled;
@@ -363,14 +379,17 @@ uint8_t ArtNetNode::GetNetSwitch(uint8_t nPage) const {
 
 bool ArtNetNode::GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress, TArtNetPortDir dir) const {
 	if (dir == ARTNET_INPUT_PORT) {
-		assert(nPortIndex < ARTNET_MAX_PORTS);
+		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT);
 
-		nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
-		return m_InputPorts[nPortIndex].bIsEnabled;
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
+			return m_InputPorts[nPortIndex].bIsEnabled;
+		}
 
+		return false;
 	}
 
-	assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
 
 	nAddress = m_OutputPorts[nPortIndex].port.nPortAddress;
 	return m_OutputPorts[nPortIndex].bIsEnabled;
@@ -409,14 +428,14 @@ void ArtNetNode::SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode) {
 }
 
 TMerge ArtNetNode::GetMergeMode(uint8_t nPortIndex) const {
-	assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
 
 	return m_OutputPorts[nPortIndex].mergeMode;
 }
 
 void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
 	if (m_nVersion > 3) {
-		assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
 
 		m_OutputPorts[nPortIndex].tPortProtocol = tPortProtocol;
 
@@ -440,7 +459,7 @@ void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol
 }
 
 TPortProtocol ArtNetNode::GetPortProtocol(uint8_t nPortIndex) const {
-	assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+	assert(nPortIndex < (ARTNET_NODE_MAX_PORTS_OUTPUT));
 
 	return m_OutputPorts[nPortIndex].tPortProtocol;
 }

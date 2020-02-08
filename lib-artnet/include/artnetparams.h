@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ enum TArtnetParamsMask {
 
 class ArtNetParamsStore {
 public:
-	virtual ~ArtNetParamsStore(void);
+	virtual ~ArtNetParamsStore(void) {}
 
 	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
 	virtual void Copy(struct TArtNetParams *pArtNetParams)=0;
@@ -112,8 +112,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(ArtNetNode *);
 
@@ -182,7 +182,9 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+	bool isMaskSet(uint32_t nMask) {
+		return (m_tArtNetParams.nSetList & nMask) == nMask;
+	}
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;
