@@ -2,7 +2,7 @@
  * @file l6470params.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ enum TL6470ParamsMask {
 
 class L6470ParamsStore {
 public:
-	virtual ~L6470ParamsStore(void);
+	virtual ~L6470ParamsStore(void) {}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
@@ -84,7 +84,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tL6470Params.nSetList & nMask) == nMask;
+    }
 
 private:
 	L6470ParamsStore *m_pL6470ParamsStore;

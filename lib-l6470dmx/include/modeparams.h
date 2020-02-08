@@ -71,7 +71,7 @@ enum TModeParamsMask {
 
 class ModeParamsStore {
 public:
-	virtual ~ModeParamsStore(void);
+	virtual ~ModeParamsStore(void) {}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams)=0;
@@ -122,7 +122,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tModeParams.nSetList & nMask) == nMask;
+    }
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

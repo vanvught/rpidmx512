@@ -2,7 +2,7 @@
  * @file motorparams.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ enum TMotorParamsMask {
 
 class MotorParamsStore {
 public:
-	virtual ~MotorParamsStore(void);
+	virtual ~MotorParamsStore(void) {}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams)=0;
@@ -93,8 +93,11 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t) const;
-	float calcIntersectSpeed(void) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tMotorParams.nSetList & nMask) == nMask;
+    }
+
+	float calcIntersectSpeed(void);
 	uint32_t calcIntersectSpeedReg(float) const;
 
 public:

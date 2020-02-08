@@ -162,6 +162,3 @@ void MidiParams::staticCallbackFunction(void *p, const char *s) {
 	((MidiParams *) p)->callbackFunction(s);
 }
 
-bool MidiParams::isMaskSet(uint32_t nMask) const {
-	return (m_tMidiParams.nSetList & nMask) == nMask;
-}

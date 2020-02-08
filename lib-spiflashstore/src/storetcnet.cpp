@@ -36,12 +36,6 @@
 
 StoreTCNet *StoreTCNet::s_pThis = 0;
 
-TCNetParamsStore::~TCNetParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 StoreTCNet::StoreTCNet(void) {
 	DEBUG_ENTRY
 

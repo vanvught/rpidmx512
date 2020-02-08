@@ -2,7 +2,7 @@
  * @file displayudfparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ enum TDisplayUdfParamsMask {
 
 class DisplayUdfParamsStore {
 public:
-	virtual ~DisplayUdfParamsStore(void);
+	virtual ~DisplayUdfParamsStore(void) {}
 
 	virtual void Update(const struct TDisplayUdfParams *ptDisplayUdfParams)=0;
 	virtual void Copy(struct TDisplayUdfParams *ptDisplayUdfParams)=0;
@@ -80,7 +80,10 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
+    }
+
     void Set(void);
 
 private:

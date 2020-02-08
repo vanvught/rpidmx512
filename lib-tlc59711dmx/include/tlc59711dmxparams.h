@@ -2,7 +2,7 @@
  * @file tlc59711dmxparams.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ enum TTLC59711DmxParamsMask {
 
 class TLC59711DmxParamsStore {
 public:
-	virtual ~TLC59711DmxParamsStore(void);
+	virtual ~TLC59711DmxParamsStore(void) {}
 
 	virtual void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
 	virtual void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
@@ -61,8 +61,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(TLC59711Dmx *);
 
@@ -76,8 +76,13 @@ public:
 		return m_tTLC59711Params.nLedCount;
 	}
 
-	bool IsSetLedType(void) const;
-	bool IsSetLedCount(void) const;
+	bool IsSetLedType(void) {
+		return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE);
+	}
+
+	bool IsSetLedCount(void) {
+		return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT);
+	}
 
 public:
 	static const char *GetLedTypeString(TTLC59711Type tTLC59711Type);
@@ -86,7 +91,9 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tTLC59711Params.nSetList & nMask) == nMask;
+    }
 
 private:
 	TLC59711DmxParamsStore *m_pLC59711ParamsStore;

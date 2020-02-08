@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "network.h"
 #include "networkparams.h"
 #include "networkconst.h"
 
@@ -56,6 +57,11 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS));
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
+
+	if (!isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
+		strncpy((char *)m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE);
+		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+	}
 	builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
 
 	builder.AddIpAddress(NetworkConst::PARAMS_NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER));

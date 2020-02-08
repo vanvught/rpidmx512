@@ -213,6 +213,3 @@ void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	((NetworkParams *) p)->callbackFunction(s);
 }
 
-bool NetworkParams::isMaskSet(uint32_t nMask) const {
-	return (m_tNetworkParams.nSetList & nMask) == nMask;
-}

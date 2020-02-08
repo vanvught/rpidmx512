@@ -77,6 +77,14 @@ public:
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 
+	uint8_t GetLabel(uint8_t nIndex) {
+		if (nIndex < DISPLAY_UDF_LABEL_UNKNOWN) {
+			return m_aLabels[nIndex];
+		}
+
+		return m_aLabels[0];
+	}
+
 	static DisplayUdf* Get(void) {
 		return s_pThis;
 	}

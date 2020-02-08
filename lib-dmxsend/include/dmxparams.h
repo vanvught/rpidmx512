@@ -52,7 +52,7 @@ enum TDmxSendParamsMask {
 
 class DMXParamsStore {
 public:
-	virtual ~DMXParamsStore(void);
+	virtual ~DMXParamsStore(void) {}
 
 	virtual void Update(const struct TDMXParams *pDmxParams)=0;
 	virtual void Copy(struct TDMXParams *pDmxParams)=0;
@@ -93,7 +93,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tDMXParams.nSetList & nMask) == nMask;
+    }
 
 private:
     DMXParamsStore *m_pDMXParamsStore;

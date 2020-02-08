@@ -224,7 +224,7 @@ void MotorParams::Dump(void) {
 #endif
 }
 
-float MotorParams::calcIntersectSpeed(void) const {
+float MotorParams::calcIntersectSpeed(void) {
 	if (isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE) && isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE)) {
 		return ((float) 4 * m_tMotorParams.fResistance) / (2 * M_PI * m_tMotorParams.fInductance * 0.001);
 	} else {
@@ -243,6 +243,3 @@ void MotorParams::staticCallbackFunction(void *p, const char *s) {
 	((MotorParams *) p)->callbackFunction(s);
 }
 
-bool MotorParams::isMaskSet(uint32_t nMask) const {
-	return (m_tMotorParams.nSetList & nMask) == nMask;
-}

@@ -2,7 +2,7 @@
  * @file storerdmdevice.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,18 +35,6 @@
 #include "debug.h"
 
 StoreRDMDevice *StoreRDMDevice::s_pThis = 0;
-
-RDMDeviceParamsStore::~RDMDeviceParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-RDMDeviceStore::~RDMDeviceStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 StoreRDMDevice::StoreRDMDevice(void) {
 	DEBUG_ENTRY

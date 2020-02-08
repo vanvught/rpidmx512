@@ -32,12 +32,6 @@
 
 #include "debug.h"
 
-ArtNet4ParamsStore::~ArtNet4ParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 StoreArtNet4::StoreArtNet4(void) {
 	DEBUG_ENTRY
 

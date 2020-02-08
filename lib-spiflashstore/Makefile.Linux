@@ -1,6 +1,6 @@
 #
 DEFINES = RASPPI LIB_SPIFLASHSTORE #NDEBUG
 #
-EXTRA_INCLUDES = ../lib-spiflash/include ../lib-remoteconfig/include ../lib-tftpdeamon/include ../lib-displayudf/include ../lib-display/include ../lib-artnet/include ../lib-artnet4/include ../lib-e131/include ../lib-network/include ../lib-dmxsend/include ../lib-dmx/include ../lib-ws28xxdmx/include ../lib-ws28xx/include ../lib-tlc59711dmx/include ../lib-tlc59711/include ../lib-ltc/include ../lib-tcnet/include ../lib-midi/include ../lib-oscserver/include ../lib-oscclient/include ../lib-widget/include ../lib-rdm/include ../lib-l6470dmx/include ../lib-l6470/include ../lib-nextion/include ../lib-lightset/include ../lib-properties/include ../lib-ledblink/include ../lib-hal/include ../lib-bob/include
+EXTRA_INCLUDES = ../lib-spiflash/include ../lib-remoteconfig/include ../lib-tftpdeamon/include ../lib-displayudf/include ../lib-display/include ../lib-artnet/include ../lib-artnet4/include ../lib-e131/include ../lib-network/include ../lib-dmxsend/include ../lib-dmx/include ../lib-ws28xxdmx/include ../lib-ws28xx/include ../lib-tlc59711dmx/include ../lib-tlc59711/include ../lib-ltc/include ../lib-tcnet/include ../lib-midi/include ../lib-oscserver/include ../lib-oscclient/include ../lib-widget/include ../lib-rdm/include ../lib-l6470dmx/include ../lib-l6470/include ../lib-nextion/include ../lib-lightset/include ../lib-properties/include ../lib-hal/include ../lib-bob/include
 #
 include ../linux-template/lib/Rules.mk

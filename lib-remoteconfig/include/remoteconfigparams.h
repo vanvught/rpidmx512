@@ -2,7 +2,7 @@
  * @file remoteconfigparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ enum TRemoteConfigParamsMask {
 
 class RemoteConfigParamsStore {
 public:
-	virtual ~RemoteConfigParamsStore(void);
+	virtual ~RemoteConfigParamsStore(void) {}
 
 	virtual void Update(const struct TRemoteConfigParams *pRemoteConfigParams)=0;
 	virtual void Copy(struct TRemoteConfigParams *pRemoteConfigParams)=0;
@@ -63,8 +63,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(RemoteConfig *);
 
@@ -75,7 +75,9 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	RemoteConfigParamsStore *m_pRemoteConfigParamsStore;

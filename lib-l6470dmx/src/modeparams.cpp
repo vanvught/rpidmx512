@@ -328,8 +328,3 @@ void ModeParams::staticCallbackFunction(void *p, const char *s) {
 
 	((ModeParams *) p)->callbackFunction(s);
 }
-
-bool ModeParams::isMaskSet(uint32_t nMask) const {
-	return (m_tModeParams.nSetList & nMask) == nMask;
-}
-

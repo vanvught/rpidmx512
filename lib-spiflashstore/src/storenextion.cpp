@@ -1,5 +1,5 @@
 /**
- * @file rdmdevicestore.h
+ * @file storenextion.cpp
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -23,16 +23,46 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDEVICESTORE_H_
-#define RDMDEVICESTORE_H_
-
 #include <stdint.h>
 
-class RDMDeviceStore {
-public:
-	virtual ~RDMDeviceStore(void) {}
+#include "storenextion.h"
 
-	virtual void SaveLabel(const uint8_t *pLabel, uint8_t nLength)=0;
-};
+#include "nextionparams.h"
 
-#endif /* RDMDEVICESTORE_H_ */
+#include "spiflashstore.h"
+
+#include "debug.h"
+
+StoreNextion *StoreNextion::s_pThis = 0;
+
+StoreNextion::StoreNextion(void) {
+	DEBUG_ENTRY
+
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
+
+	DEBUG_EXIT
+}
+
+StoreNextion::~StoreNextion(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreNextion::Update(const struct TNextionParams *pNextionParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_NEXTION, (void *)pNextionParams, sizeof(struct TNextionParams));
+
+	DEBUG_EXIT
+}
+
+void StoreNextion::Copy(struct TNextionParams *pNextionParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_NEXTION, (void *)pNextionParams, sizeof(struct TNextionParams));
+
+	DEBUG_EXIT
+}

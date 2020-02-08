@@ -1,7 +1,7 @@
 /**
  * @file midiparams.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ struct TMidiParams {
 
 class MidiParamsStore {
 public:
-	virtual ~MidiParamsStore(void);
+	virtual ~MidiParamsStore(void) {}
 
 	virtual void Update(const struct TMidiParams *pMidiParams)=0;
 	virtual void Copy(struct TMidiParams *pMidiParams)=0;
@@ -69,7 +69,9 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tMidiParams.nSetList & nMask) == nMask;
+    }
 
 private:
     MidiParamsStore *m_pMidiParamsStore;

@@ -2,7 +2,7 @@
  * @file pca9685leddmxparams.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,14 +40,14 @@ public:
 	void Set(PCA9685DmxLed *);
 	void Dump(void);
 
-private:
-	bool isMaskSet(uint32_t nMask) const;
-
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_bSetList & nMask) == nMask;
+    }
 
 private:
     uint32_t m_bSetList;

@@ -170,23 +170,11 @@ void TLC59711DmxParams::Dump(void) {
 #endif
 }
 
-bool TLC59711DmxParams::IsSetLedType(void) const {
-	return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE);
-}
-
-bool TLC59711DmxParams::IsSetLedCount(void) const {
-	return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT);
-}
-
 void TLC59711DmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
 	((TLC59711DmxParams *) p)->callbackFunction(s);
-}
-
-bool TLC59711DmxParams::isMaskSet(uint32_t nMask) const {
-	return (m_tTLC59711Params.nSetList & nMask) == nMask;
 }
 
 /*

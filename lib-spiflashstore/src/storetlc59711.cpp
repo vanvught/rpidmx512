@@ -2,7 +2,7 @@
  * @file storetlc59711.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,18 +36,6 @@
 #include "debug.h"
 
 StoreTLC59711 *StoreTLC59711::s_pThis = 0;
-
-TLC59711DmxParamsStore::~TLC59711DmxParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-TLC59711DmxStore::~TLC59711DmxStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 StoreTLC59711::StoreTLC59711(void) {
 	DEBUG_ENTRY

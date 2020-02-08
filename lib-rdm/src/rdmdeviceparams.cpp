@@ -181,6 +181,3 @@ void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
 	((RDMDeviceParams *) p)->callbackFunction(s);
 }
 
-bool RDMDeviceParams::isMaskSet(uint32_t nMask) const {
-	return (m_tRDMDeviceParams.nSetList & nMask) == nMask;
-}

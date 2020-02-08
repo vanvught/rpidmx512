@@ -2,7 +2,7 @@
  * @file oscserverparams.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ enum TOSCServerParamsMask {
 
 class OSCServerParamsStore {
 public:
-	virtual ~OSCServerParamsStore(void);
+	virtual ~OSCServerParamsStore(void) {}
 
 	virtual void Update(const struct TOSCServerParams *pOSCServerParams)=0;
 	virtual void Copy(struct TOSCServerParams *pOSCServerParams)=0;

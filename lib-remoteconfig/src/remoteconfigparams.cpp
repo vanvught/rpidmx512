@@ -228,6 +228,3 @@ void RemoteConfigParams::staticCallbackFunction(void *p, const char *s) {
 	((RemoteConfigParams*) p)->callbackFunction(s);
 }
 
-bool RemoteConfigParams::isMaskSet(uint32_t nMask) const {
-	return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
-}

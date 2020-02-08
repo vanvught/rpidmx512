@@ -117,6 +117,3 @@ void SpiFlashInstallParams::staticCallbackFunction(void* p, const char* s) {
 	((SpiFlashInstallParams *) p)->callbackFunction(s);
 }
 
-bool SpiFlashInstallParams::isMaskSet(uint32_t nMask) const {
-	return (m_nSetList & nMask) == nMask;
-}

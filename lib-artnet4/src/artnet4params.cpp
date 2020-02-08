@@ -142,6 +142,3 @@ void ArtNet4Params::staticCallbackFunction(void *p, const char *s) {
 	((ArtNet4Params *) p)->callbackFunction(s);
 }
 
-bool ArtNet4Params::isMaskSet(uint32_t nMask) const {
-	return (m_tArtNet4Params.nSetList & nMask) == nMask;
-}

@@ -2,7 +2,7 @@
  * @file dmxsendparams.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -149,6 +149,3 @@ void DMXParams::staticCallbackFunction(void *p, const char *s) {
 	((DMXParams *) p)->callbackFunction(s);
 }
 
-bool DMXParams::isMaskSet(uint32_t nMask) const {
-	return (m_tDMXParams.nSetList & nMask) == nMask;
-}

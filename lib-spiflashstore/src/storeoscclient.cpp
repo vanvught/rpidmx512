@@ -36,12 +36,6 @@
 
 StoreOscClient *StoreOscClient::s_pThis = 0;
 
-OscClientParamsStore::~OscClientParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 StoreOscClient::StoreOscClient(void) {
 	DEBUG_ENTRY
 

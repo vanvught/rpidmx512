@@ -146,7 +146,6 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 			return;
 		}
 	}
-
 }
 
 void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -165,13 +164,15 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+		if (!isMaskSet(1 << i)) {
+			m_tDisplayUdfParams.nLabelIndex[i] = DisplayUdf::Get()->GetLabel(i);
+		}
 		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
 	}
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return;
 }
 
 void DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -184,8 +185,6 @@ void DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize)
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
@@ -226,8 +225,4 @@ void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != 0);
 
 	((DisplayUdfParams *) p)->callbackFunction(s);
-}
-
-bool DisplayUdfParams::isMaskSet(uint32_t nMask) const {
-	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
 }

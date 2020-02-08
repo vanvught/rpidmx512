@@ -2,7 +2,7 @@
  * @file storewidget.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,18 +35,6 @@
 #include "debug.h"
 
 StoreWidget *StoreWidget::s_pThis = 0;
-
-WidgetStore::~WidgetStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-WidgetParamsStore::~WidgetParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 StoreWidget::StoreWidget(void) {
 	DEBUG_ENTRY

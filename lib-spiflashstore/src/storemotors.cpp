@@ -2,7 +2,7 @@
  * @file storemotors.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,30 +53,6 @@ struct TMotorStore {
 #define STORE_MOTOR_OFFSET(x)		((x) * sizeof(struct TMotorStore))
 
 StoreMotors *StoreMotors::s_pThis = 0;
-
-ModeParamsStore::~ModeParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-MotorParamsStore::~MotorParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-L6470ParamsStore::~L6470ParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-ModeStore::~ModeStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 StoreMotors::StoreMotors(void) {
 	DEBUG_ENTRY

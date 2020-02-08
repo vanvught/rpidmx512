@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ enum TRDMDeviceParamsMask {
 
 class RDMDeviceParamsStore {
 public:
-	virtual ~RDMDeviceParamsStore(void);
+	virtual ~RDMDeviceParamsStore(void) {}
 
 	virtual void Update(const struct TRDMDeviceParams *pRDMDeviceParams)=0;
 	virtual void Copy(struct TRDMDeviceParams *pRDMDeviceParams)=0;
@@ -74,7 +74,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tRDMDeviceParams.nSetList & nMask) == nMask;
+    }
 
 private:
     RDMDeviceParamsStore *m_pRDMDeviceParamsStore;

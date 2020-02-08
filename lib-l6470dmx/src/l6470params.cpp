@@ -280,7 +280,3 @@ void L6470Params::staticCallbackFunction(void *p, const char *s) {
 
 	((L6470Params *) p)->callbackFunction(s);
 }
-
-bool L6470Params::isMaskSet(uint32_t nMask) const {
-	return (m_tL6470Params.nSetList & nMask) == nMask;
-}

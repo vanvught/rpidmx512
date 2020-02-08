@@ -44,12 +44,6 @@ StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = 0;
 
 #define STORE_SPARKFUN_OFFSET(x)		(STORE_SPARKFUN_STRUCT_OFFSET + ((x) * sizeof(struct TSparkFunDmxParams)))
 
-SparkFunDmxParamsStore::~SparkFunDmxParamsStore(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 StoreSparkFunDmx::StoreSparkFunDmx(void) {
 	DEBUG_ENTRY
 

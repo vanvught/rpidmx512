@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ enum TArtNet4ParamsMask {
 
 class ArtNet4ParamsStore {
 public:
-	virtual ~ArtNet4ParamsStore(void);
+	virtual ~ArtNet4ParamsStore(void) {}
 
 	virtual void Update(const struct TArtNet4Params *pArtNet4Params)=0;
 	virtual void Copy(struct TArtNet4Params *pArtNet4Params)=0;
@@ -76,7 +76,9 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const;
+	bool isMaskSet(uint32_t nMask) {
+		return (m_tArtNet4Params.nSetList & nMask) == nMask;
+	}
 
 private:
 	ArtNet4ParamsStore *m_pArtNet4ParamsStore;

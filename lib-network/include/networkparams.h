@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ enum TNetworkParamsMask {
 
 class NetworkParamsStore {
 public:
-	virtual ~NetworkParamsStore(void);
+	virtual ~NetworkParamsStore(void) {}
 
 	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
 	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
@@ -118,7 +118,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint32_t nMask) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tNetworkParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	NetworkParamsStore *m_pNetworkParamsStore;
