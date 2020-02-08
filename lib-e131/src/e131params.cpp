@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -241,7 +241,7 @@ void E131Params::Dump(void) {
 #endif
 }
 
-uint16_t E131Params::GetUniverse(uint8_t nPort, bool& IsSet) const {
+uint16_t E131Params::GetUniverse(uint8_t nPort, bool &IsSet) {
 	assert(nPort < E131_PARAMS_MAX_PORTS);
 
 	IsSet = isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << nPort);
@@ -256,6 +256,4 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 	((E131Params *) p)->callbackFunction(s);
 }
 
-bool E131Params::isMaskSet(uint32_t nMask) const {
-	return (m_tE131Params.nSetList & nMask) == nMask;
-}
+

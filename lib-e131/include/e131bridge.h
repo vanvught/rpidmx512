@@ -2,7 +2,7 @@
  * @file e131bridge.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -230,6 +230,14 @@ private:
 	uint32_t m_DiscoveryIpAddress;
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
+
+public:
+	static E131Bridge* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static E131Bridge *s_pThis;
 };
 
 #endif /* E131BRIDGE_H_ */

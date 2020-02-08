@@ -2,7 +2,7 @@
  * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ void E131Bridge::Print(void) {
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 			uint16_t nUniverse;
 			if (GetUniverse(i, nUniverse, E131_OUTPUT_PORT)) {
-				printf("  Port %c Universe %d [%s]\n", (char) ('A' + i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
+				printf("  Port %2d Universe %-3d [%s]\n", (int) i , nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
 			}
 		}
 	}
@@ -59,7 +59,7 @@ void E131Bridge::Print(void) {
 		for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
 			uint16_t nUniverse;
 			if (GetUniverse(i, nUniverse, E131_INPUT_PORT)) {
-				printf("  Port %c Universe %d [%d]\n", (char) ('A' + i), nUniverse, GetPriority(i));
+				printf("  Port %2d Universe %-3d [%d]\n", (int) i, nUniverse, GetPriority(i));
 			}
 		}
 	}

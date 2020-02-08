@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ enum TE131ParamsMask {
 
 class E131ParamsStore {
 public:
-	virtual ~E131ParamsStore(void);
+	virtual ~E131ParamsStore(void) {}
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
@@ -113,7 +113,7 @@ public:
 		return (TE131Merge) m_tE131Params.nMergeMode;
 	}
 
-	uint16_t GetUniverse(uint8_t nPort, bool &IsSet) const;
+	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate(void) {
 		return m_tE131Params.bEnableNoChangeUpdate;
@@ -128,7 +128,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tE131Params.nSetList & nMask) == nMask;
+    }
 
 private:
     E131ParamsStore *m_pE131ParamsStore;

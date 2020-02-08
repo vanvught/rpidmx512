@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,10 @@
 #include "network.h"
 #include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 13 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 14 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
+
+E131Bridge *E131Bridge::s_pThis = 0;
 
 E131Bridge::E131Bridge(void) :
 	m_nHandle(-1),
@@ -67,6 +69,8 @@ E131Bridge::E131Bridge(void) :
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
 	assert(LedBlink::Get() != 0);
+
+	s_pThis = this;
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(struct TE131OutputPort));
@@ -231,8 +235,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 	assert(dir <= E131_DISABLE_PORT);
 	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
 
-	if (dir == E131_INPUT_PORT) {
-		assert(nPortIndex < E131_MAX_UARTS);
+	if ((dir == E131_INPUT_PORT) && (nPortIndex < E131_MAX_UARTS)) {
 		if (m_InputPort[nPortIndex].bIsEnabled) {
 			if (m_InputPort[nPortIndex].nUniverse == nUniverse) {
 				return;
@@ -250,15 +253,21 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 	}
 
 	if (dir == E131_DISABLE_PORT) {
-		if (m_OutputPort[nPortIndex].bIsEnabled) {
-			m_OutputPort[nPortIndex].bIsEnabled = false;
-			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
-			LeaveUniverse(nPortIndex, nUniverse);
+		if (nPortIndex < E131_MAX_PORTS) {
+			if (m_OutputPort[nPortIndex].bIsEnabled) {
+				m_OutputPort[nPortIndex].bIsEnabled = false;
+				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+				LeaveUniverse(nPortIndex, nUniverse);
+			}
 		}
-		if (m_InputPort[nPortIndex].bIsEnabled) {
-			m_InputPort[nPortIndex].bIsEnabled = false;
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+
+		if (nPortIndex < E131_MAX_UARTS) {
+			if (m_InputPort[nPortIndex].bIsEnabled) {
+				m_InputPort[nPortIndex].bIsEnabled = false;
+				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+			}
 		}
+
 		return;
 	}
 
@@ -283,11 +292,13 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 
 bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir) const {
 	if (tDir == E131_INPUT_PORT) {
-		assert(nPortIndex < E131_MAX_UARTS);
+		if (nPortIndex < E131_MAX_UARTS) {
+			nUniverse = m_InputPort[nPortIndex].nUniverse;
 
-		nUniverse = m_InputPort[nPortIndex].nUniverse;
+			return m_InputPort[nPortIndex].bIsEnabled;
+		}
 
-		return m_InputPort[nPortIndex].bIsEnabled;
+		return false;
 	}
 
 	assert(nPortIndex < E131_MAX_PORTS);
