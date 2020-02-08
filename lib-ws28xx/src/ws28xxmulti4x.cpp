@@ -61,6 +61,22 @@ bool WS28xxMulti::SetupSI5351A(void) {
 	__builtin_unreachable();
 }
 
+bool WS28xxMulti::IsMCP23017(void) {
+	DEBUG_ENTRY
+
+	device_info_t timing = { (spi_cs_t) 0, };
+
+	if (!mcp23017_start(&timing)) {
+		DEBUG_PUTS("mcp23017 not connected!");
+		DEBUG_EXIT
+		return false;
+	}
+
+	return true;
+
+	DEBUG_EXIT
+}
+
 bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_ENTRY
 
@@ -116,7 +132,6 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
 			}
 			break;
-
 		case RGB_MAPPING_RBG:
 			if (mask & nRed) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
@@ -150,6 +165,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 			} else {
 				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
 			}
+			break;
 		case RGB_MAPPING_GBR:
 			if (mask & nGreen) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
@@ -166,6 +182,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 			} else {
 				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
 			}
+			break;
 		case RGB_MAPPING_BRG:
 			if (mask & nBlue) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);

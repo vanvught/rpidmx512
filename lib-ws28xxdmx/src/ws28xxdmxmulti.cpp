@@ -63,6 +63,8 @@ WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 
 	UpdateMembers();
 
+	m_pLEDStripe = new WS28xxMulti;
+
 	DEBUG_EXIT
 }
 
@@ -73,8 +75,22 @@ WS28xxDmxMulti::~WS28xxDmxMulti(void) {
 	m_pLEDStripe = 0;
 }
 
+void WS28xxDmxMulti::Initialize(void) {
+	assert(m_pLEDStripe != 0);
+
+	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
+
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
+	}
+
+	m_pLEDStripe->Blackout();
+}
+
 void WS28xxDmxMulti::Start(uint8_t nPort) {
-	DEBUG_PRINTF("%d", (int) nPort);
+	assert(m_pLEDStripe != 0);
+
+	DEBUG_PRINTF("%d", (int ) nPort);
 
 	if (m_bIsStarted) {
 		return;
@@ -82,23 +98,17 @@ void WS28xxDmxMulti::Start(uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (m_pLEDStripe == 0) {
-		m_pLEDStripe = new WS28xxMulti(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
-		assert(m_pLEDStripe != 0);
-		while (m_pLEDStripe->IsUpdating()) {
-			// wait for completion
-		}
-		m_pLEDStripe->Blackout();
-	} else {
-		while (m_pLEDStripe->IsUpdating()) {
-			// wait for completion
-		}
-		m_pLEDStripe->Update();
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
 	}
+
+	m_pLEDStripe->Update();
 }
 
 void WS28xxDmxMulti::Stop(uint8_t nPort) {
-	DEBUG_PRINTF("%d", (int) nPort);
+	assert(m_pLEDStripe != 0);
+
+	DEBUG_PRINTF("%d", (int ) nPort);
 
 	if (!m_bIsStarted) {
 		return;
@@ -106,24 +116,20 @@ void WS28xxDmxMulti::Stop(uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	if (m_pLEDStripe != 0) {
-		while (m_pLEDStripe->IsUpdating()) {
-			// wait for completion
-		}
-		m_pLEDStripe->Blackout();
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
 	}
+
+	m_pLEDStripe->Blackout();
 }
 
 void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
 	assert(pData != 0);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
+	assert(m_pLEDStripe != 0);
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
-
-	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
-		Start(0);
-	}
 
 	switch (nPortId & ~(uint8_t)m_nUniverses & (uint8_t)0x03) {
 	case 0:
@@ -188,6 +194,10 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 void WS28xxDmxMulti::Blackout(bool bBlackout) {
 	m_bBlackout = bBlackout;
 
+	while (m_pLEDStripe->IsUpdating()) {
+		// wait for completion
+	}
+
 	if (bBlackout) {
 		m_pLEDStripe->Blackout();
 	} else {
@@ -226,7 +236,9 @@ void WS28xxDmxMulti::SetLEDCount(uint16_t nLedCount) {
 void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
 	DEBUG_ENTRY
 
-	m_nActiveOutputs = nActiveOutputs;
+	const uint32_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X ? 4 : 8);
+
+	m_nActiveOutputs = MIN(nActiveOutputs, nMaxActiveOutputs);
 
 	UpdateMembers();
 

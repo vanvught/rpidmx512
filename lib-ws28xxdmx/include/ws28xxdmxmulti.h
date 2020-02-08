@@ -44,6 +44,8 @@ public:
 	WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc);
 	virtual ~WS28xxDmxMulti(void);
 
+	void Initialize(void);
+
 	void Start(uint8_t nPort);
 	void Stop(uint8_t nPort);
 

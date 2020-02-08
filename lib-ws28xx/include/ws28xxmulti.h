@@ -48,8 +48,10 @@ enum WS28xxMultiActivePorts {
 
 class WS28xxMulti {
 public:
-	WS28xxMulti(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
+	WS28xxMulti(void);
 	~WS28xxMulti(void);
+
+	void Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 
 	TWS28XXType GetLEDType(void) {
 		return m_tWS28xxType;
@@ -111,6 +113,7 @@ private:
 	uint8_t ReverseBits(uint8_t nBits);
 
 // 4x
+	bool IsMCP23017(void);
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
 	bool SetupSI5351A(void);
 	void SetupGPIO(void);
