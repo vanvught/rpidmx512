@@ -1,6 +1,6 @@
 #
 DEFINES = #NDEBUG
 #
-EXTRA_INCLUDES = ../lib-artnet/include ../lib-artnet4/include ../lib-display/include ../lib-displayudf/include ../lib-e131/include ../lib-ledblink/include ../lib-lightset/include ../lib-network/include ../lib-spiflashstore/include
+EXTRA_INCLUDES = ../lib-artnet/include ../lib-artnet4/include ../lib-display/include ../lib-displayudf/include ../lib-e131/include ../lib-lightset/include ../lib-network/include ../lib-spiflashstore/include
 #
 include ../linux-template/lib/Rules.mk

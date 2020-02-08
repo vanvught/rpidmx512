@@ -1,8 +1,8 @@
 /**
- * @file displayudfhandler.cpp
+ * @file artnetreboot.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include "displayudfhandler.h"
+#ifndef ARTNETREBOOT_H_
+#define ARTNETREBOOT_H_
 
-#include "artnetdisplay.h"
-#include "lightsetdisplay.h"
-#include "networkdisplay.h"
+#include "reboothandler.h"
 
-DisplayUdfHandler::~DisplayUdfHandler(void) {
-}
+#include "artnetnode.h"
 
-ArtNetDisplay::~ArtNetDisplay(void) {
-}
+class ArtNetReboot: public RebootHandler {
+public:
+	ArtNetReboot(void) {}
+	~ArtNetReboot(void) {}
 
+	void Run(void) {
+		ArtNetNode::Get()->Stop();
+	}
+};
 
-LightSetDisplay::~LightSetDisplay(void) {
-}
-
-NetworkDisplay::~NetworkDisplay(void) {
-}
-
-DisplayUdfHandler::DisplayUdfHandler(void) {
-}
+#endif /* ARTNETREBOOT_H_ */
