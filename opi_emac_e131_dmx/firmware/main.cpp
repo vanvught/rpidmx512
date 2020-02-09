@@ -42,6 +42,7 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "e131.h"
 
 #include "reboot.h"
 
@@ -76,11 +77,21 @@ void notmain(void) {
 	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
 
+	E131Params e131params((E131ParamsStore*) &storeE131);
+
+	if (e131params.Load()) {
+		e131params.Dump();
+	}
+
 	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output/Input");
+	if (e131params.GetDirection() == E131_INPUT_PORT) {
+		console_puts("DMX Input");
+	} else {
+		console_puts("DMX Output");
+	}
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" {1 Universe}\n");
 
@@ -97,19 +108,18 @@ void notmain(void) {
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	E131Bridge bridge;
-	E131Params e131params((E131ParamsStore*) &storeE131);
 
-	if (e131params.Load()) {
-		e131params.Set(&bridge);
-		e131params.Dump();
-	}
+	e131params.Set(&bridge);
+
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	DMXSend *pDmxOutput;
 	DmxInput *pDmxInput;
 
 	const uint16_t nUniverse = e131params.GetUniverse();
 
-	if (e131params.GetDirection() == E131_PARAMS_DIRECTION_INPUT) {
+	if (e131params.GetDirection() == E131_INPUT_PORT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != 0);
 
@@ -134,9 +144,6 @@ void notmain(void) {
 	}
 
 	bridge.Print();
-
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	display.SetTitle("Eth sACN E1.31 DMX");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
