@@ -2,7 +2,7 @@
  * @file e131paramssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,21 +47,25 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 		m_pE131ParamsStore->Copy(&m_tE131Params);
 	}
 
-	PropertiesBuilder builder(E131ParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
+	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
 
-	builder.Add(E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
+	builder.Add(E131ParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		builder.Add(E131ParamsConst::PARAMS_UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
-		builder.Add(E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
+		builder.Add(E131ParamsConst::UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+		builder.Add(E131ParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
 	}
 
-	builder.Add(E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
-	builder.Add(E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
+	builder.Add(E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
+	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, (uint32_t) m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
 
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+
+	// DMX Input
+	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == (uint8_t) E131_PARAMS_DIRECTION_INPUT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
+	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131_PARAMS_MASK_PRIORITY));
 
 	nSize = builder.GetSize();
 

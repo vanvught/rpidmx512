@@ -2,7 +2,7 @@
  * @file e131packets.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -183,6 +183,6 @@ struct TE131 {
 #define DATA_FRAME_LAYER_LENGTH(x)			(DATA_FRAME_LAYER_SIZE + DATA_LAYER_LENGTH(x))
 #define DATA_ROOT_LAYER_LENGTH(x)			(ROOT_LAYER_SIZE - 16 + DATA_FRAME_LAYER_LENGTH(x))
 
-#define DATA_PACKET_SIZE(x)					(ROOT_LAYER_SIZE + DATA_FRAME_LAYER_SIZE +  DATA_LAYER_LENGTH(x))
+#define DATA_PACKET_SIZE(x)					(ROOT_LAYER_SIZE + DATA_FRAME_LAYER_SIZE + DATA_LAYER_LENGTH(x))
 
 #endif /* E131PACKETS_H_ */

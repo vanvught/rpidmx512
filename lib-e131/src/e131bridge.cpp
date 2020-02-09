@@ -49,7 +49,7 @@
 #include "network.h"
 #include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 14 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 15 };
 static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
 
 E131Bridge *E131Bridge::s_pThis = 0;
@@ -132,10 +132,12 @@ void E131Bridge::Start(void) {
 void E131Bridge::Stop(void) {
 	m_State.IsNetworkDataLoss = true;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-		m_pLightSet->Stop(i);
-		m_OutputPort[i].length = 0;
-		m_OutputPort[i].IsDataPending = false;
+	if (m_pLightSet != 0) {
+		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+			m_pLightSet->Stop(i);
+			m_OutputPort[i].length = 0;
+			m_OutputPort[i].IsDataPending = false;
+		}
 	}
 
 	if (m_pE131DmxIn != 0) {

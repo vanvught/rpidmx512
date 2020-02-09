@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ bool E131Params::Load(void) {
 
 	ReadConfigFile configfile(E131Params::staticCallbackFunction, this);
 
-	if (configfile.Read(E131ParamsConst::PARAMS_FILE_NAME)) {
+	if (configfile.Read(E131ParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pE131ParamsStore != 0) {
 			m_pE131ParamsStore->Update(&m_tE131Params);
@@ -118,7 +118,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 
 	len = 3;
-	if (Sscan::Char(pLine, E131ParamsConst::PARAMS_MERGE_MODE, value, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, E131ParamsConst::MERGE_MODE, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "ltp", 3) == 0) {
 			m_tE131Params.nMergeMode = E131_MERGE_LTP;
 			m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_MODE;
@@ -130,14 +130,14 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 
 	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		if (Sscan::Uint16(pLine, E131ParamsConst::PARAMS_UNIVERSE_PORT[i], &value16) == SSCAN_OK) {
+		if (Sscan::Uint16(pLine, E131ParamsConst::UNIVERSE_PORT[i], &value16) == SSCAN_OK) {
 			m_tE131Params.nUniversePort[i] = value16;
 			m_tE131Params.nSetList |= (E131_PARAMS_MASK_UNIVERSE_A << i);
 			return;
 		}
 
 		len = 3;
-		if (Sscan::Char(pLine, E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], value, &len) == SSCAN_OK) {
+		if (Sscan::Char(pLine, E131ParamsConst::MERGE_MODE_PORT[i], value, &len) == SSCAN_OK) {
 			if (memcmp(value, "ltp", 3) == 0) {
 				m_tE131Params.nMergeModePort[i] = E131_MERGE_LTP;
 				m_tE131Params.nSetList |= (E131_PARAMS_MASK_MERGE_MODE_A << i);
@@ -149,13 +149,13 @@ void E131Params::callbackFunction(const char *pLine) {
 		}
 	}
 
-	if (Sscan::Float(pLine, E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, &fValue) == SSCAN_OK) {
+	if (Sscan::Float(pLine, E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, &fValue) == SSCAN_OK) {
 		m_tE131Params.nNetworkTimeout = fValue;
 		m_tE131Params.nSetList |= E131_PARAMS_MASK_NETWORK_TIMEOUT;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, E131ParamsConst::DISABLE_MERGE_TIMEOUT, &value8) == SSCAN_OK) {
 		m_tE131Params.bDisableMergeTimeout = (value8 != 0);
 		m_tE131Params.nSetList |= E131_PARAMS_MASK_MERGE_TIMEOUT;
 		return;
@@ -168,7 +168,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 
 	len = 5;
-	if (Sscan::Char(pLine, E131ParamsConst::PARAMS_DIRECTION, value, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, E131ParamsConst::DIRECTION, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "input", 5) == 0) {
 			m_tE131Params.nDirection = (uint8_t) E131_PARAMS_DIRECTION_INPUT;
 			m_tE131Params.nSetList |= E131_PARAMS_MASK_DIRECTION;
@@ -177,7 +177,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 
 	len = 6;
-	if (Sscan::Char(pLine, E131ParamsConst::PARAMS_DIRECTION, value, &len) == SSCAN_OK) {
+	if (Sscan::Char(pLine, E131ParamsConst::DIRECTION, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "output", 6) == 0) {
 			m_tE131Params.nDirection = (uint8_t) E131_PARAMS_DIRECTION_OUTPUT;
 			m_tE131Params.nSetList |= E131_PARAMS_MASK_DIRECTION;
@@ -185,7 +185,7 @@ void E131Params::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, E131ParamsConst::PARAMS_PRIORITY, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, E131ParamsConst::PRIORITY, &value8) == SSCAN_OK) {
 		if ((value8 >= E131_PRIORITY_LOWEST) && (value8 <= E131_PRIORITY_HIGHEST)) {
 			m_tE131Params.nPriority = value8;
 			m_tE131Params.nSetList |= E131_PARAMS_MASK_PRIORITY;
@@ -197,7 +197,7 @@ void E131Params::callbackFunction(const char *pLine) {
 
 void E131Params::Dump(void) {
 #ifndef NDEBUG
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::FILE_NAME);
 
 	if (isMaskSet(E131_PARAMS_MASK_UNIVERSE)) {
 		printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE, (int) m_tE131Params.nUniverse);
@@ -205,26 +205,26 @@ void E131Params::Dump(void) {
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i)) {
-			printf(" %s=%d\n", E131ParamsConst::PARAMS_UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
+			printf(" %s=%d\n", E131ParamsConst::UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
 		}
 	}
 
 	if (isMaskSet(E131_PARAMS_MASK_MERGE_MODE)) {
-		printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode));
+		printf(" %s=%s\n", E131ParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode));
 	}
 
 	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		if (isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i)) {
-			printf(" %s=%s\n", E131ParamsConst::PARAMS_MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]));
+			printf(" %s=%s\n", E131ParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]));
 		}
 	}
 
 	if (isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT)) {
-		printf(" %s=%.1f [%s]\n", E131ParamsConst::PARAMS_NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout == 0) ? "Disabled" : "");
+		printf(" %s=%.1f [%s]\n", E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
 	if(isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::PARAMS_DISABLE_MERGE_TIMEOUT, (int) m_tE131Params.bDisableMergeTimeout, BOOL2STRING(m_tE131Params.bDisableMergeTimeout));
+		printf(" %s=%d [%s]\n", E131ParamsConst::DISABLE_MERGE_TIMEOUT, (int) m_tE131Params.bDisableMergeTimeout, BOOL2STRING(m_tE131Params.bDisableMergeTimeout));
 	}
 
 	if(isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
@@ -232,11 +232,11 @@ void E131Params::Dump(void) {
 	}
 
 	if(isMaskSet(E131_PARAMS_MASK_DIRECTION)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::PARAMS_DIRECTION, (int) m_tE131Params.nDirection, m_tE131Params.nDirection == E131_PARAMS_DIRECTION_OUTPUT ? "Output" : "Input");
+		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION, (int) m_tE131Params.nDirection, m_tE131Params.nDirection == E131_PARAMS_DIRECTION_OUTPUT ? "Output" : "Input");
 	}
 
 	if (isMaskSet(E131_PARAMS_MASK_PRIORITY)) {
-		printf(" %s=%d\n", E131ParamsConst::PARAMS_PRIORITY, m_tE131Params.nPriority);
+		printf(" %s=%d\n", E131ParamsConst::PRIORITY, m_tE131Params.nPriority);
 	}
 #endif
 }

@@ -2,7 +2,7 @@
  * @file e131paramsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@
 
 class E131ParamsConst {
 public:
-	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
-	alignas(uint32_t) static const char PARAMS_UNIVERSE_PORT[4][16];
-	alignas(uint32_t) static const char PARAMS_MERGE_MODE[];
-	alignas(uint32_t) static const char PARAMS_MERGE_MODE_PORT[4][18];
-	alignas(uint32_t) static const char PARAMS_NETWORK_DATA_LOSS_TIMEOUT[];
-	alignas(uint32_t) static const char PARAMS_DISABLE_MERGE_TIMEOUT[];
-	alignas(uint32_t) static const char PARAMS_DIRECTION[];
-	alignas(uint32_t) static const char PARAMS_PRIORITY[];
+	alignas(uint32_t) static const char FILE_NAME[];
+	alignas(uint32_t) static const char UNIVERSE_PORT[4][16];
+	alignas(uint32_t) static const char MERGE_MODE[];
+	alignas(uint32_t) static const char MERGE_MODE_PORT[4][18];
+	alignas(uint32_t) static const char NETWORK_DATA_LOSS_TIMEOUT[];
+	alignas(uint32_t) static const char DISABLE_MERGE_TIMEOUT[];
+	alignas(uint32_t) static const char DIRECTION[];
+	alignas(uint32_t) static const char PRIORITY[];
 };
 
 #endif /* E131PARAMSCONST_H_ */
