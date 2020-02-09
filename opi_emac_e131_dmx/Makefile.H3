@@ -3,9 +3,9 @@ PLATFORM = ORANGE_PI
 #
 DEFINES = E131_BRIDGE DMXSEND DISPLAY_UDF NDEBUG
 #
-LIBS = 
+LIBS =
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

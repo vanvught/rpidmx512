@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,10 +43,14 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
-// DMX Out
+#include "reboot.h"
+
+// DMX Output
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+// DMX Input
+#include "dmxinput.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -76,7 +80,7 @@ void notmain(void) {
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output");
+	console_puts("DMX Output/Input");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" {1 Universe}\n");
 
@@ -100,23 +104,39 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const uint8_t nUniverse = e131params.GetUniverse();
+	DMXSend *pDmxOutput;
+	DmxInput *pDmxInput;
 
-	bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
+	const uint16_t nUniverse = e131params.GetUniverse();
 
-	DMXSend dmx;
-	DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+	if (e131params.GetDirection() == E131_PARAMS_DIRECTION_INPUT) {
+		pDmxInput = new DmxInput;
+		assert(pDmxInput != 0);
 
-	if (dmxparams.Load()) {
-		dmxparams.Set(&dmx);
-		dmxparams.Dump();
+		bridge.SetUniverse(0, E131_INPUT_PORT, nUniverse);
+		bridge.SetE131Dmx(pDmxInput);
+	} else {
+		pDmxOutput = new DMXSend;
+		assert(pDmxOutput != 0);
+
+		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+
+		if (dmxparams.Load()) {
+			dmxparams.Set(pDmxOutput);
+			dmxparams.Dump();
+		}
+
+		pDmxOutput->Print();
+
+		bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetDirectUpdate(false);
+		bridge.SetOutput(pDmxOutput);
 	}
 
-	bridge.SetDirectUpdate(false);
-	bridge.SetOutput(&dmx);
 	bridge.Print();
 
-	dmx.Print();
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	display.SetTitle("Eth sACN E1.31 DMX");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
