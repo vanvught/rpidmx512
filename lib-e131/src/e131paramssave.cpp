@@ -64,7 +64,7 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
 	// DMX Input
-	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == (uint8_t) E131_PARAMS_DIRECTION_INPUT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
+	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == (uint8_t) E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
 	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131_PARAMS_MASK_PRIORITY));
 
 	nSize = builder.GetSize();

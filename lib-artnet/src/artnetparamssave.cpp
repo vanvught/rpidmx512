@@ -2,7 +2,7 @@
  * @file artnetparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +85,10 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT));
 
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+
+	// DMX Input
+	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == (uint8_t) ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
+	builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP, m_tArtNetParams.nDestinationIp, isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP));
 
 	nSize = builder.GetSize();
 

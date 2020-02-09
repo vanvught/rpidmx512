@@ -26,9 +26,12 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "artnetnode.h"
+
+#include "network.h"
 
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
@@ -42,6 +45,8 @@ void ArtNetNode::Print(void) {
 	printf(" Long name  : %s\n", m_Node.LongName);
 
 	if (m_State.nActiveOutputPorts != 0) {
+		printf(" Output\n");
+
 		for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(i, nAddress)) {
@@ -63,6 +68,9 @@ void ArtNetNode::Print(void) {
 	}
 
 	if (m_State.nActiveInputPorts != 0) {
+		printf(" Input\n");
+		printf("  Destination " IPSTR "\n", IP2STR(m_nDestinationIp));
+
 		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS); i++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(i, nAddress, ARTNET_INPUT_PORT)) {

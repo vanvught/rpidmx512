@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,6 @@
 #include "lightset.h"
 
 #define E131_PARAMS_MAX_PORTS	4
-
-enum TE131ParamsDirection {
-	E131_PARAMS_DIRECTION_OUTPUT = 0,
-	E131_PARAMS_DIRECTION_INPUT
-};
 
 struct TE131Params {
     uint32_t nSetList;
@@ -119,8 +114,8 @@ public:
 		return m_tE131Params.bEnableNoChangeUpdate;
 	}
 
-	TE131ParamsDirection GetDirection(void) {
-		return (TE131ParamsDirection) m_tE131Params.nDirection;
+	TE131PortDir GetDirection(void) {
+		return (TE131PortDir) m_tE131Params.nDirection;
 	}
 
 public:

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,35 +38,35 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		return;
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {
-		pArtNetNode->SetShortName((const char *)m_tArtNetParams.aShortName);
+	if (isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {
+		pArtNetNode->SetShortName((const char*) m_tArtNetParams.aShortName);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME)) {
-		pArtNetNode->SetLongName((const char *)m_tArtNetParams.aLongName);
+	if (isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME)) {
+		pArtNetNode->SetLongName((const char*) m_tArtNetParams.aLongName);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_NET)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_NET)) {
 		pArtNetNode->SetNetSwitch(m_tArtNetParams.nNet);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_SUBNET)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_SUBNET)) {
 		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_ID)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_ID)) {
 		pArtNetNode->SetManufacturerId(m_tArtNetParams.aManufacturerId);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {
 		pArtNetNode->SetOemValue(m_tArtNetParams.aOemValue);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT)) {
 		pArtNetNode->SetNetworkTimeout(m_tArtNetParams.nNetworkTimeout);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT)) {
 		pArtNetNode->SetDisableMergeTimeout(m_tArtNetParams.bDisableMergeTimeout);
 	}
 
@@ -91,7 +91,11 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocol);
 	}
 
-	if(isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+	if (isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
 		pArtNetNode->SetDirectUpdate(m_tArtNetParams.bEnableNoChangeUpdate);
+	}
+
+	if (isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP)) {
+		pArtNetNode->SetDestinationIp(m_tArtNetParams.nDestinationIp);
 	}
 }

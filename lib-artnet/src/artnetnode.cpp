@@ -1102,6 +1102,15 @@ void ArtNetNode::Run(void) {
 #if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
 		if (m_pArtNetDmx != 0) {
 			HandleDmxIn();
+
+			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+				if (m_State.bIsReceivingDmx) {
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+					m_State.bIsReceivingDmx = false;
+				} else {
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+				}
+			}
 		}
 #endif
 		return;

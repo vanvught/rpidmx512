@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,15 @@
 #include "artnetdmx.h"
 
 #include "network.h"
+#include "hardware.h"
 
 #include "debug.h"
+
+void ArtNetNode::SetDestinationIp(uint32_t nDestinationIp) {
+	m_nDestinationIp = nDestinationIp;
+
+	DEBUG_PRINTF("m_nDestinationIp=" IPSTR ", Netmask=" IPSTR, IP2STR(m_nDestinationIp), IP2STR(Network::Get()->GetNetmask()));
+}
 
 void ArtNetNode::HandleDmxIn(void) {
 	struct TArtDmx  artDmx;
@@ -62,6 +69,16 @@ void ArtNetNode::HandleDmxIn(void) {
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 
 				Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(artDmx), (uint16_t) sizeof(struct TArtDmx), m_nDestinationIp, (uint16_t) ARTNET_UDP_PORT);
+
+				m_nLastDmxPacketTimeMillis[i] = Hardware::Get()->Millis();
+				m_State.bIsReceivingDmx = true;
+			} else {
+				if ((m_InputPorts[i].port.nStatus & GO_DATA_IS_BEING_TRANSMITTED) == GO_DATA_IS_BEING_TRANSMITTED) {
+					if ((Hardware::Get()->Millis() - m_nLastDmxPacketTimeMillis[i]) > 3000) {
+						m_InputPorts[i].port.nStatus = m_InputPorts[i].port.nStatus & ~GI_DATA_RECIEVED;
+						m_State.bIsReceivingDmx = false;
+					}
+				}
 			}
 		}
 

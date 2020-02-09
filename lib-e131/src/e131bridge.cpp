@@ -853,6 +853,15 @@ void E131Bridge::Run(void) {
 		if (m_pE131DmxIn != 0) {
 			HandleDmxIn();
 			SendDiscoveryPacket();
+
+			if (m_bEnableDataIndicator){
+				if (m_State.bIsReceivingDmx) {
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+					m_State.bIsReceivingDmx = false;
+				} else {
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+				}
+			}
 		}
 
 		return;

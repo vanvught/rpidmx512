@@ -260,6 +260,11 @@ public:
 		return m_pArtNetDmx;
 	}
 
+	void SetDestinationIp(uint32_t nDestinationIp);
+	uint32_t GetDestinationIp(void) {
+		return m_nDestinationIp;
+	}
+
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
@@ -346,6 +351,7 @@ private:
 	alignas(uint32_t) char m_aSysName[16];
 	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 
+	uint32_t m_nLastDmxPacketTimeMillis[ARTNET_NODE_MAX_PORTS_INPUT];
 	uint32_t m_nDestinationIp;
 
 public:

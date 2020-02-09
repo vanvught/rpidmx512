@@ -2,7 +2,7 @@
  * @file e131bridgehandledmxin.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "e117const.h"
 
 #include "network.h"
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -78,6 +79,13 @@ void E131Bridge::HandleDmxIn(void) {
 				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(nLength);
 
 				Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
+
+				m_nLastDmxPacketTimeMillis[i] = Hardware::Get()->Millis();
+				m_State.bIsReceivingDmx = true;
+			} else {
+				if ((Hardware::Get()->Millis() - m_nLastDmxPacketTimeMillis[i]) > 3000) {
+					m_State.bIsReceivingDmx = false;
+				}
 			}
 		}
 	}
