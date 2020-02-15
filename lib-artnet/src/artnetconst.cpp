@@ -2,7 +2,10 @@
  * @file artnetconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +26,13 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "artnetconst.h"
+#include "artnet.h"
+
+alignas(uint32_t) const uint8_t ArtNetConst::ESTA_ID[ARTNET_ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
+alignas(uint32_t) const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };						///< Waiting OEM from Artistic Licence Holdings Ltd.
 
 alignas(uint32_t) const char ArtNetConst::MSG_NODE_PARAMS[] = "Setting Node parameters";
 alignas(uint32_t) const char ArtNetConst::MSG_NODE_START[] = "Starting the Node";

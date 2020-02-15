@@ -9,15 +9,6 @@
 			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
 		</extension>
 	</configuration>
-	<configuration id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790" name="Circle">
-		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
-			<provider-reference id="org.eclipse.cdt.build.crossgcc.CrossGCCBuiltinSpecsDetector" ref="shared-provider"/>
-			<provider-reference id="org.eclipse.cdt.managedbuilder.core.MBSLanguageSettingsProvider" ref="shared-provider"/>
-			<provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
-			<provider copy-of="extension" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider"/>
-			<provider copy-of="extension" id="org.eclipse.cdt.managedbuilder.core.GCCBuildCommandParser"/>
-		</extension>
-	</configuration>
 	<configuration id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979" name="Linux">
 		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
 			<provider-reference id="org.eclipse.cdt.build.crossgcc.CrossGCCBuiltinSpecsDetector" ref="shared-provider"/>

@@ -33,6 +33,7 @@
 #include <assert.h>
 
 #include "artnetnode.h"
+#include "artnetconst.h"
 #include "packets.h"
 
 #include "lightset.h"
@@ -69,9 +70,7 @@ union uip {
 #define NODE_DEFAULT_SUBNET_SWITCH	0
 #define NODE_DEFAULT_UNIVERSE		0
 
-static const uint8_t DEVICE_MANUFACTURER_ID[] = { 0x7F, 0xF0 };
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 41 };
-static const uint8_t DEVICE_OEM_VALUE[] = { 0x20, 0xE0 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 42 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
 #define ARTNET_MERGE_TIMEOUT_SECONDS	10
@@ -94,6 +93,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_pArtNetStore(0),
 	m_pArtNetDisplay(0),
 	m_pArtNetDmx(0),
+	m_pArtNetTrigger(0),
 	m_pArtNet4Handler(0),
 	m_pTimeCodeData(0),
 	m_pTodData(0),
@@ -136,8 +136,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	snprintf((char *)m_aDefaultNodeLongName, ARTNET_LONG_NAME_LENGTH, "%s %s %d %s", pBoardName, NODE_ID, m_nVersion, pWebsiteUrl);
 	SetLongName((const char *) m_aDefaultNodeLongName);
 
-	SetManufacturerId(DEVICE_MANUFACTURER_ID);
-	SetOemValue(DEVICE_OEM_VALUE);
+	SetOemValue(ArtNetConst::OEM_ID);
 
 	uint8_t nSysNameLenght;
 	const char *pSysName = Hardware::Get()->GetSysName(nSysNameLenght);
@@ -467,9 +466,7 @@ TPortProtocol ArtNetNode::GetPortProtocol(uint8_t nPortIndex) const {
 void ArtNetNode::SetShortName(const char *pName) {
 	assert(pName != 0);
 
-	strncpy((char*) m_Node.ShortName, pName, ARTNET_SHORT_NAME_LENGTH);
-	m_Node.ShortName[ARTNET_SHORT_NAME_LENGTH - 1] = '\0';
-
+	strncpy((char *) m_Node.ShortName, pName, ARTNET_SHORT_NAME_LENGTH - 1);
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, ARTNET_SHORT_NAME_LENGTH);
 
 	if (m_State.status == ARTNET_ON) {
@@ -485,9 +482,7 @@ void ArtNetNode::SetShortName(const char *pName) {
 void ArtNetNode::SetLongName(const char *pName) {
 	assert(pName != 0);
 
-	strncpy((char*) m_Node.LongName, pName, ARTNET_LONG_NAME_LENGTH);
-	m_Node.LongName[ARTNET_LONG_NAME_LENGTH - 1] = '\0';
-
+	strncpy((char *) m_Node.LongName, pName, ARTNET_LONG_NAME_LENGTH - 1);
 	memcpy(m_PollReply.LongName, m_Node.LongName, ARTNET_LONG_NAME_LENGTH);
 
 	if (m_State.status == ARTNET_ON) {
@@ -498,13 +493,6 @@ void ArtNetNode::SetLongName(const char *pName) {
 			m_pArtNetDisplay->ShowLongName((const char*) m_Node.LongName);
 		}
 	}
-}
-
-void ArtNetNode::SetManufacturerId(const uint8_t *pEsta) {
-	assert(pEsta != 0);
-
-	m_Node.Esta[0] = pEsta[1];
-	m_Node.Esta[1] = pEsta[0];
 }
 
 void ArtNetNode::SetOemValue(const uint8_t *pOem) {
@@ -542,8 +530,8 @@ void ArtNetNode::FillPollReply(void) {
 
 	m_PollReply.Status1 = m_Node.Status1;
 
-	m_PollReply.EstaMan[0] = m_Node.Esta[0];
-	m_PollReply.EstaMan[1] = m_Node.Esta[1];
+	m_PollReply.EstaMan[0] = ArtNetConst::ESTA_ID[1];
+	m_PollReply.EstaMan[1] = ArtNetConst::ESTA_ID[0];
 
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
 	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
@@ -1185,11 +1173,9 @@ void ArtNetNode::Run(void) {
 		break;
 	}
 
-#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
 	if (m_pArtNetDmx != 0) {
 		HandleDmxIn();
 	}
-#endif
 
 	if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
 		if (m_State.bIsReceivingDmx) {

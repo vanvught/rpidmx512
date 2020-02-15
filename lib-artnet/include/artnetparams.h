@@ -49,7 +49,7 @@ struct TArtNetParams {
 	bool bRdmDiscovery;
 	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];
 	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];
-	uint8_t aManufacturerId[2];
+	uint8_t filler[2]; // aManufacturerId
 	uint8_t aOemValue[2];
 	time_t nNetworkTimeout;
 	bool bDisableMergeTimeout;
@@ -73,7 +73,7 @@ enum TArtnetParamsMask {
 	ARTNET_PARAMS_MASK_TIMECODE = (1 << 6),
 	ARTNET_PARAMS_MASK_TIMESYNC = (1 << 7),
 	ARTNET_PARAMS_MASK_OUTPUT = (1 << 8),
-	ARTNET_PARAMS_MASK_ID = (1 << 9),
+	//ARTNET_PARAMS_MASK_NOT_USED = (1 << 9), // aManufacturerId
 	ARTNET_PARAMS_MASK_OEM_VALUE = (1 << 10),
 	ARTNET_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 11),
 	ARTNET_PARAMS_MASK_MERGE_TIMEOUT = (1 << 12),
@@ -141,10 +141,6 @@ public:
 
 	TLightSetOutputType GetOutputType(void) {
 		return m_tArtNetParams.tOutputType;
-	}
-
-	const uint8_t *GetManufacturerId(void) {
-		return m_tArtNetParams.aManufacturerId;
 	}
 
 	time_t GetNetworkTimeout(void) {

@@ -26,10 +26,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #if !defined(__clang__)	// Needed for compiling on MacOS
  #pragma GCC push_options
  #pragma GCC optimize ("Os")
@@ -161,13 +157,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, (char *)m_tArtNetParams.aLongName, &nLength) == SSCAN_OK) {
 		m_tArtNetParams.aLongName[nLength] = '\0';
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_LONG_NAME;
-		return;
-	}
-
-	if (Sscan::HexUint16(pLine, ArtNetParamsConst::NODE_MANUFACTURER_ID, &nValue16) == SSCAN_OK) {
-		m_tArtNetParams.aManufacturerId[0] = (uint8_t) (nValue16 >> 8);
-		m_tArtNetParams.aManufacturerId[1] = (uint8_t) (nValue16 & 0xFF);
-		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_ID;
 		return;
 	}
 
@@ -336,10 +325,6 @@ void ArtNetParams::Dump(void) {
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_TIMESYNC)) {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMESYNC, (int) m_tArtNetParams.bUseTimeCode, BOOL2STRING(m_tArtNetParams.bUseTimeSync));
-	}
-
-	if(isMaskSet(ARTNET_PARAMS_MASK_ID)) {
-		printf(" %s=0x%.2X%.2X\n", ArtNetParamsConst::NODE_MANUFACTURER_ID, m_tArtNetParams.aManufacturerId[0], m_tArtNetParams.aManufacturerId[1]);
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {

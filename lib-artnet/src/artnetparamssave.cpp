@@ -34,6 +34,7 @@
 
 #include "artnetparams.h"
 #include "artnetparamsconst.h"
+#include "artnetnode.h"
 
 #include "propertiesbuilder.h"
 
@@ -65,7 +66,6 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, (const char *) m_tArtNetParams.aLongName, isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
 	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, (const char *) m_tArtNetParams.aShortName, isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
 
-	builder.AddHex16(ArtNetParamsConst::NODE_MANUFACTURER_ID, m_tArtNetParams.aManufacturerId, isMaskSet(ARTNET_PARAMS_MASK_ID));
 	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE));
 
 	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ARTNET_PARAMS_MASK_RDM));
@@ -88,6 +88,10 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 
 	// DMX Input
 	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == (uint8_t) ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
+
+	if (!isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP)) {
+		m_tArtNetParams.nDestinationIp = ArtNetNode::Get()->GetDestinationIp();
+	}
 	builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP, m_tArtNetParams.nDestinationIp, isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP));
 
 	nSize = builder.GetSize();

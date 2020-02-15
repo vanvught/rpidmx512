@@ -69,7 +69,8 @@ void ArtNetNode::Print(void) {
 
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
-		printf("  Destination " IPSTR "\n", IP2STR(m_nDestinationIp));
+		const uint32_t nDestinationIp = (m_nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_nDestinationIp);
+		printf("  Destination " IPSTR "\n", IP2STR(nDestinationIp));
 
 		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS); i++) {
 			uint8_t nAddress;

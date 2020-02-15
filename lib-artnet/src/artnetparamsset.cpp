@@ -54,10 +54,6 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet);
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_ID)) {
-		pArtNetNode->SetManufacturerId(m_tArtNetParams.aManufacturerId);
-	}
-
 	if (isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {
 		pArtNetNode->SetOemValue(m_tArtNetParams.aOemValue);
 	}

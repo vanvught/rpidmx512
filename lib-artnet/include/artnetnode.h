@@ -118,7 +118,6 @@ struct TArtNetNode {
 	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
 	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
 	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
-	uint8_t Esta[ARTNET_ESTA_SIZE];					///< The ESTA manufacturer code.
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;								///< General Status register
 	uint8_t Status2;
@@ -217,13 +216,8 @@ public:
 	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
 	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;
 
-	void SetManufacturerId(const uint8_t *);
-	const uint8_t* GetManufacturerId(void) {
-		return m_Node.Esta;
-	}
-
 	void SetOemValue(const uint8_t *);
-	const uint8_t* GetOemValue(void) {
+	const uint8_t *GetOemValue(void) {
 		return m_Node.Oem;
 	}
 
@@ -253,6 +247,13 @@ public:
 		m_pArtNetDisplay = pArtNetDisplay;
 	}
 
+	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
+		m_pArtNetTrigger = pArtNetTrigger;
+	}
+	ArtNetTrigger *GetArtNetTrigger(void) {
+		return m_pArtNetTrigger;
+	}
+
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
 		m_pArtNetDmx = pArtNetDmx;
 	}
@@ -263,13 +264,6 @@ public:
 	void SetDestinationIp(uint32_t nDestinationIp);
 	uint32_t GetDestinationIp(void) {
 		return m_nDestinationIp;
-	}
-
-	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
-		m_pArtNetTrigger = pArtNetTrigger;
-	}
-	ArtNetTrigger *GetArtNetTrigger(void) {
-		return m_pArtNetTrigger;
 	}
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
@@ -351,7 +345,6 @@ private:
 	alignas(uint32_t) char m_aSysName[16];
 	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
 
-	uint32_t m_nLastDmxPacketTimeMillis[ARTNET_NODE_MAX_PORTS_INPUT];
 	uint32_t m_nDestinationIp;
 
 public:
