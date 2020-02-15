@@ -226,7 +226,6 @@ private:
 	// Input
 	E131Dmx *m_pE131DmxIn;
 	TE131DataPacket *m_pE131DataPacket;
-	uint32_t m_nLastDmxPacketTimeMillis[E131_MAX_UARTS];
 	TE131DiscoveryPacket *m_pE131DiscoveryPacket;
 	uint32_t m_DiscoveryIpAddress;
 	uint8_t m_Cid[E131_CID_LENGTH];

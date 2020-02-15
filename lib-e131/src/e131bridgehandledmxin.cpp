@@ -59,11 +59,12 @@ void E131Bridge::FillDataPacket(void) {
 void E131Bridge::HandleDmxIn(void) {
 	assert(m_pE131DataPacket != 0);
 
-	uint16_t nLength;
-
 	for (uint32_t i = 0 ; i < E131_MAX_UARTS; i++) {
+		uint32_t nUpdatesPerSecond;
+
 		if (m_InputPort[i].bIsEnabled) {
-			const uint8_t *pDmxData = m_pE131DmxIn->Handler(i, nLength);
+			uint16_t nLength;
+			const uint8_t *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != 0) {
 				// Root Layer (See Section 5)
@@ -80,10 +81,9 @@ void E131Bridge::HandleDmxIn(void) {
 
 				Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
 
-				m_nLastDmxPacketTimeMillis[i] = Hardware::Get()->Millis();
 				m_State.bIsReceivingDmx = true;
 			} else {
-				if ((Hardware::Get()->Millis() - m_nLastDmxPacketTimeMillis[i]) > 3000) {
+				if (nUpdatesPerSecond == 0) {
 					m_State.bIsReceivingDmx = false;
 				}
 			}

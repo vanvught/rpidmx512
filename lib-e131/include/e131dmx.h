@@ -35,7 +35,7 @@ public:
 	virtual void Start(uint8_t nPort)=0;
 	virtual void Stop(uint8_t nPort)=0;
 
-	virtual const uint8_t *Handler(uint8_t nPort, uint16_t& nLength)=0;
+	virtual const uint8_t *Handler(uint8_t nPort, uint16_t& nLength, uint32_t &nUpdatesPerSecond)=0;
 };
 
 #endif /* E131DMX_H_ */
