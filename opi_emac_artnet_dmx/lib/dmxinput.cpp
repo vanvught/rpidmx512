@@ -72,8 +72,10 @@ void DmxInput::Stop(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength) {
+const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
 	const uint8_t *pDmx = GetDmxAvailable();
+
+	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != 0) {
 		const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;

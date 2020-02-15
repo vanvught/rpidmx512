@@ -117,6 +117,7 @@
 		<configuration configurationName="rpi">
 			<resource resourceType="PROJECT" workspacePath="/rpi_wifi_artnet_dmx"/>
 		</configuration>
+		<configuration configurationName="H3"/>
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/rpi_wifi_artnet_dmx"/>
 		</configuration>
