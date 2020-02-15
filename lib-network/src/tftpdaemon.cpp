@@ -2,7 +2,7 @@
  * @file tftpdaemon.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -231,7 +231,7 @@ void TFTPDaemon::SendError (uint16_t nErrorCode, const char *pErrorMessage) {
 
 	ErrorPacket.OpCode = __builtin_bswap16 (OP_CODE_ERROR);
 	ErrorPacket.ErrorCode = __builtin_bswap16 (nErrorCode);
-	strncpy(ErrorPacket.ErrMsg, pErrorMessage, sizeof(ErrorPacket.ErrMsg));
+	strncpy(ErrorPacket.ErrMsg, pErrorMessage, sizeof(ErrorPacket.ErrMsg) - 1);
 
 	Network::Get()->SendTo(m_nIdx, (uint8_t *)&ErrorPacket, sizeof ErrorPacket, m_nFromIp, m_nFromPort);
 }

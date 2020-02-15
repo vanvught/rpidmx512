@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ public:
 	}
 
 	uint32_t GetBroadcastIp(void) {
-		return m_nBroadcastIp;
+		return m_nLocalIp | ~m_nNetmask;
 	}
 
 	virtual bool EnableDhcp(void);
@@ -155,7 +155,6 @@ protected:
 	uint32_t m_nLocalIp;
 	uint32_t m_nGatewayIp;
 	uint32_t m_nNetmask;
-	uint32_t m_nBroadcastIp;
 	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];

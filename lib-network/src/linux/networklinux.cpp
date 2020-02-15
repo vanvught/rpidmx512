@@ -2,7 +2,7 @@
  * @file networklinux.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,7 +86,7 @@ int NetworkLinux::Init(const char *s) {
 
 	if (IfGetByAddress(s, m_aIfName, sizeof(m_aIfName)) == 0) {
 	} else {
-		strncpy(m_aIfName, s, IFNAMSIZ);
+		strncpy(m_aIfName, s, IFNAMSIZ - 1);
 	}
 
 	DEBUG_PRINTF("m_aIfName=%s", m_aIfName);
@@ -430,7 +430,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     	return -3;
     }
 
-	m_nBroadcastIp =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
+	//m_nBroadcastIp =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
     	perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");

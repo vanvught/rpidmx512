@@ -2,7 +2,7 @@
  * @file network.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,6 @@ Network::Network(void) :
 	m_nLocalIp(0),
 	m_nGatewayIp(0),
 	m_nNetmask(0),
-	m_nBroadcastIp(0),
 	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false),
 	m_nIfIndex(1),

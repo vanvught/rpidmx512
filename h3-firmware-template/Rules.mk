@@ -30,7 +30,7 @@ endif
 ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
 else
 	ifdef COND
-		LIBS:=remoteconfig tftpdeamon $(LIBS)
+		LIBS:=remoteconfig $(LIBS)
 	endif
 endif
 
