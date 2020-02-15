@@ -72,7 +72,7 @@ void DmxInput::Stop(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength) {
+const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
 	const uint8_t *pDmx = GetDmxAvailable();
 
 	if (pDmx != 0) {
@@ -81,6 +81,8 @@ const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength) {
 	} else {
 		nLength = 0;
 	}
+
+	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	return pDmx;
 }
