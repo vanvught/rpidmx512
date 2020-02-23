@@ -2,7 +2,7 @@
  * @file tcnet.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@
 
 #include "debug.h"
 
-#define NODE_NAME_DEFAULT	"AvV-OPi"
+const char *NODE_NAME_DEFAULT = "AvV-OPi";
 
 TCNet *TCNet::s_pThis = 0;
 
@@ -70,7 +70,7 @@ TCNet::TCNet(TTCNetNodeType tNodeType) :
 	m_tOptIn.DeviceMinorVersion = _TIME_STAMP_MONTH_;
 	m_tOptIn.DeviceBugVersion = _TIME_STAMP_DAY_;
 
-	SetNodeName((uint8_t *) NODE_NAME_DEFAULT);
+	SetNodeName(NODE_NAME_DEFAULT);
 	SetLayer(TCNET_LAYER_M);
 	SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
 }
@@ -101,6 +101,12 @@ void TCNet::Start(void) {
 
 void TCNet::Stop(void) {
 	DEBUG_ENTRY
+
+	struct TTCNetPacketOptOut OptOut;
+
+	memcpy(&OptOut, (const void *)&m_tOptIn, sizeof(struct TTCNetPacketOptOut));
+
+	Network::Get()->SendTo(m_aHandles[0],  (const uint8_t *) &OptOut, (uint16_t) sizeof(struct TTCNetPacketOptOut), m_tNode.nIPAddressBroadcast, TCNET_BROADCAST_PORT_0);
 
 	DEBUG_EXIT
 }
@@ -246,8 +252,8 @@ void TCNet::SetLayer(TTCNetLayers tLayer) {
 	m_pLTimeCode = (struct TTCNetPacketTimeTimeCode *)((uintptr_t) &m_TTCNet.TCNetPacket.Time.L1TimeCode + (uintptr_t) tLayer * sizeof(struct TTCNetPacketTimeTimeCode));
 }
 
-void TCNet::SetNodeName(const uint8_t *pNodeName) {
-	strncpy((char *)m_tOptIn.ManagementHeader.NodeName, (const char *)pNodeName, TCNET_NODE_NAME_LENGTH);
+void TCNet::SetNodeName(const char *pNodeName) {
+	strncpy((char *)m_tOptIn.ManagementHeader.NodeName, pNodeName, TCNET_NODE_NAME_LENGTH - 1);
 }
 
 char TCNet::GetLayerName(TTCNetLayers tLayer) {
