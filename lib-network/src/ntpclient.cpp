@@ -131,12 +131,12 @@ void NtpClient::Init(void) {
 				DEBUG_PRINTF("m_InitTime=%u", (unsigned) m_InitTime);
 
 				struct tm *pLocalTime = localtime(&m_InitTime);
-				struct THardwareTime hwTime;
-				memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
+//				struct THardwareTime hwTime;
+//				memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
 
 				DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 
-				if(Hardware::Get()->SetTime(hwTime)) {
+				if(Hardware::Get()->SetTime(pLocalTime)) {
 					m_MillisLastPoll = Hardware::Get()->Millis();
 					m_tStatus = NTP_CLIENT_STATUS_IDLE;
 				}
@@ -204,8 +204,8 @@ void NtpClient::Run(void) {
 #ifndef NDEBUG
 			DEBUG_PRINTF("nTime=%u", (unsigned) nTime);
 			struct tm *pLocalTime = localtime(&nTime);
-			struct THardwareTime hwTime;
-			memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
+//			struct THardwareTime hwTime;
+//			memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
 			DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 #endif
 		} else {

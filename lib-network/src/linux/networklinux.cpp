@@ -44,11 +44,12 @@
  */
 #include "networkparams.h"
 
-#define MAX_PORTS_ALLOWED	8
+#define MAX_PORTS_ALLOWED	16
+#define MAX_ENTRIES			(1 << 2) // Must always be a power of 2
+#define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
 
-static uint16_t sPortsAllowed[MAX_PORTS_ALLOWED];
-static uint8_t snPortsUsed = 0;
-static int snHandles[MAX_PORTS_ALLOWED];
+static int s_ports_allowed[MAX_PORTS_ALLOWED];
+
 /**
  * END
  */
@@ -67,11 +68,8 @@ int NetworkLinux::Init(const char *s) {
 	uint32_t i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
-		sPortsAllowed[i] = 0;
-		snHandles[i] = -1;
+		s_ports_allowed[i] = 0;
 	}
-
-	snPortsUsed = 0;
 
 	NetworkParams params;
 	params.Load();
@@ -133,17 +131,27 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 /**
  * BEGIN - needed H3 code compatibility
  */
-	if (snPortsUsed == MAX_PORTS_ALLOWED) {
-		perror("MAX_PORTS_ALLOWED");
-		exit(EXIT_FAILURE);
-	}
 
-	for (i = 0; i < snPortsUsed; i++) {
-		if (sPortsAllowed[i] == nPort) {
-			DEBUG_EXIT
-			return 0;
+	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		if (s_ports_allowed[i] == nPort) {
+			return i;
+		}
+
+		if (s_ports_allowed[i] == 0) {
+			break;
 		}
 	}
+
+	if (i == MAX_PORTS_ALLOWED) {
+		perror("bind");
+		exit(EXIT_FAILURE);
+		//return -1;
+	}
+
+	//s_ports_allowed[i] = nPort;
+
+	DEBUG_PRINTF("i=%d, nPort=%d", i, nPort);
+
 /**
  * END
  */
@@ -181,8 +189,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 /**
  * BEGIN - needed H3 code compatibility
  */
-		snHandles[snPortsUsed] = nSocket;
-		sPortsAllowed[snPortsUsed++] = nPort;
+	s_ports_allowed[i] = nSocket;
 /**
  * END
  */
@@ -202,30 +209,24 @@ int32_t NetworkLinux::End(uint16_t nPort) {
 /**
  * BEGIN - needed H3 code compatibility
  */
-	DEBUG_PRINTF("s_ports_allowed_index=%d", snPortsUsed);
 
-	if (snPortsUsed == 0) {
-		perror("s_ports_used_index == 0");
-		DEBUG_EXIT
-		exit(EXIT_FAILURE);
-	}
+	uint32_t i;
 
-	DEBUG_PRINTF("s_ports_allowed[s_ports_allowed_index - 1]=%d", sPortsAllowed[snPortsUsed - 1]);
-
-	if ((sPortsAllowed[snPortsUsed - 1]) == nPort) {
-		sPortsAllowed[snPortsUsed - 1] = 0;
-		if (close(snHandles[snPortsUsed - 1]) == -1) {
-			perror("bind");
-			exit(EXIT_FAILURE);
+	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		if (s_ports_allowed[i] == nPort) {
+			s_ports_allowed[i] = 0;
+			if (close(s_ports_allowed[i]) == -1) {
+				perror("unbind");
+				exit(EXIT_FAILURE);
+			}
+			return 0;
 		}
-		snPortsUsed--;
-		DEBUG_EXIT
-		return 0;
 	}
 
-	perror("port not in use");
-	DEBUG_EXIT
+	perror("unbind");
 	exit(EXIT_FAILURE);
+	return -1;
+
 /**
  * END
  */
