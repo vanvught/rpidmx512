@@ -191,7 +191,7 @@ const char* Hardware::GetBoardName(uint8_t& nLength) {
 	return m_aBoardName;
 }
 
-uint64_t Hardware::GetUpTime(void) {
+uint32_t Hardware::GetUpTime(void) {
 #if defined (__APPLE__)
 	struct timeval boottime;
 	size_t len = sizeof(boottime);
@@ -213,7 +213,7 @@ uint64_t Hardware::GetUpTime(void) {
 		printf("code error = %d\n", error);
 	}
 
-	return (uint64_t) s_info.uptime;
+	return (uint32_t) s_info.uptime;
 #endif
 }
 
@@ -221,12 +221,12 @@ void Hardware::SetSysTime(time_t nTime) {
 	DEBUG_PRINTF("%s", asctime(localtime(&nTime)));
 }
 
-bool Hardware::SetTime(const struct THardwareTime &pTime) {
-	DEBUG_PRINTF("%s", asctime((const tm *)&pTime));
+bool Hardware::SetTime(const struct tm *pTime) {
+	DEBUG_PRINTF("%s", asctime(pTime));
 	return true;
 }
 
-void Hardware::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct tm *pTime) {
 	time_t ltime;
 	struct tm *local_time;
 

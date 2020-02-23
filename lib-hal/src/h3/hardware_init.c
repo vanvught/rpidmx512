@@ -35,6 +35,7 @@
 #include "h3_watchdog.h"
 
 #include "arm/gic.h"
+#include "arm/synchronize.h"
 
 #include "c/sys_time.h"
 
@@ -54,14 +55,14 @@
  static bool s_is_pwr_button_pressed = false;
 #endif
 
-static volatile uint64_t s_hardware_init_startup_seconds = 0;
+static uint32_t s_hardware_init_startup_seconds = 0;
 
+extern void sys_time_init(void);
 extern void h3_timer_init(void);
 extern void h3_hs_timer_init(void);
 
-uint64_t hardware_uptime_seconds(void) {
-	const uint64_t now = h3_read_cnt64() / (uint64_t) (24 * 1000000);
-	return (now - s_hardware_init_startup_seconds);
+uint32_t hardware_uptime_seconds(void) {
+	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
 
 int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
@@ -136,7 +137,7 @@ void hardware_init(void) {
 	h3_thermal_init();
 	emac_init();
 
-	s_hardware_init_startup_seconds = h3_read_cnt64() / (uint64_t) (24 * 1000000);
+	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
 
 #ifndef ARM_ALLOW_MULTI_CORE
 	uint8_t cpu_number = 1;

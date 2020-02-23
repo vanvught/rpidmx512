@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,8 @@
 #define C_HARDWARE_H_
 
 #include <stdint.h>
-
-struct hardware_time {
-	uint8_t second;		///< [0-59]
-	uint8_t minute;		///< [0-59]
-	uint8_t hour;		///< [0-23]
-	uint8_t day;		///< [1-31]
-	uint8_t month;		///< [0-11]
-	uint8_t year;		///< [Year - 1900]
-};
+#include <stdbool.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +38,7 @@ extern void hardware_reboot(void);
 extern void hardware_led_init(void);
 extern void hardware_led_set(const int);
 
-extern uint64_t hardware_uptime_seconds(void);
+extern uint32_t hardware_uptime_seconds(void);
 
 extern int32_t hardware_firmware_get_revision(void);
 extern const char *hardware_firmware_get_copyright(void);
@@ -58,7 +51,8 @@ extern const char *hardware_board_get_soc(void);
 
 extern int32_t hardware_get_core_temperature(void);
 
-extern void hardware_rtc_set(const struct hardware_time *);
+extern void hardware_rtc_set(const struct tm *);
+extern bool hardware_rtc_get(struct tm *);
 
 #ifdef __cplusplus
 }

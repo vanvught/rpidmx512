@@ -102,6 +102,11 @@ bool rtc_start(rtc_types_t type) {
 	return false;
 }
 
+bool rtc_is_connected(void) {
+	_i2c_setup();
+	return i2c_is_connected(s_i2c_address);
+}
+
 /*
  * Members of the tm structure:
  *

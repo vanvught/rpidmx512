@@ -35,6 +35,7 @@
 #include "c/led.h"
 
 #include "h3.h"
+#include "h3_timer.h"
 #include "h3_watchdog.h"
 #include "h3_board.h"
 
@@ -74,27 +75,27 @@ Hardware::Hardware(void):
 Hardware::~Hardware(void) {
 }
 
-const char* Hardware::GetMachine(uint8_t& nLength) {
+const char *Hardware::GetMachine(uint8_t &nLength) {
 	nLength = MACHINE_LENGTH;
 	return s_Machine;
 }
 
-const char* Hardware::GetSysName(uint8_t& nLength) {
+const char *Hardware::GetSysName(uint8_t &nLength) {
 	nLength = SYSNAME_LENGTH;
 	return s_SysName;
 }
 
-const char* Hardware::GetBoardName(uint8_t& nLength) {
+const char *Hardware::GetBoardName(uint8_t &nLength) {
 	nLength = sizeof(H3_BOARD_NAME)  - 1;
 	return H3_BOARD_NAME;
 }
 
-const char* Hardware::GetCpuName(uint8_t& nLength) {
+const char *Hardware::GetCpuName(uint8_t &nLength) {
 	nLength = CPU_NAME_LENGHTH;
 	return s_CpuName;
 }
 
-const char* Hardware::GetSocName(uint8_t& nLength) {
+const char *Hardware::GetSocName(uint8_t &nLength) {
 #if defined(ORANGE_PI)
 	nLength = s_SocNameLenghth[0];
 	return s_SocName[0];
@@ -104,22 +105,13 @@ const char* Hardware::GetSocName(uint8_t& nLength) {
 #endif
 }
 
-bool Hardware::SetTime(const struct THardwareTime &pTime) {
-	struct hardware_time tm_hw;
-
-	tm_hw.year = pTime.tm_year;
-	tm_hw.month = pTime.tm_mon;
-	tm_hw.day = pTime.tm_mday;
-	tm_hw.hour = pTime.tm_hour;
-	tm_hw.minute = pTime.tm_min;
-	tm_hw.second = pTime.tm_sec;
-
-	hardware_rtc_set(&tm_hw);
+bool Hardware::SetTime(const struct tm *pTime) {
+	hardware_rtc_set(pTime);
 
 	return true;
 }
 
-void Hardware::GetTime(struct THardwareTime *pTime) {
+void Hardware::GetTime(struct tm *pTime) {
 	time_t ltime;
 	struct tm *local_time;
 
@@ -174,3 +166,4 @@ void Hardware::SoftReset(void) {
 
 	__builtin_unreachable();
 }
+

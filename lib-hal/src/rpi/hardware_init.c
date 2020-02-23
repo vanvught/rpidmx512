@@ -41,6 +41,7 @@
 #include "console.h"
 #include "ff.h"
 
+extern void sys_time_init(void);
 
 struct _hardware_led {
 	void (*init)(void);		///< Pointer to function for LED ACCT init (GPIO FSEL OUTPUT)
@@ -53,8 +54,8 @@ static volatile uint64_t hardware_init_startup_micros = 0;	///<
  static FATFS fat_fs;		/* File system object */
 #endif
 
-uint64_t hardware_uptime_seconds(void) {
-	return (uint64_t) (bcm2835_st_read() - hardware_init_startup_micros) / (uint64_t) 1000000;
+uint32_t hardware_uptime_seconds(void) {
+	return (uint32_t) (bcm2835_st_read() - hardware_init_startup_micros) / 1000000;
 }
 
 void hardware_led_init(void) {

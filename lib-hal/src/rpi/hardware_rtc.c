@@ -2,7 +2,7 @@
  * @file hardware_rtc.c
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#include <stdbool.h>
 #include <assert.h>
 
-#include "c/hardware.h"
 #include "c/sys_time.h"
 
 #include "rtc.h"
 
-void hardware_rtc_set(const struct hardware_time *tm_hw) {
-	assert(tm_hw != 0);
+#include "debug.h"
 
-	struct tm tm_rtc;
-	struct tm tmbuf;
-
-	tm_rtc.tm_hour = (int) tm_hw->hour;
-	tm_rtc.tm_min = (int) tm_hw->minute;
-	tm_rtc.tm_sec = (int) tm_hw->second;
-	tm_rtc.tm_mday = (int) tm_hw->day;
-	tm_rtc.tm_mon = (int) tm_hw->month;
-	tm_rtc.tm_year = (int) tm_hw->year;
+void hardware_rtc_set(const struct tm *tm_rtc) {
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc->tm_year, tm_rtc->tm_mon, tm_rtc->tm_mday, tm_rtc->tm_hour, tm_rtc->tm_min, tm_rtc->tm_sec);
 
 	if (rtc_start(RTC_PROBE)) {
-		rtc_set_date_time(&tm_rtc);
+		rtc_set_date_time(tm_rtc);
 	}
 
-	tmbuf.tm_hour = (int) tm_hw->hour;
-	tmbuf.tm_min = (int) tm_hw->minute;
-	tmbuf.tm_sec = (int) tm_hw->second;
-	tmbuf.tm_mday = (int) tm_hw->day;
-	tmbuf.tm_mon = (int) tm_hw->month;
-	tmbuf.tm_year = (int) tm_hw->year;
-	tmbuf.tm_isdst = 0;
-
-	sys_time_set(&tmbuf);
+	sys_time_set(tm_rtc);
 }

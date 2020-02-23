@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -299,7 +299,7 @@ int RemoteConfig::Run(void) {
 			HandleTftpGet();
 		} else {
 #ifndef NDEBUG
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"?#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)"?#ERROR#\n", 9, m_nIPAddressFrom, UDP_PORT);
 #endif
 		}
 	} else if (!m_bDisableWrite) {
@@ -321,7 +321,7 @@ int RemoteConfig::Run(void) {
 				HandleTxtFile();
 			} else {
 #ifndef NDEBUG
-				Network::Get()->SendTo(m_nHandle, (const uint8_t *) "!#ERROR#\n", 9, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, (const uint8_t *) "!#ERROR#\n", 9, m_nIPAddressFrom, UDP_PORT);
 #endif
 				return 0;
 			}
@@ -336,15 +336,15 @@ int RemoteConfig::Run(void) {
 void RemoteConfig::HandleUptime() {
 	DEBUG_ENTRY
 
-	const uint64_t nUptime = Hardware::Get()->GetUpTime();
+	const uint32_t nUptime = Hardware::Get()->GetUpTime();
 
 	if (m_nBytesReceived == REQUEST_UPTIME_LENGTH) {
-		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "uptime:%ds\n", (int) nUptime);
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "uptime: %ds\n", (int) nUptime);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, UDP_PORT);
 	} else if (m_nBytesReceived == REQUEST_UPTIME_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp((const void *)&m_pUdpBuffer[REQUEST_UPTIME_LENGTH], "bin", 3) == 0) {
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&nUptime, sizeof(uint64_t) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&nUptime, sizeof(uint32_t) , m_nIPAddressFrom, UDP_PORT);
 		}
 	}
 
@@ -357,12 +357,12 @@ void RemoteConfig::HandleVersion() {
 	if (m_nBytesReceived == REQUEST_VERSION_LENGTH) {
 		const char *p = FirmwareVersion::Get()->GetPrint();
 		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "version:%s", p);
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, UDP_PORT);
 	} else if (m_nBytesReceived == REQUEST_VERSION_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp((const void *)&m_pUdpBuffer[REQUEST_VERSION_LENGTH], "bin", 3) == 0) {
 			const uint8_t *p = (const uint8_t *)FirmwareVersion::Get()->GetVersion();
-			Network::Get()->SendTo(m_nHandle, p, sizeof(struct TFirmwareVersion) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, p, sizeof(struct TFirmwareVersion) , m_nIPAddressFrom, UDP_PORT);
 		}
 	}
 
@@ -379,11 +379,11 @@ void RemoteConfig::HandleList(void) {
 	}
 
 	if (m_nBytesReceived == REQUEST_LIST_LENGTH) {
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_aId, (uint16_t) m_nIdLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_aId, (uint16_t) m_nIdLength, m_nIPAddressFrom, UDP_PORT);
 	} else if (m_nBytesReceived == REQUEST_LIST_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp((const void *)&	m_pUdpBuffer[REQUEST_LIST_LENGTH], "bin", 3) == 0) {
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_tRemoteConfigListBin, sizeof(struct TRemoteConfigListBin) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_tRemoteConfigListBin, sizeof(struct TRemoteConfigListBin) , m_nIPAddressFrom, UDP_PORT);
 		}
 	}
 
@@ -407,11 +407,11 @@ void RemoteConfig::HandleDisplayGet() {
 
 	if (m_nBytesReceived == GET_DISPLAY_LENGTH) {
 		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "display:%s\n", isOn ? "On" : "Off");
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, UDP_PORT);
 	} else if (m_nBytesReceived == GET_DISPLAY_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp((const void *)&	m_pUdpBuffer[GET_DISPLAY_LENGTH], "bin", 3) == 0) {
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&isOn, sizeof(bool) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&isOn, sizeof(bool) , m_nIPAddressFrom, UDP_PORT);
 		}
 	}
 
@@ -429,7 +429,7 @@ void RemoteConfig::HandleStoreGet(void) {
 		SpiFlashStore::Get()->CopyTo(GetStore((TTxtFile) nIndex), m_pUdpBuffer, nLenght);
 	} else {
 #ifndef NDEBUG
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?store#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?store#ERROR#\n", 12, m_nIPAddressFrom, UDP_PORT);
 #endif
 		return;
 	}
@@ -437,7 +437,7 @@ void RemoteConfig::HandleStoreGet(void) {
 #ifndef NDEBUG
 	debug_dump((void *)m_pUdpBuffer, nLenght);
 #endif
-	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nLenght, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nLenght, m_nIPAddressFrom, UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -525,7 +525,7 @@ void RemoteConfig::HandleGet(void) {
 #endif
 	default:
 #ifndef NDEBUG
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, UDP_PORT);
 #endif
 		DEBUG_EXIT
 		return;
@@ -536,7 +536,7 @@ void RemoteConfig::HandleGet(void) {
 #ifndef NDEBUG
 	debug_dump((void *)m_pUdpBuffer, nSize);
 #endif
-	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nSize, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nSize, m_nIPAddressFrom, UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -1286,11 +1286,11 @@ void RemoteConfig::HandleTftpGet(void) {
 
 	if (m_nBytesReceived == GET_TFTP_LENGTH) {
 		const uint32_t nLength = snprintf((char *)m_pUdpBuffer, UDP_BUFFER_SIZE, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, (uint16_t) UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pUdpBuffer, nLength, m_nIPAddressFrom, UDP_PORT);
 	} else if (m_nBytesReceived == GET_TFTP_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp((const void *)&	m_pUdpBuffer[GET_TFTP_LENGTH], "bin", 3) == 0) {
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_bEnableTFTP, sizeof(bool) , m_nIPAddressFrom, (uint16_t) UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_bEnableTFTP, sizeof(bool) , m_nIPAddressFrom, UDP_PORT);
 		}
 	}
 

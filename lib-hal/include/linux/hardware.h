@@ -39,19 +39,17 @@ public:
 	Hardware(void);
 	~Hardware(void);
 
-	const char* GetMachine(uint8_t &nLength);
-	const char* GetSysName(uint8_t &nLength);
+	const char *GetMachine(uint8_t &nLength);
+	const char *GetSysName(uint8_t &nLength);
+	const char *GetBoardName(uint8_t &nLength);
+	const char *GetCpuName(uint8_t &nLength);
+	const char *GetSocName(uint8_t &nLength);
 
 	uint32_t GetReleaseId(void);
-
-	const char* GetBoardName(uint8_t &nLength);
 
 	uint32_t GetBoardId(void) {
 		return m_nBoardId;
 	}
-
-	const char* GetCpuName(uint8_t &nLength);
-	const char* GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void);
 	float GetCoreTemperatureMax(void);
@@ -61,7 +59,7 @@ public:
 	bool Reboot(void);
 	bool PowerOff(void);
 
-	uint64_t GetUpTime(void);
+	uint32_t GetUpTime(void);
 
 	time_t GetTime(void) {
 		return time(NULL);
@@ -69,8 +67,8 @@ public:
 
 	void SetSysTime(time_t nTime);
 
-	bool SetTime(const struct THardwareTime &pTime);
-	void GetTime(struct THardwareTime *pTime);
+	bool SetTime(const struct tm *pTime);
+	void GetTime(struct tm *pTime);
 
 	uint32_t Micros(void);
 	uint32_t Millis(void);
@@ -80,7 +78,7 @@ public:
 	void WatchdogFeed(void) { } // Not implemented
 	void WatchdogStop(void) { } // Not implemented
 
-	const char* GetWebsiteUrl(void) {
+	const char *GetWebsiteUrl(void) {
 		return "www.orangepi-dmx.org";
 	}
 

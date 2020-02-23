@@ -2,7 +2,7 @@
  * @file h3.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,7 @@
 #define H3_HS_TIMER_BASE		0x01C60000
 #define H3_SPI_BASE				0x01C68000
 #define H3_GIC_BASE 			0x01C80000	///< GIC-400 v2
+#define H3_RTC_BASE				0x01F00000
 #define H3_PRCM_BASE			0x01F01400
 #define H3_CPUCFG_BASE			0x01F01C00
 #define H3_PIO_PORTL_BASE		0x01F02C00
@@ -552,6 +553,15 @@ typedef struct T_H3_CNT64 {
 	__IO uint32_t HIGH;
 } H3_CNT64_TypeDef;
 
+typedef struct T_H3_RTC {
+	__IO uint32_t LOSC_CTRL;		///< 0x00
+	__IO uint32_t LOSC_AUTO;		///< 0x04
+	__IO uint32_t INTOSC;			///< 0x08
+	__IO uint32_t RES1;				///< 0x0C
+	__IO uint32_t YMD;				///< 0x10
+	__IO uint32_t HMS;				///< 0x14
+} H3_RTC_TypeDef;
+
 /* http://linux-sunxi.org/PRCM */
 
 typedef struct T_H3_PRCM {
@@ -632,6 +642,7 @@ typedef struct T_H3_PRCM {
 #define H3_TWI2			((H3_TWI_TypeDef *) H3_TWI2_BASE)
 #define H3_SPI0			((H3_SPI_TypeDef *) H3_SPI0_BASE)
 #define H3_SPI1			((H3_SPI_TypeDef *) H3_SPI1_BASE)
+#define H3_RTC			((H3_RTC_TypeDef *) H3_RTC_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
 
 #ifdef __cplusplus
@@ -639,7 +650,7 @@ extern "C" {
 #endif
 
 extern void udelay(uint32_t);
-extern void* h3_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n);
+extern void *h3_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n);
 
 typedef enum H3_BOOT_DEVICE {
 	H3_BOOT_DEVICE_UNK,
@@ -647,12 +658,6 @@ typedef enum H3_BOOT_DEVICE {
 	H3_BOOT_DEVICE_MMC0,
 	H3_BOOT_DEVICE_SPI
 } h3_boot_device_t;
-
-inline static uint64_t h3_read_cnt64(void) {
-	uint64_t value;
-	asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (value));
-	return value;
-}
 
 extern uint32_t h3_get_dram_size(void);
 extern h3_boot_device_t h3_get_boot_device(void);

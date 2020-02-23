@@ -2,7 +2,7 @@
  * @file sys_time.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  */
 
 #include <stdint.h>
-#include <stddef.h>
+#include <stdbool.h>
 #include <time.h>
 
 #include "h3.h"
@@ -31,14 +31,18 @@
 
 #include "debug.h"
 
-static volatile uint64_t sys_time_init_seconds = 0;
-static volatile time_t rtc_startup_seconds = 0;
+static time_t rtc_seconds = 0;
+static time_t elapsed_previous = 0;
+static uint32_t millis_init = 0;
+static bool have_rtc = false;
 
 void sys_time_init(void) {
 	struct tm tmbuf;
 	struct tm tm_rtc;
 
-	sys_time_init_seconds = h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000000;
+	millis_init = H3_TIMER->AVS_CNT0;
+
+	DEBUG_PRINTF("millis_init=%u", millis_init);
 
 	/*
 	 * The mktime function ignores the specified contents of the tm_wday and tm_yday members of the broken- down time structure.
@@ -53,48 +57,68 @@ void sys_time_init(void) {
 		tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;
 		tmbuf.tm_isdst = 0; // 0 (DST not in effect, just take RTC time)
 
-		rtc_startup_seconds = mktime(&tmbuf);
+		rtc_seconds = mktime(&tmbuf);
 
 		DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
-		DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_startup_seconds)));
+		DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_seconds)));
 
 		return;
 	}
 
 	rtc_get_date_time(&tm_rtc);
-	rtc_startup_seconds = mktime(&tm_rtc);
+	rtc_seconds = mktime(&tm_rtc);
+	have_rtc = true;
 
 	DEBUG_PUTS("RTC found");
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc.tm_year, tm_rtc.tm_mon, tm_rtc.tm_mday, tm_rtc.tm_hour, tm_rtc.tm_min, tm_rtc.tm_sec);
-	DEBUG_PRINTF("sys_time_init_startup_seconds=%u, rtc_startup_seconds=%u", sys_time_init_seconds, rtc_startup_seconds);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_startup_seconds)));
+	DEBUG_PRINTF("millis_init/1000=%u, rtc_startup_seconds=%u", millis_init/1000, rtc_seconds);
+	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_seconds)));
 }
 
 void sys_time_set(const struct tm *tmbuf) {
-	sys_time_init_seconds = h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000000;
-	rtc_startup_seconds = mktime((struct tm *) tmbuf);
+	millis_init = H3_TIMER->AVS_CNT0;
+	rtc_seconds = mktime((struct tm *) tmbuf);
 
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tmbuf->tm_year, tmbuf->tm_mon, tmbuf->tm_mday, tmbuf->tm_hour, tmbuf->tm_min, tmbuf->tm_sec);
-	DEBUG_PRINTF("sys_time_init_startup_seconds=%u, rtc_startup_seconds=%u", sys_time_init_seconds, rtc_startup_seconds);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_startup_seconds)));
+	DEBUG_PRINTF("millis_init/1000=%u, rtc_startup_seconds=%u", millis_init/1000, rtc_seconds);
+	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_seconds)));
 }
 
 void sys_time_set_systime(time_t seconds) {
-	sys_time_init_seconds = h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000000;
-	rtc_startup_seconds = seconds;
+	millis_init = H3_TIMER->AVS_CNT0;
+	rtc_seconds = seconds;
 
-	DEBUG_PRINTF("sys_time_init_startup_seconds=%u, rtc_startup_seconds=%u", sys_time_init_seconds, rtc_startup_seconds);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_startup_seconds)));
+	DEBUG_PRINTF("millis_init/1000=%u, rtc_startup_seconds=%u", millis_init/1000, rtc_seconds);
+	DEBUG_PRINTF("%s", asctime(localtime((const time_t *) &rtc_seconds)));
 }
 
 uint32_t millis(void) {
-	return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
+	return H3_TIMER->AVS_CNT0;
 }
 
 time_t time(time_t *__timer) {
-	time_t elapsed = (time_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000000) - sys_time_init_seconds);
+	struct tm tm_rtc;
 
-	elapsed = elapsed + rtc_startup_seconds;
+	time_t elapsed = (time_t) (H3_TIMER->AVS_CNT0 - millis_init) / 1000;
+
+	elapsed = elapsed + rtc_seconds;
+
+	if (have_rtc && ((elapsed - elapsed_previous) > (60 * 60))) {
+		if (rtc_is_connected()) {
+
+			elapsed_previous = elapsed;
+
+			rtc_get_date_time(&tm_rtc);
+			rtc_seconds = mktime(&tm_rtc);
+
+			millis_init = H3_TIMER->AVS_CNT0;
+			elapsed = rtc_seconds;
+
+			DEBUG_PRINTF("Updated with RTC [%u]", rtc_seconds);
+		} else {
+			DEBUG_PUTS("RTC not connected (anymore)");
+		}
+	}
 
 	if (__timer != NULL) {
 		*__timer = elapsed;

@@ -34,14 +34,16 @@
 #include "c/sys_time.h"
 #include "c/hardware.h"
 
+#include "h3.h"
 #include "h3_watchdog.h"
-#include "h3_hs_timer.h"
 #include "h3_thermal.h"
 
 #include "reboothandler.h"
 
 enum TSocType {
-	SOC_TYPE_H2_PLUS, SOC_TYPE_H3, SOC_TYPE_UNKNOWN
+	SOC_TYPE_H2_PLUS,
+	SOC_TYPE_H3,
+	SOC_TYPE_UNKNOWN
 };
 
 class Hardware {
@@ -51,12 +53,13 @@ public:
 
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
+	const char *GetBoardName(uint8_t &nLength);
+	const char *GetCpuName(uint8_t &nLength);
+	const char *GetSocName(uint8_t &nLength);
 
 	uint32_t GetReleaseId(void) {
 		return 0;	// TODO U-Boot version
 	}
-
-	const char *GetBoardName(uint8_t &nLength);
 
 	uint32_t GetBoardId(void) {
 	#if defined(ORANGE_PI)
@@ -67,9 +70,6 @@ public:
 	 #error Platform not supported
 	#endif
 	}
-
-	const char *GetCpuName(uint8_t &nLength);
-	const char *GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void) {
 		return (float) h3_thermal_gettemp();
@@ -97,24 +97,25 @@ public:
 		sys_time_set_systime(nTime);
 	}
 
-	bool SetTime(const struct THardwareTime &pTime);
-	void GetTime(struct THardwareTime *pTime);
+	bool SetTime(const struct tm *pTime);
+	void GetTime(struct tm *pTime);
 
 	time_t GetTime(void) {
 		return time(0);
 	}
 
-	uint64_t GetUpTime(void) {
+	uint32_t GetUpTime(void) {
 		return hardware_uptime_seconds();
 	}
 
 	uint32_t Micros(void) {
-		return h3_hs_timer_lo_us();
+		return H3_TIMER->AVS_CNT1;
+		//return h3_hs_timer_lo_us();
 	}
 
 	uint32_t Millis(void) {
-		return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
-		// return millis();
+		return H3_TIMER->AVS_CNT0;
+		//return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
 	}
 
 	void WatchdogInit(void) {
@@ -139,7 +140,7 @@ public:
 		return (TBootDevice) h3_get_boot_device();
 	}
 
-	const char* GetWebsiteUrl(void) {
+	const char *GetWebsiteUrl(void) {
 		return "www.orangepi-dmx.org";
 	}
 

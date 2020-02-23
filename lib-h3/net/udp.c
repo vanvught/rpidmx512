@@ -182,6 +182,8 @@ int udp_bind(uint16_t local_port) {
 
 	s_ports_allowed[s_ports_used_index++] = local_port;
 
+	DEBUG_PRINTF("%d[%d]", current_index, local_port);
+
 	return current_index;
 }
 
@@ -224,7 +226,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1) & MAX_ENTRIES_MASK;
 
-	DEBUG_PRINTF("%d " IPSTR, i, IP2STR(*from_ip));
+	DEBUG_PRINTF("[%d] %d[%d]: %d " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], i, IP2STR(*from_ip));
 
 	return i;
 }
@@ -239,7 +241,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 		return -1;
 	}
 
-	DEBUG_PRINTF("%d %p " IPSTR, size, to_ip, IP2STR(to_ip));
+	DEBUG_PRINTF("[%d] %d[%d]: %d %p " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], size, to_ip, IP2STR(to_ip));
 
 	if (to_ip == IPv4_BROADCAST) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);

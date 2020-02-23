@@ -68,16 +68,15 @@ void arp_announce(void) {
 void arp_handle_request(struct t_arp *p_arp) {
 	DEBUG2_ENTRY
 
-	DEBUG_PRINTF(IPSTR, IP2STR(p_arp->arp.sender_ip));
-
 	_pcast32 target;
 
 	const uint8_t *p = (uint8_t *) &p_arp->arp.target_ip;
 
 	memcpy(target.u8, p, 4);
 
+	DEBUG_PRINTF("Sender "IPSTR" Target "IPSTR, IP2STR(p_arp->arp.sender_ip), IP2STR(target.u32));
+
 	if (target.u32 != s_arp_announce.arp.sender_ip) {
-		DEBUG_PRINTF(IPSTR, IP2STR(target.u32));
 		DEBUG2_EXIT
 		return;
 	}
@@ -89,11 +88,11 @@ void arp_handle_request(struct t_arp *p_arp) {
 	memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, ETH_ADDR_LEN);
 	s_arp_reply.arp.target_ip = p_arp->arp.sender_ip;
 
-	debug_dump((void *)&s_arp_reply, sizeof(struct t_arp));
+	//debug_dump((void *)&s_arp_reply, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_reply, sizeof(struct t_arp));
 
-	//DEBUG2_EXIT
+	DEBUG2_EXIT
 }
 
 void arp_handle_reply(struct t_arp *p_arp) {

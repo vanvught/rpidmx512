@@ -88,14 +88,14 @@ public:
 		sys_time_set_systime(nTime);
 	}
 
-	bool SetTime(const struct THardwareTime &pTime);
-	void GetTime(struct THardwareTime *pTime);
+	bool SetTime(const struct tm *pTime);
+	void GetTime(struct tm *pTime);
 
 	time_t GetTime(void) {
 		return time(0);
 	}
 
-	uint64_t GetUpTime(void) {
+	uint32_t GetUpTime(void) {
 		return hardware_uptime_seconds();
 	}
 

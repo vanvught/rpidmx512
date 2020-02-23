@@ -2,7 +2,7 @@
  * @file h3_spi.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -572,9 +572,9 @@ const uint8_t *h3_spi_dma_tx_prepare(uint32_t *size) {
 	p_dma_tx->lli.dst = (uint32_t) &EXT_SPI->TX.byte;
 	p_dma_tx->lli.para = DMA_NORMAL_WAIT;
 	p_dma_tx->lli.p_lli_next = DMA_LLI_LAST_ITEM;
-
+#ifndef NDEBUG
 	h3_dma_dump_lli((const struct sunxi_dma_lli *)&p_dma_tx->lli);
-
+#endif
 	*size = (uint32_t) sizeof(p_dma_tx->tx_buffer);
 
 	return (const uint8_t *)&p_dma_tx->tx_buffer;

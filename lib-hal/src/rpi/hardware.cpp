@@ -99,22 +99,13 @@ const char* Hardware::GetSocName(uint8_t& nLength) {
 	return s_SocName[m_tSocType];
 }
 
-bool Hardware::SetTime(const struct THardwareTime& pTime) {
-	struct hardware_time tm_hw;
-
-	tm_hw.year = pTime.tm_year;
-	tm_hw.month = pTime.tm_mon;
-	tm_hw.day = pTime.tm_mday;
-	tm_hw.hour = pTime.tm_hour;
-	tm_hw.minute = pTime.tm_min;
-	tm_hw.second = pTime.tm_sec;
-
-	hardware_rtc_set(&tm_hw);
+bool Hardware::SetTime(const struct tm *pTime) {
+	hardware_rtc_set(pTime);
 
 	return true;
 }
 
-void Hardware::GetTime(struct THardwareTime* pTime) {
+void Hardware::GetTime(struct tm *pTime) {
 	time_t ltime;
 	struct tm *local_time;
 

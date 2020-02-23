@@ -2,7 +2,7 @@
  * @file timesync.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,17 +49,17 @@ TimeSync::~TimeSync(void) {
 void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	DEBUG_ENTRY
 
-	struct THardwareTime hwTime;
+	struct tm tmTime;
 
-	hwTime.tm_sec = pArtNetTimeSync->tm_sec;
-	hwTime.tm_min = pArtNetTimeSync->tm_min;
-	hwTime.tm_hour = pArtNetTimeSync->tm_hour;
-	hwTime.tm_mday = pArtNetTimeSync->tm_mday;
-	hwTime.tm_mon = pArtNetTimeSync->tm_mon;
-	hwTime.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
+	tmTime.tm_sec = pArtNetTimeSync->tm_sec;
+	tmTime.tm_min = pArtNetTimeSync->tm_min;
+	tmTime.tm_hour = pArtNetTimeSync->tm_hour;
+	tmTime.tm_mday = pArtNetTimeSync->tm_mday;
+	tmTime.tm_mon = pArtNetTimeSync->tm_mon;
+	tmTime.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
 
-	Hardware::Get()->SetTime(hwTime);
+	Hardware::Get()->SetTime(&tmTime);
 
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + hwTime.tm_year, 1 + hwTime.tm_mon, hwTime.tm_mday, hwTime.tm_hour, hwTime.tm_min, hwTime.tm_sec);
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmTime.tm_year, 1 + tmTime.tm_mon, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
 	DEBUG_EXIT
 }
