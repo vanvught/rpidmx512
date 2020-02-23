@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,9 @@ public:
 	void TextStatus(const char *pText);
 	void TextStatus(const char *pText, TDisplay7SegmentMessages nStatus);
 
+	void Status(uint8_t nValue, bool bHex = false);
+	void TextStatus(const char *pText, uint8_t nValue, bool bHex = false);
+
 	uint8_t Write(uint8_t, const char *);
 	uint8_t Printf(uint8_t, const char *, ...);
 
@@ -111,6 +114,7 @@ public:
 private:
 	void Detect(uint8_t nCols, uint8_t nRows);
 	void Init7Segment(void);
+	TDisplay7SegmentCharacters Get7SegmentData(uint8_t nValue);
 
 private:
 	uint8_t m_nCols;

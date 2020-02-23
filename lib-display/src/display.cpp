@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -308,6 +308,86 @@ void Display::Status(TDisplay7SegmentMessages nStatus) {
 void Display::TextStatus(const char *pText, TDisplay7SegmentMessages nStatus) {
 	TextStatus(pText);
 	Status(nStatus);
+}
+
+TDisplay7SegmentCharacters Display::Get7SegmentData(uint8_t nValue) {
+
+	switch (nValue) {
+	case 0:
+		return DISPLAY_7SEGMENT_0;
+		break;
+	case 1:
+		return DISPLAY_7SEGMENT_1;
+		break;
+	case 2:
+		return DISPLAY_7SEGMENT_2;
+		break;
+	case 3:
+		return DISPLAY_7SEGMENT_3;
+		break;
+	case 4:
+		return DISPLAY_7SEGMENT_4;
+		break;
+	case 5:
+		return DISPLAY_7SEGMENT_5;
+		break;
+	case 6:
+		return DISPLAY_7SEGMENT_6;
+		break;
+	case 7:
+		return DISPLAY_7SEGMENT_7;
+		break;
+	case 8:
+		return DISPLAY_7SEGMENT_8;
+		break;
+	case 9:
+		return DISPLAY_7SEGMENT_9;
+		break;
+	case 0xa:
+		return DISPLAY_7SEGMENT_A;
+		break;
+	case 0xb:
+		return DISPLAY_7SEGMENT_B;
+		break;
+	case 0xc:
+		return DISPLAY_7SEGMENT_C;
+		break;
+	case 0xd:
+		return DISPLAY_7SEGMENT_D;
+		break;
+	case 0xe:
+		return DISPLAY_7SEGMENT_E;
+		break;
+	case 0xf:
+		return DISPLAY_7SEGMENT_F;
+		break;
+	default:
+		break;
+	}
+
+	return DISPLAY_7SEGMENT_BLANK;
+}
+
+void Display::Status(uint8_t nValue, bool bHex) {
+	if (m_bHave7Segment) {
+		uint16_t n7SegmentData;
+
+		if (!bHex) {
+			n7SegmentData = (uint16_t) Get7SegmentData(nValue / 10);
+			n7SegmentData |= (uint16_t) Get7SegmentData(nValue % 10) << 8;
+		} else {
+			n7SegmentData = (uint16_t) Get7SegmentData(nValue & 0x0F);
+			n7SegmentData |= (uint16_t) Get7SegmentData((nValue >> 4) & 0x0F) << 8;
+		}
+
+		i2c_set_address(SEGMENT7_I2C_ADDRESS);
+		i2c_write_reg_uint16(MCP23X17_GPIOA, ~n7SegmentData);
+	}
+}
+
+void Display::TextStatus(const char *pText, uint8_t nValue, bool bHex) {
+	TextStatus(pText);
+	Status(nValue, bHex);
 }
 
 void Display::Run(void) {
