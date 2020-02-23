@@ -44,6 +44,7 @@
 #include "artnetparamsconst.h"
 #include "artnetnode.h"
 #include "artnet.h"
+#include "artnetconst.h"
 
 #include "lightsetconst.h"
 
@@ -65,10 +66,14 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 		*p++ = 0;
 	}
 
+	m_tArtNetParams.nUniverse = 1;
+
 	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-		m_tArtNetParams.nUniversePort[i] = i;
+		m_tArtNetParams.nUniversePort[i] = 1 + i;
 	}
 
+	m_tArtNetParams.aOemValue[0] = ArtNetConst::OEM_ID[1];
+	m_tArtNetParams.aOemValue[1] = ArtNetConst::OEM_ID[0];
 	m_tArtNetParams.nDirection = ARTNET_OUTPUT_PORT;
 }
 

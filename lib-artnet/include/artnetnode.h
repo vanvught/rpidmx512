@@ -92,8 +92,8 @@ struct TArtNetNodeState {
 	uint32_t IPAddressArtPoll;			///< ArtPoll : IPAddress for the ArtPoll package
 	TArtNetNodeReportCode reportCode;	///< See \ref TArtNetNodeReportCode
 	TNodeStatus status;					///< See \ref TNodeStatus
-	time_t nNetworkDataLossTimeout;
-	time_t ArtSyncTime;					///< Latest ArtSync received time
+	uint32_t nNetworkDataLossTimeoutMillis;
+	uint32_t nArtSyncMillis;			///< Latest ArtSync received time
 	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	bool SendArtDiagData;				///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
 	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
@@ -133,10 +133,10 @@ struct TOutputPort {
 	uint8_t data[ARTNET_DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
 	uint8_t dataA[ARTNET_DMX_LENGTH];	///< The data received from Port A
-	time_t timeA;						///< The latest time of the data received from Port A
+	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
 	uint8_t dataB[ARTNET_DMX_LENGTH];	///< The data received from Port B
-	time_t timeB;						///< The latest time of the data received from Port B
+	uint32_t nMillisB;					///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
 	TMerge mergeMode;					///< \ref TMerge
 	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
@@ -169,8 +169,10 @@ public:
 		return m_nPages;
 	}
 
-	void SetOutput(LightSet *pLightSet);
-	LightSet* GetOutput(void) {
+	void SetOutput(LightSet *pLightSet) {
+		m_pLightSet = pLightSet;
+	}
+	LightSet *GetOutput(void) {
 		return m_pLightSet;
 	}
 
@@ -221,12 +223,16 @@ public:
 		return m_Node.Oem;
 	}
 
-	void SetNetworkTimeout(time_t);
-	time_t GetNetworkTimeout(void) {
-		return m_State.nNetworkDataLossTimeout;
+	void SetNetworkTimeout(uint32_t nNetworkDataLossTimeout) {
+		m_State.nNetworkDataLossTimeoutMillis = nNetworkDataLossTimeout * 1000;
+	}
+	uint32_t GetNetworkTimeout(void) {
+		return m_State.nNetworkDataLossTimeoutMillis / 1000;
 	}
 
-	void SetDisableMergeTimeout(bool);
+	void SetDisableMergeTimeout(bool bDisable) {
+		m_State.bDisableMergeTimeout = bDisable;
+	}
 	bool GetDisableMergeTimeout(void) {
 		return m_State.bDisableMergeTimeout;
 	}
@@ -335,8 +341,9 @@ private:
 
 	bool m_bDirectUpdate;
 
-	time_t m_nCurrentPacketTime;
-	time_t m_nPreviousPacketTime;
+	uint32_t m_nCurrentPacketMillis;
+	uint32_t m_nPreviousPacketMillis;
+
 	TOpCodes m_tOpCodePrevious;
 
 	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
