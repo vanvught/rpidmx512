@@ -1,8 +1,8 @@
 /**
- * @file networkhandleroled.cpp
+ * @file reboot.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,30 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef REBOOT_H_
+#define REBOOT_H_
 
-#include "networkhandleroled.h"
+#include "reboothandler.h"
 
-#include "display.h"
+#include "tcnet.h"
 
-#include "networkdisplay.h"
-#include "network.h"
+class Reboot: public RebootHandler {
+public:
+	Reboot(TLtcReaderSource tSource): m_tSource(tSource) {}
+	~Reboot(void) {}
 
-NetworkDisplay::~NetworkDisplay(void) {
+	void Run(void) {
+		switch (m_tSource) {
+			case LTC_READER_SOURCE_TCNET:
+				TCNet::Get()->Stop();
+				break;
+			default:
+				break;
+		}
+	}
 
-}
+private:
+	TLtcReaderSource m_tSource;
+};
 
-NetworkHandlerOled::NetworkHandlerOled(void) {
-}
-
-NetworkHandlerOled::~NetworkHandlerOled(void) {
-}
-
-void NetworkHandlerOled::ShowIp(void) {
-	Display::Get()->ClearLine(3);
-	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), (int) Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
-}
-
-void NetworkHandlerOled::ShowNetMask(void) {
-	ShowIp();
-}
+#endif /* REBOOT_H_ */
