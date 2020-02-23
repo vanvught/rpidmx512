@@ -48,7 +48,7 @@ OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m
 
 	m_tOscClientParams.nOutgoingPort = OSCCLIENT_DEFAULT_PORT_OUTGOING;
 	m_tOscClientParams.nIncomingPort = OSCCLIENT_DEFAULT_PORT_INCOMING;
-	m_tOscClientParams.nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY;
+	m_tOscClientParams.nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY_SECONDS;
 
 	assert(sizeof(m_aCmd) > strlen(OscClientParamsConst::PARAMS_CMD));
 	const char *src = (char *)OscClientParamsConst::PARAMS_CMD;

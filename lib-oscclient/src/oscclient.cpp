@@ -2,7 +2,7 @@
  * @file oscclient.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,11 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "display.h"
 
-#include "display7segment.h"
+#if defined(BARE_METAL) || defined (RASPPI)
+ #include "display.h"
+ #include "display7segment.h"
+#endif
 
 #include "debug.h"
 
@@ -55,13 +57,13 @@ OscClient::OscClient(void):
 	m_nPortIncoming(OSCCLIENT_DEFAULT_PORT_INCOMING),
 	m_nHandle(-1),
 	m_bPingDisable(false),
-	m_nPingDelay(OSCCLIENT_DEFAULT_PING_DELAY),
+	m_nPingDelayMillis(OSCCLIENT_DEFAULT_PING_DELAY_SECONDS * 1000),
 	m_bPingSent(false),
 	m_bPongReceived(false),
 	m_nBytesReceived(0),
-	m_nCurrentTime(0),
-	m_nPreviousTime(0),
-	m_nPingTime(0),
+	m_nCurrenMillis(0),
+	m_nPreviousMillis(0),
+	m_nPingTimeMillis(0),
 	m_pOscClientLed(0)
 {
 	m_pBuffer = new uint8_t[OSCCLIENT_BUFFER_SIZE];
@@ -97,13 +99,13 @@ void OscClient::Stop(void) {
 
 int OscClient::Run(void) {
 	if (!m_bPingDisable) {
-		m_nCurrentTime = Hardware::Get()->GetTime();
+		m_nCurrenMillis = Hardware::Get()->Millis();
 
-		if ((m_nCurrentTime - m_nPreviousTime) >= m_nPingDelay) {
+		if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
 			OSCSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", 0);
 			m_bPingSent = true;
-			m_nPreviousTime = m_nCurrentTime;
-			m_nPingTime = m_nCurrentTime;
+			m_nPreviousMillis = m_nCurrenMillis;
+			m_nPingTimeMillis = m_nCurrenMillis;
 		}
 
 		uint32_t nRemoteIp;
@@ -111,7 +113,7 @@ int OscClient::Run(void) {
 		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCCLIENT_BUFFER_SIZE, &nRemoteIp, &nRemotePort);
 
 		if (__builtin_expect((m_nBytesReceived == 0), 1)) {
-			if (m_bPingSent && ((m_nCurrentTime - m_nPingTime) >= 1)) {
+			if (m_bPingSent && ((m_nCurrenMillis - m_nPingTimeMillis) >= 1000)) {
 				if (m_bPongReceived) {
 					m_bPongReceived = false;
 #if defined(BARE_METAL) || defined (RASPPI)
@@ -159,7 +161,7 @@ void OscClient::Print(void) {
 	printf(" Disable /ping     : %s\n", m_bPingDisable ? "Yes" : "No");
 
 	if (!m_bPingDisable) {
-		printf(" Ping delay        : %ds\n", m_nPingDelay);
+		printf(" Ping delay        : %ds\n", m_nPingDelayMillis / 1000);
 	}
 
 	for (uint32_t i = 0; i < OSCCLIENT_CMD_MAX_COUNT; i++) {
@@ -187,9 +189,9 @@ void OscClient::SetPortIncoming(uint16_t nPortIncoming) {
 	m_nPortIncoming = nPortIncoming;
 }
 
-void OscClient::SetPingDelay(uint16_t nPingDelay) {
+void OscClient::SetPingDelay(uint32_t nPingDelay) {
 	if ((nPingDelay >=2) && (nPingDelay <= 60)) {
-		m_nPingDelay = nPingDelay;
+		m_nPingDelayMillis = nPingDelay * 1000;
 	}
 }
 

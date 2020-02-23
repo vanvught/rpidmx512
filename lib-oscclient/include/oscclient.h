@@ -2,7 +2,7 @@
  * @file oscclient.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@
 
 #include "oscclientled.h"
 
-#define OSCCLIENT_DEFAULT_PORT_OUTGOING		8000
-#define OSCCLIENT_DEFAULT_PORT_INCOMING		9000
-#define OSCCLIENT_DEFAULT_PING_DELAY		10
-#define OSCCLIENT_CMD_MAX_COUNT				8
-#define OSCCLIENT_CMD_MAX_PATH_LENGTH		64
-#define OSCCLIENT_LED_MAX_COUNT				8
-#define OSCCLIENT_LED_MAX_PATH_LENGTH		48
+#define OSCCLIENT_DEFAULT_PORT_OUTGOING			8000
+#define OSCCLIENT_DEFAULT_PORT_INCOMING			9000
+#define OSCCLIENT_DEFAULT_PING_DELAY_SECONDS	10
+#define OSCCLIENT_CMD_MAX_COUNT					8
+#define OSCCLIENT_CMD_MAX_PATH_LENGTH			64
+#define OSCCLIENT_LED_MAX_COUNT					8
+#define OSCCLIENT_LED_MAX_PATH_LENGTH			48
 
 class OscClient {
 public:
@@ -79,9 +79,9 @@ public:
 		return m_bPingDisable;
 	}
 
-	void SetPingDelay(uint16_t nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY);
+	void SetPingDelay(uint32_t nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY_SECONDS);
 	uint8_t GetPingDelay(void) {
-		return m_nPingDelay;
+		return m_nPingDelayMillis / 1000;
 	}
 
 	void CopyCmds(const uint8_t *pCmds, uint32_t nCount, uint32_t nLength);
@@ -98,14 +98,14 @@ private:
 	uint16_t m_nPortIncoming;
 	int32_t m_nHandle;
 	bool m_bPingDisable;
-	uint8_t m_nPingDelay;
+	uint32_t m_nPingDelayMillis;
 	bool m_bPingSent;
 	bool m_bPongReceived;
 	uint8_t *m_pBuffer;
 	uint16_t m_nBytesReceived;
-	time_t m_nCurrentTime;
-	time_t m_nPreviousTime;
-	time_t m_nPingTime;
+	uint32_t m_nCurrenMillis;
+	uint32_t m_nPreviousMillis;
+	uint32_t m_nPingTimeMillis;
 	uint8_t *m_pCmds;
 	uint8_t *m_pLeds;
 	OscClientLed *m_pOscClientLed;
