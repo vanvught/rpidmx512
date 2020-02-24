@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -673,8 +673,27 @@ public class RemoteConfig extends JFrame {
 	}
 	
 	private void doUptime(OrangePi opi) {
-		if (lblNodeId.getText().trim().length() != 0) {
-			JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
+		if (lblNodeId.getText().trim().length() != 0) {						
+			try {
+				String uptime = opi.doUptime().trim();
+				uptime = uptime.substring(uptime.indexOf(' ') + 1, uptime.indexOf('s'));
+				
+				int nUptime = Integer.parseInt(uptime);		
+				int days = nUptime / (24 * 3600);
+				nUptime -= days * (24 * 3600);
+				int hours = nUptime / 3600;
+				nUptime -= hours * 3600;
+				int minutes = nUptime / 60;
+				int seconds = nUptime - minutes * 60;
+				
+				String output = String.format("uptime %d day%s, %02d:%02d:%02d", days, days == 1 ? "" : "s", hours, minutes, seconds);
+				
+				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + output);
+				
+			} catch (Exception e) {
+				System.out.println(e);
+				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
+			}
 		}
 	}
 	
