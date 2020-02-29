@@ -1,8 +1,8 @@
 /**
- * @file if.h
+ * @file errno.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,4 @@
  * THE SOFTWARE.
  */
 
-#ifndef IF_H_
-#define IF_H_
-
-#define IF_NAMESIZE     16
-
-#ifndef IFNAMSIZ
-#define IFNAMSIZ        IF_NAMESIZE
-#endif
-
-#endif /* IF_H_ */
+int errno = 0;

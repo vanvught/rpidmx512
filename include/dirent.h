@@ -1,8 +1,8 @@
 /**
- * @file if.h
+ * @file dirent.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef IF_H_
-#define IF_H_
+#ifndef DIRENT_H_
+#define DIRENT_H_
 
-#define IF_NAMESIZE     16
+#include <stdio.h>
 
-#ifndef IFNAMSIZ
-#define IFNAMSIZ        IF_NAMESIZE
+#if !defined (_FATFS)
+	typedef void *DIR;
 #endif
 
-#endif /* IF_H_ */
+enum {
+	DT_UNKNOWN = 0,
+	DT_FIFO = 1,
+	DT_CHR = 2,
+	DT_DIR = 4,
+	DT_BLK = 6,
+	DT_REG = 8,
+	DT_LNK = 10,
+	DT_SOCK = 12,
+	DT_WHT = 14
+};
+
+/**
+ * https://en.wikibooks.org/wiki/C_Programming/POSIX_Reference/dirent.h
+ */
+
+struct dirent {
+#if 0
+	ino_t d_ino;
+	off_t d_off;
+	unsigned short d_reclen;
+#endif
+	unsigned char d_type;
+	char d_name[FILENAME_MAX];
+};
+
+typedef struct dirent dirent_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern DIR *opendir(const char *dirname);
+extern struct dirent *readdir(DIR *dirp);
+extern int closedir(DIR* dirp);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+#endif /* DIRENT_H_ */

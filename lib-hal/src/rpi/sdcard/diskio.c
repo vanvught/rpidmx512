@@ -2,7 +2,7 @@
  * @file diskio.c
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,8 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "diskio.h"
-
-#include "device/sd.h"
+#include "../ff12c/diskio.h"
+#include "../../lib-bcm2835/device/emmc/sd.h"
 
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)
 #error Wrong sector size configuration

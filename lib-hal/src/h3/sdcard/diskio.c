@@ -2,7 +2,7 @@
  * @file diskio.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,9 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "diskio.h"
+#include "../ff12c/diskio.h"
+#include "../../lib-h3/device/mmc/mmc_internal.h"
 
-#include "mmc_internal.h"
-
-// #define SD_WRITE_SUPPORT
 #define CACHE_ENABLED
 
 #if (_MAX_SS != _MIN_SS) && (_MAX_SS != 512)

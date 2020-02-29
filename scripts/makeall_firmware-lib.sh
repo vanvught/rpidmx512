@@ -8,7 +8,7 @@ do
 	cd "$f"
 	
 	if [ -f Makefile ]; then
-		make $1 $2 || exit
+		make -j 4 $1 $2 || exit
 	fi
 	
 	cd -

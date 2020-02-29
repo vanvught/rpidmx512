@@ -5,7 +5,6 @@ Build all libraries and firmware
 - build_h3-firmware.sh - build for Allwinner SoC's H2+/H3 (OrangePi Zero and OrangePi One)
 - build_linux.sh - build for host PC (testing and debugging)
 - build_firmware.sh - build for Broadcom SoC's (Raspberry Pi boards, minimum support)
-- build_circle.sh  - build for Broadcom SoC's (Raspberry Pi boards, minimum support)
 
 Assistants - Please read / modify these script files
 ====================================================
@@ -27,5 +26,3 @@ Used by build scripts
 - makeall_linux.sh
 - makeall_firmware-lib.sh
 - makeall_firmware.sh
-- makeall_circle-lib.sh
-- makeall_circle.sh

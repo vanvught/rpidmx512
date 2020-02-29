@@ -42,13 +42,15 @@
 #include "device/emac.h"
 
 #include "console.h"
-#include "ff.h"
+#include "../ff12c/ff.h"
 
 #define POWER_LED_PIO	10	// PL10
 #define EXTERNAL_LED 	GPIO_EXT_16
 
 #if (_FFCONF == 68300)		// R0.12c
  static FATFS fat_fs;
+#else
+#error Not a recognized/tested FatFs version
 #endif
 
 #if defined (ORANGE_PI_ONE)
@@ -146,19 +148,15 @@ void hardware_init(void) {
 	}
 #endif
 
-	if (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) {
-#if (_FFCONF == 68300)/*R0.12c */
-		FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
-		if (result != FR_OK) {
-			char buffer[32];
-			snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
-			console_error(buffer);
-			assert(0);
-		}
-#else
-#error Not a recognized/tested FatFs version
-#endif
+//	if (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) {
+	const FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) ? 1 : 0);
+	if (result != FR_OK) {
+		char buffer[32];
+		snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", (int) result);
+		console_error(buffer);
+		assert(0);
 	}
+//	}
 
 	// Power led
 	#define PRCM_APB0_GATE_PIO (0x1 << 0)

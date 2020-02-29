@@ -2,7 +2,7 @@
  * @file stdio.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 #define EOF	-1
 
-typedef void* FILE;
+typedef void *FILE;
 
 #ifndef SEEK_SET
 #define	SEEK_SET	0	/* set file offset to offset */
@@ -42,6 +42,8 @@ typedef void* FILE;
 #ifndef SEEK_END
 #define	SEEK_END	2	/* set file offset to EOF plus offset */
 #endif
+
+#define FILENAME_MAX	16
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,6 +60,8 @@ extern char *fgets(char *s, int size, FILE *stream);
 extern int fputs(const char *s, FILE *stream);
 
 extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+extern size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
 extern int fseek(FILE *stream, long offset, int whence);
 
 extern long ftell(FILE *stream);
@@ -72,6 +76,8 @@ extern int snprintf(char *str, size_t size, const char *format, ...);
 
 extern int vprintf(const char *format, va_list ap);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list);
+
+extern void perror(const char *s);
 
 #ifdef __cplusplus
 }

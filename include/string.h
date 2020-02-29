@@ -2,7 +2,7 @@
  * @file string.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern char *strerror(int errnum);
 
 inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;

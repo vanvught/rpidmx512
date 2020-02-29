@@ -26,7 +26,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS += properties hal c++ debug bob i2c utils ff12c bcm2835 arm
+LIBS += properties hal c++ debug bob i2c utils bcm2835 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -56,7 +56,7 @@ LIB7DEP=$(addsuffix /lib7/lib, $(LIBDEP))
 LIB7DEP:=$(join $(LIB7DEP), $(LIBS))
 LIB7DEP:=$(addsuffix .a, $(LIB7DEP))
 
-COPS_COMMON=-DBARE_METAL $(DEFINES)
+COPS_COMMON=-DBARE_METAL -DSD_WRITE_SUPPORT $(DEFINES)
 COPS_COMMON+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 

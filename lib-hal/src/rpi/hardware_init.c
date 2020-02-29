@@ -39,7 +39,7 @@
 #include "bcm2837_gpio_virt.h"
 
 #include "console.h"
-#include "ff.h"
+#include "../ff12c/ff.h"
 
 extern void sys_time_init(void);
 
@@ -52,6 +52,8 @@ static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 #if (_FFCONF == 68300)
  static FATFS fat_fs;		/* File system object */
+#else
+#error Not a recognized/tested FatFs version
 #endif
 
 uint32_t hardware_uptime_seconds(void) {
@@ -90,16 +92,13 @@ void hardware_init(void) {
 
 	(void) bcm2835_vc_set_power_state(BCM2835_VC_POWER_ID_SDCARD, BCM2835_VC_SET_POWER_STATE_ON_WAIT);
 
-#if (_FFCONF == 68300)/*R0.12c *//* 32020 R0.11 */
 	FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) 1);
 	if (result != FR_OK) {
 		char buffer[32];
 		snprintf(buffer, 31, "f_mount failed! %d\n", (int) result);
 		console_error(buffer);
 	}
-#else
-#error Not a recognized/tested FatFs version
-#endif
+
 
 	board_revision = bcm2835_vc_get_get_board_revision();
 

@@ -13,7 +13,7 @@ INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
-COPS_COMMON=-DBARE_METAL $(DEFINES) $(INCLUDES)
+COPS_COMMON=-DBARE_METAL -DSD_WRITE_SUPPORT $(DEFINES) $(INCLUDES)
 COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
 
 COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s

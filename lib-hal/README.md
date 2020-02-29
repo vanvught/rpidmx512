@@ -6,8 +6,9 @@ Supported platforms:
 - Orange Pi Zero / One (baremetal)
 - Mac OS
 - Linux
-- Raspberry Pi (baremetal)
 - Cygwin
+- Raspberry Pi (baremetal)
+
 
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

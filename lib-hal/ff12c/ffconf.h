@@ -9,9 +9,13 @@
 /---------------------------------------------------------------------------*/
 
 #if defined(H3)
-#define _FS_READONLY	1
+	#if defined (SD_WRITE_SUPPORT)
+		#define _FS_READONLY	0
+	#else
+		#define _FS_READONLY	1
+	#endif
 #else
-#define _FS_READONLY	0
+	#define _FS_READONLY	0
 #endif
 /* This option switches read-only configuration. (0:Read/Write or 1:Read-only)
 /  Read-only configuration removes writing API functions, f_write(), f_sync(),
@@ -19,9 +23,13 @@
 /  and optional writing functions as well. */
 
 #if defined(H3)
-#define _FS_MINIMIZE	2
+	#if defined (SD_WRITE_SUPPORT)
+		#define _FS_MINIMIZE	0
+	#else
+		#define _FS_MINIMIZE	2
+	#endif
 #else
-#define _FS_MINIMIZE	0
+	#define _FS_MINIMIZE	0
 #endif
 /* This option defines minimization level to remove some basic API functions.
 /
@@ -223,9 +231,9 @@
 
 
 #define _FS_NORTC	0
-#define _NORTC_MON	1
-#define _NORTC_MDAY	1
-#define _NORTC_YEAR	2016
+#define _NORTC_MON	_TIME_STAMP_MONTH_
+#define _NORTC_MDAY	_TIME_STAMP_DAY_
+#define _NORTC_YEAR	_TIME_STAMP_YEAR_
 /* The option _FS_NORTC switches timestamp functiton. If the system does not have
 /  any RTC function or valid timestamp is not needed, set _FS_NORTC = 1 to disable
 /  the timestamp function. All objects modified by FatFs will have a fixed timestamp
