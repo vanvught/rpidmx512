@@ -29,6 +29,8 @@
 
 #include "artnetnode.h"
 
+#include "network.h"
+
 #include "debug.h"
 
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? 'H' : 'L'
@@ -62,4 +64,9 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, MERGEMODE2STRING(pArtNetNode->GetMergeMode(i)), pArtNetNode->GetPortProtocol(i) == PORT_ARTNET_ARTNET ? "    " : "sACN");
 		}
 	}
+}
+
+void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
+	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_DESTINATION_IP]);
+	Printf(m_aLabels[DISPLAY_UDF_LABEL_DESTINATION_IP], "Out: " IPSTR, IP2STR(pArtNetNode->GetDestinationIp()));
 }

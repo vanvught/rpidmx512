@@ -1,7 +1,7 @@
 /**
  * @file widgetstore.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 
 class WidgetStore {
 public:
-	virtual ~WidgetStore(void);
+	virtual ~WidgetStore(void) {}
 
 	virtual void UpdateBreakTime(uint8_t nBreakTime)=0;
 	virtual void UpdateMabTime(uint8_t nMabTime)=0;

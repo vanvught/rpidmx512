@@ -2,7 +2,7 @@
  * @file displayudf.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,9 @@ void DisplayUdf::Show(void) {
 void DisplayUdf::ShowDmxStartAddress(void) {
 	DEBUG_ENTRY
 
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS], "DMX S:%3d F:%3d", (int) LightSet::Get()->GetDmxStartAddress(), (int) LightSet::Get()->GetDmxFootprint());
+	if (LightSet::Get() != 0) {
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS], "DMX S:%3d F:%3d", (int) LightSet::Get()->GetDmxStartAddress(), (int) LightSet::Get()->GetDmxFootprint());
+	}
 
 	DEBUG_EXIT
 }

@@ -49,6 +49,7 @@
 #define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
 
 static int s_ports_allowed[MAX_PORTS_ALLOWED];
+static int snHandles[MAX_PORTS_ALLOWED];
 
 /**
  * END
@@ -69,6 +70,7 @@ int NetworkLinux::Init(const char *s) {
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		s_ports_allowed[i] = 0;
+		snHandles[i] = -1;
 	}
 
 	NetworkParams params;
@@ -189,10 +191,16 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 /**
  * BEGIN - needed H3 code compatibility
  */
-	s_ports_allowed[i] = nSocket;
+	s_ports_allowed[i] = nPort;
+
+	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		printf("s_ports_allowed[%2u]=%4u\n", i, s_ports_allowed[i]);
+	}
 /**
  * END
  */
+
+	snHandles[i] = nSocket;
 
 	return nSocket;
 }
@@ -210,21 +218,26 @@ int32_t NetworkLinux::End(uint16_t nPort) {
  * BEGIN - needed H3 code compatibility
  */
 
+	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		printf("s_ports_allowed[%2u]=%4u\n", i, s_ports_allowed[i]);
+	}
+
 	uint32_t i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == nPort) {
 			s_ports_allowed[i] = 0;
-			if (close(s_ports_allowed[i]) == -1) {
+			printf("close");
+			if (close(snHandles[i]) == -1) {
 				perror("unbind");
 				exit(EXIT_FAILURE);
 			}
+			snHandles[i] = -1;
 			return 0;
 		}
 	}
 
 	perror("unbind");
-	exit(EXIT_FAILURE);
 	return -1;
 
 /**

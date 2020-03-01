@@ -2,7 +2,7 @@
  * @file displayudf.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,7 @@ enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_UNIVERSE_PORT_D,
 	DISPLAY_UDF_LABEL_NETMASK,
 	DISPLAY_UDF_LABEL_DMX_START_ADDRESS,
+	DISPLAY_UDF_LABEL_DESTINATION_IP,
 	DISPLAY_UDF_LABEL_UNKNOWN
 };
 
@@ -61,10 +62,13 @@ public:
 
 	void SetTitle(const char *format, ...);
 
+	// Art-Net
 	void Show(ArtNetNode *pArtNetNode);
 	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
+	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 
+	// sACN E1.31
 	void Show(E131Bridge *pE131Bridge);
 
 	// LightSet

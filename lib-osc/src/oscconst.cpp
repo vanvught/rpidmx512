@@ -1,8 +1,8 @@
 /**
- * @file fgets.c
+ * @file oscconst.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stddef.h>
+#include <stdint.h>
 
-char *fgets(char *dst, int max, FILE *stream) {
-	int c;
-	char *p;
+#include "oscconst.h"
 
-	for (p = dst, max--; max > 0; max--) {
-		if ((c = fgetc(stream)) == EOF) {
-			break;
-		}
-
-		if (c == '\r') {
-			continue;
-		}
-
-		*p++ = c;
-
-		if (c == '\n') {
-			break;
-		}
-	}
-
-	*p = 0;
-
-	if (p == dst) {
-		return NULL;
-	}
-
-	return dst;
-}
+alignas(uint32_t) const char OscConst::PARAMS_INCOMING_PORT[] = "incoming_port";
+alignas(uint32_t) const char OscConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";

@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,8 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		ArtNetParamsConst::UNIVERSE_PORT[2],
 		ArtNetParamsConst::UNIVERSE_PORT[3],
 		NetworkConst::PARAMS_NET_MASK,
-		LightSetConst::PARAMS_DMX_START_ADDRESS
+		LightSetConst::PARAMS_DMX_START_ADDRESS,
+		ArtNetParamsConst::DESTINATION_IP
 };
 
 

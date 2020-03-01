@@ -2,7 +2,7 @@
  * @file rdmhandler.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include <assert.h>
 
 #ifndef MAX
@@ -988,7 +989,7 @@ void RDMHandler::SetIdentifyDevice(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetRealTimeClock(uint16_t nSubDevice) {
-	struct THardwareTime local_time;
+	struct tm local_time;
 	Hardware::Get()->GetTime(&local_time);
 
 	const uint16_t year = local_time.tm_year + 1900;
@@ -1016,7 +1017,7 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	struct THardwareTime tTime;
+	struct tm tTime;
 
 	tTime.tm_year = ((rdm_command->param_data[0] << 8) + rdm_command->param_data[1]) - 1900;
 	tTime.tm_mon = rdm_command->param_data[2] - 1;	// 0..11
@@ -1025,7 +1026,7 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice) {
 	tTime.tm_min = rdm_command->param_data[5];
 	tTime.tm_sec = rdm_command->param_data[6];
 
-	if ((!IsBroadcast) && (!Hardware::Get()->SetTime(tTime))) {
+	if ((!IsBroadcast) && (!Hardware::Get()->SetTime(&tTime))) {
 		RespondMessageNack(E120_NR_WRITE_PROTECT);
 	}
 

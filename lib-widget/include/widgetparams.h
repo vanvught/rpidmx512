@@ -1,7 +1,7 @@
 /**
  * @file widgetparams.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ struct TWidgetParams {
 
 class WidgetParamsStore {
 public:
-	virtual ~WidgetParamsStore(void);
+	virtual ~WidgetParamsStore(void) {}
 
 	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
 	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;

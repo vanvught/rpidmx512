@@ -1,8 +1,8 @@
 /**
- * @file printf.c
+ * @file oscconst.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <circle/logger.h>
-#include <circle/stdarg.h>
-#include <circle/types.h>
-#include <circle/util.h>
+#ifndef OSCCONST_H_
+#define OSCCONST_H_
 
-#include <assert.h>
+#include <stdint.h>
 
-extern "C" {
+class OscConst {
+public:
+	alignas(uint32_t) static const char PARAMS_INCOMING_PORT[];
+	alignas(uint32_t) static const char PARAMS_OUTGOING_PORT[];
+};
 
-void printf(const char *fmt, ...) {
-	assert(fmt != 0);
-
-	char *p = (char *) fmt;
-
-	const size_t fmtlen = strlen(fmt);
-	char fmtbuf[fmtlen + 1];
-
-	strcpy(fmtbuf, p);
-
-	if ((fmtlen > 0) && (fmtbuf[fmtlen - 1] == '\n')) {
-		fmtbuf[fmtlen - 1] = '\0';
-	}
-
-	if (fmtbuf[0] != '\0') {
-		va_list var;
-		va_start(var, fmt);
-
-		CLogger::Get()->WriteV("", LogNotice, fmtbuf, var);
-
-		va_end(var);
-	}
-}
-
-}
+#endif /* OSCCONST_H_ */
