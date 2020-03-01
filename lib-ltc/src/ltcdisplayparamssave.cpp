@@ -2,7 +2,7 @@
  * @file ltcdisplayparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,11 +59,13 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 	builder.Add(LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxType == LTCDISPLAYWS28XX_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE));
 	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE));
 
+	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
-		m_tLtcDisplayParams.nRgbMapping = (uint8_t) WS28xx::GetRgbMapping((TWS28XXType) m_tLtcDisplayParams.nWS28xxType);
+		m_tLtcDisplayParams.nRgbMapping = (uint8_t) WS28xx::GetRgbMapping((TWS28XXType) m_tLtcDisplayParams.nLedType);
 	}
 	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING));
 
+	builder.AddComment("WS28xx");
 	builder.Add(LtcDisplayParamsConst::WS28XX_INTENSITY, m_tLtcDisplayParams.nWS28xxIntensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY));
 	builder.Add(LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, m_tLtcDisplayParams.nWS28xxColonBlinkMode == LTCDISPLAYWS28XX_COLON_BLINK_MODE_OFF ? "off" : (m_tLtcDisplayParams.nWS28xxColonBlinkMode == LTCDISPLAYWS28XX_COLON_BLINK_MODE_DOWN ? "down" : "up") , isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE));
 
@@ -71,9 +73,11 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 		builder.AddHex24(LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], m_tLtcDisplayParams.aWS28xxColour[nIndex],isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex));
 	}
 
+	builder.AddComment("MAX7219");
 	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE));
 	builder.Add(LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity, isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY));
 
+	builder.AddComment("APA102");
 	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tLtcDisplayParams.nGlobalBrightness, isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS));
 
 	nSize = builder.GetSize();

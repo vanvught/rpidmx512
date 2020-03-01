@@ -53,8 +53,8 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
-	builder.Add(LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart, isMaskSet(LTC_PARAMS_MASK_AUTO_START));
 
+	builder.AddComment("Disable outputs");
 	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
 	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219));
 	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC));
@@ -63,15 +63,14 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	builder.Add(LtcParamsConst::DISABLE_TCNET, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET));
 	builder.Add(LtcParamsConst::DISABLE_RTPMIDI, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI));
 
+	builder.AddComment("System clock / RTC");
 	builder.Add(LtcParamsConst::SHOW_SYSTIME, m_tLtcParams.nShowSysTime, isMaskSet(LTC_PARAMS_MASK_SHOW_SYSTIME));
 	builder.Add(LtcParamsConst::DISABLE_TIMESYNC, m_tLtcParams.nDisableTimeSync, isMaskSet(LTC_PARAMS_MASK_DISABLE_TIMESYNC));
 
-	builder.Add(LtcParamsConst::YEAR, m_tLtcParams.nYear, isMaskSet(LTC_PARAMS_MASK_YEAR));
-	builder.Add(LtcParamsConst::MONTH, m_tLtcParams.nMonth, isMaskSet(LTC_PARAMS_MASK_MONTH));
-	builder.Add(LtcParamsConst::DAY, m_tLtcParams.nDay, isMaskSet(LTC_PARAMS_MASK_DAY));
+	builder.AddComment("source=systime");
+	builder.Add(LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart, isMaskSet(LTC_PARAMS_MASK_AUTO_START));
 
-	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
-
+	builder.AddComment("source=internal");
 	builder.Add(LtcParamsConst::FPS, m_tLtcParams.nFps, isMaskSet(LTC_PARAMS_MASK_FPS));
 	builder.Add(LtcParamsConst::START_HOUR, m_tLtcParams.nStartHour, isMaskSet(LTC_PARAMS_MASK_START_HOUR));
 	builder.Add(LtcParamsConst::START_MINUTE, m_tLtcParams.nStartMinute, isMaskSet(LTC_PARAMS_MASK_START_MINUTE));
@@ -82,9 +81,17 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LTC_PARAMS_MASK_STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LTC_PARAMS_MASK_STOP_FRAME));
 
+	builder.AddComment("NTP Server");
+	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LTC_PARAMS_MASK_ENABLE_NTP));
+	builder.Add(LtcParamsConst::YEAR, m_tLtcParams.nYear, isMaskSet(LTC_PARAMS_MASK_YEAR));
+	builder.Add(LtcParamsConst::MONTH, m_tLtcParams.nMonth, isMaskSet(LTC_PARAMS_MASK_MONTH));
+	builder.Add(LtcParamsConst::DAY, m_tLtcParams.nDay, isMaskSet(LTC_PARAMS_MASK_DAY));
+
+	builder.AddComment("OSC Server");
 	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LTC_PARAMS_MASK_ENABLE_OSC));
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LTC_PARAMS_MASK_OSC_PORT));
 
+	builder.AddComment("WS28xx display");
 	builder.Add(LtcParamsConst::WS28XX_ENABLE, m_tLtcParams.nEnableWS28xx, isMaskSet(LTC_PARAMS_MASK_ENABLE_WS28XX));
 
 	nSize = builder.GetSize();

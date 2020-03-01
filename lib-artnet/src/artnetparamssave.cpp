@@ -86,7 +86,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
-	// DMX Input
+	builder.AddComment("DMX Input");
 	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == (uint8_t) ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
 
 	if (!isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP)) {

@@ -68,6 +68,8 @@ public:
 
 	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true);
 
+	bool AddComment(const char *pComment);
+
 	unsigned GetSize(void) {
 		return m_nSize;
 	}

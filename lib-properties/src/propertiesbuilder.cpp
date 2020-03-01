@@ -261,3 +261,26 @@ bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, b
 
 	return true;
 }
+
+bool PropertiesBuilder::AddComment(const char *pComment) {
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	const int i = snprintf(p, nSize, "# %s #\n", pComment);
+
+	if (i > static_cast<int>(nSize)) {
+		return false;
+	}
+
+	m_nSize += i;
+
+#ifndef NDEBUG
+	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
+#endif
+
+	return true;
+}
