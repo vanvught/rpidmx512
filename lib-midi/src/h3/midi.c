@@ -2,11 +2,7 @@
  * @file midi.c
  *
  */
-/* Parts of this code is inspired by:
- *  Project     Arduino MIDI Library
- *  https://github.com/FortySevenEffects/arduino_midi_library/blob/master/src/MIDI.cpp
- */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -297,7 +293,7 @@ static bool parse(void) {
 			break;
 		}
 
-		if (pending_message_index >= (pending_message_expected_lenght - (uint8_t) 1)) {
+		if (pending_message_index >= (pending_message_expected_lenght - 1)) {
 			// Reception complete
 			midi_message.timestamp = pending_timestamp;
 			midi_message.type = get_type_from_status_byte(pending_message[0]);
