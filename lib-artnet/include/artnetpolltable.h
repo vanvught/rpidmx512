@@ -4,11 +4,8 @@
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- *
- * Art-Net 3 Protocol Release V1.4 Document Revision 1.4bk 23/1/2016
- *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,25 +31,46 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <time.h>
 
 #include "packets.h"
 
-struct TIpProg {
-	uint32_t IPAddress;
-	uint32_t SubMask;
-	uint8_t Status;
+// __attribute__((packed))
+
+enum TArtNetPollInterval {
+	ARTNET_POLL_INTERVAL_SECONDS = 8,
+	ARTNET_POLL_INTERVAL_MILLIS = (ARTNET_POLL_INTERVAL_SECONDS * 1000)
+};
+
+enum TArtNetPollTableSizes {
+	ARTNET_POLL_TABLE_SIZE_ENRIES = 255,
+	ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES = 64,
+	ARTNET_POLL_TABLE_SIZE_UNIVERSES = 512
+};
+
+struct TArtNetNodeEntryUniverse {
+	uint32_t nLastUpdateMillis;
+	uint16_t nUniverse;
 };
 
 struct TArtNetNodeEntry {
 	uint32_t IPAddress;
-	uint8_t  Mac[ARTNET_MAC_SIZE];
-	uint8_t  ShortName[ARTNET_SHORT_NAME_LENGTH];
-	uint8_t  LongName[ARTNET_LONG_NAME_LENGTH];
-	uint8_t  Status1;
-	uint8_t  Status2;
-	time_t	 LastUpdate;
-	struct TIpProg IpProg;
+	uint8_t Mac[ARTNET_MAC_SIZE];
+	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];
+	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];
+	uint32_t nUniversesCount;
+	struct TArtNetNodeEntryUniverse Universe[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES];
+};
+
+struct TArtNetPollTableUniverses {
+	uint16_t nUniverse;
+	uint16_t nCount;
+	uint32_t *pIpAddresses;
+};
+
+struct TArtNetPollTableClean {
+	uint32_t nTableIndex;
+	uint32_t nUniverseIndex;
+	bool bOffLine;
 };
 
 class ArtNetPollTable {
@@ -60,19 +78,30 @@ public:
 	ArtNetPollTable(void);
 	~ArtNetPollTable(void);
 
-	bool isChanged(void);
-	const uint8_t GetEntries(void);
-	bool GetEntry(const uint8_t, struct TArtNetNodeEntry *);
+	uint32_t GetEntries(void) {
+		return m_nPollTableEntries;
+	}
 
-	bool Add(const struct TArtPollReply *);
-	bool Add(const struct TArtIpProgReply *);
+	void Add(const struct TArtPollReply *ptArtPollReply);
+	void Clean(void);
+
+	const struct TArtNetPollTableUniverses *GetIpAddress(uint16_t nUniverse);
 
 	void Dump(void);
+	void DumpTableUniverses(void);
+
 private:
-	bool m_bIsChanged;
-	uint8_t m_nEntries;
+	uint16_t MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse);
+	void ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse);
+	void RemoveIpAddress(uint32_t nEntry, uint32_t nIpAddressIndex);
+
+private:
 	TArtNetNodeEntry *m_pPollTable;
-	time_t m_nLastUpdate;
+	uint32_t m_nPollTableEntries;
+	TArtNetPollTableUniverses *m_pTableUniverses;
+	uint32_t m_nTableUniversesEntries;
+	uint32_t *m_pIpAddresses[ARTNET_POLL_TABLE_SIZE_UNIVERSES];
+	TArtNetPollTableClean m_tTableClean;
 };
 
 #endif /* ARTNETPOLLTABLE_H_ */

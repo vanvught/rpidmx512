@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,18 @@
 #define ARTNETCONTROLLER_H_
 
 #include <time.h>
+#include <stdint.h>
 
 #include "packets.h"
+#include "artnettrigger.h"
 
 #include "artnetpolltable.h"
-#include "artnetipprog.h"
+
+struct TArtNetController {
+	uint32_t nIPAddressLocal;
+	uint32_t nIPAddressBroadcast;
+	uint8_t Oem[2];
+};
 
 class ArtNetController: public ArtNetPollTable {
 public:
@@ -43,29 +50,71 @@ public:
 
 	void Start(void);
 	void Stop(void);
+	void Run(void);
 
-	void SetPollInterval(const uint8_t);
-	const uint8_t GetPollInterval(void);
+	void Print(void);
 
-	int Run(void);
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
+	void HandleSync(void);
+	void HandleBlackout(void);
 
-	void SendIpProg(const uint32_t, const struct TArtNetIpProg *);
+	void SetRunTableCleanup(bool bDoTableCleanup) {
+		m_bDoTableCleanup = bDoTableCleanup;
+	}
+
+	void SetSynchronization(bool bSynchronization) {
+		m_bSynchronization = bSynchronization;
+	}
+	bool GetSynchronization(void) {
+		return m_bSynchronization;
+	}
+
+	void SetUnicast(bool bUnicast) {
+		m_bUnicast = bUnicast;
+	}
+	bool GetUnicast(void) {
+		return m_bUnicast;
+	}
+
+	// Handler
+	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
+		m_pArtNetTrigger = pArtNetTrigger;
+	}
+	ArtNetTrigger *GetArtNetTrigger(void) {
+		return m_pArtNetTrigger;
+	}
+
+	const uint8_t *GetSoftwareVersion(void);
 
 private:
-	void SendPoll(void);
+	void HandlePoll(void);
 	void HandlePollReply(void);
-	void SendIpProg(void);
-	void HandleIpProgReply(void);
+	void HandleTrigger(void);
+	void ActiveUniversesAdd(uint16_t nUniverse);
+	void ActiveUniversesClear(void);
 
 private:
-	uint32_t				m_nHandle;
-	struct TArtNetPacket	*m_pArtNetPacket;
-	struct TArtPoll			m_ArtNetPoll;
-	struct TArtIpProg 		m_ArtIpProg;
-	time_t 					m_nLastPollTime;
-	uint32_t				m_IPAddressLocal;
-	uint32_t				m_IPAddressBroadcast;
-	uint8_t					m_nPollInterVal;
+	struct TArtNetController m_tArtNetController;
+	bool m_bSynchronization;
+	bool m_bUnicast;
+	int32_t m_nHandle;
+	struct TArtNetPacket *m_pArtNetPacket;
+	struct TArtPoll m_ArtNetPoll;
+	struct TArtDmx *m_pArtDmx;
+	struct TArtSync *m_pArtSync;
+	ArtNetTrigger *m_pArtNetTrigger; // Trigger handler
+	uint32_t m_nLastPollMillis;
+	bool m_bDoTableCleanup;
+	bool m_bDmxHandled;
+	uint32_t m_nActiveUniverses;
+
+public:
+	static ArtNetController *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static ArtNetController *s_pThis;
 };
 
 #endif /* ARTNETCONTROLLER_H_ */

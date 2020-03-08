@@ -186,13 +186,13 @@ void ArtNetNode::Start(void) {
 		m_nDestinationIp = m_Node.IPAddressBroadcast;
 	}
 
-#if !defined(ARTNET_DO_NOT_SUPPORT_DMX_IN)
 	if (m_pArtNetDmx != 0) {
 		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-			m_pArtNetDmx->Start(i);
+			if (m_InputPorts[i].bIsEnabled) {
+				m_pArtNetDmx->Start(i);
+			}
 		}
 	}
-#endif
 
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 
@@ -202,7 +202,9 @@ void ArtNetNode::Start(void) {
 void ArtNetNode::Stop(void) {
 	if (m_pArtNetDmx != 0) {
 		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-			m_pArtNetDmx->Stop(i);
+			if (m_InputPorts[i].bIsEnabled) {
+				m_pArtNetDmx->Stop(i);
+			}
 		}
 	}
 

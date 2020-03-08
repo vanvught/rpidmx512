@@ -178,7 +178,9 @@ public:
 
 	const uint8_t *GetSoftwareVersion(void);
 
-	uint8_t GetActiveInputPorts(void) { return 0; }
+	uint8_t GetActiveInputPorts(void) {
+		return m_State.nActiveInputPorts;
+	}
 
 	uint8_t GetActiveOutputPorts(void) {
 		return m_State.nActiveOutputPorts;

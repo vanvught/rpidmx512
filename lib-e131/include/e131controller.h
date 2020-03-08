@@ -1,0 +1,107 @@
+/**
+ * @file e131controller.h
+ *
+ */
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#ifndef E131CONTROLLER_H_
+#define E131CONTROLLER_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "e131.h"
+#include "e131packets.h"
+
+enum {
+	DEFAULT_SYNCHRONIZATION_ADDRESS = 5000
+};
+
+struct TE131ControllerState {
+	bool bIsRunning;
+	uint16_t nActiveUniverses;
+	uint32_t DiscoveryTime;
+	uint8_t nPriority;
+	struct TSynchronizationPacket {
+		uint16_t nUniverseNumber;
+		uint32_t nIpAddress;
+		uint8_t nSequenceNumber;
+	} SynchronizationPacket;
+};
+
+class E131Controller {
+public:
+	E131Controller(void);
+	~E131Controller(void);
+
+	void Start(void);
+	void Stop(void);
+	void Run(void);
+
+	void Print(void);
+
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
+	void HandleSync(void);
+	void HandleBlackout(void);
+
+	void SetSynchronizationAddress(uint16_t nSynchronizationAddress = DEFAULT_SYNCHRONIZATION_ADDRESS) {
+		m_State.SynchronizationPacket.nUniverseNumber = nSynchronizationAddress;
+		m_State.SynchronizationPacket.nIpAddress = UniverseToMulticastIp(nSynchronizationAddress);
+	}
+	uint16_t GetSynchronizationAddress(void) {
+		return m_State.SynchronizationPacket.nUniverseNumber;
+	}
+
+	const uint8_t *GetSoftwareVersion(void);
+
+	void SetSourceName(const char *pSourceName);
+	void SetPriority(uint8_t nPriority);
+
+private:
+	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
+	void FillDataPacket(void);
+	void FillDiscoveryPacket(void);
+	void FillSynchronizationPacket(void);
+	void SendDiscoveryPacket(void);
+	uint8_t GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress);
+
+private:
+	int32_t m_nHandle;
+	uint32_t m_nCurrentPacketMillis;
+	struct TE131ControllerState m_State;
+	TE131DataPacket *m_pE131DataPacket;
+	TE131DiscoveryPacket *m_pE131DiscoveryPacket;
+	TE131SynchronizationPacket *m_pE131SynchronizationPacket;
+	uint32_t m_DiscoveryIpAddress;
+	uint8_t m_Cid[E131_CID_LENGTH];
+	char m_SourceName[E131_SOURCE_NAME_LENGTH];
+
+public:
+	static E131Controller* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static E131Controller *s_pThis;
+};
+
+#endif /* E131CONTROLLER_H_ */
