@@ -30,6 +30,7 @@
 
 #include "tftpfileserver.h"
 #include "ubootheader.h"
+#include "remoteconfig.h"
 
 #include "display.h"
 
@@ -67,6 +68,15 @@ TFTPFileServer::~TFTPFileServer(void) {
 
 	DEBUG_EXIT
 }
+
+void TFTPFileServer::Exit(void) {
+	DEBUG_ENTRY
+
+	RemoteConfig::Get()->TftpExit();
+
+	DEBUG_EXIT
+}
+
 
 bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
 	DEBUG_ENTRY

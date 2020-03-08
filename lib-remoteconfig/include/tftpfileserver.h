@@ -40,6 +40,7 @@ public:
 	bool FileClose (void);
 	int FileRead (void *pBuffer, unsigned nCount, unsigned nBlockNumber);
 	int FileWrite (const void *pBuffer, unsigned nCount, unsigned nBlockNumber);
+	void Exit(void);
 
 	uint32_t GetFileSize(void) {
 		return m_nFileSize;

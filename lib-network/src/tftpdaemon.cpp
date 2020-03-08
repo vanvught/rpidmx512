@@ -34,6 +34,7 @@
 #include "tftpdaemon.h"
 
 #include "network.h"
+
 #include "debug.h"
 
 enum TState {
@@ -98,6 +99,8 @@ struct TTFTPDataPacket {
 	uint8_t Data[MAX_DATA_LEN];
 } PACKED;
 
+TFTPDaemon *TFTPDaemon::s_pThis = 0;
+
 TFTPDaemon::TFTPDaemon(void):
 		m_nState(STATE_INIT),
 		m_nIdx(-1),
@@ -109,12 +112,30 @@ TFTPDaemon::TFTPDaemon(void):
 		m_nPacketLength(0),
 		m_bIsLastBlock(false)
 {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+
+	if (s_pThis != 0) {
+		s_pThis->Exit();
+	}
+
+	s_pThis = this;
+
+	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+
 	assert(Network::Get() != 0);
 	memset(m_Buffer, 0, sizeof(m_Buffer));
+
+	DEBUG_EXIT
 }
 
 TFTPDaemon::~TFTPDaemon(void) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+
 	Network::Get()->End(TFTP_UDP_PORT);
+
+	DEBUG_EXIT
 }
 
 bool TFTPDaemon::Run(void) {

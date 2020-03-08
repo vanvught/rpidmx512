@@ -46,6 +46,7 @@ public:
 	virtual bool FileClose(void)=0;
 	virtual int FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
 	virtual int FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
+	virtual void Exit(void)=0;
 
 private:
 	void HandleRequest(void);
@@ -66,6 +67,14 @@ private:
 	uint16_t m_nDataLength;
 	uint16_t m_nPacketLength;
 	bool m_bIsLastBlock;
+
+public:
+	static TFTPDaemon* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static TFTPDaemon *s_pThis;
 };
 
 #endif /* TFTPDAEMON_H_ */
