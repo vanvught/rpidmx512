@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,7 @@ enum TRemoteConfig {
 	REMOTE_CONFIG_LTC,
 	REMOTE_CONFIG_OSC_CLIENT,
 	REMOTE_CONFIG_RDMNET_LLRP_ONLY,
+	REMOTE_CONFIG_SHOWFILE,
 	REMOTE_CONFIG_LAST
 };
 
@@ -67,6 +68,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_OSC,
 	REMOTE_CONFIG_MODE_CONFIG,
 	REMOTE_CONFIG_MODE_STEPPER,
+	REMOTE_CONFIG_MODE_PLAYER,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -96,6 +98,7 @@ enum TTxtFile {
 	TXT_FILE_MOTOR7,
 #endif
 	TXT_FILE_RDM,
+	TXT_FILE_SHOW,
 	TXT_FILE_LAST
 };
 
@@ -156,6 +159,7 @@ public:
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
 	static void HandleReboot(void);
+	void TftpExit(void);
 
 private:
 	void HandleList(void);
@@ -202,6 +206,9 @@ private:
 #if defined(RDM_RESPONDER)
 	void HandleGetRdmTxt(uint32_t& nSize);
 #endif
+#if defined(SHOWFILE)
+	void HandleGetShowTxt(uint32_t& nSize);
+#endif
 
 	void HandleTxtFile(void);
 	void HandleTxtFileRconfig(void);
@@ -242,6 +249,9 @@ private:
 #endif
 #if defined(RDM_RESPONDER)
 	void HandleTxtFileRdm(void);
+#endif
+#if defined(SHOWFILE)
+	void HandleTxtFileShow(void);
 #endif
 
 	void HandleDisplaySet(void);

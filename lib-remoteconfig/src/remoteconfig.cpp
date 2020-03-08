@@ -118,6 +118,11 @@
  #include "rdmdeviceparams.h"
  #include "storerdmdevice.h"
 #endif
+#if defined(SHOWFILE)
+ /* show.txt */
+ #include "showfileparams.h"
+ #include "storeshowfile.h"
+#endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
@@ -132,8 +137,8 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sRemoteConfigs[REMOTE_CONFIG_LAST][18] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only" };
-static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][9] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper" };
+static const char sRemoteConfigs[REMOTE_CONFIG_LAST][18] ALIGNED = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile" };
+static const char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][12] ALIGNED = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player" };
 
 static const char sRequestReboot[] ALIGNED = "?reboot##";
 #define REQUEST_REBOOT_LENGTH (sizeof(sRequestReboot)/sizeof(sRequestReboot[0]) - 1)
@@ -523,10 +528,13 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetRdmTxt(nSize);
 		break;
 #endif
-	default:
-#ifndef NDEBUG
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, UDP_PORT);
+#if defined(SHOWFILE)
+	case TXT_FILE_SHOW:
+		HandleGetShowTxt(nSize);
+		break;
 #endif
+	default:
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) "?get#ERROR#\n", 12, m_nIPAddressFrom, UDP_PORT);
 		DEBUG_EXIT
 		return;
 		__builtin_unreachable ();
@@ -760,6 +768,17 @@ void RemoteConfig::HandleGetRdmTxt(uint32_t& nSize) {
 }
 #endif
 
+#if defined(SHOWFILE)
+void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	ShowFileParams showFileParams((ShowFileParamsStore *) StoreShowFile::Get());
+	showFileParams.Save(m_pUdpBuffer, UDP_BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 /*
  *
  */
@@ -855,6 +874,11 @@ void RemoteConfig::HandleTxtFile(void) {
 #if defined(RDM_RESPONDER)
 	case TXT_FILE_RDM:
 		HandleTxtFileRdm();
+		break;
+#endif
+#if defined(SHOWFILE)
+	case TXT_FILE_SHOW:
+		HandleTxtFileShow();
 		break;
 #endif
 	default:
@@ -1224,9 +1248,33 @@ void RemoteConfig::HandleTxtFileRdm(void) {
 }
 #endif
 
+#if defined(SHOWFILE)
+void RemoteConfig::HandleTxtFileShow(void) {
+	DEBUG_ENTRY
+
+	ShowFileParams showFileParams((ShowFileParamsStore *) StoreShowFile::Get());
+	showFileParams.Load((const char *) m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	showFileParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
 /**
  * TFTP Update firmware
  */
+
+void RemoteConfig::TftpExit(void) {
+	DEBUG_ENTRY
+
+	m_pUdpBuffer[GET_TFTP_LENGTH] = '0';
+
+	HandleTftpSet();
+
+	DEBUG_EXIT
+}
 
 void RemoteConfig::HandleTftpSet(void) {
 	DEBUG_ENTRY

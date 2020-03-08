@@ -2,7 +2,7 @@
  * @file remoteconfigstatic.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ static const char sTxtFile[TXT_FILE_LAST][15] ALIGNED = {
 		"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt",
 		"motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt",
 #endif
-		"rdm_device.txt"
+		"rdm_device.txt", "show.txt"
 };
 
 static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
@@ -63,7 +63,7 @@ static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
 		10, 10, 10, 10,
 		10, 10, 10, 10,
 #endif
-		14
+		14, 8
 };
 
 static const TStore sMap[TXT_FILE_LAST] ALIGNED = { STORE_RCONFIG,
@@ -75,7 +75,7 @@ static const TStore sMap[TXT_FILE_LAST] ALIGNED = { STORE_RCONFIG,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 #endif
-		STORE_RDMDEVICE
+		STORE_RDMDEVICE, STORE_SHOW
 };
 
 uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {

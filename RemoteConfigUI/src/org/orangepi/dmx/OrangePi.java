@@ -36,14 +36,15 @@ public class OrangePi {
 	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NEXTION_TXT = "nextion.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", ""};
-	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only"};
-	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt"};
+	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "show.txt", ""};
+	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
+	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
 	private static final String RDM_TXT = "rdm_device.txt";
 	private static final String SPARKFUN_TXT = "sparkfun.txt";
+	private static final String SHOW_TXT = "show.txt";
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -66,6 +67,7 @@ public class OrangePi {
 	private String nodeMotors[] = {null, null, null, null, null, null, null, null};
 	private String nodeRDM = null;
 	private String nodeSparkFun = null;
+	private String nodeShow = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbDisplay = null;
@@ -78,6 +80,7 @@ public class OrangePi {
 	private String sbMotors[] = {null, null, null, null, null, null, null, null};
 	private String sbRDM = null;
 	private String sbSparkFun = null;
+	private String sbShow = null;
 	
 	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
 		super();
@@ -90,8 +93,10 @@ public class OrangePi {
 		
 		if (values.length >= 4) {
 			String[] Mode = values[2].split("\n");
-			isValid = isMapTypeValues(values[1]);		
-
+			isValid = isMapTypeValues(values[1]);	
+			
+			System.out.println(Mode[0]);
+			
 			if (isValid) {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
 					nodeMode = MODES_TXT[0];
@@ -118,8 +123,9 @@ public class OrangePi {
 						nodeMotors[i] = MOTORS_TXT[i];
 					}
 					nodeRDM = RDM_TXT;
-				}  
-				else {
+				} else if (Mode[0].equals("Player")) {
+					nodeShow = SHOW_TXT;
+				} else {
 					isValid = false;
 				}
 			}
@@ -208,6 +214,11 @@ public class OrangePi {
 				sbSparkFun = doGet(txt);
 			}
 			return sbSparkFun.toString();
+		}  else if (isShowTxt(txt)) {
+			if (sbShow == null) {
+				sbShow = doGet(txt);
+			}
+			return sbShow.toString();
 		}
 
 		return null;
@@ -491,6 +502,13 @@ public class OrangePi {
 		}
 		return false;
 	}
+	
+	private Boolean isShowTxt(String show) {
+		if (show.equals(SHOW_TXT)) {
+			return true;
+		}
+		return false;
+	}
 		
 	public Boolean getIsValid() {
 		return isValid;
@@ -553,7 +571,10 @@ public class OrangePi {
 	public String getNodeSparkFun() {
 		return nodeSparkFun;
 	}
-	
+
+	public String getNodeShow() {
+		return nodeShow;
+	}
 	
 	public InetAddress getAddress() {
 		return address;
