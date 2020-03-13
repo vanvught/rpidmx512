@@ -2,7 +2,7 @@
  * @file dmx_multi_internal.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include <assert.h>
 
-#include "dmx.h"
+#include "dmx_uarts.h"
 
 /*
  * PORT
@@ -39,7 +39,7 @@
  */
 
 inline static uint8_t _port_to_uart(uint8_t port) {
-	assert(port < DMX_MAX_OUT);
+	assert(port < DMX_MAX_UARTS);
 
 	if (port < 3) {
 		return port + 1;

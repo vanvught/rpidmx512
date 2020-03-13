@@ -1,8 +1,8 @@
 /**
- * @file dmx_uarts.h
+ * @file dmxinput.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_UART_H_
-#define DMX_UART_H_
+#ifndef _DMXINPUT_H_
+#define DMXINPUT_H_
 
-#if defined(H3)
- #if defined(ORANGE_PI_ONE)
-  #define DMX_MAX_UARTS	4
- #else
-  #define DMX_MAX_UARTS	2	///< Orange Pi Zero
- #endif
-#else
- #define DMX_MAX_UARTS	1	///< All Raspberry Pi's
-#endif
+#include <stdint.h>
+#include <stdbool.h>
 
-#endif /* DMX_UART_H_ */
+#include "e131dmx.h"
+
+#include "dmx_uarts.h"
+
+class DmxInput: public E131Dmx {
+public:
+	DmxInput(void);
+	~DmxInput(void);
+
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
+
+	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
+
+private:
+	bool m_bIsStarted[DMX_MAX_UARTS];
+};
+
+#endif /* DMXINPUT_H_ */

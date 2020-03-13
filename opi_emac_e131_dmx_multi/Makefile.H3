@@ -3,7 +3,7 @@ DEFINES = E131_BRIDGE_MULTI DMXSEND_MULTI ENABLE_SPIFLASH DISPLAY_UDF NDEBUG
 #
 LIBS = 
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

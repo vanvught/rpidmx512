@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,14 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
-// DMX Out
+#include "reboot.h"
+
+// DMX Output
 #include "dmxparams.h"
 #include "h3/dmxsendmulti.h"
 #include "storedmxsend.h"
+// DMX Input
+#include "dmxinput.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -71,11 +75,23 @@ void notmain(void) {
 	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
 
+	E131Params e131params((E131ParamsStore*) &storeE131);
+
+	if (e131params.Load()) {
+		e131params.Dump();
+	}
+
+	const TE131PortDir portDir = e131params.GetDirection();
+
 	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX Output");
+	if (portDir == E131_INPUT_PORT) {
+		console_puts("DMX Input");
+	} else {
+		console_puts("DMX Output");
+	}
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
 	console_puts(" {2 Universes}\n");
@@ -95,12 +111,12 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
-	E131Params e131params((E131ParamsStore*) &storeE131);
 	E131Bridge bridge;
-	if (e131params.Load()) {
-		e131params.Set(&bridge);
-		e131params.Dump();
-	}
+
+	e131params.Set(&bridge);
+
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	uint16_t nUniverse;
 	bool bIsSetIndividual = false;
@@ -108,25 +124,25 @@ void notmain(void) {
 
 	nUniverse = e131params.GetUniverse(0, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetUniverse(0, portDir, nUniverse);
 		bIsSetIndividual = true;
 	}
 
 	nUniverse = e131params.GetUniverse(1, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetUniverse(1, portDir, nUniverse);
 		bIsSetIndividual = true;
 	}
 #if defined (ORANGE_PI_ONE)
 	nUniverse = e131params.GetUniverse(2, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetUniverse(2, portDir, nUniverse);
 		bIsSetIndividual = true;
 	}
 #ifndef DO_NOT_USE_UART0
 	nUniverse = e131params.GetUniverse(3, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetUniverse(3, portDir, nUniverse);
 		bIsSetIndividual = true;
 	}
 #endif
@@ -134,31 +150,44 @@ void notmain(void) {
 
 	if (!bIsSetIndividual) { // Backwards compatibility
 		nUniverse = e131params.GetUniverse();
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, 0 + nUniverse);
-		bridge.SetUniverse(1, E131_OUTPUT_PORT, 1 + nUniverse);
+		bridge.SetUniverse(0, portDir, 0 + nUniverse);
+		bridge.SetUniverse(1, portDir, 1 + nUniverse);
 #if defined (ORANGE_PI_ONE)
-		bridge.SetUniverse(2, E131_OUTPUT_PORT, 2 + nUniverse);
+		bridge.SetUniverse(2, portDir, 2 + nUniverse);
 #ifndef DO_NOT_USE_UART0
-		bridge.SetUniverse(3, E131_OUTPUT_PORT, 3 + nUniverse);
+		bridge.SetUniverse(3, portDir, 3 + nUniverse);
 #endif
 #endif
 	}
 
-	DMXSendMulti dmx;
-	DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+	DMXSendMulti *pDmxOutput;
+	DmxInput *pDmxInput;
 
-	if (dmxparams.Load()) {
-		dmxparams.Dump();
-		dmxparams.Set(&dmx);
+	if (portDir == E131_INPUT_PORT) {
+		pDmxInput = new DmxInput;
+		assert(pDmxInput != 0);
+
+		bridge.SetE131Dmx(pDmxInput);
+	} else {
+		pDmxOutput = new DMXSendMulti;
+		assert(pDmxOutput != 0);
+
+		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+
+		if (dmxparams.Load()) {
+			dmxparams.Dump();
+			dmxparams.Set(pDmxOutput);
+		}
+
+		bridge.SetDirectUpdate(false);
+		bridge.SetOutput(pDmxOutput);
+
+		pDmxOutput->Print();
 	}
-
-	bridge.SetDirectUpdate(false);
-	bridge.SetOutput(&dmx);
 
 	bridge.Print();
-	dmx.Print();
 
-	display.SetTitle("Eth sACN E1.31 DMX");
+	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == E131_INPUT_PORT ? "Input" : "Output");
 	display.Set(2, DISPLAY_UDF_LABEL_IP);
 	display.Set(3, DISPLAY_UDF_LABEL_NETMASK);
 	display.Set(4, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
@@ -166,11 +195,7 @@ void notmain(void) {
 	display.Set(6, DISPLAY_UDF_LABEL_BOARDNAME);
 
 	StoreDisplayUdf storeDisplayUdf;
-#if defined (ORANGE_PI)
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-#else
-	DisplayUdfParams displayUdfParams;
-#endif
 
 	if(displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
@@ -179,7 +204,9 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, bridge.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (e131params.GetDirection() == E131_INPUT_PORT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 
@@ -190,6 +217,9 @@ void notmain(void) {
 			remoteConfigParams.Set(&remoteConfig);
 			remoteConfigParams.Dump();
 		}
+
+		while (spiFlashStore.Flash())
+			;
 	} else {
 		remoteConfig.SetDisable(true);
 		printf("Remote configuration is disabled\n");
@@ -202,9 +232,6 @@ void notmain(void) {
 
 	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
 	display.TextStatus(E131Const::MSG_BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
-
-	while (spiFlashStore.Flash())
-		;
 
 	hw.WatchdogInit();
 

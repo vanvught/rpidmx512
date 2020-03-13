@@ -1,8 +1,8 @@
 /**
- * @file dmx_uarts.h
+ * @file dmx_multi_input.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_UART_H_
-#define DMX_UART_H_
+#ifndef DMX_MULTI_INPUT_H_
+#define DMX_MULTI_INPUT_H_
 
-#if defined(H3)
- #if defined(ORANGE_PI_ONE)
-  #define DMX_MAX_UARTS	4
- #else
-  #define DMX_MAX_UARTS	2	///< Orange Pi Zero
- #endif
-#else
- #define DMX_MAX_UARTS	1	///< All Raspberry Pi's
+#include <stdint.h>
+
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#endif /* DMX_UART_H_ */
+extern void dmx_multi_input_init(void);
+
+extern void dmx_multi_start_data(uint8_t port);
+extern void dmx_multi_stop_data(uint8_t port);
+
+extern const uint8_t *dmx_multi_get_available(uint8_t port);
+extern uint32_t dmx_multi_get_updates_per_seconde(uint8_t port);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DMX_MULTI_INPUT_H_ */

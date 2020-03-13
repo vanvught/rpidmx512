@@ -2,7 +2,7 @@
  * @file uart.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,15 @@
 										///< EPS bit 5:4
 #define UART_LCR_BC			(0x1 << 6)	///< Cause a Break condition
 
-#define UART_IER_ERBFI		(1<<0)		///< Enable Received Data Available Interrupts
-#define UART_IER_ETBEI		(1<<1)		///< Enable Transmit Holding Register Empty Interrupt
-#define UART_IER_PTIME		(1<<7)		///< Programmable THRE Interrupt Mode Enable
+#define UART_IER_ERBFI		(1 << 0)	///< Enable Received Data Available Interrupts
+#define UART_IER_ETBEI		(1 << 1)	///< Enable Transmit Holding Register Empty Interrupt
+#define UART_IER_PTIME		(1 << 7)	///< Programmable THRE Interrupt Mode Enable
 
 #define UART_IIR_IID_NO			(0b0001 << 0)	///< No Interrupt pending
 #define UART_IIR_IID_THRE		(0b0010 << 0)	///< THR empty
 #define UART_IIR_IID_RD			(0b0100 << 0)	///< Received data
 #define UART_IIR_IID_RCVR_LINE	(0b0110 << 0)	///< Receiver line status
+#define UART_IIR_IID_TIME_OUT	(0b1100 << 0)	///< Character time-out
 
 #define UART_FCR_EFIFO	0x01	///< Enable in and out hardware FIFOs
 #define UART_FCR_RRESET 0x02	///< Reset receiver FIFO
@@ -66,6 +67,7 @@
 #define UART_FCR_TRIG3	0xC0	///< RCVR FIFO trigger level 3/4
 
 #define UART_USR_BUSY	(1 << 0)
+#define UART_USR_RFNE	(1 << 3)	///< Receive FIFO not empty
 
 #define BAUD_31250_L	 (48)		///< 24000000 / 16 / 31250 = 48
 #define BAUD_31250_H     (0)		///<

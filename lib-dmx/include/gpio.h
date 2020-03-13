@@ -2,7 +2,7 @@
  * @file gpio.h
  *
  */
-/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,13 +42,13 @@
 
  #ifdef LOGIC_ANALYZER
   #define GPIO_ANALYZER_CH0
-  #define GPIO_ANALYZER_CH1
-  #define GPIO_ANALYZER_CH2
-  #define GPIO_ANALYZER_CH3					GPIO_EXT_15
-  #define GPIO_ANALYZER_CH4					GPIO_EXT_7
-  #define GPIO_ANALYZER_CH5					GPIO_EXT_37
-  #define GPIO_ANALYZER_CH6
-  #define GPIO_ANALYZER_CH7
+  #define GPIO_ANALYZER_CH1					GPIO_EXT_7	///< GPIO 6
+  #define GPIO_ANALYZER_CH2					GPIO_EXT_15	///< GPIO 3
+  #define GPIO_ANALYZER_CH3					GPIO_EXT_19	///< GPIO15 / MOSI
+  #define GPIO_ANALYZER_CH4					GPIO_EXT_21	///< GPIO16 / MISO
+  #define GPIO_ANALYZER_CH5					GPIO_EXT_23	///< GPIO14 / SCLK
+  #define GPIO_ANALYZER_CH6					GPIO_EXT_26	///< GPIO10
+  #define GPIO_ANALYZER_CH7					GPIO_EXT_24	///< GPIO13 / CS0
  #endif
  
 #elif defined (BARE_METAL)
