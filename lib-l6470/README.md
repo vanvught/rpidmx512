@@ -1,4 +1,4 @@
-## Open source Raspberry Pi C++ library for STMicro L6470 stepper motor driver ##
+## Open source C++ library for STMicro L6470 stepper motor driver ##
 
 Supported devices :
 
