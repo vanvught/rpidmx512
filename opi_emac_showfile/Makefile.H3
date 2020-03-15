@@ -1,0 +1,11 @@
+PLATFORM = ORANGE_PI
+#
+DEFINES = SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT NDEBUG
+#
+LIBS = showfile osc
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
