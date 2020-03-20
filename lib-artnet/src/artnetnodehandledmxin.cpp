@@ -39,10 +39,11 @@
 
 #include "debug.h"
 
-void ArtNetNode::SetDestinationIp(uint32_t nDestinationIp) {
-	m_nDestinationIp = nDestinationIp;
-
-	DEBUG_PRINTF("m_nDestinationIp=" IPSTR ", Netmask=" IPSTR, IP2STR(m_nDestinationIp), IP2STR(Network::Get()->GetNetmask()));
+void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
+	if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+		m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
+		DEBUG_PRINTF("m_nDestinationIp=" IPSTR ", Netmask=" IPSTR, IP2STR(m_InputPorts[nPortIndex].nDestinationIp), IP2STR(Network::Get()->GetNetmask()));
+	}
 }
 
 void ArtNetNode::HandleDmxIn(void) {
@@ -71,7 +72,7 @@ void ArtNetNode::HandleDmxIn(void) {
 
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 
-				Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(artDmx), (uint16_t) sizeof(struct TArtDmx), m_nDestinationIp, (uint16_t) ARTNET_UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(artDmx), (uint16_t) sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, (uint16_t) ARTNET_UDP_PORT);
 
 				m_State.bIsReceivingDmx = true;
 			} else {

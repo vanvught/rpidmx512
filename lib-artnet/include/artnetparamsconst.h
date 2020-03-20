@@ -51,7 +51,7 @@ public:
 	alignas(uint32_t) static const char PROTOCOL[];
 	alignas(uint32_t) static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
 	alignas(uint32_t) static const char DIRECTION[];
-	alignas(uint32_t) static const char DESTINATION_IP[];
+	alignas(uint32_t) static const char DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24];
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

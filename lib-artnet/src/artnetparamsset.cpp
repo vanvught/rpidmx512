@@ -80,6 +80,10 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		} else {
 			pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocol);
 		}
+
+		if (isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i)) {
+			pArtNetNode->SetDestinationIp(i, m_tArtNetParams.nDestinationIpPort[i]);
+		}
 	}
 
 	for (;i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
@@ -89,9 +93,5 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
 		pArtNetNode->SetDirectUpdate(m_tArtNetParams.bEnableNoChangeUpdate);
-	}
-
-	if (isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP)) {
-		pArtNetNode->SetDestinationIp(m_tArtNetParams.nDestinationIp);
 	}
 }

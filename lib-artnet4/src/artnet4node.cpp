@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,11 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	const bool isActive = GetPortAddress(nPortId, nUniverse, dir);
 
 	DEBUG_PRINTF("Port %d, Active %c, Universe %d, [%s]", (int )nPortId, isActive ? 'Y' : 'N', nUniverse, dir == ARTNET_OUTPUT_PORT ? "Output" : "Input");
+
+	if (dir == ARTNET_INPUT_PORT) {
+		DEBUG_PUTS("Input is not supported");
+		return;
+	}
 
 	if (isActive) {
 		const TPortProtocol tPortProtocol = GetPortProtocol(nPortId);
@@ -231,9 +236,11 @@ uint8_t ArtNet4Node::GetStatus(uint8_t nPortId) {
 void ArtNet4Node::Print(void) {
 	ArtNetNode::Print();
 
-	if (m_bMapUniverse0) {
-		printf("  Universes are mappped +1\n");
-	}
+	if (ArtNetNode::GetActiveOutputPorts() != 0) {
+		if (m_bMapUniverse0) {
+			printf("  Universes are mappped +1\n");
+		}
 
-	m_Bridge.Print();
+		m_Bridge.Print();
+	}
 }

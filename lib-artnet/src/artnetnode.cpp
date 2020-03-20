@@ -68,9 +68,9 @@ union uip {
 #define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"
 #define NODE_DEFAULT_NET_SWITCH		0
 #define NODE_DEFAULT_SUBNET_SWITCH	0
-#define NODE_DEFAULT_UNIVERSE		0
+#define NODE_DEFAULT_UNIVERSE		1
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 43 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 44 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
 #define ARTNET_MERGE_TIMEOUT_SECONDS	10
@@ -101,8 +101,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_bDirectUpdate(false),
 	m_nCurrentPacketMillis(0),
 	m_nPreviousPacketMillis(0),
-	m_IsRdmResponder(false),
-	m_nDestinationIp(0)
+	m_IsRdmResponder(false)
 {
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
@@ -124,8 +123,9 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 		memset(&m_OutputPorts[i], 0 , sizeof(struct TOutputPort));
 	}
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS); i++) {
+	for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
 		memset(&m_InputPorts[i], 0 , sizeof(struct TInputPort));
+		m_InputPorts[i].nDestinationIp = Network::Get()->GetIp() | ~(Network::Get()->GetNetmask());
 	}
 
 	SetShortName((const char *) NODE_DEFAULT_SHORT_NAME);
@@ -182,13 +182,12 @@ void ArtNetNode::Start(void) {
 
 	m_State.status = ARTNET_ON;
 
-	if(m_nDestinationIp == 0) {
-		m_nDestinationIp = m_Node.IPAddressBroadcast;
-	}
-
 	if (m_pArtNetDmx != 0) {
 		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
+				if (m_InputPorts[i].nDestinationIp == 0) {
+					m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
+				}
 				m_pArtNetDmx->Start(i);
 			}
 		}

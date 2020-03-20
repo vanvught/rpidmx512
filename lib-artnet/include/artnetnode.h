@@ -149,6 +149,7 @@ struct TInputPort {
 	bool bIsEnabled;
 	TGenericPort port;
 	uint8_t nSequence;
+	uint32_t nDestinationIp;
 };
 
 class ArtNetNode {
@@ -269,9 +270,13 @@ public:
 		return m_pArtNetDmx;
 	}
 
-	void SetDestinationIp(uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(void) {
-		return m_nDestinationIp;
+	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
+	uint32_t GetDestinationIp(uint8_t nPortIndex) {
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			return m_InputPorts[nPortIndex].nDestinationIp;
+		}
+
+		return 0;
 	}
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
@@ -353,8 +358,6 @@ private:
 
 	alignas(uint32_t) char m_aSysName[16];
 	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
-
-	uint32_t m_nDestinationIp;
 
 public:
 	static ArtNetNode* Get(void) {

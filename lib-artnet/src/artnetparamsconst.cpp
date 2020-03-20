@@ -47,4 +47,4 @@ alignas(uint32_t) const char ArtNetParamsConst::MERGE_MODE_PORT[ARTNET_MAX_PORTS
 alignas(uint32_t) const char ArtNetParamsConst::PROTOCOL[] = "protocol";
 alignas(uint32_t) const char ArtNetParamsConst::PROTOCOL_PORT[ARTNET_MAX_PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
 alignas(uint32_t) const char ArtNetParamsConst::DIRECTION[] = "direction";
-alignas(uint32_t) const char ArtNetParamsConst::DESTINATION_IP[] = "destination_ip";
+alignas(uint32_t) const char ArtNetParamsConst::DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };

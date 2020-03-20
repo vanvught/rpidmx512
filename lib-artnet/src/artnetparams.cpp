@@ -60,6 +60,9 @@
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("sizeof(struct TArtNetParams)=%d", (int) sizeof(struct TArtNetParams));
+
 	uint8_t *p = (uint8_t *) &m_tArtNetParams;
 
 	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
@@ -75,6 +78,8 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 	m_tArtNetParams.aOemValue[0] = ArtNetConst::OEM_ID[1];
 	m_tArtNetParams.aOemValue[1] = ArtNetConst::OEM_ID[0];
 	m_tArtNetParams.nDirection = ARTNET_OUTPUT_PORT;
+
+	DEBUG_EXIT
 }
 
 ArtNetParams::~ArtNetParams(void) {
@@ -83,6 +88,7 @@ ArtNetParams::~ArtNetParams(void) {
 
 bool ArtNetParams::Load(void) {
 	m_tArtNetParams.nSetList = 0;
+	m_tArtNetParams.nMultiPortOptions = 0;
 
 	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
 
@@ -100,7 +106,7 @@ bool ArtNetParams::Load(void) {
 	return true;
 }
 
-void ArtNetParams::Load(const char* pBuffer, uint32_t nLength) {
+void ArtNetParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != 0);
 	assert(nLength != 0);
 	assert(m_pArtNetParamsStore != 0);
@@ -110,6 +116,7 @@ void ArtNetParams::Load(const char* pBuffer, uint32_t nLength) {
 	}
 
 	m_tArtNetParams.nSetList = 0;
+	m_tArtNetParams.nMultiPortOptions = 0;
 
 	ReadConfigFile config(ArtNetParams::staticCallbackFunction, this);
 
@@ -256,6 +263,16 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			}
 			return;
 		}
+
+		if (Sscan::IpAddress(pLine, ArtNetParamsConst::DESTINATION_IP_PORT[i], &nValue32) == SSCAN_OK) {
+			m_tArtNetParams.nDestinationIpPort[i] = nValue32;
+
+			if (nValue32 != 0) {
+				m_tArtNetParams.nMultiPortOptions |= (ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i);
+			} else {
+				m_tArtNetParams.nMultiPortOptions &= ~(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i);
+			}
+		}
 	}
 
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &nValue8) == SSCAN_OK) {
@@ -279,12 +296,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			m_tArtNetParams.nDirection = (uint8_t) ARTNET_OUTPUT_PORT;
 			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_DIRECTION;
 		}
-		return;
-	}
-
-	if (Sscan::IpAddress(pLine, ArtNetParamsConst::DESTINATION_IP, &nValue32) == SSCAN_OK) {
-		m_tArtNetParams.nDestinationIp = nValue32;
-		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_DESTINATION_IP;
 		return;
 	}
 }
@@ -374,8 +385,10 @@ void ArtNetParams::Dump(void) {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, (int) m_tArtNetParams.nDirection, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "Input" : "Output");
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_DESTINATION_IP)) {
-		printf(" %s=" IPSTR "\n", ArtNetParamsConst::DESTINATION_IP, IP2STR(m_tArtNetParams.nDestinationIp));
+	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
+		if (isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i)) {
+			printf(" %s=" IPSTR "\n", ArtNetParamsConst::DESTINATION_IP_PORT[i], IP2STR(m_tArtNetParams.nDestinationIpPort[i]));
+		}
 	}
 #endif
 }

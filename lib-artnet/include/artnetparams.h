@@ -38,29 +38,36 @@
 #include "lightset.h"
 
 struct TArtNetParams {
-	uint32_t nSetList;
-	uint8_t nNet;
-	uint8_t nSubnet;
-	uint8_t nUniverse;
-	TLightSetOutputType tOutputType;
-	bool bUseTimeCode;
-	bool bUseTimeSync;
-	bool bEnableRdm;
-	bool bRdmDiscovery;
-	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];
-	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];
-	uint8_t filler[2]; // aManufacturerId
-	uint8_t aOemValue[2];
-	time_t nNetworkTimeout;
-	bool bDisableMergeTimeout;
-	uint8_t nUniversePort[ARTNET_MAX_PORTS];
-	uint8_t nMergeMode;
-	uint8_t nMergeModePort[ARTNET_MAX_PORTS];
-	uint8_t nProtocol;
-	uint8_t nProtocolPort[ARTNET_MAX_PORTS];
-	bool bEnableNoChangeUpdate;
-	uint8_t nDirection;
-	uint32_t nDestinationIp;
+	uint32_t nSetList;								///< 4	  4
+	uint8_t nNet;									///< 1	  5
+	uint8_t nSubnet;								///< 1	  6
+	uint8_t nUniverse;								///< 1	  7
+	TLightSetOutputType tOutputType;				///< 1	  8
+	bool bUseTimeCode;								///< 1	  9
+	bool bUseTimeSync;								///< 1	 10
+	bool bEnableRdm;								///< 1	 11
+	bool bRdmDiscovery;								///< 1	 12
+	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];	///< 18	 30
+	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];		///< 64	 94
+	uint16_t nMultiPortOptions;						///< 2	 96
+	uint8_t aOemValue[2];							///< 2	 98
+	time_t nNetworkTimeout;							///< 4	102
+	bool bDisableMergeTimeout;						///< 1	103
+	uint8_t nUniversePort[ARTNET_MAX_PORTS];		///< 4	107
+	uint8_t nMergeMode;								///< 1	108
+	uint8_t nMergeModePort[ARTNET_MAX_PORTS];		///< 4	112
+	uint8_t nProtocol;								///< 1	113
+	uint8_t nProtocolPort[ARTNET_MAX_PORTS];		///< 4	117
+	bool bEnableNoChangeUpdate;						///< 1	118
+	uint8_t nDirection;								///< 1	119
+	uint32_t nDestinationIpPort[ARTNET_MAX_PORTS];	///< 16	135
+};													///< Not packed!
+
+enum TArtnetParamsMaskMultiPortOptions {
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A = (1 << 0),
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B = (1 << 1),
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C = (1 << 2),
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D = (1 << 3)
 };
 
 enum TArtnetParamsMask {
@@ -92,8 +99,7 @@ enum TArtnetParamsMask {
 	ARTNET_PARAMS_MASK_PROTOCOL_C = (1 << 25),
 	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26),
 	ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 27),
-	ARTNET_PARAMS_MASK_DIRECTION = (1 << 28),
-	ARTNET_PARAMS_MASK_DESTINATION_IP = (1 << 29)
+	ARTNET_PARAMS_MASK_DIRECTION = (1 << 28)
 };
 
 class ArtNetParamsStore {
@@ -173,10 +179,6 @@ public:
 		return (TArtNetPortDir) m_tArtNetParams.nDirection;
 	}
 
-	uint32_t GetDestinationIp(void) {
-		return m_tArtNetParams.nDestinationIp;
-	}
-
 public:
 	static void staticCallbackFunction(void *p, const char *s);
 
@@ -184,6 +186,9 @@ private:
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) {
 		return (m_tArtNetParams.nSetList & nMask) == nMask;
+	}
+	bool isMaskMultiPortOptionsSet(uint16_t nMask) {
+		return (m_tArtNetParams.nMultiPortOptions & nMask) == nMask;
 	}
 
 private:

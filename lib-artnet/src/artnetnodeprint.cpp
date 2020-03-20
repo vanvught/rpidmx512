@@ -69,16 +69,15 @@ void ArtNetNode::Print(void) {
 
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
-		const uint32_t nDestinationIp = (m_nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_nDestinationIp);
-		printf("  Destination " IPSTR "\n", IP2STR(nDestinationIp));
 
-		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS); i++) {
+		for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(i, nAddress, ARTNET_INPUT_PORT)) {
-				const uint8_t nNet = m_Node.NetSwitch[i];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[i];
+				const uint32_t nNet = m_Node.NetSwitch[i];
+				const uint32_t nSubSwitch = m_Node.SubSwitch[i];
+				const uint32_t nDestinationIp = (m_InputPorts[i].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[i].nDestinationIp);
 
-				printf("  Port %2d %d:%-3d[%2x]\n", (int) i, nNet, (nSubSwitch * 16 + nAddress), (nSubSwitch * 16 + nAddress));
+				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n", (int) i, (int) nNet, (int) (nSubSwitch * 16 + nAddress), (int) (nSubSwitch * 16 + nAddress), IP2STR(nDestinationIp));
 			}
 		}
 	}
