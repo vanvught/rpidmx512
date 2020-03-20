@@ -2,7 +2,7 @@
  * @file displayudfparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,17 +40,8 @@ struct TDisplayUdfParams {
 }__attribute__((packed));
 
 enum TDisplayUdfParamsMask {
-	DISPLAY_UDF_PARAMS_MASK_LABEL_TITLE = (1 << DISPLAY_UDF_LABEL_TITLE),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_BOARDNAME = (1 << DISPLAY_UDF_LABEL_BOARDNAME),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_IP = (1 << DISPLAY_UDF_LABEL_IP),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_VERSION = (1 << DISPLAY_UDF_LABEL_VERSION),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_UNIVERSE = (1 << DISPLAY_UDF_LABEL_UNIVERSE),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_AP = (1 << DISPLAY_UDF_LABEL_AP),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_NODE_NAME = (1 << DISPLAY_UDF_LABEL_NODE_NAME),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_NETMASK = (1 << DISPLAY_UDF_LABEL_NETMASK),
-	DISPLAY_UDF_PARAMS_MASK_LABEL_DMX_START_ADDRESS = (1 << DISPLAY_UDF_LABEL_DMX_START_ADDRESS),
 	DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT = (1 << 28)
-}; // Not used
+};
 
 class DisplayUdfParamsStore {
 public:

@@ -68,7 +68,10 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		ArtNetParamsConst::UNIVERSE_PORT[3],
 		NetworkConst::PARAMS_NET_MASK,
 		LightSetConst::PARAMS_DMX_START_ADDRESS,
-		ArtNetParamsConst::DESTINATION_IP
+		ArtNetParamsConst::DESTINATION_IP_PORT[0],
+		ArtNetParamsConst::DESTINATION_IP_PORT[1],
+		ArtNetParamsConst::DESTINATION_IP_PORT[2],
+		ArtNetParamsConst::DESTINATION_IP_PORT[3]
 };
 
 
