@@ -2,7 +2,7 @@
  * @file propertiesbuilder.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 
 #include "network.h"
 
+#include "debug.h"
+
 PropertiesBuilder::PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength):
 	m_pBuffer(pBuffer),
 	m_nLength(nLength),
@@ -53,12 +55,6 @@ PropertiesBuilder::~PropertiesBuilder(void) {
 }
 
 bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -80,20 +76,12 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
 
 bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, uint32_t nPrecision) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -115,20 +103,12 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, ui
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
 
 bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -150,20 +130,12 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
 
 bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -185,20 +157,12 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
 
 bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -220,20 +184,12 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
 
 bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, bool bIsSet) {
-#if !defined(BUILDER_NOT_SET)
-	if (!bIsSet) {
-		return false;
-	}
-#endif
-
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
@@ -255,9 +211,7 @@ bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, b
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
@@ -278,9 +232,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 
 	m_nSize += i;
 
-#ifndef NDEBUG
-	printf("m_nLength=%d, m_nSize=%d\n", m_nLength, m_nSize);
-#endif
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
 
 	return true;
 }
