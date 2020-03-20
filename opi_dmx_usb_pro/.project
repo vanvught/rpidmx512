@@ -8,7 +8,6 @@
 		<project>lib-display</project>
 		<project>lib-dmx</project>
 		<project>lib-hal</project>
-		<project>lib-ledblink</project>
 		<project>lib-rdm</project>
 		<project>lib-usb</project>
 		<project>lib-widget</project>
