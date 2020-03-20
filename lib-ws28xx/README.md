@@ -1,4 +1,5 @@
-# Open Source C++ library for the WS28xx / SK6812 / APA102 / UCSx903 chips
+# Library WS28xx
+## Open Source C++ library for the WS28xx / SK6812 / APA102 / UCSx903 / P9813 chips
 
 The supported chips are:
 
@@ -12,6 +13,7 @@ The supported chips are:
 - APA102
 - UCS1903
 - UCS2903
+- P9813
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 

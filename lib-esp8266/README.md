@@ -2,9 +2,8 @@
 
 Supported boards:
 
-* Raspberry Pi (all models)
 * Orange Pi Zero
-* Nano Pi NEO
+* Raspberry Pi (models <= 3) (limited support)
 
 
 **Wifi** functions :

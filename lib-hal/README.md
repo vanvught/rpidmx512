@@ -1,5 +1,5 @@
 # Library HAL
-## Hardware Abstraction Layer (HAL) implementation ##
+## Open Source Hardware Abstraction Layer (HAL) implementation 
 
 Supported platforms:
 
@@ -7,8 +7,7 @@ Supported platforms:
 - Mac OS
 - Linux
 - Cygwin
-- Raspberry Pi (baremetal)
-
+- Raspberry Pi (baremetal) (limited)
 
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)

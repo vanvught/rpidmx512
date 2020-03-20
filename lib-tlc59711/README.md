@@ -1,9 +1,9 @@
-## Open Source C++ library for 12-Channel 16-bit PWM LED Driver TLC59711 ##
+# Library TLC59711
+## Open Source C++ library for 12-Channel 16-bit PWM LED Driver TLC59711
 
 Successfully tested with :
 
 - Adafruit 12-Channel 16-bit PWM LED Driver - SPI Interface - TLC59711 ([https://www.adafruit.com/product/1455](https://www.adafruit.com/product/1455 "12-Channel 16-bit PWM LED Driver - SPI Interface - TLC59711"))
-
 
 Supported platforms :
 
@@ -11,8 +11,6 @@ Supported platforms :
     - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-h3](https://github.com/vanvught/rpidmx512/tree/master/lib-h3)
 - Linux Raspbian
     -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
-- Bare-metal Broadcom BCM2835 (Raspberry Pi)
-    - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
 
 Compile and build the examples on Linux Raspbian
 

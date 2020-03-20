@@ -1,4 +1,5 @@
-## Open source C library for I2C ##
+# Library I2C
+## Open source C library for the I2C protocol
 
 This library provides an abstraction layer for the I2C interface. 
 

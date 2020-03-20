@@ -1,4 +1,5 @@
-## Open source Raspberry Pi C++ library for 16-Channel 12-bit PWM/Servo Driver PCA9685 ##
+# Library PCA9685
+## Open source C++ library for 16-Channel 12-bit PWM/Servo Driver PCA9685 
 
 Successfully tested with :
 
@@ -7,10 +8,10 @@ Successfully tested with :
 
 Supported platforms :
 
-- Linux Raspbian
+- Orange Pi Zero
+- Orange Pi One
+- Raspberry Pi boards Linux Raspbian
     -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
-- Bare-metal
-    - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
 
 Compile and build the library on Linux Raspbian
 

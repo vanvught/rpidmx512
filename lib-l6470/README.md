@@ -1,4 +1,5 @@
-## Open source Raspberry Pi C++ library for STMicro L6470 stepper motor driver ##
+# Library L6470
+## Open source C++ library for STMicro L6470 stepper motor driver
 
 Supported devices :
 
@@ -9,12 +10,10 @@ Supported devices :
 
 Supported platforms :
 
-- Orange Pi Zero
-- Orange Pi One
-- Raspberry Pi boards Linux Raspbian
+- Bare-metal Allwinner H2+/H3 SoC (Orange Pi Zero/One)
+    - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-h3](https://github.com/vanvught/rpidmx512/tree/master/lib-h3)
+- Linux Raspbian
     -  Prerequisite: [C library for Broadcom BCM 2835 as used in Raspberry Pi](http://www.airspayce.com/mikem/bcm2835/)
-- Raspberry Pi boards bare-metal
-    - Prerequisite: [https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835](https://github.com/vanvught/rpidmx512/tree/master/lib-bcm2835)
 
 Compile and build the library on Linux Raspbian
 
