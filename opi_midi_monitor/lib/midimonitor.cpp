@@ -1,7 +1,7 @@
 /**
  * @file midimonitor.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 
 #include "hardware.h"
 #include "console.h"
+
+#include "h3_hs_timer.h"
 
 #ifndef MIN
  #define MIN(a,b)               (((a) < (b)) ? (a) : (b))
@@ -93,7 +95,7 @@ void MidiMonitor::Init(void) {
 	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
 	console_set_top_row(4);
 
-	m_nInitTimestamp = Hardware::Get()->Micros();
+	m_nInitTimestamp = h3_hs_timer_lo_us();
 }
 
 void MidiMonitor::Update(uint8_t nType) {
@@ -159,12 +161,12 @@ void MidiMonitor::HandleMessage(void) {
 		// Time stamp
 		const uint32_t nDeltaUs = m_pMidiMessage->timestamp - m_nInitTimestamp;
 		uint32_t nTime = nDeltaUs / 1000;
-		const uint32_t nHours = nTime / (uint32_t) 3600000;
-		nTime -= nHours * (uint32_t) 3600000;
-		const uint32_t nMinutes = nTime / (uint32_t) 60000;
-		nTime -= nMinutes * (uint32_t) 60000;
-		const uint32_t nSeconds = nTime / (uint32_t) 1000;
-		const uint32_t nMillis = nTime - nSeconds * (uint32_t) 1000;
+		const uint32_t nHours = nTime / 3600000;
+		nTime -= nHours * 3600000;
+		const uint32_t nMinutes = nTime /  60000;
+		nTime -= nMinutes * 60000;
+		const uint32_t nSeconds = nTime / 1000;
+		const uint32_t nMillis = nTime - nSeconds * 1000;
 
 		printf("%02d:%02d.%03d ", (int) (nHours * 60) + nMinutes, (int) nSeconds, (int) nMillis);
 
