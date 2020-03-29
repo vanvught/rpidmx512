@@ -784,11 +784,11 @@ public class RemoteConfig extends JFrame {
 				child.add(new DefaultMutableTreeNode(nodeDisplay));
 			}
 			
-//			String nodeNextion = ((OrangePi) child.getUserObject()).getNodeNextion();
-//			
-//			if (nodeNextion != null) {
-//				child.add(new DefaultMutableTreeNode(nodeNextion));
-//			}
+			String nodeNextion = ((OrangePi) child.getUserObject()).getNodeNextion();
+			
+			if (nodeNextion != null) {
+				child.add(new DefaultMutableTreeNode(nodeNextion));
+			}
 			
 			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
 			
