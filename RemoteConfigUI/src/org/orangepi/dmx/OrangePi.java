@@ -95,7 +95,7 @@ public class OrangePi {
 			String[] Mode = values[2].split("\n");
 			isValid = isMapTypeValues(values[1]);	
 			
-			System.out.println(Mode[0]);
+			System.out.println("Mode[0]=" + Mode[0]);
 			
 			if (isValid) {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
@@ -125,6 +125,8 @@ public class OrangePi {
 					nodeRDM = RDM_TXT;
 				} else if (Mode[0].equals("Player")) {
 					nodeShow = SHOW_TXT;
+				} else if (Mode[0].equals("Art-Net")) {
+					//
 				} else {
 					isValid = false;
 				}
