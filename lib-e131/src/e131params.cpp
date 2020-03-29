@@ -233,7 +233,7 @@ void E131Params::Dump(void) {
 	}
 
 	if(isMaskSet(E131_PARAMS_MASK_DIRECTION)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION, (int) m_tE131Params.nDirection, m_tE131Params.nDirection == ARTNET_INPUT_PORT ? "Input" : "Output");
+		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION, (int) m_tE131Params.nDirection, m_tE131Params.nDirection == E131_INPUT_PORT ? "Input" : "Output");
 	}
 
 	if (isMaskSet(E131_PARAMS_MASK_PRIORITY)) {
@@ -256,5 +256,3 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 
 	((E131Params *) p)->callbackFunction(s);
 }
-
-

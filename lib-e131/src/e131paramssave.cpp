@@ -38,7 +38,7 @@
 
 #define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "htp" : "ltp"
 
-void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (ptE131Params != 0) {
@@ -49,12 +49,19 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
+	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == (uint8_t) E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
+
 	builder.Add(LightSetConst::PARAMS_UNIVERSE, (uint32_t) m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
 
+	builder.AddComment("Multi port configuration");
+	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
+		builder.Add(E131ParamsConst::UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+	}
+
+	builder.AddComment("DMX Output");
 	builder.Add(E131ParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
 
-	for (unsigned i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		builder.Add(E131ParamsConst::UNIVERSE_PORT[i], (uint32_t) m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
 		builder.Add(E131ParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
 	}
 
@@ -64,16 +71,15 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffe
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (uint32_t) m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
-	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == (uint8_t) E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
 	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131_PARAMS_MASK_PRIORITY));
 
 	nSize = builder.GetSize();
 
+	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-	return;
 }
 
-void E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void E131Params::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pE131ParamsStore == 0) {
@@ -83,6 +89,4 @@ void E131Params::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }
