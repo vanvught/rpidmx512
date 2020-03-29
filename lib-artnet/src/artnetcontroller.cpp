@@ -42,7 +42,7 @@
 
 #define ARTNET_MIN_HEADER_SIZE		12
 
-static uint16_t s_ActiveUniverses[512];
+static uint16_t s_ActiveUniverses[512] __attribute__ ((aligned (4)));
 
 ArtNetController *ArtNetController::s_pThis = 0;
 
@@ -123,6 +123,8 @@ void ArtNetController::Stop(void) {
 }
 
 void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
+	DEBUG_ENTRY
+
 	ActiveUniversesAdd(nUniverse);
 
 	m_pArtDmx->PortAddress = nUniverse;
@@ -145,6 +147,8 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
 		m_bDmxHandled = true;
 	}
+
+	DEBUG_EXIT
 }
 
 void ArtNetController::HandleSync(void) {
@@ -207,8 +211,12 @@ void ArtNetController::HandlePoll(void) {
 		DEBUG_PRINTF("SendPoll - %.2d:%.2d:%.2d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
 
+		DEBUG_PUTS("");
+
 		Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_ArtNetPoll, sizeof(struct TArtPoll), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 		m_nLastPollMillis= nCurrentMillis;
+
+		DEBUG_PUTS("");
 
 #ifndef NDEBUG
 		Dump();
@@ -222,6 +230,8 @@ void ArtNetController::HandlePoll(void) {
 }
 
 void ArtNetController::HandlePollReply(void) {
+	DEBUG_ENTRY
+
 #ifndef NDEBUG
 	time_t ltime = Hardware::Get()->GetTime();;
 	struct tm tm = *localtime(&ltime);
@@ -232,6 +242,8 @@ void ArtNetController::HandlePollReply(void) {
 	const TArtPollReply *pArtPollReply = (TArtPollReply *)(&m_pArtNetPacket->ArtPacket.ArtIpProgReply);
 
 	Add(pArtPollReply);
+
+	DEBUG_EXIT
 }
 
 void ArtNetController::Run(void) {
@@ -274,8 +286,11 @@ void ArtNetController::ActiveUniversesClear(void) {
 }
 
 void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nUniverse=%d", (int) nUniverse);
+
 	int32_t nLow = 0;
-	int32_t nMid;
+	int32_t nMid = 0;
 	int32_t nHigh = m_nActiveUniverses;
 
 	if (m_nActiveUniverses == (sizeof(s_ActiveUniverses) / sizeof(s_ActiveUniverses[0]))) {
@@ -293,11 +308,14 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 		} else if (nMidValue > nUniverse) {
 			nHigh = nMid - 1;
 		} else {
+			DEBUG_EXIT
 			return;
 		}
 	}
 
-	if (m_nActiveUniverses != (uint32_t) nHigh) {
+	DEBUG_PRINTF("nLow=%d, nMid=%d, nHigh=%d", (int) nLow, (int) nMid, (int) nHigh);
+
+	if ((nHigh != -1) && (m_nActiveUniverses != (uint32_t) nHigh)) {
 
 		uint16_t *p16 = (uint16_t *)s_ActiveUniverses;
 
@@ -317,6 +335,8 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 	}
 
 	m_nActiveUniverses++;
+
+	DEBUG_EXIT
 }
 
 void ArtNetController::Print(void) {

@@ -179,6 +179,8 @@ void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
 }
 
 void ArtNetPollTable::ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse) {
+	DEBUG_ENTRY
+
 	// FIXME boundaries
 
 	// FIXME Universe lookup
@@ -214,17 +216,21 @@ void ArtNetPollTable::ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse) {
 		// New universe
 		pTableUniverses->nUniverse = nUniverse;
 		m_nTableUniversesEntries++;
-		DEBUG_PUTS("New Universe");
+		DEBUG_PRINTF("New Universe %d", (int) nUniverse);
 	}
 
 	if (!bFoundIp) {
-		// It is a new IP for the Universe
 		pTableUniverses->pIpAddresses[pTableUniverses->nCount] = nIpAddress;
 		pTableUniverses->nCount++;
+		DEBUG_PUTS("It is a new IP for the Universe");
 	}
+
+	DEBUG_EXIT
 }
 
 void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
+	DEBUG_ENTRY
+
 	bool bFound = false;
 
 	memcpy(ip.u8, ptArtPollReply->IPAddress, 4);
@@ -326,7 +332,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 		}
 	}
 
-	return;
+	DEBUG_EXIT;
 }
 
 void ArtNetPollTable::Clean(void) {

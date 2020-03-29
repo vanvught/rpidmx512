@@ -140,7 +140,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 
 	uint8_t nSysNameLenght;
 	const char *pSysName = Hardware::Get()->GetSysName(nSysNameLenght);
-	strncpy(m_aSysName, pSysName, sizeof m_aSysName);
+	strncpy(m_aSysName, pSysName, (sizeof m_aSysName) - 1);
 	m_aSysName[(sizeof m_aSysName) - 1] = '\0';
 }
 
