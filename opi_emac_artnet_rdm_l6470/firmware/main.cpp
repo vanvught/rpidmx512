@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "artnetreboot.h"
 
 #include "identify.h"
 
@@ -227,6 +228,9 @@ void notmain(void) {
 #endif
 	node.SetOutput(pBoard);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+
+	ArtNetReboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, pBoard);
