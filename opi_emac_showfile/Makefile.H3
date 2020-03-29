@@ -4,7 +4,7 @@ DEFINES = SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT NDEBUG
 #
 LIBS = showfile osc
 #
-SRCDIR = firmware lib
+SRCDIR = firmware
 
 include ../h3-firmware-template/Rules.mk
 

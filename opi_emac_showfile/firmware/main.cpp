@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,35 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <stdint.h>
+
 #include "hardware.h"
 #include "networkh3emac.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "console.h"
-
-#include "networkconst.h"
-
-#include "spiflashinstall.h"
-
-#include "spiflashstore.h"
-#include "storeshowfile.h"
-#include "storeremoteconfig.h"
-
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "showfileparams.h"
+#include "storeshowfile.h"
 #include "showfileosc.h"
+
+#include "displayhandler.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
+
+#include "firmwareversion.h"
+#include "software_version.h"
 
 // Format handlers
 #include "olashowfile.h"
@@ -53,11 +59,6 @@
 // Protocol handlers
 #include "showfileprotocole131.h"
 #include "showfileprotocolartnet.h"
-
-#include "displayhandler.h"
-
-#include "firmwareversion.h"
-#include "software_version.h"
 
 extern "C" {
 
@@ -167,7 +168,10 @@ void notmain(void) {
 		pShowFile->Start();
 	}
 
+	hw.WatchdogInit();
+
 	for (;;) {
+		hw.WatchdogFeed();
 		nw.Run();
 		//
 		pShowFile->Run();
