@@ -182,16 +182,12 @@ void notmain(void) {
 
 	node.Print();
 
-	display.SetTitle("Eth Art-Net 4 %s", artnetparams.GetDirection() == ARTNET_INPUT_PORT ? "DMX" : (artnetparams.IsRdm() ? "RDM" : "DMX"));
+	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == ARTNET_INPUT_PORT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	if (artnetparams.GetDirection() == ARTNET_INPUT_PORT) {
-		display.Set(6, DISPLAY_UDF_LABEL_DESTINATION_IP);
-	} else {
-		display.Set(6, DISPLAY_UDF_LABEL_AP);
-	}
+	display.Set(6, DISPLAY_UDF_LABEL_HOSTNAME);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -203,7 +199,9 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, node.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
