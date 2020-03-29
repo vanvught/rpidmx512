@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "artnetreboot.h"
 
 #include "ipprog.h"
 #include "displayudfhandler.h"
@@ -80,7 +81,7 @@ void notmain(void) {
 
 	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Pixel controller {4x 4 Universes}");
+	console_puts("Pixel controller {4x/8x 4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
 
@@ -105,7 +106,7 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-	ws28xxDmxMulti.Start(0);
+	ws28xxDmxMulti.Initialize();
 
 	const uint8_t nActivePorts = ws28xxDmxMulti.GetActivePorts();
 
@@ -123,19 +124,20 @@ void notmain(void) {
 	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
 	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
 
-	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();
-	const uint8_t nUniverseStart = artnetparams.GetUniverse();
-
 	node.SetDirectUpdate(true);
 	node.SetOutput(&ws28xxDmxMulti);
+
+	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();
+	const uint8_t nUniverseStart = artnetparams.GetUniverse();
 
 	uint8_t nPortIndex = 0;
 	uint8_t nPage = 1;
 
 	for (uint32_t i = 0; i < nActivePorts; i++) {
+
 		node.SetUniverseSwitch(nPortIndex, ARTNET_OUTPUT_PORT,  nUniverseStart);
 
-		if (ws28xxDmxMulti.GetLEDType() == WS28XXMULTI_SK6812W) {
+		if (ws28xxDmxMulti.GetLEDType() == SK6812W) {
 			if (nLedCount > 128) {
 				node.SetUniverseSwitch(nPortIndex + 1, ARTNET_OUTPUT_PORT, nUniverseStart + 1);
 			}
@@ -173,19 +175,23 @@ void notmain(void) {
 			}
 			nPage++;
 		}
+
 		nPortIndex += ARTNET_MAX_PORTS;
 	}
+
+	ArtNetReboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	node.Print();
 	ws28xxDmxMulti.Print();
 
-	display.SetTitle("Eth Art-Net 4 Pixel");
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_HOSTNAME);
-	display.Set(4, DISPLAY_UDF_LABEL_IP);
-	display.Set(5, DISPLAY_UDF_LABEL_NETMASK);
+	display.SetTitle("Eth Art-Net 4 Pixel %c", ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_8X ? '8' : (ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_4X ? '4' : ' '));
+	display.Set(2, DISPLAY_UDF_LABEL_VERSION);
+	display.Set(3, DISPLAY_UDF_LABEL_NODE_NAME);
+	display.Set(4, DISPLAY_UDF_LABEL_HOSTNAME);
+	display.Set(5, DISPLAY_UDF_LABEL_IP);
 	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -197,7 +203,7 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET,  REMOTE_CONFIG_MODE_PIXEL, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_PIXEL, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
