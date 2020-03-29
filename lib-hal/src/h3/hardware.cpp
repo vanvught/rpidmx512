@@ -39,6 +39,7 @@
 #include "h3_watchdog.h"
 #include "h3_board.h"
 
+#include "arm/arm.h"
 #include "arm/synchronize.h"
 
 extern "C" {
@@ -156,6 +157,10 @@ bool Hardware::Reboot(void) {
 }
 
 void Hardware::SoftReset(void) {
+	__disable_irq();
+	__disable_fiq();
+	dmb();
+
 	invalidate_instruction_cache();
 	flush_branch_target_cache();
 	flush_prefetch_buffer();
