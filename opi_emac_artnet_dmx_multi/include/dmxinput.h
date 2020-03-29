@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file dmxinput.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef _DMXINPUT_H_
+#define DMXINPUT_H_
 
-static const char SOFTWARE_VERSION[] = "2.4";
+#include <stdint.h>
+#include <stdbool.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "artnetdmx.h"
+
+#include "dmx_uarts.h"
+
+class DmxInput: public ArtNetDmx {
+public:
+	DmxInput(void);
+	~DmxInput(void);
+
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
+
+	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
+
+private:
+	bool m_bIsStarted[DMX_MAX_UARTS];
+};
+
+#endif /* DMXINPUT_H_ */

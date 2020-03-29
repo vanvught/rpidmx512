@@ -1,4 +1,4 @@
 # Orange Pi Zero/One Ethernet Art-Net 4 Node
-## DMX Out / RDM {2/4 Universes} [Plug & Play]
+## DMX / RDM {2/4 Universes} [Plug & Play]
 
 [http://www.orangepi-dmx.org/raspberry-pi-art-net-dmx-out](http://www.orangepi-dmx.org/raspberry-pi-art-net-dmx-out)
