@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "artnetreboot.h"
 
 #include "ipprog.h"
 #include "displayudfhandler.h"
@@ -92,7 +93,11 @@ void notmain(void) {
 
 	fw.Print();
 
-	console_puts("Ethernet Art-Net 4 Node Pixel controller {4 Universes}\n");
+	console_puts("Ethernet Art-Net 4 Node ");
+	console_set_fg_color(CONSOLE_GREEN);
+	console_puts("Pixel controller {1x 4 Universes}");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -189,12 +194,15 @@ void notmain(void) {
 		}
 	}
 
+	ArtNetReboot reboot;
+	hw.SetRebootHandler(&reboot);
+
 	node.SetOutput(pSpi);
 	node.Print();
 
 	pSpi->Print();
 
-	display.SetTitle("Eth Art-Net 4 Pixel");
+	display.SetTitle("Eth Art-Net 4 Pixel 1");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
