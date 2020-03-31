@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
+#include "reboot.h"
+
 #include "lightset.h"
 
 #include "ws28xxdmxparams.h"
@@ -78,7 +80,7 @@ void notmain(void) {
 
 	console_puts("Ethernet sACN E1.31 ");;
 	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Pixel controller {4x 4 Universes}");
+	console_puts("Pixel controller {4x/8x 4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
 
@@ -110,21 +112,21 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-	ws28xxDmxMulti.Start(0);
+	ws28xxDmxMulti.Initialize();
+
+	bridge.SetDirectUpdate(true);
+	bridge.SetOutput(&ws28xxDmxMulti);
 
 	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();
 	const uint8_t nActivePorts = ws28xxDmxMulti.GetActivePorts();
 	const uint8_t nUniverseStart = e131params.GetUniverse();
-
-	bridge.SetDirectUpdate(true);
-	bridge.SetOutput(&ws28xxDmxMulti);
 
 	uint8_t nPortIndex = 0;
 
 	for (uint32_t i = 0; i < nActivePorts; i++) {
 		bridge.SetUniverse(nPortIndex, E131_OUTPUT_PORT, nPortIndex + nUniverseStart);
 
-		if (ws28xxDmxMulti.GetLEDType() == WS28XXMULTI_SK6812W) {
+		if (ws28xxDmxMulti.GetLEDType() == SK6812W) {
 			if (nLedCount > 128) {
 				bridge.SetUniverse(nPortIndex + 1, E131_OUTPUT_PORT, nUniverseStart + nPortIndex + 1);
 			}
@@ -156,13 +158,16 @@ void notmain(void) {
 	bridge.Print();
 	ws28xxDmxMulti.Print();
 
-	display.SetTitle("Eth sACN E1.31 Pixel");
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
+
+	display.SetTitle("Eth sACN Pixel %c", ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_8X ? '8' : (ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_4X ? '4' : ' '));
 	display.Set(2, DISPLAY_UDF_LABEL_HOSTNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
 	display.Set(6, DISPLAY_UDF_LABEL_BOARDNAME);
-	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
+	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

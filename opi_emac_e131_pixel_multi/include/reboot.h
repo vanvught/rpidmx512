@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file reboot.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef REBOOT_H_
+#define REBOOT_H_
 
-static const char SOFTWARE_VERSION[] = "1.3";
+#include "reboothandler.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "e131bridge.h"
+
+class Reboot: public RebootHandler {
+public:
+	Reboot(void) {}
+	~Reboot(void) {}
+
+	void Run(void) {
+		E131Bridge::Get()->Stop();
+	}
+};
+
+#endif /* REBOOT_H_ */
