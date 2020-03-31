@@ -145,7 +145,7 @@ void notmain(void) {
 
 	bridge.Print();
 
-	display.SetTitle("Eth sACN E1.31 DMX");
+	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == E131_INPUT_PORT ? "Input" : "Output");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
@@ -162,7 +162,9 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, bridge.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (e131params.GetDirection() == E131_INPUT_PORT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

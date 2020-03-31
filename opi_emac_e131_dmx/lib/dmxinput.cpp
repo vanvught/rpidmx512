@@ -75,14 +75,14 @@ void DmxInput::Stop(uint8_t nPort) {
 const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
 	const uint8_t *pDmx = GetDmxAvailable();
 
+	nUpdatesPerSecond = GetUpdatesPerSecond();
+
 	if (pDmx != 0) {
 		const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;
 		nLength = (uint16_t) (1 + (dmx_statistics->Statistics.SlotsInPacket)); // Add 1 for SC
-	} else {
-		nLength = 0;
+		return pDmx;
 	}
 
-	nUpdatesPerSecond = GetUpdatesPerSecond();
-
-	return pDmx;
+	nLength = 0;
+	return 0;
 }
