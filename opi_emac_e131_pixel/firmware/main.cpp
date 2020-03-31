@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@
 #include "e131bridge.h"
 #include "e131params.h"
 
+#include "reboot.h"
+
 // Addressable led
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
@@ -74,15 +76,21 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreE131 storeE131;
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;
 
 	fw.Print();
 
-	console_puts("Ethernet sACN E1.31 Pixel controller {4 Universes}\n");
+	console_puts("Ethernet sACN E1.31 ");
+	console_set_fg_color(CONSOLE_GREEN);
+	console_puts("Pixel controller {1x 4 Universes}");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -180,10 +188,12 @@ void notmain(void) {
 
 	bridge.SetOutput(pSpi);
 	bridge.Print();
-
 	pSpi->Print();
 
-	display.SetTitle("Eth sACN E1.31 Pixel");
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
+
+	display.SetTitle("Eth sACN Pixel 1");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
