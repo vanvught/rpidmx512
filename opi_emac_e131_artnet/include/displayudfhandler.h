@@ -1,8 +1,8 @@
 /**
- * @file artnetoutput.h
+ * @file displayudfhandler.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef ARTNETOUTPUT_H_
-#define ARTNETOUTPUT_H_
+
+#ifndef DISPLAYUDFHANDLER_H_
+#define DISPLAYUDFHANDLER_H_
 
 #include <stdint.h>
 
-#include "lightset.h"
+#include "displayudf.h"
 
-#include "e131.h"
-#include "e131sync.h"
+#include "networkdisplay.h"
 
-class ArtNetOutput: public E131Sync, LightSet {
+class DisplayUdfHandler: public NetworkDisplay {
 public:
-	ArtNetOutput(void);
-	~ArtNetOutput(void);
+	DisplayUdfHandler(void) {}
+	~DisplayUdfHandler(void) {}
 
-	void Handler(void);
+	void ShowIp(void) {
+		DisplayUdf::Get()->ShowIpAddress();
+	}
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
+	void ShowNetMask(void) {
+		DisplayUdf::Get()->ShowNetmask();
+	}
 
-	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
-
-	void Print(void);
-
-private:
-	uint16_t m_nUniverse[E131_MAX_PORTS];
+	void ShowHostName(void) {
+		DisplayUdf::Get()->ShowHostName();
+	}
 };
 
-#endif /* ARTNETOUTPUT_H_ */
+#endif /* DISPLAYUDFHANDLER_H_ */

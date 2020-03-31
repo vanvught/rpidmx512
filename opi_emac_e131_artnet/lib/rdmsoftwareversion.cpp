@@ -1,5 +1,5 @@
 /**
- * @file artnetoutput.h
+ * @file rdmsoftwareversion.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -22,32 +22,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef ARTNETOUTPUT_H_
-#define ARTNETOUTPUT_H_
 
 #include <stdint.h>
 
-#include "lightset.h"
+#include "rdmsoftwareversion.h"
 
-#include "e131.h"
-#include "e131sync.h"
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-class ArtNetOutput: public E131Sync, LightSet {
-public:
-	ArtNetOutput(void);
-	~ArtNetOutput(void);
+const char *RDMSoftwareVersion::GetVersion(void) {
+	return SOFTWARE_VERSION;
+}
 
-	void Handler(void);
+const uint8_t RDMSoftwareVersion::GetVersionLength(void) {
+	return (uint8_t) sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
-
-	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
-
-	void Print(void);
-
-private:
-	uint16_t m_nUniverse[E131_MAX_PORTS];
-};
-
-#endif /* ARTNETOUTPUT_H_ */
+const uint32_t RDMSoftwareVersion::GetVersionId(void) {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

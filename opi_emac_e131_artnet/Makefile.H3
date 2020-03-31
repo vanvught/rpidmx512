@@ -1,12 +1,13 @@
 #
 PLATFORM = ORANGE_PI
 #
-DEFINES = E131_BRIDGE_MULTI ENABLE_SPIFLASH DISPLAY_UDF NDEBUG
+DEFINES = E131_BRIDGE_MULTI RDMNET_LLRP_ONLY DISPLAY_UDF NDEBUG
 #
-LIBS = 
+LIBS = rdmnet rdm rdmsensor rdmsubdevice
 #
 SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk
 
 prerequisites:
+	./generate_sofware_version_id.sh

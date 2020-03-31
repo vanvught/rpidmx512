@@ -48,6 +48,14 @@ ArtNetOutput::~ArtNetOutput(void) {
 	DEBUG_EXIT
 }
 
+void ArtNetOutput::Handler(void) {
+	DEBUG_ENTRY
+
+	ArtNetController::Get()->HandleSync();
+
+	DEBUG_EXIT
+}
+
 void ArtNetOutput::Start(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%d", (int) nPortIndex);
@@ -83,6 +91,10 @@ void ArtNetOutput::SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t
 	assert(nPortIndex < E131_MAX_PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
-		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength);
+		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, nPortIndex);
 	}
+}
+
+void ArtNetOutput::Print(void) {
+
 }

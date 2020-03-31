@@ -40,6 +40,7 @@
 #include "e131bridge.h"
 #include "e131const.h"
 #include "e131params.h"
+#include "e131sync.h"
 #include "storee131.h"
 
 #include "artnetcontroller.h"
@@ -53,6 +54,12 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
+
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "identify.h"
+
+#include "displayudfhandler.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -80,8 +87,11 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
+	DisplayUdfHandler displayUdfHandler;
+
 	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
@@ -98,43 +108,39 @@ void notmain(void) {
 	}
 
 	bridge.SetDirectUpdate(true);
+	bridge.SetDisableSynchronize(true);
 
 	ArtNetController controller;
 	ArtNetOutput artnetOutput;
 
-	bridge.SetOutput(&artnetOutput);
+	bridge.SetOutput((LightSet *)&artnetOutput);
+	bridge.SetE131Sync((E131Sync *)&artnetOutput);
 
-	uint16_t nUniverse;
 	bool bIsSetIndividual = false;
-	bool bIsSet;
 
-	nUniverse = e131params.GetUniverse(0, bIsSet);
-	if (bIsSet) {
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
-		bIsSetIndividual = true;
-	}
+	uint16_t nUniverse[E131_MAX_UARTS];
 
-	nUniverse = e131params.GetUniverse(1, bIsSet);
-	if (bIsSet) {
-		bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse);
-		bIsSetIndividual = true;
-	}
+	for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+		bool bIsSet;
+		nUniverse[i] = e131params.GetUniverse(i, bIsSet);
 
-	nUniverse = e131params.GetUniverse(2, bIsSet);
-	if (bIsSet) {
-		bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse);
-		bIsSetIndividual = true;
-	}
+		for (uint32_t j = 0; j < i; j++) {
+			if (nUniverse[i] == nUniverse[j]) {
+				bIsSet = false;
+				break;
+			}
+		}
 
-	nUniverse = e131params.GetUniverse(3, bIsSet);
-	if (bIsSet) {
-		bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse);
-		bIsSetIndividual = true;
+		if (bIsSet) {
+			bridge.SetUniverse(i, E131_OUTPUT_PORT, nUniverse[i]);
+			bIsSetIndividual = true;
+		}
 	}
 
 	if (!bIsSetIndividual) {
+		const uint32_t nUniverse = e131params.GetUniverse();
+
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-		nUniverse = e131params.GetUniverse();
 			bridge.SetUniverse(i, E131_OUTPUT_PORT, i + nUniverse);
 		}
 	}
@@ -173,11 +179,18 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
+	Identify identify;
+	RDMNetDevice device(new RDMPersonality("RDMNet LLRP device only", 0));
+
+	device.Init();
+	device.Print();
+
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
 	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
 
 	bridge.Start();
 	controller.Start();
+	device.Start();
 
 	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
 	display.TextStatus(E131Const::MSG_BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
@@ -191,6 +204,7 @@ void notmain(void) {
 		bridge.Run();
 		controller.Run();
 		//
+		device.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

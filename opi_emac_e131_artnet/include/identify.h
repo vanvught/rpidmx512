@@ -1,5 +1,5 @@
 /**
- * @file artnetoutput.h
+ * @file identify.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -22,32 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef ARTNETOUTPUT_H_
-#define ARTNETOUTPUT_H_
 
-#include <stdint.h>
+#ifndef IDENTIFY_H_
+#define IDENTIFY_H_
 
-#include "lightset.h"
+#include "rdmidentify.h"
 
-#include "e131.h"
-#include "e131sync.h"
-
-class ArtNetOutput: public E131Sync, LightSet {
+class Identify: public RDMIdentify {
 public:
-	ArtNetOutput(void);
-	~ArtNetOutput(void);
+	Identify(void) {}
+	~Identify(void) {}
 
-	void Handler(void);
+	void SetMode(TRdmIdentifyMode nMode) {
+		m_nMode = nMode;
+	}
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
-
-	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
-
-	void Print(void);
-
-private:
-	uint16_t m_nUniverse[E131_MAX_PORTS];
+	void Run(void) {
+	}
 };
 
-#endif /* ARTNETOUTPUT_H_ */
+#endif /* IDENTIFY_H_ */
