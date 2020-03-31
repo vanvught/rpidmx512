@@ -32,9 +32,11 @@
 #include "e131.h"
 #include "e131packets.h"
 
-#include "e131dmx.h"
-
 #include "lightset.h"
+
+// Handlers
+#include "e131dmx.h"
+#include "e131sync.h"
 
 enum {
 	E131_MAX_UARTS = 4
@@ -51,6 +53,7 @@ struct TE131BridgeState {
 	bool bDisableNetworkDataLossTimeout;
 	bool bDisableMergeTimeout;
 	bool bIsReceivingDmx;
+	bool bDisableSynchronize;
 	uint32_t SynchronizationTime;
 	uint32_t DiscoveryTime;
 	uint16_t DiscoveryPacketLength;
@@ -148,8 +151,19 @@ public:
 		return m_bEnableDataIndicator;
 	}
 
+	void SetDisableSynchronize(bool bDisableSynchronize = false) {
+		m_State.bDisableSynchronize = bDisableSynchronize;
+	}
+	bool GetDisableSynchronize(void) {
+		return m_State.bDisableSynchronize;
+	}
+
 	void SetE131Dmx(E131Dmx *pE131Dmx) {
 		m_pE131DmxIn = pE131Dmx;
+	}
+
+	void SetE131Sync(E131Sync *pE131Sync) {
+		m_pE131Sync = pE131Sync;
 	}
 
 	const uint8_t *GetCid(void) {
@@ -230,6 +244,9 @@ private:
 	uint32_t m_DiscoveryIpAddress;
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
+
+	// Synchronization handler
+	E131Sync *m_pE131Sync;
 
 public:
 	static E131Bridge* Get(void) {

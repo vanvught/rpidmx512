@@ -288,8 +288,8 @@ const uint8_t *E131Controller::GetSoftwareVersion(void) {
 void E131Controller::SetSourceName(const char *pSourceName) {
 	assert(pSourceName != 0);
 
-	strncpy((char *)m_SourceName, pSourceName, sizeof m_SourceName - 1);
-	m_SourceName[sizeof m_SourceName - 1] = '\0';
+	strncpy((char *)m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH - 1);
+	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
 }
 
 void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority

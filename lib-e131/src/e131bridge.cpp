@@ -43,14 +43,15 @@
 #include "e131bridge.h"
 #include "e131uuid.h"
 
+#include "e117const.h"
+
 #include "lightset.h"
 
 #include "hardware.h"
 #include "network.h"
 #include "ledblink.h"
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 16 };
-static const uint8_t ACN_PACKET_IDENTIFIER[E131_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 17 };
 
 E131Bridge *E131Bridge::s_pThis = 0;
 
@@ -64,7 +65,8 @@ E131Bridge::E131Bridge(void) :
 	m_pE131DmxIn(0),
 	m_pE131DataPacket(0),
 	m_pE131DiscoveryPacket(0),
-	m_DiscoveryIpAddress(0)
+	m_DiscoveryIpAddress(0),
+	m_pE131Sync(0)
 {
 	assert(Hardware::Get() != 0);
 	assert(Network::Get() != 0);
@@ -158,7 +160,7 @@ const uint8_t *E131Bridge::GetSoftwareVersion(void) {
 void E131Bridge::SetSourceName(const char *pSourceName) {
 	assert(pSourceName != 0);
 
-	strncpy((char *)m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH);
+	strncpy((char *)m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH - 1);
 	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
 }
 
@@ -634,7 +636,7 @@ void E131Bridge::HandleDmx(void) {
 		}
 
 		if (sendNewData || m_bDirectUpdate) {
-			if (!m_State.IsSynchronized) {
+			if ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize)) {
 
 				m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].length);
 
@@ -682,6 +684,10 @@ void E131Bridge::HandleSynchronization(void) {
 
 			m_OutputPort[i].IsDataPending = false;
 		}
+	}
+
+	if (m_pE131Sync != 0) {
+		m_pE131Sync->Handler();
 	}
 }
 
@@ -784,7 +790,7 @@ void E131Bridge::Clear(uint8_t nPortIndex) {
 bool E131Bridge::IsValidRoot(void) {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
-	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, ACN_PACKET_IDENTIFIER, 12) != 0) {
+	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, E117_PACKET_IDENTIFIER_LENGTH) != 0) {
 		return false;
 	}
 	
@@ -801,25 +807,25 @@ bool E131Bridge::IsValidDataPacket(void) {
 
 	// The DMP Layer's Vector shall be set to 0x02, which indicates a DMP Set Property message by
 	// transmitters. Receivers shall discard the packet if the received value is not 0x02.
-	if (m_E131.E131Packet.Data.DMPLayer.Vector != (uint8_t)E131_VECTOR_DMP_SET_PROPERTY) {
+	if (m_E131.E131Packet.Data.DMPLayer.Vector != E131_VECTOR_DMP_SET_PROPERTY) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's Address Type and Data Type to 0xa1. Receivers shall discard the
 	// packet if the received value is not 0xa1.
-	if (m_E131.E131Packet.Data.DMPLayer.Type != (uint8_t)0xa1) {
+	if (m_E131.E131Packet.Data.DMPLayer.Type != 0xa1) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's First Property Address to 0x0000. Receivers shall discard the
 	// packet if the received value is not 0x0000.
-	if (m_E131.E131Packet.Data.DMPLayer.FirstAddressProperty != __builtin_bswap16((uint16_t)0x0000)) {
+	if (m_E131.E131Packet.Data.DMPLayer.FirstAddressProperty != __builtin_bswap16(0x0000)) {
 		return false;
 	}
 
 	// Transmitters shall set the DMP Layer's Address Increment to 0x0001. Receivers shall discard the packet if
 	// the received value is not 0x0001.
-	if (m_E131.E131Packet.Data.DMPLayer.AddressIncrement != __builtin_bswap16((uint16_t)0x0001)) {
+	if (m_E131.E131Packet.Data.DMPLayer.AddressIncrement != __builtin_bswap16(0x0001)) {
 		return false;
 	}
 
@@ -843,7 +849,7 @@ void E131Bridge::Run(void) {
 				}
 			}
 
-			if (m_bEnableDataIndicator){
+			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
 				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
 					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 				}
@@ -854,7 +860,7 @@ void E131Bridge::Run(void) {
 			HandleDmxIn();
 			SendDiscoveryPacket();
 
-			if (m_bEnableDataIndicator){
+			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
 				if (m_State.bIsReceivingDmx) {
 					LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
 					m_State.bIsReceivingDmx = false;
@@ -867,7 +873,7 @@ void E131Bridge::Run(void) {
 		return;
 	}
 
-	if (!IsValidRoot()) {
+	if (__builtin_expect((!IsValidRoot()), 0)) {
 		return;
 	}
 
@@ -901,7 +907,7 @@ void E131Bridge::Run(void) {
 		SendDiscoveryPacket();
 	}
 
-	if (m_bEnableDataIndicator){
+	if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
 		if (m_State.bIsReceivingDmx) {
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
 			m_State.bIsReceivingDmx = false;
@@ -909,6 +915,4 @@ void E131Bridge::Run(void) {
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 		}
 	}
-
-	return;
 }

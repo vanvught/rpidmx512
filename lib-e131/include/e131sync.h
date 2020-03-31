@@ -1,8 +1,9 @@
 /**
- * @file e131const.cpp
+ * @file e131sync.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef E131SYNC_H_
+#define E131SYNC_H_
 
-#include "e131const.h"
+class E131Sync {
+public:
+	virtual ~E131Sync(void) {}
 
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";
+	virtual void Handler(void)=0;
+};
+
+#endif /* E131SYNC_H_ */
