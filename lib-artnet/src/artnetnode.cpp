@@ -460,6 +460,8 @@ void ArtNetNode::SetShortName(const char *pName) {
 	assert(pName != 0);
 
 	strncpy((char *) m_Node.ShortName, pName, ARTNET_SHORT_NAME_LENGTH - 1);
+	m_Node.ShortName[ARTNET_SHORT_NAME_LENGTH - 1] = '\0';
+
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, ARTNET_SHORT_NAME_LENGTH);
 
 	if (m_State.status == ARTNET_ON) {
@@ -476,6 +478,8 @@ void ArtNetNode::SetLongName(const char *pName) {
 	assert(pName != 0);
 
 	strncpy((char *) m_Node.LongName, pName, ARTNET_LONG_NAME_LENGTH - 1);
+	m_Node.LongName[ARTNET_LONG_NAME_LENGTH - 1] = '\0';
+
 	memcpy(m_PollReply.LongName, m_Node.LongName, ARTNET_LONG_NAME_LENGTH);
 
 	if (m_State.status == ARTNET_ON) {

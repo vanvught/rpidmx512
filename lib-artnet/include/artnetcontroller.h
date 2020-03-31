@@ -54,7 +54,7 @@ public:
 
 	void Print(void);
 
-	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength, uint8_t nPortIndex = 0);
 	void HandleSync(void);
 	void HandleBlackout(void);
 
