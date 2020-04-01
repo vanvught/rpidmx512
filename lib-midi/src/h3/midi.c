@@ -63,11 +63,11 @@ static bool midi_active_sense = false;
 static _midi_direction midi_direction = MIDI_DIRECTION_INPUT;
 
 /*
- * IRQ UART
+ * IRQ UART2
  */
 static volatile struct _midi_receive midi_rx_buffer[MIDI_RX_BUFFER_INDEX_ENTRIES] ALIGNED;
-static volatile uint16_t midi_rx_buffer_index_head = 0;
-static volatile uint16_t midi_rx_buffer_index_tail = 0;
+static volatile uint32_t midi_rx_buffer_index_head = 0;
+static volatile uint32_t midi_rx_buffer_index_tail = 0;
 /*
  * IRQ Timer0
  */
@@ -575,14 +575,22 @@ static void uart2_init(void) {
 
 	H3_UART2->O08.FCR = 0;
 	H3_UART2->LCR = UART_LCR_DLAB;
+
 	if (midi_baudrate == 0) {
 		H3_UART2->O00.DLL = BAUD_31250_L;
 	} else {
 		H3_UART2->O00.DLL = (24000000 / 16) / midi_baudrate;
 	}
+
 	H3_UART2->O04.DLH = 0;
 	H3_UART2->O04.IER = 0;
 	H3_UART2->LCR = UART_LCR_8_N_1;
+
+	dmb();
+
+	while ((H3_UART2->USR & UART_USR_BUSY) == UART_USR_BUSY) {
+		(void) H3_UART2->O00.RBR;
+	}
 
 	if ((midi_direction & MIDI_DIRECTION_INPUT) == MIDI_DIRECTION_INPUT) {
 		H3_UART2->O08.FCR = 0;
@@ -591,6 +599,7 @@ static void uart2_init(void) {
 		gic_irq_config(H3_UART2_IRQn, GIC_CORE0);
 
 		__enable_irq();
+		dmb();
 	}
 
 	if ((midi_direction & MIDI_DIRECTION_OUTPUT) == MIDI_DIRECTION_OUTPUT) {
