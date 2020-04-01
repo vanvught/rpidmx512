@@ -38,20 +38,9 @@
 
 #include "autodriver.h"
 
-#include "hal_spi.h"
-#include "hal_gpio.h"
-
 #include "modestore.h"
 
 #define SPARKFUN_DMX_MAX_MOTORS		8
-
-#if !defined (H3)
- #define GPIO_BUSY_IN		GPIO_EXT_35
- #define GPIO_RESET_OUT 	GPIO_EXT_38
-#else
- #define GPIO_BUSY_IN		GPIO_EXT_11
- #define GPIO_RESET_OUT 	GPIO_EXT_13
-#endif
 
 struct TSparkFunStores {
 	void *pSparkFunDmxParamsStore;

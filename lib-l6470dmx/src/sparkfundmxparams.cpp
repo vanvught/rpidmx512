@@ -41,6 +41,7 @@
 #include "l6470dmxconst.h"
 
 #include "sparkfundmx.h"
+#include "sparkfundmx_internal.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
