@@ -58,10 +58,8 @@ ArtNetPollTable::ArtNetPollTable(void) :
 	memset(m_pTableUniverses, 0, sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES]));
 
 	for (uint32_t nIndex = 0; nIndex < ARTNET_POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
-		m_pIpAddresses[nIndex] = new uint32_t[ARTNET_POLL_TABLE_SIZE_ENRIES];
-		assert(m_pIpAddresses[nIndex] != 0);
-
-		m_pTableUniverses[nIndex].pIpAddresses = m_pIpAddresses[nIndex];
+		m_pTableUniverses[nIndex].pIpAddresses = new uint32_t[ARTNET_POLL_TABLE_SIZE_ENRIES];
+		assert(m_pTableUniverses[nIndex].pIpAddresses != 0);
 	}
 
 	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, (unsigned) sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES]), (unsigned) sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES]) / 1024);
@@ -70,14 +68,12 @@ ArtNetPollTable::ArtNetPollTable(void) :
 	m_tTableClean.nTableIndex = 0;
 	m_tTableClean.nUniverseIndex = 0;
 	m_tTableClean.bOffLine = true;
-
-	DEBUG_PRINTF("m_nPollTableEntries=%d", m_nPollTableEntries);
 }
 
 ArtNetPollTable::~ArtNetPollTable(void) {
 	for (uint32_t nIndex = 0; nIndex < ARTNET_POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
-		delete[] m_pIpAddresses[nIndex];
-		m_pIpAddresses[nIndex] = 0;
+		delete[] m_pTableUniverses[nIndex].pIpAddresses;
+		m_pTableUniverses[nIndex].pIpAddresses = 0;
 	}
 
 	delete[] m_pTableUniverses;
@@ -181,7 +177,11 @@ void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
 void ArtNetPollTable::ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse) {
 	DEBUG_ENTRY
 
-	// FIXME boundaries
+	if (ARTNET_POLL_TABLE_SIZE_UNIVERSES == m_nTableUniversesEntries) {
+		DEBUG_PUTS("m_pTableUniverses is full");
+		DEBUG_EXIT
+		return;
+	}
 
 	// FIXME Universe lookup
 	bool bFoundUniverse = false;
@@ -220,9 +220,13 @@ void ArtNetPollTable::ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse) {
 	}
 
 	if (!bFoundIp) {
-		pTableUniverses->pIpAddresses[pTableUniverses->nCount] = nIpAddress;
-		pTableUniverses->nCount++;
-		DEBUG_PUTS("It is a new IP for the Universe");
+		if (pTableUniverses->nCount < ARTNET_POLL_TABLE_SIZE_ENRIES) {
+			pTableUniverses->pIpAddresses[pTableUniverses->nCount] = nIpAddress;
+			pTableUniverses->nCount++;
+			DEBUG_PUTS("It is a new IP for the Universe");
+		} else {
+			DEBUG_PUTS("New IP does not fit");
+		}
 	}
 
 	DEBUG_EXIT

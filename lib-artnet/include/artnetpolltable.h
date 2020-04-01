@@ -34,8 +34,6 @@
 
 #include "packets.h"
 
-// __attribute__((packed))
-
 enum TArtNetPollInterval {
 	ARTNET_POLL_INTERVAL_SECONDS = 8,
 	ARTNET_POLL_INTERVAL_MILLIS = (ARTNET_POLL_INTERVAL_SECONDS * 1000)
@@ -100,7 +98,6 @@ private:
 	uint32_t m_nPollTableEntries;
 	TArtNetPollTableUniverses *m_pTableUniverses;
 	uint32_t m_nTableUniversesEntries;
-	uint32_t *m_pIpAddresses[ARTNET_POLL_TABLE_SIZE_UNIVERSES];
 	TArtNetPollTableClean m_tTableClean;
 };
 

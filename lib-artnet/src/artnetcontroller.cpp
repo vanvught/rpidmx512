@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "artnetcontroller.h"
@@ -142,16 +143,33 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 
 	memcpy(m_pArtDmx->Data, pDmxData, nLength);
 
+	struct TArtNetPollTableUniverses *IpAddresses;
+	uint32_t nCount;
+
 	if (m_bUnicast) {
-		const struct TArtNetPollTableUniverses *IpAddresses = GetIpAddress(nUniverse);
+		IpAddresses = (struct TArtNetPollTableUniverses*) GetIpAddress(nUniverse);
 		if (IpAddresses != 0) {
-			for (uint32_t nIndex = 0; nIndex < IpAddresses->nCount; nIndex++) {
-				Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], (uint16_t) ARTNET_UDP_PORT);
-			}
-			m_bDmxHandled = true;
+			nCount = IpAddresses->nCount;
+		} else {
+			nCount = 0;
 		}
-	} else {
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
+	}
+
+	// If the number of universe subscribers exceeds 40 for a given universe, the transmitting device may broadcast.
+	if (m_bUnicast && (nCount != 0) && (nCount <= 40)) {
+		for (uint32_t nIndex = 0; nIndex < nCount; nIndex++) {
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], ARTNET_UDP_PORT);
+		}
+
+		m_bDmxHandled = true;
+
+		DEBUG_EXIT
+		return;
+	}
+
+	if (!m_bUnicast) {
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
+
 		m_bDmxHandled = true;
 	}
 
@@ -161,7 +179,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 void ArtNetController::HandleSync(void) {
 	if (m_bSynchronization && m_bDmxHandled) {
 		m_bDmxHandled = false;
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtSync, (uint16_t) sizeof(struct TArtSync), m_tArtNetController.nIPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtSync, (uint16_t) sizeof(struct TArtSync), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 	}
 }
 
@@ -179,12 +197,12 @@ void ArtNetController::HandleBlackout(void) {
 			if (IpAddresses != 0) {
 				for (uint32_t nIndex = 0; nIndex < IpAddresses->nCount; nIndex++) {
 					m_pArtDmx->Sequence++;
-					Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], (uint16_t) ARTNET_UDP_PORT);
+					Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], ARTNET_UDP_PORT);
 				}
 			}
 		} else  {
 			m_pArtDmx->Sequence++;
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, (uint16_t) ARTNET_UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pArtDmx, (uint16_t) sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 		}
 
 		DEBUG_PRINTF("s_ActiveUniverses[%d]=%u", nIndex, s_ActiveUniverses[nIndex]);
@@ -347,5 +365,10 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 }
 
 void ArtNetController::Print(void) {
-	// TODO Print
+	printf("Art-Net Controller\n");
+	printf(" Max Node's    : %u\n", ARTNET_POLL_TABLE_SIZE_ENRIES);
+	printf(" Max Universes : %u\n", ARTNET_POLL_TABLE_SIZE_UNIVERSES);
+	if (!m_bSynchronization) {
+		puts(" Synchronization is disabled");
+	}
 }

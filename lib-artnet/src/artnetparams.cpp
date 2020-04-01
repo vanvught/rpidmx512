@@ -55,6 +55,8 @@
 
 #include "propertiesbuilder.h"
 
+#include "debug.h"
+
 #define BOOL2STRING(b)			(b) ? "Yes" : "No"
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
