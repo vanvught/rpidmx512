@@ -1,7 +1,7 @@
 #
 DEFINES = ENABLE_SPIFLASH #NDEBUG
 #
-LIBS = oscserver osc dmxmonitor lightset debug artnet ledblink
+LIBS = oscserver osc dmxmonitor lightset debug artnet
 #
 SRCDIR = src lib
 
