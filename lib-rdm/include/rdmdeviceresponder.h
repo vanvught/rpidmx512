@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "rdmpersonality.h"
 #include "rdmsensors.h"
 #include "rdmsubdevices.h"
+#include "rdmfactorydefaults.h"
 
 #include "lightset.h"
 
@@ -88,6 +89,11 @@ public:
 	uint8_t GetPersonalityCurrent(uint16_t nSubDevice = RDM_ROOT_DEVICE);
 	void SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality);
 
+	// Handler
+	void SetRDMFactoryDefaults(RDMFactoryDefaults *pRDMFactoryDefaults) {
+		m_pRDMFactoryDefaults = pRDMFactoryDefaults;
+	}
+
 public:
 	static RDMDeviceResponder* Get(void) {
 		return s_pThis;
@@ -112,6 +118,8 @@ private:
 	uint16_t m_nCheckSum;
 	uint16_t m_nDmxStartAddressFactoryDefault;
 	uint8_t m_nCurrentPersonalityFactoryDefault;
+	//
+	RDMFactoryDefaults *m_pRDMFactoryDefaults;
 
 	static RDMDeviceResponder *s_pThis;
 };

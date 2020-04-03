@@ -151,34 +151,34 @@ bool RDMDevice::GetFactoryDefaults(void) {
 	return (m_nCheckSum == CalculateChecksum());
 }
 
-void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *info) {
-	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, info->length);
+void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *pInfo) {
+	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, pInfo->length);
 
 	if (m_IsInit) {
-		memcpy(m_tRDMDevice.aDeviceRootLabel, info->data, nLength);
+		memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
 		m_tRDMDevice.nDeviceRootLabelLength = nLength;
 
 		if (m_pRDMDeviceStore != 0) {
 			m_pRDMDeviceStore->SaveLabel((const uint8_t *)m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
 		}
 	} else {
-		memcpy(m_aDeviceRootLabel, info->data, nLength);
+		memcpy(m_aDeviceRootLabel, pInfo->data, nLength);
 		m_nDeviceRootLabelLength = nLength;
 	}
 }
 
-void RDMDevice::GetLabel(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDevice.aDeviceRootLabel;
-	info->length = m_tRDMDevice.nDeviceRootLabelLength;
+void RDMDevice::GetLabel(struct TRDMDeviceInfoData *pInfo) {
+	pInfo->data = (uint8_t *) m_tRDMDevice.aDeviceRootLabel;
+	pInfo->length = m_tRDMDevice.nDeviceRootLabelLength;
 }
 
-void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *info) {
-	info->data[0] = RDMConst::MANUFACTURER_ID[1];
-	info->data[1] = RDMConst::MANUFACTURER_ID[0];
-	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
+void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
+	pInfo->data[0] = RDMConst::MANUFACTURER_ID[1];
+	pInfo->data[1] = RDMConst::MANUFACTURER_ID[0];
+	pInfo->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
-void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *info) {
-	info->data = (uint8_t *) m_tRDMDevice.aDeviceManufacturerName;
-	info->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
+void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *pInfo) {
+	pInfo->data = (uint8_t *) m_tRDMDevice.aDeviceManufacturerName;
+	pInfo->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
 }

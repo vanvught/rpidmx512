@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 
 #include "rdmsoftwareversion.h"
 #include "rdmpersonality.h"
+#include "rdmfactorydefaults.h"
 
 #include "lightset.h"
 
@@ -74,7 +75,8 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 		m_IsFactoryDefaults(true),
 		m_nCheckSum(0),
 		m_nDmxStartAddressFactoryDefault(DMX_START_ADDRESS_DEFAULT),
-		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY)
+		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY),
+		m_pRDMFactoryDefaults(0)
 {
 	DEBUG_ENTRY
 
@@ -304,17 +306,20 @@ bool RDMDeviceResponder::GetFactoryDefaults(void) {
 void RDMDeviceResponder::SetFactoryDefaults(void) {
 	DEBUG_ENTRY
 
-	if (!m_IsFactoryDefaults) {
-		RDMDevice::SetFactoryDefaults();
+	RDMDevice::SetFactoryDefaults();
 
-		SetPersonalityCurrent(RDM_ROOT_DEVICE, m_nCurrentPersonalityFactoryDefault);
-		SetDmxStartAddress(RDM_ROOT_DEVICE, m_nDmxStartAddressFactoryDefault);
+	SetPersonalityCurrent(RDM_ROOT_DEVICE, m_nCurrentPersonalityFactoryDefault);
+	SetDmxStartAddress(RDM_ROOT_DEVICE, m_nDmxStartAddressFactoryDefault);
 
-		memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
+	memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
 
-		m_RDMSubDevices.SetFactoryDefaults();
+	m_RDMSubDevices.SetFactoryDefaults();
 
-		m_IsFactoryDefaults = true;
+	m_IsFactoryDefaults = true;
+
+	if (m_pRDMFactoryDefaults != 0) {
+		DEBUG_PUTS("");
+		m_pRDMFactoryDefaults->Set();
 	}
 
 	DEBUG_EXIT

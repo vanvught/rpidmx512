@@ -1,8 +1,8 @@
 /**
- * @file rdmnetllrponly.h
+ * @file rdmfactorydefaults.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMNETLLRPONLY_H_
-#define RDMNETLLRPONLY_H_
+#ifndef RDMFACTORYDEFAULTS_H_
+#define RDMFACTORYDEFAULTS_H_
 
-#include "rdmnetdevice.h"
-#include "rdmidentify.h"
-#include "rdmfactorydefaults.h"
-
-#include "lightsetllrponly.h"
-
-class RDMNetLLRPOnly: public RDMIdentify  {
+class RDMFactoryDefaults {
 public:
-	RDMNetLLRPOnly(void);
-	~RDMNetLLRPOnly(void);
+	virtual ~RDMFactoryDefaults(void) {}
 
-	void Init(void);
-	void Start(void);
-	void Stop(void);
-
-	void Run(void) {
-		m_RDMNetDevice.Run();
-	}
-
-	void Print(void) {
-		m_RDMNetDevice.Print();
-	}
-
-	void SetMode(TRdmIdentifyMode nMode);
-
-private:
-	LightSetLLRPOnly m_LightSetLLRPOnly;
-	RDMNetDevice m_RDMNetDevice;
+	virtual void Set(void)=0;
 };
 
-#endif /* RDMNETLLRPONLY_H_ */
+#endif /* RDMFACTORYDEFAULTS_H_ */

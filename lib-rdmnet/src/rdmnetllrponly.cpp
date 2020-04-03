@@ -2,7 +2,7 @@
  * @file rdmnetllrponly.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,14 +76,6 @@ void RDMNetLLRPOnly::Stop(void) {
 	m_RDMNetDevice.Stop();
 
 	DEBUG_EXIT
-}
-
-void RDMNetLLRPOnly::Run(void) {
-	m_RDMNetDevice.Run();
-}
-
-void RDMNetLLRPOnly::Print(void) {
-	m_RDMNetDevice.Print();
 }
 
 void RDMNetLLRPOnly::SetMode(TRdmIdentifyMode nMode) {
