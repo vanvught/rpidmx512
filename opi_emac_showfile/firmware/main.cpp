@@ -149,8 +149,6 @@ void notmain(void) {
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 
-	display.TextStatus(pShowFile->GetShowFileName(), pShowFile->GetShowFile());
-
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
@@ -167,6 +165,10 @@ void notmain(void) {
 	if (showFileParams.IsAutoStart()) {
 		pShowFile->Start();
 	}
+
+	// Fixed row 5, 6
+	display.Printf(5, showFileParams.GetProtocol() == SHOWFILE_PROTOCOL_ARTNET ? "Art-Net" : "sACN E1.31");
+	displayHandler.ShowShowFileStatus();
 
 	hw.WatchdogInit();
 

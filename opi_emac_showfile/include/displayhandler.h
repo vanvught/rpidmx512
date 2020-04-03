@@ -29,7 +29,9 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "showfile.h"
 #include "showfiledisplay.h"
+
 #include "display.h"
 #include "display7segment.h"
 
@@ -45,6 +47,35 @@ public:
 			Display::Get()->TextStatus(pFileName, nShow);
 		} else {
 			Display::Get()->TextStatus("No showfile", DISPLAY_7SEGMENT_MSG_ERROR_PLAYER);
+		}
+	}
+
+	void ShowShowFileStatus(void) {
+		switch (ShowFile::Get()->GetStatus()) {
+			case SHOWFILE_STATUS_IDLE:
+				Display::Get()->Printf(6, "Idle     ");
+				break;
+			case SHOWFILE_STATUS_RUNNING:
+				Display::Get()->Printf(6, "Running  ");
+				break;
+			case SHOWFILE_STATUS_STOPPED:
+				Display::Get()->Printf(6, "Stopped  ");
+				break;
+			case SHOWFILE_STATUS_ENDED:
+				Display::Get()->Printf(6, "Ended    ");
+				break;
+			case SHOWFILE_STATUS_UNDEFINED:
+			default:
+				Display::Get()->Printf(6, "No Status");
+				break;
+		}
+
+		if (ShowFile::Get()->GetDoLoop()) {
+			Display::Get()->SetCursorPos(11, 7);
+			Display::Get()->PutString(" [Looping]");
+		} else {
+			Display::Get()->SetCursorPos(11, 7);
+			Display::Get()->PutString("          ");
 		}
 	}
 };
