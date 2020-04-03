@@ -40,26 +40,30 @@
 #include "e131bridge.h"
 #include "e131const.h"
 #include "e131params.h"
-#include "e131sync.h"
 #include "storee131.h"
+#include "e131sync.h"
 
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
 
 #include "reboot.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
+#include "rdm_e120.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
-#include "identify.h"
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
 
+#include "identify.h"
+#include "factorydefaults.h"
 #include "displayudfhandler.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -176,11 +180,31 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
+	Identify identify;
+
+	RDMNetDevice device(new RDMPersonality("RDMNet LLRP device only", 0));
+
+	StoreRDMDevice storeRdmDevice;
+
+	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+
+	((RDMDevice *)&device)->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+
+	const uint8_t aLabel[] = "sACN E1.31 to Art-Net";
+	device.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
+
+	((RDMDeviceResponder *)&device)->SetRDMFactoryDefaults(new FactoryDefaults);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set((RDMDevice *)&device);
+		rdmDeviceParams.Dump();
+	}
+
 	while (spiFlashStore.Flash())
 		;
 
-	Identify identify;
-	RDMNetDevice device(new RDMPersonality("RDMNet LLRP device only", 0));
+	((RDMDevice *)&device)->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	((RDMDevice *)&device)->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 
 	device.Init();
 	device.Print();

@@ -1,5 +1,5 @@
 /**
- * @file artnetoutput.h
+ * @file factorydefaults.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,32 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETOUTPUT_H_
-#define ARTNETOUTPUT_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-#include <stdint.h>
+#include "rdmfactorydefaults.h"
 
-#include "lightset.h"
+#include "remoteconfig.h"
+#include "spiflashstore.h"
 
-#include "e131.h"
-#include "e131sync.h"
+#include "debug.h"
 
-class ArtNetOutput: public E131Sync, LightSet {
+class FactoryDefaults: public RDMFactoryDefaults {
 public:
-	ArtNetOutput(void);
-	~ArtNetOutput(void);
+	FactoryDefaults(void) {}
+	~FactoryDefaults(void) {}
 
-	void Handler(void);
+	void Set(void) {
+		DEBUG_ENTRY
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
+		RemoteConfig::Get()->SetDisable(false);
+		SpiFlashStore::Get()->ResetSetList(STORE_RDMDEVICE);
 
-	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
-
-	void Print(void);
-
-private:
-	uint16_t m_nUniverse[E131_MAX_PORTS];
+		DEBUG_EXIT
+	}
 };
 
-#endif /* ARTNETOUTPUT_H_ */
+
+#endif /* FACTORYDEFAULTS_H_ */

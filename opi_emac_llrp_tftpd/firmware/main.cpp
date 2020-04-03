@@ -46,6 +46,8 @@
 
 #include "displayudfhandler.h"
 
+#include "factorydefaults.h"
+
 #include "software_version.h"
 
 extern "C" {
@@ -77,6 +79,8 @@ void notmain(void) {
 	mDns.Print();
 
 	RDMNetLLRPOnly device;
+
+	((RDMDeviceResponder *)&device)->SetRDMFactoryDefaults(new FactoryDefaults);
 
 	device.Init();
 	device.Print();
