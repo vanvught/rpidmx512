@@ -36,6 +36,13 @@ enum {
 	DEFAULT_SYNCHRONIZATION_ADDRESS = 5000
 };
 
+#if !defined(DMX_MAX_VALUE_DEFINED)
+	#define DMX_MAX_VALUE_DEFINED
+	enum {
+		DMX_MAX_VALUE = 255
+	};
+#endif
+
 struct TE131ControllerState {
 	bool bIsRunning;
 	uint16_t nActiveUniverses;
@@ -71,6 +78,17 @@ public:
 		return m_State.SynchronizationPacket.nUniverseNumber;
 	}
 
+	void SetMaster(uint32_t nMaster = DMX_MAX_VALUE) {
+		if (nMaster < DMX_MAX_VALUE) {
+			m_nMaster = nMaster;
+		} else {
+			m_nMaster = DMX_MAX_VALUE;
+		}
+	}
+	uint32_t GetMaster(void) {
+		return m_nMaster;
+	}
+
 	const uint8_t *GetSoftwareVersion(void);
 
 	void SetSourceName(const char *pSourceName);
@@ -94,6 +112,7 @@ private:
 	uint32_t m_DiscoveryIpAddress;
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
+	uint32_t m_nMaster;
 
 public:
 	static E131Controller* Get(void) {

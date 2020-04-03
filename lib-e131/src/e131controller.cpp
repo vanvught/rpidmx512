@@ -56,12 +56,13 @@ static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8
 E131Controller *E131Controller::s_pThis = 0;
 
 E131Controller::E131Controller(void):
-	 m_nHandle(-1),
-	 m_nCurrentPacketMillis(0),
-	 m_pE131DataPacket(0),
-	 m_pE131DiscoveryPacket(0),
-	 m_pE131SynchronizationPacket(0),
-	 m_DiscoveryIpAddress(0)
+	m_nHandle(-1),
+	m_nCurrentPacketMillis(0),
+	m_pE131DataPacket(0),
+	m_pE131DiscoveryPacket(0),
+	m_pE131SynchronizationPacket(0),
+	m_DiscoveryIpAddress(0),
+	m_nMaster(DMX_MAX_VALUE)
 {
 	DEBUG_ENTRY
 
@@ -151,16 +152,6 @@ void E131Controller::Run(void) {
 	}
 }
 
-void E131Controller::Print(void) {
-	printf("sACN E1.31 Controller\n");
-	printf(" Max Universes : %u\n", (unsigned) (sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
-	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
-		printf(" Synchronization Universe : %u\n", m_State.SynchronizationPacket.nUniverseNumber);
-	} else {
-		puts(" Synchronization is disabled");
-	}
-}
-
 void E131Controller::FillDataPacket(void) {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
@@ -230,7 +221,19 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 
 	// Data Layer
 	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (uint16_t) (DATA_LAYER_LENGTH(1 + nLength)));
-	memcpy((void *) &m_pE131DataPacket->DMPLayer.PropertyValues[1], (const void *) pDmxData, nLength);
+
+	//memcpy((void *) &m_pE131DataPacket->DMPLayer.PropertyValues[1], (const void *) pDmxData, nLength);
+
+	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
+		memcpy((void *) &m_pE131DataPacket->DMPLayer.PropertyValues[1], (const void *) pDmxData, nLength);
+	} else if (m_nMaster == 0) {
+		memset((void *) &m_pE131DataPacket->DMPLayer.PropertyValues[1], 0, nLength);
+	} else {
+		for (uint32_t i = 0; i < nLength; i++) {
+			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = (m_nMaster * (uint32_t) pDmxData[i]) / DMX_MAX_VALUE;
+		}
+	}
+
 	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(1 + nLength);
 
 	Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pE131DataPacket, DATA_PACKET_SIZE(1 + nLength), nIp, E131_DEFAULT_PORT);
@@ -320,7 +323,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 	assert(sizeof(struct TSequenceNumbers) == sizeof(uint64_t));
 
 	int32_t nLow = 0;
-	int32_t nMid;
+	int32_t nMid = 0;
 	int32_t nHigh = m_State.nActiveUniverses;
 
 	while (nLow <= nHigh) {
@@ -343,9 +346,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 
 	DEBUG_PRINTF("nActiveUniverses=%u -> %u : nLow=%d, nMid=%d, nHigh=%d", m_State.nActiveUniverses, nUniverse, nLow, nMid, nHigh);
 
-	if (m_State.nActiveUniverses != nHigh) {
-		DEBUG_PUTS("Move");
-
+	if ((nHigh != -1) && (m_State.nActiveUniverses != (uint32_t) nHigh)) {
 		uint64_t *p64 = (uint64_t *) s_SequenceNumbers;
 
 		for (int32_t i = m_State.nActiveUniverses - 1; i >= nLow; i--) {
@@ -358,19 +359,27 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 
 		nMulticastIpAddress = s_SequenceNumbers[nLow].nIpAddress;
 
-		DEBUG_PRINTF("nUniverse=%u, nLow=%d", nUniverse, nLow);
+		DEBUG_PRINTF(">m< nUniverse=%u, nLow=%d", nUniverse, nLow);
 	} else {
-		DEBUG_PUTS("Add");
-
 		s_SequenceNumbers[nMid].nIpAddress = UniverseToMulticastIp(nUniverse);
 		s_SequenceNumbers[nMid].nUniverse = nUniverse;
 
 		nMulticastIpAddress = s_SequenceNumbers[nMid].nIpAddress;
 
-		DEBUG_PRINTF("nUniverse=%u, nMid=%d", nUniverse, nMid);
+		DEBUG_PRINTF(">a< nUniverse=%u, nMid=%d", nUniverse, nMid);
 	}
 
 	m_State.nActiveUniverses++;
 
 	return 0;
+}
+
+void E131Controller::Print(void) {
+	printf("sACN E1.31 Controller\n");
+	printf(" Max Universes : %u\n", (unsigned) (sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
+	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
+		printf(" Synchronization Universe : %u\n", m_State.SynchronizationPacket.nUniverseNumber);
+	} else {
+		puts(" Synchronization is disabled");
+	}
 }

@@ -77,8 +77,8 @@ public:
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
 
-	virtual void UpdateUuid(const uuid_t uuid)=0;
-	virtual void CopyUuid(uuid_t uuid)=0;
+//	virtual void UpdateUuid(const uuid_t uuid)=0;
+//	virtual void CopyUuid(uuid_t uuid)=0;
 };
 
 class E131Params {

@@ -43,6 +43,13 @@ struct TArtNetController {
 	uint8_t Oem[2];
 };
 
+#if !defined(DMX_MAX_VALUE_DEFINED)
+	#define DMX_MAX_VALUE_DEFINED
+	enum {
+		DMX_MAX_VALUE = 255
+	};
+#endif
+
 class ArtNetController: public ArtNetPollTable {
 public:
 	ArtNetController(void);
@@ -76,6 +83,17 @@ public:
 		return m_bUnicast;
 	}
 
+	void SetMaster(uint32_t nMaster = DMX_MAX_VALUE) {
+		if (nMaster < DMX_MAX_VALUE) {
+			m_nMaster = nMaster;
+		} else {
+			m_nMaster = DMX_MAX_VALUE;
+		}
+	}
+	uint32_t GetMaster(void) {
+		return m_nMaster;
+	}
+
 	// Handler
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
@@ -107,6 +125,7 @@ private:
 	bool m_bDoTableCleanup;
 	bool m_bDmxHandled;
 	uint32_t m_nActiveUniverses;
+	uint32_t m_nMaster;
 
 public:
 	static ArtNetController *Get(void) {
