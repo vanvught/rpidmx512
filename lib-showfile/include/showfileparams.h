@@ -40,7 +40,8 @@ struct TShowFileParams {
     uint8_t nProtocol;
     uint16_t nUniverse;
     uint8_t nDisableUnicast;
-};
+    uint8_t nDmxMaster;
+}__attribute__((packed));
 
 enum TShowFileOptions {
 	SHOWFILE_OPTION_AUTO_START = (1 << 0),
@@ -57,7 +58,8 @@ enum TShowFileParamsMask {
 	SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING = (1 << 4),
 	SHOWFILE_PARAMS_MASK_PROTOCOL = (1 << 5),
 	SHOWFILE_PARAMS_MASK_SACN_UNIVERSE = (1 << 6),
-	SHOWFILE_PARAMS_MASK_ARTNET_UNICAST = (1 << 7)
+	SHOWFILE_PARAMS_MASK_ARTNET_UNICAST = (1 << 7),
+	SHOWFILE_PARAMS_MASK_DMX_MASTER = (1 << 8)
 };
 
 class ShowFileParamsStore {

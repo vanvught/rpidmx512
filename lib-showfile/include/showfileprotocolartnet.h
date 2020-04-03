@@ -63,6 +63,10 @@ public:
 		m_ArtNetController.HandleBlackout();
 	}
 
+	void DmxMaster(uint32_t nMaster) {
+		m_ArtNetController.SetMaster(nMaster);
+	}
+
 	void DoRunCleanupProcess(bool bDoRun) {
 		m_ArtNetController.SetRunTableCleanup(bDoRun);
 	}

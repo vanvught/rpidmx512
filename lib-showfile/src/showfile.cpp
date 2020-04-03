@@ -81,6 +81,7 @@ void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
 
 		if (m_pShowFileDisplay != 0) {
 			m_pShowFileDisplay->ShowFileName((const char*) m_aShowFileName, nShowFileNumber);
+			m_pShowFileDisplay->ShowShowFileStatus();
 		}
 	}
 

@@ -93,8 +93,17 @@ public:
 	void DoLoop(bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
 	}
+	bool GetDoLoop(void) {
+		return m_bDoLoop;
+	}
 
 	void BlackOut(void);
+
+	void SetMaster(uint32_t nMaster) {
+		if (m_pShowFileProtocolHandler != 0) {
+			m_pShowFileProtocolHandler->DmxMaster(nMaster);
+		}
+	}
 
 	enum TShowFileStatus GetStatus(void) {
 		return m_tShowFileStatus;
@@ -105,6 +114,12 @@ public:
 	}
 
 	void EnableTFTP(bool bEnableTFTP);
+
+	void UpdateDisplayStatus(void) {
+		if (m_pShowFileDisplay != 0) {
+			m_pShowFileDisplay->ShowShowFileStatus();
+		}
+	}
 
 public:
 	static TShowFileFormats GetFormat(const char *pString);

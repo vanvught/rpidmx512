@@ -35,6 +35,7 @@ public:
 	virtual void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength)=0;
 	virtual void DmxSync(void)=0;
 	virtual void DmxBlackout(void)=0;
+	virtual void DmxMaster(uint32_t nMaster)=0;
 
 	virtual void DoRunCleanupProcess(bool bDoRun)=0;
 

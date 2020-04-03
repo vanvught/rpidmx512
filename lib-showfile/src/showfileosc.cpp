@@ -69,15 +69,19 @@ static const char sLoop[] ALIGNED = "loop";
 static const char sBlackout[] ALIGNED = "blackout";
 #define BO_LENGTH 				(sizeof(sBlackout)/sizeof(sBlackout[0]) - 1)
 
+static const char sMaster[] ALIGNED = "master";
+#define MASTER_LENGTH 			(sizeof(sMaster)/sizeof(sMaster[0]) - 1)
+
 static const char sTftp[] ALIGNED = "tftp";
 #define TFTP_LENGTH 			(sizeof(sTftp)/sizeof(sTftp[0]) - 1)
 
 static const char sDelete[] ALIGNED = "delete";
 #define DELETE_LENGTH 			(sizeof(sDelete)/sizeof(sDelete[0]) - 1)
 
+// TouchOSC
 static const char sReload[] ALIGNED = "reload";
 #define RELOAD_LENGTH 			(sizeof(sReload)/sizeof(sReload[0]) - 1)
-
+// TouchOSC
 static const char sIndex[] ALIGNED = "index";
 #define INDEX_LENGTH 			(sizeof(sIndex)/sizeof(sIndex[0]) - 1)
 
@@ -132,7 +136,7 @@ void ShowFileOSC::Run(void) {
 	}
 
 	if (memcmp((const char *) m_pBuffer, sPath, PATH_LENGTH) == 0) {
-		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, (int) strlen((const char *)m_pBuffer), PATH_LENGTH, &m_pBuffer[PATH_LENGTH]);
+		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, (int) strlen((const char *)m_pBuffer), (int) PATH_LENGTH, &m_pBuffer[PATH_LENGTH]);
 
 		if (memcmp(&m_pBuffer[PATH_LENGTH], sStart, START_LENGTH) == 0) {
 			ShowFile::Get()->Start();
@@ -176,6 +180,7 @@ void ShowFileOSC::Run(void) {
 
 			ShowFile::Get()->DoLoop(nValue != 0);
 			SendStatus();
+			ShowFile::Get()->UpdateDisplayStatus();
 
 			DEBUG_PRINTF("Loop %d", nValue != 0);
 			return;
@@ -185,6 +190,27 @@ void ShowFileOSC::Run(void) {
 			ShowFile::Get()->BlackOut();
 			SendStatus();
 			DEBUG_PUTS("Blackout");
+			return;
+		}
+
+		if (memcmp(&m_pBuffer[PATH_LENGTH], sMaster, MASTER_LENGTH) == 0) {
+			OSCMessage Msg(m_pBuffer, nBytesReceived);
+
+			int nValue;
+
+			if (Msg.GetType(0) == OSC_INT32) {
+				nValue = Msg.GetInt(0);
+			} else if (Msg.GetType(0) == OSC_FLOAT) { // TouchOSC
+				nValue = Msg.GetFloat(0);
+			} else {
+				return;
+			}
+
+			if ((nValue >= 0) &&  (nValue <= 255)) {
+				ShowFile::Get()->SetMaster((uint32_t) nValue);
+			}
+
+			DEBUG_PRINTF("Master %d", nValue);
 			return;
 		}
 
@@ -232,6 +258,7 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
+		// TouchOSC
 		if (memcmp(&m_pBuffer[PATH_LENGTH], sReload, RELOAD_LENGTH) == 0) {
 
 			Reload();
@@ -240,6 +267,7 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
+		// TouchOSC
 		if (memcmp(&m_pBuffer[PATH_LENGTH], sIndex, INDEX_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
@@ -272,6 +300,7 @@ void ShowFileOSC::Run(void) {
 	}
 }
 
+// TouchOSC
 void ShowFileOSC::SendStatus(void) {
 	OSCSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
 
@@ -281,6 +310,7 @@ void ShowFileOSC::SendStatus(void) {
 	OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", ShowFileConst::STATUS[tStatus]);
 }
 
+// TouchOSC
 void ShowFileOSC::Reload(void) {
     DIR *dirp;
     struct dirent *dp;

@@ -62,7 +62,11 @@ public:
 		m_E131Controller.HandleBlackout();
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {} // TODO
+	void DmxMaster(uint32_t nMaster) {
+		m_E131Controller.SetMaster(nMaster);
+	}
+
+	void DoRunCleanupProcess(bool bDoRun) {} // TODO ?
 
 	void Run(void) {
 		m_E131Controller.Run();

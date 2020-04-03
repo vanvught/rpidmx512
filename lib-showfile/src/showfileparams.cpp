@@ -62,6 +62,7 @@ ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pSh
 	m_tShowFileParams.nProtocol = SHOWFILE_PROTOCOL_SACN;
 	m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
 	m_tShowFileParams.nDisableUnicast = 0;
+	m_tShowFileParams.nDmxMaster = DMX_MAX_VALUE;
 
 	DEBUG_EXIT
 }
@@ -221,6 +222,17 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, ShowFileParamsConst::DMX_MASTER, &value8) == SSCAN_OK) {
+		if (value8 < DMX_MAX_VALUE) {
+			m_tShowFileParams.nDmxMaster = value8;
+			m_tShowFileParams.nSetList |= SHOWFILE_PARAMS_MASK_DMX_MASTER;
+		} else {
+			m_tShowFileParams.nDmxMaster = DMX_MAX_VALUE;
+			m_tShowFileParams.nSetList &= ~SHOWFILE_PARAMS_MASK_DMX_MASTER;
+		}
+		return;
+	}
+
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_AUTO_START, SHOWFILE_OPTION_AUTO_START);
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_LOOP, SHOWFILE_OPTION_LOOP);
 }
@@ -240,6 +252,9 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ui
 
 	builder.Add(ShowFileParamsConst::FORMAT, ShowFile::GetFormat((TShowFileFormats) m_tShowFileParams.nFormat), isMaskSet(SHOWFILE_PARAMS_MASK_FORMAT));
 	builder.Add(ShowFileParamsConst::PROTOCOL, (m_tShowFileParams.nProtocol == SHOWFILE_PROTOCOL_SACN) ? "sacn" : "artnet", isMaskSet(SHOWFILE_PARAMS_MASK_PROTOCOL));
+
+	builder.AddComment("DMX");
+	builder.Add(ShowFileParamsConst::DMX_MASTER, (uint32_t) m_tShowFileParams.nDmxMaster, isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER));
 
 	builder.AddComment("sACN");
 	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, (uint32_t) m_tShowFileParams.nUniverse, isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE));
@@ -321,16 +336,12 @@ void ShowFileParams::Dump(void) {
 		printf(" %s=%u\n", ShowFileParamsConst::SHOW, (unsigned) m_tShowFileParams.nShow);
 	}
 
-	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, (unsigned) m_tShowFileParams.nOscPortIncoming);
-	}
-
-	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, (unsigned) m_tShowFileParams.nOscPortOutgoing);
-	}
-
 	if(isMaskSet(SHOWFILE_PARAMS_MASK_PROTOCOL)) {
 		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, (unsigned) m_tShowFileParams.nProtocol, PROTOCOL2STRING(m_tShowFileParams.nProtocol));
+	}
+
+	if (isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER)) {
+		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, (unsigned) m_tShowFileParams.nDmxMaster);
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE)) {
@@ -357,6 +368,14 @@ void ShowFileParams::Dump(void) {
 		if (isOptionSet(SHOWFILE_OPTION_DISABLE_UNICAST)) {
 			printf("  Unicast is disabled [Art-Net DMX broadcast]\n");
 		}
+	}
+
+	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING)) {
+		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, (unsigned) m_tShowFileParams.nOscPortIncoming);
+	}
+
+	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING)) {
+		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, (unsigned) m_tShowFileParams.nOscPortOutgoing);
 	}
 #endif
 }

@@ -35,6 +35,8 @@ public:
 	alignas(uint32_t) static const char FORMAT[];
 	alignas(uint32_t) static const char SHOW[];
 
+	alignas(uint32_t) static const char DMX_MASTER[];
+
 	alignas(uint32_t) static const char OPTION_AUTO_START[];
 	alignas(uint32_t) static const char OPTION_LOOP[];
 	alignas(uint32_t) static const char OPTION_DISABLE_SYNC[];

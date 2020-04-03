@@ -32,6 +32,8 @@ alignas(uint32_t) const char ShowFileParamsConst::FILE_NAME[] = "show.txt";
 alignas(uint32_t) const char ShowFileParamsConst::FORMAT[] = "format";
 alignas(uint32_t) const char ShowFileParamsConst::SHOW[] = "show";
 
+alignas(uint32_t) const char ShowFileParamsConst::DMX_MASTER[] = "dmx_master";
+
 alignas(uint32_t) const char ShowFileParamsConst::OPTION_AUTO_START[] = "auto_start";
 alignas(uint32_t) const char ShowFileParamsConst::OPTION_LOOP[] = "loop";
 alignas(uint32_t) const char ShowFileParamsConst::OPTION_DISABLE_SYNC[] = "disable_sync";

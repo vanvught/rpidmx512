@@ -75,6 +75,8 @@ void OlaShowFile::Start(void) {
 
 	m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
 
+	UpdateDisplayStatus();
+
 	DEBUG1_EXIT
 }
 
@@ -85,6 +87,8 @@ void OlaShowFile::Stop(void) {
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 
 	m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
+
+	UpdateDisplayStatus();
 
 	DEBUG1_EXIT
 }
@@ -99,6 +103,8 @@ void OlaShowFile::Resume(void) {
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
 
 	m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
+
+	UpdateDisplayStatus();
 
 	DEBUG1_EXIT
 }
@@ -129,6 +135,8 @@ void OlaShowFile::Process(void) {
 					(void) fseek(m_pShowFile, 0L, SEEK_SET);
 				} else {
 					m_tShowFileStatus = SHOWFILE_STATUS_ENDED;
+					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					UpdateDisplayStatus();
 				}
 			}
 		}
