@@ -50,6 +50,10 @@ public:
 		m_E131Controller.Start();
 	}
 
+	void Stop(void) {
+		m_E131Controller.Stop();
+	}
+
 	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
 		m_E131Controller.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}

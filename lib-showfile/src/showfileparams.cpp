@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -258,6 +263,9 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ui
 
 	builder.AddComment("sACN");
 	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, (uint32_t) m_tShowFileParams.nUniverse, isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE));
+
+	builder.AddComment("Art-Net");
+	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, (uint32_t) m_tShowFileParams.nDisableUnicast, isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST));
 
 	builder.AddComment("Options");
 	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isOptionSet(SHOWFILE_OPTION_AUTO_START), isOptionSet(SHOWFILE_OPTION_AUTO_START));

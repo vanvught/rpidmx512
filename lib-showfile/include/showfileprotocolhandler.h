@@ -40,6 +40,7 @@ public:
 	virtual void DoRunCleanupProcess(bool bDoRun)=0;
 
 	virtual void Start(void)=0;
+	virtual void Stop(void)=0;
 	virtual void Run(void)=0;
 
 	virtual void Print(void)=0;

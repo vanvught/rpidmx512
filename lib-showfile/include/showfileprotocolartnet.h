@@ -51,6 +51,10 @@ public:
 		m_ArtNetController.Start();
 	}
 
+	void Stop(void) {
+		m_ArtNetController.Stop();
+	}
+
 	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
 		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}

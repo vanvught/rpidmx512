@@ -74,8 +74,11 @@ public:
 
 	void Run(void);
 
-	void SetHandlers(ShowFileProtocolHandler *pShowFileProtocolHandler) {
+	void SetProtocolHandler(ShowFileProtocolHandler *pShowFileProtocolHandler) {
 		m_pShowFileProtocolHandler = pShowFileProtocolHandler;
+	}
+	ShowFileProtocolHandler *GetProtocolHandler(void) {
+		return m_pShowFileProtocolHandler;
 	}
 
 	void SetShowFile(uint8_t nShowFileNumber);
