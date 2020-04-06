@@ -624,8 +624,6 @@ public class RemoteConfig extends JFrame {
 	}
 	
 	private void doExit() {
-		//int n = JOptionPane.showConfirmDialog(null, "Are you sure?", "Exit", JOptionPane.OK_CANCEL_OPTION);
-		//if (n == JOptionPane.OK_OPTION)
 		System.exit(0);
 	}
 	
@@ -836,11 +834,11 @@ public class RemoteConfig extends JFrame {
 				nMotorIndex++;
 			}
 			
-			String nodeShow =  ((OrangePi) child.getUserObject()).getNodeShow();
-			
-			if (nodeShow != null) {
-				child.add(new DefaultMutableTreeNode(nodeShow));
-			}
+//			String nodeShow =  ((OrangePi) child.getUserObject()).getNodeShow();
+//			
+//			if (nodeShow != null) {
+//				child.add(new DefaultMutableTreeNode(nodeShow));
+//			}
 			
 			root.add(child);
 		}

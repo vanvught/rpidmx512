@@ -36,7 +36,7 @@ public class OrangePi {
 	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NEXTION_TXT = "nextion.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "show.txt", ""};
+	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "monitor.txt", "artnet.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
@@ -44,7 +44,7 @@ public class OrangePi {
 	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
 	private static final String RDM_TXT = "rdm_device.txt";
 	private static final String SPARKFUN_TXT = "sparkfun.txt";
-	private static final String SHOW_TXT = "show.txt";
+//	private static final String SHOW_TXT = "show.txt";
 	
 	private InetAddress localAddress;
 	private DatagramSocket socketReceive;
@@ -115,7 +115,7 @@ public class OrangePi {
 					nodeTCNet = TCNET_TXT;
 				} else if (Mode[0].equals("OSC")) {
 				} else if (Mode[0].equals("Config")) {
-					nodeRDM = RDM_TXT;
+					//
 				} else if (Mode[0].equals("Stepper")) {
 					nodeMode = MODES_TXT[1];
 					nodeSparkFun = SPARKFUN_TXT;
@@ -124,14 +124,14 @@ public class OrangePi {
 					}
 					nodeRDM = RDM_TXT;
 				} else if (Mode[0].equals("Player")) {
-					nodeShow = SHOW_TXT;
+					// 
 				} else if (Mode[0].equals("Art-Net")) {
 					//
 				} else {
 					isValid = false;
 				}
 			}
-
+			
 			if (isValid) {
 				nodeRemoteConfig = RCONFIG_TXT;
 				nodeNetwork = NETWORK_TXT;
@@ -216,11 +216,6 @@ public class OrangePi {
 				sbSparkFun = doGet(txt);
 			}
 			return sbSparkFun.toString();
-		}  else if (isShowTxt(txt)) {
-			if (sbShow == null) {
-				sbShow = doGet(txt);
-			}
-			return sbShow.toString();
 		}
 
 		return null;
@@ -317,7 +312,7 @@ public class OrangePi {
 		} else if (isSparkFunTxt(txt)) {
 			sbSparkFun = null;
 			bDoSave = true;
-		}
+		} 
 		
 		if (bDoSave) {
 			byte[] buffer = data.trim().getBytes();
@@ -505,13 +500,6 @@ public class OrangePi {
 		return false;
 	}
 	
-	private Boolean isShowTxt(String show) {
-		if (show.equals(SHOW_TXT)) {
-			return true;
-		}
-		return false;
-	}
-		
 	public Boolean getIsValid() {
 		return isValid;
 	}
@@ -575,6 +563,7 @@ public class OrangePi {
 	}
 
 	public String getNodeShow() {
+		System.out.println(nodeShow);
 		return nodeShow;
 	}
 	
