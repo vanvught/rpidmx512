@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -33,11 +32,6 @@
 #endif
 
 #include "remoteconfig.h"
-
-#include "hardware.h"
-#include "display.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
@@ -108,20 +102,3 @@ TStore RemoteConfig::GetStore(TTxtFile tTxtFile) {
 	return sMap[tTxtFile];
 }
 
-void RemoteConfig::HandleReboot(void) {
-	DEBUG_ENTRY
-
-	Display::Get()->SetSleep(false);
-
-	while (SpiFlashStore::Get()->Flash())
-		;
-
-	printf("Rebooting ...\n");
-
-	Display::Get()->Cls();
-	Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
-
-	Hardware::Get()->Reboot();
-
-	DEBUG_EXIT
-}

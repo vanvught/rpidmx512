@@ -131,21 +131,21 @@ public:
 		return m_bDisable;
 	}
 
-	void SetDisableWrite(bool bDisableWrite) {
+	void SetDisableWrite(bool bDisableWrite = true) {
 		m_bDisableWrite = bDisableWrite;
 	}
 	bool GetDisableWrite(void) {
 		return m_bDisableWrite;
 	}
 
-	void SetEnableReboot(bool bEnableReboot) {
+	void SetEnableReboot(bool bEnableReboot = true) {
 		m_bEnableReboot = bEnableReboot;
 	}
 	bool GetEnableReboot(void) {
 		return m_bEnableReboot;
 	}
 
-	void SetEnableUptime(bool bEnableUptime) {
+	void SetEnableUptime(bool bEnableUptime = true) {
 		m_bEnableUptime = bEnableUptime;
 	}
 	bool GetEnableUptime(void) {
@@ -154,15 +154,20 @@ public:
 
 	void SetDisplayName(const char *pDisplayName);
 
+	bool IsReboot(void) {
+		return m_bIsReboot;
+	}
+
 	int Run(void);
 
 public:
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
-	static void HandleReboot(void);
 	void TftpExit(void);
 
 private:
+	void HandleReboot(void);
+
 	void HandleList(void);
 	void HandleUptime(void);
 	void HandleVersion(void);
@@ -265,7 +270,7 @@ private:
 	void HandleTftpGet(void);
 
 public:
-	static RemoteConfig* Get(void) {
+	static RemoteConfig *Get(void) {
 		return s_pThis;
 	}
 
@@ -292,6 +297,7 @@ private:
 	uint16_t m_nBytesReceived;
 	TRemoteConfigHandleMode m_tRemoteConfigHandleMode;
 	uint8_t *m_pStoreBuffer;
+	bool m_bIsReboot;
 };
 
 #endif /* REMOTECONFIG_H_ */

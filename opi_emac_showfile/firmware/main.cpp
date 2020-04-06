@@ -53,6 +53,9 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+// Reboot handler
+#include "reboot.h"
+
 // Format handlers
 #include "olashowfile.h"
 
@@ -68,11 +71,15 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	fw.Print();
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	console_puts("Showfile player\n");
 
 	hw.SetLed(HARDWARE_LED_ON);
 
@@ -119,7 +126,7 @@ void notmain(void) {
 	assert(pShowFileProtocolHandler != 0);
 
 	assert(pShowFile != 0);
-	pShowFile->SetHandlers(pShowFileProtocolHandler);
+	pShowFile->SetProtocolHandler(pShowFileProtocolHandler);
 
 	ShowFileOSC oscServer;
 
@@ -152,7 +159,7 @@ void notmain(void) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}
@@ -183,6 +190,7 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+		display.Run();
 	}
 }
 

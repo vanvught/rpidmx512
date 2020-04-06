@@ -196,7 +196,8 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_nIPAddressFrom(0),
 	m_nBytesReceived(0),
 	m_tRemoteConfigHandleMode(REMOTE_CONFIG_HANDLE_MODE_TXT),
-	m_pStoreBuffer(0)
+	m_pStoreBuffer(0),
+	m_bIsReboot(false)
 
 {
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);

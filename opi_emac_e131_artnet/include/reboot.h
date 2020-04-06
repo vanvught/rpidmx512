@@ -31,14 +31,37 @@
 #include "e131bridge.h"
 #include "artnetcontroller.h"
 
+#include "remoteconfig.h"
+#include "display.h"
+
+#include "debug.h"
+
 class Reboot: public RebootHandler {
 public:
 	Reboot(void) {}
 	~Reboot(void) {}
 
 	void Run(void) {
+		DEBUG_ENTRY
+
 		E131Bridge::Get()->Stop();
 		ArtNetController::Get()->Stop();
+
+		if (!RemoteConfig::Get()->IsReboot()) {
+			DEBUG_PUTS("");
+
+			Display::Get()->SetSleep(false);
+
+			while (SpiFlashStore::Get()->Flash())
+				;
+
+			printf("Rebooting ...\n");
+
+			Display::Get()->Cls();
+			Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		}
+
+		DEBUG_EXIT
 	}
 };
 

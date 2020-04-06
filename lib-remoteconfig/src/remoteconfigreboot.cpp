@@ -1,8 +1,8 @@
 /**
- * @file tftpfileserver.h
+ * @file remoteconfigstatic.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTPFILESERVER_H_
-#define TFTPFILESERVER_H_
+#include <stdio.h>
+#include <assert.h>
 
-#include <stdint.h>
+#include "remoteconfig.h"
 
-#include "tftpdaemon.h"
+#include "hardware.h"
+#include "display.h"
 
-class TFTPFileServer: public TFTPDaemon {
-public:
-	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer (void);
+#include "spiflashstore.h"
 
-	bool FileOpen (const char *pFileName, TTFTPMode tMode);
-	bool FileCreate (const char *pFileName, TTFTPMode tMode);
-	bool FileClose (void);
-	int FileRead (void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-	int FileWrite (const void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-	void Exit(void);
+#include "debug.h"
 
-	uint32_t GetFileSize(void) {
-		return m_nFileSize;
-	}
+void RemoteConfig::HandleReboot(void) {
+	DEBUG_ENTRY
 
-	bool isDone(void)  {
-		return m_bDone;
-	}
+	m_bIsReboot = true;
 
-private:
-	uint8_t* m_pBuffer;
-	uint32_t m_nSize;
-	uint32_t m_nFileSize;
-	bool m_bIsCompressedSupported;
-	bool m_bDone;
-};
+	Display::Get()->SetSleep(false);
 
-#endif /* TFTPFILESERVER_H_ */
+	while (SpiFlashStore::Get()->Flash())
+		;
+
+	printf("Rebooting ...\n");
+
+	Display::Get()->Cls();
+	Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+
+	Hardware::Get()->Reboot();
+
+	DEBUG_EXIT
+}

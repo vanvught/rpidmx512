@@ -2,7 +2,7 @@
  * @file remoteconfigparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,39 +92,39 @@ void RemoteConfigParams::Load(const char* pBuffer, uint32_t nLength) {
 	m_pRemoteConfigParamsStore->Update(&m_tRemoteConfigParams);
 }
 
-void RemoteConfigParams::callbackFunction(const char* pLine) {
+void RemoteConfigParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	uint8_t value8;
-	uint8_t len;
+	uint8_t nValue8;
+	uint8_t nLength;
 
-	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE, &value8) == SSCAN_OK) {
-		m_tRemoteConfigParams.bDisabled = (value8 != 0);
+	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE, &nValue8) == SSCAN_OK) {
+		m_tRemoteConfigParams.bDisabled = (nValue8 != 0);
 		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISABLED;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE_WRITE, &value8) == SSCAN_OK) {
-		m_tRemoteConfigParams.bDisableWrite = (value8 != 0);
+	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE_WRITE, &nValue8) == SSCAN_OK) {
+		m_tRemoteConfigParams.bDisableWrite = (nValue8 != 0);
 		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISABLE_WRITE;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_REBOOT, &value8) == SSCAN_OK) {
-		m_tRemoteConfigParams.bEnableReboot = (value8 != 0);
+	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_REBOOT, &nValue8) == SSCAN_OK) {
+		m_tRemoteConfigParams.bEnableReboot = (nValue8 != 0);
 		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_ENABLE_REBOOT;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_UPTIME, &value8) == SSCAN_OK) {
-		m_tRemoteConfigParams.bEnableUptime = (value8 != 0);
+	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_UPTIME, &nValue8) == SSCAN_OK) {
+		m_tRemoteConfigParams.bEnableUptime = (nValue8 != 0);
 		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_ENABLE_UPTIME;
 		return;
 	}
 
-	len = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
-	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, (char *) m_tRemoteConfigParams.aDisplayName, &len) == SSCAN_OK) {
-		m_tRemoteConfigParams.aDisplayName[len] = '\0';
+	nLength = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
+	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, (char *) m_tRemoteConfigParams.aDisplayName, &nLength) == SSCAN_OK) {
+		m_tRemoteConfigParams.aDisplayName[nLength] = '\0';
 		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISPLAY_NAME;
 		return;
 	}

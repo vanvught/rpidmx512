@@ -25,7 +25,10 @@
 
 #include "hardware.h"
 #include "networkh3emac.h"
+#include "networkconst.h"
 #include "ledblink.h"
+
+#include "console.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -44,9 +47,10 @@
 #include "mdns.h"
 #include "mdnsservices.h"
 
+// Handlers
 #include "displayudfhandler.h"
-
 #include "factorydefaults.h"
+#include "reboot.h"
 
 #include "software_version.h"
 
@@ -58,11 +62,20 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	fw.Print();
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	console_puts("RDMNet LLRP device only\n");
+
+	hw.SetLed(HARDWARE_LED_ON);
+
+	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	DisplayUdfHandler displayUdfHandler;
 
