@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,10 +47,6 @@
 #include "sscan.h"
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
-
-#if !defined (H3)
-static const char PARAMS_NAME_SERVER[] ALIGNED = "name_server";
-#endif
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	uint8_t *p = (uint8_t *) &m_tNetworkParams;
@@ -106,52 +102,52 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 void NetworkParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	uint8_t value8;
-	uint32_t value32;
-	uint8_t len;
+	uint8_t nValue8;
+	uint32_t nValue32;
+	uint8_t nLength;
 	float f;
 
-	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, &value8) == SSCAN_OK) {
-		m_tNetworkParams.bIsDhcpUsed = !(value8 == 0);
+	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, &nValue8) == SSCAN_OK) {
+		m_tNetworkParams.bIsDhcpUsed = !(nValue8 == 0);
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_DHCP;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nLocalIp = value32;
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, &nValue32) == SSCAN_OK) {
+		m_tNetworkParams.nLocalIp = nValue32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_IP_ADDRESS;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nNetmask = value32;
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, &nValue32) == SSCAN_OK) {
+		m_tNetworkParams.nNetmask = nValue32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NET_MASK;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nGatewayIp = value32;
-		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_DEFAULT_GATEWAY;
-		return;
-	}
-
-	len = NETWORK_HOSTNAME_SIZE - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, (char *) m_tNetworkParams.aHostName, &len) == SSCAN_OK) {
-		m_tNetworkParams.aHostName[len] = '\0';
+	nLength = NETWORK_HOSTNAME_SIZE - 1;
+	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, (char *) m_tNetworkParams.aHostName, &nLength) == SSCAN_OK) {
+		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_HOSTNAME;
 		return;
 	}
 
 #if !defined (H3)
-	if (Sscan::IpAddress(pLine, PARAMS_NAME_SERVER, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nNameServerIp = value32;
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, &nValue32) == SSCAN_OK) {
+		m_tNetworkParams.nGatewayIp = nValue32;
+		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_DEFAULT_GATEWAY;
+		return;
+	}
+
+	if (Sscan::IpAddress(pLine,  NetworkConst::PARAMS_NAME_SERVER, &nValue32) == SSCAN_OK) {
+		m_tNetworkParams.nNameServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NAME_SERVER;
 		return;
 	}
 #endif
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, &value32) == SSCAN_OK) {
-		m_tNetworkParams.nNtpServerIp = value32;
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, &nValue32) == SSCAN_OK) {
+		m_tNetworkParams.nNtpServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NTP_SERVER;
 		return;
 	}
@@ -186,13 +182,13 @@ void NetworkParams::Dump(void) {
 		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
 	}
 
+#if !defined (H3)
 	if (isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY)) {
 		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
 	}
 
-#if !defined (H3)
 	if (isMaskSet(NETWORK_PARAMS_MASK_NAME_SERVER)) {
-		printf(" %s=" IPSTR "\n", PARAMS_NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
+		printf(" %s=" IPSTR "\n",  NetworkConst::PARAMS_NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
 	}
 #endif
 

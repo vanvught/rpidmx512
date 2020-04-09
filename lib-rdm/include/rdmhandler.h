@@ -2,7 +2,7 @@
  * @file rdmhandler.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,23 +37,23 @@ public:
 	RDMHandler(bool bRDM = true);
 	~RDMHandler(void);
 
-	void HandleData(const uint8_t* pRdmDataIn, uint8_t *pRdmDataOut);
+	void HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut);
 
 private:
 	void Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t nSubDevice);
 
 	typedef struct {
-		const uint16_t pid;
+		const uint16_t nPid;
 		void (RDMHandler::*pGetHandler)(uint16_t nSubDevice);
 		void (RDMHandler::*pSetHandler)(bool IsBroadcast, uint16_t nSubDevice);
 		const uint8_t nGetArgumentSize;
 		const bool bIncludeInSupportedParams;
 		const bool bRDM;
 		const bool bRDMNet;
-	} pid_definition;
+	} TPidDefinition;
 
-	static const pid_definition PID_DEFINITIONS[];
-	static const pid_definition PID_DEFINITIONS_SUB_DEVICES[];
+	static const TPidDefinition PID_DEFINITIONS[];
+	static const TPidDefinition PID_DEFINITIONS_SUB_DEVICES[];
 
 	// Get
 	void GetQueuedMessage(uint16_t nSubDevice);
@@ -79,6 +79,7 @@ private:
 	void GetIdentifyDevice(uint16_t nSubDevice);
 	void GetRealTimeClock(uint16_t nSubDevice);
 	void GetPowerState(uint16_t nSubDevice);
+	// ANSI E1.37-1
 	void GetIdentifyMode(uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
 	void GetInterfaceList(uint16_t nSubDevice);
@@ -86,9 +87,9 @@ private:
 	void GetHardwareAddress(uint16_t nSubDevice);
 	void GetDHCPMode(uint16_t nSubDevice);
 	void GetZeroconf(uint16_t nSubDevice);
-	void GetDefaultRoute(uint16_t nSubDevice);
 	void GetAddressNetmask(uint16_t nSubDevice);
 	void GetStaticAddress(uint16_t nSubDevice);
+	void GetDefaultRoute(uint16_t nSubDevice);
 	void GetNameServers(uint16_t nSubDevice);
 	void GetHostName(uint16_t nSubDevice);
 	void GetDomainName(uint16_t nSubDevice);
@@ -106,13 +107,19 @@ private:
 	void SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice);
 	void SetResetDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
+	// ANSI E1.37-1
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
 	void SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice);
 	void SetZeroconf(bool IsBroadcast, uint16_t nSubDevice);
 	void SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice);
+	void SetDefaultRoute(bool IsBroadcast, uint16_t nSubDevice);
 	void ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice);
 	void SetHostName(bool IsBroadcast, uint16_t nSubDevice);
+	void SetDomainName(bool IsBroadcast, uint16_t nSubDevice);
+
+	// ANSI E1.37-2 – 2015
+	bool CheckInterfaceID(const struct TRdmMessageNoSc *pRdmDataIn);
 
 private:
 	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);

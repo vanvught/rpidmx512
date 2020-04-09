@@ -30,6 +30,7 @@
 void Network::Print(void) {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
+	printf(" Domain    : %s\n", m_aDomainName);
 	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
 	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
 	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));

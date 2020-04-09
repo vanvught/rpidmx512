@@ -36,7 +36,8 @@
 enum TNetwork {
 	NETWORK_IP_SIZE = 4,
 	NETWORK_MAC_SIZE = 6,
-	NETWORK_HOSTNAME_SIZE = 64	/* including a terminating null byte. */
+	NETWORK_HOSTNAME_SIZE = 64,		/* including a terminating null byte. */
+	NETWORK_DOMAINNAME_SIZE = 64	/* including a terminating null byte. */
 };
 
 #ifndef IP2STR
@@ -80,6 +81,11 @@ public:
 	virtual void SetHostName(const char *pHostName);
 	const char *GetHostName(void) {
 		return m_aHostName;
+	}
+
+	virtual void SetDomainName(const char *pDomainName);
+	const char *GetDomainName(void) {
+		return m_aDomainName;
 	}
 
 	bool SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask = 0);
@@ -158,6 +164,7 @@ protected:
 	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
+	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
 	uint32_t m_nIfIndex;
 	uint32_t m_nNtpServerIp;

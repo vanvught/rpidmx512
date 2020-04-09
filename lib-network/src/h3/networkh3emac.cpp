@@ -2,7 +2,7 @@
  * networkh3emac.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,6 +99,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_aHostName[k] = '\0';
 	} else {
 		strncpy(m_aHostName, (const char *) p, sizeof(m_aHostName) - 1);
+		m_aHostName[sizeof(m_aHostName) - 1] = '\0';
 	}
 
 	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, &m_IsDhcpUsed);
@@ -140,7 +141,7 @@ int32_t NetworkH3emac::End(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::MacAddressCopyTo(uint8_t* pMacAddress) {
+void NetworkH3emac::MacAddressCopyTo(uint8_t *pMacAddress) {
 	DEBUG_ENTRY
 
 	for (uint32_t i =  0; i < NETWORK_MAC_SIZE; i++) {
@@ -166,11 +167,11 @@ void NetworkH3emac::LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size, uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port) {
 	return udp_recv(nHandle, packet, size, from_ip, from_port);
 }
 
-void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(nHandle, packet, size, to_ip, remote_port);
 }
 
@@ -187,7 +188,7 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 
 		m_nLocalIp = tIpInfo.ip.addr;
 		m_nNetmask = tIpInfo.netmask.addr;
-		m_nGatewayIp = tIpInfo.gw.addr;
+		m_nGatewayIp = tIpInfo.ip.addr; //tIpInfo.gw.addr; There is no gateway support
 	} else {
 		net_set_ip(nIp);
 		m_nLocalIp = nIp;

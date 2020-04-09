@@ -2,7 +2,7 @@
  * @file networkconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,13 @@ alignas(uint32_t) const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
 alignas(uint32_t) const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
 alignas(uint32_t) const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
 alignas(uint32_t) const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
 alignas(uint32_t) const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
 alignas(uint32_t) const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
 alignas(uint32_t) const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
+
+#if !defined (H3)
+ alignas(uint32_t) const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
+ alignas(uint32_t) const char NetworkConst::PARAMS_NAME_SERVER[] = "name_server";
+#endif
 
 alignas(uint32_t) const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";

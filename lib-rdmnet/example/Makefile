@@ -10,7 +10,7 @@ ROOT= ./../..
 SOURCE= .
 BUILD=build_linux/
 
-LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 lightset network properties ledblink debug hal
+LIBS=rdmnet rdm rdmsensor rdmsubdevice e131 lightset network properties debug hal
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I$(ROOT)/lib-,$(LIBS))
@@ -57,7 +57,7 @@ prerequisites:
 $(LIBSDEP):
 	for d in $(LIBDEP); \
 		do                               \
-			$(MAKE) -f Makefile.Linux 'DEFINES=-DRDMNET_LLRP_ONLY -DNDEBUG' --directory=$$d;       \
+			$(MAKE) -f Makefile.Linux 'DEFINES=-DDMX_WORKSHOP_DEFECT -DRDMNET_LLRP_ONLY -DNDEBUG' --directory=$$d;       \
 		done
 
 $(TARGET) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP) $(LIBSDEP)

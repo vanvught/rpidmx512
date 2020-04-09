@@ -50,6 +50,7 @@ Network::Network(void) :
 
 	m_aNetMacaddr[0] = '\0';
 	m_aHostName[0] = '\0';
+	m_aDomainName[0] = '\0';
 	m_aIfName[0] = '\0';
 }
 
@@ -93,10 +94,20 @@ uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
 void Network::SetHostName(const char *pHostName) {
 	DEBUG_ENTRY
 
-	strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE);
+	strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE - 1);
 	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
 
 	DEBUG_PUTS(m_aHostName);
+	DEBUG_EXIT
+}
+
+void Network::SetDomainName(const char *pDomainName) {
+	DEBUG_ENTRY
+
+	strncpy(m_aDomainName, pDomainName, NETWORK_DOMAINNAME_SIZE - 1);
+	m_aDomainName[NETWORK_DOMAINNAME_SIZE - 1] = '\0';
+
+	DEBUG_PUTS(m_aDomainName);
 	DEBUG_EXIT
 }
 

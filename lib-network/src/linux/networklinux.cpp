@@ -117,6 +117,22 @@ int NetworkLinux::Init(const char *s) {
 
 	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
 
+	i = 0;
+
+	while(i < NETWORK_HOSTNAME_SIZE && m_aHostName[i] != '.') {
+		i++;
+	}
+
+	m_aHostName[i++] = '\0';
+
+	uint32_t j = 0;
+
+	while (j < NETWORK_DOMAINNAME_SIZE && i < NETWORK_HOSTNAME_SIZE && m_aHostName[i] != '\0') {
+		m_aDomainName[j++] = m_aHostName[i++];
+	}
+
+	m_aDomainName[j]  = '\0';
+
 	return result;
 }
 
@@ -149,8 +165,6 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		exit(EXIT_FAILURE);
 		//return -1;
 	}
-
-	//s_ports_allowed[i] = nPort;
 
 	DEBUG_PRINTF("i=%d, nPort=%d", i, nPort);
 
@@ -185,6 +199,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 
 	if (bind(nSocket, (struct sockaddr*) &si_me, sizeof(si_me)) == -1) {
 		perror("bind");
+		printf(IPSTR "\n", IP2STR(si_me.sin_addr.s_addr));
 		exit(EXIT_FAILURE);
 	}
 
@@ -194,7 +209,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	s_ports_allowed[i] = nPort;
 
 	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
-		printf("s_ports_allowed[%2u]=%4u\n", i, s_ports_allowed[i]);
+		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
 	}
 /**
  * END
@@ -219,7 +234,7 @@ int32_t NetworkLinux::End(uint16_t nPort) {
  */
 
 	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
-		printf("s_ports_allowed[%2u]=%4u\n", i, s_ports_allowed[i]);
+		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
 	}
 
 	uint32_t i;
@@ -332,7 +347,6 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSi
 	if ((recv_len = recvfrom(nHandle, (void *)pPacket, nSize, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
-			//exit(EXIT_FAILURE);
 		}
 		return 0;
 	}
@@ -390,6 +404,32 @@ bool NetworkLinux::IsDhclient(const char* if_name) {
 }
 #endif
 
+uint32_t NetworkLinux::GetDefaultGateway(void) {
+	char cmd[255];
+	char buf[1024];
+	FILE *fp;
+
+	memset(cmd, 0, sizeof(cmd));
+	memset(buf, 0, sizeof(buf));
+
+	snprintf(cmd, sizeof(cmd) -1, "ip route | grep default | awk '{print $3}'");
+
+	fp = popen(cmd, "r");
+
+    if (fgets(buf, sizeof(buf), fp) == NULL) {
+    	pclose(fp);
+    	return 0;
+    }
+
+    pclose(fp);
+
+	struct in_addr addr;
+
+	(void) inet_aton(buf, &addr);
+
+	return addr.s_addr;
+}
+
 int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 	struct ifaddrs *addrs, *iap;
 	struct sockaddr_in *sa;
@@ -438,21 +478,15 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
 
     m_nLocalIp =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
 
-	if (ioctl(fd, SIOCGIFBRDADDR, &ifr) < 0) {
-		perror("ioctl(fd, SIOCGIFBRDADDR, &ifr)");
+    if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
+    	perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");
     	close(fd);
     	return -3;
     }
 
-	//m_nBroadcastIp =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
-
-    if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
-    	perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");
-    	close(fd);
-    	return -4;
-    }
-
     m_nNetmask =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
+
+    m_nGatewayIp =  GetDefaultGateway();
 
 #if defined (__APPLE__)
 	if(!(OSxGetMacaddress(pIfInterface,m_aNetMacaddr))) {

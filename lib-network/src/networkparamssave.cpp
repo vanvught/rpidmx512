@@ -33,6 +33,7 @@
 #include <assert.h>
 
 #include "network.h"
+
 #include "networkparams.h"
 #include "networkconst.h"
 
@@ -56,8 +57,9 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	builder.Add(NetworkConst::PARAMS_USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NETWORK_PARAMS_MASK_DHCP));
 	builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS));
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NETWORK_PARAMS_MASK_NET_MASK));
+#if !defined(H3)
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
-
+#endif
 	if (!isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
 		strncpy((char *)m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE);
 		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
@@ -70,9 +72,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-
 	DEBUG_EXIT
-	return;
 }
 
 void NetworkParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -85,6 +85,4 @@ void NetworkParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }
