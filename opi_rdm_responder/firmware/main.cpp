@@ -32,6 +32,7 @@
 #include "ledblink.h"
 
 #include "console.h"
+#include "display.h"
 
 #include "identify.h"
 
@@ -65,6 +66,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
+	Display display(DISPLAY_TYPE_UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
