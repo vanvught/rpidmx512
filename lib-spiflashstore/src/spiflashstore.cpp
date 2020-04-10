@@ -169,6 +169,20 @@ uint32_t SpiFlashStore::GetStoreOffset(enum TStore tStore) {
 	return nOffset;
 }
 
+void SpiFlashStore::ResetSetList(enum TStore tStore) {
+	assert(tStore < STORE_LAST);
+
+	uint8_t *pbSetList = &m_aSpiFlashData[GetStoreOffset(tStore)];
+
+	// Clear bSetList
+	*pbSetList++ = 0x00;
+	*pbSetList++ = 0x00;
+	*pbSetList++ = 0x00;
+	*pbSetList = 0x00;
+
+	m_tState = STORE_STATE_CHANGED;
+}
+
 void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
 	DEBUG1_ENTRY
 

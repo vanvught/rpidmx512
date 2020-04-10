@@ -84,8 +84,10 @@ public:
 	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
 	void CopyTo(enum TStore tStore, void *pData, uint32_t &nDataLength);
 
-	void UuidUpdate(const uuid_t uuid);
-	void UuidCopyTo(uuid_t uuid);
+//	void UuidUpdate(const uuid_t uuid);
+//	void UuidCopyTo(uuid_t uuid);
+
+	void ResetSetList(enum TStore tStore);
 
 	bool Flash(void);
 

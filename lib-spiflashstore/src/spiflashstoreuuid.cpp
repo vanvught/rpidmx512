@@ -2,7 +2,7 @@
  * @file spiflashstoreuuid.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,31 +27,31 @@
 
 #include "spiflashstore.h"
 
-void SpiFlashStore::UuidUpdate(const uuid_t uuid) {
-	bool bIsChanged = false;
-
-	const uint8_t *src = (uint8_t *) uuid;
-	uint8_t *dst = (uint8_t *) &m_aSpiFlashData[16];
-
-	for (uint32_t i = 0; i < sizeof(uuid_t); i++) {
-		if (*src != *dst) {
-			bIsChanged = true;
-			*dst = *src;
-		}
-		dst++;
-		src++;
-	}
-
-	if (bIsChanged && (m_tState != STORE_STATE_ERASED)) {
-		m_tState = STORE_STATE_CHANGED;
-	}
-}
-
-void SpiFlashStore::UuidCopyTo(uuid_t uuid) {
-	const uint8_t *src = (uint8_t *) &m_aSpiFlashData[16];
-	uint8_t *dst = (uint8_t *) uuid;
-
-	for (uint32_t i = 0; i < sizeof(uuid_t); i++) {
-		*dst++ = *src++;
-	}
-}
+//void SpiFlashStore::UuidUpdate(const uuid_t uuid) {
+//	bool bIsChanged = false;
+//
+//	const uint8_t *src = (uint8_t *) uuid;
+//	uint8_t *dst = (uint8_t *) &m_aSpiFlashData[16];
+//
+//	for (uint32_t i = 0; i < sizeof(uuid_t); i++) {
+//		if (*src != *dst) {
+//			bIsChanged = true;
+//			*dst = *src;
+//		}
+//		dst++;
+//		src++;
+//	}
+//
+//	if (bIsChanged && (m_tState != STORE_STATE_ERASED)) {
+//		m_tState = STORE_STATE_CHANGED;
+//	}
+//}
+//
+//void SpiFlashStore::UuidCopyTo(uuid_t uuid) {
+//	const uint8_t *src = (uint8_t *) &m_aSpiFlashData[16];
+//	uint8_t *dst = (uint8_t *) uuid;
+//
+//	for (uint32_t i = 0; i < sizeof(uuid_t); i++) {
+//		*dst++ = *src++;
+//	}
+//}
