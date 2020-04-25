@@ -25,5 +25,4 @@ if [ -f "$filename" ]; then
     else
         ../scripts/do-tftp.sh 192.168.1.56 
     fi
-
 fi
