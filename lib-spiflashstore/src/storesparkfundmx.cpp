@@ -58,12 +58,12 @@ StoreSparkFunDmx::StoreSparkFunDmx(void) {
 
 	for (uint32_t nMotorIndex = 0; nMotorIndex < STORE_SPARKFUN_MAX_MOTORS; nMotorIndex++) {
 		struct TSparkFunDmxParams tSparkFunDmxParams;
-		memset((void *) &tSparkFunDmxParams, 0xFF, sizeof(struct TSparkFunDmxParams));
+		memset( &tSparkFunDmxParams, 0xFF, sizeof(struct TSparkFunDmxParams));
 		tSparkFunDmxParams.nSetList = 0;
 
 		Copy(nMotorIndex, &tSparkFunDmxParams);
 
-		if (tSparkFunDmxParams.nSetList == (uint32_t)~0) {
+		if (tSparkFunDmxParams.nSetList == static_cast<uint32_t>(~0)) {
 			DEBUG_PRINTF("%d: Clear nSetList", nMotorIndex);
 			tSparkFunDmxParams.nSetList = 0;
 			Update(nMotorIndex, &tSparkFunDmxParams);
@@ -82,7 +82,7 @@ StoreSparkFunDmx::~StoreSparkFunDmx(void) {
 void StoreSparkFunDmx::Update(const struct TSparkFunDmxParams *pSparkFunDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_SPARKFUN, (void *)pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Update(STORE_SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -90,7 +90,7 @@ void StoreSparkFunDmx::Update(const struct TSparkFunDmxParams *pSparkFunDmxParam
 void StoreSparkFunDmx::Copy(struct TSparkFunDmxParams *pSparkFunDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, (void *)pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -100,7 +100,7 @@ void StoreSparkFunDmx::Update(uint8_t nMotorIndex, const struct TSparkFunDmxPara
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Update(STORE_SPARKFUN, STORE_SPARKFUN_OFFSET(nMotorIndex), (void *)ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Update(STORE_SPARKFUN, STORE_SPARKFUN_OFFSET(nMotorIndex), ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -110,7 +110,7 @@ void StoreSparkFunDmx::Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSp
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, (void *)ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams), STORE_SPARKFUN_OFFSET(nMotorIndex));
+	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams), STORE_SPARKFUN_OFFSET(nMotorIndex));
 
 	DEBUG_EXIT
 }

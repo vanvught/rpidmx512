@@ -58,7 +58,7 @@ TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 	assert(m_pBuffer != 0);
 
 	m_bIsCompressedSupported = Compressed::IsSupported();
-	DEBUG_PRINTF("m_bIsCompressedSupported=%d", (int) m_bIsCompressedSupported);
+	DEBUG_PRINTF("m_bIsCompressedSupported=%d", static_cast<int>(m_bIsCompressedSupported));
 
 	DEBUG_EXIT
 }
@@ -126,7 +126,7 @@ int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount, unsigned nBlockNumb
 	return -1;
 }
 
-int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBlockNumber) {
+int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
 	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
 
 	if (nBlockNumber > (m_nSize / 512)) {
@@ -137,7 +137,7 @@ int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBl
 	assert(nBlockNumber != 0);
 
 	if (nBlockNumber == 1) {
-		UBootHeader uImage((uint8_t *)pBuffer);
+		UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
 		if (!uImage.IsValid()) {
 			DEBUG_PUTS("uImage is not valid");
 			return -1;
@@ -154,7 +154,7 @@ int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount, unsigned nBl
 
 	assert((nOffset + nCount) <= m_nSize);
 
-	memcpy((void *)&m_pBuffer[nOffset], pBuffer, nCount);
+	memcpy(&m_pBuffer[nOffset], pBuffer, nCount);
 
 	m_nFileSize += nCount; //FIXME BUG When in retry ?
 

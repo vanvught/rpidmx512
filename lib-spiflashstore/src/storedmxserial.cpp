@@ -1,8 +1,8 @@
 /**
- * @file storetlc59711.h
+ * @file storedmxserial.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORETLC59711_H_
-#define STORETLC59711_H_
+#include "storedmxserial.h"
+#include "dmxserialparams.h"
 
-#include <stdint.h>
+#include "spiflashstore.h"
 
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmxstore.h"
+#include "debug.h"
 
-class StoreTLC59711: public TLC59711DmxParamsStore, public TLC59711DmxStore {
-public:
-	StoreTLC59711(void);
-	~StoreTLC59711(void);
+StoreDmxSerial *StoreDmxSerial::s_pThis = 0;
 
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+StoreDmxSerial::StoreDmxSerial(void) {
+	DEBUG_ENTRY
 
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
+	s_pThis = this;
 
-public:
-	static StoreTLC59711 *Get(void) {
-		return s_pThis;
-	}
+	DEBUG_PRINTF("%p", s_pThis);
 
-private:
-	static StoreTLC59711 *s_pThis;
-};
+	DEBUG_EXIT
+}
 
-#endif /* STORETLC59711_H_ */
+StoreDmxSerial::~StoreDmxSerial(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreDmxSerial::Update(const struct TDmxSerialParams *ptDmxSerialParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+
+	DEBUG_EXIT
+}
+
+void StoreDmxSerial::Copy(struct TDmxSerialParams *ptDmxSerialParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+
+	DEBUG_EXIT
+}

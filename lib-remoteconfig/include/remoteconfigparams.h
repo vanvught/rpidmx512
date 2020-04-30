@@ -36,7 +36,7 @@ struct TRemoteConfigParams {
 	bool bDisableWrite;
 	bool bEnableReboot;
 	bool bEnableUptime;
-	uint8_t aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
+	char aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
 };
 
 enum TRemoteConfigParamsMask {
@@ -63,8 +63,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(RemoteConfig *);
 

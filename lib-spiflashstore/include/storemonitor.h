@@ -1,8 +1,8 @@
 /**
- * @file storetlc59711.h
+ * @file storemonitor.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORETLC59711_H_
-#define STORETLC59711_H_
+#ifndef STOREMONITOR_H_
+#define STOREMONITOR_H_
 
-#include <stdint.h>
+#include "dmxmonitorparams.h"
 
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmxstore.h"
-
-class StoreTLC59711: public TLC59711DmxParamsStore, public TLC59711DmxStore {
+class StoreMonitor: public DMXMonitorParamsStore {
 public:
-	StoreTLC59711(void);
-	~StoreTLC59711(void);
+	StoreMonitor(void);
+	~StoreMonitor(void);
 
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+	void Update(const struct TDMXMonitorParams *pDMXMonitorParams);
+	void Copy(struct TDMXMonitorParams *pDMXMonitorParams);
 
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
-
-public:
-	static StoreTLC59711 *Get(void) {
+	static StoreMonitor* Get(void) {
 		return s_pThis;
 	}
 
 private:
-	static StoreTLC59711 *s_pThis;
+	static StoreMonitor *s_pThis;
 };
 
-#endif /* STORETLC59711_H_ */
+#endif /* STOREMONITOR_H_ */

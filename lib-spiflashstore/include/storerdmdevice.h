@@ -2,7 +2,7 @@
  * @file storerdmdevice.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 
 #include "rdmdevicestore.h"
 
-class StoreRDMDevice: public RDMDeviceParamsStore, RDMDeviceStore {
+class StoreRDMDevice: public RDMDeviceParamsStore, public RDMDeviceStore {
 public:
 	StoreRDMDevice(void);
 	~StoreRDMDevice(void);
@@ -40,7 +40,7 @@ public:
 	void Update(const struct TRDMDeviceParams *pRDMDeviceParams);
 	void Copy(struct TRDMDeviceParams *pRDMDeviceParams);
 
-	void SaveLabel(const uint8_t *pLabel, uint8_t nLength);
+	void SaveLabel(const char *pLabel, uint8_t nLength);
 
 public:
 	static StoreRDMDevice *Get(void) {

@@ -2,7 +2,7 @@
  * @file storenetwork.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "networkparams.h"
 #include "networkstore.h"
 
-class StoreNetwork: public NetworkParamsStore, NetworkStore {
+class StoreNetwork: public NetworkParamsStore, public NetworkStore {
 public:
 	StoreNetwork(void);
 	~StoreNetwork(void);
@@ -39,7 +39,7 @@ public:
 
 	void SaveIp(uint32_t nIp);
 	void SaveNetMask(uint32_t nNetMask);
-	void SaveHostName(const uint8_t *pHostName, uint32_t nLength);
+	void SaveHostName(const char *pHostName, uint32_t nLength);
 	void SaveDhcp(bool bIsDhcpUsed);
 
 public:

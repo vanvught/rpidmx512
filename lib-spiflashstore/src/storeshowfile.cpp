@@ -23,9 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
-
 #include "storeshowfile.h"
 
 #include "showfileparams.h"
@@ -55,7 +52,7 @@ StoreShowFile::~StoreShowFile(void) {
 void StoreShowFile::Update(const struct TShowFileParams *ptShowFileParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_SHOW, (void *)ptShowFileParams, sizeof(struct TShowFileParams));
+	SpiFlashStore::Get()->Update(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +60,7 @@ void StoreShowFile::Update(const struct TShowFileParams *ptShowFileParams) {
 void StoreShowFile::Copy(struct TShowFileParams *ptShowFileParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_SHOW, (void *)ptShowFileParams, sizeof(struct TShowFileParams));
+	SpiFlashStore::Get()->Copy(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
 
 	DEBUG_EXIT
 }

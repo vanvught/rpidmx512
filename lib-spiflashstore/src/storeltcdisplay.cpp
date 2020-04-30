@@ -55,7 +55,7 @@ StoreLtcDisplay::~StoreLtcDisplay(void) {
 void StoreLtcDisplay::Update(const struct TLtcDisplayParams *ptLtcDisplayParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+	SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreLtcDisplay::Update(const struct TLtcDisplayParams *ptLtcDisplayParams)
 void StoreLtcDisplay::Copy(struct TLtcDisplayParams *ptLtcDisplayParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, (void *)ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+	SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
 
 	DEBUG_EXIT
 }

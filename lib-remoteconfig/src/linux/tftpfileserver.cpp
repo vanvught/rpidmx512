@@ -1,8 +1,8 @@
 /**
- * @file storemidi.cpp
+ * @file tftpfileserver.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,61 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#if __GNUC__ > 8
+ #pragma GCC diagnostic ignored "-Wunused-private-field"
+#endif
 
-#include "storemidi.h"
-
-#include "midiparams.h"
-
-#include "spiflashstore.h"
+#include "tftpfileserver.h"
 
 #include "debug.h"
 
-StoreMidi *StoreMidi::s_pThis = 0;
-
-StoreMidi::StoreMidi(void) {
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
+		m_pBuffer(pBuffer),
+		m_nSize(nSize),
+		m_nFileSize(0),
+		m_bDone(false)
+{
 	DEBUG_ENTRY
-
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", s_pThis);
-
 	DEBUG_EXIT
 }
 
-StoreMidi::~StoreMidi(void) {
+TFTPFileServer::~TFTPFileServer(void) {
 	DEBUG_ENTRY
-
 	DEBUG_EXIT
 }
 
-void StoreMidi::Update(const struct TMidiParams* pMidiParams) {
+void TFTPFileServer::Exit(void) {
 	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
 	DEBUG_EXIT
 }
 
-void StoreMidi::Copy(struct TMidiParams* pMidiParams) {
+
+bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
 	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
 	DEBUG_EXIT
+	return false;
+}
+
+bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+	return false;
+}
+
+bool TFTPFileServer::FileClose(void) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+	return false;
+}
+
+int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount, unsigned nBlockNumber) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+	return -1;
+}
+
+int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+	return -1;
 }

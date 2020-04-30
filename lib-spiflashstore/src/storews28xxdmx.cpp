@@ -56,7 +56,7 @@ StoreWS28xxDmx::~StoreWS28xxDmx(void) {
 void StoreWS28xxDmx::Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, (void *)pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 
 	DEBUG_EXIT
 }
@@ -64,7 +64,7 @@ void StoreWS28xxDmx::Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) {
 void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, (void *)pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+	SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 
 	DEBUG_EXIT
 }
@@ -72,7 +72,7 @@ void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
 void StoreWS28xxDmx::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), (void *)&nDmxStartAddress, sizeof(uint32_t), WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS);
+	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS);
 
 	DEBUG_EXIT
 }

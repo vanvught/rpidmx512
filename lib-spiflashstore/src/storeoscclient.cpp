@@ -55,7 +55,7 @@ StoreOscClient::~StoreOscClient(void) {
 void StoreOscClient::Update(const struct TOscClientParams* pOscClientParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_OSC_CLIENT, (void *)pOscClientParams, sizeof(struct TOscClientParams));
+	SpiFlashStore::Get()->Update(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreOscClient::Update(const struct TOscClientParams* pOscClientParams) {
 void StoreOscClient::Copy(struct TOscClientParams* pOscClientParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_OSC_CLIENT, (void *)pOscClientParams, sizeof(struct TOscClientParams));
+	SpiFlashStore::Get()->Copy(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
 
 	DEBUG_EXIT
 }

@@ -55,7 +55,7 @@ StoreTCNet::~StoreTCNet(void) {
 void StoreTCNet::Update(const struct TTCNetParams* pTCNetParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_TCNET, (void *)pTCNetParams, sizeof(struct TTCNetParams));
+	SpiFlashStore::Get()->Update(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreTCNet::Update(const struct TTCNetParams* pTCNetParams) {
 void StoreTCNet::Copy(struct TTCNetParams* pTCNetParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_TCNET, (void *)pTCNetParams, sizeof(struct TTCNetParams));
+	SpiFlashStore::Get()->Copy(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
 
 	DEBUG_EXIT
 }

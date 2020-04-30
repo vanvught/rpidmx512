@@ -55,7 +55,7 @@ StoreSlushDmx::~StoreSlushDmx(void) {
 void StoreSlushDmx::Update(const struct TSlushDmxParams *pSlushDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_SLUSH, (void *)pSlushDmxParams, sizeof(struct TSlushDmxParams));
+	SpiFlashStore::Get()->Update(STORE_SLUSH, pSlushDmxParams, sizeof(struct TSlushDmxParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreSlushDmx::Update(const struct TSlushDmxParams *pSlushDmxParams) {
 void StoreSlushDmx::Copy(struct TSlushDmxParams *pSlushDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_SLUSH, (void *)pSlushDmxParams, sizeof(struct TSlushDmxParams));
+	SpiFlashStore::Get()->Copy(STORE_SLUSH, pSlushDmxParams, sizeof(struct TSlushDmxParams));
 
 	DEBUG_EXIT
 }

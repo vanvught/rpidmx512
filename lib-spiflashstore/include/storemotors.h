@@ -2,7 +2,7 @@
  * @file storemotors.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #include "l6470params.h"
 #include "modestore.h"
 
-class StoreMotors: public ModeParamsStore, MotorParamsStore, L6470ParamsStore, ModeStore {
+class StoreMotors: public ModeParamsStore, public MotorParamsStore, public L6470ParamsStore, public ModeStore {
 public:
 	StoreMotors(void);
 	~StoreMotors(void);

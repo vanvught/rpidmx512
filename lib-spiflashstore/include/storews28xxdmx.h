@@ -2,7 +2,7 @@
  * @file storews28xxdmx.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxstore.h"
 
-class StoreWS28xxDmx: public WS28xxDmxParamsStore, WS28xxDmxStore {
+class StoreWS28xxDmx: public WS28xxDmxParamsStore, public WS28xxDmxStore {
 public:
 	StoreWS28xxDmx(void);
 	~StoreWS28xxDmx(void);
@@ -42,7 +42,7 @@ public:
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
 
 public:
-	static StoreWS28xxDmx* Get(void) {
+	static StoreWS28xxDmx *Get(void) {
 		return s_pThis;
 	}
 

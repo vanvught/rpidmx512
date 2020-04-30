@@ -49,7 +49,7 @@ StoreArtNet4::~StoreArtNet4(void) {
 void StoreArtNet4::Update(const struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_ARTNET4, (void *)pArtNet4Params, sizeof(struct TArtNet4Params));
+	SpiFlashStore::Get()->Update(STORE_ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }
@@ -57,7 +57,7 @@ void StoreArtNet4::Update(const struct TArtNet4Params* pArtNet4Params) {
 void StoreArtNet4::Copy(struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_ARTNET4, (void *)pArtNet4Params, sizeof(struct TArtNet4Params));
+	SpiFlashStore::Get()->Copy(STORE_ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }

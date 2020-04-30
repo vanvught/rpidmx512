@@ -54,7 +54,7 @@ StoreRemoteConfig::~StoreRemoteConfig(void) {
 void StoreRemoteConfig::Update(const struct TRemoteConfigParams* pRemoteConfigParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_RCONFIG, (void *)pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
+	SpiFlashStore::Get()->Update(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 
 	DEBUG_EXIT
 }
@@ -62,7 +62,7 @@ void StoreRemoteConfig::Update(const struct TRemoteConfigParams* pRemoteConfigPa
 void StoreRemoteConfig::Copy(struct TRemoteConfigParams* pRemoteConfigParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_RCONFIG, (void *)pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
+	SpiFlashStore::Get()->Copy(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 
 	DEBUG_EXIT
 }

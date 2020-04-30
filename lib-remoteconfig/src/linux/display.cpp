@@ -1,8 +1,8 @@
 /**
- * @file storemidi.cpp
+ * @file display.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,85 @@
  * THE SOFTWARE.
  */
 
+#if __GNUC__ > 8
+ #pragma GCC diagnostic ignored "-Wunused-private-field"
+#endif
+
 #include <stdint.h>
 
-#include "storemidi.h"
-
-#include "midiparams.h"
-
-#include "spiflashstore.h"
+#include "display.h"
 
 #include "debug.h"
 
-StoreMidi *StoreMidi::s_pThis = 0;
+Display *Display::s_pThis = 0;
 
-StoreMidi::StoreMidi(void) {
+Display::Display(uint32_t nCols, uint32_t nRows):
+	m_tType(DISPLAY_TYPE_UNKNOWN),
+	m_LcdDisplay(0),
+	m_bIsSleep(false),
+	m_bHave7Segment(false),
+#if !defined(NO_HAL)
+	m_nMillis(0),
+#endif
+	m_nSleepTimeout(0)
+{
 	DEBUG_ENTRY
-
 	s_pThis = this;
-
-	DEBUG_PRINTF("%p", s_pThis);
-
 	DEBUG_EXIT
 }
 
-StoreMidi::~StoreMidi(void) {
+Display::Display(TDisplayTypes tDisplayType):
+	m_nCols(0),
+	m_nRows(0),
+	m_LcdDisplay(0),
+	m_bIsSleep(false),
+	m_bHave7Segment(false),
+#if !defined(NO_HAL)
+	m_nMillis(0),
+#endif
+	m_nSleepTimeout(0)
+{
 	DEBUG_ENTRY
-
+	s_pThis = this;
 	DEBUG_EXIT
 }
 
-void StoreMidi::Update(const struct TMidiParams* pMidiParams) {
+Display::~Display(void) {
 	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
 	DEBUG_EXIT
 }
 
-void StoreMidi::Copy(struct TMidiParams* pMidiParams) {
+void Display::Cls(void) {
 	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
 	DEBUG_EXIT
 }
+
+void Display::TextStatus(const char *pText, TDisplay7SegmentMessages nStatus) {
+	DEBUG_PUTS(pText);
+}
+
+uint8_t Display::Printf(uint8_t nLine, char const*, ...){
+	DEBUG_ENTRY
+	DEBUG_EXIT
+	return 0;
+}
+
+uint8_t Display::Write(uint8_t nLine, const char *pText) {
+	DEBUG_PUTS(pText);
+	return 0;
+}
+
+void Display::ClearLine(unsigned char){
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+#if !defined(NO_HAL)
+void Display::SetSleep(bool bSleep) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void Display::Run(void) {
+}
+#endif

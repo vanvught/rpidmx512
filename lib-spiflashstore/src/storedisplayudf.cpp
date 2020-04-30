@@ -55,7 +55,7 @@ StoreDisplayUdf::~StoreDisplayUdf(void) {
 void StoreDisplayUdf::Update(const struct TDisplayUdfParams *ptDisplayUdfParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_DISPLAYUDF, (void *)ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	SpiFlashStore::Get()->Update(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreDisplayUdf::Update(const struct TDisplayUdfParams *ptDisplayUdfParams)
 void StoreDisplayUdf::Copy(struct TDisplayUdfParams *ptDisplayUdfParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_DISPLAYUDF, (void *)ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	SpiFlashStore::Get()->Copy(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
 
 	DEBUG_EXIT
 }

@@ -70,6 +70,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_STEPPER,
 	REMOTE_CONFIG_MODE_PLAYER,
 	REMOTE_CONFIG_MODE_ARTNET,
+	REMOTE_CONFIG_MODE_SERIAL,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -86,7 +87,7 @@ enum TTxtFile {
 	TXT_FILE_OSC_CLIENT,
 	TXT_FILE_DISPLAY_UDF,
 	TXT_FILE_LTCDISPLAY,
-	TXT_FILE_DISPLAY_NEXTION,
+	TXT_FILE_MONITOR,
 #if defined(STEPPER)
 	TXT_FILE_SPARKFUN,
 	TXT_FILE_MOTOR0,
@@ -100,6 +101,7 @@ enum TTxtFile {
 #endif
 	TXT_FILE_RDM,
 	TXT_FILE_SHOW,
+	TXT_FILE_SERIAL,
 	TXT_FILE_LAST
 };
 
@@ -118,7 +120,7 @@ struct TRemoteConfigListBin {
 	uint8_t nType;				// TRemoteConfig
 	uint8_t nMode;				// TRemoteConfigMode
 	uint8_t nActiveUniverses;
-	uint8_t aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
+	char aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
 }__attribute__((packed));
 
 class RemoteConfig {
@@ -160,10 +162,13 @@ public:
 
 	int Run(void);
 
-public:
+	void TftpExit(void);
+
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
-	void TftpExit(void);
+	static RemoteConfig *Get(void) {
+		return s_pThis;
+	}
 
 private:
 	void HandleReboot(void);
@@ -196,14 +201,14 @@ private:
 	void HandleGetLtcDisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 #endif
+#if defined (DMX_MONITOR)
+	void HandleGetMonTxt(uint32_t& nSize);
+#endif
 #if defined (OSC_CLIENT)
 	void HandleGetOscClntTxt(uint32_t& nSize);
 #endif
 #if defined(DISPLAY_UDF)
 	void HandleGetDisplayTxt(uint32_t& nSize);
-#endif
-#if defined(DISPLAY_NEXTION)
-	void HandleGetNextionTxt(uint32_t& nSize);
 #endif
 #if defined(STEPPER)
 	void HandleGetSparkFunTxt(uint32_t& nSize);
@@ -214,6 +219,9 @@ private:
 #endif
 #if defined(SHOWFILE)
 	void HandleGetShowTxt(uint32_t& nSize);
+#endif
+#if defined (DMXSERIAL)
+	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
 
 	void HandleTxtFile(void);
@@ -240,14 +248,14 @@ private:
 	void HandleTxtFileLtcDisplay(void);
 	void HandleTxtFileTCNet(void);
 #endif
+#if defined (DMX_MONITOR)
+	void HandleTxtFileMon(void);
+#endif
 #if defined (OSC_CLIENT)
 	void HandleTxtFileOscClient(void);
 #endif
 #if defined(DISPLAY_UDF)
 	void HandleTxtFileDisplay(void);
-#endif
-#if defined(DISPLAY_NEXTION)
-	void HandleTxtFileNextion(void);
 #endif
 #if defined(STEPPER)
 	void HandleTxtFileSparkFun(void);
@@ -259,6 +267,9 @@ private:
 #if defined(SHOWFILE)
 	void HandleTxtFileShow(void);
 #endif
+#if defined (DMXSERIAL)
+	void HandleTxtFileSerial(void);
+#endif
 
 	void HandleDisplaySet(void);
 	void HandleDisplayGet(void);
@@ -268,14 +279,6 @@ private:
 
 	void HandleTftpSet(void);
 	void HandleTftpGet(void);
-
-public:
-	static RemoteConfig *Get(void) {
-		return s_pThis;
-	}
-
-private:
-	static RemoteConfig *s_pThis;
 
 private:
 	TRemoteConfig m_tRemoteConfig;
@@ -292,12 +295,14 @@ private:
 	uint32_t m_nIdLength;
 	struct TRemoteConfigListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle;
-	uint8_t *m_pUdpBuffer;
+	char *m_pUdpBuffer;
 	uint32_t m_nIPAddressFrom;
 	uint16_t m_nBytesReceived;
 	TRemoteConfigHandleMode m_tRemoteConfigHandleMode;
 	uint8_t *m_pStoreBuffer;
 	bool m_bIsReboot;
+
+	static RemoteConfig *s_pThis;
 };
 
 #endif /* REMOTECONFIG_H_ */

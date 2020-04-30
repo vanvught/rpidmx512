@@ -55,7 +55,7 @@ StoreLtc::~StoreLtc(void) {
 void StoreLtc::Update(const struct TLtcParams* pLtcParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_LTC, (void *)pLtcParams, sizeof(struct TLtcParams));
+	SpiFlashStore::Get()->Update(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
 
 	DEBUG_EXIT
 }
@@ -63,7 +63,7 @@ void StoreLtc::Update(const struct TLtcParams* pLtcParams) {
 void StoreLtc::Copy(struct TLtcParams* pLtcParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_LTC, (void *)pLtcParams, sizeof(struct TLtcParams));
+	SpiFlashStore::Get()->Copy(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
 
 	DEBUG_EXIT
 }

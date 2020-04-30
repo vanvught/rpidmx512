@@ -41,9 +41,9 @@ static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024,     32};
+static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024,     32,     32};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Nextion", "SparkFun", "Slush", "Motors", "Show"};
+static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -102,7 +102,7 @@ bool SpiFlashStore::Init(void) {
 		return false;
 	}
 
-	spi_flash_cmd_read_fast(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE, (void *) &m_aSpiFlashData);
+	spi_flash_cmd_read_fast(m_nStartAddress, SPI_FLASH_STORE_SIZE, &m_aSpiFlashData);
 
 	bool bSignatureOK = true;
 
@@ -120,7 +120,7 @@ bool SpiFlashStore::Init(void) {
 
 		// Clear bSetList
 		for (uint32_t j = 0; j < STORE_LAST; j++) {
-			const uint32_t nOffset = GetStoreOffset((enum TStore) j);
+			const uint32_t nOffset = GetStoreOffset(static_cast<enum TStore>(j));
 			uint32_t k = nOffset;
 			m_aSpiFlashData[k++] = 0x00;
 			m_aSpiFlashData[k++] = 0x00;
@@ -139,7 +139,7 @@ bool SpiFlashStore::Init(void) {
 	}
 
 	for (uint32_t j = 0; j < STORE_LAST; j++) {
-		uint8_t *pbSetList = &m_aSpiFlashData[GetStoreOffset((enum TStore) j)];
+		uint8_t *pbSetList = &m_aSpiFlashData[GetStoreOffset(static_cast<enum TStore>(j))];
 		if ((pbSetList[0] == 0xFF) && (pbSetList[1] == 0xFF) && (pbSetList[2] == 0xFF) && (pbSetList[3] == 0xFF)) {
 			DEBUG_PRINTF("[%s]: bSetList \'FF...FF\'", s_aStoreName[j]);
 			// Clear bSetList
@@ -183,7 +183,7 @@ void SpiFlashStore::ResetSetList(enum TStore tStore) {
 	m_tState = STORE_STATE_CHANGED;
 }
 
-void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
+void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
 	DEBUG1_ENTRY
 
 	if (__builtin_expect((!m_bHaveFlashChip),0)) {
@@ -196,14 +196,14 @@ void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void *pData, ui
 	assert(pData != 0);
 	assert((nOffset + nDataLength) <= s_aStorSize[tStore]);
 
-	debug_dump(pData, nDataLength);
+	debug_dump(const_cast<void*>(pData), nDataLength);
 
 	bool bIsChanged = false;
 
 	const uint32_t nBase = nOffset + GetStoreOffset(tStore);
 
-	const uint8_t *pSrc = (const uint8_t *) pData;
-	uint8_t *pDst = (uint8_t *) &m_aSpiFlashData[nBase];
+	const uint8_t *pSrc = static_cast<const uint8_t*>(pData);
+	uint8_t *pDst = &m_aSpiFlashData[nBase];
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		if (*pSrc != *pDst) {
@@ -219,7 +219,7 @@ void SpiFlashStore::Update(enum TStore tStore, uint32_t nOffset, void *pData, ui
 	}
 
 	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
-		uint32_t *pSet = (uint32_t *) (&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffsetSetList);
+		uint32_t *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffsetSetList));
 
 		*pSet |= nSetList;
 	}
@@ -241,7 +241,7 @@ void SpiFlashStore::Copy(enum TStore tStore, void *pData, uint32_t nDataLength, 
 	assert(pData != 0);
 	assert((nDataLength + nOffset) <= s_aStorSize[tStore]);
 
-	const uint32_t *pSet = (uint32_t *) ((uint8_t *)&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset);
+	const uint32_t *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset));
 
 	DEBUG_PRINTF("*pSet=0x%x", (uint32_t) *pSet);
 
@@ -251,8 +251,8 @@ void SpiFlashStore::Copy(enum TStore tStore, void *pData, uint32_t nDataLength, 
 		return;
 	}
 
-	const uint8_t *pSrc = (const uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset;
-	uint8_t *pDst = (uint8_t *) pData;
+	const uint8_t *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]) + nOffset;
+	uint8_t *pDst = static_cast<uint8_t*>(pData);
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		*pDst++ = *pSrc++;
@@ -264,15 +264,15 @@ void SpiFlashStore::Copy(enum TStore tStore, void *pData, uint32_t nDataLength, 
 void SpiFlashStore::CopyTo(enum TStore tStore, void* pData, uint32_t& nDataLength) {
 	DEBUG1_ENTRY
 
-	if (__builtin_expect(((unsigned) tStore >= (unsigned) STORE_LAST), 0)) {
+	if (__builtin_expect((static_cast<unsigned>(tStore) >= STORE_LAST), 0)) {
 		nDataLength = 0;
 		return;
 	}
 
 	nDataLength = s_aStorSize[tStore];
 
-	const uint8_t *pSrc = (const uint8_t *) &m_aSpiFlashData[GetStoreOffset(tStore)];
-	uint8_t *pDst = (uint8_t *) pData;
+	const uint8_t *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]);
+	uint8_t *pDst = static_cast<uint8_t*>(pData);
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		*pDst++ = *pSrc++;
@@ -297,12 +297,12 @@ bool SpiFlashStore::Flash(void) {
 
 	switch (m_tState) {
 		case STORE_STATE_CHANGED:
-			spi_flash_cmd_erase(m_nStartAddress, (size_t) SPI_FLASH_STORE_SIZE);
+			spi_flash_cmd_erase(m_nStartAddress, SPI_FLASH_STORE_SIZE);
 			m_tState = STORE_STATE_ERASED;
 			return true;
 			break;
 		case STORE_STATE_ERASED:
-			spi_flash_cmd_write_multi(m_nStartAddress, (size_t) m_nSpiFlashStoreSize, (const void *)&m_aSpiFlashData);
+			spi_flash_cmd_write_multi(m_nStartAddress, m_nSpiFlashStoreSize, &m_aSpiFlashData);
 			m_tState = STORE_STATE_IDLE;
 			break;
 		default:
@@ -334,7 +334,7 @@ void SpiFlashStore::Dump(void) {
 	for (uint32_t j = 0; j < STORE_LAST; j++) {
 		printf("Store [%s]:%d\n", s_aStoreName[j], j);
 
-		uint8_t *p = (uint8_t *) (&m_aSpiFlashData[GetStoreOffset((enum TStore) j)]);
+		uint8_t *p = &m_aSpiFlashData[GetStoreOffset(static_cast<enum TStore>(j))];
 		debug_dump(p, s_aStorSize[j]);
 
 		printf("\n");

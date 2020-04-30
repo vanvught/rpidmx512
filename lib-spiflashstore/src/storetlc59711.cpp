@@ -56,7 +56,7 @@ StoreTLC59711::~StoreTLC59711(void) {
 void StoreTLC59711::Update(const struct TTLC59711DmxParams* pTLC59711DmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, (void *)pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
 
 	DEBUG_EXIT
 }
@@ -64,7 +64,7 @@ void StoreTLC59711::Update(const struct TTLC59711DmxParams* pTLC59711DmxParams) 
 void StoreTLC59711::Copy(struct TTLC59711DmxParams* pTLC59711DmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, (void *)pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
 
 	DEBUG_EXIT
 }
@@ -72,7 +72,7 @@ void StoreTLC59711::Copy(struct TTLC59711DmxParams* pTLC59711DmxParams) {
 void StoreTLC59711::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), (void *)&nDmxStartAddress, sizeof(uint32_t), TLC59711DMX_PARAMS_MASK_START_ADDRESS);
+	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DMX_PARAMS_MASK_START_ADDRESS);
 
 	DEBUG_EXIT
 }

@@ -37,7 +37,7 @@ public:
 	void Copy(struct TShowFileParams *ptShowFileParams);
 
 public:
-	static StoreShowFile* Get(void) {
+	static StoreShowFile *Get(void) {
 		return s_pThis;
 	}
 

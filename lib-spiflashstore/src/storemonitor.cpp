@@ -1,8 +1,8 @@
 /**
- * @file storetlc59711.h
+ * @file storemonitor.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,48 @@
  * THE SOFTWARE.
  */
 
-#ifndef STORETLC59711_H_
-#define STORETLC59711_H_
 
 #include <stdint.h>
+#include <assert.h>
 
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmxstore.h"
+#include "storemonitor.h"
 
-class StoreTLC59711: public TLC59711DmxParamsStore, public TLC59711DmxStore {
-public:
-	StoreTLC59711(void);
-	~StoreTLC59711(void);
+#include "dmxmonitorparams.h"
 
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+#include "spiflashstore.h"
 
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
+#include "debug.h"
 
-public:
-	static StoreTLC59711 *Get(void) {
-		return s_pThis;
-	}
+StoreMonitor *StoreMonitor::s_pThis = 0;
 
-private:
-	static StoreTLC59711 *s_pThis;
-};
+StoreMonitor::StoreMonitor(void) {
+	DEBUG_ENTRY
 
-#endif /* STORETLC59711_H_ */
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", s_pThis);
+
+	DEBUG_EXIT
+}
+
+StoreMonitor::~StoreMonitor(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void StoreMonitor::Update(const struct TDMXMonitorParams *pDMXMonitorParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+
+	DEBUG_EXIT
+}
+
+void StoreMonitor::Copy(struct TDMXMonitorParams *pDMXMonitorParams) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Copy(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+
+	DEBUG_EXIT
+}

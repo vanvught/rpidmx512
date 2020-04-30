@@ -29,7 +29,7 @@
 #include "artnetparams.h"
 #include "artnetstore.h"
 
-class StoreArtNet: public ArtNetParamsStore, ArtNetStore {
+class StoreArtNet: public ArtNetParamsStore, public ArtNetStore {
 public:
 	StoreArtNet(void);
 	~StoreArtNet(void);

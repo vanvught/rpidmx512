@@ -55,7 +55,7 @@ StoreE131::~StoreE131(void) {
 void StoreE131::Update(const struct TE131Params* pE131Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_E131, (void *)pE131Params, sizeof(struct TE131Params));
+	SpiFlashStore::Get()->Update(STORE_E131, pE131Params, sizeof(struct TE131Params));
 
 	DEBUG_EXIT
 }
@@ -63,23 +63,7 @@ void StoreE131::Update(const struct TE131Params* pE131Params) {
 void StoreE131::Copy(struct TE131Params* pE131Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_E131, (void *)pE131Params, sizeof(struct TE131Params));
+	SpiFlashStore::Get()->Copy(STORE_E131, pE131Params, sizeof(struct TE131Params));
 
 	DEBUG_EXIT
 }
-
-//void StoreE131::UpdateUuid(const uuid_t uuid) {
-//	DEBUG_ENTRY
-//
-//	SpiFlashStore::Get()->UuidUpdate(uuid);
-//
-//	DEBUG_EXIT
-//}
-//
-//void StoreE131::CopyUuid(uuid_t uuid) {
-//	DEBUG_ENTRY
-//
-//	SpiFlashStore::Get()->UuidCopyTo(uuid);
-//
-//	DEBUG_EXIT
-//}

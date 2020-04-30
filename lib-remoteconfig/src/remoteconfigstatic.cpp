@@ -41,35 +41,35 @@
 
 static const char sTxtFile[TXT_FILE_LAST][15] ALIGNED = {
 		"rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt",
-		"ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "ldisplay.txt", "nextion.txt",
+		"ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "ldisplay.txt", "mon.txt",
 #if defined(STEPPER)
 		"sparkfun.txt",
 		"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt",
 		"motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt",
 #endif
-		"rdm_device.txt", "show.txt"
+		"rdm_device.txt", "show.txt", "serial.txt"
 };
 
 static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
-		11, 11, 10,8, 7, 10, 11, 7, 9, 11, 11, 12, 11,
+		11, 11, 10,8, 7, 10, 11,
+		7, 9, 11, 11, 12, 7,
 #if defined(STEPPER)
 		12,
 		10, 10, 10, 10,
 		10, 10, 10, 10,
 #endif
-		14, 8
+		14, 8, 10
 };
 
 static const TStore sMap[TXT_FILE_LAST] ALIGNED = { STORE_RCONFIG,
-		STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND,
-		STORE_WS28XXDMX, STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT,
-		STORE_DISPLAYUDF, STORE_LTCDISPLAY, STORE_NEXTION,
+		STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX,
+		STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT, STORE_DISPLAYUDF, STORE_LTCDISPLAY, STORE_MONITOR,
 #if defined(STEPPER)
 		STORE_SPARKFUN,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 #endif
-		STORE_RDMDEVICE, STORE_SHOW
+		STORE_RDMDEVICE, STORE_SHOW, STORE_SERIAL
 };
 
 uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
@@ -79,11 +79,11 @@ uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
 	DEBUG_PRINTF("nLength=%d", nLength);
 
 #ifndef NDEBUG
-	debug_dump((void *)p, 16);
+	debug_dump(const_cast<void*>(p), 16);
 #endif
 
 	for (i = 0; i < TXT_FILE_LAST; i++) {
-		if (memcmp(p, (const void *) sTxtFile[i], MIN(sTxtFileNameLength[i], nLength)) == 0) {
+		if (memcmp(p, sTxtFile[i], MIN(sTxtFileNameLength[i], nLength)) == 0) {
 			nLength = sTxtFileNameLength[i];
 			break;
 		}
