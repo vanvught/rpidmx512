@@ -2,7 +2,7 @@
  * @file tc1602.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,10 @@ public:
 	void Text(const char *, uint8_t);
 
 	void SetCursorPos(uint8_t, uint8_t);
+
+#if defined(ENABLE_CURSOR_MODE)
 	void SetCursor(TCursorMode);
+#endif
 
 private:
 	void Setup(void);

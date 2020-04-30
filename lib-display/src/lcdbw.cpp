@@ -2,7 +2,7 @@
  * @file lcdbw.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,13 +58,13 @@ extern void udelay(uint32_t);
 LcdBw::LcdBw(void): m_nSlaveAddress(BW_LCD_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0) {
 }
 
-LcdBw::LcdBw(const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(BW_LCD_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0) {
+LcdBw::LcdBw(uint8_t nCols, uint8_t nRows): m_nSlaveAddress(BW_LCD_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 }
 
-LcdBw::LcdBw(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_nWriteMicros(0) {
-	if (nSlaveAddress == (uint8_t) 0) {
+LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_nWriteMicros(0) {
+	if (nSlaveAddress == 0) {
 		m_nSlaveAddress = BW_LCD_DEFAULT_SLAVE_ADDRESS;
 	} else {
 		m_nSlaveAddress = nSlaveAddress;
@@ -90,13 +90,13 @@ bool LcdBw::Start(void) {
 }
 
 void LcdBw::Cls(void) {
-	char cmd[] = { (char) BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
+	char cmd[] = { BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
 
 	Setup();
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::TextLine(const uint8_t nLine, const char *data, const uint8_t nLength) {
+void LcdBw::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -118,8 +118,8 @@ void LcdBw::TextLine(const uint8_t nLine, const char *data, const uint8_t nLengt
 
 void LcdBw::PutChar(int c) {
 	char data[2];
-	data[0] = (char) BW_PORT_WRITE_DISPLAY_DATA;
-	data[1] = (char) c;
+	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
+	data[1] = c;
 
 	Setup();
 	Write(data, 2);
@@ -128,9 +128,9 @@ void LcdBw::PutChar(int c) {
 void LcdBw::PutString(const char *s) {
 	int i;
 	char data[(4 * 20)];
-	char *p = (char *) s;
+	const char *p = s;
 
-	data[0] = (char) BW_PORT_WRITE_DISPLAY_DATA;
+	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
 	for (i = 1; (i < m_nCols * m_nRows) && (*p != '\0'); i++) {
 		data[i] = *p;
@@ -145,7 +145,7 @@ void LcdBw::Text(const char *pText, uint8_t nLength) {
 	uint8_t i;
 	char data[32];
 
-	data[0] = (char) BW_PORT_WRITE_DISPLAY_DATA;
+	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
 	if (nLength > m_nCols) {
 		nLength = m_nCols;
@@ -160,18 +160,18 @@ void LcdBw::Text(const char *pText, uint8_t nLength) {
 }
 
 void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
-	char cmd[] = { (char) BW_PORT_WRITE_MOVE_CURSOR, (char) 0x00 };
+	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
 
-	cmd[1] = (char) ((line & 0x03) << 5) | (col & 0x1f);
+	cmd[1] = ((line & 0x03) << 5) | (col & 0x1f);
 
 	Setup();
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::ClearLine(const uint8_t nLine) {
+void LcdBw::ClearLine(uint8_t nLine) {
 	char data[32];
 
-	data[0] = (char) BW_PORT_WRITE_DISPLAY_DATA;
+	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
 	for (int i = 1; i < m_nCols; i++) {
 		data[i] = ' ';
@@ -189,7 +189,7 @@ void LcdBw::Setup(void) {
 void LcdBw::SetCursor(const TCursorMode constEnumTCursorOnOff) {
 }
 
-void LcdBw::Write(const char *buffer, const uint32_t size) {
+void LcdBw::Write(const char *buffer, uint32_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;
 
 	if (elapsed < BW_LCD_I2C_BYTE_WAIT_US) {

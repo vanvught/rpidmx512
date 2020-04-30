@@ -37,7 +37,7 @@
 #define DISPLAY_SLEEP_TIMEOUT_DEFAULT	5
 
 enum TDisplayTypes {
-	DISPLAY_BW_UI_1602 = 0,
+	DISPLAY_BW_UI_1602,
 	DISPLAY_BW_LCD_1602,
 	DISPLAY_PCF8574T_1602,
 	DISPLAY_PCF8574T_2004,
@@ -47,11 +47,18 @@ enum TDisplayTypes {
 
 class Display {
 public:
-	Display(uint8_t nCols, uint8_t nRows);
+	Display(uint32_t nCols, uint32_t nRows);
 	Display(TDisplayTypes tDisplayType = DISPLAY_SSD1306);
 	~Display(void);
 
+#if !defined(NO_HAL)
+	void SetSleep(bool bSleep);
+	bool isSleep(void) {
+		return m_bIsSleep;
+	}
+
 	void Run(void);
+#endif
 
 	void Cls(void);
 	void ClearLine(uint8_t nLine);
@@ -80,13 +87,11 @@ public:
 		return m_tType;
 	}
 
+#if defined(ENABLE_CURSOR_MODE)
 	void SetCursor(TCursorMode EnumTCursorOnOff);
-	void SetCursorPos(uint8_t nCol, uint8_t nRow);
+#endif
 
-	void SetSleep(bool bSleep);
-	bool isSleep(void) {
-		return m_bIsSleep;
-	}
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
@@ -112,18 +117,20 @@ public:
 	}
 
 private:
-	void Detect(uint8_t nCols, uint8_t nRows);
+	void Detect(uint32_t nCols, uint32_t nRows);
 	void Init7Segment(void);
 	TDisplay7SegmentCharacters Get7SegmentData(uint8_t nValue);
 
 private:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
+	uint32_t m_nCols;
+	uint32_t m_nRows;
 	TDisplayTypes m_tType;
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
 	bool m_bHave7Segment;
+#if !defined(NO_HAL)
 	uint32_t m_nMillis;
+#endif
 	uint32_t m_nSleepTimeout;
 
 	static Display *s_pThis;

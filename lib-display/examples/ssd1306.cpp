@@ -2,7 +2,7 @@
  * @file ssd1306.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,9 +49,9 @@ int main(int argc, char **argv) {
 	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
 
 	if (isDetected) {
-		printf("Display type : %d\n", (int) display.GetDetectedType());
+		printf("Display type : %d\n", static_cast<int>(display.GetDetectedType()));
 		for (int i = 1; i <= 8; i++) {	// We assume OLED_PANEL_128x64_8ROWS
-			display.Printf(i, "Line %d", (int) i);
+			display.Printf(i, "Line %d", static_cast<int>(i));
 		}
 	}
 

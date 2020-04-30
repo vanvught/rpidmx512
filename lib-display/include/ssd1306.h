@@ -2,7 +2,7 @@
  * @file ssd1306.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,19 +57,33 @@ public:
 	void Text(const char *, uint8_t);
 
 	void SetCursorPos(uint8_t, uint8_t);
-	void SetCursor(TCursorMode);
 
 	void SetSleep(bool bSleep) override;
 
+	bool IsSH1106(void) {
+		return m_bHaveSH1106;
+	}
+
+#if defined(ENABLE_CURSOR_MODE)
+	void SetCursor(TCursorMode);
+#endif
+
+	static Ssd1306* Get(void) {
+		return s_pThis;
+	}
+
 private:
 	void Setup(void);
+	void CheckSH1106(void);
 	void InitMembers(void);
 	void SendCommand(uint8_t);
 	void SendData(const uint8_t *, uint32_t);
 
+#if defined(ENABLE_CURSOR_MODE)
 	void SetCursorOn(void);
 	void SetCursorOff(void);
 	void SetCursorBlinkOn(void);
+#endif
 
 #ifndef NDEBUG
 	void DumpShadowRam(void);
@@ -78,12 +92,16 @@ private:
 private:
 	uint8_t m_nSlaveAddress;
 	TOledPanel m_OledPanel;
+	uint32_t m_nPages;
 	TCursorMode m_tCursorMode;
-	alignas(uint32_t) char *m_pShadowRam;
+	alignas(uintptr_t) char *m_pShadowRam;
 	uint16_t m_nShadowRamIndex;
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
+	bool m_bHaveSH1106;
+
+	static Ssd1306 *s_pThis;
 };
 
 #endif /* SSD1306_H_ */

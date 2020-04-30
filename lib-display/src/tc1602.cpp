@@ -2,7 +2,7 @@
  * @file tc1602.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602
 }
 
 Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
-	if (nSlaveAddress == (uint8_t) 0) {
+	if (nSlaveAddress == 0) {
 		m_nSlaveAddress = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
 	}
 
@@ -112,7 +112,6 @@ Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t n
 Tc1602::~Tc1602(void) {
 }
 
-
 bool Tc1602::Start(void) {
 	i2c_begin();
 
@@ -122,32 +121,32 @@ bool Tc1602::Start(void) {
 		return false;
 	}
 
-	WriteCmd((uint8_t) 0x33);	///< 110011 Initialize
-	WriteCmd((uint8_t) 0x32);	///< 110010 Initialize
+	WriteCmd(0x33);	///< 110011 Initialize
+	WriteCmd(0x32);	///< 110010 Initialize
 
-	WriteCmd((uint8_t) (TC1602_IC_FUNC | TC1602_IC_FUNC_4BIT | TC1602_IC_FUNC_2LINE | TC1602_IC_FUNC_5x8DOTS)); ///< Data length, number of lines, font size
-	WriteCmd((uint8_t) (TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON | TC1602_IC_DISPLAY_CURSOR_OFF | TC1602_IC_DISPLAY_BLINK_OFF));	///< Display On,Cursor Off, Blink Off
-	WriteCmd((uint8_t) TC1602_IC_CLS);
+	WriteCmd((TC1602_IC_FUNC | TC1602_IC_FUNC_4BIT | TC1602_IC_FUNC_2LINE | TC1602_IC_FUNC_5x8DOTS)); ///< Data length, number of lines, font size
+	WriteCmd((TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON | TC1602_IC_DISPLAY_CURSOR_OFF | TC1602_IC_DISPLAY_BLINK_OFF));	///< Display On,Cursor Off, Blink Off
+	WriteCmd(TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
-	WriteCmd((uint8_t) (TC1602_IC_ENTRY_MODE | TC1602_IC_ENTRY_MODE_INC));	///< Cursor move direction
+	WriteCmd((TC1602_IC_ENTRY_MODE | TC1602_IC_ENTRY_MODE_INC));	///< Cursor move direction
 
 	return true;
 }
 
 void Tc1602::Cls(void) {
-	WriteCmd((uint8_t) TC1602_IC_CLS);
+	WriteCmd(TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 }
 
 void Tc1602::PutChar(int c) {
-	WriteReg((uint8_t) c);
+	WriteReg(c);
 }
 
 void Tc1602::PutString(const char *pString) {
-	char *p = (char *)pString;
+	const char *p = pString;
 
 	for (uint32_t i = 0; *p != '\0'; i++) {
-		PutChar((int) *p);
+		PutChar(static_cast<int>(*p));
 		p++;
 	}
 }
@@ -158,7 +157,7 @@ void Tc1602::Text(const char *data, uint8_t nLength) {
 	}
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		WriteReg((uint8_t) data[i]);
+		WriteReg(data[i]);
 	}
 }
 
@@ -179,12 +178,19 @@ void Tc1602::ClearLine(uint8_t nLine) {
 	SetCursorPos(0, nLine - 1);
 
 	for (uint32_t i = 0; i < m_nCols; i++) {
-		WriteReg((uint8_t) ' ');
+		WriteReg(' ');
 	}
 
 	SetCursorPos(0, nLine - 1);
 }
 
+void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
+	assert(row <= 3);
+
+	const uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+
+	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
+}
 
 void Tc1602::Setup(void) {
 	i2c_set_address(m_nSlaveAddress);
@@ -196,19 +202,26 @@ void Tc1602::Setup(void) {
 	}
 }
 
-void Tc1602::Write4bits(const uint8_t data) {
+void Tc1602::Write4bits(uint8_t data) {
 	Setup();
 	i2c_write(data);
 	lcd_toggle_enable(data);
 }
 
-void Tc1602::WriteCmd(const uint8_t cmd) {
-	Write4bits(cmd & (uint8_t) 0xF0);
-	Write4bits((cmd << 4) & (uint8_t) 0xF0);
+void Tc1602::WriteCmd(uint8_t cmd) {
+	Write4bits(cmd & 0xF0);
+	Write4bits((cmd << 4) & 0xF0);
 	udelay(EXEC_TIME_CMD);
 }
 
-void Tc1602::SetCursor(const TCursorMode tCursorOnOff) {
+void Tc1602::WriteReg(const uint8_t reg) {
+	Write4bits(TC1602_RS | (reg & 0xF0));
+	Write4bits(TC1602_RS | ((reg << 4) & 0xF0));
+	udelay(EXEC_TIME_REG);
+}
+
+#if defined(ENABLE_CURSOR_MODE)
+void Tc1602::SetCursor(TCursorMode tCursorOnOff) {
 	uint8_t mode = TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON;
 
 	if ((tCursorOnOff & SET_CURSOR_ON) == SET_CURSOR_ON ){
@@ -221,17 +234,4 @@ void Tc1602::SetCursor(const TCursorMode tCursorOnOff) {
 
 	WriteCmd(mode);
 }
-
-void Tc1602::WriteReg(const uint8_t reg) {
-	Write4bits((uint8_t) TC1602_RS | (reg & (uint8_t) 0xF0));
-	Write4bits((uint8_t) TC1602_RS | ((reg << 4) & (uint8_t) 0xF0));
-	udelay(EXEC_TIME_REG);
-}
-
-void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
-	assert(row <= 3);
-
-	const uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-
-	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
-}
+#endif

@@ -37,7 +37,9 @@
 
 #include "i2c.h"
 
-#include "hardware.h"
+#if !defined(NO_HAL)
+ #include "hardware.h"
+#endif
 
 #define MCP23017_I2C_ADDRESS	0x20
 #define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
@@ -46,12 +48,14 @@
 
 Display *Display::s_pThis = 0;
 
-Display::Display(uint8_t nCols, uint8_t nRows):
+Display::Display(uint32_t nCols, uint32_t nRows):
 	m_tType(DISPLAY_TYPE_UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
 	m_bHave7Segment(false),
+#if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
+#endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
 	s_pThis = this;
@@ -66,7 +70,7 @@ Display::Display(TDisplayTypes tDisplayType):
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
 	m_bHave7Segment(false),
-#if !defined(RASPPI)
+#if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
@@ -113,10 +117,14 @@ Display::Display(TDisplayTypes tDisplayType):
 		}
 	}
 
+	if (m_LcdDisplay == 0){
+		m_nSleepTimeout = 0;
+	}
+
 	Init7Segment();
 }
 
-void Display::Detect(uint8_t nCols, uint8_t nRows) {
+void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 	m_LcdDisplay = 0;
@@ -171,6 +179,8 @@ void Display::Detect(uint8_t nCols, uint8_t nRows) {
 	if (m_LcdDisplay != 0) {
 		m_nCols = m_LcdDisplay->GetColumns();
 		m_nRows = m_LcdDisplay->GetRows();
+	} else {
+		m_nSleepTimeout = 0;
 	}
 }
 
@@ -194,23 +204,33 @@ void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 }
 
 void Display::TextStatus(const char *pText) {
-	ClearLine(m_nRows);
+	if (m_LcdDisplay == 0) {
+		return;
+	}
+
+	SetCursorPos(0, m_nRows - 1);
+
+	for (uint32_t i = 0; i < m_nCols - 1; i++) {
+		PutChar(' ');
+	}
+
+	SetCursorPos(0, m_nRows - 1);
+
 	Write(m_nRows, pText);
 }
 
 uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
-	int i;
-	char buffer[32];
-
 	if (m_LcdDisplay == 0) {
 		return 0;
 	}
+
+	char buffer[32];
 
 	va_list arp;
 
 	va_start(arp, format);
 
-	i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+	int i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
 
 	va_end(arp);
 
@@ -220,28 +240,21 @@ uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
 }
 
 uint8_t Display::Write(uint8_t nLine, const char *pText) {
-	const char *p = pText;
-
 	if (m_LcdDisplay == 0) {
 		return 0;
 	}
 
-	while (*p != 0) {
+	const char *p = pText;
+
+	while (*p != 0) { //FIXME check for max length
 		++p;
 	}
 
-	const size_t nLength =  (size_t) (p - pText);
+	const uint8_t nLength = static_cast<uint8_t>((p - pText));
 
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 
 	return nLength;
-}
-
-void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
-	if (m_LcdDisplay == 0) {
-		return;
-	}
-	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
 
 void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
@@ -272,20 +285,6 @@ void Display::ClearLine(uint8_t nLine) {
 	m_LcdDisplay->ClearLine(nLine);
 }
 
-void Display::SetSleep(bool bSleep) {
-	if (m_LcdDisplay == 0) {
-		return;
-	}
-
-	m_bIsSleep = bSleep;
-
-	m_LcdDisplay->SetSleep(bSleep);
-
-	if(!bSleep) {
-		m_nMillis = Hardware::Get()->Millis();
-	}
-}
-
 // Support for 2 digits 7-segment based on MCP23017
 
 void Display::Init7Segment(void) {
@@ -301,7 +300,7 @@ void Display::Init7Segment(void) {
 void Display::Status(TDisplay7SegmentMessages nStatus) {
 	if (m_bHave7Segment) {
 		i2c_set_address(SEGMENT7_I2C_ADDRESS);
-		i2c_write_reg_uint16(MCP23X17_GPIOA, (uint16_t)~nStatus);
+		i2c_write_reg_uint16(MCP23X17_GPIOA, static_cast<uint16_t>(~nStatus));
 	}
 }
 
@@ -373,11 +372,11 @@ void Display::Status(uint8_t nValue, bool bHex) {
 		uint16_t n7SegmentData;
 
 		if (!bHex) {
-			n7SegmentData = (uint16_t) Get7SegmentData(nValue / 10);
-			n7SegmentData |= (uint16_t) Get7SegmentData(nValue % 10) << 8;
+			n7SegmentData = Get7SegmentData(nValue / 10);
+			n7SegmentData |= Get7SegmentData(nValue % 10) << 8;
 		} else {
-			n7SegmentData = (uint16_t) Get7SegmentData(nValue & 0x0F);
-			n7SegmentData |= (uint16_t) Get7SegmentData((nValue >> 4) & 0x0F) << 8;
+			n7SegmentData = Get7SegmentData(nValue & 0x0F);
+			n7SegmentData |= Get7SegmentData((nValue >> 4) & 0x0F) << 8;
 		}
 
 		i2c_set_address(SEGMENT7_I2C_ADDRESS);
@@ -388,6 +387,30 @@ void Display::Status(uint8_t nValue, bool bHex) {
 void Display::TextStatus(const char *pText, uint8_t nValue, bool bHex) {
 	TextStatus(pText);
 	Status(nValue, bHex);
+}
+
+#if defined(ENABLE_CURSOR_MODE)
+void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
+	if (m_LcdDisplay == 0) {
+		return;
+	}
+	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
+}
+#endif
+
+#if !defined(NO_HAL)
+void Display::SetSleep(bool bSleep) {
+	if (m_LcdDisplay == 0) {
+		return;
+	}
+
+	m_bIsSleep = bSleep;
+
+	m_LcdDisplay->SetSleep(bSleep);
+
+	if(!bSleep) {
+		m_nMillis = Hardware::Get()->Millis();
+	}
 }
 
 void Display::Run(void) {
@@ -401,3 +424,4 @@ void Display::Run(void) {
 		}
 	}
 }
+#endif

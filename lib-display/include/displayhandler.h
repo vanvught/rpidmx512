@@ -1,8 +1,8 @@
 /**
- * @file lcd2004.cpp
+ * @file displayhandler.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,53 @@
  * THE SOFTWARE.
  */
 
+#ifndef DISPLAYHANDLER_H_
+#define DISPLAYHANDLER_H_
+
+#include <stdint.h>
 #include <stdio.h>
 
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include "ledblinkdisplay.h"
 
-#include "bcm2835.h"
-
+#include "ledblink.h"
 #include "display.h"
 
-int main(int argc, char **argv) {
-	if (getuid() != 0) {
-		fprintf(stderr, "Error: Not started with 'root'\n");
-		return -1;
-	}
+class DisplayHandler: public LedBlinkDisplay {
+public:
+	DisplayHandler(void): m_bHaveDisplay(Display::Get() != 0) {}
+	~DisplayHandler(void) {}
 
-	if (bcm2835_init() != 1) {
-		fprintf(stderr, "bcm2835_init() failed\n");
-		return -2;
-	}
+	void Print(uint32_t nState) {
+		if (m_bHaveDisplay) {
+			char c;
+			switch (static_cast<tLedBlinkMode>(nState)) {
+				case LEDBLINK_MODE_OFF_OFF:
+					c = 'O';
+					break;
+				case LEDBLINK_MODE_OFF_ON:
+					c = 'O';
+					break;
+				case LEDBLINK_MODE_NORMAL:
+					c = 'N';
+					break;
+				case LEDBLINK_MODE_DATA:
+					c = 'D';
+					break;
+				case LEDBLINK_MODE_FAST:
+					c = 'F';
+					break;
+				default:
+					c = 'U';
+					break;
+			}
 
-	Display display(DISPLAY_PCF8574T_2004);
-
-	bool isDetected = display.isDetected();
-
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
-
-	if (isDetected) {
-		printf("Display type : %d\n", static_cast<int>(display.GetDetectedType()));
-		for (int i = 1; i <= 4; i++) {
-			display.Printf(i, "Line %d", static_cast<int>(i));
+			Display::Get()->SetCursorPos(20,7);
+			Display::Get()->PutChar(c);
 		}
 	}
 
-	return 0;
-}
+private:
+	bool m_bHaveDisplay;
+};
+
+#endif /* DISPLAYHANDLER_H_ */

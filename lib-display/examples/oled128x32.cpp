@@ -2,7 +2,7 @@
  * @file oled128x32.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 	if (isDetected) {
 		for (int i = 1; i <= 4; i++) {
 			ssd1306.TextLine(i, line, sizeof(line) - 1);
-			ssd1306.PutChar((int) '0' + i);
+			ssd1306.PutChar('0' + i);
 		}
 	}
 
