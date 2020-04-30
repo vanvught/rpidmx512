@@ -3,7 +3,6 @@
 	<name>lib-e131</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

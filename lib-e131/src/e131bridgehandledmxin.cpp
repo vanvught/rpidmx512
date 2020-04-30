@@ -50,8 +50,8 @@ void E131Bridge::FillDataPacket(void) {
 	m_pE131DataPacket->FrameLayer.SynchronizationAddress = __builtin_bswap16(0); // Currently not supported
 	m_pE131DataPacket->FrameLayer.Options = 0;
 	// Data Layer
-	m_pE131DataPacket->DMPLayer.Vector = (uint8_t) E131_VECTOR_DMP_SET_PROPERTY;
-	m_pE131DataPacket->DMPLayer.Type = (uint8_t) 0xa1;
+	m_pE131DataPacket->DMPLayer.Vector = E131_VECTOR_DMP_SET_PROPERTY;
+	m_pE131DataPacket->DMPLayer.Type = 0xa1;
 	m_pE131DataPacket->DMPLayer.FirstAddressProperty = __builtin_bswap16(0x0000);
 	m_pE131DataPacket->DMPLayer.AddressIncrement = __builtin_bswap16(0x0001);
 }
@@ -68,18 +68,18 @@ void E131Bridge::HandleDmxIn(void) {
 
 			if (pDmxData != 0) {
 				// Root Layer (See Section 5)
-				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | ((uint16_t) DATA_ROOT_LAYER_LENGTH(nLength)));
+				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength)));
 				// E1.31 Framing Layer (See Section 6)
-				m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (uint16_t) (DATA_FRAME_LAYER_LENGTH(nLength)));
+				m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength)));
 				m_pE131DataPacket->FrameLayer.Priority = m_InputPort[i].nPriority;
 				m_pE131DataPacket->FrameLayer.SequenceNumber = m_InputPort[i].nSequenceNumber++;
 				m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(m_InputPort[i].nUniverse);
 				// Data Layer
-				m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (uint16_t) (DATA_LAYER_LENGTH(nLength)));
-				memcpy((void *) m_pE131DataPacket->DMPLayer.PropertyValues, (const void *) pDmxData, nLength);
+				m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(nLength)));
+				memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
 				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(nLength);
 
-				Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
+				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
 
 				m_State.bIsReceivingDmx = true;
 			} else {

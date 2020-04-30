@@ -76,9 +76,6 @@ public:
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
-
-//	virtual void UpdateUuid(const uuid_t uuid)=0;
-//	virtual void CopyUuid(uuid_t uuid)=0;
 };
 
 class E131Params {
@@ -89,8 +86,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TE131Params *ptE131Params, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(E131Bridge *);
 
@@ -105,7 +102,7 @@ public:
 	}
 
 	TE131Merge GetMergeMode(void) {
-		return (TE131Merge) m_tE131Params.nMergeMode;
+		return static_cast<TE131Merge>(m_tE131Params.nMergeMode);
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
@@ -115,7 +112,7 @@ public:
 	}
 
 	TE131PortDir GetDirection(void) {
-		return (TE131PortDir) m_tE131Params.nDirection;
+		return static_cast<TE131PortDir>(m_tE131Params.nDirection);
 	}
 
 public:

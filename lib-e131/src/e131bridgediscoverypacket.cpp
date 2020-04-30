@@ -73,6 +73,6 @@ void E131Bridge::SendDiscoveryPacket(void) {
 			}
 		}
 
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, (uint16_t)E131_DEFAULT_PORT);
+		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, E131_DEFAULT_PORT);
 	}
 }

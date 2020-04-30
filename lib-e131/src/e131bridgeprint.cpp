@@ -47,7 +47,7 @@ void E131Bridge::Print(void) {
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 			uint16_t nUniverse;
 			if (GetUniverse(i, nUniverse, E131_OUTPUT_PORT)) {
-				printf("  Port %2d Universe %-3d [%s]\n", (int) i , nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
+				printf("  Port %2d Universe %-3d [%s]\n", static_cast<int>(i), nUniverse, MERGEMODE2STRING(m_OutputPort[i].mergeMode));
 			}
 		}
 	}
@@ -59,7 +59,7 @@ void E131Bridge::Print(void) {
 		for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
 			uint16_t nUniverse;
 			if (GetUniverse(i, nUniverse, E131_INPUT_PORT)) {
-				printf("  Port %2d Universe %-3d [%d]\n", (int) i, nUniverse, GetPriority(i));
+				printf("  Port %2d Universe %-3d [%d]\n", static_cast<int>(i), nUniverse, GetPriority(i));
 			}
 		}
 	}

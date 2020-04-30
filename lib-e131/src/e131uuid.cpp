@@ -63,16 +63,19 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 
 	Network::Get()->MacAddressCopyTo(mac);
 
-	sprintf(file_name, "%02x%02x%02x%02x", (unsigned int) mac[2], (unsigned int) mac[3], (unsigned int) mac[4], (unsigned int) mac[5]);
+	sprintf(file_name, "%02x%02x%02x%02x", static_cast<unsigned int>(mac[2]),
+			static_cast<unsigned int>(mac[3]),
+			static_cast<unsigned int>(mac[4]),
+			static_cast<unsigned int>(mac[5]));
 
-	(void) memcpy(&file_name[8], EXT_UID, 4);
+	memcpy(&file_name[8], EXT_UID, 4);
 
 	file_name[12] = '\0';
 
 	fp = fopen(file_name, "r");
 	if (fp != NULL) {
-		if (fgets(buffer, (int) sizeof(buffer), fp) != NULL) {
-			if (uuid_parse((char *)buffer, out) == 0) {
+		if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+			if (uuid_parse(buffer, out) == 0) {
 				bHaveUuid = true;
 			}
 		} else {
@@ -84,16 +87,16 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 #endif
 #endif
 		}
-		(void) fclose(fp);
+		static_cast<void>(fclose(fp));
 	} else {
 		uuid_generate_random(out);
-		uuid_unparse(out, (char *)buffer);
+		uuid_unparse(out, buffer);
 		bHaveUuid = true;
 
 		fp = fopen(file_name, "w+");
 		if (fp != NULL) {
-			(void) fputs(buffer, fp);
-			(void) fclose(fp);
+			static_cast<void>(fputs(buffer, fp));
+			static_cast<void>(fclose(fp));
 		} else {
 #if defined(__linux__) || defined (__CYGWIN__)
 			perror("fopen");
@@ -106,7 +109,7 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 	}
 
 	if (!bHaveUuid) {
-		(void) uuid_parse(DUMMY_UUID, out);
+		static_cast<void>(uuid_parse(DUMMY_UUID, out));
 #ifndef NDEBUG
 		printf("%s:%d\n", __FUNCTION__, __LINE__);
 #endif
