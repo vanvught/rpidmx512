@@ -2,7 +2,7 @@
  * @file ledblink.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,10 @@ void LedBlink::SetFrequency(uint32_t nFreqHz) {
 			break;
 		case 5:
 			led_set_ticks_per_second(1000000 / 5);
+			break;
+		case 255:
+			led_set_ticks_per_second(0);
+			hardware_led_set(1);
 			break;
 		default:
 			led_set_ticks_per_second(1000000 / nFreqHz);

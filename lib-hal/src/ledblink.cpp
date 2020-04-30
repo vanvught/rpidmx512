@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,25 @@
  */
 
 #include "ledblink.h"
+#include "hardware.h"
 
 #include "debug.h"
 
 enum tFreqMode {
-	FREQ_MODE_OFF = 0,
+	FREQ_MODE_OFF_OFF = 0,
 	FREQ_MODE_NORMAL = 1,
 	FREQ_MODE_DATA = 3,
-	FREQ_MODE_FAST = 5
+	FREQ_MODE_FAST = 5,
+	FREQ_MODE_OFF_ON = 255
 };
 
 LedBlink *LedBlink::s_pThis = 0;
 
-LedBlink::LedBlink(void) :
-#if defined (__circle__)
-	m_nusPeriod(0),
-	m_bStop(true),
-#endif
-	m_nFreqHz(0),
-	m_tMode(LEDBLINK_MODE_OFF)
-{
+LedBlink::LedBlink(void) : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedBlinkDisplay(0) {
 	s_pThis = this;
 }
 
 LedBlink::~LedBlink(void) {
-
 }
 
 void LedBlink::SetMode(tLedBlinkMode Mode) {
@@ -56,13 +50,14 @@ void LedBlink::SetMode(tLedBlinkMode Mode) {
 		return;
 	}
 
-	DEBUG_PRINTF("Mode=%d", (int)Mode);
-
 	m_tMode = Mode;
 
-	switch (Mode) {
-	case LEDBLINK_MODE_OFF:
-		SetFrequency(FREQ_MODE_OFF);
+	switch (m_tMode) {
+	case LEDBLINK_MODE_OFF_OFF:
+		SetFrequency(FREQ_MODE_OFF_OFF);
+		break;
+	case LEDBLINK_MODE_OFF_ON:
+		SetFrequency(FREQ_MODE_OFF_ON);
 		break;
 	case LEDBLINK_MODE_NORMAL:
 		SetFrequency(FREQ_MODE_NORMAL);
@@ -74,7 +69,13 @@ void LedBlink::SetMode(tLedBlinkMode Mode) {
 		SetFrequency(FREQ_MODE_FAST);
 		break;
 	default:
-		SetFrequency(FREQ_MODE_OFF);
+		SetFrequency(FREQ_MODE_OFF_OFF);
 		break;
 	}
+
+	if (m_pLedBlinkDisplay != 0) {
+		m_pLedBlinkDisplay->Print(m_tMode);
+	}
+
+	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_tMode));
 }

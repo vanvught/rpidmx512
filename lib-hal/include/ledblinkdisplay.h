@@ -1,8 +1,8 @@
 /**
- * @file ledblinktask.cpp
+ * @file ledblinkdisplay.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,16 @@
  * THE SOFTWARE.
  */
 
+#ifndef LEDBLINKDISPLAY_H_
+#define LEDBLINKDISPLAY_H_
+
 #include <stdint.h>
 
-#include "ledblink.h"
+class LedBlinkDisplay {
+public:
+	virtual ~LedBlinkDisplay(void) {}
 
-#include "hardware.h"
+	virtual void Print(uint32_t nState)=0;
+};
 
-void LedBlink::SetFrequency(uint32_t nFreqHz) {
-	m_nFreqHz = nFreqHz;
-
-	if (nFreqHz == 0) {
-		Hardware::Get()->SetLed(HARDWARE_LED_OFF);
-	} else if (nFreqHz > 20) {
-		Hardware::Get()->SetLed(HARDWARE_LED_ON);
-	} else {
-		if (nFreqHz > 1) {
-			Hardware::Get()->SetLed(HARDWARE_LED_HEARTBEAT);
-		} else {
-			Hardware::Get()->SetLed(HARDWARE_LED_FLASH);
-		}
-	}
-}
-
+#endif /* LEDBLINKDISPLAY_H_ */

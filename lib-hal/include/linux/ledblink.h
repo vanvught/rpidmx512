@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,10 @@ public:
 
 	void Run(void) {} // Not needed
 
+	void SetLedBlinkDisplay(LedBlinkDisplay *pLedBlinkDisplay) {
+		m_pLedBlinkDisplay = pLedBlinkDisplay;
+	}
+
 public:
 	static LedBlink* Get(void) {
 		return s_pThis;
@@ -53,6 +57,7 @@ public:
 private:
 	uint32_t m_nFreqHz;
 	tLedBlinkMode m_tMode;
+	LedBlinkDisplay *m_pLedBlinkDisplay;
 
 	static LedBlink *s_pThis;
 };

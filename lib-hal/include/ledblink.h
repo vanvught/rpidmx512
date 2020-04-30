@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,15 @@
 #define LEDBLINK_H
 
 enum tLedBlinkMode {
-	LEDBLINK_MODE_OFF,
+	LEDBLINK_MODE_OFF_OFF,
+	LEDBLINK_MODE_OFF_ON,
 	LEDBLINK_MODE_NORMAL,
 	LEDBLINK_MODE_DATA,
 	LEDBLINK_MODE_FAST,
 	LEDBLINK_MODE_UNKNOWN
 };
+
+#include "ledblinkdisplay.h"
 
 #if defined (__circle__)
  #include "circle/ledblink.h"
