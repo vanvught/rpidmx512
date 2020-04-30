@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,14 +66,12 @@ const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void):
-	m_pRebootHandler(0),
-	m_bIsWatchdog(false)
-{
+Hardware::Hardware(void) : m_pRebootHandler(0), m_pSoftResetHandler(0), m_bIsWatchdog(false) {
 	s_pThis = this;
 }
 
 Hardware::~Hardware(void) {
+	s_pThis = 0;
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -150,7 +148,6 @@ bool Hardware::Reboot(void) {
 		led_blink();
 	}
 
-
 	__builtin_unreachable ();
 
 	return true;
@@ -160,6 +157,11 @@ void Hardware::SoftReset(void) {
 	__disable_irq();
 	__disable_fiq();
 	dmb();
+
+	if (m_pSoftResetHandler != 0) {
+		h3_watchdog_disable();
+		m_pSoftResetHandler->Run();
+	}
 
 	invalidate_instruction_cache();
 	flush_branch_target_cache();

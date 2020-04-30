@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@
 #include "hardware.h"
 
 #include "reboothandler.h"
+#include "softresethandler.h"
 
 #include "debug.h"
 
@@ -64,8 +65,10 @@ static const char UNKNOWN[] = "Unknown";
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void):
+Hardware::Hardware(char **argv):
+	m_argv(argv),
 	m_pRebootHandler(0),
+	m_pSoftResetHandler(0),
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
@@ -108,7 +111,7 @@ Hardware::Hardware(void):
 	}
 
 #ifndef NDEBUG
-	printf("m_tBoardType=%d\n", (int) m_tBoardType);
+	printf("m_tBoardType=%d\n", static_cast<int>(m_tBoardType));
 #endif
 
 
@@ -153,22 +156,22 @@ Hardware::~Hardware(void) {
 }
 
 const char* Hardware::GetMachine(uint8_t &nLength) {
-	nLength = (uint8_t) strlen(m_TOsInfo.machine);
+	nLength = strlen(m_TOsInfo.machine);
 	return m_TOsInfo.machine;
 }
 
 const char* Hardware::GetSysName(uint8_t& nLength) {
-	nLength = (uint8_t) strlen(m_TOsInfo.sysname);
+	nLength = strlen(m_TOsInfo.sysname);
 	return m_TOsInfo.sysname;
 }
 
 const char* Hardware::GetCpuName(uint8_t& nLength) {
-	nLength = (uint8_t) strlen(m_aCpuName);
+	nLength = strlen(m_aCpuName);
 	return m_aCpuName;
 }
 
 const char* Hardware::GetSocName(uint8_t& nLength) {
-	nLength = (uint8_t) strlen(m_aSocName);
+	nLength = strlen(m_aSocName);
 	return m_aSocName;
 }
 
@@ -213,7 +216,7 @@ uint32_t Hardware::GetUpTime(void) {
 		printf("code error = %d\n", error);
 	}
 
-	return (uint32_t) s_info.uptime;
+	return s_info.uptime;
 #endif
 }
 
@@ -264,6 +267,20 @@ bool Hardware::Reboot(void) {
 	return false;
 }
 
+void Hardware::SoftReset(void) {
+	if (m_argv != 0) {
+		sync();
+
+		if (m_pSoftResetHandler != 0) {
+			m_pSoftResetHandler->Run();
+		}
+
+		if (execve(m_argv[0], m_argv, NULL) == -1) {
+			perror("call to execve failed.\n");
+		}
+	}
+}
+
 bool Hardware::PowerOff(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
@@ -294,10 +311,10 @@ float Hardware::GetCoreTemperature(void) {
 
 		if (fgets(buf, sizeof(buf) - 1, fp) == NULL) {
 			pclose(fp);
-			return (float) -1;
+			return -1;
 		}
 
-		return (float) atof(buf);
+		return atof(buf);
 
 	} else {
 		const char cmd[] = "sensors | grep 'Core 0' | awk '{print $3}' | cut -c2-3";
@@ -307,21 +324,20 @@ float Hardware::GetCoreTemperature(void) {
 
 		if (fgets(buf, sizeof(buf) - 1, fp) == NULL) {
 			pclose(fp);
-			return (float) -1;
+			return -1;
 		}
 
-		return (float) atof(buf);
+		return atof(buf);
 	}
 #endif
-
-	return (float) -1;
+	return -1;
 }
 
 float Hardware::GetCoreTemperatureMax(void) {
 #if defined (__linux__)
-	return (float) 85; //TODO GetCoreTemperatureMax
+	return 85; //TODO GetCoreTemperatureMax
 #else
-	return (float) -1;
+	return -1;
 #endif
 }
 
@@ -384,8 +400,8 @@ uint32_t Hardware::Millis(void) {
 	gettimeofday(&tv, NULL);
 
 #if defined (__APPLE__)
-	return (tv.tv_sec * (__darwin_time_t) 1000) + (tv.tv_usec / (__darwin_suseconds_t) 1000);
+	return (tv.tv_sec * static_cast<__darwin_time_t>(1000) + (tv.tv_usec / static_cast<__darwin_time_t>(1000)));
 #else
-	return (tv.tv_sec * (__time_t) 1000) + (tv.tv_usec / (__suseconds_t) 1000);
+	return (tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
 #endif
 }

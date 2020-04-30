@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,11 @@
 #include "hardware.h"
 
 #include "reboothandler.h"
+#include "softresethandler.h"
 
 class Hardware {
 public:
-	Hardware(void);
+	Hardware(char **argv = 0);
 	~Hardware(void);
 
 	const char *GetMachine(uint8_t &nLength);
@@ -90,14 +91,17 @@ public:
 #endif
 	}
 
-	void SoftReset(void) {}
+	void SoftReset(void);
 
 	void SetRebootHandler(RebootHandler *pRebootHandler) {
 		m_pRebootHandler = pRebootHandler;
 	}
 
-public:
-	 static Hardware* Get(void) {
+	void SetSoftResetHandler(SoftResetHandler *pSoftResetHandler) {
+		m_pSoftResetHandler = pSoftResetHandler;
+	}
+
+	 static Hardware *Get(void) {
 		return s_pThis;
 	}
 
@@ -105,7 +109,9 @@ private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 
 private:
+	char **m_argv;
 	RebootHandler *m_pRebootHandler;
+	SoftResetHandler *m_pSoftResetHandler;
 	enum TBoardType {
 		BOARD_TYPE_LINUX,
 		BOARD_TYPE_CYGWIN,

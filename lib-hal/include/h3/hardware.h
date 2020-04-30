@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
 #include "h3_thermal.h"
 
 #include "reboothandler.h"
+#include "softresethandler.h"
 
 enum TSocType {
 	SOC_TYPE_H2_PLUS,
@@ -72,11 +73,11 @@ public:
 	}
 
 	float GetCoreTemperature(void) {
-		return (float) h3_thermal_gettemp();
+		return static_cast<float>(h3_thermal_gettemp());
 	}
 
 	float GetCoreTemperatureMax(void) {
-		return (float) h3_thermal_getalarm();
+		return static_cast<float>(h3_thermal_getalarm());
 	}
 
 	void SetLed(THardwareLedStatus tLedStatus) {
@@ -110,12 +111,10 @@ public:
 
 	uint32_t Micros(void) {
 		return H3_TIMER->AVS_CNT1;
-		//return h3_hs_timer_lo_us();
 	}
 
 	uint32_t Millis(void) {
 		return H3_TIMER->AVS_CNT0;
-		//return (uint32_t) ((uint64_t) (h3_read_cnt64() / (uint64_t) 24 / (uint64_t) 1000));
 	}
 
 	void WatchdogInit(void) {
@@ -137,7 +136,7 @@ public:
 	}
 
 	TBootDevice GetBootDevice(void){
-		return (TBootDevice) h3_get_boot_device();
+		return static_cast<TBootDevice>(h3_get_boot_device());
 	}
 
 	const char *GetWebsiteUrl(void) {
@@ -150,15 +149,20 @@ public:
 		m_pRebootHandler = pRebootHandler;
 	}
 
-public:
+	void SetSoftResetHandler(SoftResetHandler *pSoftResetHandler) {
+		m_pSoftResetHandler = pSoftResetHandler;
+	}
+
 	 static Hardware *Get(void) {
 		return s_pThis;
 	}
 
 private:
-	 RebootHandler *m_pRebootHandler;
-	 static Hardware *s_pThis;
-	 bool m_bIsWatchdog;
+	RebootHandler *m_pRebootHandler;
+	SoftResetHandler *m_pSoftResetHandler;
+	bool m_bIsWatchdog;
+
+	static Hardware *s_pThis;
 };
 
 #endif /* H3_HARDWARE_H_ */
