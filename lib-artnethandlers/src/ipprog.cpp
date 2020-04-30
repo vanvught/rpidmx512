@@ -2,7 +2,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,32 +42,27 @@ union uip {
 	uint8_t u8[4];
 } static ip_union;
 
-ArtNetIpProg::~ArtNetIpProg(void) {
-}
-
 IpProg::IpProg(void) {
-
 }
 
 IpProg::~IpProg(void) {
-
 }
 
 void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIpProgReply *pArtNetIpProgReply) {
 	// Ip
 	ip_union.u32 = Network::Get()->GetIp();
-	memcpy((void *) &pArtNetIpProgReply->ProgIpHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
 	// Netmask
 	ip_union.u32 = Network::Get()->GetNetmask();
-	memcpy((void *) &pArtNetIpProgReply->ProgSmHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
 	// Port
-	pArtNetIpProgReply->ProgPortHi = (uint8_t) (ARTNET_UDP_PORT >> 8);
+	pArtNetIpProgReply->ProgPortHi = (ARTNET_UDP_PORT >> 8);
 	pArtNetIpProgReply->ProgPortLo = ARTNET_UDP_PORT & 0xFF;
 	//
 	pArtNetIpProgReply->Filler = 0;
 	// Gateway
 	ip_union.u32 = Network::Get()->GetGatewayIp();
-	memcpy((void *) &pArtNetIpProgReply->ProgGwHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
 
 #ifndef NDEBUG
 	printf("IpProg::Handler, Command = %d\n", pArtNetIpProg->Command);
@@ -87,11 +82,11 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 			pArtNetIpProgReply->Status = (1 << 6); // DHCP Enabled
 
 			ip_union.u32 = Network::Get()->GetIp();
-			memcpy((void *) &pArtNetIpProgReply->ProgIpHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
 			ip_union.u32 = Network::Get()->GetNetmask();
-			memcpy((void *) &pArtNetIpProgReply->ProgSmHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
 			ip_union.u32 = Network::Get()->GetGatewayIp();
-			memcpy((void *) &pArtNetIpProgReply->ProgGwHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
 		}
 	}
 
@@ -99,18 +94,18 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 		Network::Get()->SetIp(0);
 
 		ip_union.u32 = Network::Get()->GetIp();
-		memcpy((void *) &pArtNetIpProgReply->ProgIpHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
 		ip_union.u32 = Network::Get()->GetNetmask();
-		memcpy((void *) &pArtNetIpProgReply->ProgSmHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
 		ip_union.u32 = Network::Get()->GetGatewayIp();
-		memcpy((void *) &pArtNetIpProgReply->ProgGwHi, (void *) ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
 
 		pArtNetIpProgReply->Status = 0; // DHCP Disabled;
 	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
 		// Get IPAddress from IpProg
-		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+		memcpy(ip_union.u8, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
 
 		Network::Get()->SetIp(ip_union.u32);
 
@@ -121,7 +116,7 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_SUBNETMASK) == IPPROG_COMMAND_PROGRAM_SUBNETMASK) {
 		// Get SubnetMask from IpProg
-		memcpy((void *) ip_union.u8, (void *) &pArtNetIpProg->ProgSmHi, ARTNET_IP_SIZE);
+		memcpy(ip_union.u8, &pArtNetIpProg->ProgSmHi, ARTNET_IP_SIZE);
 
 		Network::Get()->SetNetmask(ip_union.u32);
 

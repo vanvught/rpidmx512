@@ -39,11 +39,11 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {
-		pArtNetNode->SetShortName((const char*) m_tArtNetParams.aShortName);
+		pArtNetNode->SetShortName(reinterpret_cast<const char*>(m_tArtNetParams.aShortName));
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME)) {
-		pArtNetNode->SetLongName((const char*) m_tArtNetParams.aLongName);
+		pArtNetNode->SetLongName(reinterpret_cast<const char*>(m_tArtNetParams.aLongName));
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_NET)) {
@@ -70,15 +70,15 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 
 	for (i = 0; i < ARTNET_MAX_PORTS; i++) {
 		if (isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i)) {
-			pArtNetNode->SetMergeMode(i, (TMerge) m_tArtNetParams.nMergeModePort[i]);
+			pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeModePort[i]));
 		} else {
-			pArtNetNode->SetMergeMode(i, (TMerge) m_tArtNetParams.nMergeMode);
+			pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeMode));
 		}
 
 		if (isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i)) {
-			pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocolPort[i]);
+			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocolPort[i]));
 		} else {
-			pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocol);
+			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
 		}
 
 		if (isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i)) {
@@ -87,8 +87,8 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 
 	for (;i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
-		pArtNetNode->SetMergeMode(i, (TMerge) m_tArtNetParams.nMergeMode);
-		pArtNetNode->SetPortProtocol(i, (TPortProtocol) m_tArtNetParams.nProtocol);
+		pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeMode));
+		pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {

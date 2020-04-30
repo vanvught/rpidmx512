@@ -36,7 +36,7 @@
 #include "artnet4handler.h"
 #include "e131bridge.h"
 
-class ArtNet4Node: public ArtNetNode, ArtNet4Handler {
+class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
 	~ArtNet4Node(void);

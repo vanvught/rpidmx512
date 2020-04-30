@@ -53,7 +53,10 @@ void ArtNetNode::Print(void) {
 				const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
 				const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
 
-				printf("  Port %2d %d:%-3d[%2x] [%s]", (int) i, nNet, (nSubSwitch * 16 + nAddress), (nSubSwitch * 16 + nAddress), MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+				printf("  Port %2d %d:%-3d[%2x] [%s]", static_cast<int>(i),
+						nNet, (nSubSwitch * 16 + nAddress),
+						(nSubSwitch * 16 + nAddress),
+						MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
 				if (m_nVersion == 4) {
 					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
 				} else {
@@ -77,7 +80,11 @@ void ArtNetNode::Print(void) {
 				const uint32_t nSubSwitch = m_Node.SubSwitch[i];
 				const uint32_t nDestinationIp = (m_InputPorts[i].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[i].nDestinationIp);
 
-				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n", (int) i, (int) nNet, (int) (nSubSwitch * 16 + nAddress), (int) (nSubSwitch * 16 + nAddress), IP2STR(nDestinationIp));
+				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n",
+						static_cast<int>(i), static_cast<int>(nNet),
+						static_cast<int>((nSubSwitch * 16 + nAddress)),
+						static_cast<int>((nSubSwitch * 16 + nAddress)),
+						IP2STR(nDestinationIp));
 			}
 		}
 	}

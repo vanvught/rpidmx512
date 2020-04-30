@@ -6,7 +6,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 void ArtNetNode::FillDiagData(void) {
 	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
 
-	strncpy((char *)m_DiagData.Id, (const char *)NODE_ID, sizeof m_DiagData.Id);
+	memcpy(static_cast<void*>(m_DiagData), NODE_ID, 8);
 	m_DiagData.OpCode = OP_DIAGDATA;
 	m_DiagData.ProtVerHi = 0;
 	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;
@@ -54,7 +54,7 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 
 	m_DiagData.Priority = nPriority;
 
-	strncpy((char *) m_DiagData.Data, text, sizeof m_DiagData.Data);
+	strncpy((char *) m_DiagData.Data, text, sizeof m_DiagData.Data - 1);
 	m_DiagData.Data[sizeof(m_DiagData.Data) - 1] = '\0';// Just be sure we have a last '\0'
 	m_DiagData.LengthLo = strlen((const char *) m_DiagData.Data) + 1;// Text length including the '\0'
 

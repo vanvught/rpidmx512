@@ -116,8 +116,8 @@ struct TArtNetNode {
 	uint8_t NetSwitch[ARTNET_MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 	uint8_t SubSwitch[ARTNET_MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
-	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];	///< The array represents a null terminated short name for the Node.
-	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];		///< The array represents a null terminated long name for the Node.
+	char ShortName[ARTNET_SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
+	char LongName[ARTNET_LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;								///< General Status register
 	uint8_t Status2;
@@ -196,12 +196,12 @@ public:
 
 	void SetShortName(const char *);
 	const char *GetShortName(void) {
-		return (const char *) m_Node.ShortName;
+		return m_Node.ShortName;
 	}
 
 	void SetLongName(const char *);
 	const char *GetLongName(void) {
-		return (const char *) m_Node.LongName;
+		return m_Node.LongName;
 	}
 
 	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);

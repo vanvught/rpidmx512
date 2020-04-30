@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,12 +36,12 @@
 
 void ArtNetNode::HandleTrigger(void) {
 	DEBUG_ENTRY
-	const struct TArtTrigger *packet = (struct TArtTrigger *) &(m_ArtNetPacket.ArtPacket.ArtTrigger);
+	const struct TArtTrigger *pArtTrigger = &(m_ArtNetPacket.ArtPacket.ArtTrigger);
 
-	if ((packet->OemCodeHi == 0xFF && packet->OemCodeLo == 0xFF) || (packet->OemCodeHi == m_Node.Oem[0] && packet->OemCodeLo == m_Node.Oem[1])) {
-		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", packet->Key, packet->SubKey, packet->Data[0]);
+	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == m_Node.Oem[0] && pArtTrigger->OemCodeLo == m_Node.Oem[1])) {
+		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
 
-		m_pArtNetTrigger->Handler((const struct TArtNetTrigger *)&packet->Key);
+		m_pArtNetTrigger->Handler(reinterpret_cast<const struct TArtNetTrigger*>(&pArtTrigger->Key));
 	}
 
 	DEBUG_EXIT

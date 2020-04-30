@@ -42,16 +42,12 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#if defined (H3) || defined (RASPPI)
- #include "spiflashstore.h"
-#endif
+#include "spiflashstore.h"
 
 #define BOOL2STRING(b)				(b) ? "Yes" : "No"
 
-ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore* pArtNet4ParamsStore):
-#if defined (H3) || defined (RASPPI)
-	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : (ArtNetParamsStore *)SpiFlashStore::Get()->GetStoreArtNet()),
-#endif
+ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
+	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : SpiFlashStore::Get()->GetStoreArtNet()),
 	m_pArtNet4ParamsStore(pArtNet4ParamsStore)
 {
 	m_tArtNet4Params.nSetList = 0;
@@ -130,7 +126,7 @@ void ArtNet4Params::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
 	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
-		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, (int) m_tArtNet4Params.bMapUniverse0, BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
+		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, static_cast<int>(m_tArtNet4Params.bMapUniverse0), BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
 	}
 #endif
 }
@@ -139,6 +135,5 @@ void ArtNet4Params::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((ArtNet4Params *) p)->callbackFunction(s);
+	(static_cast<ArtNet4Params*>(p))->callbackFunction(s);
 }
-

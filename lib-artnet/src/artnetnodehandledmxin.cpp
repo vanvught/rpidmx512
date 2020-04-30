@@ -47,12 +47,12 @@ void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 }
 
 void ArtNetNode::HandleDmxIn(void) {
-	struct TArtDmx  artDmx;
+	struct TArtDmx tArtDmx;
 
-	memcpy((void *)artDmx.Id, (const char *) NODE_ID, sizeof m_PollReply.Id);
-	artDmx.OpCode = OP_DMX;
-	artDmx.ProtVerHi = 0;
-	artDmx.ProtVerLo = ARTNET_PROTOCOL_REVISION;
+	memcpy(static_cast<void*>(tArtDmx.Id), NODE_ID, sizeof m_PollReply.Id);
+	tArtDmx.OpCode = OP_DMX;
+	tArtDmx.ProtVerHi = 0;
+	tArtDmx.ProtVerLo = ARTNET_PROTOCOL_REVISION;
 
 	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
@@ -62,17 +62,17 @@ void ArtNetNode::HandleDmxIn(void) {
 			const uint8_t *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != 0) {
-				artDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
-				artDmx.Physical = i;
-				artDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
-				artDmx.LengthHi = (nLength & 0xFF00) >> 8;
-				artDmx.Length = (nLength & 0xFF);
+				tArtDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
+				tArtDmx.Physical = i;
+				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
+				tArtDmx.LengthHi = (nLength & 0xFF00) >> 8;
+				tArtDmx.Length = (nLength & 0xFF);
 
-				memcpy(artDmx.Data, pDmxData, nLength);
+				memcpy(tArtDmx.Data, pDmxData, nLength);
 
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 
-				Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(artDmx), (uint16_t) sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, (uint16_t) ARTNET_UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, ARTNET_UDP_PORT);
 
 				m_State.bIsReceivingDmx = true;
 			} else {

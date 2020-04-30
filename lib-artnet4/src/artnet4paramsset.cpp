@@ -34,14 +34,14 @@
 
 #include "debug.h"
 
-void ArtNet4Params::Set(ArtNet4Node* pArtNet4Node) {
+void ArtNet4Params::Set(ArtNet4Node *pArtNet4Node) {
 	DEBUG_ENTRY
 
 	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
 		pArtNet4Node->SetMapUniverse0(m_tArtNet4Params.bMapUniverse0);
 	}
 
-	ArtNetParams::Set((ArtNetNode *)pArtNet4Node);
+	ArtNetParams::Set(pArtNet4Node);
 
 	DEBUG_EXIT
 }

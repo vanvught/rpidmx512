@@ -3,9 +3,6 @@
 	<name>lib-artnet4</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-artnet</project>
-		<project>lib-e131</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

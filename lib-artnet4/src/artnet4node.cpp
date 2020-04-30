@@ -48,7 +48,7 @@ ArtNet4Node::ArtNet4Node(uint8_t nPages):
 
 	assert((ARTNET_MAX_PORTS * nPages) <= E131_MAX_PORTS);
 
-	ArtNetNode::SetArtNet4Handler((ArtNet4Handler *)this);
+	ArtNetNode::SetArtNet4Handler(static_cast<ArtNet4Handler*>(this));
 
 	DEBUG_EXIT
 }
@@ -65,7 +65,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	uint16_t nUniverse;
 	const bool isActive = GetPortAddress(nPortId, nUniverse, dir);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d, [%s]", (int )nPortId, isActive ? 'Y' : 'N', nUniverse, dir == ARTNET_OUTPUT_PORT ? "Output" : "Input");
+	DEBUG_PRINTF("Port %d, Active %c, Universe %d, [%s]", static_cast<int>(nPortId), isActive ? 'Y' : 'N', nUniverse, dir == ARTNET_OUTPUT_PORT ? "Output" : "Input");
 
 	if (dir == ARTNET_INPUT_PORT) {
 		DEBUG_PUTS("Input is not supported");
@@ -103,7 +103,7 @@ void ArtNet4Node::Start(void) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 		
-		DEBUG_PRINTF("Port %d, Active %c, Universe %d", (int )i, isActive ? 'Y' : 'N', nUniverse);
+		DEBUG_PRINTF("Port %d, Active %c, Universe %d", static_cast<int>(i), isActive ? 'Y' : 'N', nUniverse);
 		
 		if (isActive) {
 			const TPortProtocol tPortProtocol = GetPortProtocol(i);
@@ -111,7 +111,7 @@ void ArtNet4Node::Start(void) {
 			DEBUG_PRINTF("\tProtocol %s", PROTOCOL2STRING(tPortProtocol));
 			
 			if (tPortProtocol == PORT_ARTNET_SACN) {
-				const TE131Merge tE131Merge = (TE131Merge) ArtNetNode::GetMergeMode(i);
+				const TE131Merge tE131Merge = static_cast<TE131Merge>(ArtNetNode::GetMergeMode(i));
 				
 				DEBUG_PRINTF("\tMerge mode %s", MERGEMODE2STRING(tE131Merge));
 				
@@ -142,7 +142,10 @@ void ArtNet4Node::Stop(void) {
 
 void ArtNet4Node::Run(void) {
 	ArtNetNode::Run();
-	m_Bridge.Run();
+
+	if (m_Bridge.GetActiveOutputPorts() != 0) {
+		m_Bridge.Run();
+	}
 }
 
 void ArtNet4Node::HandleAddress(uint8_t nCommand) {
@@ -221,7 +224,7 @@ uint8_t ArtNet4Node::GetStatus(uint8_t nPortId) {
 	uint16_t nUniverse;
 	const bool isActive = m_Bridge.GetUniverse(nPortId, nUniverse);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d", (int )nPortId, isActive ? 'Y' : 'N', nUniverse);
+	DEBUG_PRINTF("Port %d, Active %c, Universe %d", static_cast<int>(nPortId), isActive ? 'Y' : 'N', nUniverse);
 
 	if (isActive) {
 		uint8_t nStatus = GO_OUTPUT_IS_SACN;

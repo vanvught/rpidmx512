@@ -61,13 +61,17 @@ struct TArtNetParams {
 	bool bEnableNoChangeUpdate;						///< 1	118
 	uint8_t nDirection;								///< 1	119
 	uint32_t nDestinationIpPort[ARTNET_MAX_PORTS];	///< 16	135
+#if defined (__linux__)
+}__attribute__((packed));
+#else
 };													///< Not packed!
+#endif
 
 enum TArtnetParamsMaskMultiPortOptions {
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A = (1 << 0),
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B = (1 << 1),
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C = (1 << 2),
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D = (1 << 3)
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A = (1 << 0),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B = (1 << 1),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C = (1 << 2),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C
+	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D = (1 << 3) ///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D
 };
 
 enum TArtnetParamsMask {
@@ -118,8 +122,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(ArtNetNode *);
 
@@ -176,7 +180,7 @@ public:
 	}
 
 	TArtNetPortDir GetDirection(void) {
-		return (TArtNetPortDir) m_tArtNetParams.nDirection;
+		return static_cast<TArtNetPortDir>(m_tArtNetParams.nDirection);
 	}
 
 public:

@@ -46,7 +46,7 @@
 #define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "htp" : "ltp"
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn"
 
-void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -59,7 +59,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == (uint8_t) ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
+	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
 
 	builder.Add(ArtNetParamsConst::NET, m_tArtNetParams.nNet, isMaskSet(ARTNET_PARAMS_MASK_NET));
 	builder.Add(ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet, isMaskSet(ARTNET_PARAMS_MASK_SUBNET));
@@ -71,8 +71,8 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	}
 
 	builder.AddComment("Node");
-	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, (const char *) m_tArtNetParams.aLongName, isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
-	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, (const char *) m_tArtNetParams.aShortName, isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
+	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aLongName), isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
+	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aShortName), isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
 
 	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE));
 
@@ -83,12 +83,12 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	builder.AddComment("DMX/RDM Output");
 	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ARTNET_PARAMS_MASK_RDM));
 
-	builder.Add(ArtNetParamsConst::MERGE_MODE, (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeMode), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE));
-	builder.Add(ArtNetParamsConst::PROTOCOL, (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocol), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL));
+	builder.Add(ArtNetParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tArtNetParams.nMergeMode), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE));
+	builder.Add(ArtNetParamsConst::PROTOCOL, PROTOCOL2STRING(m_tArtNetParams.nProtocol), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL));
 
 	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-		builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], (const char *) MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i));
-		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], (const char *) PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i));
+		builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i));
+		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i));
 	}
 
 	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT));
@@ -110,7 +110,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, uint8_t *p
 	DEBUG_EXIT
 }
 
-void ArtNetParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pArtNetParamsStore == 0) {

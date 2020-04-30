@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 		if (m_pIpProgReply != 0) {
 			memset(m_pIpProgReply, 0, sizeof(struct TArtIpProgReply));
 
-			memcpy(m_pIpProgReply->Id, (const char *) NODE_ID, sizeof(m_pIpProgReply->Id));
+			memcpy(m_pIpProgReply->Id, NODE_ID, sizeof(m_pIpProgReply->Id));
 			m_pIpProgReply->OpCode = OP_IPPROGREPLY;
 			m_pIpProgReply->ProtVerLo = ARTNET_PROTOCOL_REVISION;
 		} else {
@@ -61,11 +61,11 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 }
 
 void ArtNetNode::HandleIpProg(void) {
-	struct TArtIpProg *packet = (struct TArtIpProg *) &(m_ArtNetPacket.ArtPacket.ArtIpProg);
+	struct TArtIpProg *packet = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
 
-	m_pArtNetIpProg->Handler((const TArtNetIpProg *) &packet->Command, (TArtNetIpProgReply *) &m_pIpProgReply->ProgIpHi);
+	m_pArtNetIpProg->Handler(reinterpret_cast<const TArtNetIpProg*>(&packet->Command), reinterpret_cast<TArtNetIpProgReply*>(&m_pIpProgReply->ProgIpHi));
 
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) m_pIpProgReply, (uint16_t) sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, (uint16_t) ARTNET_UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pIpProgReply, sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, ARTNET_UDP_PORT);
 
 	memcpy(ip.u8, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
 

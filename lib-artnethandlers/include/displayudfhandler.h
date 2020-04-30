@@ -36,7 +36,7 @@
 #include "lightsetdisplay.h"
 #include "networkdisplay.h"
 
-class DisplayUdfHandler: public ArtNetDisplay, LightSetDisplay, NetworkDisplay {
+class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay {
 public:
 	DisplayUdfHandler(void) {}
 	~DisplayUdfHandler(void) {}

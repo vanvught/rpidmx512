@@ -63,13 +63,9 @@
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("sizeof(struct TArtNetParams)=%d", (int) sizeof(struct TArtNetParams));
+	DEBUG_PRINTF("sizeof(struct TArtNetParams)=%d", static_cast<int>(sizeof(struct TArtNetParams)));
 
-	uint8_t *p = (uint8_t *) &m_tArtNetParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TArtNetParams); i++) {
-		*p++ = 0;
-	}
+	memset(&m_tArtNetParams, 0, sizeof(struct TArtNetParams));
 
 	m_tArtNetParams.nUniverse = 1;
 
@@ -161,28 +157,28 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = ARTNET_SHORT_NAME_LENGTH - 1;
-	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_SHORT_NAME, (char *) m_tArtNetParams.aShortName, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<char*>(m_tArtNetParams.aShortName), &nLength) == SSCAN_OK) {
 		m_tArtNetParams.aShortName[nLength] = '\0';
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_SHORT_NAME;
 		return;
 	}
 
 	nLength = ARTNET_LONG_NAME_LENGTH - 1;
-	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, (char *)m_tArtNetParams.aLongName, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<char*>(m_tArtNetParams.aLongName), &nLength) == SSCAN_OK) {
 		m_tArtNetParams.aLongName[nLength] = '\0';
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_LONG_NAME;
 		return;
 	}
 
 	if (Sscan::HexUint16(pLine, ArtNetParamsConst::NODE_OEM_VALUE, &nValue16) == SSCAN_OK) {
-		m_tArtNetParams.aOemValue[0] = (uint8_t) (nValue16 >> 8);
-		m_tArtNetParams.aOemValue[1] = (uint8_t) (nValue16 & 0xFF);
+		m_tArtNetParams.aOemValue[0] = (nValue16 >> 8);
+		m_tArtNetParams.aOemValue[1] = (nValue16 & 0xFF);
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_OEM_VALUE;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, &nValue8) == SSCAN_OK) {
-		m_tArtNetParams.nNetworkTimeout = (time_t) nValue8;
+		m_tArtNetParams.nNetworkTimeout = nValue8;
 		m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_NETWORK_TIMEOUT;
 		return;
 	}
@@ -286,7 +282,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	nLength = 5;
 	if (Sscan::Char(pLine, ArtNetParamsConst::DIRECTION, value, &nLength) == SSCAN_OK) {
 		if (memcmp(value, "input", 5) == 0) {
-			m_tArtNetParams.nDirection = (uint8_t) ARTNET_INPUT_PORT;
+			m_tArtNetParams.nDirection = ARTNET_INPUT_PORT;
 			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_DIRECTION;
 		}
 		return;
@@ -295,7 +291,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	nLength = 6;
 	if (Sscan::Char(pLine, ArtNetParamsConst::DIRECTION, value, &nLength) == SSCAN_OK) {
 		if (memcmp(value, "output", 6) == 0) {
-			m_tArtNetParams.nDirection = (uint8_t) ARTNET_OUTPUT_PORT;
+			m_tArtNetParams.nDirection = ARTNET_OUTPUT_PORT;
 			m_tArtNetParams.nSetList |= ARTNET_PARAMS_MASK_DIRECTION;
 		}
 		return;
@@ -331,18 +327,26 @@ void ArtNetParams::Dump(void) {
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_RDM)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::RDM, (int) m_tArtNetParams.bEnableRdm, BOOL2STRING(m_tArtNetParams.bEnableRdm));
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::RDM,
+				static_cast<int>(m_tArtNetParams.bEnableRdm),
+				BOOL2STRING(m_tArtNetParams.bEnableRdm));
 		if (m_tArtNetParams.bEnableRdm) {
-			printf("  %s=%d [%s]\n", ArtNetParamsConst::RDM_DISCOVERY, (int) m_tArtNetParams.bRdmDiscovery, BOOL2STRING(m_tArtNetParams.bRdmDiscovery));
+			printf("  %s=%d [%s]\n", ArtNetParamsConst::RDM_DISCOVERY,
+					static_cast<int>(m_tArtNetParams.bRdmDiscovery),
+					BOOL2STRING(m_tArtNetParams.bRdmDiscovery));
 		}
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_TIMECODE)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMECODE, (int) m_tArtNetParams.bUseTimeCode, BOOL2STRING(m_tArtNetParams.bUseTimeCode));
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMECODE,
+				static_cast<int>(m_tArtNetParams.bUseTimeCode),
+				BOOL2STRING(m_tArtNetParams.bUseTimeCode));
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_TIMESYNC)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMESYNC, (int) m_tArtNetParams.bUseTimeCode, BOOL2STRING(m_tArtNetParams.bUseTimeSync));
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMESYNC,
+				static_cast<int>(m_tArtNetParams.bUseTimeCode),
+				BOOL2STRING(m_tArtNetParams.bUseTimeSync));
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {
@@ -350,11 +354,16 @@ void ArtNetParams::Dump(void) {
 	}
 
 	if (isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, (int) m_tArtNetParams.nNetworkTimeout, (m_tArtNetParams.nNetworkTimeout == 0) ? "Disabled" : "");
+		printf(" %s=%d [%s]\n",
+				ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT,
+				static_cast<int>(m_tArtNetParams.nNetworkTimeout),
+				(m_tArtNetParams.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, (int) m_tArtNetParams.bDisableMergeTimeout, BOOL2STRING(m_tArtNetParams.bDisableMergeTimeout));
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT,
+				static_cast<int>(m_tArtNetParams.bDisableMergeTimeout),
+				BOOL2STRING(m_tArtNetParams.bDisableMergeTimeout));
 	}
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -380,11 +389,16 @@ void ArtNetParams::Dump(void) {
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, (int) m_tArtNetParams.bEnableNoChangeUpdate, BOOL2STRING(m_tArtNetParams.bEnableNoChangeUpdate));
+		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE,
+				static_cast<int>(m_tArtNetParams.bEnableNoChangeUpdate),
+				BOOL2STRING(m_tArtNetParams.bEnableNoChangeUpdate));
 	}
 
 	if(isMaskSet(ARTNET_PARAMS_MASK_DIRECTION)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, (int) m_tArtNetParams.nDirection, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "Input" : "Output");
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION,
+				static_cast<int>(m_tArtNetParams.nDirection),
+				m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ?
+						"Input" : "Output");
 	}
 
 	for (unsigned i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -407,5 +421,5 @@ void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((ArtNetParams *) p)->callbackFunction(s);
+	(static_cast<ArtNetParams*>(p))->callbackFunction(s);
 }

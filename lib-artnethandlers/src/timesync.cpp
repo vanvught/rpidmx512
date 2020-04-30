@@ -56,7 +56,7 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	tmTime.tm_hour = pArtNetTimeSync->tm_hour;
 	tmTime.tm_mday = pArtNetTimeSync->tm_mday;
 	tmTime.tm_mon = pArtNetTimeSync->tm_mon;
-	tmTime.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
+	tmTime.tm_year = ((pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
 
 	Hardware::Get()->SetTime(&tmTime);
 

@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -58,7 +58,7 @@ void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, uint8_t
 	DEBUG_EXIT
 }
 
-void ArtNet4Params::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNet4Params::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pArtNet4ParamsStore == 0) {
