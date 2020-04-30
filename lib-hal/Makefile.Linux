@@ -3,4 +3,6 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = 
 #
+EXTRA_SRCDIR = device device/linux
+#
 include ../linux-template/lib/Rules.mk

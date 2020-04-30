@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,10 @@
 
 #define CONSOLE_OK	0	///< Call console_init() OK
 
-#if !defined(CONSOLE_FB)
- #define RGB(r, g, b) ((((uint16_t)(r) & 0xF8) << 8) | (((uint16_t)(g) & 0xFC) << 3) | ((uint16_t)(b) >> 3))
+#ifdef __cplusplus
+ #define RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xFF) << 16) | ((static_cast<uint32_t>(g) & 0xFF) << 8) | ((static_cast<uint32_t>(b) & 0xFF)))
+#else
+ #define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
 #endif
 
 #if defined(H3)

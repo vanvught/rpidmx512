@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ public:
 	const char* GetSysName(uint8_t &nLength);
 
 	uint32_t GetReleaseId(void) {
-		return (uint32_t) bcm2835_vc_get_get_firmware_revision();
+		return static_cast<uint32_t>(bcm2835_vc_get_get_firmware_revision());
 	}
 
 	const char* GetBoardName(uint8_t &nLength);
@@ -64,11 +64,11 @@ public:
 	const char* GetSocName(uint8_t &nLength);
 
 	float GetCoreTemperature(void) {
-		return (float) bcm2835_vc_get_temperature() / 1000;
+		return static_cast<float>(bcm2835_vc_get_temperature()) / 1000;
 	}
 
 	float GetCoreTemperatureMax(void) {
-		return (float) 85;
+		return static_cast<float>(85);
 	}
 
 	void SetLed(THardwareLedStatus tLedStatus) {

@@ -1,8 +1,8 @@
 /**
- * @file console_fb.h
+ * @file seriali2c.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_FB_H_
-#define CONSOLE_FB_H_
+#include <stdint.h>
+#include <stdio.h>
+#include <assert.h>
 
-// some RGB color definitions
-typedef enum {
-	CONSOLE_BLACK = 0x0000,		///<   0,   0,   0
-	CONSOLE_BLUE = 0x001F,		///<   0,   0, 255
-	CONSOLE_GREEN = 0x07E0,		///<   0, 255,   0
-	CONSOLE_CYAN = 0x07FF,		///<   0, 255, 255
-	CONSOLE_RED = 0xF800,		///< 255,   0,   0
-	CONSOLE_YELLOW = 0xFFE0,	///< 255, 255,   0
-	CONSOLE_WHITE = 0xFFFF,		///< 255, 255, 255
-} _console_colors;
+#include "serial.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "h3_i2c.h"
 
-extern void console_set_fg_color(uint16_t);
-extern void console_set_bg_color(uint16_t);
-extern void console_set_fg_bg_color(uint16_t, uint16_t);
+#include "debug.h"
 
-extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
+void Serial::SetI2cAddress(uint8_t nAddress) {
+	DEBUG_PRINTF("nAddress=%.x", nAddress);
 
-extern int console_status(uint16_t, const char *);
-
-#ifdef __cplusplus
+	m_I2cConfiguration.nAddress = nAddress;
 }
-#endif
 
-#endif /* CONSOLE_FB_H_ */
+void Serial::SetI2cSpeedMode(TSerialI2cSpeedModes tSpeedMode) {
+	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
+
+	if (tSpeedMode >= SERIAL_I2C_SPEED_MODE_UNDEFINED) {
+		return;
+	}
+
+	m_I2cConfiguration.tMode = tSpeedMode;
+}
+
+bool Serial::InitI2c(void) {
+	DEBUG_ENTRY
+
+	h3_i2c_begin();
+	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SERIAL_I2C_SPEED_MODE_NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
+
+	DEBUG_EXIT
+	return true;
+}
+
+void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	h3_i2c_set_slave_address(m_I2cConfiguration.nAddress);
+	h3_i2c_write(reinterpret_cast<const char*>(pData), nLength);
+
+	DEBUG_EXIT
+}

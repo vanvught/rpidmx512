@@ -1,8 +1,8 @@
 /**
- * @file console_fb.h
+ * @file serialinit.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_FB_H_
-#define CONSOLE_FB_H_
+#include <stdbool.h>
 
-// some RGB color definitions
-typedef enum {
-	CONSOLE_BLACK = 0x0000,		///<   0,   0,   0
-	CONSOLE_BLUE = 0x001F,		///<   0,   0, 255
-	CONSOLE_GREEN = 0x07E0,		///<   0, 255,   0
-	CONSOLE_CYAN = 0x07FF,		///<   0, 255, 255
-	CONSOLE_RED = 0xF800,		///< 255,   0,   0
-	CONSOLE_YELLOW = 0xFFE0,	///< 255, 255,   0
-	CONSOLE_WHITE = 0xFFFF,		///< 255, 255, 255
-} _console_colors;
+#include "serial.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "debug.h"
 
-extern void console_set_fg_color(uint16_t);
-extern void console_set_bg_color(uint16_t);
-extern void console_set_fg_bg_color(uint16_t, uint16_t);
-
-extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
-
-extern int console_status(uint16_t, const char *);
-
-#ifdef __cplusplus
+bool Serial::InitUart(void) {
+	DEBUG_PUTS("InitUart");
+	return true;
 }
-#endif
 
-#endif /* CONSOLE_FB_H_ */
+bool Serial::InitSpi(void) {
+	DEBUG_PUTS("InitSpi");
+	return true;
+}
+
+bool Serial::InitI2c(void) {
+	DEBUG_PUTS("InitI2c");
+	return true;
+}

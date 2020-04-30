@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@
 
 static const char s_SocName[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 static const char s_CpuName[4][24] __attribute__((aligned(4))) = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
-static const uint8_t s_nCpuNameLength[4] __attribute__((aligned(4))) = {(uint8_t) 12, (uint8_t) 9, (uint8_t) 18, (uint8_t) 8};
+static const uint8_t s_nCpuNameLength[4] __attribute__((aligned(4))) = {12, 9, 18, 8};
 
 const char s_Machine[] __attribute__((aligned(4))) = "arm";
 #define MACHINE_LENGTH (sizeof(s_Machine)/sizeof(s_Machine[0]) - 1)
@@ -58,8 +58,8 @@ Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_T
 
 	m_nBoardRevision = bcm2835_vc_get_get_board_revision();
 
-	if ((m_nBoardRevision & ((int32_t) 1 << 23)) == ((int32_t) 1 << 23)) {
-		TSocType type = (TSocType) (((uint32_t) m_nBoardRevision >> 12) & 0xF);
+	if ((m_nBoardRevision & (static_cast<int32_t>(1) << 23)) == (static_cast<int32_t>(1) << 23)) {
+		TSocType type = static_cast<TSocType>(((static_cast<uint32_t>((m_nBoardRevision)) >> 12) & 0xF));
 		if (type > SOC_TYPE_UNKNOWN) {
 		} else {
 			m_tSocType = type;
@@ -74,27 +74,27 @@ Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_T
 Hardware::~Hardware(void) {
 }
 
-const char* Hardware::GetMachine(uint8_t& nLength) {
+const char *Hardware::GetMachine(uint8_t& nLength) {
 	nLength = MACHINE_LENGTH;
 	return s_Machine;
 }
 
-const char* Hardware::GetSysName(uint8_t& nLength) {
+const char *Hardware::GetSysName(uint8_t& nLength) {
 	nLength = SYSNAME_LENGTH;
 	return s_SysName;
 }
 
-const char* Hardware::GetBoardName(uint8_t& nLength) {
+const char *Hardware::GetBoardName(uint8_t& nLength) {
 	nLength = hardware_board_get_model_length();
 	return hardware_board_get_model();
 }
 
-const char* Hardware::GetCpuName(uint8_t& nLength) {
+const char *Hardware::GetCpuName(uint8_t& nLength) {
 	nLength = s_nCpuNameLength[m_tSocType];
 	return s_CpuName[m_tSocType];
 }
 
-const char* Hardware::GetSocName(uint8_t& nLength) {
+const char *Hardware::GetSocName(uint8_t& nLength) {
 	nLength = sizeof s_SocName[0]; // Same length for all
 	return s_SocName[m_tSocType];
 }
