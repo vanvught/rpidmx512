@@ -1,3 +1,4 @@
+#if defined (H3) || defined (RASPI)
 /**
  * @file spi_flash.h
  *
@@ -5,7 +6,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/spi_flash.c
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -390,3 +391,4 @@ int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode)
 
 	return 0;
 }
+#endif

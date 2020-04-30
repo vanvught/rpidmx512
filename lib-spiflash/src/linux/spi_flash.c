@@ -2,7 +2,7 @@
  * @file spi_flash.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#if defined (RASPPI)
 #include <stdio.h>
 #include <stdint.h>
 
@@ -59,3 +60,144 @@ int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 
 	return 0;
 }
+#else
+#include <stdint.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <assert.h>
+
+#include "debug.h"
+
+static FILE *file = NULL;
+
+#define FLASH_SECTOR_SIZE	4096
+#define FLASH_SIZE			(512 * FLASH_SECTOR_SIZE)
+
+#define FLASH_FILE_NAME		"spiflash.bin"
+
+int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode) {
+	DEBUG_ENTRY
+
+	if ((file = fopen(FLASH_FILE_NAME, "r+")) == NULL) {
+		perror("fopen r+");
+		file = fopen(FLASH_FILE_NAME, "w+");
+		int i;
+		for (i = 0; i < FLASH_SIZE; i++) {
+			if (fputc(0xFF, file) == EOF) {
+				perror("fputc(0xFF, file)");
+				DEBUG_EXIT
+				return -1;
+			}
+		}
+
+		if (fflush(file) != 0) {
+			perror("fflush");
+		}
+	}
+
+	DEBUG_EXIT
+	return 0;
+}
+
+uint32_t spi_flash_get_sector_size(void) {
+	return FLASH_SECTOR_SIZE;
+}
+
+const char *spi_flash_get_name(void) {
+	return "SPI Flash None Driver";
+}
+
+uint32_t spi_flash_get_size(void) {
+	return FLASH_SIZE;
+}
+
+int spi_flash_cmd_erase(uint32_t offset, size_t len) {
+	DEBUG_ENTRY
+
+	DEBUG_PRINTF("offset=%d, len=%d", (int) offset, (int) len);
+
+	if (offset % FLASH_SECTOR_SIZE || len % FLASH_SECTOR_SIZE) {
+		DEBUG_PUTS("Erase offset/length not multiple of erase size");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	if (fseek(file, offset, SEEK_SET) != 0) {
+		perror("fseek");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	int i;
+	for (i = 0; i < len; i++) {
+		if (fputc(0xFF, file) == EOF) {
+			perror("fputc(0xFF, file)");
+			DEBUG_EXIT
+			return -1;
+		}
+	}
+
+	if (fflush(file) != 0) {
+		perror("fflush");
+	}
+
+	sync();
+
+	DEBUG_EXIT
+	return 0;
+}
+
+int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf) {
+	DEBUG_ENTRY
+
+	assert(file != NULL);
+
+	DEBUG_PRINTF("offset=%d, len=%d", (int) offset, (int) len);
+
+	if (fseek(file, offset, SEEK_SET) != 0) {
+		perror("fseek");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	if (fwrite(buf, 1, len, file) != len) {
+		perror("fwrite");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	if (fflush(file) != 0) {
+		perror("fflush");
+	}
+
+	sync();
+
+	DEBUG_EXIT
+	return 0;
+}
+
+int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
+	DEBUG_ENTRY
+
+	assert(file != NULL);
+
+	DEBUG_PRINTF("offset=%d, len=%d", (int) offset, (int) len);
+
+	if (fseek(file, offset, SEEK_SET) != 0) {
+		perror("fseek");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	if (fread(data, 1, len, file) != len) {
+		perror("fread");
+		DEBUG_EXIT
+		return -1;
+	}
+
+	DEBUG_EXIT
+	return 0;
+}
+#endif
