@@ -53,7 +53,7 @@ void ShowFileTFTP::Exit(void) {
 }
 
 bool ShowFileTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, (int) tMode);
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
 	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
@@ -66,7 +66,7 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
 }
 
 bool ShowFileTFTP::FileCreate(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, (int) tMode);
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
 	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {

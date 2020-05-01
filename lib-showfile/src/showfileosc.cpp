@@ -98,7 +98,7 @@ ShowFileOSC::ShowFileOSC(void):
 
 	s_pThis = this;
 
-	m_pBuffer = new uint8_t[OSCSERVER_MAX_BUFFER];
+	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
 	for (uint32_t i = 0; i < OSCSERVER_FILES_ENTRIES_MAX; i++) {
@@ -131,12 +131,12 @@ void ShowFileOSC::Stop(void) {
 void ShowFileOSC::Run(void) {
 	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
-	if (__builtin_expect((nBytesReceived <= (int) PATH_LENGTH), 1)) {
+	if (__builtin_expect((nBytesReceived <= static_cast<int>(PATH_LENGTH)), 1)) {
 		return;
 	}
 
-	if (memcmp((const char *) m_pBuffer, sPath, PATH_LENGTH) == 0) {
-		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, (int) strlen((const char *)m_pBuffer), (int) PATH_LENGTH, &m_pBuffer[PATH_LENGTH]);
+	if (memcmp(m_pBuffer, sPath, PATH_LENGTH) == 0) {
+		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(PATH_LENGTH), &m_pBuffer[PATH_LENGTH]);
 
 		if (memcmp(&m_pBuffer[PATH_LENGTH], sStart, START_LENGTH) == 0) {
 			ShowFile::Get()->Start();
@@ -165,7 +165,7 @@ void ShowFileOSC::Run(void) {
 			const int nValue = Msg.GetInt(0);
 
 			if (nValue <= SHOWFILE_FILE_MAX_NUMBER) {
-				ShowFile::Get()->SetShowFile((uint8_t) nValue);
+				ShowFile::Get()->SetShowFile(nValue);
 				SendStatus();
 			}
 
@@ -207,7 +207,7 @@ void ShowFileOSC::Run(void) {
 			}
 
 			if ((nValue >= 0) &&  (nValue <= 255)) {
-				ShowFile::Get()->SetMaster((uint32_t) nValue);
+				ShowFile::Get()->SetMaster(nValue);
 			}
 
 			DEBUG_PRINTF("Master %d", nValue);
@@ -238,16 +238,16 @@ void ShowFileOSC::Run(void) {
 				return;
 			}
 
-			DEBUG_PRINTF("nValue=%u", (unsigned) nValue);
+			DEBUG_PRINTF("nValue=%d", nValue);
 
 			if (nValue <= SHOWFILE_FILE_MAX_NUMBER) {
 				char aShowFileName[SHOWFILE_FILE_NAME_LENGTH + 1];
 
-				ShowFile::ShowFileNameCopyTo((char *)aShowFileName, sizeof(aShowFileName), nValue);
+				ShowFile::ShowFileNameCopyTo(aShowFileName, sizeof(aShowFileName), nValue);
 
 				OSCSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", aShowFileName);
 
-				if (ShowFile::Get()->DeleteShowFile((uint8_t) nValue)) {
+				if (ShowFile::Get()->DeleteShowFile(nValue)) {
 					OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Deleted");
 				} else {
 					OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Not deleted");
@@ -275,7 +275,7 @@ void ShowFileOSC::Run(void) {
 				return;
 			}
 
-			const uint32_t nIndex =  (uint32_t) Msg.GetFloat(0);
+			const uint32_t nIndex = static_cast<uint32_t>(Msg.GetFloat(0));
 
 			DEBUG_PRINTF("Index %u", nIndex);
 
@@ -290,7 +290,7 @@ void ShowFileOSC::Run(void) {
 			}
 
 			if (nShow <= SHOWFILE_FILE_MAX_NUMBER) {
-				ShowFile::Get()->SetShowFile((uint8_t) nShow);
+				ShowFile::Get()->SetShowFile(nShow);
 				SendStatus();
 			}
 
@@ -379,7 +379,7 @@ void ShowFileOSC::Reload(void) {
 		m_aFileIndex[i] = -1;
 	}
 
-	(void) closedir(dirp);
+	static_cast<void>(closedir(dirp));
 
 	SendStatus();
 }

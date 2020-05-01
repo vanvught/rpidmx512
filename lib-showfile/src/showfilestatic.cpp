@@ -39,7 +39,7 @@ TShowFileFormats ShowFile::GetFormat(const char *pString) {
 
 	for (uint32_t i = 0; i < SHOWFILE_FORMAT_UNDEFINED; i++) {
 		if (strcasecmp(pString, ShowFileConst::FORMAT[i]) == 0) {
-			return (TShowFileFormats) i;
+			return static_cast<TShowFileFormats>(i);
 		}
 	}
 
@@ -87,6 +87,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNu
 	DEBUG_PRINTF("cDigit=%c", cDigit);
 
 	if (!isdigit(cDigit)) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -95,8 +96,14 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNu
 	cDigit = pShowFileName[sizeof(SHOWFILE_PREFIX)];
 	DEBUG_PRINTF("cDigit=%c", cDigit);
 
+	if (!isdigit(cDigit)) {
+		DEBUG_EXIT
+		return false;
+	}
+
 	nShowFileNumber += (cDigit - '0');
 
+	DEBUG_EXIT
 	return true;
 }
 

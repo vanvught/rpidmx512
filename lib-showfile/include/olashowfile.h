@@ -49,14 +49,11 @@ public:
 	OlaShowFile(void);
 	~OlaShowFile(void);
 
-	void Start(void);
-	void Stop(void);
-	void Resume(void);
-
-	void Process(void);
-
-	void Print(void) {
-		ShowFile::Print();
+	void ShowFileStart(void);
+	void ShowFileStop(void);
+	void ShowFileResume(void);
+	void ShowFileRun(void);
+	void ShowFilePrint(void) {
 		puts("OlaShowFile");
 	}
 

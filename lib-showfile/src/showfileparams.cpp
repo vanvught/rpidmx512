@@ -121,10 +121,10 @@ void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, TSho
 
 	if (Sscan::Uint8(pLine, pKeyword, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_tShowFileParams.nOptions |= (uint8_t) tShowFileOptions;
+			m_tShowFileParams.nOptions |= static_cast<uint8_t>(tShowFileOptions);
 			m_tShowFileParams.nSetList |= SHOWFILE_PARAMS_MASK_OPTIONS;
 		} else {
-			m_tShowFileParams.nOptions &= ~((uint8_t) tShowFileOptions);
+			m_tShowFileParams.nOptions &= ~(static_cast<uint8_t>(tShowFileOptions));
 		}
 
 		if (m_tShowFileParams.nOptions == 0) {
@@ -242,7 +242,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_LOOP, SHOWFILE_OPTION_LOOP);
 }
 
-void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (ptShowFileParamss != 0) {
@@ -253,19 +253,19 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ui
 
 	PropertiesBuilder builder(ShowFileParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(ShowFileParamsConst::SHOW, (uint32_t) m_tShowFileParams.nShow, isMaskSet(SHOWFILE_PARAMS_MASK_SHOW));
+	builder.Add(ShowFileParamsConst::SHOW, static_cast<uint32_t>(m_tShowFileParams.nShow), isMaskSet(SHOWFILE_PARAMS_MASK_SHOW));
 
-	builder.Add(ShowFileParamsConst::FORMAT, ShowFile::GetFormat((TShowFileFormats) m_tShowFileParams.nFormat), isMaskSet(SHOWFILE_PARAMS_MASK_FORMAT));
+	builder.Add(ShowFileParamsConst::FORMAT, ShowFile::GetFormat(static_cast<TShowFileFormats>(m_tShowFileParams.nFormat)), isMaskSet(SHOWFILE_PARAMS_MASK_FORMAT));
 	builder.Add(ShowFileParamsConst::PROTOCOL, (m_tShowFileParams.nProtocol == SHOWFILE_PROTOCOL_SACN) ? "sacn" : "artnet", isMaskSet(SHOWFILE_PARAMS_MASK_PROTOCOL));
 
 	builder.AddComment("DMX");
-	builder.Add(ShowFileParamsConst::DMX_MASTER, (uint32_t) m_tShowFileParams.nDmxMaster, isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER));
+	builder.Add(ShowFileParamsConst::DMX_MASTER, static_cast<uint32_t>(m_tShowFileParams.nDmxMaster), isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER));
 
 	builder.AddComment("sACN");
-	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, (uint32_t) m_tShowFileParams.nUniverse, isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE));
+	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<uint32_t>(m_tShowFileParams.nUniverse), isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE));
 
 	builder.AddComment("Art-Net");
-	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, (uint32_t) m_tShowFileParams.nDisableUnicast, isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST));
+	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<uint32_t>(m_tShowFileParams.nDisableUnicast), isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST));
 
 	builder.AddComment("Options");
 	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isOptionSet(SHOWFILE_OPTION_AUTO_START), isOptionSet(SHOWFILE_OPTION_AUTO_START));
@@ -273,15 +273,15 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ui
 	builder.Add(ShowFileParamsConst::OPTION_DISABLE_SYNC, isOptionSet(SHOWFILE_OPTION_DISABLE_SYNC), isOptionSet(SHOWFILE_OPTION_DISABLE_SYNC));
 
 	builder.AddComment("OSC Server");
-	builder.Add(OscConst::PARAMS_INCOMING_PORT, (uint32_t) m_tShowFileParams.nOscPortIncoming, isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING));
-	builder.Add(OscConst::PARAMS_OUTGOING_PORT, (uint32_t) m_tShowFileParams.nOscPortOutgoing, isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING));
+	builder.Add(OscConst::PARAMS_INCOMING_PORT, static_cast<uint32_t>(m_tShowFileParams.nOscPortIncoming), isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING));
+	builder.Add(OscConst::PARAMS_OUTGOING_PORT, static_cast<uint32_t>(m_tShowFileParams.nOscPortOutgoing), isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING));
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
 }
 
-void ShowFileParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pShowFileParamsStore == 0) {
@@ -337,27 +337,27 @@ void ShowFileParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ShowFileParamsConst::FILE_NAME);
 
 	if(isMaskSet(SHOWFILE_PARAMS_MASK_FORMAT)) {
-		printf(" %s=%d [%s]\n", ShowFileParamsConst::FORMAT, m_tShowFileParams.nFormat, ShowFile::GetFormat((TShowFileFormats) m_tShowFileParams.nFormat));
+		printf(" %s=%d [%s]\n", ShowFileParamsConst::FORMAT, m_tShowFileParams.nFormat, ShowFile::GetFormat(static_cast<TShowFileFormats>(m_tShowFileParams.nFormat)));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SHOW)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SHOW, (unsigned) m_tShowFileParams.nShow);
+		printf(" %s=%u\n", ShowFileParamsConst::SHOW, static_cast<unsigned>(m_tShowFileParams.nShow));
 	}
 
 	if(isMaskSet(SHOWFILE_PARAMS_MASK_PROTOCOL)) {
-		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, (unsigned) m_tShowFileParams.nProtocol, PROTOCOL2STRING(m_tShowFileParams.nProtocol));
+		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, static_cast<unsigned>(m_tShowFileParams.nProtocol), PROTOCOL2STRING(m_tShowFileParams.nProtocol));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER)) {
-		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, (unsigned) m_tShowFileParams.nDmxMaster);
+		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, static_cast<unsigned>(m_tShowFileParams.nDmxMaster));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, (unsigned) m_tShowFileParams.nUniverse);
+		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<unsigned>(m_tShowFileParams.nUniverse));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST)) {
-		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, (unsigned) m_tShowFileParams.nDisableUnicast, m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
+		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<unsigned>(m_tShowFileParams.nDisableUnicast), m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
 	}
 
 	// Options
@@ -379,11 +379,11 @@ void ShowFileParams::Dump(void) {
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, (unsigned) m_tShowFileParams.nOscPortIncoming);
+		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, static_cast<unsigned>(m_tShowFileParams.nOscPortIncoming));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, (unsigned) m_tShowFileParams.nOscPortOutgoing);
+		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, static_cast<unsigned>(m_tShowFileParams.nOscPortOutgoing));
 	}
 #endif
 }
@@ -392,6 +392,6 @@ void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((ShowFileParams *) p)->callbackFunction(s);
+	(static_cast<ShowFileParams *>(p))->callbackFunction(s);
 }
 

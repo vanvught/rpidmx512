@@ -32,7 +32,6 @@
 #include "showfile.h"
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "debug.h"
 
@@ -55,103 +54,68 @@ OlaShowFile::~OlaShowFile(void) {
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::Start(void) {
+void OlaShowFile::ShowFileStart(void) {
 	DEBUG1_ENTRY
 
 	m_nDelayMillis = 0;
 	m_nLastMillis = 0;
 
-	if (m_pShowFile != 0) {
-		(void) fseek(m_pShowFile, 0L, SEEK_SET);
-
-		m_tShowFileStatus = SHOWFILE_STATUS_RUNNING;
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
-	} else {
-		m_tShowFileStatus = SHOWFILE_STATUS_STOPPED;
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
-	}
+	static_cast<void>(fseek(m_pShowFile, 0L, SEEK_SET));
 
 	m_tState = STATE_IDLE;
 
-	m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
-
-	UpdateDisplayStatus();
-
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::Stop(void) {
+void OlaShowFile::ShowFileStop(void) {
 	DEBUG1_ENTRY
 
-	m_tShowFileStatus = SHOWFILE_STATUS_STOPPED;
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
-
-	m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
-
-	UpdateDisplayStatus();
-
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::Resume(void) {
+void OlaShowFile::ShowFileResume(void) {
 	DEBUG1_ENTRY
 
 	m_nDelayMillis = 0;
 	m_nLastMillis = 0;
 
-	m_tShowFileStatus = SHOWFILE_STATUS_RUNNING;
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
-
-	m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
-
-	UpdateDisplayStatus();
-
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::Process(void) {
-	if (m_tShowFileStatus == SHOWFILE_STATUS_STOPPED) {
-		return;
-	}
+void OlaShowFile::ShowFileRun(void) {
+	if (m_tState != STATE_TIME_WAITING) {
+		m_tParseCode = GetNextLine();
 
-	if (m_tShowFileStatus != SHOWFILE_STATUS_ENDED) {
-		if (m_tState != STATE_TIME_WAITING) {
-
-			m_tParseCode = GetNextLine();
-
-			if (m_tParseCode == PARSE_DMX) {
+		if (m_tParseCode == PARSE_DMX) {
+			if (m_nDmxDataLength != 0) {
+				m_pShowFileProtocolHandler->DmxOut(m_nUniverse, m_DmxData, m_nDmxDataLength);
+			}
+		} else if (m_tParseCode == PARSE_TIME) {
+			if (m_nDelayMillis != 0) {
 				if (m_nDmxDataLength != 0) {
-					m_pShowFileProtocolHandler->DmxOut(m_nUniverse, m_DmxData, m_nDmxDataLength);
-				}
-			} else if (m_tParseCode == PARSE_TIME) {
-				if (m_nDelayMillis != 0) {
-					if (m_nDmxDataLength != 0) {
-						m_pShowFileProtocolHandler->DmxSync();
-					}
-				}
-				m_tState = STATE_TIME_WAITING;
-			} else if (m_tParseCode == PARSE_EOF) {
-				if (m_bDoLoop) {
-					(void) fseek(m_pShowFile, 0L, SEEK_SET);
-				} else {
-					m_tShowFileStatus = SHOWFILE_STATUS_ENDED;
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
-					UpdateDisplayStatus();
+					m_pShowFileProtocolHandler->DmxSync();
 				}
 			}
+			m_tState = STATE_TIME_WAITING;
+		} else if (m_tParseCode == PARSE_EOF) {
+			if (m_bDoLoop) {
+				static_cast<void>(fseek(m_pShowFile, 0L, SEEK_SET));
+			} else {
+				SetShowFileStatus(SHOWFILE_STATUS_ENDED);
+			}
 		}
+	}
 
-		const uint32_t nMillis = Hardware::Get()->Millis();
+	const uint32_t nMillis = Hardware::Get()->Millis();
 
-		if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
-			m_nLastMillis = nMillis;
-			m_tState = STATE_PARSING_DMX;
-		}
+	if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
+		m_nLastMillis = nMillis;
+		m_tState = STATE_PARSING_DMX;
 	}
 }
 
 ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
-	char *p = (char *) pLine;
+	char *p = const_cast<char *>(pLine);
 	int64_t k = 0;
 	uint32_t nLength = 0;
 
@@ -186,7 +150,7 @@ ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 }
 
 enum ParseCode OlaShowFile::ParseLine(const char *pLine) {
-	char *p = (char *) pLine;
+	char *p = const_cast<char *>(pLine);
 	int32_t k = 0;
 
 	while (isdigit(*p) == 1) {
@@ -194,7 +158,7 @@ enum ParseCode OlaShowFile::ParseLine(const char *pLine) {
 		p++;
 	}
 
-	if (k > (int32_t) ((uint16_t) ~0)) {
+	if (k > static_cast<int32_t>((static_cast<uint16_t>(~0)))) {
 		return PARSE_FAILED;
 	}
 
@@ -211,11 +175,11 @@ enum ParseCode OlaShowFile::ParseLine(const char *pLine) {
 
 ParseCode OlaShowFile::GetNextLine(void) {
 	if (m_pShowFile != NULL) {
-		if (fgets(s_buffer, (int) sizeof(s_buffer) - 1, m_pShowFile) != s_buffer) {
+		if (fgets(s_buffer, (sizeof(s_buffer) - 1), m_pShowFile) != s_buffer) {
 			return PARSE_EOF;
 		}
 
-		if (isdigit((int) s_buffer[0])) {
+		if (isdigit(s_buffer[0])) {
 			return ParseLine(s_buffer);
 		}
 	}

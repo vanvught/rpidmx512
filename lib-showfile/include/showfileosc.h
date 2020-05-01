@@ -73,7 +73,7 @@ private:
 	int32_t m_nHandle;
 	uint32_t m_nRemoteIp;
 	uint16_t m_nRemotePort;
-	uint8_t *m_pBuffer;
+	char *m_pBuffer;
 	int32_t m_aFileIndex[OSCSERVER_FILES_ENTRIES_MAX];
 
 public:

@@ -66,13 +66,13 @@ public:
 	ShowFile(void);
 	virtual ~ShowFile(void) {}
 
-	virtual void Start(void)=0;
-	virtual void Stop(void)=0;
-	virtual void Resume(void)=0;
-	virtual void Process(void)=0;
-	virtual void Print(void)=0;
-
+	void Start(void);
+	void Stop(void);
+	void Resume(void);
 	void Run(void);
+	void Print(void);
+
+	void SetShowFileStatus(TShowFileStatus tShowFileStatus);
 
 	void SetProtocolHandler(ShowFileProtocolHandler *pShowFileProtocolHandler) {
 		m_pShowFileProtocolHandler = pShowFileProtocolHandler;
@@ -84,7 +84,7 @@ public:
 	void SetShowFile(uint8_t nShowFileNumber);
 
 	const char *GetShowFileName(void) {
-		return (const char*)m_aShowFileName;
+		return static_cast<const char *>(m_aShowFileName);
 	}
 
 	uint8_t GetShowFile(void) {
@@ -117,6 +117,9 @@ public:
 	}
 
 	void EnableTFTP(bool bEnableTFTP);
+	bool IsTFTPEnabled(void) {
+		return m_bEnableTFTP;
+	}
 
 	void UpdateDisplayStatus(void) {
 		if (m_pShowFileDisplay != 0) {
@@ -124,31 +127,35 @@ public:
 		}
 	}
 
-public:
 	static TShowFileFormats GetFormat(const char *pString);
 	static const char *GetFormat(TShowFileFormats tFormat);
 	static bool CheckShowFileName(const char *pShowFileName, uint8_t& nShowFileNumber);
 	static bool ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t nShowFileNumber);
 
+	static ShowFile* Get(void) {
+		return s_pThis;
+	}
+
+protected:
+	virtual void ShowFileStart(void)=0;
+	virtual void ShowFileStop(void)=0;
+	virtual void ShowFileResume(void)=0;
+	virtual void ShowFileRun(void)=0;
+	virtual void ShowFilePrint(void)=0;
+
 protected:
 	uint8_t m_nShowFileNumber;
-	enum TShowFileStatus m_tShowFileStatus;
 	FILE *m_pShowFile;
 	ShowFileProtocolHandler *m_pShowFileProtocolHandler;
 	bool m_bDoLoop;
 	ShowFileDisplay *m_pShowFileDisplay;
 
 private:
-	uint8_t m_aShowFileName[SHOWFILE_FILE_NAME_LENGTH + 1]; // Inluding '\0'
+	TShowFileStatus m_tShowFileStatus;
+	char m_aShowFileName[SHOWFILE_FILE_NAME_LENGTH + 1]; // Inluding '\0'
 	bool m_bEnableTFTP;
 	ShowFileTFTP *m_pShowFileTFTP;
 
-public:
-	static ShowFile* Get(void) {
-		return s_pThis;
-	}
-
-private:
 	static ShowFile *s_pThis;
 };
 

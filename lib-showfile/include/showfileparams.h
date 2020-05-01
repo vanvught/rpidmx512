@@ -78,19 +78,19 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TShowFileParams *ptShowFileParamss, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(void);
 
 	void Dump(void);
 
 	TShowFileFormats GetFormat(void) {
-		return (TShowFileFormats) m_tShowFileParams.nFormat;
+		return static_cast<TShowFileFormats>(m_tShowFileParams.nFormat);
 	}
 
 	TShowFileProtocols GetProtocol(void) {
-		return (TShowFileProtocols) m_tShowFileParams.nProtocol;
+		return static_cast<TShowFileProtocols>(m_tShowFileParams.nProtocol);
 	}
 
 	uint8_t GetShow(void) {

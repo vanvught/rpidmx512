@@ -40,7 +40,7 @@
 class ShowFileProtocolArtNet: public ShowFileProtocolHandler, ArtNetTrigger {
 public:
 	ShowFileProtocolArtNet(void) {
-		m_ArtNetController.SetArtNetTrigger((ArtNetTrigger *) this);
+		m_ArtNetController.SetArtNetTrigger(static_cast<ArtNetTrigger *>(this));
 	}
 
 	~ShowFileProtocolArtNet(void) {
