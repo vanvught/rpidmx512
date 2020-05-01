@@ -57,7 +57,7 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	va_list arp;
 	va_start(arp, format);
 
-	const uint32_t i = vsnprintf((char *)m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
+	const uint32_t i = vsnprintf(m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
 
 	va_end(arp);
 
@@ -83,7 +83,7 @@ void DisplayUdf::Show(void) {
 		ClearLine(i);
 	}
 
-	Write(m_aLabels[DISPLAY_UDF_LABEL_TITLE], (const char *)m_aTitle);
+	Write(m_aLabels[DISPLAY_UDF_LABEL_TITLE], m_aTitle);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_BOARDNAME], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_VERSION], "Firmware V%.*s", SOFTWARE_VERSION_LENGTH, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
@@ -102,7 +102,10 @@ void DisplayUdf::ShowDmxStartAddress(void) {
 	DEBUG_ENTRY
 
 	if (LightSet::Get() != 0) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS], "DMX S:%3d F:%3d", (int) LightSet::Get()->GetDmxStartAddress(), (int) LightSet::Get()->GetDmxFootprint());
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS],
+				"DMX S:%3d F:%3d",
+				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
+				static_cast<int>(LightSet::Get()->GetDmxFootprint()));
 	}
 
 	DEBUG_EXIT

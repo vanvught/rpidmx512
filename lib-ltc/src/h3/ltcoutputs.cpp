@@ -2,7 +2,7 @@
  * @file ltcoutputs.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ LtcOutputs::~LtcOutputs(void) {
 
 void LtcOutputs::Init(void) {
 	if (!m_tLtcDisabledOutputs.bMidi) {
-		irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
+		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 	}
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
@@ -97,40 +97,40 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	assert(ptLtcTimeCode != 0);
 
 	if (!m_tLtcDisabledOutputs.bNtp) {
-		NtpServer::Get()->SetTimeCode((const struct TLtcTimeCode *)ptLtcTimeCode);
+		NtpServer::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(ptLtcTimeCode));
 	}
 
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_tTimeCodeTypePrevious)) {
 		m_tTimeCodeTypePrevious = static_cast<TTimecodeTypes>(ptLtcTimeCode->nType);
 
 		if (!m_tLtcDisabledOutputs.bMidi) {
-			Midi::Get()->SendTimeCode((const struct _midi_send_tc *)ptLtcTimeCode);
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode));
 		}
 
-		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) ptLtcTimeCode->nType] / 4;
+		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 		m_nMidiQuarterFramePiece = 0;
 
 		if (!m_tLtcDisabledOutputs.bDisplay) {
-			Display::Get()->TextLine(2, Ltc::GetType((TTimecodeTypes) ptLtcTimeCode->nType), TC_TYPE_MAX_LENGTH);
+			Display::Get()->TextLine(2, Ltc::GetType(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType)), TC_TYPE_MAX_LENGTH);
 		}
 
 		Ltc7segment::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
 	}
 
-	Ltc::ItoaBase10((const struct TLtcTimeCode *) ptLtcTimeCode, m_aTimeCode);
+	Ltc::ItoaBase10(reinterpret_cast<const struct TLtcTimeCode*>(ptLtcTimeCode), m_aTimeCode);
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
-		Display::Get()->TextLine(1, (const char *) m_aTimeCode, TC_CODE_MAX_LENGTH);
+		Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);
 	}
 
 	if (!m_tLtcDisabledOutputs.bMax7219) {
-		LtcDisplayMax7219::Get()->Show((const char *) m_aTimeCode);
+		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
 	}
 
 	if(!m_tLtcDisabledOutputs.bWS28xx) {
-		LtcDisplayWS28xx::Get()->Show((const char *) m_aTimeCode);
+		LtcDisplayWS28xx::Get()->Show(m_aTimeCode);
 	}
 }
 
@@ -138,7 +138,7 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 	dmb();
 	if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 		IsMidiQuarterFrameMessage = false;
-		Midi::Get()->SendQf((const struct _midi_send_tc *)ptLtcTimeCode, m_nMidiQuarterFramePiece);
+		Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode), m_nMidiQuarterFramePiece);
 	}
 }
 
@@ -147,27 +147,27 @@ void LtcOutputs::ShowSysTime(void) {
 		const time_t tTime = time(0);
 		const struct tm *pLocalTime = localtime(&tTime);
 
-		if (__builtin_expect((m_nSecondsPrevious == (uint32_t) pLocalTime->tm_sec), 1)) {
+		if (__builtin_expect((m_nSecondsPrevious == pLocalTime->tm_sec), 1)) {
 			return;
 		}
 
 		m_nSecondsPrevious = pLocalTime->tm_sec;
 
-		Ltc::ItoaBase10((const struct tm *) pLocalTime, m_aSystemTime);
+		Ltc::ItoaBase10(pLocalTime, m_aSystemTime);
 
 		if (!m_tLtcDisabledOutputs.bDisplay) {
-			Display::Get()->TextLine(1, (const char *) m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
+			Display::Get()->TextLine(1, m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
 			Display::Get()->ClearLine(2);
 		}
 
 		Ltc7segment::Get()->Show(TC_TYPE_UNKNOWN);
 
 		if (!m_tLtcDisabledOutputs.bMax7219) {
-			LtcDisplayMax7219::Get()->ShowSysTime((const char *) m_aSystemTime);
+			LtcDisplayMax7219::Get()->ShowSysTime(m_aSystemTime);
 		}
 
 		if(!m_tLtcDisabledOutputs.bWS28xx) {
-			LtcDisplayWS28xx::Get()->ShowSysTime((const char *) m_aSystemTime);
+			LtcDisplayWS28xx::Get()->ShowSysTime(m_aSystemTime);
 		}
 
 		ResetTimeCodeTypePrevious();

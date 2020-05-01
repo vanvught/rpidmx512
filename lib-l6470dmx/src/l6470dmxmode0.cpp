@@ -2,7 +2,7 @@
  * @file l6470dmxmode0.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,12 +72,12 @@ void L6470DmxMode0::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 
 	if (pDmxData[0] <= 126) {	// Left-hand rotation
-		m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + (float) ((uint8_t) 127 - pDmxData[0]) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
+		m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + static_cast<float>((127 - pDmxData[0])) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
 		return;
 	}
 
 	if (pDmxData[0] >= 130) {	// Right-hand rotation
-		m_pL6470->run(L6470_DIR_REV, m_fMinSpeed + (float) (pDmxData[0] - (uint8_t) 129) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
+		m_pL6470->run(L6470_DIR_REV, m_fMinSpeed + static_cast<float>((pDmxData[0] - 129)) * ((m_fMaxSpeed - m_fMinSpeed) / 127));
 		return;
 	}
 

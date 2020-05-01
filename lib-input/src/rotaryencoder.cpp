@@ -2,7 +2,7 @@
  * @file rotaryencoder.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,8 +66,8 @@ RotaryEncoder::~RotaryEncoder(void) {
 }
 
 TRotaryDirection RotaryEncoder::Process(uint8_t nInputAB) {
-	DEBUG_PRINTF("%x:%x", (int) (m_nState & 0x0F), (int) (nInputAB & 0x03));
+	DEBUG_PRINTF("%x:%x", static_cast<int>(m_nState & 0x0F), static_cast<int>(nInputAB & 0x03));
 	m_nState = s_StateTable[m_nState & 0x0F][nInputAB & 0x03];
-	DEBUG_PRINTF("%x", (int) (m_nState & 0x30));
-	return (TRotaryDirection) (m_nState & 0x30);
+	DEBUG_PRINTF("%x", static_cast<int>(m_nState & 0x30));
+	return static_cast<TRotaryDirection>((m_nState & 0x30));
 }

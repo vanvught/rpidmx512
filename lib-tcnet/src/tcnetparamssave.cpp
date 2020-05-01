@@ -2,7 +2,7 @@
  * @file tcnetparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,18 +34,17 @@
 
 #include "tcnetparams.h"
 #include "tcnetparamsconst.h"
+#include "tcnetconst.h"
 
 #include "propertiesbuilder.h"
 
 #include "debug.h"
 
-const uint8_t s_nFPS[4] = { 24, 25, 29, 30};
-
-void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
-	assert(m_tTTCNetParams.nTimeCodeType < (sizeof(s_nFPS) / sizeof(s_nFPS[0])));
+	assert(m_tTTCNetParams.nTimeCodeType < (sizeof(TCNetConst::FPS) / sizeof(TCNetConst::FPS[0])));
 
 	if (pTTCNetParams != 0) {
 		memcpy(&m_tTTCNetParams, pTTCNetParams, sizeof(struct TTCNetParams));
@@ -53,15 +52,15 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBu
 		m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
 	}
 
-	char name[2];
-	name[0] = TCNet::GetLayerName((TTCNetLayers) m_tTTCNetParams.nLayer);
-	name[1] = '\0';
+	char aName[2];
+	aName[0] = TCNet::GetLayerName(static_cast<TTCNetLayers>(m_tTTCNetParams.nLayer));
+	aName[1] = '\0';
 
 	PropertiesBuilder builder(TCNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(TCNetParamsConst::NODE_NAME, (const char *)m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
-	builder.Add(TCNetParamsConst::LAYER, (const char *)name, isMaskSet(TCNET_PARAMS_MASK_LAYER));
-	builder.Add(TCNetParamsConst::TIMECODE_TYPE, s_nFPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
+	builder.Add(TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
+	builder.Add(TCNetParamsConst::LAYER, aName, isMaskSet(TCNET_PARAMS_MASK_LAYER));
+	builder.Add(TCNetParamsConst::TIMECODE_TYPE, TCNetConst::FPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
 	builder.Add(TCNetParamsConst::USE_TIMECODE, m_tTTCNetParams.nUseTimeCode, isMaskSet(TCNET_PARAMS_MASK_USE_TIMECODE));
 
 	nSize = builder.GetSize();
@@ -71,7 +70,7 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBu
 	DEBUG_EXIT
 }
 
-void TCNetParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TCNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pTCNetParamsStore == 0) {

@@ -2,7 +2,7 @@
  * @file arp.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ void arp_announce(void) {
 		return;
 	}
 
-	debug_dump((void *)&s_arp_announce, sizeof(struct t_arp));
+	debug_dump(&s_arp_announce, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_announce, sizeof(struct t_arp));
 
@@ -88,7 +88,7 @@ void arp_handle_request(struct t_arp *p_arp) {
 	memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, ETH_ADDR_LEN);
 	s_arp_reply.arp.target_ip = p_arp->arp.sender_ip;
 
-	//debug_dump((void *)&s_arp_reply, sizeof(struct t_arp));
+	//debug_dump(&s_arp_reply, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_reply, sizeof(struct t_arp));
 
@@ -167,7 +167,7 @@ void arp_send_request(uint32_t ip) {
 
 	DEBUG_PRINTF(IPSTR, IP2STR(ip));
 
-	debug_dump((void *)&s_arp_request, sizeof(struct t_arp));
+	debug_dump(&s_arp_request, sizeof(struct t_arp));
 
 	emac_eth_send((void *)&s_arp_request, sizeof(struct t_arp));
 

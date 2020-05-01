@@ -2,7 +2,7 @@
  * @file lightsetgetoutputtype.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ const char* LightSet::GetOutputType(enum TLightSetOutputType type) {
 TLightSetOutputType LightSet::GetOutputType(const char* sType) {
 	for (uint32_t i = 0; i < sizeof(sOutput) / sizeof(sOutput[0]); i++) {
 		if (strncasecmp(sOutput[i], sType, 3) == 0) {
-			return (TLightSetOutputType) i;
+			return static_cast<TLightSetOutputType>(i);
 		}
 	}
 

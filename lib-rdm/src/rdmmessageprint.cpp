@@ -34,7 +34,7 @@
 #include "rdm_e120.h"
 
 void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
-	const struct TRdmMessage *p = (struct TRdmMessage *) pRdmDataNoSc;
+	const struct TRdmMessage *p = reinterpret_cast<const struct TRdmMessage*>(pRdmDataNoSc);
 
 	uint8_t dummy[512];
 	dummy[0] = E120_SC_RDM;
@@ -49,16 +49,16 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 		return;
 	}
 
-	const struct TRdmMessage *p = (struct TRdmMessage *) pRdmData;
+	const struct TRdmMessage *pRdmMessage = reinterpret_cast<const struct TRdmMessage*>(pRdmData);
 
 	if (pRdmData[0] == E120_SC_RDM) {
-		uint8_t *pUid = (uint8_t *)p->source_uid;
-		printf("%.2x%.2x:%.2x%.2x%.2x%.2x -> ", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
+		const uint8_t *pSrcUid = pRdmMessage->source_uid;
+		printf("%.2x%.2x:%.2x%.2x%.2x%.2x -> ", pSrcUid[0], pSrcUid[1], pSrcUid[2], pSrcUid[3], pSrcUid[4], pSrcUid[5]);
 
-		pUid = (uint8_t *)p->destination_uid;
-		printf("%.2x%.2x:%.2x%.2x%.2x%.2x ", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
+		const uint8_t *pDstUid = pRdmMessage->destination_uid;
+		printf("%.2x%.2x:%.2x%.2x%.2x%.2x ", pDstUid[0], pDstUid[1], pDstUid[2], pDstUid[3], pDstUid[4], pDstUid[5]);
 
-		switch (p->command_class) {
+		switch (pRdmMessage->command_class) {
 		case E120_DISCOVERY_COMMAND:
 			printf("DISCOVERY_COMMAND, ");
 			break;
@@ -78,13 +78,13 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 			printf("SET_COMMAND_RESPONSE, ");
 			break;
 		default:
-			printf("CC {%.2x}, ", p->command_class);
+			printf("CC {%.2x}, ", pRdmMessage->command_class);
 			break;
 		}
 
-		const uint16_t nSubDevice = (uint16_t) (p->sub_device[0] << 8) + (uint16_t) p->sub_device[1];
+		const uint16_t nSubDevice = (pRdmMessage->sub_device[0] << 8) + pRdmMessage->sub_device[1];
 
-		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", nSubDevice, p->transaction_number, p->param_id[0], p->param_id[1], p->param_data_length);
+		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", nSubDevice, pRdmMessage->transaction_number, pRdmMessage->param_id[0], pRdmMessage->param_id[1], pRdmMessage->param_data_length);
 
 	} else if (pRdmData[0] == 0xFE) {
 		for (uint32_t i = 0 ; i < 24; i++) {

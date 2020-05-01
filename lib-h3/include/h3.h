@@ -26,6 +26,10 @@
 #ifndef H3_H_
 #define H3_H_
 
+#ifdef __cplusplus
+ #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
 #define FUNC_PREFIX(x) 			h3_##x
 
 #define MEGABYTE				0x100000
@@ -134,10 +138,11 @@ typedef enum T_H3_IRQn {
 #include <stddef.h>
 
 #ifdef __cplusplus
-#define		__I		volatile		///< defines 'read only' permissions
+ #define	__I		volatile		///< defines 'read only' permissions
 #else
-#define		__I		volatile const	///< defines 'read only' permissions
+ #define	__I		volatile const	///< defines 'read only' permissions
 #endif
+
 #define		__O		volatile		///< defines 'write only' permissions
 #define		__IO	volatile		///< defines 'read / write' permissions
 

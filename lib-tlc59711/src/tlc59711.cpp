@@ -2,7 +2,7 @@
  * @file tlc59711.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,10 +85,10 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	assert(m_pBufferBlackout != 0);
 
 	for (uint32_t i = 0; i < m_nBufSize; i++) {
-		m_pBuffer[i] = (uint16_t) 0;
+		m_pBuffer[i] = 0;
 	}
 
-	m_nFirst32 |= (uint32_t) TLC59711_COMMAND << TLC59711_COMMAND_SHIFT ;
+	m_nFirst32 |= (TLC59711_COMMAND << TLC59711_COMMAND_SHIFT);
 
 	SetOnOffTiming(TLC59711_OUTTMG_DEFAULT);
 	SetExternalClock(TLC59711_EXTGCK_DEFAULT);
@@ -128,7 +128,9 @@ void TLC59711::Set(uint8_t nChannel, uint16_t nValue) {
 	}
 #ifndef NDEBUG
 	else {
-		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n", (int) m_nBoards, (int) nBoardIndex, (int) nChannel);
+		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n",
+				static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex),
+				static_cast<int>(nChannel));
 	}
 #endif
 }
@@ -152,11 +154,13 @@ void TLC59711::Set(uint8_t nChannel, uint8_t nValue) {
 
 	if (nBoardIndex < m_nBoards) {
 		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + ((12 * nBoardIndex) + 11 - nChannel);
-		m_pBuffer[nIndex] = (uint16_t) nValue << 8 | (uint16_t) nValue;
+		m_pBuffer[nIndex] = static_cast<uint16_t>(nValue) << 8 | static_cast<uint16_t>(nValue);
 	}
 #ifndef NDEBUG
 	else {
-		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n", (int) m_nBoards, (int) nBoardIndex, (int) nChannel);
+		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n",
+				static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex),
+				static_cast<int>(nChannel));
 	}
 #endif
 }
@@ -172,7 +176,9 @@ void TLC59711::SetRgb(uint8_t nOut, uint16_t nRed, uint16_t nGreen, uint16_t nBl
 	}
 #ifndef NDEBUG
 	else {
-		printf("m_nBoards=%d, nBoardIndex=%d, nOut=%d\n", (int) m_nBoards, (int) nBoardIndex, (int) nOut);
+		printf("m_nBoards=%d, nBoardIndex=%d, nOut=%d\n",
+				static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex),
+				static_cast<int>(nOut));
 	}
 #endif
 }
@@ -182,116 +188,118 @@ void TLC59711::SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue)
 
 	if (nBoardIndex < m_nBoards) {
 		uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + (((4 * nBoardIndex) + 3 - nOut) * 3);
-		m_pBuffer[nIndex++] = (uint16_t) nBlue << 8 | (uint16_t) nBlue;
-		m_pBuffer[nIndex++] = (uint16_t) nGreen << 8 | (uint16_t) nGreen;
-		m_pBuffer[nIndex] = (uint16_t) nRed << 8 | (uint16_t) nRed;
+		m_pBuffer[nIndex++] = static_cast<uint16_t>(nBlue) << 8 | static_cast<uint16_t>(nBlue);
+		m_pBuffer[nIndex++] = static_cast<uint16_t>(nGreen) << 8 | static_cast<uint16_t>(nGreen);
+		m_pBuffer[nIndex] = static_cast<uint16_t>(nRed) << 8 | static_cast<uint16_t>(nRed);
 	}
 #ifndef NDEBUG
 	else {
-		printf("m_nBoards=%d, nBoardIndex=%d, nOut=%d\n", (int) m_nBoards, (int) nBoardIndex, (int) nOut);
+		printf("m_nBoards=%d, nBoardIndex=%d, nOut=%d\n",
+				static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex),
+				static_cast<int>(nOut));
 	}
 #endif
 }
 
 int TLC59711::GetBlank(void) const {
-	return (int)(m_nFirst32 & ((uint32_t) 1 << TLC59711_BLANK_SHIFT)) == (uint32_t) 1 << TLC59711_BLANK_SHIFT;
+	return (m_nFirst32 & (1 << TLC59711_BLANK_SHIFT)) == (1 << TLC59711_BLANK_SHIFT);
 }
 
 void TLC59711::SetBlank(bool pBlank) {
-	m_nFirst32 &= ~((uint32_t) 1 << TLC59711_BLANK_SHIFT);
+	m_nFirst32 &= ~(1 << TLC59711_BLANK_SHIFT);
 
 	if (pBlank) {
-		m_nFirst32 |= (uint32_t) 1 << TLC59711_BLANK_SHIFT;
+		m_nFirst32 |= (1 << TLC59711_BLANK_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetDisplayRepeat(void) const {
-	return (int)(m_nFirst32 & ((uint32_t) 1 << TLC59711_DSPRPT_SHIFT)) == (uint32_t) 1 << TLC59711_DSPRPT_SHIFT;
+	return (m_nFirst32 & (1 << TLC59711_DSPRPT_SHIFT)) == (1 << TLC59711_DSPRPT_SHIFT);
 }
 
 void TLC59711::SetDisplayRepeat(bool pDisplayRepeat) {
-	m_nFirst32 &= ~((uint32_t) 1 << TLC59711_DSPRPT_SHIFT);
+	m_nFirst32 &= ~(1 << TLC59711_DSPRPT_SHIFT);
 
 	if (pDisplayRepeat) {
-		m_nFirst32 |= (uint32_t) 1 << TLC59711_DSPRPT_SHIFT;
+		m_nFirst32 |= (1 << TLC59711_DSPRPT_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetDisplayTimingReset(void) const {
-	return (int)(m_nFirst32 & ((uint32_t) 1 << TLC59711_TMGRST_SHIFT)) == (uint32_t) 1 << TLC59711_TMGRST_SHIFT;
+	return (m_nFirst32 & (1 << TLC59711_TMGRST_SHIFT)) == (1 << TLC59711_TMGRST_SHIFT);
 }
 
 void TLC59711::SetDisplayTimingReset(bool pDisplayTimingReset) {
-	m_nFirst32 &= ~((uint32_t) 1 << TLC59711_TMGRST_SHIFT);
+	m_nFirst32 &= ~(1 << TLC59711_TMGRST_SHIFT);
 
 	if (pDisplayTimingReset) {
-		m_nFirst32 |= (uint32_t) 1 << TLC59711_TMGRST_SHIFT;
+		m_nFirst32 |= (1 << TLC59711_TMGRST_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetExternalClock(void) const {
-	return (int)(m_nFirst32 & ((uint32_t) 1 << TLC59711_EXTGCK_SHIFT)) == (uint32_t) 1 << TLC59711_EXTGCK_SHIFT;
+	return (m_nFirst32 & (1 << TLC59711_EXTGCK_SHIFT)) == (1 << TLC59711_EXTGCK_SHIFT);
 }
 
 void TLC59711::SetExternalClock(bool pExternalClock) {
-	m_nFirst32 &= ~((uint32_t) 1 << TLC59711_EXTGCK_SHIFT);
+	m_nFirst32 &= ~(1 << TLC59711_EXTGCK_SHIFT);
 
 	if (pExternalClock) {
-		m_nFirst32 |= (uint32_t) 1 << TLC59711_EXTGCK_SHIFT;
+		m_nFirst32 |= (1 << TLC59711_EXTGCK_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetOnOffTiming(void) const {
-	return (int)(m_nFirst32 & ((uint32_t) 1 << TLC59711_OUTTMG_SHIFT)) == (uint32_t) 1 << TLC59711_OUTTMG_SHIFT;
+	return (m_nFirst32 & (1 << TLC59711_OUTTMG_SHIFT)) == (1 << TLC59711_OUTTMG_SHIFT);
 }
 
 void TLC59711::SetOnOffTiming(bool pOnOffTiming) {
-	m_nFirst32 &= ~((uint32_t) 1 << TLC59711_OUTTMG_SHIFT);
+	m_nFirst32 &= ~(1 << TLC59711_OUTTMG_SHIFT);
 
 	if (pOnOffTiming) {
-		m_nFirst32 |= (uint32_t) 1 << TLC59711_OUTTMG_SHIFT;
+		m_nFirst32 |= (1 << TLC59711_OUTTMG_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 uint8_t TLC59711::GetGbcRed(void) const {
-	return (uint8_t) (m_nFirst32 >> TLC59711_GS_RED_SHIFT) & TLC59711_GS_MASK;
+	return (m_nFirst32 >> TLC59711_GS_RED_SHIFT) & TLC59711_GS_MASK;
 }
 
 void TLC59711::SetGbcRed(uint8_t nValue) {
-	m_nFirst32 &= ~((uint32_t) TLC59711_GS_MASK << TLC59711_GS_RED_SHIFT);
-	m_nFirst32 |= (uint32_t)(nValue & TLC59711_GS_MASK) << TLC59711_GS_RED_SHIFT;
+	m_nFirst32 &= ~(TLC59711_GS_MASK << TLC59711_GS_RED_SHIFT);
+	m_nFirst32 |= ((nValue & TLC59711_GS_MASK) << TLC59711_GS_RED_SHIFT);
 
 	UpdateFirst32();
 }
 
 uint8_t TLC59711::GetGbcGreen(void) const {
-	return (uint8_t) (m_nFirst32 >> TLC59711_GS_GREEN_SHIFT) & TLC59711_GS_MASK;
+	return (m_nFirst32 >> TLC59711_GS_GREEN_SHIFT) & TLC59711_GS_MASK;
 }
 
 void TLC59711::SetGbcGreen(uint8_t nValue) {
-	m_nFirst32 &= ~((uint32_t) TLC59711_GS_MASK << TLC59711_GS_GREEN_SHIFT);
-	m_nFirst32 |= (uint32_t)(nValue & TLC59711_GS_MASK) << TLC59711_GS_GREEN_SHIFT;
+	m_nFirst32 &= ~(TLC59711_GS_MASK << TLC59711_GS_GREEN_SHIFT);
+	m_nFirst32 |= ((nValue & TLC59711_GS_MASK) << TLC59711_GS_GREEN_SHIFT);
 
 	UpdateFirst32();
 }
 
 uint8_t TLC59711::GetGbcBlue(void) const {
-	return (uint8_t) (m_nFirst32 >> TLC59711_GS_BLUE_SHIFT) & TLC59711_GS_MASK;
+	return (m_nFirst32 >> TLC59711_GS_BLUE_SHIFT) & TLC59711_GS_MASK;
 }
 
 void TLC59711::SetGbcBlue(uint8_t nValue) {
-	m_nFirst32 &= ~((uint32_t) TLC59711_GS_MASK << TLC59711_GS_BLUE_SHIFT);
-	m_nFirst32 |= (uint32_t)(nValue & TLC59711_GS_MASK) << TLC59711_GS_BLUE_SHIFT;
+	m_nFirst32 &= ~(TLC59711_GS_MASK << TLC59711_GS_BLUE_SHIFT);
+	m_nFirst32 |= ((nValue & TLC59711_GS_MASK) << TLC59711_GS_BLUE_SHIFT);
 
 	UpdateFirst32();
 }
@@ -299,8 +307,8 @@ void TLC59711::SetGbcBlue(uint8_t nValue) {
 void TLC59711::UpdateFirst32(void) {
 	for (uint32_t i = 0; i < m_nBoards; i++) {
 		const uint32_t nIndex = TLC59711_16BIT_CHANNELS * i;
-		m_pBuffer[nIndex] = __builtin_bswap16((uint16_t) (m_nFirst32 >> 16));
-		m_pBuffer[nIndex + 1] = __builtin_bswap16((uint16_t) m_nFirst32);
+		m_pBuffer[nIndex] = __builtin_bswap16(static_cast<uint16_t>((m_nFirst32 >> 16)));
+		m_pBuffer[nIndex + 1] = __builtin_bswap16(static_cast<uint16_t>(m_nFirst32));
 	}
 }
 
@@ -316,7 +324,7 @@ void TLC59711::Dump(void) {
 	printf("\tRed:0x%.2X (default=0x%.2X)\n", GetGbcRed(), TLC59711_GS_DEFAULT);
 	printf("\tGreen:0x%.2X (default=0x%.2X)\n", GetGbcGreen(), TLC59711_GS_DEFAULT);
 	printf("\tBlue:0x%.2X (default=0x%.2X)\n", GetGbcBlue(), TLC59711_GS_DEFAULT);
-	printf("\nBoards:%d\n", (int) m_nBoards);
+	printf("\nBoards:%d\n", static_cast<int>(m_nBoards));
 
 	uint8_t nOut = 0;
 
@@ -334,8 +342,8 @@ void TLC59711::Dump(void) {
 
 	for (uint32_t i = 0; i < m_nBoards * TLC59711_OUT_CHANNELS; i++) {
 		uint16_t nValue = 0;
-		if (Get((uint8_t) i, nValue)) {
-			printf("\tChannel:%-3d, Value=0x%.4X\n", (int) i, nValue);
+		if (Get(i, nValue)) {
+			printf("\tChannel:%-3d, Value=0x%.4X\n", static_cast<int>(i), nValue);
 		}
 	}
 
@@ -349,7 +357,7 @@ void TLC59711::Update(void) {
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
-	FUNC_PREFIX(spi_writenb((char *) m_pBuffer, m_nBufSize * 2));
+	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize * 2));
 }
 
 void TLC59711::Blackout(void) {
@@ -358,5 +366,5 @@ void TLC59711::Blackout(void) {
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
-	FUNC_PREFIX(spi_writenb((char *) m_pBufferBlackout, m_nBufSize * 2));
+	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBufferBlackout), m_nBufSize * 2));
 }

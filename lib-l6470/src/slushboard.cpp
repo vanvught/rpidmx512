@@ -6,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,9 +126,9 @@ void SlushBoard::InitI2c(void) {
 	I2cSetup(MAX1164_I2C_ADDRESS);
 
 	data = 0x8a;
-	FUNC_PREFIX(i2c_write((char *)&data, 1));
+	FUNC_PREFIX(i2c_write(&data, 1));
 	data = 0x01;
-	FUNC_PREFIX(i2c_write((char *)&data, 1));
+	FUNC_PREFIX(i2c_write(&data, 1));
 }
 
 void SlushBoard::I2cSetup(uint8_t address) {
@@ -141,21 +141,21 @@ uint8_t SlushBoard::Mcp23017ReadReg(uint8_t reg) {
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 
-	FUNC_PREFIX(i2c_write((char *)&data, 1));
-	FUNC_PREFIX(i2c_read((char *)&data, 1));
+	FUNC_PREFIX(i2c_write(&data, 1));
+	FUNC_PREFIX(i2c_read(&data, 1));
 
 	return data;
 }
 
 void SlushBoard::Mcp23017WriteReg(uint8_t reg, uint8_t data) {
-	uint8_t buffer[2];
+	char buffer[2];
 
 	buffer[0] = reg;
 	buffer[1] = data;
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 
-	FUNC_PREFIX(i2c_write((char *)buffer, 2));
+	FUNC_PREFIX(i2c_write(buffer, 2));
 }
 
 void SlushBoard::setIOState(TSlushIOPorts nPort, TSlushIOPins nPinNumber, uint8_t state) {
@@ -172,7 +172,7 @@ void SlushBoard::setIOState(TSlushIOPorts nPort, TSlushIOPins nPinNumber, uint8_
 }
 
 void SlushBoard::setIOState(uint8_t nPort, uint8_t nPinNumber, uint8_t state) {
-	setIOState((TSlushIOPorts) nPort, (TSlushIOPins) nPinNumber, state);
+	setIOState(static_cast<TSlushIOPorts>(nPort), static_cast<TSlushIOPins>(nPinNumber), state);
 }
 
 
@@ -186,7 +186,7 @@ uint8_t SlushBoard::getIOState(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 }
 
 uint8_t SlushBoard::getIOState(uint8_t nPort, uint8_t nPinNumber) {
-	return getIOState((TSlushIOPorts) nPort, (TSlushIOPins) nPinNumber);
+	return getIOState(static_cast<TSlushIOPorts>(nPort), static_cast<TSlushIOPins>(nPinNumber));
 }
 
 void SlushBoard::IOFSel(TSlushIOPorts nPort, TSlushIOPins nPinNumber, TSlushIOFSel fsel) {

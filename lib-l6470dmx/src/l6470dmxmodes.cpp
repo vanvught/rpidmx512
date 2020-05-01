@@ -2,7 +2,7 @@
  * @file l6470dmxmodes.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -247,7 +247,7 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint16_t nLength) 
 		return false;
 	}
 
-	uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+	uint8_t *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
 
 	return IsDmxDataChanged(p);
 }
@@ -262,7 +262,7 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 		return;
 	}
 
-	const uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+	const uint8_t *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
 
 #ifndef NDEBUG
 	printf("\tMotor : %d\n", m_nMotorNumber);

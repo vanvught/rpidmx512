@@ -2,7 +2,7 @@
  * @file midireader.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,8 +64,8 @@ inline static void itoa_base10(uint32_t arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) ('0' + (arg / 10));
-	*n = (char) ('0' + (arg % 10));
+	*n++ = '0' + (arg / 10);
+	*n = '0' + (arg % 10);
 }
 
 MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
@@ -91,12 +91,12 @@ void MidiReader::HandleMtc(void) {
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-	m_nTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
+	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
 
-	itoa_base10((pSystemExclusive[5] & 0x1F), (char *) &m_aTimeCode[0]);
-	itoa_base10(pSystemExclusive[6], (char *) &m_aTimeCode[3]);
-	itoa_base10(pSystemExclusive[7], (char *) &m_aTimeCode[6]);
-	itoa_base10(pSystemExclusive[8], (char *) &m_aTimeCode[9]);
+	itoa_base10((pSystemExclusive[5] & 0x1F), &m_aTimeCode[0]);
+	itoa_base10(pSystemExclusive[6], &m_aTimeCode[3]);
+	itoa_base10(pSystemExclusive[7], &m_aTimeCode[6]);
+	itoa_base10(pSystemExclusive[8], &m_aTimeCode[9]);
 
 	m_MidiTimeCode.nHours = pSystemExclusive[5] & 0x1F;
 	m_MidiTimeCode.nMinutes = pSystemExclusive[6];
@@ -116,7 +116,7 @@ void MidiReader::HandleMtcQf(void) {
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_nTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
+	m_nTimeCodeType = static_cast<_midi_timecode_type>((qf[7] >> 1));
 
 	if ((nPart == 7) || (m_nPartPrevious == 7)) {
 	} else {
@@ -124,10 +124,10 @@ void MidiReader::HandleMtcQf(void) {
 	}
 
 	if ((m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0))) {
-		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char *) &m_aTimeCode[0]);
-		itoa_base10(qf[4] | (qf[5] << 4), (char *) &m_aTimeCode[3]);
-		itoa_base10(qf[2] | (qf[3] << 4), (char *) &m_aTimeCode[6]);
-		itoa_base10(qf[0] | (qf[1] << 4), (char *) &m_aTimeCode[9]);
+		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), &m_aTimeCode[0]);
+		itoa_base10(qf[4] | (qf[5] << 4), &m_aTimeCode[3]);
+		itoa_base10(qf[2] | (qf[3] << 4), &m_aTimeCode[6]);
+		itoa_base10(qf[0] | (qf[1] << 4), &m_aTimeCode[9]);
 
 		m_MidiTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
 		m_MidiTimeCode.nMinutes = qf[4] | (qf[5] << 4);
@@ -143,18 +143,18 @@ void MidiReader::HandleMtcQf(void) {
 
 void MidiReader::Update(void) {
 	if (!m_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_MidiTimeCode);
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_MidiTimeCode));
 	}
 
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &m_MidiTimeCode);
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_MidiTimeCode));
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
 		RtpMidi::Get()->SendTimeCode(&m_MidiTimeCode);
 	}
 
-	LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&m_MidiTimeCode);
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_MidiTimeCode));
 }
 
 void MidiReader::Run(void) {

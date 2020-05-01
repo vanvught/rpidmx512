@@ -2,7 +2,7 @@
  * @file ntpserver.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,12 +69,11 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
 	m_tDate = mktime(&timeDate);
 	assert(m_tDate != -1);
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", (uint32_t)m_tDate, (long int)m_tDate);
+	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), static_cast<long int>(m_tDate));
 
 	m_tDate += NTP_TIMESTAMP_DELTA;
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", (uint32_t)m_tDate, (long int)m_tDate);
-
+	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), static_cast<long int>(m_tDate));
 	DEBUG_EXIT
 }
 
@@ -115,16 +114,16 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
 
 	if (pLtcTimeCode->nType == TC_TYPE_FILM) {
-		m_nFraction = (uint32_t) ((double) 178956970.625 * pLtcTimeCode->nFrames);
+		m_nFraction = static_cast<uint32_t>((static_cast<double>((178956970.625)) * pLtcTimeCode->nFrames));
 	} else if (pLtcTimeCode->nType == TC_TYPE_EBU) {
-		m_nFraction = (uint32_t) ((double) 171798691.8 * pLtcTimeCode->nFrames);
+		m_nFraction = static_cast<uint32_t>((static_cast<double>((171798691.8)) * pLtcTimeCode->nFrames));
 	} else if ((pLtcTimeCode->nType == TC_TYPE_DF) || (pLtcTimeCode->nType == TC_TYPE_SMPTE)) {
-		m_nFraction = (uint32_t) ((double) 143165576.5 * pLtcTimeCode->nFrames);
+		m_nFraction = static_cast<uint32_t>((static_cast<double>((143165576.5)) * pLtcTimeCode->nFrames));
 	} else {
 		assert(0);
 	}
 
-	DEBUG_PRINTF("m_timeDate=%.8x %ld", (uint32_t)m_tTimeDate, (long int)m_tTimeDate);
+	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned>(m_tTimeDate), static_cast<long int>(m_tTimeDate));
 
 	m_Reply.ReferenceTimestamp_s = __builtin_bswap32(m_tTimeDate);
 	m_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
@@ -138,9 +137,9 @@ void NtpServer::Run(void) {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Request, (uint16_t) sizeof(struct TNtpPacket), &nIPAddressFrom, &nForeignPort);
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Request, sizeof(struct TNtpPacket), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((nBytesReceived < (int) sizeof(struct TNtpPacket)), 1)) {
+	if (__builtin_expect((nBytesReceived < sizeof(struct TNtpPacket)), 1)) {
 		return;
 	}
 
@@ -151,7 +150,7 @@ void NtpServer::Run(void) {
 	m_Reply.OriginTimestamp_s = m_Request.TransmitTimestamp_s;
 	m_Reply.OriginTimestamp_f = m_Request.TransmitTimestamp_f;
 
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) &m_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
+	Network::Get()->SendTo(m_nHandle, &m_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
 }
 
 void NtpServer::Print(void) {
@@ -161,5 +160,5 @@ void NtpServer::Print(void) {
 
 	const time_t t = m_tDate - NTP_TIMESTAMP_DELTA;
 
-	printf(" %s", asctime(localtime((const time_t *) &t)));
+	printf(" %s", asctime(localtime(&t)));
 }

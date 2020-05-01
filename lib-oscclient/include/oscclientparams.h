@@ -2,7 +2,7 @@
  * @file oscclientparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,8 @@ struct TOscClientParams {
 	uint16_t nIncomingPort;
 	uint8_t nPingDisable;
 	uint8_t nPingDelay;
-	uint8_t aCmd[OSCCLIENT_PARAMS_CMD_MAX_COUNT][OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH];
-	uint8_t aLed[OSCCLIENT_PARAMS_LED_MAX_COUNT][OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH];
+	char aCmd[OSCCLIENT_PARAMS_CMD_MAX_COUNT][OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH];
+	char aLed[OSCCLIENT_PARAMS_LED_MAX_COUNT][OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH];
 } __attribute__((packed));
 
 enum TOscClientParamsMask {
@@ -72,8 +72,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TOscClientParams *ptOscClientParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TOscClientParams *ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(OscClient *pOscClient);
 
@@ -96,7 +96,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint16_t nMask) const;
+    bool isMaskSet(uint32_t nMask) const {
+    	return (m_tOscClientParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	OscClientParamsStore *m_pOscClientParamsStore;

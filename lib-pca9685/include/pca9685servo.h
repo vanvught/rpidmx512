@@ -2,7 +2,7 @@
  * @file servo.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #include "pca9685.h"
 
-#define ANGLE(x)	((uint8_t)(x))
+#define ANGLE(x)	(static_cast<uint8_t>(x))
 
 #define SERVO_LEFT_DEFAULT_US	1000
 #define SERVO_CENTER_DEFAULT_US	1500

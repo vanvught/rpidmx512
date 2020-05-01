@@ -2,7 +2,7 @@
  * @file tcnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ TCNetReader::~TCNetReader(void) {
 void TCNetReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, reinterpret_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -113,26 +113,33 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	nUpdates++;
 
 	assert(((uint32_t )pTimeCode & 0x3) == 0); // Check if we can do 4-byte compare
-	const uint32_t *p = (uint32_t *)pTimeCode;
+#if __GNUC__ > 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"	// FIXME
+#endif
+	const uint32_t *p = reinterpret_cast<const uint32_t*>(pTimeCode);
+#if __GNUC__ > 8
+#pragma GCC diagnostic pop
+#endif
 
 	if (m_nTimeCodePrevious != *p) {
 		m_nTimeCodePrevious = *p;
 
 		if (!m_ptLtcDisabledOutputs->bLtc) {
-			LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) pTimeCode);
+			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
 		}
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
-			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) pTimeCode);
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(pTimeCode));
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)pTimeCode);
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(pTimeCode));
 		}
 
 		memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct _midi_send_tc));
 
-		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)pTimeCode);
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
 	}
 }
 
@@ -140,7 +147,7 @@ void TCNetReader::HandleUdpRequest(void) {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((m_nBytesReceived < (int) 13), 1)) {
 		return;
@@ -155,7 +162,7 @@ void TCNetReader::HandleUdpRequest(void) {
 		m_nBytesReceived--;
 	}
 
-	debug_dump((void *)m_Buffer, m_nBytesReceived);
+	debug_dump(m_Buffer, m_nBytesReceived);
 
 	if ((m_nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&m_Buffer[6], sLayer, LAYER_LENGTH) == 0)) {
 		const TTCNetLayers tLayer = TCNet::GetLayer(m_Buffer[6 + LAYER_LENGTH]);
@@ -214,14 +221,14 @@ void TCNetReader::HandleUdpRequest(void) {
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
 		TCNetDisplay::Show();
 
-		DEBUG_PRINTF("tcnet!timecode#%c -> %d", nChar, (int) bUseTimeCode);
+		DEBUG_PRINTF("tcnet!timecode#%c -> %d", nChar, static_cast<int>(bUseTimeCode));
 
 		return;
 	}
 }
 
 void TCNetReader::Run(void) {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {

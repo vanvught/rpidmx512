@@ -2,7 +2,7 @@
  * @file ws28xxdmxgrouping.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,12 @@
 
 #include <stdint.h>
 
-#if defined (__circle__)
- #include "circle/interrupt.h"
-#endif
-
 #include "ws28xxdmx.h"
 #include "ws28xx.h"
 
 class WS28xxDmxGrouping: public WS28xxDmx {
 public:
-#if defined (__circle__)
-	WS28xxDmxGrouping(CInterruptSystem *);
-#else
 	WS28xxDmxGrouping(void);
-#endif
 	~WS28xxDmxGrouping(void);
 
 	void Start(uint8_t nPort = 0);
@@ -65,7 +57,7 @@ private:
 	void UpdateMembers(void);
 
 private:
-	uint8_t* m_pDmxData;
+	uint8_t *m_pDmxData;
 	uint32_t m_nLEDGroupCount;
 	uint32_t m_nGroups;
 };

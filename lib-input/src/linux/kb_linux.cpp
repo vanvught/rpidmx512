@@ -2,7 +2,7 @@
  * @file kb_linux.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 
 #include "kb_linux.h"
 
-#define STDIN	(int) 0
+#define STDIN	0
 
 KbLinux::KbLinux(void): m_nBytesWaiting(0), m_nState(0) {
 }

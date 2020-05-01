@@ -2,7 +2,7 @@
  * @file rdmdeviceparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 
 #include "debug.h"
 
-void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -55,9 +55,9 @@ void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, 
 	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
 
 	char aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	memcpy((void *)aRootLabel, m_tRDMDeviceParams.aDeviceRootLabel, RDM_DEVICE_LABEL_MAX_LENGTH);
+	memcpy(aRootLabel, m_tRDMDeviceParams.aDeviceRootLabel, RDM_DEVICE_LABEL_MAX_LENGTH);
 	aRootLabel[m_tRDMDeviceParams.nDeviceRootLabelLength] = '\0';
-	builder.Add(RDMDeviceParamsConst::LABEL, (const char *)aRootLabel, isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL));
+	builder.Add(RDMDeviceParamsConst::LABEL, aRootLabel, isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL));
 
 	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory, isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY));
 	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail, isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL));
@@ -69,7 +69,7 @@ void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, 
 	DEBUG_EXIT
 }
 
-void RDMDeviceParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRDMDeviceParamsStore == 0) {

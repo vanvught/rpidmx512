@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,12 @@ struct TDMXMonitorParams {
     TDMXMonitorFormat tFormat;
 };
 
+enum TDMXMonitorParamsMask {
+	DMX_MONITOR_PARAMS_MASK_START_ADDRESS = (1 << 0),
+	DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS = (1 << 1),
+	DMX_MONITOR_PARAMS_MASK_FORMAT = (1 << 2)
+}__attribute__((packed));
+
 class DMXMonitorParamsStore {
 public:
 	virtual ~DMXMonitorParamsStore(void) {}
@@ -51,12 +57,15 @@ public:
 	~DMXMonitorParams(void);
 
 	bool Load(void);
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	void Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	
 	void Set(DMXMonitor *pDMXMonitor);
 	
 	void Dump(void);
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

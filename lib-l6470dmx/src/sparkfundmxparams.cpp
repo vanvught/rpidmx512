@@ -2,7 +2,7 @@
  * @file sparkfundmxparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,7 @@ SparkFunDmxParams::SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsS
 	m_tSparkFunDmxParams.nBusyPin = GPIO_BUSY_IN;
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
-	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
-	strncpy(m_aFileName, src, sizeof(m_aFileName));
+	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 
 	DEBUG_EXIT
 }
@@ -197,7 +196,7 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
+void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -213,7 +212,7 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 		}
 	}
 
-	const char *pFileName = (nMotorIndex < SPARKFUN_DMX_MAX_MOTORS) ? (const char *)m_aFileName : SparkFunDmxParamsConst::FILE_NAME;
+	const char *pFileName = (nMotorIndex < SPARKFUN_DMX_MAX_MOTORS) ? m_aFileName : SparkFunDmxParamsConst::FILE_NAME;
 
 	PropertiesBuilder builder(pFileName, pBuffer, nLength);
 
@@ -233,7 +232,7 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 	DEBUG_EXIT
 }
 
-void SparkFunDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
+void SparkFunDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	if (m_pSparkFunDmxParamsStore == 0) {
@@ -297,7 +296,7 @@ void SparkFunDmxParams::Dump(uint8_t nMotorIndex) {
 	if (nMotorIndex >= SPARKFUN_DMX_MAX_MOTORS) {
 		printf("%s::%s \'%s\' (global settings):\n", __FILE__, __FUNCTION__, SparkFunDmxParamsConst::FILE_NAME);
 	} else {
-		m_aFileName[5] = (char) nMotorIndex + '0';
+		m_aFileName[5] = nMotorIndex + '0';
 		printf("%s::%s \'%s\' :\n", __FILE__, __FUNCTION__, m_aFileName);
 	}
 
@@ -324,9 +323,6 @@ void SparkFunDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((SparkFunDmxParams *) p)->callbackFunction(s);
+	(static_cast<SparkFunDmxParams*>(p))->callbackFunction(s);
 }
 
-bool SparkFunDmxParams::isMaskSet(uint16_t nMask) const {
-	return (m_tSparkFunDmxParams.nSetList & nMask) == nMask;
-}

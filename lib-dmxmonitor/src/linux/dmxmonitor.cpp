@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,12 +50,7 @@ DMXMonitor::DMXMonitor(void) :
 }
 
 DMXMonitor::~DMXMonitor(void) {
-	for (uint32_t i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
-		if (m_bIsStarted[i]) {
-			Stop(i);
-			m_bIsStarted[i] = false;
-		}
-	}
+
 }
 
 void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
@@ -65,7 +60,9 @@ void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%c\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, pString, (char) nPortId + 'A');
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%c\n", tm.tm_mday,
+			tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec,
+			static_cast<int>(tv.tv_usec), pString, nPortId + 'A');
 }
 
 void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
@@ -120,19 +117,24 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 	gettimeofday(&tv, NULL);
 	struct tm tm = *localtime(&tv.tv_sec);
 
-	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec, (int) tv.tv_usec, (char) nPortId + 'A', (int) nLength, (int) m_nMaxChannels, (int) m_nDmxStartAddress);
+	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday,
+			tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec,
+			static_cast<int>(tv.tv_usec), nPortId + 'A',
+			static_cast<int>(nLength),
+			static_cast<int>(m_nMaxChannels),
+			static_cast<int>(m_nDmxStartAddress));
 
 	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		switch (m_tFormat) {
-			case DMX_MONITOR_FORMAT_PCT:
-				printf("%3d ", (int) (pData[i] * 100) / 255);
-				break;
-			case DMX_MONITOR_FORMAT_DEC:
-				printf("%3d ", pData[i]);
-				break;
-			default:
-				printf("%.2x ", pData[i]);
-				break;
+		case DMX_MONITOR_FORMAT_PCT:
+			printf("%3d ", static_cast<int>((pData[i] * 100)) / 255);
+			break;
+		case DMX_MONITOR_FORMAT_DEC:
+			printf("%3d ", pData[i]);
+			break;
+		default:
+			printf("%.2x ", pData[i]);
+			break;
 		}
 	}
 

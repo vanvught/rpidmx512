@@ -2,7 +2,7 @@
  * @file pca9685dmxservoparams.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,7 @@ void PCA9685DmxServoParams::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((PCA9685DmxServoParams *) p)->callbackFunction(s);
+	(static_cast<PCA9685DmxServoParams*>(p))->callbackFunction(s);
 }
 
 void PCA9685DmxServoParams::callbackFunction(const char* pLine) {

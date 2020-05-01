@@ -2,7 +2,7 @@
  * @file artnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,13 +64,13 @@ ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 }
 
 ArtNetReader::~ArtNetReader(void) {
-	Stop();
+
 }
 
 void ArtNetReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, reinterpret_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -88,20 +88,21 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	nUpdates++;
 
 	if (!m_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) ArtNetTimeCode);
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *) ArtNetTimeCode);
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ArtNetTimeCode));
 	}
 
 	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof (struct _midi_send_tc ));
 
-	LtcOutputs::Get()->Update((const struct TLtcTimeCode *) ArtNetTimeCode);
+	LtcOutputs::Get()->Update(
+			reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 }
 
 void ArtNetReader::Run(void) {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {

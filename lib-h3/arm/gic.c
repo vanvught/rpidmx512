@@ -2,7 +2,7 @@
  * @file gic.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -181,3 +181,4 @@ void gic_int_dump(H3_IRQn_TypeDef n) {
 	printf("H3_IRQn=%d (index=%d,mask=%p), group=%d, enabled=%d, pending=%d\n", n, index, mask, group, is_enabled, is_pending);
 #endif
 }
+

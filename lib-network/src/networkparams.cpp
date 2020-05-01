@@ -49,12 +49,7 @@
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tNetworkParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TNetworkParams); i++) {
-		*p++ = 0;
-	}
-
+	memset(&m_tNetworkParams, 0, sizeof(struct TNetworkParams));
 	m_tNetworkParams.bIsDhcpUsed = true;
 }
 
@@ -126,7 +121,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = NETWORK_HOSTNAME_SIZE - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, (char *) m_tNetworkParams.aHostName, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, &nLength) == SSCAN_OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_HOSTNAME;
 		return;
@@ -154,7 +149,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, &f) == SSCAN_OK) {
 		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-		if (((int32_t) f >= -12) && ((int32_t) f <= 14)) {
+		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
 			m_tNetworkParams.fNtpUtcOffset = f;
 			m_tNetworkParams.nSetList |= NETWORK_PARAMS_MASK_NTP_UTC_OFFSET;
 			return;
@@ -171,7 +166,9 @@ void NetworkParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_DHCP)) {
-		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP, (int) m_tNetworkParams.bIsDhcpUsed, BOOL2STRING(m_tNetworkParams.bIsDhcpUsed));
+		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP,
+				static_cast<int>(m_tNetworkParams.bIsDhcpUsed),
+				BOOL2STRING(m_tNetworkParams.bIsDhcpUsed));
 	}
 
 	if (isMaskSet(NETWORK_PARAMS_MASK_IP_ADDRESS)) {
@@ -206,6 +203,6 @@ void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((NetworkParams *) p)->callbackFunction(s);
+	(static_cast<NetworkParams*>(p))->callbackFunction(s);
 }
 

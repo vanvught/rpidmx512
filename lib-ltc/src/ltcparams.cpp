@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,16 +44,12 @@
 #include "propertiesbuilder.h"
 
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tLtcParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TLtcParams); i++) {
-		*p++ = 0;
-	}
+	memset(&m_tLtcParams, 0, sizeof(struct TLtcParams));
 
 	time_t ltime = time(0);
 	struct tm *tm = localtime(&ltime);
 
-	m_tLtcParams.tSource = (uint8_t) LTC_READER_SOURCE_LTC;
+	m_tLtcParams.tSource = LTC_READER_SOURCE_LTC;
 	m_tLtcParams.nYear = tm->tm_year - 100;
 	m_tLtcParams.nMonth = tm->tm_mon + 1;
 	m_tLtcParams.nDay = tm->tm_mday;
@@ -110,10 +106,10 @@ void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, TL
 
 	if (Sscan::Uint8(pLine, pKeyword, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
-			m_tLtcParams.nDisabledOutputs |= (uint8_t) tLtcParamsMaskDisabledOutputs;
+			m_tLtcParams.nDisabledOutputs |= tLtcParamsMaskDisabledOutputs;
 			m_tLtcParams.nSetList |= LTC_PARAMS_MASK_DISABLED_OUTPUTS;
 		} else {
-			m_tLtcParams.nDisabledOutputs &= ~((uint8_t) tLtcParamsMaskDisabledOutputs);
+			m_tLtcParams.nDisabledOutputs &= ~(tLtcParamsMaskDisabledOutputs);
 		}
 	}
 }
@@ -128,7 +124,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Char(pLine, LtcParamsConst::SOURCE, source, &len) == SSCAN_OK) {
 		source[len] = '\0';
-		m_tLtcParams.tSource = GetSourceType((const char *) source);
+		m_tLtcParams.tSource = GetSourceType(source);
 		m_tLtcParams.nSetList |= LTC_PARAMS_MASK_SOURCE;
 	}
 
@@ -339,7 +335,7 @@ void LtcParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::FILE_NAME);
 
 	if (isMaskSet(LTC_PARAMS_MASK_SOURCE)) {
-		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource));
+		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType(static_cast<TLtcReaderSource>(m_tLtcParams.tSource)));
 	}
 
 	if (isMaskSet(LTC_PARAMS_MASK_AUTO_START)) {
@@ -516,5 +512,5 @@ void LtcParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((LtcParams *) p)->callbackFunction(s);
+	(static_cast<LtcParams*>(p))->callbackFunction(s);
 }

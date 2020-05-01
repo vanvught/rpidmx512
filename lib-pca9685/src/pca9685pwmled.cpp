@@ -2,7 +2,7 @@
  * @file pwmled.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ void PCA9685PWMLed::Set(uint8_t nChannel, uint8_t nData) {
 	} else if (nData == 0) {
 		SetFullOff(nChannel, true);
 	} else {
-		const uint16_t nValue = (uint16_t) (nData << 4) | (uint16_t) (nData >> 4);
+		const uint16_t nValue = (nData << 4) | (nData >> 4);
 		Write(nChannel, nValue);
 	}
 }

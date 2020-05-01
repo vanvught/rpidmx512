@@ -106,49 +106,38 @@ void LtcDisplayParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void LtcDisplayParams::callbackFunction(const char *pLine) {
-	char buffer[16];
-	uint8_t value8;
-	uint32_t value32;
-	uint8_t len;
+	assert(pLine != 0);
 
-	len = sizeof(buffer);
+	char aBuffer[16];
+	uint8_t nValue8;
+	uint32_t nValue32;
+	uint8_t nLength = sizeof(aBuffer);
 
-	if (Sscan::Char(pLine, LtcDisplayParamsConst::MAX7219_TYPE, buffer, &len) == SSCAN_OK) {
-		if (strncasecmp(buffer, "7segment", len) == 0) {
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::MAX7219_TYPE, aBuffer, &nLength) == SSCAN_OK) {
+		if (strncasecmp(aBuffer, "7segment", nLength) == 0) {
 			m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_7SEGMENT;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE;
-		} else if (strncasecmp(buffer, "matrix", len) == 0) {
+		} else if (strncasecmp(aBuffer, "matrix", nLength) == 0) {
 			m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::MAX7219_INTENSITY, &value8) == SSCAN_OK) {
-		if (value8 <= 0x0F) {
-			m_tLtcDisplayParams.nMax7219Intensity = value8;
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::MAX7219_INTENSITY, &nValue8) == SSCAN_OK) {
+		if (nValue8 <= 0x0F) {
+			m_tLtcDisplayParams.nMax7219Intensity = nValue8;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY;
 		}
 		return;
 	}
 
-	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_TYPE, buffer, &len) == SSCAN_OK) {
-		if (strncasecmp(buffer, "7segment", len) == 0) {
-			m_tLtcDisplayParams.nWS28xxType = LTCDISPLAYWS28XX_TYPE_7SEGMENT;
-			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE;
-		} else if (strncasecmp(buffer, "matrix", len) == 0) {
-			m_tLtcDisplayParams.nWS28xxType = LTCDISPLAYWS28XX_TYPE_MATRIX;
-			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE;
-		}
-		return;
-	}
-
-	len = 7;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, buffer, &len) == SSCAN_OK) {
-		buffer[len] = '\0';
+	nLength = 7;
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, aBuffer, &nLength) == SSCAN_OK) {
+		aBuffer[nLength] = '\0';
 		for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
-			if (strcasecmp(buffer, WS28xxConst::TYPES[i]) == 0) {
-				m_tLtcDisplayParams.nLedType = (TWS28XXType) i;
+			if (strcasecmp(aBuffer, WS28xxConst::TYPES[i]) == 0) {
+				m_tLtcDisplayParams.nLedType = i;
 				m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_LED_TYPE;
 				return;
 			}
@@ -156,31 +145,31 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	len = 3;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, buffer, &len) == SSCAN_OK) {
-		buffer[len] = '\0';
+	nLength = 3;
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, aBuffer, &nLength) == SSCAN_OK) {
+		aBuffer[nLength] = '\0';
 		enum TRGBMapping tMapping;
-		if ((tMapping = RGBMapping::FromString(buffer)) != RGB_MAPPING_UNDEFINED) {
-			m_tLtcDisplayParams.nRgbMapping = (uint8_t) tMapping;
+		if ((tMapping = RGBMapping::FromString(aBuffer)) != RGB_MAPPING_UNDEFINED) {
+			m_tLtcDisplayParams.nRgbMapping = tMapping;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_RGB_MAPPING;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::WS28XX_INTENSITY, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcDisplayParams.nWS28xxIntensity = value8;
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::WS28XX_INTENSITY, &nValue8) == SSCAN_OK) {
+		if (nValue8 != 0) {
+			m_tLtcDisplayParams.nWS28xxIntensity = nValue8;
 			m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY;
 		}
 		return;
 	}
 
-	len = 4;
-	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, buffer, &len) == SSCAN_OK) {
-		buffer[len] = '\0';
+	nLength = 4;
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, aBuffer, &nLength) == SSCAN_OK) {
+		aBuffer[nLength] = '\0';
 		for (uint32_t i = 0; i < (sizeof(aColonBlinkMode) / sizeof(aColonBlinkMode[0])); i++) {
-			if (strcasecmp(buffer, aColonBlinkMode[i]) == 0) {
-				m_tLtcDisplayParams.nWS28xxColonBlinkMode = (TLtcDisplayWS28xxColonBlinkMode) i;
+			if (strcasecmp(aBuffer, aColonBlinkMode[i]) == 0) {
+				m_tLtcDisplayParams.nWS28xxColonBlinkMode = i;
 				m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE;
 				return;
 			}
@@ -189,15 +178,15 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	}
 
 	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
-		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], &value32) == SSCAN_OK) {
-			m_tLtcDisplayParams.aWS28xxColour[nIndex] = value32;
+		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], &nValue32) == SSCAN_OK) {
+			m_tLtcDisplayParams.aWS28xxColour[nIndex] = nValue32;
 			m_tLtcDisplayParams.nSetList |= (LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex);
 			return;
 		}
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &value8) == SSCAN_OK) {
-		m_tLtcDisplayParams.nGlobalBrightness = value8;
+	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &nValue8) == SSCAN_OK) {
+		m_tLtcDisplayParams.nGlobalBrightness = nValue8;
 		m_tLtcDisplayParams.nSetList |= LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS;
 		return;
 	}
@@ -207,7 +196,7 @@ void LtcDisplayParams::Set(LtcDisplayWS28xx *pLtcDisplayWS28xx) {
 	assert(pLtcDisplayWS28xx != 0);
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
-		pLtcDisplayWS28xx->SetMapping((TRGBMapping) m_tLtcDisplayParams.nRgbMapping);
+		pLtcDisplayWS28xx->SetMapping(static_cast<TRGBMapping>(m_tLtcDisplayParams.nRgbMapping));
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY)) {
@@ -215,12 +204,12 @@ void LtcDisplayParams::Set(LtcDisplayWS28xx *pLtcDisplayWS28xx) {
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE)) {
-		pLtcDisplayWS28xx->SetColonBlinkMode((TLtcDisplayWS28xxColonBlinkMode) m_tLtcDisplayParams.nWS28xxColonBlinkMode);
+		pLtcDisplayWS28xx->SetColonBlinkMode(static_cast<TLtcDisplayWS28xxColonBlinkMode>(m_tLtcDisplayParams.nWS28xxColonBlinkMode));
 	}
 
 	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
 		if (isMaskSet((LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX << nIndex))) {
-			pLtcDisplayWS28xx->SetColour(m_tLtcDisplayParams.aWS28xxColour[nIndex], (TLtcDisplayWS28xxColourIndex) nIndex);
+			pLtcDisplayWS28xx->SetColour(m_tLtcDisplayParams.aWS28xxColour[nIndex], static_cast<TLtcDisplayWS28xxColourIndex>(nIndex));
 		}
 	}
 }
@@ -234,15 +223,21 @@ void LtcDisplayParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcDisplayParamsConst::FILE_NAME);
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE)) {
-		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxType, m_tLtcDisplayParams.nWS28xxType == WS28XX_TYPE_7SEGMENT ? "7segment" : "matrix");
+		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxType, m_tLtcDisplayParams.nWS28xxType == LTCDISPLAYWS28XX_TYPE_7SEGMENT ? "7segment" : "matrix");
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tLtcDisplayParams.nLedType), (int) m_tLtcDisplayParams.nLedType);
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE,
+				WS28xx::GetLedTypeString(
+						static_cast<TWS28XXType>(m_tLtcDisplayParams.nLedType)),
+				static_cast<int>(m_tLtcDisplayParams.nLedType));
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_RGB_MAPPING)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tLtcDisplayParams.nRgbMapping), (int) m_tLtcDisplayParams.nRgbMapping);
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING,
+				RGBMapping::ToString(
+						static_cast<TRGBMapping>(m_tLtcDisplayParams.nRgbMapping)),
+				static_cast<int>(m_tLtcDisplayParams.nRgbMapping));
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY)) {
@@ -260,11 +255,12 @@ void LtcDisplayParams::Dump(void) {
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
-		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, (int) m_tLtcDisplayParams.nGlobalBrightness);
+		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS,
+				static_cast<int>(m_tLtcDisplayParams.nGlobalBrightness));
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE)) {
-		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type, m_tLtcDisplayParams.nMax7219Type == MAX7219_TYPE_7SEGMENT ? "7segment" : "matrix");
+		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type, m_tLtcDisplayParams.nMax7219Type == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7segment" : "matrix");
 	}
 
 	if (isMaskSet(LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY)) {
@@ -277,5 +273,5 @@ void LtcDisplayParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((LtcDisplayParams *) p)->callbackFunction(s);
+	(static_cast<LtcDisplayParams*>(p))->callbackFunction(s);
 }

@@ -2,7 +2,7 @@
  * @file oscmessage.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,9 @@ void OSCMessage::Dump(void) {
 
 	printf("data : ");
 	if (m_Data != 0) {
-		char *p = (char *) m_Data;
-		for (int i = 0; i < (int) m_Datasize; i++) {
-			printf("%x ", (uint8_t) p[i]);
+		char *p = reinterpret_cast<char*>(m_Data);
+		for (unsigned i = 0; i < m_Datasize; i++) {
+			printf("%x ", p[i]);
 		}
 		printf("\n");
 	} else {

@@ -3,7 +3,7 @@
  * @file slushdmx.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ void SlushDmx::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((SlushDmx *) p)->callbackFunction(s);
+	(static_cast<SlushDmx*>(p))->callbackFunction(s);
 }
 
 void SlushDmx::callbackFunction(const char *pLine) {
@@ -300,7 +300,7 @@ void SlushDmx::ReadConfigFiles(void) {
 		// MCP23017 Port A
 		if (m_nDmxStartAddressPortA > 0) {
 			for (uint32_t pin = 0; pin < m_nDmxFootprintPortA; pin++) {
-				m_pBoard->IOFSel(SLUSH_IO_PORTA, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
+				m_pBoard->IOFSel(SLUSH_IO_PORTA, static_cast<TSlushIOPins>(pin), SLUSH_IO_FSEL_OUTP);
 			}
 			m_bSetPortA = true;
 
@@ -327,14 +327,14 @@ void SlushDmx::ReadConfigFiles(void) {
 
 #ifndef NDEBUG
 			printf("DMX Start Address Output PortA = %d, Footprint PortA = %d\n", m_nDmxStartAddressPortA, m_nDmxFootprintPortA);
-			printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+			printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
 		}
 
 		// MCP23017 Port B
 		if (m_nDmxStartAddressPortB > 0) {
 			for (uint32_t pin = 0; pin < m_nDmxFootprintPortB; pin++) {
-				m_pBoard->IOFSel(SLUSH_IO_PORTB, (TSlushIOPins) pin, SLUSH_IO_FSEL_OUTP);
+				m_pBoard->IOFSel(SLUSH_IO_PORTB, static_cast<TSlushIOPins>(pin), SLUSH_IO_FSEL_OUTP);
 			}
 			m_bSetPortB = true;
 
@@ -369,7 +369,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 #ifndef NDEBUG
 			printf("DMX Start Address Output PortB = %d, Footprint PortB = %d\n", m_nDmxStartAddressPortB, m_nDmxFootprintPortB);
-			printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+			printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
 		}
 	}
@@ -378,7 +378,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 
-		fileName[5] = (char) i + '0';
+		fileName[5] = i + '0';
 
 		m_pSlotInfoRaw[0] = 0;
 
@@ -416,7 +416,7 @@ void SlushDmx::ReadConfigFiles(void) {
 						m_pModeParams[i]->Load(i);
 						m_pModeParams[i]->Dump();
 
-						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pSlushMotor[i], m_pMotorParams[i], m_pModeParams[i]);
+						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pSlushMotor[i], m_pMotorParams[i], m_pModeParams[i]);
 						assert(m_pL6470DmxModes[i] != 0);
 
 						if (m_pL6470DmxModes[i] != 0) {
@@ -449,7 +449,7 @@ void SlushDmx::ReadConfigFiles(void) {
 
 #ifndef NDEBUG
 							printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
-							printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+							printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
 						}
 #ifndef NDEBUG
@@ -493,7 +493,7 @@ void SlushDmx::ReadConfigFiles(void) {
 	}
 
 #ifndef NDEBUG
-	printf("Motors connected : %d\n", (int) m_nMotorsConnected);
+	printf("Motors connected : %d\n", static_cast<int>(m_nMotorsConnected));
 #endif
 	DEBUG_EXIT;
 }
@@ -553,14 +553,14 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 
 	if (m_bSetPortA && (nLength >= nDmxAddress)) {
 		nPortData = 0;
-		p = (uint8_t *) pData + nDmxAddress - 1;
+		p = const_cast<uint8_t*>(pData) + nDmxAddress - 1;
 
 		for (uint32_t i = 0; i < m_nDmxFootprintPortA; i++) {
 			if (nDmxAddress++ > nLength) {
 				break;
 			}
-			if ((*p & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
-				nPortData = nPortData | (uint8_t) (1 << i);
+			if ((*p & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+				nPortData = nPortData | (1 << i);
 			}
 			p++;
 		}
@@ -582,14 +582,14 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 
 	if (m_bSetPortB && (nLength >= nDmxAddress)) {
 		nPortData = 0;
-		p = (uint8_t *) pData + nDmxAddress - 1;
+		p = const_cast<uint8_t*>(pData) + nDmxAddress - 1;
 
 		for (uint32_t i = 0; i < m_nDmxFootprintPortB; i++) {
 			if (nDmxAddress++ > nLength) {
 				break;
 			}
-			if ((*p & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
-				nPortData = nPortData | (uint8_t) (1 << i);
+			if ((*p & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+				nPortData = nPortData | (1 << i);
 			}
 			p++;
 		}
@@ -677,8 +677,7 @@ bool SlushDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlot
 	int16_t nOffset = nDmxAddress - m_nDmxStartAddressPortA;
 
 #ifndef NDEBUG
-	printf("\t\tnDmxAddress=%d, nOffset=%d\n", nDmxAddress, (int) nOffset);
-
+	printf("\t\tnDmxAddress=%d, nOffset=%d\n", nDmxAddress, static_cast<int>(nOffset));
 	printf("\t\tm_bSetPortA=%d, m_nDmxStartAddressPortA=%d, m_nDmxFootprintPortA=%d\n",m_bSetPortA,m_nDmxStartAddressPortA, m_nDmxFootprintPortA);
 #endif
 

@@ -24,6 +24,7 @@
  */
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "ws28xxmulti.h"
@@ -39,7 +40,7 @@
 bool WS28xxMulti::SetupSI5351A(void) {
 	DEBUG_ENTRY
 
-	device_info_t clock_generator = { (spi_cs_t) 0, };
+	device_info_t clock_generator = { static_cast<spi_cs_t>(0), };
 
 	if (!si5351a_start(&clock_generator)) {
 		DEBUG_PUTS("si5351a not connected!");
@@ -64,10 +65,10 @@ bool WS28xxMulti::SetupSI5351A(void) {
 bool WS28xxMulti::IsMCP23017(void) {
 	DEBUG_ENTRY
 
-	device_info_t timing = { (spi_cs_t) 0, };
+	device_info_t timing = { static_cast<spi_cs_t>(0), };
 
 	if (!mcp23017_start(&timing)) {
-		DEBUG_PUTS("mcp23017 not connected!");
+		puts("mcp23017 not connected!");
 		DEBUG_EXIT
 		return false;
 	}
@@ -80,11 +81,10 @@ bool WS28xxMulti::IsMCP23017(void) {
 bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_ENTRY
 
-	device_info_t timing = { (spi_cs_t) 0, };
+	device_info_t timing = { static_cast<spi_cs_t>(0), };
 
 	if (!mcp23017_start(&timing)) {
-//		Display::Get()->TextStatus("E: MCP23017", DISPLAY_7SEGMENT_MSG_ERROR_MCP23S017);
-		DEBUG_PUTS("mcp23017 not connected!");
+		puts("mcp23017 not connected!");
 		DEBUG_EXIT
 		return false;
 	}
@@ -96,9 +96,9 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 
 	DEBUG_PRINTF("nT0H=%.2x nT1H=%.2x", nT0H, nT1H);
 
-	mcp23017_reg_write(&timing, MCP23X17_GPIOA, (uint16_t) (nT1H << 8) | nT0H);
+	mcp23017_reg_write(&timing, MCP23X17_GPIOA, (nT1H << 8) | nT0H);
 
-	DEBUG_PUTS("mcp23017 running");
+	puts("mcp23017 running");
 	DEBUG_EXIT
 	return true;
 }

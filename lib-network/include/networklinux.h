@@ -2,7 +2,7 @@
  * @file networklinux.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,8 +50,8 @@ public:
 	void JoinGroup(uint32_t nHandle, uint32_t nIp);
 	void LeaveGroup(uint32_t nHandle, uint32_t nIp);
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
 private:
 	uint32_t GetDefaultGateway(void);

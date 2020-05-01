@@ -37,7 +37,7 @@ void MDNS::Print(void) {
 	printf(" Name : %s\n", m_pName);
 	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
 		if (m_aServiceRecords[i].pName != 0) {
-			printf(" %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == 0 ? "" : (char *)m_aServiceRecords[i].pTextContent);
+			printf(" %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == 0 ? "" : m_aServiceRecords[i].pTextContent);
 		}
 	}
 }

@@ -66,18 +66,18 @@ OscClient::OscClient(void):
 	m_nPingTimeMillis(0),
 	m_pOscClientLed(0)
 {
-	m_pBuffer = new uint8_t[OSCCLIENT_BUFFER_SIZE];
+	m_pBuffer = new char[OSCCLIENT_BUFFER_SIZE];
 	assert(m_pBuffer != 0);
 
-	m_pCmds = new uint8_t[OSCCLIENT_CMD_BUFFER_SIZE];
+	m_pCmds = new char[OSCCLIENT_CMD_BUFFER_SIZE];
 	assert(m_pCmds != 0);
 
-	memset((void *)m_pCmds, 0, OSCCLIENT_CMD_BUFFER_SIZE);
+	memset(m_pCmds, 0, OSCCLIENT_CMD_BUFFER_SIZE);
 
-	m_pLeds = new uint8_t[OSCCLIENT_LED_BUFFER_SIZE];
+	m_pLeds = new char[OSCCLIENT_LED_BUFFER_SIZE];
 	assert(m_pLeds != 0);
 
-	memset((void *)m_pLeds, 0, OSCCLIENT_LED_BUFFER_SIZE);
+	memset(m_pLeds, 0, OSCCLIENT_LED_BUFFER_SIZE);
 }
 
 OscClient::~OscClient(void) {
@@ -131,7 +131,7 @@ int OscClient::Run(void) {
 		}
 
 		if ((m_pOscClientLed != 0) && (!HandleLedMessage())) {
-			if (!OSC::isMatch((const char*) m_pBuffer, "/pong")) {
+			if (!OSC::isMatch(m_pBuffer, "/pong")) {
 				DEBUG_PUTS(m_pBuffer);
 				return 0;
 			}
@@ -165,14 +165,14 @@ void OscClient::Print(void) {
 	}
 
 	for (uint32_t i = 0; i < OSCCLIENT_CMD_MAX_COUNT; i++) {
-		const char *p = (const char *) &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
+		const char *p = &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  cmd%c             : [%s]\n", i + '0', p);
 		}
 	}
 
 	for (uint32_t i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
-		const char *p = (const char *) &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+		const char *p = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  led%c             : [%s]\n", i + '0', p);
 		}
@@ -195,28 +195,22 @@ void OscClient::SetPingDelay(uint32_t nPingDelay) {
 	}
 }
 
-void OscClient::CopyCmds(const uint8_t* pCmds, uint32_t nCount, uint32_t nLength) {
+void OscClient::CopyCmds(const char* pCmds, uint32_t nCount, uint32_t nLength) {
 	assert(pCmds != 0);
 
 	for (uint32_t i = 0; i < MIN(nCount, OSCCLIENT_CMD_MAX_COUNT); i++) {
-
-		const uint8_t *src = &pCmds[i * nLength];
-		uint8_t *dst = &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
-
-		strncpy((char *)dst, (const char *) src, OSCCLIENT_CMD_MAX_PATH_LENGTH);
+		char *dst = &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
+		strncpy(dst, &pCmds[i * nLength], OSCCLIENT_CMD_MAX_PATH_LENGTH - 1);
 		dst[OSCCLIENT_CMD_MAX_PATH_LENGTH - 1] = '\0';
 	}
 }
 
-void OscClient::CopyLeds(const uint8_t *pLeds, uint32_t nCount,	uint32_t nLength) {
+void OscClient::CopyLeds(const char *pLeds, uint32_t nCount,	uint32_t nLength) {
 	assert(pLeds != 0);
 
 	for (uint32_t i = 0; i < MIN(nCount, OSCCLIENT_LED_MAX_COUNT); i++) {
-
-		const uint8_t *src = &pLeds[i * nLength];
-		uint8_t *dst = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
-
-		strncpy((char *)dst, (const char *) src, OSCCLIENT_LED_MAX_PATH_LENGTH);
+		char *dst = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+		strncpy(dst, &pLeds[i * nLength], OSCCLIENT_LED_MAX_PATH_LENGTH - 1);
 		dst[OSCCLIENT_LED_MAX_PATH_LENGTH - 1] = '\0';
 	}
 }
@@ -233,8 +227,8 @@ bool OscClient::HandleLedMessage(void) {
 	uint32_t i;
 
 	for (i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
-		const char *src = (const char *) &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
-		if (OSC::isMatch((const char*) m_pBuffer, src)) {
+		const char *src = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+		if (OSC::isMatch(m_pBuffer, src)) {
 			DEBUG_PUTS("");
 			break;
 		}
@@ -245,7 +239,7 @@ bool OscClient::HandleLedMessage(void) {
 		return false;
 	}
 
-	OSCMessage Msg((char *) m_pBuffer, m_nBytesReceived);
+	OSCMessage Msg(m_pBuffer, m_nBytesReceived);
 
 	const int nArgc = Msg.GetArgc();
 

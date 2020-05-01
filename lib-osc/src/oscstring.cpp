@@ -2,7 +2,7 @@
  * @file oscstring.cpp
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 
 unsigned OSCString::Validate(void *pData, unsigned nSize) {
 	unsigned i = 0, len = 0;
-	char *pos = (char *) pData;
+	char *pos = reinterpret_cast<char *>(pData);
 
 	for (i = 0; i < nSize; ++i) {
 		if (pos[i] == '\0') {

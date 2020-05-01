@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
 
 	// first check  board config register, should be 0x2E88 on bootup
 	temp = board.getParam(L6470_PARAM_CONFIG);
-	printf("Config reg value: %4x\n", (int) temp);
+	printf("Config reg value: %4x\n", static_cast<int>(temp));
 
 	// Now check the status of the board. Should be 0x7c03
 	temp = board.getStatus();
-	printf("Status reg value: %4x\n", (int) temp);
+	printf("Status reg value: %4x\n", static_cast<int>(temp));
 
 	// set and get all configuration values here to make sure the
 	//  conversions are working and comms are up properly.
@@ -226,7 +226,7 @@ void pv(bool v) {
 }
 
 void pv(uint8_t v) {
-	printf("%s %d\n", name, (int) v);
+	printf("%s %d\n", name, static_cast<int>(v));
 }
 
 void pv(unsigned long v) {

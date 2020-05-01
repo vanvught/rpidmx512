@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ struct TModeParams {
     float fSwitchStepsPerSec;
     bool bSwitch;
     //
-    struct TLightSetSlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
+    alignas(uint32_t) struct TLightSetSlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
 } __attribute__((packed));
 
 enum TModeParamsMask {
@@ -85,8 +85,8 @@ public:
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump(void);
 

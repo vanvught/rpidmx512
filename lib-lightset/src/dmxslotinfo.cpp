@@ -2,7 +2,7 @@
  * @file dmxslotinfo.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ DmxSlotInfo::~DmxSlotInfo(void) {
 void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 	assert(pString != 0);
 
-	char *pSlotInfoRaw = (char *)pString;
+	char *pSlotInfoRaw = const_cast<char*>(pString);
 	nMask = 0;
 
 
@@ -89,7 +89,7 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 		}
 	}
 
-	DEBUG_PRINTF("nMask=0x%x", (int) nMask);
+	DEBUG_PRINTF("nMask=0x%x", static_cast<int>(nMask));
 }
 
 const char *DmxSlotInfo::ToString(uint32_t nMask) {
@@ -104,7 +104,7 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 
 	if (nMask == 0) {
 		m_pToString[0] = '\0';
-		return (const char *)m_pToString;
+		return m_pToString;
 	}
 
 	char *p = m_pToString;
@@ -130,11 +130,11 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 	p--;
 	*p = '\0';
 
-	DEBUG_PRINTF("%u %u", (uint32_t)(p - m_pToString), (uint32_t)(m_nSize * 7));
+	DEBUG_PRINTF("%u %u", static_cast<unsigned>(p - m_pToString), static_cast<unsigned>(m_nSize * 7));
 
-	assert((uint32_t)(p - m_pToString) <= (uint32_t)(m_nSize * 7));
+	assert(static_cast<uint32_t>(p - m_pToString) <= static_cast<uint32_t>(m_nSize * 7));
 
-	return (const char *)m_pToString;
+	return m_pToString;
 }
 
 void DmxSlotInfo::Dump(void) {
@@ -152,7 +152,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 	uint16_t nTmp = 0;
 
 	while ((i < 2) && (*b != ':')) {
-		if (isxdigit((int)*b) == 0) {
+		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
 			return 0;
 		}
@@ -176,7 +176,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 	b++;
 
 	while ((i < 4) && (*b != ',') && (*b != '\0')) {
-		if (isxdigit((int) *b) == 0) {
+		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
 			return 0;
 		}

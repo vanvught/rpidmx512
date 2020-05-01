@@ -27,6 +27,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.695601733" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
@@ -39,6 +40,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1297331051" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
@@ -59,6 +61,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1518581968" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -98,6 +101,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835_raspbian/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1082217300" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__linux__"/>
@@ -110,6 +114,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835_raspbian/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1897588136" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__linux__"/>
@@ -130,6 +135,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-bcm2835_raspbian/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1560919576" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -163,6 +169,8 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1582243366" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-input/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1086493674" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
@@ -174,6 +182,8 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1711105492" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-input/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1882377896" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
@@ -197,6 +207,8 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.1034042013" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-input/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-i2c/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.109151388" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -254,5 +266,10 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1085870359;cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.1085870359.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.563102101;cdt.managedbuild.tool.gnu.cpp.compiler.input.245261842">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+			<path value=""/>
+		</doc-comment-owner>
 	</storageModule>
 </cproject>

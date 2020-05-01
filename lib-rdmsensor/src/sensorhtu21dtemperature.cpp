@@ -3,7 +3,7 @@
  * @file sensorhtu21dtemperature.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,16 +62,16 @@ bool SensorHTU21DTemperature::Initialize(void) {
 	const bool IsConnected = htu21d_start(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tIsConnected=%d\n", __FUNCTION__, (int) IsConnected);
+	printf("%s\tIsConnected=%d\n", __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 	return IsConnected;
 }
 
 int16_t SensorHTU21DTemperature::GetValue(void) {
-	const int16_t nValue = (int16_t) htu21d_get_temperature(&sDeviceInfo);
+	const int16_t nValue = htu21d_get_temperature(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
+	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
 #endif
 	return nValue;
 }

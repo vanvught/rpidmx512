@@ -2,7 +2,7 @@
  * @file ws28xxdma.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ WS28xxDMA::~WS28xxDMA(void) {
 bool WS28xxDMA::Initialize(void) {
 	uint32_t nSize;
 
-	m_pBuffer = (uint8_t *)h3_spi_dma_tx_prepare(&nSize);
+	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
 	assert(m_pBuffer != 0);
 
 	const uint32_t nSizeHalf = nSize / 2;

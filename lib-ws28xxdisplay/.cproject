@@ -27,8 +27,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.354172587" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.354172587" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="USE_SPI_DMA"/>
 								</option>
@@ -40,8 +41,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1845834771" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1845834771" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="USE_SPI_DMA"/>
 								</option>
@@ -61,6 +63,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ws28xx/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1538897936" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -92,5 +95,11 @@
 		<configuration configurationName="H3">
 			<resource resourceType="PROJECT" workspacePath="/lib-ws28xxdisplay"/>
 		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+			<path value=""/>
+		</doc-comment-owner>
 	</storageModule>
 </cproject>

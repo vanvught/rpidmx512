@@ -3,7 +3,7 @@
  * @file rdmsubdevicemcp23s08.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ RDMSubDeviceMCP23S08::RDMSubDeviceMCP23S08(uint16_t nDmxStartAddress, char nChip
 	RDMSubDevice("mcp23s08", nDmxStartAddress),
 	m_nData(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -65,7 +65,7 @@ bool RDMSubDeviceMCP23S08::Initialize(void) {
 	}
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;
@@ -84,8 +84,8 @@ void RDMSubDeviceMCP23S08::Data(const uint8_t* pData, uint16_t nLength) {
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
 	for (uint32_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = nData | (uint8_t) (1 << j);
+		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+			nData = nData | (1 << j);
 		}
 	}
 

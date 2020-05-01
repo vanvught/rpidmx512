@@ -2,7 +2,7 @@
  * @file dump.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,83 +39,82 @@
 
 void LLRPDevice::DumpCommon(void) {
 #ifndef NDEBUG
-	const struct TLLRPCommonPacket *packet = (struct TLLRPCommonPacket *) &(m_tLLRP.LLRPPacket.Common);
-	printf("RootLayerPreAmble.PreAmbleSize=0x%.04x\n", (int) __builtin_bswap16(packet->RootLayerPreAmble.PreAmbleSize));
-	printf("RootLayerPreAmble.PostAmbleSize=0x%.04x\n", (int) __builtin_bswap16(packet->RootLayerPreAmble.PostAmbleSize));
-	printf("RootLayerPreAmble.ACNPacketIdentifier=[%s]\n", packet->RootLayerPreAmble.ACNPacketIdentifier);
+	struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
-	uint8_t *pdu_buf = (uint8_t *)packet->RootLayerPDU.FlagsLength;
-	uint32_t nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+	printf("RootLayerPreAmble.PreAmbleSize=0x%.04x\n", __builtin_bswap16(pCommon->RootLayerPreAmble.PreAmbleSize));
+	printf("RootLayerPreAmble.PostAmbleSize=0x%.04x\n",  __builtin_bswap16(pCommon->RootLayerPreAmble.PostAmbleSize));
+	printf("RootLayerPreAmble.ACNPacketIdentifier=[%s]\n", pCommon->RootLayerPreAmble.ACNPacketIdentifier);
 
-	printf("RootLayerPDU PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) packet->RootLayerPDU.FlagsLength[0] >> 4);
-	printf("RootLayerPDU.Vector=0x%.8x\n", (int) __builtin_bswap32(packet->RootLayerPDU.Vector));
+	uint8_t *pPdu = reinterpret_cast<uint8_t*>(pCommon->RootLayerPDU.FlagsLength);
+	uint32_t nLength = static_cast<uint32_t>(((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
+
+	printf("RootLayerPDU PDU length=%d, High 4 bits=0x%.1x\n", nLength, static_cast<int>(pCommon->RootLayerPDU.FlagsLength[0]) >> 4);
+	printf("RootLayerPDU.Vector=0x%.8x\n", __builtin_bswap32(pCommon->RootLayerPDU.Vector));
 	printf("RootLayerPDU.SenderCid=");
 
-	for (uint32_t i = 0; i < sizeof(packet->RootLayerPDU.SenderCid); i++) {
-			printf("%.02X", packet->RootLayerPDU.SenderCid[i]);
+	for (uint32_t i = 0; i < sizeof(pCommon->RootLayerPDU.SenderCid); i++) {
+		printf("%.02X", pCommon->RootLayerPDU.SenderCid[i]);
 	}
 	printf("\n");
 
-	pdu_buf = (uint8_t *)packet->LlrpPDU.FlagsLength;
-	nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+	pPdu = (uint8_t *)pCommon->LlrpPDU.FlagsLength;
+	nLength = ((uint32_t)((pPdu[0] & 0x0fu) << 16) | (uint32_t)(pPdu[1] << 8) | (uint32_t)pPdu[2]);
 
-	printf("LlrpPDU PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) packet->LlrpPDU.FlagsLength[0] >> 4);
-	printf("LlrpPDU.Vector=0x%.8x\n", (int) __builtin_bswap32(packet->LlrpPDU.Vector));
+	printf("LlrpPDU PDU length=%d, High 4 bits=0x%.1x\n", nLength, static_cast<int>(pCommon->LlrpPDU.FlagsLength[0]) >> 4);
+	printf("LlrpPDU.Vector=0x%.8x\n", __builtin_bswap32(pCommon->LlrpPDU.Vector));
 	printf("LlrpPDU.DestinationCid=");
 
-	for (uint32_t i = 0; i < sizeof(packet->LlrpPDU.DestinationCid); i++) {
-			printf("%.02X", packet->LlrpPDU.DestinationCid[i]);
+	for (uint32_t i = 0; i < sizeof(pCommon->LlrpPDU.DestinationCid); i++) {
+			printf("%.02X", pCommon->LlrpPDU.DestinationCid[i]);
 	}
 	printf("\n");
 
-	printf("LlrpPDU.TransactionNumber=0x%.4x\n", (int) __builtin_bswap32(packet->LlrpPDU.TransactionNumber));
+	printf("LlrpPDU.TransactionNumber=0x%.4x\n", __builtin_bswap32(pCommon->LlrpPDU.TransactionNumber));
 
-	switch (__builtin_bswap32(packet->LlrpPDU.Vector)) {
-	case VECTOR_LLRP_PROBE_REQUEST:
-		{
-			const struct TProbeRequestPDUPacket *pRequest = (struct TProbeRequestPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
-			pdu_buf = (uint8_t *)pRequest->ProbeRequestPDU.FlagsLength;
-			nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
+	case VECTOR_LLRP_PROBE_REQUEST: {
+		struct TProbeRequestPDUPacket *pRequest = &(m_tLLRP.LLRPPacket.Request);
 
-			printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) pRequest->ProbeRequestPDU.FlagsLength[0] >> 4);
-			printf("ProbeRequestPDU.Vector=0x%.2x\n", (int) pRequest->ProbeRequestPDU.Vector);
+		pPdu = reinterpret_cast<uint8_t*>(pRequest->ProbeRequestPDU.FlagsLength);
+		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
 
-			printf("ProbeRequestPDU.Filter=0x%.4x\n", (int) __builtin_bswap16(pRequest->ProbeRequestPDU.Filter));
+		printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", nLength, static_cast<int>(pRequest->ProbeRequestPDU.FlagsLength[0]) >> 4);
+		printf("ProbeRequestPDU.Vector=0x%.2x\n", static_cast<int>(pRequest->ProbeRequestPDU.Vector));
+		printf("ProbeRequestPDU.Filter=0x%.4x\n", __builtin_bswap16(pRequest->ProbeRequestPDU.Filter));
+	}
+	break;
+	case VECTOR_LLRP_PROBE_REPLY: {
+		struct TTProbeReplyPDUPacket *pReply = &(m_tLLRP.LLRPPacket.Reply);
+
+		pPdu = reinterpret_cast<uint8_t*>(pReply->ProbeReplyPDU.FlagsLength);
+		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
+
+		printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", nLength, static_cast<int>(pReply->ProbeReplyPDU.FlagsLength[0]) >> 4);
+		printf("ProbeRequestPDU.Vector=0x%.2x\n", static_cast<int>(pReply->ProbeReplyPDU.Vector));
+		printf("ProbeReplyPDU.UID=");
+
+		for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.UID); i++) {
+			printf("%.02X", pReply->ProbeReplyPDU.UID[i]);
 		}
-		break;
-	case VECTOR_LLRP_PROBE_REPLY:
-		{
-			const struct TTProbeReplyPDUPacket *pReply = (struct TTProbeReplyPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
-			pdu_buf = (uint8_t *)pReply->ProbeReplyPDU.FlagsLength;
-			nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+		printf("\n");
 
-			printf("Probe Request PDU length=%d, High 4 bits=%.1x\n", (int) nLength, (int) pReply->ProbeReplyPDU.FlagsLength[0] >> 4);
-			printf("ProbeRequestPDU.Vector=0x%.2x\n", (int) pReply->ProbeReplyPDU.Vector);
+		printf("ProbeReplyPDU.HardwareAddress=");
 
-			printf("ProbeReplyPDU.UID=");
-
-			for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.UID); i++) {
-					printf("%.02X", pReply->ProbeReplyPDU.UID[i]);
-			}
-			printf("\n");
-
-			printf("ProbeReplyPDU.HardwareAddress=");
-
-			for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.HardwareAddress); i++) {
-					printf("%.02X", pReply->ProbeReplyPDU.HardwareAddress[i]);
-			}
-			printf("\n");
+		for (uint32_t i = 0; i < sizeof(pReply->ProbeReplyPDU.HardwareAddress); i++) {
+			printf("%.02X", pReply->ProbeReplyPDU.HardwareAddress[i]);
 		}
-		break;
-	case VECTOR_LLRP_RDM_CMD:
-		{
-			struct LTRDMCommandPDUPacket *pRDMCommand = (struct LTRDMCommandPDUPacket *) &(m_tLLRP.LLRPPacket.Request);
-			pdu_buf = (uint8_t *)pRDMCommand->RDMCommandPDU.FlagsLength;
-			nLength = ((uint32_t)((pdu_buf[0] & 0x0fu) << 16) | (uint32_t)(pdu_buf[1] << 8) | (uint32_t)pdu_buf[2]);
+		printf("\n");
+	}
+	break;
+	case VECTOR_LLRP_RDM_CMD: {
+		struct LTRDMCommandPDUPacket *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
 
-			printf("RDM Command PDU length=%d, High 4 bits=0x%.1x\n", (int) nLength, (int) pRDMCommand->RDMCommandPDU.FlagsLength[0] >> 4);
-			printf("RDMCommandPDU.Vector=0x%.2x\n", (int) pRDMCommand->RDMCommandPDU.Vector);
-		}
+		pPdu = reinterpret_cast<uint8_t*>(pRDMCommand->RDMCommandPDU.FlagsLength);
+		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
+
+		printf("RDM Command PDU length=%d, High 4 bits=0x%.1x\n", nLength, pRDMCommand->RDMCommandPDU.FlagsLength[0] >> 4);
+		printf("RDMCommandPDU.Vector=0x%.2x\n", pRDMCommand->RDMCommandPDU.Vector);
+	}
 		break;
 	default:
 		break;
@@ -124,18 +123,18 @@ void LLRPDevice::DumpCommon(void) {
 }
 
 void LLRPDevice::DumpLLRP(void) {
-	const struct TLLRPCommonPacket *packet = (struct TLLRPCommonPacket*) &(m_tLLRP.LLRPPacket.Common);
+	const struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
 	printf("SenderCID: ");
 
-	for (uint32_t i = 0; i < sizeof(packet->RootLayerPDU.SenderCid); i++) {
-		printf("%.02X", packet->RootLayerPDU.SenderCid[i]);
+	for (uint32_t i = 0; i < sizeof(pCommon->RootLayerPDU.SenderCid); i++) {
+		printf("%.02X", pCommon->RootLayerPDU.SenderCid[i]);
 	}
 
 	printf(" DestinationCID: ");
 
-	for (uint32_t i = 0; i < sizeof(packet->LlrpPDU.DestinationCid); i++) {
-		printf("%.02X", packet->LlrpPDU.DestinationCid[i]);
+	for (uint32_t i = 0; i < sizeof(pCommon->LlrpPDU.DestinationCid); i++) {
+		printf("%.02X", pCommon->LlrpPDU.DestinationCid[i]);
 	}
 	printf("\n");
 }

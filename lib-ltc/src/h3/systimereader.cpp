@@ -93,8 +93,8 @@ SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ui
 
 	s_pThis = this;
 
-	m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) Ltc::GetType(nFps)];
-	m_tMidiTimeCode.nType = (uint8_t) Ltc::GetType(nFps);
+	m_nTimer0Interval = TimeCodeConst::TMR_INTV[Ltc::GetType(nFps)];
+	m_tMidiTimeCode.nType = Ltc::GetType(nFps);
 }
 
 SystimeReader::~SystimeReader(void) {
@@ -107,7 +107,7 @@ void SystimeReader::Start(bool bAutoStart) {
 
 	// System Time
 	irq_timer_init();
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_handler);
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
 	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
@@ -164,25 +164,25 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 			if (m_tMidiTimeCode.nFrames >= m_nFps) {
 				m_tMidiTimeCode.nFrames = m_nFps - 1;
 			}
-			m_tMidiTimeCode.nType = (uint8_t) tType;
+			m_tMidiTimeCode.nType = tType;
 			//
 			m_nTimer0Interval = TimeCodeConst::TMR_INTV[tType];
 			H3_TIMER->TMR0_INTV = m_nTimer0Interval;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 			//
 			if (!m_ptLtcDisabledOutputs->bLtc) {
-				LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_tMidiTimeCode, false);
+				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode), false);
 			}
 
 			if (!m_ptLtcDisabledOutputs->bArtNet) {
-				ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &m_tMidiTimeCode);
+				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_tMidiTimeCode));
 			}
 
 			if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&m_tMidiTimeCode);
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&m_tMidiTimeCode));
 			}
 
-			LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&m_tMidiTimeCode);
+			LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 			DEBUG_PRINTF("nFps=%d", nFps);
 		}
@@ -195,9 +195,9 @@ void SystimeReader::HandleUdpRequest(void) {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
+	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;
 	}
 
@@ -229,7 +229,7 @@ void SystimeReader::HandleUdpRequest(void) {
 		}
 	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
 		}
 	} else {
 		DEBUG_PUTS("Invalid command");
@@ -238,7 +238,7 @@ void SystimeReader::HandleUdpRequest(void) {
 
 void SystimeReader::Run(void) {
 	if (m_bIsStarted) {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&m_tMidiTimeCode);
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 		time_t nTime = Hardware::Get()->GetTime();
 
@@ -261,18 +261,18 @@ void SystimeReader::Run(void) {
 			bTimeCodeAvailable = false;
 
 			if (!m_ptLtcDisabledOutputs->bLtc) {
-				LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_tMidiTimeCode, false);
+				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode), false);
 			}
 
 			if (!m_ptLtcDisabledOutputs->bArtNet) {
-				ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &m_tMidiTimeCode);
+				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_tMidiTimeCode));
 			}
 
 			if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&m_tMidiTimeCode);
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&m_tMidiTimeCode));
 			}
 
-			LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&m_tMidiTimeCode);
+			LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 			m_tMidiTimeCode.nFrames++;
 			if (m_nFps == m_tMidiTimeCode.nFrames) {

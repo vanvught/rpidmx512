@@ -2,7 +2,7 @@
  * @file simple.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 	pca9685.Dump();
 
-	printf("\nOutput (%dHz):\n", (int) pca9685.GetFrequency());
+	printf("\nOutput (%dHz):\n", static_cast<int>(pca9685.GetFrequency()));
 
 	pca9685.Read(CHANNEL(0), &OnValue, &OffValue);
 	printf("\tChannel 0: %04xh-%04xh, Full On\n", OnValue, OffValue);

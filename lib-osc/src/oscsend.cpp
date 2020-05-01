@@ -2,7 +2,7 @@
  * @file oscsend.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ void OSCSend::AddVarArgs(va_list ap) {
 			break;
 		}
 		case OSC_FLOAT: {
-			float f = (float) va_arg(ap, double);
+			float f = static_cast<float>(va_arg(ap, double));
 			m_Result = m_Msg->AddFloat(f);
 			break;
 		}
@@ -111,14 +111,14 @@ void OSCSend::AddVarArgs(va_list ap) {
 }
 
 void OSCSend::Send(void) {
-	const uint16_t nDataLength = (uint16_t) OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
-	const uint8_t *pData = (uint8_t *)m_Msg->Serialise(m_Path, 0, 0);
+	const uint16_t nDataLength = OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
+	void *pData = m_Msg->Serialise(m_Path, 0, 0);
 
-	Network::Get()->SendTo(m_nHandle, pData, nDataLength, m_Address, (uint16_t) m_Port);
+	Network::Get()->SendTo(m_nHandle, pData, nDataLength, m_Address, m_Port);
 
 	// Free the memory allocated by m_Msg->Serialise
 	if(pData) {
-		free((void *)pData);
+		free(pData);
 		pData = 0;
 	}
 }

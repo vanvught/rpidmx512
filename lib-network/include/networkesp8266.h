@@ -47,8 +47,8 @@ public:
 		// Not supported
 	}
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
 	 void SetIp(uint32_t nIp) {
 		// Not supported

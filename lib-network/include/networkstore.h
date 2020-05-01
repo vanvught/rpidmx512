@@ -34,7 +34,7 @@ public:
 
 	virtual void SaveIp(uint32_t nIp)=0;
 	virtual void SaveNetMask(uint32_t nNetMask)=0;
-	virtual void SaveHostName(const uint8_t *pHostName, uint32_t nLength)=0;
+	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
 	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
 };
 

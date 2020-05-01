@@ -46,7 +46,7 @@ RDMDeviceController::RDMDeviceController(void) {
 
 	struct TRDMDeviceInfoData info;
 
-	info.data = (uint8_t *) DEVICE_LABEL;
+	info.data = const_cast<char*>(DEVICE_LABEL);
 	info.length = sizeof(DEVICE_LABEL) - 1;
 
 	SetLabel(&info);

@@ -1,7 +1,7 @@
 /**
  * @file widgetparams.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ WidgetParams::WidgetParams(WidgetParamsStore* pWidgetParamsStore): m_pWidgetPara
 	m_tWidgetParams.nBreakTime = WIDGET_DEFAULT_BREAK_TIME;
 	m_tWidgetParams.nMabTime = WIDGET_DEFAULT_MAB_TIME;
 	m_tWidgetParams.nRefreshRate = WIDGET_DEFAULT_REFRESH_RATE;
-	m_tWidgetParams.tMode = (TWidgetMode) MODE_DMX_RDM;
+	m_tWidgetParams.tMode = static_cast<TWidgetMode>(MODE_DMX_RDM);
 	m_tWidgetParams.nThrottle = 0;
 }
 
@@ -129,7 +129,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 	uint8_t value8;
 
 	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_BREAK_TIME, &value8) == SSCAN_OK) {
-		if ((value8 >= (uint8_t) WIDGET_MIN_BREAK_TIME) && (value8 <= (uint8_t) WIDGET_MAX_BREAK_TIME)) {
+		if ((value8 >= WIDGET_MIN_BREAK_TIME) && (value8 <= WIDGET_MAX_BREAK_TIME)) {
 			m_tWidgetParams.nBreakTime = value8;
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_BREAK_TIME;
 			return;
@@ -137,7 +137,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_MAB_TIME, &value8) == SSCAN_OK) {
-		if ((value8 >= (uint8_t) WIDGET_MIN_MAB_TIME) && (value8 <= (uint8_t) WIDGET_MAX_MAB_TIME)) {
+		if ((value8 >= WIDGET_MIN_MAB_TIME) && (value8 <= WIDGET_MAX_MAB_TIME)) {
 			m_tWidgetParams.nMabTime = value8;
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_MAB_TIME;
 			return;
@@ -151,8 +151,8 @@ void WidgetParams::callbackFunction(const char* pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, PARAMS_WIDGET_MODE, &value8) == SSCAN_OK) {
-		if (value8 <= (uint8_t) WIDGET_MODE_RDM_SNIFFER) {
-			m_tWidgetParams.tMode = (TWidgetMode) value8;
+		if (value8 <= WIDGET_MODE_RDM_SNIFFER) {
+			m_tWidgetParams.tMode = static_cast<TWidgetMode>(value8);
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_MODE;
 			return;
 		}
@@ -171,7 +171,7 @@ void WidgetParams::Set(void) {
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_REFRESH_RATE)) {
 		if (m_tWidgetParams.nRefreshRate != 0) {
-			period = (uint32_t) (1000000 / m_tWidgetParams.nRefreshRate);
+			period = (1000000 / m_tWidgetParams.nRefreshRate);
 		}
 
 		dmx_set_output_period(period);
@@ -180,12 +180,12 @@ void WidgetParams::Set(void) {
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_BREAK_TIME)) {
-		dmx_set_output_break_time((uint32_t) ((double) (m_tWidgetParams.nBreakTime) * (double) (10.67)));
+		dmx_set_output_break_time((static_cast<float>(m_tWidgetParams.nBreakTime) * 10.67));
 		widget_params_set_break_time(m_tWidgetParams.nBreakTime);
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_MAB_TIME)) {
-		dmx_set_output_mab_time((uint32_t) ((double) (m_tWidgetParams.nMabTime) * (double) (10.67)));
+		dmx_set_output_mab_time((static_cast<float>(m_tWidgetParams.nMabTime) * 10.67));
 		widget_params_set_mab_time(m_tWidgetParams.nMabTime);
 	}
 
@@ -193,19 +193,19 @@ void WidgetParams::Set(void) {
 		period = 0;
 
 		if (m_tWidgetParams.nThrottle != 0) {
-			period = (uint32_t) (1000000 / m_tWidgetParams.nThrottle);
+			period = (1000000 / m_tWidgetParams.nThrottle);
 		}
 
 		widget_set_received_dmx_packet_period(period);
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_MODE)) {
-		widget_set_mode((_widget_mode) m_tWidgetParams.tMode);
+		widget_set_mode(static_cast<_widget_mode>(m_tWidgetParams.tMode));
 
-		if ( m_tWidgetParams.tMode == (TWidgetMode) MODE_DMX_RDM) {
-			widget_params_set_firmware_msb((uint8_t) FIRMWARE_RDM);
+		if (m_tWidgetParams.tMode == static_cast<TWidgetMode>(MODE_DMX_RDM)) {
+			widget_params_set_firmware_msb(FIRMWARE_RDM);
 		} else {
-			widget_params_set_firmware_msb((uint8_t) m_tWidgetParams.tMode);
+			widget_params_set_firmware_msb(m_tWidgetParams.tMode);
 		}
 	}
 }
@@ -219,23 +219,28 @@ void WidgetParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_BREAK_TIME)) {
-		printf(" %s=%d\n", DMXUSBPRO_PARAMS_BREAK_TIME, (int) m_tWidgetParams.nBreakTime);
+		printf(" %s=%d\n", DMXUSBPRO_PARAMS_BREAK_TIME,
+				static_cast<int>(m_tWidgetParams.nBreakTime));
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_MAB_TIME)) {
-		printf(" %s=%d\n", DMXUSBPRO_PARAMS_MAB_TIME, (int) m_tWidgetParams.nMabTime);
+		printf(" %s=%d\n", DMXUSBPRO_PARAMS_MAB_TIME,
+				static_cast<int>(m_tWidgetParams.nMabTime));
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_REFRESH_RATE)) {
-		printf(" %s=%d\n", DMXUSBPRO_PARAMS_REFRESH_RATE, (int) m_tWidgetParams.nRefreshRate);
+		printf(" %s=%d\n", DMXUSBPRO_PARAMS_REFRESH_RATE,
+				static_cast<int>(m_tWidgetParams.nRefreshRate));
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_MODE)) {
-		printf(" %s=%d\n", PARAMS_WIDGET_MODE, (int) m_tWidgetParams.tMode);
+		printf(" %s=%d\n", PARAMS_WIDGET_MODE,
+				static_cast<int>(m_tWidgetParams.tMode));
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_THROTTLE)) {
-		printf(" %s=%d\n", PARAMS_DMX_SEND_TO_HOST_THROTTLE, (int) m_tWidgetParams.nThrottle);
+		printf(" %s=%d\n", PARAMS_DMX_SEND_TO_HOST_THROTTLE,
+				static_cast<int>(m_tWidgetParams.nThrottle));
 	}
 #endif
 }
@@ -244,9 +249,5 @@ void WidgetParams::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((WidgetParams *) p)->callbackFunction(s);
-}
-
-bool WidgetParams::isMaskSet(uint32_t nMask) const {
-	return (m_tWidgetParams.nSetList & nMask) == nMask;
+	(static_cast<WidgetParams*>(p))->callbackFunction(s);
 }

@@ -2,7 +2,7 @@
  * @file pca9685.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@
 #define PCA9685_I2C_ADDRESS_FIXED	0x70
 #define PCA9685_I2C_ADDRESSES_MAX	62
 
-#define CHANNEL(x)	((uint8_t)(x))
-#define VALUE(x)	((uint16_t)(x))
+#define CHANNEL(x)	(static_cast<uint8_t>(x))
+#define VALUE(x)	(static_cast<uint16_>(x))
 
 #define PCA9685_VALUE_MIN	VALUE(0)
 #define PCA9685_VALUE_MAX	VALUE(4096)

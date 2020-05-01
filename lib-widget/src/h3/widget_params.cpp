@@ -3,7 +3,7 @@
  *
  * @brief Bridge between C++ and C
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,12 @@
 
 #include "dmx.h"
 
-static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
+static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { 1, 0 };
 
 static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
-		(uint8_t) WIDGET_DEFAULT_FIRMWARE_LSB, (uint8_t) FIRMWARE_RDM,
-		(uint8_t) WIDGET_DEFAULT_BREAK_TIME, (uint8_t) WIDGET_DEFAULT_MAB_TIME,
-		(uint8_t) WIDGET_DEFAULT_REFRESH_RATE };
+		WIDGET_DEFAULT_FIRMWARE_LSB, FIRMWARE_RDM,
+		WIDGET_DEFAULT_BREAK_TIME, WIDGET_DEFAULT_MAB_TIME,
+		WIDGET_DEFAULT_REFRESH_RATE };
 
 static WidgetStore *spWidgetStore = 0;
 
@@ -62,8 +62,8 @@ void widget_params_set_refresh_rate(uint8_t refresh_rate) {
 }
 
 void widget_params_get_type_id(struct _widget_params_data *info) {
-	info->data = (uint8_t *) DEVICE_TYPE_ID;
-	info->length = (uint8_t) DEVICE_TYPE_ID_LENGTH;
+	info->data = const_cast<uint8_t*>(DEVICE_TYPE_ID);
+	info->length = DEVICE_TYPE_ID_LENGTH;
 }
 
 void widget_params_get(struct _widget_params *widget_params) {
@@ -79,21 +79,21 @@ void widget_params_set(const struct _widget_params *widget_params) {
 
 	if (widget_params->break_time != dmx_usb_pro_params.break_time) {
 		dmx_usb_pro_params.break_time = widget_params->break_time;
-		dmx_set_output_break_time((uint32_t) ((double) (dmx_usb_pro_params.break_time) * (double) (10.67)));
+		dmx_set_output_break_time((static_cast<float>((dmx_usb_pro_params.break_time)) * 10.67));
 
 		spWidgetStore->UpdateBreakTime(widget_params->break_time);
 	}
 
 	if (widget_params->mab_time != dmx_usb_pro_params.mab_time) {
 		dmx_usb_pro_params.mab_time = widget_params->mab_time;
-		dmx_set_output_mab_time((uint32_t) ((double) (dmx_usb_pro_params.mab_time) * (double) (10.67)));
+		dmx_set_output_mab_time((static_cast<float>((dmx_usb_pro_params.mab_time)) * 10.67));
 
 		spWidgetStore->UpdateMabTime(widget_params->mab_time);
 	}
 
 	if (widget_params->refresh_rate != dmx_usb_pro_params.refresh_rate) {
 		dmx_usb_pro_params.refresh_rate = widget_params->refresh_rate;
-		dmx_set_output_period(widget_params->refresh_rate == (uint8_t) 0 ? (uint32_t) 0 : (uint32_t) (1000000 / widget_params->refresh_rate));
+		dmx_set_output_period(widget_params->refresh_rate == 0 ? 0 : (1000000 / widget_params->refresh_rate));
 
 		spWidgetStore->UpdateRefreshRate(widget_params->refresh_rate);
 	}

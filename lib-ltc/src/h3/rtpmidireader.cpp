@@ -2,7 +2,7 @@
  * @file rtpmidireader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,8 +65,8 @@ inline static void itoa_base10(uint32_t arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) ('0' + (arg / 10));
-	*n = (char) ('0' + (arg % 10));
+	*n++ = '0' + (arg / 10);
+	*n = '0' + (arg % 10);
 }
 
 RtpMidiHandler::~RtpMidiHandler(void) {
@@ -91,7 +91,7 @@ RtpMidiReader::~RtpMidiReader(void) {
 void RtpMidiReader::Start(void) {
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -130,10 +130,10 @@ void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 
 	m_nTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
 
-	itoa_base10((pSystemExclusive[5] & 0x1F), (char *) &m_aTimeCode[0]);
-	itoa_base10(pSystemExclusive[6], (char *) &m_aTimeCode[3]);
-	itoa_base10(pSystemExclusive[7], (char *) &m_aTimeCode[6]);
-	itoa_base10(pSystemExclusive[8], (char *) &m_aTimeCode[9]);
+	itoa_base10((pSystemExclusive[5] & 0x1F), &m_aTimeCode[0]);
+	itoa_base10(pSystemExclusive[6], &m_aTimeCode[3]);
+	itoa_base10(pSystemExclusive[7], &m_aTimeCode[6]);
+	itoa_base10(pSystemExclusive[8], &m_aTimeCode[9]);
 
 	m_tLtcTimeCode.nFrames = pSystemExclusive[8];
 	m_tLtcTimeCode.nSeconds = pSystemExclusive[7];
@@ -150,7 +150,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_nTimeCodeType = (_midi_timecode_type) (qf[7] >> 1);
+	m_nTimeCodeType = static_cast<_midi_timecode_type>((qf[7] >> 1));
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
 		midi_send_qf(ptMidiMessage->data1);
@@ -162,10 +162,10 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 	}
 
 	if ( (m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0)) ) {
-		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), (char *) &m_aTimeCode[0]);
-		itoa_base10(qf[4] | (qf[5] << 4), (char *) &m_aTimeCode[3]);
-		itoa_base10(qf[2] | (qf[3] << 4), (char *) &m_aTimeCode[6]);
-		itoa_base10(qf[0] | (qf[1] << 4), (char *) &m_aTimeCode[9]);
+		itoa_base10(qf[6] | ((qf[7] & 0x1) << 4), &m_aTimeCode[0]);
+		itoa_base10(qf[4] | (qf[5] << 4), &m_aTimeCode[3]);
+		itoa_base10(qf[2] | (qf[3] << 4), &m_aTimeCode[6]);
+		itoa_base10(qf[0] | (qf[1] << 4), &m_aTimeCode[9]);
 
 		m_tLtcTimeCode.nFrames = qf[0] | (qf[1] << 4);
 		m_tLtcTimeCode.nSeconds = qf[2] | (qf[3] << 4);
@@ -181,18 +181,18 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 
 void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
 	if (!m_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &m_tLtcTimeCode);
+		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 	}
 
 	if (!m_ptLtcDisabledOutputs->bArtNet) {
-		ArtNetNode::Get()->SendTimeCode((struct TArtNetTimeCode *) &m_tLtcTimeCode);
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<struct TArtNetTimeCode*>(&m_tLtcTimeCode));
 	}
 
-	LtcOutputs::Get()->Update((const struct TLtcTimeCode *) &m_tLtcTimeCode);
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 }
 
 void RtpMidiReader::Run(void) {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *) &m_tLtcTimeCode);
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {

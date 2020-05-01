@@ -3,7 +3,7 @@
  *
  * @brief Bridge between C++ and C
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,12 +70,12 @@ void rdm_device_info_init(RDMDevice *pRdmDevice) {
 }
 
 void rdm_device_info_get_label(const uint16_t sub_device, struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)root_device_label;
+	info->data = reinterpret_cast<uint8_t*>(root_device_label);
 	info->length = root_device_label_length;
 }
 
 void rdm_device_info_get_manufacturer_name(struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)device_manufacturer_name;
+	info->data = reinterpret_cast<uint8_t*>(device_manufacturer_name);
 	info->length = device_manufacturer_name_length;
 }
 
@@ -83,11 +83,11 @@ void rdm_device_info_get_manufacturer_id(struct _rdm_device_info_data *info) {
 	manufacturer_id[0] = uid_device[1];
 	manufacturer_id[1] = uid_device[0];
 
-	info->data = (uint8_t *)manufacturer_id;
+	info->data = const_cast<uint8_t*>(manufacturer_id);
 	info->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 
 void rdm_device_info_get_sn(struct _rdm_device_info_data *info) {
-	info->data = (uint8_t *)device_sn;
+	info->data = const_cast<uint8_t*>(device_sn);
 	info->length = DEVICE_SN_LENGTH;
 }

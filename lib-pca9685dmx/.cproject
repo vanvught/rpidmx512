@@ -209,8 +209,6 @@
 					<sourceEntries>
 						<entry excluding="linux|h3|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="linux|h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

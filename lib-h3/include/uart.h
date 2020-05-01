@@ -37,15 +37,19 @@
 #define UART_LSR_TEMT		(1 << 6)	///< Transmitter Empty
 #define UART_LSR_FIFOERR	(1 << 7)	///< RX Data Error in FIFO
 
-#define UART_LCR_DLS_8BITS	(0x3 << 0)	///< Data Length Select - 8 bits
-#define UART_LCR_DLS_7BITS	(0x2 << 0)	///< Data Length Select - 7 bits
-#define UART_LCR_DLS_6BITS	(0x1 << 0)	///< Data Length Select	- 6 bits
-#define UART_LCR_DLS_5BITS	(0x0 << 0)	///< Data Length Select - 5 bits
-#define UART_LCR_STOP_1BIT	(0x0 << 2)	///< 1 stop bit
-#define UART_LCR_STOP_2BITS	(0x1 << 2)	///< 2 stop bits , 1.5 stop bits when DLS[1:0] = 0x0
+#define UART_LCR_DLS_8BITS	(3 << 0)	///< Data Length Select - 8 bits
+#define UART_LCR_DLS_7BITS	(2 << 0)	///< Data Length Select - 7 bits
+#define UART_LCR_DLS_6BITS	(1 << 0)	///< Data Length Select	- 6 bits
+#define UART_LCR_DLS_5BITS	(0 << 0)	///< Data Length Select - 5 bits
+#define UART_LCR_STOP_1BIT	(0 << 2)	///< 1 stop bit
+#define UART_LCR_STOP_2BITS	(1 << 2)	///< 2 stop bits , 1.5 stop bits when DLS[1:0] = 0x0
+#define UART_LCR_PEN		(1 << 3)	///< Parity enable
+#define UART_LCR_EPS_ODD	(0 << 4)
+#define UART_LCR_EPS_EVEN	(1 << 4)
  #define UART_LCR_8_N_1			(UART_LCR_DLS_8BITS)
  #define UART_LCR_8_N_2 		(UART_LCR_DLS_8BITS | UART_LCR_STOP_2BITS)
 										///< EPS bit 5:4
+										///
 #define UART_LCR_BC			(0x1 << 6)	///< Cause a Break condition
 
 #define UART_IER_ERBFI		(1 << 0)	///< Enable Received Data Available Interrupts

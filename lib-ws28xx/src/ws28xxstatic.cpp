@@ -30,7 +30,7 @@
 #include "ws28xx.h"
 #include "ws28xxconst.h"
 
-const char* WS28xx::GetLedTypeString(TWS28XXType tType) {
+const char *WS28xx::GetLedTypeString(TWS28XXType tType) {
 	if (tType < WS28XX_UNDEFINED) {
 		return WS28xxConst::TYPES[tType];
 	}
@@ -43,18 +43,20 @@ TWS28XXType WS28xx::GetLedTypeString(const char *pValue) {
 
 	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
 		if (strcasecmp(pValue, WS28xxConst::TYPES[i]) == 0) {
-			return (TWS28XXType) i;
+			return static_cast<TWS28XXType>(i);
 		}
 	}
 
 	return WS28XX_UNDEFINED;
 }
 
+// TODO Update when a new chip is added
 void WS28xx::GetTxH(TWS28XXType tType, uint8_t &nLowCode, uint8_t &nHighCode) {
 	nLowCode = 0xC0;
-	nHighCode = (tType == WS2812B ? 0xF8 : (((tType == UCS1903) || (tType == UCS2903)) ? 0xFC : 0xF0));
+	nHighCode = (tType == WS2812B ? 0xF8 : (((tType == UCS1903) || (tType == UCS2903) || (tType == CS8812)) ? 0xFC : 0xF0));
 }
 
+// TODO Update when a new chip is added
 TRGBMapping WS28xx::GetRgbMapping(TWS28XXType tType) {
 	if ((tType == WS2811) || (tType == UCS2903)) {
 		return RGB_MAPPING_RGB;
@@ -62,6 +64,10 @@ TRGBMapping WS28xx::GetRgbMapping(TWS28XXType tType) {
 
 	if (tType == UCS1903) {
 		return RGB_MAPPING_BRG;
+	}
+
+	if (tType == CS8812) {
+		return RGB_MAPPING_BGR;
 	}
 
 	return RGB_MAPPING_GRB;

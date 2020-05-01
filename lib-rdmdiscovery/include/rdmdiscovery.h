@@ -2,7 +2,7 @@
  * @file rdmddiscovery.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ public:
 	~RDMDiscovery(void);
 
 	void SetUid(const uint8_t *);
-	const char *GetUid(void);
+	const uint8_t *GetUid(void);
 
 	void Full(void);
 
@@ -50,10 +50,10 @@ private:
 
 	bool IsValidDiscoveryResponse(const uint8_t *, uint8_t *);
 
-	void PrintUid(const uint64_t);
-	void PrintUid(uint8_t *);
-	const uint8_t *ConvertUid(const uint64_t);
-	const uint64_t ConvertUid(const uint8_t *);
+	void PrintUid(uint64_t);
+	void PrintUid(const uint8_t *);
+	const uint8_t *ConvertUid(uint64_t);
+	uint64_t ConvertUid(const uint8_t *);
 
 private:
 	uint8_t m_nPort;

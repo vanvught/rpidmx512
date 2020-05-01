@@ -2,7 +2,7 @@
  * @file l6470dump.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#undef NDEBUG
 
 #include <stdio.h>
 #include <stdint.h>
@@ -59,11 +61,11 @@ static uint16_t StallThCalcValueReg(uint8_t reg) {
 		reg = 0x7F;
 	}
 
-	return ((float) reg * L6470_STALL_TH_STEP_MA) + (float) L6470_STALL_TH_MIN_MA;
+	return (static_cast<float>(reg) * L6470_STALL_TH_STEP_MA) + L6470_STALL_TH_MIN_MA;
 }
 
 static float SlpCalcValueReg(uint8_t reg) {
-	return ((float) reg * L6470_SLP_STEP) + (float) L6470_SLP_MIN;
+	return (static_cast<float>(reg) * L6470_SLP_STEP) + L6470_SLP_MIN;
 }
 
 static float KThermCalcValueReg(uint8_t reg) {
@@ -71,7 +73,7 @@ static float KThermCalcValueReg(uint8_t reg) {
 		reg = 0x0F;
 	}
 
-	return ((float) reg * L6470_K_THERM_STEP) + (float) L6470_K_THERM_MIN;
+	return (static_cast<float>(reg) * L6470_K_THERM_STEP) + L6470_K_THERM_MIN;
 }
 #endif
 
@@ -88,17 +90,17 @@ void L6470::Dump(void) {
 	printf("06:DEC        - Deceleration: %.2f steps/s2\n", getDec());
 	printf("07:MAX_SPEED  - Maximum speed: %.2f steps/s\n", getMaxSpeed());
 	printf("08:MIN_SPEED  - Minimum speed: %.2f steps/s\n", getMinSpeed());
-	printf("09:KVAL_HOLD  - Holding KVAL: %d\n", (int) getHoldKVAL());
-	printf("0A:KVAL_RUN   - Constant speed KVAL: %d\n", (int) getRunKVAL());
-	printf("0B:KVAL_ACC   - Acceleration starting KVAL: %d\n", (int) getAccKVAL());
-	printf("0C:KVAL_Dec   - Deceleration starting KVAL: %d\n", (int) getDecKVAL());
-	printf("0D:INT_SPEED  - Intersect speed: 0x%.4X (raw)\n", (unsigned int) getParam(L6470_PARAM_INT_SPD));
+	printf("09:KVAL_HOLD  - Holding KVAL: %d\n", static_cast<int>(getHoldKVAL()));
+	printf("0A:KVAL_RUN   - Constant speed KVAL: %d\n", static_cast<int>(getRunKVAL()));
+	printf("0B:KVAL_ACC   - Acceleration starting KVAL: %d\n", static_cast<int>(getAccKVAL()));
+	printf("0C:KVAL_Dec   - Deceleration starting KVAL: %d\n", static_cast<int>(getDecKVAL()));
+	printf("0D:INT_SPEED  - Intersect speed: 0x%.4X (raw)\n", static_cast<unsigned int>(getParam(L6470_PARAM_INT_SPD)));
 	reg = getParam(L6470_PARAM_ST_SLP);
-	printf("0E:ST_SLP     - Start slope: %.3f\%% s/step (0x%.2X)\n", (float) 100 * SlpCalcValueReg(reg), reg);
+	printf("0E:ST_SLP     - Start slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_FN_SLP_ACC);
-	printf("0F:FN_SLP_ACC - Acceleration final slope: %.3f\%% s/step (0x%.2X)\n", (float) 100 * SlpCalcValueReg(reg), reg);
+	printf("0F:FN_SLP_ACC - Acceleration final slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_FN_SLP_DEC);
-	printf("10:FN_SLP_DEC - Deceleration final slope: %.3f\%% s/step (0x%.2X)\n", (float) 100 * SlpCalcValueReg(reg), reg);
+	printf("10:FN_SLP_DEC - Deceleration final slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_K_THERM);
 	printf("11:K_THERM    - Thermal compensation factor: %.3f (0x%.2X)\n", KThermCalcValueReg(reg), reg);
 	reg = getParam(L6470_PARAM_ADC_OUT);
@@ -109,8 +111,8 @@ void L6470::Dump(void) {
 	printf("14:STALL_TH   - STALL threshold: %d mA (0x%.2X)\n", StallThCalcValueReg(reg & 0x7F), reg);
 	printf("15:FS_SPD     - Full-step speed: %.2f steps/s\n", getFullSpeed());
 	printf("16:STEP_MODE  - Step mode: %d microsteps\n", 1 << getStepMode());
-	printf("17:ALARM_EN   - Alarm enable: 0x%.2X\n", (unsigned int) getParam(L6470_PARAM_ALARM_EN));
-	printf("18:CONFIG     - IC configuration: 0x%.4X\n", (unsigned int) getParam(L6470_PARAM_CONFIG));
+	printf("17:ALARM_EN   - Alarm enable: 0x%.2X\n", static_cast<unsigned int>(getParam(L6470_PARAM_ALARM_EN)));
+	printf("18:CONFIG     - IC configuration: 0x%.4X\n", static_cast<unsigned int>(getParam(L6470_PARAM_CONFIG)));
 #endif
 }
 

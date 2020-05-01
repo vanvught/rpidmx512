@@ -36,7 +36,7 @@ void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
-		pWS28xxDmx->SetRgbMapping((TRGBMapping) m_tWS28xxParams.nRgbMapping);
+		pWS28xxDmx->SetRgbMapping(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {

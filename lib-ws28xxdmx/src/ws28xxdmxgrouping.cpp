@@ -2,7 +2,7 @@
  * @file ws28xxstripedmxgrouping.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,20 +37,11 @@
 
 #include "debug.h"
 
-#if defined (__circle__)
-WS28xxDmxGrouping::WS28xxDmxGrouping(CInterruptSystem *pInterruptSystem) :
-	WS28xxDmx(pInterruptSystem),
-	m_pDmxData(0),
-	m_nLEDGroupCount(0),
-	m_nGroups(0)
-{
-#else
 WS28xxDmxGrouping::WS28xxDmxGrouping(void):
 	m_pDmxData(0),
 	m_nLEDGroupCount(0),
 	m_nGroups(0)
 {
-#endif
 	UpdateMembers();
 }
 
@@ -75,7 +66,6 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 		// wait for completion
 	}
 
-//	const uint8_t *p = pData + m_nDmxStartAddress - 1;
 	bool bIsChanged = false;
 
 	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nDmxFootprint); i++, j++) {
@@ -84,13 +74,6 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 			bIsChanged = true;
 		}
 	}
-
-//	for (uint32_t i = 0; i < m_nDmxFootprint; i++) {
-//		if (p[i] != m_pDmxData[i]) {
-//			m_pDmxData[i] = p[i];
-//			bIsChanged = true;
-//		}
-//	}
 
 	if (bIsChanged) {
 		uint32_t i = 0;
@@ -123,7 +106,7 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 }
 
 void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {
-	DEBUG_PRINTF("tLedType=%d", (int)tLedType);
+	DEBUG_PRINTF("tLedType=%d", static_cast<int>(tLedType));
 
 	m_tLedType = tLedType;
 
@@ -131,7 +114,7 @@ void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {
 }
 
 void WS28xxDmxGrouping::SetLEDCount(uint16_t nLedCount) {
-	DEBUG_PRINTF("nLedCount=%d", (int)nLedCount);
+	DEBUG_PRINTF("nLedCount=%d", static_cast<int>(nLedCount));
 
 	m_nLedCount = nLedCount;
 
@@ -139,7 +122,7 @@ void WS28xxDmxGrouping::SetLEDCount(uint16_t nLedCount) {
 }
 
 void WS28xxDmxGrouping::SetLEDGroupCount(uint16_t nLedGroupCount) {
-	DEBUG_PRINTF("nLedGroupCount=%d", (int)nLedGroupCount);
+	DEBUG_PRINTF("nLedGroupCount=%d", static_cast<int>(nLedGroupCount));
 
 	m_nLEDGroupCount = nLedGroupCount;
 
@@ -147,7 +130,7 @@ void WS28xxDmxGrouping::SetLEDGroupCount(uint16_t nLedGroupCount) {
 }
 
 bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_PRINTF("nDmxStartAddress=%d", (int) nDmxStartAddress);
+	DEBUG_PRINTF("nDmxStartAddress=%d", static_cast<int>(nDmxStartAddress));
 
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint)));
 
@@ -187,14 +170,14 @@ void WS28xxDmxGrouping::UpdateMembers(void) {
 		m_nDmxFootprint = m_nGroups * 3;
 	}
 
-	DEBUG_PRINTF("m_nLEDGroupCount=%d, m_nGroups=%d, m_nDmxFootprint=%d", m_nLEDGroupCount, m_nGroups, m_nDmxFootprint);
+	DEBUG_PRINTF("m_nLEDGroupCount=%d, m_nGroups=%d, m_nDmxFootprint=%d", static_cast<int>(m_nLEDGroupCount), static_cast<int>(m_nGroups), static_cast<int>(m_nDmxFootprint));
 }
 
 void WS28xxDmxGrouping::Print(void) {
 	printf("Led (grouping) parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
-	printf(" Group : %d\n", (int) m_nLEDGroupCount);
+	printf(" Count : %d\n", static_cast<int>(m_nLedCount));
+	printf(" Group : %d\n", static_cast<int>(m_nLEDGroupCount));
 }
 
 // RDM

@@ -3,7 +3,7 @@
  * @file ir_linux.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ bool IrLinux::Start(void) {
 
 	m_Addr.sun_family=AF_UNIX;
 
-	if (connect(m_nFd, (struct sockaddr *) &m_Addr, sizeof(m_Addr)) == -1) {
+	if (connect(m_nFd, static_cast<struct sockaddr*>(&m_Addr), sizeof(m_Addr)) == -1) {
 		perror("connect");
 		return false;
 	}

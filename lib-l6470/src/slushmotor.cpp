@@ -6,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,10 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
 #if defined (__linux__)
  #include <stdio.h>
 #endif
+#include <assert.h>
 
 #include "hal_spi.h"
 #include "hal_gpio.h"
@@ -125,7 +125,7 @@ int SlushMotor::busyCheck(void) {
 uint8_t SlushMotor::SPIXfer(uint8_t data) {
 	char dataPacket[1];
 
-	dataPacket[0] = (char) data;
+	dataPacket[0] = data;
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(4000000));
@@ -135,7 +135,7 @@ uint8_t SlushMotor::SPIXfer(uint8_t data) {
 	FUNC_PREFIX(spi_transfern(dataPacket, 1));
 	FUNC_PREFIX(gpio_set(m_nSpiChipSelect));
 
-	return (uint8_t) dataPacket[0];
+	return dataPacket[0];
 }
 
 /*

@@ -32,11 +32,11 @@ void WS28xxDmxParams::Set(WS28xxDmxMulti *pWS28xxDmxMulti) {
 	assert(pWS28xxDmxMulti != 0);
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
-		pWS28xxDmxMulti->SetLEDType((TWS28XXType)m_tWS28xxParams.tLedType);
+		pWS28xxDmxMulti->SetLEDType(static_cast<TWS28XXType>(m_tWS28xxParams.tLedType));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
-		pWS28xxDmxMulti->SetRgbMapping((TRGBMapping) m_tWS28xxParams.nRgbMapping);
+		pWS28xxDmxMulti->SetRgbMapping(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {

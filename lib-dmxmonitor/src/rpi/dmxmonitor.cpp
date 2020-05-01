@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "dmxmonitor.h"
@@ -48,15 +49,11 @@ DMXMonitor::DMXMonitor(void) :
 	m_nSlots(0),
 	m_bIsStarted(false)
 {
-	uint8_t *p = (uint8_t *) m_Data;
-
-	for (uint32_t i = 0; i < (uint32_t) (sizeof(m_Data) / sizeof(m_Data[0])); i++) {
-		*p++ = 0;
-	}
+	memset(m_Data, 0, sizeof(m_Data) / sizeof(m_Data[0]));
 }
 
 DMXMonitor::~DMXMonitor(void) {
-	Stop(0);
+
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -157,12 +154,7 @@ void DMXMonitor::Cls(void) {
 void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	m_nSlots = nLength;
 
-	const uint8_t *src = (const uint8_t *) pData;
-	uint8_t *dst = (uint8_t *) m_Data;
-
-	for (uint32_t i = 0; i < nLength; i++) {
-		*dst++ = *src++;
-	}
+	memcpy(m_Data, pData, nLength);
 
 	Update();
 }
@@ -170,7 +162,7 @@ void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) 
 void DMXMonitor::Update(void) {
 	uint32_t row = TOP_ROW;
 	uint32_t i, j;
-	uint8_t *p = (uint8_t *) m_Data;
+	uint8_t *p = m_Data;
 	uint16_t slot = 0;
 
 	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
@@ -185,12 +177,15 @@ void DMXMonitor::Update(void) {
 					console_puts(" 0");
 				} else {
 					if (m_tFormat == DMX_MONITOR_FORMAT_HEX) {
-						console_puthex_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+						console_puthex_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d, d, d));
 					} else {
-						console_putpct_fg_bg(((uint32_t) d * 100) / 255, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+						console_putpct_fg_bg(
+								(static_cast<uint32_t>(d) * 100) / 255,
+								(d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE),
+								RGB(d, d, d));
 					}
 				}
-				console_putc((int) ' ');
+				console_putc(' ');
 				slot++;
 			}
 
@@ -214,9 +209,9 @@ void DMXMonitor::Update(void) {
 				if (d == 0) {
 					console_puts("  0");
 				} else {
-					console_put3dec_fg_bg(d, (uint16_t) (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), (uint16_t) RGB(d, d, d));
+					console_put3dec_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d, d, d));
 				}
-				console_putc((int) ' ');
+				console_putc(' ');
 				slot++;
 			}
 

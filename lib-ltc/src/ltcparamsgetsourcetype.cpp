@@ -2,7 +2,7 @@
  * @file ltcparamsgetsourcetype.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 enum TLtcReaderSource LtcParams::GetSourceType(const char* pType) {
 	for (uint32_t i = 0; i < sizeof(sSource) / sizeof(sSource[0]); i++) {
 		if (strcasecmp(sSource[i], pType) == 0) {
-			return (TLtcReaderSource) i;
+			return static_cast<TLtcReaderSource>(i);
 		}
 	}
 

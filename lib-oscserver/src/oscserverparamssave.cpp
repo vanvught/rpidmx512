@@ -2,7 +2,7 @@
  * @file oscserverparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -64,7 +64,7 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 	return;
 }
 
-void OSCServerParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOSCServerParamsStore == 0) {

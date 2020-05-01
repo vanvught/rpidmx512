@@ -2,7 +2,7 @@
  * @file tcnetdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,9 @@ static uint32_t s_nTimeStampPrevious = 0;
 void TCNet::DumpManagementHeader(void) {
 	printf("ManagementHeader\n");
 	printf(" %.3s V%d.%d %.8s\n", m_TTCNet.TCNetPacket.ManagementHeader.Header, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMajor, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMinor,m_TTCNet.TCNetPacket.ManagementHeader.NodeName);
-	printf(" %s\n", m_TTCNet.TCNetPacket.ManagementHeader.NodeType == (uint8_t) TCNET_TYPE_SLAVE ? "SLAVE" : (m_TTCNet.TCNetPacket.ManagementHeader.NodeType == (uint8_t) TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
+	printf(" %s\n", m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
 	printf(" %u [%u] %d\n", m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp, m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp - s_nTimeStampPrevious, m_TTCNet.TCNetPacket.ManagementHeader.SEQ);
+
 	s_nTimeStampPrevious = m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp;
 }
 

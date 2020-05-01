@@ -41,7 +41,7 @@
 
 #include "debug.h"
 
-void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -61,10 +61,10 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NETWORK_PARAMS_MASK_DEFAULT_GATEWAY));
 #endif
 	if (!isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME)) {
-		strncpy((char *)m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE);
+		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);
 		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
 	}
-	builder.Add(NetworkConst::PARAMS_HOSTNAME, (const char *)m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
+	builder.Add(NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NETWORK_PARAMS_MASK_HOSTNAME));
 
 	builder.AddIpAddress(NetworkConst::PARAMS_NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER));
 	builder.Add(NetworkConst::PARAMS_NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NETWORK_PARAMS_MASK_NTP_UTC_OFFSET));
@@ -75,7 +75,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, uint8_
 	DEBUG_EXIT
 }
 
-void NetworkParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pNetworkParamsStore == 0) {

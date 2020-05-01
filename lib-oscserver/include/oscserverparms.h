@@ -2,7 +2,7 @@
  * @file oscserverparams.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,8 +71,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TOSCServerParams *ptOSCServerParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TOSCServerParams *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(OscServer *pOscServer);
 
@@ -103,7 +103,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint16_t) const;
+    bool isMaskSet(uint32_t nMask) {
+    	return (m_tOSCServerParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	OSCServerParamsStore *m_pOSCServerParamsStore;

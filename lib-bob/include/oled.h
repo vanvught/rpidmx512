@@ -2,7 +2,7 @@
  * @file oled.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,19 +63,19 @@ typedef struct _oled_info {
 
 #define OLED_I2C_SLAVE_ADDRESS_DEFAULT	0x3C
 
-#define OLED_128x64_I2C_DEFAULT 		OLED_PROTOCOL_I2C, OLED_PANEL_128x64, false, (uint8_t) 0, OLED_SPI_CS0, 0, {0}
-#define OLED_128x32_I2C_DEFAULT			OLED_PROTOCOL_I2C, OLED_PANEL_128x32, false, (uint8_t) 0, OLED_SPI_CS0, 0, {0}
+#define OLED_128x64_I2C_DEFAULT 		OLED_PROTOCOL_I2C, OLED_PANEL_128x64, false, 0, OLED_SPI_CS0, 0, {0}
+#define OLED_128x32_I2C_DEFAULT			OLED_PROTOCOL_I2C, OLED_PANEL_128x32, false, 0, OLED_SPI_CS0, 0, {0}
 
 #define OLED_SPI_SPEED_MAX_HZ			8000000	///< 8 MHz
 #define OLED_SPI_SPEED_DEFAULT_HZ		1000000	///< 1 MHz
 
-#define OLED_128x64_SPI_CS0_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, (uint8_t) 0, OLED_SPI_CS0 , 0, {0}
-#define OLED_128x64_SPI_CS1_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, (uint8_t) 0, OLED_SPI_CS1 , 0, {0}
-#define OLED_128x64_SPI_CS2_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, (uint8_t) 0, OLED_SPI_CS2 , 0, {0}
+#define OLED_128x64_SPI_CS0_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, 0, OLED_SPI_CS0 , 0, {0}
+#define OLED_128x64_SPI_CS1_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, 0, OLED_SPI_CS1 , 0, {0}
+#define OLED_128x64_SPI_CS2_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x64, false, 0, OLED_SPI_CS2 , 0, {0}
 
-#define OLED_128x32_SPI_CS0_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, (uint8_t) 0, OLED_SPI_CS0 , 0, {0}
-#define OLED_128x32_SPI_CS1_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, (uint8_t) 0, OLED_SPI_CS1 , 0, {0}
-#define OLED_128x32_SPI_CS2_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, (uint8_t) 0, OLED_SPI_CS2 , 0, {0}
+#define OLED_128x32_SPI_CS0_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, 0, OLED_SPI_CS0 , 0, {0}
+#define OLED_128x32_SPI_CS1_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, 0, OLED_SPI_CS1 , 0, {0}
+#define OLED_128x32_SPI_CS2_DEFAULT 	OLED_PROTOCOL_SPI, OLED_PANEL_128x32, false, 0, OLED_SPI_CS2 , 0, {0}
 
 #ifdef __cplusplus
 extern "C" {

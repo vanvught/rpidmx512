@@ -77,7 +77,7 @@ void WS28xxMulti::SetupBuffers4x(void) {
 	DEBUG_EXIT
 }
 
-void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
+void WS28xxMulti::Generate800kHz(const uint32_t *pBuffer) {
 	uint32_t i = 0;
 	const uint32_t d = (125 * 24) / 100;
 	uint32_t dat;
@@ -86,12 +86,12 @@ void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
 		uint64_t cval;
 		asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (cval));
 
-		dat = H3_PIO_PORTA->DAT;
+		dat = H3_PIO_PORTA->DAT; // @suppress("C-Style cast instead of C++ cast")
 		dat &= (~(DATA_MASK));
 		dat |= pBuffer[i];
-		H3_PIO_PORTA->DAT = dat;
+		H3_PIO_PORTA->DAT = dat; // @suppress("C-Style cast instead of C++ cast")
 
-		uint32_t t1 = (uint32_t) (cval & 0xFFFFFFFF);
+		uint32_t t1 = (cval & 0xFFFFFFFF);
 		const uint32_t t2 = t1 + d;
 		i++;
 
@@ -99,11 +99,11 @@ void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
 
 		do {
 			asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (cval));
-			t1 = (uint32_t) (cval & 0xFFFFFFFF);
+			t1 = (cval & 0xFFFFFFFF);
 		} while (t1 < t2);
 
 	} while (i < m_nBufSize);
 
 	dat |= (1 << ENABLE);
-	H3_PIO_PORTA->DAT = dat;
+	H3_PIO_PORTA->DAT = dat; // @suppress("C-Style cast instead of C++ cast")
 }

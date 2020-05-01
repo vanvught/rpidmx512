@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-//#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
@@ -52,20 +48,20 @@ TCNet::TCNet(TTCNetNodeType tNodeType) :
 {
 	s_pThis = this;
 
-	memset((void *)&m_tOptIn, 0, sizeof(struct TTCNetPacketOptIn));
+	memset(&m_tOptIn, 0, sizeof(struct TTCNetPacketOptIn));
 
 	// Fill the static fields for Opt-IN
 	m_tOptIn.ManagementHeader.ProtocolVersionMajor = 3;
 	m_tOptIn.ManagementHeader.ProtocolVersionMinor = 3;
 	memcpy(m_tOptIn.ManagementHeader.Header, "TCN", 3);
-	m_tOptIn.ManagementHeader.MessageType = (uint8_t) TCNET_MESSAGE_TYPE_OPTIN;
+	m_tOptIn.ManagementHeader.MessageType = TCNET_MESSAGE_TYPE_OPTIN;
 	m_tOptIn.ManagementHeader.SEQ = 0;
-	m_tOptIn.ManagementHeader.NodeType = (uint8_t) tNodeType;
+	m_tOptIn.ManagementHeader.NodeType = tNodeType;
 	m_tOptIn.ManagementHeader.NodeOptions = 0;
 	m_tOptIn.NodeCount = 1;
 	m_tOptIn.NodeListenerPort = TCNET_UNICAST_PORT;
-	memcpy((char *)&m_tOptIn.VendorName, "orangepi-dmx.org", TCNET_VENDOR_NAME_LENGTH);
-	memcpy((char *)&m_tOptIn.DeviceName, "LTC SMPTE Node  ", TCNET_DEVICE_NAME_LENGTH);
+	memcpy(&m_tOptIn.VendorName, "orangepi-dmx.org", TCNET_VENDOR_NAME_LENGTH);
+	memcpy(&m_tOptIn.DeviceName, "LTC SMPTE Node  ", TCNET_DEVICE_NAME_LENGTH);
 	m_tOptIn.DeviceMajorVersion = _TIME_STAMP_YEAR_ - 2000;
 	m_tOptIn.DeviceMinorVersion = _TIME_STAMP_MONTH_;
 	m_tOptIn.DeviceBugVersion = _TIME_STAMP_DAY_;
@@ -104,9 +100,9 @@ void TCNet::Stop(void) {
 
 	struct TTCNetPacketOptOut OptOut;
 
-	memcpy(&OptOut, (const void *)&m_tOptIn, sizeof(struct TTCNetPacketOptOut));
+	memcpy(&OptOut, &m_tOptIn, sizeof(struct TTCNetPacketOptOut));
 
-	Network::Get()->SendTo(m_aHandles[0],  (const uint8_t *) &OptOut, (uint16_t) sizeof(struct TTCNetPacketOptOut), m_tNode.nIPAddressBroadcast, TCNET_BROADCAST_PORT_0);
+	Network::Get()->SendTo(m_aHandles[0], &OptOut, sizeof(struct TTCNetPacketOptOut), m_tNode.nIPAddressBroadcast, TCNET_BROADCAST_PORT_0);
 
 	DEBUG_EXIT
 }
@@ -115,9 +111,9 @@ void TCNet::HandlePort60000Incoming(void) {
 	DEBUG_ENTRY
 
 	const struct TTCNetPacket *packet = &(m_TTCNet.TCNetPacket);
-	const TTCNetMessageType type  = (TTCNetMessageType) packet->ManagementHeader.MessageType;
+	const TTCNetMessageType type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
 
-	DEBUG_PRINTF("MessageType = %d", (int) type);
+	DEBUG_PRINTF("MessageType = %d", static_cast<int>(type));
 
 	if (type == TCNET_MESSAGE_TYPE_OPTIN) {
 #ifndef NDEBUG
@@ -132,19 +128,19 @@ void TCNet::HandlePort60000Incoming(void) {
 
 void TCNet::HandlePort60001Incoming(void) {
 	if (__builtin_expect((m_pTCNetTimeCode != 0), 1)) {
-		if ((TTCNetMessageType) m_TTCNet.TCNetPacket.ManagementHeader.MessageType == TCNET_MESSAGE_TYPE_TIME) {
+		if (static_cast<TTCNetMessageType>(m_TTCNet.TCNetPacket.ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
 			struct TTCNetTimeCode TimeCode;
 
 			if (!m_bUseTimeCode) {
 				uint32_t nTime = *m_pLTime;
 
-				const uint32_t nHours = nTime / (uint32_t) 3600000;
-				nTime -= nHours * (uint32_t) 3600000;
-				const uint32_t nMinutes = nTime / (uint32_t) 60000;
-				nTime -= nMinutes * (uint32_t) 60000;
-				const uint32_t nSeconds = nTime / (uint32_t) 1000;
-				const uint32_t nMillis = nTime - nSeconds * (uint32_t) 1000;
-				const uint32_t nFrames = (float) nMillis / m_fTypeDivider;
+				const uint32_t nHours = nTime / 3600000;
+				nTime -= nHours * 3600000;
+				const uint32_t nMinutes = nTime / 60000;
+				nTime -= nMinutes * 60000;
+				const uint32_t nSeconds = nTime / 1000;
+				const uint32_t nMillis = nTime - nSeconds * 1000;
+				const uint32_t nFrames = static_cast<float>(nMillis) / m_fTypeDivider;
 
 				TimeCode.nFrames = nFrames;
 				TimeCode.nSeconds = nSeconds;
@@ -198,35 +194,35 @@ void TCNet::HandleOptInOutgoing(void) {
 	m_tOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
 	m_tOptIn.Uptime = Hardware::Get()->GetUpTime();
 
-	Network::Get()->SendTo(m_aHandles[0],  (const uint8_t *) &m_tOptIn, (uint16_t) sizeof(struct TTCNetPacketOptIn), m_tNode.nIPAddressBroadcast, TCNET_BROADCAST_PORT_0);
+	Network::Get()->SendTo(m_aHandles[0], &m_tOptIn, sizeof(struct TTCNetPacketOptIn), m_tNode.nIPAddressBroadcast, TCNET_BROADCAST_PORT_0);
 }
 
 void TCNet::Run(void) {
-	const char *packet = (char *) &(m_TTCNet.TCNetPacket);
+	uint8_t *packet = reinterpret_cast<uint8_t*>(&m_TTCNet.TCNetPacket);
 	uint16_t nForeignPort;
 
 #if defined(USE_PORT_UNICAST)
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[3], (uint8_t *)packet, (const uint16_t)sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[3], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
 
 	if (m_TTCNet.BytesReceived != 0) {
 		HandlePortUnicastIncoming();
 	}
 #endif
 
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[1], (uint8_t *)packet, (const uint16_t)sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[1], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
 
 	if (m_TTCNet.BytesReceived != 0) {
 		HandlePort60001Incoming();
 	}
 
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[0], (uint8_t *)packet, (const uint16_t)sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[0], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
 
 	if (m_TTCNet.BytesReceived != 0) {
 		HandlePort60000Incoming();
 	}
 
 #if defined(USE_PORT_60002)
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[2], (uint8_t *)packet, (const uint16_t)sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[2], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
 
 	if (m_TTCNet.BytesReceived != 0) {
 		HandlePort60002Incoming();
@@ -248,12 +244,15 @@ void TCNet::SetLayer(TTCNetLayers tLayer) {
 	}
 
 	m_tLayer = tLayer;
-	m_pLTime = (uint32_t *)(&m_TTCNet.TCNetPacket.Time.L1Time + (uint32_t) tLayer);
-	m_pLTimeCode = (struct TTCNetPacketTimeTimeCode *)((uintptr_t) &m_TTCNet.TCNetPacket.Time.L1TimeCode + (uintptr_t) tLayer * sizeof(struct TTCNetPacketTimeTimeCode));
+	m_pLTime = static_cast<uint32_t*>((&m_TTCNet.TCNetPacket.Time.L1Time + static_cast<uint32_t>((tLayer))));
+	m_pLTimeCode =
+			reinterpret_cast<struct TTCNetPacketTimeTimeCode*>((reinterpret_cast<uintptr_t>((&m_TTCNet.TCNetPacket.Time.L1TimeCode))
+					+ static_cast<uintptr_t>(tLayer) * sizeof(struct TTCNetPacketTimeTimeCode)));
 }
 
 void TCNet::SetNodeName(const char *pNodeName) {
-	strncpy((char *)m_tOptIn.ManagementHeader.NodeName, pNodeName, TCNET_NODE_NAME_LENGTH - 1);
+	strncpy(reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName), pNodeName, sizeof m_tOptIn.ManagementHeader.NodeName - 1);
+	m_tOptIn.ManagementHeader.NodeName[sizeof m_tOptIn.ManagementHeader.NodeName - 1] = '\0';
 }
 
 char TCNet::GetLayerName(TTCNetLayers tLayer) {
@@ -262,7 +261,7 @@ char TCNet::GetLayerName(TTCNetLayers tLayer) {
 	case TCNET_LAYER_2:
 	case TCNET_LAYER_3:
 	case TCNET_LAYER_4:
-		return (char) tLayer +  '1';
+		return static_cast<char>(tLayer +  '1');
 		break;
 	case TCNET_LAYER_A:
 		return 'A';
@@ -289,7 +288,7 @@ TTCNetLayers TCNet::GetLayer(uint8_t nChar) {
 	case '2':
 	case '3':
 	case '4':
-		return (TTCNetLayers) (nChar - '1');
+		return static_cast<TTCNetLayers>(nChar - '1');
 		break;
 	case 'A':
 		return TCNET_LAYER_A;
@@ -314,16 +313,16 @@ void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
 
 	switch (tType) {
 	case TCNET_TIMECODE_TYPE_FILM:
-		m_fTypeDivider = (float) 1000 / 24;
+		m_fTypeDivider = 1000.0F / 24;
 		break;
 	case TCNET_TIMECODE_TYPE_EBU_25FPS:
-		m_fTypeDivider = 1000 / 25;
+		m_fTypeDivider = 1000.0F / 25;
 		break;
 	case TCNET_TIMECODE_TYPE_DF:
-		m_fTypeDivider = (float) 1000 / (float) 29.97;
+		m_fTypeDivider = 1000.0F / 29.97;
 		break;
 	case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
-		m_fTypeDivider = (float) 1000 / 30;
+		m_fTypeDivider = 1000.0F / 30;
 		break;
 	default:
 		return;

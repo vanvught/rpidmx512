@@ -2,7 +2,7 @@
  * @file l6470.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -179,11 +179,11 @@ public:
 	}
 
 	void run(int dir, float stepsPerSec) {
-		run((TL6470Direction) dir, stepsPerSec);
+		run(static_cast<TL6470Direction>(dir), stepsPerSec);
 	}
 
 	void goUntilPress(int action, int dir, float stepsPerSec) {
-		goUntil((TL6470Action) action, (TL6470Direction) dir, stepsPerSec);
+		goUntil(static_cast<TL6470Action>(action), static_cast<TL6470Direction>(dir), stepsPerSec);
 	}
 
 	/**

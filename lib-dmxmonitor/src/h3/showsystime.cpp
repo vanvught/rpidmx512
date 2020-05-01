@@ -2,7 +2,7 @@
  * @file showsystime.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,8 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = '0' + (arg / 10);
+	*n = '0' + (arg % 10);
 }
 
 ShowSystime::ShowSystime(void): m_nSecondsPrevious(60) {
@@ -72,13 +72,13 @@ void ShowSystime::Run(void) {
 
 	m_nSecondsPrevious = local_time->tm_sec;
 
-	itoa_base10(local_time->tm_hour, (char *) &systime[0]);
-	itoa_base10(local_time->tm_min, (char *) &systime[3]);
-	itoa_base10(local_time->tm_sec, (char *) &systime[6]);
+	itoa_base10(local_time->tm_hour, &systime[0]);
+	itoa_base10(local_time->tm_min, &systime[3]);
+	itoa_base10(local_time->tm_sec, &systime[6]);
 
-	itoa_base10(local_time->tm_year - 100, (char *) &systime[9]);
-	itoa_base10(local_time->tm_mon + 1, (char *) &systime[12]);
-	itoa_base10(local_time->tm_mday, (char *) &systime[15]);
+	itoa_base10(local_time->tm_year - 100, &systime[9]);
+	itoa_base10(local_time->tm_mon + 1, &systime[12]);
+	itoa_base10(local_time->tm_mday, &systime[15]);
 
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);

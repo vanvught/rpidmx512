@@ -2,7 +2,7 @@
  * @file rdmsubdevices.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ public:
 
 	// E120_DEVICE_LABEL			0x0082
 	void GetLabel(uint16_t nSubDevice, struct TRDMDeviceInfoData *pInfoData);
-	void SetLabel(uint16_t nSubDevice, const uint8_t *pLabel, uint8_t nLabelLength);
+	void SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength);
 
 	// E120_FACTORY_DEFAULTS		0x0090
 	bool GetFactoryDefaults(void);

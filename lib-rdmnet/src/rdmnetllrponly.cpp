@@ -56,7 +56,7 @@ RDMNetLLRPOnly::~RDMNetLLRPOnly(void) {
 void RDMNetLLRPOnly::Init(void) {
 	DEBUG_ENTRY
 
-	m_RDMNetDevice.SetLabel(0, (const uint8_t*)LABEL, LABEL_LENGTH);
+	m_RDMNetDevice.SetLabel(0, LABEL, LABEL_LENGTH);
 	m_RDMNetDevice.Init();
 
 	DEBUG_EXIT

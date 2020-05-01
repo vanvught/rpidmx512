@@ -20,7 +20,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
 
 bool TFTPFileServer::FileClose(void) {
 	if (m_pFile != 0) {
-		fclose(m_pFile);
+		static_cast<void>(fclose(m_pFile));
 		m_pFile = 0;
 	}
 	return true;

@@ -32,7 +32,7 @@ class RDMDeviceStore {
 public:
 	virtual ~RDMDeviceStore(void) {}
 
-	virtual void SaveLabel(const uint8_t *pLabel, uint8_t nLength)=0;
+	virtual void SaveLabel(const char *pLabel, uint8_t nLength)=0;
 };
 
 #endif /* RDMDEVICESTORE_H_ */

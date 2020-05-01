@@ -33,7 +33,7 @@
 
 #include "debug.h"
 
-PropertiesBuilder::PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength):
+PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength):
 	m_pBuffer(pBuffer),
 	m_nLength(nLength),
 	m_nSize(0)
@@ -59,7 +59,7 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -76,7 +76,7 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -86,7 +86,7 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, ui
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -103,7 +103,7 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, ui
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -113,7 +113,7 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -130,7 +130,7 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -140,7 +140,7 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -157,7 +157,34 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
+
+	return true;
+}
+
+bool PropertiesBuilder::AddHex8(const char *pProperty, uint8_t nValue, bool bIsSet) {
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	char *p = &m_pBuffer[m_nSize];
+	const uint32_t nSize = m_nLength - m_nSize;
+
+	int i;
+
+	if (bIsSet) {
+		i = snprintf(p, nSize, "%s=%.2x\n", pProperty, nValue);
+	} else {
+		i = snprintf(p, nSize, "#%s=%.2x\n", pProperty, nValue);
+	}
+
+	if (i > static_cast<int>(nSize)) {
+		return false;
+	}
+
+	m_nSize += i;
+
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -167,7 +194,7 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -184,7 +211,7 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -194,7 +221,7 @@ bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, b
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	int i;
@@ -211,7 +238,7 @@ bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, b
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }
@@ -221,7 +248,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 		return false;
 	}
 
-	char *p = reinterpret_cast<char *>(&m_pBuffer[m_nSize]);
+	char *p = &m_pBuffer[m_nSize];
 	const uint32_t nSize = m_nLength - m_nSize;
 
 	const int i = snprintf(p, nSize, "# %s #\n", pComment);
@@ -232,7 +259,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 
 	m_nSize += i;
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", (int) m_nLength, (int) m_nSize);
+	DEBUG_PRINTF("pComment=%s, m_nLength=%d, m_nSize=%d", pComment, static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
 	return true;
 }

@@ -2,7 +2,7 @@
  * @file modeparams.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,12 +55,7 @@
 ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pModeParamsStore) {
 	DEBUG_ENTRY
 
-	uint8_t *p = (uint8_t*) &m_tModeParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TModeParams); i++) {
-		*p++ = 0;
-	}
-
+	memset(&m_tModeParams, 0, sizeof(struct TModeParams));
 	m_tModeParams.nDmxMode = L6470DMXMODE_UNDEFINED;
 	m_tModeParams.nDmxStartAddress = DMX_ADDRESS_INVALID;
 	m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
@@ -71,8 +66,7 @@ ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pM
 	assert(m_pDmxSlotInfo != 0);
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
-	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
-	strncpy(m_aFileName, src, sizeof(m_aFileName));
+	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 
 	DEBUG_EXIT
 }
@@ -87,7 +81,7 @@ ModeParams::~ModeParams(void) {
 bool ModeParams::Load(uint8_t nMotorIndex) {
 	DEBUG_ENTRY
 
-	m_aFileName[5] = (char) nMotorIndex + '0';
+	m_aFileName[5] = nMotorIndex + '0';
 
 	m_tModeParams.nSetList = 0;
 
@@ -221,12 +215,12 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG1_ENTRY
 
 	assert(pBuffer != 0);
 
-	m_aFileName[5] = (char) nMotorIndex + '0';
+	m_aFileName[5] = nMotorIndex + '0';
 
 	if (ptModeParams != 0) {
 		memcpy(&m_tModeParams, ptModeParams, sizeof(struct TModeParams));
@@ -256,7 +250,7 @@ void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 	DEBUG1_EXIT
 }
 
-void ModeParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pModeParamsStore == 0) {
@@ -326,5 +320,5 @@ void ModeParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((ModeParams *) p)->callbackFunction(s);
+	(static_cast<ModeParams*>(p))->callbackFunction(s);
 }

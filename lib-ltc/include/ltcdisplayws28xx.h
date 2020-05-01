@@ -54,9 +54,9 @@ enum TLtcDisplayWS28xxColourIndex {
 
 enum TLtcDisplayWS28xxDefaults {
 	LTCDISPLAYWS28XX_DEFAULT_LED_TYPE = WS2812B,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT = (uint32_t) 0x00FF0000,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_COLON = (uint32_t) 0x00FFFC00,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_MESSAGE = (uint32_t) 0x00FFFFFF,
+	LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT = 0x00FF0000,
+	LTCDISPLAYWS28XX_DEFAULT_COLOUR_COLON = 0x00FFFC00,
+	LTCDISPLAYWS28XX_DEFAULT_COLOUR_MESSAGE = 0x00FFFFFF,
 	LTCDISPLAYWS28XX_DEFAULT_COLON_BLINK_MODE = LTCDISPLAYWS28XX_COLON_BLINK_MODE_UP,
 	LTCDISPLAYWS28XX_DEFAULT_MASTER = 0xFF,
 	LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS = 0xFF,
@@ -83,7 +83,7 @@ public:
 		if (tIndex >= LTCDISPLAYWS28XX_COLOUR_INDEX_LAST) {
 			return;
 		}
-		m_aColour[(uint32_t) tIndex] = nRGB;
+		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
 	}
 
 	void Init(TWS28XXType tLedType, uint8_t nIntensity = 0xFF);
@@ -113,7 +113,7 @@ private:
 	TLtcDisplayWS28xxTypes m_tDisplayWS28xxTypes;
 	uint8_t m_nIntensity;
 	int32_t m_nHandle;
-	uint8_t m_Buffer[64];
+	char m_Buffer[64];
   	TRGBMapping m_tMapping;
   	TWS28XXType m_tLedType;
 	uint32_t m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST];
@@ -122,7 +122,7 @@ private:
 	char m_aMessage[LTCDISPLAY_MAX_MESSAGE_SIZE];
 	uint32_t m_nMsgTimer;
 	uint32_t m_nColonBlinkMillis;
-	uint32_t m_nSecondsPrevious;
+	char m_nSecondsPrevious;
 	enum TLtcDisplayWS28xxColonBlinkMode m_tColonBlinkMode;
 
 	LtcDisplayWS28xxSet *m_pLtcDisplayWS28xxSet;

@@ -2,7 +2,7 @@
  * @file tcnetprint.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,13 @@
 #include <stdio.h>
 
 #include "tcnet.h"
-
-static const uint32_t s_nFps[4] = { 24, 25, 29, 30 };
+#include "tcnetconst.h"
 
 void TCNet::Print(void) {
 	printf("TCNet\n");
 	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
 	if (m_tLayer != TCNET_LAYER_UNDEFINED) {
-		printf(" L%c T%d\n", GetLayerName((TTCNetLayers) m_tLayer), s_nFps[m_tTimeCodeType]);
+		printf(" L%c T%d\n", GetLayerName(static_cast<TTCNetLayers>(m_tLayer)), TCNetConst::FPS[m_tTimeCodeType]);
 	} else {
 		printf(" LM TimeCode\n");
 	}

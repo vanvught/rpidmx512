@@ -2,7 +2,7 @@
  * @file dmxreceiver.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
 {
 	DEBUG1_ENTRY
 
-	uint32_t *p = (uint32_t *)m_Data;
+	uint32_t *p = reinterpret_cast<uint32_t*>(m_Data);
 
 	for (uint32_t i = 0; i < (sizeof m_Data) / 4; i ++) {
 		*p++ = 0;
@@ -89,24 +89,24 @@ void DMXReceiver::Stop(void) {
 bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
-	const uint8_t *src = pData;
-	uint8_t *dst = (uint8_t *) m_Data;
+	const uint8_t *pSrc = pData;
+	uint8_t *pDst = const_cast<uint8_t*>(m_Data);
 
 	if (nLength != m_nLength) {
 		m_nLength = nLength;
 
 		for (uint32_t i = 0; i < nLength; i++) {
-			*dst++ = *src++;
+			*pDst++ = *pSrc++;
 		}
 
 		return true;
 	}
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		if (*dst != *src) {
+		if (*pDst != *pSrc) {
 			isChanged = true;
 		}
-		*dst++ = *src++;
+		*pDst++ = *pSrc++;
 	}
 
 	return isChanged;
@@ -127,15 +127,15 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		const uint8_t *pDmx = GetDmxAvailable();
 
 		if (pDmx != 0) {
-			const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;
-			nLength = (uint16_t) (dmx_statistics->Statistics.SlotsInPacket);
+			const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
+			nLength = dmx_statistics->Statistics.SlotsInPacket;
 
 			if (IsDmxDataChanged(++pDmx, nLength)) {  // Skip DMX START CODE
 
 				DEBUG_PRINTF("\tDMX Data Changed", __FILE__, __FUNCTION__, __LINE__);
 
 				m_pLightSet->SetData(0, pDmx, nLength);
-				p = (uint8_t*) pDmx;
+				p = const_cast<uint8_t*>(pDmx);
 			}
 
 			if (!m_IsActive) {

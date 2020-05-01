@@ -2,7 +2,7 @@
  * @file parse.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 
 #include "parse.h"
 
-char* Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCategory) {
+char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCategory) {
 	assert(s != 0);
 
 	char *b = s;
@@ -38,12 +38,12 @@ char* Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 	uint16_t nTmp = 0;
 
 	while ((i < 2) && (*b != ':')) {
-		if (isxdigit((int)*b) == 0) {
+		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
 			return 0;
 		}
 
-		uint8_t nibble = *b > '9' ? ((uint8_t) *b | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (*b - '0');
+		uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;
@@ -62,12 +62,12 @@ char* Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 	b++;
 
 	while ((i < 4) && (*b != ',') && (*b != '\0')) {
-		if (isxdigit((int)*b) == 0) {
+		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
 			return 0;
 		}
 
-		uint8_t nibble = *b > '9' ? ((uint8_t) *b | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (*b - '0');
+		uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;

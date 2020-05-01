@@ -2,7 +2,7 @@
  * @file tlc59711dmx.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,12 @@
 #include "lightsetdisplay.h"
 
 static unsigned long ceil(float f) {
-	int i = (int) f;
-	if (f == (float) i) {
+	int i = static_cast<int>(f);
+
+	if (f == static_cast<float>(i)) {
 		return i;
 	}
+
 	return i + 1;
 }
 
@@ -88,7 +90,7 @@ void TLC59711Dmx::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLeng
 		Start();
 	}
 
-	uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+	uint8_t *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
 
 	unsigned nDmxAddress = m_nDmxStartAddress;
 
@@ -97,9 +99,9 @@ void TLC59711Dmx::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLeng
 			break;
 		}
 
-		const uint16_t nValue = ((uint16_t) *p << 8) | (uint16_t) *p;
+		const uint16_t nValue = (static_cast<uint16_t>(*p) << 8) | static_cast<uint16_t>(*p);
 
-		m_pTLC59711->Set((uint8_t) i, nValue);
+		m_pTLC59711->Set(i, nValue);
 
 		p++;
 		nDmxAddress++;
@@ -142,7 +144,7 @@ void TLC59711Dmx::UpdateMembers(void) {
 		m_nDmxFootprint = m_nLEDCount * 4;
 	}
 
-	m_nBoardInstances = (uint8_t) ceil((float) m_nDmxFootprint / TLC59711_OUT_CHANNELS);
+	m_nBoardInstances = ceil(static_cast<float>(m_nDmxFootprint) / TLC59711_OUT_CHANNELS);
 }
 
 void TLC59711Dmx::Blackout(bool bBlackout) {
@@ -181,7 +183,7 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
+#define MOD(a,b)	(static_cast<unsigned>(a - b) * (static_cast<unsigned>(a/b)))
 
 bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	unsigned nIndex;

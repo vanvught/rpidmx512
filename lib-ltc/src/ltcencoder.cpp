@@ -1,7 +1,7 @@
 /**
  * @file ltcencoder.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,7 +110,7 @@ LtcEncoder::LtcEncoder(void):
 
 	DEBUG_PRINTF("m_pBuffer=%p", m_pBuffer);
 
-	struct TLtcFormatTemplate *p = (struct TLtcFormatTemplate *) m_pLtcBits;
+	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	for (uint32_t i = 0; i < FORMAT_SIZE_WORDS ;i ++) {
 		p->Format.words[i] = 0;
@@ -128,7 +128,7 @@ LtcEncoder::~LtcEncoder(void) {
 }
 
 void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock) {
-	struct TLtcFormatTemplate *p = (struct TLtcFormatTemplate *)m_pLtcBits;
+	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	uint32_t nTens = pLtcTimeCode->nFrames / 10;
 
@@ -181,7 +181,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	 * This keeps the phase of each frame consistent, so it always starts with a rising edge at the beginning of bit 0.
 	 */
 
-	struct TLtcFormatTemplate *p = (struct TLtcFormatTemplate *)m_pLtcBits;
+	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	if (nType == TC_TYPE_EBU) {
 		uint8_t b = p->Format.bytes[7];
@@ -209,7 +209,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 }
 
 void LtcEncoder::Encode(void) {
-	const struct TLtcFormatTemplate *p = (struct TLtcFormatTemplate *) m_pLtcBits;
+	const struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	int16_t *dst = m_pBuffer;
 	uint32_t nIdx;
@@ -236,8 +236,6 @@ void LtcEncoder::Encode(void) {
 
 			nIdxPrevious = nIdx;
 
-			//printf("%d%d ", (nIdx & (1 << 1)) >> 1, nIdx & (1 << 0));
-
 			const int16_t *src = sTables[m_nType].Samples[nIdx];
 
 			for (uint32_t i = 0; i < sTables[m_nType].nSize; i ++) {
@@ -246,13 +244,7 @@ void LtcEncoder::Encode(void) {
 				src++;
 			}
 		}
-
-		//printf("\n");
 	}
-
-	//printf("\n");
-
-	//printf("%d\n", (int)(dst - m_pBuffer));
 }
 
 uint32_t LtcEncoder::GetBufferSize(void) {
@@ -264,14 +256,14 @@ uint32_t LtcEncoder::GetBufferSize(void) {
 }
 
 void LtcEncoder::Dump(void) {
-	debug_dump((void *) m_pLtcBits, sizeof(struct TLtcFormatTemplate));
+	debug_dump( m_pLtcBits, sizeof(struct TLtcFormatTemplate));
 
 	printf("\n");
 	printf("0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 5 6 6 6 6 6 6 6 6 6 6 7 7 7 7 7 7 7 7 7 7\n");
 	printf("0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9\n");
 	printf("\n");
 
-	const struct TLtcFormatTemplate *p = (struct TLtcFormatTemplate *) m_pLtcBits;
+	const struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	uint32_t nZeros = 0;
 	uint32_t nOnes = 0;
@@ -294,7 +286,7 @@ void LtcEncoder::Dump(void) {
 }
 
 void LtcEncoder::DumpBuffer(void) {
-	debug_dump((void *)m_pBuffer, m_nBufferSize * 2);
+	debug_dump(m_pBuffer, m_nBufferSize * 2);
 }
 
 bool LtcEncoder::GetParity(uint32_t nValue) {
@@ -310,7 +302,7 @@ bool LtcEncoder::GetParity(uint32_t nValue) {
 
 uint8_t LtcEncoder::ReverseBits(uint8_t nBits) {
 #if defined (H3)
-	const uint32_t input = (uint32_t) nBits;
+	const uint32_t input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
 	return (output >> 24);

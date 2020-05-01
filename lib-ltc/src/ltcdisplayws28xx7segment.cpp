@@ -64,7 +64,7 @@ void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct TLtcDisplayRgb
 	uint8_t nGreen = tColours.nGreen;
 	uint8_t nBlue = tColours.nBlue;
 
-	const uint8_t aChars[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
+	const char aChars[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 	assert(sizeof(aChars) <= WS28XX_NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
@@ -85,7 +85,7 @@ void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct TLtcD
 	uint8_t nGreen = tColours.nGreen;
 	uint8_t nBlue = tColours.nBlue;
 
-	const uint8_t aChars[] = { ' ', ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7]};
+	const char aChars[] = { ' ', ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7]};
 	assert(sizeof(aChars) <= WS28XX_NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
@@ -108,7 +108,7 @@ void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct TLtcDisp
 	const uint8_t nGreen = tColours.nGreen;
 	const uint8_t nBlue = tColours.nBlue;
 
-	m_pWS28xxDisplay7Segment->WriteAll((const uint8_t *)pMessage, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteAll(pMessage, nRed, nGreen, nBlue);
 
 	m_pWS28xxDisplay7Segment->SetColonsOff();
 

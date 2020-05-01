@@ -2,7 +2,7 @@
  * @file rdmsensors.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,11 +106,11 @@ void RDMSensors::Init(void) {
 #if defined (RDM_SENSORS_ENABLE)
 	if(i2c_begin()) {	// We have I2C sensors only
 		ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);
-		(void) configfile.Read(SENSORS_PARAMS_FILE_NAME);
+		static_cast<void>(configfile.Read(SENSORS_PARAMS_FILE_NAME));
 	}
 #endif
 
-	DEBUG_PRINTF("Sensors added: %d", (int) m_nCount);
+	DEBUG_PRINTF("Sensors added: %d", static_cast<int>(m_nCount));
 	DEBUG_EXIT
 }
 
@@ -174,7 +174,7 @@ void RDMSensors::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((RDMSensors *) p)->callbackFunction(s);
+	(static_cast<RDMSensors *>(p))->callbackFunction(s);
 }
 
 void RDMSensors::callbackFunction(const char *pLine) {
@@ -190,9 +190,9 @@ void RDMSensors::callbackFunction(const char *pLine) {
 
 	nReturnCode = Sscan::I2c(pLine, aSensorName, &nLength, &nI2cAddress, &nI2cChannel);
 
-	if ((nReturnCode != 0) && (aSensorName[0] != 0) && (nLength != (uint8_t) 0)) {
+	if ((nReturnCode != 0) && (aSensorName[0] != 0) && (nLength != 0)) {
 
-		DEBUG_PRINTF("%s -> sensor_name={%.*s}:%d, address=%.2x, channel=%d", pLine, nLength, aSensorName, (int) nLength, nI2cAddress, (int) nI2cChannel);
+		DEBUG_PRINTF("%s -> sensor_name={%.*s}:%d, address=%.2x, channel=%d", pLine, nLength, aSensorName, static_cast<int>(nLength), nI2cAddress, static_cast<int>(nI2cChannel));
 
 		if (memcmp(aSensorName, "bh1750", 6) == 0) {						// BH1750
 			Add(new SensorBH1750(m_nCount, nI2cAddress));

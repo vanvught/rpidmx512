@@ -2,7 +2,7 @@
  * @file pwmled.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,9 +97,9 @@ int main(int argc, char **argv) {
 	uint32_t j = 0xFF;
 
 	for (;;) {
-		uint8_t c1 = (uint8_t) j;
-		uint8_t c2 = (uint8_t) (j >> 8);
-		uint8_t c3 = (uint8_t) (j >> 16);
+		uint8_t c1 = j;
+		uint8_t c2 = (j >> 8);
+		uint8_t c3 = (j >> 16);
 
 		pwmled.Set(0, c1);
 		pwmled.Set(1, c2);
@@ -113,9 +113,9 @@ int main(int argc, char **argv) {
 		pwmled.Set(7, c3);
 		pwmled.Set(8, c1);
 
-		pwmled.Set(9, (uint8_t) (0xFF - c1));
-		pwmled.Set(10, (uint8_t) (0xFF - c2));
-		pwmled.Set(11, (uint8_t) (0xFF - c3));
+		pwmled.Set(9, static_cast<uint8_t>((0xFF - c1)));
+		pwmled.Set(10, static_cast<uint8_t>((0xFF - c2)));
+		pwmled.Set(11, static_cast<uint8_t>((0xFF - c3)));
 
 		j <<= 8;
 

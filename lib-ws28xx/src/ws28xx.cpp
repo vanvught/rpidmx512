@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-//#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -54,7 +50,7 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 	m_pBuffer(0),
 	m_pBlackoutBuffer(0)
 {
-	assert(m_nLedCount > 0);
+	assert(m_nLedCount != 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
 		m_nBufSize = m_nLedCount * 4;
@@ -62,7 +58,13 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 		m_nBufSize = m_nLedCount * 3;
 	}
 
-	if (m_tLEDType == WS28XX_UNDEFINED || m_tLEDType == WS2811 || m_tLEDType == WS2812 || m_tLEDType == WS2812B || m_tLEDType == WS2813 || m_tLEDType == WS2815 || m_tLEDType == SK6812 || m_tLEDType == SK6812W || m_tLEDType == UCS1903 || m_tLEDType == UCS2903) {
+	// TODO Update when new chip is added
+	if (m_tLEDType == WS28XX_UNDEFINED || m_tLEDType == WS2811
+			|| m_tLEDType == WS2812 || m_tLEDType == WS2812B
+			|| m_tLEDType == WS2813 || m_tLEDType == WS2815
+			|| m_tLEDType == SK6812 || m_tLEDType == SK6812W
+			|| m_tLEDType == UCS1903 || m_tLEDType == UCS2903
+			|| m_tLEDType == CS8812) {
 		m_nBufSize *= 8;
 		m_bIsRTZProtocol = true;
 	}
@@ -79,7 +81,7 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 
 	if (m_bIsRTZProtocol) {
 		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tLEDType, WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
-		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", (int) m_tRGBMapping, RGBMapping::ToString(m_tRGBMapping), (int) m_nLowCode, (int) m_nHighCode);
+		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
 
 		if (m_tRGBMapping == RGB_MAPPING_UNDEFINED) {
 			m_tRGBMapping = WS28xx::GetRgbMapping(m_tLEDType);
@@ -99,13 +101,13 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 		}
 
 		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tLEDType, WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
-		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", (int) m_tRGBMapping, RGBMapping::ToString(m_tRGBMapping), (int) m_nLowCode, (int) m_nHighCode);
+		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
 	}
 
 	FUNC_PREFIX (spi_begin());
 
 	if (m_bIsRTZProtocol) {
-		m_nClockSpeedHz = 6400000;
+		m_nClockSpeedHz = 6400000;	// 6.4MHz / 8 bits = 800Hz
 	} else {
 		if (m_tLEDType == P9813) {
 			if (nClockSpeed == 0) {
@@ -114,20 +116,18 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 				m_nClockSpeedHz = P9813_SPI_SPEED_MAX_HZ;
 			}
 		} else {
-			//if ((m_tLEDType == WS2801) || (m_tLEDType == APA102)) {
 			if (nClockSpeed == 0) {
 				m_nClockSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
 			} else if (nClockSpeed > WS2801_SPI_SPEED_MAX_HZ) {
 				m_nClockSpeedHz = WS2801_SPI_SPEED_MAX_HZ;
 			}
-			//}
 		}
 	}
 
 	FUNC_PREFIX(spi_set_speed_hz(m_nClockSpeedHz));
 
 #ifndef NDEBUG
-	printf("m_bIsRTZProtocol=%d, m_nClockSpeedHz=%d\n", (int) m_bIsRTZProtocol, m_nClockSpeedHz);
+	printf("m_bIsRTZProtocol=%d, m_nClockSpeedHz=%d\n", static_cast<int>(m_bIsRTZProtocol), m_nClockSpeedHz);
 #endif
 }
 
@@ -177,12 +177,10 @@ bool WS28xx::Initialize(void) {
 
 void WS28xx::Update(void) {
 	assert (m_pBuffer != 0);
-
-	FUNC_PREFIX(spi_writenb((char *) m_pBuffer, m_nBufSize));
+	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
 }
 
 void WS28xx::Blackout(void) {
 	assert (m_pBlackoutBuffer != 0);
-
-	FUNC_PREFIX(spi_writenb((char *) m_pBlackoutBuffer, m_nBufSize));
+	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 }

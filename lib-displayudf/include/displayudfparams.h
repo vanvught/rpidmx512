@@ -59,8 +59,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(DisplayUdf *pDisplayUdf);
 

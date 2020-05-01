@@ -134,7 +134,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 			}
 		}
 
-		m_tWS28xxParams.tLedType = (TWS28XXType) i;
+		m_tWS28xxParams.tLedType = static_cast<TWS28XXType>(i);
 		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_TYPE;
 
 		return;
@@ -159,7 +159,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 			m_tWS28xxParams.nSetList &= ~WS28XXDMX_PARAMS_MASK_RGB_MAPPING;
 		}
 
-		m_tWS28xxParams.nRgbMapping = (uint8_t) tMapping;
+		m_tWS28xxParams.nRgbMapping = tMapping;
 
 		return;
 	}
@@ -244,47 +244,47 @@ void WS28xxDmxParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, DevicesParamsConst::FILE_NAME);
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(m_tWS28xxParams.tLedType), (int) m_tWS28xxParams.tLedType);
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(m_tWS28xxParams.tLedType), static_cast<int>(m_tWS28xxParams.tLedType));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
-		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tWS28xxParams.nRgbMapping), (int) m_tWS28xxParams.nRgbMapping);
+		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)), static_cast<int>(m_tWS28xxParams.nRgbMapping));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), (int) m_tWS28xxParams.nLowCode);
+		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), static_cast<int>(m_tWS28xxParams.nLowCode));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), (int) m_tWS28xxParams.nHighCode);
+		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), static_cast<int>(m_tWS28xxParams.nHighCode));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, (int) m_tWS28xxParams.nLedCount);
+		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, static_cast<int>(m_tWS28xxParams.nLedCount));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT)) {
-		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, (int) m_tWS28xxParams.nActiveOutputs);
+		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, static_cast<int>(m_tWS28xxParams.nActiveOutputs));
 	}
 
 	if(isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING)) {
-		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_GROUPING, (int) m_tWS28xxParams.bLedGrouping, BOOL2STRING(m_tWS28xxParams.bLedGrouping));
+		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_GROUPING, static_cast<int>(m_tWS28xxParams.bLedGrouping), BOOL2STRING(m_tWS28xxParams.bLedGrouping));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::LED_GROUP_COUNT, (int) m_tWS28xxParams.nLedGroupCount);
+		printf(" %s=%d\n", DevicesParamsConst::LED_GROUP_COUNT, static_cast<int>(m_tWS28xxParams.nLedGroupCount));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED)) {
-		printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, (int) m_tWS28xxParams.nSpiSpeedHz);
+		printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, static_cast<int>(m_tWS28xxParams.nSpiSpeedHz));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
-		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, (int) m_tWS28xxParams.nGlobalBrightness);
+		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, static_cast<int>(m_tWS28xxParams.nGlobalBrightness));
 	}
 
 	if (isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, (int) m_tWS28xxParams.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, static_cast<int>(m_tWS28xxParams.nDmxStartAddress));
 	}
 #endif
 }
@@ -293,5 +293,5 @@ void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((WS28xxDmxParams *) p)->callbackFunction(s);
+	(static_cast<WS28xxDmxParams*>(p))->callbackFunction(s);
 }

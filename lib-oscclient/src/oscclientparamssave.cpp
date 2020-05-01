@@ -2,7 +2,7 @@
  * @file oscclientparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 
 #include "debug.h"
 
-void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -56,23 +56,22 @@ void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 
 	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
 		m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
-		const char *cmd = (const char *) &m_tOscClientParams.aCmd[i];
+		const char *cmd = reinterpret_cast<const char*>(&m_tOscClientParams.aCmd[i]);
 		builder.Add(m_aCmd, cmd, *cmd == '/');
 	}
 
 	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
 		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
-		const char *led = (const char *) &m_tOscClientParams.aLed[i];
+		const char *led = reinterpret_cast<const char*>(&m_tOscClientParams.aLed[i]);
 		builder.Add(m_aLed, led, *led == '/');
 	}
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return;
 }
 
-void OscClientParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void OscClientParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOscClientParamsStore == 0) {
@@ -82,6 +81,4 @@ void OscClientParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) 
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }

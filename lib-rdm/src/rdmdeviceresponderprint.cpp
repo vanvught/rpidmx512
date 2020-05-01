@@ -2,7 +2,7 @@
  * @file rdmdeviceresponderprint.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,18 @@ void RDMDeviceResponder::Print(void) {
 	const uint8_t nPersonalityDescriptionLength = m_pRDMPersonality->GetDescriptionLength();
 
 	printf("RDM Responder configuration\n");
-	printf(" Protocol Version %d.%d\n", (int) info->protocol_major, (int) info->protocol_minor);
-	printf(" DMX Address      : %d\n", (int) (((uint16_t) info->dmx_start_address[0] << 8) + info->dmx_start_address[1]));
-	printf(" DMX Footprint    : %d\n", (int) (((uint16_t) info->dmx_footprint[0] << 8) + info->dmx_footprint[1]));
-	printf(" Personality %d of %d [%.*s]\n", (int) info->current_personality, (int) info->personality_count, nPersonalityDescriptionLength, pPersonalityDescription);
-	printf(" Sub Devices      : %d\n", (int) (((uint16_t) info->sub_device_count[0] << 8) + info->sub_device_count[1]));
-	printf(" Sensors          : %d\n", (int) info->sensor_count);
+	printf(" Protocol Version %d.%d\n", static_cast<int>(info->protocol_major),
+			static_cast<int>(info->protocol_minor));
+	printf(" DMX Address      : %d\n",
+			static_cast<int>(((info->dmx_start_address[0]) << 8) + info->dmx_start_address[1]));
+	printf(" DMX Footprint    : %d\n",
+			static_cast<int>(((info->dmx_footprint[0]) << 8) + info->dmx_footprint[1]));
+	printf(" Personality %d of %d [%.*s]\n",
+			static_cast<int>(info->current_personality),
+			static_cast<int>(info->personality_count),
+			nPersonalityDescriptionLength,
+			pPersonalityDescription);
+	printf(" Sub Devices      : %d\n",
+			static_cast<int>(((info->sub_device_count[0]) << 8) + info->sub_device_count[1]));
+	printf(" Sensors          : %d\n", static_cast<int>(info->sensor_count));
 }

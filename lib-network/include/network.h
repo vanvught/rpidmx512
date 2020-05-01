@@ -40,20 +40,11 @@ enum TNetwork {
 	NETWORK_DOMAINNAME_SIZE = 64	/* including a terminating null byte. */
 };
 
-#ifndef IP2STR
- #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
- #define IPSTR "%d.%d.%d.%d"
-#endif
+#define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+#define IPSTR "%d.%d.%d.%d"
 
-#ifndef IP2STR3
- #define IP2STR3(addr) (uint8_t)(addr[0]), (uint8_t)(addr[1]), (uint8_t)(addr[2]), (uint8_t)(addr[3])
- #define IPSTR3 "%.3d.%.3d.%.3d.%.3d"
-#endif
-
-#ifndef MAC2STR
- #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
- #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
-#endif
+#define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
+#define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
 class Network {
 public:
@@ -70,8 +61,8 @@ public:
 	virtual void JoinGroup(uint32_t nHandle, uint32_t nIp)=0;
 	virtual void LeaveGroup(uint32_t nHandle, uint32_t nIp)=0;
 
-	virtual uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort)=0;
-	virtual void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort)=0;
+	virtual uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort)=0;
+	virtual void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort)=0;
 
 	virtual void SetIp(uint32_t nIp)=0;
 	uint32_t GetIp(void) {
@@ -150,7 +141,7 @@ public:
 	}
 
 public:
-	static Network* Get(void) {
+	static Network *Get(void) {
 		return s_pThis;
 	}
 

@@ -88,13 +88,13 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	memset(&m_tRDMDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
 	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
 
-	m_pSoftwareVersion = (char *)RDMSoftwareVersion::GetVersion();
+	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
 	m_nSoftwareVersionLength = RDMSoftwareVersion::GetVersionLength();
 	m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
 
 	struct TRDMDeviceInfoData info;
 
-	info.data = (uint8_t *) DEVICE_LABEL;
+	info.data = const_cast<char*>(DEVICE_LABEL);
 	info.length = sizeof(DEVICE_LABEL) - 1;
 
 	RDMDevice::SetLabel(&info);
@@ -124,24 +124,24 @@ void RDMDeviceResponder::Init(void) {
 	const uint16_t nProductCategory = RDMDevice::GetProductCategory();
 	const uint16_t nSubDevices = m_RDMSubDevices.GetCount();
 
-	m_tRDMDeviceInfo.protocol_major = (uint8_t) (E120_PROTOCOL_VERSION >> 8);
-	m_tRDMDeviceInfo.protocol_minor = (uint8_t) E120_PROTOCOL_VERSION;
-	m_tRDMDeviceInfo.device_model[0] = (uint8_t) (nDeviceModel >> 8);
-	m_tRDMDeviceInfo.device_model[1] = (uint8_t) nDeviceModel;
-	m_tRDMDeviceInfo.product_category[0] = (uint8_t) (nProductCategory >> 8);
-	m_tRDMDeviceInfo.product_category[1] = (uint8_t) nProductCategory;
-	m_tRDMDeviceInfo.software_version[0] = (uint8_t) (nSoftwareVersionId >> 24);
-	m_tRDMDeviceInfo.software_version[1] = (uint8_t) (nSoftwareVersionId >> 16);
-	m_tRDMDeviceInfo.software_version[2] = (uint8_t) (nSoftwareVersionId >> 8);
-	m_tRDMDeviceInfo.software_version[3] = (uint8_t) nSoftwareVersionId;
-	m_tRDMDeviceInfo.dmx_footprint[0] = (uint8_t) (m_pLightSet->GetDmxFootprint() >> 8);
-	m_tRDMDeviceInfo.dmx_footprint[1] = (uint8_t) m_pLightSet->GetDmxFootprint();
-	m_tRDMDeviceInfo.dmx_start_address[0] = (uint8_t) (m_nDmxStartAddressFactoryDefault >> 8);
-	m_tRDMDeviceInfo.dmx_start_address[1] = (uint8_t) m_nDmxStartAddressFactoryDefault;
+	m_tRDMDeviceInfo.protocol_major = (E120_PROTOCOL_VERSION >> 8);
+	m_tRDMDeviceInfo.protocol_minor = static_cast<uint8_t>(E120_PROTOCOL_VERSION);
+	m_tRDMDeviceInfo.device_model[0] = (nDeviceModel >> 8);
+	m_tRDMDeviceInfo.device_model[1] = nDeviceModel;
+	m_tRDMDeviceInfo.product_category[0] = (nProductCategory >> 8);
+	m_tRDMDeviceInfo.product_category[1] = nProductCategory;
+	m_tRDMDeviceInfo.software_version[0] = (nSoftwareVersionId >> 24);
+	m_tRDMDeviceInfo.software_version[1] = (nSoftwareVersionId >> 16);
+	m_tRDMDeviceInfo.software_version[2] = (nSoftwareVersionId >> 8);
+	m_tRDMDeviceInfo.software_version[3] = nSoftwareVersionId;
+	m_tRDMDeviceInfo.dmx_footprint[0] = (m_pLightSet->GetDmxFootprint() >> 8);
+	m_tRDMDeviceInfo.dmx_footprint[1] = m_pLightSet->GetDmxFootprint();
+	m_tRDMDeviceInfo.dmx_start_address[0] = (m_nDmxStartAddressFactoryDefault >> 8);
+	m_tRDMDeviceInfo.dmx_start_address[1] = m_nDmxStartAddressFactoryDefault;
 	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
-	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == 0 ? (uint8_t) 0 : (uint8_t) 1;
-	m_tRDMDeviceInfo.sub_device_count[0] = (uint8_t) (nSubDevices >> 8);
-	m_tRDMDeviceInfo.sub_device_count[1] = (uint8_t) nSubDevices;
+	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == 0 ? 0 : 1;
+	m_tRDMDeviceInfo.sub_device_count[0] = (nSubDevices >> 8);
+	m_tRDMDeviceInfo.sub_device_count[1] = nSubDevices;
 	m_tRDMDeviceInfo.sensor_count = m_RDMSensors.GetCount();
 
 	memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
@@ -177,8 +177,8 @@ void RDMDeviceResponder::SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxSt
 	}
 
 	if (m_pLightSet->SetDmxStartAddress(nDmxStartAddress)) {
-		m_tRDMDeviceInfo.dmx_start_address[0] = (uint8_t) (nDmxStartAddress >> 8);
-		m_tRDMDeviceInfo.dmx_start_address[1] = (uint8_t) nDmxStartAddress;
+		m_tRDMDeviceInfo.dmx_start_address[0] = (nDmxStartAddress >> 8);
+		m_tRDMDeviceInfo.dmx_start_address[1] = nDmxStartAddress;
 	}
 }
 
@@ -187,7 +187,7 @@ uint8_t RDMDeviceResponder::GetPersonalityCount(uint16_t nSubDevice) {
 		return m_RDMSubDevices.GetPersonalityCount(nSubDevice);
 	}
 
-	return m_pRDMPersonality == 0 ? (uint8_t) 0 : (uint8_t) 1;
+	return m_pRDMPersonality == 0 ? 0 : 1;
 }
 
 uint8_t RDMDeviceResponder::GetPersonalityCurrent(uint16_t nSubDevice) {
@@ -228,12 +228,12 @@ struct TRDMDeviceInfo* RDMDeviceResponder::GetDeviceInfo(uint16_t nSubDevice) {
 		const struct TRDMSubDevicesInfo *sub_device_info = m_RDMSubDevices.GetInfo(nSubDevice);
 
 		if (sub_device_info != 0) {
-			m_tRDMSubDeviceInfo.dmx_footprint[0] = (uint8_t) (sub_device_info->dmx_footprint >> 8);
-			m_tRDMSubDeviceInfo.dmx_footprint[1] = (uint8_t) sub_device_info->dmx_footprint;
+			m_tRDMSubDeviceInfo.dmx_footprint[0] = (sub_device_info->dmx_footprint >> 8);
+			m_tRDMSubDeviceInfo.dmx_footprint[1] = sub_device_info->dmx_footprint;
 			m_tRDMSubDeviceInfo.current_personality = sub_device_info->current_personality;
 			m_tRDMSubDeviceInfo.personality_count = sub_device_info->personality_count;
-			m_tRDMSubDeviceInfo.dmx_start_address[0] = (uint8_t) (sub_device_info->dmx_start_address >> 8);
-			m_tRDMSubDeviceInfo.dmx_start_address[1] = (uint8_t) sub_device_info->dmx_start_address;
+			m_tRDMSubDeviceInfo.dmx_start_address[0] = (sub_device_info->dmx_start_address >> 8);
+			m_tRDMSubDeviceInfo.dmx_start_address[1] =  sub_device_info->dmx_start_address;
 			m_tRDMSubDeviceInfo.sensor_count = sub_device_info->sensor_count;
 		}
 
@@ -243,7 +243,7 @@ struct TRDMDeviceInfo* RDMDeviceResponder::GetDeviceInfo(uint16_t nSubDevice) {
 	return &m_tRDMDeviceInfo;
 }
 
-void RDMDeviceResponder::SetLabel(uint16_t nSubDevice, const uint8_t *pLabel, uint8_t nLabelLength) {
+void RDMDeviceResponder::SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength) {
 	struct TRDMDeviceInfoData info;
 
 	if (nLabelLength > RDM_DEVICE_LABEL_MAX_LENGTH) {
@@ -255,7 +255,7 @@ void RDMDeviceResponder::SetLabel(uint16_t nSubDevice, const uint8_t *pLabel, ui
 		return;
 	}
 
-	info.data = (uint8_t *) pLabel;
+	info.data = const_cast<char*>(pLabel);
 	info.length = nLabelLength;
 
 	RDMDevice::SetLabel(&info);
@@ -272,8 +272,8 @@ void RDMDeviceResponder::GetLabel(uint16_t nSubDevice, struct TRDMDeviceInfoData
 }
 
 void RDMDeviceResponder::SetLanguage(const char aLanguage[2]) {
-	m_aLanguage[0] = (char) aLanguage[0];
-	m_aLanguage[1] = (char) aLanguage[1];
+	m_aLanguage[0] = aLanguage[0];
+	m_aLanguage[1] = aLanguage[1];
 }
 
 uint16_t RDMDeviceResponder::CalculateChecksum(void) {

@@ -2,7 +2,7 @@
  * @file artnetdiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,6 @@
 #include "rdmdiscovery.h"
 
 #include "debug.h"
-
-ArtNetRdm::~ArtNetRdm(void) {
-
-}
 
 ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
@@ -117,16 +113,16 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 		// Discard late responses
 	}
 
-	TRdmMessageNoSc *p = (TRdmMessageNoSc *) (pRdmData);
-	uint8_t *c = (uint8_t *) m_pRdmCommand;
+	const TRdmMessageNoSc *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
+	uint8_t *pRdmCommand = reinterpret_cast<uint8_t*>(m_pRdmCommand);
 
-	memcpy(&c[1], pRdmData, p->message_length + 2);
+	memcpy(&pRdmCommand[1], pRdmData, pRdmMessageNoSc->message_length + 2);
 
 #ifndef NDEBUG
-	RDMMessage::Print((const uint8_t *) c);
+	RDMMessage::Print(pRdmCommand);
 #endif
 
-	RDMMessage::SendRaw(nPort, c, p->message_length + 2);
+	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2);
 
 	const uint8_t *pResponse = RDMMessage::ReceiveTimeOut(nPort, 20000);
 

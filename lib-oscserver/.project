@@ -3,7 +3,6 @@
 	<name>lib-oscserver</name>
 	<comment></comment>
 	<projects>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

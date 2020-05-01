@@ -2,7 +2,7 @@
  * @file l6470dmxmode3.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPrevi
 
 	m_pL6470->resetPos();
 
-	m_fSteps = (float)((uint32_t) 360 * (uint32_t)(1 << pL6470->getStepMode())) / pMotorParams->GetStepAngel() / 0xFF ;
+	m_fSteps = (360 * (static_cast<uint32_t>(1) << pL6470->getStepMode())) / pMotorParams->GetStepAngel() / 0xFF ;
 
 	DEBUG2_EXIT;
 }
@@ -104,17 +104,17 @@ void L6470DmxMode3::Data(const uint8_t *pDmxData) {
 		isRev = nCurrentPosition > steps;
 #ifndef NDEBUG
 		printf("\t\t\tCurrent position=%d\n", nCurrentPosition);
-		nDifference = (uint64_t) steps - nCurrentPosition;
+		nDifference = steps - nCurrentPosition;
 #endif
 	} else {
 		isRev = m_nPreviousData > pDmxData[0];
 #ifndef NDEBUG
-		nDifference = (uint16_t) pDmxData[0] - m_nPreviousData;
+		nDifference = pDmxData[0] - m_nPreviousData;
 #endif
 	}
 
 #ifndef NDEBUG
-	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, (int) steps, pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD" );
+	printf("\t\t\tm_fSteps=%f, steps=%d, pDmxData[0]=%d, nDifference=%d [%s]\n", m_fSteps, static_cast<int>(steps), pDmxData[0], nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
 #endif
 
 	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);

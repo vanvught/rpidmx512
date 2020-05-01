@@ -1,11 +1,8 @@
-#if defined (__circle__)
-#include "../Circle/include/assert.h"
-#else
 /**
  * @file assert.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +26,12 @@
 #ifndef _assert_h
 #define _assert_h
 
+#if defined __cplusplus
+# define __ASSERT_VOID_CAST static_cast<void>
+#else
+# define __ASSERT_VOID_CAST (void)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,15 +41,13 @@ extern void __assert_func(const char *file, int line, const char *func, const ch
 #undef assert
 
 #ifdef NDEBUG           /* required by ANSI standard */
-# define assert(__e) ((void)0)
+# define assert(__e) (__ASSERT_VOID_CAST(0))
 #else
-# define assert(__e) (__builtin_expect((__e),1) ? (void)0 : __assert_func (__FILE__, __LINE__, __FUNCTION__, #__e))
+# define assert(__e) (__builtin_expect((__e),1) ? __ASSERT_VOID_CAST(0) : __assert_func (__FILE__, __LINE__, __FUNCTION__, #__e))
 #endif /* !NDEBUG */
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 #endif

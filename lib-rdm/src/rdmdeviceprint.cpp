@@ -2,7 +2,7 @@
  * @file rdmdeviceprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,24 @@
 
 void RDMDevice::Print(void) {
 	printf("RDM Device configuration\n");
-	printf(" Manufacturer Name : %.*s\n", (int) m_tRDMDevice.nDdeviceManufacturerNameLength,  m_tRDMDevice.aDeviceManufacturerName);
-	printf(" Manufacturer ID   : %.2X%.2X\n", (int) m_tRDMDevice.aDeviceUID[0], (int) m_tRDMDevice.aDeviceUID[1]);
-	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", (int) m_tRDMDevice.aDeviceSN[3], (int) m_tRDMDevice.aDeviceSN[2], (int) m_tRDMDevice.aDeviceSN[1], (int) m_tRDMDevice.aDeviceSN[0]);
-	printf(" Root label        : %.*s\n", (int) m_tRDMDevice.nDeviceRootLabelLength,  m_tRDMDevice.aDeviceRootLabel);
-	printf(" Product Category  : %.2X%.2X\n", (int) m_tRDMDevice.nProductCategory >> 8, (int) m_tRDMDevice.nProductCategory & 0xFF);
-	printf(" Product Detail    : %.2X%.2X\n", (int) m_tRDMDevice.nProductDetail >> 8, (int) m_tRDMDevice.nProductDetail & 0xFF);
+	printf(" Manufacturer Name : %.*s\n",
+			static_cast<int>(m_tRDMDevice.nDdeviceManufacturerNameLength),
+			m_tRDMDevice.aDeviceManufacturerName);
+	printf(" Manufacturer ID   : %.2X%.2X\n",
+			static_cast<int>(m_tRDMDevice.aDeviceUID[0]),
+			static_cast<int>(m_tRDMDevice.aDeviceUID[1]));
+	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n",
+			static_cast<int>(m_tRDMDevice.aDeviceSN[3]),
+			static_cast<int>(m_tRDMDevice.aDeviceSN[2]),
+			static_cast<int>(m_tRDMDevice.aDeviceSN[1]),
+			static_cast<int>(m_tRDMDevice.aDeviceSN[0]));
+	printf(" Root label        : %.*s\n",
+			static_cast<int>(m_tRDMDevice.nDeviceRootLabelLength),
+			m_tRDMDevice.aDeviceRootLabel);
+	printf(" Product Category  : %.2X%.2X\n",
+			static_cast<int>(m_tRDMDevice.nProductCategory) >> 8,
+			static_cast<int>(m_tRDMDevice.nProductCategory) & 0xFF);
+	printf(" Product Detail    : %.2X%.2X\n",
+			static_cast<int>(m_tRDMDevice.nProductDetail) >> 8,
+			static_cast<int>(m_tRDMDevice.nProductDetail) & 0xFF);
 }

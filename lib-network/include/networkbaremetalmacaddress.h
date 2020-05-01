@@ -53,11 +53,11 @@ public:
 	void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	}
 
-	uint16_t RecvFrom(uint32_t nHandle, uint8_t *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
+	uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) {
 		return 0;
 	}
+	void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) {
 
-	void SendTo(uint32_t nHandle, const uint8_t *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	}
 
 	void SetIp(uint32_t nIp) {

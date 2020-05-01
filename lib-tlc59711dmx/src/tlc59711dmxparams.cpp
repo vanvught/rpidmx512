@@ -2,7 +2,7 @@
  * @file tlc59711dmxparams.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,7 +153,9 @@ void TLC59711DmxParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DevicesParamsConst::FILE_NAME);
 
 	if(isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, sLedTypes[m_tTLC59711Params.LedType], (int) m_tTLC59711Params.LedType);
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE,
+				sLedTypes[m_tTLC59711Params.LedType],
+				static_cast<int>(m_tTLC59711Params.LedType));
 	}
 
 	if(isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT)) {
@@ -174,7 +176,7 @@ void TLC59711DmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((TLC59711DmxParams *) p)->callbackFunction(s);
+	(static_cast<TLC59711DmxParams*>(p))->callbackFunction(s);
 }
 
 /*

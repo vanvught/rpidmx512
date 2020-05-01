@@ -53,10 +53,10 @@ public:
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
-	void WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
-	void WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void WriteChar(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void WriteColon(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
-	void WriteAll(const uint8_t *pChars, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void WriteAll(const char *pChars, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
 	void SetColonsOff(void);
 

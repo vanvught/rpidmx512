@@ -2,7 +2,7 @@
  * networkh3emac.h
  *
  */
-/* Copyright (C) 2018-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@
 
 #include "./../lib-h3/include/net/net.h"
 
-#define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
+#define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 
 #define HOST_NAME_PREFIX	"allwinner_"
 
@@ -71,7 +71,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	emac_start(true);
 
-	hardware_get_mac_address((uint8_t *) m_aNetMacaddr);
+	hardware_get_mac_address(m_aNetMacaddr);
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
@@ -81,7 +81,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	m_nNtpServerIp = params.GetNtpServer();
 	m_fNtpUtcOffset = params.GetNtpUtcOffset();
 
-	const uint8_t *p = (const uint8_t *) params.GetHostName();
+	const char *p = params.GetHostName();
 
 	if (*p == '\0') {
 		unsigned k = 0;
@@ -98,11 +98,11 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_aHostName[k++] = TO_HEX(m_aNetMacaddr[5] & 0x0F);
 		m_aHostName[k] = '\0';
 	} else {
-		strncpy(m_aHostName, (const char *) p, sizeof(m_aHostName) - 1);
+		strncpy(m_aHostName, p, sizeof(m_aHostName) - 1);
 		m_aHostName[sizeof(m_aHostName) - 1] = '\0';
 	}
 
-	net_init((const uint8_t *) m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, &m_IsDhcpUsed);
+	net_init(m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, &m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;
@@ -167,12 +167,12 @@ void NetworkH3emac::LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port) {
-	return udp_recv(nHandle, packet, size, from_ip, from_port);
+uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+	return udp_recv(nHandle, reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkH3emac::SendTo(uint32_t nHandle, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
-	udp_send(nHandle, packet, size, to_ip, remote_port);
+void NetworkH3emac::SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+	udp_send(nHandle, reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
 void NetworkH3emac::SetIp(uint32_t nIp) {
@@ -233,7 +233,7 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 	net_set_hostname(pHostName);
 
 	if (m_pNetworkStore != 0) {
-		m_pNetworkStore->SaveHostName(reinterpret_cast<const uint8_t *>(pHostName), strlen(pHostName));
+		m_pNetworkStore->SaveHostName(pHostName, strlen(pHostName));
 	}
 }
 

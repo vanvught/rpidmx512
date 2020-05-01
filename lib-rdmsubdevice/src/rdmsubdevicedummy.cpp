@@ -2,7 +2,7 @@
  * @file rdmsubdevicedummy.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,20 +62,22 @@ void RDMSubDeviceDummy::Data(const uint8_t* pData, uint16_t nLength) {
 
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	printf("RDMSubDeviceDummy::Data(*pData:%p, nLength:%d)\n", (void *) pData, (int) nLength);
-	printf("%d:%d:%d: ", (int) nLength, (int) DMX_FOOTPRINT, (int) nDmxStartAddress);
+	printf("RDMSubDeviceDummy::Data(*pData:%p, nLength:%d)\n",
+			static_cast<const void*>(pData), static_cast<int>(nLength));
+	printf("%d:%d:%d: ", static_cast<int>(nLength),
+			static_cast<int>(DMX_FOOTPRINT),
+			static_cast<int>(nDmxStartAddress));
 
 	for (uint16_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-
 		switch (GetPersonalityCurrent()) {
-			case 1:
-				printf("%.2x ", pData[i]);
-				break;
-			case 2:
-				printf("%.3d ", (int) pData[i]);
-				break;
-			default:
-				break;
+		case 1:
+			printf("%.2x ", pData[i]);
+			break;
+		case 2:
+			printf("%.3d ", static_cast<int>(pData[i]));
+			break;
+		default:
+			break;
 		}
 	}
 

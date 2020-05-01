@@ -53,16 +53,16 @@ inline static uint8_t _port_to_uart(uint8_t port) {
 inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
 	switch (uart) {
 	case 0:
-		return (H3_UART_TypeDef *) H3_UART0_BASE;
+		return H3_UART0;
 		break;
 	case 1:
-		return (H3_UART_TypeDef *) H3_UART1_BASE;
+		return H3_UART1;
 		break;
 	case 2:
-		return (H3_UART_TypeDef *) H3_UART2_BASE;
+		return H3_UART2;
 		break;
 	case 3:
-		return (H3_UART_TypeDef *) H3_UART3_BASE;
+		return H3_UART3;
 		break;
 	default:
 		assert(0);

@@ -3,7 +3,7 @@
  * @file slushdmxparams.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,8 +54,7 @@
 SlushDmxParams::SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore): m_pSlushDmxParamsStore(pSlushDmxParamsStore) {
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
-	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
-	strncpy(m_aFileName, src, sizeof(m_aFileName));
+	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
 SlushDmxParams::~SlushDmxParams(void) {
@@ -155,7 +154,7 @@ void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
 	}
 
 	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A)) {
-		pSlushDmx->SetDmxFootprintPortA((uint16_t) m_tSlushDmxParams.nDmxFootprintPortA);
+		pSlushDmx->SetDmxFootprintPortA(m_tSlushDmxParams.nDmxFootprintPortA);
 	}
 
 	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B)) {
@@ -163,11 +162,11 @@ void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
 	}
 
 	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B)) {
-		pSlushDmx->SetDmxFootprintPortB((uint16_t) m_tSlushDmxParams.nDmxFootprintPortB);
+		pSlushDmx->SetDmxFootprintPortB(m_tSlushDmxParams.nDmxFootprintPortB);
 	}
 }
 
-void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
 	if (ptSlushDmxParams != 0) {
@@ -189,7 +188,7 @@ void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, uin
 	nSize = builder.GetSize();
 }
 
-void SlushDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SlushDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	if (m_pSlushDmxParamsStore == 0) {
 		nSize = 0;
 		return;
@@ -228,11 +227,7 @@ void SlushDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((SlushDmxParams *) p)->callbackFunction(s);
-}
-
-bool SlushDmxParams::isMaskSet(uint16_t nMask) const {
-	return (m_tSlushDmxParams.nSetList & nMask) == nMask;
+	(static_cast<SlushDmxParams*>(p))->callbackFunction(s);
 }
 
 #endif /* #if !defined(ORANGE_PI) */

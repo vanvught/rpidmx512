@@ -2,7 +2,7 @@
  * @file emac.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -289,7 +289,7 @@ void emac_eth_send(void *packet, int len) {
 
 	h3_memcpy((void *) data_start, packet, len);
 
-	debug_dump((void *) data_start, (uint16_t) len);
+	debug_dump( data_start, (uint16_t) len);
 
 	/* frame end */
 	desc_p->st |= (1 << 30);

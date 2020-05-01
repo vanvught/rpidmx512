@@ -2,7 +2,7 @@
  * @file dmxmonitorparams.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,11 +44,11 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define SET_DMX_START_ADDRESS		(1 << 0)
-#define SET_DMX_MAX_CHANNELS		(1 << 1)
-#define SET_FORMAT					(1 << 2)
+#include "propertiesbuilder.h"
 
-DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore* pDMXMonitorParamsStore): m_pDMXMonitorParamsStore(pDMXMonitorParamsStore) {
+#include "debug.h"
+
+DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore): m_pDMXMonitorParamsStore(pDMXMonitorParamsStore) {
 	m_tDMXMonitorParams.nSetList = 0;
 	m_tDMXMonitorParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
 	m_tDMXMonitorParams.nDmxMaxChannels = DMX_UNIVERSE_SIZE;
@@ -77,20 +77,74 @@ bool DMXMonitorParams::Load(void) {
 	return true;
 }
 
+void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != 0);
+	assert(nLength != 0);
+	assert(m_pDMXMonitorParamsStore != 0);
+
+	if (m_pDMXMonitorParamsStore == 0) {
+		return;
+	}
+
+	m_tDMXMonitorParams.nSetList = 0;
+
+	ReadConfigFile config(DMXMonitorParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
+}
+
+void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+	DEBUG_ENTRY
+	assert(pBuffer != 0);
+
+	if (ptDMXMonitorParams != 0) {
+		memcpy(&m_tDMXMonitorParams, ptDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+	} else {
+		m_pDMXMonitorParamsStore->Copy(&m_tDMXMonitorParams);
+	}
+
+	PropertiesBuilder builder(DMXMonitorParamsConst::FILE_NAME, pBuffer, nLength);
+
+	builder.Add(DMXMonitorParamsConst::FORMAT, m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"), isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT));
+
+	builder.AddComment("DMX");
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tDMXMonitorParams.nDmxStartAddress, isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS));
+	builder.Add(DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_tDMXMonitorParams.nDmxMaxChannels, isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS));
+
+	nSize = builder.GetSize();
+	DEBUG_EXIT
+}
+
+void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+	DEBUG_ENTRY
+
+	if (m_pDMXMonitorParamsStore == 0) {
+		nSize = 0;
+		DEBUG_EXIT
+		return;
+	}
+
+	Builder(0, pBuffer, nLength, nSize);
+
+	DEBUG_EXIT
+}
+
 void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
 	assert(pDMXMonitor != 0);
 
-	if (isMaskSet(SET_DMX_START_ADDRESS)) {
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS)) {
 		pDMXMonitor->SetDmxStartAddress(m_tDMXMonitorParams.nDmxStartAddress);
 	}
 
-	if (isMaskSet(SET_DMX_MAX_CHANNELS)) {
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS)) {
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 		pDMXMonitor->SetMaxDmxChannels(m_tDMXMonitorParams.nDmxMaxChannels);
 #endif
 	}
 
-	if (isMaskSet(SET_FORMAT)) {
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT)) {
 		pDMXMonitor->SetFormat(m_tDMXMonitorParams.tFormat);
 	}
 }
@@ -105,7 +159,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxStartAddress = value16;
-			m_tDMXMonitorParams.nSetList |= SET_DMX_START_ADDRESS;
+			m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_START_ADDRESS;
 		}
 		return;
 	}
@@ -113,7 +167,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint16(pLine, DMXMonitorParamsConst::DMX_MAX_CHANNELS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxMaxChannels = value16;
-			m_tDMXMonitorParams.nSetList |= SET_DMX_MAX_CHANNELS;
+			m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS;
 		}
 		return;
 	}
@@ -127,7 +181,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 		} else {
 			m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_HEX;
 		}
-		m_tDMXMonitorParams.nSetList |= SET_FORMAT;
+		m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_FORMAT;
 		return;
 	}
 }
@@ -140,16 +194,18 @@ void DMXMonitorParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXMonitorParamsConst::FILE_NAME);
 
-	if (isMaskSet(SET_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, (int) m_tDMXMonitorParams.nDmxStartAddress);
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, static_cast<int>(m_tDMXMonitorParams.nDmxStartAddress));
 	}
 
-	if (isMaskSet(SET_DMX_MAX_CHANNELS)) {
-		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, (int) m_tDMXMonitorParams.nDmxMaxChannels);
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS)) {
+		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, static_cast<int>(m_tDMXMonitorParams.nDmxMaxChannels));
 	}
 
-	if (isMaskSet(SET_FORMAT)) {
-		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, (int) m_tDMXMonitorParams.tFormat, m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
+	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT)) {
+		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT,
+				static_cast<int>(m_tDMXMonitorParams.tFormat),
+				m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
 	}
 #endif
 }
@@ -158,6 +214,6 @@ void DMXMonitorParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((DMXMonitorParams *) p)->callbackFunction(s);
+	(static_cast<DMXMonitorParams*>(p))->callbackFunction(s);
 }
 

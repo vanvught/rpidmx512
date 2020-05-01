@@ -2,7 +2,7 @@
  * @file icmp.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ void icmp_handle(struct t_icmp *p_icmp) {
 			s_reply.icmp.checksum = 0;
 			s_reply.icmp.checksum = net_chksum((void *)&s_reply.ip4, (uint32_t)__builtin_bswap16(p_icmp->ip4.len));
 
-			debug_dump((void *)&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
+			debug_dump(&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
 
 			emac_eth_send((void *)&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
 		}

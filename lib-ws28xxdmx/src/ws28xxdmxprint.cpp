@@ -2,7 +2,7 @@
  * @file ws28xxdmxprint.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,14 @@
 void WS28xxDmx::Print(void) {
 	printf("Led parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", (int) m_nLedCount);
+	printf(" Count : %d\n", static_cast<int>(m_nLedCount));
 	if ((m_tLedType == WS2801) || (m_tLedType == APA102)) {
-		printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", (int) m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
+		printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n",
+				static_cast<int>(m_nClockSpeedHz),
+				(m_nClockSpeedHz == 0 ? "Default" : ""),
+				WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
 	}
 	if (m_tLedType == APA102) {
-		printf(" GlbBr : %d\n", (int) m_nGlobalBrightness);
+		printf(" GlbBr : %d\n", static_cast<int>(m_nGlobalBrightness));
 	}
 }

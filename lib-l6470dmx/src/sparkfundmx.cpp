@@ -166,7 +166,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	m_bIsGlobalResetSet = false;
 	m_bIsGlobalBusyPinSet = false;
 
-	SparkFunDmxParams sparkFunDmxParams(ptSparkFunStores == 0 ? 0 : (SparkFunDmxParamsStore *) ptSparkFunStores->pSparkFunDmxParamsStore);
+	SparkFunDmxParams sparkFunDmxParams(ptSparkFunStores == 0 ? 0 : static_cast<SparkFunDmxParamsStore*>(ptSparkFunStores->pSparkFunDmxParamsStore));
 
 	if (sparkFunDmxParams.Load()) {
 		sparkFunDmxParams.SetGlobal(this);
@@ -206,7 +206,14 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 				const uint8_t nResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
 				const uint8_t nBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
 #ifndef NDEBUG
-				printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n", (int) nSpiCs, (int) m_bIsLocalSpiCsSet, (int) nResetPin, (int) m_bIsLocalResetSet, (int) nBusyPin, (int) m_bIsLocalBusyPinSet, (int) m_bIsGlobalBusyPinSet);
+				printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n",
+						static_cast<int>(nSpiCs),
+						static_cast<int>(m_bIsLocalSpiCsSet),
+						static_cast<int>(nResetPin),
+						static_cast<int>(m_bIsLocalResetSet),
+						static_cast<int>(nBusyPin),
+						static_cast<int>(m_bIsLocalBusyPinSet),
+						static_cast<int>(m_bIsGlobalBusyPinSet));
 #endif
 				if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet) {
 					m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin, nBusyPin);
@@ -216,13 +223,13 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 			}
 		} else {
 #ifndef NDEBUG
-			printf("Configuration file : motor%c.txt not found\n", (char) i + '0');
+			printf("Configuration file : motor%c.txt not found\n", i + '0');
 #endif
 		}
 	}
 
 #ifndef NDEBUG
-	printf("NumBoards : %d\n", (int) AutoDriver::getNumBoards());
+	printf("NumBoards : %d\n", static_cast<int>(AutoDriver::getNumBoards()));
 #endif
 
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -264,7 +271,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 
 						m_pAutoDriver[i]->Dump();
 
-						m_pL6470DmxModes[i] = new L6470DmxModes((TL6470DmxModes) m_nDmxMode, m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
+						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
 						assert(m_pL6470DmxModes[i] != 0);
 
 						if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
@@ -279,11 +286,11 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 						}
 #ifndef NDEBUG
 						printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
-						printf("DMX Start Address:%d, DMX Footprint:%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+						printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
 						const uint32_t nMaxSlots = MIN(MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
 #ifndef NDEBUG
-						printf("SlotInfo slots: %d\n", (int) nMaxSlots);
+						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
 #endif
 						m_pSlotInfo[i] = new struct TLightSetSlotInfo[nMaxSlots];
 						assert(m_pSlotInfo[i] != 0);
@@ -408,7 +415,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	DEBUG_PRINTF("m_pLightSetDisplay=%x", (int) m_pLightSetDisplay);
+	DEBUG_PRINTF("m_pLightSetDisplay=%x", static_cast<int>(m_pLightSetDisplay));
 
 	if (m_pLightSetDisplay != 0) {
 		m_pLightSetDisplay->ShowDmxStartAddress();

@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,25 +33,25 @@
 #include "l6470constants.h"
 
 void L6470::configSyncPin(uint8_t pinFunc, uint8_t syncSteps) {
-	uint8_t syncPinConfig = (uint8_t) getParam(L6470_PARAM_STEP_MODE);
+	uint8_t syncPinConfig = getParam(L6470_PARAM_STEP_MODE);
 
 	syncPinConfig &= 0x0F;
 	syncPinConfig |= ((pinFunc & L6470_SYNC_EN) | (syncSteps & L6470_SYNC_SEL_MASK));
 
-	setParam(L6470_PARAM_STEP_MODE, (unsigned long) syncPinConfig);
+	setParam(L6470_PARAM_STEP_MODE, syncPinConfig);
 }
 
 void L6470::configStepMode(uint8_t stepMode) {
-	uint8_t stepModeConfig = (uint8_t) getParam(L6470_PARAM_STEP_MODE);
+	uint8_t stepModeConfig = getParam(L6470_PARAM_STEP_MODE);
 
 	stepModeConfig &= ~(L6470_STEP_SEL_MASK);
 	stepModeConfig |= (stepMode & L6470_STEP_SEL_MASK);
 
-	setParam(L6470_PARAM_STEP_MODE, (unsigned long) stepModeConfig);
+	setParam(L6470_PARAM_STEP_MODE, stepModeConfig);
 }
 
 uint8_t L6470::getStepMode(void) {
-	return (uint8_t) (getParam(L6470_PARAM_STEP_MODE) & L6470_STEP_SEL_MASK);
+	return (getParam(L6470_PARAM_STEP_MODE) & L6470_STEP_SEL_MASK);
 }
 
 void L6470::setMaxSpeed(float stepsPerSecond) {
@@ -107,7 +107,7 @@ void L6470::setOCThreshold(uint8_t threshold) {
 }
 
 uint8_t L6470::getOCThreshold(void) {
-	return (uint8_t) (getParam(L6470_PARAM_OCD_TH) & 0xF);
+	return (getParam(L6470_PARAM_OCD_TH) & 0xF);
 }
 
 void L6470::setPWMFreq(int divisor, int multiplier) {
@@ -121,11 +121,11 @@ void L6470::setPWMFreq(int divisor, int multiplier) {
 }
 
 int L6470::getPWMFreqDivisor(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_F_PWM_INT_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_F_PWM_INT_MASK);
 }
 
 int L6470::getPWMFreqMultiplier(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_F_PWM_DEC_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_F_PWM_DEC_MASK);
 }
 
 void L6470::setSlewRate(int slewRate) {
@@ -138,7 +138,7 @@ void L6470::setSlewRate(int slewRate) {
 }
 
 int L6470::getSlewRate(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_POW_SR_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_POW_SR_MASK);
 }
 
 void L6470::setOCShutdown(int OCShutdown) {
@@ -151,7 +151,7 @@ void L6470::setOCShutdown(int OCShutdown) {
 }
 
 int L6470::getOCShutdown(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_OC_SD_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_OC_SD_MASK);
 }
 
 void L6470::setVoltageComp(int vsCompMode) {
@@ -164,7 +164,7 @@ void L6470::setVoltageComp(int vsCompMode) {
 }
 
 int L6470::getVoltageComp(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_EN_VSCOMP_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_EN_VSCOMP_MASK);
 }
 
 void L6470::setSwitchMode(int switchMode) {
@@ -177,7 +177,7 @@ void L6470::setSwitchMode(int switchMode) {
 }
 
 int L6470::getSwitchMode(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_SW_MODE_MASK);
+	return (getParam(L6470_PARAM_CONFIG) & L6470_CONFIG_SW_MODE_MASK);
 }
 
 void L6470::setOscMode(int oscillatorMode) {
@@ -190,7 +190,7 @@ void L6470::setOscMode(int oscillatorMode) {
 }
 
 int L6470::getOscMode(void) {
-	return (int) (getParam(L6470_PARAM_CONFIG) & 0x000F);
+	return (getParam(L6470_PARAM_CONFIG) & 0x000F);
 }
 
 void L6470::setAccKVAL(uint8_t kvalInput) {
@@ -198,7 +198,7 @@ void L6470::setAccKVAL(uint8_t kvalInput) {
 }
 
 uint8_t L6470::getAccKVAL(void) {
-	return (uint8_t) getParam(L6470_PARAM_KVAL_ACC);
+	return getParam(L6470_PARAM_KVAL_ACC);
 }
 
 void L6470::setDecKVAL(uint8_t kvalInput) {
@@ -206,7 +206,7 @@ void L6470::setDecKVAL(uint8_t kvalInput) {
 }
 
 uint8_t L6470::getDecKVAL(void) {
-	return (uint8_t) getParam(L6470_PARAM_KVAL_DEC);
+	return getParam(L6470_PARAM_KVAL_DEC);
 }
 
 void L6470::setRunKVAL(uint8_t kvalInput) {
@@ -214,7 +214,7 @@ void L6470::setRunKVAL(uint8_t kvalInput) {
 }
 
 uint8_t L6470::getRunKVAL(void) {
-	return (uint8_t) getParam(L6470_PARAM_KVAL_RUN);
+	return getParam(L6470_PARAM_KVAL_RUN);
 }
 
 void L6470::setHoldKVAL(uint8_t kvalInput) {
@@ -222,7 +222,7 @@ void L6470::setHoldKVAL(uint8_t kvalInput) {
 }
 
 uint8_t L6470::getHoldKVAL(void) {
-	return (uint8_t) getParam(L6470_PARAM_KVAL_HOLD);
+	return getParam(L6470_PARAM_KVAL_HOLD);
 }
 
 void L6470::setLoSpdOpt(bool enable) {
@@ -238,5 +238,5 @@ void L6470::setLoSpdOpt(bool enable) {
 }
 
 bool L6470::getLoSpdOpt(void) {
-	return (bool) ((getParam(L6470_PARAM_MIN_SPEED) & L6470_LSPD_OPT) != 0);
+	return ((getParam(L6470_PARAM_MIN_SPEED) & L6470_LSPD_OPT) != 0);
 }

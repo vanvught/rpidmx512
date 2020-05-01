@@ -2,7 +2,7 @@
  * @file motorparams.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,8 +64,8 @@ public:
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(L6470 *pL6470);
 

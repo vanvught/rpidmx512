@@ -99,7 +99,7 @@ void WS28xxDisplayMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplayMatrix::PutChar(uint8_t nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nChar >= cp437_font_size()) {
 		nChar = ' ';
 	}
@@ -111,7 +111,7 @@ void WS28xxDisplayMatrix::PutChar(uint8_t nChar, uint8_t nRed, uint8_t nGreen, u
 	uint32_t nOffset = (FONT_CP437_CHAR_W * FONT_CP437_CHAR_H) * m_nPosition;
 
 	for (uint32_t nWidth = 0; nWidth < FONT_CP437_CHAR_W; nWidth++) {
-		uint8_t nByte = cp437_font[nChar][nWidth];
+		uint8_t nByte = cp437_font[static_cast<int>(nChar)][nWidth];
 
 		if (nWidth == (FONT_CP437_CHAR_W - 1)) {
 			if (m_ptColons[m_nPosition].nBits != 0) {
@@ -258,9 +258,9 @@ void WS28xxDisplayMatrix::SetColonsOff(void) {
 }
 
 uint8_t WS28xxDisplayMatrix::ReverseBits(uint8_t nBits) {
-	const uint32_t input = (uint32_t) nBits;
+	const uint32_t input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
-	return (uint8_t) (output >> 24);
+	return static_cast<uint8_t>((output >> 24));
 }
 

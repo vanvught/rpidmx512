@@ -3,9 +3,6 @@
 	<name>lib-dmxmonitor</name>
 	<comment></comment>
 	<projects>
-		<project>lib-console</project>
-		<project>lib-lightset</project>
-		<project>lib-properties</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

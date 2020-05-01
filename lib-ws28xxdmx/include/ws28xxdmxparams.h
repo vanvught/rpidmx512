@@ -82,8 +82,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(WS28xxDmx *pWS28xxDmx);
 	void Set(WS28xxDmxMulti *pWS28xxDmxMulti);
@@ -127,7 +127,7 @@ public:
 	}
 
 	TRGBMapping GetRgbMapping(void) {
-		return (TRGBMapping) m_tWS28xxParams.nRgbMapping;
+		return static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping);
 	}
 
 	float GetLowCode(void) {

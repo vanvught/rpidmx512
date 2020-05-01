@@ -2,7 +2,7 @@
  * @file igmp.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,7 +157,7 @@ static void _send_report(uint32_t group_address) {
 	s_report.igmp.report.igmp.checksum = 0;
 	s_report.igmp.report.igmp.checksum = net_chksum((void *)&s_report.ip4, (uint32_t)IPv4_IGMP_REPORT_HEADERS_SIZE);
 
-	debug_dump((void *)&s_report, IGMP_REPORT_PACKET_SIZE);
+	debug_dump(&s_report, IGMP_REPORT_PACKET_SIZE);
 
 	emac_eth_send((void *)&s_report, IGMP_REPORT_PACKET_SIZE);
 
@@ -183,7 +183,7 @@ static void _send_leave(uint32_t group_address) {
 	s_leave.igmp.report.igmp.checksum = 0;
 	s_leave.igmp.report.igmp.checksum = net_chksum((void *) &s_leave.ip4, (uint32_t) IPv4_IGMP_REPORT_HEADERS_SIZE);
 
-	debug_dump((void *) &s_leave, IGMP_REPORT_PACKET_SIZE);
+	debug_dump( &s_leave, IGMP_REPORT_PACKET_SIZE);
 
 	emac_eth_send((void *) &s_leave, IGMP_REPORT_PACKET_SIZE);
 

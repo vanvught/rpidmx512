@@ -138,8 +138,9 @@ private:
 	uint32_t m_nBufSize;
 	uint32_t *m_pBuffer4x;
 	uint32_t *m_pBlackoutBuffer4x;
-	alignas(uint32_t) uint8_t *m_pBuffer8x;
-	alignas(uint32_t) uint8_t *m_pBlackoutBuffer8x;
+
+	alignas(uintptr_t) uint8_t *m_pBuffer8x;
+	alignas(uintptr_t) uint8_t *m_pBlackoutBuffer8x;
 };
 
 #endif /* WS28XXMULTI_H_ */

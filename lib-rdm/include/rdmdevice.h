@@ -32,7 +32,7 @@
 #include "rdmdevicestore.h"
 
 struct TRDMDeviceInfoData {
-	uint8_t *data;
+	char *data;
 	uint8_t length;
 };
 
@@ -82,11 +82,11 @@ public:
 	bool GetFactoryDefaults(void);
 
 	const uint8_t* GetUID(void) {
-		return (const uint8_t*) m_tRDMDevice.aDeviceUID;
+		return m_tRDMDevice.aDeviceUID;
 	}
 
-	const uint8_t* GetSN(void) {
-		return (const uint8_t*) m_tRDMDevice.aDeviceSN;
+	const uint8_t *GetSN(void) {
+		return m_tRDMDevice.aDeviceSN;
 	}
 
 	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);

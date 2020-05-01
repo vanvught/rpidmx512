@@ -3,8 +3,6 @@
 	<name>lib-l6470</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-hal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

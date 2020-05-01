@@ -2,7 +2,7 @@
  * @file lightsetchain.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,12 +122,12 @@ bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &
 
 #ifndef NDEBUG
 		printf("\tnSlotOffset=%d, m_nDmxStartAddress=%d, m_pTable[%d].pLightSet->GetDmxStartAddress()=%d, m_pTable[%d].pLightSet->GetDmxFootprint()=%d\n",
-				(int) nSlotOffset,
-				(int) m_nDmxStartAddress,
-				(int) i,
-				(int) m_pTable[i].pLightSet->GetDmxStartAddress(),
-				(int) i,
-				(int) m_pTable[i].pLightSet->GetDmxFootprint()) ;
+				static_cast<int>(nSlotOffset),
+				static_cast<int>(m_nDmxStartAddress),
+				static_cast<int>(i),
+				static_cast<int>(m_pTable[i].pLightSet->GetDmxStartAddress()),
+				static_cast<int>(i),
+				static_cast<int>(m_pTable[i].pLightSet->GetDmxFootprint()));
 
 		printf("\tnOffset=%d\n", nOffset);
 #endif
@@ -159,7 +159,9 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 
 	if (pLightSet != 0) {
 #ifndef NDEBUG
-		printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", (int) m_nDmxStartAddress,(int) m_nDmxFootprint);
+		printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n",
+				static_cast<int>(m_nDmxStartAddress),
+				static_cast<int>(m_nDmxFootprint));
 #endif
 		const bool IsValidDmxStartAddress = (pLightSet->GetDmxStartAddress() > 0) && (pLightSet->GetDmxFootprint() - pLightSet->GetDmxStartAddress() < 512);
 
@@ -174,7 +176,9 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 				m_nDmxFootprint = pLightSet->GetDmxFootprint();
 
 #ifndef NDEBUG
-				printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", (int) m_nDmxStartAddress, (int) m_nDmxFootprint);
+				printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n",
+						static_cast<int>(m_nDmxStartAddress),
+						static_cast<int>(m_nDmxFootprint));
 #endif
 				DEBUG1_EXIT
 				return true;
@@ -185,7 +189,10 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 			m_nSize++;
 
 #ifndef NDEBUG
-			printf("pLightSet->GetDmxStartAddress()=%d, pLightSet->GetDmxFootprint()=%d\n", (int) pLightSet->GetDmxStartAddress(),(int) pLightSet->GetDmxFootprint());
+			printf(
+					"pLightSet->GetDmxStartAddress()=%d, pLightSet->GetDmxFootprint()=%d\n",
+					static_cast<int>(pLightSet->GetDmxStartAddress()),
+					static_cast<int>(pLightSet->GetDmxFootprint()));
 #endif
 			const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
 			m_nDmxStartAddress = MIN(m_nDmxStartAddress, pLightSet->GetDmxStartAddress());
@@ -194,7 +201,9 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 			m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLast) - m_nDmxStartAddress;
 
 #ifndef NDEBUG
-			printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", (int) m_nDmxStartAddress,(int) m_nDmxFootprint);
+			printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n",
+					static_cast<int>(m_nDmxStartAddress),
+					static_cast<int>(m_nDmxFootprint));
 #endif
 			DEBUG1_EXIT
 			return true;
@@ -252,11 +261,14 @@ void LightSetChain::Dump(uint8_t nEntries) {
 		nEntries = LIGHTSET_CHAIN_MAX_ENTRIES;
 	}
 
-	printf("Max size = %d, Current size = %d\n\n", (int) LIGHTSET_CHAIN_MAX_ENTRIES, (int) m_nSize);
+	printf("Max size = %d, Current size = %d\n\n",
+			static_cast<int>(LIGHTSET_CHAIN_MAX_ENTRIES),
+			static_cast<int>(m_nSize));
 	printf("Index\tPointer\t\tType\n");
 
 	for (unsigned i = 0; i < nEntries ; i++) {
-		printf("%d\t%p\t%d\n", (int) i, m_pTable[i].pLightSet, (int) m_pTable[i].nType);
+		printf("%d\t%p\t%d\n", static_cast<int>(i), m_pTable[i].pLightSet,
+				static_cast<int>(m_pTable[i].nType));
 	}
 
 	printf("\n");

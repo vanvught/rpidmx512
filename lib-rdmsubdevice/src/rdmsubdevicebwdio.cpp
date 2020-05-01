@@ -3,7 +3,7 @@
  * @file rdmsubdevicebwdio.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t nDmxStartAddress, char nChipSselec
 	RDMSubDevice("bw_spi_dio", nDmxStartAddress),
 	m_nData(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -58,11 +58,11 @@ bool RDMSubDeviceBwDio::Initialize(void) {
 
 	if (IsConnected) {
 		bw_spi_dio_fsel_mask(&m_tDeviceInfo, 0x7F);
-		bw_spi_dio_output(&m_tDeviceInfo, (uint8_t) 0);
+		bw_spi_dio_output(&m_tDeviceInfo, 0);
 	}
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;
@@ -72,7 +72,7 @@ void RDMSubDeviceBwDio::Start(void) {
 }
 
 void RDMSubDeviceBwDio::Stop(void) {
-	bw_spi_dio_output(&m_tDeviceInfo, (uint8_t) 0);
+	bw_spi_dio_output(&m_tDeviceInfo, 0);
 	m_nData = 0;
 }
 
@@ -81,8 +81,8 @@ void RDMSubDeviceBwDio::Data(const uint8_t* pData, uint16_t nLength) {
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
 	for (uint32_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & (uint8_t) 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = nData | (uint8_t) (1 << j);
+		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+			nData = nData | (1 << j);
 		}
 	}
 

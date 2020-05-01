@@ -2,7 +2,7 @@
  * @file autodriverprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,10 @@ void AutoDriver::Print(void) {
 	printf("SparkFun AutoDriver [%d]\n", m_nMotorNumber);
 	printf(" Position=%d, ChipSelect=%d, ResetPin=%d, BusyPin=%d [%s]\n", m_nPosition, m_nSpiChipSelect, m_nResetPin, m_nBusyPin, m_nBusyPin == 0xFF ? "SPI" : "GPIO");
 	printf(" MinSpeed=%3.0f, MaxSpeed=%3.0f, Acc=%4.0f, Dec=%4.0f\n", getMinSpeed(), getMaxSpeed(), getAcc(), getDec());
-	printf(" AccKVAL=%d, DecKVAL=%d, RunKVAL=%d, HoldKVAL=%d\n", (int) getAccKVAL(), (int) getDecKVAL(), (int) getRunKVAL(), (int) getHoldKVAL());
-	printf(" MicroSteps=%u, SwitchMode=%d\n", (unsigned) 1 << getStepMode(), (int) getSwitchMode());
+	printf(" AccKVAL=%d, DecKVAL=%d, RunKVAL=%d, HoldKVAL=%d\n",
+			static_cast<int>(getAccKVAL()), static_cast<int>(getDecKVAL()),
+			static_cast<int>(getRunKVAL()), static_cast<int>(getHoldKVAL()));
+	printf(" MicroSteps=%u, SwitchMode=%d\n",
+			static_cast<unsigned>(1) << getStepMode(),
+			static_cast<int>(getSwitchMode()));
 }

@@ -118,8 +118,8 @@ void RDMNetDevice::CopyCID(uint8_t *pCID) {
 	memcpy(pCID, m_Cid, sizeof(m_Cid));
 }
 
-uint8_t* RDMNetDevice::LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) {
-	m_RDMHandler->HandleData(pRdmDataNoSC, (uint8_t*) m_pRdmCommand);
+uint8_t *RDMNetDevice::LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) {
+	m_RDMHandler->HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(m_pRdmCommand));
 
-	return (uint8_t*) m_pRdmCommand;
+	return reinterpret_cast<uint8_t*>(m_pRdmCommand);
 }

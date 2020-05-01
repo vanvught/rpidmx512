@@ -92,14 +92,14 @@ public:
 		return m_aLabels[0];
 	}
 
-	static DisplayUdf* Get(void) {
+	static DisplayUdf *Get(void) {
 		return s_pThis;
 	}
 
 	void Show(void);
 
 private:
-	uint8_t m_aTitle[32];
+	char m_aTitle[32];
 	uint8_t m_aLabels[DISPLAY_UDF_LABEL_UNKNOWN];
 
 	static DisplayUdf *s_pThis;

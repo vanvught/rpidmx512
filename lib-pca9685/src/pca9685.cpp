@@ -2,7 +2,7 @@
  * @file pca9685.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
 	AutoIncrement(true);
 
 	for (uint8_t i = 0; i < 16; i ++) {
-		Write(i, (uint16_t) 0, (uint16_t) 0x1000);
+		Write(i, static_cast<uint16_t>(0), static_cast<uint16_t>(0x1000));
 	}
 
 	Sleep(false);
@@ -146,7 +146,7 @@ void PCA9685::SetOCH(TPCA9685Och enumTPCA9685Och) {
 TPCA9685Och PCA9685::GetOCH(void) {
 	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH;
 
-	return (TPCA9685Och) Data;
+	return static_cast<TPCA9685Och>(Data);
 }
 
 void PCA9685::SetInvert(bool bInvert) {
@@ -198,15 +198,15 @@ void PCA9685::Write(uint8_t nChannel, uint16_t nOn, uint16_t nOff) {
 }
 
 void PCA9685::Write(uint8_t nChannel, uint16_t nValue) {
-	Write (nChannel, (uint16_t) 0, nValue);
+	Write(nChannel, static_cast<uint16_t>(0), nValue);
 }
 
 void PCA9685::Write(uint16_t nOn, uint16_t nOff) {
-	Write((uint8_t) 16, nOn, nOff);
+	Write(static_cast<uint8_t>(16), nOn, nOff);
 }
 
 void PCA9685::Write(uint16_t nValue) {
-	Write((uint8_t) 16, nValue);
+	Write(static_cast<uint8_t>(16), nValue);
 }
 
 void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
@@ -231,7 +231,7 @@ void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
 }
 
 void PCA9685::Read(uint16_t *pOn, uint16_t *pOff) {
-	Read((uint8_t) 16, pOn, pOff);
+	Read(static_cast<uint8_t>(16), pOn, pOff);
 }
 
 void PCA9685::SetFullOn(uint8_t nChannel, bool bMode) {
@@ -274,9 +274,9 @@ void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
 uint8_t PCA9685::CalcPresScale(uint16_t nFreq) {
 	nFreq = (nFreq > PCA9685_FREQUENCY_MAX ? PCA9685_FREQUENCY_MAX : (nFreq < PCA9685_FREQUENCY_MIN ? PCA9685_FREQUENCY_MIN : nFreq));
 
-	const float f = (float) PCA9685_OSC_FREQ / 4096;
+	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
 
-	const uint8_t Data = (uint8_t) DIV_ROUND_UP(f, nFreq) - 1;
+	const uint8_t Data = DIV_ROUND_UP(f, nFreq) - 1;
 
 	return Data;
 }
@@ -284,8 +284,8 @@ uint8_t PCA9685::CalcPresScale(uint16_t nFreq) {
 uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
 	uint16_t f_min;
 	uint16_t f_max;
-	const float f = (float) PCA9685_OSC_FREQ / 4096;
-	const uint16_t Data = (uint16_t) DIV_ROUND_UP(f, ((uint16_t) nPreScale + 1));
+	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
+	const uint16_t Data = DIV_ROUND_UP(f, (static_cast<uint16_t>(nPreScale) + 1));
 
 	for (f_min = Data; f_min > PCA9685_FREQUENCY_MIN; f_min--) {
 		if (CalcPresScale(f_min) != nPreScale) {
@@ -366,14 +366,14 @@ void PCA9685::I2cSetup(void) {
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {
-	uint8_t buffer[2];
+	char buffer[2];
 
 	buffer[0] = reg;
 	buffer[1] = data;
 
 	I2cSetup();
 
-	FUNC_PREFIX(i2c_write((char *)buffer, 2));
+	FUNC_PREFIX(i2c_write(buffer, 2));
 }
 
 uint8_t PCA9685::I2cReadReg(uint8_t reg) {
@@ -381,22 +381,22 @@ uint8_t PCA9685::I2cReadReg(uint8_t reg) {
 
 	I2cSetup();
 
-	FUNC_PREFIX(i2c_write((char *)&data, 1));
-	FUNC_PREFIX(i2c_read((char *)&data, 1));
+	FUNC_PREFIX(i2c_write(&data, 1));
+	FUNC_PREFIX(i2c_read(&data, 1));
 
 	return data;
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data) {
-	uint8_t buffer[3];
+	char buffer[3];
 
 	buffer[0] = reg;
-	buffer[1] = (uint8_t) (data & 0xFF);
-	buffer[2] = (uint8_t) (data >> 8);
+	buffer[1] = (data & 0xFF);
+	buffer[2] = (data >> 8);
 
 	I2cSetup();
 
-	FUNC_PREFIX(i2c_write((char *) buffer, 3));
+	FUNC_PREFIX(i2c_write(buffer, 3));
 }
 
 uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
@@ -405,23 +405,23 @@ uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
 
 	I2cSetup();
 
-	FUNC_PREFIX(i2c_write((char *)&data, 1));
-	FUNC_PREFIX(i2c_read((char *)&buffer, 2));
+	FUNC_PREFIX(i2c_write(&data, 1));
+	FUNC_PREFIX(i2c_read(reinterpret_cast<char *>(&buffer), 2));
 
-	return (uint16_t) ((uint16_t) buffer[1] << 8 | (uint16_t) buffer[0]);
+	return (buffer[1] << 8) | buffer[0];
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data, uint16_t data2) {
-	uint8_t buffer[5];
+	char buffer[5];
 
 	buffer[0] = reg;
-	buffer[1] = (uint8_t) (data & 0xFF);
-	buffer[2] = (uint8_t) (data >> 8);
-	buffer[3] = (uint8_t) (data2 & 0xFF);
-	buffer[4] = (uint8_t) (data2 >> 8);
+	buffer[1] = (data & 0xFF);
+	buffer[2] = (data >> 8);
+	buffer[3] = (data2 & 0xFF);
+	buffer[4] = (data2 >> 8);
 
 	I2cSetup();
 
-	FUNC_PREFIX(i2c_write((char *) buffer, 5));
+	FUNC_PREFIX(i2c_write(buffer, 5));
 }
 

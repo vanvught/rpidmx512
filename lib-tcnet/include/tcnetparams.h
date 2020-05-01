@@ -33,7 +33,7 @@
 
 struct TTCNetParams {
 	uint32_t nSetList;
-	uint8_t aNodeName[TCNET_NODE_NAME_LENGTH];
+	char aNodeName[TCNET_NODE_NAME_LENGTH];
 	uint8_t nLayer;
 	uint8_t nTimeCodeType;
 	uint8_t nUseTimeCode;
@@ -62,8 +62,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TTCNetParams *pTTCNetParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(TCNet *pTCNet);
 

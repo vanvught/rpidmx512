@@ -30,15 +30,15 @@
 static const float s_ValidOffets[] = { -9.5, -3.5, 3.5, 4.5, 5.5, 5.75, 6.5, 8.75, 9.5, 10.5, 12.75 };
 
 int32_t Utc::Validate(float fOffset) {
-	int32_t nInt = (int32_t) fOffset;
+	int32_t nInt = static_cast<int32_t>(fOffset);
 
 	if ((nInt >= -12) && (nInt <= 14)) {
-		if (fOffset == (float) nInt) {
+		if (fOffset == static_cast<float>(nInt)) {
 			return (nInt * 3600);
 		} else {
 			for (uint32_t i = 0; i < sizeof(s_ValidOffets) / sizeof(s_ValidOffets[0]); i++) {
 				if (fOffset == s_ValidOffets[i]) {
-					return (int32_t)(fOffset * 3600);
+					return (fOffset * 3600);
 				}
 			}
 		}

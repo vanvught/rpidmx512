@@ -142,7 +142,7 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 	struct TRDMDeviceInfoData Info;
 
 	if (isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL)) {
-		Info.data = (uint8_t*) m_tRDMDeviceParams.aDeviceRootLabel;
+		Info.data = m_tRDMDeviceParams.aDeviceRootLabel;
 		Info.length = m_tRDMDeviceParams.nDeviceRootLabelLength;
 		pRDMDevice->SetLabel(&Info);
 	}
@@ -178,6 +178,6 @@ void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((RDMDeviceParams *) p)->callbackFunction(s);
+	(static_cast<RDMDeviceParams*>(p))->callbackFunction(s);
 }
 

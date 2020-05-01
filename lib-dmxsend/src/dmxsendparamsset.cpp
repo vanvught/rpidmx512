@@ -2,7 +2,7 @@
  * @file dmxsendparamsset.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 	}
 
 	if (isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE)) {
-		uint32_t period = (uint32_t) 0;
-		if (m_tDMXParams.nRefreshRate != (uint8_t) 0) {
-			period = (uint32_t) (1000000 / m_tDMXParams.nRefreshRate);
+		uint32_t period = 0;
+		if (m_tDMXParams.nRefreshRate != 0) {
+			period = (1000000 / m_tDMXParams.nRefreshRate);
 		}
 		pDMXSend->SetDmxPeriodTime(period);
 	}

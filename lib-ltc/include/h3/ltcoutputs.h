@@ -2,7 +2,7 @@
  * @file ltcoutputs.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ private:
 	uint32_t m_nMidiQuarterFramePiece;
 	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	alignas(uint32_t) char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
-	uint32_t m_nSecondsPrevious;
+	int32_t m_nSecondsPrevious;
 
 	static LtcOutputs *s_pThis;
 };

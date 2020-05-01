@@ -28,8 +28,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ff12c/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-console/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.680087981" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.680087981" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.670391994" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -41,8 +42,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ff12c/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-console/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1936718238" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1936718238" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.243033024" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -62,6 +64,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ff12c/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-console/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.811343731" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -178,7 +181,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/ff12c}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1274534615" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="H3"/>
@@ -192,7 +195,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/ff12c}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1489468221" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="H3"/>
@@ -214,7 +217,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/ff12c}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.662092062" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

@@ -2,7 +2,7 @@
  * @file tlc59711dmxparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -49,20 +49,25 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, (const char *)GetLedTypeString((TTLC59711Type) m_tTLC59711Params.LedType), isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
-	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
-	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
+	builder.Add(DevicesParamsConst::LED_TYPE,
+			static_cast<const char*>(GetLedTypeString(static_cast<TTLC59711Type>(m_tTLC59711Params.LedType))),
+			isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount,
+			isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS,
+			m_tTLC59711Params.nDmxStartAddress,
+			isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
+	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz,
+			isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
 
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
-void TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+void TLC59711DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pLC59711ParamsStore == 0) {
@@ -72,6 +77,4 @@ void TLC59711DmxParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }

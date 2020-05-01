@@ -40,6 +40,7 @@ Network::Network(void) :
 	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false),
 	m_nIfIndex(1),
+	m_nNtpServerIp(0),
 	m_fNtpUtcOffset(0),
 	m_pNetworkDisplay(0),
 	m_pNetworkStore(0),
@@ -59,7 +60,7 @@ Network::~Network(void) {
 }
 
 bool Network::SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask) {
-	DEBUG_PRINTF("bQueueing=%d, nLocalIp=" IPSTR ", nNetmask=" IPSTR, (int) bQueueing, IP2STR(nLocalIp), IP2STR(nNetmask));
+	DEBUG_PRINTF("bQueueing=%d, nLocalIp=" IPSTR ", nNetmask=" IPSTR, static_cast<int>(bQueueing), IP2STR(nLocalIp), IP2STR(nNetmask));
 
 	if (bQueueing) {
 		m_nQueuedLocalIp = nLocalIp;

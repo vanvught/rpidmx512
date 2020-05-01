@@ -3,7 +3,7 @@
  * @file rdmsubdevicebwdimmer.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChip
 	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress),
 	m_nData(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -57,11 +57,11 @@ bool RDMSubDeviceBwDimmer::Initialize(void) {
 	const bool IsConnected = bw_spi_dimmer_start(&m_tDeviceInfo);
 
 	if (IsConnected) {
-		bw_spi_dimmer_output(&m_tDeviceInfo, (uint8_t) 0);
+		bw_spi_dimmer_output(&m_tDeviceInfo, 0);
 	}
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;

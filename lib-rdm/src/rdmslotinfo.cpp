@@ -110,7 +110,7 @@ struct TTableC2 {
 		// Undefined
 		{ SD_UNDEFINED, "No definition" } };
 
-const char* RDMSlotInfo::GetTypeText(uint8_t nId, uint8_t& nLength) {
+const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint8_t &nLength) {
 
 	for (uint8_t i = 0; i < TABLE_C1_SIZE; i++) {
 		if (nId == s_tTableC1[i].nId) {
@@ -123,7 +123,7 @@ const char* RDMSlotInfo::GetTypeText(uint8_t nId, uint8_t& nLength) {
 	return s_tTableC1[TABLE_C1_SIZE - 1].pDescription;
 }
 
-const char* RDMSlotInfo::GetCategoryText(uint16_t nId, uint8_t& nLength) {
+const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint8_t &nLength) {
 	int nIndex = bsearch(nId);
 
 	if (nIndex < 0) {
@@ -141,7 +141,7 @@ int RDMSlotInfo::bsearch(uint16_t nKey) {
 
 	while (nLow <= nHigh) {
 		const int nMid = nLow + ((nHigh - nLow) / 2);
-		const int nMidValue = (const int) s_tTableC2[nMid].nId;
+		const int nMidValue = s_tTableC2[nMid].nId;
 
 		if (nMidValue < nKey) {
 			nLow = nMid + 1;

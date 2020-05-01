@@ -2,7 +2,7 @@
  * @file displayudfshowe131.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,9 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 
 	for (uint32_t i = 0; i < 4; i++) {
 		uint16_t nUniverse;
+
 		if (pE131Bridge->GetUniverse(i, nUniverse)) {
-			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "Port %c: %d %s", (char) ('A' + i), nUniverse, MERGEMODE2STRING(pE131Bridge->GetMergeMode(i)));
+			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "Port %c: %d %s", ('A' + i), nUniverse, MERGEMODE2STRING(pE131Bridge->GetMergeMode(i)));
 		}
 	}
 

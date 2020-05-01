@@ -2,7 +2,7 @@
  * @file ltcgenerator.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,7 +111,7 @@ static int32_t atoi(const char *buffer, uint32_t size) {
 	assert(buffer != 0);
 	assert(size <= 4); // -100
 
-	char *p = (char *) buffer;
+	const char *p = buffer;
 	int32_t sign = 1;
 	int32_t res = 0;
 
@@ -134,8 +134,8 @@ static int32_t atoi(const char *buffer, uint32_t size) {
 LtcGenerator *LtcGenerator::s_pThis = 0;
 
 LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_pStartLtcTimeCode((struct TLtcTimeCode *)pStartLtcTimeCode),
-	m_pStopLtcTimeCode((struct TLtcTimeCode *)pStopLtcTimeCode),
+	m_pStartLtcTimeCode(const_cast<struct TLtcTimeCode*>(pStartLtcTimeCode)),
+	m_pStopLtcTimeCode(const_cast<struct TLtcTimeCode*>(pStopLtcTimeCode)),
 	m_nFps(0),
 	m_tDirection(LTC_GENERATOR_FORWARD),
 	m_fPitchControl(0),
@@ -252,7 +252,7 @@ void LtcGenerator::ActionStart(void) {
 
 	m_bIsStarted = true;
 
-	memcpy((void *)&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
+	memcpy(&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
@@ -359,7 +359,7 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 		m_tDirection = LTC_GENERATOR_BACKWARD;
 	}
 
-	DEBUG_PRINTF("m_tDirection=%d", (int) m_tDirection);
+	DEBUG_PRINTF("m_tDirection=%d", m_tDirection);
 
 	DEBUG_EXIT
 }
@@ -367,9 +367,9 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 void LtcGenerator::ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_ENTRY
 
-	debug_dump((void *)pTimeCodePitch, nSize);
+	debug_dump(pTimeCodePitch, nSize);
 
-	const float f = (float) atoi(pTimeCodePitch, nSize) / 100;
+	const float f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
 
 	DEBUG_PRINTF("f=%f", f);
 
@@ -399,7 +399,7 @@ void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
 	m_nPitchPrevious = 0;
 	m_nPitchTicker = 1;
 
-	DEBUG_PRINTF("m_fPitchControl=%f, m_tPitch=%d", m_fPitchControl, (int) m_tPitch);
+	DEBUG_PRINTF("m_fPitchControl=%f, m_tPitch=%d", m_fPitchControl, m_tPitch);
 
 	DEBUG_EXIT
 }
@@ -426,9 +426,9 @@ void LtcGenerator::HandleUdpRequest(void) {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
+	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;
 	}
 
@@ -445,13 +445,13 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			ActionSetStart(&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '!')){
-			ActionSetStart((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			ActionSetStart(&m_Buffer[(4 + START_LENGTH + 1)]);
 			ActionStop();
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
-			ActionGoto((const char *)&m_Buffer[(4 + START_LENGTH + 1)]);
+			ActionGoto(&m_Buffer[(4 + START_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
@@ -459,7 +459,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop((const char *)&m_Buffer[(4 + STOP_LENGTH + 1)]);
+			ActionSetStop(&m_Buffer[(4 + STOP_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !stop command");
 		}
@@ -467,15 +467,15 @@ void LtcGenerator::HandleUdpRequest(void) {
 		ActionResume();
 	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-			ActionSetRate((const char *)&m_Buffer[(4 + RATE_LENGTH + 1)]);
+			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
 		}
 	} else if (memcmp(&m_Buffer[4], sDirection, DIRECTION_LENGTH) == 0) {
-		if (((uint32_t) m_nBytesReceived <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
-			ActionSetDirection((const char *)&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
+		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
+			ActionSetDirection(&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
 		}
 	} else if (memcmp(&m_Buffer[4], sPitch, PITCH_LENGTH) == 0) {
-		if (((uint32_t) m_nBytesReceived <= (4 + PITCH_LENGTH + 1 + 4)) && (m_Buffer[4 + PITCH_LENGTH] == '#')) {
-			ActionSetPitch((const char *)&m_Buffer[(4 + PITCH_LENGTH + 1)], m_nBytesReceived - (4 + PITCH_LENGTH + 1));
+		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + PITCH_LENGTH + 1 + 4)) && (m_Buffer[4 + PITCH_LENGTH] == '#')) {
+			ActionSetPitch(&m_Buffer[(4 + PITCH_LENGTH + 1)], m_nBytesReceived - (4 + PITCH_LENGTH + 1));
 		}
 	} else {
 		DEBUG_PUTS("Invalid command");
@@ -625,7 +625,7 @@ void LtcGenerator::Update(void) {
 
 void LtcGenerator::Print(void) {
 	printf("Internal\n");
-	printf(" %s\n", Ltc::GetType((TTimecodeTypes) m_pStartLtcTimeCode->nType));
+	printf(" %s\n", Ltc::GetType(static_cast<TTimecodeTypes>(m_pStartLtcTimeCode->nType)));
 	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
 	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);
 }

@@ -2,7 +2,7 @@
  * @file udp.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,6 @@ typedef union pcast32 {
 } _pcast32;
 
 static uint32_t s_ports_allowed[MAX_PORTS_ALLOWED];
-static uint32_t s_ports_used_index;
 static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
 static uint16_t s_id ALIGNED;
@@ -99,7 +98,6 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 		s_recv_queue[i].queue_tail = 0;
 	}
 
-	s_ports_used_index = 0;
 	s_id = 0;
 
 	// Ethernet
@@ -164,47 +162,46 @@ void udp_handle(struct t_udp *p_udp) {
 // -->
 
 int udp_bind(uint16_t local_port) {
+	DEBUG_PRINTF("local_port=%u", local_port);
+
 	uint32_t i;
 
-	if (s_ports_used_index == MAX_PORTS_ALLOWED) {
-		DEBUG_PUTS("s_ports_used_index == MAX_PORTS_ALLOWED");
-		console_error("unbind");
-		return -1;
-	}
-
-	for (i = 0; i < s_ports_used_index; i++) {
+	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == local_port) {
 			return i;
 		}
+
+		if (s_ports_allowed[i] == 0) {
+			break;
+		}
 	}
 
-	const int current_index = s_ports_used_index;
-
-	s_ports_allowed[s_ports_used_index++] = local_port;
-
-	DEBUG_PRINTF("%d[%d]", current_index, local_port);
-
-	return current_index;
-}
-
-int udp_unbind(uint16_t local_port) {
-	DEBUG_PRINTF("s_ports_allowed_index=%d, local_port=%d", s_ports_used_index, local_port);
-
-	if (s_ports_used_index == 0) {
+	if (i == MAX_PORTS_ALLOWED) {
+		console_error("bind");
 		return -1;
 	}
 
-	DEBUG_PRINTF("s_ports_allowed[s_ports_allowed_index - 1]=%d", s_ports_allowed[s_ports_used_index - 1]);
+	s_ports_allowed[i] = local_port;
 
-	if ((s_ports_allowed[s_ports_used_index - 1]) == local_port) {
-		s_ports_allowed[s_ports_used_index - 1] = 0;
-		s_recv_queue[s_ports_used_index - 1].queue_head = 0;
-		s_recv_queue[s_ports_used_index - 1].queue_tail = 0;
-		s_ports_used_index--;
-		return 0;
+	DEBUG_PRINTF("i=%d, local_port=%d", i, local_port);
+
+	return i;
+}
+
+int udp_unbind(uint16_t local_port) {
+	DEBUG_PRINTF("local_port=%u", local_port);
+
+	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
+		if (s_ports_allowed[i] == local_port) {
+			s_ports_allowed[i] = 0;
+			s_recv_queue[i].queue_head = 0;
+			s_recv_queue[i].queue_tail = 0;
+			return 0;
+		}
 	}
 
-	return -2;
+	console_error("unbind");
+	return -1;
 }
 
 uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip, uint16_t *from_port) {
@@ -273,7 +270,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 
-	// debug_dump((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	// debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
 	emac_eth_send((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 

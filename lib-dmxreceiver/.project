@@ -3,10 +3,6 @@
 	<name>lib-dmxreceiver</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-debug</project>
-		<project>lib-dmx</project>
-		<project>lib-lightset</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,7 +1,7 @@
 /**
  * @file read_config_file.c
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ bool read_config_file(const char *file_name, funcptr pfi) {
 	if (fp != NULL) {
 		for (;;) {
 			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
-				break; // Error or end of file
+				break; /* Error or end of file */
 			}
 
 			if (buffer[0] >= 'a') {

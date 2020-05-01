@@ -71,6 +71,7 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 	m_nIntensity(LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS),
 	m_nHandle(-1),
 	m_tMapping(RGB_MAPPING_UNDEFINED),
+	m_tLedType(WS28XX_UNDEFINED),
 	m_nMaster(LTCDISPLAYWS28XX_DEFAULT_MASTER),
 	m_bShowMsg(false),
 	m_nMsgTimer(0),
@@ -232,7 +233,7 @@ void LtcDisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
 
 	uint32_t i;
 	const char *pSrc = pMessage;
-	char *pDst = (char *)m_aMessage;
+	char *pDst = m_aMessage;
 
 	for (i = 0; i < nSize; i++) {
 		*pDst++ = *pSrc++;
@@ -283,9 +284,9 @@ void LtcDisplayWS28xx::Run(void) {
 
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
-	uint16_t m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *) &m_Buffer, (uint16_t) sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	uint16_t m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < (int) 8), 1)) {
+	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;
 	}
 
@@ -303,19 +304,19 @@ void LtcDisplayWS28xx::Run(void) {
 		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
 
 		if (((nMsgLength > 0) && (nMsgLength <= LTCDISPLAY_MAX_MESSAGE_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {
-			SetMessage((const char *) &m_Buffer[(5 + DMSG_LENGTH + 1)], nMsgLength);
+			SetMessage(&m_Buffer[(5 + DMSG_LENGTH + 1)], nMsgLength);
 		} else {
 			DEBUG_PUTS("Invalid !showmsg command");
 		}
 	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
 		if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX)) && (m_Buffer[5 + RGB_LENGTH] == '#')) {
-			SetRGB((const char *) &m_Buffer[(5 + RGB_LENGTH + 1)]);
+			SetRGB(&m_Buffer[(5 + RGB_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !rgb command");
 		}
 	} else if (memcmp(&m_Buffer[5], sMaster, MASTER_LENGTH) == 0) {
 		if ((m_nBytesReceived == (5 + MASTER_LENGTH + 1 + MASTER_SIZE_HEX)) && (m_Buffer[5 + MASTER_LENGTH] == '#')) {
-			m_nMaster = hexadecimalToDecimal((const char *) &m_Buffer[(5 + MASTER_LENGTH + 1)], MASTER_SIZE_HEX);
+			m_nMaster = hexadecimalToDecimal(&m_Buffer[(5 + MASTER_LENGTH + 1)], MASTER_SIZE_HEX);
 		} else {
 			DEBUG_PUTS("Invalid !master command");
 		}

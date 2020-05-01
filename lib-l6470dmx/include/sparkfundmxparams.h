@@ -2,7 +2,7 @@
  * @file sparkfundmxparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,8 @@ public:
 	void Load(const char *pBuffer, uint32_t nLength);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
+	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
 
 	void SetGlobal(SparkFunDmx *pSparkFunDmx);
 	void SetLocal(SparkFunDmx *pSparkFunDmx);
@@ -79,7 +79,9 @@ public:
 
 private:
     void callbackFunction(const char *s);
-	bool isMaskSet(uint16_t nMask) const;
+    bool isMaskSet(uint32_t nMask) const {
+    	return (m_tSparkFunDmxParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	SparkFunDmxParamsStore *m_pSparkFunDmxParamsStore;

@@ -96,20 +96,20 @@ void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 void TCNetParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	uint8_t len;
+	uint8_t nLength;
 	char ch;
-	uint8_t uint8;
+	uint8_t nValue8;
 
-	len = TCNET_NODE_NAME_LENGTH;
-	if (Sscan::Char(pLine, TCNetParamsConst::NODE_NAME, (char *) m_tTTCNetParams.aNodeName, &len) == SSCAN_OK) {
+	nLength = TCNET_NODE_NAME_LENGTH;
+	if (Sscan::Char(pLine, TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, &nLength) == SSCAN_OK) {
 		m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_NODE_NAME;
 		return;
 	}
 
-	len = 1;
+	nLength = 1;
 	ch = ' ';
-	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &len) == SSCAN_OK) {
-		m_tTTCNetParams.nLayer = (uint8_t) TCNet::GetLayer((uint8_t) ch);
+	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &nLength) == SSCAN_OK) {
+		m_tTTCNetParams.nLayer = TCNet::GetLayer(ch);
 
 		if (m_tTTCNetParams.nLayer != TCNET_LAYER_UNDEFINED) {
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_LAYER;
@@ -120,8 +120,8 @@ void TCNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, TCNetParamsConst::TIMECODE_TYPE, &uint8) == SSCAN_OK) {
-		switch (uint8) {
+	if (Sscan::Uint8(pLine, TCNetParamsConst::TIMECODE_TYPE, &nValue8) == SSCAN_OK) {
+		switch (nValue8) {
 		case 24:
 			m_tTTCNetParams.nTimeCodeType = TCNET_TIMECODE_TYPE_FILM;
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_TIMECODE_TYPE;
@@ -146,8 +146,8 @@ void TCNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, TCNetParamsConst::USE_TIMECODE, &uint8) == SSCAN_OK) {
-		if (uint8 != 0) {
+	if (Sscan::Uint8(pLine, TCNetParamsConst::USE_TIMECODE, &nValue8) == SSCAN_OK) {
+		if (nValue8 != 0) {
 			m_tTTCNetParams.nUseTimeCode = 1;
 			m_tTTCNetParams.nSetList |= TCNET_PARAMS_MASK_USE_TIMECODE;
 		} else {
@@ -167,15 +167,15 @@ void TCNetParams::Set(TCNet* pTCNet) {
 	}
 
 	if(isMaskSet(TCNET_PARAMS_MASK_NODE_NAME)) {
-		pTCNet->SetNodeName((const char *)m_tTTCNetParams.aNodeName);
+		pTCNet->SetNodeName(reinterpret_cast<const char*>(m_tTTCNetParams.aNodeName));
 	}
 
 	if(isMaskSet(TCNET_PARAMS_MASK_LAYER)) {
-		pTCNet->SetLayer((TTCNetLayers) m_tTTCNetParams.nLayer);
+		pTCNet->SetLayer(static_cast<TTCNetLayers>(m_tTTCNetParams.nLayer));
 	}
 
 	if(isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE)) {
-		pTCNet->SetTimeCodeType((TTCNetTimeCodeType) m_tTTCNetParams.nTimeCodeType);
+		pTCNet->SetTimeCodeType(static_cast<TTCNetTimeCodeType>(m_tTTCNetParams.nTimeCodeType));
 	}
 
 	if(isMaskSet(TCNET_PARAMS_MASK_USE_TIMECODE)) {
@@ -189,17 +189,20 @@ void TCNetParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, TCNetParamsConst::FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__,
+			TCNetParamsConst::FILE_NAME);
 
-	if(isMaskSet(TCNET_PARAMS_MASK_NODE_NAME)) {
+	if (isMaskSet(TCNET_PARAMS_MASK_NODE_NAME)) {
 		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName);
 	}
 
-	if(isMaskSet(TCNET_PARAMS_MASK_LAYER)) {
-		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_tTTCNetParams.nLayer, TCNet::GetLayerName((TTCNetLayers)m_tTTCNetParams.nLayer));
+	if (isMaskSet(TCNET_PARAMS_MASK_LAYER)) {
+		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER,
+				m_tTTCNetParams.nLayer,
+				TCNet::GetLayerName(static_cast<TTCNetLayers>(m_tTTCNetParams.nLayer)));
 	}
 
-	if(isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE)) {
+	if (isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE)) {
 		printf(" %s=%d\n", TCNetParamsConst::TIMECODE_TYPE, m_tTTCNetParams.nTimeCodeType);
 	}
 #endif
@@ -209,5 +212,5 @@ void TCNetParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((TCNetParams *) p)->callbackFunction(s);
+	(static_cast<TCNetParams *>(p))->callbackFunction(s);
 }

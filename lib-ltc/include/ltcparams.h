@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@ enum TLtcParamsMaskDisabledOutputs {
 	LTC_PARAMS_DISABLE_RTPMIDI = (1 << 7)
 };
 
-// Note : This struct is almost size 32 bytes
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
@@ -69,6 +68,8 @@ struct TLtcParams {
 	uint16_t nOscPort;
 	uint8_t nEnableWS28xx;
 }__attribute__((packed));
+
+static_assert(sizeof(struct TLtcParams) <= 32, "TLtcParams is too large");
 
 enum TLtcParamsMask {
 	LTC_PARAMS_MASK_SOURCE = (1 << 0),
@@ -112,13 +113,13 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump(void);
 
 	TLtcReaderSource GetSource(void) {
-		return (TLtcReaderSource) m_tLtcParams.tSource;
+		return static_cast<TLtcReaderSource>(m_tLtcParams.tSource);
 	}
 
 	const char *GetSourceType(enum TLtcReaderSource tSource);

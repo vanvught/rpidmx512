@@ -40,4 +40,10 @@ void Network::Print(void) {
 	if (IsDhcpKnown()) {
 		printf(" DHCP      : %s\n", m_IsDhcpUsed ? "Yes" : "No");
 	}
+
+#ifndef NDEBUG
+	puts("==");
+	printf(" m_pNetworkDisplay=%p\n", m_pNetworkDisplay);
+	printf(" m_pNetworkStore=%p\n", m_pNetworkStore);
+#endif
 }

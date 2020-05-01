@@ -84,8 +84,8 @@ public:
 		return m_nPingDelayMillis / 1000;
 	}
 
-	void CopyCmds(const uint8_t *pCmds, uint32_t nCount, uint32_t nLength);
-	void CopyLeds(const uint8_t *pLeds, uint32_t nCount, uint32_t nLength);
+	void CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength);
+	void CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength);
 
 	void SetLedHandler(OscClientLed *pOscClientLed);
 
@@ -101,13 +101,13 @@ private:
 	uint32_t m_nPingDelayMillis;
 	bool m_bPingSent;
 	bool m_bPongReceived;
-	uint8_t *m_pBuffer;
+	char *m_pBuffer;
 	uint16_t m_nBytesReceived;
 	uint32_t m_nCurrenMillis;
 	uint32_t m_nPreviousMillis;
 	uint32_t m_nPingTimeMillis;
-	uint8_t *m_pCmds;
-	uint8_t *m_pLeds;
+	char *m_pCmds;
+	char *m_pLeds;
 	OscClientLed *m_pOscClientLed;
 };
 

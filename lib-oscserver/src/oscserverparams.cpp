@@ -2,7 +2,7 @@
  * @file oscserverparams.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,12 +41,7 @@
 #include "propertiesbuilder.h"
 
 OSCServerParams::OSCServerParams(OSCServerParamsStore *pOSCServerParamsStore): m_pOSCServerParamsStore(pOSCServerParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tOSCServerParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TOSCServerParams); i++) {
-		*p++ = 0;
-	}
-
+	memset(&m_tOSCServerParams, 0, sizeof(struct TOSCServerParams));
 	m_tOSCServerParams.nIncomingPort = OSC_DEFAULT_INCOMING_PORT;
 	m_tOSCServerParams.nOutgoingPort = OSC_DEFAULT_OUTGOING_PORT;
 }
@@ -95,52 +90,52 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 void OSCServerParams::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	uint8_t value8;
-	uint16_t value16;
-	uint8_t len;
+	uint8_t nValue8;
+	uint16_t nValue16;
+	uint8_t nLength;
 
-	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_INCOMING_PORT, &value16) == SSCAN_OK) {
-		if (value16 > 1023) {
-			m_tOSCServerParams.nIncomingPort = value16;
+	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
+		if (nValue16 > 1023) {
+			m_tOSCServerParams.nIncomingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_INCOMING_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_OUTGOING_PORT, &value16) == SSCAN_OK) {
-		if (value16 > 1023) {
-			m_tOSCServerParams.nOutgoingPort = value16;
+	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+		if (nValue16 > 1023) {
+			m_tOSCServerParams.nOutgoingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_OUTGOING_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OSCServerConst::PARAMS_TRANSMISSION, &value8) == SSCAN_OK) {
-		m_tOSCServerParams.bPartialTransmission = (value8 != 0);
+	if (Sscan::Uint8(pLine, OSCServerConst::PARAMS_TRANSMISSION, &nValue8) == SSCAN_OK) {
+		m_tOSCServerParams.bPartialTransmission = (nValue8 != 0);
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_TRANSMISSION;
 		return;
 	}
 
-	len = sizeof(m_tOSCServerParams.aPath) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, &len) == SSCAN_OK) {
+	nLength = sizeof(m_tOSCServerParams.aPath) - 1;
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, &nLength) == SSCAN_OK) {
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH;
 		return;
 	}
 
-	len = sizeof(m_tOSCServerParams.aPathInfo) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, &len) == SSCAN_OK) {
+	nLength = sizeof(m_tOSCServerParams.aPathInfo) - 1;
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, &nLength) == SSCAN_OK) {
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH_INFO;
 		return;
 	}
 
-	len = sizeof(m_tOSCServerParams.aPathBlackOut) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathBlackOut, &len) == SSCAN_OK) {
+	nLength = sizeof(m_tOSCServerParams.aPathBlackOut) - 1;
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathBlackOut, &nLength) == SSCAN_OK) {
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH_BLACKOUT;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &value8) == SSCAN_OK) {
-		m_tOSCServerParams.bEnableNoChangeUpdate = (value8 != 0);
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &nValue8) == SSCAN_OK) {
+		m_tOSCServerParams.bEnableNoChangeUpdate = (nValue8 != 0);
 		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
 		return;
 	}
@@ -151,11 +146,13 @@ void OSCServerParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OSCServerConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT)) {
-		printf(" %s=%d\n", OSCServerConst::PARAMS_INCOMING_PORT, (int) m_tOSCServerParams.nIncomingPort);
+		printf(" %s=%d\n", OSCServerConst::PARAMS_INCOMING_PORT,
+				static_cast<int>(m_tOSCServerParams.nIncomingPort));
 	}
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT)) {
-		printf(" %s=%d\n", OSCServerConst::PARAMS_OUTGOING_PORT, (int) m_tOSCServerParams.nOutgoingPort);
+		printf(" %s=%d\n", OSCServerConst::PARAMS_OUTGOING_PORT,
+				static_cast<int>(m_tOSCServerParams.nOutgoingPort));
 	}
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH)) {
@@ -184,9 +181,6 @@ void OSCServerParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((OSCServerParams *) p)->callbackFunction(s);
+	(static_cast<OSCServerParams*>(p))->callbackFunction(s);
 }
 
-bool OSCServerParams::isMaskSet(uint16_t mask) const {
-	return (m_tOSCServerParams.nSetList & mask) == mask;
-}

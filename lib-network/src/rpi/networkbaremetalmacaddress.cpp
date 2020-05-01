@@ -2,7 +2,7 @@
  * @file networkbaremetalmacaddress.cpp
  *
  */
-/* Copyright (C) 2018-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,10 @@ NetworkBaremetalMacAddress::NetworkBaremetalMacAddress(void) {
 NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress(void) {
 }
 
-void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t* pMacAddress) {
+void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
 	assert(pMacAddress != 0);
 
-	bcm2835_vc_get_board_mac_address((uint8_t *) pMacAddress);
+	bcm2835_vc_get_board_mac_address(pMacAddress);
 }
 
 

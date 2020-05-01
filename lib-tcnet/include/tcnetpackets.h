@@ -2,7 +2,7 @@
  * @file tcnetpackets.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -183,7 +183,7 @@ struct TTCNetPacketTimeTimeCode {
 	uint8_t Minutes;
 	uint8_t Seconds;
 	uint8_t Frames;
-}PACKED;
+} PACKED;
 
 struct TTCNetPacketTime {
 	struct TTCNetPacketManagementHeader ManagementHeader;
@@ -238,7 +238,7 @@ struct TTCNetPacketTime {
 	uint8_t LMLayerOnAir;						// 160:1
 	uint8_t LCLayerOnAir;						// 161:1
 	uint8_t Reserved2;							// 162:1
-}PACKED;
+} PACKED;
 
 struct TTCNetPacket {
 	union {
@@ -255,7 +255,7 @@ struct TTCNetPacket {
 		struct TTCNetPacketTime Time;
 	};
 	uint8_t filler[512];
-}PACKED;
+} PACKED;
 
 struct TTCNet {
 	uint32_t BytesReceived;

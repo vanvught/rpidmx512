@@ -161,7 +161,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	}
 
 	if (i == MAX_PORTS_ALLOWED) {
-		perror("bind");
+		perror("i == MAX_PORTS_ALLOWED");
 		exit(EXIT_FAILURE);
 		//return -1;
 	}
@@ -191,7 +191,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		exit(EXIT_FAILURE);
 	}
 
-    memset((char *) &si_me, 0, sizeof(si_me));
+    memset(&si_me, 0, sizeof(si_me));
 
     si_me.sin_family = AF_INET;
     si_me.sin_port = htons(nPort);
@@ -199,7 +199,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 
 	if (bind(nSocket, (struct sockaddr*) &si_me, sizeof(si_me)) == -1) {
 		perror("bind");
-		printf(IPSTR "\n", IP2STR(si_me.sin_addr.s_addr));
+		printf(IPSTR ":%d\n", IP2STR(si_me.sin_addr.s_addr), nPort);
 		exit(EXIT_FAILURE);
 	}
 
@@ -334,7 +334,7 @@ void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
 	}
 }
 
-uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSize, uint32_t* pFromIp, uint16_t* pFromPort) {
+uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 	assert(pPacket != NULL);
 	assert(pFromIp != NULL);
 	assert(pFromPort != NULL);
@@ -344,7 +344,7 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSi
 	socklen_t slen = sizeof(si_other);
 
 
-	if ((recv_len = recvfrom(nHandle, (void *)pPacket, nSize, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
 		}
@@ -357,7 +357,7 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, uint8_t* pPacket, uint16_t nSi
 	return recv_len;
 }
 
-void NetworkLinux::SendTo(uint32_t nHandle, const uint8_t* pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+void NetworkLinux::SendTo(uint32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	struct sockaddr_in si_other;
 	int slen = sizeof(si_other);
 

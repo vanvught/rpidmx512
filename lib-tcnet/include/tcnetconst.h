@@ -1,8 +1,8 @@
 /**
- * @file d8x7segment.h
+ * @file tcnetconst.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef D8X7SEGMENT_H_
-#define D8X7SEGMENT_H_
+#ifndef TCNETCONST_H_
+#define TCNETCONST_H_
 
 #include <stdint.h>
 
-#include "device_info.h"
+class TCNetConst {
+public:
+	alignas(uint32_t) static const uint8_t FPS[4];
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-extern void d8x7segment_init(const device_info_t *, uint8_t);
-extern void d8x7segment_cls(const device_info_t *);
-extern void d8x7segment_int(const device_info_t *, int32_t);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* D8X7SEGMENT_H_ */
+#endif /* TCNETCONST_H_ */

@@ -2,7 +2,7 @@
  * @file device_info.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,9 +47,9 @@ typedef struct _device_info {
 	} internal;
 } device_info_t;
 
-#define DEVICE_INFO_I2C_DEFAULT			SPI_CS0, (uint8_t) 0, 0, true, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS0_DEFAULT		SPI_CS0, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS1_DEFAULT		SPI_CS1, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
-#define DEVICE_INFO_SPI_CS2_DEFAULT		SPI_CS2, (uint8_t) 0, 0, false, { (uint8_t) 0, (uint16_t) 0}
+#define DEVICE_INFO_I2C_DEFAULT			SPI_CS0, 0, 0, true, { 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS0_DEFAULT		SPI_CS0, 0, 0, false, { 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS1_DEFAULT		SPI_CS1, 0, 0, false, { 0, (uint16_t) 0}
+#define DEVICE_INFO_SPI_CS2_DEFAULT		SPI_CS2, 0, 0, false, { 0, (uint16_t) 0}
 
 #endif /* DEVICE_INFO_H_ */

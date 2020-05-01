@@ -2,7 +2,7 @@
  * @file l6470dmxmode5.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, MotorParams *pMotorParams, ModeParam
 
 	m_pModeParams = pModeParams;
 	m_pL6470 = pL6470;
-	m_fSteps = (float) pModeParams->GetMaxSteps() / 0xFFFF ;
+	m_fSteps = static_cast<float>(pModeParams->GetMaxSteps()) / 0xFFFF;
 
 	DEBUG2_EXIT;
 }
@@ -117,8 +117,8 @@ bool L6470DmxMode5::BusyCheck(void) {
 void L6470DmxMode5::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 	
-	const uint32_t nData = ((uint32_t) pDmxData[1] | (uint32_t) (pDmxData[0] << 8));
-	const uint32_t steps = nData * m_fSteps;
+	const uint32_t nData = pDmxData[1] | (static_cast<uint32_t>(pDmxData[0]) << 8);
+	const uint32_t nSteps = nData * m_fSteps;
 	bool isRev;
 #ifndef NDEBUG
 	int32_t nDifference;
@@ -126,23 +126,23 @@ void L6470DmxMode5::Data(const uint8_t *pDmxData) {
 
 	if(m_bWasBusy) {
 		uint32_t nCurrentPosition = m_pL6470->getPos();
-		isRev = nCurrentPosition > steps;
+		isRev = nCurrentPosition > nSteps;
 #ifndef NDEBUG
 		printf("\t\t\tCurrent position=%d\n", nCurrentPosition);
-		nDifference = (uint64_t) steps - nCurrentPosition;
+		nDifference = nSteps - nCurrentPosition;
 #endif
 	} else {
 		isRev = m_nPreviousData > nData;
 #ifndef NDEBUG
-		nDifference = (uint32_t) nData - m_nPreviousData;
+		nDifference = nData - m_nPreviousData;
 #endif
 	}
 
 #ifndef NDEBUG
-	printf("\t\t\tm_fSteps=%f, steps=%d, {pDmxData[0](%d):pDmxData[1](%d)} nData=%d, nDifference=%d [%s]\n", m_fSteps, (int) steps, pDmxData[0], pDmxData[1], nData, nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD" );
+	printf("\t\t\tm_fSteps=%f, steps=%d, {pDmxData[0](%d):pDmxData[1](%d)} nData=%d, nDifference=%d [%s]\n", m_fSteps, static_cast<int>(nSteps), pDmxData[0], pDmxData[1], nData, nDifference, isRev ? "L6470_DIR_REV" : "L6470_DIR_FWD");
 #endif
 
-	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, steps);
+	m_pL6470->goToDir(isRev ? L6470_DIR_REV : L6470_DIR_FWD, nSteps);
 
 	m_nPreviousData = nData;
 

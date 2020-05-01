@@ -51,6 +51,10 @@ public:
 
 	void SetMode(TRdmIdentifyMode nMode);
 
+	RDMNetDevice *GetRDMNetDevice(void) {
+		return &m_RDMNetDevice;
+	}
+
 private:
 	LightSetLLRPOnly m_LightSetLLRPOnly;
 	RDMNetDevice m_RDMNetDevice;

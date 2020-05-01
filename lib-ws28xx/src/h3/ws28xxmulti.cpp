@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-//#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <assert.h>
 
@@ -37,10 +33,10 @@
 #include "debug.h"
 
 uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
-	const uint32_t input = (uint32_t) nBits;
+	const uint32_t input = nBits;
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
-	return (uint8_t) (output >> 24);
+	return static_cast<uint8_t>((output >> 24));
 }
 
 void WS28xxMulti::Update(void) {

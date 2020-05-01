@@ -48,7 +48,7 @@ public:
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
-	void PutChar(uint8_t nChar, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void PutChar(char nChar, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void PutString(const char *pString, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
 	void Text(const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);

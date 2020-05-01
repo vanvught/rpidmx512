@@ -3,7 +3,7 @@
  * @file sensorina219power.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,17 +62,16 @@ bool SensorINA219Power::Initialize(void) {
 	const bool IsConnected = ina219_start(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tIsConnected=%d\n", __FUNCTION__, (int) IsConnected);
+	printf("%s\tIsConnected=%d\n", __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 	return IsConnected;
 }
 
 int16_t SensorINA219Power::GetValue(void) {
-	float bus_power = ina219_get_bus_power(&sDeviceInfo);
-	const uint16_t nValue = (uint16_t) bus_power;
+	const uint16_t nValue = ina219_get_bus_power(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
+	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
 #endif
 	return nValue;
 }

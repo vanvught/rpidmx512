@@ -94,7 +94,7 @@ void WS28xxDisplay7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) 
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplay7Segment::WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nChar > sizeof(Seg7Array)) {
 		return;
 	}
@@ -106,7 +106,7 @@ void WS28xxDisplay7Segment::WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed,
 	if (nChar & (1 << 7)) {	// use custom bitmap
 		chr = nChar;
 	} else {				// use displayws28xx_font
-		chr = Seg7Array[nChar];
+		chr = Seg7Array[static_cast<int>(nChar)];
 	}
 
 	RenderSegment(chr & (1 << 6), nCurrentDigitBase, 0, nRed, nGreen, nBlue);
@@ -118,7 +118,7 @@ void WS28xxDisplay7Segment::WriteChar(uint8_t nChar, uint8_t nPos, uint8_t nRed,
 	RenderSegment(chr & (1 << 0), nCurrentDigitBase, 6, nRed, nGreen, nBlue);
 }
 
-void WS28xxDisplay7Segment::WriteColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	const uint32_t nCurrentDigitBase = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
@@ -141,7 +141,7 @@ void WS28xxDisplay7Segment::SetColonsOff(void) {
 	}
 }
 
-void WS28xxDisplay7Segment::WriteAll(const uint8_t *pChars, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplay7Segment::WriteAll(const char *pChars, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	for (uint32_t nPos = 0; nPos < WS28XX_NUM_OF_DIGITS; nPos++) {
 		WriteChar(pChars[nPos], nPos, nRed, nGreen, nBlue);
 	}

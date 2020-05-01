@@ -48,7 +48,7 @@ enum {
  */
 
 void RDMHandler::GetIdentifyMode(uint16_t nSubDevice) {
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
 
@@ -58,7 +58,7 @@ void RDMHandler::GetIdentifyMode(uint16_t nSubDevice) {
 }
 
 void RDMHandler::SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *rdm_command = (const struct TRdmMessageNoSc *)m_pRdmDataIn;
+	const struct TRdmMessageNoSc *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (rdm_command->param_data_length != 1) {
 		RespondMessageNack(E120_NR_FORMAT_ERROR);
@@ -70,13 +70,13 @@ void RDMHandler::SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice) {
 		return;
 	}
 
-	RDMIdentify::Get()->SetMode((TRdmIdentifyMode) rdm_command->param_data[0]);
+	RDMIdentify::Get()->SetMode(static_cast<TRdmIdentifyMode>(rdm_command->param_data[0]));
 
 	if(IsBroadcast) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *)m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	pRdmDataOut->param_data_length = 0;
 
 	RespondMessageAck();
@@ -106,7 +106,7 @@ void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
 	// https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
 	const uint16_t nInterfaceHardwareType = 0x6; //	IEEE 802 Networks
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	const uint32_t nNetworkInterfaceId = Network::Get()->GetIfIndex();
 
@@ -123,16 +123,16 @@ void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
-	strcpy((char *)&pRdmDataOut->param_data[4], Network::Get()->GetIfName());
+	strcpy(reinterpret_cast<char*>(&pRdmDataOut->param_data[4]), Network::Get()->GetIfName());
 
 	pRdmDataOut->param_data_length = 4 + strlen(Network::Get()->GetIfName());
 
@@ -140,13 +140,13 @@ void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	Network::Get()->MacAddressCopyTo(&pRdmDataOut->param_data[4]);
@@ -157,13 +157,13 @@ void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	pRdmDataOut->param_data[4] = Network::Get()->IsDhcpUsed() ? 1 : 0;
@@ -174,7 +174,7 @@ void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
 }
 
 void RDMHandler::SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc*) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
@@ -188,7 +188,7 @@ void RDMHandler::SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetNameServers(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 	const uint16_t nNameServerIndex = pRdmDataIn->param_data[0];
 
 	if (nNameServerIndex >  2) {
@@ -198,7 +198,7 @@ void RDMHandler::GetNameServers(uint16_t nSubDevice) {
 
 	// TODO The Network class does not have GetNameServers
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage*) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	memset(&pRdmDataOut->param_data[1], 0, 4);
 
@@ -208,13 +208,13 @@ void RDMHandler::GetNameServers(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetZeroconf(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	pRdmDataOut->param_data[4] = 0;
@@ -229,16 +229,16 @@ void RDMHandler::SetZeroconf(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	uint32_t nIpAddress = Network::Get()->GetIp();
-	const uint8_t *p = (const uint8_t *)&nIpAddress;
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
@@ -251,16 +251,16 @@ void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	uint32_t nIpAddress = Network::Get()->GetIp();
-	const uint8_t *p = (const uint8_t *)&nIpAddress;
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
@@ -272,7 +272,7 @@ void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
 }
 
 void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 9) {
 		RespondMessageNack(E120_NR_FORMAT_ERROR);
@@ -284,7 +284,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 	}
 
 	 uint32_t nIpAddress;
-	 uint8_t *p = (uint8_t *)&nIpAddress;
+	uint8_t *p = reinterpret_cast<uint8_t*>(&nIpAddress);
 	 memcpy(p, &pRdmDataIn->param_data[4], 4);
 
 	if (Network::Get()->SetStaticIp(true, nIpAddress, Network::CIDRToNetmask(pRdmDataIn->param_data[8]))) {
@@ -295,7 +295,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
@@ -309,16 +309,16 @@ void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
 }
 
 void RDMHandler::GetDefaultRoute(uint16_t nSubDevice) {
-	const struct TRdmMessageNoSc *pRdmDataIn = (const struct TRdmMessageNoSc *) m_pRdmDataIn;
+	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
 		return;
 	}
 
-	struct TRdmMessage *pRdmDataOut = (struct TRdmMessage *) m_pRdmDataOut;
+	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	uint32_t nIpAddress = Network::Get()->GetGatewayIp();
-	const uint8_t *p = (const uint8_t *) &nIpAddress;
+	const uint8_t *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
@@ -340,7 +340,7 @@ void RDMHandler::GetHostName(uint16_t nSubDevice) {
 }
 
 void RDMHandler::SetHostName(bool IsBroadcast, uint16_t nSubDevice) {
-	struct TRdmMessageNoSc *pRdmDataIn = (struct TRdmMessageNoSc *) m_pRdmDataIn;
+	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length >= 64) {
 		RespondMessageNack(E120_NR_HARDWARE_FAULT);
@@ -349,7 +349,7 @@ void RDMHandler::SetHostName(bool IsBroadcast, uint16_t nSubDevice) {
 
 	pRdmDataIn->param_data[pRdmDataIn->param_data_length] = '\0';
 
-	Network::Get()->SetHostName((const char *)pRdmDataIn->param_data);
+	Network::Get()->SetHostName(reinterpret_cast<const char*>(pRdmDataIn->param_data));
 
 	RespondMessageAck();
 }

@@ -2,7 +2,7 @@
  * @file oscblob.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,10 +45,10 @@ public:
 
 public:
 	static unsigned Size(const void *);
-	static unsigned Validate(void *, unsigned);
+	static signed Validate(void *, unsigned);
 
 private:
-	const char *m_pData;
+	char *m_pData;
 	unsigned m_nSize;
 };
 

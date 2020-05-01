@@ -67,7 +67,6 @@ WS28xxDmx::WS28xxDmx(void) :
 }
 
 WS28xxDmx::~WS28xxDmx(void) {
-	Stop();
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
@@ -245,7 +244,7 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-#define MOD(a,b)	((unsigned)a - b * ((unsigned)a/b))
+#define MOD(a,b)	(static_cast<unsigned>(a) - b * (static_cast<unsigned>(a)/b))
 
 bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
 	unsigned nIndex;

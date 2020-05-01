@@ -78,12 +78,7 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	DEBUG_ENTRY
 
-	uint8_t *p = (uint8_t *) &m_tDisplayUdfParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TDisplayUdfParams); i++) {
-		*p++ = 0;
-	}
-
+	memset(&m_tDisplayUdfParams, 0, sizeof(struct TDisplayUdfParams));
 	m_tDisplayUdfParams.nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT;
 
 	DEBUG_EXIT
@@ -152,7 +147,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -179,7 +174,7 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 	DEBUG_EXIT
 }
 
-void DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pDisplayUdfParamsStore == 0) {
@@ -193,12 +188,12 @@ void DisplayUdfParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize)
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	if (isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT)) {
-		Display::Get()->SetSleepTimeout((uint32_t) m_tDisplayUdfParams.nSleepTimeout);
+		Display::Get()->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 		if (isMaskSet(1 << i)) {
-			pDisplayUdf->Set(m_tDisplayUdfParams.nLabelIndex[i], (enum TDisplayUdfLabels) i);
+			pDisplayUdf->Set(m_tDisplayUdfParams.nLabelIndex[i], static_cast<enum TDisplayUdfLabels>(i));
 		}
 	}
 }
@@ -228,5 +223,5 @@ void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((DisplayUdfParams *) p)->callbackFunction(s);
+	(static_cast<DisplayUdfParams*>(p))->callbackFunction(s);
 }

@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ public:
 	}
 
 	static uint16_t getNumBoards(void);
-	static uint8_t getNumBoards(int cs);
+	static uint8_t getNumBoards(uint8_t cs);
 
 private:
 	uint8_t m_nSpiChipSelect;

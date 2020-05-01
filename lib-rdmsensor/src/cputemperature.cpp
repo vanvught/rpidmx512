@@ -2,7 +2,7 @@
  * @file cputemperature.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetRangeMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
 	SetRangeMax(RDM_SENSOR_RANGE_MAX);
 	SetNormalMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
-	SetNormalMax((int16_t) Hardware::Get()->GetCoreTemperatureMax());
+	SetNormalMax(Hardware::Get()->GetCoreTemperatureMax());
 	SetDescription("CPU");
 }
 
@@ -55,10 +55,10 @@ bool CpuTemperature::Initialize(void) {
 }
 
 int16_t CpuTemperature::GetValue(void) {
-	const int16_t nValue = (int16_t) Hardware::Get()->GetCoreTemperature();
+	const int16_t nValue = Hardware::Get()->GetCoreTemperature();
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
+	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
 #endif
 	return nValue;
 }

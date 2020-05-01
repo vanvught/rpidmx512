@@ -2,7 +2,7 @@
  * @file rdmtod.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,11 +124,11 @@ bool RDMTod::Delete(const uint8_t *pUid) {
 }
 
 void RDMTod::Copy(uint8_t *pTable) {
-	const uint8_t *src = (const uint8_t *) m_pTable;
-	uint8_t *dst = (uint8_t *) pTable;
+	const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(m_pTable);
+	uint8_t *pDst = pTable;
 
 	for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {
-		*dst++ = *src++;
+		*pDst++ = *pSrc++;
 	}
 }
 

@@ -50,21 +50,21 @@ uint16_t RDMPersonality::GetSlots(void) const {
 }
 
 const char* RDMPersonality::GetDescription(void) const {
-	return (const char*) m_aDescription;
+	return m_aDescription;
 }
 
-void RDMPersonality::SetDescription(const char* pDescription) {
+void RDMPersonality::SetDescription(const char *pDescription) {
 	assert(pDescription != 0);
 
 	m_nDescriptionLength = 0;
 
-	char *src = (char *)pDescription;
-	char *dst = (char *)m_aDescription;
+	const char *pSrc = pDescription;
+	char *pDst = m_aDescription;
 
-	for (unsigned i = 0; (*src != 0) && (i < RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH); i++) {
-		*dst = *src;
-		src++;
-		dst++;
+	for (unsigned i = 0; (*pSrc != 0) && (i < RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH); i++) {
+		*pDst = *pSrc;
+		pSrc++;
+		pDst++;
 		m_nDescriptionLength++;
 	}
 
@@ -77,14 +77,14 @@ uint8_t RDMPersonality::GetDescriptionLength(void) const {
 void RDMPersonality::DescriptionCopyTo(char *p, uint8_t &nLength) {
 	assert(p != 0);
 
-	char *src = (char*) m_aDescription;
-	char *dst = (char*) p;
+	char *pSrc = m_aDescription;
+	char *pDst = p;
 	uint32_t i;
 
 	for (i = 0; (i < m_nDescriptionLength) && (i < nLength); i++) {
-		*dst = *src;
-		src++;
-		dst++;
+		*pDst = *pSrc;
+		pSrc++;
+		pDst++;
 	}
 
 	nLength = i;

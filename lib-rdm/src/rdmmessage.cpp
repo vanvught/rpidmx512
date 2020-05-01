@@ -2,7 +2,7 @@
  * @file rdmmessage.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,8 +60,8 @@ void RDMMessage::SetDstUid(const uint8_t *DstUid){
 }
 
 void RDMMessage::SetSubDevice(uint16_t SubDevice) {
-	m_pRdmCommand->sub_device[0] = (uint8_t) (SubDevice >> 8);
-	m_pRdmCommand->sub_device[1] = (uint8_t) SubDevice;
+	m_pRdmCommand->sub_device[0] = (SubDevice >> 8);
+	m_pRdmCommand->sub_device[1] = SubDevice;
 }
 
 void RDMMessage::SetCc(uint8_t cc) {
@@ -69,8 +69,8 @@ void RDMMessage::SetCc(uint8_t cc) {
 }
 
 void RDMMessage::SetPid(uint16_t pid) {
-	m_pRdmCommand->param_id[0] = (uint8_t) (pid >> 8);
-	m_pRdmCommand->param_id[1] = (uint8_t) pid;
+	m_pRdmCommand->param_id[0] = (pid >> 8);
+	m_pRdmCommand->param_id[1] = pid;
 }
 
 void RDMMessage::SetPd(const uint8_t *pd, uint8_t length) {

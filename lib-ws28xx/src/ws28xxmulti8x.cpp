@@ -52,7 +52,7 @@ void WS28xxMulti::SetupHC595(uint8_t nT0H, uint8_t nT1H) {
 	FUNC_PREFIX(spi_set_speed_hz(1000000));
 
 	FUNC_PREFIX(gpio_clr(SPI_CS1));
-	FUNC_PREFIX(spi_write((uint16_t) (nT1H << 8) | nT0H));
+	FUNC_PREFIX(spi_write((nT1H << 8) | nT0H));
 	FUNC_PREFIX(gpio_set(SPI_CS1));
 
 	DEBUG_EXIT

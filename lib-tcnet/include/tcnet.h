@@ -74,12 +74,12 @@ public:
 	void Print(void);
 
 	TTCNetNodeType GetNodeType(void) {
-		return (TTCNetNodeType) m_tOptIn.ManagementHeader.NodeType;
+		return static_cast<TTCNetNodeType>(m_tOptIn.ManagementHeader.NodeType);
 	}
 
 	void SetNodeName(const char *pNodeName);
-	const uint8_t* GetNodeName(void) {
-		return m_tOptIn.ManagementHeader.NodeName;
+	const char *GetNodeName(void) {
+		return reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName);
 	}
 
 	void SetLayer(TTCNetLayers tLayer);

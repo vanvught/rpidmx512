@@ -44,6 +44,7 @@ enum TWS28XXType {
 	UCS1903,
 	UCS2903,
 	P9813,
+	CS8812,
 	WS28XX_UNDEFINED
 };
 
@@ -108,7 +109,6 @@ public:
 		return false;
 	}
 
-public:
 	static const char *GetLedTypeString(TWS28XXType tType);
 	static TWS28XXType GetLedTypeString(const char *pValue);
 	static void GetTxH(TWS28XXType tType, uint8_t &nLowCode, uint8_t &nHighCode);
@@ -129,8 +129,9 @@ protected:
 	uint8_t m_nGlobalBrightness;
 	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;
-	alignas(uint32_t) uint8_t *m_pBuffer;
-	alignas(uint32_t) uint8_t *m_pBlackoutBuffer;
+
+	alignas(uintptr_t) uint8_t *m_pBuffer;
+	alignas(uintptr_t) uint8_t *m_pBlackoutBuffer;
 };
 
 #endif /* WS28XX_H_ */

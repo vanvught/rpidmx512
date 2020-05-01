@@ -2,7 +2,7 @@
  * @file ltc.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,24 +73,24 @@ static void itoa_base10(uint32_t arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) ('0' + (arg / 10));
-	*n = (char) ('0' + (arg % 10));
+	*n++ = ('0' + (arg / 10));
+	*n = ('0' + (arg % 10));
 }
 
 void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode) {
-	itoa_base10(ptLtcTimeCode->nHours, (char *) &pTimeCode[LTC_TC_INDEX_HOURS]);
-	itoa_base10(ptLtcTimeCode->nMinutes, (char *) &pTimeCode[LTC_TC_INDEX_MINUTES]);
-	itoa_base10(ptLtcTimeCode->nSeconds, (char *) &pTimeCode[LTC_TC_INDEX_SECONDS]);
-	itoa_base10(ptLtcTimeCode->nFrames, (char *) &pTimeCode[LTC_TC_INDEX_FRAMES]);
+	itoa_base10(ptLtcTimeCode->nHours, &pTimeCode[LTC_TC_INDEX_HOURS]);
+	itoa_base10(ptLtcTimeCode->nMinutes, &pTimeCode[LTC_TC_INDEX_MINUTES]);
+	itoa_base10(ptLtcTimeCode->nSeconds, &pTimeCode[LTC_TC_INDEX_SECONDS]);
+	itoa_base10(ptLtcTimeCode->nFrames, &pTimeCode[LTC_TC_INDEX_FRAMES]);
 }
 
 void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
-	itoa_base10(pLocalTime->tm_hour, (char *) &pSystemTime[LTC_ST_INDEX_HOURS]);
-	itoa_base10(pLocalTime->tm_min, (char *) &pSystemTime[LTC_ST_INDEX_MINUTES]);
-	itoa_base10(pLocalTime->tm_sec, (char *) &pSystemTime[LTC_ST_INDEX_SECONDS]);
+	itoa_base10(pLocalTime->tm_hour, &pSystemTime[LTC_ST_INDEX_HOURS]);
+	itoa_base10(pLocalTime->tm_min, &pSystemTime[LTC_ST_INDEX_MINUTES]);
+	itoa_base10(pLocalTime->tm_sec, &pSystemTime[LTC_ST_INDEX_SECONDS]);
 }
 
-#define DIGIT(x)	((int32_t) (x) - '0')
+#define DIGIT(x)	(static_cast<int32_t>(x) - '0')
 #define VALUE(x,y)	(((x) * 10) + (y))
 
 bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {

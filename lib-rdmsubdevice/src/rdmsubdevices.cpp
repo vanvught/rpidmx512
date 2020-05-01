@@ -2,7 +2,7 @@
  * @file rdmsubdevices.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,10 +91,10 @@ void RDMSubDevices::Init(void) {
 
 #if defined(RDM_SUBDEVICES_ENABLE)
 	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
-	(void) configfile.Read(SUBDEVICES_PARAMS_FILE_NAME);
+	static_cast<void>(configfile.Read(SUBDEVICES_PARAMS_FILE_NAME));
 #endif
 
-	DEBUG_PRINTF("SubDevices added: %d", (int) m_nCount);
+	DEBUG_PRINTF("SubDevices added: %d", static_cast<int>(m_nCount));
 }
 
 bool RDMSubDevices::Add(RDMSubDevice* pRDMSubDevice) {
@@ -134,12 +134,12 @@ void RDMSubDevices::GetLabel(uint16_t nSubDevice, struct TRDMDeviceInfoData* pIn
 	m_pRDMSubDevice[nSubDevice - 1]->GetLabel(pInfoData);
 }
 
-void RDMSubDevices::SetLabel(uint16_t nSubDevice, const uint8_t* pLabel, uint8_t nLabelLength) {
+void RDMSubDevices::SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength) {
 	assert((nSubDevice != 0) && (nSubDevice <= m_nCount));
 	assert(pLabel != 0);
 
 	assert(m_pRDMSubDevice[nSubDevice - 1] != 0);
-	m_pRDMSubDevice[nSubDevice - 1]->SetLabel((const char*) pLabel,nLabelLength);
+	m_pRDMSubDevice[nSubDevice - 1]->SetLabel(pLabel,nLabelLength);
 }
 
 
@@ -250,7 +250,7 @@ void RDMSubDevices::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((RDMSubDevices *) p)->callbackFunction(s);
+	(static_cast<RDMSubDevices*>(p))->callbackFunction(s);
 }
 
 void RDMSubDevices::callbackFunction(const char* pLine) {
@@ -259,7 +259,7 @@ void RDMSubDevices::callbackFunction(const char* pLine) {
 	int nReturnCode;
 	char aDeviceName[65];
 	uint8_t nLength = sizeof(aDeviceName) - 1;
-	char nChipSselect = (char) -1;
+	char nChipSselect = -1;
 	uint8_t nSlaveAddress = 0;
 	uint16_t nDmxStartAddress = 0;
 	uint32_t nSpiSpeed = 0;
@@ -270,7 +270,7 @@ void RDMSubDevices::callbackFunction(const char* pLine) {
 
 	if ((nReturnCode == SSCAN_OK) && (nLength != 0)) {
 
-		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, (int) nLength, (int) nChipSselect, (int) nSlaveAddress, (int) nDmxStartAddress, (long int) nSpiSpeed);
+		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, static_cast<int>(nLength), static_cast<int>(nChipSselect), static_cast<int>(nSlaveAddress), static_cast<int>(nDmxStartAddress), static_cast<long int>(nSpiSpeed));
 
 		if ((nChipSselect < 0) || (nChipSselect > 2) || (nDmxStartAddress == 0) || (nDmxStartAddress > 512) ) {
 			DEBUG_EXIT

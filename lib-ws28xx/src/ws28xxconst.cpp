@@ -30,8 +30,10 @@
 #include "ws28xx.h"
 
 alignas(uint32_t) const char WS28xxConst::TYPES[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH] =
-		{ "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",		// 6
-		  "SK6812\0", "SK6812W",														// 2
-		  "APA102\0",																	// 1
-		  "UCS1903", "UCS2903",															// 2
-		  "P9813" };																	// 1 = 12
+		{ "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",	// 6
+		  "SK6812\0", "SK6812W",													// 2
+		  "APA102\0",																// 1
+		  "UCS1903", "UCS2903",														// 2
+		  "P9813",																	// 1
+		  "CS8812"																	// 1
+		};																			// = 13

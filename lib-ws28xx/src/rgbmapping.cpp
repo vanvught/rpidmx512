@@ -34,7 +34,7 @@ TRGBMapping RGBMapping::FromString(const char *pString) {
 
 	for (uint32_t nIndex = 0; nIndex < RGB_MAPPING_UNDEFINED; nIndex++) {
 		if (strncasecmp(aMapping[nIndex], pString, 3) == 0) {
-			return (TRGBMapping) nIndex;
+			return static_cast<TRGBMapping>(nIndex);
 		}
 	}
 
@@ -43,7 +43,7 @@ TRGBMapping RGBMapping::FromString(const char *pString) {
 
 const char *RGBMapping::ToString(TRGBMapping tRGBMapping) {
 	if (tRGBMapping < RGB_MAPPING_UNDEFINED) {
-		return aMapping[(uint32_t) tRGBMapping];
+		return aMapping[static_cast<uint32_t>(tRGBMapping)];
 	}
 
 	return "Undefined";

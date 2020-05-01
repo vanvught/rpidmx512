@@ -76,8 +76,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Set(LtcDisplayWS28xx *pLtcDisplayWS28xx);
 
@@ -88,7 +88,7 @@ public:
 	}
 
 	TLtcDisplayMax7219Types GetMax7219Type(void) {
-		return (TLtcDisplayMax7219Types) m_tLtcDisplayParams.nMax7219Type;
+		return static_cast<TLtcDisplayMax7219Types>(m_tLtcDisplayParams.nMax7219Type);
 	}
 
 	uint8_t GetMax7219Intensity(void) {
@@ -96,14 +96,13 @@ public:
 	}
 
 	TWS28XXType GetLedType(void) {
-		return (TWS28XXType) m_tLtcDisplayParams.nLedType;
+		return static_cast<TWS28XXType>(m_tLtcDisplayParams.nLedType);
 	}
 
 	TLtcDisplayWS28xxTypes GetWS28xxType(void) {
-		return (TLtcDisplayWS28xxTypes) m_tLtcDisplayParams.nWS28xxType;
+		return static_cast<TLtcDisplayWS28xxTypes>(m_tLtcDisplayParams.nWS28xxType);
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

@@ -2,7 +2,7 @@
  * @file oscblob.cpp
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "oscmessage.h"
 #include "oscblob.h"
 
-OSCBlob::OSCBlob(const char *nData, int nSize) : m_pData(nData), m_nSize(nSize) {
+OSCBlob::OSCBlob(const char *nData, int nSize) : m_pData(const_cast<char*>(nData)), m_nSize(nSize) {
 
 }
 
@@ -47,14 +47,14 @@ const char *OSCBlob::GetDataPtr(void) {
 }
 
 unsigned OSCBlob::GetSize(void) const {
-	const unsigned len = (unsigned) sizeof(uint32_t) + m_nSize;
+	const unsigned len = sizeof(uint32_t) + m_nSize;
 
 	return (4 * ((len + 3) / 4));
 }
 
 int OSCBlob::GetByte(unsigned i) const {
 	if (i < m_nSize) {
-		return (unsigned char) m_pData[i];
+		return m_pData[i];
 	}
 
 	return -1;
@@ -67,23 +67,19 @@ int OSCBlob::GetByte(unsigned i) const {
  * @return Returns the storage size in bytes, which will always be a multiple of four.
  */
 unsigned OSCBlob::Size(const void *p) {
-	osc_blob *b = (osc_blob *) p;
+	osc_blob *b = reinterpret_cast<osc_blob*>(const_cast<void*>(p));
 	const uint32_t len = sizeof(uint32_t) + b->size;
 
-	return (unsigned) (4 * ((len + 3) / 4));
+	return (4 * ((len + 3) / 4));
 }
 
-unsigned OSCBlob::Validate(void *data, unsigned size) {
+signed OSCBlob::Validate(void *data, unsigned size) {
 	unsigned i, end, len;
 	unsigned dsize;
 
-	char *pos = (char *) data;
+	char *pos = reinterpret_cast<char*>(data);
 
-//	if (size < 0) {
-//		return -OSC_INVALID_SIZE;
-//	}
-
-	dsize = __builtin_bswap32(*(unsigned *) data);
+	dsize = __builtin_bswap32(*reinterpret_cast<unsigned*>(data));
 
 	if (dsize > OSC_MAX_MSG_SIZE) {
 		return -OSC_INVALID_SIZE;

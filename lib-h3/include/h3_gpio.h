@@ -2,7 +2,7 @@
  * @file h3_gpio.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@
 
 #ifndef H3_GPIO_H_
 #define H3_GPIO_H_
+
+#ifdef __cplusplus
+ #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
 
 #include "h3.h"
 

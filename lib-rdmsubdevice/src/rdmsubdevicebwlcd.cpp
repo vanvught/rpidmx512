@@ -3,7 +3,7 @@
  * @file rdmsubdevicebwlcd.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 #endif
 
 #ifndef TO_HEX
- #define TO_HEX(i)		((i) < 10) ? (char)'0' + (char)(i) : (char)'A' + (char)((i) - 10)
+ #define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 #endif
 
 #ifndef MIN
@@ -57,7 +57,7 @@ RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t nDmxStartAddress, char nChipSselec
 	m_IsStarted(false),
 	m_nLength(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -88,7 +88,7 @@ bool RDMSubDeviceBwLcd::Initialize(void) {
 	}
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;
@@ -231,7 +231,7 @@ void RDMSubDeviceBwLcd::DataPct(const uint8_t* pData, uint16_t nLength) {
 		unsigned nOffset = j * 4;
 		m_aText[nOffset] = ' ';
 		m_aText[nOffset + 1] = ' ';
-		const uint16_t pct = ((double) pData[j] / 255) * 100;
+		const uint16_t pct = (static_cast<float>(pData[j]) / 255) * 100;
 		itoaBase10(pct , &m_aText[nOffset]);
 	}
 
@@ -249,7 +249,7 @@ void RDMSubDeviceBwLcd::itoaBase10(uint16_t arg, char buf[]) {
 	if (arg == 0) *n = '0';
 
 	while (arg != 0) {
-		*n = (char)'0' + (char)(arg % 10);
+		*n = '0' + (arg % 10);
 		n--;
 		arg /= 10;
 	}

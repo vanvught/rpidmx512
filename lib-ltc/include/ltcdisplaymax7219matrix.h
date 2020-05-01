@@ -2,7 +2,7 @@
  * @file ltcdisplaymax7219matrix.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ public:
 
 private:
 	device_info_t m_DeviceInfo;
-	uint8_t m_aBuffer[SEGMENTS];
+	char m_aBuffer[SEGMENTS];
 
 	static LtcDisplayMax7219Matrix *s_pThis;
 };

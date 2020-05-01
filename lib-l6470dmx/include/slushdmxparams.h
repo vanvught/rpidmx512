@@ -2,7 +2,7 @@
  * @file slushdmxparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,8 @@ public:
 
 	void Set(SlushDmx *pSlushDmx);
 
-	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Dump(void);
 
@@ -79,7 +79,9 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-	bool isMaskSet(uint16_t nMask) const;
+    bool isMaskSet(uint32_t nMask) const {
+    	return (m_tSlushDmxParams.nSetList & nMask) == nMask;
+    }
 
 private:
 	SlushDmxParamsStore *m_pSlushDmxParamsStore;

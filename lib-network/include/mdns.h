@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,9 @@ struct TmDNSFlags {
 
 struct TMDNSServiceRecord {
 	uint16_t nPort;
-	uint8_t *pName;
-	uint8_t *pServName;
-	uint8_t *pTextContent;
+	char *pName;
+	char *pServName;
+	char *pTextContent;
 };
 
 struct TMDNSRecordData {
@@ -78,7 +78,7 @@ private:
 	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
 
 	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
-	uint8_t* FindFirstDotFromRight(const uint8_t* pString);
+	const char *FindFirstDotFromRight(const char *pString);
 
 	void CreateAnswerLocalIpAddress(void);
 
@@ -101,7 +101,7 @@ private:
 	uint32_t m_nRemoteIp;
 	uint16_t m_nRemotePort;
 	uint16_t m_nBytesReceived;
-	uint8_t *m_pName;
+	char *m_pName;
 	uint32_t m_nLastAnnounceMillis;
 	TMDNSServiceRecord m_aServiceRecords[SERVICE_RECORDS_MAX];
 	TMDNSRecordData m_aServiceRecordsData[SERVICE_RECORDS_MAX];

@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ OscServer::OscServer(void):
 	memset(m_aPathBlackOut, 0, sizeof(m_aPathBlackOut));
 	strcpy(m_aPathBlackOut, OSCSERVER_DEFAULT_PATH_BLACKOUT);
 
-	m_pBuffer = new uint8_t[OSCSERVER_MAX_BUFFER];
+	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
 	m_pData  = new uint8_t[DMX_UNIVERSE];
@@ -233,18 +233,18 @@ void OscServer::SetPartialTransmission(bool bPartialTransmission) {
 int OscServer::GetChannel(const char* p) {
 	assert(p != 0);
 
-	char *s = (char *)p + strlen(m_aPath) + 1;
+	char *s = const_cast<char *>(p) + strlen(m_aPath) + 1;
 	int nChannel = 0;
 	int i;
 
 	for (i = 0; (i < 3) && (*s != '\0'); i++) {
 		int c = *s;
 
-		if ((c < (int) '0') || (c > (int) '9')) {
+		if ((c < '0') || (c > '9')) {
 			return -1;
 		}
 
-		nChannel = nChannel * 10 + c - (int) '0';
+		nChannel = nChannel * 10 + c - '0';
 		s++;
 	}
 
@@ -262,7 +262,7 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 	bool isChanged = false;
 
 	const uint8_t *src = pData;
-	uint8_t *dst = (uint8_t *) &m_pData[--nStartChannel];
+	uint8_t *dst = &m_pData[--nStartChannel];
 
 	uint16_t nEnd = nStartChannel + nLength;
 
@@ -290,10 +290,10 @@ int OscServer::Run(void) {
 		return 0;
 	}
 
-	if (OSC::isMatch((const char*) m_pBuffer, "/ping")) {
+	if (OSC::isMatch(m_pBuffer, "/ping")) {
 		DEBUG_PUTS("ping received");
 		OSCSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", 0);
-	} else if (OSC::isMatch((const char*) m_pBuffer, m_aPathInfo)) {
+	} else if (OSC::isMatch(m_pBuffer, m_aPathInfo)) {
 		OSCSend MsgSendInfo(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/os", "s", m_Os);
 		OSCSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
 		OSCSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
@@ -301,9 +301,9 @@ int OscServer::Run(void) {
 		if (m_pOscServerHandler != 0) {
 			m_pOscServerHandler->Info(m_nHandle, nRemoteIp, m_nPortOutgoing);
 		}
-	} else if (OSC::isMatch((const char*) m_pBuffer, m_aPathBlackOut)) {
+	} else if (OSC::isMatch(m_pBuffer, m_aPathBlackOut)) {
 		OSCMessage Msg(m_pBuffer, nBytesReceived);
-		const bool bBlackout = (unsigned) Msg.GetFloat(0) == 1;
+		const bool bBlackout = (Msg.GetFloat(0) != 0);
 
 		if (bBlackout) {
 			if (m_pOscServerHandler != 0) {
@@ -319,23 +319,23 @@ int OscServer::Run(void) {
 	} else {
 		bool bIsDmxDataChanged = false;
 
-		OSCMessage Msg((char *) m_pBuffer, nBytesReceived);
+		OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 		debug_dump(m_pBuffer, nBytesReceived);
 
-		DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath((char*) m_pBuffer, nBytesReceived));
+		DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath(m_pBuffer, nBytesReceived));
 
-		if (OSC::isMatch((const char*) m_pBuffer, m_aPath)) {
+		if (OSC::isMatch(m_pBuffer, m_aPath)) {
 			const int nArgc = Msg.GetArgc();
 
 			if ((nArgc == 1) && (Msg.GetType(0) == OSC_BLOB)) {
 				DEBUG_PUTS("Blob received");
 
 				OSCBlob blob = Msg.GetBlob(0);
-				const int size = (int) blob.GetDataSize();
+				const int size = blob.GetDataSize();
 
 				if (size <= DMX_UNIVERSE) {
-					const uint8_t *ptr = (const uint8_t *) blob.GetDataPtr();
+					const uint8_t *ptr = reinterpret_cast<const uint8_t*>(blob.GetDataPtr());
 
 					bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
 
@@ -352,7 +352,7 @@ int OscServer::Run(void) {
 					return -1;
 				}
 			} else if ((nArgc == 2) && (Msg.GetType(0) == OSC_INT32)) {
-				uint16_t nChannel = (uint16_t) (1 + Msg.GetInt(0));
+				uint16_t nChannel = (1 + Msg.GetInt(0));
 
 				if ((nChannel < 1) || (nChannel > DMX_UNIVERSE)) {
 					DEBUG_PRINTF("Invalid channel [%d]", nChannel);
@@ -363,10 +363,10 @@ int OscServer::Run(void) {
 
 				if (Msg.GetType(1) == OSC_INT32) {
 					DEBUG_PUTS("ii received");
-					nData = (uint8_t) Msg.GetInt(1);
+					nData = Msg.GetInt(1);
 				} else if (Msg.GetType(1) == OSC_FLOAT) {
 					DEBUG_PUTS("if received");
-					nData = (uint8_t) (Msg.GetFloat(1) * DMX_MAX_VALUE);
+					nData = (Msg.GetFloat(1) * DMX_MAX_VALUE);
 				} else {
 					return -1;
 				}
@@ -384,21 +384,21 @@ int OscServer::Run(void) {
 					}
 				}
 			}
-		} else if (OSC::isMatch((const char*) m_pBuffer, m_aPathSecond)) {
+		} else if (OSC::isMatch(m_pBuffer, m_aPathSecond)) {
 			const int nArgc = Msg.GetArgc();
 
 			if (nArgc == 1) { // /path/N 'i' or 'f'
-				const uint16_t nChannel = GetChannel((const char*) m_pBuffer);
+				const uint16_t nChannel = GetChannel(m_pBuffer);
 
 				if (nChannel >= 1 && nChannel <= DMX_UNIVERSE) {
 					uint8_t nData;
 
 					if (Msg.GetType(0) == OSC_INT32) {
 						DEBUG_PUTS("i received");
-						nData = (uint8_t) Msg.GetInt(0);
+						nData = Msg.GetInt(0);
 					} else if (Msg.GetType(0) == OSC_FLOAT) {
 						DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
-						nData = (uint8_t) (Msg.GetFloat(0) * DMX_MAX_VALUE);
+						nData = (Msg.GetFloat(0) * DMX_MAX_VALUE);
 					} else {
 						return -1;
 					}

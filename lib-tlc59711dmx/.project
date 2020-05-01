@@ -3,9 +3,6 @@
 	<name>lib-tlc59711dmx</name>
 	<comment></comment>
 	<projects>
-		<project>lib-debug</project>
-		<project>lib-lightset</project>
-		<project>lib-tlc59711</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

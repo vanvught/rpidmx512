@@ -86,8 +86,8 @@
 #define RDM_DEVICE_HOURS_SIZE					4
 
 ///< 10.11.1 Get/Set Identify Device (IDENTIFY_DEVICE)
-#define	RDM_IDENTIFY_STATE_OFF				(uint8_t)0
-#define	RDM_IDENTIFY_STATE_ON				(uint8_t)1
+#define	RDM_IDENTIFY_STATE_OFF				0
+#define	RDM_IDENTIFY_STATE_ON				1
 
 #if  ! defined (PACKED)
  #define PACKED __attribute__((packed))

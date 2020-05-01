@@ -2,7 +2,7 @@
  * @file rdmsubdevice.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,11 +81,11 @@ RDMPersonality* RDMSubDevice::GetPersonality(uint8_t nPersonality) {
 void RDMSubDevice::GetLabel(struct TRDMDeviceInfoData* pInfoData) {
 	assert(pInfoData != 0);
 
-	pInfoData->data = (uint8_t *)m_tSubDevicesInfo.device_label;
+	pInfoData->data = m_tSubDevicesInfo.device_label;
 	pInfoData->length = m_tSubDevicesInfo.device_label_length;
 }
 
-void RDMSubDevice::SetLabel(const char* pLabel) {
+void RDMSubDevice::SetLabel(const char *pLabel) {
 	assert(pLabel != 0);
 	uint32_t i;
 
@@ -96,7 +96,7 @@ void RDMSubDevice::SetLabel(const char* pLabel) {
 	m_tSubDevicesInfo.device_label_length = i;
 }
 
-void RDMSubDevice::SetLabel(const char* pLabel, uint8_t nLabelLength) {
+void RDMSubDevice::SetLabel(const char *pLabel, uint8_t nLabelLength) {
 	assert(pLabel != 0);
 	uint32_t i;
 
@@ -139,7 +139,7 @@ uint16_t RDMSubDevice::CalculateChecksum(void) {
 	nChecksum += m_tSubDevicesInfo.current_personality;
 
 	for (uint32_t i = 0; i < m_tSubDevicesInfo.device_label_length; i++) {
-		nChecksum += (uint16_t) m_tSubDevicesInfo.device_label[i];
+		nChecksum += static_cast<uint16_t>(m_tSubDevicesInfo.device_label[i]);
 	}
 
 	return nChecksum;

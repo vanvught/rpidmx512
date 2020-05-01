@@ -2,7 +2,7 @@
  * @file rdmresponder.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@
 #define RDM_RESPONDER_INVALID_DATA_RECEIVED	-2
 #define RDM_RESPONDER_INVALID_RESPONSE		-3
 
-class RDMResponder: public DMXReceiver, RDMDeviceResponder  {
+class RDMResponder: public DMXReceiver, public RDMDeviceResponder  {
 public:
 	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool EnableSubDevices = true);
 	~RDMResponder(void);

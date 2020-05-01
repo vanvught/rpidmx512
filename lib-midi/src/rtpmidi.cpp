@@ -2,7 +2,7 @@
  * @file rtpmidi.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ int32_t RtpMidi::DecodeTime(uint32_t nCommandLength, uint32_t nOffset) {
 		}
 	}
 
-	DEBUG_PRINTF("nSize=%d, deltatime=%x", (int) nSize, (uint32_t) deltatime);
+	DEBUG_PRINTF("nSize=%d, deltatime=%x", static_cast<int>(nSize), static_cast<unsigned>(deltatime));
 
 	DEBUG_EXIT
 	return nSize;
@@ -182,19 +182,19 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 		m_tMidiMessage.bytes_count = 3;
 		nSize = 3;
 	} else if (nType == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
-		for (nSize = 0; (uint32_t) nSize < nCommandLength && (uint32_t) nSize < MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES; nSize++) {
+		for (nSize = 0; (static_cast<uint32_t>(nSize) < nCommandLength) && (static_cast<uint32_t>(nSize) < MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES); nSize++) {
 			m_tMidiMessage.system_exclusive[nSize] = m_pReceiveBuffer[nOffset++];
 			if (m_tMidiMessage.system_exclusive[nSize] == 0xF7) {
 				break;
 			}
 		}
 		nSize++;
-		m_tMidiMessage.data1 = ((uint32_t) nSize) & 0xFF; // LSB
-		m_tMidiMessage.data2 = ((uint32_t) nSize) >> 8;   // MSB
-		m_tMidiMessage.bytes_count = (uint32_t) nSize;
+		m_tMidiMessage.data1 = nSize & 0xFF; // LSB
+		m_tMidiMessage.data2 = nSize >> 8;   // MSB
+		m_tMidiMessage.bytes_count = nSize;
 	}
 
-	DEBUG_PRINTF("nSize=%d", (int) nSize);
+	DEBUG_PRINTF("nSize=%d", static_cast<int>(nSize));
 
 	if (m_pRtpMidiHandler != 0) m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
 
@@ -205,7 +205,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	DEBUG_ENTRY
 
-	m_pReceiveBuffer = (uint8_t *)pBuffer;
+	m_pReceiveBuffer = const_cast<uint8_t *>(pBuffer);
 
 	const uint8_t nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
 
@@ -220,9 +220,9 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 		nOffset = RTP_MIDI_COMMAND_OFFSET + 1;
 	}
 
-	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", (int) nCommandLength, (int) nOffset);
+	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", static_cast<int>(nCommandLength), static_cast<int>(nOffset));
 
-	debug_dump((void *)&m_pReceiveBuffer[nOffset], nCommandLength);
+	debug_dump(&m_pReceiveBuffer[nOffset], nCommandLength);
 
 	uint32_t nCommandCount = 0;
 

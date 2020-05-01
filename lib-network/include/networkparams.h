@@ -38,7 +38,7 @@ struct TNetworkParams {
 	uint32_t nGatewayIp;
 	uint32_t nNameServerIp;
 	bool bIsDhcpUsed;
-	uint8_t aHostName[NETWORK_HOSTNAME_SIZE];
+	char aHostName[NETWORK_HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float	fNtpUtcOffset;
 };
@@ -70,8 +70,8 @@ public:
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TNetworkParams *ptNetworkParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t* pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
 	void Dump(void);
 
@@ -87,7 +87,7 @@ public:
 		return m_tNetworkParams.nNetmask;
 	}
 
-	const uint8_t *GetHostName(void) {
+	const char *GetHostName(void) {
 		return m_tNetworkParams.aHostName;
 	}
 

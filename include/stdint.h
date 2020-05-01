@@ -2,7 +2,7 @@
  * @file stdint.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,11 @@ typedef int 				intptr_t;
 typedef unsigned int 		uintptr_t;
 
 #if !defined(UINT32_MAX)
-  #define UINT32_MAX  ((uint32_t)-1)
+ #ifdef __cplusplus
+  #define UINT32_MAX	(static_cast<uint32_t>(-1))
+ #else
+  #define UINT32_MAX	((uint32_t)-1)
+ #endif
 #endif
 
 #endif

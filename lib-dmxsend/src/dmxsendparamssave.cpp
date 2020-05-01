@@ -2,7 +2,7 @@
  * @file dmxsendparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, uint8_t *pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -59,7 +59,7 @@ bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, uint8_t *pBuffer, 
 	return isAdded;
 }
 
-bool DMXParams::Save(uint8_t* pBuffer, uint32_t nLength, uint32_t& nSize) {
+bool DMXParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);

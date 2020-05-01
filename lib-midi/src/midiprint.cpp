@@ -1,7 +1,7 @@
 /**
  * @file midiprint.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ void Midi::Print(void) {
 		printf(" Channel      : %d %s\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
 	}
 	printf(" Active sense : %s\n", GetActiveSense() ? "Enabled" : "Disabled");
-	printf(" Baudrate     : %d %s\n", (int) nBaudrate, nBaudrate == MIDI_BAUDRATE_DEFAULT ? "(Default)" : "");
+	printf(" Baudrate     : %d %s\n", static_cast<int>(nBaudrate), nBaudrate == MIDI_BAUDRATE_DEFAULT ? "(Default)" : "");
 	printf(" Interface    : %s\n", GetInterfaceDescription());
 }
 

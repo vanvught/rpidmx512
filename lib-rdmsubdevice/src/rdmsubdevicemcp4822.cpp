@@ -3,7 +3,7 @@
  * @file rdmsubdevicemcp4822.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ RDMSubDeviceMCP4822::RDMSubDeviceMCP4822(uint16_t nDmxStartAddress, char nChipSs
 	m_nDataA(0),
 	m_nDataB(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -62,7 +62,7 @@ bool RDMSubDeviceMCP4822::Initialize(void) {
 	const bool IsConnected = mcp4822_start(&m_tDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;
@@ -72,9 +72,9 @@ void RDMSubDeviceMCP4822::Start(void) {
 }
 
 void RDMSubDeviceMCP4822::Stop(void) {
-	mcp4822_write_ab(&m_tDeviceInfo, (uint16_t) 0, (uint16_t) 0);
-	m_nDataA = (uint16_t) 0;
-	m_nDataB = (uint16_t) 0;
+	mcp4822_write_ab(&m_tDeviceInfo, 0, 0);
+	m_nDataA = 0;
+	m_nDataB = 0;
 }
 
 void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint16_t nLength) {
@@ -83,7 +83,7 @@ void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint16_t nLength) {
 	uint16_t nOffset = GetDmxStartAddress() - 1;
 
 	if (nOffset < nLength) {
-		const uint16_t nDataA = (uint16_t) ((uint16_t) (pData[nOffset] << 4) | (uint16_t) (pData[nOffset] >> 4));
+		const uint16_t nDataA = ((pData[nOffset] << 4) | (pData[nOffset] >> 4));
 
 		if (nDataA != m_nDataA) {
 			mcp4822_write_a(&m_tDeviceInfo, nDataA);
@@ -93,7 +93,7 @@ void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint16_t nLength) {
 		nOffset++;
 
 		if (nOffset < nLength) {
-			const uint16_t nDataB = (uint16_t) ((uint16_t) (pData[nOffset] << 4) | (uint16_t) (pData[nOffset] >> 4));
+			const uint16_t nDataB = ((pData[nOffset] << 4) | (pData[nOffset] >> 4));
 
 			if (nDataB != m_nDataB) {
 				mcp4822_write_b(&m_tDeviceInfo, nDataB);

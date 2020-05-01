@@ -1,7 +1,7 @@
 /**
  * @file ltcparamssave.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 
 #include "debug.h"
 
-void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -52,7 +52,7 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(LtcParamsConst::SOURCE, GetSourceType((TLtcReaderSource) m_tLtcParams.tSource), isMaskSet(LTC_PARAMS_MASK_SOURCE));
+	builder.Add(LtcParamsConst::SOURCE, GetSourceType(static_cast<TLtcReaderSource>(m_tLtcParams.tSource)), isMaskSet(LTC_PARAMS_MASK_SOURCE));
 
 	builder.AddComment("Disable outputs");
 	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY), isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY));
@@ -101,7 +101,7 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, uint8_t *pBuffer, 
 	DEBUG_EXIT
 }
 
-void LtcParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void LtcParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pLTcParamsStore == 0) {

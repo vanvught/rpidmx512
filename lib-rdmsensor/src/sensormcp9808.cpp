@@ -3,7 +3,7 @@
  * @file sensormcp9808.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,16 +62,16 @@ bool SensorMCP9808::Initialize(void) {
 	const bool IsConnected = mcp9808_start(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tIsConnected=%d\n", __FUNCTION__, (int) IsConnected);
+	printf("%s\tIsConnected=%d\n", __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 	return IsConnected;
 }
 
 int16_t SensorMCP9808::GetValue(void) {
-	const uint16_t nValue = (uint16_t) mcp9808_get_temperature(&sDeviceInfo);
+	const uint16_t nValue = mcp9808_get_temperature(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
+	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
 #endif
 	return nValue;
 }

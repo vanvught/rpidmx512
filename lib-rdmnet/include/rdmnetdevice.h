@@ -36,7 +36,7 @@
 #include "e131.h"
 #include "e131uuid.h"
 
-class RDMNetDevice: public RDMDeviceResponder, LLRPDevice {
+class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
 	RDMNetDevice(RDMPersonality *pRDMPersonality);
 	~RDMNetDevice(void);

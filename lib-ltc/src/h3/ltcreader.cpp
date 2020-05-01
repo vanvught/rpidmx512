@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,13 +133,13 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 				aTimeCodeBits[0] = aTimeCodeBits[0] >> 1;
 				for (uint32_t n = 1; n < 8; n++) {
 					if (aTimeCodeBits[n] & 1) {
-						aTimeCodeBits[n - 1] |= (uint8_t) 0x80;
+						aTimeCodeBits[n - 1] |= 0x80;
 					}
 					aTimeCodeBits[n] = aTimeCodeBits[n] >> 1;
 				}
 
 				if (nCurrentBit == 1) {
-					aTimeCodeBits[7] |= (uint8_t) 0x80;
+					aTimeCodeBits[7] |= 0x80;
 				}
 			}
 
@@ -200,7 +200,7 @@ LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
-	Ltc::InitTimeCode((char *)aTimeCode);
+	Ltc::InitTimeCode(const_cast<char*>(aTimeCode));
 }
 
 LtcReader::~LtcReader(void) {
@@ -209,7 +209,7 @@ LtcReader::~LtcReader(void) {
 void LtcReader::Start(void) {
 	h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_EINT);
 
-	arm_install_handler((unsigned) fiq_handler, ARM_VECTOR(ARM_VECTOR_FIQ));
+	arm_install_handler(reinterpret_cast<unsigned>(fiq_handler), ARM_VECTOR(ARM_VECTOR_FIQ));
 
 	gic_fiq_config(H3_PA_EINT_IRQn, GIC_CORE0);
 
@@ -220,12 +220,12 @@ void LtcReader::Start(void) {
 
 	irq_timer_init();
 
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_update_handler);
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
 	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
-	irq_timer_set(IRQ_TIMER_1, (thunk_irq_timer_t) irq_timer1_midi_handler);
+	irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 	H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
 
 	__enable_fiq();
@@ -253,22 +253,22 @@ void LtcReader::Run(void) {
 		if (bIsDropFrameFlagSet) {
 			TimeCodeType = TC_TYPE_DF;
 #ifndef NDEBUG
-			nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
+			nLimitUs = (1000000.0 / 30);
 #endif
 		} else {
 			if (nUpdatesPerSecond == 24) {
 				TimeCodeType = TC_TYPE_FILM;
 #ifndef NDEBUG
-				nLimitUs = (uint32_t) ((double) 1000000 / (double) 24);
+				nLimitUs = (1000000.0 / 24);
 #endif
 			} else if (nUpdatesPerSecond == 25) {
 				TimeCodeType = TC_TYPE_EBU;
 #ifndef NDEBUG
-				nLimitUs = (uint32_t) ((double) 1000000 / (double) 25);
+				nLimitUs = 1000000 / 25;
 #endif
 			} else if (nUpdatesPerSecond == 30) {
 #ifndef NDEBUG
-				nLimitUs = (uint32_t) ((double) 1000000 / (double) 30);
+				nLimitUs = (1000000.0 / 30);
 #endif
 				TimeCodeType = TC_TYPE_SMPTE;
 			}
@@ -285,34 +285,39 @@ void LtcReader::Run(void) {
 		tLtcTimeCode.nType = s_tMidiTimeCode.nType;
 
 		if (!m_ptLtcDisabledOutputs->bArtNet) {
-			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode*) &tLtcTimeCode);
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&tLtcTimeCode));
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *) &s_tMidiTimeCode);
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)));
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
 			m_tTimeCodeTypePrevious = TimeCodeType;
 
-			Midi::Get()->SendTimeCode((const struct _midi_send_tc *) &s_tMidiTimeCode);
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)));
 
-			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[(int) TimeCodeType] / 4;
+			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[TimeCodeType] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 			nMidiQuarterFramePiece = 0;
 		}
 
-		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&tLtcTimeCode);
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&tLtcTimeCode));
 
 #ifndef NDEBUG
 		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;
 
 		if (nLimitUs == 0) {
-			sprintf(aLimitWarning, "%.2d:-----:%.5d", (int) nUpdatesPerSecond, (int) delta_us);
+			sprintf(aLimitWarning, "%.2d:-----:%.5d",
+					static_cast<int>(nUpdatesPerSecond),
+					static_cast<int>(delta_us));
 			console_status(CONSOLE_CYAN, aLimitWarning);
 		} else {
-			sprintf(aLimitWarning, "%.2d:%.5d:%.5d", (int) nUpdatesPerSecond, (int) nLimitUs, (int) delta_us);
+			sprintf(aLimitWarning, "%.2d:%.5d:%.5d",
+					static_cast<int>(nUpdatesPerSecond),
+					static_cast<int>(nLimitUs),
+					static_cast<int>(delta_us));
 			console_status(delta_us < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
 		}
 #endif
@@ -324,7 +329,7 @@ void LtcReader::Run(void) {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-			Midi::Get()->SendQf((const struct _midi_send_tc *)&s_tMidiTimeCode, nMidiQuarterFramePiece);
+			Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
 		}
 		led_set_ticks_per_second(LED_TICKS_DATA);
 	} else {

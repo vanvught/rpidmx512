@@ -1,7 +1,7 @@
 /**
  * @file readconfigfile.cpp
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,12 +52,12 @@ bool ReadConfigFile::Read(const char *pFileName) {
 
 	if (fp != NULL) {
 		for (;;) {
-			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
+			if (fgets(buffer, static_cast<int>(sizeof(buffer)) - 1, fp) != buffer) {
 				break; // Error or end of file
 			}
 
 			if (buffer[0] >= 'a') {
-				char *q = (char *) buffer;
+				char *q = buffer;
 
 				for (unsigned i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
 					if ((*q == '\r') || (*q == '\n')) {
@@ -66,7 +66,7 @@ bool ReadConfigFile::Read(const char *pFileName) {
 					q++;
 				}
 
-				m_cb(m_p, (const char *) buffer);
+				m_cb(m_p, buffer);
 			}
 		}
 
@@ -93,7 +93,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 #endif
 
 	while (nLength != 0) {
-		char *pLine = (char *) pSrc;
+		char *pLine = pSrc;
 
 		while ((nLength != 0) && (*pSrc != '\r') && (*pSrc != '\n')) {
 			pSrc++;
@@ -110,7 +110,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 #endif
 
 		if (*pLine >= 'a') {
-			m_cb(m_p, (const char *) pLine);
+			m_cb(m_p, pLine);
 		}
 	}
 

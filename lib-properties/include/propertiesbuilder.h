@@ -32,7 +32,7 @@
 
 class PropertiesBuilder {
 public:
-	PropertiesBuilder(const char *pFileName, uint8_t *pBuffer, uint32_t nLength);
+	PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength);
 	~PropertiesBuilder(void);
 
 	bool Add(const char *pProperty, uint32_t nValue, bool bIsSet = true);
@@ -59,6 +59,8 @@ public:
 
 	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet = true);
 
+	bool AddHex8(const char *pProperty, uint8_t nValue, bool bIsSet = true);
+
 	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet = true);
 
 	bool AddHex16(const char *pProperty, const uint16_t nValue16, bool bIsSet = true) {
@@ -75,7 +77,7 @@ public:
 	}
 
 private:
-	uint8_t *m_pBuffer;
+	char *m_pBuffer;
 	uint32_t m_nLength;
 	uint32_t m_nSize;
 };

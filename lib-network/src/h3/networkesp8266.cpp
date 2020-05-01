@@ -60,10 +60,10 @@ void NetworkESP8266::Init(void) {
 			;
 	}
 
-	const char *pHostName = (char *)wifi_get_hostname();
+	const char *pHostName = wifi_get_hostname();
 	strncpy(m_aHostName, pHostName, sizeof(m_aHostName) - 1);
 
-	(void) wifi_get_macaddr(m_aNetMacaddr);
+	wifi_get_macaddr(m_aNetMacaddr);
 
 	m_nLocalIp = info.ip.addr;
 	m_nNetmask = info.netmask.addr;
@@ -77,9 +77,9 @@ void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
-		memcpy((void *)pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
+		memcpy(pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 	} else {
-		hardware_get_mac_address((uint8_t *) pMacAddress);
+		hardware_get_mac_address(pMacAddress);
 	}
 }
 
@@ -87,10 +87,10 @@ void NetworkESP8266::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkESP8266::RecvFrom(uint32_t nHandle, uint8_t* packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
-	return wifi_udp_recvfrom(packet, size, from_ip, from_port);
+uint16_t NetworkESP8266::RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength,	uint32_t *from_ip, uint16_t* from_port) {
+	return wifi_udp_recvfrom(reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkESP8266::SendTo(uint32_t nHandle, const uint8_t* packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
-	wifi_udp_sendto(packet, size, to_ip, remote_port);
+void NetworkESP8266::SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+	wifi_udp_sendto(reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }

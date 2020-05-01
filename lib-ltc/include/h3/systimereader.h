@@ -2,7 +2,7 @@
  * @file systimereader.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ private:
 	time_t m_ntimePrevious;
 	struct _midi_send_tc m_tMidiTimeCode;
 	int m_nHandle;
-	alignas(uint32_t) uint8_t m_Buffer[64];
+	alignas(uint32_t) char m_Buffer[64];
 	int m_nBytesReceived;
 	bool m_bIsStarted;
 

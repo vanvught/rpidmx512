@@ -2,7 +2,7 @@
  * @file servo.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #define MAX_8BIT	(0xFF)
 #define MAX_ANGLE	(180)
 
-#define MID_COUNT	(uint16_t) (.5 + ((204.8 * SERVO_CENTER_DEFAULT_US) / 1000))
+#define MID_COUNT	static_cast<uint16_t>(.5 + ((204.8 * SERVO_CENTER_DEFAULT_US) / 1000))
 
 PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress), m_nLeftUs(SERVO_LEFT_DEFAULT_US), m_nRightUs(SERVO_RIGHT_DEFAULT_US) {
 	SetInvert(false);
@@ -69,11 +69,11 @@ uint16_t PCA9685Servo::GetRightUs(void) const {
 }
 
 void PCA9685Servo::CalcLeftCount(void) {
-	m_nLeftCount = (uint16_t) (.5 + ((204.8 * m_nLeftUs) / 1000));
+	m_nLeftCount = (.5 + ((204.8 * m_nLeftUs) / 1000));
 }
 
 void PCA9685Servo::CalcRightCount(void) {
-	m_nRightCount = (uint16_t) (.5 + ((204.8 * m_nRightUs) / 1000));
+	m_nRightCount = (.5 + ((204.8 * m_nRightUs) / 1000));
 }
 
 void PCA9685Servo::Set(uint8_t nChannel, uint16_t nData) {
@@ -96,7 +96,7 @@ void PCA9685Servo::Set(uint8_t nChannel, uint8_t nData) {
 	}  else if (nData == MAX_8BIT) {
 		Write(nChannel, m_nRightCount);
 	} else {
-		const uint16_t nCount = m_nLeftCount + (.5 + ((float) (m_nRightCount - m_nLeftCount) / MAX_8BIT) * nData);
+		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((m_nRightCount - m_nLeftCount)) / MAX_8BIT) * nData);
 		Write(nChannel, nCount);
 	}
 }
@@ -110,10 +110,10 @@ void PCA9685Servo::SetAngle(uint8_t nChannel, uint8_t nAngle) {
 	}  else if (nAngle >= 180) {
 		Write(nChannel, m_nRightCount);
 	} else if (nAngle < 90) {
-		const uint16_t nCount = m_nLeftCount + (uint16_t) (.5 + ((float) (MID_COUNT - m_nLeftCount) / 90 ) * nAngle);
+		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((MID_COUNT - m_nLeftCount)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	} else {
-		const uint16_t nCount = (2 * MID_COUNT) - m_nRightCount +  (uint16_t) (.5 + ((float) (m_nRightCount - MID_COUNT) / 90 ) * nAngle);
+		const uint16_t nCount = (2 * MID_COUNT) - m_nRightCount + (.5 + (static_cast<float>((m_nRightCount - MID_COUNT)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	}
 }

@@ -55,19 +55,19 @@ void LtcDisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcD
 }
 
 void LtcDisplayWS28xx::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
-	const uint8_t nRed = (uint8_t) ((nRGB & 0xFF0000) >> 16);
-	const uint8_t nGreen = (uint8_t) ((nRGB & 0xFF00) >> 8);
-	const uint8_t nBlue = (uint8_t) (nRGB & 0xFF);
+	const uint8_t nRed = ((nRGB & 0xFF0000) >> 16);
+	const uint8_t nGreen = ((nRGB & 0xFF00) >> 8);
+	const uint8_t nBlue = (nRGB & 0xFF);
 
 	SetRGB(nRed, nGreen, nBlue, tIndex);
 }
 
 void LtcDisplayWS28xx::SetRGB(const char *pHexString) {
-	if (!isdigit((int) pHexString[0])) {
+	if (!isdigit(pHexString[0])) {
 		return;
 	}
 
-	const TLtcDisplayWS28xxColourIndex tIndex = (TLtcDisplayWS28xxColourIndex) (pHexString[0]  - '0');
+	const TLtcDisplayWS28xxColourIndex tIndex = static_cast<TLtcDisplayWS28xxColourIndex>((pHexString[0] - '0'));
 
 	if (tIndex >= LTCDISPLAYWS28XX_COLOUR_INDEX_LAST) {
 		return;
@@ -79,14 +79,14 @@ void LtcDisplayWS28xx::SetRGB(const char *pHexString) {
 }
 
 uint32_t LtcDisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
-	char *src = (char *) pHexValue;
+	char *src = const_cast<char*>(pHexValue);
 	uint32_t ret = 0;
 	uint8_t nibble;
 
 	while (nLength-- > 0) {
 		const char d = *src;
 
-		if (isxdigit((int) d) == 0) {
+		if (isxdigit(d) == 0) {
 			break;
 		}
 

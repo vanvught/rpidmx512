@@ -2,7 +2,7 @@
  * @file rdmqueuedmessage.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ uint8_t RDMQueuedMessage::GetMessageCount(void) const {
 }
 
 void RDMQueuedMessage::Handler(uint8_t* pRdmData) {
-	struct TRdmMessage *rdm_response = (struct TRdmMessage *) pRdmData;
+	struct TRdmMessage *rdm_response = reinterpret_cast<struct TRdmMessage*>(pRdmData);
 
 	if (m_IsNeverQueued) {
 		rdm_response->slot16.response_type = E120_STATUS_MESSAGES;

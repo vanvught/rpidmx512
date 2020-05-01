@@ -37,7 +37,7 @@
 
 #include "debug.h"
 
-void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != 0);
@@ -50,20 +50,20 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString((TWS28XXType) m_tWS28xxParams.tLedType), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<TWS28XXType>(m_tWS28xxParams.tLedType)), isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT));
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
-		m_tWS28xxParams.nRgbMapping = (uint8_t) WS28xx::GetRgbMapping((TWS28XXType) m_tWS28xxParams.tLedType);
+		m_tWS28xxParams.nRgbMapping = WS28xx::GetRgbMapping(static_cast<TWS28XXType>(m_tWS28xxParams.tLedType));
 	}
-	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString((TRGBMapping) m_tWS28xxParams.nRgbMapping), isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING));
+	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)), isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING));
 
 	if (!isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE) || !isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
 		uint8_t nLowCode;
 		uint8_t nHighCode;
 
-		WS28xx::GetTxH((TWS28XXType) m_tWS28xxParams.tLedType, nLowCode, nHighCode);
+		WS28xx::GetTxH(static_cast<TWS28XXType>(m_tWS28xxParams.tLedType), nLowCode, nHighCode);
 
 		if (!isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
 			m_tWS28xxParams.nLowCode = nLowCode;
@@ -83,7 +83,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	builder.Add(DevicesParamsConst::LED_GROUPING, m_tWS28xxParams.bLedGrouping, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING));
 	builder.Add(DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT));
 
-	builder.AddComment("RDM");
+	builder.AddComment("DMX");
 	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS));
 
 	builder.AddComment("Clock based chips");
@@ -99,11 +99,10 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, uin
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-
 	DEBUG_EXIT
 }
 
-void WS28xxDmxParams::Save(uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	if (m_pWS28xxParamsStore == 0) {

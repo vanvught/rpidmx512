@@ -2,7 +2,7 @@
  * @file pca9685dmxled.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@
 #define BOARD_INSTANCES_MAX	32
 
 static unsigned long ceil(float f) {
-	int i = (int) f;
-	if (f == (float) i) {
+	int i = static_cast<int>(f);
+	if (f == static_cast<float>(i)) {
 		return i;
 	}
 	return i + 1;
@@ -96,7 +96,7 @@ void PCA9685DmxLed::Stop(uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
+void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -104,7 +104,7 @@ void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLe
 		Start();
 	}
 
-	uint8_t *p = (uint8_t *)pDmxData + m_nDmxStartAddress - 1;
+	uint8_t *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
 	uint8_t *q = m_pDmxData;
 
 	uint16_t nChannel = m_nDmxStartAddress;
@@ -118,7 +118,7 @@ void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLe
 			if (*p != *q) {
 				uint8_t value = *p;
 #ifndef NDEBUG
-				printf("m_pPWMLed[%d]->SetDmx(CHANNEL(%d), %d)\n", (int) j, (int) i, (int) value);
+				printf("m_pPWMLed[%d]->SetDmx(CHANNEL(%d), %d)\n", static_cast<int>(j), static_cast<int>(i), static_cast<int>(value));
 #endif
 				m_pPWMLed[j]->Set(CHANNEL(i), value);
 			}
@@ -141,8 +141,8 @@ bool PCA9685DmxLed::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PCA9685DmxLed::SetSlotInfoRaw(const char* pSlotInfoRaw) {
-	m_pSlotInfoRaw = (char *)pSlotInfoRaw;
+void PCA9685DmxLed::SetSlotInfoRaw(const char *pSlotInfoRaw) {
+	m_pSlotInfoRaw = const_cast<char*>(pSlotInfoRaw);
 }
 
 bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
@@ -193,7 +193,7 @@ void PCA9685DmxLed::SetOutDriver(bool bOutputDriver) {
 
 void PCA9685DmxLed::SetDmxFootprint(uint16_t nDmxFootprint) {
 	m_nDmxFootprint = nDmxFootprint;
-	m_nBoardInstances = (uint16_t) ceil((float) nDmxFootprint / PCA9685_PWM_CHANNELS);
+	m_nBoardInstances = static_cast<uint16_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
 }
 
 void PCA9685DmxLed::Initialize(void) {

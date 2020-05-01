@@ -2,7 +2,7 @@
  * @file rdmddiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,13 +75,11 @@ void RDMDiscovery::SetUid(const uint8_t *uid) {
 	m_DiscUniqueBranch.SetSrcUid(uid);
 }
 
-const char *RDMDiscovery::GetUid(void) {
-	return (const char *) m_Uid;
+const uint8_t *RDMDiscovery::GetUid(void) {
+	return m_Uid;
 }
 
 void RDMDiscovery::Full(void) {
-	struct TRdmMessage *response;
-
 	Reset();
 
 	m_UnMute.Send(m_nPort);
@@ -97,10 +95,11 @@ void RDMDiscovery::Full(void) {
 	udelay(100000);
 
 	m_UnMute.Send(m_nPort);
-	response = (struct TRdmMessage *) m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
 
-	if (response != 0) {
-		FindDevices(ConvertUid((const uint8_t *)response->source_uid), ConvertUid((const uint8_t *)response->source_uid));
+	const struct TRdmMessage *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+
+	if (pResponse != 0) {
+		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
 	}
 
 	FindDevices(0x000000000000, 0xfffffffffffe);
@@ -109,7 +108,7 @@ void RDMDiscovery::Full(void) {
 }
 
 bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
-	struct TRdmMessage *response;
+	struct TRdmMessage *pRdmMessage;
 	uint8_t uid[RDM_UID_SIZE];
 	bool bDeviceFound = false;
 	uint64_t MidPosition;
@@ -130,10 +129,10 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 		m_Mute.SetDstUid(uid);
 		m_Mute.Send(m_nPort);
 
-		response = (struct TRdmMessage *) m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
 
-		if (response != 0) {
-			if ((response->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, response->source_uid, RDM_UID_SIZE) == 0)) {
+		if (pRdmMessage != 0) {
+			if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
 				AddUid(uid);
 			}
 		} else {
@@ -146,12 +145,12 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 		m_DiscUniqueBranch.SetPd((const uint8_t *)pdl, 2* RDM_UID_SIZE);
 		m_DiscUniqueBranch.Send(m_nPort);
 
-		response = (struct TRdmMessage *) m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
 
-		if (response != 0) {
+		if (pRdmMessage != 0) {
 			bDeviceFound = true;
 
-			if (IsValidDiscoveryResponse((const uint8_t *)response, uid)) {
+			if (IsValidDiscoveryResponse(reinterpret_cast<const uint8_t*>(pRdmMessage), uid)) {
 				bDeviceFound = QuickFind(uid);
 			}
 
@@ -173,23 +172,23 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 	return false;
 }
 
-const uint8_t *RDMDiscovery::ConvertUid(const uint64_t uid) {
+const uint8_t *RDMDiscovery::ConvertUid(uint64_t uid) {
 	uuid_cast.uint = __builtin_bswap64(uid << 16);
-	return (const uint8_t *) uuid_cast.uid;
+	return uuid_cast.uid;
 }
 
-const uint64_t RDMDiscovery::ConvertUid(const uint8_t *uid) {
+uint64_t RDMDiscovery::ConvertUid(const uint8_t *uid) {
 	memcpy(uuid_cast.uid, uid, RDM_UID_SIZE);
-	return (const uint64_t) __builtin_bswap64(uuid_cast.uint << 16);
+	return __builtin_bswap64(uuid_cast.uint << 16);
 }
 
-void RDMDiscovery::PrintUid(const uint64_t uid) {
+void RDMDiscovery::PrintUid(uint64_t uid) {
 #ifndef NDEBUG
-	PrintUid((uint8_t *)ConvertUid(uid));
+	PrintUid(ConvertUid(uid));
 #endif
 }
 
-void RDMDiscovery::PrintUid(uint8_t *uid) {
+void RDMDiscovery::PrintUid(const uint8_t *uid) {
 #ifndef NDEBUG
 	printf("%.2x%.2x:%.2x%.2x%.2x%.2x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
 #endif
@@ -216,7 +215,7 @@ bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *response, uint8_t *ui
 			rdm_checksum += uid[i];
 		}
 
-		if (((uint8_t) (rdm_checksum >> 8) == checksum[1]) && ((uint8_t) (rdm_checksum & 0xFF) == checksum[0])) {
+		if (((rdm_checksum >> 8) == checksum[1]) && ((rdm_checksum & 0xFF) == checksum[0])) {
 			bIsValid = true;
 		}
 
@@ -235,26 +234,25 @@ bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *response, uint8_t *ui
 }
 
 bool RDMDiscovery::QuickFind(const uint8_t *uid) {
-	uint8_t *response;
-	struct TRdmMessage *p;
 	uint8_t r_uid[RDM_UID_SIZE];
 
 	Hardware::Get()->WatchdogFeed();
 
 #ifndef NDEBUG
 	printf("QuickFind : ");
-	PrintUid((uint8_t *)uid);
+	PrintUid(uid);
 	printf("\n");
 #endif
 
 	m_Mute.SetDstUid(uid);
 	m_Mute.Send(m_nPort);
 
-	response = (uint8_t *) m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+	uint8_t *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
-	if (response != 0) {
-		p = (struct TRdmMessage *) response;
-		if ((p->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, p->source_uid, RDM_UID_SIZE) == 0)) {
+	if (pResponse != 0) {
+		struct TRdmMessage *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
+
+		if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
 			AddUid(uid);
 		}
 	}
@@ -263,9 +261,9 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 
 	m_DiscUniqueBranch.Send(m_nPort);
 
-	response = (uint8_t *) m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+	pResponse = const_cast<uint8_t *>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
-	if ((response != 0) && (IsValidDiscoveryResponse(response, r_uid))) {
+	if ((pResponse != 0) && (IsValidDiscoveryResponse(pResponse, r_uid))) {
 		QuickFind(r_uid);
 	} else {
 		return true;

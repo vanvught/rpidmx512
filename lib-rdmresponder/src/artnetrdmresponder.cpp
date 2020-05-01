@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,6 @@
 #include "rdm_e120.h"
 
 #include "debug.h"
-
-ArtNetRdm::~ArtNetRdm(void) {
-
-}
 
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 	RDMDeviceResponder(pRDMPersonality, pLightSet, false),
@@ -95,7 +91,7 @@ const uint8_t *ArtNetRdmResponder::Handler(uint8_t nPort, const uint8_t *pRdmDat
 	RDMMessage::PrintNoSc(pRdmDataNoSC);
 #endif
 
-	m_RDMHandler->HandleData(pRdmDataNoSC, (uint8_t *)m_pRdmCommand);
+	m_RDMHandler->HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(m_pRdmCommand));
 
 	if (m_pRdmCommand->start_code != E120_SC_RDM) {
 		DEBUG_EXIT
@@ -103,9 +99,9 @@ const uint8_t *ArtNetRdmResponder::Handler(uint8_t nPort, const uint8_t *pRdmDat
 	}
 
 #ifndef NDEBUG
-	RDMMessage::Print((uint8_t *)m_pRdmCommand);
+	RDMMessage::Print(reinterpret_cast<uint8_t*>(m_pRdmCommand));
 #endif
 
 	DEBUG_EXIT
-	return (const uint8_t *)m_pRdmCommand;
+	return reinterpret_cast<const uint8_t*>(m_pRdmCommand);
 }

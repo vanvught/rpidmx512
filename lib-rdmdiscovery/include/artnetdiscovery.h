@@ -12,7 +12,7 @@
 #include "dmx_uarts.h"
 #include "rdm.h"
 
-class ArtNetRdmController: public RDMDeviceController, ArtNetRdm {
+class ArtNetRdmController: public RDMDeviceController, public ArtNetRdm {
 public:
 	ArtNetRdmController(void);
 	~ArtNetRdmController(void);

@@ -2,7 +2,7 @@
  * @file l6470dmxmode2.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ void L6470DmxMode2::Stop(void) {
 void L6470DmxMode2::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 
-	m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + (float) pDmxData[0] * ((m_fMaxSpeed - m_fMinSpeed) / 255));
+	m_pL6470->run(L6470_DIR_FWD, m_fMinSpeed + static_cast<float>(pDmxData[0]) * ((m_fMaxSpeed - m_fMinSpeed) / 255));
 
 	DEBUG2_EXIT;
 }

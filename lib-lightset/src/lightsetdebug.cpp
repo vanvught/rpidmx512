@@ -2,7 +2,7 @@
  * @file lightsetdebug.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ uint16_t LightSetDebug::GetDmxFootprint(void) {
 }
 
 bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_PRINTF("nDmxStartAddress=%d", (int) nDmxStartAddress);
+	DEBUG_PRINTF("nDmxStartAddress=%d", static_cast<int>(nDmxStartAddress));
 
 	if (nDmxStartAddress > (512 - DMX_FOOTPRINT)) {
 		return false;
@@ -99,8 +99,8 @@ void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLengt
 	assert(pData != 0);
 	assert(nLength <= 512);
 
-	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__,(int) nPort, (void *) pData, (int) nLength);
-	printf("%d:%d:%d: ", (int) nLength, (int) DMX_FOOTPRINT, (int) m_nDmxStartAddress);
+	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__, static_cast<int>(nPort), pData, static_cast<int>(nLength));
+	printf("%d:%d:%d: ", static_cast<int>(nLength), DMX_FOOTPRINT, static_cast<int>(m_nDmxStartAddress));
 
 	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		printf("%.2x ", pData[i]);
@@ -108,4 +108,3 @@ void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLengt
 
 	printf("\n");
 }
-

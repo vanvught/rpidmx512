@@ -2,7 +2,7 @@
  * @file motorparams.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,17 +53,12 @@
 #define TICK_S	0.00000025	///< 250ns
 
 MotorParams::MotorParams(MotorParamsStore *pMotorParamsStore): m_pMotorParamsStore(pMotorParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tMotorParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TMotorParams); i++) {
-		*p++ = 0;
-	}
+	memset(&m_tMotorParams, 0, sizeof(struct TMotorParams));
 
 	m_tMotorParams.fStepAngel = 1.8;	// 200 steps per revolution.
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
-	const char *src = (char *)L6470DmxConst::FILE_NAME_MOTOR;
-	strncpy(m_aFileName, src, sizeof(m_aFileName));
+	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
 MotorParams::~MotorParams(void) {
@@ -71,7 +66,7 @@ MotorParams::~MotorParams(void) {
 }
 
 bool MotorParams::Load(uint8_t nMotorIndex) {
-	m_aFileName[5] = (char) nMotorIndex + '0';
+	m_aFileName[5] = nMotorIndex + '0';
 
 	m_tMotorParams.nSetList = 0;
 
@@ -109,10 +104,10 @@ void MotorParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 	m_pMotorParamsStore->Update(nMotorIndex, &m_tMotorParams);
 }
 
-void MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != 0);
 
-	m_aFileName[5] = (char) nMotorIndex + '0';
+	m_aFileName[5] = nMotorIndex + '0';
 
 	if (ptMotorParams != 0) {
 		memcpy(&m_tMotorParams, ptMotorParams, sizeof(struct TMotorParams));
@@ -133,7 +128,7 @@ void MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMoto
 	return;
 }
 
-void MotorParams::Save(uint8_t nMotorIndex, uint8_t *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	if (m_pMotorParamsStore == 0) {
 		nSize = 0;
 		return;
@@ -185,7 +180,7 @@ void MotorParams::Set(L6470 *pL6470) {
 
 	float f;
 
-	if ((f = calcIntersectSpeed()) != (float) 0) {
+	if ((f = calcIntersectSpeed()) != 0) {
 		pL6470->setParam(L6470_PARAM_INT_SPD, calcIntersectSpeedReg(f));
 	}
 }
@@ -218,18 +213,18 @@ void MotorParams::Dump(void) {
 		printf(" %s=%.1f mH/phase\n", MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance);
 	}
 
-	if ((f = calcIntersectSpeed()) != (float) 0) {
-		printf(" Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, (unsigned int) calcIntersectSpeedReg(f));
+	if ((f = calcIntersectSpeed()) != 0) {
+		printf(" Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, static_cast<unsigned int>(calcIntersectSpeedReg(f)));
 	}
 #endif
 }
 
 float MotorParams::calcIntersectSpeed(void) {
 	if (isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE) && isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE)) {
-		return ((float) 4 * m_tMotorParams.fResistance) / (2 * M_PI * m_tMotorParams.fInductance * 0.001);
-	} else {
-		return (float) 0;
+		return (4 * m_tMotorParams.fResistance) / (2 * M_PI * m_tMotorParams.fInductance * 0.001);
 	}
+
+	return 0;
 }
 
 uint32_t MotorParams::calcIntersectSpeedReg(float f) const {
@@ -240,6 +235,6 @@ void MotorParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((MotorParams *) p)->callbackFunction(s);
+	(static_cast<MotorParams*>(p))->callbackFunction(s);
 }
 

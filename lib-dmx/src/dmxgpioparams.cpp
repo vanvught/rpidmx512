@@ -1,8 +1,8 @@
 /**
- * @file gpioparams.cpp
+ * @file dmxgpioparams.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,9 +155,6 @@ void DmxGpioParams::staticCallbackFunction(void* p, const char* s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((DmxGpioParams *) p)->callbackFunction(s);
+	(static_cast<DmxGpioParams*>(p))->callbackFunction(s);
 }
 
-bool DmxGpioParams::isMaskSet(uint32_t nMask) const {
-	return (m_nSetList & nMask) == nMask;
-}

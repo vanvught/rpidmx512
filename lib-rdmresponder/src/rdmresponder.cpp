@@ -3,7 +3,7 @@
  * @file rdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	uint16_t nLength = RDM_RESPONDER_INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
-		const struct TRdmMessage *p = (struct TRdmMessage *) pResponse;
+		const struct TRdmMessage *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
 		nLength = p->message_length + RDM_MESSAGE_CHECKSUM_SIZE;
 		Rdm::SendRawRespondMessage(0, pResponse, nLength);
 	} else if (pResponse[0] == 0xFE) {
@@ -97,14 +97,14 @@ int RDMResponder::Run(void) {
 			m_IsSubDeviceActive = false;
 		}
 	} else if (pDmxDataIn != 0) {
-		RDMSubDevices::Get()->SetData(pDmxDataIn, (uint16_t) nLength);
+		RDMSubDevices::Get()->SetData(pDmxDataIn, nLength);
 		if (!m_IsSubDeviceActive) {
 			RDMSubDevices::Get()->Start();
 			m_IsSubDeviceActive = true;
 		}
 	}
 
-	const uint8_t *pRdmDataIn = (uint8_t *) Rdm::Receive(0);
+	const uint8_t *pRdmDataIn = reinterpret_cast<const uint8_t*>(Rdm::Receive(0));
 
 	if (pRdmDataIn == 0) {
 		return RDM_RESPONDER_NO_DATA;
@@ -115,14 +115,14 @@ int RDMResponder::Run(void) {
 #endif
 
 	if (pRdmDataIn[0] == E120_SC_RDM) {
-		const struct TRdmMessage *pRdmCommand = (struct TRdmMessage *) pRdmDataIn;
+		const struct TRdmMessage *pRdmCommand = reinterpret_cast<const struct TRdmMessage*>(pRdmDataIn);
 
 		switch (pRdmCommand->command_class) {
 		case E120_DISCOVERY_COMMAND:
 		case E120_GET_COMMAND:
 		case E120_SET_COMMAND:
-			m_RDMHandler->HandleData(&pRdmDataIn[1], (uint8_t *)m_pRdmCommand);
-			return HandleResponse((uint8_t *)m_pRdmCommand);
+			m_RDMHandler->HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(m_pRdmCommand));
+			return HandleResponse(reinterpret_cast<uint8_t*>(m_pRdmCommand));
 			break;
 		default:
 			DEBUG_PUTS("RDM_RESPONDER_INVALID_DATA_RECEIVED");
@@ -140,6 +140,3 @@ void RDMResponder::Print(void) {
 	DMXReceiver::Print();
 }
 #endif
-
-
-

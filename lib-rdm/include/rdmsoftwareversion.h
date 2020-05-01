@@ -2,7 +2,7 @@
  * @file rdmsoftwareversion.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,8 @@
 class RDMSoftwareVersion {
 public:
 	static const char *GetVersion(void);
-	static const uint8_t GetVersionLength(void);
-	static const uint32_t GetVersionId(void);
-
-private:
+	static uint32_t GetVersionLength(void);
+	static uint32_t GetVersionId(void);
 };
 
 #endif /* RDMSOFTWAREVERSION_H_ */

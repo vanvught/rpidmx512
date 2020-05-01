@@ -1,7 +1,7 @@
 /**
  * @file midiparams.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #ifndef ALIGNED
@@ -47,12 +48,7 @@ static const char PARAMS_BAUDRATE[] ALIGNED = "baudrate";
 static const char PARAMS_ACTIVE_SENSE[] ALIGNED = "active_sense";
 
 MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pMidiParamsStore) {
-	uint8_t *p = (uint8_t *) &m_tMidiParams;
-
-	for (uint32_t i = 0; i < sizeof(struct TMidiParams); i++) {
-		*p++ = 0;
-	}
-
+	memset(&m_tMidiParams, 0, sizeof(struct TMidiParams));
 	m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
 	m_tMidiParams.nActiveSense = 1;
 }
@@ -149,7 +145,9 @@ void MidiParams::Dump(void) {
 	}
 
 	if (isMaskSet(SET_ACTIVE_SENSE)) {
-		printf(" %s=%d [%s]\n", PARAMS_ACTIVE_SENSE, (int) m_tMidiParams.nActiveSense, BOOL2STRING(m_tMidiParams.nActiveSense));
+		printf(" %s=%d [%s]\n", PARAMS_ACTIVE_SENSE,
+				static_cast<int>(m_tMidiParams.nActiveSense),
+				BOOL2STRING(m_tMidiParams.nActiveSense));
 	}
 
 #endif
@@ -159,6 +157,6 @@ void MidiParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
-	((MidiParams *) p)->callbackFunction(s);
+	(static_cast<MidiParams*>(p))->callbackFunction(s);
 }
 

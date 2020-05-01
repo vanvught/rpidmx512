@@ -104,12 +104,12 @@ void NtpClient::Init(void) {
 	uint16_t nBytesReceived;
 
 	for (nRetries = 0; nRetries < RETRIES; nRetries++) {
-		Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 
 		uint32_t nFromIp;
 		uint16_t nFromPort;
 
-		while ((nBytesReceived = Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) == 0) {
+		while ((nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) == 0) {
 #if defined (H3)
 			net_handle();
 #endif
@@ -124,23 +124,20 @@ void NtpClient::Init(void) {
 				continue;
 			}
 
-			debug_dump((void *)&m_Reply, sizeof m_Reply);
+			debug_dump(&m_Reply, sizeof m_Reply);
 
 			if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
-				m_InitTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
-				DEBUG_PRINTF("m_InitTime=%u", (unsigned) m_InitTime);
+				m_InitTime = static_cast<time_t>((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
+				DEBUG_PRINTF("m_InitTime=%u", static_cast<unsigned>(m_InitTime));
 
 				struct tm *pLocalTime = localtime(&m_InitTime);
-//				struct THardwareTime hwTime;
-//				memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
 
 				DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 
-				if(Hardware::Get()->SetTime(pLocalTime)) {
+				if (Hardware::Get()->SetTime(pLocalTime)) {
 					m_MillisLastPoll = Hardware::Get()->Millis();
 					m_tStatus = NTP_CLIENT_STATUS_IDLE;
 				}
-
 			} else {
 				DEBUG_PUTS("!>> Invalid reply <<!");
 			}
@@ -154,7 +151,7 @@ void NtpClient::Init(void) {
 #endif
 	}
 
-	DEBUG_PRINTF("nBytesReceived=%d, nRetries=%d, m_tStatus=%d", nBytesReceived, nRetries, (int) m_tStatus);
+	DEBUG_PRINTF("nBytesReceived=%d, nRetries=%d, m_tStatus=%d", nBytesReceived, nRetries, static_cast<int>(m_tStatus));
 	DEBUG_EXIT
 }
 
@@ -165,7 +162,7 @@ void NtpClient::Run(void) {
 
 	if (m_tStatus == NTP_CLIENT_STATUS_IDLE) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
-			Network::Get()->SendTo(m_nHandle, (const uint8_t *)&m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, &m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_MillisRequest = Hardware::Get()->Millis();
 			m_tStatus = NTP_CLIENT_STATUS_WAITING;
 			DEBUG_PUTS("NTP_CLIENT_STATUS_WAITING");
@@ -178,7 +175,7 @@ void NtpClient::Run(void) {
 		uint32_t nFromIp;
 		uint16_t nFromPort;
 
-		if ((Network::Get()->RecvFrom(m_nHandle, (uint8_t *)&m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) != sizeof m_Reply) {
+		if ((Network::Get()->RecvFrom(m_nHandle, &m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) != sizeof m_Reply) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
 				DEBUG_PUTS("NTP_CLIENT_STATUS_STOPPED");
@@ -194,18 +191,16 @@ void NtpClient::Run(void) {
 			return;
 		}
 
-		debug_dump((void *)&m_Reply, sizeof m_Reply);
+		debug_dump(&m_Reply, sizeof m_Reply);
 
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
-			const time_t nTime = (time_t)(__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset);
+			const time_t nTime = static_cast<time_t>((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
 			Hardware::Get()->SetSysTime(nTime);
 			m_MillisLastPoll = Hardware::Get()->Millis();
 
 #ifndef NDEBUG
-			DEBUG_PRINTF("nTime=%u", (unsigned) nTime);
+			DEBUG_PRINTF("nTime=%u", static_cast<unsigned>(nTime));
 			struct tm *pLocalTime = localtime(&nTime);
-//			struct THardwareTime hwTime;
-//			memcpy(&hwTime, pLocalTime, sizeof (struct THardwareTime));
 			DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", pLocalTime->tm_year, pLocalTime->tm_mon, pLocalTime->tm_mday, pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec);
 #endif
 		} else {
@@ -225,7 +220,7 @@ void NtpClient::Print(void) {
 	}
 	printf(" Server : " IPSTR "\n", IP2STR(m_nServerIp));
 	printf(" Port : %d\n", NTP_UDP_PORT);
-	printf(" Status : %d%c\n", (int) m_tStatus, m_tStatus == NTP_CLIENT_STATUS_STOPPED ? '!' : ' ');
-	printf(" Time : %s", asctime(localtime((const time_t *) &m_InitTime)));
+	printf(" Status : %d%c\n", static_cast<int>(m_tStatus), m_tStatus == NTP_CLIENT_STATUS_STOPPED ? '!' : ' ');
+	printf(" Time : %s", asctime(localtime(&m_InitTime)));
 	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 }

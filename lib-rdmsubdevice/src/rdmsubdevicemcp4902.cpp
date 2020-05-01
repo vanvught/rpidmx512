@@ -3,7 +3,7 @@
  * @file rdmsubdevicemcp4902.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSs
 	m_nDataA(0),
 	m_nDataB(0)
 {
-	m_tDeviceInfo.chip_select = (spi_cs_t) nChipSselect;
+	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
 	m_tDeviceInfo.slave_address = nSlaveAddress;
 	m_tDeviceInfo.speed_hz = nSpiSpeed;
 
@@ -62,7 +62,7 @@ bool RDMSubDeviceMCP4902::Initialize(void) {
 	const bool IsConnected = mcp4902_start(&m_tDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, (int) IsConnected);
+	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 
 	return IsConnected;
@@ -72,9 +72,9 @@ void RDMSubDeviceMCP4902::Start(void) {
 }
 
 void RDMSubDeviceMCP4902::Stop(void) {
-	mcp4902_write_ab(&m_tDeviceInfo, (uint8_t) 0, (uint8_t) 0);
-	m_nDataA = (uint8_t) 0;
-	m_nDataB = (uint8_t) 0;
+	mcp4902_write_ab(&m_tDeviceInfo, 0, 0);
+	m_nDataA = 0;
+	m_nDataB = 0;
 }
 
 void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {

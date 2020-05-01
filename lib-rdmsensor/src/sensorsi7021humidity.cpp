@@ -3,7 +3,7 @@
  * @file sensorsi7021humidity.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,16 +62,16 @@ bool SensorSI7021Humidity::Initialize(void) {
 	const bool IsConnected = si7021_start(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tIsConnected=%d\n", __FUNCTION__, (int) IsConnected);
+	printf("%s\tIsConnected=%d\n", __FUNCTION__, static_cast<int>(IsConnected));
 #endif
 	return IsConnected;
 }
 
 int16_t SensorSI7021Humidity::GetValue(void) {
-	const int16_t nValue = (int16_t) si7021_get_humidity(&sDeviceInfo);
+	const int16_t nValue = si7021_get_humidity(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, (int) nValue);
+	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
 #endif
 	return nValue;
 }

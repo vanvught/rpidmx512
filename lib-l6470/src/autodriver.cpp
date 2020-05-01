@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,11 +51,11 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", (int) nPosition, (int) nSpiChipSelect);
+	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
 
-	DEBUG_PRINTF("m_nNumBoards[%d]=%d", (int) nSpiChipSelect, (int) m_nNumBoards[nSpiChipSelect]);
+	DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(nSpiChipSelect), static_cast<int>(m_nNumBoards[nSpiChipSelect]));
 	DEBUG_EXIT
 }
 
@@ -68,11 +68,11 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", (int) nPosition, (int) nSpiChipSelect);
+	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
 
-	DEBUG_PRINTF("m_nNumBoards[%d]=%d", (int) nSpiChipSelect, (int) m_nNumBoards[nSpiChipSelect]);
+	DEBUG_PRINTF("m_nNumBoards[%d]=%d", static_cast<int>(nSpiChipSelect), static_cast<int>(m_nNumBoards[nSpiChipSelect]));
 	DEBUG_EXIT
 }
 
@@ -111,9 +111,9 @@ int AutoDriver::busyCheck(void) {
 uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	DEBUG_ENTRY
 
-	uint8_t dataPacket[m_nNumBoards[m_nSpiChipSelect]];
+	char dataPacket[m_nNumBoards[m_nSpiChipSelect]];
 
-	for (int i = 0; i < m_nNumBoards[m_nSpiChipSelect]; i++) {
+	for (uint32_t i = 0; i < m_nNumBoards[m_nSpiChipSelect]; i++) {
 		dataPacket[i] = 0;
 	}
 
@@ -122,7 +122,7 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	FUNC_PREFIX(spi_chipSelect(m_nSpiChipSelect));
 	FUNC_PREFIX(spi_set_speed_hz(4000000));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
-	FUNC_PREFIX(spi_transfern((char *) dataPacket, m_nNumBoards[m_nSpiChipSelect]));
+	FUNC_PREFIX(spi_transfern(dataPacket, m_nNumBoards[m_nSpiChipSelect]));
 
 	DEBUG_PRINTF("data=%x, dataPacket[m_nPosition]=%x", data, m_nPosition, dataPacket[m_nPosition]);
 	DEBUG_EXIT
@@ -130,15 +130,17 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 }
 
 uint16_t AutoDriver::getNumBoards(void) {
-	int n = 0;
-	for (int i = 0; i < (int) (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0])); i++) {
+	uint16_t n = 0;
+
+	for (uint32_t i = 0; i < (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0])); i++) {
 		n += m_nNumBoards[i];
 	}
+
 	return n;
 }
 
-uint8_t AutoDriver::getNumBoards(int cs) {
-	if (cs < (int) (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0]))) {
+uint8_t AutoDriver::getNumBoards(uint8_t cs) {
+	if (cs < (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0]))) {
 		return m_nNumBoards[cs];
 	} else {
 		return 0;
