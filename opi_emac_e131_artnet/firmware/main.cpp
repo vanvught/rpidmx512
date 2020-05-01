@@ -60,13 +60,15 @@
 
 #include "identify.h"
 #include "factorydefaults.h"
-#include "displayudfhandler.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -76,33 +78,34 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	fw.Print();
 
 	console_puts("sACN E1.31 -> Art-Net\n");
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new Reboot);
+
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	DisplayUdfHandler displayUdfHandler;
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	StoreE131 storeE131;
-	E131Params e131params((E131ParamsStore*) &storeE131);
+	E131Params e131params(&storeE131);
 
 	E131Bridge bridge;
 
@@ -117,8 +120,8 @@ void notmain(void) {
 	ArtNetController controller;
 	ArtNetOutput artnetOutput;
 
-	bridge.SetOutput((LightSet *)&artnetOutput);
-	bridge.SetE131Sync((E131Sync *)&artnetOutput);
+	bridge.SetOutput(&artnetOutput);
+	bridge.SetE131Sync(&artnetOutput);
 
 	bool bIsSetIndividual = false;
 
@@ -186,25 +189,25 @@ void notmain(void) {
 
 	StoreRDMDevice storeRdmDevice;
 
-	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-	((RDMDevice *)&device)->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+	device.SetRDMDeviceStore(&storeRdmDevice);
 
-	const uint8_t aLabel[] = "sACN E1.31 to Art-Net";
+	const char aLabel[] = "sACN E1.31 to Art-Net";
 	device.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
 
-	((RDMDeviceResponder *)&device)->SetRDMFactoryDefaults(new FactoryDefaults);
+	device.SetRDMFactoryDefaults(new FactoryDefaults);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set((RDMDevice *)&device);
+		rdmDeviceParams.Set(&device);
 		rdmDeviceParams.Dump();
 	}
 
 	while (spiFlashStore.Flash())
 		;
 
-	((RDMDevice *)&device)->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	((RDMDevice *)&device)->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 
 	device.Init();
 	device.Print();

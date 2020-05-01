@@ -87,18 +87,17 @@ void notmain(void) {
 
 	DMXReceiver dmxreceiver;
 
-	dmxreceiver.SetOutput((LightSet *)&dmxmonitor);
+	dmxreceiver.SetOutput(&dmxmonitor);
 	dmxreceiver.Start();
 
 	for(;;) {
-
 		hw.WatchdogFeed();
 
-		(void) dmxreceiver.Run(nLength);
+		static_cast<void>(dmxreceiver.Run(nLength));
 
 		const uint32_t nMicrosNow = hw.Micros();
 
-		if (nMicrosNow - nMicrosPrevious > (uint32_t) (1E6 / 2)) {
+		if (nMicrosNow - nMicrosPrevious > (1000000 / 2)) {
 			const uint32_t dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond();
 
 			console_save_cursor();
@@ -114,7 +113,7 @@ void notmain(void) {
 				console_puts("-------");
 			} else {
 				const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
-				const struct TDmxData *dmx_statistics = (struct TDmxData *)dmx_data;
+				const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(dmx_data);
 
 				nUpdatesPerSecondeMin = MIN(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
 				nUpdatesPerSecondeMax = MAX(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
@@ -129,13 +128,25 @@ void notmain(void) {
 				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
 
 				console_set_cursor(20, TOP_ROW_STATS);
-				printf("%3d     %3d / %d", (int) dmx_updates_per_seconde, (int) nUpdatesPerSecondeMin, (int) nUpdatesPerSecondeMax);
+				printf("%3d     %3d / %d",
+						static_cast<int>(dmx_updates_per_seconde),
+						static_cast<int>(nUpdatesPerSecondeMin),
+						static_cast<int>(nUpdatesPerSecondeMax));
 				console_set_cursor(20, TOP_ROW_STATS + 1);
-				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotsInPacket, (int) nSlotsInPacketMin, (int) nSlotsInPacketMax);
+				printf("%3d     %3d / %d",
+						static_cast<int>(dmx_statistics->Statistics.SlotsInPacket),
+						static_cast<int>(nSlotsInPacketMin),
+						static_cast<int>(nSlotsInPacketMax));
 				console_set_cursor(20, TOP_ROW_STATS + 2);
-				printf("%3d     %3d / %d", (int) dmx_statistics->Statistics.SlotToSlot, (int) nSotToSlotMin, (int) nSlotToSlotMax);
+				printf("%3d     %3d / %d",
+						static_cast<int>(dmx_statistics->Statistics.SlotToSlot),
+						static_cast<int>(nSotToSlotMin),
+						static_cast<int>(nSlotToSlotMax));
 				console_set_cursor(17, TOP_ROW_STATS + 3);
-				printf("%6d  %6d / %d", (int) dmx_statistics->Statistics.BreakToBreak, (int) nBreakToBreakMin, (int) nBreakToBreakMax);
+				printf("%6d  %6d / %d",
+						static_cast<int>(dmx_statistics->Statistics.BreakToBreak),
+						static_cast<int>(nBreakToBreakMin),
+						static_cast<int>(nBreakToBreakMax));
 			}
 
 			console_restore_cursor();

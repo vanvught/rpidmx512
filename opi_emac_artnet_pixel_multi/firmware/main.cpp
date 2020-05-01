@@ -43,9 +43,7 @@
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
-
 #include "ipprog.h"
-#include "displayudfhandler.h"
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
@@ -59,8 +57,10 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -86,20 +86,22 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new ArtNetReboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
 	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_ARTNET);
-	WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 	if (ws28xxparms.Load()) {
 		ws28xxparms.Set(&ws28xxDmxMulti);
@@ -111,19 +113,16 @@ void notmain(void) {
 	const uint8_t nActivePorts = ws28xxDmxMulti.GetActivePorts();
 
 	ArtNet4Node node(nActivePorts);
-	ArtNet4Params artnetparams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
 		artnetparams.Dump();
 	}
 
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
-
+	node.SetIpProgHandler(new IpProg);
+	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 	node.SetDirectUpdate(true);
 	node.SetOutput(&ws28xxDmxMulti);
 
@@ -178,9 +177,6 @@ void notmain(void) {
 
 		nPortIndex += ARTNET_MAX_PORTS;
 	}
-
-	ArtNetReboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	node.Print();
 	ws28xxDmxMulti.Print();

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ void notmain(void) {
 	midi_init(MIDI_DIRECTION_INPUT);
 
 	printf("[V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
-	printf("MIDI Monitor, baudrate : %d, interface : %s", (int) midi_get_baudrate(), midi_get_interface_description());
+	printf("MIDI Monitor, baudrate : %d, interface : %s", static_cast<int>(midi_get_baudrate()), midi_get_interface_description());
 
 	monitor.Init();
 

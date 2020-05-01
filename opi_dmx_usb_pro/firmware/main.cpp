@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,7 @@ extern void widget_params_set_store(WidgetStore *pWidgetStore);
 #endif
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
-
-const struct TRDMDeviceInfoData deviceLabel ALIGNED = { (uint8_t *) "Orange Pi Zero DMX USB Pro", 26};
+static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
 extern void rdm_device_info_init(RDMDevice *pRdmDevice);
 
@@ -92,9 +91,8 @@ void notmain(void) {
 	dmx_init();
 	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
 
-	WidgetParams widgetParams((WidgetParamsStore *) &storeWidget);
-
-	widget_params_set_store((WidgetStore *) &storeWidget);
+	WidgetParams widgetParams(&storeWidget);
+	widget_params_set_store(&storeWidget);
 
 	if (widgetParams.Load()) {
 		widgetParams.Set();
@@ -117,7 +115,7 @@ void notmain(void) {
 
 	rdm_device_info_init(&rdmDevice);
 
-	const uint8_t *pRdmDeviceUid = (const uint8_t *)rdmDevice.GetUID();
+	const uint8_t *pRdmDeviceUid = rdmDevice.GetUID();
 	struct TRDMDeviceInfoData tRdmDeviceLabel;
 	rdmDevice.GetLabel(&tRdmDeviceLabel);
 
@@ -125,7 +123,7 @@ void notmain(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", tWidgetMode, widget_mode_names[tWidgetMode]);
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", pRdmDeviceUid[0], pRdmDeviceUid[1], pRdmDeviceUid[2], pRdmDeviceUid[3], pRdmDeviceUid[4], pRdmDeviceUid[5]);
-	printf("Label : %.*s\n", (int) tRdmDeviceLabel.length, (const char *)tRdmDeviceLabel.data);
+	printf("Label : %.*s\n", static_cast<int>(tRdmDeviceLabel.length), reinterpret_cast<const char*>(tRdmDeviceLabel.data));
 
 	hw.WatchdogInit();
 

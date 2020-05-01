@@ -50,8 +50,9 @@
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -72,6 +73,7 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);

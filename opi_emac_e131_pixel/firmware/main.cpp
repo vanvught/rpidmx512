@@ -65,8 +65,9 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -93,19 +94,21 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new Reboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	E131Bridge bridge;
-	E131Params e131params((E131ParamsStore*) &storeE131);
+	E131Params e131params(&storeE131);
 
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
@@ -120,7 +123,7 @@ void notmain(void) {
 
 	bool isLedTypeSet = false;
 
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
@@ -135,8 +138,7 @@ void notmain(void) {
 	}
 
 	if (!isLedTypeSet) {
-
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
@@ -189,9 +191,6 @@ void notmain(void) {
 	bridge.SetOutput(pSpi);
 	bridge.Print();
 	pSpi->Print();
-
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	display.SetTitle("Eth sACN Pixel 1");
 	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);

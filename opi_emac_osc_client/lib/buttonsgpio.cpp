@@ -2,7 +2,7 @@
  * @file buttonsgpio.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 
 #include <stdint.h>
 #ifndef NDEBUG
@@ -52,15 +54,11 @@
 #define LED2_GPIO			GPIO_EXT_26		// PA10
 #define LED3_GPIO			GPIO_EXT_18		// PA18
 
-ButtonsGpio::ButtonsGpio(OscClient* pOscClient):
-	m_pOscClient(pOscClient),
-	m_nButtons(0)
-{
+ButtonsGpio::ButtonsGpio(OscClient *pOscClient) : m_pOscClient(pOscClient), m_nButtons(0) {
 	assert(m_pOscClient != 0);
 }
 
 ButtonsGpio::~ButtonsGpio(void) {
-	Stop();
 }
 
 bool ButtonsGpio::Start(void) {

@@ -60,7 +60,7 @@ private:
 	uint16_t m_nRemotePort;
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
 	uint32_t m_nPathLength;
-	uint8_t *m_pBuffer;
+	char *m_pBuffer;
 };
 
 #endif /* OSCSERVER_H_ */

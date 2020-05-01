@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -44,9 +45,7 @@
 #include "artnetreboot.h"
 
 #include "artnetdiscovery.h"
-
 #include "ipprog.h"
-#include "displayudfhandler.h"
 
 // DMX/RDM Output
 #include "dmxparams.h"
@@ -65,8 +64,10 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -84,7 +85,7 @@ void notmain(void) {
 	StoreDmxSend storeDmxSend;
 	StoreRDMDevice storeRdmDevice;
 
-	ArtNet4Params artnetParams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetParams(spiFlashStore.GetStoreArtNet4());
 
 	if (artnetParams.Load()) {
 		artnetParams.Dump();
@@ -113,13 +114,15 @@ void notmain(void) {
 #endif
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new ArtNetReboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	ArtNet4Node node;
@@ -129,14 +132,9 @@ void notmain(void) {
 
 	artnetParams.Set(&node);
 
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
-
-	ArtNetReboot reboot;
-	hw.SetRebootHandler(&reboot);
+	node.SetIpProgHandler(new IpProg);
+	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 
 	uint8_t nAddress;
 	bool bIsSetIndividual = false;
@@ -195,7 +193,7 @@ void notmain(void) {
 		pDmxOutput = new DMXSendMulti;
 		assert(pDmxOutput != 0);
 
-		DMXParams dmxParams((DMXParamsStore *)&storeDmxSend);
+		DMXParams dmxParams(&storeDmxSend);
 
 		if (dmxParams.Load()) {
 			dmxParams.Dump();
@@ -211,10 +209,10 @@ void notmain(void) {
 		assert(pDiscovery != 0);
 
 		if(artnetParams.IsRdm()) {
-			RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
-				rdmDeviceParams.Set((RDMDevice *)pDiscovery);
+				rdmDeviceParams.Set(pDiscovery);
 				rdmDeviceParams.Dump();
 			}
 
@@ -233,7 +231,7 @@ void notmain(void) {
 				}
 			}
 
-			node.SetRdmHandler((ArtNetRdm *)pDiscovery);
+			node.SetRdmHandler(pDiscovery);
 		}
 	}
 

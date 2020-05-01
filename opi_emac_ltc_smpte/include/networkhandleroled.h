@@ -40,7 +40,10 @@ public:
 
 	void ShowIp(void) {
 		Display::Get()->ClearLine(3);
-		Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), (int) Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+		Display::Get()->Printf(3, IPSTR "/%d %c",
+				IP2STR(Network::Get()->GetIp()),
+				static_cast<int>(Network::Get()->GetNetmaskCIDR()),
+				Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
 	}
 
 	void ShowNetMask(void) {

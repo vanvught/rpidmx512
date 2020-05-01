@@ -54,12 +54,12 @@ ifeq ($(findstring DMXSEND,$(DEFINES)),DMXSEND)
 	LIBS+=dmxsend dmx
 endif
 
-#ifeq ($(findstring PIXEL,$(DEFINES)),PIXEL)
-#	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
-#endif
+ifeq ($(findstring PIXEL,$(DEFINES)),PIXEL)
+	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+endif
 
 ifdef COND
-	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711 spiflashinstall spiflashstore spiflash
+	LIBS+=spiflashinstall spiflashstore spiflash
 endif
 
 LIBS+=network
@@ -127,7 +127,7 @@ OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
 
 define compile-objects
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS) -c $$< -o $$@	
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -Wold-style-cast $(COPS) -c $$< -o $$@	
 
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
@@ -144,7 +144,6 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
-#	$(MAKE) -f Makefile.H3 clean --directory=../lib-nextion
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
 
 builddirs:
@@ -185,7 +184,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS)
-	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
+	$(PREFIX)objdump -d $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 
 $(TARGET) : $(BUILD)main.elf 

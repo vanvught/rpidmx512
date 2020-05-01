@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,16 +54,14 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = '0' + (arg / 10);
+	*n = '0' + (arg % 10);
 }
 
 TimeCode::TimeCode(void) {
-
 }
 
 TimeCode::~TimeCode(void) {
-	this->Stop();
 }
 
 void TimeCode::Start(void) {
@@ -80,13 +78,13 @@ void TimeCode::Stop(void) {
 }
 
 void TimeCode::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
-	itoa_base10(ArtNetTimeCode->Hours, (char *) &timecode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, (char *) &timecode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, (char *) &timecode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, (char *) &timecode[9]);
+	itoa_base10(ArtNetTimeCode->Hours, &timecode[0]);
+	itoa_base10(ArtNetTimeCode->Minutes, &timecode[3]);
+	itoa_base10(ArtNetTimeCode->Seconds, &timecode[6]);
+	itoa_base10(ArtNetTimeCode->Frames, &timecode[9]);
 
 	if ((prev_type != ArtNetTimeCode->Type) && (ArtNetTimeCode->Type < 4)) {
-		memcpy((void *) &timecode[12], (const void *) types[ArtNetTimeCode->Type], 5);
+		memcpy(&timecode[12], types[ArtNetTimeCode->Type], 5);
 		prev_type = ArtNetTimeCode->Type;
 	}
 

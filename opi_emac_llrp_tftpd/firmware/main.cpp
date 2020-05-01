@@ -62,26 +62,25 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	fw.Print();
 
 	console_puts("RDMNet LLRP device only\n");
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new Reboot);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	DisplayUdfHandler displayUdfHandler;
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	MDNS mDns;
@@ -93,16 +92,14 @@ void notmain(void) {
 
 	RDMNetLLRPOnly device;
 
-	((RDMDeviceResponder *)&device)->SetRDMFactoryDefaults(new FactoryDefaults);
+	device.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 
 	device.Init();
 	device.Print();
 	device.Start();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
-
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
@@ -120,7 +117,10 @@ void notmain(void) {
 
 	display.Write(5, "mDNS enabled");
 
-	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+	console_status(CONSOLE_GREEN, "Device running");
+	display.TextStatus("Device running", DISPLAY_7SEGMENT_MSG_INFO_NONE);
+
+	lb.SetMode(LEDBLINK_MODE_NORMAL);
 
 	for (;;) {
 		nw.Run();

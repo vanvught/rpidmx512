@@ -60,8 +60,9 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -71,8 +72,10 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreE131 storeE131;
 	StoreWS28xxDmx storeWS28xxDmx;
 
@@ -85,19 +88,20 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
 	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	E131Bridge bridge;
-	E131Params e131params((E131ParamsStore*) &storeE131);
+	E131Params e131params(&storeE131);
 
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
@@ -105,7 +109,7 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_E131);
-	WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 	if (ws28xxparms.Load()) {
 		ws28xxparms.Set(&ws28xxDmxMulti);

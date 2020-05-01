@@ -128,7 +128,7 @@ OSCServer::OSCServer(void):
 	m_nRemotePort(0),
 	m_nPathLength(0)
 {
-	m_pBuffer = new uint8_t[OSCSERVER_MAX_BUFFER];
+	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
 	m_nPathLength = snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1;
@@ -156,11 +156,11 @@ void OSCServer::Run(void) {
 		return;
 	}
 
-	if (OSC::isMatch((const char*) m_pBuffer, m_aPath)) {
-		const uint32_t nCommandLength = strlen((const char *)m_pBuffer);
+	if (OSC::isMatch(m_pBuffer, m_aPath)) {
+		const uint32_t nCommandLength = strlen(m_pBuffer);
 
 		DEBUG_PUTS(m_pBuffer);
-		DEBUG_PRINTF("%d,%d %s", (int) nCommandLength, m_nPathLength, &m_pBuffer[m_nPathLength]);
+		DEBUG_PRINTF("%d,%d %s", static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
 
 		// */pitch f
 		if (memcmp(&m_pBuffer[m_nPathLength], sPitch, PITCH_LENGTH) == 0) {
@@ -191,7 +191,7 @@ void OSCServer::Run(void) {
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStart((const char *)&m_pBuffer[nOffset]);
+					LtcGenerator::Get()->ActionSetStart(&m_pBuffer[nOffset]);
 					LtcGenerator::Get()->ActionStop();
 					LtcGenerator::Get()->ActionStart();
 
@@ -204,7 +204,7 @@ void OSCServer::Run(void) {
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStart((const char *)&m_pBuffer[nOffset]);
+					LtcGenerator::Get()->ActionSetStart(&m_pBuffer[nOffset]);
 
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
@@ -227,7 +227,7 @@ void OSCServer::Run(void) {
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
 
-					LtcGenerator::Get()->ActionSetStop((const char *)&m_pBuffer[nOffset]);
+					LtcGenerator::Get()->ActionSetStop(&m_pBuffer[nOffset]);
 
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
@@ -240,7 +240,7 @@ void OSCServer::Run(void) {
 			if (memcmp(&m_pBuffer[m_nPathLength + RATE_LENGTH], sSet, SET_LENGTH) == 0) {
 				const uint32_t nOffset = m_nPathLength + RATE_LENGTH + SET_LENGTH;
 
-				LtcGenerator::Get()->ActionSetRate((const char *)&m_pBuffer[nOffset]);
+				LtcGenerator::Get()->ActionSetRate(&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 			}
@@ -263,7 +263,7 @@ void OSCServer::Run(void) {
 				m_pBuffer[nOffset + 5] = ':';
 				m_pBuffer[nOffset + 8] = '.';
 
-				LtcGenerator::Get()->ActionGoto((const char *)&m_pBuffer[nOffset]);
+				LtcGenerator::Get()->ActionGoto(&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 			}
@@ -274,7 +274,7 @@ void OSCServer::Run(void) {
 		if ((nCommandLength <= (m_nPathLength + DIRECTION_LENGTH + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], sDirection, DIRECTION_LENGTH) == 0)) {
 			if (m_pBuffer[m_nPathLength + DIRECTION_LENGTH] == '/') {
 				const uint32_t nOffset = m_nPathLength + DIRECTION_LENGTH + 1;
-				LtcGenerator::Get()->ActionSetDirection((const char *)&m_pBuffer[nOffset]);
+				LtcGenerator::Get()->ActionSetDirection(&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
 			}
@@ -293,7 +293,7 @@ void OSCServer::Run(void) {
 					TCNet::Get()->SetLayer(tLayer);
 					TCNetDisplay::Show();
 
-					DEBUG_PRINTF("*/tcnet/layer/%c -> %d", m_pBuffer[nOffset], (int) tLayer);
+					DEBUG_PRINTF("*/tcnet/layer/%c -> %d", m_pBuffer[nOffset], static_cast<int>(tLayer));
 				}
 
 				return;
@@ -342,7 +342,7 @@ void OSCServer::Run(void) {
 					TCNet::Get()->SetUseTimeCode(bUseTimeCode);
 					TCNetDisplay::Show();
 
-					DEBUG_PRINTF("*/tcnet/timecode -> %d", (int) bUseTimeCode);
+					DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(bUseTimeCode));
 				}
 
 				return;
@@ -360,9 +360,9 @@ void OSCServer::Run(void) {
 
 					const int nValue = Msg.GetInt(0);
 
-					LtcDisplayWS28xx::Get()->SetMaster((uint8_t) nValue);
+					LtcDisplayWS28xx::Get()->SetMaster(nValue);
 
-					DEBUG_PRINTF("*/ws28xx/master -> %d", (int)((uint8_t) nValue));
+					DEBUG_PRINTF("*/ws28xx/master -> %d", static_cast<int>(static_cast<uint8_t>(nValue)));
 				}
 
 				return;
@@ -427,7 +427,7 @@ void OSCServer::SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex
 
 		LtcDisplayWS28xx::Get()->SetRGB(nRed, nGreen, nBlue, tIndex);
 
-		DEBUG_PRINTF("*/ws28xx/rgb/[%d] -> %d %d %d", (int) tIndex, (int) nRed, (int) nGreen, (int) nBlue);
+		DEBUG_PRINTF("*/ws28xx/rgb/[%d] -> %d %d %d", static_cast<int>(tIndex), static_cast<int>(nRed), static_cast<int>(nGreen), static_cast<int>(nBlue));
 	} else {
 		DEBUG_PUTS("Invalid ws28xx/rgb/*");
 	}

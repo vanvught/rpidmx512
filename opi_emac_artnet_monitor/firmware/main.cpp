@@ -49,14 +49,14 @@
 #include "timecode.h"
 #include "timesync.h"
 
-#include "displayudfhandler.h"
-
- // Monitor Output
+// Monitor Output
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -78,12 +78,13 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 	nw.Init();
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -115,7 +116,7 @@ void notmain(void) {
 		node.SetTimeSyncHandler(&timesync);
 	}
 
-	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
+	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
 
 	DMXMonitor monitor;
@@ -124,9 +125,7 @@ void notmain(void) {
 	node.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
-
-	ArtNetNode *pNode = (ArtNetNode *)&node;
-	pNode->Print();
+	node.Print();
 
 	display.SetTitle("Eth Art-Net 4 Monitor");
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);

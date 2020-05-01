@@ -1,7 +1,7 @@
 #
 DEFINES = ESP8266 ENABLE_MMU NDEBUG
 #
-LIBS = e131 uuid dmxsend dmx ws28xxdmx ws28xx dmxmonitor lightset ledblink display
+LIBS = e131 uuid dmxsend dmx ws28xxdmx ws28xx dmxmonitor lightset display
 #
 SRCDIR = firmware
 

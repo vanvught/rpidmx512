@@ -71,9 +71,6 @@
  #include "storetlc59711.h"
 #endif
 
-#include "firmwareversion.h"
-#include "software_version.h"
-
 #if defined (ORANGE_PI_ONE)
  #include "slushdmx.h"
  #define BOARD_NAME	"Slushengine"
@@ -84,6 +81,11 @@
  #include "storesparkfundmx.h"
  #include "storemotors.h"
 #endif
+
+#include "firmwareversion.h"
+#include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -109,6 +111,8 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new ArtNetReboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
@@ -128,9 +132,9 @@ void notmain(void) {
 
 	struct TSparkFunStores sparkFunStores;
 	sparkFunStores.pSparkFunDmxParamsStore = &storeSparkFunDmx;
-	sparkFunStores.pModeParamsStore = (ModeParamsStore *) &storeMotors;
-	sparkFunStores.pMotorParamsStore = (MotorParamsStore *) &storeMotors;
-	sparkFunStores.pL6470ParamsStore = (L6470ParamsStore *) &storeMotors;
+	sparkFunStores.pModeParamsStore = &storeMotors;
+	sparkFunStores.pMotorParamsStore = &storeMotors;
+	sparkFunStores.pL6470ParamsStore = &storeMotors;
 
 	console_status(CONSOLE_YELLOW, SparkFunDmxConst::MSG_INIT);
 	display.TextStatus(SparkFunDmxConst::MSG_INIT, DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN);
@@ -139,7 +143,7 @@ void notmain(void) {
 	assert(pSparkFunDmx != 0);
 
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
-	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+	pSparkFunDmx->SetModeStore(&storeMotors);
 
 	nMotorsConnected = pSparkFunDmx->GetMotorsConnected();
 
@@ -148,7 +152,7 @@ void notmain(void) {
 
 #if defined (ORANGE_PI)
 	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
 #else
 	TLC59711DmxParams pwmledparms;
 #endif
@@ -160,7 +164,7 @@ void notmain(void) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != 0);
 #if defined (ORANGE_PI)
-			pTLC59711Dmx->SetTLC59711DmxStore((TLC59711DmxStore *) &storeTLC59711);
+			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
 #endif
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
@@ -178,7 +182,7 @@ void notmain(void) {
 		}
 	}
 
-	pBoard->SetLightSetDisplay((LightSetDisplay *) &displayUdfHandler);
+	pBoard->SetLightSetDisplay(&displayUdfHandler);
 
 	char aDescription[64];
 	if (isLedTypeSet) {
@@ -191,12 +195,12 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
 #if defined (ORANGE_PI)
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 #else
 	nw.Init();
 #endif
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -204,12 +208,12 @@ void notmain(void) {
 
 	ArtNet4Node node;
 #if defined (ORANGE_PI)
-	ArtNet4Params artnetparams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
 #else
 	ArtNet4Params artnetparams;
 #endif
 
-	node.SetLongName((const char *)aDescription);
+	node.SetLongName(aDescription);
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
@@ -218,40 +222,35 @@ void notmain(void) {
 
 	Identify identify;
 
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
+	node.SetIpProgHandler(new IpProg);
+	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetDirectUpdate(false);
 #if defined (ORANGE_PI)
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 #endif
 	node.SetOutput(pBoard);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
-
-	ArtNetReboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, pBoard);
 
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
-	RdmResponder.SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 #else
 	RDMDeviceParams rdmDeviceParams;
 #endif
 
 	if(rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set((RDMDevice *)&RdmResponder);
+		rdmDeviceParams.Set(&RdmResponder);
 		rdmDeviceParams.Dump();
 	}
 
 	RdmResponder.Init();
 	RdmResponder.Print();
 
-	node.SetRdmHandler((ArtNetRdm *)&RdmResponder, true);
+	node.SetRdmHandler(&RdmResponder, true);
 	node.Print();
 
 	pBoard->Print();

@@ -54,7 +54,7 @@ DmxInput::~DmxInput(void) {
 
 void DmxInput::Start(uint8_t nPort) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPort=%d", (int) nPort);
+	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
 	if (m_bIsStarted[nPort]) {
 		DEBUG_EXIT
@@ -70,7 +70,7 @@ void DmxInput::Start(uint8_t nPort) {
 
 void DmxInput::Stop(uint8_t nPort) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPort=%d", (int) nPort);
+	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
 	if (!m_bIsStarted[nPort]) {
 		DEBUG_EXIT
@@ -91,7 +91,7 @@ const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUp
 
 	if (pDmx != 0) {
 		const struct _dmx_data *dmx_data = (struct _dmx_data *) pDmx;
-		nLength = (uint16_t) (dmx_data->statistics.slots_in_packet);
+		nLength = dmx_data->statistics.slots_in_packet;
 		return (pDmx + 1);
 	}
 

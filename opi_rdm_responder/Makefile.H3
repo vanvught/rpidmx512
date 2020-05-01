@@ -1,6 +1,6 @@
 PLATFORM = ORANGE_PI
 #
-DEFINES = NO_EMAC RDM_RESPONDER  NDEBUG
+DEFINES = NO_EMAC RDM_RESPONDER PIXEL NDEBUG
 #
 LIBS = dmxreceiver rdmresponder rdm dmx rdmsensor rdmsubdevice 
 #

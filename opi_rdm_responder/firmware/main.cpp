@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2018-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,13 +93,13 @@ void notmain(void) {
 	bool isLedTypeSet = false;
 
 	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != 0);
-			pTLC59711Dmx->SetTLC59711DmxStore((TLC59711DmxStore *) &storeTLC59711);
+			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
 
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
@@ -113,9 +113,9 @@ void notmain(void) {
 	if (!isLedTypeSet) {
 		WS28xxDmx *pSPISend = new WS28xxDmx;
 		assert(pSPISend != 0);
-		pSPISend->SetWS28xxDmxStore((WS28xxDmxStore *) &storeWS28xxDmx);
+		pSPISend->SetWS28xxDmxStore(&storeWS28xxDmx);
 
-		WS28xxDmxParams deviceparams((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+		WS28xxDmxParams deviceparams(&storeWS28xxDmx);
 
 		if (deviceparams.Load()) {
 			deviceparams.Dump();
@@ -131,12 +131,12 @@ void notmain(void) {
 	RDMResponder dmxrdm(&personality, pLightSet, nGpioDataDirection);
 
 	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
-	RDMDevice *pRDMDevice = (RDMDevice *)&dmxrdm;
-	pRDMDevice->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	dmxrdm.SetRDMDeviceStore(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
+		rdmDeviceParams.Set(&dmxrdm);
 		rdmDeviceParams.Dump();
 	}
 

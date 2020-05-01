@@ -124,17 +124,17 @@ void SourceSelect::LedBlink(uint8_t nPortB) {
 
 void SourceSelect::HandleActionLeft(TLtcReaderSource &tLtcReaderSource) {
 	if (tLtcReaderSource == 0) {
-		tLtcReaderSource = (TLtcReaderSource) (LTC_READER_SOURCE_UNDEFINED - 1);
+		tLtcReaderSource = static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1));
 	} else {
-		tLtcReaderSource = (TLtcReaderSource) (tLtcReaderSource - 1);
+		tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource - 1));
 	}
 }
 
 void SourceSelect::HandleActionRight(TLtcReaderSource &tLtcReaderSource) {
-	if (tLtcReaderSource == (TLtcReaderSource) (LTC_READER_SOURCE_UNDEFINED - 1)) {
-		tLtcReaderSource = (TLtcReaderSource) 0;
+	if (tLtcReaderSource == static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1))) {
+		tLtcReaderSource = static_cast<TLtcReaderSource>(0);
 	} else {
-		tLtcReaderSource = (TLtcReaderSource) (tLtcReaderSource + 1);
+		tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource + 1));
 	}
 }
 
@@ -152,11 +152,11 @@ void SourceSelect::UpdateDisaplays(TLtcReaderSource tLtcReaderSource) {
 	Display::Get()->TextStatus(SourceSelectConst::SOURCE[tLtcReaderSource], s_7Segment[tLtcReaderSource]);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
-		LtcDisplayMax7219::Get()->WriteChar((uint8_t) tLtcReaderSource);
+		LtcDisplayMax7219::Get()->WriteChar(tLtcReaderSource);
 	}
 
 	if(!m_ptLtcDisabledOutputs->bWS28xx) {
-		LtcDisplayWS28xx::Get()->WriteChar((uint8_t) tLtcReaderSource);
+		LtcDisplayWS28xx::Get()->WriteChar(tLtcReaderSource);
 	}
 }
 
@@ -175,10 +175,10 @@ bool SourceSelect::Check(void) {
 	i2c_set_address(MCP23017_I2C_ADDRESS);
 
 	// Rotary and switches
-	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 	// All input
-	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);		// Pull-up
-	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);	// Interrupt on Change
-	(void) i2c_read_reg_uint8(MCP23X17_INTCAPA);	// Clear interrupts
+	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 			// All input
+	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);				// Pull-up
+	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);			// Interrupt on Change
+	static_cast<void>(i2c_read_reg_uint8(MCP23X17_INTCAPA));// Clear interrupts
 	// Led's
 	i2c_write_reg_uint8(MCP23X17_IODIRB, 0x00); 	// All output
 	i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << m_tLtcReaderSource);
@@ -227,7 +227,7 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 			m_tLtcReaderSource = tLtcReaderSource;
 
 			i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << tLtcReaderSource);
-			(void) i2c_read_reg_uint8(MCP23X17_INTCAPA);	// Clear interrupts
+			static_cast<void>(i2c_read_reg_uint8(MCP23X17_INTCAPA));// Clear interrupts
 
 			return false;
 		} else {

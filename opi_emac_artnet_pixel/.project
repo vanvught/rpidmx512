@@ -3,7 +3,6 @@
 	<name>opi_emac_artnet_pixel</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

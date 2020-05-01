@@ -58,14 +58,14 @@ void ArtNetOutput::Handler(void) {
 
 void ArtNetOutput::Start(uint8_t nPortIndex) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPortIndex=%d", (int) nPortIndex);
+	DEBUG_PRINTF("nPortIndex=%d", static_cast<int>(nPortIndex));
 
 	if (nPortIndex < E131_MAX_PORTS) {
 		uint16_t nUniverse;
 
 		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
 			m_nUniverse[nPortIndex] = nUniverse;
-			DEBUG_PRINTF("m_nUniverse[%d]=%d", (int) nPortIndex, (int) m_nUniverse[nPortIndex]);
+			DEBUG_PRINTF("m_nUniverse[%d]=%d", static_cast<int>(nPortIndex), static_cast<int>(m_nUniverse[nPortIndex]));
 		}
 	}
 
@@ -80,7 +80,7 @@ void ArtNetOutput::Stop(uint8_t nPortIndex) {
 
 		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
 			m_nUniverse[nPortIndex] = 0;
-			DEBUG_PRINTF("m_nUniverse[%d]=0", (int) nPortIndex);
+			DEBUG_PRINTF("m_nUniverse[%d]=0", static_cast<int>(nPortIndex));
 		}
 	}
 

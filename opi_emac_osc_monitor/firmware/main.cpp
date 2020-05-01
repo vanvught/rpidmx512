@@ -50,8 +50,9 @@
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 static const char START_BRIDGE[] = "Starting the Bridge ...";
@@ -76,6 +77,7 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
@@ -117,7 +119,7 @@ void notmain(void) {
 
 	uint8_t nHwTextLength;
 
-	display.Printf(1, "Eth OSC Monitor");
+	display.Printf(1, "OSC Monitor");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "In: %d", server.GetPortIncoming());

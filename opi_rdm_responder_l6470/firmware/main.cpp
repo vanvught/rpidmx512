@@ -118,7 +118,7 @@ void notmain(void) {
 
 #if defined (ORANGE_PI)
 	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
 #else
 	TLC59711DmxParams pwmledparms;
 #endif
@@ -130,7 +130,7 @@ void notmain(void) {
 			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != 0);
 #if defined (ORANGE_PI)
-			pTLC59711Dmx->SetTLC59711DmxStore((TLC59711DmxStore *) &storeTLC59711);
+			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
 #endif
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
@@ -171,7 +171,7 @@ void notmain(void) {
 
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 	RDMDevice *pRDMDevice = (RDMDevice *)&dmxrdm;
 	pRDMDevice->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
 #else

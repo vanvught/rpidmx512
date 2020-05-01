@@ -68,23 +68,23 @@ void TimeSync::Start(void) {
 }
 
 void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
-	struct hardware_time hw_time;
+	struct tm hw_time;
 
-	hw_time.second = pArtNetTimeSync->tm_sec;
-	hw_time.minute = pArtNetTimeSync->tm_min;
-	hw_time.hour = pArtNetTimeSync->tm_hour;
-	hw_time.day = pArtNetTimeSync->tm_mday;
-	hw_time.month = pArtNetTimeSync->tm_mon;
-	hw_time.year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + (uint16_t) pArtNetTimeSync->tm_year_lo;
+	hw_time.tm_sec = pArtNetTimeSync->tm_sec;
+	hw_time.tm_min = pArtNetTimeSync->tm_min;
+	hw_time.tm_hour = pArtNetTimeSync->tm_hour;
+	hw_time.tm_mday = pArtNetTimeSync->tm_mday;
+	hw_time.tm_mon = pArtNetTimeSync->tm_mon;
+	hw_time.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + (uint16_t) pArtNetTimeSync->tm_year_lo;
 
 	hardware_rtc_set(&hw_time);
 
-	itoa_base10(hw_time.hour, (char *) &timesync[0]);
-	itoa_base10(hw_time.minute, (char *) &timesync[3]);
-	itoa_base10(hw_time.second, (char *) &timesync[6]);
-	itoa_base10(hw_time.year - (100 * (hw_time.year / 100)), (char *) &timesync[9]);
-	itoa_base10(hw_time.month, (char *) &timesync[12]);
-	itoa_base10(hw_time.day, (char *) &timesync[15]);
+	itoa_base10(hw_time.tm_hour, (char *) &timesync[0]);
+	itoa_base10(hw_time.tm_min, (char *) &timesync[3]);
+	itoa_base10(hw_time.tm_sec, (char *) &timesync[6]);
+	itoa_base10(hw_time.tm_year - (100 * (hw_time.tm_year / 100)), (char *) &timesync[9]);
+	itoa_base10(hw_time.tm_mon, (char *) &timesync[12]);
+	itoa_base10(hw_time.tm_mday, (char *) &timesync[15]);
 
 	this->Show();
 }

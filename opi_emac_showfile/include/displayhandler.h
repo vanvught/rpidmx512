@@ -70,11 +70,13 @@ public:
 				break;
 		}
 
-		if (ShowFile::Get()->GetDoLoop()) {
-			Display::Get()->SetCursorPos(11, 7);
+		Display::Get()->SetCursorPos(10, 7);
+
+		if (ShowFile::Get()->IsTFTPEnabled()) {
+			Display::Get()->PutString(" [TFTP On]");
+		} else 	if (ShowFile::Get()->GetDoLoop()) {
 			Display::Get()->PutString(" [Looping]");
 		} else {
-			Display::Get()->SetCursorPos(11, 7);
 			Display::Get()->PutString("          ");
 		}
 	}

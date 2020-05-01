@@ -62,8 +62,8 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = (char) '0' + (char) (nArg / 10);
-	*p = (char) '0' + (char) (nArg % 10);
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
 MidiMonitor::MidiMonitor(void):
@@ -107,17 +107,17 @@ void MidiMonitor::Update(uint8_t nType) {
 
 	if (nType != m_nTypePrevious) {
 		m_nTypePrevious = nType;
-		memcpy((char *) &s_aTimecode[12], (char *) s_aTypes[nType], 5);
+		memcpy(&s_aTimecode[12], s_aTypes[nType], 5);
 	}
 }
 
 void MidiMonitor::HandleMtc(void) {
 	const uint8_t type = m_pMidiMessage->system_exclusive[5] >> 5;
 
-	itoa_base10((m_pMidiMessage->system_exclusive[5] & 0x1F), (char *) &s_aTimecode[0]);
-	itoa_base10(m_pMidiMessage->system_exclusive[6], (char *) &s_aTimecode[3]);
-	itoa_base10(m_pMidiMessage->system_exclusive[7], (char *) &s_aTimecode[6]);
-	itoa_base10(m_pMidiMessage->system_exclusive[8], (char *) &s_aTimecode[9]);
+	itoa_base10((m_pMidiMessage->system_exclusive[5] & 0x1F), &s_aTimecode[0]);
+	itoa_base10(m_pMidiMessage->system_exclusive[6], &s_aTimecode[3]);
+	itoa_base10(m_pMidiMessage->system_exclusive[7], &s_aTimecode[6]);
+	itoa_base10(m_pMidiMessage->system_exclusive[8], &s_aTimecode[9]);
 
 	Update(type);
 }
@@ -134,10 +134,10 @@ void MidiMonitor::HandleQf(void) {
 	}
 
 	if ((m_bDirection && (nPart == 7)) || (!m_bDirection && (nPart == 0))) {
-		itoa_base10(s_Qf[6] | ((s_Qf[7] & 0x1) << 4) , (char *) &s_aTimecode[0]);
-		itoa_base10(s_Qf[4] | (s_Qf[5] << 4) , (char *) &s_aTimecode[3]);
-		itoa_base10(s_Qf[2] | (s_Qf[3] << 4) , (char *) &s_aTimecode[6]);
-		itoa_base10(s_Qf[0] | (s_Qf[1] << 4) , (char *) &s_aTimecode[9]);
+		itoa_base10(s_Qf[6] | ((s_Qf[7] & 0x1) << 4) , &s_aTimecode[0]);
+		itoa_base10(s_Qf[4] | (s_Qf[5] << 4) , &s_aTimecode[3]);
+		itoa_base10(s_Qf[2] | (s_Qf[3] << 4) , &s_aTimecode[6]);
+		itoa_base10(s_Qf[0] | (s_Qf[1] << 4) , &s_aTimecode[9]);
 
 		const uint8_t nType = s_Qf[7] >> 1;
 

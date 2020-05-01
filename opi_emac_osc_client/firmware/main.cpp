@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,9 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -69,12 +70,11 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
-
 	SpiFlashStore spiFlashStore;
+
 	StoreOscClient storeOscClient;
 
-	OscClientParams params((OscClientParamsStore *)&storeOscClient);
-
+	OscClientParams params(&storeOscClient);
 	OscClient client;
 
 	if (params.Load()) {
@@ -85,12 +85,13 @@ void notmain(void) {
 	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	MDNS mDns;
@@ -111,8 +112,8 @@ void notmain(void) {
 	assert(pButtonsMcp != 0);
 
 	if (pButtonsMcp->Start()) {
-		pButtonsSet = (ButtonsSet *) pButtonsMcp;
-		client.SetLedHandler((OscClientLed *)pButtonsMcp);
+		pButtonsSet = static_cast<ButtonsSet*>(pButtonsMcp);
+		client.SetLedHandler(pButtonsMcp);
 	} else {
 		delete pButtonsMcp;
 
@@ -121,8 +122,8 @@ void notmain(void) {
 
 		pButtonsGpio->Start();
 
-		pButtonsSet = (ButtonsSet *) pButtonsGpio;
-		client.SetLedHandler((OscClientLed *)pButtonsGpio);
+		pButtonsSet = static_cast<ButtonsSet*>(pButtonsGpio);
+		client.SetLedHandler(pButtonsGpio);
 	}
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC_CLIENT, REMOTE_CONFIG_MODE_OSC, pButtonsSet->GetButtonsCount());
@@ -134,6 +135,9 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	for (unsigned i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -151,13 +155,10 @@ void notmain(void) {
 
 	client.Start();
 
-	hw.SetLed(HARDWARE_LED_FLASH);
-
 	console_status(CONSOLE_GREEN, OscClientConst::MSG_CLIENT_STARTED);
 	display.TextStatus(OscClientConst::MSG_CLIENT_STARTED, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED);
 
-	while (spiFlashStore.Flash())
-		;
+	lb.SetMode(LEDBLINK_MODE_NORMAL);
 
 	hw.WatchdogInit();
 

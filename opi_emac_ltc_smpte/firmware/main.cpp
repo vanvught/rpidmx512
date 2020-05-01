@@ -105,7 +105,7 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreLtc storeLtc;
-	LtcParams ltcParams((LtcParamsStore *)&storeLtc);
+	LtcParams ltcParams(&storeLtc);
 
 	struct TLtcDisabledOutputs tLtcDisabledOutputs;
 	struct TLtcTimeCode tStartTimeCode;
@@ -130,11 +130,9 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	NetworkHandlerOled nwHandlerDisplay;
-	nw.SetNetworkDisplay((NetworkDisplay *) &nwHandlerDisplay);
-
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(new NetworkHandlerOled);
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -149,7 +147,7 @@ void notmain(void) {
 	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
 
 	StoreLtcDisplay storeLtcDisplay;
-	LtcDisplayParams ltcDisplayParams((LtcDisplayParamsStore *)&storeLtcDisplay);
+	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
 
 	if (ltcDisplayParams.Load()) {
 		ltcDisplayParams.Dump();
@@ -171,7 +169,7 @@ void notmain(void) {
 	}
 
 	display.ClearLine(3);
-	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), (int) nw.GetNetmaskCIDR(), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), static_cast<int>(nw.GetNetmaskCIDR()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 
 	TLtcReaderSource source = ltcParams.GetSource();
 
@@ -215,14 +213,14 @@ void notmain(void) {
 		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
 		display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
 
-		ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+		ArtNetParams artnetparams(spiFlashStore.GetStoreArtNet());
 
 		if (artnetparams.Load()) {
 			artnetparams.Set(&node);
 			artnetparams.Dump();
 		}
 
-		node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+		node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 		node.SetShortName("LTC SMPTE Node");
 		node.SetIpProgHandler(&ipprog);
 
@@ -250,7 +248,7 @@ void notmain(void) {
 	StoreTCNet storetcnet;
 
 	if (bRunTCNet) {
-		TCNetParams tcnetparams((TCNetParamsStore*) &storetcnet);
+		TCNetParams tcnetparams(&storetcnet);
 
 		if (tcnetparams.Load()) {
 			tcnetparams.Set(&tcnet);
@@ -380,6 +378,9 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	printf("Source : %s\n", SourceSelectConst::SOURCE[source]);
 

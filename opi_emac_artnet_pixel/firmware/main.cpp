@@ -43,9 +43,7 @@
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
-
 #include "ipprog.h"
-#include "displayudfhandler.h"
 
 // Addressable led
 #include "lightset.h"
@@ -66,8 +64,10 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayudfhandler.h"
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -85,7 +85,7 @@ void notmain(void) {
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;
 
-	ArtNet4Params artnetparams((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -100,13 +100,15 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new ArtNetReboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay((NetworkDisplay *)&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
@@ -115,11 +117,9 @@ void notmain(void) {
 	ArtNet4Node node;
 	artnetparams.Set(&node);
 
-	IpProg ipprog;
-	node.SetIpProgHandler(&ipprog);
-
-	node.SetArtNetDisplay((ArtNetDisplay *)&displayUdfHandler);
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
+	node.SetIpProgHandler(new IpProg);
+	node.SetArtNetDisplay(&displayUdfHandler);
+	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 
 	const uint8_t nUniverse = artnetparams.GetUniverse();
 
@@ -129,7 +129,7 @@ void notmain(void) {
 
 	bool isLedTypeSet = false;
 
-	TLC59711DmxParams pwmledparms((TLC59711DmxParamsStore *) &storeTLC59711);
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
@@ -144,7 +144,7 @@ void notmain(void) {
 
 	if (!isLedTypeSet) {
 
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) &storeWS28xxDmx);
+		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
@@ -193,9 +193,6 @@ void notmain(void) {
 			}
 		}
 	}
-
-	ArtNetReboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	node.SetOutput(pSpi);
 	node.Print();

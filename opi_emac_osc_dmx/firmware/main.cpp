@@ -55,8 +55,9 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 static const char START_BRIDGE[] = "Starting the Bridge ...";
@@ -75,7 +76,7 @@ void notmain(void) {
 	StoreOscServer storeOscServer;
 	StoreDmxSend storeDmxSend;
 
-	OSCServerParams params((OSCServerParamsStore *)&storeOscServer);
+	OSCServerParams params(&storeOscServer);
 	OscServer server;
 
 	if (params.Load()) {
@@ -86,12 +87,13 @@ void notmain(void) {
 	fw.Print();
 
 	hw.SetLed(HARDWARE_LED_ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	MDNS mDns;
@@ -105,7 +107,7 @@ void notmain(void) {
 	display.TextStatus(BRIDGE_PARMAS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
 
 	DMXSend dmx;
-	DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+	DMXParams dmxparams(&storeDmxSend);
 
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
@@ -133,7 +135,7 @@ void notmain(void) {
 
 	uint8_t nHwTextLength;
 
-	display.Printf(1, "Eth OSC DMX");
+	display.Printf(1, "OSC DMX 1");
 	display.Write(2, hw.GetBoardName(nHwTextLength));
 	display.Printf(3, "IP: " IPSTR " %c", IP2STR(Network::Get()->GetIp()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
 	display.Printf(4, "In: %d", server.GetPortIncoming());

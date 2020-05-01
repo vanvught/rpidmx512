@@ -59,8 +59,9 @@
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
+
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -70,12 +71,14 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
 
-	E131Params e131params((E131ParamsStore*) &storeE131);
+	E131Params e131params(&storeE131);
 
 	if (e131params.Load()) {
 		e131params.Dump();
@@ -100,12 +103,14 @@ void notmain(void) {
 #endif
 
 	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetRebootHandler(new Reboot);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
 
-	nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore((NetworkStore *)spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
@@ -114,9 +119,6 @@ void notmain(void) {
 	E131Bridge bridge;
 
 	e131params.Set(&bridge);
-
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
 
 	uint16_t nUniverse;
 	bool bIsSetIndividual = false;
@@ -172,7 +174,7 @@ void notmain(void) {
 		pDmxOutput = new DMXSendMulti;
 		assert(pDmxOutput != 0);
 
-		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+		DMXParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Dump();

@@ -33,7 +33,7 @@
 #include "e131.h"
 #include "e131sync.h"
 
-class ArtNetOutput: public E131Sync, LightSet {
+class ArtNetOutput: public E131Sync, public LightSet {
 public:
 	ArtNetOutput(void);
 	~ArtNetOutput(void);

@@ -3,8 +3,6 @@
 	<name>opi_emac_osc_dmx</name>
 	<comment></comment>
 	<projects>
-		<project>h3-firmware-template</project>
-		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
