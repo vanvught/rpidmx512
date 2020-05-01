@@ -3,15 +3,6 @@
 	<name>linux_artnet</name>
 	<comment></comment>
 	<projects>
-		<project>lib-artnet</project>
-		<project>lib-artnet4</project>
-		<project>lib-dmxmonitor</project>
-		<project>lib-hal</project>
-		<project>lib-ledblink</project>
-		<project>lib-lightset</project>
-		<project>lib-rdm</project>
-		<project>lib-spiflashstore</project>
-		<project>linux-template</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

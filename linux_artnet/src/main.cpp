@@ -29,10 +29,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if defined (RASPPI)
- #include "bcm2835.h"
-#endif
-
 #include "hardware.h"
 #include "networklinux.h"
 #include "ledblink.h"
@@ -42,6 +38,7 @@
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
+#include "storemonitor.h"
 
 #include "identify.h"
 #include "artnetrdmresponder.h"
@@ -54,12 +51,13 @@
  #include "ipprog.h"
 #endif
 
-#if defined (RASPPI)
- #include "spiflashstore.h"
-#endif
+#include "spiflashstore.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
 
 int main(int argc, char **argv) {
@@ -67,18 +65,6 @@ int main(int argc, char **argv) {
 	NetworkLinux nw;
 	LedBlink lb;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-#if defined (RASPPI)
-	if (getuid() != 0) {
-		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
-		return -1;
-	}
-
-	if (bcm2835_init() != 1) {
-		fprintf(stderr, "bcm2835_init() failed\n");
-		return -2;
-	}
-#endif
 
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
@@ -92,21 +78,17 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-#if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
-	ArtNet4Params artnet4params((ArtNet4ParamsStore *)spiFlashStore.GetStoreArtNet4());
-#else
-	ArtNet4Params artnet4params;
-#endif
+	ArtNet4Params artnet4Params(spiFlashStore.GetStoreArtNet4());
 
 	ArtNet4Node node;
 
-	if (artnet4params.Load()) {
-		artnet4params.Dump();
-		artnet4params.Set(&node);
+	if (artnet4Params.Load()) {
+		artnet4Params.Dump();
+		artnet4Params.Set(&node);
 	}
 
-	if(artnet4params.IsRdm()) {
+	if(artnet4Params.IsRdm()) {
 		printf("Art-Net %d Node - Real-time DMX Monitor / RDM Responder {1 Universe}\n", node.GetVersion());
 	} else {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
@@ -117,19 +99,25 @@ int main(int argc, char **argv) {
 	} // No worries about closing this file pointer
 
 	DMXMonitor monitor;
-	DMXMonitorParams params;
+	DMXMonitorParams monitorParams(new StoreMonitor);
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&monitor);
+	if (monitorParams.Load()) {
+		monitorParams.Dump();
+		monitorParams.Set(&monitor);
 	}
 
 	node.SetOutput(&monitor);
+#if defined (__linux__)
+	if (getuid() == 0) {
+		node.SetIpProgHandler(new IpProg);
+	}
+#endif
+	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
-	if(artnet4params.IsRdm()) {
+	if(artnet4Params.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams;
 		if (rdmDeviceParams.Load()) {
 			rdmDeviceParams.Set(&RdmResponder);
@@ -138,20 +126,20 @@ int main(int argc, char **argv) {
 
 		RdmResponder.Init();
 
-		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4params.GetUniverse());
+		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4Params.GetUniverse());
 
-		if (artnet4params.IsRdmDiscovery()) {
+		if (artnet4Params.IsRdmDiscovery()) {
 			RdmResponder.Full(0);
 		}
 
-		node.SetRdmHandler((ArtNetRdm *)&RdmResponder, true);
+		node.SetRdmHandler(&RdmResponder, true);
 	} else {
 		uint8_t nAddress;
 		bool bIsSetIndividual = false;
 		bool bIsSet;
 
 		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-			nAddress = artnet4params.GetUniverse(i, bIsSet);
+			nAddress = artnet4Params.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
 				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, nAddress);
@@ -161,42 +149,40 @@ int main(int argc, char **argv) {
 
 		if (!bIsSetIndividual) {
 			for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, i + artnet4params.GetUniverse());
+				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, i + artnet4Params.GetUniverse());
 			}
 		}
 	}
 
 	Identify identify;
 
-#if defined (__linux__)
-	IpProg ipprog;
-
-	if (getuid() == 0) {
-		node.SetIpProgHandler(&ipprog);
-	}
-#endif
-
-#if defined (RASPPI)
-	node.SetArtNetStore((ArtNetStore *)spiFlashStore.GetStoreArtNet());
-
-	spiFlashStore.Dump();
-#endif
-
 	nw.Print();
 	node.Print();
 
-	if(artnet4params.IsRdm()) {
+	if(artnet4Params.IsRdm()) {
 		RdmResponder.Print();
 	}
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_MONITOR, node.GetActiveOutputPorts());
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	node.Start();
 
 	for (;;) {
 		node.Run();
 		identify.Run();
-#if defined (RASPPI)
+		remoteConfig.Run();
 		spiFlashStore.Flash();
-#endif
 	}
 
 	return 0;
