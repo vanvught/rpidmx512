@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,19 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "storee131.h"
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
+#include "storemonitor.h"
 
-#if defined (RASPPI)
- #include "spiflashstore.h"
- #include "storee131.h"
-#endif
+#include "spiflashstore.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
 
 int main(int argc, char **argv) {
@@ -67,21 +69,14 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-#if defined (RASPPI)
 	SpiFlashStore spiFlashStore;
-	StoreE131 storeE131;
 
-	E131Params e131params((E131ParamsStore *) &storeE131);
-	spiFlashStore.Dump();
-#else
-	E131Params e131params;
-#endif
-
+	E131Params e131Params(new StoreE131);
 	E131Bridge bridge;
 
-	if (e131params.Load()) {
-		e131params.Dump();
-		e131params.Set(&bridge);
+	if (e131Params.Load()) {
+		e131Params.Dump();
+		e131Params.Set(&bridge);
 	}
 
 	if (fopen("direct.update", "r") != NULL) {
@@ -89,11 +84,11 @@ int main(int argc, char **argv) {
 	}
 
 	DMXMonitor monitor;
-	DMXMonitorParams params;
+	DMXMonitorParams monitorParams(new StoreMonitor);
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&monitor);
+	if (monitorParams.Load()) {
+		monitorParams.Dump();
+		monitorParams.Set(&monitor);
 	}
 
 	bridge.SetOutput(&monitor);
@@ -103,7 +98,7 @@ int main(int argc, char **argv) {
 	bool bIsSet;
 
 	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		nUniverse = e131params.GetUniverse(i, bIsSet);
+		nUniverse = e131Params.GetUniverse(i, bIsSet);
 
 		if (bIsSet) {
 			bridge.SetUniverse(i, E131_OUTPUT_PORT, nUniverse);
@@ -112,28 +107,34 @@ int main(int argc, char **argv) {
 	}
 
 	if (!bIsSetIndividual) {
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, 0 + e131params.GetUniverse());
-		bridge.SetUniverse(1, E131_OUTPUT_PORT, 1 + e131params.GetUniverse());
-		bridge.SetUniverse(2, E131_OUTPUT_PORT, 2 + e131params.GetUniverse());
-		bridge.SetUniverse(3, E131_OUTPUT_PORT, 3 + e131params.GetUniverse());
+		bridge.SetUniverse(0, E131_OUTPUT_PORT, 0 + e131Params.GetUniverse());
+		bridge.SetUniverse(1, E131_OUTPUT_PORT, 1 + e131Params.GetUniverse());
+		bridge.SetUniverse(2, E131_OUTPUT_PORT, 2 + e131Params.GetUniverse());
+		bridge.SetUniverse(3, E131_OUTPUT_PORT, 3 + e131Params.GetUniverse());
 	}
 
 	nw.Print();
 	bridge.Print();
 
-	bridge.Start();
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_MONITOR, bridge.GetActiveOutputPorts());
 
-	lb.SetMode(LEDBLINK_MODE_NORMAL);
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-#if defined (RASPPI)
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
 	while (spiFlashStore.Flash())
 		;
 
-	spiFlashStore.Dump();
-#endif
+	bridge.Start();
 
 	for (;;) {
 		bridge.Run();
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 	}
 
 	return 0;

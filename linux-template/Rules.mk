@@ -7,37 +7,55 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-DEFAULT_INCLUDES=artnet artnet4 artnethandlers e131 midi ltc oscserver ws28xx ws28xxdmx tlc59711 tlc59711dmx dmx dmxsend
+$(info [${CURDIR}])
 
-LIBS:=$(LIBS)
+ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
+	LIBS:=remoteconfig $(LIBS)
+else
+	LIBS:=$(LIBS)
+endif
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
-ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-	ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-		LIBS+=spiflashstore spiflash
-	endif
+ifeq ($(detected_OS),Darwin) 
+endif
 
-	LIBS+= bob i2c
-	BCM2835 = ./../lib-bcm2835_raspbian
-	ifneq "$(wildcard $(BCM2835) )" ""
-		LIBS+=bcm2835_raspbian
-	else
-		LIBS+=bcm2835
+ifeq ($(detected_OS),Linux) 
+	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+		LIBS+= bob i2c
+		BCM2835 = ./../lib-bcm2835_raspbian
+		ifneq "$(wildcard $(BCM2835) )" ""
+			LIBS+=bcm2835_raspbian
+		else
+			LIBS+=bcm2835
+		endif
+		DEFINES+=-DRASPPI
 	endif
-	DEFINES+=-DRASPPI
+endif
+
+ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
+	LIBS+=spiflashstore spiflashinstall spiflash
 endif
 
 LIBS+=network properties hal debug
+
+ifeq ($(findstring displayudf,$(LIBS)),displayudf)
+endif
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
+ifeq ($(findstring displayudf,$(LIBS)),displayudf)
+	INCDIRS+=-I../lib-display/include
+endif
+
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
 LIBINCDIRS+=$(addprefix -I../lib-,$(DEFAULT_INCLUDES))
 LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
+
+$(info $$LIBS [${LIBS}])
 
 # The variables for the ld -L flag
 LIB=$(addprefix -L../lib-,$(LIBS))
@@ -48,9 +66,9 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
-LIBDEP:=$(addsuffix /lib_linux/lib, $(LIBDEP))
-LIBDEP:=$(join $(LIBDEP), $(LIBS))
-LIBDEP:=$(addsuffix .a, $(LIBDEP))
+LIBSDEP=$(addsuffix /lib_linux/lib, $(LIBDEP))
+LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
+LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=$(DEFINES) #-DNDEBUG
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
@@ -76,17 +94,17 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -c $$< -o $$@	
+	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -Wold-style-cast -c $$< -o $$@	
 endef
 
 THISDIR = $(CURDIR)
 
-all : builddirs prerequisites $(TARGET)
+all : clearlibs builddirs prerequisites $(TARGET)
 	
 .PHONY: clean builddirs
 
-buildlibs:
-	cd .. && ./makeall_linux-lib.sh && cd $(THISDIR)
+clearlibs:
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-remoteconfig
 
 builddirs:
 	@mkdir -p $(BUILD_DIRS)
@@ -94,9 +112,23 @@ builddirs:
 clean:
 	rm -rf $(BUILD)
 	rm -f $(TARGET)
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.Linux clean --directory=$$d;       \
+		done
 
-$(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
+$(LIBSDEP):
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.Linux 'MAKE_FLAGS=$(DEFINES)' --directory=$$d;       \
+		done
+
+$(BUILD_DIRS) :
+	mkdir -p $(BUILD_DIRS)
+		
+$(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBSDEP)
+	$(info $$TARGET [${TARGET}])
 	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
-	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > linux.lst
+	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
