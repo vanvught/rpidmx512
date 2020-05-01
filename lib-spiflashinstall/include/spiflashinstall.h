@@ -2,7 +2,7 @@
  * @file spiflashinstall.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,8 +57,8 @@ private:
 	bool m_bHaveFlashChip;
 	uint32_t m_nEraseSize;
 	uint32_t m_nFlashSize;
-	alignas(uint32_t) uint8_t *m_pFileBuffer;
-	alignas(uint32_t) uint8_t *m_pFlashBuffer;
+	alignas(uintptr_t) uint8_t *m_pFileBuffer;
+	alignas(uintptr_t) uint8_t *m_pFlashBuffer;
 	FILE *m_pFile;
 };
 

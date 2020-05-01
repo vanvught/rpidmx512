@@ -2,7 +2,7 @@
  * @file compressed.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,14 +61,9 @@ int32_t Compressed::GetFileSize(const char *pFileName) {
 
 	const long nFileSize = ftell(pFile);
 
-//	if (fseek(pFile, 0 , SEEK_SET) != 0) {	// needed for next read from beginning of file
-//		DEBUG_EXIT
-//		return -3;
-//	}
+	static_cast<void>(fclose(pFile));
 
-	(void) fclose(pFile);
-
-	return (int32_t) nFileSize;
+	return static_cast<int32_t>(nFileSize);
 }
 
 bool Compressed::IsSupported(void) {
@@ -87,9 +82,9 @@ bool Compressed::IsSupported(void) {
 
 	debug_dump(pFlashBuffer, nEraseSize);
 
-	char *pResult = Find((char *)pFlashBuffer, nEraseSize, bootcmd, BOOTCMD_LENGTH);
+	char *pResult = Find(reinterpret_cast<char*>(pFlashBuffer), nEraseSize, bootcmd, BOOTCMD_LENGTH);
 
-	DEBUG_PRINTF("offset %x", (pResult - (char *)pFlashBuffer));
+	DEBUG_PRINTF("offset %x", (pResult - reinterpret_cast<char*>(pFlashBuffer)));
 
 	if (pResult != 0) {
 		debug_dump(pResult, 64);
@@ -107,7 +102,7 @@ char *Compressed::Find(const char *pBuffer, uint32_t nBufferLength, const char *
 	assert(pBuffer != 0);
 	assert(pFind != 0);
 
-	char *pDst = (char *)pBuffer;
+	char *pDst = const_cast<char*>(pBuffer);
 
 	for (; nBufferLength-- > 0; pDst++) {
 		if (*pDst != *pFind) {
@@ -115,7 +110,7 @@ char *Compressed::Find(const char *pBuffer, uint32_t nBufferLength, const char *
 		}
 
 		unsigned nLength = nFindLength;
-		char *pTmpFind = (char *)pFind;
+		char *pTmpFind = const_cast<char *>(pFind);
 		char *pRet = pDst;
 
 		while (1) {
@@ -165,7 +160,7 @@ uint32_t Compressed::Check(const char *pFilename) {
 		return CHECK_CODE_CHECK_ERROR;
 	}
 
-	(void) fclose(pFile);
+	static_cast<void>(fclose(pFile));
 
 	UBootHeader header(FileBuffer);
 	// Sanity check

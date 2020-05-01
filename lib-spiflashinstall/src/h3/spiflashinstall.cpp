@@ -2,7 +2,7 @@
  * @file spiflashinstall.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -231,7 +231,7 @@ bool SpiFlashInstall::Open(const char* pFileName) {
 void SpiFlashInstall::Close(void) {
 	DEBUG_ENTRY
 
-	(void) fclose(m_pFile);
+	static_cast<void>(fclose(m_pFile));
 	m_pFile = 0;
 
 	Display::Get()->TextStatus(sDone, DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
@@ -245,25 +245,25 @@ bool SpiFlashInstall::BuffersCompare(uint32_t nSize) {
 
 	assert(nSize <= m_nEraseSize);
 
-	const uint32_t *src32 = (uint32_t *) m_pFileBuffer ;
-	assert(((uint32_t )src32 & 0x3) == 0);
+	const uint32_t *pSrc32 = reinterpret_cast<uint32_t*>(m_pFileBuffer);
+	assert((reinterpret_cast<uint32_t>(pSrc32) & 0x3) == 0);
 
-	const uint32_t *dst32 = (uint32_t *) m_pFlashBuffer;
-	assert(((uint32_t )dst32 & 0x3) == 0);
+	const uint32_t *pDst32 = reinterpret_cast<uint32_t*>(m_pFlashBuffer);
+	assert((reinterpret_cast<uint32_t>(pDst32) & 0x3) == 0);
 
 	while (nSize >= 4) {
-		if (*src32++ != *dst32++) {
+		if (*pSrc32++ != *pDst32++) {
 			DEBUG1_EXIT
 			return false;
 		}
 		nSize -= 4;
 	}
 
-	const uint8_t *src = (uint8_t *) src32;
-	const uint8_t *dst = (uint8_t *) dst32;
+	const uint8_t *pSrc8 = reinterpret_cast<const uint8_t*>(pSrc32);
+	const uint8_t *pDst8 = reinterpret_cast<const uint8_t*>(pDst32);
 
 	while (nSize--) {
-		if (*src++ != *dst++) {
+		if (*pSrc8++ != *pDst8++) {
 			DEBUG1_EXIT
 			return false;
 		}
@@ -286,7 +286,7 @@ bool SpiFlashInstall::Diff(uint32_t nOffset) {
 		return false;
 	}
 
-	if (fread(m_pFileBuffer, sizeof(uint8_t), (size_t) COMPARE_BYTES,  m_pFile) != (size_t) COMPARE_BYTES) {
+	if (fread(m_pFileBuffer, sizeof(uint8_t), COMPARE_BYTES,  m_pFile) != COMPARE_BYTES) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -317,10 +317,10 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	uint32_t n_Address = nOffset;
 	size_t nTotalBytes = 0;
 
-	(void) fseek(m_pFile, 0L, SEEK_SET);
+	static_cast<void>(fseek(m_pFile, 0L, SEEK_SET));
 
 	while (n_Address < m_nFlashSize) {
-		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), (size_t) m_nEraseSize, m_pFile);
+		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), (size_t)m_nEraseSize, m_pFile);
 		nTotalBytes += nBytes;
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {
@@ -361,8 +361,8 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 
 	if (bSuccess) {
 		Display::Get()->ClearLine(3);
-		Display::Get()->Printf(3, "%d", (int) nTotalBytes);
-		printf("%d bytes written\n", (int) nTotalBytes);
+		Display::Get()->Printf(3, "%d", static_cast<int>(nTotalBytes));
+		printf("%d bytes written\n", static_cast<int>(nTotalBytes));
 	}
 
 	DEBUG_EXIT

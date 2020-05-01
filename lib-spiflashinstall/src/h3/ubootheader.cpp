@@ -2,7 +2,7 @@
  * @file ubootheader.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ enum TImageHeaderCompression {
 UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false) {
 	assert(pHeader != 0);
 
-	struct TImageHeader *pImageHeader = (struct TImageHeader *)pHeader;
+	TImageHeader *pImageHeader = reinterpret_cast<TImageHeader*>(pHeader);
 
 	m_bIsValid =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
 	m_bIsValid &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
@@ -70,7 +70,7 @@ UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false
 	m_bIsValid &= (pImageHeader->ih_os == IH_OS_U_BOOT);
 	m_bIsValid &= (pImageHeader->ih_arch == IH_ARCH_ARM);
 	m_bIsValid &= (pImageHeader->ih_type == IH_TYPE_STANDALONE);
-	m_bIsValid &= (strncmp(reinterpret_cast<const char *>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
+	m_bIsValid &= (strncmp(reinterpret_cast<const char*>(pImageHeader->ih_name), "http://www.orangepi-dmx.org", IH_NMLEN) == 0);
 
 	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
 }
@@ -85,8 +85,8 @@ void UBootHeader::Dump(void) {
 		printf("* Not a valid header! *\n");
 	}
 
-	struct TImageHeader *pImageHeader = reinterpret_cast<struct TImageHeader *>(m_pHeader);
-	const time_t rawtime = (time_t)__builtin_bswap32(pImageHeader->ih_time);
+	TImageHeader *pImageHeader = reinterpret_cast<TImageHeader*>(m_pHeader);
+	const time_t rawtime = __builtin_bswap32(pImageHeader->ih_time);
 	struct tm *info = localtime(&rawtime);
 
 	printf("Magic Number        : %.8x\n", __builtin_bswap32(pImageHeader->ih_magic));
