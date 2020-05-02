@@ -1,0 +1,13 @@
+#
+PLATFORM = ORANGE_PI
+#
+DEFINES = ARTNET_NODE DMXSERIAL SD_WRITE_SUPPORT SD_EXFAT_SUPPORT DISPLAY_UDF RDMNET_LLRP_ONLY NDEBUG
+#
+LIBS = dmxserial rdmnet rdm rdmsensor rdmsubdevice
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
+	./generate_sofware_version_id.sh
