@@ -37,6 +37,9 @@
 FirmwareVersion *FirmwareVersion::s_pThis = 0;
 
 FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime) {
+	DEBUG_ENTRY
+
+	assert(s_pThis == 0);
 	assert(pVersion != 0);
 	assert(pDate != 0);
 	assert(pTime != 0);
@@ -54,6 +57,8 @@ FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const 
 			Hardware::Get()->GetBoardName(nHwTextLength),
 			GCC_DATE_LENGTH, m_tFirmwareVersion.BuildDate,
 			GCC_TIME_LENGTH, m_tFirmwareVersion.BuildTime);
+
+	DEBUG_EXIT
 }
 
 FirmwareVersion::~FirmwareVersion(void) {
@@ -62,6 +67,10 @@ FirmwareVersion::~FirmwareVersion(void) {
 	DEBUG_EXIT
 }
 
-void FirmwareVersion::Print(void) {
+void FirmwareVersion::Print(const char *pTitle) {
 	printf("%s", m_aPrint);
+
+	if (pTitle != 0) {
+		puts(pTitle);
+	}
 }

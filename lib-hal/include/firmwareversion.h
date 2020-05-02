@@ -41,22 +41,21 @@ public:
 	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
 	~FirmwareVersion(void);
 
-	void Print(void);
+	void Print(const char *pTitle = 0);
 
-	const struct TFirmwareVersion *GetVersion(void) {
+	const struct TFirmwareVersion* GetVersion(void) {
 		return &m_tFirmwareVersion;
 	}
 
-	const char *GetPrint(void) {
+	const char* GetPrint(void) {
 		return m_aPrint;
 	}
 
-	const char *GetSoftwareVersion(void) {
+	const char* GetSoftwareVersion(void) {
 		return m_tFirmwareVersion.SoftwareVersion;
 	}
 
-public:
-	 static FirmwareVersion *Get(void) {
+	static FirmwareVersion* Get(void) {
 		return s_pThis;
 	}
 
