@@ -145,11 +145,15 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
+ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsubdevice
+endif	
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
 	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
-
 
 clean:
 	rm -rf $(BUILD)

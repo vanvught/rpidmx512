@@ -105,9 +105,15 @@ all : clearlibs builddirs prerequisites $(TARGET)
 
 clearlibs:
 	$(MAKE) -f Makefile.Linux clean --directory=../lib-remoteconfig
+ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdm
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdmsensor
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdmsubdevice
+endif		
 
 builddirs:
 	@mkdir -p $(BUILD_DIRS)
+	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
 
 clean:
 	rm -rf $(BUILD)

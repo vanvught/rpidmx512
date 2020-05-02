@@ -10,6 +10,8 @@ PLATFORM?=ORANGE_PI
 CONSOLE?=
 NO_EXT_LED?=
 
+$(info [${CURDIR}])
+
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 else
 endif
@@ -54,12 +56,11 @@ LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
 
 BUILD = build_h3/
 BUILD_DIRS:=$(addprefix build_h3/,$(SRCDIR))
+$(info $$BUILD_DIRS [${BUILD_DIRS}])
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 CPP_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.S)))
-
-BUILD_DIRS:= $(addprefix build_h3/,$(SRCDIR))
 
 OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
 
@@ -67,12 +68,14 @@ TARGET = lib_h3/lib$(LIB_NAME).a
 
 LIST = lib.list
 
+#-Wold-style-cast
+
 define compile-objects
 $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 -nostdinc++ -c $$< -o $$@
+	$(CPP) $(COPS) -fno-rtti -std=c++11 -Wold-style-cast -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
@@ -86,7 +89,7 @@ builddirs:
 	mkdir -p $(BUILD_DIRS)
 	mkdir -p lib_h3
 
-clean :
+clean:
 	rm -rf build_h3
 	rm -rf lib_h3
 	
@@ -96,7 +99,7 @@ $(BUILD_DIRS) :
 	
 $(TARGET): Makefile.H3 $(OBJECTS)
 	$(AR) -r $(TARGET) $(OBJECTS)
-	$(PREFIX)objdump -D $(TARGET) | $(PREFIX)c++filt > lib_h3/$(LIST)
+	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > lib_h3/$(LIST)
 	
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))
 	
