@@ -34,7 +34,7 @@
 
 class RDMNetLLRPOnly: public RDMIdentify  {
 public:
-	RDMNetLLRPOnly(void);
+	RDMNetLLRPOnly(const char *pLabel = 0);
 	~RDMNetLLRPOnly(void);
 
 	void Init(void);
@@ -56,6 +56,7 @@ public:
 	}
 
 private:
+	char *m_pLabel;
 	LightSetLLRPOnly m_LightSetLLRPOnly;
 	RDMNetDevice m_RDMNetDevice;
 };

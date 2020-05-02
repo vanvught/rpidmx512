@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "rdmnetllrponly.h"
@@ -32,6 +33,7 @@
 #include "lightset.h"
 #include "rdmidentify.h"
 #include "rdmpersonality.h"
+#include "rdm.h"
 
 #include "debug.h"
 
@@ -39,9 +41,9 @@
 #define LABEL			DESCRIPTION
 #define LABEL_LENGTH	(sizeof(LABEL) - 1)
 
-RDMNetLLRPOnly::RDMNetLLRPOnly(void):
-	m_RDMNetDevice(new RDMPersonality(DESCRIPTION, LightSet::Get()->GetDmxFootprint()))
-{
+RDMNetLLRPOnly::RDMNetLLRPOnly(const char *pLabel):
+	m_pLabel(const_cast<char*>(pLabel)),
+	m_RDMNetDevice(new RDMPersonality(DESCRIPTION, LightSet::Get()->GetDmxFootprint())) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -56,7 +58,11 @@ RDMNetLLRPOnly::~RDMNetLLRPOnly(void) {
 void RDMNetLLRPOnly::Init(void) {
 	DEBUG_ENTRY
 
-	m_RDMNetDevice.SetLabel(0, LABEL, LABEL_LENGTH);
+	if (m_pLabel == 0) {
+		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, LABEL, LABEL_LENGTH);
+	} else {
+		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, strlen(m_pLabel));
+	}
 	m_RDMNetDevice.Init();
 
 	DEBUG_EXIT
