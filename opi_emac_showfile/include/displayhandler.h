@@ -51,22 +51,24 @@ public:
 	}
 
 	void ShowShowFileStatus(void) {
+		Display::Get()->SetCursorPos(0, 6);
+
 		switch (ShowFile::Get()->GetStatus()) {
 			case SHOWFILE_STATUS_IDLE:
-				Display::Get()->Printf(6, "Idle     ");
+				Display::Get()->PutString("Idle     ");
 				break;
 			case SHOWFILE_STATUS_RUNNING:
-				Display::Get()->Printf(6, "Running  ");
+				Display::Get()->PutString("Running  ");
 				break;
 			case SHOWFILE_STATUS_STOPPED:
-				Display::Get()->Printf(6, "Stopped  ");
+				Display::Get()->PutString("Stopped  ");
 				break;
 			case SHOWFILE_STATUS_ENDED:
-				Display::Get()->Printf(6, "Ended    ");
+				Display::Get()->PutString("Ended    ");
 				break;
 			case SHOWFILE_STATUS_UNDEFINED:
 			default:
-				Display::Get()->Printf(6, "No Status");
+				Display::Get()->PutString("No Status");
 				break;
 		}
 

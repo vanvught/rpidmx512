@@ -1,11 +1,12 @@
 PLATFORM = ORANGE_PI
 #
-DEFINES = SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT SD_EXFAT_SUPPORT NDEBUG
+DEFINES = SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT SD_EXFAT_SUPPORT RDMNET_LLRP_ONLY NDEBUG
 #
-LIBS = showfile osc
+LIBS = showfile osc rdmnet rdm rdmsensor rdmsubdevice
 #
-SRCDIR = firmware
+SRCDIR = firmware lib
 
 include ../h3-firmware-template/Rules.mk
 
 prerequisites:
+	./generate_sofware_version_id.sh

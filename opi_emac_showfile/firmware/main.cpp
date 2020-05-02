@@ -41,8 +41,6 @@
 #include "storeshowfile.h"
 #include "showfileosc.h"
 
-#include "displayhandler.h"
-
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 
@@ -53,8 +51,19 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+// LLRP Only Device
+#include "rdmnetllrponly.h"
+#include "rdm_e120.h"
+
+// LLRP Handlers
+#include "factorydefaults.h"
+#include "displayudfhandler.h"
+
 // Reboot handler
 #include "reboot.h"
+
+// Display
+#include "displayhandler.h"
 
 // Format handlers
 #include "olashowfile.h"
@@ -74,13 +83,9 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	Reboot reboot;
-	hw.SetRebootHandler(&reboot);
+	fw.Print("Showfile player");
 
-	fw.Print();
-
-	console_puts("Showfile player\n");
-
+	hw.SetRebootHandler(new Reboot);
 	hw.SetLed(HARDWARE_LED_ON);
 
 	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
@@ -88,7 +93,7 @@ void notmain(void) {
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-
+	nw.SetNetworkDisplay(new DisplayUdfHandler);
 	nw.Print();
 
 	StoreShowFile storeShowFile;
@@ -125,8 +130,6 @@ void notmain(void) {
 	}
 
 	assert(pShowFileProtocolHandler != 0);
-
-	assert(pShowFile != 0);
 	pShowFile->SetProtocolHandler(pShowFileProtocolHandler);
 
 	ShowFileOSC oscServer;
@@ -139,10 +142,17 @@ void notmain(void) {
 	pShowFileProtocolHandler->Start();
 	pShowFileProtocolHandler->Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_SHOWFILE, REMOTE_CONFIG_MODE_PLAYER, 0);
+	RDMNetLLRPOnly rdmNetLLRPOnly("Showfile player");
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	rdmNetLLRPOnly.Init();
+	rdmNetLLRPOnly.Print();
+	rdmNetLLRPOnly.Start();
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_SHOWFILE, REMOTE_CONFIG_MODE_PLAYER, 0);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
@@ -157,8 +167,7 @@ void notmain(void) {
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
 
 	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
@@ -188,6 +197,7 @@ void notmain(void) {
 		pShowFileProtocolHandler->Run();
 		oscServer.Run();
 		//
+		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
