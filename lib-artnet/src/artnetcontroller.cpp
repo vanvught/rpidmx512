@@ -65,8 +65,8 @@ ArtNetController::ArtNetController(void):
 	m_pArtNetPacket = new struct TArtNetPacket;
 	assert(m_pArtNetPacket != 0);
 
-	memset(static_cast<void*>(&m_ArtNetPoll), 0, sizeof(struct TArtPoll));
-	memcpy(static_cast<void*>(&m_ArtNetPoll), NODE_ID, 8);
+	memset(&m_ArtNetPoll, 0, sizeof(struct TArtPoll));
+	memcpy(&m_ArtNetPoll, NODE_ID, 8);
 	m_ArtNetPoll.OpCode = OP_POLL;
 	m_ArtNetPoll.ProtVerLo = ARTNET_PROTOCOL_REVISION;
 	m_ArtNetPoll.TalkToMe = TTM_SEND_ARTP_ON_CHANGE;
@@ -74,16 +74,16 @@ ArtNetController::ArtNetController(void):
 	m_pArtDmx = new struct TArtDmx;
 	assert(m_pArtDmx != 0);
 
-	memset(static_cast<void*>(m_pArtDmx), 0, sizeof(struct TArtDmx));
-	memcpy(static_cast<void*>(m_pArtDmx), NODE_ID, 8);
+	memset(m_pArtDmx, 0, sizeof(struct TArtDmx));
+	memcpy(m_pArtDmx, NODE_ID, 8);
 	m_pArtDmx->OpCode = OP_DMX;
 	m_pArtDmx->ProtVerLo = ARTNET_PROTOCOL_REVISION;
 
 	m_pArtSync = new struct TArtSync;
 	assert(m_pArtSync != 0);
 
-	memset(static_cast<void*>(m_pArtSync), 0, sizeof(struct TArtSync));
-	memcpy(static_cast<void*>(m_pArtSync), NODE_ID, 8);
+	memset(m_pArtSync, 0, sizeof(struct TArtSync));
+	memcpy(m_pArtSync, NODE_ID, 8);
 	m_pArtSync->OpCode = OP_SYNC;
 	m_pArtSync->ProtVerLo = ARTNET_PROTOCOL_REVISION;
 
@@ -113,7 +113,7 @@ void ArtNetController::Start(void) {
 	m_nHandle = Network::Get()->Begin(ARTNET_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	HandlePoll();
+	Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct TArtPoll), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -132,7 +132,6 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 	ActiveUniversesAdd(nUniverse);
 
 	m_pArtDmx->Physical = nPortIndex;
-
 	m_pArtDmx->PortAddress = nUniverse;
 	m_pArtDmx->LengthHi = (nLength & 0xFF00) >> 8;
 	m_pArtDmx->Length = (nLength & 0xFF);
@@ -140,6 +139,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 	// The sequence number is used to ensure that ArtDmx packets are used in the correct order.
 	// This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
 	m_pArtDmx->Sequence++;
+
 	if (m_pArtDmx->Sequence == 0) {
 		m_pArtDmx->Sequence = 1;
 	}
@@ -154,20 +154,21 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 		}
 	}
 
-	struct TArtNetPollTableUniverses *IpAddresses;
-	uint32_t nCount;
+	uint32_t nCount = 0;
+	struct TArtNetPollTableUniverses *IpAddresses = const_cast<struct TArtNetPollTableUniverses*>(GetIpAddress(nUniverse));
 
 	if (m_bUnicast) {
-		IpAddresses = const_cast<struct TArtNetPollTableUniverses*>(GetIpAddress(nUniverse));
 		if (IpAddresses != 0) {
 			nCount = IpAddresses->nCount;
 		} else {
-			nCount = 0;
+			DEBUG_EXIT
+			return;
 		}
 	}
 
 	// If the number of universe subscribers exceeds 40 for a given universe, the transmitting device may broadcast.
-	if (m_bUnicast && (nCount != 0) && (nCount <= 40)) {
+
+	if (m_bUnicast && (nCount <= 40)) {
 		for (uint32_t nIndex = 0; nIndex < nCount; nIndex++) {
 			Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], ARTNET_UDP_PORT);
 		}
@@ -178,7 +179,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 		return;
 	}
 
-	if (!m_bUnicast) {
+	if (!m_bUnicast || (nCount > 40)) {
 		Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 
 		m_bDmxHandled = true;
@@ -203,31 +204,45 @@ void ArtNetController::HandleBlackout(void) {
 	for (uint32_t nIndex = 0; nIndex < m_nActiveUniverses; nIndex++) {
 		m_pArtDmx->PortAddress = s_ActiveUniverses[nIndex];
 
-		if (m_bUnicast) {
-			const struct TArtNetPollTableUniverses *IpAddresses = GetIpAddress(s_ActiveUniverses[nIndex]);
-			if (IpAddresses != 0) {
-				// The sequence number is used to ensure that ArtDmx packets are used in the correct order.
-				// This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
-				m_pArtDmx->Sequence++;
-				if (m_pArtDmx->Sequence == 0) {
-					m_pArtDmx->Sequence = 1;
-				}
+		uint32_t nCount = 0;
+		const struct TArtNetPollTableUniverses *IpAddresses = GetIpAddress(s_ActiveUniverses[nIndex]);
 
-				for (uint32_t nIndex = 0; nIndex < IpAddresses->nCount; nIndex++) {
-					Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], ARTNET_UDP_PORT);
-				}
+		if (m_bUnicast) {
+			if (IpAddresses != 0) {
+				nCount = IpAddresses->nCount;
+			} else {
+				continue;
 			}
-		} else  {
+		}
+
+		if (m_bUnicast && (nCount <= 40)) {
 			// The sequence number is used to ensure that ArtDmx packets are used in the correct order.
 			// This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
 			m_pArtDmx->Sequence++;
+
 			if (m_pArtDmx->Sequence == 0) {
 				m_pArtDmx->Sequence = 1;
 			}
+
+			for (uint32_t nIndex = 0; nIndex < nCount; nIndex++) {
+				Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct TArtDmx), IpAddresses->pIpAddresses[nIndex], ARTNET_UDP_PORT);
+			}
+
+			continue;
+		}
+
+		if (!m_bUnicast || (nCount > 40)) {
+			// The sequence number is used to ensure that ArtDmx packets are used in the correct order.
+			// This field is incremented in the range 0x01 to 0xff to allow the receiving node to resequence packets.
+			m_pArtDmx->Sequence++;
+
+			if (m_pArtDmx->Sequence == 0) {
+				m_pArtDmx->Sequence = 1;
+			}
+
 			Network::Get()->SendTo(m_nHandle, m_pArtDmx, sizeof(struct TArtDmx), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 		}
 
-		DEBUG_PRINTF("s_ActiveUniverses[%d]=%u", nIndex, s_ActiveUniverses[nIndex]);
 	}
 
 	m_bDmxHandled = true;
@@ -252,18 +267,14 @@ void ArtNetController::HandlePoll(void) {
 
 	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > ARTNET_POLL_INTERVAL_MILLIS), 0)) {
 #ifndef NDEBUG
-		time_t ltime = Hardware::Get()->GetTime();
+		time_t ltime = time(0);
 		struct tm tm = *localtime(&ltime);
 
 		DEBUG_PRINTF("SendPoll - %.2d:%.2d:%.2d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
 
-		DEBUG_PUTS("");
-
 		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct TArtPoll), m_tArtNetController.nIPAddressBroadcast, ARTNET_UDP_PORT);
 		m_nLastPollMillis= nCurrentMillis;
-
-		DEBUG_PUTS("");
 
 #ifndef NDEBUG
 		Dump();
@@ -280,7 +291,7 @@ void ArtNetController::HandlePollReply(void) {
 	DEBUG_ENTRY
 
 #ifndef NDEBUG
-	time_t ltime = Hardware::Get()->GetTime();;
+	time_t ltime = time(0);
 	struct tm tm = *localtime(&ltime);
 
 	printf("ArtPollReply - %.2d:%.2d:%.2d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -389,6 +400,9 @@ void ArtNetController::Print(void) {
 	printf("Art-Net Controller\n");
 	printf(" Max Node's    : %u\n", ARTNET_POLL_TABLE_SIZE_ENRIES);
 	printf(" Max Universes : %u\n", ARTNET_POLL_TABLE_SIZE_UNIVERSES);
+	if (!m_bUnicast) {
+		puts(" Unicast is disabled");
+	}
 	if (!m_bSynchronization) {
 		puts(" Synchronization is disabled");
 	}
