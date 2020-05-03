@@ -70,10 +70,14 @@ public:
 		m_E131Controller.SetMaster(nMaster);
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {} // TODO ?
+	void DoRunCleanupProcess(bool bDoRun) {}
 
 	void Run(void) {
 		m_E131Controller.Run();
+	}
+
+	bool IsSyncDisabled(void) {
+		return (m_E131Controller.GetSynchronizationAddress() == 0);
 	}
 
 	void Print(void) {

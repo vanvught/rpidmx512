@@ -46,8 +46,7 @@ struct TShowFileParams {
 enum TShowFileOptions {
 	SHOWFILE_OPTION_AUTO_START = (1 << 0),
 	SHOWFILE_OPTION_LOOP = (1 << 1),
-	SHOWFILE_OPTION_DISABLE_SYNC = (1 << 2),
-	SHOWFILE_OPTION_DISABLE_UNICAST = (1 << 3)
+	SHOWFILE_OPTION_DISABLE_SYNC = (1 << 2)
 };
 
 enum TShowFileParamsMask {
@@ -58,7 +57,7 @@ enum TShowFileParamsMask {
 	SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING = (1 << 4),
 	SHOWFILE_PARAMS_MASK_PROTOCOL = (1 << 5),
 	SHOWFILE_PARAMS_MASK_SACN_UNIVERSE = (1 << 6),
-	SHOWFILE_PARAMS_MASK_ARTNET_UNICAST = (1 << 7),
+	SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED = (1 << 7),
 	SHOWFILE_PARAMS_MASK_DMX_MASTER = (1 << 8)
 };
 
@@ -99,6 +98,10 @@ public:
 
 	bool IsAutoStart(void) {
 		return isOptionSet(SHOWFILE_OPTION_AUTO_START);
+	}
+
+	bool IsArtNetBroadcast(void) {
+		return isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED);
 	}
 
 public:

@@ -219,10 +219,10 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, ShowFileParamsConst::ARTNET_DISABLE_UNICAST, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_tShowFileParams.nDisableUnicast = 1;
-			m_tShowFileParams.nSetList |= SHOWFILE_PARAMS_MASK_ARTNET_UNICAST;
+			m_tShowFileParams.nSetList |= SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED;
 		} else {
 			m_tShowFileParams.nDisableUnicast = 0;
-			m_tShowFileParams.nSetList &= ~SHOWFILE_PARAMS_MASK_ARTNET_UNICAST;
+			m_tShowFileParams.nSetList &= ~SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED;
 		}
 		return;
 	}
@@ -240,6 +240,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_AUTO_START, SHOWFILE_OPTION_AUTO_START);
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_LOOP, SHOWFILE_OPTION_LOOP);
+	HandleOptions(pLine, ShowFileParamsConst::OPTION_DISABLE_SYNC, SHOWFILE_OPTION_DISABLE_SYNC);
 }
 
 void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -265,7 +266,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<uint32_t>(m_tShowFileParams.nUniverse), isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE));
 
 	builder.AddComment("Art-Net");
-	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<uint32_t>(m_tShowFileParams.nDisableUnicast), isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST));
+	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<uint32_t>(m_tShowFileParams.nDisableUnicast), isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED));
 
 	builder.AddComment("Options");
 	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isOptionSet(SHOWFILE_OPTION_AUTO_START), isOptionSet(SHOWFILE_OPTION_AUTO_START));
@@ -297,6 +298,7 @@ void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 }
 
 void ShowFileParams::Set(void) {
+	DEBUG_ENTRY
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING)) {
 		ShowFileOSC::Get()->SetPortIncoming(m_tShowFileParams.nOscPortIncoming);
@@ -306,11 +308,23 @@ void ShowFileParams::Set(void) {
 		ShowFileOSC::Get()->SetPortOutgoing(m_tShowFileParams.nOscPortOutgoing);
 	}
 
+	// sACN E1.31
+
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE)) {
 		if (E131Controller::Get() != 0) {
 			E131Controller::Get()->SetSynchronizationAddress(m_tShowFileParams.nUniverse);
 		}
 	}
+
+	// Art-Net
+
+	if (isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED)) {
+		if (ArtNetController::Get() != 0) {
+			ArtNetController::Get()->SetUnicast(false);
+		}
+	}
+
+	// Options
 
 	if (isOptionSet(SHOWFILE_OPTION_LOOP)) {
 		ShowFile::Get()->DoLoop(true);
@@ -320,16 +334,13 @@ void ShowFileParams::Set(void) {
 		if (E131Controller::Get() != 0) {
 			E131Controller::Get()->SetSynchronizationAddress(0);
 		}
+
 		if (ArtNetController::Get() != 0) {
 			ArtNetController::Get()->SetSynchronization(false);
 		}
 	}
 
-	if (isOptionSet(SHOWFILE_OPTION_DISABLE_UNICAST)) {
-		if (ArtNetController::Get() != 0) {
-			ArtNetController::Get()->SetUnicast(false);
-		}
-	}
+	DEBUG_EXIT
 }
 
 void ShowFileParams::Dump(void) {
@@ -356,11 +367,12 @@ void ShowFileParams::Dump(void) {
 		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<unsigned>(m_tShowFileParams.nUniverse));
 	}
 
-	if (isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST)) {
+	if (isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED)) {
 		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<unsigned>(m_tShowFileParams.nDisableUnicast), m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
 	}
 
 	// Options
+
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OPTIONS)) {
 		printf(" Options 0x%.2x\n", m_tShowFileParams.nOptions);
 
@@ -372,9 +384,6 @@ void ShowFileParams::Dump(void) {
 		}
 		if (isOptionSet(SHOWFILE_OPTION_DISABLE_SYNC)) {
 			printf("  Synchronization is disabled\n");
-		}
-		if (isOptionSet(SHOWFILE_OPTION_DISABLE_UNICAST)) {
-			printf("  Unicast is disabled [Art-Net DMX broadcast]\n");
 		}
 	}
 
@@ -394,4 +403,3 @@ void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
 
 	(static_cast<ShowFileParams *>(p))->callbackFunction(s);
 }
-

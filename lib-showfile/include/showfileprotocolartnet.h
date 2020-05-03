@@ -79,6 +79,10 @@ public:
 		m_ArtNetController.Run();
 	}
 
+	bool IsSyncDisabled(void) {
+		return !m_ArtNetController.GetSynchronization();
+	}
+
 	void Print(void) {
 		puts("ShowFileProtocolArtNet");
 		m_ArtNetController.Print();

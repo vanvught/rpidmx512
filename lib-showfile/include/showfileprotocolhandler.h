@@ -43,6 +43,8 @@ public:
 	virtual void Stop(void)=0;
 	virtual void Run(void)=0;
 
+	virtual bool IsSyncDisabled(void)=0;
+
 	virtual void Print(void)=0;
 };
 

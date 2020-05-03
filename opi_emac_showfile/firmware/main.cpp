@@ -183,8 +183,16 @@ void notmain(void) {
 		pShowFile->Start();
 	}
 
-	// Fixed row 5, 6
+	// Fixed row 5, 6, 7
 	display.Printf(5, showFileParams.GetProtocol() == SHOWFILE_PROTOCOL_ARTNET ? "Art-Net" : "sACN E1.31");
+	if (showFileParams.GetProtocol() == SHOWFILE_PROTOCOL_ARTNET) {
+		if (showFileParams.IsArtNetBroadcast()) {
+			Display::Get()->PutString(" <Broadcast>");
+		}
+	}
+	if (pShowFileProtocolHandler->IsSyncDisabled()) {
+		display.Printf(6, "<No synchronization>");
+	}
 	displayHandler.ShowShowFileStatus();
 
 	hw.WatchdogInit();
