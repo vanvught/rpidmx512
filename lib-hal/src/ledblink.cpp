@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "ledblink.h"
 #include "hardware.h"
 
@@ -39,6 +41,7 @@ enum tFreqMode {
 LedBlink *LedBlink::s_pThis = 0;
 
 LedBlink::LedBlink(void) : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedBlinkDisplay(0) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 

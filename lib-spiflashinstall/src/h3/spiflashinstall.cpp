@@ -317,7 +317,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	static_cast<void>(fseek(m_pFile, 0L, SEEK_SET));
 
 	while (n_Address < m_nFlashSize) {
-		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), (size_t)m_nEraseSize, m_pFile);
+		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), m_nEraseSize, m_pFile);
 		nTotalBytes += nBytes;
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {

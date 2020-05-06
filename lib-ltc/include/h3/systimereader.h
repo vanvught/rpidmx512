@@ -63,7 +63,7 @@ private:
 	struct _midi_send_tc m_tMidiTimeCode;
 	int m_nHandle;
 	alignas(uint32_t) char m_Buffer[64];
-	int m_nBytesReceived;
+	uint16_t m_nBytesReceived;
 	bool m_bIsStarted;
 
 	static SystimeReader *s_pThis;

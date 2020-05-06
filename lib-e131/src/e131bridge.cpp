@@ -72,6 +72,7 @@ E131Bridge::E131Bridge(void) :
 	assert(Network::Get() != 0);
 	assert(LedBlink::Get() != 0);
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {

@@ -57,6 +57,7 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
 	DEBUG_ENTRY
 	DEBUG_PRINTF("year=%d, month=%d, day=%d", nYear, nMonth, nDay);
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	struct tm timeDate;

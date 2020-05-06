@@ -23,11 +23,14 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "lightset.h"
 
 LightSet *LightSet::s_pThis = 0;
 
-LightSet::LightSet(void): m_pLightSetDisplay(0) {
+LightSet::LightSet(void) : m_pLightSetDisplay(0) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 

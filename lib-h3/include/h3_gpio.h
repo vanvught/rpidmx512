@@ -26,9 +26,9 @@
 #ifndef H3_GPIO_H_
 #define H3_GPIO_H_
 
-#ifdef __cplusplus
- #pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
+//#ifdef __cplusplus
+//# pragma GCC diagnostic ignored "-Wold-style-cast"
+//#endif
 
 #include "h3.h"
 

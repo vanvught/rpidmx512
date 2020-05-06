@@ -89,7 +89,6 @@
 #include "reboot.h"
 
 #include "firmwareversion.h"
-
 #include "software_version.h"
 
 extern "C" {
@@ -120,7 +119,7 @@ void notmain(void) {
 
 	Ltc7segment leds;
 
-	fw.Print();
+	fw.Print("LTC SMPTE");
 
 	hw.SetLed(HARDWARE_LED_ON);
 

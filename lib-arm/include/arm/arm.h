@@ -40,7 +40,11 @@ typedef enum arm_vector {
 	ARM_VECTOR_FIQ = 0x1C				///< Fast Interrupt (FIQ)
 } _arm_vector;
 
-#define ARM_VECTOR(x)	(unsigned *)(x)
+#ifdef __cplusplus
+# define ARM_VECTOR(x)	reinterpret_cast<unsigned *>(x)
+#else
+# define ARM_VECTOR(x)	(unsigned *)(x)
+#endif
 
 #define	__enable_irq()	asm volatile ("cpsie i")
 #define	__disable_irq()	asm volatile ("cpsid i")

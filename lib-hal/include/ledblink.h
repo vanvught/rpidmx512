@@ -37,9 +37,7 @@ enum tLedBlinkMode {
 
 #include "ledblinkdisplay.h"
 
-#if defined (__circle__)
- #include "circle/ledblink.h"
-#elif defined (BARE_METAL)
+#if defined (BARE_METAL)
  #if defined (H3)
   #include "h3/ledblink.h"
  #else

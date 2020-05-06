@@ -46,6 +46,7 @@ TCNet::TCNet(TTCNetNodeType tNodeType) :
 	m_pTCNetTimeCode(0),
 	m_nSeqTimeMessage(0)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	memset(&m_tOptIn, 0, sizeof(struct TTCNetPacketOptIn));
@@ -244,7 +245,7 @@ void TCNet::SetLayer(TTCNetLayers tLayer) {
 	}
 
 	m_tLayer = tLayer;
-	m_pLTime = static_cast<uint32_t*>((&m_TTCNet.TCNetPacket.Time.L1Time + static_cast<uint32_t>((tLayer))));
+	m_pLTime = &m_TTCNet.TCNetPacket.Time.L1Time + tLayer;
 	m_pLTimeCode =
 			reinterpret_cast<struct TTCNetPacketTimeTimeCode*>((reinterpret_cast<uintptr_t>((&m_TTCNet.TCNetPacket.Time.L1TimeCode))
 					+ static_cast<uintptr_t>(tLayer) * sizeof(struct TTCNetPacketTimeTimeCode)));

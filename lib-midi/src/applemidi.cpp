@@ -138,9 +138,9 @@ void AppleMidi::SetPort(uint16_t nPort) {
 }
 
 void AppleMidi::SetSessionName(const char *pSessionName) {
-	strncpy((char *)&m_ExchangePacketReply.aName, pSessionName, APPLE_MIDI_SESSION_NAME_LENGTH_MAX);
+	strncpy(reinterpret_cast<char*>(&m_ExchangePacketReply.aName), pSessionName, APPLE_MIDI_SESSION_NAME_LENGTH_MAX);
 	m_ExchangePacketReply.aName[APPLE_MIDI_SESSION_NAME_LENGTH_MAX] = '\0';
-	m_nExchangePacketReplySize = APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH + 1 + strlen((const char *)m_ExchangePacketReply.aName);
+	m_nExchangePacketReplySize = APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH + 1 + strlen(reinterpret_cast<const char*>(m_ExchangePacketReply.aName));
 }
 
 void AppleMidi::HandleControlMessage(void) {
@@ -206,14 +206,14 @@ void AppleMidi::HandleMidiMessage(void) {
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
 
-	if (*(uint16_t*) m_pBuffer == 0x6180) {
+	if (*reinterpret_cast<uint16_t*>(m_pBuffer) == 0x6180) {
 		HandleRtpMidi(m_pBuffer);
 		return;
 	}
 
 	if (m_nBytesReceived >= APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH) {
 
-		if (*(uint16_t *)m_pBuffer == APPLEMIDI_SIGNATURE) {
+		if (*reinterpret_cast<uint16_t*>(m_pBuffer) == APPLEMIDI_SIGNATURE) {
 
 			if (m_tSessionStatus.tSessionState == SESSION_STATE_WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
@@ -291,7 +291,7 @@ void AppleMidi::Run(void) {
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleControl, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((m_nBytesReceived >= APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH), 0)) {
-		if (*(uint16_t*) m_pBuffer == APPLEMIDI_SIGNATURE) {
+		if (*reinterpret_cast<uint16_t*>(m_pBuffer) == APPLEMIDI_SIGNATURE) {
 			HandleControlMessage();
 		}
 	}

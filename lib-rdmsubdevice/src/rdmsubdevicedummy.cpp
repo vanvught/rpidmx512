@@ -62,11 +62,8 @@ void RDMSubDeviceDummy::Data(const uint8_t* pData, uint16_t nLength) {
 
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	printf("RDMSubDeviceDummy::Data(*pData:%p, nLength:%d)\n",
-			static_cast<const void*>(pData), static_cast<int>(nLength));
-	printf("%d:%d:%d: ", static_cast<int>(nLength),
-			static_cast<int>(DMX_FOOTPRINT),
-			static_cast<int>(nDmxStartAddress));
+	printf("RDMSubDeviceDummy::Data(*pData:%p, nLength:%d)\n", static_cast<const void*>(pData), nLength);
+	printf("%d:%d:%d: ", nLength, DMX_FOOTPRINT, nDmxStartAddress);
 
 	for (uint16_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		switch (GetPersonalityCurrent()) {

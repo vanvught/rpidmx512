@@ -1,5 +1,5 @@
 /**
- * @file dmx++.cpp
+ * @file dmx.cpp
  *
  */
 /* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -33,7 +33,7 @@
 
 Dmx::Dmx(uint8_t nGpioPin, bool DoInit): m_IsInitDone(DoInit) {
 #ifndef NDEBUG
-	printf("Dmx::Dmx nGpioPin=%d, DoInit=%d\n", static_cast<int>(nGpioPin), static_cast<int>(DoInit));
+	printf("Dmx::Dmx nGpioPin=%d, DoInit=%d\n", nGpioPin, DoInit);
 #endif
 	dmx_init_set_gpiopin(nGpioPin);
 

@@ -33,18 +33,14 @@
 #include "c/hardware.h"
 #include "console.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #define ROW		2
 #define COLUMN	80
 
-static char timesync[] ALIGNED =  "--:--:-- --/--/--";
-static char systime[] ALIGNED =  "--:--:--";
+static char timesync[] =  "--:--:-- --/--/--";
+static char systime[] =  "--:--:--";
 
-static void itoa_base10(int arg, char *buf) {
-	char *n = buf;
+static void itoa_base10(int arg, char *pBuffer) {
+	char *n = pBuffer;
 
 	if (arg == 0) {
 		*n++ = '0';
@@ -52,8 +48,8 @@ static void itoa_base10(int arg, char *buf) {
 		return;
 	}
 
-	*n++ = (char) '0' + (char) (arg / 10);
-	*n = (char) '0' + (char) (arg % 10);
+	*n++ = '0' + (arg / 10);
+	*n = '0' + (arg % 10);
 }
 
 TimeSync::TimeSync(void) : m_nSecondsPrevious(60) {
@@ -75,16 +71,16 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	hw_time.tm_hour = pArtNetTimeSync->tm_hour;
 	hw_time.tm_mday = pArtNetTimeSync->tm_mday;
 	hw_time.tm_mon = pArtNetTimeSync->tm_mon;
-	hw_time.tm_year = ((uint16_t) (pArtNetTimeSync->tm_year_hi) << 8) + (uint16_t) pArtNetTimeSync->tm_year_lo;
+	hw_time.tm_year = (pArtNetTimeSync->tm_year_hi << 8) +  pArtNetTimeSync->tm_year_lo;
 
 	hardware_rtc_set(&hw_time);
 
-	itoa_base10(hw_time.tm_hour, (char *) &timesync[0]);
-	itoa_base10(hw_time.tm_min, (char *) &timesync[3]);
-	itoa_base10(hw_time.tm_sec, (char *) &timesync[6]);
-	itoa_base10(hw_time.tm_year - (100 * (hw_time.tm_year / 100)), (char *) &timesync[9]);
-	itoa_base10(hw_time.tm_mon, (char *) &timesync[12]);
-	itoa_base10(hw_time.tm_mday, (char *) &timesync[15]);
+	itoa_base10(hw_time.tm_hour, &timesync[0]);
+	itoa_base10(hw_time.tm_min, &timesync[3]);
+	itoa_base10(hw_time.tm_sec, &timesync[6]);
+	itoa_base10(hw_time.tm_year - (100 * (hw_time.tm_year / 100)), &timesync[9]);
+	itoa_base10(hw_time.tm_mon, &timesync[12]);
+	itoa_base10(hw_time.tm_mday, &timesync[15]);
 
 	this->Show();
 }
@@ -110,9 +106,9 @@ void TimeSync::ShowSystemTime(void) {
 
 	m_nSecondsPrevious = local_time->tm_sec;
 
-	itoa_base10(local_time->tm_hour, (char *) &systime[0]);
-	itoa_base10(local_time->tm_min, (char *) &systime[3]);
-	itoa_base10(local_time->tm_sec, (char *) &systime[6]);
+	itoa_base10(local_time->tm_hour, &systime[0]);
+	itoa_base10(local_time->tm_min, &systime[3]);
+	itoa_base10(local_time->tm_sec, &systime[6]);
 
 	console_save_cursor();
 	console_set_cursor(COLUMN, 0);

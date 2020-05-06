@@ -78,7 +78,7 @@ const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUp
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != 0) {
-		const struct TDmxData *dmx_statistics = (struct TDmxData *) pDmx;
+		const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
 		nLength = dmx_statistics->Statistics.SlotsInPacket;
 		return (pDmx + 1);
 	}

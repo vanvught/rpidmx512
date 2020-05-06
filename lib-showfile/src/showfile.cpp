@@ -49,6 +49,7 @@ ShowFile::ShowFile(void) :
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_aShowFileName[0] = '\0';
@@ -214,6 +215,7 @@ void ShowFile::SetShowFileStatus(TShowFileStatus tShowFileStatus) {
 		case SHOWFILE_STATUS_ENDED:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+			break;
 		default:
 			break;
 	}

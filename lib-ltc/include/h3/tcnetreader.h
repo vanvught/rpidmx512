@@ -52,7 +52,7 @@ private:
 	uint32_t m_nTimeCodePrevious;
 	int m_nHandle;
 	alignas(uint32_t) uint8_t m_Buffer[64];
-	int m_nBytesReceived;
+	uint16_t m_nBytesReceived;
 };
 
 #endif /* H3_TCNETREADER_H_ */

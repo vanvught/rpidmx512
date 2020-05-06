@@ -37,28 +37,25 @@
 #define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
 void ArtNetNode::Print(void) {
-	const uint8_t *firmware_version = GetSoftwareVersion();
+	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
 
 	printf("Node %d\n", m_nVersion);
-	printf(" Firmware   : %d.%d\n", firmware_version[0], firmware_version[1]);
+	printf(" Firmware   : %d.%d\n", pSoftwareVersion[0], pSoftwareVersion[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
 
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * ARTNET_MAX_PORTS); nPortIndex++) {
 			uint8_t nAddress;
-			if (GetUniverseSwitch(i, nAddress)) {
-				const uint8_t nNet = m_Node.NetSwitch[i/ ARTNET_MAX_PORTS];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[i/ ARTNET_MAX_PORTS];
+			if (GetUniverseSwitch(nPortIndex, nAddress)) {
+				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ARTNET_MAX_PORTS];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ARTNET_MAX_PORTS];
 
-				printf("  Port %2d %d:%-3d[%2x] [%s]", static_cast<int>(i),
-						nNet, (nSubSwitch * 16 + nAddress),
-						(nSubSwitch * 16 + nAddress),
-						MERGEMODE2STRING(m_OutputPorts[i].mergeMode));
+				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, MERGEMODE2STRING(m_OutputPorts[nPortIndex].mergeMode));
 				if (m_nVersion == 4) {
-					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[i].tPortProtocol));
+					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[nPortIndex].tPortProtocol));
 				} else {
 					printf("\n");
 				}
@@ -73,18 +70,14 @@ void ArtNetNode::Print(void) {
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
 
-		for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < (ARTNET_NODE_MAX_PORTS_INPUT); nPortIndex++) {
 			uint8_t nAddress;
-			if (GetUniverseSwitch(i, nAddress, ARTNET_INPUT_PORT)) {
-				const uint32_t nNet = m_Node.NetSwitch[i];
-				const uint32_t nSubSwitch = m_Node.SubSwitch[i];
-				const uint32_t nDestinationIp = (m_InputPorts[i].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[i].nDestinationIp);
+			if (GetUniverseSwitch(nPortIndex, nAddress, ARTNET_INPUT_PORT)) {
+				const uint32_t nNet = m_Node.NetSwitch[nPortIndex];
+				const uint32_t nSubSwitch = m_Node.SubSwitch[nPortIndex];
+				const uint32_t nDestinationIp = (m_InputPorts[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[nPortIndex].nDestinationIp);
 
-				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n",
-						static_cast<int>(i), static_cast<int>(nNet),
-						static_cast<int>((nSubSwitch * 16 + nAddress)),
-						static_cast<int>((nSubSwitch * 16 + nAddress)),
-						IP2STR(nDestinationIp));
+				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, IP2STR(nDestinationIp));
 			}
 		}
 	}

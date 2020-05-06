@@ -99,23 +99,23 @@ void ArtNet4Node::Start(void) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * GetPages()); i++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < (ARTNET_MAX_PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
-		const bool isActive = GetPortAddress(i, nUniverse);
+		const bool isActive = GetPortAddress(nPortIndex, nUniverse);
 		
-		DEBUG_PRINTF("Port %d, Active %c, Universe %d", static_cast<int>(i), isActive ? 'Y' : 'N', nUniverse);
+		DEBUG_PRINTF("Port %d, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 		
 		if (isActive) {
-			const TPortProtocol tPortProtocol = GetPortProtocol(i);
+			const TPortProtocol tPortProtocol = GetPortProtocol(nPortIndex);
 			
 			DEBUG_PRINTF("\tProtocol %s", PROTOCOL2STRING(tPortProtocol));
 			
 			if (tPortProtocol == PORT_ARTNET_SACN) {
-				const TE131Merge tE131Merge = static_cast<TE131Merge>(ArtNetNode::GetMergeMode(i));
+				const TE131Merge tE131Merge = static_cast<TE131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
 				
 				DEBUG_PRINTF("\tMerge mode %s", MERGEMODE2STRING(tE131Merge));
 				
-				m_Bridge.SetMergeMode(i, tE131Merge);
+				m_Bridge.SetMergeMode(nPortIndex, tE131Merge);
 			}
 		}
 	}
@@ -224,7 +224,7 @@ uint8_t ArtNet4Node::GetStatus(uint8_t nPortId) {
 	uint16_t nUniverse;
 	const bool isActive = m_Bridge.GetUniverse(nPortId, nUniverse);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d", static_cast<int>(nPortId), isActive ? 'Y' : 'N', nUniverse);
+	DEBUG_PRINTF("Port %d, Active %c, Universe %d", nPortId, isActive ? 'Y' : 'N', nUniverse);
 
 	if (isActive) {
 		uint8_t nStatus = GO_OUTPUT_IS_SACN;

@@ -23,9 +23,11 @@
  * THE SOFTWARE.
  */
 
-#if __GNUC__ > 8
+#if (__GNUC__ > 8) || defined(__clang__)
  #pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
+
+#include <assert.h>
 
 #include "spiflashinstall.h"
 
@@ -42,7 +44,9 @@ SpiFlashInstall::SpiFlashInstall(void):
 	m_pFile(0)
 {
 	DEBUG_ENTRY
+	assert(s_pThis == 0);
 	s_pThis = this;
+
 	DEBUG_EXIT
 }
 

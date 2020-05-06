@@ -30,29 +30,30 @@
 #include "hardware.h"
 #include "ledblink.h"
 
+#include "midi.h"
+#include "midiparams.h"
+
 #include "midimonitor.h"
 
-#include "midi.h"
-#include "midi_params.h"
-
 #include "software_version.h"
+#include "firmwareversion.h"
 
 extern "C" {
 
 void notmain(void) {
 	Hardware hw;
 	LedBlink lb;
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
+	Midi midi;
+
+	midi.SetActiveSense(true);
+	midi.Init(MIDI_DIRECTION_INPUT);
+
+	fw.Print();
+	printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), midi.GetInterfaceDescription());
 
 	MidiMonitor monitor;
-
-	midi_params_init();
-	midi_set_baudrate(midi_params_get_baudrate());
-	midi_active_set_sense(true);
-	midi_init(MIDI_DIRECTION_INPUT);
-
-	printf("[V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
-	printf("MIDI Monitor, baudrate : %d, interface : %s", static_cast<int>(midi_get_baudrate()), midi_get_interface_description());
-
 	monitor.Init();
 
 	hw.WatchdogInit();

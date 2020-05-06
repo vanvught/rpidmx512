@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "displayset.h"
 #include "display.h"
@@ -58,6 +59,7 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 #endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	Detect(nCols, nRows);
@@ -75,7 +77,9 @@ Display::Display(TDisplayTypes tDisplayType):
 #endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
+
 	m_tType = tDisplayType;
 
 	switch (tDisplayType) {

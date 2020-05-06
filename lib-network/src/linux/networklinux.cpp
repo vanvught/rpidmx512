@@ -102,7 +102,7 @@ int NetworkLinux::Init(const char *s) {
 	}
 #endif
 
-	m_nIfIndex = (unsigned int)if_nametoindex((const char *)m_aIfName);
+	m_nIfIndex = if_nametoindex((const char *)m_aIfName);
 
 #if !defined ( __CYGWIN__ )
 	if (m_nIfIndex == 0) {

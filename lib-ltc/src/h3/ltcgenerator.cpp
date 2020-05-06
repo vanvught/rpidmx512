@@ -97,7 +97,7 @@ static struct TLtcTimeCode s_tLtcTimeCode;
 
 static void irq_timer0_handler(uint32_t clo) {
 	if (!s_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode, false);
+		LtcSender::Get()->SetTimeCode(static_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode), false);
 	}
 
 	bTimeCodeAvailable = true;
@@ -157,8 +157,8 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 	memset(&s_tLtcTimeCode, 0, sizeof(struct TLtcTimeCode));
 	s_tLtcTimeCode.nType = pStartLtcTimeCode->nType;
 
-	m_nFps = TimeCodeConst::FPS[(int) pStartLtcTimeCode->nType];
-	m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) pStartLtcTimeCode->nType];
+	m_nFps = TimeCodeConst::FPS[pStartLtcTimeCode->nType];
+	m_nTimer0Interval = TimeCodeConst::TMR_INTV[pStartLtcTimeCode->nType];
 
 	if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 		m_pStartLtcTimeCode->nFrames = m_nFps - 1;
@@ -201,7 +201,7 @@ void LtcGenerator::Start(void) {
 
 	// Generator
 	irq_timer_init();
-	irq_timer_set(IRQ_TIMER_0, (thunk_irq_timer_t) irq_timer0_handler);
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
 	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
 	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
@@ -210,18 +210,18 @@ void LtcGenerator::Start(void) {
 	LtcOutputs::Get()->Init();
 
 	if (!s_ptLtcDisabledOutputs->bLtc) {
-		LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode, false);
+		LtcSender::Get()->SetTimeCode(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode), false);
 	}
 
 	if (!s_ptLtcDisabledOutputs->bArtNet) {
-		ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&s_tLtcTimeCode));
 	}
 
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
 	}
 
-	LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&s_tLtcTimeCode);
+	LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 
 	led_set_ticks_per_second(LED_TICKS_NO_DATA);
 
@@ -299,36 +299,36 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 		if (nFps != m_nFps) {
 			m_nFps = nFps;
 			//
-			s_tLtcTimeCode.nType = (uint8_t) tType;
+			s_tLtcTimeCode.nType = tType;
 			//
-			m_pStartLtcTimeCode->nType = (uint8_t) tType;
+			m_pStartLtcTimeCode->nType = tType;
 			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
 				m_pStartLtcTimeCode->nFrames = m_nFps - 1;
 			}
-			m_pStopLtcTimeCode->nType = (uint8_t) tType;
+			m_pStopLtcTimeCode->nType = tType;
 			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
 				m_pStopLtcTimeCode->nFrames = m_nFps - 1;
 			}
 			//
 			//
-			m_nTimer0Interval = TimeCodeConst::TMR_INTV[(int) tType];
+			m_nTimer0Interval = TimeCodeConst::TMR_INTV[tType];
 			H3_TIMER->TMR0_INTV = m_nTimer0Interval;
 			H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 			//
 			if (!s_ptLtcDisabledOutputs->bLtc) {
-				LtcSender::Get()->SetTimeCode((const struct TLtcTimeCode *) &s_tLtcTimeCode, false);
+				LtcSender::Get()->SetTimeCode(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode), false);
 			}
 
 			if (!s_ptLtcDisabledOutputs->bArtNet) {
-				ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&s_tLtcTimeCode));
 			}
 
 			if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
 			}
 
-			LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&s_tLtcTimeCode);
+			LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 		}
 	}
 
@@ -568,7 +568,7 @@ bool LtcGenerator::PitchControl(void) {
 
 void LtcGenerator::Update(void) {
 	if (m_bIsStarted) {
-		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage((const struct TLtcTimeCode *)&s_tLtcTimeCode);
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 	}
 
 	dmb();
@@ -576,14 +576,14 @@ void LtcGenerator::Update(void) {
 		bTimeCodeAvailable = false;
 
 		if (!s_ptLtcDisabledOutputs->bArtNet) {
-			ArtNetNode::Get()->SendTimeCode((const struct TArtNetTimeCode *) &s_tLtcTimeCode);
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&s_tLtcTimeCode));
 		}
 
 		if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode((const struct _midi_send_tc *)&s_tLtcTimeCode);
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
 		}
 
-		LtcOutputs::Get()->Update((const struct TLtcTimeCode *)&s_tLtcTimeCode);
+		LtcOutputs::Get()->Update(static_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 
 		if (__builtin_expect((m_tDirection == LTC_GENERATOR_FORWARD), 1)) {
 			if (__builtin_expect((m_tPitch == LTC_GENERATOR_NORMAL), 1)) {

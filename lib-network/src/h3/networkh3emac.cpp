@@ -102,7 +102,7 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_aHostName[sizeof(m_aHostName) - 1] = '\0';
 	}
 
-	net_init(m_aNetMacaddr, &tIpInfo, (const uint8_t *) m_aHostName, &m_IsDhcpUsed);
+	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;

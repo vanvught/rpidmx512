@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-#if __GNUC__ > 8
+#if (__GNUC__ > 8) || defined(__clang__)
  #pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "display.h"
 
@@ -46,7 +47,10 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 	m_nSleepTimeout(0)
 {
 	DEBUG_ENTRY
+
+	assert(s_pThis == 0);
 	s_pThis = this;
+
 	DEBUG_EXIT
 }
 
@@ -62,7 +66,9 @@ Display::Display(TDisplayTypes tDisplayType):
 	m_nSleepTimeout(0)
 {
 	DEBUG_ENTRY
+	assert(s_pThis == 0);
 	s_pThis = this;
+
 	DEBUG_EXIT
 }
 

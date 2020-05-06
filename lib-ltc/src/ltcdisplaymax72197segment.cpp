@@ -37,6 +37,7 @@
 LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = 0;
 
 LtcDisplayMax72197Segment::LtcDisplayMax72197Segment(void) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;

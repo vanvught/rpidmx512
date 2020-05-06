@@ -142,7 +142,7 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 		memcpy(pdl[0], ConvertUid(LowerBound), RDM_UID_SIZE);
 		memcpy(pdl[1], ConvertUid(UpperBound), RDM_UID_SIZE);
 
-		m_DiscUniqueBranch.SetPd((const uint8_t *)pdl, 2* RDM_UID_SIZE);
+		m_DiscUniqueBranch.SetPd(reinterpret_cast<const uint8_t*>(pdl), 2 * RDM_UID_SIZE);
 		m_DiscUniqueBranch.Send(m_nPort);
 
 		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));

@@ -2,7 +2,7 @@
  * @file oscsend.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCSEND_CPP_
-#define OSCSEND_CPP_
+#ifndef OSCSEND_H_
+#define OSCSEND_H_
 
 #include <stdint.h>
-
-#ifdef __circle__
-#include <circle/stdarg.h>
-#else
 #include <stdarg.h>
-#endif
 
 #include "oscmessage.h"
 
@@ -55,4 +50,4 @@ private:
 	int m_Result;
 };
 
-#endif /* OSCSEND_CPP_ */
+#endif /* OSCSEND_H_ */

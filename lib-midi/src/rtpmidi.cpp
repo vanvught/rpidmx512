@@ -87,7 +87,7 @@ void RtpMidi::Start(void) {
 	m_pSendBuffer = new uint8_t[BUFFER_SIZE];
 	assert(m_pSendBuffer != 0);
 
-	TRtpHeader *pHeader = (TRtpHeader *)m_pSendBuffer;
+	TRtpHeader *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
 	pHeader->nStatic = 0x6180;
 	pHeader->nSenderSSRC = AppleMidi::GetSSRC();
 
@@ -194,7 +194,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 		m_tMidiMessage.bytes_count = nSize;
 	}
 
-	DEBUG_PRINTF("nSize=%d", static_cast<int>(nSize));
+	DEBUG_PRINTF("nSize=%d", nSize);
 
 	if (m_pRtpMidiHandler != 0) m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
 
@@ -272,7 +272,7 @@ void RtpMidi::SendTimeCode(const struct _midi_send_tc *tTimeCode) {
 }
 
 void  RtpMidi::Send(uint32_t nLength) {
-	TRtpHeader *pHeader = (TRtpHeader *)m_pSendBuffer;
+	TRtpHeader *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
 
 	pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
 	pHeader->nTimestamp = __builtin_bswap32(Now());

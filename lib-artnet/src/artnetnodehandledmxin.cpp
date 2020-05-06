@@ -49,7 +49,7 @@ void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 void ArtNetNode::HandleDmxIn(void) {
 	struct TArtDmx tArtDmx;
 
-	memcpy(static_cast<void*>(tArtDmx.Id), NODE_ID, sizeof m_PollReply.Id);
+	memcpy(tArtDmx.Id, NODE_ID, sizeof m_PollReply.Id);
 	tArtDmx.OpCode = OP_DMX;
 	tArtDmx.ProtVerHi = 0;
 	tArtDmx.ProtVerLo = ARTNET_PROTOCOL_REVISION;

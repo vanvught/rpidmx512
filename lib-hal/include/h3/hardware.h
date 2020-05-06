@@ -153,7 +153,7 @@ public:
 		m_pSoftResetHandler = pSoftResetHandler;
 	}
 
-	 static Hardware *Get(void) {
+	static Hardware *Get(void) {
 		return s_pThis;
 	}
 

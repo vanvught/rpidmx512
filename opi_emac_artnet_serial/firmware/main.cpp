@@ -129,7 +129,7 @@ void notmain(void) {
 	DmxSerialParams dmxSerialParams(new StoreDmxSerial);
 
 	if (dmxSerialParams.Load()) {
-		dmxSerialParams.Set(&dmxSerial);
+		dmxSerialParams.Set();
 		dmxSerialParams.Dump();
 	}
 

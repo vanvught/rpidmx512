@@ -28,6 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
+#include <assert.h>
 
 #include "ssd1306.h"
 
@@ -204,18 +205,21 @@ static uint8_t _ClearBuffer[133 + 1] __attribute__((aligned(4)));
 Ssd1306 *Ssd1306::s_pThis = 0;
 
 Ssd1306::Ssd1306(void) : m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(OLED_PANEL_128x64_8ROWS), m_bHaveSH1106(false) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	InitMembers();
 }
 
 Ssd1306::Ssd1306(TOledPanel tOledPanel) : m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	InitMembers();
 }
 
 Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) : m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	if (nSlaveAddress == 0) {

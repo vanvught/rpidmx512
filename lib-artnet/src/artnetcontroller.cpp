@@ -60,6 +60,7 @@ ArtNetController::ArtNetController(void):
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_pArtNetPacket = new struct TArtNetPacket;
@@ -369,7 +370,7 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 		}
 	}
 
-	DEBUG_PRINTF("nLow=%d, nMid=%d, nHigh=%d", static_cast<int>(nLow), static_cast<int>(nMid), static_cast<int>(nHigh));
+	DEBUG_PRINTF("nLow=%d, nMid=%d, nHigh=%d", nLow, nMid, nHigh);
 
 	if ((nHigh != -1) && (m_nActiveUniverses != static_cast<uint32_t>(nHigh))) {
 

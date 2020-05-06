@@ -38,6 +38,7 @@ LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType):
 	m_nIntensity(0),
 	m_pMax7219Set(0)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	if (tType == LTCDISPLAYMAX7219_TYPE_7SEGMENT) {

@@ -36,6 +36,7 @@ Serial *Serial::s_pThis = 0;
 Serial::Serial(void) : m_tType(SERIAL_TYPE_UART) {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_UartConfiguration.nBaud = 115200;

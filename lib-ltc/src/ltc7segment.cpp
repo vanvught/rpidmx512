@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "ltc7segment.h"
 #include "ltc.h"
@@ -43,6 +44,7 @@ const TDisplay7SegmentMessages msg[4] ALIGNED = {
 		DISPLAY_7SEGMENT_MSG_LTC_SMPTE };
 
 Ltc7segment::Ltc7segment(void) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 

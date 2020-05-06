@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include "tcnet.h"
@@ -33,7 +32,7 @@ void TCNet::Print(void) {
 	printf("TCNet\n");
 	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
 	if (m_tLayer != TCNET_LAYER_UNDEFINED) {
-		printf(" L%c T%d\n", GetLayerName(static_cast<TTCNetLayers>(m_tLayer)), TCNetConst::FPS[m_tTimeCodeType]);
+		printf(" L%c T%d\n", GetLayerName(m_tLayer), TCNetConst::FPS[m_tTimeCodeType]);
 	} else {
 		printf(" LM TimeCode\n");
 	}

@@ -128,7 +128,7 @@ void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
 void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 	const uint8_t *pSystemExclusive =ptMidiMessage->system_exclusive;
 
-	m_nTimeCodeType = (_midi_timecode_type) (pSystemExclusive[5] >> 5);
+	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
 
 	itoa_base10((pSystemExclusive[5] & 0x1F), &m_aTimeCode[0]);
 	itoa_base10(pSystemExclusive[6], &m_aTimeCode[3]);

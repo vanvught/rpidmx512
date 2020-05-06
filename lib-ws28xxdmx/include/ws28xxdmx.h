@@ -28,10 +28,6 @@
 
 #include <stdint.h>
 
-#if defined (__circle__)
- #include "circle/interrupt.h"
-#endif
-
 #include "lightset.h"
 
 #include "ws28xx.h"
@@ -39,11 +35,7 @@
 
 class WS28xxDmx: public LightSet {
 public:
-#if defined (__circle__)
-	WS28xxDmx(CInterruptSystem *);
-#else
 	WS28xxDmx(void);
-#endif
 	virtual ~WS28xxDmx(void);
 
 	void Start(uint8_t nPort = 0);
@@ -109,11 +101,6 @@ public: // RDM
 	}
 
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
-
-#if defined (__circle__)
-private:
-	CInterruptSystem	*m_pInterrupt;
-#endif
 
 private:
 	void UpdateMembers(void);

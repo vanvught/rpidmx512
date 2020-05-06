@@ -2,7 +2,7 @@
  * @file tlc59711dmxprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,7 @@
 void TLC59711Dmx::Print(void) {
 	printf("PWM parameters\n");
 	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetLedTypeString(m_LEDType), m_LEDType); //TODO Move TLC59711DmxParams to TLC59711
-	printf(" Count : %d %s\n", static_cast<int>(m_nLEDCount),
-			m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");
-	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n",
-			static_cast<int>(m_nSpiSpeedHz),
-			(m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711_SPI_SPEED_DEFAULT,
-			TLC59711_SPI_SPEED_MAX);
-	printf(" DMX   : StartAddress=%d, FootPrint=%d\n",
-			static_cast<int>(m_nDmxStartAddress),
-			static_cast<int>(m_nDmxFootprint));
+	printf(" Count : %d %s\n", m_nLEDCount, m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");
+	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nSpiSpeedHz, (m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711_SPI_SPEED_DEFAULT, TLC59711_SPI_SPEED_MAX);
+	printf(" DMX   : StartAddress=%d, FootPrint=%d\n", m_nDmxStartAddress, m_nDmxFootprint);
 }

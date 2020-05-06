@@ -275,7 +275,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 			assert(m_nPollTableEntries >= 1);
 			assert(nLow >= 0);
 
-			for (int32_t i = static_cast<uint32_t>(m_nPollTableEntries) - 1;i >= nLow; i--) {
+			for (int32_t i = static_cast<int32_t>(m_nPollTableEntries) - 1;i >= nLow; i--) {
 				const struct TArtNetNodeEntry *pSrc = &pArtNetNodeEntry[i];
 				struct TArtNetNodeEntry *pDst = &pArtNetNodeEntry[i + 1];
 				memcpy(pDst, pSrc, sizeof(struct TArtNetNodeEntry));

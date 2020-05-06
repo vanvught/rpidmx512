@@ -66,6 +66,7 @@ E131Controller::E131Controller(void):
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	memset(&m_State, 0, sizeof(struct TE131ControllerState));

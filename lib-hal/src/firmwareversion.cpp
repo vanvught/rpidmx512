@@ -44,6 +44,7 @@ FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const 
 	assert(pDate != 0);
 	assert(pTime != 0);
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	memcpy(m_tFirmwareVersion.SoftwareVersion, pVersion, SOFTWARE_VERSION_LENGTH);

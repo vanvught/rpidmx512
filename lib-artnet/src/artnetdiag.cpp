@@ -6,7 +6,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 void ArtNetNode::FillDiagData(void) {
 	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
 
-	memcpy(static_cast<void*>(m_DiagData), NODE_ID, 8);
+	memcpy(m_DiagData, NODE_ID, 8);
 	m_DiagData.OpCode = OP_DIAGDATA;
 	m_DiagData.ProtVerHi = 0;
 	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;
@@ -54,12 +54,12 @@ void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
 
 	m_DiagData.Priority = nPriority;
 
-	strncpy((char *) m_DiagData.Data, text, sizeof m_DiagData.Data - 1);
+	strncpy(m_DiagData.Data, text, sizeof m_DiagData.Data - 1);
 	m_DiagData.Data[sizeof(m_DiagData.Data) - 1] = '\0';// Just be sure we have a last '\0'
-	m_DiagData.LengthLo = strlen((const char *) m_DiagData.Data) + 1;// Text length including the '\0'
+	m_DiagData.LengthLo = strlen(m_DiagData.Data) + 1;// Text length including the '\0'
 
 	const uint16_t nSize = sizeof(struct TArtDiagData) - sizeof(m_DiagData.Data) + m_DiagData.LengthLo;
 
-	Network::Get()->SendTo(m_nHandle, (const uint8_t *) &(m_DiagData), nSize, m_State.IPAddressDiagSend, (uint16_t) ARTNET_UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, &m_DiagData, nSize, m_State.IPAddressDiagSend, ARTNET_UDP_PORT);
 }
 #endif

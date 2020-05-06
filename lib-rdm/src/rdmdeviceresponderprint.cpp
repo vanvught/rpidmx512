@@ -31,23 +31,15 @@
 void RDMDeviceResponder::Print(void) {
 	RDMDevice::Print();
 
-	const struct TRDMDeviceInfo *info = GetDeviceInfo();
+	const struct TRDMDeviceInfo *pDeviceInfo = GetDeviceInfo();
 	const char *pPersonalityDescription = m_pRDMPersonality->GetDescription();
 	const uint8_t nPersonalityDescriptionLength = m_pRDMPersonality->GetDescriptionLength();
 
 	printf("RDM Responder configuration\n");
-	printf(" Protocol Version %d.%d\n", static_cast<int>(info->protocol_major),
-			static_cast<int>(info->protocol_minor));
-	printf(" DMX Address      : %d\n",
-			static_cast<int>(((info->dmx_start_address[0]) << 8) + info->dmx_start_address[1]));
-	printf(" DMX Footprint    : %d\n",
-			static_cast<int>(((info->dmx_footprint[0]) << 8) + info->dmx_footprint[1]));
-	printf(" Personality %d of %d [%.*s]\n",
-			static_cast<int>(info->current_personality),
-			static_cast<int>(info->personality_count),
-			nPersonalityDescriptionLength,
-			pPersonalityDescription);
-	printf(" Sub Devices      : %d\n",
-			static_cast<int>(((info->sub_device_count[0]) << 8) + info->sub_device_count[1]));
-	printf(" Sensors          : %d\n", static_cast<int>(info->sensor_count));
+	printf(" Protocol Version %d.%d\n", pDeviceInfo->protocol_major, pDeviceInfo->protocol_minor);
+	printf(" DMX Address      : %d\n", (pDeviceInfo->dmx_start_address[0] << 8) + pDeviceInfo->dmx_start_address[1]);
+	printf(" DMX Footprint    : %d\n", (pDeviceInfo->dmx_footprint[0] << 8) + pDeviceInfo->dmx_footprint[1]);
+	printf(" Personality %d of %d [%.*s]\n", pDeviceInfo->current_personality, pDeviceInfo->personality_count, nPersonalityDescriptionLength, pPersonalityDescription);
+	printf(" Sub Devices      : %d\n", (pDeviceInfo->sub_device_count[0] << 8) + pDeviceInfo->sub_device_count[1]);
+	printf(" Sensors          : %d\n", pDeviceInfo->sensor_count);
 }

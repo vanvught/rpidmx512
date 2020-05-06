@@ -28,12 +28,11 @@
 
 #include <stdint.h>
 
+#include "dmxserialchanneldata.h"
+#include "dmxserialtftp.h"
+
 #include "lightset.h"
 #include "serial.h"
-
-#include "dmxserialchanneldata.h"
-
-#include "dmxserialtftp.h"
 
 enum TDmxSerialDefaults {
 	DMXSERIAL_DEFAULT_TYPE = SERIAL_TYPE_UART,

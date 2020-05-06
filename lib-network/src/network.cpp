@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "network.h"
 
@@ -47,6 +48,7 @@ Network::Network(void) :
 	m_nQueuedLocalIp(0),
 	m_nQueuedNetmask(0)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_aNetMacaddr[0] = '\0';

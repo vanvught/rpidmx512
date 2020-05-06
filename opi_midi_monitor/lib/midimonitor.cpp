@@ -86,7 +86,7 @@ void MidiMonitor::Init(void) {
 	console_puts(aHeaderLine);
 
 	for (uint32_t i = sizeof(aHeaderLine); i <= console_get_line_width(); i++) {
-		console_putc((int) ' ');
+		console_putc(' ');
 	}
 
 	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
@@ -165,10 +165,10 @@ void MidiMonitor::HandleMessage(void) {
 		const uint32_t nSeconds = nTime / 1000;
 		const uint32_t nMillis = nTime - nSeconds * 1000;
 
-		printf("%02d:%02d.%03d ", (int) (nHours * 60) + nMinutes, (int) nSeconds, (int) nMillis);
+		printf("%02d:%02d.%03d ", (nHours * 60) + nMinutes, nSeconds, nMillis);
 
 		console_puthex(m_pMidiMessage->type);
-		console_putc((int) ' ');
+		console_putc(' ');
 
 		switch (m_pMidiMessage->bytes_count) {
 		case 1:
@@ -180,9 +180,9 @@ void MidiMonitor::HandleMessage(void) {
 			break;
 		case 3:
 			console_puthex(m_pMidiMessage->data1);
-			console_putc((int) ' ');
+			console_putc(' ');
 			console_puthex(m_pMidiMessage->data2);
-			console_putc((int) ' ');
+			console_putc(' ');
 			break;
 		default:
 			console_puts("-- -- ");
@@ -191,11 +191,11 @@ void MidiMonitor::HandleMessage(void) {
 
 		if (m_pMidiMessage->channel != 0) {
 			// Channel messages
-			printf("%2d  ", (int) m_pMidiMessage->channel);
+			printf("%2d  ", m_pMidiMessage->channel);
 			if (m_pMidiMessage->type == MIDI_TYPES_NOTE_OFF || m_pMidiMessage->type == MIDI_TYPES_NOTE_ON) {
 				i = console_puts(midi_description_get_key_name(m_pMidiMessage->data1));
 				while ((5 - i++) > 0) {
-					console_putc((int) ' ');
+					console_putc(' ');
 				}
 			}
 			else {
@@ -213,16 +213,16 @@ void MidiMonitor::HandleMessage(void) {
 			// Channel message
 			case MIDI_TYPES_NOTE_OFF:
 			case MIDI_TYPES_NOTE_ON:
-				printf(" %d, Velocity %d\n",(int) m_pMidiMessage->data1, (int) m_pMidiMessage->data2);
+				printf(" %d, Velocity %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
 				break;
 			case MIDI_TYPES_AFTER_TOUCH_POLY:
-				printf(" %d, Pressure %d\n", (int) m_pMidiMessage->data1, (int) m_pMidiMessage->data2);
+				printf(" %d, Pressure %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
 				break;
 			case MIDI_TYPES_CONTROL_CHANGE:
 				// https://www.midi.org/specifications/item/table-3-control-change-messages-data-bytes-2
 				if (m_pMidiMessage->data1 < 120) {
 					// Control Change
-					printf(", %s, Value %d\n", midi_description_get_control_function(m_pMidiMessage->data1), (int) m_pMidiMessage->data2);
+					printf(", %s, Value %d\n", midi_description_get_control_function(m_pMidiMessage->data1), m_pMidiMessage->data2);
 				} else {
 					// Controller numbers 120-127 are reserved for Channel Mode Messages, which rather than controlling sound parameters, affect the channel's operating mode.
 					// Channel Mode Messages
@@ -231,22 +231,22 @@ void MidiMonitor::HandleMessage(void) {
 					if (m_pMidiMessage->data1	== MIDI_CONTROL_CHANGE_LOCAL_CONTROL) {
 						printf(" %s\n",	m_pMidiMessage->data2 == 0 ? "OFF" : "ON");
 					} else {
-						console_putc((int) '\n');
+						console_putc('\n');
 					}
 				}
 				break;
 			case MIDI_TYPES_PROGRAM_CHANGE:
 				if (m_pMidiMessage->channel == 10) {
-					printf(", %s {%d}\n", midi_description_get_drum_kit_name(m_pMidiMessage->data1), (int) m_pMidiMessage->data1);
+					printf(", %s {%d}\n", midi_description_get_drum_kit_name(m_pMidiMessage->data1), m_pMidiMessage->data1);
 				} else {
-					printf(", %s {%d}\n", midi_description_get_instrument_name(m_pMidiMessage->data1), (int) m_pMidiMessage->data1);
+					printf(", %s {%d}\n", midi_description_get_instrument_name(m_pMidiMessage->data1), m_pMidiMessage->data1);
 				}
 				break;
 			case MIDI_TYPES_AFTER_TOUCH_CHANNEL:
-				printf(", Pressure %d\n", (int) m_pMidiMessage->data1);
+				printf(", Pressure %d\n", m_pMidiMessage->data1);
 				break;
 			case MIDI_TYPES_PITCH_BEND:
-				printf(", Bend %d\n", (int) (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
+				printf(", Bend %d\n", (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
 				break;
 			default:
 				break;
@@ -261,23 +261,23 @@ void MidiMonitor::HandleMessage(void) {
 			case MIDI_TYPES_ACTIVE_SENSING:
 			case MIDI_TYPES_SYSTEM_RESET:
 			case MIDI_TYPES_TUNE_REQUEST:
-				console_putc((int) '\n');
+				console_putc('\n');
 				break;
 				// 2 bytes messages
 			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
-				printf(", Message number %d, Data %d\n", (int) ((m_pMidiMessage->data1 & 0x70) >> 4), (int) (m_pMidiMessage->data1 & 0x0F));
+				printf(", Message number %d, Data %d\n", ((m_pMidiMessage->data1 & 0x70) >> 4), (m_pMidiMessage->data1 & 0x0F));
 				HandleQf();
 				break;
 			case MIDI_TYPES_SONG_SELECT:
-				printf(", Song id number %d\n",(int) m_pMidiMessage->data1);
+				printf(", Song id number %d\n", m_pMidiMessage->data1);
 				break;
 				// 3 bytes messages
 			case MIDI_TYPES_SONG_POSITION:
-				printf(", Song position %d\n", (int) (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
+				printf(", Song position %d\n", (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
 				break;
 				// > 3 bytes messages
 			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
-				printf(", [%d] ", (int) m_pMidiMessage->bytes_count);
+				printf(", [%d] ", m_pMidiMessage->bytes_count);
 				{
 					uint8_t c;
 					for (c = 0; c < MIN(m_pMidiMessage->bytes_count, 16); c++) {

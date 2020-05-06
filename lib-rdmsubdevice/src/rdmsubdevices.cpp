@@ -47,6 +47,7 @@
 #endif
 
 #if defined(RDM_SUBDEVICES_ENABLE)
+#include "devicesparamsconst.h"
 //
 #include "rdmsubdevicebw7fets.h"
 #include "rdmsubdevicebwdimmer.h"
@@ -58,8 +59,6 @@
 #include "rdmsubdevicemcp23s17.h"
 #include "rdmsubdevicemcp4822.h"
 #include "rdmsubdevicemcp4902.h"
-
-static const char SUBDEVICES_PARAMS_FILE_NAME[] __attribute__ ((aligned (4))) = "devices.txt";
 #endif
 
 #define RDM_SUBDEVICES_MAX	8
@@ -91,10 +90,10 @@ void RDMSubDevices::Init(void) {
 
 #if defined(RDM_SUBDEVICES_ENABLE)
 	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
-	static_cast<void>(configfile.Read(SUBDEVICES_PARAMS_FILE_NAME));
+	configfile.Read(DevicesParamsConst::FILE_NAME);
 #endif
 
-	DEBUG_PRINTF("SubDevices added: %d", static_cast<int>(m_nCount));
+	DEBUG_PRINTF("SubDevices added: %d", m_nCount);
 }
 
 bool RDMSubDevices::Add(RDMSubDevice* pRDMSubDevice) {

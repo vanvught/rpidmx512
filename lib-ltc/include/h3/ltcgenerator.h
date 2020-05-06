@@ -90,7 +90,7 @@ private:
 	uint32_t m_nButtons;
 	int m_nHandle;
 	alignas(uint32_t) char m_Buffer[64];
-	int m_nBytesReceived;
+	uint16_t m_nBytesReceived;
 	bool m_bIsStarted;
 
 	static LtcGenerator *s_pThis;

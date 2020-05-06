@@ -127,7 +127,7 @@ void NtpClient::Init(void) {
 			debug_dump(&m_Reply, sizeof m_Reply);
 
 			if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
-				m_InitTime = static_cast<time_t>((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
+				m_InitTime = ((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
 				DEBUG_PRINTF("m_InitTime=%u", static_cast<unsigned>(m_InitTime));
 
 				struct tm *pLocalTime = localtime(&m_InitTime);
@@ -194,7 +194,7 @@ void NtpClient::Run(void) {
 		debug_dump(&m_Reply, sizeof m_Reply);
 
 		if (__builtin_expect(((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER), 1)) {
-			const time_t nTime = static_cast<time_t>((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
+			const time_t nTime = ((__builtin_bswap32(m_Reply.ReceiveTimestamp_s) - NTP_TIMESTAMP_DELTA + m_nUtcOffset));
 			Hardware::Get()->SetSysTime(nTime);
 			m_MillisLastPoll = Hardware::Get()->Millis();
 

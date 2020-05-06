@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "displayudf.h"
 #include "display.h"
@@ -41,6 +42,7 @@ DisplayUdf *DisplayUdf::s_pThis = 0;
 DisplayUdf::DisplayUdf(void): Display(DISPLAY_SSD1306) {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {

@@ -54,18 +54,18 @@ const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	const uint32_t nMicros = BCM2835_ST->CLO + nTimeOut;
 
 	do {
-		if ((p = (uint8_t *)rdm_get_available()) != 0) {
-			return (const uint8_t *) p;
+		if ((p = const_cast<uint8_t*>(rdm_get_available())) != 0) {
+			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ( BCM2835_ST->CLO < nMicros);
 
-	return (const uint8_t *) p;
+	return reinterpret_cast<const uint8_t*>(p);
 }
 
 void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	assert(pRdmCommand != 0);
 
-	uint8_t *rdm_data = (uint8_t *)pRdmCommand;
+	uint8_t *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
 	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
@@ -78,7 +78,7 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	rdm_data[i++] = rdm_checksum >> 8;
 	rdm_data[i] = rdm_checksum & 0XFF;
 
-	SendRaw(0, (const uint8_t *)pRdmCommand, pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	SendRaw(0, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 	m_TransactionNumber++;
 }
@@ -89,7 +89,7 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 
 	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
 
-	rdm_send_data((const uint8_t *) pRdmData, nLength);
+	rdm_send_data(reinterpret_cast<const uint8_t*>(pRdmData), nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 

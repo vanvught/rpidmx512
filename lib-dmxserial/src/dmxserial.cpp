@@ -43,6 +43,7 @@
 DmxSerial *DmxSerial::s_pThis = 0;
 
 DmxSerial::DmxSerial(void): m_nFilesCount(0), m_nDmxLastSlot(DMX_UNIVERSE_SIZE), m_bEnableTFTP(false), m_pDmxSerialTFTP(0), m_nHandle(-1) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < DMXSERIAL_FILE_MAX_NUMBER; i++) {

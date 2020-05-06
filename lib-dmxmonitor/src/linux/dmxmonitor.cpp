@@ -127,7 +127,7 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		switch (m_tFormat) {
 		case DMX_MONITOR_FORMAT_PCT:
-			printf("%3d ", static_cast<int>((pData[i] * 100)) / 255);
+			printf("%3d ", ((pData[i] * 100)) / 255);
 			break;
 		case DMX_MONITOR_FORMAT_DEC:
 			printf("%3d ", pData[i]);

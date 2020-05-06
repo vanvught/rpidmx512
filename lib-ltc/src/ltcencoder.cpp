@@ -100,6 +100,7 @@ LtcEncoder::LtcEncoder(void):
 	m_nBufferSize(SAMPLE_RATE / 24),	// Max buffer size
 	m_nType(0xFF)						// Invalid to force action
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_pLtcBits = new uint8_t[sizeof (struct TLtcFormatTemplate)];

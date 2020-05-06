@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "rdmidentify.h"
 
 #include "ledblink.h"
@@ -35,6 +37,7 @@ RDMIdentify::RDMIdentify(void) :
 	m_bIsEnabled(false),
 	m_nMode(IDENTIFY_MODE_QUIET)
 {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 

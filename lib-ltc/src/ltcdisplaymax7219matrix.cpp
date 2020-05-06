@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 
 #include "ltcdisplaymax7219matrix.h"
 
@@ -34,6 +35,7 @@
 LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = 0;
 
 LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_DeviceInfo.chip_select = SPI_CS0;
