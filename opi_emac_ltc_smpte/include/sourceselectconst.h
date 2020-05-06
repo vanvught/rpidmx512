@@ -26,13 +26,11 @@
 #ifndef SOURCESELECTCONST_H_
 #define SOURCESELECTCONST_H_
 
-#include <stdint.h>
-
 #include "ltcparams.h"
 
 class SourceSelectConst {
 public:
-	alignas(uint32_t) static const char SOURCE[LTC_READER_SOURCE_UNDEFINED][12];
+	static const char SOURCE[LTC_READER_SOURCE_UNDEFINED][12];
 };
 
 #endif /* SOURCESELECTCONST_H_ */

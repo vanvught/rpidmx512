@@ -2,7 +2,7 @@
  * @file oscclientconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,11 @@
 #ifndef OSCCLIENTCONST_H_
 #define OSCCLIENTCONST_H_
 
-#include <stdint.h>
-
 class OscClientConst {
 public:
-	alignas(uint32_t) static const char MSG_CLIENT_PARAMS[];
-	alignas(uint32_t) static const char MSG_CLIENT_START[];
-	alignas(uint32_t) static const char MSG_CLIENT_STARTED[];
+	static const char MSG_CLIENT_PARAMS[];
+	static const char MSG_CLIENT_START[];
+	static const char MSG_CLIENT_STARTED[];
 };
 
 #endif /* OSCCLIENTCONST_H_ */

@@ -23,12 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "showfileconst.h"
 
-alignas(uint32_t) const char ShowFileConst::FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH] =
-		{ "OLA", "dummy" };
-
-alignas(uint32_t) const char ShowFileConst::STATUS[SHOWFILE_STATUS_UNDEFINED][12] = {
-		"Idle", "Running", "Stopped", "Ended"};
+const char ShowFileConst::FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH] = { "OLA", "dummy" };
+const char ShowFileConst::STATUS[SHOWFILE_STATUS_UNDEFINED][12] = { "Idle", "Running", "Stopped", "Ended" };

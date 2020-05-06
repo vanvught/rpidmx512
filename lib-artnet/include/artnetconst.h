@@ -35,13 +35,13 @@
 
 class ArtNetConst {
 public:
-	alignas(uint32_t) static const uint8_t ESTA_ID[ARTNET_ESTA_SIZE];
-	alignas(uint32_t) static const uint8_t OEM_ID[];
+	static const uint8_t ESTA_ID[ARTNET_ESTA_SIZE];
+	static const uint8_t OEM_ID[];
 
-	alignas(uint32_t) static const char MSG_NODE_PARAMS[];
-	alignas(uint32_t) static const char MSG_NODE_START[];
-	alignas(uint32_t) static const char MSG_NODE_STARTED[];
-	alignas(uint32_t) static const char MSG_RDM_RUN[];
+	static const char MSG_NODE_PARAMS[];
+	static const char MSG_NODE_START[];
+	static const char MSG_NODE_STARTED[];
+	static const char MSG_RDM_RUN[];
 };
 
 #endif /* ARTNETCONST_H_ */

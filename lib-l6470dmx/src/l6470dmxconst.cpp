@@ -2,7 +2,7 @@
  * @file l6470dmxconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "l6470dmxconst.h"
 
-alignas(uint32_t) const char L6470DmxConst::FILE_NAME_MOTOR[] = "motor?.txt";
+const char L6470DmxConst::FILE_NAME_MOTOR[] = "motor?.txt";

@@ -2,7 +2,7 @@
  * @file oscserverconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "oscserverconst.h"
 
-alignas(uint32_t) const char OSCServerConst::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-alignas(uint32_t) const char OSCServerConst::MSG_BRIDGE_START[] = "Starting the Bridge";
-alignas(uint32_t) const char OSCServerConst::MSG_BRIDGE_STARTED[] = "Bridge started";
+const char OSCServerConst::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
+const char OSCServerConst::MSG_BRIDGE_START[] = "Starting the Bridge";
+const char OSCServerConst::MSG_BRIDGE_STARTED[] = "Bridge started";
 
-alignas(uint32_t) const char OSCServerConst::PARAMS_FILE_NAME[] = "osc.txt";
-alignas(uint32_t) const char OSCServerConst::PARAMS_INCOMING_PORT[] = "incoming_port";
-alignas(uint32_t) const char OSCServerConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";
-alignas(uint32_t) const char OSCServerConst::PARAMS_PATH[] = "path";
-alignas(uint32_t) const char OSCServerConst::PARAMS_TRANSMISSION[] = "partial_transmission";
-alignas(uint32_t) const char OSCServerConst::PARAMS_PATH_INFO[] = "path_info";
-alignas(uint32_t) const char OSCServerConst::PARAMS_PATH_BLACKOUT[] = "path_blackout";
+const char OSCServerConst::PARAMS_FILE_NAME[] = "osc.txt";
+
+const char OSCServerConst::PARAMS_PATH[] = "path";
+const char OSCServerConst::PARAMS_TRANSMISSION[] = "partial_transmission";
+const char OSCServerConst::PARAMS_PATH_INFO[] = "path_info";
+const char OSCServerConst::PARAMS_PATH_BLACKOUT[] = "path_blackout";

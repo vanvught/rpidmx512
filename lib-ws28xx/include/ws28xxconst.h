@@ -28,11 +28,13 @@
 
 #include "ws28xx.h"
 
-#define WS28XX_TYPES_MAX_NAME_LENGTH 	8
+enum {
+	WS28XX_TYPES_MAX_NAME_LENGTH  = 8
+};
 
 class WS28xxConst {
 public:
-	alignas(uint32_t) static const char TYPES[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH];
+	static const char TYPES[WS28XX_UNDEFINED][WS28XX_TYPES_MAX_NAME_LENGTH];
 };
 
 #endif /* WS28XXCONST_H_ */

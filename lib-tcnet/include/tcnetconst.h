@@ -30,7 +30,7 @@
 
 class TCNetConst {
 public:
-	alignas(uint32_t) static const uint8_t FPS[4];
+	static const uint8_t FPS[4];
 };
 
 

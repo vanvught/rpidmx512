@@ -31,10 +31,10 @@
 #include "artnetconst.h"
 #include "artnet.h"
 
-alignas(uint32_t) const uint8_t ArtNetConst::ESTA_ID[ARTNET_ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
-alignas(uint32_t) const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };						///< Waiting OEM from Artistic Licence Holdings Ltd.
+const uint8_t ArtNetConst::ESTA_ID[ARTNET_ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
+const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.
 
-alignas(uint32_t) const char ArtNetConst::MSG_NODE_PARAMS[] = "Setting Node parameters";
-alignas(uint32_t) const char ArtNetConst::MSG_NODE_START[] = "Starting the Node";
-alignas(uint32_t) const char ArtNetConst::MSG_NODE_STARTED[] = "Node started";
-alignas(uint32_t) const char ArtNetConst::MSG_RDM_RUN[] = "Running RDM Discovery";
+const char ArtNetConst::MSG_NODE_PARAMS[] = "Setting Node parameters";
+const char ArtNetConst::MSG_NODE_START[] = "Starting the Node";
+const char ArtNetConst::MSG_NODE_STARTED[] = "Node started";
+const char ArtNetConst::MSG_RDM_RUN[] = "Running RDM Discovery";

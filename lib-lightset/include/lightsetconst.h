@@ -28,13 +28,13 @@
 
 class LightSetConst {
 public:
-	alignas(uint32_t) static const char PARAMS_OUTPUT[];
-	alignas(uint32_t) static const char PARAMS_UNIVERSE[];
+	static const char PARAMS_OUTPUT[];
+	static const char PARAMS_UNIVERSE[];
 
-	alignas(uint32_t) static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
+	static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
 
-	alignas(uint32_t) static const char PARAMS_DMX_START_ADDRESS[];
-	alignas(uint32_t) static const char PARAMS_DMX_SLOT_INFO[];
+	static const char PARAMS_DMX_START_ADDRESS[];
+	static const char PARAMS_DMX_SLOT_INFO[];
 };
 
 #endif /* LIGHTSETCONST_H_ */

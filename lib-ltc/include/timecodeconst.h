@@ -1,7 +1,7 @@
 /**
  * @file timecodeconst.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@
 
 class TimeCodeConst {
 public:
-	alignas(uint32_t) static const uint8_t FPS[4];
-	alignas(uint32_t) static const uint32_t TMR_INTV[4];
+	static const uint8_t FPS[4];
+	static const uint32_t TMR_INTV[4];
 };
 
 #endif /* TIMECODECONST_H_ */

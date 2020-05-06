@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "sourceselectconst.h"
 
 #include "ltcparams.h"
 
-alignas(uint32_t) const char SourceSelectConst::SOURCE[LTC_READER_SOURCE_UNDEFINED][12] = {"LTC" , "Art-Net", "MIDI", "TCNet", "Internal", "rtpMIDI", "System-Time"};
+const char SourceSelectConst::SOURCE[LTC_READER_SOURCE_UNDEFINED][12] = {"LTC" , "Art-Net", "MIDI", "TCNet", "Internal", "rtpMIDI", "System-Time"};
 
 

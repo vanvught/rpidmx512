@@ -23,13 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "remoteconfigconst.h"
 
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_FILE_NAME[] = "rconfig.txt";
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_DISABLE[] = "disable";
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_DISABLE_WRITE[] = "disable_write";
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_ENABLE_REBOOT[] = "enable_reboot";
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
-alignas(uint32_t) const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";
+const char RemoteConfigConst::PARAMS_FILE_NAME[] = "rconfig.txt";
+
+const char RemoteConfigConst::PARAMS_DISABLE[] = "disable";
+const char RemoteConfigConst::PARAMS_DISABLE_WRITE[] = "disable_write";
+const char RemoteConfigConst::PARAMS_ENABLE_REBOOT[] = "enable_reboot";
+const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
+const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";

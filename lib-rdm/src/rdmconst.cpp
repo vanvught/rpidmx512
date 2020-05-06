@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "rdmconst.h"
 
 /*
  * https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
  */
 
-alignas(uint32_t) const char RDMConst::MANUFACTURER_NAME[] = "http://www.orangepi-dmx.org";
-alignas(uint32_t) const char RDMConst::MANUFACTURER_ID[2] = { 0x50, 0x00 };
+const char RDMConst::MANUFACTURER_NAME[] = "http://www.orangepi-dmx.org";
+const char RDMConst::MANUFACTURER_ID[2] = { 0x50, 0x00 };

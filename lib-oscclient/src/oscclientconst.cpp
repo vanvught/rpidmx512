@@ -23,10 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "oscclientconst.h"
 
-alignas(uint32_t) const char OscClientConst::MSG_CLIENT_PARAMS[] = "Setting Client parameters";
-alignas(uint32_t) const char OscClientConst::MSG_CLIENT_START[] = "Starting the Client";
-alignas(uint32_t) const char OscClientConst::MSG_CLIENT_STARTED[] = "Client started";
+const char OscClientConst::MSG_CLIENT_PARAMS[] = "Setting Client parameters";
+const char OscClientConst::MSG_CLIENT_START[] = "Starting the Client";
+const char OscClientConst::MSG_CLIENT_STARTED[] = "Client started";

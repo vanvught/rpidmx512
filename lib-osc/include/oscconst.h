@@ -26,12 +26,10 @@
 #ifndef OSCCONST_H_
 #define OSCCONST_H_
 
-#include <stdint.h>
-
 class OscConst {
 public:
-	alignas(uint32_t) static const char PARAMS_INCOMING_PORT[];
-	alignas(uint32_t) static const char PARAMS_OUTGOING_PORT[];
+	static const char PARAMS_INCOMING_PORT[];
+	static const char PARAMS_OUTGOING_PORT[];
 };
 
 #endif /* OSCCONST_H_ */

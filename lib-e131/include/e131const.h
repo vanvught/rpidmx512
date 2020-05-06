@@ -32,9 +32,9 @@
 
 class E131Const {
 public:
-	alignas(uint32_t) static const char MSG_BRIDGE_PARAMS[];
-	alignas(uint32_t) static const char MSG_BRIDGE_START[];
-	alignas(uint32_t) static const char MSG_BRIDGE_STARTED[];
+	static const char MSG_BRIDGE_PARAMS[];
+	static const char MSG_BRIDGE_START[];
+	static const char MSG_BRIDGE_STARTED[];
 };
 
 #endif /* E131CONST_H_ */

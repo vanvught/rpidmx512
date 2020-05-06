@@ -2,7 +2,7 @@
  * @file sparkfundmxconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "sparkfundmxconst.h"
 
-alignas(uint32_t) const char SparkFunDmxConst::MSG_INIT[] = "SparkFun init";
+const char SparkFunDmxConst::MSG_INIT[] = "SparkFun init";

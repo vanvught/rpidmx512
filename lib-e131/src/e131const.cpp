@@ -23,10 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "e131const.h"
 
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
-alignas(uint32_t) const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";
+const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
+const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
+const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";

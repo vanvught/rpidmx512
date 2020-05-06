@@ -26,8 +26,6 @@
 #ifndef SHOWFILECONST_H_
 #define SHOWFILECONST_H_
 
-#include <stdint.h>
-
 #include "showfile.h"
 
 enum {
@@ -36,9 +34,9 @@ enum {
 
 class ShowFileConst {
 public:
-	alignas(uint32_t) static const char FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH];
+	static const char FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH];
 
-	alignas(uint32_t) static const char STATUS[SHOWFILE_STATUS_UNDEFINED][12];
+	static const char STATUS[SHOWFILE_STATUS_UNDEFINED][12];
 };
 
 #endif /* SHOWFILECONST_H_ */

@@ -3,7 +3,7 @@
  *
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,13 @@
 #ifndef DMXSENDCONST_H_
 #define DMXSENDCONST_H_
 
-#include <stdint.h>
-
 class DMXSendConst {
 public:
-	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
-	alignas(uint32_t) static const char PARAMS_BREAK_TIME[];
-	alignas(uint32_t) static const char PARAMS_MAB_TIME[];
-	alignas(uint32_t) static const char PARAMS_REFRESH_RATE[];
+	static const char PARAMS_FILE_NAME[];
+
+	static const char PARAMS_BREAK_TIME[];
+	static const char PARAMS_MAB_TIME[];
+	static const char PARAMS_REFRESH_RATE[];
 };
 
 #endif /* DMXSENDCONST_H_ */

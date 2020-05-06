@@ -30,8 +30,8 @@
 
 class RDMConst {
 public:
-	alignas(uint32_t) static const char MANUFACTURER_NAME[];
-	alignas(uint32_t) static const char MANUFACTURER_ID[];
+	static const char MANUFACTURER_NAME[];
+	static const char MANUFACTURER_ID[];
 };
 
 #endif /* RDMCONST_H_ */

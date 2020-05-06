@@ -26,5 +26,5 @@
 
 #include "timecodeconst.h"
 
-alignas(uint32_t) const uint8_t TimeCodeConst::FPS[4] = { 24, 25, 30, 30 };
-alignas(uint32_t) const uint32_t TimeCodeConst::TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};
+const uint8_t TimeCodeConst::FPS[4] = { 24, 25, 30, 30 };
+const uint32_t TimeCodeConst::TMR_INTV[4] = {12000000 / 24, 12000000 / 25, 12000000 / 30, 12000000 / 30};

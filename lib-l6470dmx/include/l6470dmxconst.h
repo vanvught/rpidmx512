@@ -2,7 +2,7 @@
  * @file l6470dmxconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,9 @@
 #ifndef L6470DMXCONST_H_
 #define L6470DMXCONST_H_
 
-#include <stdint.h>
-
 class L6470DmxConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME_MOTOR[];
+	static const char FILE_NAME_MOTOR[];
 };
 
 #endif /* L6470DMXCONST_H_ */

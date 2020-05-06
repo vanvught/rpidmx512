@@ -28,7 +28,7 @@
 
 #include "dmxsendconst.h"
 
-alignas(uint32_t) const char DMXSendConst::PARAMS_FILE_NAME[] = "params.txt";
-alignas(uint32_t) const char DMXSendConst::PARAMS_BREAK_TIME[] = "dmxsend_break_time";
-alignas(uint32_t) const char DMXSendConst::PARAMS_MAB_TIME[] = "dmxsend_mab_time";
-alignas(uint32_t) const char DMXSendConst::PARAMS_REFRESH_RATE[] = "dmxsend_refresh_rate";
+const char DMXSendConst::PARAMS_FILE_NAME[] = "params.txt";
+const char DMXSendConst::PARAMS_BREAK_TIME[] = "dmxsend_break_time";
+const char DMXSendConst::PARAMS_MAB_TIME[] = "dmxsend_mab_time";
+const char DMXSendConst::PARAMS_REFRESH_RATE[] = "dmxsend_refresh_rate";

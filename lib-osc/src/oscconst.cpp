@@ -23,9 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "oscconst.h"
 
-alignas(uint32_t) const char OscConst::PARAMS_INCOMING_PORT[] = "incoming_port";
-alignas(uint32_t) const char OscConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";
+const char OscConst::PARAMS_INCOMING_PORT[] = "incoming_port";
+const char OscConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";
