@@ -49,7 +49,7 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-static const char aColonBlinkMode[3][5] = { "off", "down", "up" };
+constexpr char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nLedType = LTCDISPLAYWS28XX_DEFAULT_LED_TYPE;

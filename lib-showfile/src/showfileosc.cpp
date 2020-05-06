@@ -42,48 +42,46 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+enum {
+	OSCSERVER_MAX_BUFFER = 1024
+};
 
-#define OSCSERVER_MAX_BUFFER 		1024
+constexpr char aPath[] = "/showfile/";
+#define PATH_LENGTH	 	(sizeof(aPath) - 1)
 
-static const char sPath[] ALIGNED = "/showfile/";
-#define PATH_LENGTH 			(sizeof(sPath)/sizeof(sPath[0]) - 1)
+constexpr char aStart[] = "start";
+#define START_LENGTH 	(sizeof(aStart) - 1)
 
-static const char sStart[] ALIGNED = "start";
-#define START_LENGTH 			(sizeof(sStart)/sizeof(sStart[0]) - 1)
+constexpr char aStop[] = "stop";
+#define STOP_LENGTH 	(sizeof(aStop) - 1)
 
-static const char sStop[] ALIGNED = "stop";
-#define STOP_LENGTH 			(sizeof(sStop)/sizeof(sStop[0]) - 1)
+constexpr char aResume[] = "resume";
+#define RESUME_LENGTH 	(sizeof(aResume) - 1)
 
-static const char sResume[] ALIGNED = "resume";
-#define RESUME_LENGTH 			(sizeof(sResume)/sizeof(sResume[0]) - 1)
+constexpr char aShow[] = "show";
+#define SHOW_LENGTH 	(sizeof(aShow) - 1)
 
-static const char sShow[] ALIGNED = "show";
-#define SHOW_LENGTH 			(sizeof(sShow)/sizeof(sShow[0]) - 1)
+constexpr char aLoop[] = "loop";
+#define LOOP_LENGTH 	(sizeof(aLoop) - 1)
 
-static const char sLoop[] ALIGNED = "loop";
-#define LOOP_LENGTH 			(sizeof(sLoop)/sizeof(sLoop[0]) - 1)
+constexpr char aBlackout[] = "blackout";
+#define BO_LENGTH 		(sizeof(aBlackout) - 1)
 
-static const char sBlackout[] ALIGNED = "blackout";
-#define BO_LENGTH 				(sizeof(sBlackout)/sizeof(sBlackout[0]) - 1)
+constexpr char aMaster[] = "master";
+#define MASTER_LENGTH 	(sizeof(aMaster) - 1)
 
-static const char sMaster[] ALIGNED = "master";
-#define MASTER_LENGTH 			(sizeof(sMaster)/sizeof(sMaster[0]) - 1)
+constexpr char aTftp[] = "tftp";
+#define TFTP_LENGTH 	(sizeof(aTftp) - 1)
 
-static const char sTftp[] ALIGNED = "tftp";
-#define TFTP_LENGTH 			(sizeof(sTftp)/sizeof(sTftp[0]) - 1)
-
-static const char sDelete[] ALIGNED = "delete";
-#define DELETE_LENGTH 			(sizeof(sDelete)/sizeof(sDelete[0]) - 1)
+constexpr char aDelete[] = "delete";
+#define DELETE_LENGTH 	(sizeof(aDelete) - 1)
 
 // TouchOSC
-static const char sReload[] ALIGNED = "reload";
-#define RELOAD_LENGTH 			(sizeof(sReload)/sizeof(sReload[0]) - 1)
+constexpr char aReload[] = "reload";
+#define RELOAD_LENGTH 	(sizeof(aReload) - 1)
 // TouchOSC
-static const char sIndex[] ALIGNED = "index";
-#define INDEX_LENGTH 			(sizeof(sIndex)/sizeof(sIndex[0]) - 1)
+constexpr char aIndex[] = "index";
+#define INDEX_LENGTH 	(sizeof(aIndex) - 1)
 
 ShowFileOSC *ShowFileOSC::s_pThis = 0;
 
@@ -96,6 +94,7 @@ ShowFileOSC::ShowFileOSC(void):
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
@@ -129,37 +128,37 @@ void ShowFileOSC::Stop(void) {
 }
 
 void ShowFileOSC::Run(void) {
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
-	if (__builtin_expect((nBytesReceived <= static_cast<int>(PATH_LENGTH)), 1)) {
+	if (__builtin_expect((nBytesReceived <= PATH_LENGTH), 1)) {
 		return;
 	}
 
-	if (memcmp(m_pBuffer, sPath, PATH_LENGTH) == 0) {
+	if (memcmp(m_pBuffer, aPath, PATH_LENGTH) == 0) {
 		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(PATH_LENGTH), &m_pBuffer[PATH_LENGTH]);
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sStart, START_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aStart, START_LENGTH) == 0) {
 			ShowFile::Get()->Start();
 			SendStatus();
 			DEBUG_PUTS("ActionStart");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sStop, STOP_LENGTH) == 0){
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aStop, STOP_LENGTH) == 0){
 			ShowFile::Get()->Stop();
 			SendStatus();
 			DEBUG_PUTS("ActionStop");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sResume, RESUME_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aResume, RESUME_LENGTH) == 0) {
 			ShowFile::Get()->Resume();
 			SendStatus();
 			DEBUG_PUTS("ActionResume");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sShow, SHOW_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aShow, SHOW_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			const int nValue = Msg.GetInt(0);
@@ -173,7 +172,7 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sLoop, LOOP_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aLoop, LOOP_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			const int nValue = Msg.GetInt(0);
@@ -186,14 +185,14 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sBlackout, BO_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aBlackout, BO_LENGTH) == 0) {
 			ShowFile::Get()->BlackOut();
 			SendStatus();
 			DEBUG_PUTS("Blackout");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sMaster, MASTER_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aMaster, MASTER_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			int nValue;
@@ -214,7 +213,7 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sTftp, TFTP_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aTftp, TFTP_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			const int nValue = Msg.GetInt(0);
@@ -227,7 +226,7 @@ void ShowFileOSC::Run(void) {
 		}
 
 
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sDelete, DELETE_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aDelete, DELETE_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			int nValue = 255;
@@ -259,7 +258,7 @@ void ShowFileOSC::Run(void) {
 		}
 
 		// TouchOSC
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sReload, RELOAD_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aReload, RELOAD_LENGTH) == 0) {
 
 			Reload();
 
@@ -268,7 +267,7 @@ void ShowFileOSC::Run(void) {
 		}
 
 		// TouchOSC
-		if (memcmp(&m_pBuffer[PATH_LENGTH], sIndex, INDEX_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[PATH_LENGTH], aIndex, INDEX_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			if (Msg.GetType(0) != OSC_FLOAT){
@@ -386,7 +385,7 @@ void ShowFileOSC::Reload(void) {
 
 void ShowFileOSC::Print(void) {
 	printf("OSC Server\n");
-	printf(" Path : [%s]\n", sPath);
+	printf(" Path : [%s]\n", aPath);
 	printf(" Incoming port : %u\n", m_nPortIncoming);
 	printf(" Outgoing port : %u\n", m_nPortOutgoing);
 }

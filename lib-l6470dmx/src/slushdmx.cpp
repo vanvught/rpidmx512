@@ -52,27 +52,23 @@
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #define IO_PINS_IOPORT				8
 #define DMX_MAX_CHANNELS			512
 #define DMX_SLOT_INFO_RAW_LENGTH	128
 
-static const char PARAMS_SLUSH_USE_SPI[] ALIGNED = "use_spi_busy";
+constexpr char PARAMS_SLUSH_USE_SPI[] = "use_spi_busy";
 
-static const char PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A[] ALIGNED = "dmx_start_address_port_a";
-static const char PARAMS_SLUSH_DMX_FOOTPRINT_PORT_A[] ALIGNED = "dmx_footprint_port_a";
-static const char PARAMS_DMX_SLOT_INFO_PORT_A[] ALIGNED = "dmx_slot_info_port_a";
+constexpr char PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A[] = "dmx_start_address_port_a";
+constexpr char PARAMS_SLUSH_DMX_FOOTPRINT_PORT_A[] = "dmx_footprint_port_a";
+constexpr char PARAMS_DMX_SLOT_INFO_PORT_A[] = "dmx_slot_info_port_a";
 
-static const char PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B[] ALIGNED = "dmx_start_address_port_b";
-static const char PARAMS_SLUSH_DMX_FOOTPRINT_PORT_B[] ALIGNED = "dmx_footprint_port_b";
-static const char PARAMS_DMX_SLOT_INFO_PORT_B[] ALIGNED = "dmx_slot_info_port_b";
+constexpr char PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B[] = "dmx_start_address_port_b";
+constexpr char PARAMS_SLUSH_DMX_FOOTPRINT_PORT_B[] = "dmx_footprint_port_b";
+constexpr char PARAMS_DMX_SLOT_INFO_PORT_B[] = "dmx_slot_info_port_b";
 
-static const char PARAMS_DMX_MODE[] ALIGNED = "dmx_mode";
-static const char PARAMS_DMX_START_ADDRESS[] ALIGNED = "dmx_start_address";
-static const char PARAMS_DMX_SLOT_INFO[] ALIGNED = "dmx_slot_info";
+constexpr char PARAMS_DMX_MODE[] = "dmx_mode";
+constexpr char PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
+constexpr char PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";
 
 void SlushDmx::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);

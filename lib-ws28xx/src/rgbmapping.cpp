@@ -27,7 +27,7 @@
 
 #include "rgbmapping.h"
 
-static const char aMapping[RGB_MAPPING_UNDEFINED][4] __attribute__ ((aligned (4))) = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+constexpr char aMapping[RGB_MAPPING_UNDEFINED][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
 TRGBMapping RGBMapping::FromString(const char *pString) {
 	assert(pString != 0);

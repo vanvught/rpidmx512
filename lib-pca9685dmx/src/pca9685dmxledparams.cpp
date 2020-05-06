@@ -44,11 +44,11 @@
 #define SET_OUTPUT_DRIVER_MASK	(1 << 2)
 #define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
 
-static const char PARAMS_FILE_NAME[] ALIGNED = "pwmled.txt";
-static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
-static const char PARAMS_PWM_FREQUENCY[] ALIGNED = "pwm_frequency";
-static const char PARAMS_OUTPUT_INVERT[] ALIGNED = "output_invert";
-static const char PARAMS_OUTPUT_DRIVER[] ALIGNED = "output_driver";
+constexpr char PARAMS_FILE_NAME[] = "pwmled.txt";
+constexpr char PARAMS_I2C_SLAVE_ADDRESS[] = "i2c_slave_address";
+constexpr char PARAMS_PWM_FREQUENCY[] = "pwm_frequency";
+constexpr char PARAMS_OUTPUT_INVERT[] = "output_invert";
+constexpr char PARAMS_OUTPUT_DRIVER[] = "output_driver";
 
 PCA9685DmxLedParams::PCA9685DmxLedParams(void) :
 	PCA9685DmxParams(PARAMS_FILE_NAME),
@@ -143,13 +143,6 @@ void PCA9685DmxLedParams::Dump(void) {
 #endif
 }
 
-void PCA9685DmxLedParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	(static_cast<PCA9685DmxLedParams*>(p))->callbackFunction(s);
-}
-
 void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 	assert(pLine != 0);
 
@@ -189,3 +182,9 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 	}
 }
 
+void PCA9685DmxLedParams::staticCallbackFunction(void* p, const char* s) {
+	assert(p != 0);
+	assert(s != 0);
+
+	(static_cast<PCA9685DmxLedParams*>(p))->callbackFunction(s);
+}

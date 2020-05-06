@@ -45,25 +45,21 @@
 
 #include "debug.h"
 
-static const char LANGUAGE[2] = { 'e', 'n' };
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+constexpr char LANGUAGE[2] = { 'e', 'n' };
 
 #if defined(H3)
  #include "h3_board.h"
- static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " RDM Responder";
+ constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Responder";
 #elif defined (RASPPI) || defined (BARE_METAL)
- static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Responder";
+ constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
- static const char DEVICE_LABEL[] ALIGNED = "Cygwin RDM Responder";
+ constexpr char DEVICE_LABEL[] = "Cygwin RDM Responder";
 #elif defined (__linux__)
- static const char DEVICE_LABEL[] ALIGNED = "Linux RDM Responder";
+ constexpr char DEVICE_LABEL[] = "Linux RDM Responder";
 #elif defined (__APPLE__)
- static const char DEVICE_LABEL[] ALIGNED = "MacOS RDM Responder";
+ constexpr char DEVICE_LABEL[] = "MacOS RDM Responder";
 #else
- static const char DEVICE_LABEL[] ALIGNED = "RDM Responder";
+ constexpr char DEVICE_LABEL[] = "RDM Responder";
 #endif
 
 RDMDeviceResponder *RDMDeviceResponder::s_pThis = 0;
@@ -80,6 +76,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_aLanguage[0] = LANGUAGE[0];
@@ -103,8 +100,8 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 }
 
 RDMDeviceResponder::~RDMDeviceResponder(void) {
-	memset(&m_tRDMDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
-	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
+	memset(&m_tRDMDeviceInfo, 0, sizeof(struct TRDMDeviceInfo));
+	memset(&m_tRDMSubDeviceInfo, 0, sizeof(struct TRDMDeviceInfo));
 }
 
 void RDMDeviceResponder::Init(void) {

@@ -25,26 +25,26 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
 
 #include "serial.h"
 
 #include "debug.h"
 
-
-static const char s_aType[SERIAL_TYPE_UNDEFINED][5] = { "uart", "spi", "i2c" };
+constexpr char aType[SERIAL_TYPE_UNDEFINED][5] = { "uart", "spi", "i2c" };
+constexpr char aUartParity[SERIAL_UART_PARITY_UNDEFINED][5] = { "none", "odd", "even" };
+constexpr char aI2cSpeed[SERIAL_I2C_SPEED_MODE_UNDEFINED][9] = { "standard", "fast" };
 
 const char *Serial::GetType(enum TSerialTypes tType) {
 	if (tType < SERIAL_TYPE_UNDEFINED) {
-		return s_aType[tType];
+		return aType[tType];
 	}
 
 	return "Undefined";
 }
 
 enum TSerialTypes Serial::GetType(const char *pType) {
-	for (uint32_t i = 0; i < sizeof(s_aType) / sizeof(s_aType[0]); i++) {
-		if (strcasecmp(s_aType[i], pType) == 0) {
+	for (uint32_t i = 0; i < sizeof(aType) / sizeof(aType[0]); i++) {
+		if (strcasecmp(aType[i], pType) == 0) {
 			return static_cast<TSerialTypes>(i);
 		}
 	}
@@ -52,19 +52,17 @@ enum TSerialTypes Serial::GetType(const char *pType) {
 	return SERIAL_TYPE_UART;
 }
 
-static const char s_aUartParity[SERIAL_UART_PARITY_UNDEFINED][5] = { "none", "odd", "even" };
-
 const char *Serial::GetUartParity(enum TSerialUartParity tParity) {
 	if (tParity < SERIAL_UART_PARITY_UNDEFINED) {
-		return s_aUartParity[tParity];
+		return aUartParity[tParity];
 	}
 
 	return "Undefined";
 }
 
 enum TSerialUartParity Serial::GetUartParity(const char *pParity) {
-	for (uint32_t i = 0; i < sizeof(s_aUartParity) / sizeof(s_aUartParity[0]); i++) {
-		if (strcasecmp(s_aUartParity[i], pParity) == 0) {
+	for (uint32_t i = 0; i < sizeof(aUartParity) / sizeof(aUartParity[0]); i++) {
+		if (strcasecmp(aUartParity[i], pParity) == 0) {
 			return static_cast<TSerialUartParity>(i);
 		}
 	}
@@ -72,19 +70,17 @@ enum TSerialUartParity Serial::GetUartParity(const char *pParity) {
 	return SERIAL_UART_PARITY_NONE;
 }
 
-static const char s_aI2cSpeed[SERIAL_I2C_SPEED_MODE_UNDEFINED][9] = { "standard", "fast" };
-
 const char *Serial::GetI2cSpeed(enum TSerialI2cSpeedModes tSpeed) {
 	if (tSpeed < SERIAL_I2C_SPEED_MODE_UNDEFINED) {
-		return s_aI2cSpeed[tSpeed];
+		return aI2cSpeed[tSpeed];
 	}
 
 	return "Undefined";
 
 }
 enum TSerialI2cSpeedModes Serial::GetI2cSpeed(const char *pSpeed) {
-	for (uint32_t i = 0; i < sizeof(s_aI2cSpeed) / sizeof(s_aI2cSpeed[0]); i++) {
-		if (strcasecmp(s_aI2cSpeed[i], pSpeed) == 0) {
+	for (uint32_t i = 0; i < sizeof(aI2cSpeed) / sizeof(aI2cSpeed[0]); i++) {
+		if (strcasecmp(aI2cSpeed[i], pSpeed) == 0) {
 			return static_cast<TSerialI2cSpeedModes>(i);
 		}
 	}

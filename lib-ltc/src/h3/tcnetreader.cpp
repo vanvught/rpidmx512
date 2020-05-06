@@ -52,14 +52,14 @@
 
 #include "network.h"
 
-static const char sLayer[] ALIGNED = "layer#";
-#define LAYER_LENGTH (sizeof(sLayer)/sizeof(sLayer[0]) - 1)
+constexpr char aLayer[] = "layer#";
+#define LAYER_LENGTH	(sizeof(aLayer) - 1)
 
-static const char sType[] ALIGNED = "type#";
-#define TYPE_LENGTH (sizeof(sType)/sizeof(sType[0]) - 1)
+constexpr char aType[] = "type#";
+#define TYPE_LENGTH		(sizeof(aType) - 1)
 
-static const char sTimeCode[] ALIGNED = "timecode#";
-#define TIMECODE_LENGTH (sizeof(sTimeCode)/sizeof(sTimeCode[0]) - 1)
+constexpr char aTimeCode[] = "timecode#";
+#define TIMECODE_LENGTH	(sizeof(aTimeCode) - 1)
 
 enum TUdpPort {
 	UDP_PORT = 0x0ACA
@@ -149,7 +149,7 @@ void TCNetReader::HandleUdpRequest(void) {
 
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < (int) 13), 1)) {
+	if (__builtin_expect((m_nBytesReceived < 13), 1)) {
 		return;
 	}
 
@@ -164,7 +164,7 @@ void TCNetReader::HandleUdpRequest(void) {
 
 	debug_dump(m_Buffer, m_nBytesReceived);
 
-	if ((m_nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&m_Buffer[6], sLayer, LAYER_LENGTH) == 0)) {
+	if ((m_nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&m_Buffer[6], aLayer, LAYER_LENGTH) == 0)) {
 		const TTCNetLayers tLayer = TCNet::GetLayer(m_Buffer[6 + LAYER_LENGTH]);
 
 		TCNet::Get()->SetLayer(tLayer);
@@ -175,7 +175,7 @@ void TCNetReader::HandleUdpRequest(void) {
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + TYPE_LENGTH + 2)) && (memcmp(&m_Buffer[6], sType, TYPE_LENGTH) == 0)) {
+	if ((m_nBytesReceived == (6 + TYPE_LENGTH + 2)) && (memcmp(&m_Buffer[6], aType, TYPE_LENGTH) == 0)) {
 		if (m_Buffer[6 + TYPE_LENGTH] == '2') {
 
 			const uint32_t nValue = 20 + m_Buffer[6 + TYPE_LENGTH + 1] - '0';
@@ -214,7 +214,7 @@ void TCNetReader::HandleUdpRequest(void) {
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + TIMECODE_LENGTH + 1)) && (memcmp(&m_Buffer[6], sTimeCode, TIMECODE_LENGTH) == 0)) {
+	if ((m_nBytesReceived == (6 + TIMECODE_LENGTH + 1)) && (memcmp(&m_Buffer[6], aTimeCode, TIMECODE_LENGTH) == 0)) {
 		const char nChar = m_Buffer[6 + TIMECODE_LENGTH];
 		const bool bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 

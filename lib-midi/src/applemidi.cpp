@@ -71,7 +71,7 @@ struct TTimestampSynchronization {
 	uint64_t nTimestamps[3];
 }__attribute__((packed));
 
-#define APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH	(sizeof(struct TExchangePacket) - APPLE_MIDI_SESSION_NAME_LENGTH_MAX - 1)
+constexpr uint16_t APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct TExchangePacket) - APPLE_MIDI_SESSION_NAME_LENGTH_MAX - 1;
 
 AppleMidi::AppleMidi(void) :
 	m_nStartTime(0),
@@ -96,7 +96,7 @@ AppleMidi::AppleMidi(void) :
 
 	memset(&m_tSessionStatus, 0, sizeof (struct TSessionStatus));
 
-	DEBUG_PRINTF("APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = %d", (int) APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH);
+	DEBUG_PRINTF("APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = %d", APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH);
 }
 
 AppleMidi::~AppleMidi(void) {
@@ -149,7 +149,7 @@ void AppleMidi::HandleControlMessage(void) {
 	struct TExchangePacket *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
-	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, (int) m_tSessionStatus.tSessionState);
+	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, m_tSessionStatus.tSessionState);
 
 	if (m_tSessionStatus.tSessionState == SESSION_STATE_WAITING_IN_CONTROL) {
 		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");

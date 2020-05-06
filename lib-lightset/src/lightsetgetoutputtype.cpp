@@ -28,19 +28,15 @@
 
 #include "lightset.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+constexpr char sOutput[LIGHTSET_OUTPUT_TYPE_UNDEFINED][4] = {"dmx", "spi", "mon"};
 
-static const char sOutput[LIGHTSET_OUTPUT_TYPE_UNDEFINED][4] ALIGNED = {"dmx", "spi", "mon"};
-
-const char* LightSet::GetOutputType(enum TLightSetOutputType type) {
+const char *LightSet::GetOutputType(enum TLightSetOutputType type) {
 	assert(type < LIGHTSET_OUTPUT_TYPE_UNDEFINED);
 
 	return sOutput[type];
 }
 
-TLightSetOutputType LightSet::GetOutputType(const char* sType) {
+TLightSetOutputType LightSet::GetOutputType(const char *sType) {
 	for (uint32_t i = 0; i < sizeof(sOutput) / sizeof(sOutput[0]); i++) {
 		if (strncasecmp(sOutput[i], sType, 3) == 0) {
 			return static_cast<TLightSetOutputType>(i);

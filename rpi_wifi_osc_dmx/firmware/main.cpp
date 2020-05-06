@@ -69,10 +69,10 @@
 
 #include "software_version.h"
 
-static const char NETWORK_INIT[] = "Network init ...";
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
+constexpr char NETWORK_INIT[] = "Network init ...";
+constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+constexpr char START_BRIDGE[] = "Starting the Bridge ...";
+constexpr char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 

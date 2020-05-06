@@ -38,22 +38,23 @@
 
 #include "arm/synchronize.h"
 
-static const char s_SocName[4][8] __attribute__((aligned(4))) = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
-static const char s_CpuName[4][24] __attribute__((aligned(4))) = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
-static const uint8_t s_nCpuNameLength[4] __attribute__((aligned(4))) = {12, 9, 18, 8};
+constexpr char aSocName[4][8] = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
+constexpr char aCpuName[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
+constexpr uint8_t aCpuNameLength[4] = {12, 9, 18, 8};
 
-const char s_Machine[] __attribute__((aligned(4))) = "arm";
-#define MACHINE_LENGTH (sizeof(s_Machine)/sizeof(s_Machine[0]) - 1)
+constexpr char aMachine[] = "arm";
+#define MACHINE_LENGTH (sizeof(aMachine) - 1)
 
-const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
-#define SYSNAME_LENGTH (sizeof(s_SysName)/sizeof(s_SysName[0]) - 1)
+constexpr char aSysName[] = "Baremetal";
+#define SYSNAME_LENGTH (sizeof(aSysName) - 1)
 
-const char s_Version[] __attribute__((aligned(4))) = __DATE__ "" "" __TIME__;
-#define VERSION_LENGTH (sizeof(s_Version)/sizeof(s_Version[0]) - 1)
+constexpr char s_Version[] = __DATE__ "" "" __TIME__;
+#define VERSION_LENGTH (sizeof(aVersion) - 1)
 
 Hardware *Hardware::s_pThis = 0;
 
 Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_nBoardRevision = bcm2835_vc_get_get_board_revision();
@@ -76,12 +77,12 @@ Hardware::~Hardware(void) {
 
 const char *Hardware::GetMachine(uint8_t& nLength) {
 	nLength = MACHINE_LENGTH;
-	return s_Machine;
+	return aMachine;
 }
 
 const char *Hardware::GetSysName(uint8_t& nLength) {
 	nLength = SYSNAME_LENGTH;
-	return s_SysName;
+	return aSysName;
 }
 
 const char *Hardware::GetBoardName(uint8_t& nLength) {
@@ -90,13 +91,13 @@ const char *Hardware::GetBoardName(uint8_t& nLength) {
 }
 
 const char *Hardware::GetCpuName(uint8_t& nLength) {
-	nLength = s_nCpuNameLength[m_tSocType];
-	return s_CpuName[m_tSocType];
+	nLength = aCpuNameLength[m_tSocType];
+	return aCpuName[m_tSocType];
 }
 
 const char *Hardware::GetSocName(uint8_t& nLength) {
-	nLength = sizeof s_SocName[0]; // Same length for all
-	return s_SocName[m_tSocType];
+	nLength = sizeof aSocName[0]; // Same length for all
+	return aSocName[m_tSocType];
 }
 
 bool Hardware::SetTime(const struct tm *pTime) {

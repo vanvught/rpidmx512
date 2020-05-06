@@ -43,8 +43,8 @@
 
 #include "debug.h"
 
-static const char bootcmd[] = "bootcmd=sf probe; sf read 48000000 180000 22000; bootm 48000000";
-#define BOOTCMD_LENGTH	(sizeof bootcmd / sizeof bootcmd[0])
+constexpr char bootcmd[] = "bootcmd=sf probe; sf read 48000000 180000 22000; bootm 48000000";
+#define BOOTCMD_LENGTH	(sizeof bootcmd)
 
 int32_t Compressed::GetFileSize(const char *pFileName) {
 	FILE *pFile = fopen(pFileName, "r");

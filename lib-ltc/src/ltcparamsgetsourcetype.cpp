@@ -29,11 +29,7 @@
 
 #include "ltcparams.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char sSource[LTC_READER_SOURCE_UNDEFINED][9] ALIGNED = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
+constexpr char sSource[LTC_READER_SOURCE_UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
 
 const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 	assert(tSource < LTC_READER_SOURCE_UNDEFINED);
@@ -41,7 +37,7 @@ const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 	return sSource[tSource];
 }
 
-enum TLtcReaderSource LtcParams::GetSourceType(const char* pType) {
+enum TLtcReaderSource LtcParams::GetSourceType(const char *pType) {
 	for (uint32_t i = 0; i < sizeof(sSource) / sizeof(sSource[0]); i++) {
 		if (strcasecmp(sSource[i], pType) == 0) {
 			return static_cast<TLtcReaderSource>(i);

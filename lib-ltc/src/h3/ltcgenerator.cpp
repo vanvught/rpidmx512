@@ -28,10 +28,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "h3/ltcgenerator.h"
 #include "ltc.h"
 #include "timecodeconst.h"
@@ -71,23 +67,23 @@
 
 #define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
 
-static const char sStart[] ALIGNED = "start";
-#define START_LENGTH (sizeof(sStart)/sizeof(sStart[0]) - 1)
+constexpr char aStart[] = "start";
+#define START_LENGTH		(sizeof(aStart) - 1)
 
-static const char sStop[] ALIGNED = "stop";
-#define STOP_LENGTH (sizeof(sStop)/sizeof(sStop[0]) - 1)
+constexpr char aStop[] = "stop";
+#define STOP_LENGTH			(sizeof(aStop) - 1)
 
-static const char sResume[] ALIGNED = "resume";
-#define RESUME_LENGTH (sizeof(sResume)/sizeof(sResume[0]) - 1)
+constexpr char aResume[] = "resume";
+#define RESUME_LENGTH		(sizeof(aResume) - 1)
 
-static const char sRate[] ALIGNED = "rate";
-#define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+constexpr char aRate[] = "rate";
+#define RATE_LENGTH			(sizeof(aRate) - 1)
 
-static const char sDirection[] ALIGNED = "direction";
-#define DIRECTION_LENGTH (sizeof(sDirection)/sizeof(sDirection[0]) - 1)
+constexpr char aDirection[] = "direction";
+#define DIRECTION_LENGTH	(sizeof(aDirection) - 1)
 
-static const char sPitch[] ALIGNED = "pitch";
-#define PITCH_LENGTH (sizeof(sPitch)/sizeof(sPitch[0]) - 1)
+constexpr char aPitch[] = "pitch";
+#define PITCH_LENGTH		(sizeof(aPitch) - 1)
 
 enum TUdpPort {
 	UDP_PORT = 0x5443
@@ -107,21 +103,21 @@ static void irq_timer0_handler(uint32_t clo) {
 	bTimeCodeAvailable = true;
 }
 
-static int32_t atoi(const char *buffer, uint32_t size) {
-	assert(buffer != 0);
-	assert(size <= 4); // -100
+static int32_t atoi(const char *pBuffer, uint32_t nSize) {
+	assert(pBuffer != 0);
+	assert(nSize <= 4); // -100
 
-	const char *p = buffer;
+	const char *p = pBuffer;
 	int32_t sign = 1;
 	int32_t res = 0;
 
 	if (*p == '-') {
 		sign = -1;
-		size--;
+		nSize--;
 		p++;
 	}
 
-	for (; (size > 0) && (*p >= '0' && *p <= '9'); size--) {
+	for (; (nSize > 0) && (*p >= '0' && *p <= '9'); nSize--) {
 		res = res * 10 + *p - '0';
 		p++;
 	}
@@ -441,7 +437,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 		m_nBytesReceived--;
 	}
 
-	if (memcmp(&m_Buffer[4], sStart, START_LENGTH) == 0) {
+	if (memcmp(&m_Buffer[4], aStart, START_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
@@ -455,7 +451,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
-	} else if (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aStop, STOP_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
@@ -463,17 +459,17 @@ void LtcGenerator::HandleUdpRequest(void) {
 		} else {
 			DEBUG_PUTS("Invalid !stop command");
 		}
-	} else if (memcmp(&m_Buffer[4], sResume, RESUME_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aResume, RESUME_LENGTH) == 0) {
 		ActionResume();
-	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aRate, RATE_LENGTH) == 0) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
 			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
 		}
-	} else if (memcmp(&m_Buffer[4], sDirection, DIRECTION_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aDirection, DIRECTION_LENGTH) == 0) {
 		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
 			ActionSetDirection(&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
 		}
-	} else if (memcmp(&m_Buffer[4], sPitch, PITCH_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aPitch, PITCH_LENGTH) == 0) {
 		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + PITCH_LENGTH + 1 + 4)) && (m_Buffer[4 + PITCH_LENGTH] == '#')) {
 			ActionSetPitch(&m_Buffer[(4 + PITCH_LENGTH + 1)], m_nBytesReceived - (4 + PITCH_LENGTH + 1));
 		}

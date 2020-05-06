@@ -27,10 +27,6 @@
 #include <string.h>
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "remoteconfig.h"
 
 #include "debug.h"
@@ -39,7 +35,7 @@
  #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static const char sTxtFile[TXT_FILE_LAST][15] ALIGNED = {
+constexpr char sTxtFile[TXT_FILE_LAST][15] = {
 		"rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt",
 		"ltc.txt", "tcnet.txt", "oscclnt.txt", "display.txt", "ldisplay.txt", "mon.txt",
 #if defined(STEPPER)
@@ -50,7 +46,7 @@ static const char sTxtFile[TXT_FILE_LAST][15] ALIGNED = {
 		"rdm_device.txt", "show.txt", "serial.txt"
 };
 
-static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
+constexpr uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {
 		11, 11, 10,8, 7, 10, 11,
 		7, 9, 11, 11, 12, 7,
 #if defined(STEPPER)
@@ -61,7 +57,7 @@ static const uint8_t sTxtFileNameLength[TXT_FILE_LAST] ALIGNED = {
 		14, 8, 10
 };
 
-static const TStore sMap[TXT_FILE_LAST] ALIGNED = { STORE_RCONFIG,
+constexpr TStore sMap[TXT_FILE_LAST] = { STORE_RCONFIG,
 		STORE_NETWORK, STORE_ARTNET, STORE_E131, STORE_OSC, STORE_DMXSEND, STORE_WS28XXDMX,
 		STORE_LTC, STORE_TCNET, STORE_OSC_CLIENT, STORE_DISPLAYUDF, STORE_LTCDISPLAY, STORE_MONITOR,
 #if defined(STEPPER)

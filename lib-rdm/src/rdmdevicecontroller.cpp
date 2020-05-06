@@ -2,7 +2,7 @@
  * @file rdmdevicecontroller.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,10 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #if defined (H3)
- static const char DEVICE_LABEL[] ALIGNED = "Orange Pi RDM Controller";
+ constexpr char DEVICE_LABEL[] = "Orange Pi RDM Controller";
 #else
- static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Controller";
+ constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
 #endif
 
 RDMDeviceController::RDMDeviceController(void) {

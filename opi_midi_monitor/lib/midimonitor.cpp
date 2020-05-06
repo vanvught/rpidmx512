@@ -40,15 +40,12 @@
  #define MIN(a,b)               (((a) < (b)) ? (a) : (b))
 #endif
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+static uint8_t s_Qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static char s_aTimecode[] ALIGNED =  "--:--:--;-- -----";
-static const char s_aTypes[4][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE" };
-static uint8_t s_Qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static char s_aTimecode[] __attribute__ ((aligned (4))) =  "--:--:--;-- -----";
+#define TIMECODE_LENGTH	(sizeof(s_aTimecode) - 1)
 
-#define TIMECODE_LENGTH	((sizeof(s_aTimecode) / sizeof(char)) - 1)
+constexpr char aTypes[4][8] = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
 #define ROW				1
 #define COLUMN			80
@@ -107,7 +104,7 @@ void MidiMonitor::Update(uint8_t nType) {
 
 	if (nType != m_nTypePrevious) {
 		m_nTypePrevious = nType;
-		memcpy(&s_aTimecode[12], s_aTypes[nType], 5);
+		memcpy(&s_aTimecode[12], aTypes[nType], 5);
 	}
 }
 

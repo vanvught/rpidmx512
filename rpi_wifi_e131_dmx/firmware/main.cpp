@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,10 +68,10 @@
 
 #include "software_version.h"
 
-static const char NETWORK_INIT[] = "Network init ...";
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
+constexpr char NETWORK_INIT[] = "Network init ...";
+constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+constexpr char START_BRIDGE[] = "Starting the Bridge ...";
+constexpr char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 

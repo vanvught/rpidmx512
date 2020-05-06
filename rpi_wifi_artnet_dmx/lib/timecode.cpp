@@ -31,22 +31,18 @@
 
 #include "console.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #define ROW		1
 #define COLUMN	80
 
-static char timecode[] ALIGNED =  "--:--:--;-- -----";
-#define TIMECODE_LENGTH	((sizeof(timecode) / sizeof(char)) - 1)
+static char timecode[] =  "--:--:--;-- -----";
+#define TIMECODE_LENGTH		(sizeof(timecode) - 1)
 
-static const char types[4][8] ALIGNED = {"Film " , "EBU  " , "DF   " , "SMPTE" };
+constexpr char types[4][8] = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
 static uint8_t prev_type = 0xFF;	///< Invalid type. Force initial update.
 
-static void itoa_base10(int arg, char *buf) {
-	char *n = buf;
+static void itoa_base10(int arg, char *pBuffer) {
+	char *n = pBuffer;
 
 	if (arg == 0) {
 		*n++ = '0';

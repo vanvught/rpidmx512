@@ -35,10 +35,6 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__((aligned(4)))
-#endif
-
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
@@ -49,7 +45,7 @@
 #include "lightsetconst.h"
 
 #define TLC59711_TYPES_MAX_NAME_LENGTH 		10
-static const char sLedTypes[TTLC59711_TYPE_UNDEFINED][TLC59711_TYPES_MAX_NAME_LENGTH] ALIGNED = { "TLC59711\0", "TLC59711W" };
+constexpr char sLedTypes[TTLC59711_TYPE_UNDEFINED][TLC59711_TYPES_MAX_NAME_LENGTH] = { "TLC59711\0", "TLC59711W" };
 
 TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore): m_pLC59711ParamsStore(pTLC59711ParamsStore) {
 	m_tTLC59711Params.nSetList = 0;
@@ -60,7 +56,6 @@ TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStor
 }
 
 TLC59711DmxParams::~TLC59711DmxParams(void) {
-	m_tTLC59711Params.nSetList = 0;
 }
 
 bool TLC59711DmxParams::Load(void) {

@@ -43,20 +43,16 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char sRGB[] ALIGNED = "rgb";
-#define RGB_LENGTH			(sizeof(sRGB)/sizeof(sRGB[0]) - 1)
+constexpr char aRGB[] = "rgb";
+#define RGB_LENGTH			(sizeof(aRGB) - 1)
 #define RGB_SIZE_HEX		7 // 1 byte index followed by 6 bytes hex RGB
 
-static const char sMaster[] ALIGNED = "master";
-#define MASTER_LENGTH 		(sizeof(sMaster)/sizeof(sMaster[0]) - 1)
+constexpr char aMaster[] = "master";
+#define MASTER_LENGTH 		(sizeof(aMaster) - 1)
 #define MASTER_SIZE_HEX		2
 
-static const char sDisplayMSG[] ALIGNED = "showmsg";
-#define DMSG_LENGTH 		(sizeof(sDisplayMSG)/sizeof(sDisplayMSG[0]) - 1)
+constexpr char aDisplayMSG[] = "showmsg";
+#define DMSG_LENGTH 		(sizeof(aDisplayMSG) - 1)
 
 enum TUdpPort {
 	UDP_PORT = 0x2812
@@ -82,6 +78,7 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT;
@@ -299,7 +296,7 @@ void LtcDisplayWS28xx::Run(void) {
 		m_nBytesReceived--;
 	}
 
-	if (memcmp(&m_Buffer[5], sDisplayMSG, DMSG_LENGTH) == 0) {
+	if (memcmp(&m_Buffer[5], aDisplayMSG, DMSG_LENGTH) == 0) {
 		const uint32_t nMsgLength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
 		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
 
@@ -308,13 +305,13 @@ void LtcDisplayWS28xx::Run(void) {
 		} else {
 			DEBUG_PUTS("Invalid !showmsg command");
 		}
-	} else if (memcmp(&m_Buffer[5], sRGB, RGB_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[5], aRGB, RGB_LENGTH) == 0) {
 		if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX)) && (m_Buffer[5 + RGB_LENGTH] == '#')) {
 			SetRGB(&m_Buffer[(5 + RGB_LENGTH + 1)]);
 		} else {
 			DEBUG_PUTS("Invalid !rgb command");
 		}
-	} else if (memcmp(&m_Buffer[5], sMaster, MASTER_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[5], aMaster, MASTER_LENGTH) == 0) {
 		if ((m_nBytesReceived == (5 + MASTER_LENGTH + 1 + MASTER_SIZE_HEX)) && (m_Buffer[5 + MASTER_LENGTH] == '#')) {
 			m_nMaster = hexadecimalToDecimal(&m_Buffer[(5 + MASTER_LENGTH + 1)], MASTER_SIZE_HEX);
 		} else {

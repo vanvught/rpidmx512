@@ -25,7 +25,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <assert.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -54,9 +53,9 @@
 
 #include "displayhandler.h"
 
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
+constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+constexpr char START_BRIDGE[] = "Starting the Bridge ...";
+constexpr char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 
@@ -67,8 +66,6 @@ void notmain(void) {
 	Display display(DISPLAY_SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
-	fw.Print();
 
 	console_puts("Ethernet OSC ");
 	console_set_fg_color(CONSOLE_GREEN);

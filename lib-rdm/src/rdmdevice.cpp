@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,6 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #ifndef MAX
  #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
  #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
@@ -49,17 +45,17 @@
 
 #if defined(H3)
  #include "h3_board.h"
- static const char DEVICE_LABEL[] ALIGNED = H3_BOARD_NAME " RDM Device";
+ constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
 #elif defined (RASPPI) || defined (BARE_METAL)
- static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi RDM Device";
+ constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
 #elif defined (__CYGWIN__)
- static const char DEVICE_LABEL[] ALIGNED = "Cygwin RDM Device";
+ constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
 #elif defined (__linux__)
- static const char DEVICE_LABEL[] ALIGNED = "Linux RDM Device";
+ constexpr char DEVICE_LABEL[] = "Linux RDM Device";
 #elif defined (__APPLE__)
- static const char DEVICE_LABEL[] ALIGNED = "MacOS RDM Device";
+ constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
 #else
- static const char DEVICE_LABEL[] ALIGNED = "RDM Device";
+ constexpr char DEVICE_LABEL[] = "RDM Device";
 #endif
 
 RDMDevice::RDMDevice(void):

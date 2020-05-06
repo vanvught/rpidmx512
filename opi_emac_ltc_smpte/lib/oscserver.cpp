@@ -44,10 +44,6 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 enum TOscServerPort {
 	OSCSERVER_PORT_DEFAULT_INCOMING = 8000
 };
@@ -56,66 +52,66 @@ enum TOscServerPort {
 
 // Internal
 
-static const char sStart[] ALIGNED = "start";
-#define START_LENGTH 			(sizeof(sStart)/sizeof(sStart[0]) - 1)
+constexpr char aStart[] = "start";
+#define START_LENGTH 			(sizeof(aStart) - 1)
 
-static const char sStop[] ALIGNED = "stop";
-#define STOP_LENGTH 			(sizeof(sStop)/sizeof(sStop[0]) - 1)
+constexpr char aStop[] = "stop";
+#define STOP_LENGTH 			(sizeof(aStop) - 1)
 
-static const char sResume[] ALIGNED = "resume";
-#define RESUME_LENGTH 			(sizeof(sResume)/sizeof(sResume[0]) - 1)
+constexpr char aResume[] = "resume";
+#define RESUME_LENGTH 			(sizeof(aResume) - 1)
 
-static const char sRate[] ALIGNED = "rate";
-#define RATE_LENGTH 			(sizeof(sRate)/sizeof(sRate[0]) - 1)
+constexpr char aRate[] = "rate";
+#define RATE_LENGTH 			(sizeof(aRate) - 1)
 
-static const char sSet[] ALIGNED = "/set/";
-#define SET_LENGTH 				(sizeof(sSet)/sizeof(sSet[0]) - 1)
+constexpr char aSet[] = "/set/";
+#define SET_LENGTH 				(sizeof(aSet) - 1)
 
-static const char sGoto[] ALIGNED = "goto";
-#define GOTO_LENGTH 			(sizeof(sGoto)/sizeof(sGoto[0]) - 1)
+constexpr char aGoto[] = "goto";
+#define GOTO_LENGTH 			(sizeof(aGoto) - 1)
 
-static const char sDirection[] ALIGNED = "direction";
-#define DIRECTION_LENGTH 		(sizeof(sDirection)/sizeof(sDirection[0]) - 1)
+constexpr char aDirection[] = "direction";
+#define DIRECTION_LENGTH 		(sizeof(aDirection) - 1)
 
-static const char sPitch[] ALIGNED = "pitch";
-#define PITCH_LENGTH 			(sizeof(sPitch)/sizeof(sPitch[0]) - 1)
+constexpr char aPitch[] = "pitch";
+#define PITCH_LENGTH 			(sizeof(aPitch) - 1)
 
 // TCNet
 
-static const char sTCNet[] ALIGNED = "tcnet/";
-#define TCNET_LENGTH 			(sizeof(sTCNet)/sizeof(sTCNet[0]) - 1)
+constexpr char aTCNet[] = "tcnet/";
+#define TCNET_LENGTH 			(sizeof(aTCNet) - 1)
 
-static const char sTCNetLayer[] ALIGNED = "layer/";
-#define TCNETLAYER_LENGTH 		(sizeof(sTCNetLayer)/sizeof(sTCNetLayer[0]) - 1)
+constexpr char aTCNetLayer[] = "layer/";
+#define TCNETLAYER_LENGTH 		(sizeof(aTCNetLayer) - 1)
 
-static const char sTCNetType[] ALIGNED = "type";
-#define TCNETTYPE_LENGTH 		(sizeof(sTCNetType)/sizeof(sTCNetType[0]) - 1)
+constexpr char aTCNetType[] = "type";
+#define TCNETTYPE_LENGTH 		(sizeof(aTCNetType) - 1)
 
-static const char sTCNetTimeCode[] ALIGNED = "timecode";
-#define TCNETTIMECODE_LENGTH 	(sizeof(sTCNetTimeCode)/sizeof(sTCNetTimeCode[0]) - 1)
+constexpr char aTCNetTimeCode[] = "timecode";
+#define TCNETTIMECODE_LENGTH 	(sizeof(aTCNetTimeCode) - 1)
 
 // WS28xx Display
 
-static const char sWS28xx[] ALIGNED = "ws28xx/";
-#define WS28XX_LENGTH 			(sizeof(sWS28xx)/sizeof(sWS28xx[0]) - 1)
+constexpr char aWS28xx[] = "ws28xx/";
+#define WS28XX_LENGTH 			(sizeof(aWS28xx) - 1)
 
-static const char sWS28xxMaster[] ALIGNED = "master";
-#define WS28XXMASTER_LENGTH 	(sizeof(sWS28xxMaster)/sizeof(sWS28xxMaster[0]) - 1)
+constexpr char aWS28xxMaster[] = "master";
+#define WS28XXMASTER_LENGTH 	(sizeof(aWS28xxMaster) - 1)
 
-static const char sWS28xxMessage[] ALIGNED = "message";
-#define WS28XXMESSAGE_LENGTH 	(sizeof(sWS28xxMessage)/sizeof(sWS28xxMessage[0]) - 1)
+constexpr char aWS28xxMessage[] = "message";
+#define WS28XXMESSAGE_LENGTH 	(sizeof(aWS28xxMessage) - 1)
 
-static const char sWS28xxRgb[] ALIGNED = "rgb/";
-#define WS28XXRGB_LENGTH 		(sizeof(sWS28xxRgb)/sizeof(sWS28xxRgb[0]) - 1)
+constexpr char aWS28xxRgb[] = "rgb/";
+#define WS28XXRGB_LENGTH 		(sizeof(aWS28xxRgb) - 1)
 
-static const char sWS28xxRgbTime[] ALIGNED = "time";
-#define WS28XXTIME_LENGTH 		(sizeof(sWS28xxRgbTime)/sizeof(sWS28xxRgbTime[0]) - 1)
+constexpr char aWS28xxRgbTime[] = "time";
+#define WS28XXTIME_LENGTH 		(sizeof(aWS28xxRgbTime) - 1)
 
-static const char sWS28xxRgbColon[] ALIGNED = "colon";
-#define WS28XXCOLON_LENGTH 		(sizeof(sWS28xxRgbColon)/sizeof(sWS28xxRgbColon[0]) - 1)
+constexpr char aWS28xxRgbColon[] = "colon";
+#define WS28XXCOLON_LENGTH 		(sizeof(aWS28xxRgbColon) - 1)
 
-static const char sWS28xxRgbMessage[] ALIGNED = "message";
-#define WS28XXRGBMESSAGE_LENGTH (sizeof(sWS28xxRgbMessage)/sizeof(sWS28xxRgbMessage[0]) - 1)
+constexpr char aWS28xxRgbMessage[] = "message";
+#define WS28XXRGBMESSAGE_LENGTH (sizeof(aWS28xxRgbMessage) - 1)
 
 // "hh/mm/ss/ff" -> length = 11
 #define VALUE_LENGTH		11
@@ -150,7 +146,7 @@ void OSCServer::Stop(void) {
 }
 
 void OSCServer::Run(void) {
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= 4), 1)) {
 		return;
@@ -163,7 +159,7 @@ void OSCServer::Run(void) {
 		DEBUG_PRINTF("%d,%d %s", static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
 
 		// */pitch f
-		if (memcmp(&m_pBuffer[m_nPathLength], sPitch, PITCH_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], aPitch, PITCH_LENGTH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			const float fValue = Msg.GetFloat(0);
@@ -177,7 +173,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */start*
-		if (memcmp(&m_pBuffer[m_nPathLength], sStart, START_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], aStart, START_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
 
 				LtcGenerator::Get()->ActionStart();
@@ -198,7 +194,7 @@ void OSCServer::Run(void) {
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
 			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				if (memcmp(&m_pBuffer[m_nPathLength + START_LENGTH], sSet, SET_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + START_LENGTH], aSet, SET_LENGTH) == 0) {
 					const uint32_t nOffset = m_nPathLength + START_LENGTH + SET_LENGTH;
 					m_pBuffer[nOffset + 2] = ':';
 					m_pBuffer[nOffset + 5] = ':';
@@ -213,7 +209,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */stop*
-		if (memcmp(&m_pBuffer[m_nPathLength], sStop, STOP_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], aStop, STOP_LENGTH) == 0) {
 			if ((nCommandLength == (m_nPathLength + STOP_LENGTH))) {
 
 				LtcGenerator::Get()->ActionStop();
@@ -221,7 +217,7 @@ void OSCServer::Run(void) {
 
 				DEBUG_PUTS("ActionStop");
 			} else if ((nCommandLength == (m_nPathLength + STOP_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], sSet, SET_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], aSet, SET_LENGTH) == 0) {
 					const uint32_t nOffset = m_nPathLength + STOP_LENGTH + SET_LENGTH;
 					m_pBuffer[nOffset + 2] = ':';
 					m_pBuffer[nOffset + 5] = ':';
@@ -237,7 +233,7 @@ void OSCServer::Run(void) {
 		}
 		// */set/*
 		if ((nCommandLength == (m_nPathLength + RATE_LENGTH + SET_LENGTH + RATE_VALUE_LENGTH))) {
-			if (memcmp(&m_pBuffer[m_nPathLength + RATE_LENGTH], sSet, SET_LENGTH) == 0) {
+			if (memcmp(&m_pBuffer[m_nPathLength + RATE_LENGTH], aSet, SET_LENGTH) == 0) {
 				const uint32_t nOffset = m_nPathLength + RATE_LENGTH + SET_LENGTH;
 
 				LtcGenerator::Get()->ActionSetRate(&m_pBuffer[nOffset]);
@@ -248,7 +244,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */resume
-		if ( (nCommandLength == (m_nPathLength + RESUME_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], sResume, RESUME_LENGTH) == 0)) {
+		if ( (nCommandLength == (m_nPathLength + RESUME_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], aResume, RESUME_LENGTH) == 0)) {
 			LtcGenerator::Get()->ActionResume();
 
 			DEBUG_PUTS("ActionResume");
@@ -256,7 +252,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */goto/*
-		if ((nCommandLength == (m_nPathLength + GOTO_LENGTH + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], sGoto, GOTO_LENGTH) == 0)) {
+		if ((nCommandLength == (m_nPathLength + GOTO_LENGTH + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], aGoto, GOTO_LENGTH) == 0)) {
 			if (m_pBuffer[m_nPathLength + GOTO_LENGTH] == '/') {
 				const uint32_t nOffset = m_nPathLength + GOTO_LENGTH + 1;
 				m_pBuffer[nOffset + 2] = ':';
@@ -271,7 +267,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */direction/*
-		if ((nCommandLength <= (m_nPathLength + DIRECTION_LENGTH + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], sDirection, DIRECTION_LENGTH) == 0)) {
+		if ((nCommandLength <= (m_nPathLength + DIRECTION_LENGTH + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], aDirection, DIRECTION_LENGTH) == 0)) {
 			if (m_pBuffer[m_nPathLength + DIRECTION_LENGTH] == '/') {
 				const uint32_t nOffset = m_nPathLength + DIRECTION_LENGTH + 1;
 				LtcGenerator::Get()->ActionSetDirection(&m_pBuffer[nOffset]);
@@ -283,10 +279,10 @@ void OSCServer::Run(void) {
 		}
 
 		// */tcnet/
-		if (memcmp(&m_pBuffer[m_nPathLength], sTCNet, TCNET_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], aTCNet, TCNET_LENGTH) == 0) {
 			// layer/?
 			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH + 1)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], sTCNetLayer, TCNETLAYER_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetLayer, TCNETLAYER_LENGTH) == 0) {
 					const uint32_t nOffset = m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH;
 					const TTCNetLayers tLayer = TCNet::GetLayer(m_pBuffer[nOffset]);
 
@@ -300,7 +296,7 @@ void OSCServer::Run(void) {
 			}
 			// type i
 			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETTYPE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], sTCNetType, TCNETTYPE_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetType, TCNETTYPE_LENGTH) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -333,7 +329,7 @@ void OSCServer::Run(void) {
 			}
 			// timecode i
 			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETTIMECODE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], sTCNetType, TCNETTIMECODE_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetType, TCNETTIMECODE_LENGTH) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -352,10 +348,10 @@ void OSCServer::Run(void) {
 		}
 
 		// */ws28xx/
-		if (memcmp(&m_pBuffer[m_nPathLength], sWS28xx, WS28XX_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], aWS28xx, WS28XX_LENGTH) == 0) {
 			// ws28xx/master i
 			if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXMASTER_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], sWS28xxMaster, WS28XXMASTER_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxMaster, WS28XXMASTER_LENGTH) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -369,7 +365,7 @@ void OSCServer::Run(void) {
 			}
 			// ws28xx/message string
 			if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXMESSAGE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], sWS28xxMessage, WS28XXMESSAGE_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxMessage, WS28XXMESSAGE_LENGTH) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					char *pString = Msg.GetString(0);
@@ -384,10 +380,10 @@ void OSCServer::Run(void) {
 			}
 			// ws28xx/rgb/*
 			if (nCommandLength > (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], sWS28xxRgb, WS28XXRGB_LENGTH) == 0) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxRgb, WS28XXRGB_LENGTH) == 0) {
 					// ws28xx/rgb/time iii
 					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXTIME_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], sWS28xxRgbTime, WS28XXTIME_LENGTH) == 0) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbTime, WS28XXTIME_LENGTH) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT);
 						}
 
@@ -395,7 +391,7 @@ void OSCServer::Run(void) {
 					}
 					// ws28xx/rgb/colon iii
 					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXCOLON_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], sWS28xxRgbColon, WS28XXCOLON_LENGTH) == 0) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbColon, WS28XXCOLON_LENGTH) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_COLON);
 						}
 
@@ -403,7 +399,7 @@ void OSCServer::Run(void) {
 					}
 					// ws28xx/rgb/message iii
 					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXRGBMESSAGE_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], sWS28xxRgbMessage, WS28XXRGBMESSAGE_LENGTH) == 0) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbMessage, WS28XXRGBMESSAGE_LENGTH) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE);
 						}
 

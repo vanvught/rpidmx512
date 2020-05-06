@@ -37,13 +37,13 @@
 
 #include "debug.h"
 
-static const uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
+constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 
 #define OFFSET_STORES	((((sizeof(s_aSignature) + 15) / 16) * 16) + 16) // +16 is reserved for UUID
 
-static const uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024,     32,     32};
+constexpr uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024,     32,     32};
 #ifndef NDEBUG
-static const char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial"};
+constexpr char s_aStoreName[STORE_LAST][12] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = 0;
@@ -51,6 +51,7 @@ SpiFlashStore *SpiFlashStore::s_pThis = 0;
 SpiFlashStore::SpiFlashStore(void): m_bHaveFlashChip(false), m_bIsNew(false), m_nStartAddress(0), m_nSpiFlashStoreSize(SPI_FLASH_STORE_SIZE), m_tState(STORE_STATE_IDLE) {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	if (spi_flash_probe(0, 0, 0) < 0) {
@@ -67,7 +68,7 @@ SpiFlashStore::SpiFlashStore(void): m_bHaveFlashChip(false), m_bIsNew(false), m_
 			m_nSpiFlashStoreSize += s_aStorSize[j];
 		}
 
-		DEBUG_PRINTF("OFFSET_STORES=%d", (int) OFFSET_STORES);
+		DEBUG_PRINTF("OFFSET_STORES=%d", OFFSET_STORES);
 		DEBUG_PRINTF("m_nSpiFlashStoreSize=%d", m_nSpiFlashStoreSize);
 
 		assert(m_nSpiFlashStoreSize <= SPI_FLASH_STORE_SIZE);

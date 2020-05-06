@@ -69,9 +69,9 @@
 
 #include "displayhandler.h"
 
-static const char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-static const char START_BRIDGE[] = "Starting the Bridge ...";
-static const char BRIDGE_STARTED[] = "Bridge started";
+constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
+constexpr char START_BRIDGE[] = "Starting the Bridge ...";
+constexpr char BRIDGE_STARTED[] = "Bridge started";
 
 extern "C" {
 
@@ -81,8 +81,10 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(DISPLAY_SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreOscServer storeOscServer;
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;

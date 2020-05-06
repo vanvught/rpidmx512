@@ -27,10 +27,6 @@
 #include <string.h>
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "h3/systimereader.h"
 
 #include "ltc.h"
@@ -59,14 +55,14 @@
 
 #include "debug.h"
 
-static const char sStart[] ALIGNED = "start";
-#define START_LENGTH (sizeof(sStart)/sizeof(sStart[0]) - 1)
+constexpr char aStart[] = "start";
+#define START_LENGTH	(sizeof(aStart) - 1)
 
-static const char sStop[] ALIGNED = "stop";
-#define STOP_LENGTH (sizeof(sStop)/sizeof(sStop[0]) - 1)
+constexpr char aStop[] = "stop";
+#define STOP_LENGTH		(sizeof(aStop) - 1)
 
-static const char sRate[] ALIGNED = "rate";
-#define RATE_LENGTH (sizeof(sRate)/sizeof(sRate[0]) - 1)
+constexpr char aRate[] = "rate";
+#define RATE_LENGTH		(sizeof(aRate) - 1)
 
 enum tUdpPort {
 	UDP_PORT = 0x5443
@@ -215,19 +211,19 @@ void SystimeReader::HandleUdpRequest(void) {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[4], sStart, START_LENGTH) == 0) {
+	if (memcmp(&m_Buffer[4], aStart, START_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + START_LENGTH)) {
 			ActionStart();
 		} else {
 			DEBUG_PUTS("Invalid !start command");
 		}
-	} else if (memcmp(&m_Buffer[4], sStop, STOP_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aStop, STOP_LENGTH) == 0) {
 		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
 			ActionStop();
 		} else {
 			DEBUG_PUTS("Invalid !stop command");
 		}
-	} else if (memcmp(&m_Buffer[4], sRate, RATE_LENGTH) == 0) {
+	} else if (memcmp(&m_Buffer[4], aRate, RATE_LENGTH) == 0) {
 		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
 			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
 		}

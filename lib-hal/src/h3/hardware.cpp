@@ -52,36 +52,36 @@ void _start(void);
  #error Platform not supported
 #endif
 
-static const char s_SocName[2][4] __attribute__((aligned(4))) = { "H2+", "H3\0" };
-static const uint8_t s_SocNameLenghth[2] = { 3, 2 };
+constexpr char aSocName[2][4] = { "H2+", "H3\0" };
+constexpr uint8_t s_SocNameLenghth[2] = { 3, 2 };
 
-static const char s_CpuName[] __attribute__((aligned(4))) = "Cortex-A7";
-#define CPU_NAME_LENGHTH (sizeof(s_CpuName) / sizeof(s_CpuName[0]) - 1)
+constexpr char aCpuName[] = "Cortex-A7";
+#define CPU_NAME_LENGHTH (sizeof(aCpuName) - 1)
 
-const char s_Machine[] __attribute__((aligned(4))) = "arm";
-#define MACHINE_LENGTH (sizeof(s_Machine)/sizeof(s_Machine[0]) - 1)
+const char aMachine[] = "arm";
+#define MACHINE_LENGTH (sizeof(aMachine) - 1)
 
-const char s_SysName[] __attribute__((aligned(4))) = "Baremetal";
-#define SYSNAME_LENGTH (sizeof(s_SysName)/sizeof(s_SysName[0]) - 1)
+const char aSysName[] = "Baremetal";
+#define SYSNAME_LENGTH (sizeof(aSysName) - 1)
 
 Hardware *Hardware::s_pThis = 0;
 
 Hardware::Hardware(void) : m_pRebootHandler(0), m_pSoftResetHandler(0), m_bIsWatchdog(false) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 
 Hardware::~Hardware(void) {
-	s_pThis = 0;
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
 	nLength = MACHINE_LENGTH;
-	return s_Machine;
+	return aMachine;
 }
 
 const char *Hardware::GetSysName(uint8_t &nLength) {
 	nLength = SYSNAME_LENGTH;
-	return s_SysName;
+	return aSysName;
 }
 
 const char *Hardware::GetBoardName(uint8_t &nLength) {
@@ -91,16 +91,16 @@ const char *Hardware::GetBoardName(uint8_t &nLength) {
 
 const char *Hardware::GetCpuName(uint8_t &nLength) {
 	nLength = CPU_NAME_LENGHTH;
-	return s_CpuName;
+	return aCpuName;
 }
 
 const char *Hardware::GetSocName(uint8_t &nLength) {
 #if defined(ORANGE_PI)
 	nLength = s_SocNameLenghth[0];
-	return s_SocName[0];
+	return aSocName[0];
 #else
 	nLength = s_SocNameLenghth[1];
-	return s_SocName[1];
+	return aSocName[1];
 #endif
 }
 

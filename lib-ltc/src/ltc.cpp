@@ -31,7 +31,7 @@
 
 #include "ltc.h"
 
-static const char aTypes[5][TC_TYPE_MAX_LENGTH + 1] __attribute__ ((aligned (4))) =
+constexpr char aTypes[5][TC_TYPE_MAX_LENGTH + 1] =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
 
@@ -64,8 +64,8 @@ TTimecodeTypes Ltc::GetType(uint8_t nFps) {
 	return TC_TYPE_UNKNOWN;
 }
 
-static void itoa_base10(uint32_t arg, char *buf) {
-	char *n = buf;
+static void itoa_base10(uint32_t arg, char *pBuffer) {
+	char *n = pBuffer;
 
 	if (arg == 0) {
 		*n++ = '0';

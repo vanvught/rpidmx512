@@ -72,11 +72,11 @@
 
 #include "software_version.h"
 
-static const char NETWORK_INIT[] = "Network init ...";
-static const char NODE_PARMAS[] = "Setting Node parameters ...";
-static const char RUN_RDM[] = "Running RDM Discovery ...";
-static const char START_NODE[] = "Starting the Node ...";
-static const char NODE_STARTED[] = "Node started";
+constexpr char NETWORK_INIT[] = "Network init ...";
+constexpr char NODE_PARMAS[] = "Setting Node parameters ...";
+constexpr char RUN_RDM[] = "Running RDM Discovery ...";
+constexpr char START_NODE[] = "Starting the Node ...";
+constexpr char NODE_STARTED[] = "Node started";
 
 extern "C" {
 

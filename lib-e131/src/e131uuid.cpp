@@ -35,12 +35,8 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char EXT_UID[] ALIGNED = ".uid";
-static const char DUMMY_UUID[] ALIGNED = "01234567-89ab-cdef-0134-567890abcedf";
+constexpr char EXT_UID[] = ".uid";
+constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
 
 E131Uuid::E131Uuid(void) {
 	DEBUG_ENTRY
@@ -56,26 +52,23 @@ E131Uuid::~E131Uuid(void) {
 
 void E131Uuid::GetHardwareUuid(uuid_t out) {
 	bool bHaveUuid = false;
-	char file_name[16];	///< mac:8, .:1 ,uud:3 ,'\0':1
+	char aFileName[16];	///< mac:8, .:1 ,uud:3 ,'\0':1
 	uint8_t mac[8];
 	FILE *fp;
-	char buffer[128];
+	char aBuffer[128];
 
 	Network::Get()->MacAddressCopyTo(mac);
 
-	sprintf(file_name, "%02x%02x%02x%02x", static_cast<unsigned int>(mac[2]),
-			static_cast<unsigned int>(mac[3]),
-			static_cast<unsigned int>(mac[4]),
-			static_cast<unsigned int>(mac[5]));
+	sprintf(aFileName, "%02x%02x%02x%02x", mac[2], mac[3], mac[4], mac[5]);
 
-	memcpy(&file_name[8], EXT_UID, 4);
+	memcpy(&aFileName[8], EXT_UID, 4);
 
-	file_name[12] = '\0';
+	aFileName[12] = '\0';
 
-	fp = fopen(file_name, "r");
+	fp = fopen(aFileName, "r");
 	if (fp != NULL) {
-		if (fgets(buffer, sizeof(buffer), fp) != NULL) {
-			if (uuid_parse(buffer, out) == 0) {
+		if (fgets(aBuffer, sizeof(aBuffer), fp) != NULL) {
+			if (uuid_parse(aBuffer, out) == 0) {
 				bHaveUuid = true;
 			}
 		} else {
@@ -90,12 +83,12 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 		static_cast<void>(fclose(fp));
 	} else {
 		uuid_generate_random(out);
-		uuid_unparse(out, buffer);
+		uuid_unparse(out, aBuffer);
 		bHaveUuid = true;
 
-		fp = fopen(file_name, "w+");
+		fp = fopen(aFileName, "w+");
 		if (fp != NULL) {
-			static_cast<void>(fputs(buffer, fp));
+			static_cast<void>(fputs(aBuffer, fp));
 			static_cast<void>(fclose(fp));
 		} else {
 #if defined(__linux__) || defined (__CYGWIN__)

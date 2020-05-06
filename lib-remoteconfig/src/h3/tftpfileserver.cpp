@@ -40,11 +40,11 @@
 #include "debug.h"
 
 #if defined(ORANGE_PI)
- static const char sFileName[] __attribute__((aligned(4))) = "orangepi_zero.uImage";
- #define FILE_NAME_LENGTH	(sizeof(sFileName) / sizeof(sFileName[0]) - 1)
+ constexpr char sFileName[] = "orangepi_zero.uImage";
+ #define FILE_NAME_LENGTH	(sizeof(sFileName) - 1)
 #else
- static const char sFileName[] __attribute__((aligned(4))) = "orangepi_one.uImage";
- #define FILE_NAME_LENGTH	(sizeof(sFileName) / sizeof(sFileName[0]) - 1)
+ constexpr char sFileName[] = "orangepi_one.uImage";
+ #define FILE_NAME_LENGTH	(sizeof(sFileName) - 1)
 #endif
 
 TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):

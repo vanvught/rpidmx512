@@ -42,10 +42,6 @@
 
 #include "debug.h"
 
-#ifndef ALIGNED
- #define ALIGNED 	__attribute__((aligned(4)))
-#endif
-
 #define OFFSET_UBOOT_SPI	0x000000
 #define OFFSET_UIMAGE		0x180000
 
@@ -53,13 +49,13 @@
 
 #define FLASH_SIZE_MINIMUM	0x200000
 
-static const char sFileUbootSpi[] ALIGNED = "uboot.spi";
-static const char sFileuImage[] ALIGNED = "uImage";
+constexpr char aFileUbootSpi[] = "uboot.spi";
+constexpr char aFileuImage[] = "uImage";
 
-static const char sWriting[] ALIGNED = "Writing";
-static const char sCheckDifference[] ALIGNED = "Check difference";
-static const char sNoDifference[] ALIGNED = "No difference";
-static const char sDone[] ALIGNED = "Done";
+constexpr char aWriting[] = "Writing";
+constexpr char aCheckDifference[] = "Check difference";
+constexpr char aNoDifference[] = "No difference";
+constexpr char aDone[] = "Done";
 
 SpiFlashInstall *SpiFlashInstall::s_pThis = 0;
 
@@ -73,6 +69,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	Display::Get()->Cls();
@@ -107,12 +104,12 @@ SpiFlashInstall::SpiFlashInstall(void):
 				assert(m_pFlashBuffer != 0);
 
 				if (params.GetInstalluboot()) {
-					Process(sFileUbootSpi, OFFSET_UBOOT_SPI);
+					Process(aFileUbootSpi, OFFSET_UBOOT_SPI);
 				}
 
 				if (params.GetInstalluImage()) {
 					// Temporarily code BEGIN
-					const uint32_t code = Compressed::Check(sFileuImage);
+					const uint32_t code = Compressed::Check(aFileuImage);
 
 					DEBUG_PRINTF("code = %x", code);
 
@@ -156,9 +153,9 @@ SpiFlashInstall::SpiFlashInstall(void):
 							Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
 							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 							for (;;) {
-	#if defined (BARE_METAL)
+#if defined (BARE_METAL)
 								led_blink();
-	#endif
+#endif
 							}
 						}
 
@@ -166,7 +163,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 					// Temporarily code END
 
-					Process(sFileuImage, OFFSET_UIMAGE);
+					Process(aFileuImage, OFFSET_UIMAGE);
 				}
 			}
 		}
@@ -191,16 +188,16 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 
 void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
 	if (Open(pFileName)) {
-		Display::Get()->TextStatus(sCheckDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_CHECK);
-		puts(sCheckDifference);
+		Display::Get()->TextStatus(aCheckDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_CHECK);
+		puts(aCheckDifference);
 
 		if (Diff(nOffset)) {
-			Display::Get()->TextStatus(sWriting, DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
-			puts(sWriting);
+			Display::Get()->TextStatus(aWriting, DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
+			puts(aWriting);
 			Write(nOffset);
 		} else {
-			Display::Get()->TextStatus(sNoDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_NODIFF);
-			puts(sNoDifference);
+			Display::Get()->TextStatus(aNoDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_NODIFF);
+			puts(aNoDifference);
 		}
 		Close();
 	}
@@ -234,8 +231,8 @@ void SpiFlashInstall::Close(void) {
 	static_cast<void>(fclose(m_pFile));
 	m_pFile = 0;
 
-	Display::Get()->TextStatus(sDone, DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
-	puts(sDone);
+	Display::Get()->TextStatus(aDone, DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
+	puts(aDone);
 
 	DEBUG_EXIT
 }

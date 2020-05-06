@@ -27,10 +27,6 @@
 #endif
 #include <assert.h>
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__((aligned(4)))
-#endif
-
 #include "pca9685dmxparams.h"
 
 #include "pca9685.h"
@@ -47,9 +43,9 @@
 #define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
 #define BOARD_INSTANCES_MASK	(1 << 4)
 
-static const char PARAMS_DMX_FOOTPRINT[] ALIGNED = "dmx_footprint";
-static const char PARAMS_I2C_SLAVE_ADDRESS[] ALIGNED = "i2c_slave_address";
-static const char PARAMS_BOARD_INSTANCES[] ALIGNED = "board_instances";
+constexpr char PARAMS_DMX_FOOTPRINT[] = "dmx_footprint";
+constexpr char PARAMS_I2C_SLAVE_ADDRESS[] = "i2c_slave_address";
+constexpr char PARAMS_BOARD_INSTANCES[] = "board_instances";
 
 #define PARAMS_DMX_START_ADDRESS_DEFAULT	1
 #define PARAMS_DMX_FOOTPRINT_DEFAULT		PCA9685_PWM_CHANNELS
