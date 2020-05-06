@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsconst.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,34 +29,35 @@
 
 class LtcParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char SOURCE[];
-	alignas(uint32_t) static const char AUTO_START[];
-	alignas(uint32_t) static const char DISABLE_DISPLAY[];
-	alignas(uint32_t) static const char DISABLE_MAX7219[];
-	alignas(uint32_t) static const char DISABLE_MIDI[];
-	alignas(uint32_t) static const char DISABLE_ARTNET[];
-	alignas(uint32_t) static const char DISABLE_TCNET[];
-	alignas(uint32_t) static const char DISABLE_LTC[];
-	alignas(uint32_t) static const char DISABLE_RTPMIDI[];
-	alignas(uint32_t) static const char SHOW_SYSTIME[];
-	alignas(uint32_t) static const char DISABLE_TIMESYNC[];
-	alignas(uint32_t) static const char YEAR[];
-	alignas(uint32_t) static const char MONTH[];
-	alignas(uint32_t) static const char DAY[];
-	alignas(uint32_t) static const char NTP_ENABLE[];
-	alignas(uint32_t) static const char FPS[];
-	alignas(uint32_t) static const char START_FRAME[];
-	alignas(uint32_t) static const char START_SECOND[];
-	alignas(uint32_t) static const char START_MINUTE[];
-	alignas(uint32_t) static const char START_HOUR[];
-	alignas(uint32_t) static const char STOP_FRAME[];
-	alignas(uint32_t) static const char STOP_SECOND[];
-	alignas(uint32_t) static const char STOP_MINUTE[];
-	alignas(uint32_t) static const char STOP_HOUR[];
-	alignas(uint32_t) static const char OSC_ENABLE[];
-	alignas(uint32_t) static const char OSC_PORT[];
-	alignas(uint32_t) static const char WS28XX_ENABLE[];
+	static const char FILE_NAME[];
+
+	static const char SOURCE[];
+	static const char AUTO_START[];
+	static const char DISABLE_DISPLAY[];
+	static const char DISABLE_MAX7219[];
+	static const char DISABLE_MIDI[];
+	static const char DISABLE_ARTNET[];
+	static const char DISABLE_TCNET[];
+	static const char DISABLE_LTC[];
+	static const char DISABLE_RTPMIDI[];
+	static const char SHOW_SYSTIME[];
+	static const char DISABLE_TIMESYNC[];
+	static const char YEAR[];
+	static const char MONTH[];
+	static const char DAY[];
+	static const char NTP_ENABLE[];
+	static const char FPS[];
+	static const char START_FRAME[];
+	static const char START_SECOND[];
+	static const char START_MINUTE[];
+	static const char START_HOUR[];
+	static const char STOP_FRAME[];
+	static const char STOP_SECOND[];
+	static const char STOP_MINUTE[];
+	static const char STOP_HOUR[];
+	static const char OSC_ENABLE[];
+	static const char OSC_PORT[];
+	static const char WS28XX_ENABLE[];
 };
 
 #endif /* LTCPARAMSCONST_H_ */

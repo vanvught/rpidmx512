@@ -2,7 +2,7 @@
  * @file l6470paramsconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "l6470paramsconst.h"
 
-alignas(uint32_t) const char L6470ParamsConst::MIN_SPEED[] = "l6470_min_speed";
-alignas(uint32_t) const char L6470ParamsConst::MAX_SPEED[] = "l6470_max_speed";
-alignas(uint32_t) const char L6470ParamsConst::ACC[] = "l6470_acc";
-alignas(uint32_t) const char L6470ParamsConst::DEC[] = "l6470_dec";
-alignas(uint32_t) const char L6470ParamsConst::KVAL_HOLD[] = "l6470_kval_hold";
-alignas(uint32_t) const char L6470ParamsConst::KVAL_RUN[] = "l6470_kval_run";
-alignas(uint32_t) const char L6470ParamsConst::KVAL_ACC[] = "l6470_kval_acc";
-alignas(uint32_t) const char L6470ParamsConst::KVAL_DEC[] = "l6470_kval_dec";
-alignas(uint32_t) const char L6470ParamsConst::MICRO_STEPS[] = "l6470_micro_steps";
+const char L6470ParamsConst::MIN_SPEED[] = "l6470_min_speed";
+const char L6470ParamsConst::MAX_SPEED[] = "l6470_max_speed";
+const char L6470ParamsConst::ACC[] = "l6470_acc";
+const char L6470ParamsConst::DEC[] = "l6470_dec";
+const char L6470ParamsConst::KVAL_HOLD[] = "l6470_kval_hold";
+const char L6470ParamsConst::KVAL_RUN[] = "l6470_kval_run";
+const char L6470ParamsConst::KVAL_ACC[] = "l6470_kval_acc";
+const char L6470ParamsConst::KVAL_DEC[] = "l6470_kval_dec";
+const char L6470ParamsConst::MICRO_STEPS[] = "l6470_micro_steps";

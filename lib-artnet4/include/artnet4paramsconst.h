@@ -26,11 +26,9 @@
 #ifndef ARTNET4PARAMSCONST_H_
 #define ARTNET4PARAMSCONST_H_
 
-#include <stdint.h>
-
 class ArtNet4ParamsConst {
 public:
-	alignas(uint32_t) static const char MAP_UNIVERSE0[];
+	static const char MAP_UNIVERSE0[];
 };
 
 #endif /* ARTNET4PARAMSCONST_H_ */

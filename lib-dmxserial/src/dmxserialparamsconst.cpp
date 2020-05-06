@@ -23,23 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "dmxserialparamsconst.h"
 
-alignas(uint32_t) const char DmxSerialParamsConst::FILE_NAME[]  = "serial.txt";
+const char DmxSerialParamsConst::FILE_NAME[] = "serial.txt";
 
-alignas(uint32_t) const char  DmxSerialParamsConst::TYPE[] = "type";
+const char DmxSerialParamsConst::TYPE[] = "type";
 
-alignas(uint32_t) const char DmxSerialParamsConst::UART_BAUD[]  = "uart_baud";
-alignas(uint32_t) const char DmxSerialParamsConst::UART_BITS[]  = "uart_bits";
-alignas(uint32_t) const char DmxSerialParamsConst::UART_PARITY[]  = "uart_parity";
-alignas(uint32_t) const char DmxSerialParamsConst::UART_STOPBITS[]  = "uart_stopbits";
+const char DmxSerialParamsConst::UART_BAUD[] = "uart_baud";
+const char DmxSerialParamsConst::UART_BITS[] = "uart_bits";
+const char DmxSerialParamsConst::UART_PARITY[] = "uart_parity";
+const char DmxSerialParamsConst::UART_STOPBITS[] = "uart_stopbits";
 
-alignas(uint32_t) const char DmxSerialParamsConst::SPI_SPEED_HZ[]  = "spi_speed_hz";
-alignas(uint32_t) const char DmxSerialParamsConst::SPI_MODE[]  = "spi_mode";
+const char DmxSerialParamsConst::SPI_SPEED_HZ[] = "spi_speed_hz";
+const char DmxSerialParamsConst::SPI_MODE[] = "spi_mode";
 
-alignas(uint32_t) const char DmxSerialParamsConst::I2C_ADDRESS[]  = "i2c_address";
-alignas(uint32_t) const char DmxSerialParamsConst::I2C_SPEED_MODE[]  = "i2c_speed_mode";
+const char DmxSerialParamsConst::I2C_ADDRESS[] = "i2c_address";
+const char DmxSerialParamsConst::I2C_SPEED_MODE[] = "i2c_speed_mode";
 
 

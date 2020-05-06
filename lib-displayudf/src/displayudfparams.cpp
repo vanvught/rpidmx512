@@ -74,7 +74,6 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		ArtNetParamsConst::DESTINATION_IP_PORT[3]
 };
 
-
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	DEBUG_ENTRY
 

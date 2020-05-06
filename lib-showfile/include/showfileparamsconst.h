@@ -26,24 +26,22 @@
 #ifndef SHOWFILEPARAMSCONST_H_
 #define SHOWFILEPARAMSCONST_H_
 
-#include <stdint.h>
-
 class ShowFileParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
+	static  const char FILE_NAME[];
 
-	alignas(uint32_t) static const char FORMAT[];
-	alignas(uint32_t) static const char SHOW[];
+	static  const char FORMAT[];
+	static  const char SHOW[];
 
-	alignas(uint32_t) static const char DMX_MASTER[];
+	static  const char DMX_MASTER[];
 
-	alignas(uint32_t) static const char OPTION_AUTO_START[];
-	alignas(uint32_t) static const char OPTION_LOOP[];
-	alignas(uint32_t) static const char OPTION_DISABLE_SYNC[];
+	static  const char OPTION_AUTO_START[];
+	static  const char OPTION_LOOP[];
+	static  const char OPTION_DISABLE_SYNC[];
 
-	alignas(uint32_t) static const char PROTOCOL[];
-	alignas(uint32_t) static const char SACN_SYNC_UNIVERSE[];
-	alignas(uint32_t) static const char ARTNET_DISABLE_UNICAST[];
+	static  const char PROTOCOL[];
+	static  const char SACN_SYNC_UNIVERSE[];
+	static  const char ARTNET_DISABLE_UNICAST[];
 };
 
 #endif /* SHOWFILEPARAMSCONST_H_ */

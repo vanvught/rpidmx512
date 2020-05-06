@@ -352,23 +352,23 @@ void ShowFileParams::Dump(void) {
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SHOW)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SHOW, static_cast<unsigned>(m_tShowFileParams.nShow));
+		printf(" %s=%u\n", ShowFileParamsConst::SHOW, m_tShowFileParams.nShow);
 	}
 
 	if(isMaskSet(SHOWFILE_PARAMS_MASK_PROTOCOL)) {
-		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, static_cast<unsigned>(m_tShowFileParams.nProtocol), PROTOCOL2STRING(m_tShowFileParams.nProtocol));
+		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, m_tShowFileParams.nProtocol, PROTOCOL2STRING(m_tShowFileParams.nProtocol));
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_DMX_MASTER)) {
-		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, static_cast<unsigned>(m_tShowFileParams.nDmxMaster));
+		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, m_tShowFileParams.nDmxMaster);
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_SACN_UNIVERSE)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<unsigned>(m_tShowFileParams.nUniverse));
+		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, m_tShowFileParams.nUniverse);
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED)) {
-		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<unsigned>(m_tShowFileParams.nDisableUnicast), m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
+		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, m_tShowFileParams.nDisableUnicast, m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
 	}
 
 	// Options
@@ -388,11 +388,11 @@ void ShowFileParams::Dump(void) {
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, static_cast<unsigned>(m_tShowFileParams.nOscPortIncoming));
+		printf(" %s=%u\n", OscConst::PARAMS_INCOMING_PORT, m_tShowFileParams.nOscPortIncoming);
 	}
 
 	if (isMaskSet(SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING)) {
-		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, static_cast<unsigned>(m_tShowFileParams.nOscPortOutgoing));
+		printf(" %s=%u\n", OscConst::PARAMS_OUTGOING_PORT, m_tShowFileParams.nOscPortOutgoing);
 	}
 #endif
 }

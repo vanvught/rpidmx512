@@ -26,16 +26,14 @@
 #ifndef DISPLAYUDFPARAMSCONST_H_
 #define DISPLAYUDFPARAMSCONST_H_
 
-#include <stdint.h>
-
 class DisplayUdfParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char SLEEP_TIMEOUT[];
-	alignas(uint32_t) static const char TITLE[];
-	alignas(uint32_t) static const char BOARD_NAME[];
-	alignas(uint32_t) static const char VERSION[];
-	alignas(uint32_t) static const char ACTIVE_PORTS[];
+	static const char FILE_NAME[];
+	static const char SLEEP_TIMEOUT[];
+	static const char TITLE[];
+	static const char BOARD_NAME[];
+	static const char VERSION[];
+	static const char ACTIVE_PORTS[];
 };
 
 #endif /* DISPLAYUDFPARAMSCONST_H_ */

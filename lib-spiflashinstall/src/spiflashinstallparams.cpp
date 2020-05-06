@@ -2,7 +2,7 @@
  * @file spiflashinstallparams.cpp
  *
  */
-/* Copyright (C) 2018-2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,22 +36,15 @@
 #include <assert.h>
 
 #include "spiflashinstallparams.h"
+#include "spiflashinstallparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #define BOOL2STRING(b)	(b) ? "Yes" : "No"
 
 #define INSTALL_UBOOT_MASK			(1 << 0)
 #define INSTALL_UIMAGE_MASK			(1 << 1)
-
-static const char PARAMS_FILE_NAME[] ALIGNED = "spiflash.txt";
-static const char PARAMS_INSTALL_UBOOT[] ALIGNED = "install_uboot";
-static const char PARAMS_INSTALL_UIMAGE[] ALIGNED = "install_uimage";
 
 SpiFlashInstallParams::SpiFlashInstallParams(void):
 		m_nSetList(0),
@@ -66,7 +59,7 @@ bool SpiFlashInstallParams::Load(void) {
 	m_nSetList = 0;
 
 	ReadConfigFile configfile(SpiFlashInstallParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
+	return configfile.Read(SpiFlashInstallParamsConst::FILE_NAME);
 }
 
 void SpiFlashInstallParams::callbackFunction(const char* pLine) {
@@ -74,18 +67,24 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, PARAMS_INSTALL_UBOOT, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UBOOT, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bInstalluboot = true;
 			m_nSetList |= INSTALL_UBOOT_MASK;
+		} else {
+			m_bInstalluboot = false;
+			m_nSetList &= ~INSTALL_UBOOT_MASK;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_INSTALL_UIMAGE, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UIMAGE, &value8) == SSCAN_OK) {
 		if (value8 != 0) {
 			m_bInstalluImage = true;
 			m_nSetList |= INSTALL_UIMAGE_MASK;
+		} else {
+			m_bInstalluImage = false;
+			m_nSetList &= ~INSTALL_UIMAGE_MASK;
 		}
 		return;
 	}
@@ -100,15 +99,11 @@ void SpiFlashInstallParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
 
 	if(isMaskSet(INSTALL_UBOOT_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UBOOT,
-				static_cast<int>(m_bInstalluboot),
-				BOOL2STRING(m_bInstalluboot));
+		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT, m_bInstalluboot, BOOL2STRING(m_bInstalluboot));
 	}
 
 	if(isMaskSet(INSTALL_UIMAGE_MASK)) {
-		printf(" %s=%d [%s]\n", PARAMS_INSTALL_UIMAGE,
-				static_cast<int>(m_bInstalluImage),
-				BOOL2STRING(m_bInstalluImage));
+		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE, m_bInstalluImage, BOOL2STRING(m_bInstalluImage));
 	}
 
 #endif

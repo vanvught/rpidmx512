@@ -2,7 +2,7 @@
  * @file motorparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,13 @@
 #ifndef MOTORPARAMSCONST_H_
 #define MOTORPARAMSCONST_H_
 
-#include <stdint.h>
-
 class MotorParamsConst {
 public:
-	alignas(uint32_t) static const char STEP_ANGEL[];
-	alignas(uint32_t) static const char VOLTAGE[];
-	alignas(uint32_t) static const char CURRENT[];
-	alignas(uint32_t) static const char RESISTANCE[];
-	alignas(uint32_t) static const char INDUCTANCE[];
+	static const char STEP_ANGEL[];
+	static const char VOLTAGE[];
+	static const char CURRENT[];
+	static const char RESISTANCE[];
+	static const char INDUCTANCE[];
 };
 
 #endif /* MOTORPARAMSCONST_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file motorparamsconst.cpp
+ * @file spiflashinstallparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include "motorparamsconst.h"
+#ifndef SPIFLASHINSTALLPARAMSCONST_H_
+#define SPIFLASHINSTALLPARAMSCONST_H_
 
-const char MotorParamsConst::STEP_ANGEL[] = "motor_step_angel";
-const char MotorParamsConst::VOLTAGE[] = "motor_voltage";
-const char MotorParamsConst::CURRENT[] = "motor_current";
-const char MotorParamsConst::RESISTANCE[] = "motor_resistance";
-const char MotorParamsConst::INDUCTANCE[] = "motor_inductance";
+class SpiFlashInstallParamsConst {
+public:
+	static const char FILE_NAME[];
+
+	static const char INSTALL_UBOOT[];
+	static const char INSTALL_UIMAGE[];
+};
+
+#endif /* SPIFLASHINSTALLPARAMSCONST_H_ */

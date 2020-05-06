@@ -55,7 +55,6 @@ ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
 }
 
 ArtNet4Params::~ArtNet4Params(void) {
-	m_tArtNet4Params.nSetList = 0;
 }
 
 bool ArtNet4Params::Load(void) {
@@ -126,7 +125,7 @@ void ArtNet4Params::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
 	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
-		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, static_cast<int>(m_tArtNet4Params.bMapUniverse0), BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
+		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
 	}
 #endif
 }

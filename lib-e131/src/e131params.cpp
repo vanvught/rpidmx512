@@ -54,7 +54,6 @@ E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE1
 }
 
 E131Params::~E131Params(void) {
-	m_tE131Params.nSetList = 0;
 }
 
 bool E131Params::Load(void) {

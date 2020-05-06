@@ -2,7 +2,7 @@
  * @file rdmdeviceparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,13 @@
 #ifndef RDMDEVICEPARAMSCONST_H_
 #define RDMDEVICEPARAMSCONST_H_
 
-#include <stdint.h>
-
 class RDMDeviceParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char LABEL[];
-	alignas(uint32_t) static const char PRODUCT_CATEGORY[];
-	alignas(uint32_t) static const char PRODUCT_DETAIL[];
+	static const char FILE_NAME[];
+
+	static const char LABEL[];
+	static const char PRODUCT_CATEGORY[];
+	static const char PRODUCT_DETAIL[];
 };
 
 #endif /* RDMDEVICEPARAMSCONST_H_ */

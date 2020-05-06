@@ -76,7 +76,7 @@ public:
 
 	void Dump(void);
 
-	void Set(DmxSerial *pDmxSerial);
+	void Set(void);
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

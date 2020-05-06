@@ -3,7 +3,7 @@
  * @file slushdmxparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,19 @@
 #ifndef SLUSHDMXPARAMSCONST_H_
 #define SLUSHDMXPARAMSCONST_H_
 
-#include <stdint.h>
-
 class SlushDmxParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
+	static const char FILE_NAME[];
 
-	alignas(uint32_t) static const char USE_SPI[];
+	static const char USE_SPI[];
 
-	alignas(uint32_t) static const char DMX_START_ADDRESS_PORT_A[];
-	alignas(uint32_t) static const char DMX_FOOTPRINT_PORT_A[];
-	alignas(uint32_t) static const char DMX_SLOT_INFO_PORT_A[];
+	static const char DMX_START_ADDRESS_PORT_A[];
+	static const char DMX_FOOTPRINT_PORT_A[];
+	static const char DMX_SLOT_INFO_PORT_A[];
 
-	alignas(uint32_t) static const char DMX_START_ADDRESS_PORT_B[];
-	alignas(uint32_t) static const char DMX_FOOTPRINT_PORT_B[];
-	alignas(uint32_t) static const char DMX_SLOT_INFO_PORT_B[];
+	static const char DMX_START_ADDRESS_PORT_B[];
+	static const char DMX_FOOTPRINT_PORT_B[];
+	static const char DMX_SLOT_INFO_PORT_B[];
 };
 
 #endif /* SLUSHDMXPARAMSCONST_H_ */

@@ -22,35 +22,33 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "ltcparamsconst.h"
 
-alignas(uint32_t) const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
-alignas(uint32_t) const char LtcParamsConst::SOURCE[] = "source";
-alignas(uint32_t) const char LtcParamsConst::AUTO_START[] = "auto_start";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_TCNET[] = "disable_tcnet";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_RTPMIDI[] = "disable_rtp-midi";
-alignas(uint32_t) const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
-alignas(uint32_t) const char LtcParamsConst::DISABLE_TIMESYNC[] = "disable_timesync";
-alignas(uint32_t) const char LtcParamsConst::YEAR[] = "year";
-alignas(uint32_t) const char LtcParamsConst::MONTH[] = "month";
-alignas(uint32_t) const char LtcParamsConst::DAY[] = "day";
-alignas(uint32_t) const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
-alignas(uint32_t) const char LtcParamsConst::FPS[] = "fps";
-alignas(uint32_t) const char LtcParamsConst::START_FRAME[] = "start_frame";
-alignas(uint32_t) const char LtcParamsConst::START_SECOND[] = "start_second";
-alignas(uint32_t) const char LtcParamsConst::START_MINUTE[] = "start_minute";
-alignas(uint32_t) const char LtcParamsConst::START_HOUR[] = "start_hour";
-alignas(uint32_t) const char LtcParamsConst::STOP_FRAME[] = "stop_frame";
-alignas(uint32_t) const char LtcParamsConst::STOP_SECOND[] = "stop_second";
-alignas(uint32_t) const char LtcParamsConst::STOP_MINUTE[] = "stop_minute";
-alignas(uint32_t) const char LtcParamsConst::STOP_HOUR[] = "stop_hour";
-alignas(uint32_t) const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";
-alignas(uint32_t) const char LtcParamsConst::OSC_PORT[] = "osc_port";
-alignas(uint32_t) const char LtcParamsConst::WS28XX_ENABLE[] = "ws28xx_enable";
+const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
+const char LtcParamsConst::SOURCE[] = "source";
+const char LtcParamsConst::AUTO_START[] = "auto_start";
+const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
+const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
+const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
+const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
+const char LtcParamsConst::DISABLE_TCNET[] = "disable_tcnet";
+const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
+const char LtcParamsConst::DISABLE_RTPMIDI[] = "disable_rtp-midi";
+const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
+const char LtcParamsConst::DISABLE_TIMESYNC[] = "disable_timesync";
+const char LtcParamsConst::YEAR[] = "year";
+const char LtcParamsConst::MONTH[] = "month";
+const char LtcParamsConst::DAY[] = "day";
+const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
+const char LtcParamsConst::FPS[] = "fps";
+const char LtcParamsConst::START_FRAME[] = "start_frame";
+const char LtcParamsConst::START_SECOND[] = "start_second";
+const char LtcParamsConst::START_MINUTE[] = "start_minute";
+const char LtcParamsConst::START_HOUR[] = "start_hour";
+const char LtcParamsConst::STOP_FRAME[] = "stop_frame";
+const char LtcParamsConst::STOP_SECOND[] = "stop_second";
+const char LtcParamsConst::STOP_MINUTE[] = "stop_minute";
+const char LtcParamsConst::STOP_HOUR[] = "stop_hour";
+const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";
+const char LtcParamsConst::OSC_PORT[] = "osc_port";
+const char LtcParamsConst::WS28XX_ENABLE[] = "ws28xx_enable";

@@ -26,24 +26,22 @@
 #ifndef DMXSERIALPARAMSCONST_H_
 #define DMXSERIALPARAMSCONST_H_
 
-#include <stdint.h>
-
 class DmxSerialParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
+	static const char FILE_NAME[];
 
-	alignas(uint32_t) static const char TYPE[];
+	static const char TYPE[];
 
-	alignas(uint32_t) static const char UART_BAUD[];
-	alignas(uint32_t) static const char UART_BITS[];
-	alignas(uint32_t) static const char UART_PARITY[];
-	alignas(uint32_t) static const char UART_STOPBITS[];
+	static const char UART_BAUD[];
+	static const char UART_BITS[];
+	static const char UART_PARITY[];
+	static const char UART_STOPBITS[];
 
-	alignas(uint32_t) static const char SPI_SPEED_HZ[];
-	alignas(uint32_t) static const char SPI_MODE[];
+	static const char SPI_SPEED_HZ[];
+	static const char SPI_MODE[];
 
-	alignas(uint32_t) static const char I2C_ADDRESS[];
-	alignas(uint32_t) static const char I2C_SPEED_MODE[];
+	static const char I2C_ADDRESS[];
+	static const char I2C_SPEED_MODE[];
 };
 
 #endif /* DMXSERIALPARAMSCONST_H_ */

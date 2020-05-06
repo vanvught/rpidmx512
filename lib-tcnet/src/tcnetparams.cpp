@@ -53,7 +53,6 @@ TCNetParams::TCNetParams(TCNetParamsStore* pTCNetParamsStore): m_pTCNetParamsSto
 }
 
 TCNetParams::~TCNetParams(void) {
-	m_tTTCNetParams.nSetList = 0;
 }
 
 bool TCNetParams::Load(void) {

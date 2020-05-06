@@ -2,7 +2,7 @@
  * @file artnetparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,32 +26,31 @@
 #ifndef ARTNETPARAMSCONST_H_
 #define ARTNETPARAMSCONST_H_
 
-#include <stdint.h>
-
 #include "artnet.h"
 
 class ArtNetParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char NET[];
-	alignas(uint32_t) static const char SUBNET[];
-	alignas(uint32_t) static const char TIMECODE[];
-	alignas(uint32_t) static const char TIMESYNC[];
-	alignas(uint32_t) static const char RDM[];
-	alignas(uint32_t) static const char RDM_DISCOVERY[];
-	alignas(uint32_t) static const char NODE_SHORT_NAME[];
-	alignas(uint32_t) static const char NODE_LONG_NAME[];
-	alignas(uint32_t) static const char NODE_MANUFACTURER_ID[];
-	alignas(uint32_t) static const char NODE_OEM_VALUE[];
-	alignas(uint32_t) static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
-	alignas(uint32_t) static const char NODE_DISABLE_MERGE_TIMEOUT[];
-	alignas(uint32_t) static const char UNIVERSE_PORT[ARTNET_MAX_PORTS][16];
-	alignas(uint32_t) static const char MERGE_MODE[];
-	alignas(uint32_t) static const char MERGE_MODE_PORT[ARTNET_MAX_PORTS][18];
-	alignas(uint32_t) static const char PROTOCOL[];
-	alignas(uint32_t) static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
-	alignas(uint32_t) static const char DIRECTION[];
-	alignas(uint32_t) static const char DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24];
+	static const char FILE_NAME[];
+
+	static const char NET[];
+	static const char SUBNET[];
+	static const char TIMECODE[];
+	static const char TIMESYNC[];
+	static const char RDM[];
+	static const char RDM_DISCOVERY[];
+	static const char NODE_SHORT_NAME[];
+	static const char NODE_LONG_NAME[];
+	static const char NODE_MANUFACTURER_ID[];
+	static const char NODE_OEM_VALUE[];
+	static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
+	static const char NODE_DISABLE_MERGE_TIMEOUT[];
+	static const char UNIVERSE_PORT[ARTNET_MAX_PORTS][16];
+	static const char MERGE_MODE[];
+	static const char MERGE_MODE_PORT[ARTNET_MAX_PORTS][18];
+	static const char PROTOCOL[];
+	static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
+	static const char DIRECTION[];
+	static const char DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24];
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

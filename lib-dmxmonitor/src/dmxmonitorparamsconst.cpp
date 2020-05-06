@@ -23,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "dmxmonitorparamsconst.h"
 
-alignas(uint32_t) const char DMXMonitorParamsConst::FILE_NAME[] = "mon.txt";
+const char DMXMonitorParamsConst::FILE_NAME[] = "mon.txt";
 
-alignas(uint32_t) const char DMXMonitorParamsConst::DMX_MAX_CHANNELS[] = "dmx_max_channels";
-alignas(uint32_t) const char DMXMonitorParamsConst::FORMAT[] = "format";
+const char DMXMonitorParamsConst::DMX_MAX_CHANNELS[] = "dmx_max_channels";
+const char DMXMonitorParamsConst::FORMAT[] = "format";

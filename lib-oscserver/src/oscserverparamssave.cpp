@@ -2,7 +2,7 @@
  * @file oscserverparamssave.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 
 #include "oscserverparms.h"
 #include "oscserverconst.h"
+#include "oscconst.h"
 
 #include "lightsetconst.h"
 
@@ -49,8 +50,8 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 
 	PropertiesBuilder builder(OSCServerConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	builder.Add(OSCServerConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
-	builder.Add(OSCServerConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
+	builder.Add(OscConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
+	builder.Add(OscConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
 	builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCSERVER_PARAMS_MASK_PATH));
 	builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO));
 	builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT));

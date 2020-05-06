@@ -60,8 +60,6 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 RDMDeviceParams::~RDMDeviceParams(void) {
 	DEBUG_ENTRY
 
-	m_tRDMDeviceParams.nSetList = 0;
-
 	DEBUG_EXIT
 }
 

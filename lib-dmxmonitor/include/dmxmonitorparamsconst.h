@@ -26,14 +26,12 @@
 #ifndef DMXMONITORPARAMSCONST_H_
 #define DMXMONITORPARAMSCONST_H_
 
-#include <stdint.h>
-
 class DMXMonitorParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
+	static const char FILE_NAME[];
 
-	alignas(uint32_t) static const char DMX_MAX_CHANNELS[];
-	alignas(uint32_t) static const char FORMAT[];
+	static const char DMX_MAX_CHANNELS[];
+	static const char FORMAT[];
 };
 
 #endif /* DMXMONITORPARAMSCONST_H_ */

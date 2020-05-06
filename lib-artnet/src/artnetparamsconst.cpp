@@ -23,28 +23,31 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "artnetparamsconst.h"
 #include "artnet.h"
 
-alignas(uint32_t) const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
-alignas(uint32_t) const char ArtNetParamsConst::NET[] = "net";
-alignas(uint32_t) const char ArtNetParamsConst::SUBNET[] = "subnet";
-alignas(uint32_t) const char ArtNetParamsConst::TIMECODE[] = "use_timecode";
-alignas(uint32_t) const char ArtNetParamsConst::TIMESYNC[] = "use_timesync";
-alignas(uint32_t) const char ArtNetParamsConst::RDM[] = "enable_rdm";
-alignas(uint32_t) const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_MANUFACTURER_ID[] = "manufacturer_id";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_OEM_VALUE[] = "oem_value";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
-alignas(uint32_t) const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
-alignas(uint32_t) const char ArtNetParamsConst::UNIVERSE_PORT[ARTNET_MAX_PORTS][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
-alignas(uint32_t) const char ArtNetParamsConst::MERGE_MODE[] = "merge_mode";
-alignas(uint32_t) const char ArtNetParamsConst::MERGE_MODE_PORT[ARTNET_MAX_PORTS][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
-alignas(uint32_t) const char ArtNetParamsConst::PROTOCOL[] = "protocol";
-alignas(uint32_t) const char ArtNetParamsConst::PROTOCOL_PORT[ARTNET_MAX_PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
-alignas(uint32_t) const char ArtNetParamsConst::DIRECTION[] = "direction";
-alignas(uint32_t) const char ArtNetParamsConst::DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };
+const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
+
+const char ArtNetParamsConst::NET[] = "net";
+const char ArtNetParamsConst::SUBNET[] = "subnet";
+
+const char ArtNetParamsConst::TIMECODE[] = "use_timecode";
+const char ArtNetParamsConst::TIMESYNC[] = "use_timesync";
+
+const char ArtNetParamsConst::RDM[] = "enable_rdm";
+const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";
+
+const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
+const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
+const char ArtNetParamsConst::NODE_MANUFACTURER_ID[] = "manufacturer_id";
+const char ArtNetParamsConst::NODE_OEM_VALUE[] = "oem_value";
+const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
+
+const char ArtNetParamsConst::UNIVERSE_PORT[ARTNET_MAX_PORTS][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+const char ArtNetParamsConst::MERGE_MODE[] = "merge_mode";
+const char ArtNetParamsConst::MERGE_MODE_PORT[ARTNET_MAX_PORTS][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+const char ArtNetParamsConst::PROTOCOL[] = "protocol";
+const char ArtNetParamsConst::PROTOCOL_PORT[ARTNET_MAX_PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
+const char ArtNetParamsConst::DIRECTION[] = "direction";
+const char ArtNetParamsConst::DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };

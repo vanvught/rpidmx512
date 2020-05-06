@@ -32,6 +32,7 @@
 
 #include "oscclientparams.h"
 #include "oscclientparamsconst.h"
+#include "oscconst.h"
 
 #include "network.h"
 
@@ -106,7 +107,7 @@ void OscClientParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscClientParamsConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nOutgoingPort = nValue16;
 			m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_OUTGOING_PORT;
@@ -116,7 +117,7 @@ void OscClientParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscClientParamsConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nIncomingPort = nValue16;
 			m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_INCOMING_PORT;
@@ -212,11 +213,11 @@ void OscClientParams::Dump(void) {
 	}
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT)) {
-		printf(" %s=%d\n", OscClientParamsConst::PARAMS_OUTGOING_PORT, static_cast<int>(m_tOscClientParams.nOutgoingPort));
+		printf(" %s=%d\n", OscConst::PARAMS_OUTGOING_PORT, m_tOscClientParams.nOutgoingPort);
 	}
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT)) {
-		printf(" %s=%d\n", OscClientParamsConst::PARAMS_INCOMING_PORT, static_cast<int>(m_tOscClientParams.nIncomingPort));
+		printf(" %s=%d\n", OscConst::PARAMS_INCOMING_PORT, m_tOscClientParams.nIncomingPort);
 	}
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE)) {
@@ -224,7 +225,7 @@ void OscClientParams::Dump(void) {
 	}
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY)) {
-		printf(" %s=%ds\n", OscClientParamsConst::PARAMS_PING_DELAY, static_cast<int>(m_tOscClientParams.nPingDelay));
+		printf(" %s=%ds\n", OscClientParamsConst::PARAMS_PING_DELAY, m_tOscClientParams.nPingDelay);
 	}
 
 	if (isMaskSet(OSCCLIENT_PARAMS_MASK_CMD)) {

@@ -52,7 +52,6 @@ RemoteConfigParams::RemoteConfigParams(RemoteConfigParamsStore* pTRemoteConfigPa
 }
 
 RemoteConfigParams::~RemoteConfigParams(void) {
-	m_tRemoteConfigParams.nSetList = 0;
 }
 
 bool RemoteConfigParams::Load(void) {

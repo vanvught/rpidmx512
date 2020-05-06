@@ -54,7 +54,6 @@ NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetwor
 }
 
 NetworkParams::~NetworkParams(void) {
-	m_tNetworkParams.nSetList = 0;
 }
 
 bool NetworkParams::Load(void) {

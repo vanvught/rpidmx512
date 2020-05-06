@@ -31,6 +31,11 @@ struct TMidiParams {
 	uint32_t nSetList;
 	uint32_t nBaudrate;
 	uint8_t nActiveSense;
+} __attribute__((packed));
+
+enum TMidiParamsMask {
+	MIDIPARAMS_MASK_BAUDRATE = (1 << 0),
+	MIDIPARAMS_MASK_ACTIVE_SENSE = (1 << 1)
 };
 
 class MidiParamsStore {
@@ -64,7 +69,6 @@ public:
 		return (m_tMidiParams.nActiveSense != 0);
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

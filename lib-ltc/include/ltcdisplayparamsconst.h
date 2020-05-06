@@ -26,21 +26,19 @@
 #ifndef LTCDISPLAYPARAMSCONST_H_
 #define LTCDISPLAYPARAMSCONST_H_
 
-#include <stdint.h>
-
 #include "ltcdisplayws28xx.h"
 
 class LtcDisplayParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
+	static const char FILE_NAME[];
 
-	alignas(uint32_t) static const char MAX7219_TYPE[];
-	alignas(uint32_t) static const char MAX7219_INTENSITY[];
+	static const char MAX7219_TYPE[];
+	static const char MAX7219_INTENSITY[];
 
-	alignas(uint32_t) static const char WS28XX_TYPE[];
-	alignas(uint32_t) static const char WS28XX_INTENSITY[];
-	alignas(uint32_t) static const char WS28XX_COLON_BLINK_MODE[];
-	alignas(uint32_t) static const char WS28XX_COLOUR[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST][24];
+	static const char WS28XX_TYPE[];
+	static const char WS28XX_INTENSITY[];
+	static const char WS28XX_COLON_BLINK_MODE[];
+	static const char WS28XX_COLOUR[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST][24];
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

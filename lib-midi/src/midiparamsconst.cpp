@@ -1,8 +1,7 @@
 /**
- * @file motorparamsconst.cpp
- *
+ * @file midiparamsconst.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +22,11 @@
  * THE SOFTWARE.
  */
 
-#include "motorparamsconst.h"
+#include "midiparamsconst.h"
 
-const char MotorParamsConst::STEP_ANGEL[] = "motor_step_angel";
-const char MotorParamsConst::VOLTAGE[] = "motor_voltage";
-const char MotorParamsConst::CURRENT[] = "motor_current";
-const char MotorParamsConst::RESISTANCE[] = "motor_resistance";
-const char MotorParamsConst::INDUCTANCE[] = "motor_inductance";
+const char FILE_NAME[] = "midi.txt";
+
+const char BAUDRATE[] = "baudrate";
+const char ACTIVE_SENSE[] = "active_sense";
+
+

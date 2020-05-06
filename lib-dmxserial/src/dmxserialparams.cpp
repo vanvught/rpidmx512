@@ -281,7 +281,7 @@ void DmxSerialParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	return;
 }
 
-void DmxSerialParams::Set(DmxSerial *pDmxSerial) {
+void DmxSerialParams::Set(void) {
 
 	if (isMaskSet(DMXSERIAL_PARAMS_MASK_TYPE)) {
 		Serial::Get()->SetType(static_cast<TSerialTypes>(m_tDmxSerialParams.nType));

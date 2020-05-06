@@ -23,27 +23,25 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "devicesparamsconst.h"
 
-alignas(uint32_t) const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
+const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
 
-alignas(uint32_t) const char DevicesParamsConst::LED_TYPE[] = "led_type";
+const char DevicesParamsConst::LED_TYPE[] = "led_type";
 
-alignas(uint32_t) const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
+const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
 
-alignas(uint32_t) const char DevicesParamsConst::LED_T0H[] = "led_t0h";
-alignas(uint32_t) const char DevicesParamsConst::LED_T1H[] = "led_t1h";
+const char DevicesParamsConst::LED_T0H[] = "led_t0h";
+const char DevicesParamsConst::LED_T1H[] = "led_t1h";
 
-alignas(uint32_t) const char DevicesParamsConst::LED_COUNT[] = "led_count";
+const char DevicesParamsConst::LED_COUNT[] = "led_count";
 
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-alignas(uint32_t) const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
+const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
+const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
 
-alignas(uint32_t) const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
+const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
 
-alignas(uint32_t) const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
+const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
 
-alignas(uint32_t) const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
-alignas(uint32_t) const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
+const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
+const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";

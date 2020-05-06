@@ -23,11 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "rdmdeviceparamsconst.h"
 
-alignas(uint32_t) const char RDMDeviceParamsConst::FILE_NAME[] = "rdm_device.txt";
-alignas(uint32_t) const char RDMDeviceParamsConst::LABEL[] = "device_label";
-alignas(uint32_t) const char RDMDeviceParamsConst::PRODUCT_CATEGORY[] = "product_category";
-alignas(uint32_t) const char RDMDeviceParamsConst::PRODUCT_DETAIL[] = "product_detail";
+const char RDMDeviceParamsConst::FILE_NAME[] = "rdm_device.txt";
+
+const char RDMDeviceParamsConst::LABEL[] = "device_label";
+const char RDMDeviceParamsConst::PRODUCT_CATEGORY[] = "product_category";
+const char RDMDeviceParamsConst::PRODUCT_DETAIL[] = "product_detail";

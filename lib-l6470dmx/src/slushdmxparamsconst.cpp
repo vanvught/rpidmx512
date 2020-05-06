@@ -3,7 +3,7 @@
  * @file slushdmxparamsconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "slushdmxparamsconst.h"
 
-alignas(uint32_t) const char SlushDmxParamsConst::FILE_NAME[] = "slush.txt";
+const char SlushDmxParamsConst::FILE_NAME[] = "slush.txt";
 
-alignas(uint32_t) const char SlushDmxParamsConst::USE_SPI[] = "use_spi_busy";
+const char SlushDmxParamsConst::USE_SPI[] = "use_spi_busy";
 
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A[] = "dmx_start_address_port_a";
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A[] = "dmx_footprint_port_a";
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_A[] = "dmx_slot_info_port_a";
+const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A[] = "dmx_start_address_port_a";
+const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A[] = "dmx_footprint_port_a";
+const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_A[] = "dmx_slot_info_port_a";
 
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B[] = "dmx_start_address_port_b";
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B[] = "dmx_footprint_port_b";
-alignas(uint32_t) const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_B[] = "dmx_slot_info_port_b";
+const char SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B[] = "dmx_start_address_port_b";
+const char SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B[] = "dmx_footprint_port_b";
+const char SlushDmxParamsConst::DMX_SLOT_INFO_PORT_B[] = "dmx_slot_info_port_b";
 
 #endif /* #if !defined(ORANGE_PI) */

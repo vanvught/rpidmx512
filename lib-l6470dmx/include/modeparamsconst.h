@@ -2,7 +2,7 @@
  * @file modeparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,15 @@
 #ifndef MODEPARAMSCONST_H_
 #define MODEPARAMSCONST_H_
 
-#include <stdint.h>
-
 class ModeParamsConst {
 public:
-	alignas(uint32_t) static const char DMX_MODE[];
+	static const char DMX_MODE[];
 
-	alignas(uint32_t) static const char MAX_STEPS[];
-	alignas(uint32_t) static const char SWITCH_ACT[];
-	alignas(uint32_t) static const char SWITCH_DIR[];
-	alignas(uint32_t) static const char SWITCH_SPS[];
-	alignas(uint32_t) static const char SWITCH[];
+	static const char MAX_STEPS[];
+	static const char SWITCH_ACT[];
+	static const char SWITCH_DIR[];
+	static const char SWITCH_SPS[];
+	static const char SWITCH[];
 };
 
 #endif /* MODEPARAMSCONST_H_ */

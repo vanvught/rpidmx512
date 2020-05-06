@@ -2,7 +2,7 @@
  * @file sparkfundmxparamsconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,15 @@
 #ifndef SPARKFUNDMXPARAMSCONST_H_
 #define SPARKFUNDMXPARAMSCONST_H_
 
-#include <stdint.h>
-
 class SparkFunDmxParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char POSITION[];
+	static const char FILE_NAME[];
+	static const char POSITION[];
 #if !defined (H3)
-	alignas(uint32_t) static const char SPI_CS[];
+	static const char SPI_CS[];
 #endif
-	alignas(uint32_t) static const char RESET_PIN[];
-	alignas(uint32_t) static const char BUSY_PIN[];
+	static const char RESET_PIN[];
+	static const char BUSY_PIN[];
 };
 
 #endif /* SPARKFUNDMXPARAMSCONST_H_ */

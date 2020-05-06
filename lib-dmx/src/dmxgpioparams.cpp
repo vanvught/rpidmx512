@@ -31,6 +31,7 @@
 #include <assert.h>
 
 #include "dmxgpioparams.h"
+#include "dmxgpioparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -46,11 +47,6 @@
 #define DATA_DIRECTION_OUT_B_MASK	(1 << 2)
 #define DATA_DIRECTION_OUT_C_MASK	(1 << 3)
 #define DATA_DIRECTION_OUT_D_MASK	(1 << 4)
-
-static const char PARAMS_FILE_NAME[] ALIGNED = "gpio.txt";
-static const char PARAMS_DATA_DIRECTION[] ALIGNED = "data_direction";
-static const char PARAMS_DATA_DIRECTION_OUT[4][21] ALIGNED = {
-		"data_direction_out_a", "data_direction_out_b", "data_direction_out_c", "data_direction_out_d" };
 
 DmxGpioParams::DmxGpioParams(void):
 		m_nSetList(0),
@@ -78,7 +74,7 @@ bool DmxGpioParams::Load(void) {
 	m_nSetList = 0;
 
 	ReadConfigFile configfile(DmxGpioParams::staticCallbackFunction, this);
-	return configfile.Read(PARAMS_FILE_NAME);
+	return configfile.Read(DmxGpioParamsConst::FILE_NAME);
 }
 
 void DmxGpioParams::callbackFunction(const char* pLine) {
@@ -86,7 +82,7 @@ void DmxGpioParams::callbackFunction(const char* pLine) {
 
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION, &value8) == SSCAN_OK) {
 		if (value8 < 32) {
 			m_nDmxDataDirection = value8;
 			m_nSetList |= DATA_DIRECTION_MASK;
@@ -95,7 +91,7 @@ void DmxGpioParams::callbackFunction(const char* pLine) {
 	}
 
 	for (unsigned i = 0; i < 4; i++) {
-		if (Sscan::Uint8(pLine, PARAMS_DATA_DIRECTION_OUT[i], &value8) == SSCAN_OK) {
+		if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION_OUT[i], &value8) == SSCAN_OK) {
 			m_nDmxDataDirectionOut[i] = value8;
 			m_nSetList |= (DATA_DIRECTION_OUT_A_MASK << i);
 			return;
@@ -137,15 +133,15 @@ void DmxGpioParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxGpioParamsConst::FILE_NAME);
 
 	if (isMaskSet(DATA_DIRECTION_MASK)) {
-		printf(" %s=%d\n", PARAMS_DATA_DIRECTION, m_nDmxDataDirection);
+		printf(" %s=%d\n", DmxGpioParamsConst::DATA_DIRECTION, m_nDmxDataDirection);
 	}
 
 	for (unsigned i = 0; i < 4; i++) {
 		if (isMaskSet(DATA_DIRECTION_OUT_A_MASK << i)) {
-			printf(" %s=%d\n", PARAMS_DATA_DIRECTION_OUT[i], m_nDmxDataDirectionOut[i]);
+			printf(" %s=%d\n", DmxGpioParamsConst::DATA_DIRECTION_OUT[i], m_nDmxDataDirectionOut[i]);
 		}
 	}
 #endif

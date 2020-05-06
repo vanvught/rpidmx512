@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "artnet4paramsconst.h"
 
-alignas(uint32_t) const char ArtNet4ParamsConst::MAP_UNIVERSE0[] = "map_universe0";
+const char ArtNet4ParamsConst::MAP_UNIVERSE0[] = "map_universe0";

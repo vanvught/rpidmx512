@@ -30,14 +30,15 @@
 
 class OscClientParamsConst {
 public:
-	alignas(uint32_t) static const char PARAMS_FILE_NAME[];
-	alignas(uint32_t) static const char PARAMS_SERVER_IP[];
-	alignas(uint32_t) static const char PARAMS_OUTGOING_PORT[];
-	alignas(uint32_t) static const char PARAMS_INCOMING_PORT[];
-	alignas(uint32_t) static const char PARAMS_PING_DISABLE[];
-	alignas(uint32_t) static const char PARAMS_PING_DELAY[];
-	alignas(uint32_t) static const char PARAMS_CMD[];
-	alignas(uint32_t) static const char PARAMS_LED[];
+	static const char PARAMS_FILE_NAME[];
+
+	static const char PARAMS_SERVER_IP[];
+
+	static const char PARAMS_PING_DISABLE[];
+	static const char PARAMS_PING_DELAY[];
+
+	static const char PARAMS_CMD[];
+	static const char PARAMS_LED[];
 };
 
 #endif /* OSCCLIENTPARAMSCONST_H_ */

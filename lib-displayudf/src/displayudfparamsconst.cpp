@@ -23,13 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "displayudfparamsconst.h"
 
-alignas(uint32_t) const char DisplayUdfParamsConst::FILE_NAME[] = "display.txt";
-alignas(uint32_t) const char DisplayUdfParamsConst::SLEEP_TIMEOUT[] = "sleep_timeout";
-alignas(uint32_t) const char DisplayUdfParamsConst::TITLE[] = "title";
-alignas(uint32_t) const char DisplayUdfParamsConst::BOARD_NAME[] = "board_name";
-alignas(uint32_t) const char DisplayUdfParamsConst::VERSION[] = "version";
-alignas(uint32_t) const char DisplayUdfParamsConst::ACTIVE_PORTS[] = "active_ports";
+const char DisplayUdfParamsConst::FILE_NAME[] = "display.txt";
+const char DisplayUdfParamsConst::SLEEP_TIMEOUT[] = "sleep_timeout";
+const char DisplayUdfParamsConst::TITLE[] = "title";
+const char DisplayUdfParamsConst::BOARD_NAME[] = "board_name";
+const char DisplayUdfParamsConst::VERSION[] = "version";
+const char DisplayUdfParamsConst::ACTIVE_PORTS[] = "active_ports";

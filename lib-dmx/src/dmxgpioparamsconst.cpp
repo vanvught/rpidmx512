@@ -1,8 +1,8 @@
 /**
- * @file motorparamsconst.cpp
+ * @file gpioparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include "motorparamsconst.h"
+#include "dmxgpioparamsconst.h"
 
-const char MotorParamsConst::STEP_ANGEL[] = "motor_step_angel";
-const char MotorParamsConst::VOLTAGE[] = "motor_voltage";
-const char MotorParamsConst::CURRENT[] = "motor_current";
-const char MotorParamsConst::RESISTANCE[] = "motor_resistance";
-const char MotorParamsConst::INDUCTANCE[] = "motor_inductance";
+#include "dmx.h"
+
+const char DmxGpioParamsConst::FILE_NAME[] = "gpio.txt";
+
+const char DmxGpioParamsConst::DATA_DIRECTION[] = "data_direction";
+const char DmxGpioParamsConst::DATA_DIRECTION_OUT[DMX_MAX_OUT][DMXGPIOPARAMS_DATA_DIRECTION_OUT_MAX_LENGTH] =
+		{ "data_direction_out_a", "data_direction_out_b", "data_direction_out_c", "data_direction_out_d" };
+

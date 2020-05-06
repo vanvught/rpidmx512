@@ -23,15 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "e131paramsconst.h"
 
-alignas(uint32_t) const char E131ParamsConst::FILE_NAME[] = "e131.txt";
-alignas(uint32_t) const char E131ParamsConst::UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
-alignas(uint32_t) const char E131ParamsConst::MERGE_MODE[] = "merge_mode";
-alignas(uint32_t) const char E131ParamsConst::MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
-alignas(uint32_t) const char E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
-alignas(uint32_t) const char E131ParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
-alignas(uint32_t) const char E131ParamsConst::DIRECTION[] = "direction";
-alignas(uint32_t) const char E131ParamsConst::PRIORITY[] = "priority";
+const char E131ParamsConst::FILE_NAME[] = "e131.txt";
+
+const char E131ParamsConst::UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+const char E131ParamsConst::MERGE_MODE[] = "merge_mode";
+const char E131ParamsConst::MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+const char E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+const char E131ParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
+const char E131ParamsConst::DIRECTION[] = "direction";
+const char E131ParamsConst::PRIORITY[] = "priority";

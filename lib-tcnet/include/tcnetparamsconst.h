@@ -26,15 +26,14 @@
 #ifndef TCNETPARAMSCONST_H_
 #define TCNETPARAMSCONST_H_
 
-#include <stdint.h>
-
 class TCNetParamsConst {
 public:
-	alignas(uint32_t) static const char FILE_NAME[];
-	alignas(uint32_t) static const char NODE_NAME[];
-	alignas(uint32_t) static const char LAYER[];
-	alignas(uint32_t) static const char TIMECODE_TYPE[];
-	alignas(uint32_t) static const char USE_TIMECODE[];
+	static const char FILE_NAME[];
+
+	static const char NODE_NAME[];
+	static const char LAYER[];
+	static const char TIMECODE_TYPE[];
+	static const char USE_TIMECODE[];
 };
 
 #endif /* TCNETPARAMSCONST_H_ */

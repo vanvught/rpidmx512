@@ -23,15 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "oscclientparamsconst.h"
 
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_FILE_NAME[] = "oscclnt.txt";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_SERVER_IP[] = "server_ip";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_INCOMING_PORT[] = "incoming_port";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_PING_DISABLE[] = "ping_disable";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_PING_DELAY[] = "ping_delay";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_CMD[] = "cmd?";
-alignas(uint32_t) const char OscClientParamsConst::PARAMS_LED[] = "led?";
+const char OscClientParamsConst::PARAMS_FILE_NAME[] = "oscclnt.txt";
+
+const char OscClientParamsConst::PARAMS_SERVER_IP[] = "server_ip";
+
+const char OscClientParamsConst::PARAMS_PING_DISABLE[] = "ping_disable";
+const char OscClientParamsConst::PARAMS_PING_DELAY[] = "ping_delay";
+
+const char OscClientParamsConst::PARAMS_CMD[] = "cmd?";
+const char OscClientParamsConst::PARAMS_LED[] = "led?";

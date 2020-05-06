@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "tcnetparamsconst.h"
 
-alignas(uint32_t) const char TCNetParamsConst::FILE_NAME[]  = "tcnet.txt";
-alignas(uint32_t) const char TCNetParamsConst::NODE_NAME[]  = "node_name";
-alignas(uint32_t) const char TCNetParamsConst::LAYER[]  = "layer";
-alignas(uint32_t) const char TCNetParamsConst::TIMECODE_TYPE[]  = "timecode_type";
-alignas(uint32_t) const char TCNetParamsConst::USE_TIMECODE[]  = "use_timecode";
+const char TCNetParamsConst::FILE_NAME[]  = "tcnet.txt";
+const char TCNetParamsConst::NODE_NAME[]  = "node_name";
+const char TCNetParamsConst::LAYER[]  = "layer";
+const char TCNetParamsConst::TIMECODE_TYPE[]  = "timecode_type";
+const char TCNetParamsConst::USE_TIMECODE[]  = "use_timecode";

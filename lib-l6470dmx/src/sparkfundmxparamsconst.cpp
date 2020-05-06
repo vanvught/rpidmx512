@@ -2,7 +2,7 @@
  * @file sparkfundmxparamsconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "sparkfundmxparamsconst.h"
 
-alignas(uint32_t) const char SparkFunDmxParamsConst::FILE_NAME[] = "sparkfun.txt";
-alignas(uint32_t) const char SparkFunDmxParamsConst::POSITION[] = "sparkfun_position";
+const char SparkFunDmxParamsConst::FILE_NAME[] = "sparkfun.txt";
+const char SparkFunDmxParamsConst::POSITION[] = "sparkfun_position";
 #if !defined (H3)
- alignas(uint32_t) const char SparkFunDmxParamsConst::SPI_CS[] = "sparkfun_spi_cs";
+ const char SparkFunDmxParamsConst::SPI_CS[] = "sparkfun_spi_cs";
 #endif
-alignas(uint32_t) const char SparkFunDmxParamsConst::RESET_PIN[] = "sparkfun_reset_pin";
-alignas(uint32_t) const char SparkFunDmxParamsConst::BUSY_PIN[] = "sparkfun_busy_pin";
+const char SparkFunDmxParamsConst::RESET_PIN[] = "sparkfun_reset_pin";
+const char SparkFunDmxParamsConst::BUSY_PIN[] = "sparkfun_busy_pin";

@@ -33,6 +33,7 @@
 #include "oscserverparms.h"
 #include "oscserverconst.h"
 #include "osc.h"
+#include "oscconst.h"
 
 #include "lightsetconst.h"
 
@@ -94,7 +95,7 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	uint16_t nValue16;
 	uint8_t nLength;
 
-	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nIncomingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_INCOMING_PORT;
@@ -102,7 +103,7 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OSCServerConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nOutgoingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_OUTGOING_PORT;
@@ -146,13 +147,11 @@ void OSCServerParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OSCServerConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT)) {
-		printf(" %s=%d\n", OSCServerConst::PARAMS_INCOMING_PORT,
-				static_cast<int>(m_tOSCServerParams.nIncomingPort));
+		printf(" %s=%d\n", OscConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort);
 	}
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT)) {
-		printf(" %s=%d\n", OSCServerConst::PARAMS_OUTGOING_PORT,
-				static_cast<int>(m_tOSCServerParams.nOutgoingPort));
+		printf(" %s=%d\n", OscConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort);
 	}
 
 	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH)) {

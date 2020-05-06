@@ -81,7 +81,6 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 }
 
 ArtNetParams::~ArtNetParams(void) {
-	m_tArtNetParams.nSetList = 0;
 }
 
 bool ArtNetParams::Load(void) {
