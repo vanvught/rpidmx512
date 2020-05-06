@@ -84,12 +84,12 @@ e131.txt
 osc.txt
 *.Linux
 *.MacOS
+# 
 sofware_version_id.h
 */sofware_version_id.h
 */include/sofware_version_id.h
 lib-rdmnet/example/sofware_version_id.h
-rpi_dmx_usb_pro/include/device_software_version.h
+#
 lib-bob/examples/si5351a
 linux_rpi_artipprog/linux_rpi_artipprog
-
 *.gz
