@@ -2,7 +2,7 @@ PREFIX ?=
 DEF ?= 
 
 CC	= $(PREFIX)gcc
-CPP	= $(PREFIX)g++
+CPP?=$(PREFIX)g++
 AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
