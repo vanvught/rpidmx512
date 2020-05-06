@@ -1,10 +1,10 @@
 PREFIX ?=
 
-CC	=$(PREFIX)gcc
-CPP	=$(PREFIX)g++
-AS	=$(CC)
-LD	=$(PREFIX)ld
-AR	=$(PREFIX)ar
+CC?=$(PREFIX)gcc
+CPP?=$(PREFIX)g++
+AS?=$(CC)
+LD?=$(PREFIX)ld
+AR?=$(PREFIX)ar
 
 $(info [${CURDIR}])
 
@@ -49,10 +49,14 @@ $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
  
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-Wall -Werror -O2
+COPS+=-O2 -Wall -Werror -Wunused #-Wpedantic -Wextra  #-Wconversion
 
-# -Wold-style-cast
-CCPOPS=-fno-rtti 
+# -Wold-style-cast 
+CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
+ifeq ($(detected_OS),Darwin) 
+else
+CCPOPS+=-Wuseless-cast
+endif
 
 ifeq ($(detected_OS),Cygwin)
 	CCPOPS+=-std=gnu++11
@@ -70,6 +74,7 @@ C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(
 CPP_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 
 OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
+$(info $$OBJECTS [${OBJECTS}])
 
 TARGET = lib_linux/lib$(LIB_NAME).a 
 
@@ -80,7 +85,7 @@ $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 -c $$< -o $$@
+	$(CPP) $(COPS) $(CCPOPS) -c $$< -o $$@
 endef
 
 all : builddirs $(TARGET)

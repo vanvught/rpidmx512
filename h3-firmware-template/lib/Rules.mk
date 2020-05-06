@@ -49,7 +49,8 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mhard-float -mfloat-abi=hard
-COPS+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays
+COPS+=-O2 -Wall -Werror -Wunused #-Wpedantic #-Wextra  #-Wconversion #-Wcast-align
+COPS+= -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
@@ -64,18 +65,19 @@ ASM_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.S,$(BUILD)$(sdir)/%.o,
 
 OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS) $(CPP_OBJECTS)
 
-TARGET = lib_h3/lib$(LIB_NAME).a 
+TARGET=lib_h3/lib$(LIB_NAME).a 
+$(info $$TARGET [${TARGET}])
 
 LIST = lib.list
 
-#-Wold-style-cast
+#-Wuseless-cast
 
 define compile-objects
 $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -fno-rtti -std=c++11 -Wold-style-cast -c $$< -o $$@
+	$(CPP) $(COPS) -std=c++11 -fno-rtti -Wold-style-cast -Wnon-virtual-dtor -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
