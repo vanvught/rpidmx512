@@ -85,10 +85,6 @@ do
 					echo -e "\e[33mSkipping...\e[0m"
 				elif [ $(grep -c RDM_RESPONDER Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c MONITOR_MIDI Makefile.H3) -ne 0 ] && [[ $1 = "PLATFORM=ORANGE_PI" ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
-				elif [ $(grep -c MONITOR_MIDI Makefile.H3) -ne 0 ] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
-					echo -e "\e[33mSkipping...\e[0m"
 				else
 					echo $1 $2 $3
 					make -f Makefile.H3 $1 $2 $3 || exit

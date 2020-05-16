@@ -9,8 +9,8 @@ do
 	cd "$f"
 	
 	if [ -f Makefile.H3 ]; then
-		make -f Makefile.H3 $1 $2 $3 clean || exit
-		make -j 4 -f Makefile.H3 $1 $2 $3 || exit
+#		make -f Makefile.H3 $1 $2 $3 clean || exit
+		make -f Makefile.H3 -j3 $1 $2 $3 || exit
 	fi
 	
 	cd -
